@@ -349,11 +349,17 @@ namespace Microsoft.AspNetCore.Http.Generated
             [(@"TestMapActions.cs", 25)] = (
                 (methodInfo, options) =>
                 {
-                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
-                    Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
-                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 25));
-                    options!.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
-                    return new RequestDelegateMetadataResult { EndpointMetadata = options!.EndpointBuilder.Metadata.AsReadOnly() };
+                    if (options is not { } rdfOptions)
+                    {
+                        throw new ArgumentNullException(nameof(options));
+                    }
+                    if (rdfOptions.EndpointBuilder is not { } endpointBuilder)
+                    {
+                        throw new ArgumentNullException(nameof(options), "EndpointBuilder not found.");
+                    }
+                    endpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 25));
+                    endpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
+                    return new RequestDelegateMetadataResult { EndpointMetadata = endpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
                 {
@@ -436,11 +442,17 @@ namespace Microsoft.AspNetCore.Http.Generated
             [(@"TestMapActions.cs", 26)] = (
                 (methodInfo, options) =>
                 {
-                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
-                    Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
-                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 26));
-                    options!.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
-                    return new RequestDelegateMetadataResult { EndpointMetadata = options!.EndpointBuilder.Metadata.AsReadOnly() };
+                    if (options is not { } rdfOptions)
+                    {
+                        throw new ArgumentNullException(nameof(options));
+                    }
+                    if (rdfOptions.EndpointBuilder is not { } endpointBuilder)
+                    {
+                        throw new ArgumentNullException(nameof(options), "EndpointBuilder not found.");
+                    }
+                    endpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 26));
+                    endpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
+                    return new RequestDelegateMetadataResult { EndpointMetadata = endpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
                 {
@@ -501,11 +513,17 @@ namespace Microsoft.AspNetCore.Http.Generated
             [(@"TestMapActions.cs", 27)] = (
                 (methodInfo, options) =>
                 {
-                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
-                    Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
-                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 27));
-                    options!.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
-                    return new RequestDelegateMetadataResult { EndpointMetadata = options!.EndpointBuilder.Metadata.AsReadOnly() };
+                    if (options is not { } rdfOptions)
+                    {
+                        throw new ArgumentNullException(nameof(options));
+                    }
+                    if (rdfOptions.EndpointBuilder is not { } endpointBuilder)
+                    {
+                        throw new ArgumentNullException(nameof(options), "EndpointBuilder not found.");
+                    }
+                    endpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 27));
+                    endpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
+                    return new RequestDelegateMetadataResult { EndpointMetadata = endpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
                 {
@@ -588,11 +606,17 @@ namespace Microsoft.AspNetCore.Http.Generated
             [(@"TestMapActions.cs", 28)] = (
                 (methodInfo, options) =>
                 {
-                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
-                    Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
-                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 28));
-                    options!.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
-                    return new RequestDelegateMetadataResult { EndpointMetadata = options!.EndpointBuilder.Metadata.AsReadOnly() };
+                    if (options is not { } rdfOptions)
+                    {
+                        throw new ArgumentNullException(nameof(options));
+                    }
+                    if (rdfOptions.EndpointBuilder is not { } endpointBuilder)
+                    {
+                        throw new ArgumentNullException(nameof(options), "EndpointBuilder not found.");
+                    }
+                    endpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 28));
+                    endpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
+                    return new RequestDelegateMetadataResult { EndpointMetadata = endpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
                 {
@@ -653,11 +677,17 @@ namespace Microsoft.AspNetCore.Http.Generated
             [(@"TestMapActions.cs", 29)] = (
                 (methodInfo, options) =>
                 {
-                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
-                    Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
-                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 29));
-                    options!.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
-                    return new RequestDelegateMetadataResult { EndpointMetadata = options!.EndpointBuilder.Metadata.AsReadOnly() };
+                    if (options is not { } rdfOptions)
+                    {
+                        throw new ArgumentNullException(nameof(options));
+                    }
+                    if (rdfOptions.EndpointBuilder is not { } endpointBuilder)
+                    {
+                        throw new ArgumentNullException(nameof(options), "EndpointBuilder not found.");
+                    }
+                    endpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 29));
+                    endpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
+                    return new RequestDelegateMetadataResult { EndpointMetadata = endpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
                 {
@@ -740,11 +770,17 @@ namespace Microsoft.AspNetCore.Http.Generated
             [(@"TestMapActions.cs", 30)] = (
                 (methodInfo, options) =>
                 {
-                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
-                    Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
-                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 30));
-                    options!.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
-                    return new RequestDelegateMetadataResult { EndpointMetadata = options!.EndpointBuilder.Metadata.AsReadOnly() };
+                    if (options is not { } rdfOptions)
+                    {
+                        throw new ArgumentNullException(nameof(options));
+                    }
+                    if (rdfOptions.EndpointBuilder is not { } endpointBuilder)
+                    {
+                        throw new ArgumentNullException(nameof(options), "EndpointBuilder not found.");
+                    }
+                    endpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 30));
+                    endpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
+                    return new RequestDelegateMetadataResult { EndpointMetadata = endpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
                 {
@@ -805,11 +841,17 @@ namespace Microsoft.AspNetCore.Http.Generated
             [(@"TestMapActions.cs", 31)] = (
                 (methodInfo, options) =>
                 {
-                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
-                    Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
-                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 31));
-                    options!.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
-                    return new RequestDelegateMetadataResult { EndpointMetadata = options!.EndpointBuilder.Metadata.AsReadOnly() };
+                    if (options is not { } rdfOptions)
+                    {
+                        throw new ArgumentNullException(nameof(options));
+                    }
+                    if (rdfOptions.EndpointBuilder is not { } endpointBuilder)
+                    {
+                        throw new ArgumentNullException(nameof(options), "EndpointBuilder not found.");
+                    }
+                    endpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 31));
+                    endpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
+                    return new RequestDelegateMetadataResult { EndpointMetadata = endpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
                 {
@@ -892,11 +934,17 @@ namespace Microsoft.AspNetCore.Http.Generated
             [(@"TestMapActions.cs", 32)] = (
                 (methodInfo, options) =>
                 {
-                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
-                    Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
-                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 32));
-                    options!.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
-                    return new RequestDelegateMetadataResult { EndpointMetadata = options!.EndpointBuilder.Metadata.AsReadOnly() };
+                    if (options is not { } rdfOptions)
+                    {
+                        throw new ArgumentNullException(nameof(options));
+                    }
+                    if (rdfOptions.EndpointBuilder is not { } endpointBuilder)
+                    {
+                        throw new ArgumentNullException(nameof(options), "EndpointBuilder not found.");
+                    }
+                    endpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 32));
+                    endpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
+                    return new RequestDelegateMetadataResult { EndpointMetadata = endpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
                 {
@@ -957,11 +1005,17 @@ namespace Microsoft.AspNetCore.Http.Generated
             [(@"TestMapActions.cs", 33)] = (
                 (methodInfo, options) =>
                 {
-                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
-                    Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
-                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 33));
-                    options!.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
-                    return new RequestDelegateMetadataResult { EndpointMetadata = options!.EndpointBuilder.Metadata.AsReadOnly() };
+                    if (options is not { } rdfOptions)
+                    {
+                        throw new ArgumentNullException(nameof(options));
+                    }
+                    if (rdfOptions.EndpointBuilder is not { } endpointBuilder)
+                    {
+                        throw new ArgumentNullException(nameof(options), "EndpointBuilder not found.");
+                    }
+                    endpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 33));
+                    endpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
+                    return new RequestDelegateMetadataResult { EndpointMetadata = endpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
                 {
@@ -1043,11 +1097,17 @@ namespace Microsoft.AspNetCore.Http.Generated
             [(@"TestMapActions.cs", 34)] = (
                 (methodInfo, options) =>
                 {
-                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
-                    Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
-                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 34));
-                    options!.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
-                    return new RequestDelegateMetadataResult { EndpointMetadata = options!.EndpointBuilder.Metadata.AsReadOnly() };
+                    if (options is not { } rdfOptions)
+                    {
+                        throw new ArgumentNullException(nameof(options));
+                    }
+                    if (rdfOptions.EndpointBuilder is not { } endpointBuilder)
+                    {
+                        throw new ArgumentNullException(nameof(options), "EndpointBuilder not found.");
+                    }
+                    endpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 34));
+                    endpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
+                    return new RequestDelegateMetadataResult { EndpointMetadata = endpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
                 {
@@ -1107,11 +1167,17 @@ namespace Microsoft.AspNetCore.Http.Generated
             [(@"TestMapActions.cs", 35)] = (
                 (methodInfo, options) =>
                 {
-                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
-                    Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
-                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 35));
-                    options!.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
-                    return new RequestDelegateMetadataResult { EndpointMetadata = options!.EndpointBuilder.Metadata.AsReadOnly() };
+                    if (options is not { } rdfOptions)
+                    {
+                        throw new ArgumentNullException(nameof(options));
+                    }
+                    if (rdfOptions.EndpointBuilder is not { } endpointBuilder)
+                    {
+                        throw new ArgumentNullException(nameof(options), "EndpointBuilder not found.");
+                    }
+                    endpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 35));
+                    endpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
+                    return new RequestDelegateMetadataResult { EndpointMetadata = endpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
                 {
@@ -1193,11 +1259,17 @@ namespace Microsoft.AspNetCore.Http.Generated
             [(@"TestMapActions.cs", 36)] = (
                 (methodInfo, options) =>
                 {
-                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
-                    Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
-                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 36));
-                    options!.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
-                    return new RequestDelegateMetadataResult { EndpointMetadata = options!.EndpointBuilder.Metadata.AsReadOnly() };
+                    if (options is not { } rdfOptions)
+                    {
+                        throw new ArgumentNullException(nameof(options));
+                    }
+                    if (rdfOptions.EndpointBuilder is not { } endpointBuilder)
+                    {
+                        throw new ArgumentNullException(nameof(options), "EndpointBuilder not found.");
+                    }
+                    endpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 36));
+                    endpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
+                    return new RequestDelegateMetadataResult { EndpointMetadata = endpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
                 {
@@ -1257,11 +1329,17 @@ namespace Microsoft.AspNetCore.Http.Generated
             [(@"TestMapActions.cs", 37)] = (
                 (methodInfo, options) =>
                 {
-                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
-                    Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
-                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 37));
-                    options!.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
-                    return new RequestDelegateMetadataResult { EndpointMetadata = options!.EndpointBuilder.Metadata.AsReadOnly() };
+                    if (options is not { } rdfOptions)
+                    {
+                        throw new ArgumentNullException(nameof(options));
+                    }
+                    if (rdfOptions.EndpointBuilder is not { } endpointBuilder)
+                    {
+                        throw new ArgumentNullException(nameof(options), "EndpointBuilder not found.");
+                    }
+                    endpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 37));
+                    endpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
+                    return new RequestDelegateMetadataResult { EndpointMetadata = endpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
                 {
@@ -1344,11 +1422,17 @@ namespace Microsoft.AspNetCore.Http.Generated
             [(@"TestMapActions.cs", 38)] = (
                 (methodInfo, options) =>
                 {
-                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
-                    Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
-                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 38));
-                    options!.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
-                    return new RequestDelegateMetadataResult { EndpointMetadata = options!.EndpointBuilder.Metadata.AsReadOnly() };
+                    if (options is not { } rdfOptions)
+                    {
+                        throw new ArgumentNullException(nameof(options));
+                    }
+                    if (rdfOptions.EndpointBuilder is not { } endpointBuilder)
+                    {
+                        throw new ArgumentNullException(nameof(options), "EndpointBuilder not found.");
+                    }
+                    endpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 38));
+                    endpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
+                    return new RequestDelegateMetadataResult { EndpointMetadata = endpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
                 {
@@ -1409,11 +1493,17 @@ namespace Microsoft.AspNetCore.Http.Generated
             [(@"TestMapActions.cs", 39)] = (
                 (methodInfo, options) =>
                 {
-                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
-                    Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
-                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 39));
-                    options!.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
-                    return new RequestDelegateMetadataResult { EndpointMetadata = options!.EndpointBuilder.Metadata.AsReadOnly() };
+                    if (options is not { } rdfOptions)
+                    {
+                        throw new ArgumentNullException(nameof(options));
+                    }
+                    if (rdfOptions.EndpointBuilder is not { } endpointBuilder)
+                    {
+                        throw new ArgumentNullException(nameof(options), "EndpointBuilder not found.");
+                    }
+                    endpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 39));
+                    endpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
+                    return new RequestDelegateMetadataResult { EndpointMetadata = endpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
                 {
@@ -1495,11 +1585,17 @@ namespace Microsoft.AspNetCore.Http.Generated
             [(@"TestMapActions.cs", 40)] = (
                 (methodInfo, options) =>
                 {
-                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
-                    Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
-                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 40));
-                    options!.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
-                    return new RequestDelegateMetadataResult { EndpointMetadata = options!.EndpointBuilder.Metadata.AsReadOnly() };
+                    if (options is not { } rdfOptions)
+                    {
+                        throw new ArgumentNullException(nameof(options));
+                    }
+                    if (rdfOptions.EndpointBuilder is not { } endpointBuilder)
+                    {
+                        throw new ArgumentNullException(nameof(options), "EndpointBuilder not found.");
+                    }
+                    endpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 40));
+                    endpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
+                    return new RequestDelegateMetadataResult { EndpointMetadata = endpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
                 {
@@ -1559,11 +1655,17 @@ namespace Microsoft.AspNetCore.Http.Generated
             [(@"TestMapActions.cs", 41)] = (
                 (methodInfo, options) =>
                 {
-                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
-                    Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
-                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 41));
-                    options!.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
-                    return new RequestDelegateMetadataResult { EndpointMetadata = options!.EndpointBuilder.Metadata.AsReadOnly() };
+                    if (options is not { } rdfOptions)
+                    {
+                        throw new ArgumentNullException(nameof(options));
+                    }
+                    if (rdfOptions.EndpointBuilder is not { } endpointBuilder)
+                    {
+                        throw new ArgumentNullException(nameof(options), "EndpointBuilder not found.");
+                    }
+                    endpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 41));
+                    endpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
+                    return new RequestDelegateMetadataResult { EndpointMetadata = endpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
                 {
@@ -1646,11 +1748,17 @@ namespace Microsoft.AspNetCore.Http.Generated
             [(@"TestMapActions.cs", 42)] = (
                 (methodInfo, options) =>
                 {
-                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
-                    Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
-                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 42));
-                    options!.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
-                    return new RequestDelegateMetadataResult { EndpointMetadata = options!.EndpointBuilder.Metadata.AsReadOnly() };
+                    if (options is not { } rdfOptions)
+                    {
+                        throw new ArgumentNullException(nameof(options));
+                    }
+                    if (rdfOptions.EndpointBuilder is not { } endpointBuilder)
+                    {
+                        throw new ArgumentNullException(nameof(options), "EndpointBuilder not found.");
+                    }
+                    endpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 42));
+                    endpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
+                    return new RequestDelegateMetadataResult { EndpointMetadata = endpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
                 {
