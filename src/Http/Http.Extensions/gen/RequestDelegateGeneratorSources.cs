@@ -219,7 +219,7 @@ internal static class RequestDelegateGeneratorSources
 """;
 
     public static string LogOrThrowExceptionHelperClass => $$"""
-    file class LogOrThrowExceptionHelper
+    file sealed class LogOrThrowExceptionHelper
     {
         private readonly ILogger? _rdgLogger;
         private readonly bool _shouldThrow;
@@ -463,7 +463,7 @@ internal static class RequestDelegateGeneratorSources
 namespace Microsoft.AspNetCore.Builder
 {
     {{GeneratedCodeAttribute}}
-    internal class SourceKey
+    internal sealed class SourceKey
     {
         public string Path { get; init; }
         public int Line { get; init; }

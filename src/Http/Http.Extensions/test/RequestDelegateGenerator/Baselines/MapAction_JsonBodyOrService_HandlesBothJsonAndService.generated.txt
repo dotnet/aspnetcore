@@ -11,7 +11,7 @@
 namespace Microsoft.AspNetCore.Builder
 {
     %GENERATEDCODEATTRIBUTE%
-    internal class SourceKey
+    internal sealed class SourceKey
     {
         public string Path { get; init; }
         public int Line { get; init; }
@@ -324,7 +324,7 @@ namespace Microsoft.AspNetCore.Http.Generated
         public IEnumerable<string> ContentTypes { get; }
     }
 
-    file class LogOrThrowExceptionHelper
+    file sealed class LogOrThrowExceptionHelper
     {
         private readonly ILogger? _rdgLogger;
         private readonly bool _shouldThrow;
