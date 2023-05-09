@@ -250,20 +250,6 @@ namespace Microsoft.AspNetCore.Http.Generated
 
     }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-    file static class GeneratedMetadataConstants
-    {
-        public static readonly string[] JsonContentType = new [] { "application/json" };
-        public static readonly string[] PlaintextContentType = new [] { "text/plain" };
-        public static readonly string[] FormFileContentType = new[] { "multipart/form-data" };
-        public static readonly string[] FormContentType = new[] { "multipart/form-data", "application/x-www-form-urlencoded" };
-    }
-
->>>>>>> 2a98db8b95 (Add form metadata.)
-=======
->>>>>>> b17659f45a (Selectively emit accepts/produces metadata.)
     file sealed class GeneratedProducesResponseTypeMetadata : IProducesResponseTypeMetadata
     {
         public GeneratedProducesResponseTypeMetadata(Type? type, int statusCode, string[] contentTypes)
@@ -280,8 +266,6 @@ namespace Microsoft.AspNetCore.Http.Generated
         public IEnumerable<string> ContentTypes { get; }
     }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
     file static class GeneratedMetadataConstants
     {
         public static readonly string[] JsonContentType = new [] { "application/json" };
@@ -291,23 +275,6 @@ namespace Microsoft.AspNetCore.Http.Generated
     }
 
 
-=======
-    file sealed class GeneratedAcceptsMetadata : IAcceptsMetadata
-=======
-    file static class GeneratedMetadataConstants
->>>>>>> b17659f45a (Selectively emit accepts/produces metadata.)
-    {
-        public static readonly string[] JsonContentType = new [] { "application/json" };
-        public static readonly string[] PlaintextContentType = new [] { "text/plain" };
-        public static readonly string[] FormFileContentType = new[] { "multipart/form-data" };
-        public static readonly string[] FormContentType = new[] { "multipart/form-data", "application/x-www-form-urlencoded" };
-    }
-
-<<<<<<< HEAD
->>>>>>> 2a98db8b95 (Add form metadata.)
-=======
-
->>>>>>> b17659f45a (Selectively emit accepts/produces metadata.)
     file class LogOrThrowExceptionHelper
     {
         private readonly ILogger? _rdgLogger;

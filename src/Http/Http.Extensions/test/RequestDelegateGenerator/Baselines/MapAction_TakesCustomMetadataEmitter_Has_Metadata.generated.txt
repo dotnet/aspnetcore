@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         options!.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(type: inferredBodyParameter.Item2, isOptional: inferredBodyParameter.Item1, contentTypes: GeneratedMetadataConstants.JsonContentType));
                     }
                     var parameterInfos = methodInfo.GetParameters();
-                    var x_ParameterInfo = parameterInfos.Single(p => p.Name == "x");
+                    var x_ParameterInfo = parameterInfos[0];
                     PopulateMetadataForParameter<global::Microsoft.AspNetCore.Http.Generators.Tests.CustomMetadataEmitter>(x_ParameterInfo, options!.EndpointBuilder);
                     PopulateMetadataForEndpoint<global::Microsoft.AspNetCore.Http.Generators.Tests.CustomMetadataEmitter>(methodInfo, options!.EndpointBuilder);
                     return new RequestDelegateMetadataResult { EndpointMetadata = options!.EndpointBuilder.Metadata.AsReadOnly() };

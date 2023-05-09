@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel.Emitters;
@@ -245,19 +246,31 @@ internal static class StaticRouteHandlerModelEmitter
         codeWriter.WriteLine("var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;");
         codeWriter.WriteLine($"var serviceProviderIsService = serviceProvider?.GetService<IServiceProviderIsService>();");
 
-        if (endpoint.Parameters.SingleOrDefault(p => p.Source == EndpointParameterSource.JsonBody) is { } explicitBodyParameter)
+        EndpointParameter? explicitBodyParameter = null;
+        var potentialImplicitBodyParameters = new List<EndpointParameter>();
+
+        foreach (var parameter in endpoint.Parameters)
         {
-            // If we have a parameter which is explicitly set as the JSON body then we
-            // can assume its the one we want to build metadata from.
+            if (explicitBodyParameter == null && parameter.Source == EndpointParameterSource.JsonBody)
+            {
+                explicitBodyParameter = parameter;
+                break;
+            }
+            else if (parameter.Source == EndpointParameterSource.JsonBodyOrService)
+            {
+                potentialImplicitBodyParameters.Add(parameter);
+            }
+        }
+
+        if (explicitBodyParameter != null)
+        {
             codeWriter.WriteLine($$"""options!.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(type: typeof({{explicitBodyParameter.Type.ToDisplayString(EmitterConstants.DisplayFormatWithoutNullability)}}), isOptional: {{(explicitBodyParameter.IsOptional ? "true" : "false")}}, contentTypes: GeneratedMetadataConstants.JsonContentType));""");
         }
-        else if (endpoint.Parameters.Any(p => p.Source == EndpointParameterSource.JsonBodyOrService))
+        else if (potentialImplicitBodyParameters.Count > 0)
         {
-            var jsonBodyOrServiceParameters = endpoint.Parameters.Where(p => p.Source == EndpointParameterSource.JsonBodyOrService);
-
             codeWriter.WriteLine("var jsonBodyOrServiceTypeTuples = new (bool, Type)[] {");
             codeWriter.Indent++;
-            foreach (var parameter in jsonBodyOrServiceParameters)
+            foreach (var parameter in potentialImplicitBodyParameters)
             {
                 codeWriter.WriteLine($$"""({{(parameter.IsOptional ? "true" : "false")}}, typeof({{parameter.Type.ToDisplayString(EmitterConstants.DisplayFormatWithoutNullability)}})),""");
             }
@@ -272,71 +285,7 @@ internal static class StaticRouteHandlerModelEmitter
         }
         else
         {
-            codeWriter.WriteLine($"options.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(contentTypes: GeneratedMetadataConstants.JsonContentType));");
-        }
-    }
-
-    public static void EmitAcceptsMetadata(this Endpoint endpoint, CodeWriter codeWriter)
-    {
-        var hasJsonBody = endpoint.EmitterContext.HasJsonBody || endpoint.EmitterContext.HasJsonBodyOrService;
-
-        if (endpoint.EmitterContext.HasFormBody)
-        {
-            endpoint.EmitFormAcceptsMetadata(codeWriter);
-        }
-        else if (hasJsonBody)
-        {
-            endpoint.EmitJsonAcceptsMetadata(codeWriter);
-        }
-    }
-
-    public static void EmitFormAcceptsMetadata(this Endpoint endpoint, CodeWriter codeWriter)
-    {
-        var hasFormFiles = endpoint.Parameters.Any(p => p.IsFormFile);
-
-        if (hasFormFiles)
-        {
-            codeWriter.WriteLine("options.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(contentTypes: GeneratedMetadataConstants.FormFileContentType));");
-        }
-        else
-        {
-            codeWriter.WriteLine("options.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(contentTypes: GeneratedMetadataConstants.FormContentType));");
-        }
-    }
-
-    public static void EmitJsonAcceptsMetadata(this Endpoint endpoint, CodeWriter codeWriter)
-    {
-        codeWriter.WriteLine("var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;");
-        codeWriter.WriteLine($"var serviceProviderIsService = serviceProvider?.GetService<IServiceProviderIsService>();");
-
-        if (endpoint.Parameters.SingleOrDefault(p => p.Source == EndpointParameterSource.JsonBody) is { } explicitBodyParameter)
-        {
-            // If we have a parameter which is explicitly set as the JSON body then we
-            // can assume its the one we want to build metadata from.
-            codeWriter.WriteLine($$"""options!.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(type: typeof({{explicitBodyParameter.Type.ToDisplayString(EmitterConstants.DisplayFormatWithoutNullability)}}), isOptional: {{(explicitBodyParameter.IsOptional ? "true" : "false")}}, contentTypes: GeneratedMetadataConstants.JsonContentType));""");
-        }
-        else if (endpoint.Parameters.Any(p => p.Source == EndpointParameterSource.JsonBodyOrService))
-        {
-            var jsonBodyOrServiceParameters = endpoint.Parameters.Where(p => p.Source == EndpointParameterSource.JsonBodyOrService);
-
-            codeWriter.WriteLine("var jsonBodyOrServiceTypeTuples = new (bool, Type)[] {");
-            codeWriter.Indent++;
-            foreach (var parameter in jsonBodyOrServiceParameters)
-            {
-                codeWriter.WriteLine($$"""({{(parameter.IsOptional ? "true" : "false")}}, typeof({{parameter.Type.ToDisplayString(EmitterConstants.DisplayFormatWithoutNullability)}})),""");
-            }
-            codeWriter.Indent--;
-            codeWriter.WriteLine("};");
-            codeWriter.WriteLine($"var inferredBodyParameters = jsonBodyOrServiceTypeTuples.Where(p => !serviceProviderIsService!.IsService(p.Item2));");
-            codeWriter.WriteLine("if (inferredBodyParameters.Count() == 1)");
-            codeWriter.StartBlock();
-            codeWriter.WriteLine("var inferredBodyParameter = inferredBodyParameters.Single();");
-            codeWriter.WriteLine($$"""options!.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(type: inferredBodyParameter.Item2, isOptional: inferredBodyParameter.Item1, contentTypes: GeneratedMetadataConstants.JsonContentType));""");
-            codeWriter.EndBlock();
-        }
-        else
-        {
-            codeWriter.WriteLine($"options.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(contentTypes: GeneratedMetadataConstants.JsonContentType));");
+            codeWriter.WriteLine($"options!.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(contentTypes: GeneratedMetadataConstants.JsonContentType));");
         }
     }
 
