@@ -8,8 +8,8 @@
   "symbols/skipRestore/description": "Pokud se tato možnost zadá, přeskočí automatické obnovení projektu při vytvoření.",
   "symbols/UseProgramMain/displayName": "Nepoužívat _příkazy nejvyšší úrovně",
   "symbols/UseProgramMain/description": "Určuje, jestli se má místo příkazů nejvyšší úrovně generovat explicitní třída Program a metoda Main.",
-  "symbols/NativeAot/displayName": "Povolit _nativní publikování AOT",
-  "symbols/NativeAot/description": "Určuje, jestli se má u projektu povolit nativní publikování AOT.",
+  "symbols/NativeAot/displayName": "Povolit publikování _native AOT",
+  "symbols/NativeAot/description": "Určuje, jestli se má u projektu povolit publikování jako native AOT.",
   "postActions/restore/description": "Obnoví balíčky NuGet vyžadované tímto projektem.",
   "postActions/restore/manualInstructions/default/text": "Spustit dotnet restore"
 }
