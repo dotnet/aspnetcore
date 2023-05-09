@@ -54,16 +54,9 @@ internal static class InvocationOperationExtensions
     public static bool TryGetMapMethodName(this SyntaxNode node, out string? methodName)
     {
         methodName = default;
-        if (node is InvocationExpressionSyntax
-        {
-            Expression: MemberAccessExpressionSyntax
-            {
-                Name: IdentifierNameSyntax
-                {
-                    Identifier: { ValueText: var method }
-                }
-            },
-        })
+        // Given an invocation like app.MapGet, app.Map, app.MapFallback, etc. get
+        // the value of the Map method being access on the the WebApplication `app`.
+        if (node is InvocationExpressionSyntax { Expression: MemberAccessExpressionSyntax { Name: { Identifier: { ValueText: var method } } } })
         {
             methodName = method;
             return true;
