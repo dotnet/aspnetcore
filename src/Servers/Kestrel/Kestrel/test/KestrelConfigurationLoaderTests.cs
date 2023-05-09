@@ -1260,11 +1260,9 @@ public class KestrelConfigurationLoaderTests
     }
 
     [Theory]
-    [InlineData(true, true)]
-    [InlineData(false, true)]
-    [InlineData(true, false)]
-    [InlineData(false, false)]
-    public void MultipleLoads_ConfigurationChanges(bool changeBeforeInitialLoad, bool changeAfterInitialLoad)
+    [InlineData(true)]
+    [InlineData(false)]
+    public void MultipleLoads_ConfigurationChanges(bool changeConfiguration)
     {
         var currentConfig = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
@@ -1273,7 +1271,6 @@ public class KestrelConfigurationLoaderTests
         }).Build();
 
         var mockReloadToken = new Mock<IChangeToken>();
-        mockReloadToken.SetupGet(t => t.HasChanged).Returns(changeBeforeInitialLoad);
 
         var mockConfig = new Mock<IConfiguration>();
         mockConfig.Setup(c => c.GetSection(It.IsAny<string>())).Returns<string>(currentConfig.GetSection);
@@ -1288,7 +1285,7 @@ public class KestrelConfigurationLoaderTests
         mockReloadToken.VerifyGet(t => t.HasChanged, Times.Never);
         mockConfig.Verify(c => c.GetSection(It.IsAny<string>()), Times.AtLeastOnce);
 
-        mockReloadToken.SetupGet(t => t.HasChanged).Returns(changeAfterInitialLoad);
+        mockReloadToken.SetupGet(t => t.HasChanged).Returns(changeConfiguration);
 
         mockReloadToken.Invocations.Clear();
         mockConfig.Invocations.Clear();
@@ -1296,7 +1293,7 @@ public class KestrelConfigurationLoaderTests
         serverOptions.ConfigurationLoader.Load();
 
         mockReloadToken.VerifyGet(t => t.HasChanged, Times.AtLeastOnce);
-        mockConfig.Verify(c => c.GetSection(It.IsAny<string>()), changeAfterInitialLoad ? Times.AtLeastOnce : Times.Never);
+        mockConfig.Verify(c => c.GetSection(It.IsAny<string>()), changeConfiguration ? Times.AtLeastOnce : Times.Never);
     }
 
     [Theory]
@@ -1320,6 +1317,8 @@ public class KestrelConfigurationLoaderTests
         serverOptions.ConfigurationLoader.Load();
 
         Assert.Equal(beforeInitialLoadCount, _endpointAddedCount);
+        Assert.Equal(beforeInitialLoadCount, serverOptions.CodeBackedListenOptions.Count);
+        Assert.Empty(serverOptions.ConfigurationBackedListenOptions);
 
         for (int i = 0; i < afterInitialLoadCount; i++)
         {
@@ -1329,6 +1328,8 @@ public class KestrelConfigurationLoaderTests
         serverOptions.ConfigurationLoader.Load();
 
         Assert.Equal(beforeInitialLoadCount + afterInitialLoadCount, _endpointAddedCount);
+        Assert.Equal(beforeInitialLoadCount + afterInitialLoadCount, serverOptions.CodeBackedListenOptions.Count);
+        Assert.Empty(serverOptions.ConfigurationBackedListenOptions);
     }
 
     [Fact]

@@ -958,8 +958,6 @@ public class KestrelServerTests
         mockTransportFactory.Verify(f => f.BindAsync(new IPEndPoint(IPAddress.IPv6Any, 5000), It.IsAny<CancellationToken>()), Times.Once);
         mockTransportFactory.Verify(f => f.BindAsync(new IPEndPoint(IPAddress.IPv6Any, 5001), It.IsAny<CancellationToken>()), Times.Once);
 
-        mockConfig.Verify(c => c.GetReloadToken(), Times.Once); // Grabbed on Load
-
         await server.StopAsync(CancellationToken.None).DefaultTimeout();
     }
 
