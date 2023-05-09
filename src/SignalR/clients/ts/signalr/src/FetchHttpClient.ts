@@ -21,7 +21,7 @@ export class FetchHttpClient extends HttpClient {
         super();
         this._logger = logger;
 
-        this._fetchType = fetch;
+        this._fetchType = fetch || {};
         // This is how you do "reference" arguments
         const fetchObj = { _fetchType: this._fetchType, _jar: this._jar };
         if (configureFetch(fetchObj)) {
