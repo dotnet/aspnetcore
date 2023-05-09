@@ -26,7 +26,7 @@ public static class RouteHandlerServices
     /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
     /// <param name="pattern">The route pattern.</param>
     /// <param name="handler">The delegate executed when the endpoint is matched.</param>
-    /// <param name="httpMethods">The set of supported HTTP methods. May not be null.</param>
+    /// <param name="httpMethods">The set of supported HTTP methods.</param>
     /// <param name="populateMetadata">A delegate for populating endpoint metadata.</param>
     /// <param name="createRequestDelegate">A delegate for constructing a RequestDelegate.</param>
     /// <returns></returns>
@@ -34,7 +34,7 @@ public static class RouteHandlerServices
             IEndpointRouteBuilder endpoints,
             string pattern,
             Delegate handler,
-            IEnumerable<string> httpMethods,
+            IEnumerable<string>? httpMethods,
             Func<MethodInfo, RequestDelegateFactoryOptions?, RequestDelegateMetadataResult> populateMetadata,
             Func<Delegate, RequestDelegateFactoryOptions, RequestDelegateMetadataResult?, RequestDelegateResult> createRequestDelegate)
     {

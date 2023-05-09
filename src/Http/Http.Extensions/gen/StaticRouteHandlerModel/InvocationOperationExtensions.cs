@@ -11,52 +11,84 @@ namespace Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerM
 internal static class InvocationOperationExtensions
 {
     private const int RoutePatternArgumentOrdinal = 1;
-    private const int RouteHandlerArgumentOrdinal = 2;
-
-    public static bool TryGetRouteHandlerMethod(this IInvocationOperation invocation, SemanticModel semanticModel, out IMethodSymbol? method)
+    public static readonly string[] KnownMethods =
     {
-        foreach (var argument in invocation.Arguments)
-        {
-            if (argument.Parameter?.Ordinal == RouteHandlerArgumentOrdinal)
-            {
-                method = ResolveMethodFromOperation(argument, semanticModel);
-                return true;
-            }
-        }
+        "MapGet",
+        "MapPost",
+        "MapPut",
+        "MapDelete",
+        "MapPatch",
+        "Map",
+        "MapMethods",
+        "MapFallback"
+    };
+
+    public static bool TryGetRouteHandlerMethod(this IInvocationOperation invocation, SemanticModel semanticModel, [NotNullWhen(true)] out IMethodSymbol? method)
+    {
         method = null;
+        if (invocation.TryGetRouteHandlerArgument(out var argument))
+        {
+            method = ResolveMethodFromOperation(argument, semanticModel);
+            return method is not null;
+        }
         return false;
     }
 
-    public static IArgumentOperation? GetRouteHandlerArgument(this IInvocationOperation invocation)
+    public static bool TryGetRouteHandlerArgument(this IInvocationOperation invocation, [NotNullWhen(true)] out IArgumentOperation? argumentOperation)
     {
+        argumentOperation = null;
+        // Route handler argument is assumed to be the last parameter provided to
+        // the Map methods.
+        var routeHandlerArgumentOrdinal = invocation.Arguments.Length - 1;
         foreach (var argument in invocation.Arguments)
         {
-            if (argument.Parameter?.Ordinal == RouteHandlerArgumentOrdinal)
-            {
-                return argument;
-            }
-        }
-        return null;
-    }
-
-    public static bool TryGetRouteHandlerPattern(this IInvocationOperation invocation, out SyntaxToken token)
-    {
-        IArgumentOperation? argumentOperation = null;
-        foreach (var argument in invocation.Arguments)
-        {
-            if (argument.Parameter?.Ordinal == RoutePatternArgumentOrdinal)
+            if (argument.Parameter?.Ordinal == routeHandlerArgumentOrdinal)
             {
                 argumentOperation = argument;
+                return true;
             }
         }
-        if (argumentOperation?.Syntax is not ArgumentSyntax routePatternArgumentSyntax ||
-            routePatternArgumentSyntax.Expression is not LiteralExpressionSyntax routePatternArgumentLiteralSyntax)
+        return false;
+    }
+
+    public static bool TryGetMapMethodName(this SyntaxNode node, out string? methodName)
+    {
+        methodName = default;
+        // Given an invocation like app.MapGet, app.Map, app.MapFallback, etc. get
+        // the value of the Map method being access on the the WebApplication `app`.
+        if (node is InvocationExpressionSyntax { Expression: MemberAccessExpressionSyntax { Name: { Identifier: { ValueText: var method } } } })
         {
-            token = default;
-            return false;
+            methodName = method;
+            return true;
         }
-        token = routePatternArgumentLiteralSyntax.Token;
-        return true;
+        return false;
+    }
+
+    public static bool TryGetRouteHandlerPattern(this IInvocationOperation invocation, [NotNullWhen(true)] out string? token)
+    {
+        token = default;
+        if (invocation.Syntax.TryGetMapMethodName(out var methodName))
+        {
+            if (methodName == "MapFallback" && invocation.Arguments.Length == 2)
+            {
+                token = "{*path:nonfile}";
+                return true;
+            }
+            foreach (var argument in invocation.Arguments)
+            {
+                if (argument.Parameter?.Ordinal == RoutePatternArgumentOrdinal)
+                {
+                    if (argument?.Syntax is not ArgumentSyntax routePatternArgumentSyntax ||
+                        routePatternArgumentSyntax.Expression is not LiteralExpressionSyntax routePatternArgumentLiteralSyntax)
+                    {
+                        return false;
+                    }
+                    token = routePatternArgumentLiteralSyntax.Token.ValueText;
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private static IMethodSymbol? ResolveMethodFromOperation(IOperation operation, SemanticModel semanticModel) => operation switch
