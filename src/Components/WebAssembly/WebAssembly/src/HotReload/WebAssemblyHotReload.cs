@@ -35,7 +35,7 @@ public static partial class WebAssemblyHotReload
             // The agent is injected in to the hosted app and can serve this script that can provide results from local-storage.
             // See https://github.com/dotnet/aspnetcore/issues/37357#issuecomment-941237000
             await JSHost.ImportAsync(BlazorHotReloadModuleName, "/_framework/blazor-hotreload.js");
-            ReceiveHotReload();
+            await ReceiveHotReloadAsync();
         }
     }
 
@@ -74,6 +74,6 @@ public static partial class WebAssemblyHotReload
         return (string)method.Invoke(obj: null, parameters: null)!;
     }
 
-    [JSImport("receiveHotReload", BlazorHotReloadModuleName)]
-    private static partial void ReceiveHotReload();
+    [JSImport("receiveHotReloadAsync", BlazorHotReloadModuleName)]
+    private static partial Task ReceiveHotReloadAsync();
 }
