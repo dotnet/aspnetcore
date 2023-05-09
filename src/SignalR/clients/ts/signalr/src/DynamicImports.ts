@@ -6,7 +6,7 @@ import { CookieJar } from "@types/tough-cookie";
 import { Platform } from "./Utils";
 
 /** @private */
-export function configureFetch(obj: { _fetchType: (input: RequestInfo, init?: RequestInit) => Promise<Response>,
+export function configureFetch(obj: { _fetchType?: (input: RequestInfo, init?: RequestInit) => Promise<Response>,
                                _jar?: CookieJar }): boolean
 {
     // Node added a fetch implementation to the global scope starting in v18.
