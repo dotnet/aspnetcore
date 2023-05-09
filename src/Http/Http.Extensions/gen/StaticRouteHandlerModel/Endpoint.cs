@@ -76,12 +76,6 @@ internal class Endpoint
                             break;
                     }
                     break;
-                case EndpointParameterSource.JsonBody:
-                case EndpointParameterSource.JsonBodyOrService:
-                case EndpointParameterSource.FormBody:
-                    break;
-                case EndpointParameterSource.AsParameters:
-                    break;
                 case EndpointParameterSource.Unknown:
                     Diagnostics.Add(Diagnostic.Create(
                         DiagnosticDescriptors.UnableToResolveParameterDescriptor,

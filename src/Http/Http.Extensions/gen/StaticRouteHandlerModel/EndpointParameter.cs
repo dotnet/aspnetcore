@@ -44,6 +44,7 @@ internal class EndpointParameter
         PropertyAsParameterInfoConstruction = parameter is not null
             ? $"new PropertyAsParameterInfo({(IsOptional ? "true" : "false")}, {propertyInfo}, {parameter.GetParameterInfoFromConstructor()})"
             : $"new PropertyAsParameterInfo({(IsOptional ? "true" : "false")}, {propertyInfo})";
+        endpoint.EmitterContext.RequiresPropertyAsParameterInfo = IsProperty && IsEndpointParameterMetadataProvider;
         ProcessEndpointParameterSource(endpoint, property, attributeBuilder.ToImmutable(), wellKnownTypes);
     }
 
@@ -134,7 +135,6 @@ internal class EndpointParameter
         else if (attributes.HasAttribute(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_AsParametersAttribute)))
         {
             Source = EndpointParameterSource.AsParameters;
-            endpoint.EmitterContext.HasAsParameters = true;
             var location = endpoint.Operation.Syntax.GetLocation();
             if (IsOptional)
             {
@@ -191,6 +191,7 @@ internal class EndpointParameter
         else if (HasBindAsync(Type, wellKnownTypes, out var bindMethod))
         {
             endpoint.IsAwaitable = true;
+            endpoint.EmitterContext.RequiresPropertyAsParameterInfo = IsProperty && bindMethod is BindabilityMethod.BindAsyncWithParameter or BindabilityMethod.IBindableFromHttpContext;
             Source = EndpointParameterSource.BindAsync;
             BindMethod = bindMethod;
         }

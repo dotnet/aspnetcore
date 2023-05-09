@@ -364,14 +364,14 @@ internal static class RequestDelegateGeneratorSources
 """;
 
     public static string PropertyAsParameterInfoClass = """
-    file class PropertyAsParameterInfo : ParameterInfo
+    file sealed class PropertyAsParameterInfo : ParameterInfo
     {
         private readonly PropertyInfo _underlyingProperty;
         private readonly ParameterInfo? _constructionParameterInfo;
 
         public PropertyAsParameterInfo(bool isOptional, PropertyInfo propertyInfo)
         {
-            Debug.Assert(null != propertyInfo);
+            Debug.Assert(propertyInfo != null, "PropertyInfo must be provided.");
 
             AttrsImpl = (ParameterAttributes)propertyInfo.Attributes;
             NameImpl = propertyInfo.Name;
