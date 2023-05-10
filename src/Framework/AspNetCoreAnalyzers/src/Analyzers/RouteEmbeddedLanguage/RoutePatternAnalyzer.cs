@@ -33,26 +33,11 @@ public class RoutePatternAnalyzer : DiagnosticAnalyzer
         var root = syntaxTree.GetRoot(cancellationToken);
         var routeUsageCache = RouteUsageCache.GetOrCreate(context.SemanticModel.Compilation);
 
-        // Use a stack collection so that we don't blow the actual stack through recursion.
-        var stack = new Stack<SyntaxNode>();
-        stack.Push(root);
-
-        while (stack.Count != 0)
+        foreach (var item in root.DescendantTokens())
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var current = stack.Pop();
 
-            foreach (var child in current.ChildNodesAndTokens())
-            {
-                if (child.IsNode)
-                {
-                    stack.Push(child.AsNode()!);
-                }
-                else
-                {
-                    AnalyzeToken(context, routeUsageCache, child.AsToken(), cancellationToken);
-                }
-            }
+            AnalyzeToken(context, routeUsageCache, item, cancellationToken);
         }
     }
 
