@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel.Emitters;
 using Microsoft.CodeAnalysis;
@@ -243,9 +244,6 @@ internal static class StaticRouteHandlerModelEmitter
 
     public static void EmitJsonAcceptsMetadata(this Endpoint endpoint, CodeWriter codeWriter)
     {
-        codeWriter.WriteLine("var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;");
-        codeWriter.WriteLine($"var serviceProviderIsService = serviceProvider.GetRequiredService<IServiceProviderIsService>();");
-
         EndpointParameter? explicitBodyParameter = null;
         var potentialImplicitBodyParameters = new List<EndpointParameter>();
 
@@ -268,6 +266,9 @@ internal static class StaticRouteHandlerModelEmitter
         }
         else if (potentialImplicitBodyParameters.Count > 0)
         {
+            codeWriter.WriteLine("var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;");
+            codeWriter.WriteLine($"var serviceProviderIsService = serviceProvider.GetRequiredService<IServiceProviderIsService>();");
+
             codeWriter.WriteLine("var jsonBodyOrServiceTypeTuples = new (bool, Type)[] {");
             codeWriter.Indent++;
             foreach (var parameter in potentialImplicitBodyParameters)
@@ -276,11 +277,13 @@ internal static class StaticRouteHandlerModelEmitter
             }
             codeWriter.Indent--;
             codeWriter.WriteLine("};");
-            codeWriter.WriteLine($"var inferredBodyParameters = jsonBodyOrServiceTypeTuples.Where(p => !serviceProviderIsService.IsService(p.Item2));");
-            codeWriter.WriteLine("if (inferredBodyParameters.Count() == 1)");
+            codeWriter.WriteLine("foreach (var (isOptional, type) in jsonBodyOrServiceTypeTuples)");
             codeWriter.StartBlock();
-            codeWriter.WriteLine("var inferredBodyParameter = inferredBodyParameters.Single();");
-            codeWriter.WriteLine($$"""options.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(type: inferredBodyParameter.Item2, isOptional: inferredBodyParameter.Item1, contentTypes: GeneratedMetadataConstants.JsonContentType));""");
+            codeWriter.WriteLine("if (!serviceProviderIsService.IsService(type))");
+            codeWriter.StartBlock();
+            codeWriter.WriteLine("options.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(type: type, isOptional: isOptional, contentTypes: GeneratedMetadataConstants.JsonContentType));");
+            codeWriter.WriteLine("break;");
+            codeWriter.EndBlock();
             codeWriter.EndBlock();
         }
         else

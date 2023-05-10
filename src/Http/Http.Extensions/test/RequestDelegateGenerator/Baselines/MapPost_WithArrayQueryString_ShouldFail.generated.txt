@@ -102,11 +102,13 @@ namespace Microsoft.AspNetCore.Http.Generated
                     var jsonBodyOrServiceTypeTuples = new (bool, Type)[] {
                         (false, typeof(global::System.String[])),
                     };
-                    var inferredBodyParameters = jsonBodyOrServiceTypeTuples.Where(p => !serviceProviderIsService.IsService(p.Item2));
-                    if (inferredBodyParameters.Count() == 1)
+                    foreach (var (isOptional, type) in jsonBodyOrServiceTypeTuples)
                     {
-                        var inferredBodyParameter = inferredBodyParameters.Single();
-                        options.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(type: inferredBodyParameter.Item2, isOptional: inferredBodyParameter.Item1, contentTypes: GeneratedMetadataConstants.JsonContentType));
+                        if (!serviceProviderIsService.IsService(type))
+                        {
+                            options.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(type: type, isOptional: isOptional, contentTypes: GeneratedMetadataConstants.JsonContentType));
+                            break;
+                        }
                     }
                     options.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: typeof(global::System.Int32), statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.JsonContentType));
                     return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
