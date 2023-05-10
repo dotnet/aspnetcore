@@ -61,17 +61,11 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
             codeWriter.Indent++;
             codeWriter.WriteLine("(methodInfo, options) =>");
             codeWriter.StartBlock();
-            codeWriter.WriteLine("if (options is not { } rdfOptions)");
-            codeWriter.StartBlock();
-            codeWriter.WriteLine("throw new ArgumentNullException(nameof(options));");
-            codeWriter.EndBlock();
-            codeWriter.WriteLine("if (rdfOptions.EndpointBuilder is not { } endpointBuilder)");
-            codeWriter.StartBlock();
-            codeWriter.WriteLine(@"throw new ArgumentNullException(nameof(options), ""EndpointBuilder not found."");");
-            codeWriter.EndBlock();
-            codeWriter.WriteLine($"endpointBuilder.Metadata.Add(new SourceKey{endpoint!.EmitSourceKey()});");
+            codeWriter.WriteLine(@"Debug.Assert(options != null, ""RequestDelegateFactoryOptions not found."");");
+            codeWriter.WriteLine(@"Debug.Assert(options.EndpointBuilder != null, ""EndpointBuilder not found."");");
+            codeWriter.WriteLine($"options.EndpointBuilder.Metadata.Add(new SourceKey{endpoint!.EmitSourceKey()});");
             endpoint!.EmitEndpointMetadataPopulation(codeWriter);
-            codeWriter.WriteLine("return new RequestDelegateMetadataResult { EndpointMetadata = endpointBuilder.Metadata.AsReadOnly() };");
+            codeWriter.WriteLine("return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };");
             codeWriter.EndBlockWithComma();
             codeWriter.WriteLine("(del, options, inferredMetadataResult) =>");
             codeWriter.StartBlock();
@@ -240,7 +234,7 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
             {
                 var hasFormBody = endpoints.Any(endpoint => endpoint!.EmitterContext.HasFormBody);
                 var hasJsonBody = endpoints.Any(endpoint => endpoint!.EmitterContext.HasJsonBody || endpoint!.EmitterContext.HasJsonBodyOrService);
-                var hasResponseMetadata = endpoints.Any(endpoint => endpoint!.Response is { } response && !(response.IsIResult || response.HasNoResponse));
+                var hasResponseMetadata = endpoints.Any(endpoint => endpoint!.EmitterContext.HasResponseMetadata);
 
                 using var stringWriter = new StringWriter(CultureInfo.InvariantCulture);
                 using var codeWriter = new CodeWriter(stringWriter, baseIndent: 0);

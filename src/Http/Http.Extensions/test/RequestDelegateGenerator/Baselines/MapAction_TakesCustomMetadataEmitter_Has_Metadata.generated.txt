@@ -94,16 +94,10 @@ namespace Microsoft.AspNetCore.Http.Generated
             [(@"TestMapActions.cs", 25)] = (
                 (methodInfo, options) =>
                 {
-                    if (options is not { } rdfOptions)
-                    {
-                        throw new ArgumentNullException(nameof(options));
-                    }
-                    if (rdfOptions.EndpointBuilder is not { } endpointBuilder)
-                    {
-                        throw new ArgumentNullException(nameof(options), "EndpointBuilder not found.");
-                    }
-                    endpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 25));
-                    var serviceProvider = rdfOptions.ServiceProvider ?? endpointBuilder.ApplicationServices;
+                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
+                    Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
+                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 25));
+                    var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
                     var serviceProviderIsService = serviceProvider.GetRequiredService<IServiceProviderIsService>();
                     var jsonBodyOrServiceTypeTuples = new (bool, Type)[] {
                         (false, typeof(global::Microsoft.AspNetCore.Http.Generators.Tests.CustomMetadataEmitter)),
@@ -112,13 +106,13 @@ namespace Microsoft.AspNetCore.Http.Generated
                     if (inferredBodyParameters.Count() == 1)
                     {
                         var inferredBodyParameter = inferredBodyParameters.Single();
-                        endpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(type: inferredBodyParameter.Item2, isOptional: inferredBodyParameter.Item1, contentTypes: GeneratedMetadataConstants.JsonContentType));
+                        options.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(type: inferredBodyParameter.Item2, isOptional: inferredBodyParameter.Item1, contentTypes: GeneratedMetadataConstants.JsonContentType));
                     }
                     var parameterInfos = methodInfo.GetParameters();
                     var x_ParameterInfo = parameterInfos[0];
-                    PopulateMetadataForParameter<global::Microsoft.AspNetCore.Http.Generators.Tests.CustomMetadataEmitter>(x_ParameterInfo, endpointBuilder);
-                    PopulateMetadataForEndpoint<global::Microsoft.AspNetCore.Http.Generators.Tests.CustomMetadataEmitter>(methodInfo, endpointBuilder);
-                    return new RequestDelegateMetadataResult { EndpointMetadata = endpointBuilder.Metadata.AsReadOnly() };
+                    PopulateMetadataForParameter<global::Microsoft.AspNetCore.Http.Generators.Tests.CustomMetadataEmitter>(x_ParameterInfo, options.EndpointBuilder);
+                    PopulateMetadataForEndpoint<global::Microsoft.AspNetCore.Http.Generators.Tests.CustomMetadataEmitter>(methodInfo, options.EndpointBuilder);
+                    return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
                 {

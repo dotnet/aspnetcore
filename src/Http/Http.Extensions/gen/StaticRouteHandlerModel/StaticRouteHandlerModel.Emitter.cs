@@ -179,11 +179,11 @@ internal static class StaticRouteHandlerModelEmitter
 
         if (responseType.SpecialType == SpecialType.System_String)
         {
-            codeWriter.WriteLine("endpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));");
+            codeWriter.WriteLine("options.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));");
         }
         else
         {
-            codeWriter.WriteLine($"endpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: typeof({responseType.ToDisplayString(EmitterConstants.DisplayFormat)}), statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.JsonContentType));");
+            codeWriter.WriteLine($"options.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: typeof({responseType.ToDisplayString(EmitterConstants.DisplayFormat)}), statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.JsonContentType));");
         }
     }
 
@@ -196,7 +196,7 @@ internal static class StaticRouteHandlerModelEmitter
 
         if (response.IsEndpointMetadataProvider)
         {
-            codeWriter.WriteLine($"PopulateMetadataForEndpoint<{responseType.ToDisplayString(EmitterConstants.DisplayFormat)}>(methodInfo, endpointBuilder);");
+            codeWriter.WriteLine($"PopulateMetadataForEndpoint<{responseType.ToDisplayString(EmitterConstants.DisplayFormat)}>(methodInfo, options.EndpointBuilder);");
         }
     }
     private static void EmitCallsToMetadataProvidersForParameters(this Endpoint endpoint, CodeWriter codeWriter)
@@ -216,12 +216,12 @@ internal static class StaticRouteHandlerModelEmitter
             if (parameter.IsEndpointParameterMetadataProvider)
             {
                 codeWriter.WriteLine($$"""var {{parameter.SymbolName}}_ParameterInfo = parameterInfos[{{parameter.Ordinal}}];""");
-                codeWriter.WriteLine($"PopulateMetadataForParameter<{parameterType.ToDisplayString(EmitterConstants.DisplayFormat)}>({parameter.SymbolName}_ParameterInfo, endpointBuilder);");
+                codeWriter.WriteLine($"PopulateMetadataForParameter<{parameterType.ToDisplayString(EmitterConstants.DisplayFormat)}>({parameter.SymbolName}_ParameterInfo, options.EndpointBuilder);");
             }
 
             if (parameter.IsEndpointMetadataProvider)
             {
-                codeWriter.WriteLine($"PopulateMetadataForEndpoint<{parameterType.ToDisplayString(EmitterConstants.DisplayFormat)}>(methodInfo, endpointBuilder);");
+                codeWriter.WriteLine($"PopulateMetadataForEndpoint<{parameterType.ToDisplayString(EmitterConstants.DisplayFormat)}>(methodInfo, options.EndpointBuilder);");
             }
 
         }
@@ -233,17 +233,17 @@ internal static class StaticRouteHandlerModelEmitter
 
         if (hasFormFiles)
         {
-            codeWriter.WriteLine("endpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(contentTypes: GeneratedMetadataConstants.FormFileContentType));");
+            codeWriter.WriteLine("options.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(contentTypes: GeneratedMetadataConstants.FormFileContentType));");
         }
         else
         {
-            codeWriter.WriteLine("endpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(contentTypes: GeneratedMetadataConstants.FormContentType));");
+            codeWriter.WriteLine("options.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(contentTypes: GeneratedMetadataConstants.FormContentType));");
         }
     }
 
     public static void EmitJsonAcceptsMetadata(this Endpoint endpoint, CodeWriter codeWriter)
     {
-        codeWriter.WriteLine("var serviceProvider = rdfOptions.ServiceProvider ?? endpointBuilder.ApplicationServices;");
+        codeWriter.WriteLine("var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;");
         codeWriter.WriteLine($"var serviceProviderIsService = serviceProvider.GetRequiredService<IServiceProviderIsService>();");
 
         EndpointParameter? explicitBodyParameter = null;
@@ -264,7 +264,7 @@ internal static class StaticRouteHandlerModelEmitter
 
         if (explicitBodyParameter != null)
         {
-            codeWriter.WriteLine($$"""endpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(type: typeof({{explicitBodyParameter.Type.ToDisplayString(EmitterConstants.DisplayFormatWithoutNullability)}}), isOptional: {{(explicitBodyParameter.IsOptional ? "true" : "false")}}, contentTypes: GeneratedMetadataConstants.JsonContentType));""");
+            codeWriter.WriteLine($$"""options.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(type: typeof({{explicitBodyParameter.Type.ToDisplayString(EmitterConstants.DisplayFormatWithoutNullability)}}), isOptional: {{(explicitBodyParameter.IsOptional ? "true" : "false")}}, contentTypes: GeneratedMetadataConstants.JsonContentType));""");
         }
         else if (potentialImplicitBodyParameters.Count > 0)
         {
@@ -280,12 +280,12 @@ internal static class StaticRouteHandlerModelEmitter
             codeWriter.WriteLine("if (inferredBodyParameters.Count() == 1)");
             codeWriter.StartBlock();
             codeWriter.WriteLine("var inferredBodyParameter = inferredBodyParameters.Single();");
-            codeWriter.WriteLine($$"""endpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(type: inferredBodyParameter.Item2, isOptional: inferredBodyParameter.Item1, contentTypes: GeneratedMetadataConstants.JsonContentType));""");
+            codeWriter.WriteLine($$"""options.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(type: inferredBodyParameter.Item2, isOptional: inferredBodyParameter.Item1, contentTypes: GeneratedMetadataConstants.JsonContentType));""");
             codeWriter.EndBlock();
         }
         else
         {
-            codeWriter.WriteLine($"endpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(contentTypes: GeneratedMetadataConstants.JsonContentType));");
+            codeWriter.WriteLine($"options.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(contentTypes: GeneratedMetadataConstants.JsonContentType));");
         }
     }
 

@@ -94,17 +94,11 @@ namespace Microsoft.AspNetCore.Http.Generated
             [(@"TestMapActions.cs", 29)] = (
                 (methodInfo, options) =>
                 {
-                    if (options is not { } rdfOptions)
-                    {
-                        throw new ArgumentNullException(nameof(options));
-                    }
-                    if (rdfOptions.EndpointBuilder is not { } endpointBuilder)
-                    {
-                        throw new ArgumentNullException(nameof(options), "EndpointBuilder not found.");
-                    }
-                    endpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 29));
-                    endpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(contentTypes: GeneratedMetadataConstants.FormFileContentType));
-                    return new RequestDelegateMetadataResult { EndpointMetadata = endpointBuilder.Metadata.AsReadOnly() };
+                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
+                    Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
+                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 29));
+                    options.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(contentTypes: GeneratedMetadataConstants.FormFileContentType));
+                    return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
                 {

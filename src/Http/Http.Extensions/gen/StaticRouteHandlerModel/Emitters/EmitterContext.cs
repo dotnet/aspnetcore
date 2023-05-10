@@ -14,4 +14,5 @@ internal sealed class EmitterContext
     public bool RequiresLoggingHelper { get; set; }
     public bool HasEndpointMetadataProvider { get; set; }
     public bool HasEndpointParameterMetadataProvider { get; set; }
+    public bool HasResponseMetadata { get; set; }
 }

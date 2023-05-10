@@ -94,20 +94,14 @@ namespace Microsoft.AspNetCore.Http.Generated
             [(@"TestMapActions.cs", 25)] = (
                 (methodInfo, options) =>
                 {
-                    if (options is not { } rdfOptions)
-                    {
-                        throw new ArgumentNullException(nameof(options));
-                    }
-                    if (rdfOptions.EndpointBuilder is not { } endpointBuilder)
-                    {
-                        throw new ArgumentNullException(nameof(options), "EndpointBuilder not found.");
-                    }
-                    endpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 25));
-                    var serviceProvider = rdfOptions.ServiceProvider ?? endpointBuilder.ApplicationServices;
+                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
+                    Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
+                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 25));
+                    var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
                     var serviceProviderIsService = serviceProvider.GetRequiredService<IServiceProviderIsService>();
-                    endpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(type: typeof(global::Microsoft.AspNetCore.Http.Generators.Tests.Todo), isOptional: false, contentTypes: GeneratedMetadataConstants.JsonContentType));
-                    PopulateMetadataForEndpoint<global::Microsoft.AspNetCore.Http.HttpResults.Ok<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo>>(methodInfo, endpointBuilder);
-                    return new RequestDelegateMetadataResult { EndpointMetadata = endpointBuilder.Metadata.AsReadOnly() };
+                    options.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(type: typeof(global::Microsoft.AspNetCore.Http.Generators.Tests.Todo), isOptional: false, contentTypes: GeneratedMetadataConstants.JsonContentType));
+                    PopulateMetadataForEndpoint<global::Microsoft.AspNetCore.Http.HttpResults.Ok<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo>>(methodInfo, options.EndpointBuilder);
+                    return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
                 {
@@ -176,20 +170,14 @@ namespace Microsoft.AspNetCore.Http.Generated
             [(@"TestMapActions.cs", 27)] = (
                 (methodInfo, options) =>
                 {
-                    if (options is not { } rdfOptions)
-                    {
-                        throw new ArgumentNullException(nameof(options));
-                    }
-                    if (rdfOptions.EndpointBuilder is not { } endpointBuilder)
-                    {
-                        throw new ArgumentNullException(nameof(options), "EndpointBuilder not found.");
-                    }
-                    endpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 27));
-                    var serviceProvider = rdfOptions.ServiceProvider ?? endpointBuilder.ApplicationServices;
+                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
+                    Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
+                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 27));
+                    var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
                     var serviceProviderIsService = serviceProvider.GetRequiredService<IServiceProviderIsService>();
-                    endpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(type: typeof(global::Microsoft.AspNetCore.Http.Generators.Tests.Todo), isOptional: true, contentTypes: GeneratedMetadataConstants.JsonContentType));
-                    PopulateMetadataForEndpoint<global::Microsoft.AspNetCore.Http.HttpResults.Ok<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo>>(methodInfo, endpointBuilder);
-                    return new RequestDelegateMetadataResult { EndpointMetadata = endpointBuilder.Metadata.AsReadOnly() };
+                    options.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(type: typeof(global::Microsoft.AspNetCore.Http.Generators.Tests.Todo), isOptional: true, contentTypes: GeneratedMetadataConstants.JsonContentType));
+                    PopulateMetadataForEndpoint<global::Microsoft.AspNetCore.Http.HttpResults.Ok<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo>>(methodInfo, options.EndpointBuilder);
+                    return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
                 {

@@ -46,6 +46,8 @@ internal class Endpoint
         EmitterContext.HasJsonResponse = Response is not { ResponseType: { IsSealed: true } or { IsValueType: true } };
         IsAwaitable = Response?.IsAwaitable == true;
 
+        EmitterContext.HasResponseMetadata = Response is { } response && !(response.IsIResult || response.HasNoResponse);
+
         // NOTE: We set this twice. It is possible that we don't have any parameters so we
         //       want this to be true if the response type implements IEndpointMetadataProvider.
         //       Later on we set this to be true if the parameters or the response type
