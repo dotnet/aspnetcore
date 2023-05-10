@@ -26,7 +26,7 @@ public class Http2TimeoutTests : Http2TestBase
 
         _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
 
-        AdvanceTime(TimeSpan.FromTicks(1));
+        AdvanceTime(TimeSpan.FromMilliseconds(1));
 
         _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.KeepAlive), Times.Once);
 
@@ -46,7 +46,7 @@ public class Http2TimeoutTests : Http2TestBase
 
         _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
 
-        AdvanceTime(TimeSpan.FromTicks(1));
+        AdvanceTime(TimeSpan.FromMilliseconds(1));
 
         _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.KeepAlive), Times.Once);
 
@@ -94,7 +94,7 @@ public class Http2TimeoutTests : Http2TestBase
 
         _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
 
-        AdvanceTime(TimeSpan.FromTicks(1));
+        AdvanceTime(TimeSpan.FromMilliseconds(1));
 
         _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.KeepAlive), Times.Once);
 
@@ -184,7 +184,7 @@ public class Http2TimeoutTests : Http2TestBase
 
         await SendEmptyContinuationFrameAsync(1, Http2ContinuationFrameFlags.NONE);
 
-        AdvanceTime(TimeSpan.FromTicks(1));
+        AdvanceTime(TimeSpan.FromMilliseconds(1));
 
         _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.RequestHeaders), Times.Once);
 
@@ -268,7 +268,7 @@ public class Http2TimeoutTests : Http2TestBase
             while (!closed)
             {
                 // Just past the timeout
-                mockTimeProvider.Advance(Constants.RequestBodyDrainTimeout + TimeSpan.FromTicks(1));
+                mockTimeProvider.Advance(Constants.RequestBodyDrainTimeout + TimeSpan.FromMilliseconds(1));
 
                 // Send an extra frame to make it fail
                 switch (finalFrameType)
@@ -631,7 +631,7 @@ public class Http2TimeoutTests : Http2TestBase
 
         _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
 
-        AdvanceTime(TimeSpan.FromTicks(1));
+        AdvanceTime(TimeSpan.FromMilliseconds(1));
 
         _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.ReadDataRate), Times.Once);
 
@@ -865,7 +865,7 @@ public class Http2TimeoutTests : Http2TestBase
 
         _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
 
-        AdvanceTime(TimeSpan.FromTicks(1));
+        AdvanceTime(TimeSpan.FromMilliseconds(1));
 
         _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
 
@@ -953,7 +953,7 @@ public class Http2TimeoutTests : Http2TestBase
 
         _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
 
-        AdvanceTime(TimeSpan.FromTicks(1));
+        AdvanceTime(TimeSpan.FromMicroseconds(1));
 
         _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.ReadDataRate), Times.Once);
 

@@ -56,9 +56,9 @@ public abstract class Http3ConnectionBenchmarkBase
 
         var serviceContext = TestContextFactory.CreateServiceContext(
             serverOptions: new KestrelServerOptions(),
-            dateHeaderValueManager: new DateHeaderValueManager(),
+            dateHeaderValueManager: new DateHeaderValueManager(mockTimeProvider),
             timeProvider: mockTimeProvider);
-        serviceContext.DateHeaderValueManager.OnHeartbeat(default);
+        serviceContext.DateHeaderValueManager.OnHeartbeat();
 
         _http3 = new Http3InMemory(serviceContext, mockTimeProvider, new DefaultTimeoutHandler(), NullLoggerFactory.Instance);
 

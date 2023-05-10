@@ -105,7 +105,7 @@ public class Http1WritingBenchmark
         var serviceContext = TestContextFactory.CreateServiceContext(
             serverOptions: new KestrelServerOptions(),
             httpParser: new HttpParser<Http1ParsingHandler>(),
-            dateHeaderValueManager: new DateHeaderValueManager());
+            dateHeaderValueManager: new DateHeaderValueManager(new MockTimeProvider()));
 
         var connectionContext = TestContextFactory.CreateHttpConnectionContext(
             serviceContext: serviceContext,
@@ -119,7 +119,7 @@ public class Http1WritingBenchmark
 
         http1Connection.Reset();
         http1Connection.InitializeBodyControl(MessageBody.ZeroContentLengthKeepAlive);
-        serviceContext.DateHeaderValueManager.OnHeartbeat(DateTimeOffset.UtcNow);
+        serviceContext.DateHeaderValueManager.OnHeartbeat();
 
         return http1Connection;
     }

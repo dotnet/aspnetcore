@@ -7,6 +7,14 @@ internal static class TimeSpanExtensions
 {
     public static long ToTicks(this TimeSpan timeSpan, long tickFrequency)
     {
+        if (timeSpan == TimeSpan.MaxValue)
+        {
+            return long.MaxValue;
+        }
+        if (timeSpan == TimeSpan.MinValue)
+        {
+            return long.MinValue;
+        }
         return (long)(timeSpan.TotalSeconds * tickFrequency);
     }
 }

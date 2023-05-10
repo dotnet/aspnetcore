@@ -209,7 +209,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
             ValidateTlsRequirements();
 
             TimeoutControl.InitializeHttp2(_inputFlowControl);
-            TimeoutControl.SetTimeout(Limits.KeepAliveTimeout.Ticks, TimeoutReason.KeepAlive);
+            TimeoutControl.SetTimeout(Limits.KeepAliveTimeout.ToTicks(TimeProvider.TimestampFrequency), TimeoutReason.KeepAlive);
 
             if (!await TryReadPrefaceAsync())
             {
@@ -729,7 +729,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
 
             if (!_incomingFrame.HeadersEndHeaders)
             {
-                TimeoutControl.SetTimeout(Limits.RequestHeadersTimeout.Ticks, TimeoutReason.RequestHeaders);
+                TimeoutControl.SetTimeout(Limits.RequestHeadersTimeout.ToTicks(TimeProvider.TimestampFrequency), TimeoutReason.RequestHeaders);
             }
 
             // Start a new stream
@@ -944,7 +944,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
         // Incoming ping resets connection keep alive timeout
         if (TimeoutControl.TimerReason == TimeoutReason.KeepAlive)
         {
-            TimeoutControl.ResetTimeout(Limits.KeepAliveTimeout.Ticks, TimeoutReason.KeepAlive);
+            TimeoutControl.ResetTimeout(Limits.KeepAliveTimeout.ToTicks(TimeProvider.TimestampFrequency), TimeoutReason.KeepAlive);
         }
 
         if (_incomingFrame.PingAck)
@@ -1241,7 +1241,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
         }
     }
 
-    void IRequestProcessor.Tick(DateTimeOffset now)
+    void IRequestProcessor.Tick(long now)
     {
         Input.CancelPendingRead();
     }
@@ -1363,7 +1363,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
             {
                 if (TimeoutControl.TimerReason == TimeoutReason.None)
                 {
-                    TimeoutControl.SetTimeout(Limits.KeepAliveTimeout.Ticks, TimeoutReason.KeepAlive);
+                    TimeoutControl.SetTimeout(Limits.KeepAliveTimeout.ToTicks(TimeProvider.TimestampFrequency), TimeoutReason.KeepAlive);
                 }
 
                 // If we're awaiting headers, either a new stream will be started, or there will be a connection

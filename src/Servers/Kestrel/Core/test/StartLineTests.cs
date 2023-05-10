@@ -526,6 +526,7 @@ public class StartLineTests : IDisposable
 
         var serviceContext = TestContextFactory.CreateServiceContext(
             serverOptions: new KestrelServerOptions(),
+            timeProvider: new MockTimeProvider(),
             httpParser: new HttpParser<Http1ParsingHandler>());
 
         var connectionContext = TestContextFactory.CreateHttpConnectionContext(

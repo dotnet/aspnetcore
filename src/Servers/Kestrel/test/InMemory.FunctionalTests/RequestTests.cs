@@ -1628,12 +1628,11 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         var appEvent = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var delayEvent = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var serviceContext = new TestServiceContext(LoggerFactory);
-        var heartbeatManager = new HeartbeatManager(serviceContext.ConnectionManager);
 
         await using (var server = new TestServer(async context =>
         {
             context.Features.Get<IHttpMinRequestBodyDataRateFeature>().MinDataRate =
-                new MinDataRate(bytesPerSecond: double.MaxValue, gracePeriod: Heartbeat.Interval + TimeSpan.FromTicks(1));
+                new MinDataRate(bytesPerSecond: double.MaxValue, gracePeriod: Heartbeat.Interval + TimeSpan.FromMilliseconds(1));
 
             using (var stream = await context.Features.Get<IHttpUpgradeFeature>().UpgradeAsync())
             {
@@ -1665,7 +1664,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
                 await appEvent.Task.DefaultTimeout();
 
                 serviceContext.MockTimeProvider.Advance(TimeSpan.FromSeconds(5));
-                heartbeatManager.OnHeartbeat(serviceContext.TimeProvider.GetUtcNow());
+                serviceContext.ConnectionManager.OnHeartbeat();
 
                 delayEvent.SetResult();
 

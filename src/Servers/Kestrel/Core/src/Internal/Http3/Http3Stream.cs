@@ -70,7 +70,6 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     public QPackDecoder QPackDecoder { get; private set; } = default!;
 
     public PipeReader Input => _context.Transport.Input;
-    public TimeProvider TimeProvider => _context.ServiceContext.TimeProvider;
     public KestrelServerLimits Limits => _context.ServiceContext.ServerOptions.Limits;
     public long StreamId => _streamIdFeature.StreamId;
     public long StreamTimeoutTicks { get; set; }

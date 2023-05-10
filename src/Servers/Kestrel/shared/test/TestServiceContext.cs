@@ -38,17 +38,16 @@ internal class TestServiceContext : ServiceContext
 
     public void InitializeHeartbeat()
     {
-        var heartbeatManager = new HeartbeatManager(ConnectionManager);
-        DateHeaderValueManager = new DateHeaderValueManager();
+        DateHeaderValueManager = new DateHeaderValueManager(TimeProvider.System);
         Heartbeat = new Heartbeat(
-            new IHeartbeatHandler[] { DateHeaderValueManager, heartbeatManager },
+            new IHeartbeatHandler[] { DateHeaderValueManager, ConnectionManager },
             TimeProvider.System,
             DebuggerWrapper.Singleton,
             Log,
             Heartbeat.Interval);
 
         MockTimeProvider = null;
-        TimeProvider = heartbeatManager;
+        TimeProvider = TimeProvider.System;
     }
 
     private void Initialize(ILoggerFactory loggerFactory, KestrelTrace kestrelTrace, bool disableHttp1LineFeedTerminators, KestrelMetrics metrics)
@@ -58,7 +57,7 @@ internal class TestServiceContext : ServiceContext
         Scheduler = PipeScheduler.ThreadPool;
         MockTimeProvider = new MockTimeProvider();
         TimeProvider = MockTimeProvider;
-        DateHeaderValueManager = new DateHeaderValueManager();
+        DateHeaderValueManager = new DateHeaderValueManager(MockTimeProvider);
         ConnectionManager = new ConnectionManager(Log, ResourceCounter.Unlimited);
         HttpParser = new HttpParser<Http1ParsingHandler>(Log.IsEnabled(LogLevel.Information), disableHttp1LineFeedTerminators);
         ServerOptions = new KestrelServerOptions
@@ -66,7 +65,7 @@ internal class TestServiceContext : ServiceContext
             AddServerHeader = false
         };
 
-        DateHeaderValueManager.OnHeartbeat(TimeProvider.GetUtcNow());
+        DateHeaderValueManager.OnHeartbeat();
         Metrics = metrics;
     }
 

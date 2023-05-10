@@ -22,10 +22,11 @@ public class DateHeaderValueManagerTests
     [Fact]
     public void GetDateHeaderValue_ReturnsDateValueInRFC1123Format()
     {
-        var now = DateTimeOffset.UtcNow;
+        var timeProvider = new MockTimeProvider();
+        var now = timeProvider.GetUtcNow();
 
-        var dateHeaderValueManager = new DateHeaderValueManager();
-        dateHeaderValueManager.OnHeartbeat(now);
+        var dateHeaderValueManager = new DateHeaderValueManager(timeProvider);
+        dateHeaderValueManager.OnHeartbeat();
 
         Assert.Equal(now.ToString(Rfc1123DateFormat), dateHeaderValueManager.GetDateHeaderValues().String);
     }
@@ -37,8 +38,8 @@ public class DateHeaderValueManagerTests
         var future = now.AddSeconds(10);
         var timeProvider = new MockTimeProvider(now);
 
-        var dateHeaderValueManager = new DateHeaderValueManager();
-        dateHeaderValueManager.OnHeartbeat(now);
+        var dateHeaderValueManager = new DateHeaderValueManager(timeProvider);
+        dateHeaderValueManager.OnHeartbeat();
 
         var testKestrelTrace = new KestrelTrace(NullLoggerFactory.Instance);
 
@@ -49,7 +50,7 @@ public class DateHeaderValueManagerTests
             Assert.Equal(now.ToString(Rfc1123DateFormat), dateHeaderValueManager.GetDateHeaderValues().String);
         }
 
-        Assert.Equal(0, timeProvider.UtcNowCalled);
+        Assert.Equal(1, timeProvider.UtcNowCalled);
     }
 
     [Fact]
@@ -59,8 +60,8 @@ public class DateHeaderValueManagerTests
         var future = now.AddSeconds(10);
         var timeProvider = new MockTimeProvider(now);
 
-        var dateHeaderValueManager = new DateHeaderValueManager();
-        dateHeaderValueManager.OnHeartbeat(now);
+        var dateHeaderValueManager = new DateHeaderValueManager(timeProvider);
+        dateHeaderValueManager.OnHeartbeat();
 
         var testKestrelTrace = new KestrelTrace(NullLoggerFactory.Instance);
 
@@ -78,7 +79,7 @@ public class DateHeaderValueManagerTests
             heartbeat.OnHeartbeat();
 
             Assert.Equal(future.ToString(Rfc1123DateFormat), dateHeaderValueManager.GetDateHeaderValues().String);
-            Assert.Equal(4, timeProvider.UtcNowCalled);
+            Assert.Equal(3, timeProvider.UtcNowCalled);
         }
     }
 
@@ -89,8 +90,8 @@ public class DateHeaderValueManagerTests
         var future = now.AddSeconds(10);
         var timeProvider = new MockTimeProvider(now);
 
-        var dateHeaderValueManager = new DateHeaderValueManager();
-        dateHeaderValueManager.OnHeartbeat(now);
+        var dateHeaderValueManager = new DateHeaderValueManager(timeProvider);
+        dateHeaderValueManager.OnHeartbeat();
 
         var testKestrelTrace = new KestrelTrace(NullLoggerFactory.Instance);
 

@@ -5,6 +5,7 @@ using System;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
@@ -26,7 +27,6 @@ public class ResponseDrainingTests : TestApplicationErrorLoggerLoggedTest
     public async Task ConnectionClosedWhenResponseNotDrainedAtMinimumDataRate(ListenOptions listenOptions)
     {
         var testContext = new TestServiceContext(LoggerFactory);
-        var heartbeatManager = new HeartbeatManager(testContext.ConnectionManager);
         var minRate = new MinDataRate(16384, TimeSpan.FromSeconds(2));
 
         await using (var server = new TestServer(context =>
@@ -63,16 +63,16 @@ public class ResponseDrainingTests : TestApplicationErrorLoggerLoggedTest
                 for (var i = 0; i < 2; i++)
                 {
                     testContext.MockTimeProvider.Advance(TimeSpan.FromSeconds(1));
-                    heartbeatManager.OnHeartbeat(testContext.TimeProvider.GetUtcNow());
+                    testContext.ConnectionManager.OnHeartbeat();
                 }
 
                 testContext.MockTimeProvider.Advance(Heartbeat.Interval - TimeSpan.FromSeconds(.5));
-                heartbeatManager.OnHeartbeat(testContext.TimeProvider.GetUtcNow());
+                testContext.ConnectionManager.OnHeartbeat();
 
                 Assert.Null(transportConnection.AbortReason);
 
                 testContext.MockTimeProvider.Advance(TimeSpan.FromSeconds(1));
-                heartbeatManager.OnHeartbeat(testContext.TimeProvider.GetUtcNow());
+                testContext.ConnectionManager.OnHeartbeat();
 
                 Assert.NotNull(transportConnection.AbortReason);
                 Assert.Equal(CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied, transportConnection.AbortReason.Message);

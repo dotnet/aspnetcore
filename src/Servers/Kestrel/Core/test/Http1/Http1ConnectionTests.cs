@@ -450,7 +450,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         ParseRequest((await _transport.Input.ReadAsync()).Buffer, out _consumed, out _examined);
         _transport.Input.AdvanceTo(_consumed, _examined);
 
-        var expectedRequestHeadersTimeout = _serviceContext.ServerOptions.Limits.RequestHeadersTimeout.Ticks;
+        var expectedRequestHeadersTimeout = _serviceContext.ServerOptions.Limits.RequestHeadersTimeout.ToTicks(_serviceContext.TimeProvider.TimestampFrequency);
         _timeoutControl.Verify(cc => cc.ResetTimeout(expectedRequestHeadersTimeout, TimeoutReason.RequestHeaders));
     }
 
@@ -570,7 +570,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
     {
         var requestProcessingTask = _http1Connection.ProcessRequestsAsync<object>(null);
 
-        var expectedKeepAliveTimeout = _serviceContext.ServerOptions.Limits.KeepAliveTimeout.Ticks;
+        var expectedKeepAliveTimeout = _serviceContext.ServerOptions.Limits.KeepAliveTimeout.ToTicks(_serviceContext.TimeProvider.TimestampFrequency);
         _timeoutControl.Verify(cc => cc.SetTimeout(expectedKeepAliveTimeout, TimeoutReason.KeepAlive));
 
         _http1Connection.StopProcessingNextRequest();

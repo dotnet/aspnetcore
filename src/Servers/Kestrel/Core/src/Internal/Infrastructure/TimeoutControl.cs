@@ -43,9 +43,9 @@ internal sealed class TimeoutControl : ITimeoutControl, IConnectionTimeoutFeatur
 
     internal IDebugger Debugger { get; set; } = DebuggerWrapper.Singleton;
 
-    internal void Initialize(long nowTicks)
+    internal void Initialize(long timestamp)
     {
-        _lastTimestamp = nowTicks;
+        Interlocked.Exchange(ref _lastTimestamp, timestamp);
     }
 
     public void Tick(long now)

@@ -55,8 +55,9 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
 
         _context = context;
         _parser = ServiceContext.HttpParser;
-        _keepAliveTicks = ServerOptions.Limits.KeepAliveTimeout.Ticks;
-        _requestHeadersTimeoutTicks = ServerOptions.Limits.RequestHeadersTimeout.Ticks;
+        var frequency = context.ServiceContext.TimeProvider.TimestampFrequency;
+        _keepAliveTicks = ServerOptions.Limits.KeepAliveTimeout.ToTicks(frequency);
+        _requestHeadersTimeoutTicks = ServerOptions.Limits.RequestHeadersTimeout.ToTicks(frequency);
 
         _http1Output = new Http1OutputProducer(
             _context.Transport.Output,
@@ -790,5 +791,5 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         return base.TryProduceInvalidRequestResponse();
     }
 
-    void IRequestProcessor.Tick(DateTimeOffset now) { }
+    void IRequestProcessor.Tick(long now) { }
 }

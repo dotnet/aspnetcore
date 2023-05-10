@@ -6,7 +6,6 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO.Pipelines;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.QPack;
 using System.Text;
@@ -17,12 +16,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using static System.IO.Pipelines.DuplexPipe;
@@ -205,20 +201,26 @@ internal class Http3InMemory
 
         var timeProvider = _mockTimeProvider;
         var endTime = timeProvider.GetTimestamp() + timeSpan.ToTicks(timeProvider.TimestampFrequency);
+        var interval = Heartbeat.Interval.ToTicks(timeProvider.TimestampFrequency);
 
-        while (timeProvider.GetTimestamp() + Heartbeat.Interval.ToTicks(timeProvider.TimestampFrequency) < endTime)
+        while (timeProvider.GetTimestamp() + interval < endTime)
         {
-            timeProvider.Advance(Heartbeat.Interval);
-            _timeoutControl.Tick(timeProvider.GetTimestamp());
+            TriggerTick(timeProvider.GetTimestamp() + interval);
         }
 
-        timeProvider.SetTimestamp(endTime);
-        _timeoutControl.Tick(timeProvider.GetTimestamp());
+        TriggerTick(endTime);
     }
 
     public void TriggerTick(DateTimeOffset now)
     {
         _mockTimeProvider.SetUtcNow(now);
+        Connection?.Tick(_mockTimeProvider.GetTimestamp());
+    }
+
+    public void TriggerTick(long now)
+    {
+        _mockTimeProvider.SetTimestamp(now);
+        _timeoutControl.Tick(now);
         Connection?.Tick(now);
     }
 

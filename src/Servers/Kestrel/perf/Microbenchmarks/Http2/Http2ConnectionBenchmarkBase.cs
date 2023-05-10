@@ -68,9 +68,9 @@ public abstract class Http2ConnectionBenchmarkBase
 
         var serviceContext = TestContextFactory.CreateServiceContext(
             serverOptions: new KestrelServerOptions(),
-            dateHeaderValueManager: new DateHeaderValueManager(),
-            timeProvider: TimeProvider.System);
-        serviceContext.DateHeaderValueManager.OnHeartbeat(default);
+            dateHeaderValueManager: new DateHeaderValueManager(new MockTimeProvider()),
+            timeProvider: new MockTimeProvider());
+        serviceContext.DateHeaderValueManager.OnHeartbeat();
 
         var connectionContext = TestContextFactory.CreateHttpConnectionContext(
             serviceContext: serviceContext,

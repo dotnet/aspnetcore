@@ -33,10 +33,11 @@ public class HeartbeatTests : LoggedTest
         var debugger = new Mock<IDebugger>();
         var kestrelTrace = new KestrelTrace(LoggerFactory);
         var now = timeProvider.GetUtcNow();
+        var timestamp = timeProvider.GetTimestamp();
 
         var splits = new List<TimeSpan>();
         Stopwatch sw = null;
-        heartbeatHandler.Setup(h => h.OnHeartbeat(now)).Callback(() =>
+        heartbeatHandler.Setup(h => h.OnHeartbeat()).Callback(() =>
         {
             heartbeatCallCount++;
             if (sw == null)
@@ -106,9 +107,10 @@ public class HeartbeatTests : LoggedTest
         var handlerMre = new ManualResetEventSlim();
         var handlerStartedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var now = timeProvider.GetUtcNow();
+        var timestamp = timeProvider.GetTimestamp();
         var heartbeatDuration = TimeSpan.FromSeconds(2);
 
-        heartbeatHandler.Setup(h => h.OnHeartbeat(now)).Callback(() =>
+        heartbeatHandler.Setup(h => h.OnHeartbeat()).Callback(() =>
         {
             handlerStartedTcs.SetResult();
             handlerMre.Wait();
@@ -131,10 +133,10 @@ public class HeartbeatTests : LoggedTest
 
         await blockedHeartbeatTask.DefaultTimeout();
 
-        heartbeatHandler.Verify(h => h.OnHeartbeat(now), Times.Once());
+        heartbeatHandler.Verify(h => h.OnHeartbeat(), Times.Once());
 
         var warningMessage = TestSink.Writes.Single(message => message.LogLevel == LogLevel.Warning).Message;
-        Assert.Equal($"As of \"{now.ToString(CultureInfo.InvariantCulture)}\", the heartbeat has been running for "
+        Assert.Equal($"As of \"{timeProvider.GetUtcNow().ToString(CultureInfo.InvariantCulture)}\", the heartbeat has been running for "
             + $"\"{heartbeatDuration.ToString("c", CultureInfo.InvariantCulture)}\" which is longer than "
             + $"\"{Heartbeat.Interval.ToString("c", CultureInfo.InvariantCulture)}\". "
             + "This could be caused by thread pool starvation.", warningMessage);
@@ -150,8 +152,9 @@ public class HeartbeatTests : LoggedTest
         var handlerMre = new ManualResetEventSlim();
         var handlerStartedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var now = timeProvider.GetUtcNow();
+        var timestamp = timeProvider.GetTimestamp();
 
-        heartbeatHandler.Setup(h => h.OnHeartbeat(now)).Callback(() =>
+        heartbeatHandler.Setup(h => h.OnHeartbeat()).Callback(() =>
         {
             handlerStartedTcs.SetResult();
             handlerMre.Wait();
@@ -175,7 +178,7 @@ public class HeartbeatTests : LoggedTest
 
         await blockedHeartbeatTask.DefaultTimeout();
 
-        heartbeatHandler.Verify(h => h.OnHeartbeat(now), Times.Once());
+        heartbeatHandler.Verify(h => h.OnHeartbeat(), Times.Once());
 
         Assert.Empty(TestSink.Writes.Where(w => w.EventId.Name == "HeartbeatSlow"));
     }
@@ -188,7 +191,7 @@ public class HeartbeatTests : LoggedTest
         var kestrelTrace = new KestrelTrace(LoggerFactory);
         var ex = new Exception();
 
-        heartbeatHandler.Setup(h => h.OnHeartbeat(timeProvider.GetUtcNow())).Throws(ex);
+        heartbeatHandler.Setup(h => h.OnHeartbeat()).Throws(ex);
 
         using (var heartbeat = new Heartbeat(new[] { heartbeatHandler.Object }, timeProvider, DebuggerWrapper.Singleton, kestrelTrace, Heartbeat.Interval))
         {

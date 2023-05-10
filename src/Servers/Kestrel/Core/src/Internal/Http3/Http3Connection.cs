@@ -190,7 +190,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
         }
     }
 
-    public void Tick(DateTimeOffset now)
+    public void Tick(long now)
     {
         if (_aborted)
         {
@@ -203,10 +203,8 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
         UpdateStreamTimeouts(now);
     }
 
-    private void ValidateOpenControlStreams(DateTimeOffset now)
+    private void ValidateOpenControlStreams(long now)
     {
-        var ticks = now.Ticks;
-
         // This method validates that a connnection's control streams are open.
         //
         // They're checked on a delayed timer because when a connection is aborted or timed out, notifications are sent to open streams
@@ -216,10 +214,10 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
         //
         // Realistically, control streams are never closed except when the connection is. A small delay in aborting the connection in the
         // unlikely situation where a control stream is incorrectly closed should be fine.
-        ValidateOpenControlStream(OutboundControlStream, this, ticks);
-        ValidateOpenControlStream(ControlStream, this, ticks);
-        ValidateOpenControlStream(EncoderStream, this, ticks);
-        ValidateOpenControlStream(DecoderStream, this, ticks);
+        ValidateOpenControlStream(OutboundControlStream, this, now);
+        ValidateOpenControlStream(ControlStream, this, now);
+        ValidateOpenControlStream(EncoderStream, this, now);
+        ValidateOpenControlStream(DecoderStream, this, now);
 
         static void ValidateOpenControlStream(Http3ControlStream? stream, Http3Connection connection, long ticks)
         {
@@ -242,15 +240,16 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
         }
     }
 
-    private void UpdateStreamTimeouts(DateTimeOffset now)
+    private void UpdateStreamTimeouts(long now)
     {
         // This method checks for timeouts:
         // 1. When a stream first starts and waits to receive headers.
         //    Uses RequestHeadersTimeout.
         // 2. When a stream finished and is waiting for underlying transport to drain.
         //    Uses MinResponseDataRate.
-
-        var ticks = now.Ticks;
+        var serviceContext = _context.ServiceContext;
+        var requestHeadersTimeout = serviceContext.ServerOptions.Limits.RequestHeadersTimeout.ToTicks(
+                        serviceContext.TimeProvider.TimestampFrequency);
 
         lock (_unidentifiedStreams)
         {
@@ -259,11 +258,11 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                 if (stream.StreamTimeoutTicks == default)
                 {
                     // On expiration overflow, use max value.
-                    var expirationTicks = ticks + _context.ServiceContext.ServerOptions.Limits.RequestHeadersTimeout.Ticks;
+                    var expirationTicks = now + requestHeadersTimeout;
                     stream.StreamTimeoutTicks = expirationTicks >= 0 ? expirationTicks : long.MaxValue;
                 }
 
-                if (stream.StreamTimeoutTicks < ticks)
+                if (stream.StreamTimeoutTicks < now)
                 {
                     stream.Abort(new("Stream timed out before its type was determined."));
                 }
@@ -279,11 +278,11 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                     if (stream.StreamTimeoutTicks == default)
                     {
                         // On expiration overflow, use max value.
-                        var expirationTicks = ticks + _context.ServiceContext.ServerOptions.Limits.RequestHeadersTimeout.Ticks;
+                        var expirationTicks = now + requestHeadersTimeout;
                         stream.StreamTimeoutTicks = expirationTicks >= 0 ? expirationTicks : long.MaxValue;
                     }
 
-                    if (stream.StreamTimeoutTicks < ticks)
+                    if (stream.StreamTimeoutTicks < now)
                     {
                         if (stream.IsRequestStream)
                         {
@@ -305,10 +304,10 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
 
                     if (stream.StreamTimeoutTicks == default)
                     {
-                        stream.StreamTimeoutTicks = TimeoutControl.GetResponseDrainDeadline(ticks, minDataRate);
+                        stream.StreamTimeoutTicks = TimeoutControl.GetResponseDrainDeadline(now, minDataRate);
                     }
 
-                    if (stream.StreamTimeoutTicks < ticks)
+                    if (stream.StreamTimeoutTicks < now)
                     {
                         // Cancel connection to be consistent with other data rate limits.
                         Log.ResponseMinimumDataRateNotSatisfied(_context.ConnectionId, stream.TraceIdentifier);
@@ -348,7 +347,8 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
             outboundControlStreamTask = ProcessOutboundControlStreamAsync(outboundControlStream);
 
             // Close the connection if we don't receive any request streams
-            TimeoutControl.SetTimeout(Limits.KeepAliveTimeout.Ticks, TimeoutReason.KeepAlive);
+            TimeoutControl.SetTimeout(
+                Limits.KeepAliveTimeout.ToTicks(_context.ServiceContext.TimeProvider.TimestampFrequency), TimeoutReason.KeepAlive);
 
             while (_stoppedAcceptingStreams == 0)
             {
@@ -820,7 +820,8 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
 
                 if (_activeRequestCount == 0)
                 {
-                    TimeoutControl.SetTimeout(Limits.KeepAliveTimeout.Ticks, TimeoutReason.KeepAlive);
+                    TimeoutControl.SetTimeout(
+                        Limits.KeepAliveTimeout.ToTicks(_context.ServiceContext.TimeProvider.TimestampFrequency), TimeoutReason.KeepAlive);
                 }
             }
             _streams.Remove(stream.StreamId);

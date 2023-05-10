@@ -256,8 +256,6 @@ public class TimeoutControlTests
         var timeout = TimeSpan.FromSeconds(5);
         var minRate = new MinDataRate(bytesPerSecond: 100, gracePeriod: TimeSpan.FromSeconds(2));
 
-        var startTime = _timeProvider.GetUtcNow();
-
         // Initialize timestamp
         _timeoutControl.Initialize(_timeProvider.GetTimestamp());
 
@@ -275,7 +273,7 @@ public class TimeoutControlTests
         _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
 
         // Tick just past timeout period, adjusted by Heartbeat.Interval
-        _timeProvider.SetUtcNow(startTime + timeout + Heartbeat.Interval + TimeSpan.FromTicks(1));
+        _timeProvider.Advance(TimeSpan.FromSeconds(2) + Heartbeat.Interval + TimeSpan.FromMilliseconds(1));
         _timeoutControl.Tick(_timeProvider.GetTimestamp());
 
         // Timed out
@@ -382,7 +380,7 @@ public class TimeoutControlTests
         _timeoutControl.StartTimingWrite();
 
         // Tick just past 4s plus Heartbeat.Interval
-        AdvanceClock(TimeSpan.FromSeconds(4) + Heartbeat.Interval + TimeSpan.FromTicks(1));
+        AdvanceClock(TimeSpan.FromSeconds(4) + Heartbeat.Interval + TimeSpan.FromMilliseconds(1));
 
         _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.WriteDataRate), Times.Once);
     }
@@ -400,7 +398,7 @@ public class TimeoutControlTests
         _timeoutControl.StartTimingWrite();
 
         // Tick just past 1s plus Heartbeat.Interval
-        AdvanceClock(TimeSpan.FromSeconds(1) + Heartbeat.Interval + TimeSpan.FromTicks(1));
+        AdvanceClock(TimeSpan.FromSeconds(1) + Heartbeat.Interval + TimeSpan.FromMilliseconds(1));
 
         // Still within grace period, not timed out
         _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
@@ -428,7 +426,7 @@ public class TimeoutControlTests
         _timeoutControl.StartTimingWrite();
 
         // Tick just past 5s plus Heartbeat.Interval, when the first write should have completed
-        AdvanceClock(TimeSpan.FromSeconds(5) + Heartbeat.Interval + TimeSpan.FromTicks(1));
+        AdvanceClock(TimeSpan.FromSeconds(5) + Heartbeat.Interval + TimeSpan.FromMilliseconds(1));
 
         // Not timed out because the timeout was pushed by the second write
         _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
@@ -469,7 +467,7 @@ public class TimeoutControlTests
         _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
 
         // On more tick forward triggers the timeout.
-        _timeProvider.Advance(TimeSpan.FromTicks(1));
+        _timeProvider.Advance(TimeSpan.FromMilliseconds(1));
         _timeoutControl.Tick(_timeProvider.GetTimestamp());
 
         _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.WriteDataRate), Times.Once);
@@ -488,13 +486,13 @@ public class TimeoutControlTests
         _timeoutControl.StartTimingWrite();
 
         // Tick just past 4s plus Heartbeat.Interval at once
-        _timeProvider.Advance(TimeSpan.FromSeconds(4) + Heartbeat.Interval + TimeSpan.FromTicks(1));
+        _timeProvider.Advance(TimeSpan.FromSeconds(4) + Heartbeat.Interval + TimeSpan.FromMilliseconds(1));
         _timeoutControl.Tick(_timeProvider.GetTimestamp());
 
         _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.WriteDataRate), Times.Never);
 
         // The last Tick only accounted for one heartbeat interval. Try again with a tick per interval.
-        AdvanceClock(TimeSpan.FromSeconds(4) + TimeSpan.FromTicks(1));
+        AdvanceClock(TimeSpan.FromSeconds(4) + TimeSpan.FromMilliseconds(1));
 
         _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.WriteDataRate), Times.Once);
     }

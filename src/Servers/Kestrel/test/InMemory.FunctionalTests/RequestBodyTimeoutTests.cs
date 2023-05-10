@@ -22,7 +22,6 @@ public class RequestBodyTimeoutTests : LoggedTest
     {
         var gracePeriod = TimeSpan.FromSeconds(5);
         var serviceContext = new TestServiceContext(LoggerFactory);
-        var heartbeatManager = new HeartbeatManager(serviceContext.ConnectionManager);
 
         var appRunningEvent = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -74,7 +73,7 @@ public class RequestBodyTimeoutTests : LoggedTest
                 for (var i = 0; i < 6; i++)
                 {
                     serviceContext.MockTimeProvider.Advance(TimeSpan.FromSeconds(1));
-                    heartbeatManager.OnHeartbeat(serviceContext.TimeProvider.GetUtcNow());
+                    serviceContext.ConnectionManager.OnHeartbeat();
                 }
 
                 await connection.Receive(
@@ -99,8 +98,8 @@ public class RequestBodyTimeoutTests : LoggedTest
 
         // Ensure there's still a constant date header value.
         var timeProvider = new MockTimeProvider();
-        var date = new DateHeaderValueManager();
-        date.OnHeartbeat(timeProvider.GetUtcNow());
+        var date = new DateHeaderValueManager(timeProvider);
+        date.OnHeartbeat();
         serviceContext.DateHeaderValueManager = date;
 
         var appRunningEvent = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -143,7 +142,6 @@ public class RequestBodyTimeoutTests : LoggedTest
     {
         var gracePeriod = TimeSpan.FromSeconds(5);
         var serviceContext = new TestServiceContext(LoggerFactory);
-        var heartbeatManager = new HeartbeatManager(serviceContext.ConnectionManager);
 
         var appRunningTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var exceptionSwallowedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -191,7 +189,7 @@ public class RequestBodyTimeoutTests : LoggedTest
                 for (var i = 0; i < 6; i++)
                 {
                     serviceContext.MockTimeProvider.Advance(TimeSpan.FromSeconds(1));
-                    heartbeatManager.OnHeartbeat(serviceContext.TimeProvider.GetUtcNow());
+                    serviceContext.ConnectionManager.OnHeartbeat();
                 }
 
                 await exceptionSwallowedTcs.Task.DefaultTimeout();

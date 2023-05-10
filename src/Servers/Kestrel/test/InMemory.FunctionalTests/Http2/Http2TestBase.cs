@@ -387,9 +387,12 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
     {
         base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
 
+        var timeProvider = new MockTimeProvider();
         _serviceContext = new TestServiceContext(LoggerFactory)
         {
             Scheduler = PipeScheduler.Inline,
+            MockTimeProvider = timeProvider,
+            TimeProvider = timeProvider,
         };
 
         TestSink.MessageLogged += context =>
@@ -472,7 +475,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         _mockTimeoutHandler.Setup(h => h.OnTimeout(It.IsAny<TimeoutReason>()))
                            .Callback<TimeoutReason>(r => httpConnection.OnTimeout(r));
 
-        _timeoutControl.Initialize(_serviceContext.TimeProvider.GetUtcNow().Ticks);
+        _timeoutControl.Initialize(_serviceContext.TimeProvider.GetTimestamp());
     }
 
     private class LifetimeHandlerInterceptor : IHttp2StreamLifetimeHandler
@@ -1342,18 +1345,27 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
     {
         var now = nowOrNull ?? _serviceContext.MockTimeProvider.GetUtcNow();
         _serviceContext.MockTimeProvider.SetUtcNow(now);
-        _timeoutControl.Tick(now.Ticks);
+        var timestamp = _serviceContext.MockTimeProvider.GetTimestamp();
+        _timeoutControl.Tick(timestamp);
+        ((IRequestProcessor)_connection)?.Tick(timestamp);
+    }
+
+    protected void TriggerTick(long now)
+    {
+        _serviceContext.MockTimeProvider.SetTimestamp(now);
+        _timeoutControl.Tick(now);
         ((IRequestProcessor)_connection)?.Tick(now);
     }
 
     protected void AdvanceTime(TimeSpan timeSpan)
     {
         var timeProvider = _serviceContext.MockTimeProvider;
-        var endTime = timeProvider.GetUtcNow() + timeSpan;
+        var endTime = timeProvider.GetTimestamp() + timeSpan.ToTicks(timeProvider.TimestampFrequency);
+        var interval = Heartbeat.Interval.ToTicks(timeProvider.TimestampFrequency);
 
-        while (timeProvider.GetUtcNow() + Heartbeat.Interval < endTime)
+        while (timeProvider.GetTimestamp() + interval < endTime)
         {
-            TriggerTick(timeProvider.GetUtcNow() + Heartbeat.Interval);
+            TriggerTick(timeProvider.GetTimestamp() + interval);
         }
 
         TriggerTick(endTime);

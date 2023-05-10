@@ -711,6 +711,7 @@ public class KestrelServerTests
     [Fact]
     public void StartingServerInitializesHeartbeat()
     {
+        var timeProvider = new MockTimeProvider();
         var testContext = new TestServiceContext
         {
             ServerOptions =
@@ -720,12 +721,14 @@ public class KestrelServerTests
                         new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
                     }
                 },
-            DateHeaderValueManager = new DateHeaderValueManager()
+            MockTimeProvider = timeProvider,
+            TimeProvider = timeProvider,
+            DateHeaderValueManager = new DateHeaderValueManager(timeProvider)
         };
 
         testContext.Heartbeat = new Heartbeat(
             new IHeartbeatHandler[] { testContext.DateHeaderValueManager },
-            testContext.MockTimeProvider,
+            timeProvider,
             DebuggerWrapper.Singleton,
             testContext.Log,
             Heartbeat.Interval);

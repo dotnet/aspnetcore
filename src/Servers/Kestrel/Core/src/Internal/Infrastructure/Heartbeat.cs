@@ -42,24 +42,22 @@ internal sealed class Heartbeat : IDisposable
 
     internal void OnHeartbeat()
     {
-        var now = _timeProvider.GetUtcNow();
+        var now = _timeProvider.GetTimestamp();
 
         try
         {
             foreach (var callback in _callbacks)
             {
-                callback.OnHeartbeat(now);
+                callback.OnHeartbeat();
             }
 
             if (!_debugger.IsAttached)
             {
-                var after = _timeProvider.GetUtcNow();
-
-                var duration = TimeSpan.FromTicks(after.Ticks - now.Ticks);
+                var duration = _timeProvider.GetElapsedTime(now);
 
                 if (duration > _interval)
                 {
-                    _trace.HeartbeatSlow(duration, _interval, now);
+                    _trace.HeartbeatSlow(duration, _interval, _timeProvider.GetUtcNow());
                 }
             }
         }
