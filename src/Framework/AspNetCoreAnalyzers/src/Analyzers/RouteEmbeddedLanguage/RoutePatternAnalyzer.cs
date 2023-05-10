@@ -33,6 +33,7 @@ public class RoutePatternAnalyzer : DiagnosticAnalyzer
         var root = syntaxTree.GetRoot(cancellationToken);
         var routeUsageCache = RouteUsageCache.GetOrCreate(context.SemanticModel.Compilation);
 
+        // Update to use FilterSpan when available. See https://github.com/dotnet/aspnetcore/issues/48157
         foreach (var item in root.DescendantTokens())
         {
             cancellationToken.ThrowIfCancellationRequested();
