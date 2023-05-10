@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Metrics;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
@@ -23,13 +24,6 @@ internal sealed class KestrelMetrics
     private readonly UpDownCounter<long> _currentUpgradedRequestsCounter;
     private readonly Histogram<double> _tlsHandshakeDuration;
     private readonly UpDownCounter<long> _currentTlsHandshakesCounter;
-
-    public bool CurrentConnectionsCounterEnabled => _currentConnectionsCounter.Enabled;
-    public bool ConnectionDurationEnabled => _connectionDuration.Enabled;
-    public bool QueuedConnectionsCounterEnabled => _queuedConnectionsCounter.Enabled;
-    public bool QueuedRequestsCounterEnabled => _queuedRequestsCounter.Enabled;
-    public bool CurrentUpgradedRequestsCounterEnabled => _currentUpgradedRequestsCounter.Enabled;
-    public bool CurrentTlsHandshakesCounterEnabled => _currentTlsHandshakesCounter.Enabled;
 
     public KestrelMetrics(IMeterFactory meterFactory)
     {
@@ -296,9 +290,15 @@ internal sealed class KestrelMetrics
         if (metricsContext.ConnectionContext.LocalEndPoint is { } localEndpoint)
         {
             // TODO: Improve getting string allocation for endpoint. Currently allocates.
-            // Possible solution is to cache in the endpoint: https://github.com/dotnet/runtime/issues/84515
-            // Alternatively, add cache to ConnectionContext.
+            // Considering adding a way to cache on ConnectionContext.
             tags.Add("endpoint", localEndpoint.ToString());
         }
+    }
+
+    public ConnectionMetricsContext CreateContext(BaseConnectionContext connection)
+    {
+        return new ConnectionMetricsContext(connection,
+            _currentConnectionsCounter.Enabled, _connectionDuration.Enabled, _queuedConnectionsCounter.Enabled,
+            _queuedRequestsCounter.Enabled, _currentUpgradedRequestsCounter.Enabled, _currentTlsHandshakesCounter.Enabled);
     }
 }

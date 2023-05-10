@@ -54,9 +54,7 @@ internal sealed class ConnectionDispatcher<T> where T : BaseConnectionContext
 
                     // Cache counter enabled state at the start of the connection.
                     // This ensures that the state is consistent for the entire connection.
-                    var metricsContext = new ConnectionMetricsContext(connection,
-                        Metrics.CurrentConnectionsCounterEnabled, Metrics.ConnectionDurationEnabled, Metrics.QueuedConnectionsCounterEnabled,
-                        Metrics.QueuedRequestsCounterEnabled, Metrics.CurrentUpgradedRequestsCounterEnabled, Metrics.CurrentTlsHandshakesCounterEnabled);
+                    var metricsContext = Metrics.CreateContext(connection);
 
                     var kestrelConnection = new KestrelConnection<T>(
                         id, _serviceContext, _transportConnectionManager, _connectionDelegate, connection, Log, metricsContext);
