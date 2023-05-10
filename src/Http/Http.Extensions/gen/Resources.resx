@@ -160,19 +160,19 @@
     <value>No public parameterless constructor found for type '{0}'.</value>
   </data>
   <data name="InvalidAsParametersSingleConstructorOnly_Title" xml:space="preserve">
-    <value>Multiple parameterized constructors found</value>
+    <value>Multiple constructors found</value>
   </data>
   <data name="InvalidAsParametersSingleConstructorOnly_Message" xml:space="preserve">
     <value>Only a single public parameterized constructor is allowed for type '{0}'.</value>
   </data>
   <data name="InvalidAsParametersNested_Title" xml:space="preserve">
-    <value>Nested AsParameters</value>
+    <value>Invalid nested AsParameters</value>
   </data>
   <data name="InvalidAsParametersNested_Message" xml:space="preserve">
     <value>Nested AsParametersAttribute is not supported and should be used only for handler parameters.</value>
   </data>
   <data name="InvalidAsParametersNullable_Title" xml:space="preserve">
-    <value>Unexpected nullable parameter</value>
+    <value>Unexpected nullable type</value>
   </data>
   <data name="InvalidAsParametersNullable_Message" xml:space="preserve">
     <value>The nullable type '{0}' is not supported. Mark the parameter as non-nullable.</value>
