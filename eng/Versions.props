@@ -229,6 +229,7 @@
     -->
     <Analyzer_MicrosoftCodeAnalysisCSharpVersion>3.3.1</Analyzer_MicrosoftCodeAnalysisCSharpVersion>
     <Analyzer_MicrosoftCodeAnalysisCSharpWorkspacesVersion>3.3.1</Analyzer_MicrosoftCodeAnalysisCSharpWorkspacesVersion>
+    <RDG_MicrosoftCodeAnalysisVersion>4.5.0</RDG_MicrosoftCodeAnalysisVersion>
     <MicrosoftCodeAnalysisExternalAccessAspNetCoreVersion>4.4.0-4.22520.2</MicrosoftCodeAnalysisExternalAccessAspNetCoreVersion>
     <MicrosoftCodeAnalysisCommonVersion>4.4.0-4.22520.2</MicrosoftCodeAnalysisCommonVersion>
     <MicrosoftCodeAnalysisCSharpVersion>4.4.0-4.22520.2</MicrosoftCodeAnalysisCSharpVersion>
