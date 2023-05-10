@@ -11,7 +11,7 @@ import { WebAssemblyResourceLoader, LoadingResource } from '../WebAssemblyResour
 import { Platform, System_Array, Pointer, System_Object, System_String, HeapLock, PlatformApi } from '../Platform';
 import { WebAssemblyBootResourceType, WebAssemblyStartOptions } from '../WebAssemblyStartOptions';
 import { Blazor } from '../../GlobalExports';
-import { DotnetModuleConfig, EmscriptenModule, MonoConfig, ModuleAPI, BootJsonData, ICUDataMode } from 'dotnet';
+import { DotnetModuleConfig, EmscriptenModule, MonoConfig, ModuleAPI, BootJsonData, ICUDataMode, RuntimeAPI } from 'dotnet';
 import { BINDINGType, MONOType } from 'dotnet/dotnet-legacy';
 import { WebAssemblyComponentDescriptor, discoverComponents, discoverPersistedState } from '../../Services/ComponentDescriptorDiscovery';
 import { attachRootComponentToElement, attachRootComponentToLogicalElement } from '../../Rendering/Renderer';
@@ -24,6 +24,7 @@ export let BINDING: BINDINGType = undefined as any;
 export let MONO: MONOType = undefined as any;
 export let Module: DotnetModuleConfig & EmscriptenModule = undefined as any;
 let MONO_INTERNAL: any = undefined as any;
+let runtime: RuntimeAPI = undefined as any;
 
 const uint64HighOrderShift = Math.pow(2, 32);
 const maxSafeNumberHighPart = Math.pow(2, 21) - 1; // The high-order int32 from Number.MAX_SAFE_INTEGER
@@ -62,10 +63,8 @@ export const monoPlatform: Platform = {
   },
 
   callEntryPoint: async function callEntryPoint(assemblyName: string): Promise<any> {
-    const emptyArray = [[]];
-
     try {
-      await BINDING.call_assembly_entry_point(assemblyName, emptyArray, 'm');
+      await runtime.runMain(assemblyName, []);
     } catch (error) {
       console.error(error);
       showErrorNotification();
@@ -131,18 +130,7 @@ export const monoPlatform: Platform = {
       return unboxedValue;
     }
 
-    let decodedString: string | null | undefined;
-    if (currentHeapLock) {
-      decodedString = currentHeapLock.stringCache.get(fieldValue);
-      if (decodedString === undefined) {
-        decodedString = BINDING.conv_string(fieldValue as any as System_String);
-        currentHeapLock.stringCache.set(fieldValue, decodedString);
-      }
-    } else {
-      decodedString = BINDING.conv_string(fieldValue as any as System_String);
-    }
-
-    return decodedString;
+    return BINDING.conv_string(fieldValue as any as System_String);
   },
 
   readStructField: function readStructField<T extends Pointer>(baseAddress: Pointer, fieldOffset?: number): T {
@@ -321,7 +309,7 @@ async function createRuntimeInstance(options: Partial<WebAssemblyStartOptions>):
 
   anyDotnet.withStartupOptions(options).withModuleConfig(moduleConfig);
 
-  const runtime = await dotnet.create();
+  runtime = await dotnet.create();
   const { MONO: mono, BINDING: binding, Module: module, setModuleImports, INTERNAL: mono_internal } = runtime;
   Module = module;
   BINDING = binding;
@@ -472,9 +460,6 @@ function assertHeapIsNotLocked() {
 }
 
 class MonoHeapLock implements HeapLock {
-  // Within a given heap lock, it's safe to cache decoded strings since the memory can't change
-  stringCache = new Map<number, string | null>();
-
   // eslint-disable-next-line @typescript-eslint/ban-types
   private postReleaseActions?: Function[];
 
