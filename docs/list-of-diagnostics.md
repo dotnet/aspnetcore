@@ -41,7 +41,7 @@
 |  __`API1003`__ | Action methods on ApiController instances do not require explicit model validation check |
 
 ### MVC (`MVC1000` - `MVC1006`)
-B
+
 | Diagnostic ID     | Description |
 | :---------------- | :---------- |
 |  __`MVC1000`__ | Use of IHtmlHelper.{0} should be avoided |
