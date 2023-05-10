@@ -10,8 +10,8 @@
   "symbols/kestrelHttpsPort/description": "launchSettings.json içinde HTTPS uç noktası için kullanılacak bağlantı noktası numarası. Bu seçenek yalnızca no-https parametresi kullanılmazsa uygulanabilir (IndividualAuth veya OrganizationalAuth kullanılırsa no-https yoksayılır).",
   "symbols/UseProgramMain/displayName": "_Üst düzey deyimler kullanmayın",
   "symbols/UseProgramMain/description": "Üst düzey deyimler yerine açık bir Program sınıfı ve Ana yöntem oluşturup oluşturulmayacağını belirtir.",
-  "symbols/NativeAot/displayName": "_yerel AOT yayımlamayı etkinleştir",
-  "symbols/NativeAot/description": "Projenin yerel AOT olarak yayımlama için etkinleştirilip etkinleştirilmeyeceğini belirtir.",
+  "symbols/NativeAot/displayName": "_native AOT yayımlamayı etkinleştir",
+  "symbols/NativeAot/description": "Projenin native AOT olarak yayımlama için etkinleştirilip etkinleştirilmeyeceğini belirtir.",
   "postActions/restore/description": "Bu projenin gerektirdiği NuGet paketlerini geri yükleyin.",
   "postActions/restore/manualInstructions/default/text": "'dotnet restore' çalıştır"
 }
