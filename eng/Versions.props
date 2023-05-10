@@ -229,7 +229,9 @@
     -->
     <Analyzer_MicrosoftCodeAnalysisCSharpVersion>3.3.1</Analyzer_MicrosoftCodeAnalysisCSharpVersion>
     <Analyzer_MicrosoftCodeAnalysisCSharpWorkspacesVersion>3.3.1</Analyzer_MicrosoftCodeAnalysisCSharpWorkspacesVersion>
-    <RDG_MicrosoftCodeAnalysisVersion>4.5.0</RDG_MicrosoftCodeAnalysisVersion>
+    <!-- Pin the version of the M.CA dependencies that we utilize with a cutom version property $(MicrosoftCodeAnalysisVersion_LatestVS) to avoid automatically
+    consuming the newest version of the packages when using the $(MicrosoftCodeAnalysisCSharpVersion) properties in source-build. -->
+    <MicrosoftCodeAnalysisVersion_LatestVS>4.5.0</MicrosoftCodeAnalysisVersion_LatestVS>
     <MicrosoftCodeAnalysisExternalAccessAspNetCoreVersion>4.4.0-4.22520.2</MicrosoftCodeAnalysisExternalAccessAspNetCoreVersion>
     <MicrosoftCodeAnalysisCommonVersion>4.4.0-4.22520.2</MicrosoftCodeAnalysisCommonVersion>
     <MicrosoftCodeAnalysisCSharpVersion>4.4.0-4.22520.2</MicrosoftCodeAnalysisCSharpVersion>

@@ -22,9 +22,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Match the versions of the M.CA dependencies pinned in the RequestDelegateGenerator. -->
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="All" IsImplicitlyDefined="true" Version="$(RDG_MicrosoftCodeAnalysisVersion)" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="All" IsImplicitlyDefined="true" Version="$(RDG_MicrosoftCodeAnalysisVersion)" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="All" IsImplicitlyDefined="true" Version="$(MicrosoftCodeAnalysisVersion_LatestVS)" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="All" IsImplicitlyDefined="true" Version="$(MicrosoftCodeAnalysisVersion_LatestVS)" />
   </ItemGroup>
 
   <ItemGroup>

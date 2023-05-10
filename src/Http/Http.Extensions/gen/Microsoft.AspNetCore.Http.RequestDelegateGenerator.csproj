@@ -11,10 +11,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Pin the version of the M.CA dependencies that we utilize with a cutom version property (RDG_MicrosoftCodeAnalysisVersion) to avoid automatically
-    consuming the newest version of the packages when using the $(MicrosoftCodeAnalysisCSharpVersion) properties in source-build. -->
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="All" IsImplicitlyDefined="true" Version="$(RDG_MicrosoftCodeAnalysisVersion)" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Common" PrivateAssets="All" IsImplicitlyDefined="true" Version="$(RDG_MicrosoftCodeAnalysisVersion)" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="All" IsImplicitlyDefined="true" Version="$(MicrosoftCodeAnalysisVersion_LatestVS)" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Common" PrivateAssets="All" IsImplicitlyDefined="true" Version="$(MicrosoftCodeAnalysisVersion_LatestVS)" />
   </ItemGroup>
 
   <ItemGroup>
