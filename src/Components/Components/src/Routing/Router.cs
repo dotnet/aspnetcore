@@ -8,6 +8,7 @@ using System.Reflection.Metadata;
 using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Components.Routing;
 
