@@ -272,6 +272,7 @@
     <MicrosoftIdentityWebVersion>2.10.0</MicrosoftIdentityWebVersion>
     <MicrosoftIdentityWebMicrosoftGraphVersion>2.10.0</MicrosoftIdentityWebMicrosoftGraphVersion>
     <MicrosoftIdentityWebUIVersion>2.10.0</MicrosoftIdentityWebUIVersion>
+	  <MicrosoftIdentityWebDownstreamApiVersion>2.10.0</MicrosoftIdentityWebDownstreamApiVersion>
     <MessagePackAnalyzerVersion>$(MessagePackVersion)</MessagePackAnalyzerVersion>
     <MoqVersion>4.10.0</MoqVersion>
     <MonoCecilVersion>0.11.2</MonoCecilVersion>
