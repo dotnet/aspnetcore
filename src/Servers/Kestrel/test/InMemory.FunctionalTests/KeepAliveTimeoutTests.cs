@@ -42,7 +42,7 @@ public class KeepAliveTimeoutTests : LoggedTest
                 await ReceiveResponse(connection, testContext);
 
                 // Min amount of time between requests that triggers a keep-alive timeout.
-                testContext.MockTimeProvider.Advance(_keepAliveTimeout + Heartbeat.Interval + TimeSpan.FromMilliseconds(1));
+                testContext.MockTimeProvider.Advance(_keepAliveTimeout + Heartbeat.Interval + TimeSpan.FromTicks(1));
                 testContext.ConnectionManager.OnHeartbeat();
 
                 await connection.WaitForConnectionClose();
@@ -170,7 +170,7 @@ public class KeepAliveTimeoutTests : LoggedTest
                 await connection.TransportConnection.WaitForReadTask;
 
                 // Min amount of time between requests that triggers a keep-alive timeout.
-                testContext.MockTimeProvider.Advance(_keepAliveTimeout + Heartbeat.Interval + TimeSpan.FromMilliseconds(1));
+                testContext.MockTimeProvider.Advance(_keepAliveTimeout + Heartbeat.Interval + TimeSpan.FromTicks(1));
                 testContext.ConnectionManager.OnHeartbeat();
 
                 await connection.WaitForConnectionClose();

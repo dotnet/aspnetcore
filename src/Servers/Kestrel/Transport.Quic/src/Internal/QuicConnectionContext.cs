@@ -19,7 +19,7 @@ internal partial class QuicConnectionContext : TransportMultiplexedConnection
 
     private bool _streamPoolHeartbeatInitialized;
     // Ticks updated once per-second in heartbeat event.
-    private long _heartbeatTicks;
+    private long _heartbeatTimestamp;
     private readonly object _poolLock = new object();
 
     private readonly object _shutdownLock = new object();
@@ -256,16 +256,16 @@ internal partial class QuicConnectionContext : TransportMultiplexedConnection
 
                 heartbeatFeature.OnHeartbeat(static state => ((QuicConnectionContext)state).RemoveExpiredStreams(), this);
 
-                // Set ticks for the first time. Ticks are then updated in heartbeat.
+                // Set timestamp for the first time. Timestamps are then updated in heartbeat.
                 var now = timeProvider.GetTimestamp();
-                Volatile.Write(ref _heartbeatTicks, now);
+                Volatile.Write(ref _heartbeatTimestamp, now);
 
                 _streamPoolHeartbeatInitialized = true;
             }
 
             if (stream.CanReuse && StreamPool.Count < MaxStreamPoolSize)
             {
-                stream.PoolExpirationTicks = Volatile.Read(ref _heartbeatTicks) + StreamPoolExpirySeconds * timeProvider.TimestampFrequency;
+                stream.PoolExpirationTimestamp = Volatile.Read(ref _heartbeatTimestamp) + StreamPoolExpirySeconds * timeProvider.TimestampFrequency;
                 StreamPool.Push(stream);
 
                 QuicLog.StreamPooled(_log, stream);
@@ -287,7 +287,7 @@ internal partial class QuicConnectionContext : TransportMultiplexedConnection
         {
             // Update ticks on heartbeat. A precise value isn't necessary.
             var now = _context.Options.TimeProvider.GetTimestamp();
-            Volatile.Write(ref _heartbeatTicks, now);
+            Volatile.Write(ref _heartbeatTimestamp, now);
 
             StreamPool.RemoveExpired(now);
         }

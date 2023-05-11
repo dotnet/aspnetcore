@@ -1429,14 +1429,14 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
 
         public virtual TimeoutReason TimerReason => _realTimeoutControl.TimerReason;
 
-        public virtual void SetTimeout(long ticks, TimeoutReason timeoutReason)
+        public virtual void SetTimeout(TimeSpan timeout, TimeoutReason timeoutReason)
         {
-            _realTimeoutControl.SetTimeout(ticks, timeoutReason);
+            _realTimeoutControl.SetTimeout(timeout, timeoutReason);
         }
 
-        public virtual void ResetTimeout(long ticks, TimeoutReason timeoutReason)
+        public virtual void ResetTimeout(TimeSpan timeout, TimeoutReason timeoutReason)
         {
-            _realTimeoutControl.ResetTimeout(ticks, timeoutReason);
+            _realTimeoutControl.ResetTimeout(timeout, timeoutReason);
         }
 
         public virtual void CancelTimeout()

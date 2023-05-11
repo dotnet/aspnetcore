@@ -38,7 +38,7 @@ public class RequestHeadersTimeoutTests : LoggedTest
                     headers);
 
                 // Min amount of time between requests that triggers a request headers timeout.
-                testContext.MockTimeProvider.Advance(RequestHeadersTimeout + Heartbeat.Interval + TimeSpan.FromMilliseconds(1));
+                testContext.MockTimeProvider.Advance(RequestHeadersTimeout + Heartbeat.Interval + TimeSpan.FromTicks(1));
                 testContext.ConnectionManager.OnHeartbeat();
 
                 await ReceiveTimeoutResponse(connection, testContext);
@@ -65,7 +65,7 @@ public class RequestHeadersTimeoutTests : LoggedTest
                     "");
 
                 // Min amount of time between requests that triggers a request headers timeout.
-                testContext.MockTimeProvider.Advance(RequestHeadersTimeout + Heartbeat.Interval + TimeSpan.FromMilliseconds(1));
+                testContext.MockTimeProvider.Advance(RequestHeadersTimeout + Heartbeat.Interval + TimeSpan.FromTicks(1));
                 testContext.ConnectionManager.OnHeartbeat();
 
                 await connection.Send(
@@ -92,7 +92,7 @@ public class RequestHeadersTimeoutTests : LoggedTest
                 await connection.Send(requestLine);
 
                 // Min amount of time between requests that triggers a request headers timeout.
-                testContext.MockTimeProvider.Advance(RequestHeadersTimeout + Heartbeat.Interval + TimeSpan.FromMilliseconds(1));
+                testContext.MockTimeProvider.Advance(RequestHeadersTimeout + Heartbeat.Interval + TimeSpan.FromTicks(1));
                 testContext.ConnectionManager.OnHeartbeat();
 
                 await ReceiveTimeoutResponse(connection, testContext);

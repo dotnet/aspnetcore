@@ -117,7 +117,7 @@ public class PooledStreamStackTests
 
         return new Http2Stream<HttpContext>(new DummyApplication(), context)
         {
-            DrainExpirationTicks = expirationTicks
+            DrainExpirationTimestamp = expirationTicks
         };
     }
 }

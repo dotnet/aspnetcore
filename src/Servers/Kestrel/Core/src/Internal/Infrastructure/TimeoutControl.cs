@@ -48,10 +48,8 @@ internal sealed class TimeoutControl : ITimeoutControl, IConnectionTimeoutFeatur
         Interlocked.Exchange(ref _lastTimestamp, timestamp);
     }
 
-    public void Tick(long now)
+    public void Tick(long timestamp)
     {
-        var timestamp = now;
-
         CheckForTimeout(timestamp);
         CheckForReadDataRateTimeout(timestamp);
         CheckForWriteDataRateTimeout(timestamp);
@@ -167,16 +165,16 @@ internal sealed class TimeoutControl : ITimeoutControl, IConnectionTimeoutFeatur
         }
     }
 
-    public void SetTimeout(long ticks, TimeoutReason timeoutReason)
+    public void SetTimeout(TimeSpan timeout, TimeoutReason timeoutReason)
     {
         Debug.Assert(_timeoutTimestamp == long.MaxValue, "Concurrent timeouts are not supported.");
 
-        AssignTimeout(ticks, timeoutReason);
+        AssignTimeout(timeout, timeoutReason);
     }
 
-    public void ResetTimeout(long ticks, TimeoutReason timeoutReason)
+    public void ResetTimeout(TimeSpan timeout, TimeoutReason timeoutReason)
     {
-        AssignTimeout(ticks, timeoutReason);
+        AssignTimeout(timeout, timeoutReason);
     }
 
     public void CancelTimeout()
@@ -186,12 +184,13 @@ internal sealed class TimeoutControl : ITimeoutControl, IConnectionTimeoutFeatur
         TimerReason = TimeoutReason.None;
     }
 
-    private void AssignTimeout(long ticks, TimeoutReason timeoutReason)
+    private void AssignTimeout(TimeSpan timeout, TimeoutReason timeoutReason)
     {
         TimerReason = timeoutReason;
 
         // Add Heartbeat.Interval since this can be called right before the next heartbeat.
-        Interlocked.Exchange(ref _timeoutTimestamp, Interlocked.Read(ref _lastTimestamp) + ticks + _heartbeatIntervalTicks);
+        var timeoutTicks = timeout.ToTicks(_tickFrequency);
+        Interlocked.Exchange(ref _timeoutTimestamp, Interlocked.Read(ref _lastTimestamp) + timeoutTicks + _heartbeatIntervalTicks);
     }
 
     public void InitializeHttp2(InputFlowControl connectionInputFlowControl)
@@ -322,7 +321,7 @@ internal sealed class TimeoutControl : ITimeoutControl, IConnectionTimeoutFeatur
             throw new InvalidOperationException(CoreStrings.ConcurrentTimeoutsNotSupported);
         }
 
-        SetTimeout(timeSpan.ToTicks(_tickFrequency), TimeoutReason.TimeoutFeature);
+        SetTimeout(timeSpan, TimeoutReason.TimeoutFeature);
     }
 
     void IConnectionTimeoutFeature.ResetTimeout(TimeSpan timeSpan)
@@ -332,13 +331,13 @@ internal sealed class TimeoutControl : ITimeoutControl, IConnectionTimeoutFeatur
             throw new ArgumentException(CoreStrings.PositiveFiniteTimeSpanRequired, nameof(timeSpan));
         }
 
-        ResetTimeout(timeSpan.ToTicks(_tickFrequency), TimeoutReason.TimeoutFeature);
+        ResetTimeout(timeSpan, TimeoutReason.TimeoutFeature);
     }
 
-    public long GetResponseDrainDeadline(long ticks, MinDataRate minRate)
+    public long GetResponseDrainDeadline(long timestamp, MinDataRate minRate)
     {
         // On grace period overflow, use max value.
-        var gracePeriod = ticks + minRate.GracePeriod.ToTicks(_tickFrequency);
+        var gracePeriod = timestamp + minRate.GracePeriod.ToTicks(_tickFrequency);
         gracePeriod = gracePeriod >= 0 ? gracePeriod : long.MaxValue;
 
         return Math.Max(_writeTimingTimeoutTimestamp, gracePeriod);

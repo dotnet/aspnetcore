@@ -28,8 +28,6 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
     private readonly HttpConnectionContext _context;
     private readonly IHttpParser<Http1ParsingHandler> _parser;
     private readonly Http1OutputProducer _http1Output;
-    protected readonly long _keepAliveTicks;
-    private readonly long _requestHeadersTimeoutTicks;
 
     private volatile bool _requestTimedOut;
     private uint _requestCount;
@@ -55,9 +53,6 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
 
         _context = context;
         _parser = ServiceContext.HttpParser;
-        var frequency = context.ServiceContext.TimeProvider.TimestampFrequency;
-        _keepAliveTicks = ServerOptions.Limits.KeepAliveTimeout.ToTicks(frequency);
-        _requestHeadersTimeoutTicks = ServerOptions.Limits.RequestHeadersTimeout.ToTicks(frequency);
 
         _http1Output = new Http1OutputProducer(
             _context.Transport.Output,
@@ -167,7 +162,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
                     break;
                 }
 
-                TimeoutControl.ResetTimeout(_requestHeadersTimeoutTicks, TimeoutReason.RequestHeaders);
+                TimeoutControl.ResetTimeout(ServerOptions.Limits.RequestHeadersTimeout, TimeoutReason.RequestHeaders);
 
                 _requestProcessingStatus = RequestProcessingStatus.ParsingRequestLine;
                 goto case RequestProcessingStatus.ParsingRequestLine;
@@ -672,7 +667,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         // Reset the features and timeout.
         Reset();
         _requestCount++;
-        TimeoutControl.SetTimeout(_keepAliveTicks, TimeoutReason.KeepAlive);
+        TimeoutControl.SetTimeout(ServerOptions.Limits.KeepAliveTimeout, TimeoutReason.KeepAlive);
     }
 
     protected override bool BeginRead(out ValueTask<ReadResult> awaitable)

@@ -217,11 +217,11 @@ internal class Http3InMemory
         Connection?.Tick(_mockTimeProvider.GetTimestamp());
     }
 
-    public void TriggerTick(long now)
+    public void TriggerTick(long timestamp)
     {
-        _mockTimeProvider.SetTimestamp(now);
-        _timeoutControl.Tick(now);
-        Connection?.Tick(now);
+        _mockTimeProvider.SetTimestamp(timestamp);
+        _timeoutControl.Tick(timestamp);
+        Connection?.Tick(timestamp);
     }
 
     public async Task InitializeConnectionAsync(RequestDelegate application)

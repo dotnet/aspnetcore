@@ -525,7 +525,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         Assert.Equal(1, quicConnectionContext.StreamPool.Count);
         QuicStreamContext pooledStream = quicConnectionContext.StreamPool._array[0];
         Assert.Same(stream1, pooledStream);
-        Assert.Equal(testTimeProvider.GetTimestamp() + QuicConnectionContext.StreamPoolExpirySeconds * testTimeProvider.TimestampFrequency, pooledStream.PoolExpirationTicks);
+        Assert.Equal(testTimeProvider.GetTimestamp() + QuicConnectionContext.StreamPoolExpirySeconds * testTimeProvider.TimestampFrequency, pooledStream.PoolExpirationTimestamp);
 
         testTimeProvider.Advance((long)(0.1 * testTimeProvider.TimestampFrequency));
         testHeartbeatFeature.RaiseHeartbeat();
@@ -537,7 +537,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         Assert.Equal(1, quicConnectionContext.StreamPool.Count);
         pooledStream = quicConnectionContext.StreamPool._array[0];
         Assert.Same(stream1, pooledStream);
-        Assert.Equal(testTimeProvider.GetTimestamp() + QuicConnectionContext.StreamPoolExpirySeconds * testTimeProvider.TimestampFrequency, pooledStream.PoolExpirationTicks);
+        Assert.Equal(testTimeProvider.GetTimestamp() + QuicConnectionContext.StreamPoolExpirySeconds * testTimeProvider.TimestampFrequency, pooledStream.PoolExpirationTimestamp);
 
         Assert.Same(stream1, stream2);
 

@@ -26,7 +26,7 @@ public class Http2TimeoutTests : Http2TestBase
 
         _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
 
-        AdvanceTime(TimeSpan.FromMilliseconds(1));
+        AdvanceTime(TimeSpan.FromTicks(1));
 
         _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.KeepAlive), Times.Once);
 
@@ -46,7 +46,7 @@ public class Http2TimeoutTests : Http2TestBase
 
         _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
 
-        AdvanceTime(TimeSpan.FromMilliseconds(1));
+        AdvanceTime(TimeSpan.FromTicks(1));
 
         _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.KeepAlive), Times.Once);
 
@@ -65,13 +65,13 @@ public class Http2TimeoutTests : Http2TestBase
         AdvanceTime(limits.KeepAliveTimeout + Heartbeat.Interval);
 
         // keep-alive timeout set but not fired.
-        _mockTimeoutControl.Verify(c => c.SetTimeout(It.IsAny<long>(), TimeoutReason.KeepAlive), Times.Once);
+        _mockTimeoutControl.Verify(c => c.SetTimeout(It.IsAny<TimeSpan>(), TimeoutReason.KeepAlive), Times.Once);
         _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
 
         // The KeepAlive timeout is set when the stream completes processing on a background thread, so we need to hook the
         // keep-alive set afterwards to make a reliable test.
         var setTimeoutTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        _mockTimeoutControl.Setup(c => c.SetTimeout(It.IsAny<long>(), TimeoutReason.KeepAlive)).Callback<long, TimeoutReason>((t, r) =>
+        _mockTimeoutControl.Setup(c => c.SetTimeout(It.IsAny<TimeSpan>(), TimeoutReason.KeepAlive)).Callback<TimeSpan, TimeoutReason>((t, r) =>
         {
             _timeoutControl.SetTimeout(t, r);
             setTimeoutTcs.SetResult();
@@ -81,7 +81,7 @@ public class Http2TimeoutTests : Http2TestBase
         await SendHeadersAsync(1, Http2HeadersFrameFlags.END_STREAM, _browserRequestHeaders);
         await SendEmptyContinuationFrameAsync(1, Http2ContinuationFrameFlags.END_HEADERS);
 
-        _mockTimeoutControl.Verify(c => c.SetTimeout(It.IsAny<long>(), TimeoutReason.RequestHeaders), Times.Once);
+        _mockTimeoutControl.Verify(c => c.SetTimeout(It.IsAny<TimeSpan>(), TimeoutReason.RequestHeaders), Times.Once);
 
         await ExpectAsync(Http2FrameType.HEADERS,
             withLength: 36,
@@ -94,7 +94,7 @@ public class Http2TimeoutTests : Http2TestBase
 
         _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
 
-        AdvanceTime(TimeSpan.FromMilliseconds(1));
+        AdvanceTime(TimeSpan.FromTicks(1));
 
         _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.KeepAlive), Times.Once);
 
@@ -113,8 +113,8 @@ public class Http2TimeoutTests : Http2TestBase
         await InitializeConnectionAsync(_noopApplication);
 
         // Connection starts and sets keep alive timeout
-        _mockTimeoutControl.Verify(c => c.SetTimeout(It.IsAny<long>(), TimeoutReason.KeepAlive), Times.Once);
-        _mockTimeoutControl.Verify(c => c.ResetTimeout(It.IsAny<long>(), TimeoutReason.KeepAlive), Times.Never);
+        _mockTimeoutControl.Verify(c => c.SetTimeout(It.IsAny<TimeSpan>(), TimeoutReason.KeepAlive), Times.Once);
+        _mockTimeoutControl.Verify(c => c.ResetTimeout(It.IsAny<TimeSpan>(), TimeoutReason.KeepAlive), Times.Never);
 
         await SendPingAsync(Http2PingFrameFlags.NONE);
         await ExpectAsync(Http2FrameType.PING,
@@ -123,7 +123,7 @@ public class Http2TimeoutTests : Http2TestBase
             withStreamId: 0);
 
         // Server resets keep alive timeout
-        _mockTimeoutControl.Verify(c => c.ResetTimeout(It.IsAny<long>(), TimeoutReason.KeepAlive), Times.Once);
+        _mockTimeoutControl.Verify(c => c.ResetTimeout(It.IsAny<TimeSpan>(), TimeoutReason.KeepAlive), Times.Once);
     }
 
     [Fact]
@@ -136,8 +136,8 @@ public class Http2TimeoutTests : Http2TestBase
         await InitializeConnectionAsync(_echoApplication);
 
         // Connection starts and sets keep alive timeout
-        _mockTimeoutControl.Verify(c => c.SetTimeout(It.IsAny<long>(), TimeoutReason.KeepAlive), Times.Once);
-        _mockTimeoutControl.Verify(c => c.ResetTimeout(It.IsAny<long>(), TimeoutReason.KeepAlive), Times.Never);
+        _mockTimeoutControl.Verify(c => c.SetTimeout(It.IsAny<TimeSpan>(), TimeoutReason.KeepAlive), Times.Once);
+        _mockTimeoutControl.Verify(c => c.ResetTimeout(It.IsAny<TimeSpan>(), TimeoutReason.KeepAlive), Times.Never);
         _mockTimeoutControl.Verify(c => c.CancelTimeout(), Times.Never);
 
         // Stream will stay open because it is waiting for request body to end
@@ -153,7 +153,7 @@ public class Http2TimeoutTests : Http2TestBase
             withStreamId: 0);
 
         // Server doesn't reset keep alive timeout because it isn't running
-        _mockTimeoutControl.Verify(c => c.ResetTimeout(It.IsAny<long>(), TimeoutReason.KeepAlive), Times.Never);
+        _mockTimeoutControl.Verify(c => c.ResetTimeout(It.IsAny<TimeSpan>(), TimeoutReason.KeepAlive), Times.Never);
 
         // End stream
         await SendDataAsync(1, _helloWorldBytes, endStream: true);
@@ -184,7 +184,7 @@ public class Http2TimeoutTests : Http2TestBase
 
         await SendEmptyContinuationFrameAsync(1, Http2ContinuationFrameFlags.NONE);
 
-        AdvanceTime(TimeSpan.FromMilliseconds(1));
+        AdvanceTime(TimeSpan.FromTicks(1));
 
         _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.RequestHeaders), Times.Once);
 
@@ -268,7 +268,7 @@ public class Http2TimeoutTests : Http2TestBase
             while (!closed)
             {
                 // Just past the timeout
-                mockTimeProvider.Advance(Constants.RequestBodyDrainTimeout + TimeSpan.FromMilliseconds(1));
+                mockTimeProvider.Advance(Constants.RequestBodyDrainTimeout + TimeSpan.FromTicks(1));
 
                 // Send an extra frame to make it fail
                 switch (finalFrameType)
@@ -631,7 +631,7 @@ public class Http2TimeoutTests : Http2TestBase
 
         _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
 
-        AdvanceTime(TimeSpan.FromMilliseconds(1));
+        AdvanceTime(TimeSpan.FromTicks(1));
 
         _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.ReadDataRate), Times.Once);
 
@@ -865,7 +865,7 @@ public class Http2TimeoutTests : Http2TestBase
 
         _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
 
-        AdvanceTime(TimeSpan.FromMilliseconds(1));
+        AdvanceTime(TimeSpan.FromTicks(1));
 
         _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
 
@@ -953,7 +953,7 @@ public class Http2TimeoutTests : Http2TestBase
 
         _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
 
-        AdvanceTime(TimeSpan.FromMicroseconds(1));
+        AdvanceTime(TimeSpan.FromTicks(1));
 
         _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.ReadDataRate), Times.Once);
 
