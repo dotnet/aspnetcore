@@ -56,10 +56,12 @@ internal class EndpointParameter
             LookupName = GetEscapedParameterName(fromFormAttribute, parameter.Name);
             if (SymbolEqualityComparer.Default.Equals(parameter.Type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_IFormFileCollection)))
             {
+                IsFormFile = true;
                 AssigningCode = "httpContext.Request.Form.Files";
             }
             else if (SymbolEqualityComparer.Default.Equals(parameter.Type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_IFormFile)))
             {
+                IsFormFile = true;
                 AssigningCode = $"httpContext.Request.Form.Files[{SymbolDisplay.FormatLiteral(LookupName, true)}]";
             }
             else if (SymbolEqualityComparer.Default.Equals(parameter.Type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_IFormCollection)))
@@ -107,12 +109,14 @@ internal class EndpointParameter
         else if (SymbolEqualityComparer.Default.Equals(parameter.Type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_IFormFileCollection)))
         {
             Source = EndpointParameterSource.FormBody;
+            IsFormFile = true;
             LookupName = parameter.Name;
             AssigningCode = "httpContext.Request.Form.Files";
         }
         else if (SymbolEqualityComparer.Default.Equals(parameter.Type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_IFormFile)))
         {
             Source = EndpointParameterSource.FormBody;
+            IsFormFile = true;
             LookupName = parameter.Name;
             AssigningCode = $"httpContext.Request.Form.Files[{SymbolDisplay.FormatLiteral(LookupName, true)}]";
         }
@@ -181,6 +185,7 @@ internal class EndpointParameter
     public string DefaultValue { get; set; }
 
     public EndpointParameterSource Source { get; }
+    public bool IsFormFile { get; }
 
     // Only used for SpecialType parameters that need
     // to be resolved by a specific WellKnownType

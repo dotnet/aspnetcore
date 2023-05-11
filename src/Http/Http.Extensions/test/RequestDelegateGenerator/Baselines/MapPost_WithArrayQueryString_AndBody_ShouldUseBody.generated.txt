@@ -94,8 +94,22 @@ namespace Microsoft.AspNetCore.Http.Generated
             [(@"TestMapActions.cs", 25)] = (
                 (methodInfo, options) =>
                 {
-                    Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
+                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
+                    Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                     options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 25));
+                    var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
+                    var serviceProviderIsService = serviceProvider.GetRequiredService<IServiceProviderIsService>();
+                    var jsonBodyOrServiceTypeTuples = new (bool, Type)[] {
+                        (false, typeof(global::System.String[])),
+                    };
+                    foreach (var (isOptional, type) in jsonBodyOrServiceTypeTuples)
+                    {
+                        if (!serviceProviderIsService.IsService(type))
+                        {
+                            options.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(type: type, isOptional: isOptional, contentTypes: GeneratedMetadataConstants.JsonContentType));
+                            break;
+                        }
+                    }
                     options.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
                     return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
                 },
@@ -287,12 +301,31 @@ namespace Microsoft.AspNetCore.Http.Generated
 
     }
 
-    file static class GeneratedMetadataConstants
+    file sealed class GeneratedAcceptsMetadata : IAcceptsMetadata
     {
-        public static readonly string[] JsonContentType = new [] { "application/json" };
-        public static readonly string[] PlaintextContentType = new [] { "text/plain" };
-    }
+        public GeneratedAcceptsMetadata(string[] contentTypes)
+        {
+            ArgumentNullException.ThrowIfNull(contentTypes);
 
+            ContentTypes = contentTypes;
+        }
+
+        public GeneratedAcceptsMetadata(Type? type, bool isOptional, string[] contentTypes)
+        {
+            ArgumentNullException.ThrowIfNull(type);
+            ArgumentNullException.ThrowIfNull(contentTypes);
+
+            RequestType = type;
+            ContentTypes = contentTypes;
+            IsOptional = isOptional;
+        }
+
+        public IReadOnlyList<string> ContentTypes { get; }
+
+        public Type? RequestType { get; }
+
+        public bool IsOptional { get; }
+    }
     file sealed class GeneratedProducesResponseTypeMetadata : IProducesResponseTypeMetadata
     {
         public GeneratedProducesResponseTypeMetadata(Type? type, int statusCode, string[] contentTypes)
@@ -308,6 +341,15 @@ namespace Microsoft.AspNetCore.Http.Generated
 
         public IEnumerable<string> ContentTypes { get; }
     }
+
+    file static class GeneratedMetadataConstants
+    {
+        public static readonly string[] JsonContentType = new [] { "application/json" };
+        public static readonly string[] PlaintextContentType = new [] { "text/plain" };
+        public static readonly string[] FormFileContentType = new[] { "multipart/form-data" };
+        public static readonly string[] FormContentType = new[] { "multipart/form-data", "application/x-www-form-urlencoded" };
+    }
+
 
     file class LogOrThrowExceptionHelper
     {
