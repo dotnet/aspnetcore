@@ -84,7 +84,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         {
             // Saving RouteData to avoid routing twice in Router component
             var routingStateProvider = httpContext.RequestServices.GetRequiredService<EndpointRoutingStateProvider>();
-            routingStateProvider.SetRouteData(new RouteData(componentType, httpContext.GetRouteData().Values));
+            routingStateProvider.RouteData = new RouteData(componentType, httpContext.GetRouteData().Values);
         }
     }
 

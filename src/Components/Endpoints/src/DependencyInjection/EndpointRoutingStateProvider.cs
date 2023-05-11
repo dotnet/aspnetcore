@@ -7,12 +7,5 @@ namespace Microsoft.AspNetCore.Components.Endpoints.DependencyInjection;
 
 internal sealed class EndpointRoutingStateProvider : IRoutingStateProvider
 {
-    private RouteData? _routeData;
-
-    public RouteData? RouteData => _routeData;
-
-    internal void SetRouteData(RouteData routeData)
-    {
-        _routeData = routeData;
-    }
+    public RouteData? RouteData { get; internal set; }
 }
