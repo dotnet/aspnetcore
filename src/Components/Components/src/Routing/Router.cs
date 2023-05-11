@@ -48,7 +48,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 
     [Inject] IServiceProvider ServiceProvider { get; set; }
 
-    private IRoutingStateProvider RoutingStateProvider { get; set; }
+    private IRoutingStateProvider? RoutingStateProvider { get; set; }
 
     /// <summary>
     /// Gets or sets the assembly that should be searched for components matching the URI.
