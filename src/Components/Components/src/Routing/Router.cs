@@ -202,11 +202,11 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         locationPath = TrimQueryOrHash(locationPath);
 
         // In order to avoid routing twice we check for RouteData
-        if (RoutingStateProvider != null && RoutingStateProvider.RouteData != null)
+        if (RoutingStateProvider?.RouteData is { } routeData)
         {
-            Log.NavigatingToComponent(_logger, RoutingStateProvider.RouteData.PageType, locationPath, _baseUri);
+            Log.NavigatingToComponent(_logger, routeData.PageType, locationPath, _baseUri);
 
-            _renderHandle.Render(Found(RoutingStateProvider.RouteData));
+            _renderHandle.Render(Found(routeData));
 
             return;
         }
