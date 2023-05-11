@@ -326,7 +326,8 @@ internal static class ServiceDescriptorHelpers
 
     // Transcoding assumes that the app is referencing Google.Api.CommonProtos and HttpRule is from that assembly.
     // However, it's possible the app has compiled http.proto with Grpc.Tools, so the extension type won't match.
-    // This custom extension uses the HttpRule field number but has a return type of object so it always returns a value.
+    // This custom extension uses the HttpRule field number but has a return type of object.
+    // The method always returns the extension value, and the calling code can convert it to the expected type.
     private static readonly Extension<MethodOptions, object> UntypedHttpExtension =
         new Extension<MethodOptions, object>(AnnotationsExtensions.Http.FieldNumber, codec: null);
 
