@@ -328,6 +328,7 @@ internal static class ServiceDescriptorHelpers
     // However, it's possible the app has compiled http.proto with Grpc.Tools, so the extension value is HttpRule from a different assembly.
     // This custom extension uses the HttpRule field number but has a return type of object.
     // The method always returns the extension value, and the calling code can convert it to the expected type.
+    // See https://github.com/protocolbuffers/protobuf/issues/9626 for more details.
     private static readonly Extension<MethodOptions, object> UntypedHttpExtension =
         new Extension<MethodOptions, object>(AnnotationsExtensions.Http.FieldNumber, codec: null);
 
