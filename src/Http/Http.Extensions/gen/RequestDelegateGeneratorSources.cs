@@ -20,13 +20,18 @@ internal static class RequestDelegateGeneratorSources
 
     public static string GeneratedCodeAttribute => $@"[System.CodeDom.Compiler.GeneratedCodeAttribute(""{typeof(RequestDelegateGeneratorSources).Assembly.FullName}"", ""{typeof(RequestDelegateGeneratorSources).Assembly.GetName().Version}"")]";
 
-    public static string ContentMetadataTypes => """
+    public static string ContentTypeConstantsType => """
     file static class GeneratedMetadataConstants
     {
         public static readonly string[] JsonContentType = new [] { "application/json" };
         public static readonly string[] PlaintextContentType = new [] { "text/plain" };
+        public static readonly string[] FormFileContentType = new[] { "multipart/form-data" };
+        public static readonly string[] FormContentType = new[] { "multipart/form-data", "application/x-www-form-urlencoded" };
     }
 
+""";
+
+    public static string ProducesResponseTypeMetadataType => """
     file sealed class GeneratedProducesResponseTypeMetadata : IProducesResponseTypeMetadata
     {
         public GeneratedProducesResponseTypeMetadata(Type? type, int statusCode, string[] contentTypes)
@@ -41,6 +46,35 @@ internal static class RequestDelegateGeneratorSources
         public int StatusCode { get; }
 
         public IEnumerable<string> ContentTypes { get; }
+    }
+
+""";
+
+    public static string AcceptsMetadataType => """
+    file sealed class GeneratedAcceptsMetadata : IAcceptsMetadata
+    {
+        public GeneratedAcceptsMetadata(string[] contentTypes)
+        {
+            ArgumentNullException.ThrowIfNull(contentTypes);
+
+            ContentTypes = contentTypes;
+        }
+
+        public GeneratedAcceptsMetadata(Type? type, bool isOptional, string[] contentTypes)
+        {
+            ArgumentNullException.ThrowIfNull(type);
+            ArgumentNullException.ThrowIfNull(contentTypes);
+
+            RequestType = type;
+            ContentTypes = contentTypes;
+            IsOptional = isOptional;
+        }
+
+        public IReadOnlyList<string> ContentTypes { get; }
+
+        public Type? RequestType { get; }
+
+        public bool IsOptional { get; }
     }
 """;
 

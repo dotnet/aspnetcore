@@ -61,7 +61,8 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
             codeWriter.Indent++;
             codeWriter.WriteLine("(methodInfo, options) =>");
             codeWriter.StartBlock();
-            codeWriter.WriteLine(@"Debug.Assert(options?.EndpointBuilder != null, ""EndpointBuilder not found."");");
+            codeWriter.WriteLine(@"Debug.Assert(options != null, ""RequestDelegateFactoryOptions not found."");");
+            codeWriter.WriteLine(@"Debug.Assert(options.EndpointBuilder != null, ""EndpointBuilder not found."");");
             codeWriter.WriteLine($"options.EndpointBuilder.Metadata.Add(new SourceKey{endpoint!.EmitSourceKey()});");
             endpoint!.EmitEndpointMetadataPopulation(codeWriter);
             codeWriter.WriteLine("return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };");
@@ -231,15 +232,27 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
             .Collect()
             .Select((endpoints, _) =>
             {
-                var requiresMetadataHelperTypes = endpoints.Any(endpoint => endpoint!.EmitterContext.RequiresMetadataHelperTypes);
+                var hasFormBody = endpoints.Any(endpoint => endpoint!.EmitterContext.HasFormBody);
+                var hasJsonBody = endpoints.Any(endpoint => endpoint!.EmitterContext.HasJsonBody || endpoint!.EmitterContext.HasJsonBodyOrService);
+                var hasResponseMetadata = endpoints.Any(endpoint => endpoint!.EmitterContext.HasResponseMetadata);
                 var requiresPropertyAsParameterInfo = endpoints.Any(endpoint => endpoint!.EmitterContext.RequiresPropertyAsParameterInfo);
 
                 using var stringWriter = new StringWriter(CultureInfo.InvariantCulture);
                 using var codeWriter = new CodeWriter(stringWriter, baseIndent: 0);
 
-                if (requiresMetadataHelperTypes)
+                if (hasFormBody || hasJsonBody)
                 {
-                    codeWriter.WriteLine(RequestDelegateGeneratorSources.ContentMetadataTypes);
+                    codeWriter.WriteLine(RequestDelegateGeneratorSources.AcceptsMetadataType);
+                }
+
+                if (hasResponseMetadata)
+                {
+                    codeWriter.WriteLine(RequestDelegateGeneratorSources.ProducesResponseTypeMetadataType);
+                }
+
+                if (hasFormBody || hasJsonBody || hasResponseMetadata)
+                {
+                    codeWriter.WriteLine(RequestDelegateGeneratorSources.ContentTypeConstantsType);
                 }
 
                 if (requiresPropertyAsParameterInfo)

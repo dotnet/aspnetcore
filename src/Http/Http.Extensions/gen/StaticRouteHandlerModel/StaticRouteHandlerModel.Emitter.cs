@@ -2,10 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Text;
-using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel.Emitters;
 using Microsoft.CodeAnalysis;
 
@@ -229,11 +228,6 @@ internal static class StaticRouteHandlerModelEmitter
                 return;
             }
 
-            if (parameter.IsEndpointMetadataProvider)
-            {
-                codeWriter.WriteLine($"PopulateMetadataForEndpoint<{parameterType.ToDisplayString(EmitterConstants.DisplayFormat)}>(methodInfo, options.EndpointBuilder);");
-            }
-
             if (parameter.IsEndpointParameterMetadataProvider)
             {
                 var resolveParameterInfo = parameter.IsProperty
@@ -242,14 +236,99 @@ internal static class StaticRouteHandlerModelEmitter
                 codeWriter.WriteLine($"var {parameter.SymbolName}_ParameterInfo = {resolveParameterInfo};");
                 codeWriter.WriteLine($"PopulateMetadataForParameter<{parameterType.ToDisplayString(EmitterConstants.DisplayFormat)}>({parameter.SymbolName}_ParameterInfo, options.EndpointBuilder);");
             }
+
+            if (parameter.IsEndpointMetadataProvider)
+            {
+                codeWriter.WriteLine($"PopulateMetadataForEndpoint<{parameterType.ToDisplayString(EmitterConstants.DisplayFormat)}>(methodInfo, options.EndpointBuilder);");
+            }
+
+        }
+    }
+
+    public static void EmitFormAcceptsMetadata(this Endpoint endpoint, CodeWriter codeWriter)
+    {
+        var hasFormFiles = endpoint.Parameters.Any(p => p.IsFormFile);
+
+        if (hasFormFiles)
+        {
+            codeWriter.WriteLine("options.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(contentTypes: GeneratedMetadataConstants.FormFileContentType));");
+        }
+        else
+        {
+            codeWriter.WriteLine("options.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(contentTypes: GeneratedMetadataConstants.FormContentType));");
+        }
+    }
+
+    public static void EmitJsonAcceptsMetadata(this Endpoint endpoint, CodeWriter codeWriter)
+    {
+        EndpointParameter? explicitBodyParameter = null;
+        var potentialImplicitBodyParameters = new List<EndpointParameter>();
+
+        foreach (var parameter in endpoint.Parameters)
+        {
+            if (explicitBodyParameter == null && parameter.Source == EndpointParameterSource.JsonBody)
+            {
+                explicitBodyParameter = parameter;
+                break;
+            }
+            else if (parameter.Source == EndpointParameterSource.JsonBodyOrService)
+            {
+                potentialImplicitBodyParameters.Add(parameter);
+            }
+        }
+
+        if (explicitBodyParameter != null)
+        {
+            codeWriter.WriteLine($$"""options.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(type: typeof({{explicitBodyParameter.Type.ToDisplayString(EmitterConstants.DisplayFormatWithoutNullability)}}), isOptional: {{(explicitBodyParameter.IsOptional ? "true" : "false")}}, contentTypes: GeneratedMetadataConstants.JsonContentType));""");
+        }
+        else if (potentialImplicitBodyParameters.Count > 0)
+        {
+            codeWriter.WriteLine("var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;");
+            codeWriter.WriteLine($"var serviceProviderIsService = serviceProvider.GetRequiredService<IServiceProviderIsService>();");
+
+            codeWriter.WriteLine("var jsonBodyOrServiceTypeTuples = new (bool, Type)[] {");
+            codeWriter.Indent++;
+            foreach (var parameter in potentialImplicitBodyParameters)
+            {
+                codeWriter.WriteLine($$"""({{(parameter.IsOptional ? "true" : "false")}}, typeof({{parameter.Type.ToDisplayString(EmitterConstants.DisplayFormatWithoutNullability)}})),""");
+            }
+            codeWriter.Indent--;
+            codeWriter.WriteLine("};");
+            codeWriter.WriteLine("foreach (var (isOptional, type) in jsonBodyOrServiceTypeTuples)");
+            codeWriter.StartBlock();
+            codeWriter.WriteLine("if (!serviceProviderIsService.IsService(type))");
+            codeWriter.StartBlock();
+            codeWriter.WriteLine("options.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(type: type, isOptional: isOptional, contentTypes: GeneratedMetadataConstants.JsonContentType));");
+            codeWriter.WriteLine("break;");
+            codeWriter.EndBlock();
+            codeWriter.EndBlock();
+        }
+        else
+        {
+            codeWriter.WriteLine($"options.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(contentTypes: GeneratedMetadataConstants.JsonContentType));");
+        }
+    }
+
+    public static void EmitAcceptsMetadata(this Endpoint endpoint, CodeWriter codeWriter)
+    {
+        var hasJsonBody = endpoint.EmitterContext.HasJsonBody || endpoint.EmitterContext.HasJsonBodyOrService;
+
+        if (endpoint.EmitterContext.HasFormBody)
+        {
+            endpoint.EmitFormAcceptsMetadata(codeWriter);
+        }
+        else if (hasJsonBody)
+        {
+            endpoint.EmitJsonAcceptsMetadata(codeWriter);
         }
     }
 
     public static void EmitEndpointMetadataPopulation(this Endpoint endpoint, CodeWriter codeWriter)
     {
+        endpoint.EmitAcceptsMetadata(codeWriter);
         endpoint.EmitBuiltinResponseTypeMetadata(codeWriter);
-        endpoint.EmitCallToMetadataProviderForResponse(codeWriter);
         endpoint.EmitCallsToMetadataProvidersForParameters(codeWriter);
+        endpoint.EmitCallToMetadataProviderForResponse(codeWriter);
     }
 
     public static void EmitFilteredInvocation(this Endpoint endpoint, CodeWriter codeWriter)

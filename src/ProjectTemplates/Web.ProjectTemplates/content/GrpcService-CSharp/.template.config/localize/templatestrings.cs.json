@@ -10,8 +10,8 @@
   "symbols/kestrelHttpsPort/description": "Číslo portu, který se má použít pro koncový bod HTTPS v souboru launchSettings.json. Tato možnost se dá použít jenom v případě, že se nepoužije parametr no-https (no-https se bude ignorovat, pokud se použije IndividualAuth nebo OrganizationalAuth).",
   "symbols/UseProgramMain/displayName": "Nepoužívat _příkazy nejvyšší úrovně",
   "symbols/UseProgramMain/description": "Určuje, jestli se má místo příkazů nejvyšší úrovně generovat explicitní třída Program a metoda Main.",
-  "symbols/NativeAot/displayName": "Povolit _nativní publikování AOT",
-  "symbols/NativeAot/description": "Určuje, jestli se má u projektu povolit nativní publikování AOT.",
+  "symbols/NativeAot/displayName": "Povolit publikování _native AOT",
+  "symbols/NativeAot/description": "Určuje, jestli se má u projektu povolit publikování jako native AOT.",
   "postActions/restore/description": "Obnoví balíčky NuGet vyžadované tímto projektem.",
   "postActions/restore/manualInstructions/default/text": "Spustit dotnet restore"
 }

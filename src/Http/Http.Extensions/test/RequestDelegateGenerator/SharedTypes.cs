@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
@@ -894,4 +895,54 @@ public class ClassWithParametersConstructor
     }
 
     public object NestedParameterList { get; set; }
+}
+
+public class CountsDefaultEndpointMetadataResult : IEndpointMetadataProvider, IResult
+{
+    public static void PopulateMetadata(MethodInfo method, EndpointBuilder builder)
+    {
+        var currentMetadataCount = builder.Metadata.Count;
+        builder.Metadata.Add(new MetadataCountMetadata { Count = currentMetadataCount });
+    }
+
+    public Task ExecuteAsync(HttpContext httpContext) => Task.CompletedTask;
+}
+
+public class MetadataCountMetadata
+{
+    public int Count { get; init; }
+}
+public class RoutePatternMetadata
+{
+    public string RoutePattern { get; init; } = String.Empty;
+}
+
+public class AddsRoutePatternMetadata : IEndpointMetadataProvider
+{
+    public static void PopulateMetadata(MethodInfo method, EndpointBuilder builder)
+    {
+        if (builder is not RouteEndpointBuilder reb)
+        {
+            return;
+        }
+
+        builder.Metadata.Add(new RoutePatternMetadata { RoutePattern = reb.RoutePattern?.RawText ?? string.Empty });
+    }
+}
+
+public class CountsDefaultEndpointMetadataPoco : IEndpointMetadataProvider
+{
+    public static void PopulateMetadata(MethodInfo method, EndpointBuilder builder)
+    {
+        var currentMetadataCount = builder.Metadata.Count;
+        builder.Metadata.Add(new MetadataCountMetadata { Count = currentMetadataCount });
+    }
+}
+
+public class Attribute1 : Attribute
+{
+}
+
+public class Attribute2 : Attribute
+{
 }

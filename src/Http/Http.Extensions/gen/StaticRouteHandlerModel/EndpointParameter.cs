@@ -92,10 +92,12 @@ internal class EndpointParameter
             LookupName = GetEscapedParameterName(fromFormAttribute, symbol.Name);
             if (SymbolEqualityComparer.Default.Equals(Type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_IFormFileCollection)))
             {
+                IsFormFile = true;
                 AssigningCode = "httpContext.Request.Form.Files";
             }
             else if (SymbolEqualityComparer.Default.Equals(Type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_IFormFile)))
             {
+                IsFormFile = true;
                 AssigningCode = $"httpContext.Request.Form.Files[{SymbolDisplay.FormatLiteral(LookupName, true)}]";
             }
             else if (SymbolEqualityComparer.Default.Equals(Type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_IFormCollection)))
@@ -171,14 +173,14 @@ internal class EndpointParameter
         {
             endpoint.IsAwaitable = true;
             Source = EndpointParameterSource.FormBody;
-            LookupName = symbol.Name;
+            IsFormFile = true;
             AssigningCode = "httpContext.Request.Form.Files";
         }
         else if (SymbolEqualityComparer.Default.Equals(Type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_IFormFile)))
         {
             endpoint.IsAwaitable = true;
             Source = EndpointParameterSource.FormBody;
-            LookupName = symbol.Name;
+            IsFormFile = true;
             AssigningCode = $"httpContext.Request.Form.Files[{SymbolDisplay.FormatLiteral(LookupName, true)}]";
         }
         else if (SymbolEqualityComparer.Default.Equals(Type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_IFormCollection)))
@@ -251,12 +253,10 @@ internal class EndpointParameter
     public string DefaultValue { get; set; } = "null";
     [MemberNotNullWhen(true, nameof(PropertyAsParameterInfoConstruction))]
     public bool IsProperty { get; set; }
-
     public EndpointParameterSource Source { get; set; }
-
     public string? PropertyAsParameterInfoConstruction { get; set; }
-
     public IEnumerable<EndpointParameter>? EndpointParameters { get; set; }
+    public bool IsFormFile { get; set; }
 
     // Only used for SpecialType parameters that need
     // to be resolved by a specific WellKnownType
