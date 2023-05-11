@@ -69,11 +69,13 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
             codeWriter.EndBlockWithComma();
             codeWriter.WriteLine("(del, options, inferredMetadataResult) =>");
             codeWriter.StartBlock();
+            codeWriter.WriteLine(@"Debug.Assert(options != null, ""RequestDelegateFactoryOptions not found."");");
+            codeWriter.WriteLine(@"Debug.Assert(options.EndpointBuilder != null, ""EndpointBuilder not found."");");
             codeWriter.WriteLine($"var handler = ({endpoint!.EmitHandlerDelegateType(considerOptionality: true)})del;");
             codeWriter.WriteLine("EndpointFilterDelegate? filteredInvocation = null;");
             if (endpoint!.EmitterContext.RequiresLoggingHelper || endpoint!.EmitterContext.HasJsonBodyOrService || endpoint!.Response?.IsSerializableJsonResponse(out var _) is true)
             {
-                codeWriter.WriteLine("var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;");
+                codeWriter.WriteLine("var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;");
             }
             endpoint!.EmitLoggingPreamble(codeWriter);
             endpoint!.EmitRouteOrQueryResolver(codeWriter);

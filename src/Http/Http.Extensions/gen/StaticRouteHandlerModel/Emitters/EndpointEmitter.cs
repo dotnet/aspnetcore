@@ -40,15 +40,12 @@ internal static class EndpointEmitter
                     parameter.EmitBindAsyncPreparation(parameterPreparationBuilder);
                     break;
                 case EndpointParameterSource.JsonBody:
-                    emitterContext.HasJsonBody = true;
                     parameter.EmitJsonBodyParameterPreparationString(parameterPreparationBuilder);
                     break;
                 case EndpointParameterSource.FormBody:
-                    emitterContext.HasFormBody = true;
                     parameter.EmitFormParameterPreparation(parameterPreparationBuilder, ref readFormEmitted);
                     break;
                 case EndpointParameterSource.JsonBodyOrService:
-                    emitterContext.HasJsonBodyOrService = true;
                     parameter.EmitJsonBodyOrServiceParameterPreparationString(parameterPreparationBuilder);
                     break;
                 case EndpointParameterSource.Service:

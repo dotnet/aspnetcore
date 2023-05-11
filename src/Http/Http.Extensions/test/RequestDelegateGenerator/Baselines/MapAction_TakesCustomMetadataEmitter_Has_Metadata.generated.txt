@@ -97,6 +97,19 @@ namespace Microsoft.AspNetCore.Http.Generated
                     Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
                     Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                     options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 25));
+                    var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
+                    var serviceProviderIsService = serviceProvider.GetRequiredService<IServiceProviderIsService>();
+                    var jsonBodyOrServiceTypeTuples = new (bool, Type)[] {
+                        (false, typeof(global::Microsoft.AspNetCore.Http.Generators.Tests.CustomMetadataEmitter)),
+                    };
+                    foreach (var (isOptional, type) in jsonBodyOrServiceTypeTuples)
+                    {
+                        if (!serviceProviderIsService.IsService(type))
+                        {
+                            options.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(type: type, isOptional: isOptional, contentTypes: GeneratedMetadataConstants.JsonContentType));
+                            break;
+                        }
+                    }
                     var parameterInfos = methodInfo.GetParameters();
                     var x_ParameterInfo = parameterInfos[0];
                     PopulateMetadataForParameter<global::Microsoft.AspNetCore.Http.Generators.Tests.CustomMetadataEmitter>(x_ParameterInfo, options.EndpointBuilder);
@@ -105,9 +118,11 @@ namespace Microsoft.AspNetCore.Http.Generated
                 },
                 (del, options, inferredMetadataResult) =>
                 {
+                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
+                    Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                     var handler = (System.Action<global::Microsoft.AspNetCore.Http.Generators.Tests.CustomMetadataEmitter>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
-                    var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;
+                    var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
                     var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
                     var serviceProviderIsService = serviceProvider?.GetService<IServiceProviderIsService>();
                     var x_JsonBodyOrServiceResolver = ResolveJsonBodyOrService<global::Microsoft.AspNetCore.Http.Generators.Tests.CustomMetadataEmitter>(logOrThrowExceptionHelper, "CustomMetadataEmitter", "x", serviceProviderIsService);

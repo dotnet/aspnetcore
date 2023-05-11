@@ -97,14 +97,29 @@ namespace Microsoft.AspNetCore.Http.Generated
                     Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
                     Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                     options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 25));
+                    var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
+                    var serviceProviderIsService = serviceProvider.GetRequiredService<IServiceProviderIsService>();
+                    var jsonBodyOrServiceTypeTuples = new (bool, Type)[] {
+                        (false, typeof(global::System.String[])),
+                    };
+                    foreach (var (isOptional, type) in jsonBodyOrServiceTypeTuples)
+                    {
+                        if (!serviceProviderIsService.IsService(type))
+                        {
+                            options.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(type: type, isOptional: isOptional, contentTypes: GeneratedMetadataConstants.JsonContentType));
+                            break;
+                        }
+                    }
                     options.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: typeof(global::System.Int32), statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.JsonContentType));
                     return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
                 {
+                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
+                    Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                     var handler = (System.Func<global::System.String[], global::System.Int32>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
-                    var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;
+                    var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
                     var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
                     var serviceProviderIsService = serviceProvider?.GetService<IServiceProviderIsService>();
                     var p_JsonBodyOrServiceResolver = ResolveJsonBodyOrService<global::System.String[]>(logOrThrowExceptionHelper, "string[]", "p", serviceProviderIsService);

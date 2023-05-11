@@ -222,6 +222,11 @@ internal class EndpointParameter
             Source = EndpointParameterSource.JsonBodyOrService;
         }
         endpoint.EmitterContext.HasParsable |= IsParsable;
+        // Set emitter context state for parameters that need to populate
+        // accepts metadata here since we know that will always be required
+        endpoint.EmitterContext.HasFormBody |= Source == EndpointParameterSource.FormBody;
+        endpoint.EmitterContext.HasJsonBody |= Source == EndpointParameterSource.JsonBody;
+        endpoint.EmitterContext.HasJsonBodyOrService |= Source == EndpointParameterSource.JsonBodyOrService;
     }
 
     private static bool ImplementsIEndpointMetadataProvider(ITypeSymbol type, WellKnownTypes wellKnownTypes)

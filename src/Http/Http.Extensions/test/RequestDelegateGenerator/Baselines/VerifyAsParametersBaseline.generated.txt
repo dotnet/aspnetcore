@@ -146,9 +146,11 @@ namespace Microsoft.AspNetCore.Http.Generated
                 },
                 (del, options, inferredMetadataResult) =>
                 {
+                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
+                    Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                     var handler = (System.Action<global::Microsoft.AspNetCore.Http.Generators.Tests.ParameterListWitDefaultValue>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
-                    var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;
+                    var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
                     var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
@@ -255,9 +257,11 @@ namespace Microsoft.AspNetCore.Http.Generated
                 },
                 (del, options, inferredMetadataResult) =>
                 {
+                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
+                    Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                     var handler = (System.Action<global::Microsoft.AspNetCore.Http.Generators.Tests.ParameterListRecordStruct>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
-                    var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;
+                    var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
                     var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
                     var Value_RouteOrQueryResolver = GeneratedRouteBuilderExtensionsCore.ResolveFromRouteOrQuery("Value", options?.RouteParameterNames);
 
@@ -357,9 +361,11 @@ namespace Microsoft.AspNetCore.Http.Generated
                 },
                 (del, options, inferredMetadataResult) =>
                 {
+                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
+                    Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                     var handler = (System.Action<global::Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithHttpContext>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
-                    var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;
+                    var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
                     var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
@@ -426,14 +432,17 @@ namespace Microsoft.AspNetCore.Http.Generated
                     Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
                     Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                     options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 43));
+                    options.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(contentTypes: GeneratedMetadataConstants.JsonContentType));
                     options.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
                     return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
                 {
+                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
+                    Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                     var handler = (System.Func<global::Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithImplicitFromBody, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
-                    var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;
+                    var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
                     var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
                     var serviceProviderIsService = serviceProvider?.GetService<IServiceProviderIsService>();
                     var Todo_JsonBodyOrServiceResolver = ResolveJsonBodyOrService<global::Microsoft.AspNetCore.Http.Generators.Tests.TodoStruct>(logOrThrowExceptionHelper, "TodoStruct", "Todo", serviceProviderIsService);

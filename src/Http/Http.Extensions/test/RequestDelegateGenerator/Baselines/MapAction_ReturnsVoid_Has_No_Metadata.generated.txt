@@ -101,6 +101,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                 },
                 (del, options, inferredMetadataResult) =>
                 {
+                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
+                    Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                     var handler = (System.Action)del;
                     EndpointFilterDelegate? filteredInvocation = null;
 

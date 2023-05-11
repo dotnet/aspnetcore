@@ -132,6 +132,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                 },
                 (del, options, inferredMetadataResult) =>
                 {
+                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
+                    Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                     var handler = (System.Func<global::Microsoft.AspNetCore.Http.HttpRequest, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
 
@@ -192,6 +194,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                 },
                 (del, options, inferredMetadataResult) =>
                 {
+                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
+                    Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                     var handler = (System.Func<global::Microsoft.AspNetCore.Http.HttpResponse, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
 
@@ -252,6 +256,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                 },
                 (del, options, inferredMetadataResult) =>
                 {
+                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
+                    Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                     var handler = (System.Func<global::Microsoft.AspNetCore.Http.HttpRequest, global::Microsoft.AspNetCore.Http.HttpResponse, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
 
