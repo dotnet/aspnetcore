@@ -1350,11 +1350,11 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         ((IRequestProcessor)_connection)?.Tick(timestamp);
     }
 
-    protected void TriggerTick(long now)
+    protected void TriggerTick(long timestamp)
     {
-        _serviceContext.MockTimeProvider.SetTimestamp(now);
-        _timeoutControl.Tick(now);
-        ((IRequestProcessor)_connection)?.Tick(now);
+        _serviceContext.MockTimeProvider.SetTimestamp(timestamp);
+        _timeoutControl.Tick(timestamp);
+        ((IRequestProcessor)_connection)?.Tick(timestamp);
     }
 
     protected void AdvanceTime(TimeSpan timeSpan)
@@ -1489,9 +1489,9 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
             _realTimeoutControl.BytesWrittenToBuffer(minRate, size);
         }
 
-        public virtual void Tick(long now)
+        public virtual void Tick(long timestamp)
         {
-            _realTimeoutControl.Tick(now);
+            _realTimeoutControl.Tick(timestamp);
         }
 
         public long GetResponseDrainDeadline(long ticks, MinDataRate minRate)

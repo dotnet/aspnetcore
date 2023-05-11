@@ -786,5 +786,5 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         return base.TryProduceInvalidRequestResponse();
     }
 
-    void IRequestProcessor.Tick(long now) { }
+    void IRequestProcessor.Tick(long timestamp) { }
 }

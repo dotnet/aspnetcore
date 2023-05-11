@@ -1241,7 +1241,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
         }
     }
 
-    void IRequestProcessor.Tick(long now)
+    void IRequestProcessor.Tick(long timestamp)
     {
         Input.CancelPendingRead();
     }

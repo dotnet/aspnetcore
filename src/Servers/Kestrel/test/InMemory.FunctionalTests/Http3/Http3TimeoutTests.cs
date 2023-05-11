@@ -376,7 +376,7 @@ public class Http3TimeoutTests : Http3TestBase
     [Fact]
     public async Task ResponseDrain_SlowerThanMinimumDataRate_AbortsConnection()
     {
-        var now = _serviceContext.MockTimeProvider.GetUtcNow();
+        var now = _serviceContext.MockTimeProvider.GetTimestamp();
         var limits = _serviceContext.ServerOptions.Limits;
         var mockTimeProvider = _serviceContext.MockTimeProvider;
 
@@ -401,10 +401,10 @@ public class Http3TimeoutTests : Http3TestBase
         Http3Api.TriggerTick(now);
         Assert.Null(requestStream.StreamContext._error);
 
-        Http3Api.TriggerTick(now + TimeSpan.FromTicks(1));
+        Http3Api.AdvanceTime(TimeSpan.FromTicks(1));
         Assert.Null(requestStream.StreamContext._error);
 
-        Http3Api.TriggerTick(now + limits.MinResponseDataRate.GracePeriod + TimeSpan.FromTicks(1));
+        Http3Api.AdvanceTime(limits.MinResponseDataRate.GracePeriod);
 
         requestStream.StartStreamDisposeTcs.TrySetResult();
 

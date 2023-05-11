@@ -236,9 +236,9 @@ internal sealed class HttpConnection : ITimeoutHandler
             return;
         }
 
-        var now = _timeProvider.GetTimestamp();
-        _timeoutControl.Tick(now);
-        _requestProcessor!.Tick(now);
+        var timestamp = _timeProvider.GetTimestamp();
+        _timeoutControl.Tick(timestamp);
+        _requestProcessor!.Tick(timestamp);
     }
 
     public void OnTimeout(TimeoutReason reason)
