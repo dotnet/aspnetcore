@@ -493,7 +493,7 @@ namespace System.Net.Http.Unit.Tests.HPack
             _decoder.Decode(encoded[..^(_headerValueString.Length / 2)], endHeaders: false, handler: _handler);
             _decoder.Decode(encoded[^(_headerValueString.Length / 2)..], endHeaders: true, handler: _handler);
 
-            Assert.Equal(1, _handler.DecodedHeaders.Count);
+            Assert.Single(_handler.DecodedHeaders);
             Assert.True(_handler.DecodedHeaders.ContainsKey(_literalHeaderNameString));
             Assert.Equal(_headerValueString, _handler.DecodedHeaders[_literalHeaderNameString]);
         }
@@ -843,7 +843,7 @@ namespace System.Net.Http.Unit.Tests.HPack
 
             if (expectDynamicTableEntry)
             {
-                Assert.Equal(1, dynamicTable.Count);
+                Assert.Single(dynamicTable);
                 Assert.Equal(expectedHeaderName, Encoding.ASCII.GetString(dynamicTable[0].Name));
                 Assert.Equal(expectedHeaderValue, Encoding.ASCII.GetString(dynamicTable[0].Value));
                 Assert.Equal(expectedHeaderName.Length + expectedHeaderValue.Length + 32, dynamicTable.Size);
