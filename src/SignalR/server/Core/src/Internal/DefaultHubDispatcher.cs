@@ -186,6 +186,10 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
                 }
                 break;
 
+            case AckMessage ackMessage:
+                connection.Ack(ackMessage);
+                break;
+
             // Other kind of message we weren't expecting
             default:
                 Log.UnsupportedMessageReceived(_logger, hubMessage.GetType().FullName!);

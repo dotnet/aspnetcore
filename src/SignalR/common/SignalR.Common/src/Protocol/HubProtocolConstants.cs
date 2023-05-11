@@ -42,4 +42,9 @@ public static class HubProtocolConstants
     /// Represents the close message type.
     /// </summary>
     public const int CloseMessageType = 7;
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public const int AckMessageType = 8;
 }

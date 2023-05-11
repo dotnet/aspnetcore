@@ -46,6 +46,28 @@ public class CompletionMessage : HubInvocationMessage
         HasResult = hasResult;
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="invocationId"></param>
+    /// <param name="sequenceId"></param>
+    /// <param name="error"></param>
+    /// <param name="result"></param>
+    /// <param name="hasResult"></param>
+    /// <exception cref="ArgumentException"></exception>
+    public CompletionMessage(string invocationId, string? sequenceId, string? error, object? result, bool hasResult)
+        : base(invocationId, sequenceId)
+    {
+        if (error is not null && hasResult)
+        {
+            throw new ArgumentException($"Expected either '{nameof(error)}' or '{nameof(result)}' to be provided, but not both");
+        }
+
+        Error = error;
+        Result = result;
+        HasResult = hasResult;
+    }
+
     /// <inheritdoc />
     public override string ToString()
     {
