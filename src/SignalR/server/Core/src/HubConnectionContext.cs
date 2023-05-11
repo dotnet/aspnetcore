@@ -254,11 +254,22 @@ public partial class HubConnectionContext
     {
         try
         {
-            // We know that we are only writing this message to one receiver, so we can
-            // write it without caching.
-            Protocol.WriteMessage(message, _connectionContext.Transport.Output);
+            // TODO
+            var isAck = true;
+            if (isAck)
+            {
+                var m = new SerializedHubMessage(message);
+                var bytes = m.GetSerializedMessage(Protocol);
+                return _connectionContext.Transport.Output.WriteAsync(bytes, cancellationToken);
+            }
+            else
+            {
+                // We know that we are only writing this message to one receiver, so we can
+                // write it without caching.
+                Protocol.WriteMessage(message, _connectionContext.Transport.Output);
 
-            return _connectionContext.Transport.Output.FlushAsync(cancellationToken);
+                return _connectionContext.Transport.Output.FlushAsync(cancellationToken);
+            }
         }
         catch (Exception ex)
         {
@@ -730,5 +741,11 @@ public partial class HubConnectionContext
 
         // Use _streamTracker to avoid lazy init from StreamTracker getter if it doesn't exist
         _streamTracker?.CompleteAll(new OperationCanceledException("The underlying connection was closed."));
+    }
+
+    internal void Ack(AckMessage ackMessage)
+    {
+        // Remove from ring buffer
+        // ackMessage.SequenceId
     }
 }

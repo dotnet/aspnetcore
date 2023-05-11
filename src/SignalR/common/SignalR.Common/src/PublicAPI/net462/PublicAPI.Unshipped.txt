@@ -1,1 +1,11 @@
 #nullable enable
+Microsoft.AspNetCore.SignalR.Protocol.AckMessage
+Microsoft.AspNetCore.SignalR.Protocol.AckMessage.AckMessage(string! sequenceId) -> void
+Microsoft.AspNetCore.SignalR.Protocol.AckMessage.SequenceId.get -> string!
+Microsoft.AspNetCore.SignalR.Protocol.CancelInvocationMessage.CancelInvocationMessage(string! invocationId, string! sequenceId) -> void
+Microsoft.AspNetCore.SignalR.Protocol.CompletionMessage.CompletionMessage(string! invocationId, string! sequenceId, string? error, object? result, bool hasResult) -> void
+Microsoft.AspNetCore.SignalR.Protocol.HubInvocationMessage.HubInvocationMessage(string? invocationId, string! sequenceId) -> void
+Microsoft.AspNetCore.SignalR.Protocol.HubInvocationMessage.SequenceId.get -> string?
+Microsoft.AspNetCore.SignalR.Protocol.HubMethodInvocationMessage.HubMethodInvocationMessage(string? invocationId, string! sequenceId, string! target, object?[]! arguments, string![]? streamIds) -> void
+Microsoft.AspNetCore.SignalR.Protocol.StreamInvocationMessage.StreamInvocationMessage(string! invocationId, string! sequenceId, string! target, object?[]! arguments, string![]? streamIds) -> void
+Microsoft.AspNetCore.SignalR.Protocol.StreamItemMessage.StreamItemMessage(string! invocationId, string! sequenceId, object? item) -> void
