@@ -1712,7 +1712,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-user-jwts", "src\Too
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dotnet-user-jwts", "dotnet-user-jwts", "{AB4B9E75-719C-4589-B852-20FBFD727730}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MinimalJwtBearerSample", "src\Security\Authentication\JwtBearer\samples\MinimalJwtBearerSample\MinimalJwtBearerSample.csproj", "{7F079E92-32D5-4257-B95B-CFFB0D49C160}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MinimalJwtBearerSample", "src\Security\Authentication\JwtBearer\samples\MinimalJwtBearerSample\MinimalJwtBearerSample.csproj", "{7F079E92-32D5-4257-B95B-CFFB0D49C160}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-user-jwts.Tests", "src\Tools\dotnet-user-jwts\test\dotnet-user-jwts.Tests.csproj", "{89896261-C5DD-4901-BCA7-7A5F718BC008}"
 EndProject
@@ -1740,7 +1740,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RateLimitingSample", "src\M
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebTransportSampleApp", "src\Servers\Kestrel\samples\WebTransportSampleApp\WebTransportSampleApp.csproj", "{F4A9CC79-5FE3-4F2B-9CC3-7F42DEDB4853}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MinimalOpenIdConnectSample", "src\Security\Authentication\OpenIdConnect\samples\MinimalOpenIdConnectSample\MinimalOpenIdConnectSample.csproj", "{07FDBE0D-B7A1-43DE-B120-F699C30E7CEF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MinimalOpenIdConnectSample", "src\Security\Authentication\OpenIdConnect\samples\MinimalOpenIdConnectSample\MinimalOpenIdConnectSample.csproj", "{07FDBE0D-B7A1-43DE-B120-F699C30E7CEF}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebTransportInteractiveSampleApp", "src\Servers\Kestrel\samples\WebTransportInteractiveSampleApp\WebTransportInteractiveSampleApp.csproj", "{BA649043-EF2B-42DC-B422-A46127BE8296}"
 EndProject
@@ -1785,6 +1785,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.BearerToken", "src\Security\Authentication\BearerToken\src\Microsoft.AspNetCore.Authentication.BearerToken.csproj", "{66FA1041-5556-43A0-9CA3-F9937F085F6E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentitySample.ApiEndpoints", "src\Identity\samples\IdentitySample.ApiEndpoints\IdentitySample.ApiEndpoints.csproj", "{37FC77EA-AC44-4D08-B002-8EFF415C424A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.ObjectPool.Tests", "src\ObjectPool\test\Microsoft.Extensions.ObjectPool.Tests.csproj", "{47519C32-E071-4F2B-BED8-7674133A1929}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -10739,6 +10741,22 @@ Global
 		{37FC77EA-AC44-4D08-B002-8EFF415C424A}.Release|x64.Build.0 = Release|Any CPU
 		{37FC77EA-AC44-4D08-B002-8EFF415C424A}.Release|x86.ActiveCfg = Release|Any CPU
 		{37FC77EA-AC44-4D08-B002-8EFF415C424A}.Release|x86.Build.0 = Release|Any CPU
+		{47519C32-E071-4F2B-BED8-7674133A1929}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{47519C32-E071-4F2B-BED8-7674133A1929}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{47519C32-E071-4F2B-BED8-7674133A1929}.Debug|arm64.ActiveCfg = Debug|Any CPU
+		{47519C32-E071-4F2B-BED8-7674133A1929}.Debug|arm64.Build.0 = Debug|Any CPU
+		{47519C32-E071-4F2B-BED8-7674133A1929}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{47519C32-E071-4F2B-BED8-7674133A1929}.Debug|x64.Build.0 = Debug|Any CPU
+		{47519C32-E071-4F2B-BED8-7674133A1929}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{47519C32-E071-4F2B-BED8-7674133A1929}.Debug|x86.Build.0 = Debug|Any CPU
+		{47519C32-E071-4F2B-BED8-7674133A1929}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{47519C32-E071-4F2B-BED8-7674133A1929}.Release|Any CPU.Build.0 = Release|Any CPU
+		{47519C32-E071-4F2B-BED8-7674133A1929}.Release|arm64.ActiveCfg = Release|Any CPU
+		{47519C32-E071-4F2B-BED8-7674133A1929}.Release|arm64.Build.0 = Release|Any CPU
+		{47519C32-E071-4F2B-BED8-7674133A1929}.Release|x64.ActiveCfg = Release|Any CPU
+		{47519C32-E071-4F2B-BED8-7674133A1929}.Release|x64.Build.0 = Release|Any CPU
+		{47519C32-E071-4F2B-BED8-7674133A1929}.Release|x86.ActiveCfg = Release|Any CPU
+		{47519C32-E071-4F2B-BED8-7674133A1929}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -11621,6 +11639,7 @@ Global
 		{56291265-B7BF-4756-92AB-FC30F09381D1} = {822D1519-77F0-484A-B9AB-F694C2CC25F1}
 		{66FA1041-5556-43A0-9CA3-F9937F085F6E} = {56291265-B7BF-4756-92AB-FC30F09381D1}
 		{37FC77EA-AC44-4D08-B002-8EFF415C424A} = {64B2A28F-6D82-4F2B-B0BB-88DE5216DD2C}
+		{47519C32-E071-4F2B-BED8-7674133A1929} = {E235DAAD-FE73-469E-B16F-F2B8E872E217}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3E8720B3-DBDD-498C-B383-2CC32A054E8F}
