@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Components.Endpoints.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 
@@ -30,6 +31,7 @@ public class RazorComponentEndpointFactoryTest
         var routeEndpoint = Assert.IsType<RouteEndpoint>(endpoint);
         Assert.Equal(0, routeEndpoint.Order);
         Assert.Equal("/", routeEndpoint.RoutePattern.RawText);
+        Assert.Contains(endpoint.Metadata, m => m is RootComponentMetadata);
         Assert.Contains(endpoint.Metadata, m => m is ComponentTypeMetadata);
         Assert.Contains(endpoint.Metadata, m => m is SuppressLinkGenerationMetadata);
         Assert.Contains(endpoint.Metadata, m => m is AuthorizeAttribute);
