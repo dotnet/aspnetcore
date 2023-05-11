@@ -324,10 +324,26 @@ internal static class ServiceDescriptorHelpers
         }
     }
 
+    // Transcoding assumes that the app is referencing Google.Api.CommonProtos and HttpRule is from that assembly.
+    // However, it's possible the app has compiled http.proto with Grpc.Tools, so the extension type won't match.
+    // This custom extension uses the HttpRule field number but has a return type of object so it always returns a value.
+    private static readonly Extension<MethodOptions, object> UntypedHttpExtension =
+        new Extension<MethodOptions, object>(AnnotationsExtensions.Http.FieldNumber, codec: null);
+
     public static bool TryGetHttpRule(MethodDescriptor methodDescriptor, [NotNullWhen(true)] out HttpRule? httpRule)
     {
         var options = methodDescriptor.GetOptions();
-        httpRule = options?.GetExtension(AnnotationsExtensions.Http);
+
+        // The untyped extension always returns a value. If the type is already the expected HttpRule then use it directly.
+        // A different message indicates a custom HttpRule was used.
+        // Convert the message to bytes and reparse it to the known HttpRule type.
+        var extensionValue = options?.GetExtension(UntypedHttpExtension);
+        httpRule = extensionValue switch
+        {
+            HttpRule rule => rule,
+            IMessage message => HttpRule.Parser.ParseFrom(message.ToByteArray()),
+            _ => null
+        };
 
         return httpRule != null;
     }
