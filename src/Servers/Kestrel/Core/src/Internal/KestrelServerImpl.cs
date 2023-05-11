@@ -304,7 +304,8 @@ internal sealed class KestrelServerImpl : IServer
                 reloadToken = Options.ConfigurationLoader.Configuration.GetReloadToken();
             }
 
-            Options.ConfigurationLoader?.Load();
+            Options.ConfigurationLoader?.LoadInternal();
+            Options.ConfigurationLoader?.ProcessEndpointsToAdd();
 
             await AddressBinder.BindAsync(Options.GetListenOptions(), AddressBindContext!, _httpsConfigurationService.UseHttpsWithDefaults, cancellationToken).ConfigureAwait(false);
             _configChangedRegistration = reloadToken?.RegisterChangeCallback(TriggerRebind, this);
