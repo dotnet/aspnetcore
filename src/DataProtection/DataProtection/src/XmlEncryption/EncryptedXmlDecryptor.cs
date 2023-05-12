@@ -46,6 +46,8 @@ public sealed class EncryptedXmlDecryptor : IInternalEncryptedXmlDecryptor, IXml
     /// <param name="encryptedElement">An encrypted XML element.</param>
     /// <returns>The decrypted form of <paramref name="encryptedElement"/>.</returns>
 #pragma warning disable SYSLIB0022 // Rijndael types are obsolete
+    // RijndaelManaged (aka AES) is used by default. If we find another important algorithm, we should add it here as well.
+    // In the meantime, a useful exception will be thrown in a trimmed app if the algorithm can't be found.
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(RijndaelManaged))]
 #pragma warning restore SYSLIB0022
     [UnconditionalSuppressMessage("AOT", "IL2026:RequiresUnreferencedCode",

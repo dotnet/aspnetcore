@@ -3,7 +3,6 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography.Xml;
 using System.Xml;
@@ -78,9 +77,9 @@ public sealed class CertificateXmlEncryptor : IInternalCertificateXmlEncryptor, 
     }
 
     [UnconditionalSuppressMessage("AOT", "IL2026:RequiresUnreferencedCode",
-        Justification = "This usage of EncryptedXml to encrypt an XElement using a X509Certificate2 does not require unreferenced code.")]
+        Justification = "This usage of EncryptedXml to encrypt an XElement using a X509Certificate2 does not use reflection.")]
     [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode",
-        Justification = "Only XSLTs require dynamic code. The usage of EncryptedXml doesn't use XSLTs.")]
+        Justification = "This usage of EncryptedXml to encrypt an XElement using a X509Certificate2 does not use XSLTs.")]
     private XElement EncryptElement(XElement plaintextElement)
     {
         // EncryptedXml works with XmlDocument, not XLinq. When we perform the conversion
