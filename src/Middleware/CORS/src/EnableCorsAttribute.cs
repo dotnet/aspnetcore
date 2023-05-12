@@ -35,6 +35,6 @@ public class EnableCorsAttribute : Attribute, IEnableCorsAttribute
     /// <inheritdoc/>>
     public override string ToString()
     {
-        return $"PolicyName: {PolicyName}";
+        return $"PolicyName: {PolicyName ?? "(null)"}";
     }
 }
