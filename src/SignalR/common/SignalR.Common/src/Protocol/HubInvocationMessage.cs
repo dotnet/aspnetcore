@@ -23,7 +23,7 @@ public abstract class HubInvocationMessage : HubMessage
     /// <summary>
     /// TODO; monotonically increasing ID that identifies this message
     /// </summary>
-    public string? SequenceId { get; }
+    public long? SequenceId { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HubInvocationMessage"/> class.
@@ -39,7 +39,7 @@ public abstract class HubInvocationMessage : HubMessage
     /// </summary>
     /// <param name="invocationId"></param>
     /// <param name="sequenceId"></param>
-    protected HubInvocationMessage(string? invocationId, string? sequenceId)
+    protected HubInvocationMessage(string? invocationId, long? sequenceId)
         : this(invocationId)
     {
         SequenceId = sequenceId;

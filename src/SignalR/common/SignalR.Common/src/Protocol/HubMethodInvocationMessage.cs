@@ -36,7 +36,7 @@ public abstract class HubMethodInvocationMessage : HubInvocationMessage
     /// <param name="arguments"></param>
     /// <param name="streamIds"></param>
     /// <exception cref="ArgumentNullException"></exception>
-    protected HubMethodInvocationMessage(string? invocationId, string? sequenceId, string target, object?[] arguments, string[]? streamIds)
+    protected HubMethodInvocationMessage(string? invocationId, long? sequenceId, string target, object?[] arguments, string[]? streamIds)
         : base(invocationId, sequenceId)
     {
         if (string.IsNullOrEmpty(target))
@@ -116,7 +116,7 @@ public class InvocationMessage : HubMethodInvocationMessage
     {
     }
 
-    public InvocationMessage(string? invocationId, string? sequenceId, string target, object?[] arguments, string[]? streamIds)
+    public InvocationMessage(string? invocationId, long? sequenceId, string target, object?[] arguments, string[]? streamIds)
         : base(invocationId, sequenceId, target, arguments, streamIds)
     {
     }
@@ -184,7 +184,7 @@ public class StreamInvocationMessage : HubMethodInvocationMessage
     /// <param name="target"></param>
     /// <param name="arguments"></param>
     /// <param name="streamIds"></param>
-    public StreamInvocationMessage(string invocationId, string? sequenceId, string target, object?[] arguments, string[]? streamIds)
+    public StreamInvocationMessage(string invocationId, long? sequenceId, string target, object?[] arguments, string[]? streamIds)
         : base(invocationId, sequenceId, target, arguments, streamIds)
     {
     }
