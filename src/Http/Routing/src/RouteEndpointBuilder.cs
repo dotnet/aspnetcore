@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Http;
@@ -112,6 +113,7 @@ public sealed class RouteEndpointBuilder : EndpointBuilder
         return new EndpointMetadataCollection(metadata);
     }
 
+    [DebuggerDisplay("{ToString(),nq}")]
     private sealed class RouteDiagnosticsMetadata : IRouteDiagnosticsMetadata
     {
         public string Route { get; }
@@ -119,6 +121,11 @@ public sealed class RouteEndpointBuilder : EndpointBuilder
         public RouteDiagnosticsMetadata(string route)
         {
             Route = route;
+        }
+
+        public override string ToString()
+        {
+            return $"Route: {Route}";
         }
     }
 }

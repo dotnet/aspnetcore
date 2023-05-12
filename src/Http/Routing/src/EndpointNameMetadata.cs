@@ -33,6 +33,6 @@ public class EndpointNameMetadata : IEndpointNameMetadata
     /// <inheritdoc/>
     public override string ToString()
     {
-        return EndpointName;
+        return $"EndpointName: {EndpointName}";
     }
 }
