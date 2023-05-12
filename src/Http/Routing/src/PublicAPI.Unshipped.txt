@@ -2,6 +2,7 @@
 Microsoft.AspNetCore.Routing.RouteHandlerServices
 override Microsoft.AspNetCore.Routing.DataTokensMetadata.ToString() -> string!
 override Microsoft.AspNetCore.Routing.EndpointNameMetadata.ToString() -> string!
+override Microsoft.AspNetCore.Routing.ExcludeFromDescriptionAttribute.ToString() -> string!
 override Microsoft.AspNetCore.Routing.HostAttribute.ToString() -> string!
 override Microsoft.AspNetCore.Routing.HttpMethodMetadata.ToString() -> string!
 override Microsoft.AspNetCore.Routing.RouteNameMetadata.ToString() -> string!
