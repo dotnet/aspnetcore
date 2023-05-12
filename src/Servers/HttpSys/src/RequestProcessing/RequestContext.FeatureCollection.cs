@@ -32,6 +32,7 @@ internal partial class RequestContext :
     IHttpMaxRequestBodySizeFeature,
     IHttpBodyControlFeature,
     IHttpSysRequestInfoFeature,
+    IHttpSysRequestTimingFeature,
     IHttpResponseTrailersFeature,
     IHttpResetFeature,
     IHttpSysRequestDelegationFeature,
@@ -588,6 +589,8 @@ internal partial class RequestContext :
 
     IReadOnlyDictionary<int, ReadOnlyMemory<byte>> IHttpSysRequestInfoFeature.RequestInfo => Request.RequestInfo;
 
+    IEnumerable<long> IHttpSysRequestTimingFeature.Timestamps => Request.RequestTimestamps;
+
     IHeaderDictionary IHttpResponseTrailersFeature.Trailers
     {
         get => _responseTrailers ??= Response.Trailers;
@@ -597,6 +600,34 @@ internal partial class RequestContext :
     public bool CanDelegate => Request.CanDelegate;
 
     CancellationToken IConnectionLifetimeNotificationFeature.ConnectionClosedRequested { get; set; }
+
+    bool IHttpSysRequestTimingFeature.TryGetTimestamp(HttpSysRequestTimingType timestampType, out long timestamp)
+    {
+        int index = (int)timestampType;
+        if (index < Request.RequestTimestamps.Count && Request.RequestTimestamps[index] > 0)
+        {
+            timestamp = Request.RequestTimestamps[index];
+            return true;
+        }
+
+        timestamp = default;
+        return false;
+    }
+
+    bool IHttpSysRequestTimingFeature.TryGetElapsedTime(HttpSysRequestTimingType startingTimestampType, HttpSysRequestTimingType endingTimestampType, out TimeSpan elapsed)
+    {
+        var timingFeature = (IHttpSysRequestTimingFeature)this;
+        if (timingFeature.TryGetTimestamp(startingTimestampType, out long startTimestamp) && timingFeature.TryGetTimestamp(endingTimestampType, out long endTimestamp))
+        {
+            // TODO: Switch to using TimeProvider which is in preview 4
+            // elapsed = TimeProvider.System.GetElapsedTime(startTimestamp, endTimestamp);
+            elapsed = new TimeSpan((long)((endTimestamp - startTimestamp) * ((double)TimeSpan.TicksPerSecond / Stopwatch.Frequency)));
+            return true;
+        }
+
+        elapsed = default;
+        return false;
+    }
 
     internal async Task OnResponseStart()
     {

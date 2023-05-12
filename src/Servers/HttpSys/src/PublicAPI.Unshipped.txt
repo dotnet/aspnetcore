@@ -1,1 +1,6 @@
 #nullable enable
+Microsoft.AspNetCore.Server.HttpSys.HttpSysRequestTimingType
+Microsoft.AspNetCore.Server.HttpSys.IHttpSysRequestTimingFeature
+Microsoft.AspNetCore.Server.HttpSys.IHttpSysRequestTimingFeature.Timestamps.get -> System.Collections.Generic.IEnumerable<long>!
+Microsoft.AspNetCore.Server.HttpSys.IHttpSysRequestTimingFeature.TryGetElapsedTime(Microsoft.AspNetCore.Server.HttpSys.HttpSysRequestTimingType startingTimestampType, Microsoft.AspNetCore.Server.HttpSys.HttpSysRequestTimingType endingTimestampType, out System.TimeSpan elapsed) -> bool
+Microsoft.AspNetCore.Server.HttpSys.IHttpSysRequestTimingFeature.TryGetTimestamp(Microsoft.AspNetCore.Server.HttpSys.HttpSysRequestTimingType timestampType, out long timestamp) -> bool
