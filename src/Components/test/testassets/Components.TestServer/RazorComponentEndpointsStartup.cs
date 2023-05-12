@@ -6,10 +6,12 @@ using Components.TestServer.RazorComponents;
 using Components.TestServer.RazorComponents.Pages;
 using Components.TestServer.RazorComponents.Pages.Forms;
 using Components.TestServer.Services;
+using Microsoft.AspNetCore.Components;
 
 namespace TestServer;
 
-public class RazorComponentEndpointsStartup
+public class RazorComponentEndpointsStartup<TRootComponent>
+    where TRootComponent : IRazorComponentApplication<TRootComponent>
 {
     public RazorComponentEndpointsStartup(IConfiguration configuration)
     {
@@ -43,7 +45,7 @@ public class RazorComponentEndpointsStartup
             app.UseRouting();
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapRazorComponents<RazorComponentsRoot>();
+                endpoints.MapRazorComponents<TRootComponent>();
 
                 StreamingRendering.MapEndpoints(endpoints);
                 StreamingRenderingForm.MapEndpoints(endpoints);

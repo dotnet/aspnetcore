@@ -5,6 +5,9 @@ Microsoft.AspNetCore.Builder.RazorComponentEndpointConventionBuilder
 Microsoft.AspNetCore.Builder.RazorComponentEndpointConventionBuilder.Add(System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder!>! convention) -> void
 Microsoft.AspNetCore.Builder.RazorComponentEndpointConventionBuilder.Finally(System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder!>! finallyConvention) -> void
 Microsoft.AspNetCore.Builder.RazorComponentsEndpointRouteBuilderExtensions
+Microsoft.AspNetCore.Builder.RootComponentMetadata
+Microsoft.AspNetCore.Builder.RootComponentMetadata.RootComponentMetadata(System.Type! rootComponentType) -> void
+Microsoft.AspNetCore.Builder.RootComponentMetadata.Type.get -> System.Type!
 Microsoft.AspNetCore.Components.ComponentApplicationBuilder
 Microsoft.AspNetCore.Components.ComponentApplicationBuilder.Build() -> Microsoft.AspNetCore.Components.RazorComponentApplication!
 Microsoft.AspNetCore.Components.ComponentApplicationBuilder.ComponentApplicationBuilder() -> void

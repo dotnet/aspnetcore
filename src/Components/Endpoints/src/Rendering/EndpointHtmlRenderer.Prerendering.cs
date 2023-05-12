@@ -67,7 +67,7 @@ internal partial class EndpointHtmlRenderer
 
     internal async ValueTask<PrerenderedComponentHtmlContent> RenderEndpointComponent(
         HttpContext httpContext,
-        Type componentType,
+        Type rootComponentType,
         ParameterView parameters,
         bool waitForQuiescence)
     {
@@ -75,7 +75,7 @@ internal partial class EndpointHtmlRenderer
 
         try
         {
-            var component = BeginRenderingComponent(componentType, parameters);
+            var component = BeginRenderingComponent(rootComponentType, parameters);
             var result = new PrerenderedComponentHtmlContent(Dispatcher, component, null, null);
 
             await WaitForResultReady(waitForQuiescence, result);

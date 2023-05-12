@@ -1,47 +1,15 @@
 ﻿@inherits LayoutComponentBase
-@implements IRazorComponentApplication<MainLayout>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <base href="/" />
-    <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
-    <link href="css/site.css" rel="stylesheet" />
-    <link href="BlazorUnitedApp.styles.css" rel="stylesheet" />
-    <link rel="icon" type="image/png" href="favicon.png"/>
-    <HeadOutlet></HeadOutlet>
-</head>
-<body>
-    <PageTitle>BlazorUnitedApp</PageTitle>
 
-    <div class="page">
-        <div class="sidebar">
-            <NavMenu />
+<div class="page">
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+    <main>
+        <div class="top-row px-4">
+            <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
         </div>
-
-        <main>
-            <div class="top-row px-4">
-                <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
-            </div>
-
-            <article class="content px-4">
-                @Body
-            </article>
-        </main>
-    </div>
-
-    <div id="blazor-error-ui">
-        <environment include="Staging,Production">
-            An error has occurred. This application may no longer respond until reloaded.
-        </environment>
-        <environment include="Development">
-            An unhandled exception has occurred. See browser dev tools for details.
-        </environment>
-        <a href="" class="reload">Reload</a>
-        <a class="dismiss">🗙</a>
-    </div>
-
-    <script src="_framework/blazor.web.js" suppress-error="BL9992"></script>
-</body>
-</html>
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+</div>

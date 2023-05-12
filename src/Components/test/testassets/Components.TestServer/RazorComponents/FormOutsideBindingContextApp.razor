@@ -1,4 +1,6 @@
-﻿@inherits LayoutComponentBase
+﻿@using Components.TestServer.RazorComponents.Pages.Forms
+@implements IRazorComponentApplication<FormOutsideBindingContextApp>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,8 +9,8 @@
     <HeadOutlet />
 </head>
 <body>
-    <PageTitle>Razor Components Endpoints App</PageTitle>
-    @Body
+    <h1 id="ready">Form test cases</h1>
+    <FormOutsideBindingContextNoOps />
     <script src="_framework/blazor.web.js" suppress-error="BL9992"></script>
 </body>
 </html>
