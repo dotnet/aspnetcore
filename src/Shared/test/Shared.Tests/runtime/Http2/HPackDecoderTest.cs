@@ -843,7 +843,7 @@ namespace System.Net.Http.Unit.Tests.HPack
 
             if (expectDynamicTableEntry)
             {
-                Assert.Single(dynamicTable);
+                Assert.Equal(1, dynamicTable.Count);
                 Assert.Equal(expectedHeaderName, Encoding.ASCII.GetString(dynamicTable[0].Name));
                 Assert.Equal(expectedHeaderValue, Encoding.ASCII.GetString(dynamicTable[0].Value));
                 Assert.Equal(expectedHeaderName.Length + expectedHeaderValue.Length + 32, dynamicTable.Size);
