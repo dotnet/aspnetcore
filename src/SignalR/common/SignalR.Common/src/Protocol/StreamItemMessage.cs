@@ -29,7 +29,7 @@ public class StreamItemMessage : HubInvocationMessage
     /// <param name="invocationId"></param>
     /// <param name="sequenceId"></param>
     /// <param name="item"></param>
-    public StreamItemMessage(string invocationId, string? sequenceId, object? item) : base(invocationId, sequenceId)
+    public StreamItemMessage(string invocationId, long? sequenceId, object? item) : base(invocationId, sequenceId)
     {
         Item = item;
     }

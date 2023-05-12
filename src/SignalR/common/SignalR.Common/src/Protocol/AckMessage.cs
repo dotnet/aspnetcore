@@ -18,7 +18,7 @@ public sealed class AckMessage : HubMessage
     /// 
     /// </summary>
     /// <param name="sequenceId"></param>
-    public AckMessage(string sequenceId)
+    public AckMessage(long sequenceId)
     {
         SequenceId = sequenceId;
     }
@@ -26,5 +26,5 @@ public sealed class AckMessage : HubMessage
     /// <summary>
     /// 
     /// </summary>
-    public string SequenceId { get; }
+    public long SequenceId { get; }
 }

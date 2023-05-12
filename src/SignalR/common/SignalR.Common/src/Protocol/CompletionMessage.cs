@@ -55,7 +55,7 @@ public class CompletionMessage : HubInvocationMessage
     /// <param name="result"></param>
     /// <param name="hasResult"></param>
     /// <exception cref="ArgumentException"></exception>
-    public CompletionMessage(string invocationId, string? sequenceId, string? error, object? result, bool hasResult)
+    public CompletionMessage(string invocationId, long? sequenceId, string? error, object? result, bool hasResult)
         : base(invocationId, sequenceId)
     {
         if (error is not null && hasResult)
@@ -104,4 +104,25 @@ public class CompletionMessage : HubInvocationMessage
     /// <returns>The constructed <see cref="CompletionMessage"/>.</returns>
     public static CompletionMessage Empty(string invocationId)
         => new CompletionMessage(invocationId, error: null, result: null, hasResult: false);
+
+    public static CompletionMessage WithError(string invocationId, long? sequenceId, string? error)
+        => new CompletionMessage(invocationId, sequenceId, error, result: null, hasResult: false);
+
+    /// <summary>
+    /// Constructs a <see cref="CompletionMessage"/> with a result.
+    /// </summary>
+    /// <param name="invocationId">The ID of the invocation that is being completed.</param>
+    /// <param name="payload">The result from the invocation.</param>
+    /// <returns>The constructed <see cref="CompletionMessage"/>.</returns>
+    public static CompletionMessage WithResult(string invocationId, long? sequenceId, object? payload)
+        => new CompletionMessage(invocationId, sequenceId, error: null, result: payload, hasResult: true);
+
+    /// <summary>
+    /// Constructs a <see cref="CompletionMessage"/> without an error or result.
+    /// This means the invocation was successful but there is no return value.
+    /// </summary>
+    /// <param name="invocationId">The ID of the invocation that is being completed.</param>
+    /// <returns>The constructed <see cref="CompletionMessage"/>.</returns>
+    public static CompletionMessage Empty(string invocationId, long? sequenceId)
+        => new CompletionMessage(invocationId, sequenceId, error: null, result: null, hasResult: false);
 }

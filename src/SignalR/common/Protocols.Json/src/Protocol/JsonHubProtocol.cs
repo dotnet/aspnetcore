@@ -141,7 +141,7 @@ public sealed class JsonHubProtocol : IHubProtocol
             Dictionary<string, string>? headers = null;
             var completed = false;
             var allowReconnect = false;
-            string? sequenceId = null;
+            long? sequenceId = null;
 
             var reader = new Utf8JsonReader(input, isFinalBlock: true, state: default);
 
@@ -330,7 +330,7 @@ public sealed class JsonHubProtocol : IHubProtocol
                         }
                         else if (reader.ValueTextEquals(SequenceIdPropertyNameBytes.EncodedUtf8Bytes))
                         {
-                            sequenceId = reader.ReadAsString(SequenceIdPropertyName);
+                            sequenceId = reader.ReadAsInt64(SequenceIdPropertyName);
                         }
                         else
                         {
@@ -671,7 +671,7 @@ public sealed class JsonHubProtocol : IHubProtocol
 
     private static void WriteAckMessage(AckMessage message, Utf8JsonWriter writer)
     {
-        writer.WriteString(SequenceIdPropertyName, message.SequenceId);
+        writer.WriteNumber(SequenceIdPropertyName, message.SequenceId);
     }
 
     private void WriteArguments(object?[] arguments, Utf8JsonWriter writer)
@@ -716,9 +716,9 @@ public sealed class JsonHubProtocol : IHubProtocol
 
     private static void WriteSequenceId(HubInvocationMessage message, Utf8JsonWriter writer)
     {
-        if (!string.IsNullOrEmpty(message.SequenceId))
+        if (message.SequenceId is not null)
         {
-            writer.WriteString(SequenceIdPropertyNameBytes, message.SequenceId);
+            writer.WriteNumber(SequenceIdPropertyNameBytes, message.SequenceId.Value);
         }
     }
 
@@ -727,7 +727,7 @@ public sealed class JsonHubProtocol : IHubProtocol
         writer.WriteNumber(TypePropertyNameBytes, type);
     }
 
-    private static HubMessage BindCancelInvocationMessage(string? invocationId, string? sequenceId)
+    private static HubMessage BindCancelInvocationMessage(string? invocationId, long? sequenceId)
     {
         if (string.IsNullOrEmpty(invocationId))
         {
@@ -737,7 +737,7 @@ public sealed class JsonHubProtocol : IHubProtocol
         return new CancelInvocationMessage(invocationId, sequenceId);
     }
 
-    private static HubMessage BindCompletionMessage(string invocationId, string? sequenceId, string? error, object? result, bool hasResult)
+    private static HubMessage BindCompletionMessage(string invocationId, long? sequenceId, string? error, object? result, bool hasResult)
     {
         if (string.IsNullOrEmpty(invocationId))
         {
@@ -757,7 +757,7 @@ public sealed class JsonHubProtocol : IHubProtocol
         return new CompletionMessage(invocationId, sequenceId, error, result: null, hasResult: false);
     }
 
-    private static HubMessage BindStreamItemMessage(string invocationId, string? sequenceId, object? item, bool hasItem)
+    private static HubMessage BindStreamItemMessage(string invocationId, long? sequenceId, object? item, bool hasItem)
     {
         if (string.IsNullOrEmpty(invocationId))
         {
@@ -772,7 +772,7 @@ public sealed class JsonHubProtocol : IHubProtocol
         return new StreamItemMessage(invocationId, sequenceId, item);
     }
 
-    private static HubMessage BindStreamInvocationMessage(string? invocationId, string? sequenceId, string target,
+    private static HubMessage BindStreamInvocationMessage(string? invocationId, long? sequenceId, string target,
         object?[]? arguments, bool hasArguments, string[]? streamIds)
     {
         if (string.IsNullOrEmpty(invocationId))
@@ -795,7 +795,7 @@ public sealed class JsonHubProtocol : IHubProtocol
         return new StreamInvocationMessage(invocationId, sequenceId, target, arguments, streamIds);
     }
 
-    private static HubMessage BindInvocationMessage(string? invocationId, string? sequenceId, string target,
+    private static HubMessage BindInvocationMessage(string? invocationId, long? sequenceId, string target,
         object?[]? arguments, bool hasArguments, string[]? streamIds)
     {
         if (string.IsNullOrEmpty(target))
@@ -886,14 +886,14 @@ public sealed class JsonHubProtocol : IHubProtocol
         return new CloseMessage(error, allowReconnect);
     }
 
-    private static AckMessage BindAckMessage(string? sequenceId)
+    private static AckMessage BindAckMessage(long? sequenceId)
     {
-        if (string.IsNullOrEmpty(sequenceId))
+        if (sequenceId is null)
         {
             throw new InvalidDataException("Missing 'sequenceId' in Ack message.");
         }
 
-        return new AckMessage(sequenceId);
+        return new AckMessage(sequenceId.Value);
     }
 
     private static HubMessage ApplyHeaders(HubMessage message, Dictionary<string, string>? headers)
