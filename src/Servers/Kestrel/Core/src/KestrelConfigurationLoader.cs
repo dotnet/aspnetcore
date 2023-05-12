@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Server.Kestrel;
 
@@ -19,6 +21,9 @@ public class KestrelConfigurationLoader
     private readonly IHttpsConfigurationService _httpsConfigurationService;
 
     private bool _loaded;
+    private bool _endpointsToAddProcessed;
+
+    private IChangeToken? _reloadToken;
 
     internal KestrelConfigurationLoader(
         KestrelServerOptions options,
@@ -229,19 +234,51 @@ public class KestrelConfigurationLoader
         }
     }
 
+    // Note: This method is obsolete, but we have to keep it around to avoid breaking the public API.
+    // Internally, we should always use <see cref="LoadInternal"/>.
     /// <summary>
-    /// Loads the configuration.
+    /// Loads the configuration.  Does nothing if it has previously been invoked (including implicitly).
     /// </summary>
     public void Load()
     {
-        if (_loaded)
+        if (!_loaded)
         {
-            // The loader has already been run.
+            LoadInternal();
+        }
+
+        // Has its own logic for skipping subsequent invocations
+        ProcessEndpointsToAdd();
+    }
+
+    /// <remarks>
+    /// Always prefer this to <see cref="Load"/> since it can be called repeatedly and no-ops if
+    /// there's a change token indicating nothing has changed.
+    /// </remarks>
+    internal void LoadInternal()
+    {
+        if (!_loaded || ReloadOnChange)
+        {
+            Debug.Assert(!!_loaded || _reloadToken is null, "Shouldn't have a reload token before first load");
+            Debug.Assert(!!ReloadOnChange || _reloadToken is null, "Shouldn't have a reload token unless reload-on-change is set");
+
+            _loaded = true;
+
+            if (_reloadToken is null || _reloadToken.HasChanged)
+            {
+                // Will update _reloadToken
+                _ = Reload();
+            }
+        }
+    }
+
+    internal void ProcessEndpointsToAdd()
+    {
+        if (_endpointsToAddProcessed)
+        {
             return;
         }
-        _loaded = true;
-
-        Reload();
+        // Set this *before* invoking delegates, in case one throws
+        _endpointsToAddProcessed = true;
 
         foreach (var action in EndpointsToAdd)
         {
@@ -253,6 +290,11 @@ public class KestrelConfigurationLoader
     // Any endpoints that were removed from the last time endpoints were loaded are returned.
     internal (List<ListenOptions>, List<ListenOptions>) Reload()
     {
+        if (ReloadOnChange)
+        {
+            _reloadToken = Configuration.GetReloadToken();
+        }
+
         var endpointsToStop = Options.ConfigurationBackedListenOptions.ToList();
         var endpointsToStart = new List<ListenOptions>();
         var endpointsToReuse = new List<ListenOptions>();
