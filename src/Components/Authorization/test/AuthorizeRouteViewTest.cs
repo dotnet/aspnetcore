@@ -35,7 +35,7 @@ public class AuthorizeRouteViewTest
 
         var services = serviceCollection.BuildServiceProvider();
         _renderer = new TestRenderer(services);
-        var componentFactory = new ComponentFactory(new DefaultComponentActivator(), new RenderModeResolver());
+        var componentFactory = new ComponentFactory(new DefaultComponentActivator(), _renderer);
         _authorizeRouteViewComponent = (AuthorizeRouteView)componentFactory.InstantiateComponent(services, typeof(AuthorizeRouteView), null);
         _authorizeRouteViewComponentId = _renderer.AssignRootComponentId(_authorizeRouteViewComponent);
     }

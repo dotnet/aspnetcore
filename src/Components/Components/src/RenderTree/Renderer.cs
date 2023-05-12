@@ -86,7 +86,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         // has always taken ILoggerFactory so to avoid the per-instance string allocation of the logger name we just pass the
         // logger name in here as a string literal.
         _logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Components.RenderTree.Renderer");
-        _componentFactory = new ComponentFactory(componentActivator, RenderModeResolver);
+        _componentFactory = new ComponentFactory(componentActivator, this);
     }
 
     internal HotReloadManager HotReloadManager { get; set; } = HotReloadManager.Default;
@@ -107,11 +107,6 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     /// if it exists.
     /// </summary>
     protected internal ElementReferenceContext? ElementReferenceContext { get; protected set; }
-
-    /// <summary>
-    /// Gets the <see cref="RenderModeResolver"/> associated with this <see cref="Renderer"/>.
-    /// </summary>
-    protected virtual RenderModeResolver RenderModeResolver { get; } = new();
 
     /// <summary>
     /// Gets a value that determines if the <see cref="Renderer"/> is triggering a render in response to a (metadata update) hot-reload change.
@@ -167,16 +162,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     /// <param name="componentType">The type of the component to instantiate.</param>
     /// <returns>The component instance.</returns>
     protected IComponent InstantiateComponent([DynamicallyAccessedMembers(Component)] Type componentType)
-        => InstantiateComponent(componentType, null);
-
-    /// <summary>
-    /// Constructs a new component of the specified type.
-    /// </summary>
-    /// <param name="componentType">The type of the component to instantiate.</param>
-    /// <param name="renderMode">The <see cref="IComponentRenderMode"/>.</param>
-    /// <returns>The component instance.</returns>
-    protected IComponent InstantiateComponent([DynamicallyAccessedMembers(Component)] Type componentType, IComponentRenderMode? renderMode)
-        => _componentFactory.InstantiateComponent(_serviceProvider, componentType, renderMode);
+        => _componentFactory.InstantiateComponent(_serviceProvider, componentType, null);
 
     /// <summary>
     /// Associates the <see cref="IComponent"/> with the <see cref="Renderer"/>, assigning
@@ -500,40 +486,12 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             throw new ArgumentException($"The frame already has a non-null component instance", nameof(frameIndex));
         }
 
-        var callerSpecifiedRenderMode = frame.ComponentFrameFlags.HasFlag(ComponentFrameFlags.HasCallerSpecifiedRenderMode)
-            ? FindCallerSpecifiedRenderMode(frames, frameIndex)
-            : null;
-
-        var newComponent = _componentFactory.InstantiateComponent(_serviceProvider, frame.ComponentTypeField, callerSpecifiedRenderMode);
+        var newComponent = _componentFactory.InstantiateComponent(_serviceProvider, frame.ComponentTypeField, parentComponentId);
         var newComponentState = AttachAndInitComponent(newComponent, parentComponentId);
         frame.ComponentStateField = newComponentState;
         frame.ComponentIdField = newComponentState.ComponentId;
 
         return newComponentState;
-    }
-
-    private static IComponentRenderMode? FindCallerSpecifiedRenderMode(RenderTreeFrame[] frames, int componentFrameIndex)
-    {
-        // ComponentRenderMode frames are immediate children of Component frames. So, they have to appear after any parameter
-        // attributes (since attributes must always immediately follow Component frames), but before anything that would
-        // represent a different child node, such as text/element or another component. It's OK to do this linear scan
-        // because we consider it uncommon to specify a rendermode, and none of this happens if you don't.
-        var endIndex = componentFrameIndex + frames[componentFrameIndex].ComponentSubtreeLengthField;
-        for (var index = componentFrameIndex + 1; index <= endIndex; index++)
-        {
-            ref var frame = ref frames[index];
-            switch (frame.FrameType)
-            {
-                case RenderTreeFrameType.Attribute:
-                    continue;
-                case RenderTreeFrameType.ComponentRenderMode:
-                    return frame.ComponentRenderMode;
-                default:
-                    break;
-            }
-        }
-
-        return null;
     }
 
     internal void AddToPendingTasksWithErrorHandling(Task task, ComponentState? owningComponentState)
@@ -1200,6 +1158,27 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
                 HandleException(exceptions[0]);
             }
         }
+    }
+
+    /// <summary>
+    /// Determines how to handle an <see cref="IComponentRenderMode"/> when obtaining a component instance.
+    /// This is only called for components that have specified a render mode. Subclasses may override this
+    /// method to return a component of a different type, or throw, depending on whether the renderer
+    /// supports the render mode and how it implements that support.
+    /// </summary>
+    /// <param name="componentType">The type of component that was requested.</param>
+    /// <param name="parentComponentId">The parent component ID, or null if it is a root component.</param>
+    /// <param name="componentActivator">An <see cref="IComponentActivator"/> that should be used when instantiating component objects.</param>
+    /// <param name="componentTypeRenderMode">The <see cref="IComponentRenderMode"/> declared on <paramref name="componentType"/>.</param>
+    /// <returns>An <see cref="IComponent"/> instance.</returns>
+    protected internal virtual IComponent ResolveComponentForRenderMode(
+        Type componentType,
+        int? parentComponentId,
+        IComponentActivator componentActivator,
+        IComponentRenderMode componentTypeRenderMode)
+    {
+        // Nothing is supported by default. Subclasses must override this to opt into supporting specific render modes.
+        throw new NotSupportedException($"Cannot supply a component of type '{componentType}' because the current platform does not support the render mode '{componentTypeRenderMode}'.");
     }
 
     /// <summary>

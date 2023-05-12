@@ -5,7 +5,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.AspNetCore.Components.Reflection;
-using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.RenderTree;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components;
@@ -18,12 +18,12 @@ internal sealed class ComponentFactory
     private static readonly ConcurrentDictionary<Type, ComponentTypeInfoCacheEntry> _cachedComponentTypeInfo = new();
 
     private readonly IComponentActivator _componentActivator;
-    private readonly RenderModeResolver _renderModeResolver;
+    private readonly Renderer _renderer;
 
-    public ComponentFactory(IComponentActivator componentActivator, RenderModeResolver renderModeResolver)
+    public ComponentFactory(IComponentActivator componentActivator, Renderer renderer)
     {
         _componentActivator = componentActivator ?? throw new ArgumentNullException(nameof(componentActivator));
-        _renderModeResolver = renderModeResolver ?? throw new ArgumentNullException(nameof(renderModeResolver));
+        _renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
     }
 
     public static void ClearCache() => _cachedComponentTypeInfo.Clear();
@@ -35,23 +35,26 @@ internal sealed class ComponentFactory
         // and it doesn't matter if we build a cache entry more than once.
         if (!_cachedComponentTypeInfo.TryGetValue(componentType, out var cacheEntry))
         {
-            cacheEntry = new ComponentTypeInfoCacheEntry(GetRenderModeFromComponentType(componentType), CreatePropertyInjector(componentType));
+            var componentTypeRenderMode = componentType.GetCustomAttribute<RenderModeAttribute>()?.Mode;
+            cacheEntry = new ComponentTypeInfoCacheEntry(
+                componentTypeRenderMode,
+                CreatePropertyInjector(componentType));
             _cachedComponentTypeInfo.TryAdd(componentType, cacheEntry);
         }
 
         return cacheEntry;
     }
 
-    public IComponent InstantiateComponent(IServiceProvider serviceProvider, [DynamicallyAccessedMembers(Component)] Type componentType, IComponentRenderMode? callerSpecifiedRenderMode)
+    public IComponent InstantiateComponent(IServiceProvider serviceProvider, [DynamicallyAccessedMembers(Component)] Type componentType, int? parentComponentId)
     {
         var componentTypeInfo = GetComponentTypeInfo(componentType);
-        var component = callerSpecifiedRenderMode is null && componentTypeInfo.RenderMode is null
+        var component = componentTypeInfo.ComponentTypeRenderMode is null
             ? _componentActivator.CreateInstance(componentType)
-            : _renderModeResolver.ResolveComponent(componentType, _componentActivator, componentTypeInfo.RenderMode, callerSpecifiedRenderMode);
+            : _renderer.ResolveComponentForRenderMode(componentType, parentComponentId, _componentActivator, componentTypeInfo.ComponentTypeRenderMode);
 
         if (component is null)
         {
-            // The default activator will never do this, but an externally-supplied one might
+            // The default activator/resolver will never do this, but an externally-supplied one might
             throw new InvalidOperationException($"The component activator returned a null value for a component of type {componentType.FullName}.");
         }
 
@@ -74,9 +77,6 @@ internal sealed class ComponentFactory
         var componentTypeInfo = GetComponentTypeInfo(instance.GetType());
         componentTypeInfo.PerformPropertyInjection(serviceProvider, instance);
     }
-
-    private static IComponentRenderMode? GetRenderModeFromComponentType(Type componentType)
-        => componentType.GetCustomAttribute<RenderModeAttribute>()?.Mode;
 
     private static Action<IServiceProvider, IComponent> CreatePropertyInjector([DynamicallyAccessedMembers(Component)] Type type)
     {
@@ -121,6 +121,6 @@ internal sealed class ComponentFactory
 
     // Tracks information about a specific component type that ComponentFactory uses
     private record class ComponentTypeInfoCacheEntry(
-        IComponentRenderMode? RenderMode,
+        IComponentRenderMode? ComponentTypeRenderMode,
         Action<IServiceProvider, IComponent> PerformPropertyInjection);
 }

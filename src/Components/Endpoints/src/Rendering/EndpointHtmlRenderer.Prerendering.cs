@@ -12,6 +12,23 @@ internal partial class EndpointHtmlRenderer
 {
     private static readonly object ComponentSequenceKey = new object();
 
+    protected override IComponent ResolveComponentForRenderMode(Type componentType, int? parentComponentId, IComponentActivator componentActivator, IComponentRenderMode componentTypeRenderMode)
+    {
+        var parentComponentIsModeBoundary = parentComponentId.HasValue
+            && GetComponentState(parentComponentId.Value).Component is SSRRenderModeBoundary;
+        if (parentComponentIsModeBoundary)
+        {
+            // Any immediate child of a SSRRenderModeBoundary is prerendered content, so don't wrap it in a further
+            // layer of SSRRenderModeBoundary (that would lead to infinite recursion). Just render it directly.
+            return componentActivator.CreateInstance(componentType);
+        }
+        else
+        {
+            // This component has a rendermode, so introduce a new rendermode boundary here
+            return new SSRRenderModeBoundary(componentType, componentTypeRenderMode);
+        }
+    }
+
     public ValueTask<IHtmlAsyncContent> PrerenderComponentAsync(
         HttpContext httpContext,
         Type componentType,
@@ -44,8 +61,11 @@ internal partial class EndpointHtmlRenderer
 
         try
         {
-            var htmlComponent = await Dispatcher.InvokeAsync(() => BeginRenderingComponent(componentType, parameters, prerenderMode));
-            var result = new PrerenderedComponentHtmlContent(Dispatcher, htmlComponent);
+            var rootComponent = prerenderMode is null
+                ? InstantiateComponent(componentType)
+                : new SSRRenderModeBoundary(componentType, prerenderMode);
+            var htmlRootComponent = await Dispatcher.InvokeAsync(() => BeginRenderingComponent(rootComponent, parameters));
+            var result = new PrerenderedComponentHtmlContent(Dispatcher, htmlRootComponent);
 
             await WaitForResultReady(waitForQuiescence, result);
 
@@ -67,7 +87,7 @@ internal partial class EndpointHtmlRenderer
 
         try
         {
-            var component = BeginRenderingComponent(componentType, parameters, null);
+            var component = BeginRenderingComponent(componentType, parameters);
             var result = new PrerenderedComponentHtmlContent(Dispatcher, component);
 
             await WaitForResultReady(waitForQuiescence, result);

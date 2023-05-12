@@ -13,7 +13,8 @@ Microsoft.AspNetCore.Components.Forms.EditForm.BindingContext.set -> void
 Microsoft.AspNetCore.Components.Forms.EditForm.FormHandlerName.get -> string?
 Microsoft.AspNetCore.Components.Forms.EditForm.FormHandlerName.set -> void
 Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer
-Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.BeginRenderingComponent(System.Type! componentType, Microsoft.AspNetCore.Components.ParameterView initialParameters, Microsoft.AspNetCore.Components.IComponentRenderMode? renderMode) -> Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent
+Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.BeginRenderingComponent(Microsoft.AspNetCore.Components.IComponent! component, Microsoft.AspNetCore.Components.ParameterView initialParameters) -> Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent
+Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.BeginRenderingComponent(System.Type! componentType, Microsoft.AspNetCore.Components.ParameterView initialParameters) -> Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent
 Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.StaticHtmlRenderer(System.IServiceProvider! serviceProvider, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
 Microsoft.AspNetCore.Components.Web.AutoRenderMode
 Microsoft.AspNetCore.Components.Web.AutoRenderMode.AutoRenderMode() -> void

@@ -912,7 +912,7 @@ public class EndpointHtmlRendererTest
             ParameterView.FromDictionary(new Dictionary<string, object>
             {
                 [nameof(MultiAsyncRenderNamedEventHandlerComponent.Continue)] = continueTaskCompletion.Task
-            }), null));
+            })));
 
         // Assert
         continueTaskCompletion.SetResult();
@@ -936,7 +936,7 @@ public class EndpointHtmlRendererTest
                 ParameterView.FromDictionary(new Dictionary<string, object>
                 {
                     [nameof(NamedEventHandlerComponent.Handler)] = handler
-                }), null);
+                }));
 
             await result.QuiescenceTask;
 
@@ -958,7 +958,7 @@ public class EndpointHtmlRendererTest
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
             renderer.Dispatcher.InvokeAsync(async () =>
             {
-                var result = renderer.BeginRenderingComponent(typeof(NamedEventHandlerComponent), ParameterView.Empty, null);
+                var result = renderer.BeginRenderingComponent(typeof(NamedEventHandlerComponent), ParameterView.Empty);
                 await result.QuiescenceTask;
 
                 // Act
@@ -1112,19 +1112,6 @@ public class EndpointHtmlRendererTest
             var parameterValues = JsonSerializer.Deserialize<object[]>(Convert.FromBase64String(marker.ParameterValues), WebAssemblyComponentSerializationSettings.JsonSerializationOptions);
             Assert.Equal("WebAssembly", parameterValues.Single().ToString());
         }
-    }
-
-    [Fact]
-    public async Task RenderMode_CannotBeSpecifiedAtCallSiteAndOnComponent()
-    {
-        // Arrange
-        var httpContext = GetHttpContext();
-        var writer = new StringWriter();
-
-        // Act
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            await renderer.PrerenderComponentAsync(httpContext, typeof(ComponentWithDuplicateRenderModes), null, ParameterView.Empty));
-        Assert.Equal($"The component type '{typeof(InteractiveGreetingServer)}' has a fixed rendermode of '{RenderMode.Server}', so it is not valid to specify a rendermode when using this component.", ex.Message);
     }
 
     private class NamedEventHandlerComponent : ComponentBase

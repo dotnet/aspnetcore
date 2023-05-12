@@ -61,10 +61,6 @@ internal class SSRRenderModeBoundary : IComponent
             builder.AddComponentParameter(1, name, value);
         }
 
-        // Avoid infinite recursion by explicitly disabling any component-level render mode
-        // on the prerendered child
-        builder.AddComponentRenderMode(2, BypassRenderMode.Instance);
-
         builder.CloseComponent();
     }
 
@@ -92,11 +88,5 @@ internal class SSRRenderModeBoundary : IComponent
         }
 
         return (serverMarker, webAssemblyMarker);
-    }
-
-    // This is only used internally to Endpoints when prerendering
-    public class BypassRenderMode : IComponentRenderMode
-    {
-        public static BypassRenderMode Instance { get; } = new();
     }
 }

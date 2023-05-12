@@ -22,7 +22,7 @@ public class RouteViewTest
         var services = serviceCollection.BuildServiceProvider();
         _renderer = new TestRenderer(services);
 
-        var componentFactory = new ComponentFactory(new DefaultComponentActivator(), new RenderModeResolver());
+        var componentFactory = new ComponentFactory(new DefaultComponentActivator(), _renderer);
         _routeViewComponent = (RouteView)componentFactory.InstantiateComponent(services, typeof(RouteView), null);
 
         _routeViewComponentId = _renderer.AssignRootComponentId(_routeViewComponent);

@@ -52,8 +52,6 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         _services = serviceProvider;
     }
 
-    protected override RenderModeResolver RenderModeResolver { get; } = new EndpointRenderModeResolver();
-
     private void SetHttpContext(HttpContext httpContext)
     {
         if (_httpContext is null)

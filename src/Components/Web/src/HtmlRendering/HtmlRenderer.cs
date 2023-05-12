@@ -49,7 +49,7 @@ public sealed class HtmlRenderer : IDisposable, IAsyncDisposable
     /// <typeparam name="TComponent">The component type.</typeparam>
     /// <returns>An <see cref="HtmlRootComponent"/> instance representing the render output.</returns>
     public HtmlRootComponent BeginRenderingComponent<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TComponent>() where TComponent : IComponent
-        => _passiveHtmlRenderer.BeginRenderingComponent(typeof(TComponent), ParameterView.Empty, null);
+        => _passiveHtmlRenderer.BeginRenderingComponent(typeof(TComponent), ParameterView.Empty);
 
     /// <summary>
     /// Adds an instance of the specified component and instructs it to render. The resulting content represents the
@@ -62,7 +62,7 @@ public sealed class HtmlRenderer : IDisposable, IAsyncDisposable
     /// <returns>An <see cref="HtmlRootComponent"/> instance representing the render output.</returns>
     public HtmlRootComponent BeginRenderingComponent<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TComponent>(
         ParameterView parameters) where TComponent : IComponent
-        => _passiveHtmlRenderer.BeginRenderingComponent(typeof(TComponent), parameters, null);
+        => _passiveHtmlRenderer.BeginRenderingComponent(typeof(TComponent), parameters);
 
     /// <summary>
     /// Adds an instance of the specified component and instructs it to render. The resulting content represents the
@@ -74,7 +74,7 @@ public sealed class HtmlRenderer : IDisposable, IAsyncDisposable
     /// <returns>An <see cref="HtmlRootComponent"/> instance representing the render output.</returns>
     public HtmlRootComponent BeginRenderingComponent(
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type componentType)
-        => _passiveHtmlRenderer.BeginRenderingComponent(componentType, ParameterView.Empty, null);
+        => _passiveHtmlRenderer.BeginRenderingComponent(componentType, ParameterView.Empty);
 
     /// <summary>
     /// Adds an instance of the specified component and instructs it to render. The resulting content represents the
@@ -88,7 +88,7 @@ public sealed class HtmlRenderer : IDisposable, IAsyncDisposable
     public HtmlRootComponent BeginRenderingComponent(
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type componentType,
         ParameterView parameters)
-        => _passiveHtmlRenderer.BeginRenderingComponent(componentType, parameters, null);
+        => _passiveHtmlRenderer.BeginRenderingComponent(componentType, parameters);
 
     /// <summary>
     /// Adds an instance of the specified component and instructs it to render, waiting
