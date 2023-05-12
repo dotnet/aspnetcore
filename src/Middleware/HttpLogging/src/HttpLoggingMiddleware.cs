@@ -110,7 +110,7 @@ internal sealed class HttpLoggingMiddleware
                     out var encoding))
                 {
                     var requestBodyLogLimit = options.RequestBodyLogLimit;
-                    if (loggingAttribute?.RequestBodyLogLimit is int)
+                    if (loggingAttribute?.IsRequestBodyLogLimitSet is true)
                     {
                         requestBodyLogLimit = loggingAttribute.RequestBodyLogLimit;
                     }
@@ -161,7 +161,7 @@ internal sealed class HttpLoggingMiddleware
                 originalBodyFeature = context.Features.Get<IHttpResponseBodyFeature>()!;
 
                 var responseBodyLogLimit = options.ResponseBodyLogLimit;
-                if (loggingAttribute?.ResponseBodyLogLimit is int)
+                if (loggingAttribute?.IsRequestBodyLogLimitSet is true)
                 {
                     responseBodyLogLimit = loggingAttribute.ResponseBodyLogLimit;
                 }
