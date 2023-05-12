@@ -45,7 +45,7 @@ public sealed class HttpLoggingAttribute : Attribute
                 return _requestBodyLogLimit;
             }
 
-            throw new InvalidOperationException("TODO");
+            throw new InvalidOperationException($"{nameof(RequestBodyLogLimit)} was not set. Check {nameof(IsRequestBodyLogLimitSet)} before accessing this property.");
         }
         set
         {
@@ -73,7 +73,7 @@ public sealed class HttpLoggingAttribute : Attribute
             {
                 return _responseBodyLogLimit;
             }
-            throw new InvalidOperationException("TODO");
+            throw new InvalidOperationException($"{nameof(ResponseBodyLogLimit)} was not set. Check {nameof(IsResponseBodyLogLimitSet)} before accessing this property.");
         }
         set
         {
