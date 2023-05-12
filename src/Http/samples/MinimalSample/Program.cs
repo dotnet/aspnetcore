@@ -30,8 +30,8 @@ inner.AddEndpointFilterFactory((routeContext, next) =>
 
     return async invocationContext =>
     {
-        var metadata = invocationContext.HttpContext.GetEndpoint()?.Metadata;
-        tags ??= metadata?.GetMetadata<ITagsMetadata>()?.Tags ?? Array.Empty<string>();
+        var endpoint = invocationContext.HttpContext.GetEndpoint();
+        tags ??= endpoint?.Metadata.GetMetadata<ITagsMetadata>()?.Tags ?? Array.Empty<string>();
 
         Console.WriteLine("Running filter!");
         var result = await next(invocationContext);
