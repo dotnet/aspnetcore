@@ -28,6 +28,6 @@ public sealed class EndpointSummaryAttribute : Attribute, IEndpointSummaryMetada
     /// <inheritdoc/>>
     public override string ToString()
     {
-        return $"Summary: {Summary}";
+        return $"Summary: {Summary ?? "(null)"}";
     }
 }

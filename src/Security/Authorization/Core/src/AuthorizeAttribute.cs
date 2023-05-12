@@ -45,6 +45,8 @@ public class AuthorizeAttribute : Attribute, IAuthorizeData
     /// <inheritdoc/>>
     public override string ToString()
     {
-        return $"Policy: {Policy}, Roles: {Roles}, AuthenticationSchemes: {AuthenticationSchemes}";
+        const string NullValue = "(null)";
+
+        return $"Policy: {Policy ?? NullValue}, Roles: {Roles ?? NullValue}, AuthenticationSchemes: {AuthenticationSchemes ?? NullValue}";
     }
 }

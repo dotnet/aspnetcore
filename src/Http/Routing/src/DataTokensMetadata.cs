@@ -32,7 +32,7 @@ public sealed class DataTokensMetadata : IDataTokensMetadata
     /// <inheritdoc/>
     public override string ToString()
     {
-        var dataTokens = string.Join(",", DataTokens.Select(t => $"{t.Key}={t.Value}"));
+        var dataTokens = string.Join(",", DataTokens.Select(t => $"{t.Key}={t.Value ?? "(null)"}"));
 
         return $"DataTokens: {dataTokens}";
     }

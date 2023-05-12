@@ -28,6 +28,6 @@ public sealed class RouteNameMetadata : IRouteNameMetadata
     /// <inheritdoc/>
     public override string ToString()
     {
-        return $"Name: {RouteName}";
+        return $"Name: {RouteName ?? "(null)"}";
     }
 }

@@ -32,6 +32,6 @@ public sealed class EndpointDescriptionAttribute : Attribute, IEndpointDescripti
     /// <inheritdoc/>>
     public override string ToString()
     {
-        return $"Description: {Description}";
+        return $"Description: {Description ?? "(null)"}";
     }
 }
