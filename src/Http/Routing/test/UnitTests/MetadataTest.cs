@@ -58,7 +58,7 @@ public class MetadataTest
         var value = metadata.ToString();
 
         // Assert
-        Assert.Equal("HttpMethods: GET,POST - Cors: True", value);
+        Assert.Equal("HttpMethods: GET,POST, Cors: True", value);
     }
 
     [Fact]
