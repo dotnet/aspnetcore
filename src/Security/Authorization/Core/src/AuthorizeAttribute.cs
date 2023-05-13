@@ -47,6 +47,6 @@ public class AuthorizeAttribute : Attribute, IAuthorizeData
     {
         const string NullValue = "(null)";
 
-        return $"Policy: {Policy ?? NullValue}, Roles: {Roles ?? NullValue}, AuthenticationSchemes: {AuthenticationSchemes ?? NullValue}";
+        return $"Authorize Policy: {Policy ?? NullValue}, Roles: {Roles ?? NullValue}, AuthenticationSchemes: {AuthenticationSchemes ?? NullValue}";
     }
 }

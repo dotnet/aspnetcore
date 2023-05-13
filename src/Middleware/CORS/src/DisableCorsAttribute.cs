@@ -14,6 +14,6 @@ public class DisableCorsAttribute : Attribute, IDisableCorsAttribute
     /// <inheritdoc/>>
     public override string ToString()
     {
-        return "DisableCors";
+        return "CORS Disable";
     }
 }
