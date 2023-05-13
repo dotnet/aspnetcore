@@ -76,8 +76,10 @@ public sealed class CertificateXmlEncryptor : IInternalCertificateXmlEncryptor, 
         return new EncryptedXmlInfo(encryptedElement, typeof(EncryptedXmlDecryptor));
     }
 
+    [UnconditionalSuppressMessage("AOT", "IL2026:RequiresUnreferencedCode",
+        Justification = "This usage of EncryptedXml to encrypt an XElement using a X509Certificate2 does not use reflection.")]
     [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode",
-        Justification = "Only XSLTs require dynamic code. The usage of EncryptedXml doesn't use XSLTs.")]
+        Justification = "This usage of EncryptedXml to encrypt an XElement using a X509Certificate2 does not use XSLTs.")]
     private XElement EncryptElement(XElement plaintextElement)
     {
         // EncryptedXml works with XmlDocument, not XLinq. When we perform the conversion
@@ -88,9 +90,7 @@ public sealed class CertificateXmlEncryptor : IInternalCertificateXmlEncryptor, 
         var elementToEncrypt = (XmlElement)xmlDocument.DocumentElement!.FirstChild!;
 
         // Perform the encryption and update the document in-place.
-#pragma warning disable IL2026 // TODO: https://github.com/dotnet/aspnetcore/issues/47695
         var encryptedXml = new EncryptedXml(xmlDocument);
-#pragma warning restore IL2026
         var encryptedData = _encryptor.PerformEncryption(encryptedXml, elementToEncrypt);
         EncryptedXml.ReplaceElement(elementToEncrypt, encryptedData, content: false);
 

@@ -8,6 +8,8 @@
 -->
 <Project>
   <ItemGroup>
+    <RequiresDelayedBuild Include="$(RepoRoot)src\DataProtection\DataProtection\test\Microsoft.AspNetCore.DataProtection.TrimmingTests\Microsoft.AspNetCore.DataProtection.TrimmingTests.proj" />
+    <RequiresDelayedBuild Include="$(RepoRoot)src\DefaultBuilder\test\Microsoft.AspNetCore.NativeAotTests\Microsoft.AspNetCore.NativeAotTests.proj" />
     <RequiresDelayedBuild Include="$(RepoRoot)src\Grpc\JsonTranscoding\perf\Microsoft.AspNetCore.Grpc.Microbenchmarks\Microsoft.AspNetCore.Grpc.Microbenchmarks.csproj" />
     <RequiresDelayedBuild Include="$(RepoRoot)src\Grpc\JsonTranscoding\src\Microsoft.AspNetCore.Grpc.JsonTranscoding\Microsoft.AspNetCore.Grpc.JsonTranscoding.csproj" />
     <RequiresDelayedBuild Include="$(RepoRoot)src\Grpc\JsonTranscoding\src\Microsoft.AspNetCore.Grpc.Swagger\Microsoft.AspNetCore.Grpc.Swagger.csproj" />
@@ -17,6 +19,5 @@
     <RequiresDelayedBuild Include="$(RepoRoot)src\Grpc\JsonTranscoding\test\testassets\IntegrationTestsWebsite\IntegrationTestsWebsite.csproj" />
     <RequiresDelayedBuild Include="$(RepoRoot)src\Grpc\JsonTranscoding\test\testassets\Sandbox\Sandbox.csproj" />
     <RequiresDelayedBuild Include="$(RepoRoot)src\ProjectTemplates\test\Templates.Blazor.Tests\Templates.Blazor.Tests.csproj" />
-    <RequiresDelayedBuild Include="$(RepoRoot)src\DefaultBuilder\test\Microsoft.AspNetCore.NativeAotTests\Microsoft.AspNetCore.NativeAotTests.proj" />
   </ItemGroup>
 </Project>
