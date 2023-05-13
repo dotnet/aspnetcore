@@ -21,27 +21,11 @@ public abstract class HubInvocationMessage : HubMessage
     public string? InvocationId { get; }
 
     /// <summary>
-    /// TODO; monotonically increasing ID that identifies this message
-    /// </summary>
-    public long? SequenceId { get; }
-
-    /// <summary>
     /// Initializes a new instance of the <see cref="HubInvocationMessage"/> class.
     /// </summary>
     /// <param name="invocationId">The invocation ID.</param>
     protected HubInvocationMessage(string? invocationId)
     {
         InvocationId = invocationId;
-    }
-
-    /// <summary>
-    /// TODO
-    /// </summary>
-    /// <param name="invocationId"></param>
-    /// <param name="sequenceId"></param>
-    protected HubInvocationMessage(string? invocationId, long? sequenceId)
-        : this(invocationId)
-    {
-        SequenceId = sequenceId;
     }
 }

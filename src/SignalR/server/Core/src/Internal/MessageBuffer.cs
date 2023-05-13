@@ -8,13 +8,14 @@ namespace Microsoft.AspNetCore.SignalR.Internal;
 
 internal sealed class MessageBuffer
 {
-    private readonly (SerializedHubMessage? Message, long? SequenceId)[] _buffer;
+    private readonly (SerializedHubMessage? Message, long SequenceId)[] _buffer;
     private int _index;
+    private long _totalMessageCount;
 
     // TODO: pass in limits
     public MessageBuffer()
     {
-        _buffer = new (SerializedHubMessage? Message, long? SequenceId)[10];
+        _buffer = new (SerializedHubMessage? Message, long SequenceId)[10];
     }
 
     public async ValueTask<FlushResult> WriteAsync(PipeWriter pipeWriter, SerializedHubMessage hubMessage, IHubProtocol protocol,
@@ -30,10 +31,10 @@ internal sealed class MessageBuffer
             // ...
         }
 
-        long? sequenceId;
         if (hubMessage.Message is HubInvocationMessage invocationMessage)
         {
-            sequenceId = invocationMessage.SequenceId;
+            //sequenceId = invocationMessage.SequenceId;
+            _totalMessageCount++;
         }
         else
         {
@@ -41,7 +42,7 @@ internal sealed class MessageBuffer
             return await pipeWriter.WriteAsync(hubMessage.GetSerializedMessage(protocol), cancellationToken);
         }
 
-        _buffer[_index] = (hubMessage, sequenceId);
+        _buffer[_index] = (hubMessage, _totalMessageCount);
         _index = (_index + 1) % _buffer.Length;
         return await pipeWriter.WriteAsync(hubMessage.GetSerializedMessage(protocol), cancellationToken);
     }
@@ -52,9 +53,9 @@ internal sealed class MessageBuffer
         for (var i = 0; i < _buffer.Length; i++)
         {
             var currentIndex = (index + i) % _buffer.Length;
-            if (_buffer[currentIndex].SequenceId is long id && id <= ackMessage.SequenceId)
+            if (_buffer[currentIndex].SequenceId <= ackMessage.SequenceId)
             {
-                _buffer[currentIndex] = (null, null);
+                _buffer[currentIndex] = (null, long.MinValue);
             }
         }
 

@@ -23,17 +23,6 @@ public class StreamItemMessage : HubInvocationMessage
         Item = item;
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="invocationId"></param>
-    /// <param name="sequenceId"></param>
-    /// <param name="item"></param>
-    public StreamItemMessage(string invocationId, long? sequenceId, object? item) : base(invocationId, sequenceId)
-    {
-        Item = item;
-    }
-
     /// <inheritdoc />
     public override string ToString()
     {
