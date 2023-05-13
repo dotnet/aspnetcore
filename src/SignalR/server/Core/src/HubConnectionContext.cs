@@ -761,23 +761,28 @@ public partial class HubConnectionContext
         _messageBuffer.Ack(ackMessage);
     }
 
-    private long? GetSequenceId()
-    {
-        if (UseAcks)
-        {
-            return Interlocked.Increment(ref _sequenceId);
-        }
-        return null;
-    }
+    //private long? GetSequenceId()
+    //{
+    //    if (UseAcks)
+    //    {
+    //        return Interlocked.Increment(ref _sequenceId);
+    //    }
+    //    return null;
+    //}
+
+    private long _currentReceivingSequenceId;
 
     internal bool ShouldProcessMessage(HubInvocationMessage message)
     {
-        if (message.SequenceId <= _latestReceivedSequenceId)
+        var currentId = _currentReceivingSequenceId;
+        _currentReceivingSequenceId++;
+        if (currentId <= _latestReceivedSequenceId)
         {
             // Ignore, this is a duplicate message
             return false;
         }
-        _latestReceivedSequenceId = message.SequenceId!.Value;
+        _latestReceivedSequenceId = currentId;
+
         return true;
     }
 }

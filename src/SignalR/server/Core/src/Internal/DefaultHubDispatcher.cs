@@ -218,7 +218,7 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
 
         var errorMessage = ErrorMessageHelper.BuildErrorMessage($"Failed to invoke '{bindingFailureMessage.Target}' due to an error on the server.",
             bindingFailureMessage.BindingFailure.SourceException, _enableDetailedErrors);
-        return SendInvocationError(bindingFailureMessage.InvocationId, connection.GetSequenceId(), connection, errorMessage);
+        return SendInvocationError(bindingFailureMessage.InvocationId, connection, errorMessage);
     }
 
     private Task ProcessStreamBindingFailure(HubConnectionContext connection, StreamBindingFailureMessage bindingFailureMessage)
@@ -227,7 +227,7 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
             "Failed to bind Stream message.",
             bindingFailureMessage.BindingFailure.SourceException, _enableDetailedErrors);
 
-        var message = CompletionMessage.WithError(bindingFailureMessage.Id, connection.GetSequenceId(), errorString);
+        var message = CompletionMessage.WithError(bindingFailureMessage.Id, errorString);
         Log.ClosingStreamWithBindingError(_logger, message);
 
         // ignore failure, it means the client already completed the stream or the stream never existed on the server
@@ -260,7 +260,7 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
             {
                 // Send an error to the client. Then let the normal completion process occur
                 return connection.WriteAsync(CompletionMessage.WithError(
-                    hubMethodInvocationMessage.InvocationId, connection.GetSequenceId(), $"Unknown hub method '{hubMethodInvocationMessage.Target}'")).AsTask();
+                    hubMethodInvocationMessage.InvocationId, $"Unknown hub method '{hubMethodInvocationMessage.Target}'")).AsTask();
             }
             else
             {
@@ -303,7 +303,7 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
             if (!await IsHubMethodAuthorized(scope.ServiceProvider, connection, descriptor, hubMethodInvocationMessage.Arguments, hub))
             {
                 Log.HubMethodNotAuthorized(_logger, hubMethodInvocationMessage.Target);
-                await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection.GetSequenceId(), connection,
+                await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
                     $"Failed to invoke '{hubMethodInvocationMessage.Target}' because user is unauthorized");
                 return true;
             }
@@ -321,7 +321,7 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
                 {
                     var ex = new HubException($"Client sent {clientStreamLength} stream(s), Hub method expects {serverStreamLength}.");
                     Log.InvalidHubParameters(_logger, hubMethodInvocationMessage.Target, ex);
-                    await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection.GetSequenceId(), connection,
+                    await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
                         ErrorMessageHelper.BuildErrorMessage($"An unexpected error occurred invoking '{hubMethodInvocationMessage.Target}' on the server.", ex, _enableDetailedErrors));
                     return true;
                 }
@@ -374,7 +374,7 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
                         catch (Exception ex)
                         {
                             Log.FailedInvokingHubMethod(logger, hubMethodInvocationMessage.Target, ex);
-                            await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection.GetSequenceId(), connection,
+                            await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
                                 ErrorMessageHelper.BuildErrorMessage($"An unexpected error occurred invoking '{hubMethodInvocationMessage.Target}' on the server.", ex, enableDetailedErrors));
                             return;
                         }
@@ -392,7 +392,7 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
                         if (!string.IsNullOrEmpty(hubMethodInvocationMessage.InvocationId))
                         {
                             // Invoke Async, one response expected
-                            await connection.WriteAsync(CompletionMessage.WithResult(hubMethodInvocationMessage.InvocationId, connection.GetSequenceId(), result));
+                            await connection.WriteAsync(CompletionMessage.WithResult(hubMethodInvocationMessage.InvocationId, result));
                         }
                     }
 
@@ -414,13 +414,13 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
             catch (TargetInvocationException ex)
             {
                 Log.FailedInvokingHubMethod(_logger, hubMethodInvocationMessage.Target, ex);
-                await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection.GetSequenceId(), connection,
+                await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
                     ErrorMessageHelper.BuildErrorMessage($"An unexpected error occurred invoking '{hubMethodInvocationMessage.Target}' on the server.", ex.InnerException ?? ex, _enableDetailedErrors));
             }
             catch (Exception ex)
             {
                 Log.FailedInvokingHubMethod(_logger, hubMethodInvocationMessage.Target, ex);
-                await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection.GetSequenceId(), connection,
+                await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
                     ErrorMessageHelper.BuildErrorMessage($"An unexpected error occurred invoking '{hubMethodInvocationMessage.Target}' on the server.", ex, _enableDetailedErrors));
             }
         }
@@ -446,7 +446,7 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
         {
             foreach (var stream in hubMessage.StreamIds)
             {
-                connection.StreamTracker.TryComplete(CompletionMessage.Empty(stream, connection.GetSequenceId()));
+                connection.StreamTracker.TryComplete(CompletionMessage.Empty(stream));
             }
         }
 
@@ -495,7 +495,7 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
 
             await using var enumerator = descriptor.FromReturnedStream(result, streamCts.Token);
             Log.StreamingResult(_logger, invocationId, descriptor.MethodExecutor);
-            var streamItemMessage = new StreamItemMessage(invocationId, connection.GetSequenceId(), null);
+            var streamItemMessage = new StreamItemMessage(invocationId, null);
 
             while (await enumerator.MoveNextAsync())
             {
@@ -526,7 +526,7 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
             streamCts.Dispose();
             connection.ActiveRequestCancellationSources.TryRemove(invocationId, out _);
 
-            await connection.WriteAsync(CompletionMessage.WithError(invocationId, connection.GetSequenceId(), error));
+            await connection.WriteAsync(CompletionMessage.WithError(invocationId, error));
         }
     }
 
@@ -572,15 +572,14 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
         }
     }
 
-    private static async Task SendInvocationError(string? invocationId, long? sequenceId,
-        HubConnectionContext connection, string errorMessage)
+    private static async Task SendInvocationError(string? invocationId, HubConnectionContext connection, string errorMessage)
     {
         if (string.IsNullOrEmpty(invocationId))
         {
             return;
         }
 
-        await connection.WriteAsync(CompletionMessage.WithError(invocationId, sequenceId, errorMessage));
+        await connection.WriteAsync(CompletionMessage.WithError(invocationId, errorMessage));
     }
 
     private void InitializeHub(THub hub, HubConnectionContext connection, bool invokeAllowed = true)
@@ -624,7 +623,7 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
             if (!string.IsNullOrEmpty(hubMethodInvocationMessage.InvocationId))
             {
                 Log.StreamingMethodCalledWithInvoke(_logger, hubMethodInvocationMessage);
-                await connection.WriteAsync(CompletionMessage.WithError(hubMethodInvocationMessage.InvocationId, connection.GetSequenceId(),
+                await connection.WriteAsync(CompletionMessage.WithError(hubMethodInvocationMessage.InvocationId,
                     $"The client attempted to invoke the streaming '{hubMethodInvocationMessage.Target}' method with a non-streaming invocation."));
             }
 
@@ -634,7 +633,7 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
         if (!hubMethodDescriptor.IsStreamResponse && isStreamResponse)
         {
             Log.NonStreamingMethodCalledWithStream(_logger, hubMethodInvocationMessage);
-            await connection.WriteAsync(CompletionMessage.WithError(hubMethodInvocationMessage.InvocationId!, connection.GetSequenceId(),
+            await connection.WriteAsync(CompletionMessage.WithError(hubMethodInvocationMessage.InvocationId!,
                 $"The client attempted to invoke the non-streaming '{hubMethodInvocationMessage.Target}' method with a streaming invocation."));
 
             return false;

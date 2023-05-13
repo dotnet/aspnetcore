@@ -17,13 +17,4 @@ public class CancelInvocationMessage : HubInvocationMessage
     public CancelInvocationMessage(string invocationId) : base(invocationId)
     {
     }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="invocationId"></param>
-    /// <param name="sequenceId"></param>
-    public CancelInvocationMessage(string invocationId, long? sequenceId) : base(invocationId, sequenceId)
-    {
-    }
 }

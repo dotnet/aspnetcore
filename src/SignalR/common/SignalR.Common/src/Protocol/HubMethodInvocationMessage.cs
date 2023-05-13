@@ -28,28 +28,6 @@ public abstract class HubMethodInvocationMessage : HubInvocationMessage
     public string[]? StreamIds { get; }
 
     /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="invocationId"></param>
-    /// <param name="sequenceId"></param>
-    /// <param name="target"></param>
-    /// <param name="arguments"></param>
-    /// <param name="streamIds"></param>
-    /// <exception cref="ArgumentNullException"></exception>
-    protected HubMethodInvocationMessage(string? invocationId, long? sequenceId, string target, object?[] arguments, string[]? streamIds)
-        : base(invocationId, sequenceId)
-    {
-        if (string.IsNullOrEmpty(target))
-        {
-            throw new ArgumentNullException(nameof(target));
-        }
-
-        Target = target;
-        Arguments = arguments;
-        StreamIds = streamIds;
-    }
-
-    /// <summary>
     /// Initializes a new instance of the <see cref="HubMethodInvocationMessage"/> class.
     /// </summary>
     /// <param name="invocationId">The invocation ID.</param>
@@ -116,11 +94,6 @@ public class InvocationMessage : HubMethodInvocationMessage
     {
     }
 
-    public InvocationMessage(string? invocationId, long? sequenceId, string target, object?[] arguments, string[]? streamIds)
-        : base(invocationId, sequenceId, target, arguments, streamIds)
-    {
-    }
-
     /// <inheritdoc />
     public override string ToString()
     {
@@ -173,19 +146,6 @@ public class StreamInvocationMessage : HubMethodInvocationMessage
     /// <param name="streamIds">The target methods stream IDs.</param>
     public StreamInvocationMessage(string invocationId, string target, object?[] arguments, string[]? streamIds)
         : base(invocationId, target, arguments, streamIds)
-    {
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="invocationId"></param>
-    /// <param name="sequenceId"></param>
-    /// <param name="target"></param>
-    /// <param name="arguments"></param>
-    /// <param name="streamIds"></param>
-    public StreamInvocationMessage(string invocationId, long? sequenceId, string target, object?[] arguments, string[]? streamIds)
-        : base(invocationId, sequenceId, target, arguments, streamIds)
     {
     }
 
