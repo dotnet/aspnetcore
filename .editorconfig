@@ -133,10 +133,12 @@ dotnet_diagnostic.CA1829.severity = warning
 dotnet_diagnostic.CA1830.severity = warning
 
 # CA1831: Use AsSpan or AsMemory instead of Range-based indexers when appropriate
-# CA1832: Use AsSpan or AsMemory instead of Range-based indexers when appropriate
-# CA1833: Use AsSpan or AsMemory instead of Range-based indexers when appropriate
 dotnet_diagnostic.CA1831.severity = warning
+
+# CA1832: Use AsSpan or AsMemory instead of Range-based indexers when appropriate
 dotnet_diagnostic.CA1832.severity = warning
+
+# CA1833: Use AsSpan or AsMemory instead of Range-based indexers when appropriate
 dotnet_diagnostic.CA1833.severity = warning
 
 # CA1834: Consider using 'StringBuilder.Append(char)' when applicable
@@ -290,6 +292,12 @@ dotnet_diagnostic.CA1826.severity = suggestion
 dotnet_diagnostic.CA1827.severity = suggestion
 # CA1829: Use Length/Count property instead of Count() when available
 dotnet_diagnostic.CA1829.severity = suggestion
+# CA1831: Use AsSpan or AsMemory instead of Range-based indexers when appropriate
+dotnet_diagnostic.CA1831.severity = suggestion
+# CA1832: Use AsSpan or AsMemory instead of Range-based indexers when appropriate
+dotnet_diagnostic.CA1832.severity = suggestion
+# CA1833: Use AsSpan or AsMemory instead of Range-based indexers when appropriate
+dotnet_diagnostic.CA1833.severity = suggestion
 # CA1834: Consider using 'StringBuilder.Append(char)' when applicable
 dotnet_diagnostic.CA1834.severity = suggestion
 # CA1835: Prefer the 'Memory'-based overloads for 'ReadAsync' and 'WriteAsync'
