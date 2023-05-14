@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Globalization;
 using Microsoft.AspNetCore.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.CodeAnalysis;
@@ -230,14 +229,17 @@ internal static class EndpointParameterEmitter
     {
         var unwrappedType = endpointParameter.Type.UnwrapTypeSymbol(unwrapNullable: true);
         var unwrappedTypeString = unwrappedType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        var resolveParameterInfo = endpointParameter.IsProperty
+            ? endpointParameter.PropertyAsParameterInfoConstruction
+            : $"parameters[{endpointParameter.Ordinal}]";
 
         switch (endpointParameter.BindMethod)
         {
             case BindabilityMethod.IBindableFromHttpContext:
-                codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = await BindAsync<{unwrappedTypeString}>(httpContext, parameters[{endpointParameter.Ordinal}]);");
+                codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = await BindAsync<{unwrappedTypeString}>(httpContext, {resolveParameterInfo});");
                 break;
             case BindabilityMethod.BindAsyncWithParameter:
-                codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = await {unwrappedTypeString}.BindAsync(httpContext, parameters[{endpointParameter.Ordinal}]);");
+                codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = await {unwrappedTypeString}.BindAsync(httpContext, {resolveParameterInfo});");
                 break;
             case BindabilityMethod.BindAsync:
                 codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = await {unwrappedTypeString}.BindAsync(httpContext);");
@@ -281,17 +283,17 @@ internal static class EndpointParameterEmitter
         codeWriter.WriteLine($"var {endpointParameter.EmitHandlerArgument()} = {assigningCode};");
     }
 
+    internal static void EmitAsParametersParameterPreparation(this EndpointParameter endpointParameter, CodeWriter codeWriter, EmitterContext emitterContext)
+    {
+        codeWriter.WriteLine(endpointParameter.EmitParameterDiagnosticComment());
+        codeWriter.WriteLine(endpointParameter.EndpointParameters?.EmitParameterPreparation(baseIndent: codeWriter.Indent, emitterContext: emitterContext));
+        codeWriter.WriteLine($"var {endpointParameter.EmitHandlerArgument()} = {endpointParameter.AssigningCode};");
+    }
+
     private static string EmitParameterDiagnosticComment(this EndpointParameter endpointParameter) => $"// Endpoint Parameter: {endpointParameter.SymbolName} (Type = {endpointParameter.Type}, IsOptional = {endpointParameter.IsOptional}, IsParsable = {endpointParameter.IsParsable}, IsArray = {endpointParameter.IsArray}, Source = {endpointParameter.Source})";
-    private static string EmitHandlerArgument(this EndpointParameter endpointParameter) => $"{endpointParameter.SymbolName}_local";
+
     private static string EmitTempArgument(this EndpointParameter endpointParameter) => $"{endpointParameter.SymbolName}_temp";
 
     private static string EmitParsedTempArgument(this EndpointParameter endpointParameter) => $"{endpointParameter.SymbolName}_parsed_temp";
     private static string EmitAssigningCodeResult(this EndpointParameter endpointParameter) => $"{endpointParameter.SymbolName}_raw";
-
-    public static string EmitArgument(this EndpointParameter endpointParameter) => endpointParameter.Source switch
-    {
-        EndpointParameterSource.JsonBody or EndpointParameterSource.Route or EndpointParameterSource.RouteOrQuery or EndpointParameterSource.JsonBodyOrService or EndpointParameterSource.FormBody => endpointParameter.IsOptional ? endpointParameter.EmitHandlerArgument() : $"{endpointParameter.EmitHandlerArgument()}!",
-        EndpointParameterSource.Unknown => throw new NotImplementedException($"Unreachable! Unexpected {nameof(EndpointParameterSource)}: {endpointParameter.Source}"),
-        _ => endpointParameter.EmitHandlerArgument()
-    };
 }

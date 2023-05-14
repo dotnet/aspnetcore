@@ -69,7 +69,6 @@ internal class Endpoint
             switch (parameter.Source)
             {
                 case EndpointParameterSource.BindAsync:
-                    IsAwaitable = true;
                     switch (parameter.BindMethod)
                     {
                         case BindabilityMethod.IBindableFromHttpContext:
@@ -77,11 +76,6 @@ internal class Endpoint
                             NeedsParameterArray = true;
                             break;
                     }
-                    break;
-                case EndpointParameterSource.JsonBody:
-                case EndpointParameterSource.JsonBodyOrService:
-                case EndpointParameterSource.FormBody:
-                    IsAwaitable = true;
                     break;
                 case EndpointParameterSource.Unknown:
                     Diagnostics.Add(Diagnostic.Create(
@@ -96,25 +90,16 @@ internal class Endpoint
 
         Parameters = parameters;
 
-        EmitterContext.HasEndpointParameterMetadataProvider = Parameters.Any(p => p.IsEndpointParameterMetadataProvider);
-        EmitterContext.HasEndpointMetadataProvider = Response!.IsEndpointMetadataProvider || Parameters.Any(p => p.IsEndpointMetadataProvider || p.IsEndpointParameterMetadataProvider);
-
-        EmitterContext.HasJsonBodyOrService = Parameters.Any(parameter => parameter.Source == EndpointParameterSource.JsonBodyOrService);
-        EmitterContext.HasJsonBody = Parameters.Any(parameter => parameter.Source == EndpointParameterSource.JsonBody);
-        EmitterContext.HasFormBody = Parameters.Any(parameter => parameter.Source == EndpointParameterSource.FormBody);
-        EmitterContext.HasRouteOrQuery = Parameters.Any(parameter => parameter.Source == EndpointParameterSource.RouteOrQuery);
-        EmitterContext.HasBindAsync = Parameters.Any(parameter => parameter.Source == EndpointParameterSource.BindAsync);
-        EmitterContext.HasParsable = Parameters.Any(parameter => parameter.IsParsable);
         EmitterContext.RequiresLoggingHelper = !Parameters.All(parameter =>
             parameter.Source == EndpointParameterSource.SpecialType ||
             parameter is { IsArray: true, ElementType.SpecialType: SpecialType.System_String, Source: EndpointParameterSource.Query });
     }
 
     public string HttpMethod { get; }
-    public bool IsAwaitable { get; }
+    public bool IsAwaitable { get; set; }
     public bool NeedsParameterArray { get; }
     public string? RoutePattern { get; }
-    public EmitterContext EmitterContext { get;  }
+    public EmitterContext EmitterContext { get; }
     public EndpointResponse? Response { get; }
     public EndpointParameter[] Parameters { get; } = Array.Empty<EndpointParameter>();
     public List<Diagnostic> Diagnostics { get; } = new List<Diagnostic>();

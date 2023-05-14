@@ -25,6 +25,7 @@ public abstract partial class RequestDelegateCreationTests : RequestDelegateCrea
             var expectedServiceBody = "Produced from service!";
             var implicitRequiredServiceSource = $"""app.MapPost("/", ({typeof(TestService)} svc) => svc.TestServiceMethod());""";
             var implicitRequiredJsonBodySource = $"""app.MapPost("/", (Todo todo) => todo.Name ?? string.Empty);""";
+            var implicitRequiredJsonBodyViaAsParametersSource = $"""app.MapPost("/", ([AsParameters] ParametersListWithImplicitFromBody args) => args.Todo.Name ?? string.Empty);""";
 
             return new[]
             {
@@ -32,6 +33,8 @@ public abstract partial class RequestDelegateCreationTests : RequestDelegateCrea
                 new object[] { implicitRequiredServiceSource, false, null, false, 400, string.Empty },
                 new object[] { implicitRequiredJsonBodySource, true, todo, false, 200, expectedTodoBody },
                 new object[] { implicitRequiredJsonBodySource, true, null, false, 400, string.Empty },
+                new object[] { implicitRequiredJsonBodyViaAsParametersSource, true, todo, false, 200, expectedTodoBody },
+                new object[] { implicitRequiredJsonBodyViaAsParametersSource, true, null, false, 400, string.Empty },
             };
         }
     }

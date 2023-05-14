@@ -11,7 +11,7 @@
 namespace Microsoft.AspNetCore.Builder
 {
     %GENERATEDCODEATTRIBUTE%
-    internal class SourceKey
+    internal sealed class SourceKey
     {
         public string Path { get; init; }
         public int Line { get; init; }
@@ -102,9 +102,11 @@ namespace Microsoft.AspNetCore.Http.Generated
                 },
                 (del, options, inferredMetadataResult) =>
                 {
+                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
+                    Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                     var handler = (System.Func<global::System.String, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
-                    var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;
+                    var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
                     var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
@@ -180,9 +182,11 @@ namespace Microsoft.AspNetCore.Http.Generated
                 },
                 (del, options, inferredMetadataResult) =>
                 {
+                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
+                    Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                     var handler = (System.Func<global::System.String, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
-                    var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;
+                    var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
                     var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
@@ -258,9 +262,11 @@ namespace Microsoft.AspNetCore.Http.Generated
                 },
                 (del, options, inferredMetadataResult) =>
                 {
+                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
+                    Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                     var handler = (System.Func<global::System.String, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
-                    var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;
+                    var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
                     var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
@@ -289,7 +295,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         if (routeValue_raw == null)
                         {
                             wasParamCheckFailure = true;
-                            logOrThrowExceptionHelper.RequiredParameterNotProvided("string", "routeValue", "unknown");
+                            logOrThrowExceptionHelper.RequiredParameterNotProvided("string", "routeValue", "route");
                         }
                         var routeValue_temp = (string?)routeValue_raw;
                         string routeValue_local = routeValue_temp!;
@@ -316,7 +322,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         if (routeValue_raw == null)
                         {
                             wasParamCheckFailure = true;
-                            logOrThrowExceptionHelper.RequiredParameterNotProvided("string", "routeValue", "unknown");
+                            logOrThrowExceptionHelper.RequiredParameterNotProvided("string", "routeValue", "route");
                         }
                         var routeValue_temp = (string?)routeValue_raw;
                         string routeValue_local = routeValue_temp!;
@@ -344,9 +350,11 @@ namespace Microsoft.AspNetCore.Http.Generated
                 },
                 (del, options, inferredMetadataResult) =>
                 {
+                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
+                    Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                     var handler = (System.Func<global::System.String, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
-                    var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;
+                    var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
                     var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
                     var value_RouteOrQueryResolver = GeneratedRouteBuilderExtensionsCore.ResolveFromRouteOrQuery("value", options?.RouteParameterNames);
 
@@ -423,9 +431,11 @@ namespace Microsoft.AspNetCore.Http.Generated
                 },
                 (del, options, inferredMetadataResult) =>
                 {
+                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
+                    Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                     var handler = (System.Func<global::System.String, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
-                    var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;
+                    var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
                     var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
                     var value_RouteOrQueryResolver = GeneratedRouteBuilderExtensionsCore.ResolveFromRouteOrQuery("value", options?.RouteParameterNames);
 
@@ -576,7 +586,7 @@ namespace Microsoft.AspNetCore.Http.Generated
     }
 
 
-    file class LogOrThrowExceptionHelper
+    file sealed class LogOrThrowExceptionHelper
     {
         private readonly ILogger? _rdgLogger;
         private readonly bool _shouldThrow;

@@ -72,6 +72,13 @@
 |  __`RDG002`__ | Unable to resolve endpoint handler |
 |  __`RDG003`__ | Unable to resolve parameter |
 |  __`RDG004`__ | Unable to resolve anonymous type |
+|  __`RDG005`__ | Invalid abstract type |
+|  __`RDG006`__ | Invalid constructor parameters |
+|  __`RDG007`__ | No valid constructor found |
+|  __`RDG008`__ | Multiple public constructors found |
+|  __`RDG009`__ | Invalid nested AsParameters |
+|  __`RDG010`__ | Unexpected nullable type |
+
 
 ### SignalR Source Generator (`SSG0000-SSG0110`)
 

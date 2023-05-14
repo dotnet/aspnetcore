@@ -253,7 +253,7 @@ internal static class RequestDelegateGeneratorSources
 """;
 
     public static string LogOrThrowExceptionHelperClass => $$"""
-    file class LogOrThrowExceptionHelper
+    file sealed class LogOrThrowExceptionHelper
     {
         private readonly ILogger? _rdgLogger;
         private readonly bool _shouldThrow;
@@ -397,13 +397,107 @@ internal static class RequestDelegateGeneratorSources
     }
 """;
 
+    public static string PropertyAsParameterInfoClass = """
+    file sealed class PropertyAsParameterInfo : ParameterInfo
+    {
+        private readonly PropertyInfo _underlyingProperty;
+        private readonly ParameterInfo? _constructionParameterInfo;
+
+        public PropertyAsParameterInfo(bool isOptional, PropertyInfo propertyInfo)
+        {
+            Debug.Assert(propertyInfo != null, "PropertyInfo must be provided.");
+
+            AttrsImpl = (ParameterAttributes)propertyInfo.Attributes;
+            NameImpl = propertyInfo.Name;
+            MemberImpl = propertyInfo;
+            ClassImpl = propertyInfo.PropertyType;
+
+            // It is not a real parameter in the delegate, so,
+            // not defining a real position.
+            PositionImpl = -1;
+
+            _underlyingProperty = propertyInfo;
+            IsOptional = isOptional;
+        }
+
+        public PropertyAsParameterInfo(bool isOptional, PropertyInfo property, ParameterInfo? parameterInfo)
+            : this(isOptional, property)
+        {
+            _constructionParameterInfo = parameterInfo;
+        }
+
+        public override bool HasDefaultValue
+            => _constructionParameterInfo is not null && _constructionParameterInfo.HasDefaultValue;
+        public override object? DefaultValue
+            => _constructionParameterInfo?.DefaultValue;
+        public override int MetadataToken => _underlyingProperty.MetadataToken;
+        public override object? RawDefaultValue
+            => _constructionParameterInfo?.RawDefaultValue;
+
+        public override object[] GetCustomAttributes(Type attributeType, bool inherit)
+        {
+            var attributes = _constructionParameterInfo?.GetCustomAttributes(attributeType, inherit);
+
+            if (attributes == null || attributes is { Length: 0 })
+            {
+                attributes = _underlyingProperty.GetCustomAttributes(attributeType, inherit);
+            }
+
+            return attributes;
+        }
+
+        public override object[] GetCustomAttributes(bool inherit)
+        {
+            var constructorAttributes = _constructionParameterInfo?.GetCustomAttributes(inherit);
+
+            if (constructorAttributes == null || constructorAttributes is { Length: 0 })
+            {
+                return _underlyingProperty.GetCustomAttributes(inherit);
+            }
+
+            var propertyAttributes = _underlyingProperty.GetCustomAttributes(inherit);
+
+            // Since the constructors attributes should take priority we will add them first,
+            // as we usually call it as First() or FirstOrDefault() in the argument creation
+            var mergedAttributes = new object[constructorAttributes.Length + propertyAttributes.Length];
+            Array.Copy(constructorAttributes, mergedAttributes, constructorAttributes.Length);
+            Array.Copy(propertyAttributes, 0, mergedAttributes, constructorAttributes.Length, propertyAttributes.Length);
+
+            return mergedAttributes;
+        }
+
+        public override IList<CustomAttributeData> GetCustomAttributesData()
+        {
+            var attributes = new List<CustomAttributeData>(
+                _constructionParameterInfo?.GetCustomAttributesData() ?? Array.Empty<CustomAttributeData>());
+            attributes.AddRange(_underlyingProperty.GetCustomAttributesData());
+
+            return attributes.AsReadOnly();
+        }
+
+        public override Type[] GetOptionalCustomModifiers()
+            => _underlyingProperty.GetOptionalCustomModifiers();
+
+        public override Type[] GetRequiredCustomModifiers()
+            => _underlyingProperty.GetRequiredCustomModifiers();
+
+        public override bool IsDefined(Type attributeType, bool inherit)
+        {
+            return (_constructionParameterInfo is not null && _constructionParameterInfo.IsDefined(attributeType, inherit)) ||
+                _underlyingProperty.IsDefined(attributeType, inherit);
+        }
+
+        public new bool IsOptional { get; }
+    }
+""";
+
     public static string GetGeneratedRouteBuilderExtensionsSource(string genericThunks, string thunks, string endpoints, string helperMethods, string helperTypes) => $$"""
 {{SourceHeader}}
 
 namespace Microsoft.AspNetCore.Builder
 {
     {{GeneratedCodeAttribute}}
-    internal class SourceKey
+    internal sealed class SourceKey
     {
         public string Path { get; init; }
         public int Line { get; init; }

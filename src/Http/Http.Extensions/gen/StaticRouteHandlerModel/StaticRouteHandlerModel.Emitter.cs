@@ -64,7 +64,7 @@ internal static class StaticRouteHandlerModelEmitter
 
         if (endpoint.Parameters.Length > 0)
         {
-            codeWriter.WriteLine(endpoint.EmitParameterPreparation(codeWriter.Indent));
+            codeWriter.WriteLine(endpoint.Parameters.EmitParameterPreparation(endpoint.EmitterContext, codeWriter.Indent));
         }
 
         codeWriter.WriteLine("if (wasParamCheckFailure)");
@@ -153,7 +153,7 @@ internal static class StaticRouteHandlerModelEmitter
 
         if (endpoint.Parameters.Length > 0)
         {
-            codeWriter.WriteLine(endpoint.EmitParameterPreparation(codeWriter.Indent));
+            codeWriter.WriteLine(endpoint.Parameters.EmitParameterPreparation(endpoint.EmitterContext, codeWriter.Indent));
         }
 
         codeWriter.WriteLine("if (wasParamCheckFailure)");
@@ -208,14 +208,32 @@ internal static class StaticRouteHandlerModelEmitter
 
         foreach (var parameter in endpoint.Parameters)
         {
+            if (parameter is { Source: EndpointParameterSource.AsParameters, EndpointParameters: { } innerParameters })
+            {
+                foreach (var innerParameter in innerParameters)
+                {
+                    ProcessParameter(innerParameter, codeWriter);
+                }
+            }
+            else
+            {
+                ProcessParameter(parameter, codeWriter);
+            }
+        }
+
+        static void ProcessParameter(EndpointParameter parameter, CodeWriter codeWriter)
+        {
             if (parameter.Type is not { } parameterType)
             {
-                break;
+                return;
             }
 
             if (parameter.IsEndpointParameterMetadataProvider)
             {
-                codeWriter.WriteLine($$"""var {{parameter.SymbolName}}_ParameterInfo = parameterInfos[{{parameter.Ordinal}}];""");
+                var resolveParameterInfo = parameter.IsProperty
+                    ? parameter.PropertyAsParameterInfoConstruction
+                    : $"parameterInfos[{parameter.Ordinal}]";
+                codeWriter.WriteLine($"var {parameter.SymbolName}_ParameterInfo = {resolveParameterInfo};");
                 codeWriter.WriteLine($"PopulateMetadataForParameter<{parameterType.ToDisplayString(EmitterConstants.DisplayFormat)}>({parameter.SymbolName}_ParameterInfo, options.EndpointBuilder);");
             }
 

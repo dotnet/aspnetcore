@@ -69,11 +69,13 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
             codeWriter.EndBlockWithComma();
             codeWriter.WriteLine("(del, options, inferredMetadataResult) =>");
             codeWriter.StartBlock();
+            codeWriter.WriteLine(@"Debug.Assert(options != null, ""RequestDelegateFactoryOptions not found."");");
+            codeWriter.WriteLine(@"Debug.Assert(options.EndpointBuilder != null, ""EndpointBuilder not found."");");
             codeWriter.WriteLine($"var handler = ({endpoint!.EmitHandlerDelegateType(considerOptionality: true)})del;");
             codeWriter.WriteLine("EndpointFilterDelegate? filteredInvocation = null;");
             if (endpoint!.EmitterContext.RequiresLoggingHelper || endpoint!.EmitterContext.HasJsonBodyOrService || endpoint!.Response?.IsSerializableJsonResponse(out var _) is true)
             {
-                codeWriter.WriteLine("var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;");
+                codeWriter.WriteLine("var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;");
             }
             endpoint!.EmitLoggingPreamble(codeWriter);
             endpoint!.EmitRouteOrQueryResolver(codeWriter);
@@ -235,6 +237,7 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                 var hasFormBody = endpoints.Any(endpoint => endpoint!.EmitterContext.HasFormBody);
                 var hasJsonBody = endpoints.Any(endpoint => endpoint!.EmitterContext.HasJsonBody || endpoint!.EmitterContext.HasJsonBodyOrService);
                 var hasResponseMetadata = endpoints.Any(endpoint => endpoint!.EmitterContext.HasResponseMetadata);
+                var requiresPropertyAsParameterInfo = endpoints.Any(endpoint => endpoint!.EmitterContext.RequiresPropertyAsParameterInfo);
 
                 using var stringWriter = new StringWriter(CultureInfo.InvariantCulture);
                 using var codeWriter = new CodeWriter(stringWriter, baseIndent: 0);
@@ -252,6 +255,11 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                 if (hasFormBody || hasJsonBody || hasResponseMetadata)
                 {
                     codeWriter.WriteLine(RequestDelegateGeneratorSources.ContentTypeConstantsType);
+                }
+
+                if (requiresPropertyAsParameterInfo)
+                {
+                    codeWriter.WriteLine(RequestDelegateGeneratorSources.PropertyAsParameterInfoClass);
                 }
 
                 return stringWriter.ToString();

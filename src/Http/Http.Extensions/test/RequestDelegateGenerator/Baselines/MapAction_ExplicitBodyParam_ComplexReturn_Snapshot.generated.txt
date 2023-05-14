@@ -11,7 +11,7 @@
 namespace Microsoft.AspNetCore.Builder
 {
     %GENERATEDCODEATTRIBUTE%
-    internal class SourceKey
+    internal sealed class SourceKey
     {
         public string Path { get; init; }
         public int Line { get; init; }
@@ -103,9 +103,11 @@ namespace Microsoft.AspNetCore.Http.Generated
                 },
                 (del, options, inferredMetadataResult) =>
                 {
+                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
+                    Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                     var handler = (System.Func<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo, global::Microsoft.AspNetCore.Http.HttpResults.Ok<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo>>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
-                    var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;
+                    var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
                     var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
@@ -177,9 +179,11 @@ namespace Microsoft.AspNetCore.Http.Generated
                 },
                 (del, options, inferredMetadataResult) =>
                 {
+                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
+                    Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                     var handler = (System.Func<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo?, global::Microsoft.AspNetCore.Http.HttpResults.Ok<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo>>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
-                    var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices;
+                    var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
                     var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
 
                     if (options?.EndpointBuilder?.FilterFactories.Count > 0)
@@ -388,7 +392,7 @@ namespace Microsoft.AspNetCore.Http.Generated
     }
 
 
-    file class LogOrThrowExceptionHelper
+    file sealed class LogOrThrowExceptionHelper
     {
         private readonly ILogger? _rdgLogger;
         private readonly bool _shouldThrow;
