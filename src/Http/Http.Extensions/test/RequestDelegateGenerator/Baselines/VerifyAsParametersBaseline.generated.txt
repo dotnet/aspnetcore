@@ -97,6 +97,21 @@ namespace Microsoft.AspNetCore.Builder
                 filePath,
                 lineNumber);
         }
+        internal static global::Microsoft.AspNetCore.Builder.RouteHandlerBuilder MapGet(
+            this global::Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints,
+            [global::System.Diagnostics.CodeAnalysis.StringSyntax("Route")] string pattern,
+            global::System.Action<global::Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithMetadataType> handler,
+            [global::System.Runtime.CompilerServices.CallerFilePath] string filePath = "",
+            [global::System.Runtime.CompilerServices.CallerLineNumber]int lineNumber = 0)
+        {
+            return global::Microsoft.AspNetCore.Http.Generated.GeneratedRouteBuilderExtensionsCore.MapCore(
+                endpoints,
+                pattern,
+                handler,
+                GetVerb,
+                filePath,
+                lineNumber);
+        }
 
     }
 }
@@ -136,12 +151,12 @@ namespace Microsoft.AspNetCore.Http.Generated
 
         private static readonly Dictionary<(string, int), (MetadataPopulator, RequestDelegateFactoryFunc)> map = new()
         {
-            [(@"TestMapActions.cs", 40)] = (
+            [(@"TestMapActions.cs", 44)] = (
                 (methodInfo, options) =>
                 {
                     Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
                     Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
-                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 40));
+                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 44));
                     return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
@@ -247,12 +262,12 @@ namespace Microsoft.AspNetCore.Http.Generated
                     var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
                     return new RequestDelegateResult(targetDelegate, metadata);
                 }),
-            [(@"TestMapActions.cs", 41)] = (
+            [(@"TestMapActions.cs", 45)] = (
                 (methodInfo, options) =>
                 {
                     Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
                     Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
-                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 41));
+                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 45));
                     return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
@@ -351,12 +366,12 @@ namespace Microsoft.AspNetCore.Http.Generated
                     var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
                     return new RequestDelegateResult(targetDelegate, metadata);
                 }),
-            [(@"TestMapActions.cs", 42)] = (
+            [(@"TestMapActions.cs", 46)] = (
                 (methodInfo, options) =>
                 {
                     Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
                     Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
-                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 42));
+                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 46));
                     return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
@@ -426,12 +441,12 @@ namespace Microsoft.AspNetCore.Http.Generated
                     var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
                     return new RequestDelegateResult(targetDelegate, metadata);
                 }),
-            [(@"TestMapActions.cs", 43)] = (
+            [(@"TestMapActions.cs", 47)] = (
                 (methodInfo, options) =>
                 {
                     Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
                     Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
-                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 43));
+                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 47));
                     options.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(contentTypes: GeneratedMetadataConstants.JsonContentType));
                     options.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
                     return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
@@ -506,6 +521,95 @@ namespace Microsoft.AspNetCore.Http.Generated
                             httpContext.Response.StatusCode = 400;
                         }
                         var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithImplicitFromBody>(httpContext, args_local));
+                        await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
+                    }
+
+                    RequestDelegate targetDelegate = filteredInvocation is null ? RequestHandler : RequestHandlerFiltered;
+                    var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
+                    return new RequestDelegateResult(targetDelegate, metadata);
+                }),
+            [(@"TestMapActions.cs", 48)] = (
+                (methodInfo, options) =>
+                {
+                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
+                    Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
+                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 48));
+                    options.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(contentTypes: GeneratedMetadataConstants.JsonContentType));
+                    var parameterInfos = methodInfo.GetParameters();
+                    var Value_ParameterInfo = new PropertyAsParameterInfo(false, typeof(Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithMetadataType)!.GetProperty("Value")!, typeof(Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithMetadataType).GetConstructor(new[] { typeof(Microsoft.AspNetCore.Http.HttpContext), typeof(Microsoft.AspNetCore.Http.Generators.Tests.AddsCustomParameterMetadataAsProperty) })?.GetParameters()[1]);
+                    PopulateMetadataForParameter<global::Microsoft.AspNetCore.Http.Generators.Tests.AddsCustomParameterMetadataAsProperty>(Value_ParameterInfo, options.EndpointBuilder);
+                    PopulateMetadataForEndpoint<global::Microsoft.AspNetCore.Http.Generators.Tests.AddsCustomParameterMetadataAsProperty>(methodInfo, options.EndpointBuilder);
+                    return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
+                },
+                (del, options, inferredMetadataResult) =>
+                {
+                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
+                    Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
+                    var handler = (System.Action<global::Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithMetadataType>)del;
+                    EndpointFilterDelegate? filteredInvocation = null;
+                    var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
+                    var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
+                    var serviceProviderIsService = serviceProvider?.GetService<IServiceProviderIsService>();
+                    var Value_JsonBodyOrServiceResolver = ResolveJsonBodyOrService<global::Microsoft.AspNetCore.Http.Generators.Tests.AddsCustomParameterMetadataAsProperty>(logOrThrowExceptionHelper, "AddsCustomParameterMetadataAsProperty", "Value", serviceProviderIsService);
+
+                    if (options?.EndpointBuilder?.FilterFactories.Count > 0)
+                    {
+                        filteredInvocation = GeneratedRouteBuilderExtensionsCore.BuildFilterDelegate(ic =>
+                        {
+                            if (ic.HttpContext.Response.StatusCode == 400)
+                            {
+                                return ValueTask.FromResult<object?>(Results.Empty);
+                            }
+                            handler(ic.GetArgument<global::Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithMetadataType>(0)!);
+                            return ValueTask.FromResult<object?>(Results.Empty);
+                        },
+                        options.EndpointBuilder,
+                        handler.Method);
+                    }
+
+                    async Task RequestHandler(HttpContext httpContext)
+                    {
+                        var wasParamCheckFailure = false;
+                        // Endpoint Parameter: args (Type = Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithMetadataType, IsOptional = False, IsParsable = False, IsArray = False, Source = AsParameters)
+                        var HttpContext_local = httpContext;
+                        // Endpoint Parameter: Value (Type = Microsoft.AspNetCore.Http.Generators.Tests.AddsCustomParameterMetadataAsProperty, IsOptional = False, IsParsable = False, IsArray = False, Source = JsonBodyOrService)
+                        var Value_resolveJsonBodyOrServiceResult = await Value_JsonBodyOrServiceResolver(httpContext, false);
+                        var Value_local = Value_resolveJsonBodyOrServiceResult.Item2;
+                        if (!Value_resolveJsonBodyOrServiceResult.Item1)
+                        {
+                            return;
+                        }
+
+                        var args_local = new global::Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithMetadataType(HttpContext_local, Value_local);
+
+                        if (wasParamCheckFailure)
+                        {
+                            httpContext.Response.StatusCode = 400;
+                            return;
+                        }
+                        handler(args_local);
+                    }
+
+                    async Task RequestHandlerFiltered(HttpContext httpContext)
+                    {
+                        var wasParamCheckFailure = false;
+                        // Endpoint Parameter: args (Type = Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithMetadataType, IsOptional = False, IsParsable = False, IsArray = False, Source = AsParameters)
+                        var HttpContext_local = httpContext;
+                        // Endpoint Parameter: Value (Type = Microsoft.AspNetCore.Http.Generators.Tests.AddsCustomParameterMetadataAsProperty, IsOptional = False, IsParsable = False, IsArray = False, Source = JsonBodyOrService)
+                        var Value_resolveJsonBodyOrServiceResult = await Value_JsonBodyOrServiceResolver(httpContext, false);
+                        var Value_local = Value_resolveJsonBodyOrServiceResult.Item2;
+                        if (!Value_resolveJsonBodyOrServiceResult.Item1)
+                        {
+                            return;
+                        }
+
+                        var args_local = new global::Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithMetadataType(HttpContext_local, Value_local);
+
+                        if (wasParamCheckFailure)
+                        {
+                            httpContext.Response.StatusCode = 400;
+                        }
+                        var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithMetadataType>(httpContext, args_local));
                         await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
                     }
 
@@ -639,6 +743,16 @@ namespace Microsoft.AspNetCore.Http.Generated
         }
         private static bool TryParseExplicit<T>(string? s, IFormatProvider? provider, [MaybeNullWhen(returnValue: false)] out T result) where T: IParsable<T>
             => T.TryParse(s, provider, out result);
+        private static void PopulateMetadataForEndpoint<T>(MethodInfo method, EndpointBuilder builder)
+            where T : IEndpointMetadataProvider
+        {
+            T.PopulateMetadata(method, builder);
+        }
+        private static void PopulateMetadataForParameter<T>(ParameterInfo parameter, EndpointBuilder builder)
+            where T : IEndpointParameterMetadataProvider
+        {
+            T.PopulateMetadata(parameter, builder);
+        }
 
     }
 
@@ -691,6 +805,97 @@ namespace Microsoft.AspNetCore.Http.Generated
         public static readonly string[] FormContentType = new[] { "multipart/form-data", "application/x-www-form-urlencoded" };
     }
 
+    file sealed class PropertyAsParameterInfo : ParameterInfo
+    {
+        private readonly PropertyInfo _underlyingProperty;
+        private readonly ParameterInfo? _constructionParameterInfo;
+
+        public PropertyAsParameterInfo(bool isOptional, PropertyInfo propertyInfo)
+        {
+            Debug.Assert(propertyInfo != null, "PropertyInfo must be provided.");
+
+            AttrsImpl = (ParameterAttributes)propertyInfo.Attributes;
+            NameImpl = propertyInfo.Name;
+            MemberImpl = propertyInfo;
+            ClassImpl = propertyInfo.PropertyType;
+
+            // It is not a real parameter in the delegate, so,
+            // not defining a real position.
+            PositionImpl = -1;
+
+            _underlyingProperty = propertyInfo;
+            IsOptional = isOptional;
+        }
+
+        public PropertyAsParameterInfo(bool isOptional, PropertyInfo property, ParameterInfo? parameterInfo)
+            : this(isOptional, property)
+        {
+            _constructionParameterInfo = parameterInfo;
+        }
+
+        public override bool HasDefaultValue
+            => _constructionParameterInfo is not null && _constructionParameterInfo.HasDefaultValue;
+        public override object? DefaultValue
+            => _constructionParameterInfo?.DefaultValue;
+        public override int MetadataToken => _underlyingProperty.MetadataToken;
+        public override object? RawDefaultValue
+            => _constructionParameterInfo?.RawDefaultValue;
+
+        public override object[] GetCustomAttributes(Type attributeType, bool inherit)
+        {
+            var attributes = _constructionParameterInfo?.GetCustomAttributes(attributeType, inherit);
+
+            if (attributes == null || attributes is { Length: 0 })
+            {
+                attributes = _underlyingProperty.GetCustomAttributes(attributeType, inherit);
+            }
+
+            return attributes;
+        }
+
+        public override object[] GetCustomAttributes(bool inherit)
+        {
+            var constructorAttributes = _constructionParameterInfo?.GetCustomAttributes(inherit);
+
+            if (constructorAttributes == null || constructorAttributes is { Length: 0 })
+            {
+                return _underlyingProperty.GetCustomAttributes(inherit);
+            }
+
+            var propertyAttributes = _underlyingProperty.GetCustomAttributes(inherit);
+
+            // Since the constructors attributes should take priority we will add them first,
+            // as we usually call it as First() or FirstOrDefault() in the argument creation
+            var mergedAttributes = new object[constructorAttributes.Length + propertyAttributes.Length];
+            Array.Copy(constructorAttributes, mergedAttributes, constructorAttributes.Length);
+            Array.Copy(propertyAttributes, 0, mergedAttributes, constructorAttributes.Length, propertyAttributes.Length);
+
+            return mergedAttributes;
+        }
+
+        public override IList<CustomAttributeData> GetCustomAttributesData()
+        {
+            var attributes = new List<CustomAttributeData>(
+                _constructionParameterInfo?.GetCustomAttributesData() ?? Array.Empty<CustomAttributeData>());
+            attributes.AddRange(_underlyingProperty.GetCustomAttributesData());
+
+            return attributes.AsReadOnly();
+        }
+
+        public override Type[] GetOptionalCustomModifiers()
+            => _underlyingProperty.GetOptionalCustomModifiers();
+
+        public override Type[] GetRequiredCustomModifiers()
+            => _underlyingProperty.GetRequiredCustomModifiers();
+
+        public override bool IsDefined(Type attributeType, bool inherit)
+        {
+            return (_constructionParameterInfo is not null && _constructionParameterInfo.IsDefined(attributeType, inherit)) ||
+                _underlyingProperty.IsDefined(attributeType, inherit);
+        }
+
+        public new bool IsOptional { get; }
+    }
 
     file sealed class LogOrThrowExceptionHelper
     {

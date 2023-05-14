@@ -160,7 +160,7 @@
     <value>No public parameterless constructor found for type '{0}'.</value>
   </data>
   <data name="InvalidAsParametersSingleConstructorOnly_Title" xml:space="preserve">
-    <value>Multiple constructors found</value>
+    <value>Multiple public constructors found</value>
   </data>
   <data name="InvalidAsParametersSingleConstructorOnly_Message" xml:space="preserve">
     <value>Only a single public parameterized constructor is allowed for type '{0}'.</value>

@@ -94,7 +94,7 @@ internal static class SymbolExtensions
         return false;
     }
 
-    public static bool TryGetAttributeImplementingInterface(this ImmutableArray<AttributeData> attributes, INamedTypeSymbol interfaceType)
+    public static bool HasAttributeImplementingInterface(this ImmutableArray<AttributeData> attributes, INamedTypeSymbol interfaceType)
     {
         return attributes.TryGetAttributeImplementingInterface(interfaceType, out var _);
     }
@@ -187,15 +187,15 @@ internal static class SymbolExtensions
         return false;
     }
 
-    public static string GetParameterInfoFromConstructor(this IParameterSymbol parameterSymbol)
+    public static string GetParameterInfoFromConstructorCode(this IParameterSymbol parameterSymbol)
     {
         if (parameterSymbol is { ContainingSymbol: IMethodSymbol constructor })
         {
-            var parameterType = $"typeof({parameterSymbol.Type.ToDisplayString()})";
+            var constructedType = $"typeof({parameterSymbol.ContainingType.ToDisplayString()})";
             var parameterTypes = constructor.Parameters.Select(parameter => $"typeof({parameter.Type.ToDisplayString()})");
             var parameterTypesString = string.Join(", ", parameterTypes);
             var getConstructorParameters = $$"""new[] { {{parameterTypesString}} }""";
-            return $"{parameterType}.GetConstructor({getConstructorParameters})?.GetParameters()[{parameterSymbol.Ordinal}]";
+            return $"{constructedType}.GetConstructor({getConstructorParameters})?.GetParameters()[{parameterSymbol.Ordinal}]";
         }
         return "null";
     }

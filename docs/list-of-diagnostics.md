@@ -75,7 +75,7 @@
 |  __`RDG005`__ | Invalid abstract type |
 |  __`RDG006`__ | Invalid constructor parameters |
 |  __`RDG007`__ | No valid constructor found |
-|  __`RDG008`__ | Multiple constructors found |
+|  __`RDG008`__ | Multiple public constructors found |
 |  __`RDG009`__ | Invalid nested AsParameters |
 |  __`RDG010`__ | Unexpected nullable type |
 

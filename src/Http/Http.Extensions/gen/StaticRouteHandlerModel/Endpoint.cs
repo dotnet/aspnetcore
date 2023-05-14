@@ -96,7 +96,7 @@ internal class Endpoint
     }
 
     public string HttpMethod { get; }
-    public bool IsAwaitable { get; set;  }
+    public bool IsAwaitable { get; set; }
     public bool NeedsParameterArray { get; }
     public string? RoutePattern { get; }
     public EmitterContext EmitterContext { get; }

@@ -260,10 +260,15 @@ static void parametersListWithHttpContext([AsParameters] ParametersListWithHttpC
     args.HttpContext.Items.Add("request", args.Request);
     args.HttpContext.Items.Add("response", args.Response);
 }
+static void parametersListWithMetadataType([AsParameters] ParametersListWithMetadataType args)
+{
+    args.HttpContext.Items.Add("value", args.Value);
+}
 app.MapGet("/parameterListWithDefaultValue/{value}", parameterListWithDefaultValue);
 app.MapGet("/parameterListRecordStruct/{value}", parameterListRecordStruct);
 app.MapGet("/parametersListWithHttpContext", parametersListWithHttpContext);
 app.MapPost("/parametersListWithImplicitFromBody", ([AsParameters] ParametersListWithImplicitFromBody args) => args.Todo.Name ?? string.Empty);
+app.MapGet("/parametersListWithMetadataType", parametersListWithMetadataType);
 """);
 
         await VerifyAgainstBaselineUsingFile(compilation);

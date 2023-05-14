@@ -42,7 +42,7 @@ internal class EndpointParameter
 
         var propertyInfo = $"typeof({property.ContainingType.ToDisplayString()})!.GetProperty({SymbolDisplay.FormatLiteral(property.Name, true)})!";
         PropertyAsParameterInfoConstruction = parameter is not null
-            ? $"new PropertyAsParameterInfo({(IsOptional ? "true" : "false")}, {propertyInfo}, {parameter.GetParameterInfoFromConstructor()})"
+            ? $"new PropertyAsParameterInfo({(IsOptional ? "true" : "false")}, {propertyInfo}, {parameter.GetParameterInfoFromConstructorCode()})"
             : $"new PropertyAsParameterInfo({(IsOptional ? "true" : "false")}, {propertyInfo})";
         endpoint.EmitterContext.RequiresPropertyAsParameterInfo = IsProperty && IsEndpointParameterMetadataProvider;
         ProcessEndpointParameterSource(endpoint, property, attributeBuilder.ToImmutable(), wellKnownTypes);
@@ -130,7 +130,7 @@ internal class EndpointParameter
             }
             IsOptional = isOptional;
         }
-        else if (attributes.TryGetAttributeImplementingInterface(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromServiceMetadata)))
+        else if (attributes.HasAttributeImplementingInterface(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromServiceMetadata)))
         {
             Source = EndpointParameterSource.Service;
         }

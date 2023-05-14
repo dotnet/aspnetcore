@@ -427,7 +427,7 @@ internal static class RequestDelegateGeneratorSources
         }
 
         public override bool HasDefaultValue
-        => _constructionParameterInfo is not null && _constructionParameterInfo.HasDefaultValue;
+            => _constructionParameterInfo is not null && _constructionParameterInfo.HasDefaultValue;
         public override object? DefaultValue
             => _constructionParameterInfo?.DefaultValue;
         public override int MetadataToken => _underlyingProperty.MetadataToken;
