@@ -4,7 +4,7 @@
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
 /// <summary>
-/// This exposes the Http.Sys HTTP_REQUEST_TIMING_INFO extensibility point which contains request processing timing data from Http.Sys.
+/// This exposes the Http.Sys HTTP_REQUEST_TIMING_INFO extensibility point which contains request processing timestamp data from Http.Sys.
 /// </summary>
 public interface IHttpSysRequestTimingFeature
 {
