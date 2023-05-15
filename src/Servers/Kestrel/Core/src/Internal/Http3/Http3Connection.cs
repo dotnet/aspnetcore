@@ -249,7 +249,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
         //    Uses MinResponseDataRate.
         var serviceContext = _context.ServiceContext;
         var requestHeadersTimeout = serviceContext.ServerOptions.Limits.RequestHeadersTimeout.ToTicks(
-                        serviceContext.TimeProvider.TimestampFrequency);
+                        serviceContext.TimeProvider);
 
         lock (_unidentifiedStreams)
         {

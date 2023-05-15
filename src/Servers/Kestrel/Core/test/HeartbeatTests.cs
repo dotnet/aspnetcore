@@ -32,8 +32,6 @@ public class HeartbeatTests : LoggedTest
         var heartbeatHandler = new Mock<IHeartbeatHandler>();
         var debugger = new Mock<IDebugger>();
         var kestrelTrace = new KestrelTrace(LoggerFactory);
-        var now = timeProvider.GetUtcNow();
-        var timestamp = timeProvider.GetTimestamp();
 
         var splits = new List<TimeSpan>();
         Stopwatch sw = null;
@@ -106,8 +104,6 @@ public class HeartbeatTests : LoggedTest
         var kestrelTrace = new KestrelTrace(LoggerFactory);
         var handlerMre = new ManualResetEventSlim();
         var handlerStartedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var now = timeProvider.GetUtcNow();
-        var timestamp = timeProvider.GetTimestamp();
         var heartbeatDuration = TimeSpan.FromSeconds(2);
 
         heartbeatHandler.Setup(h => h.OnHeartbeat()).Callback(() =>
@@ -151,8 +147,6 @@ public class HeartbeatTests : LoggedTest
         var kestrelTrace = new KestrelTrace(LoggerFactory);
         var handlerMre = new ManualResetEventSlim();
         var handlerStartedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var now = timeProvider.GetUtcNow();
-        var timestamp = timeProvider.GetTimestamp();
 
         heartbeatHandler.Setup(h => h.OnHeartbeat()).Callback(() =>
         {

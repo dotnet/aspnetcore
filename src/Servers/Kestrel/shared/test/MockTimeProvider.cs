@@ -12,39 +12,25 @@ public class MockTimeProvider : TimeProvider
         // 100_000_000; // 8 zeros, in between
         // 1_000_000_000; // Linux
         Stopwatch.Frequency;
-    private long _ticks;
+    private long _utcTicks;
+    private long _timestamp;
 
     public MockTimeProvider()
     {
         // Use a random DateTimeOffset to ensure tests that incorrectly use the current DateTimeOffset fail always instead of only rarely.
-        // Pick a date between the min DateTimeOffset and a year before the max DateTimeOffset so there's room to advance the clock.
-        _ticks = NextLong(0,
-            (DateTimeOffset.UtcNow - DateTimeOffset.UnixEpoch + TimeSpan.FromDays(365 * 10)).ToTicks(_timestampFrequency));
-    }
-
-    public MockTimeProvider(DateTimeOffset now)
-    {
-        _ticks = (now - DateTimeOffset.UnixEpoch).ToTicks(_timestampFrequency);
+        var tenYears = TimeSpan.FromDays(365 * 10).Ticks;
+        _utcTicks = DateTimeOffset.UtcNow.Ticks + Random.Shared.NextInt64(-tenYears, tenYears);
+        // Timestamps often measure system uptime.
+        _timestamp = Random.Shared.NextInt64(0, System.GetTimestamp() * 100);
     }
 
     public override DateTimeOffset GetUtcNow()
     {
         UtcNowCalled++;
-        var seconds = Interlocked.Read(ref _ticks) / (double)_timestampFrequency;
-        return DateTimeOffset.UnixEpoch + TimeSpan.FromSeconds(seconds);
+        return new DateTimeOffset(Interlocked.Read(ref _utcTicks), TimeSpan.Zero);
     }
 
-    public void SetUtcNow(DateTimeOffset now)
-    {
-        Interlocked.Exchange(ref _ticks, (now - DateTimeOffset.UnixEpoch).ToTicks(_timestampFrequency));
-    }
-
-    public override long GetTimestamp() => Interlocked.Read(ref _ticks);
-
-    public void SetTimestamp(long now)
-    {
-        Interlocked.Exchange(ref _ticks, now);
-    }
+    public override long GetTimestamp() => Interlocked.Read(ref _timestamp);
 
     public override long TimestampFrequency => _timestampFrequency;
 
@@ -52,12 +38,27 @@ public class MockTimeProvider : TimeProvider
 
     public void Advance(TimeSpan timeSpan)
     {
-        Interlocked.Add(ref _ticks, timeSpan.ToTicks(TimestampFrequency));
+        Interlocked.Add(ref _utcTicks, timeSpan.Ticks);
+        Interlocked.Add(ref _timestamp, timeSpan.ToTicks(_timestampFrequency));
     }
 
-    private long NextLong(long minValue, long maxValue)
+    public void AdvanceTo(DateTimeOffset newUtcNow)
     {
-        return (long)(Random.Shared.NextDouble() * (maxValue - minValue) + minValue);
+        var nowTicks = newUtcNow.UtcTicks;
+        var priorTicks = Interlocked.Exchange(ref _utcTicks, nowTicks);
+        // Advance Timestamp by the same amount.
+        // Known timestamp frequencies are the same or larger than TicksPerSecond.
+        var timestampOffset = (nowTicks - priorTicks) * (_timestampFrequency / TimeSpan.TicksPerSecond);
+        Interlocked.Add(ref _timestamp, timestampOffset);
+    }
+
+    public void AdvanceTo(long timestamp)
+    {
+        var priorTimestamp = Interlocked.Exchange(ref _timestamp, timestamp);
+        // Advance UtcNow by the same amount.
+        // Known timestamp frequencies are the same or larger than TicksPerSecond.
+        var utcOffset = (long)((timestamp - priorTimestamp) * ((double)TimeSpan.TicksPerSecond / _timestampFrequency));
+        Interlocked.Add(ref _utcTicks, utcOffset);
     }
 
     public override ITimer CreateTimer(TimerCallback callback, object state, TimeSpan dueTime, TimeSpan period)

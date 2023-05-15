@@ -18,7 +18,7 @@ public class TimeoutControlTests
     {
         _mockTimeoutHandler = new Mock<ITimeoutHandler>();
         _timeProvider = new MockTimeProvider();
-        _timeoutControl = new TimeoutControl(_mockTimeoutHandler.Object, _timeProvider.TimestampFrequency);
+        _timeoutControl = new TimeoutControl(_mockTimeoutHandler.Object, _timeProvider);
     }
 
     [Fact]
@@ -29,9 +29,9 @@ public class TimeoutControlTests
         _timeoutControl.Debugger = mockDebugger.Object;
 
         var now = _timeProvider.GetTimestamp();
-        _timeoutControl.Initialize(now);
+        _timeoutControl.Initialize();
         _timeoutControl.SetTimeout(TimeSpan.FromTicks(1), TimeoutReason.RequestHeaders);
-        _timeoutControl.Tick(now + 2 + Heartbeat.Interval.ToTicks(_timeProvider.TimestampFrequency));
+        _timeoutControl.Tick(_timeProvider.GetTimestamp(now + 2, Heartbeat.Interval));
 
         _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
     }
@@ -64,7 +64,7 @@ public class TimeoutControlTests
 
         // Initialize timestamp
         var now = _timeProvider.GetTimestamp();
-        _timeoutControl.Initialize(now);
+        _timeoutControl.Initialize();
 
         _timeoutControl.StartRequestBody(minRate);
         _timeoutControl.StartTimingRead();
@@ -96,7 +96,7 @@ public class TimeoutControlTests
 
         // Initialize timestamp
         var now = _timeProvider.GetTimestamp();
-        _timeoutControl.Initialize(now);
+        _timeoutControl.Initialize();
 
         _timeoutControl.StartRequestBody(minRate);
         _timeoutControl.StartTimingRead();
@@ -155,7 +155,7 @@ public class TimeoutControlTests
         var minRate = new MinDataRate(bytesPerSecond: 100, gracePeriod: TimeSpan.FromSeconds(2));
 
         // Initialize timestamp
-        _timeoutControl.Initialize(_timeProvider.GetTimestamp());
+        _timeoutControl.Initialize();
 
         _timeoutControl.StartRequestBody(minRate);
         _timeoutControl.StartTimingRead();
@@ -211,7 +211,7 @@ public class TimeoutControlTests
         var minRate = new MinDataRate(bytesPerSecond: 100, gracePeriod: TimeSpan.FromSeconds(2));
 
         // Initialize timestamp
-        _timeoutControl.Initialize(_timeProvider.GetTimestamp());
+        _timeoutControl.Initialize();
 
         _timeoutControl.StartRequestBody(minRate);
         _timeoutControl.StartTimingRead();
@@ -257,7 +257,7 @@ public class TimeoutControlTests
         var minRate = new MinDataRate(bytesPerSecond: 100, gracePeriod: TimeSpan.FromSeconds(2));
 
         // Initialize timestamp
-        _timeoutControl.Initialize(_timeProvider.GetTimestamp());
+        _timeoutControl.Initialize();
 
         _timeoutControl.StartRequestBody(minRate);
         _timeoutControl.StartTimingRead();
@@ -289,7 +289,7 @@ public class TimeoutControlTests
 
         // Initialize timestamp
         var now = _timeProvider.GetTimestamp();
-        _timeoutControl.Initialize(now);
+        _timeoutControl.Initialize();
         _timeoutControl.InitializeHttp2(flowControl);
 
         _timeoutControl.StartRequestBody(minRate);
@@ -335,7 +335,7 @@ public class TimeoutControlTests
 
         // Initialize timestamp
         var now = _timeProvider.GetTimestamp();
-        _timeoutControl.Initialize(now);
+        _timeoutControl.Initialize();
 
         _timeoutControl.StartRequestBody(minRate);
         _timeoutControl.StartTimingRead();
@@ -373,7 +373,7 @@ public class TimeoutControlTests
         var minRate = new MinDataRate(bytesPerSecond: 100, gracePeriod: TimeSpan.FromSeconds(2));
 
         // Initialize timestamp
-        _timeoutControl.Initialize(_timeProvider.GetTimestamp());
+        _timeoutControl.Initialize();
 
         // Should complete within 4 seconds, but the timeout is adjusted by adding Heartbeat.Interval
         _timeoutControl.BytesWrittenToBuffer(minRate, 400);
@@ -391,7 +391,7 @@ public class TimeoutControlTests
         var minRate = new MinDataRate(bytesPerSecond: 100, gracePeriod: TimeSpan.FromSeconds(5));
 
         // Initialize timestamp
-        _timeoutControl.Initialize(_timeProvider.GetTimestamp());
+        _timeoutControl.Initialize();
 
         // Should complete within 1 second, but the timeout is adjusted by adding Heartbeat.Interval
         _timeoutControl.BytesWrittenToBuffer(minRate, 100);
@@ -415,7 +415,7 @@ public class TimeoutControlTests
         var minRate = new MinDataRate(bytesPerSecond: 100, gracePeriod: TimeSpan.FromSeconds(2));
 
         // Initialize timestamp
-        _timeoutControl.Initialize(_timeProvider.GetTimestamp());
+        _timeoutControl.Initialize();
 
         // Should complete within 5 seconds, but the timeout is adjusted by adding Heartbeat.Interval
         _timeoutControl.BytesWrittenToBuffer(minRate, 500);
@@ -448,7 +448,7 @@ public class TimeoutControlTests
         var writeSize = 100;
 
         // Initialize timestamp
-        _timeoutControl.Initialize(_timeProvider.GetTimestamp());
+        _timeoutControl.Initialize();
 
         // 5 consecutive 100 byte writes.
         for (var i = 0; i < numWrites - 1; i++)
@@ -479,7 +479,7 @@ public class TimeoutControlTests
         var minRate = new MinDataRate(bytesPerSecond: 100, gracePeriod: TimeSpan.FromSeconds(2));
 
         // Initialize timestamp
-        _timeoutControl.Initialize(_timeProvider.GetTimestamp());
+        _timeoutControl.Initialize();
 
         // Should complete within 4 seconds, but the timeout is adjusted by adding Heartbeat.Interval
         _timeoutControl.BytesWrittenToBuffer(minRate, 400);
@@ -504,7 +504,7 @@ public class TimeoutControlTests
         var minRate = new MinDataRate(bytesPerSecond, gracePeriod);
 
         // Initialize timestamp
-        _timeoutControl.Initialize(_timeProvider.GetTimestamp());
+        _timeoutControl.Initialize();
 
         _timeoutControl.StartRequestBody(minRate);
         _timeoutControl.StartTimingRead();
@@ -519,15 +519,15 @@ public class TimeoutControlTests
 
     private void AdvanceClock(TimeSpan timeSpan)
     {
-        var endTime = _timeProvider.GetTimestamp() + timeSpan.ToTicks(_timeProvider.TimestampFrequency);
+        var endTime = _timeProvider.GetTimestamp(timeSpan);
 
-        while (_timeProvider.GetTimestamp() + Heartbeat.Interval.ToTicks(_timeProvider.TimestampFrequency) < endTime)
+        while (_timeProvider.GetTimestamp(Heartbeat.Interval) < endTime)
         {
             _timeProvider.Advance(Heartbeat.Interval);
             _timeoutControl.Tick(_timeProvider.GetTimestamp());
         }
 
-        _timeProvider.SetTimestamp(endTime);
+        _timeProvider.AdvanceTo(endTime);
         _timeoutControl.Tick(_timeProvider.GetTimestamp());
     }
 }

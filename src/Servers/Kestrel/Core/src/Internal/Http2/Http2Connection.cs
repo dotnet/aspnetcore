@@ -44,7 +44,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
 
     private const int InitialStreamPoolSize = 5;
     private const int MaxStreamPoolSize = 100;
-    private const long StreamPoolExpirySeconds = 5;
+    private readonly TimeSpan StreamPoolExpiry = TimeSpan.FromSeconds(5);
 
     private readonly HttpConnectionContext _context;
     private readonly Http2FrameWriter _frameWriter;
@@ -1270,7 +1270,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
             if (stream.DrainExpirationTimestamp == default)
             {
                 _serverActiveStreamCount--;
-                stream.DrainExpirationTimestamp = timestamp + Constants.RequestBodyDrainTimeout.ToTicks(TimeProvider.TimestampFrequency);
+                stream.DrainExpirationTimestamp = TimeProvider.GetTimestamp(timestamp, Constants.RequestBodyDrainTimeout);
             }
 
             if (stream.EndStreamReceived || stream.RstStreamReceived || stream.DrainExpirationTimestamp < timestamp)
@@ -1304,7 +1304,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
             // Pool and reuse the stream if it finished in a graceful state and there is space in the pool.
 
             // This property is used to remove unused streams from the pool
-            stream.DrainExpirationTimestamp = TimeProvider.GetTimestamp() + StreamPoolExpirySeconds * TimeProvider.TimestampFrequency;
+            stream.DrainExpirationTimestamp = TimeProvider.GetTimestamp(StreamPoolExpiry);
 
             StreamPool.Push(stream);
         }

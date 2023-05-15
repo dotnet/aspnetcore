@@ -36,7 +36,7 @@ internal class Http3InMemory
     public Http3InMemory(ServiceContext serviceContext, MockTimeProvider mockTimeProvider, ITimeoutHandler timeoutHandler, ILoggerFactory loggerFactory)
     {
         _serviceContext = serviceContext;
-        _timeoutControl = new TimeoutControl(new TimeoutControlConnectionInvoker(this, timeoutHandler), mockTimeProvider.TimestampFrequency);
+        _timeoutControl = new TimeoutControl(new TimeoutControlConnectionInvoker(this, timeoutHandler), mockTimeProvider);
         _timeoutControl.Debugger = new TestDebugger();
 
         _mockTimeProvider = mockTimeProvider;
@@ -200,27 +200,22 @@ internal class Http3InMemory
         Logger.LogDebug("Advancing timeProvider {timeSpan}.", timeSpan);
 
         var timeProvider = _mockTimeProvider;
-        var endTime = timeProvider.GetTimestamp() + timeSpan.ToTicks(timeProvider.TimestampFrequency);
-        var interval = Heartbeat.Interval.ToTicks(timeProvider.TimestampFrequency);
+        var endTime = timeProvider.GetTimestamp(timeSpan);
 
-        while (timeProvider.GetTimestamp() + interval < endTime)
+        while (timeProvider.GetTimestamp(Heartbeat.Interval) < endTime)
         {
-            TriggerTick(timeProvider.GetTimestamp() + interval);
+            timeProvider.Advance(Heartbeat.Interval);
+            _timeoutControl.Tick(timeProvider.GetTimestamp());
         }
 
-        TriggerTick(endTime);
+        timeProvider.AdvanceTo(endTime);
+        _timeoutControl.Tick(timeProvider.GetTimestamp());
     }
 
-    public void TriggerTick(DateTimeOffset now)
+    public void TriggerTick(TimeSpan timeSpan = default)
     {
-        _mockTimeProvider.SetUtcNow(now);
-        Connection?.Tick(_mockTimeProvider.GetTimestamp());
-    }
-
-    public void TriggerTick(long timestamp)
-    {
-        _mockTimeProvider.SetTimestamp(timestamp);
-        _timeoutControl.Tick(timestamp);
+        _mockTimeProvider.Advance(timeSpan);
+        var timestamp = _mockTimeProvider.GetTimestamp();
         Connection?.Tick(timestamp);
     }
 

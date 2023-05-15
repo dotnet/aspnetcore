@@ -36,7 +36,7 @@ internal sealed class HttpConnection : ITimeoutHandler
         _context = context;
         _timeProvider = _context.ServiceContext.TimeProvider;
 
-        _timeoutControl = new TimeoutControl(this, _timeProvider.TimestampFrequency);
+        _timeoutControl = new TimeoutControl(this, _timeProvider);
 
         // Tests override the timeout control sometimes
         _context.TimeoutControl ??= _timeoutControl;
@@ -49,7 +49,7 @@ internal sealed class HttpConnection : ITimeoutHandler
         try
         {
             // Ensure TimeoutControl._lastTimestamp is initialized before anything that could set timeouts runs.
-            _timeoutControl.Initialize(_timeProvider.GetTimestamp());
+            _timeoutControl.Initialize();
 
             IRequestProcessor? requestProcessor = null;
 

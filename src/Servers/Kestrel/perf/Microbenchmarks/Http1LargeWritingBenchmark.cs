@@ -71,13 +71,13 @@ public class Http1LargeWritingBenchmark
         var serviceContext = TestContextFactory.CreateServiceContext(
             serverOptions: new KestrelServerOptions(),
             httpParser: new HttpParser<Http1ParsingHandler>(),
-            dateHeaderValueManager: new DateHeaderValueManager(new MockTimeProvider()));
+            dateHeaderValueManager: new DateHeaderValueManager(TimeProvider.System));
 
         var connectionContext = TestContextFactory.CreateHttpConnectionContext(
             serviceContext: serviceContext,
             connectionContext: null,
             transport: pair.Transport,
-            timeoutControl: new TimeoutControl(timeoutHandler: null, new MockTimeProvider().TimestampFrequency),
+            timeoutControl: new TimeoutControl(timeoutHandler: null, TimeProvider.System),
             memoryPool: _memoryPool,
             connectionFeatures: new FeatureCollection());
 

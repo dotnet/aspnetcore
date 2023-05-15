@@ -22,7 +22,7 @@ public class ResponseHeaderCollectionBenchmark
     private const int InnerLoopCount = 128;
 
     private static readonly byte[] _bytesServer = Encoding.ASCII.GetBytes("\r\nServer: Kestrel");
-    private static readonly DateHeaderValueManager _dateHeaderValueManager = new DateHeaderValueManager(new MockTimeProvider());
+    private static readonly DateHeaderValueManager _dateHeaderValueManager = new DateHeaderValueManager(TimeProvider.System);
     private HttpResponseHeaders _responseHeadersDirect;
     private HttpResponse _response;
 

@@ -524,16 +524,17 @@ public class StartLineTests : IDisposable
         var pair = DuplexPipe.CreateConnectionPair(options, options);
         Transport = pair.Transport;
 
+        var timeProvider = new MockTimeProvider();
         var serviceContext = TestContextFactory.CreateServiceContext(
             serverOptions: new KestrelServerOptions(),
-            timeProvider: new MockTimeProvider(),
+            timeProvider: timeProvider,
             httpParser: new HttpParser<Http1ParsingHandler>());
 
         var connectionContext = TestContextFactory.CreateHttpConnectionContext(
             serviceContext: serviceContext,
             connectionContext: Mock.Of<ConnectionContext>(),
             transport: Transport,
-            timeoutControl: new TimeoutControl(timeoutHandler: null, new MockTimeProvider().TimestampFrequency),
+            timeoutControl: new TimeoutControl(timeoutHandler: null, timeProvider),
             memoryPool: MemoryPool,
             connectionFeatures: new FeatureCollection());
 

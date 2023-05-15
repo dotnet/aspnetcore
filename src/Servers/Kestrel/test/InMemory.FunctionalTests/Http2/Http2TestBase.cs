@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Buffers;
 using System.Buffers.Binary;
 using System.Collections.Concurrent;
@@ -118,6 +119,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
     internal readonly DynamicHPackEncoder _hpackEncoder;
     private readonly byte[] _headerEncodingBuffer = new byte[Http2PeerSettings.MinAllowedMaxFrameSize];
 
+    private readonly MockTimeProvider _timeProvider = new();
     internal readonly TimeoutControl _timeoutControl;
     protected readonly Mock<ConnectionContext> _mockConnectionContext = new Mock<ConnectionContext>();
     internal readonly Mock<ITimeoutHandler> _mockTimeoutHandler = new Mock<ITimeoutHandler>();
@@ -162,7 +164,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         _hpackDecoder = new HPackDecoder((int)_clientSettings.HeaderTableSize, MaxRequestHeaderFieldSize);
         _hpackEncoder = new DynamicHPackEncoder();
 
-        _timeoutControl = new TimeoutControl(_mockTimeoutHandler.Object, new MockTimeProvider().TimestampFrequency);
+        _timeoutControl = new TimeoutControl(_mockTimeoutHandler.Object, _timeProvider);
         _mockTimeoutControl = new Mock<MockTimeoutControlBase>(_timeoutControl) { CallBase = true };
         _timeoutControl.Debugger = Mock.Of<IDebugger>();
 
@@ -387,12 +389,11 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
     {
         base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
 
-        var timeProvider = new MockTimeProvider();
         _serviceContext = new TestServiceContext(LoggerFactory)
         {
             Scheduler = PipeScheduler.Inline,
-            MockTimeProvider = timeProvider,
-            TimeProvider = timeProvider,
+            MockTimeProvider = _timeProvider,
+            TimeProvider = _timeProvider,
         };
 
         TestSink.MessageLogged += context =>
@@ -475,7 +476,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         _mockTimeoutHandler.Setup(h => h.OnTimeout(It.IsAny<TimeoutReason>()))
                            .Callback<TimeoutReason>(r => httpConnection.OnTimeout(r));
 
-        _timeoutControl.Initialize(_serviceContext.TimeProvider.GetTimestamp());
+        _timeoutControl.Initialize();
     }
 
     private class LifetimeHandlerInterceptor : IHttp2StreamLifetimeHandler
@@ -1341,18 +1342,15 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         }
     }
 
-    protected void TriggerTick(DateTimeOffset? nowOrNull = null)
+    protected void TriggerTick(TimeSpan timeSpan)
     {
-        var now = nowOrNull ?? _serviceContext.MockTimeProvider.GetUtcNow();
-        _serviceContext.MockTimeProvider.SetUtcNow(now);
-        var timestamp = _serviceContext.MockTimeProvider.GetTimestamp();
-        _timeoutControl.Tick(timestamp);
-        ((IRequestProcessor)_connection)?.Tick(timestamp);
+        _serviceContext.MockTimeProvider.Advance(timeSpan);
+        TriggerTick();
     }
 
-    protected void TriggerTick(long timestamp)
+    protected void TriggerTick()
     {
-        _serviceContext.MockTimeProvider.SetTimestamp(timestamp);
+        var timestamp = _serviceContext.MockTimeProvider.GetTimestamp();
         _timeoutControl.Tick(timestamp);
         ((IRequestProcessor)_connection)?.Tick(timestamp);
     }
@@ -1360,15 +1358,15 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
     protected void AdvanceTime(TimeSpan timeSpan)
     {
         var timeProvider = _serviceContext.MockTimeProvider;
-        var endTime = timeProvider.GetTimestamp() + timeSpan.ToTicks(timeProvider.TimestampFrequency);
-        var interval = Heartbeat.Interval.ToTicks(timeProvider.TimestampFrequency);
+        var endTime = timeProvider.GetTimestamp(timeSpan);
 
-        while (timeProvider.GetTimestamp() + interval < endTime)
+        while (timeProvider.GetTimestamp(Heartbeat.Interval) < endTime)
         {
-            TriggerTick(timeProvider.GetTimestamp() + interval);
+            TriggerTick(Heartbeat.Interval);
         }
 
-        TriggerTick(endTime);
+        timeProvider.AdvanceTo(endTime);
+        TriggerTick();
     }
 
     private static PipeOptions GetInputPipeOptions(ServiceContext serviceContext, MemoryPool<byte> memoryPool, PipeScheduler writerScheduler) => new PipeOptions

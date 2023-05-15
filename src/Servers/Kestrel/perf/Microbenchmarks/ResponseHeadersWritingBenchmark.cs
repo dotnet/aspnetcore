@@ -179,7 +179,7 @@ public class ResponseHeadersWritingBenchmark
     {
         _responseHeaders = new HttpResponseHeaders();
         _responseHeadersDict = _responseHeaders;
-        _dateHeaderValueManager = new DateHeaderValueManager(new MockTimeProvider());
+        _dateHeaderValueManager = new DateHeaderValueManager(TimeProvider.System);
         _dateHeaderValueManager.OnHeartbeat();
         _writer = new Writer();
     }

@@ -124,7 +124,7 @@ public class Http3TimeoutTests : Http3TestBase
     public async Task HEADERS_IncompleteFrameReceivedWithinRequestHeadersTimeout_StreamError()
     {
         var timeProvider = _serviceContext.MockTimeProvider;
-        var now = timeProvider.GetTimestamp();
+        var timestamp = timeProvider.GetTimestamp();
         var limits = _serviceContext.ServerOptions.Limits;
 
         var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(_noopApplication, null).DefaultTimeout();
@@ -138,12 +138,12 @@ public class Http3TimeoutTests : Http3TestBase
 
         var serverRequestStream = Http3Api.Connection._streams[requestStream.StreamId];
 
-        Http3Api.TriggerTick(now);
-        Http3Api.AdvanceTime(limits.RequestHeadersTimeout);
+        Http3Api.TriggerTick();
+        Http3Api.TriggerTick(limits.RequestHeadersTimeout);
 
-        Assert.Equal(now + limits.RequestHeadersTimeout.ToTicks(timeProvider.TimestampFrequency), serverRequestStream.StreamTimeoutTimestamp);
+        Assert.Equal(timeProvider.GetTimestamp(timestamp, limits.RequestHeadersTimeout), serverRequestStream.StreamTimeoutTimestamp);
 
-        Http3Api.AdvanceTime(TimeSpan.FromTicks(1));
+        Http3Api.TriggerTick(TimeSpan.FromTicks(1));
 
         await requestStream.WaitForStreamErrorAsync(
             Http3ErrorCode.RequestRejected,
@@ -158,7 +158,7 @@ public class Http3TimeoutTests : Http3TestBase
     {
         Http3Api._serviceContext.ServerOptions.EnableWebTransportAndH3Datagrams = pendingStreamsEnabled;
 
-        var now = _serviceContext.MockTimeProvider.GetTimestamp();
+        var timestamp = _serviceContext.MockTimeProvider.GetTimestamp();
         var limits = _serviceContext.ServerOptions.Limits;
         var headers = new[]
         {
@@ -188,10 +188,10 @@ public class Http3TimeoutTests : Http3TestBase
             serverRequestStream = Http3Api.Connection._streams[requestStream.StreamId];
         }
 
-        Http3Api.TriggerTick(now);
+        Http3Api.TriggerTick();
         Http3Api.AdvanceTime(limits.RequestHeadersTimeout);
 
-        Assert.Equal(now + limits.RequestHeadersTimeout.ToTicks(_serviceContext.TimeProvider.TimestampFrequency), serverRequestStream.StreamTimeoutTimestamp);
+        Assert.Equal(_serviceContext.TimeProvider.GetTimestamp(timestamp, limits.RequestHeadersTimeout), serverRequestStream.StreamTimeoutTimestamp);
 
         await requestStream.SendHeadersAsync(headers).DefaultTimeout();
 
@@ -212,7 +212,7 @@ public class Http3TimeoutTests : Http3TestBase
         Http3Api._serviceContext.ServerOptions.EnableWebTransportAndH3Datagrams = true;
 
         var timeProvider = _serviceContext.MockTimeProvider;
-        var now = timeProvider.GetTimestamp();
+        var timestamp = timeProvider.GetTimestamp();
         var limits = _serviceContext.ServerOptions.Limits;
 
         await Http3Api.InitializeConnectionAsync(_noopApplication).DefaultTimeout();
@@ -225,10 +225,10 @@ public class Http3TimeoutTests : Http3TestBase
         await outboundControlStream.OnUnidentifiedStreamCreatedTask.DefaultTimeout();
         var serverInboundControlStream = Http3Api.Connection._unidentifiedStreams[outboundControlStream.StreamId];
 
-        Http3Api.TriggerTick(now);
+        Http3Api.TriggerTick();
         Http3Api.AdvanceTime(limits.RequestHeadersTimeout);
 
-        Assert.Equal(now + limits.RequestHeadersTimeout.ToTicks(timeProvider.TimestampFrequency), serverInboundControlStream.StreamTimeoutTimestamp);
+        Assert.Equal(timeProvider.GetTimestamp(timestamp, limits.RequestHeadersTimeout), serverInboundControlStream.StreamTimeoutTimestamp);
 
         Http3Api.AdvanceTime(TimeSpan.FromTicks(1));
     }
@@ -239,8 +239,8 @@ public class Http3TimeoutTests : Http3TestBase
         Http3Api._serviceContext.ServerOptions.EnableWebTransportAndH3Datagrams = false;
 
         var timeProvider = _serviceContext.MockTimeProvider;
-        var now = timeProvider.GetTimestamp();
-        Http3Api._timeoutControl.Initialize(now);
+        var timestamp = timeProvider.GetTimestamp();
+        Http3Api._timeoutControl.Initialize();
         var limits = _serviceContext.ServerOptions.Limits;
         var headers = new[]
         {
@@ -261,12 +261,12 @@ public class Http3TimeoutTests : Http3TestBase
 
         var serverInboundControlStream = Http3Api.Connection._streams[outboundControlStream.StreamId];
 
-        Http3Api.TriggerTick(now);
-        Http3Api.AdvanceTime(limits.RequestHeadersTimeout);
+        Http3Api.TriggerTick();
+        Http3Api.TriggerTick(limits.RequestHeadersTimeout);
 
-        Assert.Equal(now + limits.RequestHeadersTimeout.ToTicks(timeProvider.TimestampFrequency), serverInboundControlStream.StreamTimeoutTimestamp);
+        Assert.Equal(timeProvider.GetTimestamp(timestamp, limits.RequestHeadersTimeout), serverInboundControlStream.StreamTimeoutTimestamp);
 
-        Http3Api.AdvanceTime(TimeSpan.FromTicks(1));
+        Http3Api.TriggerTick(TimeSpan.FromTicks(1));
 
         await outboundControlStream.WaitForStreamErrorAsync(
             Http3ErrorCode.StreamCreationError,
@@ -277,7 +277,6 @@ public class Http3TimeoutTests : Http3TestBase
     [Fact]
     public async Task ControlStream_HeaderReceivedWithinRequestHeadersTimeout_StreamError()
     {
-        var now = _serviceContext.MockTimeProvider.GetUtcNow();
         var limits = _serviceContext.ServerOptions.Limits;
 
         await Http3Api.InitializeConnectionAsync(_noopApplication).DefaultTimeout();
@@ -285,14 +284,14 @@ public class Http3TimeoutTests : Http3TestBase
         var controlStream = await Http3Api.GetInboundControlStream().DefaultTimeout();
         await controlStream.ExpectSettingsAsync().DefaultTimeout();
 
-        Http3Api.TriggerTick(now);
-        Http3Api.TriggerTick(now + limits.RequestHeadersTimeout + TimeSpan.FromTicks(1));
+        Http3Api.TriggerTick();
+        Http3Api.TriggerTick(limits.RequestHeadersTimeout + TimeSpan.FromTicks(1));
 
         var outboundControlStream = await Http3Api.CreateControlStream(id: 0);
 
         await outboundControlStream.OnStreamCreatedTask.DefaultTimeout();
 
-        Http3Api.TriggerTick(now + limits.RequestHeadersTimeout + TimeSpan.FromTicks(1));
+        Http3Api.TriggerTick();
     }
 
     [Theory]
@@ -303,7 +302,6 @@ public class Http3TimeoutTests : Http3TestBase
         Http3Api._serviceContext.ServerOptions.EnableWebTransportAndH3Datagrams = pendingStreamEnabled;
 
         var timeProvider = _serviceContext.MockTimeProvider;
-        var now = timeProvider.GetTimestamp();
         var limits = _serviceContext.ServerOptions.Limits;
         limits.RequestHeadersTimeout = TimeSpan.MaxValue;
 
@@ -326,9 +324,9 @@ public class Http3TimeoutTests : Http3TestBase
             serverInboundControlStream = Http3Api.Connection._streams[outboundControlStream.StreamId];
         }
 
-        Http3Api.TriggerTick(now);
+        Http3Api.TriggerTick();
 
-        Assert.Equal(TimeSpan.MaxValue.ToTicks(timeProvider.TimestampFrequency), serverInboundControlStream.StreamTimeoutTimestamp);
+        Assert.Equal(TimeSpan.MaxValue.ToTicks(timeProvider), serverInboundControlStream.StreamTimeoutTimestamp);
     }
 
     [Fact]
@@ -340,7 +338,7 @@ public class Http3TimeoutTests : Http3TestBase
         // Use non-default value to ensure the min request and response rates aren't mixed up.
         limits.MinRequestBodyDataRate = new MinDataRate(480, TimeSpan.FromSeconds(2.5));
 
-        Http3Api._timeoutControl.Initialize(mockTimeProvider.GetTimestamp());
+        Http3Api._timeoutControl.Initialize();
 
         await Http3Api.InitializeConnectionAsync(_readRateApplication);
 
@@ -376,9 +374,7 @@ public class Http3TimeoutTests : Http3TestBase
     [Fact]
     public async Task ResponseDrain_SlowerThanMinimumDataRate_AbortsConnection()
     {
-        var now = _serviceContext.MockTimeProvider.GetTimestamp();
         var limits = _serviceContext.ServerOptions.Limits;
-        var mockTimeProvider = _serviceContext.MockTimeProvider;
 
         // Use non-default value to ensure the min request and response rates aren't mixed up.
         limits.MinResponseDataRate = new MinDataRate(480, TimeSpan.FromSeconds(2.5));
@@ -398,13 +394,13 @@ public class Http3TimeoutTests : Http3TestBase
 
         await requestStream.OnDisposingTask.DefaultTimeout();
 
-        Http3Api.TriggerTick(now);
+        Http3Api.TriggerTick();
         Assert.Null(requestStream.StreamContext._error);
 
-        Http3Api.AdvanceTime(TimeSpan.FromTicks(1));
+        Http3Api.TriggerTick(TimeSpan.FromTicks(1));
         Assert.Null(requestStream.StreamContext._error);
 
-        Http3Api.AdvanceTime(limits.MinResponseDataRate.GracePeriod);
+        Http3Api.TriggerTick(limits.MinResponseDataRate.GracePeriod);
 
         requestStream.StartStreamDisposeTcs.TrySetResult();
 
@@ -453,7 +449,7 @@ public class Http3TimeoutTests : Http3TestBase
         // Disable response buffering so "socket" backpressure is observed immediately.
         limits.MaxResponseBufferSize = 0;
 
-        Http3Api._timeoutControl.Initialize(mockTimeProvider.GetTimestamp());
+        Http3Api._timeoutControl.Initialize();
 
         var app = new EchoAppWithNotification();
         var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(app.RunApp, _browserRequestHeaders, endStream: false);
@@ -495,7 +491,7 @@ public class Http3TimeoutTests : Http3TestBase
         // Disable response buffering so "socket" backpressure is observed immediately.
         limits.MaxResponseBufferSize = 0;
 
-        Http3Api._timeoutControl.Initialize(mockTimeProvider.GetTimestamp());
+        Http3Api._timeoutControl.Initialize();
 
         var app = new EchoAppWithNotification();
         var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(app.RunApp, _browserRequestHeaders, endStream: false);
@@ -535,7 +531,7 @@ public class Http3TimeoutTests : Http3TestBase
         // Use non-default value to ensure the min request and response rates aren't mixed up.
         limits.MinRequestBodyDataRate = new MinDataRate(480, TimeSpan.FromSeconds(2.5));
 
-        Http3Api._timeoutControl.Initialize(mockTimeProvider.GetTimestamp());
+        Http3Api._timeoutControl.Initialize();
 
         await Http3Api.InitializeConnectionAsync(_readRateApplication);
 
@@ -581,7 +577,7 @@ public class Http3TimeoutTests : Http3TestBase
         // Use non-default value to ensure the min request and response rates aren't mixed up.
         limits.MinRequestBodyDataRate = new MinDataRate(480, TimeSpan.FromSeconds(2.5));
 
-        Http3Api._timeoutControl.Initialize(mockTimeProvider.GetTimestamp());
+        Http3Api._timeoutControl.Initialize();
 
         await Http3Api.InitializeConnectionAsync(_readRateApplication);
 
@@ -636,7 +632,7 @@ public class Http3TimeoutTests : Http3TestBase
         // Use non-default value to ensure the min request and response rates aren't mixed up.
         limits.MinRequestBodyDataRate = new MinDataRate(480, TimeSpan.FromSeconds(2.5));
 
-        Http3Api._timeoutControl.Initialize(mockTimeProvider.GetTimestamp());
+        Http3Api._timeoutControl.Initialize();
 
         await Http3Api.InitializeConnectionAsync(_readRateApplication);
 
@@ -692,7 +688,7 @@ public class Http3TimeoutTests : Http3TestBase
         // Use non-default value to ensure the min request and response rates aren't mixed up.
         limits.MinRequestBodyDataRate = new MinDataRate(480, TimeSpan.FromSeconds(2.5));
 
-        Http3Api._timeoutControl.Initialize(mockTimeProvider.GetTimestamp());
+        Http3Api._timeoutControl.Initialize();
 
         await Http3Api.InitializeConnectionAsync(context =>
         {

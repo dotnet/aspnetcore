@@ -505,8 +505,8 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         // Arrange
         using var httpEventSource = new HttpEventSourceListener(LoggerFactory);
 
-        var testTimeProvider = new TestTimeProvider(123456789L);
-        await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory, testTimeProvider);
+        var timeProvider = new MockTimeProvider();
+        await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory, timeProvider);
 
         var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
         await using var clientConnection = await QuicConnection.ConnectAsync(options);
@@ -525,9 +525,9 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         Assert.Equal(1, quicConnectionContext.StreamPool.Count);
         QuicStreamContext pooledStream = quicConnectionContext.StreamPool._array[0];
         Assert.Same(stream1, pooledStream);
-        Assert.Equal(testTimeProvider.GetTimestamp() + QuicConnectionContext.StreamPoolExpirySeconds * testTimeProvider.TimestampFrequency, pooledStream.PoolExpirationTimestamp);
+        Assert.Equal(timeProvider.GetTimestamp() + QuicConnectionContext.StreamPoolExpirySeconds * timeProvider.TimestampFrequency, pooledStream.PoolExpirationTimestamp);
 
-        testTimeProvider.Advance((long)(0.1 * testTimeProvider.TimestampFrequency));
+        timeProvider.Advance(TimeSpan.FromSeconds(0.1));
         testHeartbeatFeature.RaiseHeartbeat();
         // Not removed.
         Assert.Equal(1, quicConnectionContext.StreamPool.Count);
@@ -537,16 +537,16 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         Assert.Equal(1, quicConnectionContext.StreamPool.Count);
         pooledStream = quicConnectionContext.StreamPool._array[0];
         Assert.Same(stream1, pooledStream);
-        Assert.Equal(testTimeProvider.GetTimestamp() + QuicConnectionContext.StreamPoolExpirySeconds * testTimeProvider.TimestampFrequency, pooledStream.PoolExpirationTimestamp);
+        Assert.Equal(timeProvider.GetTimestamp() + QuicConnectionContext.StreamPoolExpirySeconds * timeProvider.TimestampFrequency, pooledStream.PoolExpirationTimestamp);
 
         Assert.Same(stream1, stream2);
 
-        testTimeProvider.Advance(QuicConnectionContext.StreamPoolExpirySeconds * testTimeProvider.TimestampFrequency);
+        timeProvider.Advance(TimeSpan.FromSeconds(QuicConnectionContext.StreamPoolExpirySeconds));
         testHeartbeatFeature.RaiseHeartbeat();
         // Not removed.
         Assert.Equal(1, quicConnectionContext.StreamPool.Count);
 
-        testTimeProvider.Advance(1);
+        timeProvider.Advance(TimeSpan.FromTicks(1));
         testHeartbeatFeature.RaiseHeartbeat();
         // Removed.
         Assert.Equal(0, quicConnectionContext.StreamPool.Count);
@@ -715,28 +715,6 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
     {
         public int ActiveConcurrentConnections { get; set; }
     };
-
-    private class TestTimeProvider : TimeProvider
-    {
-        private long _now;
-
-        public TestTimeProvider(long now)
-        {
-            _now = now;
-        }
-
-        public override DateTimeOffset GetUtcNow()
-            => throw new NotImplementedException();
-
-        public override long TimestampFrequency => Stopwatch.Frequency;
-
-        public override long GetTimestamp() => _now;
-
-        public void Advance(long ticks) =>  _now += ticks;
-
-        public override ITimer CreateTimer(TimerCallback callback, object state, TimeSpan dueTime, TimeSpan period)
-            => throw new NotImplementedException();
-    }
 
     private class TestHeartbeatFeature : IConnectionHeartbeatFeature
     {
