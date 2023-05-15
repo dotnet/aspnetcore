@@ -16,7 +16,7 @@ public static class PollyServiceCollectionExtensions
     /// <summary>
     /// Registers an empty <see cref="PolicyRegistry"/> in the service collection with service types
     /// <see cref="IPolicyRegistry{String}"/>, <see cref="IReadOnlyPolicyRegistry{String}"/>, and
-    /// <see cref="IConcurrentPolicyRegistry{String}"/> if the service types haven't already been registered
+     /// <see cref="IConcurrentPolicyRegistry{String}"/> if the service types haven't already been registered
     /// and returns the newly created registry.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/>.</param>
