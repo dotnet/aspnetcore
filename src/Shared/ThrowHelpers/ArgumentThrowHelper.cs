@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Shared;
 
 internal static partial class ArgumentThrowHelper
 {
-#if !NET7_0_OR_GREATER
+#if !NET7_0_OR_GREATER || NETSTANDARD ||NETFRAMEWORK
     private const string EmptyString = "";
 #endif
 
@@ -20,7 +20,7 @@ internal static partial class ArgumentThrowHelper
     /// <param name="paramName">The name of the parameter with which <paramref name="argument"/> corresponds.</param>
     public static void ThrowIfNullOrEmpty([NotNull] string? argument, [CallerArgumentExpression("argument")] string? paramName = null)
     {
-#if !NET7_0_OR_GREATER
+#if !NET7_0_OR_GREATER || NETSTANDARD ||NETFRAMEWORK
         if (argument is null or EmptyString)
         {
             ArgumentNullThrowHelper.ThrowIfNull(argument);
@@ -31,7 +31,7 @@ internal static partial class ArgumentThrowHelper
 #endif
     }
 
-#if !NET7_0_OR_GREATER
+#if !NET7_0_OR_GREATER || NETSTANDARD ||NETFRAMEWORK
     [DoesNotReturn]
     internal static void Throw(string? paramName) =>
         throw new ArgumentException("The value cannot be an empty string.", paramName);

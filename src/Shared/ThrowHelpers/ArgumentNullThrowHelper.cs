@@ -16,7 +16,7 @@ internal static partial class ArgumentNullThrowHelper
     /// <param name="paramName">The name of the parameter with which <paramref name="argument"/> corresponds.</param>
     public static void ThrowIfNull([NotNull] object? argument, [CallerArgumentExpression("argument")] string? paramName = null)
     {
-#if !NET7_0_OR_GREATER
+#if !NET7_0_OR_GREATER || NETSTANDARD ||NETFRAMEWORK
         if (argument is null)
         {
             Throw(paramName);
@@ -26,7 +26,7 @@ internal static partial class ArgumentNullThrowHelper
 #endif
     }
 
-#if !NET7_0_OR_GREATER
+#if !NET7_0_OR_GREATER || NETSTANDARD ||NETFRAMEWORK
     [DoesNotReturn]
     internal static void Throw(string? paramName) =>
         throw new ArgumentNullException(paramName);
