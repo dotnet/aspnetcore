@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc;
 /// This is a derived generic variant of the <see cref="ModelBinderAttribute"/>.
 /// Ensure that only one instance of either attribute is provided on the target.
 /// </remarks>
-public class ModelBinderAttribute<TBinder> : ModelBinderAttribute
+public class ModelBinderAttribute<TBinder> : ModelBinderAttribute where TBinder : IModelBinder
 {
     /// <summary>
     /// Initializes a new instance of <see cref="ModelBinderAttribute"/>.
