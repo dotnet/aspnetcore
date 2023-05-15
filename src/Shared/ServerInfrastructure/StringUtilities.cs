@@ -51,7 +51,7 @@ internal static class StringUtilities
         }
     }
 
-    private static unsafe readonly SpanAction<char, IntPtr> s_getAsciiOrUTF8StringNonNullCharacters = (Span<char> buffer, IntPtr state) =>
+    private static readonly unsafe SpanAction<char, IntPtr> s_getAsciiOrUTF8StringNonNullCharacters = (Span<char> buffer, IntPtr state) =>
     {
         fixed (char* output = &MemoryMarshal.GetReference(buffer))
         {
@@ -78,7 +78,7 @@ internal static class StringUtilities
         }
     }
 
-    private static unsafe readonly SpanAction<char, IntPtr> s_getAsciiStringNonNullCharacters = (Span<char> buffer, IntPtr state) =>
+    private static readonly unsafe SpanAction<char, IntPtr> s_getAsciiStringNonNullCharacters = (Span<char> buffer, IntPtr state) =>
     {
         fixed (char* output = &MemoryMarshal.GetReference(buffer))
         {
@@ -104,7 +104,7 @@ internal static class StringUtilities
         }
     }
 
-    private static unsafe readonly SpanAction<char, IntPtr> s_getLatin1StringNonNullCharacters = (Span<char> buffer, IntPtr state) =>
+    private static readonly unsafe SpanAction<char, IntPtr> s_getLatin1StringNonNullCharacters = (Span<char> buffer, IntPtr state) =>
     {
         fixed (char* output = &MemoryMarshal.GetReference(buffer))
         {
