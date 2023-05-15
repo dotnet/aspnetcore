@@ -106,7 +106,7 @@ public class Program
         {
             httpContext.VerifyUserHasAnyAcceptedScope(scopeRequiredByApi);
 
-            using var response = await downstreamApi.CallWebApiForUserAsync("DownstreamApi").ConfigureAwait(false);
+            using var response = await downstreamApi.CallApiForUserAsync("DownstreamApi").ConfigureAwait(false);
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 var apiResult = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
