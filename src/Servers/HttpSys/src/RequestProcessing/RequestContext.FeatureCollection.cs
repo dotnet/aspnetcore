@@ -619,9 +619,7 @@ internal partial class RequestContext :
         var timingFeature = (IHttpSysRequestTimingFeature)this;
         if (timingFeature.TryGetTimestamp(startingTimestampType, out long startTimestamp) && timingFeature.TryGetTimestamp(endingTimestampType, out long endTimestamp))
         {
-            // TODO: Switch to using TimeProvider which is in preview 4
-            // elapsed = TimeProvider.System.GetElapsedTime(startTimestamp, endTimestamp);
-            elapsed = new TimeSpan((long)((endTimestamp - startTimestamp) * ((double)TimeSpan.TicksPerSecond / Stopwatch.Frequency)));
+            elapsed = Stopwatch.GetElapsedTime(startTimestamp, endTimestamp);
             return true;
         }
 

@@ -242,7 +242,7 @@ public class HttpsTests
                 Assert.True(requestTimingFeature.TryGetTimestamp(HttpSysRequestTimingType.RequestHeaderParseStart, out var headerStart));
                 Assert.True(requestTimingFeature.TryGetTimestamp(HttpSysRequestTimingType.RequestHeaderParseEnd, out var headerEnd));
                 Assert.True(requestTimingFeature.TryGetElapsedTime(HttpSysRequestTimingType.RequestHeaderParseStart, HttpSysRequestTimingType.RequestHeaderParseEnd, out var elapsed));
-                Assert.Equal(new TimeSpan((long)((headerEnd - headerStart) * ((double)TimeSpan.TicksPerSecond / Stopwatch.Frequency))), elapsed);
+                Assert.Equal(Stopwatch.GetElapsedTime(headerStart, headerEnd), elapsed);
                 Assert.False(requestTimingFeature.TryGetTimestamp(HttpSysRequestTimingType.Http3StreamStart, out var streamStart));
                 Assert.False(requestTimingFeature.TryGetTimestamp((HttpSysRequestTimingType)int.MaxValue, out var invalid));
                 Assert.False(requestTimingFeature.TryGetElapsedTime(HttpSysRequestTimingType.Http3StreamStart, HttpSysRequestTimingType.RequestHeaderParseStart, out elapsed));
