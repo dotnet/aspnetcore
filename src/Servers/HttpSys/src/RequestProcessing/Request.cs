@@ -360,10 +360,7 @@ internal sealed partial class Request
         {
             /*
                 Below is the definition of the timing info structure we are accessing the memory for.
-                We can skip the first ULONG since it's always set to HttpRequestTimingTypeMax which is the size of the array.
-
-                TODO: I would expect 244 bytes (4 bytes + 8 bytes * 30 [current size of HttpRequestTimingTypeMax]) but it's 248.
-                It seems the RequestTimingCount is stored in 8 bytes as a ULONGLONG but I'm not sure why yet.
+                ULONG is 32-bit and maps to int. ULONGLONG is 64-bit and maps to long.
 
                 typedef struct _HTTP_REQUEST_TIMING_INFO
                 {
@@ -378,8 +375,10 @@ internal sealed partial class Request
                 return ReadOnlySpan<long>.Empty;
             }
 
-            var timingCount = (int)MemoryMarshal.Read<long>(timingInfo.Span);
+            var timingCount = MemoryMarshal.Read<int>(timingInfo.Span);
 
+            // Note that even though RequestTimingCount is an int, the compiler enforces alignment of data in the struct which causes 4 bytes
+            // of padding to be added after RequestTimingCount, so we need to skip 64-bits before we get to the start of the RequestTiming array
             return MemoryMarshal.CreateReadOnlySpan(
                 ref Unsafe.As<byte, long>(ref MemoryMarshal.GetReference(timingInfo.Span.Slice(sizeof(long)))),
                 timingCount);
