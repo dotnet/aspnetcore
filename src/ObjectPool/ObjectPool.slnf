@@ -1,0 +1,10 @@
+{
+  "solution": {
+    "path": "..\\..\\AspNetCore.sln",
+    "projects": [
+      "src\\ObjectPool\\src\\Microsoft.Extensions.ObjectPool.csproj",
+      "src\\ObjectPool\\test\\Microsoft.Extensions.ObjectPool.Tests.csproj",
+      "src\\Testing\\src\\Microsoft.AspNetCore.Testing.csproj"
+    ]
+  }
+}
