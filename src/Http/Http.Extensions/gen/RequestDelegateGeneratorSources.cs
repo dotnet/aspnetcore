@@ -205,6 +205,11 @@ internal static class RequestDelegateGeneratorSources
             => T.TryParse(s, provider, out result);
 """;
 
+    public static string ExecuteAsyncExplicitMethod => """
+        private static Task ExecuteAsyncExplicit(IResult result, HttpContext httpContext)
+            => result.ExecuteAsync(httpContext);
+""";
+
     public static string BindAsyncMethod => """
         private static ValueTask<T?> BindAsync<T>(HttpContext context, ParameterInfo parameter)
             where T : class, IBindableFromHttpContext<T>

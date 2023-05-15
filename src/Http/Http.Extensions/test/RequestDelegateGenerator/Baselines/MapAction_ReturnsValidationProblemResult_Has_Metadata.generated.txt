@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                             return Task.CompletedTask;
                         }
                         var result = handler();
-                        return result.ExecuteAsync(httpContext);
+                        return GeneratedRouteBuilderExtensionsCore.ExecuteAsyncExplicit(result, httpContext);
                     }
 
                     async Task RequestHandlerFiltered(HttpContext httpContext)
@@ -199,6 +199,8 @@ namespace Microsoft.AspNetCore.Http.Generated
             }
         }
 
+        private static Task ExecuteAsyncExplicit(IResult result, HttpContext httpContext)
+            => result.ExecuteAsync(httpContext);
         private static void PopulateMetadataForEndpoint<T>(MethodInfo method, EndpointBuilder builder)
             where T : IEndpointMetadataProvider
         {
