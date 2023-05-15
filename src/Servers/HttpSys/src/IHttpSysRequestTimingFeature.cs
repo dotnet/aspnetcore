@@ -4,15 +4,15 @@
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
 /// <summary>
-/// This exposes the Http.Sys HTTP_REQUEST_TIMING_INFO.
+/// This exposes the Http.Sys HTTP_REQUEST_TIMING_INFO extensibility point which contains request processing timing data from Http.Sys.
 /// </summary>
 public interface IHttpSysRequestTimingFeature
 {
     /// <summary>
-    /// Gets all http.sys timing timestamps
+    /// Gets all Http.Sys timing timestamps
     /// </summary>
     /// <remarks>
-    /// These timestamps were originally retrieved using <see cref="System.Diagnostics.Stopwatch.GetTimestamp"/> and the timestamp frequency can be obtained via <see cref="System.Diagnostics.Stopwatch.Frequency"/>.
+    /// These timestamps were obtained using QueryPerformanceCounter <see href="https://learn.microsoft.com/en-us/windows/win32/api/profileapi/nf-profileapi-queryperformancecounter"/> and the timestamp frequency can be obtained via QueryPerformanceFrequency <see href="https://learn.microsoft.com/en-us/windows/win32/api/profileapi/nf-profileapi-queryperformancefrequency"/>.
     /// The index of the timing can be cast to <see cref="HttpSysRequestTimingType"/> to know what the timing represents.
     /// The value may be 0 if the timing is not available for the current request.
     /// </remarks>
@@ -22,7 +22,7 @@ public interface IHttpSysRequestTimingFeature
     /// Gets the timestamp for the given timing.
     /// </summary>
     /// <remarks>
-    /// The timestamp was originally retrieved using <see cref="System.Diagnostics.Stopwatch.GetTimestamp"/> and the timestamp frequency can be obtained via <see cref="System.Diagnostics.Stopwatch.Frequency"/>.
+    /// These timestamps were obtained using QueryPerformanceCounter <see href="https://learn.microsoft.com/en-us/windows/win32/api/profileapi/nf-profileapi-queryperformancecounter"/> and the timestamp frequency can be obtained via QueryPerformanceFrequency <see href="https://learn.microsoft.com/en-us/windows/win32/api/profileapi/nf-profileapi-queryperformancefrequency"/>.
     /// </remarks>
     /// <param name="timestampType">The timestamp type to get.</param>
     /// <param name="timestamp">The value of the timestamp if set.</param>
