@@ -16,7 +16,7 @@ public interface IHttpSysRequestTimingFeature
     /// The index of the timing can be cast to <see cref="HttpSysRequestTimingType"/> to know what the timing represents.
     /// The value may be 0 if the timing is not available for the current request.
     /// </remarks>
-    IEnumerable<long> Timestamps { get; }
+    ReadOnlySpan<long> Timestamps { get; }
 
     /// <summary>
     /// Gets the timestamp for the given timing.

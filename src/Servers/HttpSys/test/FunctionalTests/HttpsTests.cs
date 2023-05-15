@@ -238,7 +238,7 @@ public class HttpsTests
             {
                 var requestTimingFeature = httpContext.Features.Get<IHttpSysRequestTimingFeature>();
                 Assert.NotNull(requestTimingFeature);
-                Assert.True(requestTimingFeature.Timestamps.Count() > (int)HttpSysRequestTimingType.Http3HeaderDecodeEnd);
+                Assert.True(requestTimingFeature.Timestamps.Length > (int)HttpSysRequestTimingType.Http3HeaderDecodeEnd);
                 Assert.True(requestTimingFeature.TryGetTimestamp(HttpSysRequestTimingType.RequestHeaderParseStart, out var headerStart));
                 Assert.True(requestTimingFeature.TryGetTimestamp(HttpSysRequestTimingType.RequestHeaderParseEnd, out var headerEnd));
                 Assert.True(requestTimingFeature.TryGetElapsedTime(HttpSysRequestTimingType.RequestHeaderParseStart, HttpSysRequestTimingType.RequestHeaderParseEnd, out var elapsed));

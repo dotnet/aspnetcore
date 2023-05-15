@@ -589,7 +589,7 @@ internal partial class RequestContext :
 
     IReadOnlyDictionary<int, ReadOnlyMemory<byte>> IHttpSysRequestInfoFeature.RequestInfo => Request.RequestInfo;
 
-    IEnumerable<long> IHttpSysRequestTimingFeature.Timestamps => Request.RequestTimestamps;
+    ReadOnlySpan<long> IHttpSysRequestTimingFeature.Timestamps => Request.RequestTimestamps;
 
     IHeaderDictionary IHttpResponseTrailersFeature.Trailers
     {
@@ -604,7 +604,7 @@ internal partial class RequestContext :
     bool IHttpSysRequestTimingFeature.TryGetTimestamp(HttpSysRequestTimingType timestampType, out long timestamp)
     {
         int index = (int)timestampType;
-        if (index < Request.RequestTimestamps.Count && Request.RequestTimestamps[index] > 0)
+        if (index < Request.RequestTimestamps.Length && Request.RequestTimestamps[index] > 0)
         {
             timestamp = Request.RequestTimestamps[index];
             return true;

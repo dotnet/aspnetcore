@@ -4,6 +4,7 @@
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Net;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Security.Authentication;
@@ -34,7 +35,6 @@ internal sealed partial class Request
     private AspNetCore.HttpSys.Internal.SocketAddress? _remoteEndPoint;
 
     private IReadOnlyDictionary<int, ReadOnlyMemory<byte>>? _requestInfo;
-    private ReadOnlyCollection<long>? _requestTimestamps;
 
     private bool _isDisposed;
 
@@ -354,31 +354,36 @@ internal sealed partial class Request
         }
     }
 
-    public ReadOnlyCollection<long> RequestTimestamps
+    public ReadOnlySpan<long> RequestTimestamps
     {
         get
         {
-            if (_requestTimestamps == null)
+            /*
+                Below is the definition of the timing info structure we are accessing the memory for.
+                We can skip the first ULONG since it's always set to HttpRequestTimingTypeMax which is the size of the array.
+
+                TODO: I would expect 244 bytes (4 bytes + 8 bytes * 30 [current size of HttpRequestTimingTypeMax]) but it's 248.
+                It seems the RequestTimingCount is stored in 8 bytes as a ULONGLONG but I'm not sure why yet.
+
+                typedef struct _HTTP_REQUEST_TIMING_INFO
+                {
+                    ULONG RequestTimingCount;
+                    ULONGLONG RequestTiming[HttpRequestTimingTypeMax];
+
+                } HTTP_REQUEST_TIMING_INFO, *PHTTP_REQUEST_TIMING_INFO;
+            */
+
+            if (!RequestInfo.TryGetValue((int)HttpApiTypes.HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeRequestTiming, out var timingInfo))
             {
-                /*
-                    Below is the definition of the timing info structure we are accessing the memory for.
-                    We can skip the first ULONG since it's always set to HttpRequestTimingTypeMax which is the size of the array.
-
-                    TODO: I would expect 244 bytes (4 bytes + 8 bytes * 30 [current size of HttpRequestTimingTypeMax]) but it's 248.
-                    It seems the RequestTimingCount is stored in 8 bytes as a ULONGLONG but I'm not sure why yet.
-
-                    typedef struct _HTTP_REQUEST_TIMING_INFO
-                    {
-                        ULONG RequestTimingCount;
-                        ULONGLONG RequestTiming[HttpRequestTimingTypeMax];
-
-                    } HTTP_REQUEST_TIMING_INFO, *PHTTP_REQUEST_TIMING_INFO;
-                */
-                var timings = RequestInfo[(int)HttpApiTypes.HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeRequestTiming].Span.Slice(sizeof(long));
-
-                _requestTimestamps = new ReadOnlyCollection<long>(MemoryMarshal.Cast<byte, long>(timings).ToArray());
+                return ReadOnlySpan<long>.Empty;
             }
-            return _requestTimestamps;
+
+            var timingCount = (int)MemoryMarshal.Read<long>(timingInfo.Span);
+
+            return MemoryMarshal.CreateReadOnlySpan(
+                ref Unsafe.As<byte, long>(ref MemoryMarshal.GetReference(timingInfo.Span.Slice(sizeof(long)))),
+                timingCount);
+
         }
     }
 
