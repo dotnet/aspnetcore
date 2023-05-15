@@ -947,7 +947,7 @@ public class Attribute2 : Attribute
 {
 }
 
-public class Status401Result : IResult
+public class Status410Result : IResult
 {
     Task IResult.ExecuteAsync(HttpContext httpContext)
     {

@@ -355,7 +355,7 @@ static async IAsyncEnumerable<JsonTodo> GetTodosAsync()
     public async Task SupportsIResultWithExplicitInterfaceImplementation()
     {
         var source = """
-app.MapPost("/", () => new Status401Result());
+app.MapPost("/", () => new Status410Result());
 """;
         var (_, compilation) = await RunGeneratorAsync(source);
         var endpoint = GetEndpointFromCompilation(compilation);
