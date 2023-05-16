@@ -540,6 +540,9 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
             if (UseAcks && TransportType == HttpTransportType.WebSockets)
             {
                 Application.Input.CancelPendingRead();
+                var prevPipe = Application.Input;
+                UpdateConnectionPair();
+                prevPipe.Complete(new Exception());
             }
 
             try
@@ -640,6 +643,17 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     public void RequestClose()
     {
         ThreadPool.UnsafeQueueUserWorkItem(static cts => ((CancellationTokenSource)cts!).Cancel(), _connectionCloseRequested);
+    }
+
+    private void UpdateConnectionPair()
+    {
+        var input = new Pipe(_options.TransportPipeOptions);
+
+        var transportToApplication = new DuplexPipe(Transport.Input, input.Writer);
+        var applicationToTransport = new DuplexPipe(input.Reader, Application.Output);
+
+        Application = applicationToTransport;
+        Transport = transportToApplication;
     }
 
     private static partial class Log
