@@ -124,7 +124,7 @@ public class BinderTypeBasedModelBinderIntegrationTest
         public Address Address { get; set; }
     }
 
-    [ModelBinder(BinderType = typeof(AddressModelBinder))]
+    [ModelBinder<AddressModelBinder>]
     private class Address
     {
         public string Street { get; set; }
@@ -188,7 +188,7 @@ public class BinderTypeBasedModelBinderIntegrationTest
 
     private class Person3
     {
-        [ModelBinder(BinderType = typeof(Address3ModelBinder))]
+        [ModelBinder<Address3ModelBinder>]
         public Address3 Address { get; set; }
     }
 
