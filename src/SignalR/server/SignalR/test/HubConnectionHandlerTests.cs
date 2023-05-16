@@ -2735,7 +2735,7 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
         using (StartVerifiableLog())
         {
             var interval = TimeSpan.FromMilliseconds(100);
-            var timeProvider = new TestTimeProvider();
+            var timeProvider = new MockTimeProvider();
             var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
                 services.Configure<HubOptions>(options =>
                     options.KeepAliveInterval = interval), LoggerFactory);
@@ -2797,7 +2797,7 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
         using (StartVerifiableLog())
         {
             var timeout = TimeSpan.FromMilliseconds(100);
-            var timeProvider = new TestTimeProvider();
+            var timeProvider = new MockTimeProvider();
             var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
                 services.Configure<HubOptions>(options =>
                     options.ClientTimeoutInterval = timeout), LoggerFactory);
@@ -2833,7 +2833,7 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
         using (StartVerifiableLog())
         {
             var timeout = TimeSpan.FromMilliseconds(100);
-            var timeProvider = new TestTimeProvider();
+            var timeProvider = new MockTimeProvider();
             var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
                 services.Configure<HubOptions>(options =>
                     options.ClientTimeoutInterval = timeout), LoggerFactory);
@@ -2860,7 +2860,7 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
         using (StartVerifiableLog())
         {
             var timeout = TimeSpan.FromMilliseconds(300);
-            var timeProvider = new TestTimeProvider();
+            var timeProvider = new MockTimeProvider();
             var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
                 services.Configure<HubOptions>(options =>
                     options.ClientTimeoutInterval = timeout), LoggerFactory);
