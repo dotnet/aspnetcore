@@ -946,3 +946,13 @@ public class Attribute1 : Attribute
 public class Attribute2 : Attribute
 {
 }
+
+public class Status410Result : IResult
+{
+    Task IResult.ExecuteAsync(HttpContext httpContext)
+    {
+        httpContext.Response.StatusCode = StatusCodes.Status410Gone;
+        httpContext.Response.WriteAsync("Already gone!");
+        return Task.CompletedTask;
+    }
+}

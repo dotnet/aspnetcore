@@ -350,4 +350,20 @@ static async IAsyncEnumerable<JsonTodo> GetTodosAsync()
         var expectedBody = """[{"id":1,"name":"One","isComplete":true},{"$type":"JsonTodoChild","child":"TwoChild","id":2,"name":"Two","isComplete":false}]""";
         await VerifyResponseBodyAsync(httpContext, expectedBody);
     }
+
+    [Fact]
+    public async Task SupportsIResultWithExplicitInterfaceImplementation()
+    {
+        var source = """
+app.MapPost("/", () => new Status410Result());
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+
+        await endpoint.RequestDelegate(httpContext);
+
+        await VerifyResponseBodyAsync(httpContext, "Already gone!", StatusCodes.Status410Gone);
+    }
 }

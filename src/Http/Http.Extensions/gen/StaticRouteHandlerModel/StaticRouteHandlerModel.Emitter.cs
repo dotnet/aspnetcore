@@ -106,7 +106,7 @@ internal static class StaticRouteHandlerModelEmitter
 
         if (endpointResponse.IsIResult)
         {
-            return $"{returnOrAwait} result.ExecuteAsync(httpContext);";
+            return $"{returnOrAwait} GeneratedRouteBuilderExtensionsCore.ExecuteAsyncExplicit(result, httpContext);";
         }
         else if (endpointResponse.ResponseType?.SpecialType == SpecialType.System_String)
         {
