@@ -6,6 +6,14 @@
     <InstallArgs>--check-files</InstallArgs>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <IsUnitTestProject>true</IsUnitTestProject>
+    <TestDependsOnAspNetRuntime>false</TestDependsOnAspNetRuntime>
+
+    <!-- Npm tests don't run on Helix currently, so we need to set this to false to still run the tests on non-Helix -->
+    <BuildHelixPayload>false</BuildHelixPayload>
+  </PropertyGroup>
+
   <ItemGroup>
     <!--
       Ensure files dependent projects expect exist and are up-to-date. Batching in Npm.Common.targets might skip
