@@ -7,6 +7,7 @@ using System.IO.Pipelines;
 using System.Security.Claims;
 using System.Security.Principal;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Abstractions;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Connections.Features;
 using Microsoft.AspNetCore.Http.Connections.Internal.Transports;
@@ -17,6 +18,11 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal;
+
+internal sealed class Reconnect : IReconnectFeature
+{
+    public Action NotifyOnReconnect { get; set; }
+}
 
 internal sealed partial class HttpConnectionContext : ConnectionContext,
                                      IConnectionIdFeature,
@@ -91,6 +97,12 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         Features.Set<IConnectionInherentKeepAliveFeature>(this);
         Features.Set<IConnectionLifetimeFeature>(this);
         Features.Set<IConnectionLifetimeNotificationFeature>(this);
+
+        if (useAcks)
+        {
+            var reconnectFeature = new Reconnect();
+            Features.Set<IReconnectFeature>(reconnectFeature);
+        }
 
         _connectionClosedTokenSource = new CancellationTokenSource();
         ConnectionClosed = _connectionClosedTokenSource.Token;
@@ -540,9 +552,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
             if (UseAcks && TransportType == HttpTransportType.WebSockets)
             {
                 Application.Input.CancelPendingRead();
-                var prevPipe = Application.Input;
                 UpdateConnectionPair();
-                prevPipe.Complete(new Exception());
             }
 
             try
@@ -647,6 +657,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
 
     private void UpdateConnectionPair()
     {
+        var prevPipe = Application.Input;
         var input = new Pipe(_options.TransportPipeOptions);
 
         var transportToApplication = new DuplexPipe(Transport.Input, input.Writer);
@@ -654,6 +665,9 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
 
         Application = applicationToTransport;
         Transport = transportToApplication;
+
+        prevPipe.Complete(new Exception());
+        Features.GetRequiredFeature<IReconnectFeature>().NotifyOnReconnect?.Invoke();
     }
 
     private static partial class Log

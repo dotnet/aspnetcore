@@ -61,63 +61,6 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
     public async Task ProcessSocketAsync(WebSocket socket)
     {
         var ignoreFirstCancel = false;
-        if (_application.Input is AckPipeReader reader)
-        {
-            _aborted = false;
-            // TODO: why is this needed on initial connection start, ideally should be in if condition below
-            ignoreFirstCancel = true;
-            // TODO: check if the pipe was used previously?
-            // Currently checked in Resend
-            if (reader.Resend())
-            {
-                // Start reconnect ack handshake
-                // 1. Read from client to get the last ack ID it received before disconnecting
-                // 2. Send ack ID to client for last message we received from client before it disconnected
-                // 3. Resume normal send/receive loops
-
-                var buf = new byte[AckPipeWriter.FrameHeaderSize];
-                WebSocketReceiveResult? res;
-                var readLength = 0;
-                do
-                {
-                    res = await socket.ReceiveAsync(new ArraySegment<byte>(buf, readLength, AckPipeWriter.FrameHeaderSize - readLength), _connection.Cancellation?.Token ?? default);
-                    readLength += res.Count;
-                } while (readLength < AckPipeWriter.FrameHeaderSize && !res.EndOfMessage);
-
-                if (readLength != AckPipeWriter.FrameHeaderSize)
-                {
-                    _application.Output.Complete(new InvalidDataException("WebSocket reconnect handshake received less data than expected."));
-                    _application.Input.Complete();
-                    return;
-                }
-
-                if (!res.EndOfMessage)
-                {
-                    _application.Output.Complete(new InvalidDataException("WebSocket reconnect handshake received more data than expected."));
-                    _application.Input.Complete();
-                    return;
-                }
-
-                // Needed so that the readers ack position gets updated and we don't re-send messages to client
-                // Normally this would be done by the HubConnectionHandler loop, but that requires a new message to be read
-                // so we instead make sure it's updated immediately here
-                var parsedLen = ParseAckPipeReader.ParseFrame(new ReadOnlySequence<byte>(buf), reader);
-                Debug.Assert(parsedLen == 0);
-                // we don't need to write to the pipe if we parse the frame?
-                //await _application.Output.WriteAsync(buf);
-
-                var webSocketMessageType = (_connection.ActiveFormat == TransferFormat.Binary
-                                    ? WebSocketMessageType.Binary
-                                    : WebSocketMessageType.Text);
-                Array.Clear(buf);
-                Debug.Assert(_connection.Transport.Output is AckPipeWriter);
-                AckPipeWriter.WriteFrame(buf.AsSpan(), 0, ((AckPipeWriter)_connection.Transport.Output).LastAck);
-                _connection.StartSendCancellation();
-                // send without going through the Pipe, we don't treat this as an ackable message
-                await socket.SendAsync(buf, webSocketMessageType, endOfMessage: true, _connection.SendingToken);
-                _connection.StopSendCancellation();
-            }
-        }
 
         var receiving = StartReceiving(socket);
         var sending = StartSending(socket, ignoreFirstCancel);

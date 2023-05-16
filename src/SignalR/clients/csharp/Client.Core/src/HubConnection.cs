@@ -16,6 +16,7 @@ using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Abstractions;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Shared;
@@ -79,7 +80,7 @@ public partial class HubConnection : IAsyncDisposable
     private readonly ReconnectingConnectionState _state;
 
     private bool _disposed;
-    private MessageBuffer _buffer = new();
+    private MessageBuffer? _buffer;
 
     /// <summary>
     /// Occurs when the connection is closed. The connection could be closed due to an error or due to either the server or client intentionally
@@ -476,6 +477,9 @@ public partial class HubConnection : IAsyncDisposable
         // Start the connection
         var connection = await _connectionFactory.ConnectAsync(_endPoint, cancellationToken).ConfigureAwait(false);
         var startingConnectionState = new ConnectionState(connection, this);
+
+        // TODO: probably go on ConnectionState
+        _buffer = new MessageBuffer(connection, _protocol);
 
         // From here on, if an error occurs we need to shut down the connection because
         // we still own it.
@@ -954,7 +958,7 @@ public partial class HubConnection : IAsyncDisposable
         var isAck = true;
         if (isAck)
         {
-            await _buffer.WriteAsync(connectionState.Connection.Transport.Output, new SerializedHubMessage(hubMessage), _protocol, cancellationToken).ConfigureAwait(false);
+            await _buffer.WriteAsync(new SerializedHubMessage(hubMessage), _protocol, cancellationToken).ConfigureAwait(false);
         }
         else
         {
@@ -1260,6 +1264,10 @@ public partial class HubConnection : IAsyncDisposable
                                 }
 
                                 Log.HandshakeComplete(_logger);
+
+                                var f = startingConnectionState.Connection.Features.Get<IReconnectFeature>();
+                                f.NotifyOnReconnect = _buffer.Resend;
+
                                 break;
                             }
                         }

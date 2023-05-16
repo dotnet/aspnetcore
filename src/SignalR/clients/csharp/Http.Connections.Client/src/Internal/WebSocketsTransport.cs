@@ -17,6 +17,7 @@ using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Abstractions;
 using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -24,7 +25,7 @@ using static System.IO.Pipelines.DuplexPipe;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client.Internal;
 
-internal sealed partial class WebSocketsTransport : ITransport
+internal sealed partial class WebSocketsTransport : ITransport, IReconnectFeature
 {
     private WebSocket? _webSocket;
     private IDuplexPipe? _application;
@@ -41,12 +42,15 @@ internal sealed partial class WebSocketsTransport : ITransport
     // Used for reconnect (when enabled) to determine if the close was ungraceful or not, reconnect only happens on ungraceful disconnect
     // The assumption is that a graceful close was triggered purposefully by either the client or server and a reconnect shouldn't occur 
     private bool _gracefulClose;
+    private Action? _notifyOnReconnect;
 
     internal Task Running { get; private set; } = Task.CompletedTask;
 
     public PipeReader Input => _transport!.Input;
 
     public PipeWriter Output => _transport!.Output;
+
+    public Action NotifyOnReconnect { get => _notifyOnReconnect is not null ? _notifyOnReconnect : () => { }; set => _notifyOnReconnect = value; }
 
     public WebSocketsTransport(HttpConnectionOptions httpConnectionOptions, ILoggerFactory loggerFactory, Func<Task<string?>> accessTokenProvider, HttpClient? httpClient,
         bool useAck = false)
@@ -296,92 +300,15 @@ internal sealed partial class WebSocketsTransport : ITransport
         if (_transport is null)
         {
             // Create the pipe pair (Application's writer is connected to Transport's reader, and vice versa)
-            DuplexPipePair pair;
-            //if (_useAck)
-            //{
-            //    pair = CreateAckConnectionPair(_httpConnectionOptions.TransportPipeOptions, _httpConnectionOptions.AppPipeOptions);
-            //}
-            //else
-            {
-                pair = DuplexPipe.CreateConnectionPair(_httpConnectionOptions.TransportPipeOptions, _httpConnectionOptions.AppPipeOptions);
-            }
+            var pair = CreateConnectionPair(_httpConnectionOptions.TransportPipeOptions, _httpConnectionOptions.AppPipeOptions);
 
             _transport = pair.Transport;
             _application = pair.Application;
-        }
-        else
-        {
-            if (_application!.Input is AckPipeReader reader)
-            {
-                if (reader.Resend())
-                {
-                    // Start reconnect ack handshake
-                    // 1. Send ack ID to server for last message we recieved from server before we disconnected
-                    // 2. Read from server to get the last ack ID it received before we disconnecting
-                    // 3. Resume normal send/receive loops
-
-                    ignoreFirstCanceled = true;
-                    var buf = new byte[AckPipeWriter.FrameHeaderSize];
-                    AckPipeWriter.WriteFrame(buf.AsSpan(), 0, ((AckPipeWriter)_transport.Output).LastAck);
-                    await _webSocket.SendAsync(new ArraySegment<byte>(buf, 0, AckPipeWriter.FrameHeaderSize), _webSocketMessageType, true, _stopCts.Token).ConfigureAwait(false);
-
-                    Array.Clear(buf, 0, buf.Length);
-                    // server sends 0 length, but with latest ack, so there shouldn't be more than a frame of data sent
-                    var readLength = 0;
-                    WebSocketReceiveResult? receiveResult;
-                    do
-                    {
-                        receiveResult = await _webSocket.ReceiveAsync(new ArraySegment<byte>(buf, readLength, AckPipeWriter.FrameHeaderSize - readLength), _stopCts.Token).ConfigureAwait(false);
-                        readLength += receiveResult.Count;
-                    } while (readLength < AckPipeWriter.FrameHeaderSize && !receiveResult.EndOfMessage);
-
-                    if (readLength != AckPipeWriter.FrameHeaderSize)
-                    {
-                        _application.Output.Complete(new InvalidDataException("WebSocket reconnect handshake received less data than expected."));
-                        _application.Input.Complete();
-                        return;
-                    }
-
-                    if (!receiveResult.EndOfMessage)
-                    {
-                        _application.Output.Complete(new InvalidDataException("WebSocket reconnect handshake received more data than expected."));
-                        _application.Input.Complete();
-                        return;
-                    }
-
-                    // Parsing ack id and updating reader here avoids issue where we send to server before receive loop runs, which is what normally updates ack
-                    // This avoids resending data that was already acked
-                    var parsedLen = ParseAckPipeReader.ParseFrame(new ReadOnlySequence<byte>(buf), reader);
-
-                    // TODO: why do we need to unblock the receive loop to not delay/block shutdown sometimes?
-                    // Looks like calling stop/dispose on the client doesn't avoid the reconnect cycle in the transport, we'll need to fix that
-                    var flushResult = await _application.Output.FlushAsync(default).ConfigureAwait(false);
-                }
-            }
-            else
-            {
-                Debug.Assert(false);
-            }
         }
 
         // TODO: Handle TCP connection errors
         // https://github.com/SignalR/SignalR/blob/1fba14fa3437e24c204dfaf8a18db3fce8acad3c/src/Microsoft.AspNet.SignalR.Core/Owin/WebSockets/WebSocketHandler.cs#L248-L251
         Running = ProcessSocketAsync(_webSocket, url, ignoreFirstCanceled);
-
-        static DuplexPipePair CreateAckConnectionPair(PipeOptions inputOptions, PipeOptions outputOptions)
-        {
-            var input = new Pipe(inputOptions);
-            var output = new Pipe(outputOptions);
-
-            // Use for one side only, i.e. server
-            var ackWriter = new AckPipeWriter(output);
-            var ackReader = new AckPipeReader(output);
-            var transportReader = new ParseAckPipeReader(input.Reader, ackWriter, ackReader);
-            var transportToApplication = new DuplexPipe(ackReader, input.Writer);
-            var applicationToTransport = new DuplexPipe(transportReader, ackWriter);
-
-            return new DuplexPipePair(applicationToTransport, transportToApplication);
-        }
     }
 
     private async Task ProcessSocketAsync(WebSocket socket, Uri url, bool ignoreFirstCanceled)
@@ -439,6 +366,7 @@ internal sealed partial class WebSocketsTransport : ITransport
 
         if (_useAck && !_gracefulClose)
         {
+            UpdateConnectionPair();
             await StartAsync(url, _webSocketMessageType == WebSocketMessageType.Binary ? TransferFormat.Binary : TransferFormat.Text, default).ConfigureAwait(false);
         }
     }
@@ -697,5 +625,21 @@ internal sealed partial class WebSocketsTransport : ITransport
         }
 
         Log.TransportStopped(_logger, null);
+    }
+
+    private void UpdateConnectionPair()
+    {
+        var prevPipe = _application!.Input;
+        var input = new Pipe(_httpConnectionOptions.TransportPipeOptions);
+
+        var transportToApplication = new DuplexPipe(_transport!.Input, input.Writer);
+        var applicationToTransport = new DuplexPipe(input.Reader, _application!.Output);
+
+        _application = applicationToTransport;
+        _transport = transportToApplication;
+
+        prevPipe.Complete(new Exception());
+
+        _notifyOnReconnect.Invoke();
     }
 }

@@ -11,6 +11,7 @@ using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Abstractions;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Connections.Client.Internal;
 using Microsoft.AspNetCore.Http.Features;
@@ -529,6 +530,11 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
 
         // We successfully started, set the transport properties (we don't want to set these until the transport is definitely running).
         _transport = transport;
+
+        if (_httpConnectionOptions.UseAcks && _transport is IReconnectFeature reconnectFeature)
+        {
+            Features.Set(reconnectFeature);
+        }
 
         Log.TransportStarted(_logger, transportType);
     }

@@ -8,6 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Abstractions;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.SignalR.Internal;
@@ -35,8 +36,8 @@ public partial class HubConnectionContext
     private readonly TimeProvider _timeProvider;
     private readonly CancellationTokenRegistration _closedRegistration;
     private readonly CancellationTokenRegistration? _closedRequestedRegistration;
-    private readonly MessageBuffer _messageBuffer = new();
 
+    private MessageBuffer? _messageBuffer;
     private StreamTracker? _streamTracker;
     private long _lastSendTick;
     private ReadOnlyMemory<byte> _cachedPingMessage;
@@ -262,7 +263,7 @@ public partial class HubConnectionContext
             var isAck = true;
             if (isAck)
             {
-                return _messageBuffer.WriteAsync(_connectionContext.Transport.Output, new SerializedHubMessage(message), Protocol, cancellationToken);
+                return _messageBuffer.WriteAsync(new SerializedHubMessage(message), Protocol, cancellationToken);
             }
             else
             {
@@ -292,7 +293,7 @@ public partial class HubConnectionContext
             var isAck = true;
             if (isAck)
             {
-                return _messageBuffer.WriteAsync(_connectionContext.Transport.Output, message, Protocol, cancellationToken);
+                return _messageBuffer.WriteAsync(message, Protocol, cancellationToken);
             }
             else
             {
@@ -572,6 +573,10 @@ public partial class HubConnectionContext
                                 Log.HandshakeComplete(_logger, Protocol.Name);
 
                                 await WriteHandshakeResponseAsync(HandshakeResponseMessage.Empty);
+
+                                _messageBuffer = new MessageBuffer(_connectionContext, Protocol);
+                                var f = _connectionContext.Features.Get<IReconnectFeature>();
+                                f.NotifyOnReconnect = _messageBuffer.Resend;
                                 return true;
                             }
                             else if (overLength)
