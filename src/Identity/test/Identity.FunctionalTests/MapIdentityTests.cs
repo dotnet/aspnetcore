@@ -70,7 +70,7 @@ public class MapIdentityTests : LoggedTest
     [Fact]
     public async Task CanCustomizeBearerTokenExpiration()
     {
-        var clock = new TestTimeProvider();
+        var clock = new MockTimeProvider();
         var expireTimeSpan = TimeSpan.FromSeconds(42);
 
         await using var app = await CreateAppAsync(services =>

@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity.Test;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Net.Http.Headers;
@@ -66,7 +67,7 @@ public class FunctionalTest
     [InlineData(false)]
     public async Task CanCreateMeLoginAndCookieStopsWorkingAfterExpiration(bool testCore)
     {
-        var timeProvider = new TestTimeProvider();
+        var timeProvider = new MockTimeProvider();
         var server = await CreateServer(services =>
         {
             services.ConfigureApplicationCookie(options =>
@@ -114,10 +115,10 @@ public class FunctionalTest
     [InlineData(false, false)]
     public async Task CanCreateMeLoginAndSecurityStampExtendsExpiration(bool rememberMe, bool testCore)
     {
-        var timeProvider = new TestTimeProvider();
+        var timeProvider = new MockTimeProvider();
         var server = await CreateServer(services =>
         {
-            services.Configure<SecurityStampValidatorOptions>(o => o.TimeProvider = timeProvider);
+            services.AddSingleton<TimeProvider>(timeProvider);
         }, testCore: testCore);
 
         var transaction1 = await SendAsync(server, "http://example.com/createMe");
@@ -163,12 +164,12 @@ public class FunctionalTest
     [InlineData(false)]
     public async Task CanAccessOldPrincipalDuringSecurityStampReplacement(bool testCore)
     {
-        var timeProvider = new TestTimeProvider();
+        var timeProvider = new MockTimeProvider();
         var server = await CreateServer(services =>
         {
+            services.AddSingleton<TimeProvider>(timeProvider);
             services.Configure<SecurityStampValidatorOptions>(options =>
             {
-                options.TimeProvider = timeProvider;
                 options.OnRefreshingPrincipal = c =>
                 {
                     var newId = new ClaimsIdentity();
@@ -216,7 +217,7 @@ public class FunctionalTest
     [InlineData(false)]
     public async Task TwoFactorRememberCookieVerification(bool testCore)
     {
-        var timeProvider = new TestTimeProvider();
+        var timeProvider = new MockTimeProvider();
         var server = await CreateServer(services => services.AddSingleton<TimeProvider>(timeProvider), testCore: testCore);
 
         var transaction1 = await SendAsync(server, "http://example.com/createMe");
@@ -245,7 +246,7 @@ public class FunctionalTest
     [InlineData(false)]
     public async Task TwoFactorRememberCookieClearedBySecurityStampChange(bool testCore)
     {
-        var timeProvider = new TestTimeProvider();
+        var timeProvider = new MockTimeProvider();
         var server = await CreateServer(services => services.AddSingleton<TimeProvider>(timeProvider), testCore: testCore);
 
         var transaction1 = await SendAsync(server, "http://example.com/createMe");

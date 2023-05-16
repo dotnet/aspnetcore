@@ -5,7 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(IdentityTestSharedSourceRoot)**\*.cs" />
+    <Compile Include="$(IdentityTestSharedSourceRoot)**\*.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)test\MockTimeProvider.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>
@@ -18,3 +19,4 @@
   </ItemGroup>
 
 </Project>
+ 
