@@ -24,6 +24,13 @@ public class MockTimeProvider : TimeProvider
         _timestamp = Random.Shared.NextInt64(0, System.GetTimestamp() * 100);
     }
 
+    public MockTimeProvider(DateTimeOffset now)
+    {
+        _utcTicks = now.Ticks;
+        // Timestamps often measure system uptime.
+        _timestamp = Random.Shared.NextInt64(0, System.GetTimestamp() * 100);
+    }
+
     public override DateTimeOffset GetUtcNow()
     {
         UtcNowCalled++;
@@ -39,7 +46,7 @@ public class MockTimeProvider : TimeProvider
     public void Advance(TimeSpan timeSpan)
     {
         Interlocked.Add(ref _utcTicks, timeSpan.Ticks);
-        Interlocked.Add(ref _timestamp, timeSpan.ToTicks(_timestampFrequency));
+        Interlocked.Add(ref _timestamp, timeSpan.Ticks * (_timestampFrequency / TimeSpan.TicksPerSecond));
     }
 
     public void AdvanceTo(DateTimeOffset newUtcNow)
