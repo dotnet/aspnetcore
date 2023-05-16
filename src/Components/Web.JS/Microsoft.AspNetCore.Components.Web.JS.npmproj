@@ -1,5 +1,4 @@
 <Project DefaultTargets="Build">
-  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.props))\Directory.Build.props" />
 
   <PropertyGroup>
     <IsPackable>false</IsPackable>
@@ -13,6 +12,8 @@
     <!-- Npm tests don't run on Helix currently, so we need to set this to false to still run the tests on non-Helix -->
     <BuildHelixPayload>false</BuildHelixPayload>
   </PropertyGroup>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.props))\Directory.Build.props" />
 
   <ItemGroup>
     <!--
