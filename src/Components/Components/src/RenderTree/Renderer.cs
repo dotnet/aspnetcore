@@ -86,7 +86,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         // has always taken ILoggerFactory so to avoid the per-instance string allocation of the logger name we just pass the
         // logger name in here as a string literal.
         _logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Components.RenderTree.Renderer");
-        _componentFactory = new ComponentFactory(componentActivator);
+        _componentFactory = new ComponentFactory(componentActivator, this);
     }
 
     internal HotReloadManager HotReloadManager { get; set; } = HotReloadManager.Default;
@@ -162,9 +162,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     /// <param name="componentType">The type of the component to instantiate.</param>
     /// <returns>The component instance.</returns>
     protected IComponent InstantiateComponent([DynamicallyAccessedMembers(Component)] Type componentType)
-    {
-        return _componentFactory.InstantiateComponent(_serviceProvider, componentType);
-    }
+        => _componentFactory.InstantiateComponent(_serviceProvider, componentType, null);
 
     /// <summary>
     /// Associates the <see cref="IComponent"/> with the <see cref="Renderer"/>, assigning
@@ -475,7 +473,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             : EventArgsTypeCache.GetEventArgsType(methodInfo);
     }
 
-    internal void InstantiateChildComponentOnFrame(ref RenderTreeFrame frame, int parentComponentId)
+    internal ComponentState InstantiateChildComponentOnFrame(ref RenderTreeFrame frame, int parentComponentId)
     {
         if (frame.FrameTypeField != RenderTreeFrameType.Component)
         {
@@ -487,10 +485,12 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             throw new ArgumentException($"The frame already has a non-null component instance", nameof(frame));
         }
 
-        var newComponent = InstantiateComponent(frame.ComponentTypeField);
+        var newComponent = _componentFactory.InstantiateComponent(_serviceProvider, frame.ComponentTypeField, parentComponentId);
         var newComponentState = AttachAndInitComponent(newComponent, parentComponentId);
         frame.ComponentStateField = newComponentState;
         frame.ComponentIdField = newComponentState.ComponentId;
+
+        return newComponentState;
     }
 
     internal void AddToPendingTasksWithErrorHandling(Task task, ComponentState? owningComponentState)
@@ -1157,6 +1157,27 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
                 HandleException(exceptions[0]);
             }
         }
+    }
+
+    /// <summary>
+    /// Determines how to handle an <see cref="IComponentRenderMode"/> when obtaining a component instance.
+    /// This is only called for components that have specified a render mode. Subclasses may override this
+    /// method to return a component of a different type, or throw, depending on whether the renderer
+    /// supports the render mode and how it implements that support.
+    /// </summary>
+    /// <param name="componentType">The type of component that was requested.</param>
+    /// <param name="parentComponentId">The parent component ID, or null if it is a root component.</param>
+    /// <param name="componentActivator">An <see cref="IComponentActivator"/> that should be used when instantiating component objects.</param>
+    /// <param name="componentTypeRenderMode">The <see cref="IComponentRenderMode"/> declared on <paramref name="componentType"/>.</param>
+    /// <returns>An <see cref="IComponent"/> instance.</returns>
+    protected internal virtual IComponent ResolveComponentForRenderMode(
+        [DynamicallyAccessedMembers(Component)] Type componentType,
+        int? parentComponentId,
+        IComponentActivator componentActivator,
+        IComponentRenderMode componentTypeRenderMode)
+    {
+        // Nothing is supported by default. Subclasses must override this to opt into supporting specific render modes.
+        throw new NotSupportedException($"Cannot supply a component of type '{componentType}' because the current platform does not support the render mode '{componentTypeRenderMode}'.");
     }
 
     /// <summary>
