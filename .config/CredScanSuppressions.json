@@ -38,11 +38,11 @@
       "_justification": "Legitimate UT certificate file with private key"
     },
     {
-      "file": "\\src\\DataProtection\\DataProtection\\test\\TestFiles\\TestCert1.pfx",
+      "file": "\\src\\DataProtection\\DataProtection\\test\\Microsoft.AspNetCore.DataProtection.Tests\\TestFiles\\TestCert1.pfx",
       "_justification": "Legitimate UT certificate file with private key"
     },
     {
-      "file": "\\src\\DataProtection\\DataProtection\\test\\TestFiles\\TestCert2.pfx",
+      "file": "\\src\\DataProtection\\DataProtection\\test\\Microsoft.AspNetCore.DataProtection.Tests\\TestFiles\\TestCert2.pfx",
       "_justification": "Legitimate UT certificate file with private key"
     },
     {
