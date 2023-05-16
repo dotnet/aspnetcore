@@ -19,6 +19,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
+  <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.Net.Http.Headers.Tests" />
   </ItemGroup>
 </Project>

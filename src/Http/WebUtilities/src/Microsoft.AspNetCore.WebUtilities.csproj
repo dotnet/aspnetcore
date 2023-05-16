@@ -27,6 +27,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
+  <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.WebUtilities.Tests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.WebUtilities.Microbenchmarks" />
   </ItemGroup>
