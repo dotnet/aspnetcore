@@ -52,7 +52,6 @@ public partial class HubConnectionContext
 
     internal bool UseAcks;
     private long _sequenceId;
-    private long _latestReceivedSequenceId = long.MinValue;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HubConnectionContext"/> class.
@@ -774,15 +773,11 @@ public partial class HubConnectionContext
 
     internal bool ShouldProcessMessage(HubInvocationMessage message)
     {
-        var currentId = _currentReceivingSequenceId;
-        _currentReceivingSequenceId++;
-        if (currentId <= _latestReceivedSequenceId)
-        {
-            // Ignore, this is a duplicate message
-            return false;
-        }
-        _latestReceivedSequenceId = currentId;
+        return _messageBuffer.ShouldProcessMessage(message);
+    }
 
-        return true;
+    internal void ResetSequence(SequenceMessage sequenceMessage)
+    {
+        _messageBuffer.ResetSequence(sequenceMessage);
     }
 }

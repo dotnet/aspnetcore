@@ -79,6 +79,7 @@ public partial class HubConnection : IAsyncDisposable
     private readonly ReconnectingConnectionState _state;
 
     private bool _disposed;
+    private MessageBuffer _buffer = new();
 
     /// <summary>
     /// Occurs when the connection is closed. The connection could be closed due to an error or due to either the server or client intentionally
@@ -946,11 +947,21 @@ public partial class HubConnection : IAsyncDisposable
     private async Task SendHubMessage(ConnectionState connectionState, HubMessage hubMessage, CancellationToken cancellationToken = default)
     {
         _state.AssertConnectionValid();
-        _protocol.WriteMessage(hubMessage, connectionState.Connection.Transport.Output);
 
         Log.SendingMessage(_logger, hubMessage);
 
-        await connectionState.Connection.Transport.Output.FlushAsync(cancellationToken).ConfigureAwait(false);
+        // TODO
+        var isAck = true;
+        if (isAck)
+        {
+            await _buffer.WriteAsync(connectionState.Connection.Transport.Output, new SerializedHubMessage(hubMessage), _protocol, cancellationToken).ConfigureAwait(false);
+        }
+        else
+        {
+            _protocol.WriteMessage(hubMessage, connectionState.Connection.Transport.Output);
+
+            await connectionState.Connection.Transport.Output.FlushAsync(cancellationToken).ConfigureAwait(false);
+        }
         Log.MessageSent(_logger, hubMessage);
 
         // We've sent a message, so don't ping for a while
@@ -1004,6 +1015,14 @@ public partial class HubConnection : IAsyncDisposable
         Log.ResettingKeepAliveTimer(_logger);
         connectionState.ResetTimeout();
 
+        if (true && message is HubInvocationMessage hubInvocation)
+        {
+            if (!_buffer.ShouldProcessMessage(hubInvocation))
+            {
+                return null;
+            }
+        }
+
         InvocationRequest? irq;
         switch (message)
         {
@@ -1054,6 +1073,12 @@ public partial class HubConnection : IAsyncDisposable
             case PingMessage _:
                 Log.ReceivedPing(_logger);
                 // timeout is reset above, on receiving any message
+                break;
+            case AckMessage ackMessage:
+                _buffer.Ack(ackMessage);
+                break;
+            case SequenceMessage sequenceMessage:
+                _buffer.ResetSequence(sequenceMessage);
                 break;
             default:
                 throw new InvalidOperationException($"Unexpected message type: {message.GetType().FullName}");

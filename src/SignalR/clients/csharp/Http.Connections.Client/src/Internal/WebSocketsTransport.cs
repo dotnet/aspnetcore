@@ -297,11 +297,11 @@ internal sealed partial class WebSocketsTransport : ITransport
         {
             // Create the pipe pair (Application's writer is connected to Transport's reader, and vice versa)
             DuplexPipePair pair;
-            if (_useAck)
-            {
-                pair = CreateAckConnectionPair(_httpConnectionOptions.TransportPipeOptions, _httpConnectionOptions.AppPipeOptions);
-            }
-            else
+            //if (_useAck)
+            //{
+            //    pair = CreateAckConnectionPair(_httpConnectionOptions.TransportPipeOptions, _httpConnectionOptions.AppPipeOptions);
+            //}
+            //else
             {
                 pair = DuplexPipe.CreateConnectionPair(_httpConnectionOptions.TransportPipeOptions, _httpConnectionOptions.AppPipeOptions);
             }

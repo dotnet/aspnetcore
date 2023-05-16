@@ -461,6 +461,8 @@ public sealed class JsonHubProtocol : IHubProtocol
                     return BindCloseMessage(error, allowReconnect);
                 case HubProtocolConstants.AckMessageType:
                     return BindAckMessage(sequenceId);
+                case HubProtocolConstants.SequenceMessageType:
+                    return BindSequenceMessage(sequenceId);
                 case null:
                     throw new InvalidDataException($"Missing required property '{TypePropertyName}'.");
                 default:
@@ -557,6 +559,10 @@ public sealed class JsonHubProtocol : IHubProtocol
                     WriteMessageType(writer, HubProtocolConstants.AckMessageType);
                     WriteAckMessage(m, writer);
                     break;
+                case SequenceMessage m:
+                    WriteMessageType(writer, HubProtocolConstants.SequenceMessageType);
+                    WriteSequenceMessage(m, writer);
+                    break;
                 default:
                     throw new InvalidOperationException($"Unsupported message type: {message.GetType().FullName}");
             }
@@ -586,7 +592,6 @@ public sealed class JsonHubProtocol : IHubProtocol
     private void WriteCompletionMessage(CompletionMessage message, Utf8JsonWriter writer)
     {
         WriteInvocationId(message, writer);
-        WriteSequenceId(message, writer);
         if (!string.IsNullOrEmpty(message.Error))
         {
             writer.WriteString(ErrorPropertyNameBytes, message.Error);
@@ -615,13 +620,11 @@ public sealed class JsonHubProtocol : IHubProtocol
     private static void WriteCancelInvocationMessage(CancelInvocationMessage message, Utf8JsonWriter writer)
     {
         WriteInvocationId(message, writer);
-        WriteSequenceId(message, writer);
     }
 
     private void WriteStreamItemMessage(StreamItemMessage message, Utf8JsonWriter writer)
     {
         WriteInvocationId(message, writer);
-        WriteSequenceId(message, writer);
 
         writer.WritePropertyName(ItemPropertyNameBytes);
         if (message.Item == null)
@@ -637,7 +640,6 @@ public sealed class JsonHubProtocol : IHubProtocol
     private void WriteInvocationMessage(InvocationMessage message, Utf8JsonWriter writer)
     {
         WriteInvocationId(message, writer);
-        WriteSequenceId(message, writer);
         writer.WriteString(TargetPropertyNameBytes, message.Target);
 
         WriteArguments(message.Arguments, writer);
@@ -648,7 +650,6 @@ public sealed class JsonHubProtocol : IHubProtocol
     private void WriteStreamInvocationMessage(StreamInvocationMessage message, Utf8JsonWriter writer)
     {
         WriteInvocationId(message, writer);
-        WriteSequenceId(message, writer);
         writer.WriteString(TargetPropertyNameBytes, message.Target);
 
         WriteArguments(message.Arguments, writer);
@@ -670,6 +671,11 @@ public sealed class JsonHubProtocol : IHubProtocol
     }
 
     private static void WriteAckMessage(AckMessage message, Utf8JsonWriter writer)
+    {
+        writer.WriteNumber(SequenceIdPropertyName, message.SequenceId);
+    }
+
+    private static void WriteSequenceMessage(SequenceMessage message, Utf8JsonWriter writer)
     {
         writer.WriteNumber(SequenceIdPropertyName, message.SequenceId);
     }
@@ -711,14 +717,6 @@ public sealed class JsonHubProtocol : IHubProtocol
         if (!string.IsNullOrEmpty(message.InvocationId))
         {
             writer.WriteString(InvocationIdPropertyNameBytes, message.InvocationId);
-        }
-    }
-
-    private static void WriteSequenceId(HubInvocationMessage message, Utf8JsonWriter writer)
-    {
-        if (message.SequenceId is not null)
-        {
-            writer.WriteNumber(SequenceIdPropertyNameBytes, message.SequenceId.Value);
         }
     }
 
@@ -894,6 +892,16 @@ public sealed class JsonHubProtocol : IHubProtocol
         }
 
         return new AckMessage(sequenceId.Value);
+    }
+
+    private static SequenceMessage BindSequenceMessage(long? sequenceId)
+    {
+        if (sequenceId is null)
+        {
+            throw new InvalidDataException("Missing 'sequenceId' in Sequence message.");
+        }
+
+        return new SequenceMessage(sequenceId.Value);
     }
 
     private static HubMessage ApplyHeaders(HubMessage message, Dictionary<string, string>? headers)

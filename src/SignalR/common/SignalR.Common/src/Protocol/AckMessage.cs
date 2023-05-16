@@ -28,3 +28,13 @@ public sealed class AckMessage : HubMessage
     /// </summary>
     public long SequenceId { get; }
 }
+
+public sealed class SequenceMessage : HubMessage
+{
+    public SequenceMessage(long sequenceId)
+    {
+        SequenceId = sequenceId;
+    }
+
+    public long SequenceId { get; }
+}
