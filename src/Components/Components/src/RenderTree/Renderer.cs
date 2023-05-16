@@ -473,17 +473,16 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             : EventArgsTypeCache.GetEventArgsType(methodInfo);
     }
 
-    internal ComponentState InstantiateChildComponentOnFrame(RenderTreeFrame[] frames, int frameIndex, int parentComponentId)
+    internal ComponentState InstantiateChildComponentOnFrame(ref RenderTreeFrame frame, int parentComponentId)
     {
-        ref var frame = ref frames[frameIndex];
         if (frame.FrameTypeField != RenderTreeFrameType.Component)
         {
-            throw new ArgumentException($"The frame's {nameof(RenderTreeFrame.FrameType)} property must equal {RenderTreeFrameType.Component}", nameof(frameIndex));
+            throw new ArgumentException($"The frame's {nameof(RenderTreeFrame.FrameType)} property must equal {RenderTreeFrameType.Component}", nameof(frame));
         }
 
         if (frame.ComponentStateField != null)
         {
-            throw new ArgumentException($"The frame already has a non-null component instance", nameof(frameIndex));
+            throw new ArgumentException($"The frame already has a non-null component instance", nameof(frame));
         }
 
         var newComponent = _componentFactory.InstantiateComponent(_serviceProvider, frame.ComponentTypeField, parentComponentId);

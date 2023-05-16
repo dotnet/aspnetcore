@@ -951,8 +951,9 @@ internal static class RenderTreeDiffBuilder
     private static void InitializeNewComponentFrame(ref DiffContext diffContext, int frameIndex)
     {
         var frames = diffContext.NewTree;
+        ref var frame = ref frames[frameIndex];
         var parentComponentId = diffContext.ComponentId;
-        var childComponentState = diffContext.Renderer.InstantiateChildComponentOnFrame(frames, frameIndex, parentComponentId);
+        var childComponentState = diffContext.Renderer.InstantiateChildComponentOnFrame(ref frame, parentComponentId);
 
         // Set initial parameters
         var initialParametersLifetime = new ParameterViewLifetime(diffContext.BatchBuilder);

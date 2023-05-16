@@ -107,7 +107,7 @@ internal partial class EndpointHtmlRenderer
         try
         {
             var component = BeginRenderingComponent(rootComponentType, parameters);
-            var result = new PrerenderedComponentHtmlContent(Dispatcher, component, null, null);
+            var result = new PrerenderedComponentHtmlContent(Dispatcher, component);
 
             await WaitForResultReady(waitForQuiescence, result);
 
