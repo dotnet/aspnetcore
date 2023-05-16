@@ -765,15 +765,6 @@ public partial class HubConnectionContext
         _messageBuffer.Ack(ackMessage);
     }
 
-    //private long? GetSequenceId()
-    //{
-    //    if (UseAcks)
-    //    {
-    //        return Interlocked.Increment(ref _sequenceId);
-    //    }
-    //    return null;
-    //}
-
     private long _currentReceivingSequenceId;
 
     internal bool ShouldProcessMessage(HubInvocationMessage message)
