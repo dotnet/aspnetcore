@@ -103,9 +103,9 @@ public static class PollyServiceCollectionExtensions
             return registry;
         });
 
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IPolicyRegistry<string>>(serviceProvider => serviceProvider.GetRequiredService<PolicyRegistry>()));
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IReadOnlyPolicyRegistry<string>>(serviceProvider => serviceProvider.GetRequiredService<PolicyRegistry>()));
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IConcurrentPolicyRegistry<string>>(serviceProvider => serviceProvider.GetRequiredService<PolicyRegistry>()));
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IPolicyRegistry<string>, PolicyRegistry>(serviceProvider => serviceProvider.GetRequiredService<PolicyRegistry>()));
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IReadOnlyPolicyRegistry<string>, PolicyRegistry>(serviceProvider => serviceProvider.GetRequiredService<PolicyRegistry>()));
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IConcurrentPolicyRegistry<string>, PolicyRegistry>(serviceProvider => serviceProvider.GetRequiredService<PolicyRegistry>()));
 
         return services;
     }
