@@ -47,6 +47,11 @@ public class MockTimeProvider : TimeProvider
     {
         Interlocked.Add(ref _utcTicks, timeSpan.Ticks);
         Interlocked.Add(ref _timestamp, timeSpan.Ticks * (_timestampFrequency / TimeSpan.TicksPerSecond));
+
+        if (_utcTicks < 0 || _timestamp < 0)
+        {
+            throw new InvalidOperationException("UtcNow or Timestamp became negative.");
+        }
     }
 
     public void AdvanceTo(DateTimeOffset newUtcNow)
@@ -57,6 +62,11 @@ public class MockTimeProvider : TimeProvider
         // Known timestamp frequencies are the same or larger than TicksPerSecond.
         var timestampOffset = (nowTicks - priorTicks) * (_timestampFrequency / TimeSpan.TicksPerSecond);
         Interlocked.Add(ref _timestamp, timestampOffset);
+
+        if (_utcTicks < 0 || _timestamp < 0)
+        {
+            throw new InvalidOperationException("UtcNow or Timestamp became negative.");
+        }
     }
 
     public void AdvanceTo(long timestamp)
@@ -66,6 +76,11 @@ public class MockTimeProvider : TimeProvider
         // Known timestamp frequencies are the same or larger than TicksPerSecond.
         var utcOffset = (long)((timestamp - priorTimestamp) * ((double)TimeSpan.TicksPerSecond / _timestampFrequency));
         Interlocked.Add(ref _utcTicks, utcOffset);
+
+        if (_utcTicks < 0 || _timestamp < 0)
+        {
+            throw new InvalidOperationException("UtcNow or Timestamp became negative.");
+        }
     }
 
     public override ITimer CreateTimer(TimerCallback callback, object state, TimeSpan dueTime, TimeSpan period)
