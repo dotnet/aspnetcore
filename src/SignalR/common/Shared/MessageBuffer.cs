@@ -80,37 +80,6 @@ internal sealed class MessageBuffer
                 return await oldTcs.Task.ConfigureAwait(false);
             }
             return await _resend.Task.ConfigureAwait(false);
-
-            //long latestAckedIndex = -1;
-            //for (var i = 0; i < _buffer.Length - 1; i++)
-            //{
-            //    if (_buffer[(_index + i + 1) % _buffer.Length].SequenceId > long.MinValue)
-            //    {
-            //        latestAckedIndex = (_index + i + 1) % _buffer.Length;
-            //    }
-            //}
-
-            //if (latestAckedIndex == -1)
-            //{
-            //    // no unacked messages, probably not possible
-            //    // because we are in the middle of writing a message when we get here, so there should be 1 minimum
-            //}
-
-            //protocol.WriteMessage(new SequenceMessage(_buffer[latestAckedIndex].SequenceId), connection.Transport.Output);
-            //await connection.Transport.Output.FlushAsync(cancellationToken).ConfigureAwait(false);
-
-            //for (var i = 0; i < _buffer.Length; i++)
-            //{
-            //    var item = _buffer[(latestAckedIndex + i) % _buffer.Length];
-            //    if (item.SequenceId > long.MinValue)
-            //    {
-            //        await connection.Transport.Output.WriteAsync(item.Message!.GetSerializedMessage(protocol), cancellationToken).ConfigureAwait(false);
-            //    }
-            //    else
-            //    {
-            //        break;
-            //    }
-            //}
         }
     }
 
@@ -185,8 +154,7 @@ internal sealed class MessageBuffer
 
         if (latestAckedIndex == -1)
         {
-            // no unacked messages, probably not possible
-            // because we are in the middle of writing a message when we get here, so there should be 1 minimum
+            // no unacked messages, still send SequenceMessage?
         }
 
         FlushResult finalResult = new();
