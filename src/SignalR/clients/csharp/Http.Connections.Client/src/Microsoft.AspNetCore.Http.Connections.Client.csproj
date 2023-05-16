@@ -11,9 +11,6 @@
     <Compile Include="$(SignalRSharedSourceRoot)WebSocketExtensions.cs" Link="WebSocketExtensions.cs" />
     <Compile Include="$(SignalRSharedSourceRoot)StreamExtensions.cs" Link="StreamExtensions.cs" />
     <Compile Include="$(SignalRSharedSourceRoot)DuplexPipe.cs" Link="DuplexPipe.cs" />
-    <Compile Include="$(SignalRSharedSourceRoot)AckPipeReader.cs" Link="Internal\AckPipeReader.cs" />
-    <Compile Include="$(SignalRSharedSourceRoot)AckPipeWriter.cs" Link="Internal\AckPipeWriter.cs" />
-    <Compile Include="$(SignalRSharedSourceRoot)ParseAckPipeReader.cs" Link="Internal\ParseAckPipeReader.cs" />
     <Compile Include="$(SharedSourceRoot)PlatformAttributes.cs" Condition="'$(TargetFramework)' != '$(DefaultNetCoreTargetFramework)'" />
     <Compile Include="$(SharedSourceRoot)OperatingSystem.cs" Condition="'$(TargetFramework)' != '$(DefaultNetCoreTargetFramework)'" />
     <Compile Include="$(SharedSourceRoot)IsExternalInit.cs" Link="IsExternalInit.cs" />

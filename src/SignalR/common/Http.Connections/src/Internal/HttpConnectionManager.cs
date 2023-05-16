@@ -91,27 +91,12 @@ internal sealed partial class HttpConnectionManager
         HttpConnectionsEventSource.Log.ConnectionStart(id);
         _metrics.ConnectionStart(metricsContext);
 
-        var pair = DuplexPipe.CreateConnectionPair(options.TransportPipeOptions, options.AppPipeOptions);
+        var pair = CreateConnectionPair(options.TransportPipeOptions, options.AppPipeOptions);
         var connection = new HttpConnectionContext(id, connectionToken, _connectionLogger, metricsContext, pair.Application, pair.Transport, options, useAck);
 
         _connections.TryAdd(connectionToken, (connection, startTimestamp));
 
         return connection;
-
-        static DuplexPipePair CreateAckConnectionPair(PipeOptions inputOptions, PipeOptions outputOptions)
-        {
-            var input = new Pipe(inputOptions);
-            var output = new Pipe(outputOptions);
-
-            // Use for one side only, i.e. server
-            var ackWriterApp = new AckPipeWriter(output);
-            var ackReader = new AckPipeReader(output);
-            var transportReader = new ParseAckPipeReader(input.Reader, ackWriterApp, ackReader);
-            var transportToApplication = new DuplexPipe(ackReader, input.Writer);
-            var applicationToTransport = new DuplexPipe(transportReader, ackWriterApp);
-
-            return new DuplexPipePair(transportToApplication, applicationToTransport);
-        }
     }
 
     public void RemoveConnection(string id, HttpTransportType transportType, HttpConnectionStopStatus status)
