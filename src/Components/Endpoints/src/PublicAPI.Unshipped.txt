@@ -1,16 +1,13 @@
-Microsoft.AspNetCore.Builder.ComponentTypeMetadata
-Microsoft.AspNetCore.Builder.ComponentTypeMetadata.ComponentTypeMetadata(System.Type! componentType) -> void
-Microsoft.AspNetCore.Builder.ComponentTypeMetadata.Type.get -> System.Type!
 Microsoft.AspNetCore.Builder.RazorComponentEndpointConventionBuilder
 Microsoft.AspNetCore.Builder.RazorComponentEndpointConventionBuilder.Add(System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder!>! convention) -> void
 Microsoft.AspNetCore.Builder.RazorComponentEndpointConventionBuilder.Finally(System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder!>! finallyConvention) -> void
 Microsoft.AspNetCore.Builder.RazorComponentsEndpointRouteBuilderExtensions
-Microsoft.AspNetCore.Builder.RootComponentMetadata
-Microsoft.AspNetCore.Builder.RootComponentMetadata.RootComponentMetadata(System.Type! rootComponentType) -> void
-Microsoft.AspNetCore.Builder.RootComponentMetadata.Type.get -> System.Type!
 Microsoft.AspNetCore.Components.ComponentApplicationBuilder
 Microsoft.AspNetCore.Components.ComponentApplicationBuilder.Build() -> Microsoft.AspNetCore.Components.RazorComponentApplication!
 Microsoft.AspNetCore.Components.ComponentApplicationBuilder.ComponentApplicationBuilder() -> void
+Microsoft.AspNetCore.Components.Endpoints.ComponentTypeMetadata
+Microsoft.AspNetCore.Components.Endpoints.ComponentTypeMetadata.ComponentTypeMetadata(System.Type! componentType) -> void
+Microsoft.AspNetCore.Components.Endpoints.ComponentTypeMetadata.Type.get -> System.Type!
 Microsoft.AspNetCore.Components.Endpoints.IComponentPrerenderer
 Microsoft.AspNetCore.Components.Endpoints.IComponentPrerenderer.Dispatcher.get -> Microsoft.AspNetCore.Components.Dispatcher!
 Microsoft.AspNetCore.Components.Endpoints.IComponentPrerenderer.PrerenderComponentAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext, System.Type! componentType, Microsoft.AspNetCore.Components.RenderMode renderMode, Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Html.IHtmlAsyncContent!>
@@ -38,6 +35,9 @@ Microsoft.AspNetCore.Components.Endpoints.RazorComponentResult<TComponent>.Razor
 Microsoft.AspNetCore.Components.Endpoints.RazorComponentResult<TComponent>.RazorComponentResult(System.Collections.Generic.IReadOnlyDictionary<string!, object?>! parameters) -> void
 Microsoft.AspNetCore.Components.Endpoints.RazorComponentResultExecutor
 Microsoft.AspNetCore.Components.Endpoints.RazorComponentResultExecutor.RazorComponentResultExecutor() -> void
+Microsoft.AspNetCore.Components.Endpoints.RootComponentMetadata
+Microsoft.AspNetCore.Components.Endpoints.RootComponentMetadata.RootComponentMetadata(System.Type! rootComponentType) -> void
+Microsoft.AspNetCore.Components.Endpoints.RootComponentMetadata.Type.get -> System.Type!
 Microsoft.AspNetCore.Components.IRazorComponentApplication<TComponent>
 Microsoft.AspNetCore.Components.IRazorComponentApplication<TComponent>.GetBuilder() -> Microsoft.AspNetCore.Components.ComponentApplicationBuilder!
 Microsoft.AspNetCore.Components.PageDefinition
