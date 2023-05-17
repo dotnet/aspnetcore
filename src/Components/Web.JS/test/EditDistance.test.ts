@@ -1,8 +1,8 @@
 import { expect, test, describe } from '@jest/globals';
-import { ComparisonResult, compareArrays, Operation } from '../src/Rendering/DomMerging/EditDistance';
+import { compareArrays, Operation } from '../src/Rendering/DomMerging/EditDistance';
 
 function exactEqualityComparer<T>(a: T, b: T) {
-    return a === b ? ComparisonResult.Identical : ComparisonResult.Incompatible;
+    return a === b;
 }
 
 describe('levenshteinArray', () => {
@@ -31,7 +31,7 @@ describe('levenshteinArray', () => {
     const before: number[] = [1, 2, 3];
     const after: number[] = [1, 2, 3];
     const result = compareArrays(before, after, exactEqualityComparer);
-    expect(result).toEqual([Operation.RetainAsIdentical, Operation.RetainAsIdentical, Operation.RetainAsIdentical]);
+    expect(result).toEqual([Operation.Retain, Operation.Retain, Operation.Retain]);
   });
 
   test('should return correct operations for mixed changes', () => {
@@ -45,6 +45,6 @@ describe('levenshteinArray', () => {
     const before: number[] = [1, 2, 3, 4];
     const after: number[] = [1, 3, 5, 4];
     const result = compareArrays(before, after, exactEqualityComparer);
-    expect(result).toEqual([Operation.RetainAsIdentical, Operation.Delete, Operation.RetainAsIdentical, Operation.Insert, Operation.RetainAsIdentical]);
+    expect(result).toEqual([Operation.Retain, Operation.Delete, Operation.Retain, Operation.Insert, Operation.Retain]);
   });
 });

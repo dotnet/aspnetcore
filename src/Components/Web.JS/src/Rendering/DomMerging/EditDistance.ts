@@ -1,9 +1,9 @@
-type EqualityCallback<T> = (a: T, b: T) => ComparisonResult;
+type EqualityCallback<T> = (a: T, b: T) => boolean;
 
 export function compareArrays<T>(before: T[], after: T[], equalityCallback: EqualityCallback<T>): Operation[] {
   // Initialize matrices
   const matrix: number[][] = [];
-  const comparisonResults: ComparisonResult[][] = [];
+  const equalityResults: boolean[][] = [];
   const beforeLength = before.length;
   const afterLength = after.length;
   if (before.length === 0 && afterLength === 0) {
@@ -12,7 +12,7 @@ export function compareArrays<T>(before: T[], after: T[], equalityCallback: Equa
 
   for (let beforeIndex = 0; beforeIndex <= beforeLength; beforeIndex++) {
     (matrix[beforeIndex] = Array(afterLength + 1))[0] = beforeIndex;
-    comparisonResults[beforeIndex] = Array(afterLength + 1);
+    equalityResults[beforeIndex] = Array(afterLength + 1);
   }
   const rowZero = matrix[0];
   for (let afterIndex = 1; afterIndex <= afterLength; afterIndex++) {
@@ -26,12 +26,12 @@ export function compareArrays<T>(before: T[], after: T[], equalityCallback: Equa
       const costAsDelete = matrix[beforeIndex - 1][afterIndex] + 1;
       const costAsInsert = matrix[beforeIndex][afterIndex - 1] + 1;
 
-      const comparisonResult = comparisonResults[beforeIndex][afterIndex] = equalityCallback(beforeItem, afterItem);
-      if (comparisonResult === ComparisonResult.Incompatible) {
-        matrix[beforeIndex][afterIndex] = Math.min(costAsInsert, costAsDelete);
-      } else {
+      const isEqual = equalityResults[beforeIndex][afterIndex] = equalityCallback(beforeItem, afterItem);
+      if (isEqual) {
         const costAsRetain = matrix[beforeIndex - 1][afterIndex - 1];
         matrix[beforeIndex][afterIndex] = Math.min(costAsInsert, costAsDelete, costAsRetain);
+      } else {
+        matrix[beforeIndex][afterIndex] = Math.min(costAsInsert, costAsDelete);
       }
     }
   }
@@ -48,17 +48,17 @@ export function compareArrays<T>(before: T[], after: T[], equalityCallback: Equa
       operations.unshift(Operation.Delete);
       beforeIndex--;
     } else {
-      const comparisonResult = comparisonResults[beforeIndex][afterIndex];
+      const isEqual = equalityResults[beforeIndex][afterIndex];
       const costAsInsert = matrix[beforeIndex][afterIndex - 1];
       const costAsDelete = matrix[beforeIndex - 1][afterIndex];
-      const costAsRetain = comparisonResult === ComparisonResult.Incompatible
-        ? Number.MAX_VALUE
-        : matrix[beforeIndex - 1][afterIndex - 1];
+      const costAsRetain = isEqual
+        ? matrix[beforeIndex - 1][afterIndex - 1]
+        : Number.MAX_VALUE;
 
       if (costAsRetain <= costAsInsert && costAsRetain <= costAsDelete) {
         beforeIndex--;
         afterIndex--;
-        operations.unshift(Operation.RetainAsIdentical);
+        operations.unshift(Operation.Retain);
       } else if (costAsInsert < costAsDelete) {
         operations.unshift(Operation.Insert);
         afterIndex--;
@@ -73,13 +73,7 @@ export function compareArrays<T>(before: T[], after: T[], equalityCallback: Equa
 }
 
 export enum Operation {
-  RetainAsIdentical = 0,
-  Insert = 2,
-  Delete = 3,
-}
-
-export enum ComparisonResult {
-  Identical = 0,
-  Compatible = 1,
-  Incompatible = 2,
+  Retain = 0,
+  Insert = 1,
+  Delete = 2,
 }
