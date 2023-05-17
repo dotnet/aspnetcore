@@ -1,13 +1,43 @@
-// Optimizations to consider:
-// - First, do linear scans to find the common prefixes/suffixes of the two arrays, and only do Levenshtein in between
-//   the first and last difference. This reduces it to O(N) for common cases like "no change" or "only one change".
-// - Try increasingly wide diagonal stripes to see if they produce a valid edit script.
-// - Easy: Shrink the final script by omitting trailing sequences of "retain". Just change the existing code not to unshift those
-//   until we've unshifted one other operation.
-
 export function compareArrays<T>(before: ItemList<T>, after: ItemList<T>, equals: (a: T, b: T) => boolean): Operation[] {
+  // In common cases where nothing has changed or only one thing changed, we can reduce the task dramatically
+  // by identifying the common prefix/suffix, and only doing Levenshtein on the subset in between
+  const commonPrefixLength = lengthOfCommonPrefix(before, after, equals);
+  const commonSuffixLength = lengthOfCommonSuffix(before, after, commonPrefixLength, commonPrefixLength, equals);
+  before = ItemListSubset.create(before, commonPrefixLength, before.length - commonPrefixLength - commonSuffixLength);
+  after =  ItemListSubset.create(after, commonPrefixLength, after.length - commonPrefixLength - commonSuffixLength);
+
   const operations = computeOperations(before, after, equals);
-  return toEditScript(operations);
+  const edits = toEditScript(operations);
+
+  return Array(commonPrefixLength).fill(Operation.Retain)
+    .concat(edits)
+    .concat(Array(commonSuffixLength).fill(Operation.Retain));
+}
+
+function lengthOfCommonPrefix<T>(before: ItemList<T>, after: ItemList<T>, equals: (a: T, b: T) => boolean): number {
+  const shorterLength = Math.min(before.length, after.length);
+  for (let index = 0; index < shorterLength; index++) {
+    if (!equals(before.item(index)!, after.item(index)!)) {
+      return index;
+    }
+  }
+
+  return shorterLength;
+}
+
+function lengthOfCommonSuffix<T>(before: ItemList<T>, after: ItemList<T>, beforeStartIndex: number, afterStartIndex: number, equals: (a: T, b: T) => boolean): number {
+  let beforeIndex = before.length - 1;
+  let afterIndex = after.length - 1;
+  let count = 0;
+  while (beforeIndex >= beforeStartIndex && afterIndex >= afterStartIndex) {
+    if (!equals(before.item(beforeIndex)!, after.item(afterIndex)!)) {
+      break;
+    }
+    beforeIndex--;
+    afterIndex--;
+    count++;
+  }
+  return count;
 }
 
 function computeOperations<T>(before: ItemList<T>, after: ItemList<T>, equals: (a: T, b: T) => boolean): Operation[][] {
@@ -57,6 +87,7 @@ function toEditScript(operations: Operation[][]) {
   const result: Operation[] = [];
   let beforeIndex = operations.length - 1;
   let afterIndex = operations[beforeIndex]?.length - 1;
+
   while (beforeIndex > 0 || afterIndex > 0) {
     const operation = beforeIndex === 0
       ? Operation.Insert
@@ -93,4 +124,23 @@ export interface ItemList<T> { // Designed to be compatible with NodeList
   readonly length: number;
   item(index: number): T | null;
   forEach(callbackfn: (value: T, key: number, parent: ItemList<T>) => void, thisArg?: any): void;
+}
+
+class ItemListSubset<T> implements ItemList<T> {
+  static create<T>(source: ItemList<T>, startIndex: number, length: number) {
+    return startIndex === 0 && length === source.length
+      ? source // No need for a wrapper
+      : new ItemListSubset(source, startIndex, length);
+  }
+
+  constructor(private source: ItemList<T>, private startIndex: number, public length: number) {
+  }
+  item(index: number): T | null {
+    return this.source.item(index + this.startIndex);
+  }
+  forEach(callbackfn: (value: T, key: number, parent: ItemList<T>) => void, thisArg?: any): void {
+    for (let i = 0; i < this.length; i++) {
+      callbackfn(this.item(i)!, i, this);
+    }
+  }
 }
