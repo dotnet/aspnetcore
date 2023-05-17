@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 #if (GenerateApiOrGraph)
 using System.Net;
 #endif
@@ -11,6 +11,7 @@ using Microsoft.Graph;
 #endif
 #if (GenerateApiOrGraph)
 using Microsoft.Identity.Web;
+using Microsoft.Identity.Abstractions;
 #endif
 using Company.WebApplication1.Models;
 
@@ -24,19 +25,19 @@ public class HomeController : Controller
     private readonly ILogger<HomeController> _logger;
 
 #if (GenerateApi)
-    private readonly IDownstreamWebApi _downstreamWebApi;
+    private readonly IDownstreamApi _downstreamApi;
 
     public HomeController(ILogger<HomeController> logger,
-                            IDownstreamWebApi downstreamWebApi)
+                            IDownstreamApi downstreamApi)
     {
             _logger = logger;
-        _downstreamWebApi = downstreamWebApi;
+        _downstreamApi = downstreamApi;
     }
 
     [AuthorizeForScopes(ScopeKeySection = "DownstreamApi:Scopes")]
     public async Task<IActionResult> Index()
     {
-        using var response = await _downstreamWebApi.CallWebApiForUserAsync("DownstreamApi").ConfigureAwait(false);
+        using var response = await _downstreamApi.CallApiForUserAsync("DownstreamApi").ConfigureAwait(false);
         if (response.StatusCode == System.Net.HttpStatusCode.OK)
         {
             var apiResult = await response.Content.ReadAsStringAsync().ConfigureAwait(false);

@@ -67,7 +67,7 @@ public class Program
             .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAd"))
                 .EnableTokenAcquisitionToCallDownstreamApi(initialScopes)
         #if (GenerateApi)
-                    .AddDownstreamWebApi("DownstreamApi", builder.Configuration.GetSection("DownstreamApi"))
+                    .AddDownstreamApi("DownstreamApi", builder.Configuration.GetSection("DownstreamApi"))
         #endif
         #if (GenerateGraph)
                     .AddMicrosoftGraph(builder.Configuration.GetSection("DownstreamApi"))
@@ -85,7 +85,7 @@ public class Program
         #if (GenerateApi)
             .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAdB2C"))
                 .EnableTokenAcquisitionToCallDownstreamApi(initialScopes)
-                    .AddDownstreamWebApi("DownstreamApi", builder.Configuration.GetSection("DownstreamApi"))
+                    .AddDownstreamApi("DownstreamApi", builder.Configuration.GetSection("DownstreamApi"))
                     .AddInMemoryTokenCaches();
         #else
             .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAdB2C"));
