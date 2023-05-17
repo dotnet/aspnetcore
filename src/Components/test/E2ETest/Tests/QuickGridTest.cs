@@ -114,10 +114,11 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
         Assert.Equal("5", totalPageNumber);
     }
 
+    [Fact]
     public void AdditionalAttributesApplied()
     {
         var grid = app.FindElement(By.CssSelector("#grid > table"));
-        
+
         var idValue = element.GetAttribute("id");
         var classValue = element.GetAttribute("class");
 
