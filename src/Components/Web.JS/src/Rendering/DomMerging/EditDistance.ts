@@ -11,15 +11,15 @@ export function compareArrays<T>(before: ItemList<T>, after: ItemList<T>, compar
   const operations = computeOperations(before, after, comparer);
   const edits = toEditScript(operations);
 
-  return Array(commonPrefixLength).fill(Operation.Skip)
+  return Array(commonPrefixLength).fill(Operation.Keep)
     .concat(edits)
-    .concat(Array(commonSuffixLength).fill(Operation.Skip));
+    .concat(Array(commonSuffixLength).fill(Operation.Keep));
 }
 
 function lengthOfCommonPrefix<T>(before: ItemList<T>, after: ItemList<T>, comparer: Comparer<T>): number {
   const shorterLength = Math.min(before.length, after.length);
   for (let index = 0; index < shorterLength; index++) {
-    if (comparer(before.item(index)!, after.item(index)!) !== ComparisonResult.Identical) {
+    if (comparer(before.item(index)!, after.item(index)!) !== ComparisonResult.Same) {
       return index;
     }
   }
@@ -32,7 +32,7 @@ function lengthOfCommonSuffix<T>(before: ItemList<T>, after: ItemList<T>, before
   let afterIndex = after.length - 1;
   let count = 0;
   while (beforeIndex >= beforeStartIndex && afterIndex >= afterStartIndex) {
-    if (comparer(before.item(beforeIndex)!, after.item(afterIndex)!) !== ComparisonResult.Identical) {
+    if (comparer(before.item(beforeIndex)!, after.item(afterIndex)!) !== ComparisonResult.Same) {
       break;
     }
     beforeIndex--;
@@ -48,7 +48,7 @@ function computeOperations<T>(before: ItemList<T>, after: ItemList<T>, comparer:
   const operations: Operation[][] = [];
   const beforeLength = before.length;
   const afterLength = after.length;
-  if (before.length === 0 && afterLength === 0) {
+  if (beforeLength === 0 && afterLength === 0) {
     return [];
   }
 
@@ -61,27 +61,27 @@ function computeOperations<T>(before: ItemList<T>, after: ItemList<T>, comparer:
     rowZero[afterIndex] = afterIndex;
   }
 
-  for (let beforeIndex = 1; beforeIndex <= before.length; beforeIndex++) {
-    for (let afterIndex = 1; afterIndex <= after.length; afterIndex++) {
+  for (let beforeIndex = 1; beforeIndex <= beforeLength; beforeIndex++) {
+    for (let afterIndex = 1; afterIndex <= afterLength; afterIndex++) {
       const comparisonResult = comparer(before.item(beforeIndex - 1)!, after.item(afterIndex - 1)!);
       const costAsDelete = costs[beforeIndex - 1][afterIndex] + 1;
       const costAsInsert = costs[beforeIndex][afterIndex - 1] + 1;
       let costAsRetain: number;
       switch (comparisonResult) {
-        case ComparisonResult.Identical:
+        case ComparisonResult.Same:
           costAsRetain = costs[beforeIndex - 1][afterIndex - 1];
           break;
-        case ComparisonResult.Compatible:
+        case ComparisonResult.CanSubstitute:
           costAsRetain = costs[beforeIndex - 1][afterIndex - 1] + 1;
           break;
-        case ComparisonResult.Incompatible:
+        case ComparisonResult.CannotSubstitute:
           costAsRetain = Number.MAX_VALUE;
           break;
       }
 
       if (costAsRetain < costAsInsert && costAsRetain < costAsDelete) {
         costs[beforeIndex][afterIndex] = costAsRetain;
-        operations[beforeIndex][afterIndex] = comparisonResult === ComparisonResult.Identical ? Operation.Skip : Operation.Update;
+        operations[beforeIndex][afterIndex] = comparisonResult === ComparisonResult.Same ? Operation.Keep : Operation.Substitute;
       } else if (costAsInsert < costAsDelete) {
         costs[beforeIndex][afterIndex] = costAsInsert;
         operations[beforeIndex][afterIndex] = Operation.Insert;
@@ -111,8 +111,8 @@ function toEditScript(operations: Operation[][]) {
     result.unshift(operation);
 
     switch (operation) {
-      case Operation.Skip:
-      case Operation.Update:
+      case Operation.Keep:
+      case Operation.Substitute:
         beforeIndex--;
         afterIndex--;
         break;
@@ -129,14 +129,14 @@ function toEditScript(operations: Operation[][]) {
 }
 
 export enum ComparisonResult {
-  Identical,
-  Compatible,
-  Incompatible,
+  Same,             // Treated like a substitution cost of zero
+  CanSubstitute,    // Treated like a substitution cost of 1
+  CannotSubstitute, // Treated like a substitution cost of infinity
 }
 
 export enum Operation {
-  Skip = 'skip',
-  Update = 'update',
+  Keep = 'keep',
+  Substitute = 'substitute',
   Insert = 'insert',
   Delete = 'delete',
 }
