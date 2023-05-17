@@ -1,6 +1,6 @@
 {
   "name": "microsoft.aspnetcore.components.e2etest",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Not a real package. This file exists only to declare dependencies.",
   "main": "index.js",
   "private": true,
@@ -13,7 +13,7 @@
   "license": "MIT",
   "dependencies": {
     "sauce-connect-launcher": "^1.3.1",
-    "selenium-standalone": "^7.1.0"
+    "selenium-standalone": "^8.3.0"
   },
   "devDependencies": {
     "@types/node": "^13.1.7",
