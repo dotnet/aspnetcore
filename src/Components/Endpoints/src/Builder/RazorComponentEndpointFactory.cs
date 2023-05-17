@@ -17,7 +17,7 @@ internal class RazorComponentEndpointFactory
 #pragma warning restore CA1822 // It's a singleton
         List<Endpoint> endpoints,
         Type rootComponent,
-        PageDefinition pageDefinition,
+        PageComponentInfo pageDefinition,
         IReadOnlyList<Action<EndpointBuilder>> conventions,
         IReadOnlyList<Action<EndpointBuilder>> finallyConventions)
     {

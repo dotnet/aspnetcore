@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -14,6 +15,11 @@ internal class RazorComponentEndpointDataSource<TRootComponent> : EndpointDataSo
     private readonly object _lock = new();
     private readonly List<Action<EndpointBuilder>> _conventions = new();
     private readonly List<Action<EndpointBuilder>> _finallyConventions = new();
+    private readonly List<IComponentRenderMode> _renderModes = new();
+    private readonly ComponentApplicationBuilder _builder;
+    private readonly IApplicationBuilder _applicationBuilder;
+    private readonly RenderModeEndpointProvider[] _renderModeEndpointProviders;
+    private readonly RazorComponentEndpointFactory _factory;
 
     private List<Endpoint>? _endpoints;
     // TODO: Implement endpoint data source updates https://github.com/dotnet/aspnetcore/issues/47026
@@ -22,22 +28,24 @@ internal class RazorComponentEndpointDataSource<TRootComponent> : EndpointDataSo
 
     public RazorComponentEndpointDataSource(
         ComponentApplicationBuilder builder,
+        IEnumerable<RenderModeEndpointProvider> renderModeEndpointProviders,
+        IApplicationBuilder applicationBuilder,
         RazorComponentEndpointFactory factory)
     {
         _builder = builder;
+        _applicationBuilder = applicationBuilder;
+        _renderModeEndpointProviders = renderModeEndpointProviders.ToArray();
         _factory = factory;
         DefaultBuilder = new RazorComponentEndpointConventionBuilder(
             _lock,
             builder,
+            _renderModes,
             _conventions,
             _finallyConventions);
 
         _cancellationTokenSource = new CancellationTokenSource();
         _changeToken = new CancellationChangeToken(_cancellationTokenSource.Token);
     }
-
-    private readonly ComponentApplicationBuilder _builder;
-    private readonly RazorComponentEndpointFactory _factory;
 
     internal RazorComponentEndpointConventionBuilder DefaultBuilder { get; }
 
@@ -77,9 +85,40 @@ internal class RazorComponentEndpointDataSource<TRootComponent> : EndpointDataSo
     {
         var endpoints = new List<Endpoint>();
         var context = _builder.Build();
+        if (_renderModes.Count == 0)
+        {
+            _renderModes.AddRange(context.ResolveRenderModes());
+        }
+
         foreach (var definition in context.Pages)
         {
             _factory.AddEndpoints(endpoints, typeof(TRootComponent), definition, _conventions, _finallyConventions);
+        }
+
+        var found = false;
+        for (var i = 0; i < _renderModes.Count; i++)
+        {
+            var renderMode = _renderModes[i];
+            foreach (var provider in _renderModeEndpointProviders)
+            {
+                if (provider.Supports(renderMode))
+                {
+                    found = true;
+                    RenderModeEndpointProvider.AddEndpoints(
+                        endpoints,
+                        typeof(TRootComponent),
+                        provider.GetEndpointBuilders(renderMode, _applicationBuilder.New()),
+                        renderMode,
+                        _conventions,
+                        _finallyConventions);
+                }
+            }
+
+            if (!found)
+            {
+                throw new InvalidOperationException($"Unable to find a provider for the render mode: {renderMode.GetType().FullName}. This generally" +
+                    $"means that a call to 'AddWebAssemblyComponents' or 'AddServerComponents' is missing.");
+            }
         }
 
         _endpoints = endpoints;

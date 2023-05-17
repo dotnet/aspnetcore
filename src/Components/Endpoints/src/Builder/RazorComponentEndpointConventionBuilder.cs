@@ -15,19 +15,41 @@ public class RazorComponentEndpointConventionBuilder : IEndpointConventionBuilde
 {
     private readonly object _lock;
     private readonly ComponentApplicationBuilder _builder;
+    private readonly List<IComponentRenderMode> _renderModes;
     private readonly List<Action<EndpointBuilder>> _conventions;
     private readonly List<Action<EndpointBuilder>> _finallyConventions;
 
     internal RazorComponentEndpointConventionBuilder(
         object @lock,
         ComponentApplicationBuilder builder,
+        List<IComponentRenderMode> renderModes,
         List<Action<EndpointBuilder>> conventions,
         List<Action<EndpointBuilder>> finallyConventions)
     {
         _lock = @lock;
         _builder = builder;
+        _renderModes = renderModes;
         _conventions = conventions;
         _finallyConventions = finallyConventions;
+    }
+
+    /// <summary>
+    /// Gets the <see cref="ComponentApplicationBuilder"/> that is used to build the endpoints.
+    /// </summary>
+    public ComponentApplicationBuilder ApplicationBuilder => _builder;
+
+    /// <summary>
+    /// Restricts the <see cref="IComponentRenderMode"/> available for these endpoints.
+    /// </summary>
+    /// <param name="renderModes">The render modes the components rendering from these endpoints are
+    /// allowed to use.
+    /// </param>
+    /// <returns>The <see cref="RazorComponentEndpointConventionBuilder"/>.</returns>
+    public RazorComponentEndpointConventionBuilder SetRenderModes(params IComponentRenderMode[] renderModes)
+    {
+        _renderModes.Clear();
+        _renderModes.AddRange(renderModes);
+        return this;
     }
 
     /// <inheritdoc/>
