@@ -150,4 +150,3 @@ virtual Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.IsSortab
 ~override Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Microsoft.AspNetCore.Components.QuickGrid.Paginator.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
-
