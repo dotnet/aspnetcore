@@ -4,15 +4,9 @@
 
 <h1>Counter</h1>
 
-<p role="status">Current count: @currentCount</p>
+<CounterButtonWasm />
 
-<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+<hr />
 
-@code {
-    private int currentCount = 0;
+<CounterButtonServer />
 
-    private void IncrementCount()
-    {
-        currentCount++;
-    }
-}
