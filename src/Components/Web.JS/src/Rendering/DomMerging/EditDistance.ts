@@ -1,12 +1,14 @@
-export function compareArrays<T>(before: ItemList<T>, after: ItemList<T>, equals: (a: T, b: T) => boolean): Operation[] {
+type Comparer<T> = (a: T, b: T) => ComparisonResult;
+
+export function compareArrays<T>(before: ItemList<T>, after: ItemList<T>, comparer: Comparer<T>): Operation[] {
   // In common cases where nothing has changed or only one thing changed, we can reduce the task dramatically
   // by identifying the common prefix/suffix, and only doing Levenshtein on the subset in between
-  const commonPrefixLength = lengthOfCommonPrefix(before, after, equals);
-  const commonSuffixLength = lengthOfCommonSuffix(before, after, commonPrefixLength, commonPrefixLength, equals);
+  const commonPrefixLength = lengthOfCommonPrefix(before, after, comparer);
+  const commonSuffixLength = lengthOfCommonSuffix(before, after, commonPrefixLength, commonPrefixLength, comparer);
   before = ItemListSubset.create(before, commonPrefixLength, before.length - commonPrefixLength - commonSuffixLength);
   after =  ItemListSubset.create(after, commonPrefixLength, after.length - commonPrefixLength - commonSuffixLength);
 
-  const operations = computeOperations(before, after, equals);
+  const operations = computeOperations(before, after, comparer);
   const edits = toEditScript(operations);
 
   return Array(commonPrefixLength).fill(Operation.Retain)
@@ -14,10 +16,10 @@ export function compareArrays<T>(before: ItemList<T>, after: ItemList<T>, equals
     .concat(Array(commonSuffixLength).fill(Operation.Retain));
 }
 
-function lengthOfCommonPrefix<T>(before: ItemList<T>, after: ItemList<T>, equals: (a: T, b: T) => boolean): number {
+function lengthOfCommonPrefix<T>(before: ItemList<T>, after: ItemList<T>, comparer: Comparer<T>): number {
   const shorterLength = Math.min(before.length, after.length);
   for (let index = 0; index < shorterLength; index++) {
-    if (!equals(before.item(index)!, after.item(index)!)) {
+    if (comparer(before.item(index)!, after.item(index)!) === ComparisonResult.NotEqual) {
       return index;
     }
   }
@@ -25,12 +27,12 @@ function lengthOfCommonPrefix<T>(before: ItemList<T>, after: ItemList<T>, equals
   return shorterLength;
 }
 
-function lengthOfCommonSuffix<T>(before: ItemList<T>, after: ItemList<T>, beforeStartIndex: number, afterStartIndex: number, equals: (a: T, b: T) => boolean): number {
+function lengthOfCommonSuffix<T>(before: ItemList<T>, after: ItemList<T>, beforeStartIndex: number, afterStartIndex: number, comparer: Comparer<T>): number {
   let beforeIndex = before.length - 1;
   let afterIndex = after.length - 1;
   let count = 0;
   while (beforeIndex >= beforeStartIndex && afterIndex >= afterStartIndex) {
-    if (!equals(before.item(beforeIndex)!, after.item(afterIndex)!)) {
+    if (comparer(before.item(beforeIndex)!, after.item(afterIndex)!) === ComparisonResult.NotEqual) {
       break;
     }
     beforeIndex--;
@@ -40,7 +42,7 @@ function lengthOfCommonSuffix<T>(before: ItemList<T>, after: ItemList<T>, before
   return count;
 }
 
-function computeOperations<T>(before: ItemList<T>, after: ItemList<T>, equals: (a: T, b: T) => boolean): Operation[][] {
+function computeOperations<T>(before: ItemList<T>, after: ItemList<T>, comparer: Comparer<T>): Operation[][] {
   // Initialize matrices
   const costs: number[][] = [];
   const operations: Operation[][] = [];
@@ -61,7 +63,7 @@ function computeOperations<T>(before: ItemList<T>, after: ItemList<T>, equals: (
 
   for (let beforeIndex = 1; beforeIndex <= before.length; beforeIndex++) {
     for (let afterIndex = 1; afterIndex <= after.length; afterIndex++) {
-      const isEqual = equals(before.item(beforeIndex - 1)!, after.item(afterIndex - 1)!);
+      const isEqual = comparer(before.item(beforeIndex - 1)!, after.item(afterIndex - 1)!) === ComparisonResult.Equal;
       const costAsDelete = costs[beforeIndex - 1][afterIndex] + 1;
       const costAsInsert = costs[beforeIndex][afterIndex - 1] + 1;
       const costAsRetain = isEqual ? costs[beforeIndex - 1][afterIndex - 1] : Number.MAX_VALUE;
@@ -112,6 +114,11 @@ function toEditScript(operations: Operation[][]) {
   }
 
   return result;
+}
+
+export enum ComparisonResult {
+  Equal,
+  NotEqual,
 }
 
 export enum Operation {

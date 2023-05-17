@@ -1,5 +1,5 @@
 import { expect, test, describe } from '@jest/globals';
-import { compareArrays, ItemList, Operation } from '../src/Rendering/DomMerging/EditDistance';
+import { compareArrays, ComparisonResult, ItemList, Operation } from '../src/Rendering/DomMerging/EditDistance';
 
 describe('levenshteinArray', () => {
   test('should return correct operations for empty arrays', () => {
@@ -46,7 +46,7 @@ describe('levenshteinArray', () => {
 });
 
 function exactEqualityComparer<T>(a: T, b: T) {
-  return a === b;
+  return a === b ? ComparisonResult.Equal : ComparisonResult.NotEqual;
 }
 
 class ArrayItemList<T> implements ItemList<T> {
