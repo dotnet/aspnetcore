@@ -123,6 +123,6 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
         var classValue = grid.GetAttribute("class");
 
         Assert.Equal("quick-grid", idValue);
-        Assert.Equal("custom-class-name", classValue);
+        Assert.Equal("quickgrid custom-class-name", classValue);
     }
 }
