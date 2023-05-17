@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using Microsoft.AspNetCore.Http.Metadata;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Http;
 
@@ -35,6 +36,6 @@ public sealed class TagsAttribute : Attribute, ITagsMetadata
     /// <inheritdoc/>>
     public override string ToString()
     {
-        return $"Tags: {string.Join(",", Tags)}";
+        return DebuggerHelpers.GetDebugText(nameof(Tags), Tags);
     }
 }

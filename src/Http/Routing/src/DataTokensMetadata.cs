@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Routing;
 
@@ -32,8 +33,6 @@ public sealed class DataTokensMetadata : IDataTokensMetadata
     /// <inheritdoc/>
     public override string ToString()
     {
-        var dataTokens = string.Join(",", DataTokens.Select(t => $"{t.Key}={t.Value ?? "(null)"}"));
-
-        return $"DataTokens: {dataTokens}";
+        return DebuggerHelpers.GetDebugText(nameof(DataTokens), DataTokens.Select(t => $"{t.Key}={t.Value ?? "(null)"}"));
     }
 }

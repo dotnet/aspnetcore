@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using Microsoft.AspNetCore.Http.Metadata;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Http;
 
@@ -28,6 +29,6 @@ public sealed class EndpointSummaryAttribute : Attribute, IEndpointSummaryMetada
     /// <inheritdoc/>>
     public override string ToString()
     {
-        return $"Summary: {Summary ?? "(null)"}";
+        return DebuggerHelpers.GetDebugText(nameof(Summary), Summary);
     }
 }
