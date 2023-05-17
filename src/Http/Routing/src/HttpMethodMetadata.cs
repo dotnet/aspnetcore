@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.AspNetCore.Shared;
 using static Microsoft.AspNetCore.Http.HttpMethods;
 
 namespace Microsoft.AspNetCore.Routing;
@@ -55,6 +56,6 @@ public sealed class HttpMethodMetadata : IHttpMethodMetadata
     /// <inheritdoc/>
     public override string ToString()
     {
-        return $"HttpMethods: {string.Join(",", HttpMethods)}, Cors: {AcceptCorsPreflight}";
+        return DebuggerHelpers.GetDebugText(nameof(HttpMethods), HttpMethods, "Cors", AcceptCorsPreflight);
     }
 }

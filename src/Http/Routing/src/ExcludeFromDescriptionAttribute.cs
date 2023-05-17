@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Routing;
 
@@ -19,6 +20,6 @@ public sealed class ExcludeFromDescriptionAttribute : Attribute, IExcludeFromDes
     /// <inheritdoc/>>
     public override string ToString()
     {
-        return $"ExcludeFromDescription: {ExcludeFromDescription}";
+        return DebuggerHelpers.GetDebugText(nameof(ExcludeFromDescription), ExcludeFromDescription);
     }
 }

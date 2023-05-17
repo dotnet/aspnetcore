@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Routing;
 
@@ -54,6 +55,6 @@ public sealed class HostAttribute : Attribute, IHostMetadata
             ? "*:*"
             : string.Join(",", Hosts.Select(h => h.Contains(':') ? h : h + ":*"));
 
-        return $"Hosts: {hostsDisplay}";
+        return DebuggerHelpers.GetDebugText(nameof(Hosts), hostsDisplay);
     }
 }

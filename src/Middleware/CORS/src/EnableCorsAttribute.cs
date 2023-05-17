@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using Microsoft.AspNetCore.Cors.Infrastructure;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Cors;
 
@@ -35,6 +36,6 @@ public class EnableCorsAttribute : Attribute, IEnableCorsAttribute
     /// <inheritdoc/>>
     public override string ToString()
     {
-        return $"CORS PolicyName: {PolicyName ?? "(null)"}";
+        return DebuggerHelpers.GetDebugText(nameof(PolicyName), PolicyName, prefix: "CORS");
     }
 }

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Routing;
 
@@ -20,6 +21,6 @@ public sealed class SuppressLinkGenerationMetadata : ISuppressLinkGenerationMeta
     /// <inheritdoc/>
     public override string ToString()
     {
-        return $"SuppressLinkGeneration: {SuppressLinkGeneration}";
+        return DebuggerHelpers.GetDebugText(nameof(SuppressLinkGeneration), SuppressLinkGeneration);
     }
 }

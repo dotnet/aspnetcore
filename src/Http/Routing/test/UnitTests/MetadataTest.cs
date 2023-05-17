@@ -71,7 +71,7 @@ public class MetadataTest
         var value = metadata.ToString();
 
         // Assert
-        Assert.Equal("Name: RouteName", value);
+        Assert.Equal("RouteName: RouteName", value);
     }
 
     [Fact]

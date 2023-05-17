@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Authorization;
 
@@ -45,8 +46,6 @@ public class AuthorizeAttribute : Attribute, IAuthorizeData
     /// <inheritdoc/>>
     public override string ToString()
     {
-        const string NullValue = "(null)";
-
-        return $"Authorize Policy: {Policy ?? NullValue}, Roles: {Roles ?? NullValue}, AuthenticationSchemes: {AuthenticationSchemes ?? NullValue}";
+        return DebuggerHelpers.GetDebugText(nameof(Policy), Policy, nameof(Roles), Roles, nameof(AuthenticationSchemes), AuthenticationSchemes, includeNullValues: false, prefix: "Authorize");
     }
 }

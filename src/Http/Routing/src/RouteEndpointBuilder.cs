@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing.Patterns;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Routing;
 
@@ -125,7 +126,7 @@ public sealed class RouteEndpointBuilder : EndpointBuilder
 
         public override string ToString()
         {
-            return $"Route: {Route}";
+            return DebuggerHelpers.GetDebugText(nameof(Route), Route);
         }
     }
 }

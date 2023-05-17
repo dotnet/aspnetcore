@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Routing;
 
@@ -33,6 +34,6 @@ public class EndpointNameMetadata : IEndpointNameMetadata
     /// <inheritdoc/>
     public override string ToString()
     {
-        return $"EndpointName: {EndpointName ?? "(null)"}";
+        return DebuggerHelpers.GetDebugText(nameof(EndpointName), EndpointName);
     }
 }

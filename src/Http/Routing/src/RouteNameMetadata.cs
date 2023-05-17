@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Routing;
 
@@ -28,6 +29,6 @@ public sealed class RouteNameMetadata : IRouteNameMetadata
     /// <inheritdoc/>
     public override string ToString()
     {
-        return $"Name: {RouteName ?? "(null)"}";
+        return DebuggerHelpers.GetDebugText(nameof(RouteName), RouteName);
     }
 }
