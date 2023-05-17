@@ -119,8 +119,8 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
     {
         var grid = app.FindElement(By.CssSelector("#grid > table"));
 
-        var idValue = element.GetAttribute("id");
-        var classValue = element.GetAttribute("class");
+        var idValue = grid.GetAttribute("id");
+        var classValue = grid.GetAttribute("class");
 
         Assert.Equal("quick-grid", idValue);
         Assert.Equal("custom-class-name", classValue);
