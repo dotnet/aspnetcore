@@ -11,9 +11,9 @@ export function compareArrays<T>(before: ItemList<T>, after: ItemList<T>, compar
   const operations = computeOperations(before, after, comparer);
   const edits = toEditScript(operations);
 
-  return Array(commonPrefixLength).fill(Operation.Retain)
+  return Array(commonPrefixLength).fill(Operation.Skip)
     .concat(edits)
-    .concat(Array(commonSuffixLength).fill(Operation.Retain));
+    .concat(Array(commonSuffixLength).fill(Operation.Skip));
 }
 
 function lengthOfCommonPrefix<T>(before: ItemList<T>, after: ItemList<T>, comparer: Comparer<T>): number {
@@ -81,7 +81,7 @@ function computeOperations<T>(before: ItemList<T>, after: ItemList<T>, comparer:
 
       if (costAsRetain < costAsInsert && costAsRetain < costAsDelete) {
         costs[beforeIndex][afterIndex] = costAsRetain;
-        operations[beforeIndex][afterIndex] = comparisonResult === ComparisonResult.Identical ? Operation.Retain : Operation.Update;
+        operations[beforeIndex][afterIndex] = comparisonResult === ComparisonResult.Identical ? Operation.Skip : Operation.Update;
       } else if (costAsInsert < costAsDelete) {
         costs[beforeIndex][afterIndex] = costAsInsert;
         operations[beforeIndex][afterIndex] = Operation.Insert;
@@ -111,7 +111,7 @@ function toEditScript(operations: Operation[][]) {
     result.unshift(operation);
 
     switch (operation) {
-      case Operation.Retain:
+      case Operation.Skip:
       case Operation.Update:
         beforeIndex--;
         afterIndex--;
@@ -135,7 +135,7 @@ export enum ComparisonResult {
 }
 
 export enum Operation {
-  Retain = 'retain',
+  Skip = 'skip',
   Update = 'update',
   Insert = 'insert',
   Delete = 'delete',
