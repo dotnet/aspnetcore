@@ -1,9 +1,16 @@
-export function compareArrays<T>(before: T[], after: T[], equals: (a: T, b: T) => boolean): Operation[] {
+// Optimizations to consider:
+// - First, do linear scans to find the common prefixes/suffixes of the two arrays, and only do Levenshtein in between
+//   the first and last difference. This reduces it to O(N) for common cases like "no change" or "only one change".
+// - Try increasingly wide diagonal stripes to see if they produce a valid edit script.
+// - Easy: Shrink the final script by omitting trailing sequences of "retain". Just change the existing code not to unshift those
+//   until we've unshifted one other operation.
+
+export function compareArrays<T>(before: ItemList<T>, after: ItemList<T>, equals: (a: T, b: T) => boolean): Operation[] {
   const operations = computeOperations(before, after, equals);
   return toEditScript(operations);
 }
 
-function computeOperations<T>(before: T[], after: T[], equals: (a: T, b: T) => boolean): Operation[][] {
+function computeOperations<T>(before: ItemList<T>, after: ItemList<T>, equals: (a: T, b: T) => boolean): Operation[][] {
   // Initialize matrices
   const costs: number[][] = [];
   const operations: Operation[][] = [];
@@ -24,7 +31,7 @@ function computeOperations<T>(before: T[], after: T[], equals: (a: T, b: T) => b
 
   for (let beforeIndex = 1; beforeIndex <= before.length; beforeIndex++) {
     for (let afterIndex = 1; afterIndex <= after.length; afterIndex++) {
-      const isEqual = equals(before[beforeIndex - 1], after[afterIndex - 1]);
+      const isEqual = equals(before.item(beforeIndex - 1)!, after.item(afterIndex - 1)!);
       const costAsDelete = costs[beforeIndex - 1][afterIndex] + 1;
       const costAsInsert = costs[beforeIndex][afterIndex - 1] + 1;
       const costAsRetain = isEqual ? costs[beforeIndex - 1][afterIndex - 1] : Number.MAX_VALUE;
@@ -80,4 +87,10 @@ export enum Operation {
   Retain = 1,
   Insert = 2,
   Delete = 3,
+}
+
+export interface ItemList<T> { // Designed to be compatible with NodeList
+  readonly length: number;
+  item(index: number): T | null;
+  forEach(callbackfn: (value: T, key: number, parent: ItemList<T>) => void, thisArg?: any): void;
 }
