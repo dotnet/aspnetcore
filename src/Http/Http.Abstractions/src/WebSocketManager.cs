@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Net.WebSockets;
 
 namespace Microsoft.AspNetCore.Http;
@@ -8,6 +9,8 @@ namespace Microsoft.AspNetCore.Http;
 /// <summary>
 /// Manages the establishment of WebSocket connections for a specific HTTP request.
 /// </summary>
+[DebuggerDisplay("{ToString(),nq}")]
+[DebuggerTypeProxy(typeof(WebSocketManagerDebugView))]
 public abstract class WebSocketManager
 {
     /// <summary>
@@ -42,4 +45,22 @@ public abstract class WebSocketManager
     /// <param name="acceptContext"></param>
     /// <returns></returns>
     public virtual Task<WebSocket> AcceptWebSocketAsync(WebSocketAcceptContext acceptContext) => throw new NotImplementedException();
+
+    /// <inheritdoc />
+    public override string ToString()
+    {
+        return IsWebSocketRequest switch
+        {
+            false => "IsWebSocket: False",
+            true => $"IsWebSocket: True, RequestedProtocols: {string.Join(", ", WebSocketRequestedProtocols)}",
+        };
+    }
+
+    private class WebSocketManagerDebugView(WebSocketManager manager)
+    {
+        private readonly WebSocketManager _manager = manager;
+
+        public bool IsWebSocketRequest => _manager.IsWebSocketRequest;
+        public IList<string> WebSocketRequestedProtocols => _manager.WebSocketRequestedProtocols;
+    }
 }
