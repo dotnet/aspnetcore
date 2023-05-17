@@ -18,16 +18,48 @@ internal sealed class CodeWriter : IndentedTextWriter
         this.Indent++;
     }
 
-    public void EndBlock()
+    public void StartParameterListBlock()
+    {
+        this.WriteLine("(");
+        this.Indent++;
+    }
+
+    public void EndParameterListBlock()
     {
         this.Indent--;
-        this.WriteLine("}");
+        this.Write(")");
+    }
+
+    public void EndBlock(bool newLine = true)
+    {
+        this.Indent--;
+        if (newLine)
+        {
+            this.WriteLine("}");
+        }
+        else
+        {
+            this.Write("}");
+        }
     }
 
     public void EndBlockWithComma()
     {
         this.Indent--;
         this.WriteLine("},");
+    }
+
+    public void EndBlockWithSemiColon(bool newLine)
+    {
+        this.Indent--;
+        if (newLine)
+        {
+            this.WriteLine("};");
+        }
+        else
+        {
+            this.Write("};");
+        }
     }
 
     // The IndentedTextWriter adds the indentation

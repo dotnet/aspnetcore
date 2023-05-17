@@ -132,4 +132,24 @@ internal class WellKnownTypes
         }
         return false;
     }
+
+    public static bool IsSubClassOf(ITypeSymbol? type, ITypeSymbol baseType)
+    {
+        if (type is null)
+        {
+            return false;
+        }
+
+        var current = type;
+        while (current != null)
+        {
+            if (SymbolEqualityComparer.Default.Equals(current, baseType))
+            {
+                return true;
+            }
+            current = current.BaseType;
+        }
+
+        return false;
+    }
 }

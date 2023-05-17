@@ -1786,6 +1786,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authen
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentitySample.ApiEndpoints", "src\Identity\samples\IdentitySample.ApiEndpoints\IdentitySample.ApiEndpoints.csproj", "{37FC77EA-AC44-4D08-B002-8EFF415C424A}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.Endpoints.Generator", "src\Components\Endpoints\gen\Microsoft.AspNetCore.Components.Endpoints.Generator.csproj", "{0C749772-D67F-473C-BB3A-ED45608155A1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -10739,6 +10741,22 @@ Global
 		{37FC77EA-AC44-4D08-B002-8EFF415C424A}.Release|x64.Build.0 = Release|Any CPU
 		{37FC77EA-AC44-4D08-B002-8EFF415C424A}.Release|x86.ActiveCfg = Release|Any CPU
 		{37FC77EA-AC44-4D08-B002-8EFF415C424A}.Release|x86.Build.0 = Release|Any CPU
+		{0C749772-D67F-473C-BB3A-ED45608155A1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0C749772-D67F-473C-BB3A-ED45608155A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0C749772-D67F-473C-BB3A-ED45608155A1}.Debug|arm64.ActiveCfg = Debug|Any CPU
+		{0C749772-D67F-473C-BB3A-ED45608155A1}.Debug|arm64.Build.0 = Debug|Any CPU
+		{0C749772-D67F-473C-BB3A-ED45608155A1}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{0C749772-D67F-473C-BB3A-ED45608155A1}.Debug|x64.Build.0 = Debug|Any CPU
+		{0C749772-D67F-473C-BB3A-ED45608155A1}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{0C749772-D67F-473C-BB3A-ED45608155A1}.Debug|x86.Build.0 = Debug|Any CPU
+		{0C749772-D67F-473C-BB3A-ED45608155A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0C749772-D67F-473C-BB3A-ED45608155A1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0C749772-D67F-473C-BB3A-ED45608155A1}.Release|arm64.ActiveCfg = Release|Any CPU
+		{0C749772-D67F-473C-BB3A-ED45608155A1}.Release|arm64.Build.0 = Release|Any CPU
+		{0C749772-D67F-473C-BB3A-ED45608155A1}.Release|x64.ActiveCfg = Release|Any CPU
+		{0C749772-D67F-473C-BB3A-ED45608155A1}.Release|x64.Build.0 = Release|Any CPU
+		{0C749772-D67F-473C-BB3A-ED45608155A1}.Release|x86.ActiveCfg = Release|Any CPU
+		{0C749772-D67F-473C-BB3A-ED45608155A1}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -11621,6 +11639,7 @@ Global
 		{56291265-B7BF-4756-92AB-FC30F09381D1} = {822D1519-77F0-484A-B9AB-F694C2CC25F1}
 		{66FA1041-5556-43A0-9CA3-F9937F085F6E} = {56291265-B7BF-4756-92AB-FC30F09381D1}
 		{37FC77EA-AC44-4D08-B002-8EFF415C424A} = {64B2A28F-6D82-4F2B-B0BB-88DE5216DD2C}
+		{0C749772-D67F-473C-BB3A-ED45608155A1} = {7BAEB9BF-28F4-4DFD-9A04-E5193683C261}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3E8720B3-DBDD-498C-B383-2CC32A054E8F}

@@ -3,6 +3,8 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <RazorLangVersion>8.0</RazorLangVersion>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
+    <NoWarn>CS8632</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,5 +14,34 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.Endpoints" />
     <Reference Include="Microsoft.AspNetCore.Http" />
+    <Reference Include="Microsoft.Extensions.DependencyModel" />
+    <Reference Include="Microsoft.AspNetCore.TestHost" />
+    <Reference Include="Microsoft.Extensions.HostFactoryResolver.Sources" />
   </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" IsImplicitlyDefined="true" Version="$(MicrosoftCodeAnalysisVersion_LatestVS)" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" IsImplicitlyDefined="true" Version="$(MicrosoftCodeAnalysisVersion_LatestVS)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Samples\BlazorUnitedApp\BlazorUnitedApp.csproj" />
+    <ProjectReference Include="..\gen\Microsoft.AspNetCore.Components.Endpoints.Generator.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>ComponentEndpointsGeneratorTestBaselines</_Parameter1>
+      <_Parameter2>$([System.IO.Path]::Combine($(MSBuildProjectDirectory), "ComponentEndpointsGenerator", "Baselines"))</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
+    <HelixContent Include="$(MSBuildProjectDirectory)\ComponentEndpointsGenerator\Baselines\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="ComponentEndpointsGenerator\Baselines\**" />
+  </ItemGroup>
+
 </Project>

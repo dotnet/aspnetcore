@@ -7,6 +7,9 @@ internal static class WellKnownTypeData
 {
     public enum WellKnownType
     {
+        Microsoft_AspNetCore_Components_IComponent,
+        Microsoft_AspNetCore_Components_RenderModeAttribute,
+        Microsoft_AspNetCore_Components_RouteAttribute,
         Microsoft_AspNetCore_Components_Rendering_RenderTreeBuilder,
         Microsoft_AspNetCore_Http_IHeaderDictionary,
         Microsoft_AspNetCore_Http_Metadata_IEndpointMetadataProvider,
@@ -116,6 +119,9 @@ internal static class WellKnownTypeData
 
     public static string[] WellKnownTypeNames = new[]
     {
+        "Microsoft.AspNetCore.Components.IComponent",
+        "Microsoft.AspNetCore.Components.RenderModeAttribute",
+        "Microsoft.AspNetCore.Components.RouteAttribute",
         "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder",
         "Microsoft.AspNetCore.Http.IHeaderDictionary",
         "Microsoft.AspNetCore.Http.Metadata.IEndpointMetadataProvider",
