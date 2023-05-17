@@ -1,3 +1,4 @@
+using Components_CSharp;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,11 +20,15 @@ builder.Services.AddRazorComponents()
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+#if (UseClient)
 if (app.Environment.IsDevelopment())
 {
     app.UseWebAssemblyDebugging();
 }
 else
+#else
+if (!app.Environment.IsDevelopment())
+#endif
 {
     app.UseExceptionHandler("/Error");
 #if (HasHttpsProfile)

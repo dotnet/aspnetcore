@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@implements IRazorComponentApplication<App>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -45,7 +46,7 @@
         <a class="dismiss">🗙</a>
     </div>
 
-    <script src="_framework/blazor.web.js"></script>
+    <script src="_framework/blazor.web.js" suppress-error="BL9992"></script>
     @*#if PWA -->
     <script>navigator.serviceWorker.register('service-worker.js');</script>
     ##endif*@
