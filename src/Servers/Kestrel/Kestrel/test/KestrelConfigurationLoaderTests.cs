@@ -402,7 +402,156 @@ public class KestrelConfigurationLoaderTests
         void CheckListenOptions(X509Certificate2 expectedCert)
         {
             var listenOptions = Assert.Single(serverOptions.ConfigurationBackedListenOptions);
-            Assert.Equal(expectedCert.SerialNumber, listenOptions.HttpsOptions.ServerCertificate.SerialNumber);
+            Assert.Equal(expectedCert.SerialNumber, listenOptions.HttpsOptions!.ServerCertificate.SerialNumber);
+        }
+    }
+
+    [Fact]
+    public void LoadDevelopmentCertificate_LoadBeforeUseHttps()
+    {
+        try
+        {
+            var serverOptions = CreateServerOptions();
+            var certificate = new X509Certificate2(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword", X509KeyStorageFlags.Exportable);
+            var bytes = certificate.Export(X509ContentType.Pkcs12, "1234");
+            var path = GetCertificatePath();
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            File.WriteAllBytes(path, bytes);
+
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("Certificates:Development:Password", "1234"),
+            }).Build();
+
+            serverOptions.Configure(config);
+
+            Assert.Null(serverOptions.ConfigurationLoader.DefaultCertificate);
+
+            serverOptions.ConfigurationLoader.Load();
+
+            Assert.NotNull(serverOptions.ConfigurationLoader.DefaultCertificate);
+            Assert.Equal(serverOptions.ConfigurationLoader.DefaultCertificate.SerialNumber, certificate.SerialNumber);
+
+            var ran1 = false;
+            serverOptions.ListenAnyIP(4545, listenOptions =>
+            {
+                ran1 = true;
+                listenOptions.UseHttps();
+            });
+            Assert.True(ran1);
+
+            var listenOptions = serverOptions.CodeBackedListenOptions.Single();
+            listenOptions.Build();
+            Assert.Equal(listenOptions.HttpsOptions.ServerCertificate?.SerialNumber, certificate.SerialNumber);
+        }
+        finally
+        {
+            if (File.Exists(GetCertificatePath()))
+            {
+                File.Delete(GetCertificatePath());
+            }
+        }
+    }
+
+    [Fact]
+    public void LoadDevelopmentCertificate_UseHttpsBeforeLoad()
+    {
+        try
+        {
+            var serverOptions = CreateServerOptions();
+            var certificate = new X509Certificate2(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword", X509KeyStorageFlags.Exportable);
+            var bytes = certificate.Export(X509ContentType.Pkcs12, "1234");
+            var path = GetCertificatePath();
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            File.WriteAllBytes(path, bytes);
+
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("Certificates:Development:Password", "1234"),
+            }).Build();
+
+            serverOptions.Configure(config);
+
+            Assert.Null(serverOptions.ConfigurationLoader.DefaultCertificate);
+
+            var ran1 = false;
+            serverOptions.ListenAnyIP(4545, listenOptions =>
+            {
+                ran1 = true;
+                listenOptions.UseHttps();
+            });
+            Assert.True(ran1);
+
+            // Use Https triggers a load, so the default cert is already set
+            Assert.NotNull(serverOptions.ConfigurationLoader.DefaultCertificate);
+            Assert.Equal(serverOptions.ConfigurationLoader.DefaultCertificate.SerialNumber, certificate.SerialNumber);
+
+            // This Load is a no-op (tested elsewhere)
+            serverOptions.ConfigurationLoader.Load();
+
+            var listenOptions = serverOptions.CodeBackedListenOptions.Single();
+            listenOptions.Build();
+            Assert.Equal(listenOptions.HttpsOptions.ServerCertificate?.SerialNumber, certificate.SerialNumber);
+        }
+        finally
+        {
+            if (File.Exists(GetCertificatePath()))
+            {
+                File.Delete(GetCertificatePath());
+            }
+        }
+    }
+
+    [Fact]
+    public void LoadDevelopmentCertificate_UseHttpsBeforeConfigure()
+    {
+        try
+        {
+            var serverOptions = CreateServerOptions();
+            var certificate = new X509Certificate2(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword", X509KeyStorageFlags.Exportable);
+            var bytes = certificate.Export(X509ContentType.Pkcs12, "1234");
+            var path = GetCertificatePath();
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            File.WriteAllBytes(path, bytes);
+
+            var defaultCertificate = TestResources.GetTestCertificate();
+            Assert.NotEqual(certificate.SerialNumber, defaultCertificate.SerialNumber);
+            serverOptions.TestOverrideDefaultCertificate = defaultCertificate;
+
+            var ran1 = false;
+            serverOptions.ListenAnyIP(4545, listenOptions =>
+            {
+                ran1 = true;
+                listenOptions.UseHttps();
+            });
+            Assert.True(ran1);
+
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("Certificates:Development:Password", "1234"),
+            }).Build();
+
+            serverOptions.Configure(config);
+
+            Assert.Null(serverOptions.ConfigurationLoader.DefaultCertificate);
+
+            serverOptions.ConfigurationLoader.Load();
+
+            Assert.NotNull(serverOptions.ConfigurationLoader.DefaultCertificate);
+            Assert.Equal(serverOptions.ConfigurationLoader.DefaultCertificate.SerialNumber, certificate.SerialNumber);
+
+            var listenOptions = serverOptions.CodeBackedListenOptions.Single();
+            listenOptions.Build();
+            // In a perfect world, it would match certificate.SerialNumber, but there's no way for an eager UseHttps
+            // to do that before Configure is called.
+            Assert.Equal(listenOptions.HttpsOptions.ServerCertificate?.SerialNumber, defaultCertificate.SerialNumber);
+        }
+        finally
+        {
+            if (File.Exists(GetCertificatePath()))
+            {
+                File.Delete(GetCertificatePath());
+            }
         }
     }
 
