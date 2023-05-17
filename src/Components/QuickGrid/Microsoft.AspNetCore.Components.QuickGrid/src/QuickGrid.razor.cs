@@ -392,7 +392,15 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
         : ColumnClass(column);
 
     private string GridClass()
-        => $"quickgrid {Class} {(_pendingDataLoadCancellationTokenSource is null ? null : "loading")}";
+    {
+        var gridClass = $"quickgrid {Class} {(_pendingDataLoadCancellationTokenSource is null ? null : "loading")}";
+        if (AdditionalAttributes?.TryGetValue("class", out var originalClass) == true)
+        {
+            gridClass += $" {originalClass}";
+        }
+
+        return gridClass;
+    }
 
     private static string? ColumnClass(ColumnBase<TGridItem> column) => column.Align switch
     {
