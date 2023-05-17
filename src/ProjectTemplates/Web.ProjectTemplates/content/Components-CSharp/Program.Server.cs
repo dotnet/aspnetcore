@@ -2,20 +2,20 @@
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
-#if (!UseServer && !UseWasm)
+#if (!UseServer && !UseClient)
 builder.Services.AddRazorComponents();
 #else
 builder.Services.AddRazorComponents()
-  #if (UseServer && UseClient)
-  .AddServerComponents()
-  .AddWebassemblyComponents();
-  #elif(UseServer)
-  .AddServerComponents();
-  #elif(UseClient)
-  .AddWebassemblyComponents();
-  #endif
+    #if (UseServer && UseClient)
+    .AddServerComponents()
+    .AddWebassemblyComponents();
+    #elif(UseServer)
+    .AddServerComponents();
+    #elif(UseClient)
+    .AddWebassemblyComponents();
+    #endif
 #endif
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

@@ -8,7 +8,7 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
 
         // Add services to the container.
-        #if (!UseServer && !UseWasm)
+        #if (!UseServer && !UseClient)
         builder.Services.AddRazorComponents();
         #else
         builder.Services.AddRazorComponents()

@@ -48,6 +48,19 @@
           ]
         },
         {
+          "condition": "(!UseClient)",
+          "exclude": [
+            "Program.Browser.Main.cs",
+            "Program.Browser.cs",
+            "wwwroot/appsettings.Development.json",
+            "wwwroot/appsettings.json"
+          ],
+          "rename": {
+            "Program.Server.Main.cs": "Program.cs",
+            "Program.Server.cs": "Program.cs"
+          }
+        },
+        {
           "condition": "(!UseProgramMain)",
           "exclude": [
             "Program.Server.Main.cs",
@@ -55,7 +68,17 @@
           ]
         },
         {
-          "condition": "(UseProgramMain)",
+          "condition": "(UseProgramMain && !UseClient)",
+          "exclude": [
+            "Program.Server.cs",
+            "Program.Browser.cs"
+          ],
+          "rename": {
+            "Program.Server.Main.cs": "Program.cs"
+          }
+        },
+        {
+          "condition": "(UseProgramMain && UseClient)",
           "exclude": [
             "Program.Server.cs",
             "Program.Browser.cs"
@@ -187,6 +210,20 @@
         "fallbackVariableName": "iisHttpsPortGenerated"
       },
       "replaces": "44300"
+    },
+    "UseClient": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "displayName": "_Use interactive webassembly components",
+      "description": "If specified, configures the project to render components interactively on the browser using webassembly."
+    },
+    "UseServer": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "displayName": "_Use interactive server components",
+      "description": "If specified, configures the project to render components interactively on the server."
     },
     "PWA": {
       "type": "parameter",
