@@ -13,10 +13,20 @@ import { DefaultReconnectionHandler } from './Platform/Circuits/DefaultReconnect
 import { CircuitStartOptions } from './Platform/Circuits/CircuitStartOptions';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
 import { Platform, Pointer } from './Platform/Platform';
-import { getNextChunk, receiveDotNetDataStream } from './StreamingInterop';
+import { getNextChunk } from './StreamingInterop';
 import { RootComponentsFunctions } from './Rendering/JSRootComponents';
 import { attachWebRendererInterop } from './Rendering/WebRendererInteropMethods';
 
+// TODO: It's kind of hard to tell which .NET platform(s) some of these APIs are relevant to.
+// It's important to know this information when dealing with the possibility of mulitple .NET platforms being available.
+// e.g., which of these APIs need to account for there being multiple .NET runtimes, and which don't?
+
+// We should consider separating it all out so that we can easily identify the platform requirements of each API.
+// For example:
+// * Blazor.{foo}: public Blazor APIs
+// * Blazor._internal.{foo}: internal, platform-agnostic Blazor APIs
+// * Blazor.platform.{somePlatformName}.{foo}: public, platform-specific Blazor APIs (would be empty at first, so no initial breaking changes)
+// * Blazor.platform.{somePlatformName}.{_internal}.{foo}: internal, platform-specific Blazor APIs
 interface IBlazor {
   navigateTo: (uri: string, options: NavigationOptions) => void;
   registerCustomEventType: (eventName: string, options: EventTypeOptions) => void;
@@ -58,7 +68,8 @@ interface IBlazor {
     loadSatelliteAssemblies?: any;
     sendJSDataStream?: (data: any, streamId: number, chunkSize: number) => void;
     getJSDataStreamChunk?: (data: any, position: number, chunkSize: number) => Promise<Uint8Array>;
-    receiveDotNetDataStream?: (streamId: number, data: any, bytesRead: number, errorMessage: string) => void;
+    receiveWebAssemblyDotNetDataStream?: (streamId: number, data: any, bytesRead: number, errorMessage: string) => void;
+    receiveWebViewDotNetDataStream?: (streamId: number, data: any, bytesRead: number, errorMessage: string) => void;
     attachWebRendererInterop?: typeof attachWebRendererInterop;
 
     // JSExport APIs
@@ -88,7 +99,6 @@ export const Blazor: IBlazor = {
     InputFile,
     NavigationLock,
     getJSDataStreamChunk: getNextChunk,
-    receiveDotNetDataStream: receiveDotNetDataStream,
     attachWebRendererInterop,
   },
 };

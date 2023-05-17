@@ -1,5 +1,8 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 export function attachStreamingRenderingListener() {
-  customElements.define("blazor-ssr", BlazorStreamingUpdate);
+  customElements.define('blazor-ssr', BlazorStreamingUpdate);
 }
 
 class BlazorStreamingUpdate extends HTMLElement {

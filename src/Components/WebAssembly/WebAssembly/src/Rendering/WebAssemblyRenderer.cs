@@ -26,8 +26,6 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
     public WebAssemblyRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, JSComponentInterop jsComponentInterop)
         : base(serviceProvider, loggerFactory, DefaultWebAssemblyJSRuntime.Instance.ReadJsonSerializerOptions(), jsComponentInterop)
     {
-        // The WebAssembly renderer registers and unregisters itself with the static registry
-        RendererId = RendererRegistry.Add(this);
         _logger = loggerFactory.CreateLogger<WebAssemblyRenderer>();
 
         ElementReferenceContext = DefaultWebAssemblyJSRuntime.Instance.ElementReferenceContext;
@@ -54,7 +52,6 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
     protected override void Dispose(bool disposing)
     {
         base.Dispose(disposing);
-        RendererRegistry.TryRemove(RendererId);
     }
 
     /// <inheritdoc />

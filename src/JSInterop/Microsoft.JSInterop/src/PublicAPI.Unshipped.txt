@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.JSInterop.JSRuntime.DispatcherId.get -> int
+Microsoft.JSInterop.JSRuntime.DispatcherId.set -> void

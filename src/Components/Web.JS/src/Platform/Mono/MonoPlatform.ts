@@ -23,6 +23,7 @@ import { WebAssemblyConfigLoader } from '../WebAssemblyConfigLoader';
 export let BINDING: BINDINGType = undefined as any;
 export let MONO: MONOType = undefined as any;
 export let Module: DotnetModuleConfig & EmscriptenModule = undefined as any;
+export let dispatcher: DotNet.ICallDispatcher = undefined as any;
 let MONO_INTERNAL: any = undefined as any;
 let runtime: RuntimeAPI = undefined as any;
 
@@ -269,7 +270,7 @@ function prepareRuntimeConfig(options: Partial<WebAssemblyStartOptions>, platfor
       getParameterValues: (id) => componentAttacher.getParameterValues(id) || '',
     };
 
-    Blazor._internal.getPersistedState = () => discoverPersistedState(document) || '';
+    Blazor._internal.getPersistedState = () => discoverPersistedState(document, 'webassembly') || '';
 
     Blazor._internal.attachRootComponentToElement = (selector, componentId, rendererId: any) => {
       const element = componentAttacher.resolveRegisteredElement(selector);
@@ -407,7 +408,7 @@ function getArrayDataPointer<T>(array: System_Array<T>): number {
 }
 
 function attachInteropInvoker(): void {
-  DotNet.attachDispatcher({
+  dispatcher = DotNet.attachDispatcher({
     beginInvokeDotNetFromJS: (callId: number, assemblyName: string | null, methodIdentifier: string, dotNetObjectId: any | null, argsJson: string): void => {
       assertHeapIsNotLocked();
       if (!dotNetObjectId && !assemblyName) {
