@@ -3,7 +3,7 @@ type EqualityCallback<T> = (a: T, b: T) => boolean;
 export function compareArrays<T>(before: T[], after: T[], equalityCallback: EqualityCallback<T>): Operation[] {
   // Initialize matrices
   const matrix: number[][] = [];
-  const equalityResults: boolean[][] = [];
+  const chosenOps: Operation[][] = [];
   const beforeLength = before.length;
   const afterLength = after.length;
   if (before.length === 0 && afterLength === 0) {
@@ -12,7 +12,7 @@ export function compareArrays<T>(before: T[], after: T[], equalityCallback: Equa
 
   for (let beforeIndex = 0; beforeIndex <= beforeLength; beforeIndex++) {
     (matrix[beforeIndex] = Array(afterLength + 1))[0] = beforeIndex;
-    equalityResults[beforeIndex] = Array(afterLength + 1);
+    chosenOps[beforeIndex] = Array(afterLength + 1);
   }
   const rowZero = matrix[0];
   for (let afterIndex = 1; afterIndex <= afterLength; afterIndex++) {
@@ -23,15 +23,20 @@ export function compareArrays<T>(before: T[], after: T[], equalityCallback: Equa
     for (let afterIndex = 1; afterIndex <= after.length; afterIndex++) {
       const beforeItem = before[beforeIndex - 1];
       const afterItem = after[afterIndex - 1];
+      const isEqual = equalityCallback(beforeItem, afterItem);
       const costAsDelete = matrix[beforeIndex - 1][afterIndex] + 1;
       const costAsInsert = matrix[beforeIndex][afterIndex - 1] + 1;
+      const costAsRetain = isEqual ? matrix[beforeIndex - 1][afterIndex - 1] : Number.MAX_VALUE;
 
-      const isEqual = equalityResults[beforeIndex][afterIndex] = equalityCallback(beforeItem, afterItem);
-      if (isEqual) {
-        const costAsRetain = matrix[beforeIndex - 1][afterIndex - 1];
-        matrix[beforeIndex][afterIndex] = Math.min(costAsInsert, costAsDelete, costAsRetain);
+      if (costAsRetain < costAsInsert && costAsRetain < costAsDelete) {
+        matrix[beforeIndex][afterIndex] = costAsRetain;
+        chosenOps[beforeIndex][afterIndex] = Operation.Retain;
+      } else if (costAsInsert < costAsDelete) {
+        matrix[beforeIndex][afterIndex] = costAsInsert;
+        chosenOps[beforeIndex][afterIndex] = Operation.Insert;
       } else {
-        matrix[beforeIndex][afterIndex] = Math.min(costAsInsert, costAsDelete);
+        matrix[beforeIndex][afterIndex] = costAsDelete;
+        chosenOps[beforeIndex][afterIndex] = Operation.Delete;
       }
     }
   }
@@ -41,31 +46,25 @@ export function compareArrays<T>(before: T[], after: T[], equalityCallback: Equa
   let afterIndex = after.length;
 
   while (beforeIndex > 0 || afterIndex > 0) {
-    if (beforeIndex === 0) {
-      operations.unshift(Operation.Insert);
-      afterIndex--;
-    } else if (afterIndex === 0) {
-      operations.unshift(Operation.Delete);
-      beforeIndex--;
-    } else {
-      const isEqual = equalityResults[beforeIndex][afterIndex];
-      const costAsInsert = matrix[beforeIndex][afterIndex - 1];
-      const costAsDelete = matrix[beforeIndex - 1][afterIndex];
-      const costAsRetain = isEqual
-        ? matrix[beforeIndex - 1][afterIndex - 1]
-        : Number.MAX_VALUE;
+    const thisOp = beforeIndex === 0
+      ? Operation.Insert
+      : afterIndex === 0
+        ? Operation.Delete
+        : chosenOps[beforeIndex][afterIndex];
 
-      if (costAsRetain <= costAsInsert && costAsRetain <= costAsDelete) {
+    operations.unshift(thisOp);
+
+    switch (thisOp) {
+      case Operation.Retain:
         beforeIndex--;
         afterIndex--;
-        operations.unshift(Operation.Retain);
-      } else if (costAsInsert < costAsDelete) {
-        operations.unshift(Operation.Insert);
+        break;
+      case Operation.Insert:
         afterIndex--;
-      } else {
-        operations.unshift(Operation.Delete);
+        break;
+      case Operation.Delete:
         beforeIndex--;
-      }
+        break;
     }
   }
 

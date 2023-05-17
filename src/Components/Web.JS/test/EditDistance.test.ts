@@ -35,6 +35,7 @@ describe('levenshteinArray', () => {
   });
 
   test('should return correct operations for mixed changes', () => {
+    debugger;
     const before: number[] = [1];
     const after: number[] = [2];
     const result = compareArrays(before, after, exactEqualityComparer);
