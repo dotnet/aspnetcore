@@ -43,10 +43,17 @@ describe('levenshteinArray', () => {
     const result = compareArrays(before, after, exactEqualityComparer);
     expect(result).toEqual([Operation.Retain, Operation.Delete, Operation.Retain, Operation.Insert, Operation.Retain]);
   });
+
+  test('should prefer to update rather than insert and delete, when allowed', () => {
+    const before = new ArrayItemList<number>([1, 2]);
+    const after = new ArrayItemList<number>([3, 2]);
+    const result = compareArrays(before, after, (a, b) => (a === b) ? ComparisonResult.Identical : ComparisonResult.Compatible);
+    expect(result).toEqual([Operation.Update, Operation.Retain]);
+  });
 });
 
 function exactEqualityComparer<T>(a: T, b: T) {
-  return a === b ? ComparisonResult.Equal : ComparisonResult.NotEqual;
+  return a === b ? ComparisonResult.Identical : ComparisonResult.Incompatible;
 }
 
 class ArrayItemList<T> implements ItemList<T> {

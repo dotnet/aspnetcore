@@ -19,7 +19,7 @@ export function compareArrays<T>(before: ItemList<T>, after: ItemList<T>, compar
 function lengthOfCommonPrefix<T>(before: ItemList<T>, after: ItemList<T>, comparer: Comparer<T>): number {
   const shorterLength = Math.min(before.length, after.length);
   for (let index = 0; index < shorterLength; index++) {
-    if (comparer(before.item(index)!, after.item(index)!) === ComparisonResult.NotEqual) {
+    if (comparer(before.item(index)!, after.item(index)!) !== ComparisonResult.Identical) {
       return index;
     }
   }
@@ -32,7 +32,7 @@ function lengthOfCommonSuffix<T>(before: ItemList<T>, after: ItemList<T>, before
   let afterIndex = after.length - 1;
   let count = 0;
   while (beforeIndex >= beforeStartIndex && afterIndex >= afterStartIndex) {
-    if (comparer(before.item(beforeIndex)!, after.item(afterIndex)!) === ComparisonResult.NotEqual) {
+    if (comparer(before.item(beforeIndex)!, after.item(afterIndex)!) !== ComparisonResult.Identical) {
       break;
     }
     beforeIndex--;
@@ -63,14 +63,25 @@ function computeOperations<T>(before: ItemList<T>, after: ItemList<T>, comparer:
 
   for (let beforeIndex = 1; beforeIndex <= before.length; beforeIndex++) {
     for (let afterIndex = 1; afterIndex <= after.length; afterIndex++) {
-      const isEqual = comparer(before.item(beforeIndex - 1)!, after.item(afterIndex - 1)!) === ComparisonResult.Equal;
+      const comparisonResult = comparer(before.item(beforeIndex - 1)!, after.item(afterIndex - 1)!);
       const costAsDelete = costs[beforeIndex - 1][afterIndex] + 1;
       const costAsInsert = costs[beforeIndex][afterIndex - 1] + 1;
-      const costAsRetain = isEqual ? costs[beforeIndex - 1][afterIndex - 1] : Number.MAX_VALUE;
+      let costAsRetain: number;
+      switch (comparisonResult) {
+        case ComparisonResult.Identical:
+          costAsRetain = costs[beforeIndex - 1][afterIndex - 1];
+          break;
+        case ComparisonResult.Compatible:
+          costAsRetain = costs[beforeIndex - 1][afterIndex - 1] + 1;
+          break;
+        case ComparisonResult.Incompatible:
+          costAsRetain = Number.MAX_VALUE;
+          break;
+      }
 
       if (costAsRetain < costAsInsert && costAsRetain < costAsDelete) {
         costs[beforeIndex][afterIndex] = costAsRetain;
-        operations[beforeIndex][afterIndex] = Operation.Retain;
+        operations[beforeIndex][afterIndex] = comparisonResult === ComparisonResult.Identical ? Operation.Retain : Operation.Update;
       } else if (costAsInsert < costAsDelete) {
         costs[beforeIndex][afterIndex] = costAsInsert;
         operations[beforeIndex][afterIndex] = Operation.Insert;
@@ -101,6 +112,7 @@ function toEditScript(operations: Operation[][]) {
 
     switch (operation) {
       case Operation.Retain:
+      case Operation.Update:
         beforeIndex--;
         afterIndex--;
         break;
@@ -117,14 +129,16 @@ function toEditScript(operations: Operation[][]) {
 }
 
 export enum ComparisonResult {
-  Equal,
-  NotEqual,
+  Identical,
+  Compatible,
+  Incompatible,
 }
 
 export enum Operation {
-  Retain = 1,
-  Insert = 2,
-  Delete = 3,
+  Retain = 'retain',
+  Update = 'update',
+  Insert = 'insert',
+  Delete = 'delete',
 }
 
 export interface ItemList<T> { // Designed to be compatible with NodeList
