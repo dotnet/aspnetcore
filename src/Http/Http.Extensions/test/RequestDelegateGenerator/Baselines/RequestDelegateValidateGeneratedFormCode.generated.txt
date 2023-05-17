@@ -104,12 +104,14 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
                     Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
+                    Debug.Assert(options.EndpointBuilder.ApplicationServices != null, "ApplicationServices not found.");
+                    Debug.Assert(options.EndpointBuilder.FilterFactories != null, "FilterFactories not found.");
                     var handler = (System.Action<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.IFormFile, global::Microsoft.AspNetCore.Http.IFormFileCollection, global::Microsoft.AspNetCore.Http.IFormCollection, global::Microsoft.AspNetCore.Http.Generators.Tests.MyTryParseRecord>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
                     var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
                     var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
 
-                    if (options?.EndpointBuilder?.FilterFactories.Count > 0)
+                    if (options.EndpointBuilder.FilterFactories.Count > 0)
                     {
                         filteredInvocation = GeneratedRouteBuilderExtensionsCore.BuildFilterDelegate(ic =>
                         {

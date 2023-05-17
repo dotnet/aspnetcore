@@ -104,13 +104,15 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
                     Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
+                    Debug.Assert(options.EndpointBuilder.ApplicationServices != null, "ApplicationServices not found.");
+                    Debug.Assert(options.EndpointBuilder.FilterFactories != null, "FilterFactories not found.");
                     var handler = (System.Func<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
                     var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
                     var serializerOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value.SerializerOptions ?? new JsonOptions().SerializerOptions;
                     var jsonTypeInfo =  (JsonTypeInfo<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo>)serializerOptions.GetTypeInfo(typeof(global::Microsoft.AspNetCore.Http.Generators.Tests.Todo));
 
-                    if (options?.EndpointBuilder?.FilterFactories.Count > 0)
+                    if (options.EndpointBuilder.FilterFactories.Count > 0)
                     {
                         filteredInvocation = GeneratedRouteBuilderExtensionsCore.BuildFilterDelegate(ic =>
                         {
