@@ -22,7 +22,7 @@ public interface IHttpSysRequestTimingFeature
     /// Gets the timestamp for the given timing.
     /// </summary>
     /// <remarks>
-    /// These timestamps were obtained using QueryPerformanceCounter <see href="https://learn.microsoft.com/en-us/windows/win32/api/profileapi/nf-profileapi-queryperformancecounter"/> and the timestamp frequency can be obtained via QueryPerformanceFrequency <see href="https://learn.microsoft.com/en-us/windows/win32/api/profileapi/nf-profileapi-queryperformancefrequency"/>.
+    /// These timestamps were obtained using QueryPerformanceCounter <see href="https://learn.microsoft.com/windows/win32/api/profileapi/nf-profileapi-queryperformancecounter"/> and the timestamp frequency can be obtained via QueryPerformanceFrequency <see href="https://learn.microsoft.com/windows/win32/api/profileapi/nf-profileapi-queryperformancefrequency"/>.
     /// </remarks>
     /// <param name="timestampType">The timestamp type to get.</param>
     /// <param name="timestamp">The value of the timestamp if set.</param>
