@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
-    <IsPackable>true</IsPackable>
+    <IsPackable>false</IsPackable>
     <IsAnalyzersProject>true</IsAnalyzersProject>
     <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
     <Nullable>enable</Nullable>
