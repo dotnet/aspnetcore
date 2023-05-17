@@ -270,7 +270,7 @@ function prepareRuntimeConfig(options: Partial<WebAssemblyStartOptions>, platfor
       getParameterValues: (id) => componentAttacher.getParameterValues(id) || '',
     };
 
-    Blazor._internal.getPersistedState = () => discoverPersistedState(document, 'webassembly') || '';
+    Blazor._internal.getPersistedState = () => discoverPersistedState(document) || '';
 
     Blazor._internal.attachRootComponentToElement = (selector, componentId, rendererId: any) => {
       const element = componentAttacher.resolveRegisteredElement(selector);

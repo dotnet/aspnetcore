@@ -29,18 +29,12 @@ function discoverServerComponents(document: Document): ServerComponentDescriptor
   return discoveredComponents.sort((a, b): number => a.sequence - b.sequence);
 }
 
-const serverStateCommentRegularExpression = /^\s*Blazor-Component-State-Server:(?<state>[a-zA-Z0-9+/=]+)$/;
-const webassemblyStateCommentRegularExpression = /^\s*Blazor-Component-State-WebAssembly:(?<state>[a-zA-Z0-9+/=]+)$/;
+const blazorStateCommentRegularExpression = /^\s*Blazor-Component-State:(?<state>[a-zA-Z0-9+/=]+)$/;
 
-export function discoverPersistedState(node: Node, stateType: 'server' | 'webassembly'): string | null | undefined {
+export function discoverPersistedState(node: Node): string | null | undefined {
   if (node.nodeType === Node.COMMENT_NODE) {
     const content = node.textContent || '';
-
-    const matchingRegex = stateType === 'server'
-      ? serverStateCommentRegularExpression
-      : webassemblyStateCommentRegularExpression;
-
-    const parsedState = matchingRegex.exec(content);
+    const parsedState = blazorStateCommentRegularExpression.exec(content);
     const value = parsedState && parsedState.groups && parsedState.groups['state'];
     if (value){
       node.parentNode?.removeChild(node);
@@ -55,7 +49,7 @@ export function discoverPersistedState(node: Node, stateType: 'server' | 'webass
   const nodes = node.childNodes;
   for (let index = 0; index < nodes.length; index++) {
     const candidate = nodes[index];
-    const result = discoverPersistedState(candidate, stateType);
+    const result = discoverPersistedState(candidate);
     if (result){
       return result;
     }
@@ -156,8 +150,7 @@ function getComponentComment(commentNodeIterator: ComponentCommentIterator, type
         }
       } catch (error) {
         // throw new Error(`Found malformed component comment at ${candidateStart.textContent}`);
-        // FIXME: Why are we getting duplicate, seemingly malformed component comments?
-        return;
+        // FIXME: Temporary hack until we know what to do about the duplicate, malformed comments.
       }
     } else {
       return;

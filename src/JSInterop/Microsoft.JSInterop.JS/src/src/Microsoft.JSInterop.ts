@@ -122,7 +122,7 @@ export module DotNet {
    */
   export function invokeMethod<T>(assemblyName: string, methodIdentifier: string, ...args: any[]): T {
       const dispatcher = getDefaultCallDispatcher();
-      return dispatcher.invokeDotNetStaticMethod<T>(assemblyName, methodIdentifier, args);
+      return dispatcher.invokeDotNetStaticMethod<T>(assemblyName, methodIdentifier, ...args);
   }
 
   /**
@@ -136,7 +136,7 @@ export module DotNet {
    */
   export function invokeMethodAsync<T>(assemblyName: string, methodIdentifier: string, ...args: any[]): Promise<T> {
       const dispatcher = getDefaultCallDispatcher();
-      return dispatcher.invokeDotNetStaticMethodAsync<T>(assemblyName, methodIdentifier, args);
+      return dispatcher.invokeDotNetStaticMethodAsync<T>(assemblyName, methodIdentifier, ...args);
   }
 
   /**

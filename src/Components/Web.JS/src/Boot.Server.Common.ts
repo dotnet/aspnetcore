@@ -50,8 +50,8 @@ export async function startCircuit(userOptions?: Partial<CircuitStartOptions>, c
   options.reconnectionHandler = options.reconnectionHandler || Blazor.defaultReconnectionHandler;
   logger.log(LogLevel.Information, 'Starting up Blazor server-side application.');
 
-  components ||= discoverComponents(document, 'server') as ServerComponentDescriptor[]; // TODO: This okay?
-  const appState = discoverPersistedState(document, 'server');
+  components ||= discoverComponents(document, 'server') as ServerComponentDescriptor[]; // TODO: Revise this.
+  const appState = discoverPersistedState(document);
   circuit = new CircuitDescriptor(components || [], appState || '');
 
   // Configure navigation via SignalR
@@ -184,7 +184,7 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
 }
 
 export async function activatePrerenderedComponents(components: ServerComponentDescriptor[]) {
-  const appState = discoverPersistedState(document, 'server');
+  const appState = discoverPersistedState(document);
   circuit = new CircuitDescriptor(components || [], appState || '');
   await connection.send('ActivatePrerenderedComponents', JSON.stringify(components.map(c => c.toRecord())));
 }
