@@ -85,7 +85,8 @@ public abstract class HttpContext
     {
         private readonly HttpContext _context = context;
 
-        public IFeatureCollection Features => _context.Features;
+        // Hide server specific implementations, they combine IFeatureCollection and many feature interfaces.
+        public IFeatureCollection Features => _context.Features as FeatureCollection ?? new FeatureCollection(_context.Features);
         public HttpRequest Request => _context.Request;
         public HttpResponse Response => _context.Response;
         public ConnectionInfo Connection => _context.Connection;

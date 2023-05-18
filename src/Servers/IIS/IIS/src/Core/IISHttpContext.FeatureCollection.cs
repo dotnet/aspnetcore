@@ -4,7 +4,6 @@
 using System.Collections;
 using System.Diagnostics;
 using System.IO.Pipelines;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
@@ -18,8 +17,6 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core;
 
-[DebuggerDisplay("Count = {System.Linq.Enumerable.Count(this)}")]
-[DebuggerTypeProxy(typeof(IISHttpContextDebugView))]
 internal partial class IISHttpContext : IFeatureCollection,
                                         IHttpRequestFeature,
                                         IHttpRequestBodyDetectionFeature,
@@ -494,13 +491,5 @@ internal partial class IISHttpContext : IFeatureCollection,
         {
             ResponseHeaders.Connection = ConnectionClose;
         }
-    }
-
-    private sealed class IISHttpContextDebugView(IISHttpContext context)
-    {
-        private readonly IISHttpContext _context = context;
-
-        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-        public string?[] Items => _context.Select(pair => pair.Key.FullName).ToArray();
     }
 }

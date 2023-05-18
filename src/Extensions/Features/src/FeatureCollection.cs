@@ -158,6 +158,6 @@ public class FeatureCollection : IFeatureCollection
         private readonly FeatureCollection _collection = collection;
 
         [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-        public KeyValuePair<string, object>[] Items => _collection.Select(pair => new KeyValuePair<string, object>(pair.Key.FullName, pair.Value)).ToArray();
+        public KeyValuePair<string, object>[] Items => _collection.Select(pair => new KeyValuePair<string, object>(pair.Key.FullName ?? string.Empty, pair.Value)).ToArray();
     }
 }
