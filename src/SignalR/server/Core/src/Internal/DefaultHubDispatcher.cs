@@ -139,6 +139,7 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
         {
             if (!connection.ShouldProcessMessage(invocation))
             {
+                _logger.LogInformation($"dropping {invocation.GetType().Name}. ID: {invocation.InvocationId}");
                 return Task.CompletedTask;
             }
         }

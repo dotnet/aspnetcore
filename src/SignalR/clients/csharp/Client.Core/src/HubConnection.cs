@@ -1023,6 +1023,7 @@ public partial class HubConnection : IAsyncDisposable
         {
             if (!_buffer.ShouldProcessMessage(hubInvocation))
             {
+                _logger.LogInformation($"Dropped {hubInvocation.GetType().Name}. ID: {hubInvocation.InvocationId}");
                 return null;
             }
         }

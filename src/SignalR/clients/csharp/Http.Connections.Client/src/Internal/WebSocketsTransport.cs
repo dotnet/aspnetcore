@@ -305,6 +305,10 @@ internal sealed partial class WebSocketsTransport : ITransport, IReconnectFeatur
             _transport = pair.Transport;
             _application = pair.Application;
         }
+        else
+        {
+            ignoreFirstCanceled = true;
+        }
 
         // TODO: Handle TCP connection errors
         // https://github.com/SignalR/SignalR/blob/1fba14fa3437e24c204dfaf8a18db3fce8acad3c/src/Microsoft.AspNet.SignalR.Core/Owin/WebSockets/WebSocketHandler.cs#L248-L251
@@ -325,7 +329,7 @@ internal sealed partial class WebSocketsTransport : ITransport, IReconnectFeatur
             var trigger = await Task.WhenAny(receiving, sending).ConfigureAwait(false);
 
             _stopCts.CancelAfter(_closeTimeout);
-
+            _logger.LogInformation("starting close");
             if (trigger == receiving)
             {
                 // We're waiting for the application to finish and there are 2 things it could be doing
@@ -433,6 +437,7 @@ internal sealed partial class WebSocketsTransport : ITransport, IReconnectFeatur
                 // or if the consumer is done
                 if (flushResult.IsCanceled || flushResult.IsCompleted)
                 {
+                    _logger.LogInformation("receive: pipe canceled or completed");
                     break;
                 }
             }
@@ -451,9 +456,10 @@ internal sealed partial class WebSocketsTransport : ITransport, IReconnectFeatur
                 }
                 else
                 {
-                    _application.Output.CancelPendingFlush();
+                    //_application.Output.CancelPendingFlush();
                 }
                 //_closed = true;
+                _logger.LogInformation(ex, "receive error");
             }
         }
         finally
@@ -487,6 +493,7 @@ internal sealed partial class WebSocketsTransport : ITransport, IReconnectFeatur
                 {
                     if (result.IsCanceled && !ignoreFirstCanceled)
                     {
+                        _logger.LogInformation("send canceled");
                         break;
                     }
 
@@ -519,6 +526,7 @@ internal sealed partial class WebSocketsTransport : ITransport, IReconnectFeatur
                     }
                     else if (result.IsCompleted)
                     {
+                        _logger.LogInformation("send: pipe result completed");
                         break;
                     }
                 }
@@ -560,7 +568,14 @@ internal sealed partial class WebSocketsTransport : ITransport, IReconnectFeatur
             {
                 _application.Input.Complete(error);
             }
-            // TODO: log error in else?
+            else
+            {
+                if (error is not null)
+                {
+                    // TODO: log error in else?
+                    _logger.LogInformation(error, "send error");
+                }
+            }
 
             Log.SendStopped(_logger);
         }
@@ -638,7 +653,7 @@ internal sealed partial class WebSocketsTransport : ITransport, IReconnectFeatur
         _application = applicationToTransport;
         _transport = transportToApplication;
 
-        prevPipe.Complete(new Exception());
+        prevPipe.Complete(new ConnectionResetException(""));
 
         _notifyOnReconnect.Invoke();
     }

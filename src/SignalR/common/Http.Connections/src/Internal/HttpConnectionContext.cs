@@ -666,7 +666,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         Application = applicationToTransport;
         Transport = transportToApplication;
 
-        prevPipe.Complete(new Exception());
+        prevPipe.Complete(new ConnectionResetException(""));
         Features.GetRequiredFeature<IReconnectFeature>().NotifyOnReconnect?.Invoke();
     }
 

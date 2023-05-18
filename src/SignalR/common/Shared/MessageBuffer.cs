@@ -68,7 +68,7 @@ internal sealed class MessageBuffer
             _index = (_index + 1) % _buffer.Length;
             return await _connection.Transport.Output.WriteAsync(hubMessage.GetSerializedMessage(protocol), cancellationToken).ConfigureAwait(false);
         }
-        catch (Exception ex)
+        catch (ConnectionResetException ex)
         {
             // TODO: specific exception or some identifier needed
 
@@ -98,7 +98,8 @@ internal sealed class MessageBuffer
         // Release backpressure?
     }
 
-    private long _currentReceivingSequenceId;
+    // Message IDs start at 1 and always increment by 1
+    private long _currentReceivingSequenceId = 1;
     private long _latestReceivedSequenceId = long.MinValue;
 
     internal bool ShouldProcessMessage(HubInvocationMessage message)
