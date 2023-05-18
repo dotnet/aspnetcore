@@ -10,82 +10,68 @@ namespace Microsoft.AspNetCore.Components.Discovery;
 /// </summary>
 internal class PageCollectionBuilder
 {
-    private readonly List<PageComponentBuilder> _pages = new();
+    private readonly Dictionary<string, IReadOnlyList<PageComponentBuilder>> _pages = new();
 
     internal void Combine(PageCollectionBuilder pages)
     {
-        for (var i = 0; i < pages._pages.Count; i++)
+        foreach (var (assembly, pageCollection) in pages._pages)
         {
-            var pageToAdd = pages._pages[i];
-            var found = false;
-            for (var j = _pages.Count - 1; j > 0; j--)
+            if (!_pages.ContainsKey(assembly))
             {
-                var page = _pages[j];
-                if (page.Equals(pageToAdd))
-                {
-                    found = true;
-                    break;
-                }
-            }
-
-            if (!found)
-            {
-                _pages.Add(pageToAdd);
+                _pages.Add(assembly, pageCollection);
             }
         }
     }
 
     internal void Exclude(PageCollectionBuilder pages)
     {
-        for (var i = 0; i < pages._pages.Count; i++)
+        foreach (var (assembly, _) in pages._pages)
         {
-            var pageToRemove = pages._pages[i];
-            for (var j = _pages.Count - 1; j >= 0; j--)
+            if (_pages.ContainsKey(assembly))
             {
-                var page = _pages[j];
-                if (page.Equals(pageToRemove))
-                {
-                    _pages.RemoveAt(j);
-                    break;
-                }
+                _pages.Remove(assembly);
             }
         }
     }
 
     internal void RemoveFromAssembly(string name)
     {
-        for (var i = _pages.Count - 1; i >= 0; i--)
-        {
-            if (_pages[i].HasSource(name))
-            {
-                _pages.RemoveAt(i);
-            }
-        }
+        _pages.Remove(name);
     }
 
-    internal void AddFromLibraryInfo(IEnumerable<PageComponentBuilder> pages)
+    internal void AddFromLibraryInfo(string assemblyName, IReadOnlyList<PageComponentBuilder> pages)
     {
-        _pages.AddRange(pages);
+        _pages.Add(assemblyName, pages);
     }
 
     internal PageComponentInfo[] ToPageCollection()
     {
-        if (_pages.Count == 0)
+        var totalCount = 0;
+        foreach (var value in _pages.Values)
+        {
+            totalCount += value.Count;
+        }
+
+        if (totalCount == 0)
         {
             return Array.Empty<PageComponentInfo>();
         }
 
-        var list = new List<PageComponentInfo>();
+        var list = new List<PageComponentInfo>(totalCount);
         // Reuse a buffer for computing the metadata
         var buffer = new MetadataBuffer();
         try
         {
-            for (var i = 0; i < _pages.Count; i++)
+            foreach (var (assembly, pages) in _pages)
             {
-                var page = _pages[i];
-                foreach (var route in page.RouteTemplates!)
+                for (var i = 0; i < pages.Count; i++)
                 {
-                    list.Add(new PageComponentInfo(route, page.PageType!, route, ResolveMetadata(page.PageType!, ref buffer)));
+                    var page = pages[i];
+                    var metadata = ResolveMetadata(page.PageType!, ref buffer);
+                    foreach (var route in page.RouteTemplates!)
+                    {
+                        list.Add(new PageComponentInfo(route, page.PageType!, route, metadata));
+                    }
                 }
             }
         }

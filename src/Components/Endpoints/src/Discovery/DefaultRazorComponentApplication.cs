@@ -42,7 +42,7 @@ internal class DefaultRazorComponentApplication<TComponent> : IRazorComponentApp
         builder.AddLibrary(new ComponentLibraryBuilder(libraryName, pages, components));
         return builder;
 
-        static (IEnumerable<PageComponentBuilder>, IEnumerable<ComponentBuilder>) CreatePageRouteCollection(string name)
+        static (IReadOnlyList<PageComponentBuilder>, IReadOnlyList<ComponentBuilder>) CreatePageRouteCollection(string name)
         {
             var exported = typeof(TComponent).Assembly.GetExportedTypes();
             var pages = new List<PageComponentBuilder>();

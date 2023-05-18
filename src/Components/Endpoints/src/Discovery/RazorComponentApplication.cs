@@ -34,7 +34,7 @@ internal class RazorComponentApplication
     /// </summary>
     public IReadOnlyList<ComponentInfo> Components => _components;
 
-    internal IEnumerable<IComponentRenderMode> ResolveRenderModes()
+    internal IEnumerable<IComponentRenderMode> GetDeclaredRenderModesByDiscoveredComponents()
     {
         var set = new HashSet<IComponentRenderMode>();
         for (var i = 0; i < Components.Count; i++)

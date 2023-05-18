@@ -25,9 +25,9 @@ Microsoft.AspNetCore.Components.Discovery.ComponentBuilder.RenderMode.get -> Mic
 Microsoft.AspNetCore.Components.Discovery.ComponentBuilder.RenderMode.set -> void
 Microsoft.AspNetCore.Components.Discovery.ComponentLibraryBuilder
 Microsoft.AspNetCore.Components.Discovery.ComponentLibraryBuilder.AssemblyName.get -> string!
-Microsoft.AspNetCore.Components.Discovery.ComponentLibraryBuilder.ComponentLibraryBuilder(string! name, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder!>! pages, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Components.Discovery.ComponentBuilder!>! components) -> void
-Microsoft.AspNetCore.Components.Discovery.ComponentLibraryBuilder.Components.get -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Components.Discovery.ComponentBuilder!>!
-Microsoft.AspNetCore.Components.Discovery.ComponentLibraryBuilder.Pages.get -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder!>!
+Microsoft.AspNetCore.Components.Discovery.ComponentLibraryBuilder.ComponentLibraryBuilder(string! name, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder!>! pages, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.Discovery.ComponentBuilder!>! components) -> void
+Microsoft.AspNetCore.Components.Discovery.ComponentLibraryBuilder.Components.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.Discovery.ComponentBuilder!>!
+Microsoft.AspNetCore.Components.Discovery.ComponentLibraryBuilder.Pages.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder!>!
 Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder
 Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder.AssemblyName.get -> string!
 Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder.AssemblyName.set -> void

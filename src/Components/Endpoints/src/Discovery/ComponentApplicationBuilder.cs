@@ -31,8 +31,8 @@ public class ComponentApplicationBuilder
             throw new InvalidOperationException("Assembly already defined.");
         }
         _assemblies.Add(libraryBuilder.AssemblyName);
-        Pages.AddFromLibraryInfo(libraryBuilder.Pages);
-        Components.AddFromLibraryInfo(libraryBuilder.Components);
+        Pages.AddFromLibraryInfo(libraryBuilder.AssemblyName, libraryBuilder.Pages);
+        Components.AddFromLibraryInfo(libraryBuilder.AssemblyName, libraryBuilder.Components);
     }
 
     /// <summary>

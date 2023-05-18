@@ -260,141 +260,159 @@ public class ComponentApplicationBuilderTests
             c => Assert.Equal(typeof(App1OtherComponent), c.ComponentType));
     }
 
-    private IEnumerable<ComponentBuilder> CreateApp1Components(string assemblyName)
+    private IReadOnlyList<ComponentBuilder> CreateApp1Components(string assemblyName)
     {
-        yield return new ComponentBuilder
+        return new[]
         {
-            AssemblyName = assemblyName,
-            ComponentType = typeof(App1Test1),
-        };
-        yield return new ComponentBuilder
-        {
-            AssemblyName = assemblyName,
-            ComponentType = typeof(App1Test2),
-        };
-        yield return new ComponentBuilder
-        {
-            AssemblyName = assemblyName,
-            ComponentType = typeof(App1Test3),
-        };
-        yield return new ComponentBuilder
-        {
-            AssemblyName = assemblyName,
-            ComponentType = typeof(App1OtherComponent),
+            new ComponentBuilder
+            {
+                AssemblyName = assemblyName,
+                ComponentType = typeof(App1Test1),
+            },
+            new ComponentBuilder
+            {
+                AssemblyName = assemblyName,
+                ComponentType = typeof(App1Test2),
+            },
+            new ComponentBuilder
+            {
+                AssemblyName = assemblyName,
+                ComponentType = typeof(App1Test3),
+            },
+            new ComponentBuilder
+            {
+                AssemblyName = assemblyName,
+                ComponentType = typeof(App1OtherComponent),
+            }
         };
     }
 
-    private IEnumerable<PageComponentBuilder> CreateApp1Pages(string assemblyName)
+    private IReadOnlyList<PageComponentBuilder> CreateApp1Pages(string assemblyName)
     {
-        yield return new PageComponentBuilder
+        return new[]
         {
-            AssemblyName = assemblyName,
-            PageType = typeof(App1Test1),
-            RouteTemplates = new List<string> { "/App1/Test1" }
-        };
-        yield return new PageComponentBuilder
-        {
-            AssemblyName = assemblyName,
-            PageType = typeof(App1Test2),
-            RouteTemplates = new List<string> { "/App1/Test2" }
-        };
-        yield return new PageComponentBuilder
-        {
-            AssemblyName = assemblyName,
-            PageType = typeof(App1Test3),
-            RouteTemplates = new List<string> { "/App1/Test3" }
+            new PageComponentBuilder
+            {
+                AssemblyName = assemblyName,
+                PageType = typeof(App1Test1),
+                RouteTemplates = new List<string> { "/App1/Test1" }
+            },
+            new PageComponentBuilder
+            {
+                AssemblyName = assemblyName,
+                PageType = typeof(App1Test2),
+                RouteTemplates = new List<string> { "/App1/Test2" }
+            },
+            new PageComponentBuilder
+            {
+                AssemblyName = assemblyName,
+                PageType = typeof(App1Test3),
+                RouteTemplates = new List<string> { "/App1/Test3" }
+            }
         };
     }
 
-    private IEnumerable<ComponentBuilder> CreateApp2Components(string assemblyName)
+    private IReadOnlyList<ComponentBuilder> CreateApp2Components(string assemblyName)
     {
-        yield return new ComponentBuilder
+        return new[]
         {
-            AssemblyName = assemblyName,
-            ComponentType = typeof(App2Test1),
-        };
-        yield return new ComponentBuilder
-        {
-            AssemblyName = assemblyName,
-            ComponentType = typeof(App2Test2),
-        };
-        yield return new ComponentBuilder
-        {
-            AssemblyName = assemblyName,
-            ComponentType = typeof(App2Test3),
-        };
-        yield return new ComponentBuilder
-        {
-            AssemblyName = assemblyName,
-            ComponentType = typeof(App2OtherComponent),
+            new ComponentBuilder
+            {
+                AssemblyName = assemblyName,
+                ComponentType = typeof(App2Test1),
+            },
+            new ComponentBuilder
+            {
+                AssemblyName = assemblyName,
+                ComponentType = typeof(App2Test2),
+            },
+            new ComponentBuilder
+            {
+                AssemblyName = assemblyName,
+                ComponentType = typeof(App2Test3),
+            },
+            new ComponentBuilder
+            {
+                AssemblyName = assemblyName,
+                ComponentType = typeof(App2OtherComponent),
+            }
         };
     }
 
-    private IEnumerable<PageComponentBuilder> CreateApp2Pages(string assemblyName)
+    private IReadOnlyList<PageComponentBuilder> CreateApp2Pages(string assemblyName)
     {
-        yield return new PageComponentBuilder
+        return new[]
         {
-            AssemblyName = assemblyName,
-            PageType = typeof(App2Test1),
-            RouteTemplates = new List<string> { "/App2/Test1" }
-        };
-        yield return new PageComponentBuilder
-        {
-            AssemblyName = assemblyName,
-            PageType = typeof(App2Test2),
-            RouteTemplates = new List<string> { "/App2/Test2" }
-        };
-        yield return new PageComponentBuilder
-        {
-            AssemblyName = assemblyName,
-            PageType = typeof(App2Test3),
-            RouteTemplates = new List<string> { "/App2/Test3" }
+            new PageComponentBuilder
+            {
+                AssemblyName = assemblyName,
+                PageType = typeof(App2Test1),
+                RouteTemplates = new List<string> { "/App2/Test1" }
+            },
+            new PageComponentBuilder
+            {
+                AssemblyName = assemblyName,
+                PageType = typeof(App2Test2),
+                RouteTemplates = new List<string> { "/App2/Test2" }
+            },
+            new PageComponentBuilder
+            {
+                AssemblyName = assemblyName,
+                PageType = typeof(App2Test3),
+                RouteTemplates = new List<string> { "/App2/Test3" }
+            }
         };
     }
 
-    private IEnumerable<ComponentBuilder> CreateSharedComponents(string assemblyName)
+    private IReadOnlyList<ComponentBuilder> CreateSharedComponents(string assemblyName)
     {
-        yield return new ComponentBuilder
+        return new[]
         {
-            AssemblyName = assemblyName,
-            ComponentType = typeof(SharedTest1),
-        };
-        yield return new ComponentBuilder
-        {
-            AssemblyName = assemblyName,
-            ComponentType = typeof(SharedTest2),
-        };
-        yield return new ComponentBuilder
-        {
-            AssemblyName = assemblyName,
-            ComponentType = typeof(SharedTest3),
-        };
-        yield return new ComponentBuilder
-        {
-            AssemblyName = assemblyName,
-            ComponentType = typeof(SharedOtherComponent),
+            new ComponentBuilder
+            {
+                AssemblyName = assemblyName,
+                ComponentType = typeof(SharedTest1),
+            },
+            new ComponentBuilder
+            {
+                AssemblyName = assemblyName,
+                ComponentType = typeof(SharedTest2),
+            },
+            new ComponentBuilder
+            {
+                AssemblyName = assemblyName,
+                ComponentType = typeof(SharedTest3),
+            },
+            new ComponentBuilder
+            {
+                AssemblyName = assemblyName,
+                ComponentType = typeof(SharedOtherComponent),
+            }
         };
     }
 
-    private IEnumerable<PageComponentBuilder> CreateSharedPages(string assemblyName)
+    private IReadOnlyList<PageComponentBuilder> CreateSharedPages(string assemblyName)
     {
-        yield return new PageComponentBuilder
+        return new[]
         {
-            AssemblyName = assemblyName,
-            PageType = typeof(SharedTest1),
-            RouteTemplates = new List<string> { "/Shared/Test1" }
-        };
-        yield return new PageComponentBuilder
-        {
-            AssemblyName = assemblyName,
-            PageType = typeof(SharedTest2),
-            RouteTemplates = new List<string> { "/Shared/Test2" }
-        };
-        yield return new PageComponentBuilder
-        {
-            AssemblyName = assemblyName,
-            PageType = typeof(SharedTest3),
-            RouteTemplates = new List<string> { "/Shared/Test3" }
+            new PageComponentBuilder
+            {
+                AssemblyName = assemblyName,
+                PageType = typeof(SharedTest1),
+                RouteTemplates = new List<string> { "/Shared/Test1" }
+            },
+            new PageComponentBuilder
+            {
+                AssemblyName = assemblyName,
+                PageType = typeof(SharedTest2),
+                RouteTemplates = new List<string> { "/Shared/Test2" }
+            },
+            new PageComponentBuilder
+            {
+                AssemblyName = assemblyName,
+                PageType = typeof(SharedTest3),
+                RouteTemplates = new List<string> { "/Shared/Test3" }
+            },
         };
     }
 

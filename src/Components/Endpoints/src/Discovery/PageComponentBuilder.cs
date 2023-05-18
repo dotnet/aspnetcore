@@ -7,7 +7,7 @@ using System.Linq;
 namespace Microsoft.AspNetCore.Components.Discovery;
 
 /// <summary>
-/// Initializes a new instance of <see cref="PageComponentBuilder"/>.
+/// A razor component page <see cref="PageComponentBuilder"/>.
 /// </summary>
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
 public class PageComponentBuilder : IEquatable<PageComponentBuilder?>

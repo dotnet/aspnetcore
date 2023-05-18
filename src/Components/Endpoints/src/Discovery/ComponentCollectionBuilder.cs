@@ -9,85 +9,71 @@ namespace Microsoft.AspNetCore.Components.Discovery;
 /// </summary>
 internal class ComponentCollectionBuilder
 {
-    private readonly List<ComponentBuilder> _components = new();
+    private readonly Dictionary<string, IReadOnlyList<ComponentBuilder>> _components = new();
 
     internal void Combine(ComponentCollectionBuilder components)
     {
-        for (var i = 0; i < components._components.Count; i++)
+        foreach (var (assembly, pageCollection) in components._components)
         {
-            var pageToAdd = components._components[i];
-            var found = false;
-            for (var j = _components.Count - 1; j > 0; j--)
+            if (!_components.ContainsKey(assembly))
             {
-                var page = _components[j];
-                if (page.Equals(pageToAdd))
-                {
-                    found = true;
-                    break;
-                }
-            }
-
-            if (!found)
-            {
-                _components.Add(pageToAdd);
+                _components.Add(assembly, pageCollection);
             }
         }
     }
 
     internal void Exclude(ComponentCollectionBuilder components)
     {
-        for (var i = 0; i < components._components.Count; i++)
+        foreach (var (assembly, _) in components._components)
         {
-            var pageToRemove = components._components[i];
-            for (var j = _components.Count - 1; j >= 0; j--)
+            if (_components.ContainsKey(assembly))
             {
-                var page = _components[j];
-                if (page.Equals(pageToRemove))
-                {
-                    _components.RemoveAt(j);
-                    break;
-                }
+                _components.Remove(assembly);
             }
         }
     }
 
     internal void Remove(string name)
     {
-        for (var i = _components.Count - 1; i >= 0; i--)
-        {
-            if (_components[i].HasSource(name))
-            {
-                _components.RemoveAt(i);
-            }
-        }
+        _components.Remove(name);
     }
 
-    internal void AddFromLibraryInfo(IEnumerable<ComponentBuilder> components)
+    internal void AddFromLibraryInfo(string assemblyName, IReadOnlyList<ComponentBuilder> components)
     {
-        _components.AddRange(components);
+        _components.Add(assemblyName, components);
     }
 
     internal ComponentInfo[] ToComponentCollection()
     {
-        if (_components.Count == 0)
+        var totalCount = 0;
+        foreach (var value in _components.Values)
+        {
+            totalCount += value.Count;
+        }
+
+        if (totalCount == 0)
         {
             return Array.Empty<ComponentInfo>();
         }
 
-        var result = new ComponentInfo[_components.Count];
-        for (var i = 0; i < _components.Count; i++)
+        var current = 0;
+        var result = new ComponentInfo[totalCount];
+        foreach (var (_, components) in _components)
         {
-            var componentType = _components[i];
-            if (componentType.RenderMode != null)
+            for (var i = 0; i < components.Count; i++, current++)
             {
-                result[i] = new ComponentInfo(componentType.ComponentType)
+                var componentType = components[i];
+                if (componentType.RenderMode != null)
                 {
-                    RenderMode = componentType.RenderMode.Mode,
-                };
-            }
-            else
-            {
-                result[i] = new ComponentInfo(componentType.ComponentType);
+                    result[current] = new ComponentInfo(componentType.ComponentType)
+                    {
+                        RenderMode = componentType.RenderMode.Mode,
+                    };
+                }
+                else
+                {
+                    result[current] = new ComponentInfo(componentType.ComponentType);
+                }
             }
         }
 

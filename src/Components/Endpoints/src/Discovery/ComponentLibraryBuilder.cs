@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using System.Linq;
 
 namespace Microsoft.AspNetCore.Components.Discovery;
 
@@ -20,7 +19,7 @@ public class ComponentLibraryBuilder
     /// <param name="name">The assembly name.</param>
     /// <param name="pages">The list of pages in the assembly.</param>
     /// <param name="components">The list of components in the assembly.</param>
-    public ComponentLibraryBuilder(string name, IEnumerable<PageComponentBuilder> pages, IEnumerable<ComponentBuilder> components)
+    public ComponentLibraryBuilder(string name, IReadOnlyList<PageComponentBuilder> pages, IReadOnlyList<ComponentBuilder> components)
     {
         ArgumentException.ThrowIfNullOrEmpty(nameof(name));
         ArgumentNullException.ThrowIfNull(pages);
@@ -39,15 +38,15 @@ public class ComponentLibraryBuilder
     /// <summary>
     /// Gets the pages in the assembly.
     /// </summary>
-    public IEnumerable<PageComponentBuilder> Pages { get; }
+    public IReadOnlyList<PageComponentBuilder> Pages { get; }
 
     /// <summary>
     /// Gets the components in the assembly.
     /// </summary>
-    public IEnumerable<ComponentBuilder> Components { get; }
+    public IReadOnlyList<ComponentBuilder> Components { get; }
 
     private string GetDebuggerDisplay()
     {
-        return $"{AssemblyName}: Pages = {Pages.Count()} Components = {Components.Count()}";
+        return $"{AssemblyName}: Pages = {Pages.Count} Components = {Components.Count}";
     }
 }

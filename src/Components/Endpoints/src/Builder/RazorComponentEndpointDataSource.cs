@@ -89,7 +89,7 @@ internal class RazorComponentEndpointDataSource<TRootComponent> : EndpointDataSo
         if (_renderModes.RenderModes == null)
         {
             _renderModes.RenderModes = new();
-            _renderModes.RenderModes.AddRange(context.ResolveRenderModes());
+            _renderModes.RenderModes.AddRange(context.GetDeclaredRenderModesByDiscoveredComponents());
         }
 
         var renderModes = _renderModes.RenderModes;
