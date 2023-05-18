@@ -21,7 +21,7 @@ internal static partial class ArgumentThrowHelper
         string? argument, [CallerArgumentExpression("argument")] string? paramName = null)
     {
 #if !NET7_0_OR_GREATER || NETSTANDARD || NETFRAMEWORK
-        if (string.IsNullOrEmpty(argument))
+        if (argument is null or argument == string.Empty)
         {
             ArgumentNullThrowHelper.ThrowIfNull(argument);
             Throw(paramName);
