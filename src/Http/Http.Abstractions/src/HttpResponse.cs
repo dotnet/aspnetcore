@@ -156,8 +156,8 @@ public abstract class HttpResponse
 
     private string DebuggerToString()
     {
-        return $"Status: {StatusCode}, Started: {HasStarted},"
-            + $" Length: {ContentLength?.ToString(CultureInfo.InvariantCulture) ?? "(null)"} {ContentType}";
+        return $"StatusCode = {StatusCode}, HasStarted = {HasStarted},"
+            + $" Length = {ContentLength?.ToString(CultureInfo.InvariantCulture) ?? "(null)"} {ContentType}";
     }
 
     private sealed class HttpResponseDebugView(HttpResponse response)

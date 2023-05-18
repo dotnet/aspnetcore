@@ -64,7 +64,7 @@ public abstract class ConnectionInfo
     {
         var remoteEndpoint = RemoteIpAddress == null ? "(null)" : new IPEndPoint(RemoteIpAddress, RemotePort).ToString();
         var localEndpoint = LocalIpAddress == null ? "(null)" : new IPEndPoint(LocalIpAddress, LocalPort).ToString();
-        return $"Id: {Id ?? "(null)"}, Remote: {remoteEndpoint}, Local: {localEndpoint}, ClientCertificate: {ClientCertificate?.Subject ?? "(null)"}";
+        return $"Id = {Id ?? "(null)"}, Remote = {remoteEndpoint}, Local = {localEndpoint}, ClientCertificate = {ClientCertificate?.Subject ?? "(null)"}";
     }
 
     private sealed class ConnectionInfoDebugView(ConnectionInfo info)

@@ -78,7 +78,7 @@ public abstract class HttpContext
     private string DebuggerToString()
     {
         return $"{Request.Method} {Request.Path.Value} {Request.ContentType}"
-            + $" Status: {Response.StatusCode} {Response.ContentType}";
+            + $" StatusCode = {Response.StatusCode} {Response.ContentType}";
     }
 
     private sealed class HttpContextDebugView(HttpContext context)

@@ -155,7 +155,7 @@ public abstract class HttpRequest
     private string DebuggerToString()
     {
         return $"{Protocol} {Method} {Scheme}://{Host.Value}{PathBase.Value}{Path.Value}{QueryString.Value} {ContentType}"
-            + $" Length: {ContentLength?.ToString(CultureInfo.InvariantCulture) ?? "(null)"}";
+            + $" Length = {ContentLength?.ToString(CultureInfo.InvariantCulture) ?? "(null)"}";
     }
 
     private sealed class HttpRequestDebugView(HttpRequest request)
