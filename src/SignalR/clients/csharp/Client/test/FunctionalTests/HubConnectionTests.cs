@@ -2543,7 +2543,7 @@ public class HubConnectionTests : FunctionalTestBase
     public async Task CanReconnectAndSendMessageWhileDisconnected()
     {
         var protocol = HubProtocols["json"];
-        await using (var server = await StartServer<Startup>())
+        await using (var server = await StartServer<Startup>(w => w.EventId.Name == "ReceivedUnexpectedResponse"))
         {
             var websocket = new ClientWebSocket();
             var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -2599,11 +2599,11 @@ public class HubConnectionTests : FunctionalTestBase
     }
 
     [Fact]
-    [Repeat(500)]
+    [Repeat(1500)]
     public async Task CanReconnectAndSendMessageOnceConnected()
     {
         var protocol = HubProtocols["json"];
-        await using (var server = await StartServer<Startup>())
+        await using (var server = await StartServer<Startup>(w => w.EventId.Name == "ReceivedUnexpectedResponse"))
         {
             var websocket = new ClientWebSocket();
             var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
