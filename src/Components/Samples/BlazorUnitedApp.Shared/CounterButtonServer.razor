@@ -4,6 +4,10 @@
 
 <button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
 
+<p>
+    Is browser platform: @OperatingSystem.IsBrowser()
+</p>
+
 @code {
     private int currentCount = 0;
 
