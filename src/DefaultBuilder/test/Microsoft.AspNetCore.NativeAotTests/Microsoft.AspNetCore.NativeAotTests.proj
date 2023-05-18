@@ -1,7 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <TestConsoleAppSourceFiles Include="SlimBuilderDoesNotDependOnX509Test.cs" />
+    <TestConsoleAppSourceFiles Include="SlimBuilderDoesNotDependOnX509Test.cs">
+      <DisabledFeatureSwitches>System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault</DisabledFeatureSwitches>
+    </TestConsoleAppSourceFiles>
     <TestConsoleAppSourceFiles Include="UseStartupThrowsForStructContainersTest.cs" />
   </ItemGroup>
 
