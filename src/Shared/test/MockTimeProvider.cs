@@ -45,12 +45,14 @@ public class MockTimeProvider : TimeProvider
 
     public void Advance(TimeSpan timeSpan)
     {
-        Interlocked.Add(ref _utcTicks, timeSpan.Ticks);
-        Interlocked.Add(ref _timestamp, timeSpan.Ticks * (_timestampFrequency / TimeSpan.TicksPerSecond));
-
-        if (_utcTicks < 0 || _timestamp < 0)
+        if (timeSpan < TimeSpan.Zero)
         {
-            throw new InvalidOperationException("UtcNow or Timestamp became negative.");
+            throw new ArgumentOutOfRangeException(nameof(timeSpan), timeSpan, "Cannot go back in time.");
+        }
+        Interlocked.Add(ref _utcTicks, timeSpan.Ticks);
+        checked
+        {
+            Interlocked.Add(ref _timestamp, (long)(timeSpan.Ticks * ((double)_timestampFrequency / TimeSpan.TicksPerSecond)));
         }
     }
 
@@ -58,28 +60,28 @@ public class MockTimeProvider : TimeProvider
     {
         var nowTicks = newUtcNow.UtcTicks;
         var priorTicks = Interlocked.Exchange(ref _utcTicks, nowTicks);
-        // Advance Timestamp by the same amount.
-        // Known timestamp frequencies are the same or larger than TicksPerSecond.
-        var timestampOffset = (nowTicks - priorTicks) * (_timestampFrequency / TimeSpan.TicksPerSecond);
-        Interlocked.Add(ref _timestamp, timestampOffset);
-
-        if (_utcTicks < 0 || _timestamp < 0)
+        if (priorTicks > nowTicks)
         {
-            throw new InvalidOperationException("UtcNow or Timestamp became negative.");
+            var priorTime = new DateTimeOffset(priorTicks, TimeSpan.Zero);
+            throw new ArgumentOutOfRangeException(nameof(newUtcNow), newUtcNow, $"Cannot go back in time. The prior time was {priorTime}");
         }
+        // Advance Timestamp by the same amount.
+        var timestampOffset = (long)((nowTicks - priorTicks) * ((double)_timestampFrequency / TimeSpan.TicksPerSecond));
+        Interlocked.Add(ref _timestamp, timestampOffset);
     }
 
     public void AdvanceTo(long timestamp)
     {
         var priorTimestamp = Interlocked.Exchange(ref _timestamp, timestamp);
-        // Advance UtcNow by the same amount.
-        // Known timestamp frequencies are the same or larger than TicksPerSecond.
-        var utcOffset = (long)((timestamp - priorTimestamp) * ((double)TimeSpan.TicksPerSecond / _timestampFrequency));
-        Interlocked.Add(ref _utcTicks, utcOffset);
-
-        if (_utcTicks < 0 || _timestamp < 0)
+        if (priorTimestamp > timestamp)
         {
-            throw new InvalidOperationException("UtcNow or Timestamp became negative.");
+            throw new ArgumentOutOfRangeException(nameof(timestamp), timestamp, $"Cannot go back in time. The prior timestamp was {priorTimestamp}");
+        }
+        // Advance UtcNow by the same amount.
+        checked
+        {
+            var utcOffset = (long)((timestamp - priorTimestamp) * ((double)TimeSpan.TicksPerSecond / _timestampFrequency));
+            Interlocked.Add(ref _utcTicks, utcOffset);
         }
     }
 

@@ -10,16 +10,22 @@ internal static class TimeExtensions
 
     public static long ToTicks(this TimeSpan timeSpan, long tickFrequency)
     {
+        if (timeSpan < TimeSpan.Zero)
+        {
+            throw new ArgumentOutOfRangeException(nameof(timeSpan), timeSpan, string.Empty);
+        }
         if (timeSpan == TimeSpan.MaxValue)
         {
             return long.MaxValue;
         }
-        if (timeSpan == TimeSpan.MinValue)
+        if (tickFrequency == TimeSpan.TicksPerSecond)
         {
-            return long.MinValue;
+            return timeSpan.Ticks;
         }
-        // The tick frequency should be equal or greater than TicksPerSecond
-        return timeSpan.Ticks * (tickFrequency / TimeSpan.TicksPerSecond);
+        checked
+        {
+            return (long)(timeSpan.Ticks * ((double)tickFrequency / TimeSpan.TicksPerSecond));
+        }
     }
 
     public static long GetTimestamp(this TimeProvider timeProvider, TimeSpan timeSpan)
