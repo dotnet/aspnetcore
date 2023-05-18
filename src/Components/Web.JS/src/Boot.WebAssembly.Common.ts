@@ -6,24 +6,24 @@ import { DotNet } from '@microsoft/dotnet-js-interop';
 import { Blazor } from './GlobalExports';
 import * as Environment from './Environment';
 import { BINDING, monoPlatform, dispatcher } from './Platform/Mono/MonoPlatform';
-import { renderBatch, getRendererer } from './Rendering/Renderer';
+import { renderBatch, getRendererer, attachRootComponentToElement, attachRootComponentToLogicalElement } from './Rendering/Renderer';
 import { SharedMemoryRenderBatch } from './Rendering/RenderBatch/SharedMemoryRenderBatch';
 import { WebAssemblyResourceLoader } from './Platform/WebAssemblyResourceLoader';
 import { Pointer } from './Platform/Platform';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
-import { setDispatchEventMiddleware } from './Rendering/WebRendererInteropMethods';
+import { addDispatchEventMiddleware } from './Rendering/WebRendererInteropMethods';
 import { JSInitializer } from './JSInitializers/JSInitializers';
 import { WebAssemblyComponentDescriptor, discoverPersistedState } from './Services/ComponentDescriptorDiscovery';
 import { receiveDotNetDataStream } from './StreamingInterop';
+import { WebAssemblyComponentAttacher } from './Platform/WebAssemblyComponentAttacher';
 
-// TODO: Logic to actually create and restore the state of WebAssembly components.
 export async function startWebAssembly(options?: Partial<WebAssemblyStartOptions>, components?: WebAssemblyComponentDescriptor[]): Promise<void> {
   if (inAuthRedirectIframe()) {
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     await new Promise(() => { }); // See inAuthRedirectIframe for explanation
   }
 
-  setDispatchEventMiddleware((browserRendererId, eventHandlerId, continuation) => {
+  addDispatchEventMiddleware((browserRendererId, eventHandlerId, continuation) => {
     // It's extremely unusual, but an event can be raised while we're in the middle of synchronously applying a
     // renderbatch. For example, a renderbatch might mutate the DOM in such a way as to cause an <input> to lose
     // focus, in turn triggering a 'change' event. It may also be possible to listen to other DOM mutation events
@@ -83,6 +83,29 @@ export async function startWebAssembly(options?: Partial<WebAssemblyStartOptions
 
     Blazor._internal.navigationManager.endLocationChanging(callId, shouldContinueNavigation);
   });
+
+  // Leverage the time while we are loading boot.config.json from the network to discover any potentially registered component on
+  // the document.
+  const componentAttacher = new WebAssemblyComponentAttacher(components || []);
+  Blazor._internal.registeredComponents = {
+    getRegisteredComponentsCount: () => componentAttacher.getCount(),
+    getId: (index) => componentAttacher.getId(index),
+    getAssembly: (id) => componentAttacher.getAssembly(id),
+    getTypeName: (id) => componentAttacher.getTypeName(id),
+    getParameterDefinitions: (id) => componentAttacher.getParameterDefinitions(id) || '',
+    getParameterValues: (id) => componentAttacher.getParameterValues(id) || '',
+  };
+
+  Blazor._internal.getPersistedState = () => discoverPersistedState(document) || '';
+
+  Blazor._internal.attachRootComponentToElement = (selector, componentId, rendererId: any) => {
+    const element = componentAttacher.resolveRegisteredElement(selector);
+    if (!element) {
+      attachRootComponentToElement(selector, componentId, rendererId);
+    } else {
+      attachRootComponentToLogicalElement(rendererId, element, componentId, false);
+    }
+  };
 
   let resourceLoader: WebAssemblyResourceLoader;
   let jsInitializer: JSInitializer;

@@ -7,6 +7,7 @@ import { Module } from './Platform/Mono/MonoPlatform';
 import { shouldAutoStart } from './BootCommon';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
 import { startWebAssembly } from './Boot.WebAssembly.Common';
+import { WebAssemblyComponentDescriptor, discoverComponents } from './Services/ComponentDescriptorDiscovery';
 
 let started = false;
 
@@ -16,7 +17,8 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
   }
   started = true;
 
-  await startWebAssembly(options);
+  const webAssemblyComponents = discoverComponents(document, 'webassembly') as WebAssemblyComponentDescriptor[];
+  await startWebAssembly(options, webAssemblyComponents);
 }
 
 Blazor.start = boot;

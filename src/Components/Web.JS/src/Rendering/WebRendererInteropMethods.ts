@@ -52,9 +52,10 @@ function getInteropMethods(rendererId: number): DotNet.DotNetObject {
 // On some hosting platforms, we may need to defer the event dispatch, so they can register this middleware to do so
 type DispatchEventMiddlware = (browserRendererId: number, eventHandlerId: number, continuation: () => void) => void;
 
-// TODO: Need to not make this global state. Maybe register on a per-platform or per-renderer basis.
-// Otherwise, Server/Wasm/other will be stepping over each other when setting the dispatchEventMiddleware.
 let dispatchEventMiddleware: DispatchEventMiddlware = (browserRendererId, eventHandlerId, continuation) => continuation();
-export function setDispatchEventMiddleware(middleware: DispatchEventMiddlware): void {
-  dispatchEventMiddleware = middleware;
+export function addDispatchEventMiddleware(middleware: DispatchEventMiddlware): void {
+  const next = dispatchEventMiddleware;
+  dispatchEventMiddleware = (browserRendererId, eventHandlerId, continuation) => {
+    middleware(browserRendererId, eventHandlerId, () => next(browserRendererId, eventHandlerId, continuation));
+  };
 }

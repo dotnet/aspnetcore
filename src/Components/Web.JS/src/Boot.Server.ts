@@ -5,6 +5,7 @@ import { Blazor } from './GlobalExports';
 import { shouldAutoStart } from './BootCommon';
 import { CircuitStartOptions } from './Platform/Circuits/CircuitStartOptions';
 import { startCircuit } from './Boot.Server.Common';
+import { ServerComponentDescriptor, discoverComponents } from './Services/ComponentDescriptorDiscovery';
 
 let started = false;
 
@@ -14,7 +15,8 @@ function boot(userOptions?: Partial<CircuitStartOptions>): Promise<void> {
   }
   started = true;
 
-  return startCircuit(userOptions);
+  const serverComponents = discoverComponents(document, 'server') as ServerComponentDescriptor[];
+  return startCircuit(userOptions, serverComponents);
 }
 
 Blazor.start = boot;

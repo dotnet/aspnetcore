@@ -13,7 +13,7 @@ import { CircuitDescriptor } from './Platform/Circuits/CircuitManager';
 import { resolveOptions, CircuitStartOptions } from './Platform/Circuits/CircuitStartOptions';
 import { DefaultReconnectionHandler } from './Platform/Circuits/DefaultReconnectionHandler';
 import { attachRootComponentToLogicalElement } from './Rendering/Renderer';
-import { discoverComponents, discoverPersistedState, ServerComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
+import { discoverPersistedState, ServerComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
 import { sendJSDataStream } from './Platform/Circuits/CircuitStreamingInterop';
 import { fetchAndInvokeInitializers } from './JSInitializers/JSInitializers.Server';
 
@@ -50,7 +50,6 @@ export async function startCircuit(userOptions?: Partial<CircuitStartOptions>, c
   options.reconnectionHandler = options.reconnectionHandler || Blazor.defaultReconnectionHandler;
   logger.log(LogLevel.Information, 'Starting up Blazor server-side application.');
 
-  components ||= discoverComponents(document, 'server') as ServerComponentDescriptor[]; // TODO: Revise this.
   const appState = discoverPersistedState(document);
   circuit = new CircuitDescriptor(components || [], appState || '');
 
@@ -63,6 +62,18 @@ export async function startCircuit(userOptions?: Partial<CircuitStartOptions>, c
 
   Blazor._internal.forceCloseConnection = () => connection.stop();
   Blazor._internal.sendJSDataStream = (data: ArrayBufferView | Blob, streamId: number, chunkSize: number) => sendJSDataStream(connection, data, streamId, chunkSize);
+
+  dispatcher = DotNet.attachDispatcher({
+    beginInvokeDotNetFromJS: (callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson): void => {
+      connection.send('BeginInvokeDotNetFromJS', callId ? callId.toString() : null, assemblyName, methodIdentifier, dotNetObjectId || 0, argsJson);
+    },
+    endInvokeJSFromDotNet: (asyncHandle, succeeded, argsJson): void => {
+      connection.send('EndInvokeJSFromDotNet', asyncHandle, succeeded, argsJson);
+    },
+    sendByteArray: (id: number, data: Uint8Array): void => {
+      connection.send('ReceiveByteArray', id, data);
+    },
+  });
 
   const initialConnection = await initializeConnection(options, logger, circuit);
   const circuitStarted = await circuit.startCircuit(initialConnection);
@@ -101,18 +112,6 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
   options.configureSignalR(connectionBuilder);
 
   const newConnection = connectionBuilder.build();
-
-  dispatcher = DotNet.attachDispatcher({
-    beginInvokeDotNetFromJS: (callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson): void => {
-      newConnection.send('BeginInvokeDotNetFromJS', callId ? callId.toString() : null, assemblyName, methodIdentifier, dotNetObjectId || 0, argsJson);
-    },
-    endInvokeJSFromDotNet: (asyncHandle, succeeded, argsJson): void => {
-      newConnection.send('EndInvokeJSFromDotNet', asyncHandle, succeeded, argsJson);
-    },
-    sendByteArray: (id: number, data: Uint8Array): void => {
-      newConnection.send('ReceiveByteArray', id, data);
-    },
-  });
 
   newConnection.on('JS.AttachComponent', (componentId, selector) => attachRootComponentToLogicalElement(0, circuit.resolveElement(selector), componentId, false));
   newConnection.on('JS.BeginInvokeJS', dispatcher.beginInvokeJSFromDotNet.bind(dispatcher));
@@ -181,12 +180,6 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
   }
 
   return newConnection;
-}
-
-export async function activatePrerenderedComponents(components: ServerComponentDescriptor[]) {
-  const appState = discoverPersistedState(document);
-  circuit = new CircuitDescriptor(components || [], appState || '');
-  await connection.send('ActivatePrerenderedComponents', JSON.stringify(components.map(c => c.toRecord())));
 }
 
 function unhandledError(connection: HubConnection, err: Error, logger: Logger): void {
