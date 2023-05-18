@@ -104,8 +104,8 @@ public class SeleniumStandaloneServer : IDisposable
         var chromeDriverPathEnvVar = Environment.GetEnvironmentVariable("CHROMEWEBDRIVER");
         if (!string.IsNullOrEmpty(chromeDriverPathEnvVar))
         {
-	    // Can't use selenium-standalone --javaArg=-D... due to https://github.com/webdriverio/selenium-standalone/issues/736
-	    // Pass the option to Java using JDK_JAVA_OPTIONS instead
+            // Can't use selenium-standalone --javaArg=-D... due to https://github.com/webdriverio/selenium-standalone/issues/736
+            // Pass the option to Java using JDK_JAVA_OPTIONS instead
             chromeDriverArg = $"-Dwebdriver.chrome.driver={chromeDriverPathEnvVar}/chromedriver";
             output.WriteLine($"Using chromedriver at path {chromeDriverPathEnvVar}");
         }
@@ -117,10 +117,10 @@ public class SeleniumStandaloneServer : IDisposable
             RedirectStandardOutput = true,
             RedirectStandardError = true,
         };
-	if (!string.IsNullOrEmpty(chromeDriverArg))
-	{
-	    psi.Environment.Add("JDK_JAVA_OPTIONS", $"{chromeDriverArg}");
-	}
+        if (!string.IsNullOrEmpty(chromeDriverArg))
+        {
+            psi.Environment.Add("JDK_JAVA_OPTIONS", $"{chromeDriverArg}");
+        }
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
