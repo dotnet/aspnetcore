@@ -39,7 +39,7 @@ internal class ComponentCollectionBuilder
         for (var i = 0; i < components._components.Count; i++)
         {
             var pageToRemove = components._components[i];
-            for (var j = _components.Count - 1; j > 0; j--)
+            for (var j = _components.Count - 1; j >= 0; j--)
             {
                 var page = _components[j];
                 if (page.Equals(pageToRemove))
@@ -53,7 +53,7 @@ internal class ComponentCollectionBuilder
 
     internal void Remove(string name)
     {
-        for (var i = _components.Count - 1; i > 0; i--)
+        for (var i = _components.Count - 1; i >= 0; i--)
         {
             if (_components[i].HasSource(name))
             {

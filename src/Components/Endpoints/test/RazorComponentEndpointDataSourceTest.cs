@@ -19,34 +19,17 @@ public class RazorComponentEndpointDataSourceTest
         Assert.Equal(2, endpoints.Count);
     }
 
-    [Fact]
-    public void RegistersEndpoints_CallsCustomImplementation()
-    {
-        var endpointDataSource = CreateDataSource<CustomApp>();
-
-        Assert.Equal(0, endpointDataSource.Endpoints.Count);
-    }
-
     private RazorComponentEndpointDataSource<TComponent> CreateDataSource<TComponent>()
     {
-        return new RazorComponentEndpointDataSource<TComponent>(
+        var result = new RazorComponentEndpointDataSource<TComponent>(
             DefaultRazorComponentApplication<TComponent>.Instance.GetBuilder(),
             Array.Empty<RenderModeEndpointProvider>(),
             new ApplicationBuilder(new ServiceCollection().BuildServiceProvider()),
             new RazorComponentEndpointFactory());
-    }
-}
 
-public class CustomApp : IComponent
-{
-    public void Attach(RenderHandle renderHandle)
-    {
-        throw new NotImplementedException();
-    }
+        result.DefaultBuilder.SetRenderModes();
 
-    public Task SetParametersAsync(ParameterView parameters)
-    {
-        throw new NotImplementedException();
+        return result;
     }
 }
 

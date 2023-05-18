@@ -26,7 +26,7 @@ public class ComponentLibraryBuilder
         ArgumentNullException.ThrowIfNull(pages);
         ArgumentNullException.ThrowIfNull(components);
 
-        Name = name;
+        AssemblyName = name;
         Pages = pages;
         Components = components;
     }
@@ -34,7 +34,7 @@ public class ComponentLibraryBuilder
     /// <summary>
     /// Gets the name of the assembly.
     /// </summary>
-    public string Name { get; }
+    public string AssemblyName { get; }
 
     /// <summary>
     /// Gets the pages in the assembly.
@@ -48,6 +48,6 @@ public class ComponentLibraryBuilder
 
     private string GetDebuggerDisplay()
     {
-        return $"{Name}: Pages = {Pages.Count()} Components = {Components.Count()}";
+        return $"{AssemblyName}: Pages = {Pages.Count()} Components = {Components.Count()}";
     }
 }

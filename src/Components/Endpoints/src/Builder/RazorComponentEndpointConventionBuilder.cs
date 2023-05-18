@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Discovery;
+using Microsoft.AspNetCore.Components.Endpoints;
 
 namespace Microsoft.AspNetCore.Builder;
 
@@ -16,14 +17,14 @@ public class RazorComponentEndpointConventionBuilder : IEndpointConventionBuilde
 {
     private readonly object _lock;
     private readonly ComponentApplicationBuilder _builder;
-    private readonly List<IComponentRenderMode> _renderModes;
+    private readonly ConfiguredRenderModes _renderModes;
     private readonly List<Action<EndpointBuilder>> _conventions;
     private readonly List<Action<EndpointBuilder>> _finallyConventions;
 
     internal RazorComponentEndpointConventionBuilder(
         object @lock,
         ComponentApplicationBuilder builder,
-        List<IComponentRenderMode> renderModes,
+        ConfiguredRenderModes renderModes,
         List<Action<EndpointBuilder>> conventions,
         List<Action<EndpointBuilder>> finallyConventions)
     {
@@ -48,8 +49,10 @@ public class RazorComponentEndpointConventionBuilder : IEndpointConventionBuilde
     /// <returns>The <see cref="RazorComponentEndpointConventionBuilder"/>.</returns>
     public RazorComponentEndpointConventionBuilder SetRenderModes(params IComponentRenderMode[] renderModes)
     {
-        _renderModes.Clear();
-        _renderModes.AddRange(renderModes);
+        _renderModes.RenderModes ??= new();
+        _renderModes.RenderModes.Clear();
+        _renderModes.RenderModes.AddRange(renderModes);
+
         return this;
     }
 

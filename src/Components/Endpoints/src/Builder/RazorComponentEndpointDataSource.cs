@@ -16,7 +16,7 @@ internal class RazorComponentEndpointDataSource<TRootComponent> : EndpointDataSo
     private readonly object _lock = new();
     private readonly List<Action<EndpointBuilder>> _conventions = new();
     private readonly List<Action<EndpointBuilder>> _finallyConventions = new();
-    private readonly List<IComponentRenderMode> _renderModes = new();
+    private readonly ConfiguredRenderModes _renderModes = new();
     private readonly ComponentApplicationBuilder _builder;
     private readonly IApplicationBuilder _applicationBuilder;
     private readonly RenderModeEndpointProvider[] _renderModeEndpointProviders;
@@ -86,10 +86,13 @@ internal class RazorComponentEndpointDataSource<TRootComponent> : EndpointDataSo
     {
         var endpoints = new List<Endpoint>();
         var context = _builder.Build();
-        if (_renderModes.Count == 0)
+        if (_renderModes.RenderModes == null)
         {
-            _renderModes.AddRange(context.ResolveRenderModes());
+            _renderModes.RenderModes = new();
+            _renderModes.RenderModes.AddRange(context.ResolveRenderModes());
         }
+
+        var renderModes = _renderModes.RenderModes;
 
         foreach (var definition in context.Pages)
         {
@@ -97,9 +100,9 @@ internal class RazorComponentEndpointDataSource<TRootComponent> : EndpointDataSo
         }
 
         var found = false;
-        for (var i = 0; i < _renderModes.Count; i++)
+        for (var i = 0; i < renderModes.Count; i++)
         {
-            var renderMode = _renderModes[i];
+            var renderMode = renderModes[i];
             foreach (var provider in _renderModeEndpointProviders)
             {
                 if (provider.Supports(renderMode))
@@ -124,10 +127,14 @@ internal class RazorComponentEndpointDataSource<TRootComponent> : EndpointDataSo
 
         _endpoints = endpoints;
     }
-
     public override IChangeToken GetChangeToken()
     {
         // TODO: Handle updates if necessary (for hot reload).
         return _changeToken;
     }
+}
+
+internal class ConfiguredRenderModes
+{
+    public List<IComponentRenderMode>? RenderModes { get; set; }
 }

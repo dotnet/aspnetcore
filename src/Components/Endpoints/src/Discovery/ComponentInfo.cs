@@ -53,15 +53,18 @@ internal class ComponentInfo
     {
         if (RenderMode is ServerRenderMode { Prerender: var server })
         {
-            return $" RenderMode: {nameof(ServerRenderMode)[^"RenderMode".Length]}, Prerendered: {server}";
+            var size = (nameof(ServerRenderMode).Length - "RenderMode".Length);
+            return $" RenderMode: {nameof(ServerRenderMode)[0..size]}, Prerendered: {server}";
         }
         if (RenderMode is WebAssemblyRenderMode { Prerender: var wasm })
         {
-            return $" RenderMode: {nameof(WebAssemblyRenderMode)[^"RenderMode".Length]}, Prerendered: {wasm}";
+            var size = (nameof(WebAssemblyRenderMode).Length - "RenderMode".Length);
+            return $" RenderMode: {nameof(WebAssemblyRenderMode)[0..size]}, Prerendered: {wasm}";
         }
         if (RenderMode is AutoRenderMode { Prerender: var auto })
         {
-            return $" RenderMode: {nameof(AutoRenderMode)[^"RenderMode".Length]}, Prerendered: {auto}";
+            var size = (nameof(AutoRenderMode).Length - "RenderMode".Length);
+            return $" RenderMode: {nameof(AutoRenderMode)[0..size]}, Prerendered: {auto}";
         }
 
         return " RenderMode: Unknown, Prerendered: Unknown";

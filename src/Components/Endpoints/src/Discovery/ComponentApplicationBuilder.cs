@@ -12,8 +12,10 @@ namespace Microsoft.AspNetCore.Components.Discovery;
 public class ComponentApplicationBuilder
 {
     private readonly HashSet<string> _assemblies = new();
-    private readonly PageCollectionBuilder _pageCollectionBuilder = new();
-    private readonly ComponentCollectionBuilder _componentCollectionBuilder = new();
+
+    internal PageCollectionBuilder Pages { get; } = new PageCollectionBuilder();
+
+    internal ComponentCollectionBuilder Components { get; } = new ComponentCollectionBuilder();
 
     /// <summary>
     /// Adds a given assembly and associated pages and components to the build.
@@ -24,13 +26,13 @@ public class ComponentApplicationBuilder
     /// </exception>
     public void AddLibrary(ComponentLibraryBuilder libraryBuilder)
     {
-        if (_assemblies.Contains(libraryBuilder.Name))
+        if (_assemblies.Contains(libraryBuilder.AssemblyName))
         {
             throw new InvalidOperationException("Assembly already defined.");
         }
-        _assemblies.Add(libraryBuilder.Name);
-        _pageCollectionBuilder.AddFromLibraryInfo(libraryBuilder.Pages);
-        _componentCollectionBuilder.AddFromLibraryInfo(libraryBuilder.Components);
+        _assemblies.Add(libraryBuilder.AssemblyName);
+        Pages.AddFromLibraryInfo(libraryBuilder.Pages);
+        Components.AddFromLibraryInfo(libraryBuilder.Components);
     }
 
     /// <summary>
@@ -40,8 +42,8 @@ public class ComponentApplicationBuilder
     internal RazorComponentApplication Build()
     {
         return new RazorComponentApplication(
-            _pageCollectionBuilder.ToPageCollection(),
-            _componentCollectionBuilder.ToComponentCollection());
+            Pages.ToPageCollection(),
+            Components.ToComponentCollection());
     }
 
     /// <summary>
@@ -89,16 +91,6 @@ public class ComponentApplicationBuilder
         Pages.RemoveFromAssembly(assembly);
         Components.Remove(assembly);
     }
-
-    /// <summary>
-    /// Gets the page component collection available in this builder instance.
-    /// </summary>
-    internal PageCollectionBuilder Pages { get; } = new PageCollectionBuilder();
-
-    /// <summary>
-    /// Gets the component collection available in this builder instance.
-    /// </summary>
-    internal ComponentCollectionBuilder Components { get; } = new ComponentCollectionBuilder();
 
     /// <summary>
     /// Gets the <see cref="ComponentApplicationBuilder"/> for the given <typeparamref name="TComponent"/>.

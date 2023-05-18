@@ -40,7 +40,7 @@ internal class PageCollectionBuilder
         for (var i = 0; i < pages._pages.Count; i++)
         {
             var pageToRemove = pages._pages[i];
-            for (var j = _pages.Count - 1; j > 0; j--)
+            for (var j = _pages.Count - 1; j >= 0; j--)
             {
                 var page = _pages[j];
                 if (page.Equals(pageToRemove))
@@ -54,7 +54,7 @@ internal class PageCollectionBuilder
 
     internal void RemoveFromAssembly(string name)
     {
-        for (var i = _pages.Count - 1; i > 0; i--)
+        for (var i = _pages.Count - 1; i >= 0; i--)
         {
             if (_pages[i].HasSource(name))
             {
