@@ -85,6 +85,7 @@ public abstract class HttpContext
     {
         private readonly HttpContext _context = context;
 
+        public IFeatureCollection Features => _context.Features;
         public HttpRequest Request => _context.Request;
         public HttpResponse Response => _context.Response;
         public ConnectionInfo Connection => _context.Connection;

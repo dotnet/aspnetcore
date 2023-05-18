@@ -23,6 +23,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 using BadHttpRequestException = Microsoft.AspNetCore.Http.BadHttpRequestException;
 
+[DebuggerDisplay("Count = {System.Linq.Enumerable.Count(this)}")]
+[DebuggerTypeProxy(typeof(HttpProtocolDebugView))]
 internal abstract partial class HttpProtocol : IHttpResponseControl
 {
     private static readonly byte[] _bytesConnectionClose = Encoding.ASCII.GetBytes("\r\nConnection: close");
@@ -1706,5 +1708,13 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
             HandleNonBodyResponseWrite();
             return await Output.FlushAsync(cancellationToken);
         }
+    }
+
+    private sealed class HttpProtocolDebugView(HttpProtocol httpProtocol)
+    {
+        private readonly HttpProtocol _httpProtocol = httpProtocol;
+
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+        public string?[] Items => _httpProtocol.Select(pair => pair.Key.FullName).ToArray();
     }
 }
