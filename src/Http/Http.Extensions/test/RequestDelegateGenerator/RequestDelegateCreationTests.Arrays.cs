@@ -28,7 +28,6 @@ app.MapGet("/hello", ([FromQuery]ParsableTodo[] p) => p.Length);
 
         VerifyStaticEndpointModel(results, endpointModel =>
         {
-            Assert.Equal("/hello", endpointModel.RoutePattern);
             Assert.Equal("MapGet", endpointModel.HttpMethod);
         });
 
@@ -50,7 +49,6 @@ app.MapGet("/hello", ([FromHeader]ParsableTodo[] p) => p.Length);
 
         VerifyStaticEndpointModel(results, endpointModel =>
         {
-            Assert.Equal("/hello", endpointModel.RoutePattern);
             Assert.Equal("MapGet", endpointModel.HttpMethod);
         });
 
@@ -72,7 +70,6 @@ app.MapGet("/hello", ([FromHeader]string[] p) => p.Length);
 
         VerifyStaticEndpointModel(results, endpointModel =>
         {
-            Assert.Equal("/hello", endpointModel.RoutePattern);
             Assert.Equal("MapGet", endpointModel.HttpMethod);
         });
 
@@ -94,7 +91,6 @@ app.MapGet("/hello", ([FromHeader]string?[] p) => p.Length);
 
         VerifyStaticEndpointModel(results, endpointModel =>
         {
-            Assert.Equal("/hello", endpointModel.RoutePattern);
             Assert.Equal("MapGet", endpointModel.HttpMethod);
         });
 
@@ -168,7 +164,6 @@ app.MapGet("/hello", (HttpContext context, {{typeName}} tryParsable) => {
 
         VerifyStaticEndpointModel(results, endpointModel =>
         {
-            Assert.Equal("/hello", endpointModel.RoutePattern);
             Assert.Equal("MapGet", endpointModel.HttpMethod);
         });
 
@@ -194,7 +189,6 @@ app.MapGet("/hello", (ParsableTodo[] p) => p.Length);
 
         VerifyStaticEndpointModel(results, endpointModel =>
         {
-            Assert.Equal("/hello", endpointModel.RoutePattern);
             Assert.Equal("MapGet", endpointModel.HttpMethod);
         });
 
@@ -216,7 +210,6 @@ app.MapGet("/hello", ([FromQuery]string[] p) => p.Length);
 
         VerifyStaticEndpointModel(results, endpointModel =>
         {
-            Assert.Equal("/hello", endpointModel.RoutePattern);
             Assert.Equal("MapGet", endpointModel.HttpMethod);
         });
 
@@ -238,7 +231,6 @@ app.MapGet("/hello", (string[] p) => p.Length);
 
         VerifyStaticEndpointModel(results, endpointModel =>
         {
-            Assert.Equal("/hello", endpointModel.RoutePattern);
             Assert.Equal("MapGet", endpointModel.HttpMethod);
         });
 
@@ -260,7 +252,6 @@ app.MapGet("/hello", (string?[] p) => p.Length);
 
         VerifyStaticEndpointModel(results, endpointModel =>
         {
-            Assert.Equal("/hello", endpointModel.RoutePattern);
             Assert.Equal("MapGet", endpointModel.HttpMethod);
         });
 
@@ -281,7 +272,6 @@ app.MapGet("/hello", (string?[] p) => p.Length);
 
         VerifyStaticEndpointModel(results, endpointModel =>
         {
-            Assert.Equal("/hello", endpointModel.RoutePattern);
             Assert.Equal("MapGet", endpointModel.HttpMethod);
         });
 
@@ -303,7 +293,6 @@ app.MapGet("/hello", ([FromQuery]string?[] p) => p.Length);
 
         VerifyStaticEndpointModel(results, endpointModel =>
         {
-            Assert.Equal("/hello", endpointModel.RoutePattern);
             Assert.Equal("MapGet", endpointModel.HttpMethod);
         });
 
@@ -325,7 +314,6 @@ app.MapGet("/hello", (string?[] p) => p.Length);
 
         VerifyStaticEndpointModel(results, endpointModel =>
         {
-            Assert.Equal("/hello", endpointModel.RoutePattern);
             Assert.Equal("MapGet", endpointModel.HttpMethod);
         });
 
@@ -347,7 +335,6 @@ app.MapPost("/hello", (string[] p) => p.Length);
 
         VerifyStaticEndpointModel(results, endpointModel =>
         {
-            Assert.Equal("/hello", endpointModel.RoutePattern);
             Assert.Equal("MapPost", endpointModel.HttpMethod);
         });
 
@@ -369,7 +356,6 @@ app.MapPost("/hello", (string[] p) => p[0]);
 
         VerifyStaticEndpointModel(results, endpointModel =>
         {
-            Assert.Equal("/hello", endpointModel.RoutePattern);
             Assert.Equal("MapPost", endpointModel.HttpMethod);
         });
 
