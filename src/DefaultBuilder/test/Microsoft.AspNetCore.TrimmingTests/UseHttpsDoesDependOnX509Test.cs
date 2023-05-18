@@ -26,7 +26,7 @@ catch (InvalidOperationException)
 }
 
 if (!X509Utilities.HasCertificateType) {
-    return 1;
+    return -1;
 }
 
 return 100; // Success
