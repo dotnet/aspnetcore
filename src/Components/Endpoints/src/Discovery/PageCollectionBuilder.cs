@@ -59,86 +59,36 @@ internal class PageCollectionBuilder
 
         var list = new List<PageComponentInfo>(totalCount);
         // Reuse a buffer for computing the metadata
-        var buffer = new MetadataBuffer();
-        try
+        var metadata = new List<object>();
+        foreach (var (assembly, pages) in _pages)
         {
-            foreach (var (assembly, pages) in _pages)
+            for (var i = 0; i < pages.Count; i++)
             {
-                for (var i = 0; i < pages.Count; i++)
+                var page = pages[i];
+                ResolveMetadata(page.PageType!, metadata);
+                foreach (var route in page.RouteTemplates!)
                 {
-                    var page = pages[i];
-                    var metadata = ResolveMetadata(page.PageType!, ref buffer);
-                    foreach (var route in page.RouteTemplates!)
-                    {
-                        list.Add(new PageComponentInfo(route, page.PageType!, route, metadata));
-                    }
+                    list.Add(new PageComponentInfo(route, page.PageType!, route, metadata.ToArray()));
                 }
             }
-        }
-        finally
-        {
-            buffer.Dispose();
         }
 
         return list.ToArray();
     }
 
-    private static IReadOnlyList<object> ResolveMetadata(Type componentType, ref MetadataBuffer buffer)
+    private static void ResolveMetadata(Type componentType, List<object> result)
     {
         // We remove the route attribute since it is captured on the endpoint.
         // This is similar to how MVC behaves.
         var attributes = componentType.GetCustomAttributes(inherit: true);
-        buffer.Reset(attributes.Length);
+        result.Clear();
         foreach (var attribute in attributes)
         {
             if (attribute is RouteAttribute)
             {
                 continue;
             }
-            buffer.Add(attribute);
-        }
-
-        return buffer.ToArray();
-    }
-
-    private ref struct MetadataBuffer
-    {
-        public object[] Buffer;
-        public int Count;
-
-        public void Add(object element)
-        {
-            Buffer[Count++] = element;
-        }
-
-        public void Dispose()
-        {
-            if (Buffer != null)
-            {
-                ArrayPool<object>.Shared.Return(Buffer, clearArray: false);
-            }
-        }
-
-        internal void Reset(int length)
-        {
-            if (Buffer == null)
-            {
-                Buffer = ArrayPool<object>.Shared.Rent(length);
-            }
-            else if (length > Buffer.Length)
-            {
-                ArrayPool<object>.Shared.Return(Buffer, clearArray: false);
-                Buffer = ArrayPool<object>.Shared.Rent(length);
-            }
-
-            Count = 0;
-        }
-
-        internal readonly object[] ToArray()
-        {
-            var result = new object[Count];
-            Buffer.AsSpan(0, Count).CopyTo(result.AsSpan());
-            return result;
+            result.Add(attribute);
         }
     }
 }

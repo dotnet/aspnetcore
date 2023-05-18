@@ -121,7 +121,9 @@ internal class RazorComponentEndpointDataSource<TRootComponent> : EndpointDataSo
             if (!found)
             {
                 throw new InvalidOperationException($"Unable to find a provider for the render mode: {renderMode.GetType().FullName}. This generally" +
-                    $"means that a call to 'AddWebAssemblyComponents' or 'AddServerComponents' is missing.");
+                    $"means that a call to 'AddWebAssemblyComponents' or 'AddServerComponents' is missing. " +
+                    $"Alternatively call 'UseWebAssemblyRendering', 'UseServerRendering' or 'UseStaticRendering' " +
+                    $"to configure the desired rendering mode.");
             }
         }
 
