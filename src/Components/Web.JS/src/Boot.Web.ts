@@ -17,13 +17,13 @@ import { attachStreamingRenderingListener } from './Rendering/StreamingRendering
 import { WebAssemblyComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
 import { ServerComponentDescriptor, discoverComponents } from './Services/ComponentDescriptorDiscovery';
 
-let booted = false;
+let started = false;
 
 async function boot(options?: Partial<WebStartOptions>): Promise<void> {
-  if (booted) {
+  if (started) {
     throw new Error('Blazor has already started.');
   }
-  booted = true;
+  started = true;
   await activateInteractiveComponents(options);
 
   attachStreamingRenderingListener();

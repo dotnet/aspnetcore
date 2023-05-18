@@ -667,9 +667,9 @@ export module DotNet {
   }
 
   let nextByteArrayIndex = 0;
-  function stringifyArgs(jsCallDispatcher: CallDispatcher, args: any[] | null) {
+  function stringifyArgs(callDispatcher: CallDispatcher, args: any[] | null) {
       nextByteArrayIndex = 0;
-      currentCallDispatcher = jsCallDispatcher;
+      currentCallDispatcher = callDispatcher;
       const result = JSON.stringify(args, argReplacer);
       currentCallDispatcher = undefined;
       return result;
