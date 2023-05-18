@@ -3,13 +3,13 @@
 
 using System.Diagnostics;
 
-namespace Microsoft.AspNetCore.Components;
+namespace Microsoft.AspNetCore.Components.Discovery;
 
 /// <summary>
 /// The definition for a page, including the type and the associated routes.
 /// </summary>
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
-public class PageComponentInfo
+internal class PageComponentInfo
 {
     /// <summary>
     /// Initializes a new instance of <see cref="PageComponentInfo"/>.

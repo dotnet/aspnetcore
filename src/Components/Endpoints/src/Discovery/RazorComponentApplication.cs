@@ -4,13 +4,13 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Components.Web;
 
-namespace Microsoft.AspNetCore.Components;
+namespace Microsoft.AspNetCore.Components.Discovery;
 
 /// <summary>
 /// The definition of a component based application.
 /// </summary>
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
-public class RazorComponentApplication
+internal class RazorComponentApplication
 {
     private readonly PageComponentInfo[] _pages;
     private readonly ComponentInfo[] _components;

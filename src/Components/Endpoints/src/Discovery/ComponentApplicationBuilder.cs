@@ -1,10 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Components;
+using System.Reflection;
+using Microsoft.AspNetCore.Components.Infrastructure;
+
+namespace Microsoft.AspNetCore.Components.Discovery;
 
 /// <summary>
-/// Builder used to configure a <see cref="RazorComponentApplication"/> instance.
+/// Builder used to configure a razor component application.
 /// </summary>
 public class ComponentApplicationBuilder
 {
@@ -34,7 +37,7 @@ public class ComponentApplicationBuilder
     /// Builds the component application definition.
     /// </summary>
     /// <returns>The <see cref="RazorComponentApplication"/>.</returns>
-    public RazorComponentApplication Build()
+    internal RazorComponentApplication Build()
     {
         return new RazorComponentApplication(
             _pageCollectionBuilder.ToPageCollection(),
@@ -96,4 +99,17 @@ public class ComponentApplicationBuilder
     /// Gets the component collection available in this builder instance.
     /// </summary>
     internal ComponentCollectionBuilder Components { get; } = new ComponentCollectionBuilder();
+
+    /// <summary>
+    /// Gets the <see cref="ComponentApplicationBuilder"/> for the given <typeparamref name="TComponent"/>.
+    /// </summary>
+    /// <typeparam name="TComponent">A component inside the assembly.</typeparam>
+    /// <returns></returns>
+    public static ComponentApplicationBuilder? GetBuilder<TComponent>()
+    {
+        var assembly = typeof(TComponent).Assembly;
+        var attribute = assembly.GetCustomAttribute<RazorComponentApplicationAttribute>();
+
+        return attribute?.GetBuilder();
+    }
 }

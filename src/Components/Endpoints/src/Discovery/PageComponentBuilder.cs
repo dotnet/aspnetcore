@@ -4,7 +4,7 @@
 using System.Diagnostics;
 using System.Linq;
 
-namespace Microsoft.AspNetCore.Components;
+namespace Microsoft.AspNetCore.Components.Discovery;
 
 /// <summary>
 /// Initializes a new instance of <see cref="PageComponentBuilder"/>.
@@ -15,9 +15,9 @@ public class PageComponentBuilder : IEquatable<PageComponentBuilder?>
     private IReadOnlyList<string> _routeTemplates = Array.Empty<string>();
 
     /// <summary>
-    /// Gets or sets the source for this page component.
+    /// Gets or sets the assembly name where this component comes from.
     /// </summary>
-    public required string Source { get; set; }
+    public required string AssemblyName { get; set; }
 
     /// <summary>
     /// Gets or sets the route templates for this page component.
@@ -44,7 +44,7 @@ public class PageComponentBuilder : IEquatable<PageComponentBuilder?>
     /// <returns><c>true</c> when it has the same source; false otherwise.</returns>
     public bool HasSource(string source)
     {
-        return string.Equals(Source, source, StringComparison.Ordinal);
+        return string.Equals(AssemblyName, source, StringComparison.Ordinal);
     }
 
     /// <inheritdoc/>
@@ -57,7 +57,7 @@ public class PageComponentBuilder : IEquatable<PageComponentBuilder?>
     public bool Equals(PageComponentBuilder? other)
     {
         return other is not null &&
-               Source == other.Source &&
+               AssemblyName == other.AssemblyName &&
                RouteTemplates.SequenceEqual(other.RouteTemplates!, StringComparer.OrdinalIgnoreCase) &&
                EqualityComparer<Type>.Default.Equals(PageType, other.PageType);
     }
@@ -66,7 +66,7 @@ public class PageComponentBuilder : IEquatable<PageComponentBuilder?>
     public override int GetHashCode()
     {
         var hash = new HashCode();
-        hash.Add(Source);
+        hash.Add(AssemblyName);
         if (RouteTemplates != null)
         {
             for (var i = 0; i < RouteTemplates.Count; i++)

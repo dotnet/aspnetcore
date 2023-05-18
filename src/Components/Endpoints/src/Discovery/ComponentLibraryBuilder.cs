@@ -4,7 +4,7 @@
 using System.Diagnostics;
 using System.Linq;
 
-namespace Microsoft.AspNetCore.Components;
+namespace Microsoft.AspNetCore.Components.Discovery;
 
 /// <summary>
 /// Represents an assembly along with the components and pages included in it.

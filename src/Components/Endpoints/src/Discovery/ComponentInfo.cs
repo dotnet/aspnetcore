@@ -4,13 +4,13 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Components.Web;
 
-namespace Microsoft.AspNetCore.Components;
+namespace Microsoft.AspNetCore.Components.Discovery;
 
 /// <summary>
-/// Represents metadata about a component.
+/// Metadata captured for a component during discovery.
 /// </summary>
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
-public class ComponentInfo
+internal class ComponentInfo
 {
     private IComponentRenderMode? _renderMode;
 
@@ -53,16 +53,17 @@ public class ComponentInfo
     {
         if (RenderMode is ServerRenderMode { Prerender: var server })
         {
-            return $" RenderMode: {RenderMode.GetType().Name[^"RenderMode".Length]}, Prerendered: {server}";
+            return $" RenderMode: {nameof(ServerRenderMode)[^"RenderMode".Length]}, Prerendered: {server}";
         }
         if (RenderMode is WebAssemblyRenderMode { Prerender: var wasm })
         {
-            return $" RenderMode: {RenderMode.GetType().Name[^"RenderMode".Length]}, Prerendered: {wasm}";
+            return $" RenderMode: {nameof(WebAssemblyRenderMode)[^"RenderMode".Length]}, Prerendered: {wasm}";
         }
         if (RenderMode is AutoRenderMode { Prerender: var auto })
         {
-            return $" RenderMode: {RenderMode.GetType().Name[^"RenderMode".Length]}, Prerendered: {auto}";
+            return $" RenderMode: {nameof(AutoRenderMode)[^"RenderMode".Length]}, Prerendered: {auto}";
         }
-        return "";
+
+        return " RenderMode: Unknown, Prerendered: Unknown";
     }
 }

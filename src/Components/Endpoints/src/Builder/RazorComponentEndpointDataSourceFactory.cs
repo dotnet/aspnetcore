@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
+using Microsoft.AspNetCore.Components.Discovery;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Routing;
 
@@ -25,10 +26,6 @@ internal class RazorComponentEndpointDataSourceFactory
         var assembly = typeof(TRootComponent).Assembly;
         var rca = assembly.GetCustomAttribute<RazorComponentApplicationAttribute>();
         var builder = rca?.GetBuilder() ?? DefaultRazorComponentApplication<TRootComponent>.Instance.GetBuilder();
-        if (builder == null)
-        {
-            throw new InvalidOperationException("");
-        }
 
         return new RazorComponentEndpointDataSource<TRootComponent>(builder, _providers, endpoints.CreateApplicationBuilder(), _factory);
     }

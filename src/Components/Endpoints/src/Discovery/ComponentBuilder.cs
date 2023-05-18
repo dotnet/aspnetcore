@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Components;
+namespace Microsoft.AspNetCore.Components.Discovery;
 
 /// <summary>
 /// Represents a discovered component.
@@ -9,9 +9,9 @@ namespace Microsoft.AspNetCore.Components;
 public class ComponentBuilder : IEquatable<ComponentBuilder?>
 {
     /// <summary>
-    /// Gets or sets the source for the component.
+    /// Gets or sets the assembly name where this component comes from.
     /// </summary>
-    public required string Source { get; set; }
+    public required string AssemblyName { get; set; }
 
     /// <summary>
     /// Gets or sets the component type.
@@ -33,18 +33,18 @@ public class ComponentBuilder : IEquatable<ComponentBuilder?>
     public bool Equals(ComponentBuilder? other)
     {
         return other is not null &&
-               Source == other.Source &&
+               AssemblyName == other.AssemblyName &&
                EqualityComparer<Type>.Default.Equals(ComponentType, other.ComponentType);
     }
 
     /// <inheritdoc/>
     public override int GetHashCode()
     {
-        return HashCode.Combine(Source, ComponentType);
+        return HashCode.Combine(AssemblyName, ComponentType);
     }
 
     internal bool HasSource(string name)
     {
-        return string.Equals(Source, name, StringComparison.Ordinal);
+        return string.Equals(AssemblyName, name, StringComparison.Ordinal);
     }
 }

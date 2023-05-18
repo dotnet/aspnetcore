@@ -1,15 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Components.Discovery;
+
 namespace Microsoft.AspNetCore.Components.Infrastructure;
 
 /// <summary>
-/// The definition of a Razor Components Application.
+/// Indicates how to collect the components that are part of a razor components
+/// application.
 /// </summary>
-/// <remarks>
-/// Typically the top level component (like the App component or the MainLayout component)
-/// for the application implements this interface.
-/// </remarks> 
 [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = false)]
 public abstract class RazorComponentApplicationAttribute : Attribute, IRazorComponentApplication
 {
@@ -18,8 +17,7 @@ public abstract class RazorComponentApplicationAttribute : Attribute, IRazorComp
     /// For example, to add or remove pages, change routes, etc.
     /// </summary>
     /// <returns>
-    /// The <see cref="ComponentApplicationBuilder"/> associated with the application
-    /// definition.
+    /// The <see cref="ComponentApplicationBuilder"/> associated with the application definition.
     /// </returns>
     public abstract ComponentApplicationBuilder GetBuilder();
 }

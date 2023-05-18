@@ -3,7 +3,7 @@
 
 using System.Buffers;
 
-namespace Microsoft.AspNetCore.Components;
+namespace Microsoft.AspNetCore.Components.Discovery;
 
 /// <summary>
 /// Represents the list of pages in a <see cref="ComponentApplicationBuilder"/>.
@@ -77,20 +77,27 @@ internal class PageCollectionBuilder
 
         var list = new List<PageComponentInfo>();
         // Reuse a buffer for computing the metadata
-        using var buffer = new MetadataBuffer(256);
-        for (var i = 0; i < _pages.Count; i++)
+        var buffer = new MetadataBuffer();
+        try
         {
-            var page = _pages[i];
-            foreach (var route in page.RouteTemplates!)
+            for (var i = 0; i < _pages.Count; i++)
             {
-                list.Add(new PageComponentInfo(route, page.PageType!, route, ResolveMetadata(page.PageType!, buffer)));
+                var page = _pages[i];
+                foreach (var route in page.RouteTemplates!)
+                {
+                    list.Add(new PageComponentInfo(route, page.PageType!, route, ResolveMetadata(page.PageType!, ref buffer)));
+                }
             }
+        }
+        finally
+        {
+            buffer.Dispose();
         }
 
         return list.ToArray();
     }
 
-    private static IReadOnlyList<object> ResolveMetadata(Type componentType, MetadataBuffer buffer)
+    private static IReadOnlyList<object> ResolveMetadata(Type componentType, ref MetadataBuffer buffer)
     {
         // We remove the route attribute since it is captured on the endpoint.
         // This is similar to how MVC behaves.
@@ -113,11 +120,6 @@ internal class PageCollectionBuilder
         public object[] Buffer;
         public int Count;
 
-        public MetadataBuffer(int initialLength) : this()
-        {
-            Buffer = ArrayPool<object>.Shared.Rent(initialLength);
-        }
-
         public void Add(object element)
         {
             Buffer[Count++] = element;
@@ -133,17 +135,20 @@ internal class PageCollectionBuilder
 
         internal void Reset(int length)
         {
-            if (length > Buffer.Length)
+            if (Buffer == null)
+            {
+                Buffer = ArrayPool<object>.Shared.Rent(length);
+            }
+            else if (length > Buffer.Length)
             {
                 ArrayPool<object>.Shared.Return(Buffer, clearArray: false);
+                Buffer = ArrayPool<object>.Shared.Rent(length);
             }
-            else
-            {
-                Count = 0;
-            }
+
+            Count = 0;
         }
 
-        internal object[] ToArray()
+        internal readonly object[] ToArray()
         {
             var result = new object[Count];
             Buffer.AsSpan(0, Count).CopyTo(result.AsSpan());

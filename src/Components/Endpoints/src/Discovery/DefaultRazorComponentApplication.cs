@@ -4,7 +4,7 @@
 using System.Linq;
 using System.Reflection;
 
-namespace Microsoft.AspNetCore.Components;
+namespace Microsoft.AspNetCore.Components.Discovery;
 
 internal class DefaultRazorComponentApplication<TComponent> : IRazorComponentApplication
 {
@@ -59,13 +59,13 @@ internal class DefaultRazorComponentApplication<TComponent> : IRazorComponentApp
                         pages.Add(new PageComponentBuilder()
                         {
                             RouteTemplates = routes.Select(r => r.Template).ToList(),
-                            Source = name,
+                            AssemblyName = name,
                             PageType = candidate
                         });
                     }
 
                     var renderMode = candidate.GetCustomAttribute<RenderModeAttribute>();
-                    components.Add(new ComponentBuilder() { Source = name, ComponentType = candidate, RenderMode = renderMode });
+                    components.Add(new ComponentBuilder() { AssemblyName = name, ComponentType = candidate, RenderMode = renderMode });
                 }
             }
 
