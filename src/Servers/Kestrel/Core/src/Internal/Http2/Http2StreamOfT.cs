@@ -20,7 +20,7 @@ internal sealed class Http2Stream<TContext> : Http2Stream, IHostContextContainer
     public override void Execute()
     {
         KestrelEventSource.Log.RequestQueuedStop(this, AspNetCore.Http.HttpProtocol.Http2);
-        ServiceContext.Metrics.RequestQueuedStop(ConnectionContext, AspNetCore.Http.HttpProtocol.Http2);
+        ServiceContext.Metrics.RequestQueuedStop(MetricsContext, AspNetCore.Http.HttpProtocol.Http2);
 
         // REVIEW: Should we store this in a field for easy debugging?
         _ = ProcessRequestsAsync(_application);

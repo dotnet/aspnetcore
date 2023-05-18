@@ -154,6 +154,7 @@ internal sealed class HttpsConnectionMiddleware
         context.Features.Set<ISslStreamFeature>(feature);
         context.Features.Set<SslStream>(sslStream); // Anti-pattern, but retain for back compat
 
+        var metricsContext = context.Features.GetRequiredFeature<IConnectionMetricsContextFeature>().MetricsContext;
         var startTimestamp = Stopwatch.GetTimestamp();
         try
         {
@@ -166,13 +167,13 @@ internal sealed class HttpsConnectionMiddleware
             }
             else
             {
-                var state = (this, context, feature);
+                var state = (this, context, feature, metricsContext);
                 await sslStream.AuthenticateAsServerAsync(ServerOptionsCallback, state, cancellationTokenSource.Token);
             }
         }
         catch (OperationCanceledException ex)
         {
-            RecordHandshakeFailed(_metrics, startTimestamp, Stopwatch.GetTimestamp(), context, ex);
+            RecordHandshakeFailed(_metrics, startTimestamp, Stopwatch.GetTimestamp(), metricsContext, ex);
 
             _logger.AuthenticationTimedOut();
             await sslStream.DisposeAsync();
@@ -180,7 +181,7 @@ internal sealed class HttpsConnectionMiddleware
         }
         catch (IOException ex)
         {
-            RecordHandshakeFailed(_metrics, startTimestamp, Stopwatch.GetTimestamp(), context, ex);
+            RecordHandshakeFailed(_metrics, startTimestamp, Stopwatch.GetTimestamp(), metricsContext, ex);
 
             _logger.AuthenticationFailed(ex);
             await sslStream.DisposeAsync();
@@ -188,7 +189,7 @@ internal sealed class HttpsConnectionMiddleware
         }
         catch (AuthenticationException ex)
         {
-            RecordHandshakeFailed(_metrics, startTimestamp, Stopwatch.GetTimestamp(), context, ex);
+            RecordHandshakeFailed(_metrics, startTimestamp, Stopwatch.GetTimestamp(), metricsContext, ex);
 
             _logger.AuthenticationFailed(ex);
 
@@ -197,7 +198,7 @@ internal sealed class HttpsConnectionMiddleware
         }
 
         KestrelEventSource.Log.TlsHandshakeStop(context, feature);
-        _metrics.TlsHandshakeStop(context, startTimestamp, Stopwatch.GetTimestamp(), protocol: sslStream.SslProtocol);
+        _metrics.TlsHandshakeStop(metricsContext, startTimestamp, Stopwatch.GetTimestamp(), protocol: sslStream.SslProtocol);
 
         _logger.HttpsConnectionEstablished(context.ConnectionId, sslStream.SslProtocol);
 
@@ -222,11 +223,11 @@ internal sealed class HttpsConnectionMiddleware
             context.Transport = originalTransport;
         }
 
-        static void RecordHandshakeFailed(KestrelMetrics metrics, long startTimestamp, long currentTimestamp, ConnectionContext context, Exception ex)
+        static void RecordHandshakeFailed(KestrelMetrics metrics, long startTimestamp, long currentTimestamp, ConnectionMetricsContext metricsContext, Exception ex)
         {
-            KestrelEventSource.Log.TlsHandshakeFailed(context.ConnectionId);
-            KestrelEventSource.Log.TlsHandshakeStop(context, null);
-            metrics.TlsHandshakeStop(context, startTimestamp, currentTimestamp, exception: ex);
+            KestrelEventSource.Log.TlsHandshakeFailed(metricsContext.ConnectionContext.ConnectionId);
+            KestrelEventSource.Log.TlsHandshakeStop(metricsContext.ConnectionContext, null);
+            metrics.TlsHandshakeStop(metricsContext, startTimestamp, currentTimestamp, exception: ex);
         }
     }
 
@@ -338,7 +339,7 @@ internal sealed class HttpsConnectionMiddleware
         _options.OnAuthenticate?.Invoke(context, sslOptions);
 
         KestrelEventSource.Log.TlsHandshakeStart(context, sslOptions);
-        _metrics.TlsHandshakeStart(context);
+        _metrics.TlsHandshakeStart(context.Features.GetRequiredFeature<IConnectionMetricsContextFeature>().MetricsContext);
 
         return sslStream.AuthenticateAsServerAsync(sslOptions, cancellationToken);
     }
@@ -427,7 +428,7 @@ internal sealed class HttpsConnectionMiddleware
 
     private static async ValueTask<SslServerAuthenticationOptions> ServerOptionsCallback(SslStream sslStream, SslClientHelloInfo clientHelloInfo, object? state, CancellationToken cancellationToken)
     {
-        var (middleware, context, feature) = (ValueTuple<HttpsConnectionMiddleware, ConnectionContext, Core.Internal.TlsConnectionFeature>)state!;
+        var (middleware, context, feature, metricsContext) = (ValueTuple<HttpsConnectionMiddleware, ConnectionContext, Core.Internal.TlsConnectionFeature, ConnectionMetricsContext>)state!;
 
         feature.HostName = clientHelloInfo.ServerName;
         context.Features.Set(sslStream);
@@ -449,7 +450,7 @@ internal sealed class HttpsConnectionMiddleware
         }
 
         KestrelEventSource.Log.TlsHandshakeStart(context, sslOptions);
-        middleware._metrics.TlsHandshakeStart(context);
+        middleware._metrics.TlsHandshakeStart(metricsContext);
 
         return sslOptions;
     }
