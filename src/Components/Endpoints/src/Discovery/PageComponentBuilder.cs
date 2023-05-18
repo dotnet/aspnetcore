@@ -78,6 +78,11 @@ public class PageComponentBuilder : IEquatable<PageComponentBuilder?>
         return hash.ToHashCode();
     }
 
+    internal PageComponentInfo Build(string route, object[] pageMetadata)
+    {
+        return new PageComponentInfo(route, PageType, route, pageMetadata);
+    }
+
     private string GetDebuggerDisplay()
     {
         return $"{PageType.FullName}{string.Join(", ", RouteTemplates ?? Enumerable.Empty<string>())}";

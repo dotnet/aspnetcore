@@ -12,14 +12,14 @@ namespace Microsoft.AspNetCore.Components.Discovery;
 /// This API is meant to be consumed in a source generation context.
 /// </remarks>
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
-public class ComponentLibraryBuilder
+public class AssemblyComponentLibraryDescriptor
 {
     /// <summary>
-    /// Initializes a new instance of <see cref="ComponentLibraryBuilder"/>.</summary>
+    /// Initializes a new instance of <see cref="AssemblyComponentLibraryDescriptor"/>.</summary>
     /// <param name="name">The assembly name.</param>
     /// <param name="pages">The list of pages in the assembly.</param>
     /// <param name="components">The list of components in the assembly.</param>
-    public ComponentLibraryBuilder(string name, IReadOnlyList<PageComponentBuilder> pages, IReadOnlyList<ComponentBuilder> components)
+    public AssemblyComponentLibraryDescriptor(string name, IReadOnlyList<PageComponentBuilder> pages, IReadOnlyList<ComponentBuilder> components)
     {
         ArgumentException.ThrowIfNullOrEmpty(nameof(name));
         ArgumentNullException.ThrowIfNull(pages);

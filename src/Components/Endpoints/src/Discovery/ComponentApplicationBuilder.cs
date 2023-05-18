@@ -24,7 +24,7 @@ public class ComponentApplicationBuilder
     /// <exception cref="InvalidOperationException">When the assembly has already been added
     /// to this component application builder.
     /// </exception>
-    public void AddLibrary(ComponentLibraryBuilder libraryBuilder)
+    public void AddLibrary(AssemblyComponentLibraryDescriptor libraryBuilder)
     {
         if (_assemblies.Contains(libraryBuilder.AssemblyName))
         {

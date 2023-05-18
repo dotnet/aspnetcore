@@ -7,8 +7,13 @@ Microsoft.AspNetCore.Builder.RazorComponentEndpointConventionBuilder.Application
 Microsoft.AspNetCore.Builder.RazorComponentEndpointConventionBuilder.Finally(System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder!>! finallyConvention) -> void
 Microsoft.AspNetCore.Builder.RazorComponentEndpointConventionBuilder.SetRenderModes(params Microsoft.AspNetCore.Components.IComponentRenderMode![]! renderModes) -> Microsoft.AspNetCore.Builder.RazorComponentEndpointConventionBuilder!
 Microsoft.AspNetCore.Builder.RazorComponentsEndpointRouteBuilderExtensions
+Microsoft.AspNetCore.Components.Discovery.AssemblyComponentLibraryDescriptor
+Microsoft.AspNetCore.Components.Discovery.AssemblyComponentLibraryDescriptor.AssemblyComponentLibraryDescriptor(string! name, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder!>! pages, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.Discovery.ComponentBuilder!>! components) -> void
+Microsoft.AspNetCore.Components.Discovery.AssemblyComponentLibraryDescriptor.AssemblyName.get -> string!
+Microsoft.AspNetCore.Components.Discovery.AssemblyComponentLibraryDescriptor.Components.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.Discovery.ComponentBuilder!>!
+Microsoft.AspNetCore.Components.Discovery.AssemblyComponentLibraryDescriptor.Pages.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder!>!
 Microsoft.AspNetCore.Components.Discovery.ComponentApplicationBuilder
-Microsoft.AspNetCore.Components.Discovery.ComponentApplicationBuilder.AddLibrary(Microsoft.AspNetCore.Components.Discovery.ComponentLibraryBuilder! libraryBuilder) -> void
+Microsoft.AspNetCore.Components.Discovery.ComponentApplicationBuilder.AddLibrary(Microsoft.AspNetCore.Components.Discovery.AssemblyComponentLibraryDescriptor! libraryBuilder) -> void
 Microsoft.AspNetCore.Components.Discovery.ComponentApplicationBuilder.Combine(Microsoft.AspNetCore.Components.Discovery.ComponentApplicationBuilder! other) -> void
 Microsoft.AspNetCore.Components.Discovery.ComponentApplicationBuilder.ComponentApplicationBuilder() -> void
 Microsoft.AspNetCore.Components.Discovery.ComponentApplicationBuilder.Exclude(Microsoft.AspNetCore.Components.Discovery.ComponentApplicationBuilder! builder) -> void
@@ -23,11 +28,6 @@ Microsoft.AspNetCore.Components.Discovery.ComponentBuilder.ComponentType.set -> 
 Microsoft.AspNetCore.Components.Discovery.ComponentBuilder.Equals(Microsoft.AspNetCore.Components.Discovery.ComponentBuilder? other) -> bool
 Microsoft.AspNetCore.Components.Discovery.ComponentBuilder.RenderMode.get -> Microsoft.AspNetCore.Components.RenderModeAttribute?
 Microsoft.AspNetCore.Components.Discovery.ComponentBuilder.RenderMode.set -> void
-Microsoft.AspNetCore.Components.Discovery.ComponentLibraryBuilder
-Microsoft.AspNetCore.Components.Discovery.ComponentLibraryBuilder.AssemblyName.get -> string!
-Microsoft.AspNetCore.Components.Discovery.ComponentLibraryBuilder.ComponentLibraryBuilder(string! name, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder!>! pages, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.Discovery.ComponentBuilder!>! components) -> void
-Microsoft.AspNetCore.Components.Discovery.ComponentLibraryBuilder.Components.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.Discovery.ComponentBuilder!>!
-Microsoft.AspNetCore.Components.Discovery.ComponentLibraryBuilder.Pages.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder!>!
 Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder
 Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder.AssemblyName.get -> string!
 Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder.AssemblyName.set -> void

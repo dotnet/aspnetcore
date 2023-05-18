@@ -10,7 +10,7 @@ public class ComponentApplicationBuilderTests
     {
         // Arrange
         var builder = new ComponentApplicationBuilder();
-        builder.AddLibrary(new ComponentLibraryBuilder(
+        builder.AddLibrary(new AssemblyComponentLibraryDescriptor(
             "App1",
             CreateApp1Pages("App1"),
             CreateApp1Components("App1")));
@@ -41,12 +41,12 @@ public class ComponentApplicationBuilderTests
     {
         // Arrange
         var builder = new ComponentApplicationBuilder();
-        builder.AddLibrary(new ComponentLibraryBuilder(
+        builder.AddLibrary(new AssemblyComponentLibraryDescriptor(
             "App1",
             CreateApp1Pages("App1"),
             CreateApp1Components("App1")));
 
-        builder.AddLibrary(new ComponentLibraryBuilder(
+        builder.AddLibrary(new AssemblyComponentLibraryDescriptor(
             "App2",
             CreateApp2Pages("App2"),
             CreateApp2Components("App2")));
@@ -80,12 +80,12 @@ public class ComponentApplicationBuilderTests
     {
         // Arrange
         var builder = new ComponentApplicationBuilder();
-        builder.AddLibrary(new ComponentLibraryBuilder(
+        builder.AddLibrary(new AssemblyComponentLibraryDescriptor(
             "App1",
             CreateApp1Pages("App1"),
             CreateApp1Components("App1")));
 
-        builder.AddLibrary(new ComponentLibraryBuilder(
+        builder.AddLibrary(new AssemblyComponentLibraryDescriptor(
             "App2",
             CreateApp2Pages("App2"),
             CreateApp2Components("App2")));
@@ -115,13 +115,13 @@ public class ComponentApplicationBuilderTests
     {
         // Arrange
         var builder = new ComponentApplicationBuilder();
-        builder.AddLibrary(new ComponentLibraryBuilder(
+        builder.AddLibrary(new AssemblyComponentLibraryDescriptor(
             "App1",
             CreateApp1Pages("App1"),
             CreateApp1Components("App1")));
 
         var builder2 = new ComponentApplicationBuilder();
-        builder2.AddLibrary(new ComponentLibraryBuilder(
+        builder2.AddLibrary(new AssemblyComponentLibraryDescriptor(
             "App2",
             CreateApp2Pages("App2"),
             CreateApp2Components("App2")));
@@ -156,23 +156,23 @@ public class ComponentApplicationBuilderTests
     {
         // Arrange
         var builder = new ComponentApplicationBuilder();
-        builder.AddLibrary(new ComponentLibraryBuilder(
+        builder.AddLibrary(new AssemblyComponentLibraryDescriptor(
             "App1",
             CreateApp1Pages("App1"),
             CreateApp1Components("App1")));
 
-        builder.AddLibrary(new ComponentLibraryBuilder(
+        builder.AddLibrary(new AssemblyComponentLibraryDescriptor(
             "Shared",
             CreateSharedPages("Shared"),
             CreateSharedComponents("Shared")));
 
         var builder2 = new ComponentApplicationBuilder();
-        builder2.AddLibrary(new ComponentLibraryBuilder(
+        builder2.AddLibrary(new AssemblyComponentLibraryDescriptor(
             "App2",
             CreateApp2Pages("App2"),
             CreateApp2Components("App2")));
 
-        builder2.AddLibrary(new ComponentLibraryBuilder(
+        builder2.AddLibrary(new AssemblyComponentLibraryDescriptor(
             "Shared",
             CreateSharedPages("Shared"),
             CreateSharedComponents("Shared")));
@@ -215,28 +215,28 @@ public class ComponentApplicationBuilderTests
     {
         // Arrange
         var builder = new ComponentApplicationBuilder();
-        builder.AddLibrary(new ComponentLibraryBuilder(
+        builder.AddLibrary(new AssemblyComponentLibraryDescriptor(
             "App1",
             CreateApp1Pages("App1"),
             CreateApp1Components("App1")));
 
-        builder.AddLibrary(new ComponentLibraryBuilder(
+        builder.AddLibrary(new AssemblyComponentLibraryDescriptor(
             "App2",
             CreateApp2Pages("App2"),
             CreateApp2Components("App2")));
 
-        builder.AddLibrary(new ComponentLibraryBuilder(
+        builder.AddLibrary(new AssemblyComponentLibraryDescriptor(
             "Shared",
             CreateSharedPages("Shared"),
             CreateSharedComponents("Shared")));
 
         var builder2 = new ComponentApplicationBuilder();
-        builder2.AddLibrary(new ComponentLibraryBuilder(
+        builder2.AddLibrary(new AssemblyComponentLibraryDescriptor(
             "App2",
             CreateApp2Pages("App2"),
             CreateApp2Components("App2")));
 
-        builder2.AddLibrary(new ComponentLibraryBuilder(
+        builder2.AddLibrary(new AssemblyComponentLibraryDescriptor(
             "Shared",
             CreateSharedPages("Shared"),
             CreateSharedComponents("Shared")));

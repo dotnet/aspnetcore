@@ -39,7 +39,7 @@ internal class DefaultRazorComponentApplication<TComponent> : IRazorComponentApp
         // so that users can decide the list of things that get considered as endpoints.
         var libraryName = typeof(TComponent).Assembly.FullName!;
         var (pages, components) = CreatePageRouteCollection(libraryName);
-        builder.AddLibrary(new ComponentLibraryBuilder(libraryName, pages, components));
+        builder.AddLibrary(new AssemblyComponentLibraryDescriptor(libraryName, pages, components));
         return builder;
 
         static (IReadOnlyList<PageComponentBuilder>, IReadOnlyList<ComponentBuilder>) CreatePageRouteCollection(string name)

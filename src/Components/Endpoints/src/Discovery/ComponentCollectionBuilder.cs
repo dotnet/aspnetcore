@@ -63,17 +63,7 @@ internal class ComponentCollectionBuilder
             for (var i = 0; i < components.Count; i++, current++)
             {
                 var componentType = components[i];
-                if (componentType.RenderMode != null)
-                {
-                    result[current] = new ComponentInfo(componentType.ComponentType)
-                    {
-                        RenderMode = componentType.RenderMode.Mode,
-                    };
-                }
-                else
-                {
-                    result[current] = new ComponentInfo(componentType.ComponentType);
-                }
+                result[current] = componentType.Build();
             }
         }
 

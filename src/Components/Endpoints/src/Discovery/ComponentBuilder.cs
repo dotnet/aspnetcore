@@ -47,4 +47,19 @@ public class ComponentBuilder : IEquatable<ComponentBuilder?>
     {
         return string.Equals(AssemblyName, name, StringComparison.Ordinal);
     }
+
+    internal ComponentInfo Build()
+    {
+        if (RenderMode != null)
+        {
+            return new ComponentInfo(ComponentType)
+            {
+                RenderMode = RenderMode.Mode,
+            };
+        }
+        else
+        {
+            return new ComponentInfo(ComponentType);
+        }
+    }
 }

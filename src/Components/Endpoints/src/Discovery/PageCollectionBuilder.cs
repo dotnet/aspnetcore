@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Buffers;
-
 namespace Microsoft.AspNetCore.Components.Discovery;
 
 /// <summary>
@@ -66,9 +64,10 @@ internal class PageCollectionBuilder
             {
                 var page = pages[i];
                 ResolveMetadata(page.PageType!, metadata);
+                var pageMetadata = metadata.ToArray();
                 foreach (var route in page.RouteTemplates!)
                 {
-                    list.Add(new PageComponentInfo(route, page.PageType!, route, metadata.ToArray()));
+                    list.Add(page.Build(route, pageMetadata));
                 }
             }
         }
