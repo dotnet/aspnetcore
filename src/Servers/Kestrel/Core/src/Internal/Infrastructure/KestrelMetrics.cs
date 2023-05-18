@@ -123,6 +123,7 @@ internal sealed class KestrelMetrics
 
     public void ConnectionRejected(in ConnectionMetricsContext metricsContext)
     {
+        // Check live rather than cached state because this is just a counter, it's not a start/stop event like the other metrics.
         if (_rejectedConnectionsCounter.Enabled)
         {
             ConnectionRejectedCore(metricsContext);
@@ -297,6 +298,7 @@ internal sealed class KestrelMetrics
 
     public ConnectionMetricsContext CreateContext(BaseConnectionContext connection)
     {
+        // Cache the state at the start of the connection so we produce consistent start/stop events.
         return new ConnectionMetricsContext(connection,
             _currentConnectionsCounter.Enabled, _connectionDuration.Enabled, _queuedConnectionsCounter.Enabled,
             _queuedRequestsCounter.Enabled, _currentUpgradedRequestsCounter.Enabled, _currentTlsHandshakesCounter.Enabled);
