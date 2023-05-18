@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Http;
 /// <summary>
 /// Represents the incoming side of an individual HTTP request.
 /// </summary>
-[DebuggerDisplay("{ToString(),nq}")]
+[DebuggerDisplay("{DebuggerToString(),nq}")]
 [DebuggerTypeProxy(typeof(HttpRequestDebugView))]
 public abstract class HttpRequest
 {
@@ -152,14 +152,13 @@ public abstract class HttpRequest
     /// <returns>The collection of route values for this request.</returns>
     public virtual RouteValueDictionary RouteValues { get; set; } = null!;
 
-    /// <inheritdoc />
-    public override string ToString()
+    private string DebuggerToString()
     {
         return $"{Protocol} {Method} {Scheme}://{Host.Value}{PathBase.Value}{Path.Value}{QueryString.Value} {ContentType}"
             + $" Length: {ContentLength?.ToString(CultureInfo.InvariantCulture) ?? "(null)"}";
     }
 
-    private class HttpRequestDebugView(HttpRequest request)
+    private sealed class HttpRequestDebugView(HttpRequest request)
     {
         private readonly HttpRequest _request = request;
 

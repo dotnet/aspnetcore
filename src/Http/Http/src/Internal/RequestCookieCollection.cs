@@ -226,7 +226,7 @@ internal sealed class RequestCookieCollection : IRequestCookieCollection
         }
     }
 
-    private class RequestCookieCollectionDebugView(RequestCookieCollection collection)
+    private sealed class RequestCookieCollectionDebugView(RequestCookieCollection collection)
     {
         private readonly RequestCookieCollection _collection = collection;
 

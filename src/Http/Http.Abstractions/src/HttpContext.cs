@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Http;
 /// <summary>
 /// Encapsulates all HTTP-specific information about an individual HTTP request.
 /// </summary>
-[DebuggerDisplay("{ToString(),nq}")]
+[DebuggerDisplay("{DebuggerToString(),nq}")]
 [DebuggerTypeProxy(typeof(HttpContextDebugView))]
 public abstract class HttpContext
 {
@@ -75,14 +75,13 @@ public abstract class HttpContext
     /// </summary>
     public abstract void Abort();
 
-    /// <inheritdoc />
-    public override string ToString()
+    private string DebuggerToString()
     {
         return $"{Request.Method} {Request.Path.Value} {Request.ContentType}"
             + $" Status: {Response.StatusCode} {Response.ContentType}";
     }
 
-    private class HttpContextDebugView(HttpContext context)
+    private sealed class HttpContextDebugView(HttpContext context)
     {
         private readonly HttpContext _context = context;
 
@@ -94,6 +93,7 @@ public abstract class HttpContext
         public IDictionary<object, object?> Items => _context.Items;
         public CancellationToken RequestAborted => _context.RequestAborted;
         public string TraceIdentifier => _context.TraceIdentifier;
+        // The normal session property throws if accessed before/without the session middleware.
         public ISession? Session => _context.Features.Get<ISessionFeature>()?.Session;
     }
 }

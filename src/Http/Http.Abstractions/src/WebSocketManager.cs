@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Http;
 /// <summary>
 /// Manages the establishment of WebSocket connections for a specific HTTP request.
 /// </summary>
-[DebuggerDisplay("{ToString(),nq}")]
+[DebuggerDisplay("{DebuggerToString(),nq}")]
 [DebuggerTypeProxy(typeof(WebSocketManagerDebugView))]
 public abstract class WebSocketManager
 {
@@ -46,17 +46,16 @@ public abstract class WebSocketManager
     /// <returns></returns>
     public virtual Task<WebSocket> AcceptWebSocketAsync(WebSocketAcceptContext acceptContext) => throw new NotImplementedException();
 
-    /// <inheritdoc />
-    public override string ToString()
+    private string DebuggerToString()
     {
         return IsWebSocketRequest switch
         {
-            false => "IsWebSocket: False",
-            true => $"IsWebSocket: True, RequestedProtocols: {string.Join(", ", WebSocketRequestedProtocols)}",
+            false => "IsWebSocketRequest: false",
+            true => $"IsWebSocketRequest: true, RequestedProtocols: {string.Join(",", WebSocketRequestedProtocols)}",
         };
     }
 
-    private class WebSocketManagerDebugView(WebSocketManager manager)
+    private sealed class WebSocketManagerDebugView(WebSocketManager manager)
     {
         private readonly WebSocketManager _manager = manager;
 

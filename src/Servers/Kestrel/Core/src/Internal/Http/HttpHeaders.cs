@@ -680,7 +680,7 @@ internal abstract partial class HttpHeaders : IHeaderDictionary
         throw new InvalidOperationException(CoreStrings.InvalidEmptyHeaderName);
     }
 
-    private class HttpHeadersDebugView(HttpHeaders headers)
+    private sealed class HttpHeadersDebugView(HttpHeaders headers)
     {
         private readonly HttpHeaders _headers = headers;
 

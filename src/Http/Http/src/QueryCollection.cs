@@ -251,7 +251,7 @@ public class QueryCollection : IQueryCollection
         }
     }
 
-    private class QueryCollectionDebugView(QueryCollectionInternal collection)
+    private sealed class QueryCollectionDebugView(QueryCollectionInternal collection)
     {
         private readonly QueryCollectionInternal _collection = collection;
 

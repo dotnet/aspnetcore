@@ -438,7 +438,7 @@ public class DistributedSession : ISession
         return output;
     }
 
-    private class DistributedSessionDebugView(DistributedSession session)
+    private sealed class DistributedSessionDebugView(DistributedSession session)
     {
         private readonly DistributedSession _session = session;
 

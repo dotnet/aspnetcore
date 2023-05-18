@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Http;
 /// <summary>
 /// Represents the underlying connection for a request.
 /// </summary>
-[DebuggerDisplay("{ToString(),nq}")]
+[DebuggerDisplay("{DebuggerToString(),nq}")]
 [DebuggerTypeProxy(typeof(ConnectionInfoDebugView))]
 public abstract class ConnectionInfo
 {
@@ -60,15 +60,14 @@ public abstract class ConnectionInfo
     {
     }
 
-    /// <inheritdoc />
-    public override string ToString()
+    private string DebuggerToString()
     {
         var remoteEndpoint = RemoteIpAddress == null ? "(null)" : new IPEndPoint(RemoteIpAddress, RemotePort).ToString();
         var localEndpoint = LocalIpAddress == null ? "(null)" : new IPEndPoint(LocalIpAddress, LocalPort).ToString();
         return $"Id: {Id ?? "(null)"}, Remote: {remoteEndpoint}, Local: {localEndpoint}, ClientCertificate: {ClientCertificate?.Subject ?? "(null)"}";
     }
 
-    private class ConnectionInfoDebugView(ConnectionInfo info)
+    private sealed class ConnectionInfoDebugView(ConnectionInfo info)
     {
         private readonly ConnectionInfo _info = info;
 

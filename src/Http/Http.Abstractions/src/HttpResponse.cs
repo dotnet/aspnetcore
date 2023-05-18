@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Http;
 /// <summary>
 /// Represents the outgoing side of an individual HTTP request.
 /// </summary>
-[DebuggerDisplay("{ToString(),nq}")]
+[DebuggerDisplay("{DebuggerToString(),nq}")]
 [DebuggerTypeProxy(typeof(HttpResponseDebugView))]
 public abstract class HttpResponse
 {
@@ -154,14 +154,13 @@ public abstract class HttpResponse
     /// <returns></returns>
     public virtual Task CompleteAsync() { throw new NotImplementedException(); }
 
-    /// <inheritdoc />
-    public override string ToString()
+    private string DebuggerToString()
     {
         return $"Status: {StatusCode}, Started: {HasStarted},"
             + $" Length: {ContentLength?.ToString(CultureInfo.InvariantCulture) ?? "(null)"} {ContentType}";
     }
 
-    private class HttpResponseDebugView(HttpResponse response)
+    private sealed class HttpResponseDebugView(HttpResponse response)
     {
         private readonly HttpResponse _response = response;
 
