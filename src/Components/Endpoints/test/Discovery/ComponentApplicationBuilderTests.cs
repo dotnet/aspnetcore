@@ -398,7 +398,6 @@ public class ComponentApplicationBuilderTests
         };
     }
 
-
     class App1Test1 : ComponentBase { }
 
     class App1Test2 : ComponentBase { }
