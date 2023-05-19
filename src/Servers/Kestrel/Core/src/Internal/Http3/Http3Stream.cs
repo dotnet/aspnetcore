@@ -70,10 +70,9 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     public QPackDecoder QPackDecoder { get; private set; } = default!;
 
     public PipeReader Input => _context.Transport.Input;
-    public ISystemClock SystemClock => _context.ServiceContext.SystemClock;
     public KestrelServerLimits Limits => _context.ServiceContext.ServerOptions.Limits;
     public long StreamId => _streamIdFeature.StreamId;
-    public long StreamTimeoutTicks { get; set; }
+    public long StreamTimeoutTimestamp { get; set; }
     public bool IsReceivingHeader => _requestHeaderParsingState <= RequestHeaderParsingState.Headers; // Assigned once headers are received
     public bool IsDraining => _appCompletedTaskSource.GetStatus() != ValueTaskSourceStatus.Pending; // Draining starts once app is complete
     public bool IsRequestStream => true;
@@ -102,7 +101,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         _eagerRequestHeadersParsedLimit = ServerOptions.Limits.MaxRequestHeaderCount * 2;
         _isMethodConnect = false;
         _completionState = default;
-        StreamTimeoutTicks = 0;
+        StreamTimeoutTimestamp = 0;
 
         if (_frameWriter == null)
         {
@@ -859,7 +858,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         }
 
         _requestHeaderParsingState = RequestHeaderParsingState.Body;
-        StreamTimeoutTicks = default;
+        StreamTimeoutTimestamp = default;
         _context.StreamLifetimeHandler.OnStreamHeaderReceived(this);
 
         ThreadPool.UnsafeQueueUserWorkItem(this, preferLocal: false);

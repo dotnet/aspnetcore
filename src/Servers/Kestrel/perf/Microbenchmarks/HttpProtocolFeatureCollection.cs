@@ -233,7 +233,7 @@ public class HttpProtocolFeatureCollection
         var serviceContext = TestContextFactory.CreateServiceContext(
             serverOptions: new KestrelServerOptions(),
             httpParser: new HttpParser<Http1ParsingHandler>(),
-            dateHeaderValueManager: new DateHeaderValueManager());
+            dateHeaderValueManager: new DateHeaderValueManager(TimeProvider.System));
 
         var connectionContext = TestContextFactory.CreateHttpConnectionContext(
             serviceContext: serviceContext,

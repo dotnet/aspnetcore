@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Buffers;
 using System.Buffers.Binary;
 using System.Collections.Concurrent;
@@ -118,6 +119,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
     internal readonly DynamicHPackEncoder _hpackEncoder;
     private readonly byte[] _headerEncodingBuffer = new byte[Http2PeerSettings.MinAllowedMaxFrameSize];
 
+    private readonly MockTimeProvider _timeProvider = new();
     internal readonly TimeoutControl _timeoutControl;
     protected readonly Mock<ConnectionContext> _mockConnectionContext = new Mock<ConnectionContext>();
     internal readonly Mock<ITimeoutHandler> _mockTimeoutHandler = new Mock<ITimeoutHandler>();
@@ -162,7 +164,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         _hpackDecoder = new HPackDecoder((int)_clientSettings.HeaderTableSize, MaxRequestHeaderFieldSize);
         _hpackEncoder = new DynamicHPackEncoder();
 
-        _timeoutControl = new TimeoutControl(_mockTimeoutHandler.Object);
+        _timeoutControl = new TimeoutControl(_mockTimeoutHandler.Object, _timeProvider);
         _mockTimeoutControl = new Mock<MockTimeoutControlBase>(_timeoutControl) { CallBase = true };
         _timeoutControl.Debugger = Mock.Of<IDebugger>();
 
@@ -390,6 +392,8 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         _serviceContext = new TestServiceContext(LoggerFactory)
         {
             Scheduler = PipeScheduler.Inline,
+            MockTimeProvider = _timeProvider,
+            TimeProvider = _timeProvider,
         };
 
         TestSink.MessageLogged += context =>
@@ -473,7 +477,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         _mockTimeoutHandler.Setup(h => h.OnTimeout(It.IsAny<TimeoutReason>()))
                            .Callback<TimeoutReason>(r => httpConnection.OnTimeout(r));
 
-        _timeoutControl.Initialize(_serviceContext.SystemClock.UtcNow.Ticks);
+        _timeoutControl.Initialize();
     }
 
     private class TestConnectionMetricsContextFeature : IConnectionMetricsContextFeature
@@ -1345,25 +1349,31 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         }
     }
 
-    protected void TriggerTick(DateTimeOffset? nowOrNull = null)
+    protected void TriggerTick(TimeSpan timeSpan)
     {
-        var now = nowOrNull ?? _serviceContext.MockSystemClock.UtcNow;
-        _serviceContext.MockSystemClock.UtcNow = now;
-        _timeoutControl.Tick(now);
-        ((IRequestProcessor)_connection)?.Tick(now);
+        _serviceContext.MockTimeProvider.Advance(timeSpan);
+        TriggerTick();
     }
 
-    protected void AdvanceClock(TimeSpan timeSpan)
+    protected void TriggerTick()
     {
-        var clock = _serviceContext.MockSystemClock;
-        var endTime = clock.UtcNow + timeSpan;
+        var timestamp = _serviceContext.MockTimeProvider.GetTimestamp();
+        _timeoutControl.Tick(timestamp);
+        ((IRequestProcessor)_connection)?.Tick(timestamp);
+    }
 
-        while (clock.UtcNow + Heartbeat.Interval < endTime)
+    protected void AdvanceTime(TimeSpan timeSpan)
+    {
+        var timeProvider = _serviceContext.MockTimeProvider;
+        var endTime = timeProvider.GetTimestamp(timeSpan);
+
+        while (timeProvider.GetTimestamp(Heartbeat.Interval) < endTime)
         {
-            TriggerTick(clock.UtcNow + Heartbeat.Interval);
+            TriggerTick(Heartbeat.Interval);
         }
 
-        TriggerTick(endTime);
+        timeProvider.AdvanceTo(endTime);
+        TriggerTick();
     }
 
     private static PipeOptions GetInputPipeOptions(ServiceContext serviceContext, MemoryPool<byte> memoryPool, PipeScheduler writerScheduler) => new PipeOptions
@@ -1424,14 +1434,14 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
 
         public virtual TimeoutReason TimerReason => _realTimeoutControl.TimerReason;
 
-        public virtual void SetTimeout(long ticks, TimeoutReason timeoutReason)
+        public virtual void SetTimeout(TimeSpan timeout, TimeoutReason timeoutReason)
         {
-            _realTimeoutControl.SetTimeout(ticks, timeoutReason);
+            _realTimeoutControl.SetTimeout(timeout, timeoutReason);
         }
 
-        public virtual void ResetTimeout(long ticks, TimeoutReason timeoutReason)
+        public virtual void ResetTimeout(TimeSpan timeout, TimeoutReason timeoutReason)
         {
-            _realTimeoutControl.ResetTimeout(ticks, timeoutReason);
+            _realTimeoutControl.ResetTimeout(timeout, timeoutReason);
         }
 
         public virtual void CancelTimeout()
@@ -1484,9 +1494,9 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
             _realTimeoutControl.BytesWrittenToBuffer(minRate, size);
         }
 
-        public virtual void Tick(DateTimeOffset now)
+        public virtual void Tick(long timestamp)
         {
-            _realTimeoutControl.Tick(now);
+            _realTimeoutControl.Tick(timestamp);
         }
 
         public long GetResponseDrainDeadline(long ticks, MinDataRate minRate)

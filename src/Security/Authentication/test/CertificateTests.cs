@@ -688,7 +688,8 @@ public class ClientCertificateAuthenticationTests
     {
         const string Expected = "John Doe";
         var validationCount = 0;
-        var timeProvider = new TestTimeProvider();
+        // The test certs are generated based off UtcNow.
+        var timeProvider = new MockTimeProvider(TimeProvider.System.GetUtcNow());
 
         using var host = await CreateHost(
             new CertificateAuthenticationOptions

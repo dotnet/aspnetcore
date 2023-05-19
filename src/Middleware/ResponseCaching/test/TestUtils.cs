@@ -389,22 +389,3 @@ internal class TestResponseCache : IResponseCache
         _storage[key] = entry;
     }
 }
-
-internal class TestTimeProvider : TimeProvider
-{
-    private DateTimeOffset _current;
-
-    public TestTimeProvider() : this(DateTimeOffset.UtcNow) { }
-
-    public TestTimeProvider(DateTimeOffset current)
-    {
-        _current = current;
-    }
-
-    public override DateTimeOffset GetUtcNow() => _current;
-
-    public void Advance(TimeSpan timeSpan)
-    {
-        _current += timeSpan;
-    }
-}

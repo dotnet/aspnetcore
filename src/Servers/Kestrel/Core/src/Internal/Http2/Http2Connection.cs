@@ -44,7 +44,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
 
     private const int InitialStreamPoolSize = 5;
     private const int MaxStreamPoolSize = 100;
-    private const long StreamPoolExpiryTicks = TimeSpan.TicksPerSecond * 5;
+    private readonly TimeSpan StreamPoolExpiry = TimeSpan.FromSeconds(5);
 
     private readonly HttpConnectionContext _context;
     private readonly ConnectionMetricsContext _metricsContext;
@@ -113,7 +113,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
             _keepAlive = new Http2KeepAlive(
                 http2Limits.KeepAlivePingDelay,
                 http2Limits.KeepAlivePingTimeout,
-                context.ServiceContext.SystemClock);
+                context.ServiceContext.TimeProvider);
         }
 
         _serverSettings.MaxConcurrentStreams = (uint)http2Limits.MaxStreamsPerConnection;
@@ -147,7 +147,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
 
     public KestrelTrace Log => _context.ServiceContext.Log;
     public IFeatureCollection ConnectionFeatures => _context.ConnectionFeatures;
-    public ISystemClock SystemClock => _context.ServiceContext.SystemClock;
+    public TimeProvider TimeProvider => _context.ServiceContext.TimeProvider;
     public ITimeoutControl TimeoutControl => _context.TimeoutControl;
     public KestrelServerLimits Limits => _context.ServiceContext.ServerOptions.Limits;
 
@@ -211,7 +211,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
             ValidateTlsRequirements();
 
             TimeoutControl.InitializeHttp2(_inputFlowControl);
-            TimeoutControl.SetTimeout(Limits.KeepAliveTimeout.Ticks, TimeoutReason.KeepAlive);
+            TimeoutControl.SetTimeout(Limits.KeepAliveTimeout, TimeoutReason.KeepAlive);
 
             if (!await TryReadPrefaceAsync())
             {
@@ -242,7 +242,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
                 if (result.IsCanceled)
                 {
                     // Heartbeat will cancel ReadAsync and trigger expiring unused streams from pool.
-                    StreamPool.RemoveExpired(SystemClock.UtcNowTicks);
+                    StreamPool.RemoveExpired(TimeProvider.GetTimestamp());
                 }
 
                 try
@@ -731,7 +731,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
 
             if (!_incomingFrame.HeadersEndHeaders)
             {
-                TimeoutControl.SetTimeout(Limits.RequestHeadersTimeout.Ticks, TimeoutReason.RequestHeaders);
+                TimeoutControl.SetTimeout(Limits.RequestHeadersTimeout, TimeoutReason.RequestHeaders);
             }
 
             // Start a new stream
@@ -947,7 +947,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
         // Incoming ping resets connection keep alive timeout
         if (TimeoutControl.TimerReason == TimeoutReason.KeepAlive)
         {
-            TimeoutControl.ResetTimeout(Limits.KeepAliveTimeout.Ticks, TimeoutReason.KeepAlive);
+            TimeoutControl.ResetTimeout(Limits.KeepAliveTimeout, TimeoutReason.KeepAlive);
         }
 
         if (_incomingFrame.PingAck)
@@ -1244,7 +1244,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
         }
     }
 
-    void IRequestProcessor.Tick(DateTimeOffset now)
+    void IRequestProcessor.Tick(long timestamp)
     {
         Input.CancelPendingRead();
     }
@@ -1258,7 +1258,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
     private void UpdateCompletedStreams()
     {
         Http2Stream? firstRequedStream = null;
-        var now = SystemClock.UtcNowTicks;
+        var timestamp = TimeProvider.GetTimestamp();
 
         while (_completedStreams.TryDequeue(out var stream))
         {
@@ -1270,13 +1270,13 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
                 break;
             }
 
-            if (stream.DrainExpirationTicks == default)
+            if (stream.DrainExpirationTimestamp == default)
             {
                 _serverActiveStreamCount--;
-                stream.DrainExpirationTicks = now + Constants.RequestBodyDrainTimeout.Ticks;
+                stream.DrainExpirationTimestamp = TimeProvider.GetTimestamp(timestamp, Constants.RequestBodyDrainTimeout);
             }
 
-            if (stream.EndStreamReceived || stream.RstStreamReceived || stream.DrainExpirationTicks < now)
+            if (stream.EndStreamReceived || stream.RstStreamReceived || stream.DrainExpirationTimestamp < timestamp)
             {
                 if (stream == _currentHeadersStream)
                 {
@@ -1307,7 +1307,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
             // Pool and reuse the stream if it finished in a graceful state and there is space in the pool.
 
             // This property is used to remove unused streams from the pool
-            stream.DrainExpirationTicks = SystemClock.UtcNowTicks + StreamPoolExpiryTicks;
+            stream.DrainExpirationTimestamp = TimeProvider.GetTimestamp(StreamPoolExpiry);
 
             StreamPool.Push(stream);
         }
@@ -1325,7 +1325,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
         // If we're tracking too many streams, discard the oldest.
         while (_streams.Count >= maxStreams && _completedStreams.TryDequeue(out var stream))
         {
-            if (stream.DrainExpirationTicks == default)
+            if (stream.DrainExpirationTimestamp == default)
             {
                 _serverActiveStreamCount--;
             }
@@ -1366,7 +1366,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
             {
                 if (TimeoutControl.TimerReason == TimeoutReason.None)
                 {
-                    TimeoutControl.SetTimeout(Limits.KeepAliveTimeout.Ticks, TimeoutReason.KeepAlive);
+                    TimeoutControl.SetTimeout(Limits.KeepAliveTimeout, TimeoutReason.KeepAlive);
                 }
 
                 // If we're awaiting headers, either a new stream will be started, or there will be a connection
