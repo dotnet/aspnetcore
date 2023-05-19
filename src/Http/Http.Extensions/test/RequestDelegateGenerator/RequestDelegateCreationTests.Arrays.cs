@@ -430,7 +430,7 @@ app.MapMethods("/hello", new [] { "GET" }, (string[] p) => p[0]);
     }
 
     [Fact]
-    public async Task MapMethods_PostAndGet_WithArrayQueryString_AndBody_ShouldUseBody()
+    public async Task MapMethods_PostAndGet_WithArrayQueryString_AndBody_ShouldUseQueryString()
     {
         var (results, compilation) = await RunGeneratorAsync("""
 app.MapMethods("/hello", new [] { "POST", "GET" }, (string[] p) => p[0]);
