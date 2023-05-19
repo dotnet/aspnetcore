@@ -444,6 +444,6 @@ public class DistributedSession : ISession
 
         public bool IsAvailable => _session.IsAvailable;
         public string Id => _session.Id;
-        public IEnumerable<string> Keys => _session.Keys.ToArray();
+        public IEnumerable<string> Keys => new List<string>(_session.Keys);
     }
 }
