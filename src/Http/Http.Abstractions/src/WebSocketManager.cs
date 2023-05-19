@@ -60,6 +60,6 @@ public abstract class WebSocketManager
         private readonly WebSocketManager _manager = manager;
 
         public bool IsWebSocketRequest => _manager.IsWebSocketRequest;
-        public IList<string> WebSocketRequestedProtocols => _manager.WebSocketRequestedProtocols;
+        public IList<string> WebSocketRequestedProtocols => new List<string>(_manager.WebSocketRequestedProtocols);
     }
 }

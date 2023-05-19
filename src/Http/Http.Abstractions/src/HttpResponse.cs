@@ -3,8 +3,8 @@
 
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.IO.Pipelines;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Http;
 
@@ -154,10 +154,9 @@ public abstract class HttpResponse
     /// <returns></returns>
     public virtual Task CompleteAsync() { throw new NotImplementedException(); }
 
-    private string DebuggerToString()
+    internal string DebuggerToString()
     {
-        return $"StatusCode = {StatusCode}, HasStarted = {HasStarted},"
-            + $" Length = {ContentLength?.ToString(CultureInfo.InvariantCulture) ?? "(null)"} {ContentType}";
+        return HttpContextDebugFormatter.ResponseToString(this, reasonPhrase: null);
     }
 
     private sealed class HttpResponseDebugView(HttpResponse response)

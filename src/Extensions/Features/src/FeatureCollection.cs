@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Http.Features;
 /// <summary>
 /// Default implementation for <see cref="IFeatureCollection"/>.
 /// </summary>
-[DebuggerDisplay("Count = {_features?.Count ?? 0}")]
+[DebuggerDisplay("Count = {GetCount()}")]
 [DebuggerTypeProxy(typeof(FeatureCollectionDebugView))]
 public class FeatureCollection : IFeatureCollection
 {
@@ -140,6 +140,9 @@ public class FeatureCollection : IFeatureCollection
         this[typeof(TFeature)] = instance;
     }
 
+    // Used by the debugger. Count over enumerable is required to get the correct value.
+    private int GetCount() => this.Count();
+
     private sealed class KeyComparer : IEqualityComparer<KeyValuePair<Type, object>>
     {
         public bool Equals(KeyValuePair<Type, object> x, KeyValuePair<Type, object> y)
@@ -153,11 +156,11 @@ public class FeatureCollection : IFeatureCollection
         }
     }
 
-    private sealed class FeatureCollectionDebugView(FeatureCollection collection)
+    private sealed class FeatureCollectionDebugView(FeatureCollection features)
     {
-        private readonly FeatureCollection _collection = collection;
+        private readonly FeatureCollection _features = features;
 
         [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-        public KeyValuePair<string, object>[] Items => _collection.Select(pair => new KeyValuePair<string, object>(pair.Key.FullName ?? string.Empty, pair.Value)).ToArray();
+        public KeyValuePair<string, object>[] Items => _features.Select(pair => new KeyValuePair<string, object>(pair.Key.FullName ?? string.Empty, pair.Value)).ToArray();
     }
 }
