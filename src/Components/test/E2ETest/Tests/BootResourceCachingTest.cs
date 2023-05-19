@@ -88,8 +88,7 @@ public class BootResourceCachingTest
         WaitUntilLoaded();
         var subsequentResourcesRequested = GetAndClearRequestedPaths();
         Assert.Collection(subsequentResourcesRequested.Where(url => url.Contains(".wasm")),
-            requestedDll => Assert.Contains("/Microsoft.AspNetCore.Components.wasm", requestedDll));
-        Assert.Collection(subsequentResourcesRequested.Where(url => url.Contains(".wasm")),
+            requestedDll => Assert.Contains("/Microsoft.AspNetCore.Components.wasm", requestedDll),
             requestedDll => Assert.Contains("/dotnet.native.wasm", requestedDll));
 
         // We also update the cache (add new items, remove unnecessary items)
