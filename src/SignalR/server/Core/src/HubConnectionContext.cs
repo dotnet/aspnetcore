@@ -263,7 +263,7 @@ public partial class HubConnectionContext
             var isAck = true;
             if (isAck)
             {
-                return _messageBuffer.WriteAsync(new SerializedHubMessage(message), Protocol, cancellationToken);
+                return _messageBuffer.WriteAsync(new SerializedHubMessage(message), cancellationToken);
             }
             else
             {
@@ -293,7 +293,7 @@ public partial class HubConnectionContext
             var isAck = true;
             if (isAck)
             {
-                return _messageBuffer.WriteAsync(message, Protocol, cancellationToken);
+                return _messageBuffer.WriteAsync(message, cancellationToken);
             }
             else
             {
@@ -752,6 +752,7 @@ public partial class HubConnectionContext
 
     internal void Cleanup()
     {
+        _messageBuffer.Dispose();
         _closedRegistration.Dispose();
         _closedRequestedRegistration?.Dispose();
 
