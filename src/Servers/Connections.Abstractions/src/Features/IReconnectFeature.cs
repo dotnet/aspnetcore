@@ -9,7 +9,16 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Connections.Abstractions;
 
+/// <summary>
+/// 
+/// </summary>
 public interface IReconnectFeature
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public Action NotifyOnReconnect { get; set; }
+
+    // TODO
+    // void DisableReconnect();
 }

@@ -48,5 +48,8 @@ public static class HubProtocolConstants
     /// </summary>
     public const int AckMessageType = 8;
 
+    /// <summary>
+    /// 
+    /// </summary>
     public const int SequenceMessageType = 9;
 }

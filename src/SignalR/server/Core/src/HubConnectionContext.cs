@@ -52,7 +52,6 @@ public partial class HubConnectionContext
     private ClaimsPrincipal? _user;
 
     internal bool UseAcks;
-    private long _sequenceId;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HubConnectionContext"/> class.
@@ -259,10 +258,9 @@ public partial class HubConnectionContext
     {
         try
         {
-            // TODO
-            var isAck = true;
-            if (isAck)
+            if (UseAcks)
             {
+                Debug.Assert(_messageBuffer is not null);
                 return _messageBuffer.WriteAsync(new SerializedHubMessage(message), cancellationToken);
             }
             else
@@ -289,10 +287,9 @@ public partial class HubConnectionContext
     {
         try
         {
-            // TODO
-            var isAck = true;
-            if (isAck)
+            if (UseAcks)
             {
+                Debug.Assert(_messageBuffer is not null);
                 return _messageBuffer.WriteAsync(message, cancellationToken);
             }
             else
@@ -574,9 +571,12 @@ public partial class HubConnectionContext
 
                                 await WriteHandshakeResponseAsync(HandshakeResponseMessage.Empty);
 
-                                _messageBuffer = new MessageBuffer(_connectionContext, Protocol);
-                                var f = _connectionContext.Features.Get<IReconnectFeature>();
-                                f.NotifyOnReconnect = _messageBuffer.Resend;
+                                if (_connectionContext.Features.Get<IReconnectFeature>() is IReconnectFeature feature)
+                                {
+                                    UseAcks = true;
+                                    _messageBuffer = new MessageBuffer(_connectionContext, Protocol);
+                                    feature.NotifyOnReconnect = _messageBuffer.Resend;
+                                }
                                 return true;
                             }
                             else if (overLength)
@@ -752,7 +752,7 @@ public partial class HubConnectionContext
 
     internal void Cleanup()
     {
-        _messageBuffer.Dispose();
+        _messageBuffer?.Dispose();
         _closedRegistration.Dispose();
         _closedRequestedRegistration?.Dispose();
 
@@ -762,19 +762,19 @@ public partial class HubConnectionContext
 
     internal void Ack(AckMessage ackMessage)
     {
-        // Remove from ring buffer
+        Debug.Assert(_messageBuffer is not null);
         _messageBuffer.Ack(ackMessage);
     }
 
-    private long _currentReceivingSequenceId;
-
-    internal bool ShouldProcessMessage(HubInvocationMessage message)
+    internal bool ShouldProcessMessage(HubMessage message)
     {
+        Debug.Assert(_messageBuffer is not null);
         return _messageBuffer.ShouldProcessMessage(message);
     }
 
     internal void ResetSequence(SequenceMessage sequenceMessage)
     {
+        Debug.Assert(_messageBuffer is not null);
         _messageBuffer.ResetSequence(sequenceMessage);
     }
 }

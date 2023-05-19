@@ -74,9 +74,6 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
 
     public override async Task OnConnectedAsync(HubConnectionContext connection)
     {
-        // TODO: figure out when this should be true
-        connection.UseAcks = true;
-
         await using var scope = _serviceScopeFactory.CreateAsyncScope();
 
         var hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub>>();
@@ -135,11 +132,11 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
 
         // With parallel invokes enabled, messages run sequentially until they go async and then the next message will be allowed to start running.
 
-        if (_useAcks && hubMessage is HubInvocationMessage invocation)
+        if (connection.UseAcks)
         {
-            if (!connection.ShouldProcessMessage(invocation))
+            if (!connection.ShouldProcessMessage(hubMessage))
             {
-                _logger.LogInformation($"dropping {invocation.GetType().Name}. ID: {invocation.InvocationId}");
+                _logger.LogInformation($"dropping {((HubInvocationMessage)hubMessage).GetType().Name}. ID: {((HubInvocationMessage)hubMessage).InvocationId}");
                 return Task.CompletedTask;
             }
         }
@@ -202,12 +199,18 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
 
             case AckMessage ackMessage:
                 _logger.LogInformation("received ack with id {id}", ackMessage.SequenceId);
-                connection.Ack(ackMessage);
+                if (connection.UseAcks)
+                {
+                    connection.Ack(ackMessage);
+                }
                 break;
 
             case SequenceMessage sequenceMessage:
                 _logger.LogInformation("received sequence message with id {id}", sequenceMessage.SequenceId);
-                connection.ResetSequence(sequenceMessage);
+                if (connection.UseAcks)
+                {
+                    connection.ResetSequence(sequenceMessage);
+                }
                 break;
 
             // Other kind of message we weren't expecting

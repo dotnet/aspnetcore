@@ -951,9 +951,7 @@ public partial class HubConnection : IAsyncDisposable
 
         Log.SendingMessage(_logger, hubMessage);
 
-        // TODO
-        var isAck = true;
-        if (isAck)
+        if (connectionState.UsingAcks())
         {
             await connectionState.WriteAsync(new SerializedHubMessage(hubMessage), cancellationToken).ConfigureAwait(false);
         }
@@ -1016,11 +1014,11 @@ public partial class HubConnection : IAsyncDisposable
         Log.ResettingKeepAliveTimer(_logger);
         connectionState.ResetTimeout();
 
-        if (true && message is HubInvocationMessage hubInvocation)
+        if (connectionState.UsingAcks())
         {
-            if (!connectionState.ShouldProcessMessage(hubInvocation))
+            if (!connectionState.ShouldProcessMessage(message))
             {
-                _logger.LogInformation($"Dropped {hubInvocation.GetType().Name}. ID: {hubInvocation.InvocationId}");
+                _logger.LogInformation($"Dropped {((HubInvocationMessage)message).GetType().Name}. ID: {((HubInvocationMessage)message).InvocationId}");
                 return null;
             }
         }
@@ -1078,11 +1076,17 @@ public partial class HubConnection : IAsyncDisposable
                 break;
             case AckMessage ackMessage:
                 _logger.LogInformation("Received Ack with ID {id}", ackMessage.SequenceId);
-                connectionState.Ack(ackMessage);
+                if (connectionState.UsingAcks())
+                {
+                    connectionState.Ack(ackMessage);
+                }
                 break;
             case SequenceMessage sequenceMessage:
                 _logger.LogInformation("Received SequenceMessage with ID {id}", sequenceMessage.SequenceId);
-                connectionState.ResetSequence(sequenceMessage);
+                if (connectionState.UsingAcks())
+                {
+                    connectionState.ResetSequence(sequenceMessage);
+                }
                 break;
             default:
                 throw new InvalidOperationException($"Unexpected message type: {message.GetType().FullName}");
@@ -1843,6 +1847,7 @@ public partial class HubConnection : IAsyncDisposable
         private readonly HubConnection _hubConnection;
         private readonly ILogger _logger;
         private readonly bool _hasInherentKeepAlive;
+        private readonly MessageBuffer? _messageBuffer;
 
         private readonly object _lock = new object();
         private readonly Dictionary<string, InvocationRequest> _pendingCalls = new Dictionary<string, InvocationRequest>(StringComparer.Ordinal);
@@ -1854,8 +1859,6 @@ public partial class HubConnection : IAsyncDisposable
 
         private long _nextActivationServerTimeout;
         private long _nextActivationSendPing;
-
-        private MessageBuffer? _buffer;
 
         public ConnectionContext Connection { get; }
         public Task? ReceiveTask { get; set; }
@@ -1883,13 +1886,11 @@ public partial class HubConnection : IAsyncDisposable
             _logger = _hubConnection._logger;
             _hasInherentKeepAlive = connection.Features.Get<IConnectionInherentKeepAliveFeature>()?.HasInherentKeepAlive ?? false;
 
-            var useAck = true;
-            if (useAck)
+            if (Connection.Features.Get<IReconnectFeature>() is IReconnectFeature feature)
             {
-                _buffer = new MessageBuffer(connection, hubConnection._protocol);
+                _messageBuffer = new MessageBuffer(connection, hubConnection._protocol);
 
-                var f = Connection.Features.Get<IReconnectFeature>();
-                f.NotifyOnReconnect = _buffer.Resend;
+                feature.NotifyOnReconnect = _messageBuffer.Resend;
             }
         }
 
@@ -1976,7 +1977,7 @@ public partial class HubConnection : IAsyncDisposable
         {
             Log.Stopping(_logger);
 
-            _buffer.Dispose();
+            _messageBuffer?.Dispose();
 
             // Complete our write pipe, which should cause everything to shut down
             Log.TerminatingReceiveLoop(_logger);
@@ -2011,23 +2012,30 @@ public partial class HubConnection : IAsyncDisposable
 
         public ValueTask<FlushResult> WriteAsync(SerializedHubMessage message, CancellationToken cancellationToken)
         {
-            return _buffer.WriteAsync(message, cancellationToken);
+            Debug.Assert(_messageBuffer is not null);
+            return _messageBuffer.WriteAsync(message, cancellationToken);
         }
 
-        public bool ShouldProcessMessage(HubInvocationMessage message)
+        public bool ShouldProcessMessage(HubMessage message)
         {
-            return _buffer.ShouldProcessMessage(message);
+            Debug.Assert(_messageBuffer is not null);
+            return _messageBuffer.ShouldProcessMessage(message);
         }
 
         public void Ack(AckMessage ackMessage)
         {
-            _buffer.Ack(ackMessage);
+            Debug.Assert(_messageBuffer is not null);
+            _messageBuffer.Ack(ackMessage);
         }
 
         public void ResetSequence(SequenceMessage sequenceMessage)
         {
-            _buffer.ResetSequence(sequenceMessage);
+            Debug.Assert(_messageBuffer is not null);
+            _messageBuffer.ResetSequence(sequenceMessage);
         }
+
+        [MemberNotNullWhen(true, nameof(_messageBuffer))]
+        public bool UsingAcks() => _messageBuffer is not null;
 
         public void ResetSendPing()
         {
