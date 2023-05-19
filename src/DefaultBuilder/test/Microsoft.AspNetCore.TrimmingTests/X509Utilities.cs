@@ -12,11 +12,11 @@ using Microsoft.AspNetCore.Builder;
 public static class X509Utilities
 {
     public static bool HasCertificateType =>
-        GetType("System.Security.Cryptography", "System.Security.Cryptography.X509Certificates.X509Certificate") is not null;
+        GetType("System.Security.Cryptography", "System.Security.Cryptography.X509Certificates", "X509Certificate") is not null;
 
     [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2057:UnrecognizedReflectionPattern",
         Justification = "Returning null when the type is unreferenced is desirable")]
-    private static Type? GetType(string assemblyName, string typeName) {
-        return Type.GetType($"{typeName}, {assemblyName}");
+    private static Type? GetType(string assemblyName, string namespaceName, string typeName) {
+        return Type.GetType($"{namespaceName}.{typeName}, {assemblyName}");
     }
 }
