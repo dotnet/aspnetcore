@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.AspNetCore.Shared;
 using static Microsoft.AspNetCore.Http.HttpMethods;
 
 namespace Microsoft.AspNetCore.Routing;
@@ -10,7 +11,7 @@ namespace Microsoft.AspNetCore.Routing;
 /// <summary>
 /// Represents HTTP method metadata used during routing.
 /// </summary>
-[DebuggerDisplay("{DebuggerToString(),nq}")]
+[DebuggerDisplay("{ToString(),nq}")]
 public sealed class HttpMethodMetadata : IHttpMethodMetadata
 {
     /// <summary>
@@ -52,8 +53,9 @@ public sealed class HttpMethodMetadata : IHttpMethodMetadata
     /// </summary>
     public IReadOnlyList<string> HttpMethods { get; }
 
-    private string DebuggerToString()
+    /// <inheritdoc/>
+    public override string ToString()
     {
-        return $"HttpMethods: {string.Join(",", HttpMethods)} - Cors: {AcceptCorsPreflight}";
+        return DebuggerHelpers.GetDebugText(nameof(HttpMethods), HttpMethods, "Cors", AcceptCorsPreflight);
     }
 }
