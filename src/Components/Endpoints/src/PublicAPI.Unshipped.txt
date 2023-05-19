@@ -6,6 +6,9 @@ Microsoft.AspNetCore.Builder.RazorComponentEndpointConventionBuilder.Add(System.
 Microsoft.AspNetCore.Builder.RazorComponentEndpointConventionBuilder.ApplicationBuilder.get -> Microsoft.AspNetCore.Components.Discovery.ComponentApplicationBuilder!
 Microsoft.AspNetCore.Builder.RazorComponentEndpointConventionBuilder.Finally(System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder!>! finallyConvention) -> void
 Microsoft.AspNetCore.Builder.RazorComponentEndpointConventionBuilder.SetRenderModes(params Microsoft.AspNetCore.Components.IComponentRenderMode![]! renderModes) -> Microsoft.AspNetCore.Builder.RazorComponentEndpointConventionBuilder!
+Microsoft.AspNetCore.Builder.RazorComponentEndpointConventionBuilder.SetServerRenderMode() -> Microsoft.AspNetCore.Builder.RazorComponentEndpointConventionBuilder!
+Microsoft.AspNetCore.Builder.RazorComponentEndpointConventionBuilder.SetStaticRenderMode() -> Microsoft.AspNetCore.Builder.RazorComponentEndpointConventionBuilder!
+Microsoft.AspNetCore.Builder.RazorComponentEndpointConventionBuilder.SetWebAssemblyRenderMode() -> Microsoft.AspNetCore.Builder.RazorComponentEndpointConventionBuilder!
 Microsoft.AspNetCore.Builder.RazorComponentsEndpointRouteBuilderExtensions
 Microsoft.AspNetCore.Components.Discovery.AssemblyComponentLibraryDescriptor
 Microsoft.AspNetCore.Components.Discovery.AssemblyComponentLibraryDescriptor.AssemblyComponentLibraryDescriptor(string! name, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder!>! pages, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.Discovery.ComponentBuilder!>! components) -> void
