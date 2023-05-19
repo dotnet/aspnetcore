@@ -24,10 +24,7 @@ public static class DataProtectionProvider
     /// applications on the machine.</param>
     public static IDataProtectionProvider Create(string applicationName)
     {
-        if (string.IsNullOrEmpty(applicationName))
-        {
-            throw new ArgumentNullException(nameof(applicationName));
-        }
+        ArgumentThrowHelper.ThrowIfNullOrEmpty(applicationName);
 
         return CreateProvider(
             keyDirectory: null,
@@ -74,10 +71,7 @@ public static class DataProtectionProvider
     /// <param name="certificate">The <see cref="X509Certificate2"/> to be used for encryption.</param>
     public static IDataProtectionProvider Create(string applicationName, X509Certificate2 certificate)
     {
-        if (string.IsNullOrEmpty(applicationName))
-        {
-            throw new ArgumentNullException(nameof(applicationName));
-        }
+        ArgumentThrowHelper.ThrowIfNullOrEmpty(applicationName);
         ArgumentNullThrowHelper.ThrowIfNull(certificate);
 
         return CreateProvider(

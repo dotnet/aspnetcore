@@ -32,7 +32,7 @@ public class DefaultTransportFactoryTests
     [InlineData(HttpTransportType.ServerSentEvents | HttpTransportType.WebSockets)]
     public void DefaultTransportFactoryCannotBeCreatedWithoutHttpClient(HttpTransportType transportType)
     {
-        var exception = Assert.Throws<ArgumentNullException>(
+        var exception = Assert.Throws<ArgumentException>(
             () => new DefaultTransportFactory(transportType, new LoggerFactory(), httpClient: null, httpConnectionOptions: null, accessTokenProvider: null));
 
         Assert.Equal("httpClient", exception.ParamName);

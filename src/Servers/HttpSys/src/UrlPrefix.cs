@@ -67,10 +67,7 @@ public class UrlPrefix
             throw new ArgumentOutOfRangeException(nameof(scheme), scheme, Resources.Exception_UnsupportedScheme);
         }
 
-        if (string.IsNullOrWhiteSpace(host))
-        {
-            throw new ArgumentNullException(nameof(host));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(host);
 
         string port;
         if (!portValue.HasValue)
