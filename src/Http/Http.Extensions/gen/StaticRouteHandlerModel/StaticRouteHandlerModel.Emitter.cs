@@ -271,7 +271,7 @@ internal static class StaticRouteHandlerModelEmitter
                 explicitBodyParameter = parameter;
                 break;
             }
-            else if (parameter.Source == EndpointParameterSource.JsonBodyOrService)
+            else if (parameter.Source == EndpointParameterSource.JsonBodyOrService || parameter.Source == EndpointParameterSource.JsonBodyOrQuery)
             {
                 potentialImplicitBodyParameters.Add(parameter);
             }
@@ -311,7 +311,7 @@ internal static class StaticRouteHandlerModelEmitter
 
     public static void EmitAcceptsMetadata(this Endpoint endpoint, CodeWriter codeWriter)
     {
-        var hasJsonBody = endpoint.EmitterContext.HasJsonBody || endpoint.EmitterContext.HasJsonBodyOrService;
+        var hasJsonBody = endpoint.EmitterContext.HasJsonBody || endpoint.EmitterContext.HasJsonBodyOrService || endpoint.EmitterContext.HasJsonBodyOrQuery;
 
         if (endpoint.EmitterContext.HasFormBody)
         {

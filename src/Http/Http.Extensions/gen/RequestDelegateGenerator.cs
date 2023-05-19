@@ -247,7 +247,7 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
             .Select((endpoints, _) =>
             {
                 var hasFormBody = endpoints.Any(endpoint => endpoint.EmitterContext.HasFormBody);
-                var hasJsonBody = endpoints.Any(endpoint => endpoint.EmitterContext.HasJsonBody || endpoint.EmitterContext.HasJsonBodyOrService);
+                var hasJsonBody = endpoints.Any(endpoint => endpoint.EmitterContext.HasJsonBody || endpoint.EmitterContext.HasJsonBodyOrService || endpoint.EmitterContext.HasJsonBodyOrQuery);
                 var hasResponseMetadata = endpoints.Any(endpoint => endpoint.EmitterContext.HasResponseMetadata);
                 var requiresPropertyAsParameterInfo = endpoints.Any(endpoint => endpoint.EmitterContext.RequiresPropertyAsParameterInfo);
 
@@ -301,7 +301,6 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                 helperMethods: helperMethods ?? string.Empty,
                 helperTypes: helperTypes ?? string.Empty);
 
-            context.AddSource("GeneratedRouteBuilderExtensions.g.cs", code);
-        });
+         context.AddSource("GeneratedRouteBuilderExtensions.g.cs", code);        });
     }
 }
