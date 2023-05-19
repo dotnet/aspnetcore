@@ -26,7 +26,7 @@ public sealed class AckMessage : HubMessage
     /// <summary>
     /// 
     /// </summary>
-    public long SequenceId { get; }
+    public long SequenceId { get; set; }
 }
 
 public sealed class SequenceMessage : HubMessage
@@ -36,5 +36,5 @@ public sealed class SequenceMessage : HubMessage
         SequenceId = sequenceId;
     }
 
-    public long SequenceId { get; }
+    public long SequenceId { get; set; }
 }

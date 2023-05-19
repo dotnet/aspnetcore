@@ -201,10 +201,12 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
                 break;
 
             case AckMessage ackMessage:
+                _logger.LogInformation("received ack with id {id}", ackMessage.SequenceId);
                 connection.Ack(ackMessage);
                 break;
 
             case SequenceMessage sequenceMessage:
+                _logger.LogInformation("received sequence message with id {id}", sequenceMessage.SequenceId);
                 connection.ResetSequence(sequenceMessage);
                 break;
 

@@ -2670,7 +2670,7 @@ public class HubConnectionTests : FunctionalTestBase
 
     [Fact]
     [Repeat(500)]
-    public async Task ServerAbortsConnectionNoReconnectAttempted()
+    public async Task ServerAbortsConnectionWithAckingEnabledNoReconnectAttempted()
     {
         var protocol = HubProtocols["json"];
         await using (var server = await StartServer<Startup>())

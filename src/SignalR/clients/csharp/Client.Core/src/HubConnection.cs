@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
+using System.IO.Pipelines;
 using System.Linq;
 using System.Net;
 using System.Reflection;
@@ -80,7 +81,6 @@ public partial class HubConnection : IAsyncDisposable
     private readonly ReconnectingConnectionState _state;
 
     private bool _disposed;
-    private MessageBuffer? _buffer;
 
     /// <summary>
     /// Occurs when the connection is closed. The connection could be closed due to an error or due to either the server or client intentionally
@@ -477,9 +477,6 @@ public partial class HubConnection : IAsyncDisposable
         // Start the connection
         var connection = await _connectionFactory.ConnectAsync(_endPoint, cancellationToken).ConfigureAwait(false);
         var startingConnectionState = new ConnectionState(connection, this);
-
-        // TODO: probably go on ConnectionState
-        _buffer = new MessageBuffer(connection, _protocol);
 
         // From here on, if an error occurs we need to shut down the connection because
         // we still own it.
@@ -958,7 +955,7 @@ public partial class HubConnection : IAsyncDisposable
         var isAck = true;
         if (isAck)
         {
-            await _buffer.WriteAsync(new SerializedHubMessage(hubMessage), _protocol, cancellationToken).ConfigureAwait(false);
+            await connectionState.WriteAsync(new SerializedHubMessage(hubMessage), cancellationToken).ConfigureAwait(false);
         }
         else
         {
@@ -1021,7 +1018,7 @@ public partial class HubConnection : IAsyncDisposable
 
         if (true && message is HubInvocationMessage hubInvocation)
         {
-            if (!_buffer.ShouldProcessMessage(hubInvocation))
+            if (!connectionState.ShouldProcessMessage(hubInvocation))
             {
                 _logger.LogInformation($"Dropped {hubInvocation.GetType().Name}. ID: {hubInvocation.InvocationId}");
                 return null;
@@ -1080,10 +1077,12 @@ public partial class HubConnection : IAsyncDisposable
                 // timeout is reset above, on receiving any message
                 break;
             case AckMessage ackMessage:
-                _buffer.Ack(ackMessage);
+                _logger.LogInformation("Received Ack with ID {id}", ackMessage.SequenceId);
+                connectionState.Ack(ackMessage);
                 break;
             case SequenceMessage sequenceMessage:
-                _buffer.ResetSequence(sequenceMessage);
+                _logger.LogInformation("Received SequenceMessage with ID {id}", sequenceMessage.SequenceId);
+                connectionState.ResetSequence(sequenceMessage);
                 break;
             default:
                 throw new InvalidOperationException($"Unexpected message type: {message.GetType().FullName}");
@@ -1265,9 +1264,6 @@ public partial class HubConnection : IAsyncDisposable
                                 }
 
                                 Log.HandshakeComplete(_logger);
-
-                                var f = startingConnectionState.Connection.Features.Get<IReconnectFeature>();
-                                f.NotifyOnReconnect = _buffer.Resend;
 
                                 break;
                             }
@@ -1859,6 +1855,8 @@ public partial class HubConnection : IAsyncDisposable
         private long _nextActivationServerTimeout;
         private long _nextActivationSendPing;
 
+        private MessageBuffer? _buffer;
+
         public ConnectionContext Connection { get; }
         public Task? ReceiveTask { get; set; }
         public Exception? CloseException { get; set; }
@@ -1884,6 +1882,15 @@ public partial class HubConnection : IAsyncDisposable
 
             _logger = _hubConnection._logger;
             _hasInherentKeepAlive = connection.Features.Get<IConnectionInherentKeepAliveFeature>()?.HasInherentKeepAlive ?? false;
+
+            var useAck = true;
+            if (useAck)
+            {
+                _buffer = new MessageBuffer(connection, hubConnection._protocol);
+
+                var f = Connection.Features.Get<IReconnectFeature>();
+                f.NotifyOnReconnect = _buffer.Resend;
+            }
         }
 
         public string GetNextId() => (++_nextInvocationId).ToString(CultureInfo.InvariantCulture);
@@ -1969,6 +1976,8 @@ public partial class HubConnection : IAsyncDisposable
         {
             Log.Stopping(_logger);
 
+            _buffer.Dispose();
+
             // Complete our write pipe, which should cause everything to shut down
             Log.TerminatingReceiveLoop(_logger);
             Connection.Transport.Input.CancelPendingRead();
@@ -1998,6 +2007,26 @@ public partial class HubConnection : IAsyncDisposable
                     await RunTimerActions().ConfigureAwait(false);
                 }
             }
+        }
+
+        public ValueTask<FlushResult> WriteAsync(SerializedHubMessage message, CancellationToken cancellationToken)
+        {
+            return _buffer.WriteAsync(message, cancellationToken);
+        }
+
+        public bool ShouldProcessMessage(HubInvocationMessage message)
+        {
+            return _buffer.ShouldProcessMessage(message);
+        }
+
+        public void Ack(AckMessage ackMessage)
+        {
+            _buffer.Ack(ackMessage);
+        }
+
+        public void ResetSequence(SequenceMessage sequenceMessage)
+        {
+            _buffer.ResetSequence(sequenceMessage);
         }
 
         public void ResetSendPing()
