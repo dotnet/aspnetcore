@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace Microsoft.AspNetCore.SignalR.Protocol;
 
 /// <summary>
-/// 
+/// Represents the ID being acknowledged so we can stop buffering older messages.
 /// </summary>
 public sealed class AckMessage : HubMessage
 {
@@ -29,12 +29,22 @@ public sealed class AckMessage : HubMessage
     public long SequenceId { get; set; }
 }
 
+/// <summary>
+/// Represents the restart of the sequence of messages being sent. <see cref="SequenceId"/> is the starting ID of messages being sent, which might be duplicate messages.
+/// </summary>
 public sealed class SequenceMessage : HubMessage
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="sequenceId"></param>
     public SequenceMessage(long sequenceId)
     {
         SequenceId = sequenceId;
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public long SequenceId { get; set; }
 }

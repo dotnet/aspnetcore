@@ -4,6 +4,7 @@
 using System;
 using System.IO.Pipelines;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Internal;
@@ -18,6 +19,8 @@ internal sealed class MessageBuffer : IDisposable
     private readonly IHubProtocol _protocol;
     private readonly AckMessage _ackMessage = new(0);
     private readonly SequenceMessage _sequenceMessage = new(0);
+    private readonly Channel<int> _waitForAck = Channel.CreateBounded<int>(new BoundedChannelOptions(1) { FullMode = BoundedChannelFullMode.DropOldest });
+
 #if NET8_0_OR_GREATER
     private readonly PeriodicTimer _timer = new(TimeSpan.FromSeconds(1));
 #else
@@ -27,6 +30,7 @@ internal sealed class MessageBuffer : IDisposable
 
     private int _bufferIndex;
     private long _totalMessageCount;
+    private bool _waitForSequenceMessage;
 
     // Message IDs start at 1 and always increment by 1
     private long _currentReceivingSequenceId = 1;
@@ -67,9 +71,9 @@ internal sealed class MessageBuffer : IDisposable
                 if (_lastAckedId < _latestReceivedSequenceId)
                 {
                     // TODO: consider a minimum time between sending these?
-                    // If we only read and don't write, this approach isn't great
 
                     var sequenceId = _latestReceivedSequenceId;
+
                     _ackMessage.SequenceId = sequenceId;
 
                     await _writeLock.WaitAsync().ConfigureAwait(false);
@@ -88,18 +92,28 @@ internal sealed class MessageBuffer : IDisposable
         }
     }
 
+    // TODO: WriteAsync(HubMessage) overload, so we don't allocate SerializedHubMessage for messages that aren't going to be buffered
     public async ValueTask<FlushResult> WriteAsync(SerializedHubMessage hubMessage, CancellationToken cancellationToken)
     {
-        // No lock because this is always called in a single async loop?
-        // And other methods don't affect the checks here?
-
-        // TODO: Backpressure
-
+        // TODO: Backpressure based on message count and total message size
         if (_buffer[_bufferIndex].Message is not null)
         {
-            // ...
+            // primitive backpressure if buffer is full
+            while (await _waitForAck.Reader.WaitToReadAsync(cancellationToken).ConfigureAwait(false))
+            {
+                if (_waitForAck.Reader.TryRead(out var index)
+                    && (index == _bufferIndex || _buffer[_bufferIndex].Message is null))
+                {
+                    break;
+                }
+            }
         }
 
+        // Avoid condition where last Ack position is the position we're currently writing into the buffer
+        // If we wrote messages around the entire buffer before another Ack arrived we would end up reading the Ack position and writing over a buffered message
+        _waitForAck.Reader.TryRead(out _);
+
+        // TODO: We could consider buffering messages until they hit backpressure in the case when the connection is down
         await _resend.Task.ConfigureAwait(false);
 
         var waitForResend = false;
@@ -119,10 +133,11 @@ internal sealed class MessageBuffer : IDisposable
 
             _buffer[_bufferIndex] = (hubMessage, _totalMessageCount);
             _bufferIndex = (_bufferIndex + 1) % _buffer.Length;
+
             return await _connection.Transport.Output.WriteAsync(hubMessage.GetSerializedMessage(_protocol), cancellationToken).ConfigureAwait(false);
         }
         // TODO: figure out what exception to use
-        catch (ConnectionResetException ex)
+        catch (ConnectionResetException)
         {
             waitForResend = true;
         }
@@ -151,22 +166,48 @@ internal sealed class MessageBuffer : IDisposable
         // Grabbing _bufferIndex unsynchronized should be fine, we might miss the most recent message but the client shouldn't be able to ack that yet
         // Or in exceptional cases we could miss multiple messages, but the next ack will clear them
         var index = _bufferIndex;
+        var finalIndex = -1;
         for (var i = 0; i < _buffer.Length; i++)
         {
             var currentIndex = (index + i) % _buffer.Length;
             if (_buffer[currentIndex].Message is not null && _buffer[currentIndex].SequenceId <= ackMessage.SequenceId)
             {
                 _buffer[currentIndex] = (null, long.MinValue);
+                finalIndex = currentIndex;
             }
             // TODO: figure out an early exit?
         }
 
-        // Release backpressure?
+        // Release backpressure
+        if (finalIndex > 0)
+        {
+            _waitForAck.Writer.TryWrite(finalIndex);
+        }
     }
 
-    internal bool ShouldProcessMessage(HubInvocationMessage message)
+    internal bool ShouldProcessMessage(HubMessage message)
     {
-        // TODO: if we're expecting a sequence message but get here we should probably error
+        // TODO: if we're expecting a sequence message but get here should we error or ignore?
+        if (_waitForSequenceMessage)
+        {
+            if (message is SequenceMessage)
+            {
+                _waitForSequenceMessage = false;
+                return true;
+            }
+            else
+            {
+                // ignore messages received while waiting for sequence message
+                return false;
+            }
+        }
+
+        // Only care about messages implementing HubInvocationMessage currently (e.g. ignore ping, close, ack, sequence)
+        // Could expand in the future, but should probably rev the ack version if changes are made
+        if (message is not HubInvocationMessage)
+        {
+            return true;
+        }
 
         var currentId = _currentReceivingSequenceId;
         _currentReceivingSequenceId++;
@@ -193,10 +234,14 @@ internal sealed class MessageBuffer : IDisposable
 
     internal void Resend()
     {
+        _waitForSequenceMessage = true;
+
         var tcs = new TaskCompletionSource<FlushResult>(TaskCreationOptions.RunContinuationsAsynchronously);
         var oldTcs = Interlocked.Exchange(ref _resend, tcs);
+        // WriteAsync can also try to swap the TCS, we need to check if it's completed to know if it was swapped or not
         if (!oldTcs.Task.IsCompleted)
         {
+            // Swap back to the TCS created by WriteAsync since it's waiting on the result of that task
             Interlocked.Exchange(ref _resend, oldTcs);
             tcs = oldTcs;
         }

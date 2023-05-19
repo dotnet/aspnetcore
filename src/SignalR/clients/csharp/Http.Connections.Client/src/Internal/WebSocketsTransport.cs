@@ -655,6 +655,7 @@ internal sealed partial class WebSocketsTransport : ITransport, IReconnectFeatur
 
         prevPipe.Complete(new ConnectionResetException(""));
 
+        Debug.Assert(_notifyOnReconnect is not null);
         _notifyOnReconnect.Invoke();
     }
 }

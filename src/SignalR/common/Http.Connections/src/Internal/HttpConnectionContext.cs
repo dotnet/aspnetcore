@@ -19,11 +19,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal;
 
-internal sealed class Reconnect : IReconnectFeature
-{
-    public Action NotifyOnReconnect { get; set; }
-}
-
 internal sealed partial class HttpConnectionContext : ConnectionContext,
                                      IConnectionIdFeature,
                                      IConnectionItemsFeature,
@@ -35,7 +30,8 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
                                      IHttpTransportFeature,
                                      IConnectionInherentKeepAliveFeature,
                                      IConnectionLifetimeFeature,
-                                     IConnectionLifetimeNotificationFeature
+                                     IConnectionLifetimeNotificationFeature,
+                                     IReconnectFeature
 {
     private readonly HttpConnectionDispatcherOptions _options;
 
@@ -100,8 +96,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
 
         if (useAcks)
         {
-            var reconnectFeature = new Reconnect();
-            Features.Set<IReconnectFeature>(reconnectFeature);
+            Features.Set<IReconnectFeature>(this);
         }
 
         _connectionClosedTokenSource = new CancellationTokenSource();
@@ -206,6 +201,8 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     public override CancellationToken ConnectionClosed { get; set; }
 
     public CancellationToken ConnectionClosedRequested { get; set; }
+
+    public Action NotifyOnReconnect { get; set; } = () => { };
 
     public override void Abort()
     {
