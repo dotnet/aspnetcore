@@ -17,7 +17,7 @@ public class RazorComponentEndpointFactoryTest
         var factory = new RazorComponentEndpointFactory();
         var conventions = new List<Action<EndpointBuilder>>();
         var finallyConventions = new List<Action<EndpointBuilder>>();
-        factory.AddEndpoints(endpoints, new PageDefinition(
+        factory.AddEndpoints(endpoints, typeof(App), new PageDefinition(
             "App",
             typeof(App),
             "/",
@@ -30,6 +30,7 @@ public class RazorComponentEndpointFactoryTest
         var routeEndpoint = Assert.IsType<RouteEndpoint>(endpoint);
         Assert.Equal(0, routeEndpoint.Order);
         Assert.Equal("/", routeEndpoint.RoutePattern.RawText);
+        Assert.Contains(endpoint.Metadata, m => m is RootComponentMetadata);
         Assert.Contains(endpoint.Metadata, m => m is ComponentTypeMetadata);
         Assert.Contains(endpoint.Metadata, m => m is SuppressLinkGenerationMetadata);
         Assert.Contains(endpoint.Metadata, m => m is AuthorizeAttribute);
@@ -54,6 +55,7 @@ public class RazorComponentEndpointFactoryTest
         var finallyConventions = new List<Action<EndpointBuilder>>();
         factory.AddEndpoints(
             endpoints,
+            typeof(App),
             new PageDefinition(
                 "App",
                 typeof(App),
@@ -80,6 +82,7 @@ public class RazorComponentEndpointFactoryTest
 
         factory.AddEndpoints(
             endpoints,
+            typeof(App),
             new PageDefinition(
                 "App",
                 typeof(App),
@@ -106,6 +109,7 @@ public class RazorComponentEndpointFactoryTest
 
         factory.AddEndpoints(
             endpoints,
+            typeof(App),
             new PageDefinition(
                 "App",
                 typeof(App),
@@ -136,6 +140,7 @@ public class RazorComponentEndpointFactoryTest
 
         factory.AddEndpoints(
             endpoints,
+            typeof(App),
             new PageDefinition(
                 "App",
                 typeof(App),

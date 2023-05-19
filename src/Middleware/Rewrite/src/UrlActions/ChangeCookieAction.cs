@@ -18,13 +18,9 @@ internal sealed class ChangeCookieAction : UrlAction
     // for testing
     internal ChangeCookieAction(string name, Func<DateTimeOffset> timeSource)
     {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+
         _timeSource = timeSource;
-
-        if (string.IsNullOrEmpty(name))
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
-
         Name = name;
     }
 

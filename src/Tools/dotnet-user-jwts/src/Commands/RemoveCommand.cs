@@ -37,13 +37,12 @@ internal sealed class RemoveCommand
         }
         var jwtStore = new JwtStore(userSecretsId);
 
-        if (!jwtStore.Jwts.ContainsKey(id))
+        if (!jwtStore.Jwts.TryGetValue(id, out var jwt))
         {
             reporter.Error(Resources.FormatRemoveCommand_NoJwtFound(id));
             return 1;
         }
 
-        var jwt = jwtStore.Jwts[id];
         var appsettingsFilePath = Path.Combine(Path.GetDirectoryName(project), "appsettings.Development.json");
         JwtAuthenticationSchemeSettings.RemoveScheme(appsettingsFilePath, jwt.Scheme);
         jwtStore.Jwts.Remove(id);

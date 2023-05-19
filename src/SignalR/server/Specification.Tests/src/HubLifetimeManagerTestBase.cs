@@ -220,7 +220,7 @@ public abstract class HubLifetimeManagerTestsBase<THub> where THub : Hub
 
             await manager.SetConnectionResultAsync(connection1.ConnectionId, CompletionMessage.WithError(invocation.InvocationId, "Error from client")).DefaultTimeout();
 
-            var ex = await Assert.ThrowsAsync<Exception>(() => resultTask).DefaultTimeout();
+            var ex = await Assert.ThrowsAsync<HubException>(() => resultTask).DefaultTimeout();
             Assert.Equal("Error from client", ex.Message);
         }
     }
@@ -359,7 +359,7 @@ public abstract class HubLifetimeManagerTestsBase<THub> where THub : Hub
             var invocation1 = Assert.IsType<InvocationMessage>(await client1.ReadAsync().DefaultTimeout());
             cts.Cancel();
 
-            await Assert.ThrowsAsync<Exception>(() => invoke1).DefaultTimeout();
+            await Assert.ThrowsAsync<HubException>(() => invoke1).DefaultTimeout();
 
             // Noop, just checking that it doesn't throw. This could be caused by an inflight response from a client while the server cancels the token
             await manager1.SetConnectionResultAsync(connection1.ConnectionId, CompletionMessage.WithResult(invocation1.InvocationId, 1));

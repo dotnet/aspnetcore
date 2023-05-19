@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Quic;
 using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -25,6 +26,7 @@ public class Http3TlsTests : LoggedTest
     [MsQuicSupported]
     public async Task ServerCertificateSelector_Invoked()
     {
+        var serverCertificateSelectorActionCalled = false;
         var builder = CreateHostBuilder(async context =>
         {
             await context.Response.WriteAsync("Hello World");
@@ -37,6 +39,7 @@ public class Http3TlsTests : LoggedTest
                 {
                     httpsOptions.ServerCertificateSelector = (context, host) =>
                     {
+                        serverCertificateSelectorActionCalled = true;
                         Assert.Null(context); // The context isn't available durring the quic handshake.
                         Assert.Equal("testhost", host);
                         return TestResources.GetTestCertificate();
@@ -60,6 +63,8 @@ public class Http3TlsTests : LoggedTest
         var result = await response.Content.ReadAsStringAsync();
         Assert.Equal(HttpVersion.Version30, response.Version);
         Assert.Equal("Hello World", result);
+
+        Assert.True(serverCertificateSelectorActionCalled);
 
         await host.StopAsync().DefaultTimeout();
     }
@@ -420,6 +425,93 @@ public class Http3TlsTests : LoggedTest
 
         // This *could* work (in some cases) if `UseQuic` implied `UseKestrelHttpsConfiguration`
         Assert.Throws<InvalidOperationException>(host.Run);
+    }
+
+    [ConditionalFact]
+    [MsQuicSupported]
+    public async Task LoadDevelopmentCertificateViaConfiguration()
+    {
+        var expectedCertificate = new X509Certificate2(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword", X509KeyStorageFlags.Exportable);
+        var bytes = expectedCertificate.Export(X509ContentType.Pkcs12, "1234");
+        var path = GetCertificatePath();
+        Directory.CreateDirectory(Path.GetDirectoryName(path));
+        File.WriteAllBytes(path, bytes);
+
+        var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        {
+            new KeyValuePair<string, string>("Certificates:Development:Password", "1234"),
+        }).Build();
+
+        var ranConfigureKestrelAction = false;
+        var ranUseHttpsAction = false;
+        var hostBuilder = CreateHostBuilder(async context =>
+        {
+            await context.Response.WriteAsync("Hello World");
+        }, configureKestrel: kestrelOptions =>
+        {
+            ranConfigureKestrelAction = true;
+            kestrelOptions.Configure(config);
+
+            kestrelOptions.ListenAnyIP(0, listenOptions =>
+            {
+                listenOptions.Protocols = HttpProtocols.Http3;
+                listenOptions.UseHttps(_ =>
+                {
+                    ranUseHttpsAction = true;
+                });
+            });
+        });
+
+        Assert.False(ranConfigureKestrelAction);
+        Assert.False(ranUseHttpsAction);
+
+        using var host = hostBuilder.Build();
+        await host.StartAsync().DefaultTimeout();
+
+        Assert.True(ranConfigureKestrelAction);
+        Assert.True(ranUseHttpsAction);
+
+        var request = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
+        request.Version = HttpVersion.Version30;
+        request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+        request.Headers.Host = "testhost";
+
+        var ranCertificateValidation = false;
+        var httpHandler = new SocketsHttpHandler();
+        httpHandler.SslOptions = new SslClientAuthenticationOptions
+        {
+            RemoteCertificateValidationCallback = (object _sender, X509Certificate actualCertificate, X509Chain _chain, SslPolicyErrors _sslPolicyErrors) =>
+            {
+                ranCertificateValidation = true;
+                Assert.Equal(expectedCertificate.GetSerialNumberString(), actualCertificate.GetSerialNumberString());
+                return true;
+            },
+            TargetHost = "targethost",
+        };
+        using var client = new HttpMessageInvoker(httpHandler);
+
+        var response = await client.SendAsync(request, CancellationToken.None).DefaultTimeout();
+        response.EnsureSuccessStatusCode();
+        var result = await response.Content.ReadAsStringAsync();
+        Assert.Equal(HttpVersion.Version30, response.Version);
+        Assert.Equal("Hello World", result);
+
+        Assert.True(ranCertificateValidation);
+
+        await host.StopAsync().DefaultTimeout();
+    }
+
+    ///<remarks>
+    /// This is something of a hack - we should actually be calling
+    /// <see cref="Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader.TryGetCertificatePath"/>.
+    /// </remarks>
+    private static string GetCertificatePath()
+    {
+        var appData = Environment.GetEnvironmentVariable("APPDATA");
+        var home = Environment.GetEnvironmentVariable("HOME");
+        var basePath = appData != null ? Path.Combine(appData, "ASP.NET", "https") : null;
+        basePath = basePath ?? (home != null ? Path.Combine(home, ".aspnet", "https") : null);
+        return Path.Combine(basePath, $"{typeof(Http3TlsTests).Assembly.GetName().Name}.pfx");
     }
 
     private IHostBuilder CreateHostBuilder(RequestDelegate requestDelegate, HttpProtocols? protocol = null, Action<KestrelServerOptions> configureKestrel = null)

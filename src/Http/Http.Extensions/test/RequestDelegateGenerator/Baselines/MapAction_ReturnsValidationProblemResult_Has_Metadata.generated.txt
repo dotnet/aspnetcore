@@ -11,7 +11,7 @@
 namespace Microsoft.AspNetCore.Builder
 {
     %GENERATEDCODEATTRIBUTE%
-    internal class SourceKey
+    internal sealed class SourceKey
     {
         public string Path { get; init; }
         public int Line { get; init; }
@@ -94,13 +94,16 @@ namespace Microsoft.AspNetCore.Http.Generated
             [(@"TestMapActions.cs", 25)] = (
                 (methodInfo, options) =>
                 {
-                    Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
+                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
+                    Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                     options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 25));
                     PopulateMetadataForEndpoint<global::Microsoft.AspNetCore.Http.HttpResults.ValidationProblem>(methodInfo, options.EndpointBuilder);
                     return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
                 {
+                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
+                    Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                     var handler = (System.Func<global::Microsoft.AspNetCore.Http.HttpResults.ValidationProblem>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
 
@@ -127,7 +130,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                             return Task.CompletedTask;
                         }
                         var result = handler();
-                        return result.ExecuteAsync(httpContext);
+                        return GeneratedRouteBuilderExtensionsCore.ExecuteAsyncExplicit(result, httpContext);
                     }
 
                     async Task RequestHandlerFiltered(HttpContext httpContext)
@@ -152,7 +155,7 @@ namespace Microsoft.AspNetCore.Http.Generated
             this IEndpointRouteBuilder routes,
             string pattern,
             Delegate handler,
-            IEnumerable<string> httpMethods,
+            IEnumerable<string>? httpMethods,
             string filePath,
             int lineNumber)
         {
@@ -196,6 +199,8 @@ namespace Microsoft.AspNetCore.Http.Generated
             }
         }
 
+        private static Task ExecuteAsyncExplicit(IResult result, HttpContext httpContext)
+            => result.ExecuteAsync(httpContext);
         private static void PopulateMetadataForEndpoint<T>(MethodInfo method, EndpointBuilder builder)
             where T : IEndpointMetadataProvider
         {
@@ -205,7 +210,7 @@ namespace Microsoft.AspNetCore.Http.Generated
     }
 
 
-    file class LogOrThrowExceptionHelper
+    file sealed class LogOrThrowExceptionHelper
     {
         private readonly ILogger? _rdgLogger;
         private readonly bool _shouldThrow;

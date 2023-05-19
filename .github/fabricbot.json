@@ -1550,30 +1550,6 @@
     },
     {
       "taskType": "trigger",
-      "capabilityId": "AutoMerge",
-      "subCapability": "AutoMerge",
-      "version": "1.0",
-      "config": {
-        "taskName": "Auto Merge PRs",
-        "label": "auto-merge",
-        "minMinutesOpen": "60",
-        "mergeType": "squash",
-        "removeLabelOnPush": true,
-        "conditionalMergeTypes": [
-          {
-            "mergeType": "merge",
-            "condition": {
-              "placeholder": "labels",
-              "operator": "contains",
-              "label_name": "Type: Merge Forward :fast_forward:"
-            }
-          }
-        ],
-        "deleteBranches": true
-      }
-    },
-    {
-      "taskType": "trigger",
       "capabilityId": "IssueResponder",
       "subCapability": "PullRequestResponder",
       "version": "1.0",
@@ -2010,58 +1986,6 @@
             "name": "addReply",
             "parameters": {
               "comment": "Hi @${contextualAuthor}. It looks like you just commented on a closed PR. The team will most probably miss it. If you'd like to bring something important up to their attention, consider filing a new issue and add enough details to build context."
-            }
-          }
-        ]
-      }
-    },
-    {
-      "taskType": "trigger",
-      "capabilityId": "IssueResponder",
-      "subCapability": "PullRequestResponder",
-      "version": "1.0",
-      "config": {
-        "conditions": {
-          "operator": "and",
-          "operands": [
-            {
-              "name": "isAction",
-              "parameters": {
-                "action": "opened"
-              }
-            },
-            {
-              "name": "isActivitySender",
-              "parameters": {
-                "user": "dotnet-maestro-bot"
-              }
-            },
-            {
-              "name": "titleContains",
-              "parameters": {
-                "titlePattern": "Merge branch"
-              }
-            },
-            {
-              "name": "prTargetsBranch",
-              "parameters": {
-                "branchName": "main"
-              }
-            }
-          ]
-        },
-        "eventType": "pull_request",
-        "eventNames": [
-          "pull_request",
-          "issues",
-          "project_card"
-        ],
-        "taskName": "[Infrastructure PRs] Add auto-merge label to branch merge Pull Requests in main",
-        "actions": [
-          {
-            "name": "addLabel",
-            "parameters": {
-              "label": "auto-merge"
             }
           }
         ]

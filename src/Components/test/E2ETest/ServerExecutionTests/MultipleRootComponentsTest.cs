@@ -76,19 +76,26 @@ public class MultipleComponentsTest : ServerTestBase<BasicTestAppServerSiteFixtu
         var expectedComponentSequence = new bool[]
         {
                 // true means it was a prerendered component.
-                true,
-                false,
-                false,
-                false,
-                true,
-                false,
-                true,
-                false,
-                true,
-                false,
-                true,
-                false,
-                true,
+
+                // Layout
+                false, // Server
+                true, // ServerPrerendered
+
+                // Body
+                true, // ServerPrerendered
+                false, // Server
+                false, // Server
+
+                false, // Server
+                true, // ServerPrerendered
+                false, // Server
+                true, // ServerPrerendered
+                false, // Server
+                true, // ServerPrerendered
+
+                // Layout
+                false, // Server
+                true, // ServerPrerendered
         };
         Assert.Equal(expectedComponentSequence, componentSequence);
 

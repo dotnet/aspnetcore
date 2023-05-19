@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO.Pipelines;
 
 namespace Microsoft.AspNetCore.Http;
@@ -9,6 +11,8 @@ namespace Microsoft.AspNetCore.Http;
 /// <summary>
 /// Represents the outgoing side of an individual HTTP request.
 /// </summary>
+[DebuggerDisplay("{DebuggerToString(),nq}")]
+[DebuggerTypeProxy(typeof(HttpResponseDebugView))]
 public abstract class HttpResponse
 {
     private static readonly Func<object, Task> _callbackDelegate = callback => ((Func<Task>)callback)();
@@ -149,4 +153,21 @@ public abstract class HttpResponse
     /// </summary>
     /// <returns></returns>
     public virtual Task CompleteAsync() { throw new NotImplementedException(); }
+
+    private string DebuggerToString()
+    {
+        return $"StatusCode = {StatusCode}, HasStarted = {HasStarted},"
+            + $" Length = {ContentLength?.ToString(CultureInfo.InvariantCulture) ?? "(null)"} {ContentType}";
+    }
+
+    private sealed class HttpResponseDebugView(HttpResponse response)
+    {
+        private readonly HttpResponse _response = response;
+
+        public int StatusCode => _response.StatusCode;
+        public IHeaderDictionary Headers => _response.Headers;
+        public long? ContentLength => _response.ContentLength;
+        public string? ContentType => _response.ContentType;
+        public bool HasStarted => _response.HasStarted;
+    }
 }

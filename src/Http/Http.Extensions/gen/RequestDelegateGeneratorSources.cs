@@ -20,13 +20,18 @@ internal static class RequestDelegateGeneratorSources
 
     public static string GeneratedCodeAttribute => $@"[System.CodeDom.Compiler.GeneratedCodeAttribute(""{typeof(RequestDelegateGeneratorSources).Assembly.FullName}"", ""{typeof(RequestDelegateGeneratorSources).Assembly.GetName().Version}"")]";
 
-    public static string ContentMetadataTypes => """
+    public static string ContentTypeConstantsType => """
     file static class GeneratedMetadataConstants
     {
         public static readonly string[] JsonContentType = new [] { "application/json" };
         public static readonly string[] PlaintextContentType = new [] { "text/plain" };
+        public static readonly string[] FormFileContentType = new[] { "multipart/form-data" };
+        public static readonly string[] FormContentType = new[] { "multipart/form-data", "application/x-www-form-urlencoded" };
     }
 
+""";
+
+    public static string ProducesResponseTypeMetadataType => """
     file sealed class GeneratedProducesResponseTypeMetadata : IProducesResponseTypeMetadata
     {
         public GeneratedProducesResponseTypeMetadata(Type? type, int statusCode, string[] contentTypes)
@@ -41,6 +46,35 @@ internal static class RequestDelegateGeneratorSources
         public int StatusCode { get; }
 
         public IEnumerable<string> ContentTypes { get; }
+    }
+
+""";
+
+    public static string AcceptsMetadataType => """
+    file sealed class GeneratedAcceptsMetadata : IAcceptsMetadata
+    {
+        public GeneratedAcceptsMetadata(string[] contentTypes)
+        {
+            ArgumentNullException.ThrowIfNull(contentTypes);
+
+            ContentTypes = contentTypes;
+        }
+
+        public GeneratedAcceptsMetadata(Type? type, bool isOptional, string[] contentTypes)
+        {
+            ArgumentNullException.ThrowIfNull(type);
+            ArgumentNullException.ThrowIfNull(contentTypes);
+
+            RequestType = type;
+            ContentTypes = contentTypes;
+            IsOptional = isOptional;
+        }
+
+        public IReadOnlyList<string> ContentTypes { get; }
+
+        public Type? RequestType { get; }
+
+        public bool IsOptional { get; }
     }
 """;
 
@@ -171,6 +205,11 @@ internal static class RequestDelegateGeneratorSources
             => T.TryParse(s, provider, out result);
 """;
 
+    public static string ExecuteAsyncExplicitMethod => """
+        private static Task ExecuteAsyncExplicit(IResult result, HttpContext httpContext)
+            => result.ExecuteAsync(httpContext);
+""";
+
     public static string BindAsyncMethod => """
         private static ValueTask<T?> BindAsync<T>(HttpContext context, ParameterInfo parameter)
             where T : class, IBindableFromHttpContext<T>
@@ -219,7 +258,7 @@ internal static class RequestDelegateGeneratorSources
 """;
 
     public static string LogOrThrowExceptionHelperClass => $$"""
-    file class LogOrThrowExceptionHelper
+    file sealed class LogOrThrowExceptionHelper
     {
         private readonly ILogger? _rdgLogger;
         private readonly bool _shouldThrow;
@@ -363,13 +402,107 @@ internal static class RequestDelegateGeneratorSources
     }
 """;
 
+    public static string PropertyAsParameterInfoClass = """
+    file sealed class PropertyAsParameterInfo : ParameterInfo
+    {
+        private readonly PropertyInfo _underlyingProperty;
+        private readonly ParameterInfo? _constructionParameterInfo;
+
+        public PropertyAsParameterInfo(bool isOptional, PropertyInfo propertyInfo)
+        {
+            Debug.Assert(propertyInfo != null, "PropertyInfo must be provided.");
+
+            AttrsImpl = (ParameterAttributes)propertyInfo.Attributes;
+            NameImpl = propertyInfo.Name;
+            MemberImpl = propertyInfo;
+            ClassImpl = propertyInfo.PropertyType;
+
+            // It is not a real parameter in the delegate, so,
+            // not defining a real position.
+            PositionImpl = -1;
+
+            _underlyingProperty = propertyInfo;
+            IsOptional = isOptional;
+        }
+
+        public PropertyAsParameterInfo(bool isOptional, PropertyInfo property, ParameterInfo? parameterInfo)
+            : this(isOptional, property)
+        {
+            _constructionParameterInfo = parameterInfo;
+        }
+
+        public override bool HasDefaultValue
+            => _constructionParameterInfo is not null && _constructionParameterInfo.HasDefaultValue;
+        public override object? DefaultValue
+            => _constructionParameterInfo?.DefaultValue;
+        public override int MetadataToken => _underlyingProperty.MetadataToken;
+        public override object? RawDefaultValue
+            => _constructionParameterInfo?.RawDefaultValue;
+
+        public override object[] GetCustomAttributes(Type attributeType, bool inherit)
+        {
+            var attributes = _constructionParameterInfo?.GetCustomAttributes(attributeType, inherit);
+
+            if (attributes == null || attributes is { Length: 0 })
+            {
+                attributes = _underlyingProperty.GetCustomAttributes(attributeType, inherit);
+            }
+
+            return attributes;
+        }
+
+        public override object[] GetCustomAttributes(bool inherit)
+        {
+            var constructorAttributes = _constructionParameterInfo?.GetCustomAttributes(inherit);
+
+            if (constructorAttributes == null || constructorAttributes is { Length: 0 })
+            {
+                return _underlyingProperty.GetCustomAttributes(inherit);
+            }
+
+            var propertyAttributes = _underlyingProperty.GetCustomAttributes(inherit);
+
+            // Since the constructors attributes should take priority we will add them first,
+            // as we usually call it as First() or FirstOrDefault() in the argument creation
+            var mergedAttributes = new object[constructorAttributes.Length + propertyAttributes.Length];
+            Array.Copy(constructorAttributes, mergedAttributes, constructorAttributes.Length);
+            Array.Copy(propertyAttributes, 0, mergedAttributes, constructorAttributes.Length, propertyAttributes.Length);
+
+            return mergedAttributes;
+        }
+
+        public override IList<CustomAttributeData> GetCustomAttributesData()
+        {
+            var attributes = new List<CustomAttributeData>(
+                _constructionParameterInfo?.GetCustomAttributesData() ?? Array.Empty<CustomAttributeData>());
+            attributes.AddRange(_underlyingProperty.GetCustomAttributesData());
+
+            return attributes.AsReadOnly();
+        }
+
+        public override Type[] GetOptionalCustomModifiers()
+            => _underlyingProperty.GetOptionalCustomModifiers();
+
+        public override Type[] GetRequiredCustomModifiers()
+            => _underlyingProperty.GetRequiredCustomModifiers();
+
+        public override bool IsDefined(Type attributeType, bool inherit)
+        {
+            return (_constructionParameterInfo is not null && _constructionParameterInfo.IsDefined(attributeType, inherit)) ||
+                _underlyingProperty.IsDefined(attributeType, inherit);
+        }
+
+        public new bool IsOptional { get; }
+    }
+""";
+
     public static string GetGeneratedRouteBuilderExtensionsSource(string genericThunks, string thunks, string endpoints, string helperMethods, string helperTypes) => $$"""
 {{SourceHeader}}
 
 namespace Microsoft.AspNetCore.Builder
 {
     {{GeneratedCodeAttribute}}
-    internal class SourceKey
+    internal sealed class SourceKey
     {
         public string Path { get; init; }
         public int Line { get; init; }
@@ -494,7 +627,7 @@ namespace Microsoft.AspNetCore.Http.Generated
             this IEndpointRouteBuilder routes,
             string pattern,
             Delegate handler,
-            IEnumerable<string> httpMethods,
+            IEnumerable<string>? httpMethods,
             string filePath,
             int lineNumber)
         {

@@ -77,9 +77,9 @@ internal class RazorComponentEndpointDataSource<TRootComponent> : EndpointDataSo
     {
         var endpoints = new List<Endpoint>();
         var context = _builder.Build();
-        foreach (var definitions in context.Pages)
+        foreach (var definition in context.Pages)
         {
-            _factory.AddEndpoints(endpoints, definitions, _conventions, _finallyConventions);
+            _factory.AddEndpoints(endpoints, typeof(TRootComponent), definition, _conventions, _finallyConventions);
         }
 
         _endpoints = endpoints;

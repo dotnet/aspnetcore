@@ -43,10 +43,11 @@ The steps you follow next depend on your preferred development environment:
     > To modify an existing Visual Studio installation, [follow the instructions for installing from a configuration file](https://learn.microsoft.com/visualstudio/install/import-export-installation-configurations#import-a-configuration) and use the `.vsconfig` file located in the root of the repository:
 
     ```powershell
-    ./eng/scripts/InstallVisualStudio.ps1 Enterprise
+    ./eng/scripts/InstallVisualStudio.ps1 Enterprise Preview
     ```
 
-    Replace `Enterprise` with `Community` if that is your preferred Visual Studio edition. If you use Visual Studio from a preview channel you can specify that also, for example `./eng/scripts/InstallVisualStudio.ps1 Enterprise Preview`.
+    Replace `Enterprise` with `Professional` or `Community` if that is your preferred Visual Studio edition. 
+    The preview channel is currently required as it supports the preview version of the SDK that is used.
 
     If you are seeing errors similar to `the imported project "....\aspnetcore.tools\msbuild\17.1.0\tools\MSBuild\Microsoft\VC\v170\Microsoft.Cpp.Default.props" was not found`, try installing/updating Visual Studio as above.
 
@@ -86,7 +87,7 @@ The steps you follow next depend on your preferred development environment:
 
 1. To use Visual Studio Code for developing in this repo, you need [Visual Studio Code installed](https://code.visualstudio.com/) and the ability to [launch `code` from the command line](https://code.visualstudio.com/docs/setup/mac#_launching-from-the-command-line).
 
-1. This repo has JavaScript dependencies, so you need [Node.js](https://nodejs.org/en/) and [yarn](https://yarnpkg.com/) installed on your machine.
+1. This repo has JavaScript dependencies, so you need [Node.js](https://nodejs.org/en/). [Yarn](https://yarnpkg.com/) version 1.x will be installed automatically using `npm`, if you have already installed it with a version >= 2.x then you may have to uninstall it as it is not compatible with the aspnetcore build script.
 
 1. Before you open anything in Visual Studio Code, run the `restore` script in the root of the repo to install the required .NET dependencies.
 

@@ -47,6 +47,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
     private const long StreamPoolExpiryTicks = TimeSpan.TicksPerSecond * 5;
 
     private readonly HttpConnectionContext _context;
+    private readonly ConnectionMetricsContext _metricsContext;
     private readonly Http2FrameWriter _frameWriter;
     private readonly Pipe _input;
     private readonly Task _inputTask;
@@ -93,6 +94,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
 
         _context = context;
         _streamLifetimeHandler = this;
+        _metricsContext = context.ConnectionFeatures.GetRequiredFeature<IConnectionMetricsContextFeature>().MetricsContext;
 
         // Capture the ExecutionContext before dispatching HTTP/2 middleware. Will be restored by streams when processing request
         _context.InitialExecutionContext = ExecutionContext.Capture();
@@ -772,7 +774,8 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
             _clientSettings,
             _serverSettings,
             _frameWriter,
-            _inputFlowControl);
+            _inputFlowControl,
+            _metricsContext);
         streamContext.TimeoutControl = _context.TimeoutControl;
         streamContext.InitialExecutionContext = _context.InitialExecutionContext;
 
@@ -1189,7 +1192,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
         }
 
         KestrelEventSource.Log.RequestQueuedStart(_currentHeadersStream, AspNetCore.Http.HttpProtocol.Http2);
-        _context.ServiceContext.Metrics.RequestQueuedStart(_context.ConnectionContext, AspNetCore.Http.HttpProtocol.Http2);
+        _context.ServiceContext.Metrics.RequestQueuedStart(_metricsContext, AspNetCore.Http.HttpProtocol.Http2);
 
         // _scheduleInline is only true in tests
         if (!_scheduleInline)

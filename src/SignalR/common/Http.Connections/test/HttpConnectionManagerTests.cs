@@ -450,6 +450,29 @@ public class HttpConnectionManagerTests : VerifiableLoggedTest
         }
     }
 
+    [Fact]
+    public void Metrics_ListenStartAfterConnection_Empty()
+    {
+        using (StartVerifiableLog())
+        {
+            var testMeterFactory = new TestMeterFactory();
+            var connectionManager = CreateConnectionManager(LoggerFactory, metrics: new HttpConnectionsMetrics(testMeterFactory));
+            var connection = connectionManager.CreateConnection();
+
+            using var connectionDuration = new InstrumentRecorder<double>(new TestMeterRegistry(testMeterFactory.Meters), HttpConnectionsMetrics.MeterName, "connection-duration");
+            using var currentConnections = new InstrumentRecorder<long>(new TestMeterRegistry(testMeterFactory.Meters), HttpConnectionsMetrics.MeterName, "current-connections");
+
+            Assert.NotNull(connection.ConnectionId);
+
+            connection.TransportType = HttpTransportType.WebSockets;
+
+            connectionManager.RemoveConnection(connection.ConnectionId, connection.TransportType, HttpConnectionStopStatus.NormalClosure);
+
+            Assert.Empty(currentConnections.GetMeasurements());
+            Assert.Empty(connectionDuration.GetMeasurements());
+        }
+    }
+
     private static void AssertDuration(Measurement<double> measurement, HttpConnectionStopStatus status, HttpTransportType transportType)
     {
         Assert.True(measurement.Value > 0);

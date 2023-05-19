@@ -455,6 +455,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         _pair = DuplexPipe.CreateConnectionPair(inputPipeOptions, outputPipeOptions);
 
         var features = new FeatureCollection();
+        features.Set<IConnectionMetricsContextFeature>(new TestConnectionMetricsContextFeature());
         _mockConnectionContext.Setup(x => x.Features).Returns(features);
         var httpConnectionContext = TestContextFactory.CreateHttpConnectionContext(
             serviceContext: _serviceContext,
@@ -473,6 +474,11 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
                            .Callback<TimeoutReason>(r => httpConnection.OnTimeout(r));
 
         _timeoutControl.Initialize(_serviceContext.SystemClock.UtcNow.Ticks);
+    }
+
+    private class TestConnectionMetricsContextFeature : IConnectionMetricsContextFeature
+    {
+        public ConnectionMetricsContext MetricsContext { get; }
     }
 
     private class LifetimeHandlerInterceptor : IHttp2StreamLifetimeHandler
@@ -570,7 +576,8 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
             new TransportConnectionManager(_serviceContext.ConnectionManager),
             _ => throw new NotImplementedException($"{nameof(_connection.ProcessRequestsAsync)} should invoked instead - hence transport connection manager does not have the connection registered."),
             _mockConnectionContext.Object,
-            new KestrelTrace(_serviceContext.LoggerFactory));
+            new KestrelTrace(_serviceContext.LoggerFactory),
+            TestContextFactory.CreateMetricsContext(_mockConnectionContext.Object));
     }
 
     protected Task StartStreamAsync(int streamId, IEnumerable<KeyValuePair<string, string>> headers, bool endStream, bool flushFrame = true)

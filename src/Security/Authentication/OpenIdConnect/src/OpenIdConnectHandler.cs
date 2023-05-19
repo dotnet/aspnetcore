@@ -1018,10 +1018,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
     /// The value of the cookie is: "N".</remarks>
     private void WriteNonceCookie(string nonce)
     {
-        if (string.IsNullOrEmpty(nonce))
-        {
-            throw new ArgumentNullException(nameof(nonce));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(nonce);
 
         var cookieOptions = Options.NonceCookie.Build(Context, TimeProvider.GetUtcNow());
 

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
@@ -14,6 +15,7 @@ namespace Microsoft.AspNetCore.Http;
 /// Provides correct escaping for Path and PathBase values when needed to reconstruct a request or redirect URI string
 /// </summary>
 [TypeConverter(typeof(PathStringConverter))]
+[DebuggerDisplay("{Value}")]
 public readonly struct PathString : IEquatable<PathString>
 {
     internal const int StackAllocThreshold = 128;

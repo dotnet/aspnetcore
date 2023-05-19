@@ -32,7 +32,7 @@ internal sealed class HostingRequestStartingLog : IReadOnlyList<KeyValuePair<str
         7 => new KeyValuePair<string, object?>(nameof(_request.Path), _request.Path.Value),
         8 => new KeyValuePair<string, object?>(nameof(_request.QueryString), _request.QueryString.Value),
         9 => new KeyValuePair<string, object?>("{OriginalFormat}", OriginalFormat),
-        _ => throw new IndexOutOfRangeException(nameof(index)),
+        _ => throw new ArgumentOutOfRangeException(nameof(index)),
     };
 
     public HostingRequestStartingLog(HttpContext httpContext)

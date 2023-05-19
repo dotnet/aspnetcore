@@ -13,7 +13,9 @@
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.DataProtection" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.DataProtection.Extensions" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.Net.Http.Headers" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Metadata" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.WebUtilities" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.Identity.Core" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.Identity.Stores" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Connections.Abstractions" />
@@ -44,7 +46,6 @@
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Authentication.Abstractions" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Authentication.Core" />
-    <AspNetCoreAppReference Include="Microsoft.Net.Http.Headers" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Http.Abstractions" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Http.Extensions" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Http.Features" />
@@ -52,7 +53,6 @@
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Http" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Routing.Abstractions" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Routing" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.WebUtilities" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Html.Abstractions" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Identity" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.HttpSys" />

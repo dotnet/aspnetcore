@@ -1548,12 +1548,12 @@ public class UserManager<TUser> : IDisposable where TUser : class
         ArgumentNullThrowHelper.ThrowIfNull(user);
         ArgumentNullThrowHelper.ThrowIfNull(tokenProvider);
 
-        if (!_tokenProviders.ContainsKey(tokenProvider))
+        if (!_tokenProviders.TryGetValue(tokenProvider, out var provider))
         {
             throw new NotSupportedException(Resources.FormatNoTokenProvider(nameof(TUser), tokenProvider));
         }
         // Make sure the token is valid
-        var result = await _tokenProviders[tokenProvider].ValidateAsync(purpose, token, this, user).ConfigureAwait(false);
+        var result = await provider.ValidateAsync(purpose, token, this, user).ConfigureAwait(false);
 
         if (!result && Logger.IsEnabled(LogLevel.Debug))
         {
@@ -1577,12 +1577,13 @@ public class UserManager<TUser> : IDisposable where TUser : class
         ThrowIfDisposed();
         ArgumentNullThrowHelper.ThrowIfNull(user);
         ArgumentNullThrowHelper.ThrowIfNull(tokenProvider);
-        if (!_tokenProviders.ContainsKey(tokenProvider))
+
+        if (!_tokenProviders.TryGetValue(tokenProvider, out var provider))
         {
             throw new NotSupportedException(Resources.FormatNoTokenProvider(nameof(TUser), tokenProvider));
         }
 
-        return _tokenProviders[tokenProvider].GenerateAsync(purpose, this, user);
+        return provider.GenerateAsync(purpose, this, user);
     }
 
     /// <summary>
@@ -1635,13 +1636,13 @@ public class UserManager<TUser> : IDisposable where TUser : class
     {
         ThrowIfDisposed();
         ArgumentNullThrowHelper.ThrowIfNull(user);
-        if (!_tokenProviders.ContainsKey(tokenProvider))
+        if (!_tokenProviders.TryGetValue(tokenProvider, out var provider))
         {
             throw new NotSupportedException(Resources.FormatNoTokenProvider(nameof(TUser), tokenProvider));
         }
 
         // Make sure the token is valid
-        var result = await _tokenProviders[tokenProvider].ValidateAsync("TwoFactor", token, this, user).ConfigureAwait(false);
+        var result = await provider.ValidateAsync("TwoFactor", token, this, user).ConfigureAwait(false);
         if (!result)
         {
             Logger.LogDebug(LoggerEventIds.VerifyTwoFactorTokenFailed, $"{nameof(VerifyTwoFactorTokenAsync)}() failed for user.");
@@ -1662,12 +1663,12 @@ public class UserManager<TUser> : IDisposable where TUser : class
     {
         ThrowIfDisposed();
         ArgumentNullThrowHelper.ThrowIfNull(user);
-        if (!_tokenProviders.ContainsKey(tokenProvider))
+        if (!_tokenProviders.TryGetValue(tokenProvider, out var provider))
         {
             throw new NotSupportedException(Resources.FormatNoTokenProvider(nameof(TUser), tokenProvider));
         }
 
-        return _tokenProviders[tokenProvider].GenerateAsync("TwoFactor", this, user);
+        return provider.GenerateAsync("TwoFactor", this, user);
     }
 
     /// <summary>

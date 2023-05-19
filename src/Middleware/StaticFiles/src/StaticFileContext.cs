@@ -45,7 +45,7 @@ internal struct StaticFileContext
     {
         if (subPath.Value == null)
         {
-            throw new ArgumentNullException(nameof(subPath));
+            throw new ArgumentException($"{nameof(subPath)} cannot wrap a null value.", nameof(subPath));
         }
 
         _context = context;

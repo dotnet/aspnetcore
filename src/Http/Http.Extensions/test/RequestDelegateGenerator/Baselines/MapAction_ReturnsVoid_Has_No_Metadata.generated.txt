@@ -11,7 +11,7 @@
 namespace Microsoft.AspNetCore.Builder
 {
     %GENERATEDCODEATTRIBUTE%
-    internal class SourceKey
+    internal sealed class SourceKey
     {
         public string Path { get; init; }
         public int Line { get; init; }
@@ -94,12 +94,15 @@ namespace Microsoft.AspNetCore.Http.Generated
             [(@"TestMapActions.cs", 25)] = (
                 (methodInfo, options) =>
                 {
-                    Debug.Assert(options?.EndpointBuilder != null, "EndpointBuilder not found.");
+                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
+                    Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                     options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 25));
                     return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
                 {
+                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
+                    Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                     var handler = (System.Action)del;
                     EndpointFilterDelegate? filteredInvocation = null;
 
@@ -152,7 +155,7 @@ namespace Microsoft.AspNetCore.Http.Generated
             this IEndpointRouteBuilder routes,
             string pattern,
             Delegate handler,
-            IEnumerable<string> httpMethods,
+            IEnumerable<string>? httpMethods,
             string filePath,
             int lineNumber)
         {
@@ -200,7 +203,7 @@ namespace Microsoft.AspNetCore.Http.Generated
     }
 
 
-    file class LogOrThrowExceptionHelper
+    file sealed class LogOrThrowExceptionHelper
     {
         private readonly ILogger? _rdgLogger;
         private readonly bool _shouldThrow;

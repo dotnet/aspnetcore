@@ -13,3 +13,4 @@ Microsoft.AspNetCore.Connections.NamedPipeEndPoint.ServerName.get -> string!
 override Microsoft.AspNetCore.Connections.NamedPipeEndPoint.Equals(object? obj) -> bool
 override Microsoft.AspNetCore.Connections.NamedPipeEndPoint.GetHashCode() -> int
 override Microsoft.AspNetCore.Connections.NamedPipeEndPoint.ToString() -> string!
+static Microsoft.AspNetCore.Connections.ConnectionBuilderExtensions.Use(this Microsoft.AspNetCore.Connections.IConnectionBuilder! connectionBuilder, System.Func<Microsoft.AspNetCore.Connections.ConnectionContext!, Microsoft.AspNetCore.Connections.ConnectionDelegate!, System.Threading.Tasks.Task!>! middleware) -> Microsoft.AspNetCore.Connections.IConnectionBuilder!

@@ -59,4 +59,3 @@ public enum RenderTreeFrameType : short
     /// </summary>
     Markup = 8,
 }
-

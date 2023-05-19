@@ -476,7 +476,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
                     var negotiateResponse = NegotiateProtocol.ParseResponse(responseBuffer);
                     if (!string.IsNullOrEmpty(negotiateResponse.Error))
                     {
-                        throw new Exception(negotiateResponse.Error);
+                        throw new InvalidOperationException(negotiateResponse.Error);
                     }
                     Log.ConnectionEstablished(_logger, negotiateResponse.ConnectionId!);
                     return negotiateResponse;
