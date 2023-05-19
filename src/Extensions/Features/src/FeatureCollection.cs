@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Shared;
 
@@ -12,6 +13,8 @@ namespace Microsoft.AspNetCore.Http.Features;
 /// <summary>
 /// Default implementation for <see cref="IFeatureCollection"/>.
 /// </summary>
+[DebuggerDisplay("Count = {_features?.Count ?? 0}")]
+[DebuggerTypeProxy(typeof(FeatureCollectionDebugView))]
 public class FeatureCollection : IFeatureCollection
 {
     private static readonly KeyComparer FeatureKeyComparer = new KeyComparer();
@@ -148,5 +151,13 @@ public class FeatureCollection : IFeatureCollection
         {
             return obj.Key.GetHashCode();
         }
+    }
+
+    private sealed class FeatureCollectionDebugView(FeatureCollection collection)
+    {
+        private readonly FeatureCollection _collection = collection;
+
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+        public KeyValuePair<string, object>[] Items => _collection.Select(pair => new KeyValuePair<string, object>(pair.Key.FullName ?? string.Empty, pair.Value)).ToArray();
     }
 }
