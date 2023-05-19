@@ -3,9 +3,10 @@
 
 using System.Globalization;
 using System.Text.Json;
-using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.JSInterop;
+using Moq;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
@@ -20,6 +21,7 @@ public class WebAssemblyHostTest
     {
         // Arrange
         var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods(), JsonOptions);
+        builder.Services.AddSingleton(Mock.Of<IJSRuntime>());
         var host = builder.Build();
         var cultureProvider = new TestSatelliteResourcesLoader();
 
@@ -39,6 +41,7 @@ public class WebAssemblyHostTest
     {
         // Arrange
         var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods(), JsonOptions);
+        builder.Services.AddSingleton(Mock.Of<IJSRuntime>());
         var host = builder.Build();
         var cultureProvider = new TestSatelliteResourcesLoader();
 
@@ -60,6 +63,7 @@ public class WebAssemblyHostTest
     {
         // Arrange
         var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods(), JsonOptions);
+        builder.Services.AddSingleton(Mock.Of<IJSRuntime>());
         builder.Services.AddSingleton<DisposableService>();
         var host = builder.Build();
         var cultureProvider = new TestSatelliteResourcesLoader();
