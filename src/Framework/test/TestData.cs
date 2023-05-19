@@ -22,6 +22,7 @@ public static class TestData
                 "Microsoft.AspNetCore.Antiforgery",
                 "Microsoft.AspNetCore.Authentication",
                 "Microsoft.AspNetCore.Authentication.Abstractions",
+                "Microsoft.AspNetCore.Authentication.BearerToken",
                 "Microsoft.AspNetCore.Authentication.Cookies",
                 "Microsoft.AspNetCore.Authentication.Core",
                 "Microsoft.AspNetCore.Authentication.OAuth",
@@ -168,6 +169,7 @@ public static class TestData
             {
                 { "Microsoft.AspNetCore.Antiforgery" },
                 { "Microsoft.AspNetCore.Authentication.Abstractions" },
+                { "Microsoft.AspNetCore.Authentication.BearerToken" },
                 { "Microsoft.AspNetCore.Authentication.Cookies" },
                 { "Microsoft.AspNetCore.Authentication.Core" },
                 { "Microsoft.AspNetCore.Authentication.OAuth" },

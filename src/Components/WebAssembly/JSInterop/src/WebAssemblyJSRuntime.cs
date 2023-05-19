@@ -100,7 +100,7 @@ public abstract class WebAssemblyJSRuntime : JSInProcessRuntime, IJSUnmarshalled
         var jsStreamReference = JsonSerializer.Deserialize<IJSStreamReference>(serializedStreamReference, JsonSerializerOptions);
         if (jsStreamReference is null)
         {
-            throw new NullReferenceException($"Unable to parse the {nameof(serializedStreamReference)}.");
+            throw new ArgumentException($"Failed to parse as {nameof(IJSStreamReference)}.", nameof(serializedStreamReference));
         }
 
         return jsStreamReference;

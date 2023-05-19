@@ -7,6 +7,20 @@ using Microsoft.Extensions.Metrics;
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal;
 
+internal readonly struct MetricsContext
+{
+    public MetricsContext(bool currentConnectionsCounterEnabled, bool connectionDurationEnabled, bool currentTransportsCounterEnabled)
+    {
+        CurrentConnectionsCounterEnabled = currentConnectionsCounterEnabled;
+        ConnectionDurationEnabled = connectionDurationEnabled;
+        CurrentTransportsCounterEnabled = currentTransportsCounterEnabled;
+    }
+
+    public bool CurrentConnectionsCounterEnabled { get; }
+    public bool ConnectionDurationEnabled { get; }
+    public bool CurrentTransportsCounterEnabled { get; }
+}
+
 internal sealed class HttpConnectionsMetrics : IDisposable
 {
     public const string MeterName = "Microsoft.AspNetCore.Http.Connections";
@@ -34,18 +48,24 @@ internal sealed class HttpConnectionsMetrics : IDisposable
             description: "Number of negotiated transports that are currently active on the server.");
     }
 
-    public void ConnectionStart()
+    public void ConnectionStart(in MetricsContext metricsContext)
     {
         // Tags must match connection end.
-        _currentConnectionsCounter.Add(1);
+        if (metricsContext.CurrentConnectionsCounterEnabled)
+        {
+            _currentConnectionsCounter.Add(1);
+        }
     }
 
-    public void ConnectionStop(HttpTransportType transportType, HttpConnectionStopStatus status, long startTimestamp, long currentTimestamp)
+    public void ConnectionStop(in MetricsContext metricsContext, HttpTransportType transportType, HttpConnectionStopStatus status, long startTimestamp, long currentTimestamp)
     {
         // Tags must match connection start.
-        _currentConnectionsCounter.Add(-1);
+        if (metricsContext.CurrentConnectionsCounterEnabled)
+        {
+            _currentConnectionsCounter.Add(-1);
+        }
 
-        if (_connectionDuration.Enabled)
+        if (metricsContext.ConnectionDurationEnabled)
         {
             var duration = Stopwatch.GetElapsedTime(startTimestamp, currentTimestamp);
             _connectionDuration.Record(duration.TotalSeconds,
@@ -54,21 +74,27 @@ internal sealed class HttpConnectionsMetrics : IDisposable
         }
     }
 
-    public void TransportStart(HttpTransportType transportType)
+    public void TransportStart(in MetricsContext metricsContext, HttpTransportType transportType)
     {
         Debug.Assert(transportType != HttpTransportType.None);
 
         // Tags must match transport end.
-        _currentTransportsCounter.Add(1, new KeyValuePair<string, object?>("transport", transportType.ToString()));
+        if (metricsContext.CurrentTransportsCounterEnabled)
+        {
+            _currentTransportsCounter.Add(1, new KeyValuePair<string, object?>("transport", transportType.ToString()));
+        }
     }
 
-    public void TransportStop(HttpTransportType transportType)
+    public void TransportStop(in MetricsContext metricsContext, HttpTransportType transportType)
     {
-        // Tags must match transport start.
-        // If the transport type is none then the transport was never started for this connection.
-        if (transportType != HttpTransportType.None)
+        if (metricsContext.CurrentTransportsCounterEnabled)
         {
-            _currentTransportsCounter.Add(-1, new KeyValuePair<string, object?>("transport", transportType.ToString()));
+            // Tags must match transport start.
+            // If the transport type is none then the transport was never started for this connection.
+            if (transportType != HttpTransportType.None)
+            {
+                _currentTransportsCounter.Add(-1, new KeyValuePair<string, object?>("transport", transportType.ToString()));
+            }
         }
     }
 
@@ -77,5 +103,8 @@ internal sealed class HttpConnectionsMetrics : IDisposable
         _meter.Dispose();
     }
 
-    public bool IsEnabled() => _currentConnectionsCounter.Enabled || _connectionDuration.Enabled;
+    public MetricsContext CreateContext()
+    {
+        return new MetricsContext(_currentConnectionsCounter.Enabled, _connectionDuration.Enabled, _currentTransportsCounter.Enabled);
+    }
 }

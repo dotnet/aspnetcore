@@ -15,6 +15,7 @@ The table below outlines the different docs in this folder and what they are hel
 | [Troubleshooting build errors](BuildErrors.md) | Common errors that occur when building the repo and how to resolve them | Anyone running into an issue with the build        |
 | [Building from source](BuildFromSource.md)     | Setup instructions for the ASP.NET Core repo  | First-time contributors          |
 | [Working with EventSources and EventCounters](EventSourceAndCounters.md) | Guidance on adding event tracing to a library | Anyone needing to add event tracing for diagnostics purposes      |
+| [List of Diagnostics](list-of-diagnostics.md) | List of diagnostic codes used in repo | Anyone needing to add new codes for diagnostics purposes |
 | [Tests on Helix](Helix.md)        | An overview of the Helix test environment     | Anyone debugging tests in Helix or looking to understand the output from Helix builds       |
 | [Issue management](IssueManagementPolicies.md) | Overview of policies in place to manage issues| Community members and collaborators looking to understand how we handle closed issue, issues that need author feedback, etc |    |
 | [Preparing a patch update](PreparingPatchUpdates.md)        | Documentation on how to setup for a patch release of ASP.NET Core       | Anyone looking to publish servicing updates         |

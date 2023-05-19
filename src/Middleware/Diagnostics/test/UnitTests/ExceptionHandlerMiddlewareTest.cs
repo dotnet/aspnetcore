@@ -114,6 +114,105 @@ public class ExceptionHandlerMiddlewareTest
         await middleware.Invoke(httpContext);
     }
 
+    [Fact]
+    public async Task IExceptionHandlers_CallNextIfNotHandled()
+    {
+        // Arrange
+        var httpContext = CreateHttpContext();
+
+        var optionsAccessor = CreateOptionsAccessor();
+
+        var exceptionHandlers = new List<IExceptionHandler>
+        {
+            new TestExceptionHandler(false, "1"),
+            new TestExceptionHandler(false, "2"),
+            new TestExceptionHandler(true, "3"),
+        };
+
+        var middleware = CreateMiddleware(_ => throw new InvalidOperationException(), optionsAccessor, exceptionHandlers);
+
+        // Act & Assert
+        await middleware.Invoke(httpContext);
+
+        Assert.True(httpContext.Items.ContainsKey("1"));
+        Assert.True(httpContext.Items.ContainsKey("2"));
+        Assert.True(httpContext.Items.ContainsKey("3"));
+    }
+
+    [Fact]
+    public async Task IExceptionHandlers_SkipIfOneHandle()
+    {
+        // Arrange
+        var httpContext = CreateHttpContext();
+
+        var optionsAccessor = CreateOptionsAccessor();
+
+        var exceptionHandlers = new List<IExceptionHandler>
+        {
+            new TestExceptionHandler(false, "1"),
+            new TestExceptionHandler(true, "2"),
+            new TestExceptionHandler(true, "3"),
+        };
+
+        var middleware = CreateMiddleware(_ => throw new InvalidOperationException(), optionsAccessor, exceptionHandlers);
+
+        // Act & Assert
+        await middleware.Invoke(httpContext);
+
+        Assert.True(httpContext.Items.ContainsKey("1"));
+        Assert.True(httpContext.Items.ContainsKey("2"));
+        Assert.False(httpContext.Items.ContainsKey("3"));
+    }
+
+    [Fact]
+    public async Task IExceptionHandlers_CallOptionExceptionHandlerIfNobodyHandles()
+    {
+        // Arrange
+        var httpContext = CreateHttpContext();
+
+        var optionsAccessor = CreateOptionsAccessor(
+            (context) =>
+            {
+                context.Items["ExceptionHandler"] = true;
+                return Task.CompletedTask;
+            });
+
+        var exceptionHandlers = new List<IExceptionHandler>
+        {
+            new TestExceptionHandler(false, "1"),
+            new TestExceptionHandler(false, "2"),
+            new TestExceptionHandler(false, "3"),
+        };
+
+        var middleware = CreateMiddleware(_ => throw new InvalidOperationException(), optionsAccessor, exceptionHandlers);
+
+        // Act & Assert
+        await middleware.Invoke(httpContext);
+
+        Assert.True(httpContext.Items.ContainsKey("1"));
+        Assert.True(httpContext.Items.ContainsKey("2"));
+        Assert.True(httpContext.Items.ContainsKey("3"));
+        Assert.True(httpContext.Items.ContainsKey("ExceptionHandler"));
+    }
+
+    private class TestExceptionHandler : IExceptionHandler
+    {
+        private readonly bool _handle;
+        private readonly string _name;
+
+        public TestExceptionHandler(bool handle, string name)
+        {
+            _handle = handle;
+            _name = name;
+        }
+
+        public ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
+        {
+            httpContext.Items[_name] = true;
+            return ValueTask.FromResult(_handle);
+        }
+    }
+
     private HttpContext CreateHttpContext()
     {
         var httpContext = new DefaultHttpContext
@@ -138,18 +237,20 @@ public class ExceptionHandlerMiddlewareTest
         return optionsAccessor;
     }
 
-    private ExceptionHandlerMiddleware CreateMiddleware(
+    private ExceptionHandlerMiddlewareImpl CreateMiddleware(
         RequestDelegate next,
-        IOptions<ExceptionHandlerOptions> options)
+        IOptions<ExceptionHandlerOptions> options,
+        IEnumerable<IExceptionHandler> exceptionHandlers = null)
     {
         next ??= c => Task.CompletedTask;
         var listener = new DiagnosticListener("Microsoft.AspNetCore");
 
-        var middleware = new ExceptionHandlerMiddleware(
+        var middleware = new ExceptionHandlerMiddlewareImpl(
             next,
             NullLoggerFactory.Instance,
             options,
-            listener);
+            listener,
+            exceptionHandlers ?? Enumerable.Empty<IExceptionHandler>());
 
         return middleware;
     }

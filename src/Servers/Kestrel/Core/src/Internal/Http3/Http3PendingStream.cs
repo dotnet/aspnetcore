@@ -51,7 +51,7 @@ internal sealed class Http3PendingStream
 
                 if (result.IsCanceled)
                 {
-                    throw new Exception();
+                    throw new OperationCanceledException("The read operation was canceled.");
                 }
 
                 var readableBuffer = result.Buffer;

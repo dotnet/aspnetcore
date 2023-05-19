@@ -2,7 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <RazorLangVersion>8.0</RazorLangVersion>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\Shared\test\AutoRenderComponent.cs" Link="TestComponents\AutoRenderComponent.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.Endpoints" />

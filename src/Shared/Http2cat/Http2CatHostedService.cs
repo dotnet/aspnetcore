@@ -65,11 +65,17 @@ internal sealed class Http2CatHostedService : IHostedService
 
             var endpoint = new IPEndPoint(ip, address.Port);
 
-            _logger.LogInformation($"Connecting to '{endpoint}'.");
+            if (_logger.IsEnabled(LogLevel.Information))
+            {
+                _logger.LogInformation($"Connecting to '{endpoint}'.");
+            }
 
             await using var context = await _connectionFactory.ConnectAsync(endpoint);
 
-            _logger.LogInformation($"Connected to '{endpoint}'.");
+            if (_logger.IsEnabled(LogLevel.Information))
+            {
+                _logger.LogInformation($"Connected to '{endpoint}'.");
+            }
 
             var originalTransport = context.Transport;
             IAsyncDisposable sslState = null;
@@ -95,7 +101,10 @@ internal sealed class Http2CatHostedService : IHostedService
                     EnabledSslProtocols = SslProtocols.Tls12,
                 }, CancellationToken.None);
 
-                _logger.LogInformation($"TLS handshake completed successfully.");
+                if (_logger.IsEnabled(LogLevel.Information))
+                {
+                    _logger.LogInformation($"TLS handshake completed successfully.");
+                }
             }
 
             var http2Utilities = new Http2Utilities(context, _logger, _stopTokenSource.Token);

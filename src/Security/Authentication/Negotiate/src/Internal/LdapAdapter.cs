@@ -54,7 +54,7 @@ internal static partial class LdapAdapter
 
         if (searchResponse.Entries.Count > 0)
         {
-            if (searchResponse.Entries.Count > 1)
+            if (searchResponse.Entries.Count > 1 && logger.IsEnabled(LogLevel.Warning))
             {
                 logger.LogWarning($"More than one response received for query: {filter} with distinguished name: {distinguishedName}");
             }
@@ -92,7 +92,7 @@ internal static partial class LdapAdapter
                     .SetSlidingExpiration(settings.ClaimsCacheSlidingExpiration)
                     .SetAbsoluteExpiration(settings.ClaimsCacheAbsoluteExpiration));
         }
-        else
+        else if (logger.IsEnabled(LogLevel.Warning))
         {
             logger.LogWarning($"No response received for query: {filter} with distinguished name: {distinguishedName}");
         }
@@ -108,7 +108,7 @@ internal static partial class LdapAdapter
 
         if (searchResponse.Entries.Count > 0)
         {
-            if (searchResponse.Entries.Count > 1)
+            if (searchResponse.Entries.Count > 1 && logger.IsEnabled(LogLevel.Warning))
             {
                 logger.LogWarning($"More than one response received for query: {filter} with distinguished name: {distinguishedName}");
             }

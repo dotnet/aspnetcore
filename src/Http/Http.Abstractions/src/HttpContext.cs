@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http.Features;
 
@@ -9,6 +10,8 @@ namespace Microsoft.AspNetCore.Http;
 /// <summary>
 /// Encapsulates all HTTP-specific information about an individual HTTP request.
 /// </summary>
+[DebuggerDisplay("{DebuggerToString(),nq}")]
+[DebuggerTypeProxy(typeof(HttpContextDebugView))]
 public abstract class HttpContext
 {
     /// <summary>
@@ -71,4 +74,28 @@ public abstract class HttpContext
     /// Aborts the connection underlying this request.
     /// </summary>
     public abstract void Abort();
+
+    private string DebuggerToString()
+    {
+        return $"{Request.Method} {Request.Path.Value} {Request.ContentType}"
+            + $" StatusCode = {Response.StatusCode} {Response.ContentType}";
+    }
+
+    private sealed class HttpContextDebugView(HttpContext context)
+    {
+        private readonly HttpContext _context = context;
+
+        // Hide server specific implementations, they combine IFeatureCollection and many feature interfaces.
+        public IFeatureCollection Features => _context.Features as FeatureCollection ?? new FeatureCollection(_context.Features);
+        public HttpRequest Request => _context.Request;
+        public HttpResponse Response => _context.Response;
+        public ConnectionInfo Connection => _context.Connection;
+        public WebSocketManager WebSockets => _context.WebSockets;
+        public ClaimsPrincipal User => _context.User;
+        public IDictionary<object, object?> Items => _context.Items;
+        public CancellationToken RequestAborted => _context.RequestAborted;
+        public string TraceIdentifier => _context.TraceIdentifier;
+        // The normal session property throws if accessed before/without the session middleware.
+        public ISession? Session => _context.Features.Get<ISessionFeature>()?.Session;
+    }
 }

@@ -287,6 +287,25 @@ function InstallDotNet([string] $dotnetRoot,
   [string] $runtimeSourceFeedKey = '',
   [switch] $noPath) {
 
+  $dotnetVersionLabel = "'sdk v$version'"
+
+  if ($runtime -ne '' -and $runtime -ne 'sdk') {
+    $runtimePath = $dotnetRoot
+    $runtimePath = $runtimePath + "\shared"
+    if ($runtime -eq "dotnet") { $runtimePath = $runtimePath + "\Microsoft.NETCore.App" }
+    if ($runtime -eq "aspnetcore") { $runtimePath = $runtimePath + "\Microsoft.AspNetCore.App" }
+    if ($runtime -eq "windowsdesktop") { $runtimePath = $runtimePath + "\Microsoft.WindowsDesktop.App" }
+    $runtimePath = $runtimePath + "\" + $version
+  
+    $dotnetVersionLabel = "runtime toolset '$runtime/$architecture v$version'"
+
+    if (Test-Path $runtimePath) {
+      Write-Host "  Runtime toolset '$runtime/$architecture v$version' already installed."
+      $installSuccess = $true
+      Exit
+    }
+  }
+
   $installScript = GetDotNetInstallScript $dotnetRoot
   $installParameters = @{
     Version = $version
@@ -323,18 +342,18 @@ function InstallDotNet([string] $dotnetRoot,
     } else {
       $location = "public location";
     }
-    Write-Host "Attempting to install dotnet from $location."
+    Write-Host "  Attempting to install $dotnetVersionLabel from $location."
     try {
       & $installScript @variation
       $installSuccess = $true
       break
     }
     catch {
-      Write-Host "Failed to install dotnet from $location."
+      Write-Host "  Failed to install $dotnetVersionLabel from $location."
     }
   }
   if (-not $installSuccess) {
-    Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "Failed to install dotnet from any of the specified locations."
+    Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "Failed to install $dotnetVersionLabel from any of the specified locations."
     ExitWithExitCode 1
   }
 }
@@ -399,7 +418,8 @@ function InitializeVisualStudioMSBuild([bool]$install, [object]$vsRequirements =
   # Locate Visual Studio installation or download x-copy msbuild.
   $vsInfo = LocateVisualStudio $vsRequirements
   if ($vsInfo -ne $null) {
-    $vsInstallDir = $vsInfo.installationPath
+    # Ensure vsInstallDir has a trailing slash
+    $vsInstallDir = Join-Path $vsInfo.installationPath "\"
     $vsMajorVersion = $vsInfo.installationVersion.Split('.')[0]
 
     InitializeVisualStudioEnvironmentVariables $vsInstallDir $vsMajorVersion

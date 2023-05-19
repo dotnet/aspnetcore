@@ -17,8 +17,8 @@
       "shortName": ""
     },
     "NativeAot": {
-      "longName": "publish-native-aot",
-      "shortName": "aot"
+      "longName": "aot",
+      "shortName": ""
     }
   },
   "usageExamples": [

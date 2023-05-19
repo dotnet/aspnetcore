@@ -103,7 +103,7 @@ public class RedisHubLifetimeManagerTests : ScaleoutHubLifetimeManagerTests<Test
             loggerT,
             Options.Create(new RedisOptions()
             {
-                ConnectionFactory = _ => throw new Exception("throw from connect")
+                ConnectionFactory = _ => throw new ApplicationException("throw from connect")
             }),
             new DefaultHubProtocolResolver(new IHubProtocol[]
             {
@@ -113,7 +113,7 @@ public class RedisHubLifetimeManagerTests : ScaleoutHubLifetimeManagerTests<Test
         {
             var connection = HubConnectionContextUtils.Create(client.Connection);
 
-            var ex = await Assert.ThrowsAsync<Exception>(() => manager.OnConnectedAsync(connection)).DefaultTimeout();
+            var ex = await Assert.ThrowsAsync<ApplicationException>(() => manager.OnConnectedAsync(connection)).DefaultTimeout();
             Assert.Equal("throw from connect", ex.Message);
 
             await manager.OnDisconnectedAsync(connection).DefaultTimeout();

@@ -95,6 +95,39 @@ public class ConnectionMiddlewareTests : TestApplicationErrorLoggerLoggedTest
 
     [Theory]
     [MemberData(nameof(EchoAppRequestDelegates))]
+    public async Task CanReadWriteThroughAsyncConnectionMiddleware(RequestDelegate requestDelegate)
+    {
+        var serviceContext = new TestServiceContext(LoggerFactory);
+
+        await using (var server = new TestServer(requestDelegate, serviceContext, listenOptions =>
+        {
+            listenOptions.UseConnectionLogging();
+            listenOptions.Use((context, next) =>
+            {
+                return new AsyncConnectionMiddleware(next).OnConnectionAsync(context);
+            });
+            listenOptions.UseConnectionLogging();
+        }))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                await connection.Send(
+                    "POST / HTTP/1.0",
+                    "Content-Length: 12",
+                    "",
+                    "Hello World?");
+                await connection.ReceiveEnd(
+                    "HTTP/1.1 200 OK",
+                    "Connection: close",
+                    $"Date: {serviceContext.DateHeaderValue}",
+                    "",
+                    "Hello World!");
+            }
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(EchoAppRequestDelegates))]
     public async Task ImmediateFinAfterOnConnectionAsyncClosesGracefully(RequestDelegate requestDelegate)
     {
         var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));

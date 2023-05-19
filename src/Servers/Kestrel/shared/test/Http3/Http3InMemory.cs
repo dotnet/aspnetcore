@@ -982,7 +982,7 @@ internal class Http3ControlStream : Http3StreamBase
     }
 }
 
-internal class TestMultiplexedConnectionContext : MultiplexedConnectionContext, IConnectionLifetimeNotificationFeature, IConnectionLifetimeFeature, IConnectionHeartbeatFeature, IProtocolErrorCodeFeature
+internal class TestMultiplexedConnectionContext : MultiplexedConnectionContext, IConnectionLifetimeNotificationFeature, IConnectionLifetimeFeature, IConnectionHeartbeatFeature, IProtocolErrorCodeFeature, IConnectionMetricsContextFeature
 {
     public readonly Channel<ConnectionContext> ToServerAcceptQueue = Channel.CreateUnbounded<ConnectionContext>(new UnboundedChannelOptions
     {
@@ -1006,6 +1006,7 @@ internal class TestMultiplexedConnectionContext : MultiplexedConnectionContext, 
         Features.Set<IConnectionLifetimeNotificationFeature>(this);
         Features.Set<IConnectionHeartbeatFeature>(this);
         Features.Set<IProtocolErrorCodeFeature>(this);
+        Features.Set<IConnectionMetricsContextFeature>(this);
         ConnectionClosedRequested = ConnectionClosingCts.Token;
     }
 
@@ -1024,6 +1025,7 @@ internal class TestMultiplexedConnectionContext : MultiplexedConnectionContext, 
         get => _error ?? -1;
         set => _error = value;
     }
+    public ConnectionMetricsContext MetricsContext { get; }
 
     public override void Abort()
     {

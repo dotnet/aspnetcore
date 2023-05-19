@@ -63,7 +63,7 @@ public partial class HubConnectionHandlerTests
                 await client.SendHubMessageAsync(CompletionMessage.WithError(invocationMessage.InvocationId, "Client error")).DefaultTimeout();
 
                 var completion = Assert.IsType<CompletionMessage>(await client.ReadAsync().DefaultTimeout());
-                Assert.Equal("An unexpected error occurred invoking 'GetClientResult' on the server. Exception: Client error", completion.Error);
+                Assert.Equal("An unexpected error occurred invoking 'GetClientResult' on the server. HubException: Client error", completion.Error);
                 Assert.Equal(invocationId, completion.InvocationId);
             }
         }
@@ -381,7 +381,7 @@ public partial class HubConnectionHandlerTests
 
             cts.Cancel();
 
-            var ex = await Assert.ThrowsAsync<Exception>(() => resultTask).DefaultTimeout();
+            var ex = await Assert.ThrowsAsync<HubException>(() => resultTask).DefaultTimeout();
             Assert.Equal("Invocation canceled by the server.", ex.Message);
 
             // Sending result after the server is no longer expecting one results in a log and no-ops
@@ -426,7 +426,7 @@ public partial class HubConnectionHandlerTests
 
             cts.Cancel();
 
-            var ex = await Assert.ThrowsAsync<Exception>(() => resultTask).DefaultTimeout();
+            var ex = await Assert.ThrowsAsync<HubException>(() => resultTask).DefaultTimeout();
             Assert.Equal("Invocation canceled by the server.", ex.Message);
 
             // Sending result after the server is no longer expecting one results in a log and no-ops

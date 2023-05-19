@@ -304,7 +304,8 @@ internal sealed class KestrelServerImpl : IServer
                 reloadToken = Options.ConfigurationLoader.Configuration.GetReloadToken();
             }
 
-            Options.ConfigurationLoader?.Load();
+            Options.ConfigurationLoader?.LoadInternal();
+            Options.ConfigurationLoader?.ProcessEndpointsToAdd();
 
             await AddressBinder.BindAsync(Options.GetListenOptions(), AddressBindContext!, _httpsConfigurationService.UseHttpsWithDefaults, cancellationToken).ConfigureAwait(false);
             _configChangedRegistration = reloadToken?.RegisterChangeCallback(TriggerRebind, this);
@@ -348,7 +349,10 @@ internal sealed class KestrelServerImpl : IServer
             if (endpointsToStop.Count > 0)
             {
                 var urlsToStop = endpointsToStop.Select(lo => lo.EndpointConfig!.Url);
-                Trace.LogInformation("Config changed. Stopping the following endpoints: '{endpoints}'", string.Join("', '", urlsToStop));
+                if (Trace.IsEnabled(LogLevel.Information))
+                {
+                    Trace.LogInformation("Config changed. Stopping the following endpoints: '{endpoints}'", string.Join("', '", urlsToStop));
+                }
 
                 // 5 is the default value for WebHost's "shutdownTimeoutSeconds", so use that.
                 using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
@@ -373,7 +377,10 @@ internal sealed class KestrelServerImpl : IServer
             if (endpointsToStart.Count > 0)
             {
                 var urlsToStart = endpointsToStart.Select(lo => lo.EndpointConfig!.Url);
-                Trace.LogInformation("Config changed. Starting the following endpoints: '{endpoints}'", string.Join("', '", urlsToStart));
+                if (Trace.IsEnabled(LogLevel.Information))
+                {
+                    Trace.LogInformation("Config changed. Starting the following endpoints: '{endpoints}'", string.Join("', '", urlsToStart));
+                }
 
                 foreach (var listenOption in endpointsToStart)
                 {
@@ -383,7 +390,10 @@ internal sealed class KestrelServerImpl : IServer
                     }
                     catch (Exception ex)
                     {
-                        Trace.LogCritical(0, ex, "Unable to bind to '{url}' on config reload.", listenOption.EndpointConfig!.Url);
+                        if (Trace.IsEnabled(LogLevel.Critical))
+                        {
+                            Trace.LogCritical(0, ex, "Unable to bind to '{url}' on config reload.", listenOption.EndpointConfig!.Url);
+                        }
                     }
                 }
             }

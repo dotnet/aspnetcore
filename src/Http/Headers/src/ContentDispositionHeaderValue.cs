@@ -37,8 +37,8 @@ public class ContentDispositionHeaderValue
 
     // attr-char definition from RFC5987
     // Same as token except ( "*" / "'" / "%" )
-    private static readonly IndexOfAnyValues<char> AttrChar =
-        IndexOfAnyValues.Create("!#$&+-.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ^_`abcdefghijklmnopqrstuvwxyz|~");
+    private static readonly SearchValues<char> AttrChar =
+        SearchValues.Create("!#$&+-.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ^_`abcdefghijklmnopqrstuvwxyz|~");
 
     private static readonly HttpHeaderParser<ContentDispositionHeaderValue> Parser
         = new GenericHeaderParser<ContentDispositionHeaderValue>(false, GetDispositionTypeLength);

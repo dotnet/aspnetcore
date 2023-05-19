@@ -86,7 +86,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         if (IsUpgraded)
         {
             KestrelEventSource.Log.RequestUpgradedStop(this);
-            ServiceContext.Metrics.RequestUpgradedStop(_context.ConnectionContext);
+            ServiceContext.Metrics.RequestUpgradedStop(_context.MetricsContext);
 
             ServiceContext.ConnectionManager.UpgradedConnectionCount.ReleaseOne();
         }

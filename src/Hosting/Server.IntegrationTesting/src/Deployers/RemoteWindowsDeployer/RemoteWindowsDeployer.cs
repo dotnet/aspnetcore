@@ -123,7 +123,7 @@ public class RemoteWindowsDeployer : ApplicationDeployer
             }
             catch (Exception ex)
             {
-                Logger.LogWarning(0, "Failed to stop the server.", ex);
+                Logger.LogWarning(0, ex, "Failed to stop the server.");
             }
 
             try
@@ -133,7 +133,7 @@ public class RemoteWindowsDeployer : ApplicationDeployer
             }
             catch (Exception ex)
             {
-                Logger.LogWarning(0, $"Failed to delete the deployed folder '{_deployedFolderPathInFileShare}'.", ex);
+                Logger.LogWarning(0, ex, $"Failed to delete the deployed folder '{_deployedFolderPathInFileShare}'.");
             }
 
             try
@@ -143,7 +143,7 @@ public class RemoteWindowsDeployer : ApplicationDeployer
             }
             catch (Exception ex)
             {
-                Logger.LogWarning(0, $"Failed to delete the locally published folder '{DeploymentParameters.PublishedApplicationRootPath}'.", ex);
+                Logger.LogWarning(0, ex, $"Failed to delete the locally published folder '{DeploymentParameters.PublishedApplicationRootPath}'.");
             }
         }
     }

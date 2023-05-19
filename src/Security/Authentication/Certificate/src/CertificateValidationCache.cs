@@ -16,20 +16,20 @@ public class CertificateValidationCache : ICertificateValidationCache
 {
     private readonly MemoryCache _cache;
     private readonly CertificateValidationCacheOptions _options;
-    private readonly ISystemClock _clock;
+    private readonly TimeProvider _timeProvider;
 
-    internal CertificateValidationCache(IOptions<CertificateValidationCacheOptions> options, ISystemClock clock)
+    internal CertificateValidationCache(IOptions<CertificateValidationCacheOptions> options, TimeProvider timeProvider)
     {
         _options = options.Value;
-        _cache = new MemoryCache(new MemoryCacheOptions { SizeLimit = _options.CacheSize, Clock = new CachingClock(clock) });
-        _clock = clock;
+        _cache = new MemoryCache(new MemoryCacheOptions { SizeLimit = _options.CacheSize, Clock = new CachingClock(timeProvider) });
+        _timeProvider = timeProvider;
     }
 
     /// <summary>
     /// Initializes a new instance of <see cref="CertificateValidationCache"/>.
     /// </summary>
     /// <param name="options">An accessor to <see cref="CertificateValidationCacheOptions"/></param>
-    public CertificateValidationCache(IOptions<CertificateValidationCacheOptions> options) : this(options, new SystemClock())
+    public CertificateValidationCache(IOptions<CertificateValidationCacheOptions> options) : this(options, TimeProvider.System)
     { }
 
     /// <summary>
@@ -50,7 +50,7 @@ public class CertificateValidationCache : ICertificateValidationCache
     public void Put(HttpContext context, X509Certificate2 certificate, AuthenticateResult result)
     {
         // Never cache longer than 30 minutes
-        var absoluteExpiration = _clock.UtcNow.Add(TimeSpan.FromMinutes(30));
+        var absoluteExpiration = _timeProvider.GetUtcNow().Add(TimeSpan.FromMinutes(30));
         var notAfter = certificate.NotAfter.ToUniversalTime();
         if (notAfter < absoluteExpiration)
         {
@@ -67,8 +67,8 @@ public class CertificateValidationCache : ICertificateValidationCache
 
     private sealed class CachingClock : Extensions.Internal.ISystemClock
     {
-        private readonly ISystemClock _clock;
-        public CachingClock(ISystemClock clock) => _clock = clock;
-        public DateTimeOffset UtcNow => _clock.UtcNow;
+        private readonly TimeProvider _timeProvider;
+        public CachingClock(TimeProvider timeProvider) => _timeProvider = timeProvider;
+        public DateTimeOffset UtcNow => _timeProvider.GetUtcNow();
     }
 }

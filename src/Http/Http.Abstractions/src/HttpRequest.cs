@@ -1,7 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
+using System.Globalization;
 using System.IO.Pipelines;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Http;
@@ -9,6 +12,8 @@ namespace Microsoft.AspNetCore.Http;
 /// <summary>
 /// Represents the incoming side of an individual HTTP request.
 /// </summary>
+[DebuggerDisplay("{DebuggerToString(),nq}")]
+[DebuggerTypeProxy(typeof(HttpRequestDebugView))]
 public abstract class HttpRequest
 {
     /// <summary>
@@ -146,4 +151,32 @@ public abstract class HttpRequest
     /// </summary>
     /// <returns>The collection of route values for this request.</returns>
     public virtual RouteValueDictionary RouteValues { get; set; } = null!;
+
+    private string DebuggerToString()
+    {
+        return $"{Protocol} {Method} {Scheme}://{Host.Value}{PathBase.Value}{Path.Value}{QueryString.Value} {ContentType}"
+            + $" Length = {ContentLength?.ToString(CultureInfo.InvariantCulture) ?? "(null)"}";
+    }
+
+    private sealed class HttpRequestDebugView(HttpRequest request)
+    {
+        private readonly HttpRequest _request = request;
+
+        public string Method => _request.Method;
+        public string Scheme => _request.Scheme;
+        public bool IsHttps => _request.IsHttps;
+        public HostString Host => _request.Host;
+        public PathString PathBase => _request.PathBase;
+        public PathString Path => _request.Path;
+        public QueryString QueryString => _request.QueryString;
+        public IQueryCollection Query => _request.Query;
+        public string Protocol => _request.Protocol;
+        public IHeaderDictionary Headers => _request.Headers;
+        public IRequestCookieCollection Cookies => _request.Cookies;
+        public long? ContentLength => _request.ContentLength;
+        public string? ContentType => _request.ContentType;
+        public bool HasFormContentType => _request.HasFormContentType;
+        public IFormCollection? Form => _request.HttpContext.Features.Get<IFormFeature>()?.Form;
+        public RouteValueDictionary RouteValues => _request.RouteValues;
+    }
 }

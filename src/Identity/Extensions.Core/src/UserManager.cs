@@ -1162,13 +1162,19 @@ public class UserManager<TUser> : IDisposable where TUser : class
 
     private IdentityResult UserAlreadyInRoleError(string role)
     {
-        Logger.LogDebug(LoggerEventIds.UserAlreadyInRole, "User is already in role {role}.", role);
+        if (Logger.IsEnabled(LogLevel.Debug))
+        {
+            Logger.LogDebug(LoggerEventIds.UserAlreadyInRole, "User is already in role {role}.", role);
+        }
         return IdentityResult.Failed(ErrorDescriber.UserAlreadyInRole(role));
     }
 
     private IdentityResult UserNotInRoleError(string role)
     {
-        Logger.LogDebug(LoggerEventIds.UserNotInRole, "User is not in role {role}.", role);
+        if (Logger.IsEnabled(LogLevel.Debug))
+        {
+            Logger.LogDebug(LoggerEventIds.UserNotInRole, "User is not in role {role}.", role);
+        }
         return IdentityResult.Failed(ErrorDescriber.UserNotInRole(role));
     }
 
@@ -1542,14 +1548,14 @@ public class UserManager<TUser> : IDisposable where TUser : class
         ArgumentNullThrowHelper.ThrowIfNull(user);
         ArgumentNullThrowHelper.ThrowIfNull(tokenProvider);
 
-        if (!_tokenProviders.ContainsKey(tokenProvider))
+        if (!_tokenProviders.TryGetValue(tokenProvider, out var provider))
         {
             throw new NotSupportedException(Resources.FormatNoTokenProvider(nameof(TUser), tokenProvider));
         }
         // Make sure the token is valid
-        var result = await _tokenProviders[tokenProvider].ValidateAsync(purpose, token, this, user).ConfigureAwait(false);
+        var result = await provider.ValidateAsync(purpose, token, this, user).ConfigureAwait(false);
 
-        if (!result)
+        if (!result && Logger.IsEnabled(LogLevel.Debug))
         {
             Logger.LogDebug(LoggerEventIds.VerifyUserTokenFailed, "VerifyUserTokenAsync() failed with purpose: {purpose} for user.", purpose);
         }
@@ -1571,12 +1577,13 @@ public class UserManager<TUser> : IDisposable where TUser : class
         ThrowIfDisposed();
         ArgumentNullThrowHelper.ThrowIfNull(user);
         ArgumentNullThrowHelper.ThrowIfNull(tokenProvider);
-        if (!_tokenProviders.ContainsKey(tokenProvider))
+
+        if (!_tokenProviders.TryGetValue(tokenProvider, out var provider))
         {
             throw new NotSupportedException(Resources.FormatNoTokenProvider(nameof(TUser), tokenProvider));
         }
 
-        return _tokenProviders[tokenProvider].GenerateAsync(purpose, this, user);
+        return provider.GenerateAsync(purpose, this, user);
     }
 
     /// <summary>
@@ -1629,13 +1636,13 @@ public class UserManager<TUser> : IDisposable where TUser : class
     {
         ThrowIfDisposed();
         ArgumentNullThrowHelper.ThrowIfNull(user);
-        if (!_tokenProviders.ContainsKey(tokenProvider))
+        if (!_tokenProviders.TryGetValue(tokenProvider, out var provider))
         {
             throw new NotSupportedException(Resources.FormatNoTokenProvider(nameof(TUser), tokenProvider));
         }
 
         // Make sure the token is valid
-        var result = await _tokenProviders[tokenProvider].ValidateAsync("TwoFactor", token, this, user).ConfigureAwait(false);
+        var result = await provider.ValidateAsync("TwoFactor", token, this, user).ConfigureAwait(false);
         if (!result)
         {
             Logger.LogDebug(LoggerEventIds.VerifyTwoFactorTokenFailed, $"{nameof(VerifyTwoFactorTokenAsync)}() failed for user.");
@@ -1656,12 +1663,12 @@ public class UserManager<TUser> : IDisposable where TUser : class
     {
         ThrowIfDisposed();
         ArgumentNullThrowHelper.ThrowIfNull(user);
-        if (!_tokenProviders.ContainsKey(tokenProvider))
+        if (!_tokenProviders.TryGetValue(tokenProvider, out var provider))
         {
             throw new NotSupportedException(Resources.FormatNoTokenProvider(nameof(TUser), tokenProvider));
         }
 
-        return _tokenProviders[tokenProvider].GenerateAsync("TwoFactor", this, user);
+        return provider.GenerateAsync("TwoFactor", this, user);
     }
 
     /// <summary>
@@ -2307,7 +2314,10 @@ public class UserManager<TUser> : IDisposable where TUser : class
         }
         if (errors?.Count > 0)
         {
-            Logger.LogDebug(LoggerEventIds.UserValidationFailed, "User validation failed: {errors}.", string.Join(";", errors.Select(e => e.Code)));
+            if (Logger.IsEnabled(LogLevel.Debug))
+            {
+                Logger.LogDebug(LoggerEventIds.UserValidationFailed, "User validation failed: {errors}.", string.Join(";", errors.Select(e => e.Code)));
+            }
             return IdentityResult.Failed(errors);
         }
         return IdentityResult.Success;
@@ -2340,7 +2350,10 @@ public class UserManager<TUser> : IDisposable where TUser : class
         }
         if (!isValid)
         {
-            Logger.LogDebug(LoggerEventIds.PasswordValidationFailed, "User password validation failed: {errors}.", string.Join(";", errors?.Select(e => e.Code) ?? Array.Empty<string>()));
+            if (Logger.IsEnabled(LogLevel.Debug))
+            {
+                Logger.LogDebug(LoggerEventIds.PasswordValidationFailed, "User password validation failed: {errors}.", string.Join(";", errors?.Select(e => e.Code) ?? Array.Empty<string>()));
+            }
             return IdentityResult.Failed(errors);
         }
         return IdentityResult.Success;

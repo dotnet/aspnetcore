@@ -27,6 +27,7 @@ __AlpineArch=armv7
 __FreeBSDArch=arm
 __FreeBSDMachineArch=armv7
 __IllumosArch=arm7
+__HaikuArch=arm
 __QEMUArch=arm
 __UbuntuArch=armhf
 __UbuntuRepo="http://ports.ubuntu.com/"
@@ -70,7 +71,7 @@ __AlpinePackages+=" krb5-dev"
 __AlpinePackages+=" openssl-dev"
 __AlpinePackages+=" zlib-dev"
 
-__FreeBSDBase="12.3-RELEASE"
+__FreeBSDBase="12.4-RELEASE"
 __FreeBSDPkg="1.17.0"
 __FreeBSDABI="12"
 __FreeBSDPackages="libunwind"
@@ -85,8 +86,12 @@ __IllumosPackages+=" mit-krb5"
 __IllumosPackages+=" openssl"
 __IllumosPackages+=" zlib"
 
-__HaikuPackages="gmp"
+__HaikuPackages="gcc_syslibs"
+__HaikuPackages+=" gcc_syslibs_devel"
+__HaikuPackages+=" gmp"
 __HaikuPackages+=" gmp_devel"
+__HaikuPackages+=" icu66"
+__HaikuPackages+=" icu66_devel"
 __HaikuPackages+=" krb5"
 __HaikuPackages+=" krb5_devel"
 __HaikuPackages+=" libiconv"
@@ -95,6 +100,10 @@ __HaikuPackages+=" llvm12_libunwind"
 __HaikuPackages+=" llvm12_libunwind_devel"
 __HaikuPackages+=" mpfr"
 __HaikuPackages+=" mpfr_devel"
+__HaikuPackages+=" openssl"
+__HaikuPackages+=" openssl_devel"
+__HaikuPackages+=" zlib"
+__HaikuPackages+=" zlib_devel"
 
 # ML.NET dependencies
 __UbuntuPackages+=" libomp5"
@@ -210,6 +219,7 @@ while :; do
             __FreeBSDArch=amd64
             __FreeBSDMachineArch=amd64
             __illumosArch=x86_64
+            __HaikuArch=x86_64
             __UbuntuRepo="http://archive.ubuntu.com/ubuntu/"
             ;;
         x86)
@@ -330,7 +340,7 @@ while :; do
             ;;
         freebsd13)
             __CodeName=freebsd
-            __FreeBSDBase="13.0-RELEASE"
+            __FreeBSDBase="13.2-RELEASE"
             __FreeBSDABI="13"
             __SkipUnmount=1
             ;;
@@ -340,7 +350,6 @@ while :; do
             ;;
         haiku)
             __CodeName=haiku
-            __BuildArch=x64
             __SkipUnmount=1
             ;;
         --skipunmount)
@@ -559,67 +568,54 @@ elif [[ "$__CodeName" == "illumos" ]]; then
 elif [[ "$__CodeName" == "haiku" ]]; then
     JOBS=${MAXJOBS:="$(getconf _NPROCESSORS_ONLN)"}
 
-    echo "Building Haiku sysroot for x86_64"
+    echo "Building Haiku sysroot for $__HaikuArch"
     mkdir -p "$__RootfsDir/tmp"
-    cd "$__RootfsDir/tmp"
-    git clone -b hrev56235  https://review.haiku-os.org/haiku
-    git clone -b btrev43195 https://review.haiku-os.org/buildtools
-    cd "$__RootfsDir/tmp/buildtools" && git checkout 7487388f5110021d400b9f3b88e1a7f310dc066d
+    pushd "$__RootfsDir/tmp"
 
-    # Fetch some unmerged patches
-    cd "$__RootfsDir/tmp/haiku"
-    ## Add development build profile (slimmer than nightly)
-    git fetch origin refs/changes/64/4164/1 && git -c commit.gpgsign=false cherry-pick FETCH_HEAD
+    mkdir "$__RootfsDir/tmp/download"
 
-    # Build jam
-    cd "$__RootfsDir/tmp/buildtools/jam"
-    make
+    echo "Downloading Haiku package tool"
+    git clone https://github.com/haiku/haiku-toolchains-ubuntu --depth 1 $__RootfsDir/tmp/script
+    wget -O "$__RootfsDir/tmp/download/hosttools.zip" $($__RootfsDir/tmp/script/fetch.sh --hosttools)
+    unzip -o "$__RootfsDir/tmp/download/hosttools.zip" -d "$__RootfsDir/tmp/bin"
 
-    # Configure cross tools
-    echo "Building cross-compiler"
-    mkdir -p "$__RootfsDir/generated"
-    cd "$__RootfsDir/generated"
-    "$__RootfsDir/tmp/haiku/configure" -j"$JOBS" --sysroot "$__RootfsDir" --cross-tools-source "$__RootfsDir/tmp/buildtools" --build-cross-tools x86_64
+    DepotBaseUrl="https://depot.haiku-os.org/__api/v2/pkg/get-pkg"
+    HpkgBaseUrl="https://eu.hpkg.haiku-os.org/haiku/master/$__HaikuArch/current"
 
-    # Build Haiku packages
-    echo "Building Haiku"
-    echo 'HAIKU_BUILD_PROFILE = "development-raw" ;' > UserProfileConfig
-    "$__RootfsDir/tmp/buildtools/jam/jam0" -j"$JOBS" -q '<build>package' '<repository>Haiku'
-
-    BaseUrl="https://depot.haiku-os.org/__api/v2/pkg/get-pkg"
-
-    # Download additional packages
-    echo "Downloading additional required packages"
+    # Download Haiku packages
+    echo "Downloading Haiku packages"
     read -ra array <<<"$__HaikuPackages"
     for package in "${array[@]}"; do
         echo "Downloading $package..."
         # API documented here: https://github.com/haiku/haikudepotserver/blob/master/haikudepotserver-api2/src/main/resources/api2/pkg.yaml#L60
         # The schema here: https://github.com/haiku/haikudepotserver/blob/master/haikudepotserver-api2/src/main/resources/api2/pkg.yaml#L598
-        hpkgDownloadUrl="$(wget -qO- --post-data='{"name":"'"$package"'","repositorySourceCode":"haikuports_x86_64","versionType":"LATEST","naturalLanguageCode":"en"}' \
-            --header='Content-Type:application/json' "$BaseUrl" | jq -r '.result.versions[].hpkgDownloadURL')"
-        wget -P "$__RootfsDir/generated/download" "$hpkgDownloadUrl"
+        hpkgDownloadUrl="$(wget -qO- --post-data='{"name":"'"$package"'","repositorySourceCode":"haikuports_'$__HaikuArch'","versionType":"LATEST","naturalLanguageCode":"en"}' \
+            --header='Content-Type:application/json' "$DepotBaseUrl" | jq -r '.result.versions[].hpkgDownloadURL')"
+        wget -P "$__RootfsDir/tmp/download" "$hpkgDownloadUrl"
+    done
+    for package in haiku haiku_devel; do
+        echo "Downloading $package..."
+        hpkgVersion="$(wget -qO- $HpkgBaseUrl | sed -n 's/^.*version: "\([^"]*\)".*$/\1/p')"
+        wget -P "$__RootfsDir/tmp/download" "$HpkgBaseUrl/packages/$package-$hpkgVersion-1-$__HaikuArch.hpkg"
     done
 
-    # Setup the sysroot
-    echo "Setting up sysroot and extracting needed packages"
+    # Set up the sysroot
+    echo "Setting up sysroot and extracting required packages"
     mkdir -p "$__RootfsDir/boot/system"
-    for file in "$__RootfsDir/generated/objects/haiku/x86_64/packaging/packages/"*.hpkg; do
-        "$__RootfsDir/generated/objects/linux/x86_64/release/tools/package/package" extract -C "$__RootfsDir/boot/system" "$file"
+    for file in "$__RootfsDir/tmp/download/"*.hpkg; do
+        echo "Extracting $file..."
+        LD_LIBRARY_PATH="$__RootfsDir/tmp/bin" "$__RootfsDir/tmp/bin/package" extract -C "$__RootfsDir/boot/system" "$file"
     done
-    for file in "$__RootfsDir/generated/download/"*.hpkg; do
-        "$__RootfsDir/generated/objects/linux/x86_64/release/tools/package/package" extract -C "$__RootfsDir/boot/system" "$file"
-    done
+
+    # Download buildtools
+    echo "Downloading Haiku buildtools"
+    wget -O "$__RootfsDir/tmp/download/buildtools.zip" $($__RootfsDir/tmp/script/fetch.sh --buildtools --arch=$__HaikuArch)
+    unzip -o "$__RootfsDir/tmp/download/buildtools.zip" -d "$__RootfsDir"
 
     # Cleaning up temporary files
     echo "Cleaning up temporary files"
+    popd
     rm -rf "$__RootfsDir/tmp"
-    for name in "$__RootfsDir/generated/"*; do
-        if [[ "$name" =~ "cross-tools-" ]]; then
-            : # Keep the cross-compiler
-        else
-            rm -rf "$name"
-        fi
-    done
 elif [[ -n "$__CodeName" ]]; then
 
     if [[ "$__SkipSigCheck" == "0" ]]; then

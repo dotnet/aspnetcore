@@ -1,6 +1,7 @@
 <Project>
   <!-- This file is shared between Helix.proj and .csproj files. -->
   <PropertyGroup>
+    <HelixQueueAlmaLinux8>(AlmaLinux.8.Amd64.Open)Ubuntu.2004.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:almalinux-8-helix-amd64</HelixQueueAlmaLinux8>
     <HelixQueueAlpine316>(Alpine.316.Amd64.Open)Ubuntu.2004.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.16-helix-amd64</HelixQueueAlpine316>
     <HelixQueueDebian11>(Debian.11.Amd64.Open)Ubuntu.2004.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-11-helix-amd64</HelixQueueDebian11>
     <HelixQueueFedora34>(Fedora.34.Amd64.Open)Ubuntu.2004.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-34-helix</HelixQueueFedora34>
@@ -30,6 +31,7 @@
         <HelixAvailableTargetQueue Include="Ubuntu.2004.Amd64.Open" Platform="Linux" />
         <HelixAvailableTargetQueue Include="OSX.13.Amd64.Open" Platform="OSX" />
         <HelixAvailableTargetQueue Include="Windows.11.Amd64.Client.Open" Platform="Windows" />
+        <HelixAvailableTargetQueue Include="Windows.Amd64.VS2022.Pre.Open" Platform="Windows" />
       </ItemGroup>
     </When>
     <Otherwise>
@@ -37,7 +39,7 @@
       <!-- aspnetcore-quarantined-tests (quarantined-tests.yml) and RunHelix.ps1 -RunQuarantinedTests -->
       <ItemGroup>
         <!-- Linux -->
-        <HelixAvailableTargetQueue Include="Redhat.7.Amd64.Open" Platform="Linux" />
+        <HelixAvailableTargetQueue Include="$(HelixQueueAlmaLinux8)" Platform="Linux" />
 
         <!-- Containers -->
         <HelixAvailableTargetQueue Include="$(HelixQueueAlpine316)" Platform="Linux" />

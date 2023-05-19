@@ -611,10 +611,7 @@ public class UserStore<TUser, TRole, TContext, [DynamicallyAccessedMembers(Dynam
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
-        if (string.IsNullOrEmpty(normalizedRoleName))
-        {
-            throw new ArgumentNullException(nameof(normalizedRoleName));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(normalizedRoleName);
 
         var role = await FindRoleAsync(normalizedRoleName, cancellationToken);
 

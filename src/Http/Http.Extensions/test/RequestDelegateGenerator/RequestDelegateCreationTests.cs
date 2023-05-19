@@ -449,4 +449,127 @@ app.MapGet("/", (HttpContext httpContext, int id) =>
         Assert.Equal(42, httpContext.Items["id"]);
         Assert.Equal(200, httpContext.Response.StatusCode);
     }
+
+    [Fact]
+    public async Task RequestDelegateCreation_SupportMapMethods()
+    {
+        var source = """
+var supportedMethods = new[] { "GET", "POST" };
+app.MapMethods("/", supportedMethods, (HttpContext httpContext, int id) =>
+{
+    httpContext.Items["id"] = id;
+});
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["id"] = "42",
+        });
+
+        httpContext.Request.Headers.Referer = "https://example.org";
+        await endpoint.RequestDelegate(httpContext);
+
+        Assert.Equal(42, httpContext.Items["id"]);
+        Assert.Equal(200, httpContext.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task RequestDelegateCreation_SupportMapMethods_InvalidRequestMethod()
+    {
+        var source = """
+var supportedMethods = new[] { "DELETE", "PATCH" };
+app.MapMethods("/", supportedMethods, (HttpContext httpContext, int id) =>
+{
+    httpContext.Items["id"] = id;
+});
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Method = "GET";
+
+        await endpoint.RequestDelegate(httpContext);
+
+        Assert.Null(httpContext.Items["id"]);
+        Assert.Equal(400, httpContext.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task RequestDelegateCreation_SupportsMap()
+    {
+        var source = """
+app.Map("/", (HttpContext httpContext, int id) =>
+{
+    httpContext.Items["id"] = id;
+});
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["id"] = "42",
+        });
+
+        httpContext.Request.Headers.Referer = "https://example.org";
+        await endpoint.RequestDelegate(httpContext);
+
+        Assert.Equal(42, httpContext.Items["id"]);
+        Assert.Equal(200, httpContext.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task RequestDelegateCreation_SupportsMapFallback()
+    {
+        var source = """
+app.MapFallback("/", (HttpContext httpContext, int id) =>
+{
+    httpContext.Items["id"] = id;
+});
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["id"] = "42",
+        });
+
+        httpContext.Request.Headers.Referer = "https://example.org";
+        await endpoint.RequestDelegate(httpContext);
+
+        Assert.Equal(42, httpContext.Items["id"]);
+        Assert.Equal(200, httpContext.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task RequestDelegateCreation_SupportsMapFallback_NoRoute()
+    {
+        var source = """
+app.MapFallback((HttpContext httpContext, int id) =>
+{
+    httpContext.Items["id"] = id;
+});
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["id"] = "42",
+        });
+
+        httpContext.Request.Headers.Referer = "https://example.org";
+        await endpoint.RequestDelegate(httpContext);
+
+        Assert.Equal(42, httpContext.Items["id"]);
+        Assert.Equal(200, httpContext.Response.StatusCode);
+    }
 }

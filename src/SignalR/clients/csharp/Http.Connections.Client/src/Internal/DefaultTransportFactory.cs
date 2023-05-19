@@ -21,7 +21,7 @@ internal sealed partial class DefaultTransportFactory : ITransportFactory
     {
         if (httpClient == null && requestedTransportType != HttpTransportType.WebSockets)
         {
-            throw new ArgumentNullException(nameof(httpClient));
+            throw new ArgumentException($"{nameof(httpClient)} cannot be null when {nameof(requestedTransportType)} is not {nameof(HttpTransportType.WebSockets)}.", nameof(httpClient));
         }
 
         _requestedTransportType = requestedTransportType;

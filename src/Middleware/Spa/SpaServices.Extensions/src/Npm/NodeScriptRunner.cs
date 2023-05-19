@@ -97,7 +97,7 @@ internal sealed class NodeScriptRunner : IDisposable
         // When the node task emits complete lines, pass them through to the real logger
         StdOut.OnReceivedLine += line =>
         {
-            if (!string.IsNullOrWhiteSpace(line))
+            if (!string.IsNullOrWhiteSpace(line) && logger.IsEnabled(LogLevel.Information))
             {
                 // Node tasks commonly emit ANSI colors, but it wouldn't make sense to forward
                 // those to loggers (because a logger isn't necessarily any kind of terminal)

@@ -11,6 +11,7 @@ using Xunit;
 namespace Microsoft.AspNetCore.Server.IIS.IISExpress.FunctionalTests;
 
 [Collection(PublishedSitesCollection.Name)]
+[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
 public class AppOfflineIISExpressTests : IISFunctionalTestBase
 {
     public AppOfflineIISExpressTests(PublishedSitesFixture fixture) : base(fixture)

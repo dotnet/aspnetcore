@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -142,7 +143,7 @@ public class WsFederationTest
     {
         var httpClient = await CreateClient();
         var form = CreateSignInContent("WsFederation/ValidToken.xml", suppressWctx: true);
-        var exception = await Assert.ThrowsAsync<Exception>(() => httpClient.PostAsync(httpClient.BaseAddress + "signin-wsfed", form));
+        var exception = await Assert.ThrowsAsync<AuthenticationFailureException>(() => httpClient.PostAsync(httpClient.BaseAddress + "signin-wsfed", form));
         Assert.Contains("Unsolicited logins are not allowed.", exception.InnerException.Message);
     }
 

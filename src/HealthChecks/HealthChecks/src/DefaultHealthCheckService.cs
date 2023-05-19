@@ -291,7 +291,7 @@ internal sealed partial class DefaultHealthCheckService : HealthCheckService
             {
                 if (index < 0 || index >= Count)
                 {
-                    throw new IndexOutOfRangeException(nameof(index));
+                    throw new ArgumentOutOfRangeException(nameof(index));
                 }
 
                 return _values[index];

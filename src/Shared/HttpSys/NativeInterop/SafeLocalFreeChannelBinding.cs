@@ -24,7 +24,9 @@ internal sealed class SafeLocalFreeChannelBinding : ChannelBinding
         if (result.IsInvalid)
         {
             result.SetHandleAsInvalid();
+#pragma warning disable CA2201 // Do not raise reserved exception types
             throw new OutOfMemoryException();
+#pragma warning restore CA2201
         }
 
         result.size = cb;

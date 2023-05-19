@@ -65,7 +65,7 @@ public sealed class SectionOutlet : ISectionContentSubscriber, IComponent, IDisp
             }
 
             _registry.Subscribe(identifier, this);
-            _subscribedIdentifier = SectionId;
+            _subscribedIdentifier = identifier;
         }
 
         RenderContent();

@@ -78,6 +78,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     public bool IsDraining => _appCompletedTaskSource.GetStatus() != ValueTaskSourceStatus.Pending; // Draining starts once app is complete
     public bool IsRequestStream => true;
     public BaseConnectionContext ConnectionContext => _context.ConnectionContext;
+    public ConnectionMetricsContext MetricsContext => _context.MetricsContext;
 
     public void Initialize(Http3StreamContext context)
     {

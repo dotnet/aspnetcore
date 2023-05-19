@@ -42,7 +42,10 @@ internal sealed class SpaProxyLaunchManager : IDisposable
         {
             if (_launchTask == null)
             {
-                _logger.LogInformation($"No SPA development server running at {_options.ServerUrl} found.");
+                if (_logger.IsEnabled(LogLevel.Information))
+                {
+                    _logger.LogInformation($"No SPA development server running at {_options.ServerUrl} found.");
+                }
                 _launchTask = UpdateStatus(StartSpaProcessAndProbeForLiveness(cancellationToken));
             }
         }
@@ -145,13 +148,19 @@ internal sealed class SpaProxyLaunchManager : IDisposable
 
         if (_spaProcess == null || _spaProcess.HasExited)
         {
-            _logger.LogError($"Couldn't start the SPA development server with command '{_options.LaunchCommand}'.");
+            if (_logger.IsEnabled(LogLevel.Error))
+            {
+                _logger.LogError($"Couldn't start the SPA development server with command '{_options.LaunchCommand}'.");
+            }
         }
         else if (!livenessProbeSucceeded)
         {
-            _logger.LogError($"Unable to connect to the SPA development server at '{_options.ServerUrl}'.");
+            if (_logger.IsEnabled(LogLevel.Error))
+            {
+                _logger.LogError($"Unable to connect to the SPA development server at '{_options.ServerUrl}'.");
+            }
         }
-        else
+        else if (_logger.IsEnabled(LogLevel.Information))
         {
             _logger.LogInformation($"SPA development server running at '{_options.ServerUrl}'");
         }
@@ -237,13 +246,19 @@ catch
         var stopProcess = Process.Start(stopScriptInfo);
         if (stopProcess == null || stopProcess.HasExited)
         {
-            _logger.LogWarning($"The SPA process shutdown script '{stopProcess?.Id}' failed to start. The SPA proxy might" +
-                $" remain open if the dotnet process is terminated ungracefully. Use the operating system commands to kill" +
-                $" the process tree for {spaProcessId}");
+            if (_logger.IsEnabled(LogLevel.Warning))
+            {
+                _logger.LogWarning($"The SPA process shutdown script '{stopProcess?.Id}' failed to start. The SPA proxy might" +
+                    $" remain open if the dotnet process is terminated ungracefully. Use the operating system commands to kill" +
+                    $" the process tree for {spaProcessId}");
+            }
         }
         else
         {
-            _logger.LogDebug($"Watch process '{stopProcess}' started.");
+            if (_logger.IsEnabled(LogLevel.Debug))
+            {
+                _logger.LogDebug($"Watch process '{stopProcess}' started.");
+            }
         }
     }
 

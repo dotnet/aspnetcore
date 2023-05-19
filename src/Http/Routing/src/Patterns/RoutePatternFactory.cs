@@ -823,7 +823,7 @@ public static class RoutePatternFactory
 
         if (@default != null && parameterKind == RoutePatternParameterKind.Optional)
         {
-            throw new ArgumentNullException(nameof(parameterKind), Resources.TemplateRoute_OptionalCannotHaveDefaultValue);
+            throw new ArgumentException(Resources.TemplateRoute_OptionalCannotHaveDefaultValue);
         }
 
         return ParameterPartCore(
@@ -860,7 +860,7 @@ public static class RoutePatternFactory
 
         if (@default != null && parameterKind == RoutePatternParameterKind.Optional)
         {
-            throw new ArgumentNullException(nameof(parameterKind), Resources.TemplateRoute_OptionalCannotHaveDefaultValue);
+            throw new ArgumentException(Resources.TemplateRoute_OptionalCannotHaveDefaultValue);
         }
 
         ArgumentNullException.ThrowIfNull(parameterPolicies);
@@ -899,7 +899,7 @@ public static class RoutePatternFactory
 
         if (@default != null && parameterKind == RoutePatternParameterKind.Optional)
         {
-            throw new ArgumentNullException(nameof(parameterKind), Resources.TemplateRoute_OptionalCannotHaveDefaultValue);
+            throw new ArgumentException(Resources.TemplateRoute_OptionalCannotHaveDefaultValue);
         }
 
         ArgumentNullException.ThrowIfNull(parameterPolicies);
