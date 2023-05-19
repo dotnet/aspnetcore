@@ -1,7 +1,43 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <TestConsoleAppSourceFiles Include="SlimBuilderDoesNotDependOnX509Test.cs">
+    <TestConsoleAppSourceFiles Include="SlimBuilderDoesNotDependOnX509Test0.cs">
+      <DisabledFeatureSwitches>System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault</DisabledFeatureSwitches>
+      <AdditionalSourceFiles>X509Utilities.cs</AdditionalSourceFiles>
+    </TestConsoleAppSourceFiles>
+    <TestConsoleAppSourceFiles Include="SlimBuilderDoesNotDependOnX509Test1.cs">
+      <DisabledFeatureSwitches>System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault</DisabledFeatureSwitches>
+      <AdditionalSourceFiles>X509Utilities.cs</AdditionalSourceFiles>
+    </TestConsoleAppSourceFiles>
+    <TestConsoleAppSourceFiles Include="SlimBuilderDoesNotDependOnX509Test2.cs">
+      <DisabledFeatureSwitches>System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault</DisabledFeatureSwitches>
+      <AdditionalSourceFiles>X509Utilities.cs</AdditionalSourceFiles>
+    </TestConsoleAppSourceFiles>
+    <TestConsoleAppSourceFiles Include="SlimBuilderDoesNotDependOnX509Test3.cs">
+      <DisabledFeatureSwitches>System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault</DisabledFeatureSwitches>
+      <AdditionalSourceFiles>X509Utilities.cs</AdditionalSourceFiles>
+    </TestConsoleAppSourceFiles>
+    <TestConsoleAppSourceFiles Include="SlimBuilderDoesNotDependOnX509Test4.cs">
+      <DisabledFeatureSwitches>System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault</DisabledFeatureSwitches>
+      <AdditionalSourceFiles>X509Utilities.cs</AdditionalSourceFiles>
+    </TestConsoleAppSourceFiles>
+    <TestConsoleAppSourceFiles Include="SlimBuilderDoesNotDependOnX509Test5.cs">
+      <DisabledFeatureSwitches>System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault</DisabledFeatureSwitches>
+      <AdditionalSourceFiles>X509Utilities.cs</AdditionalSourceFiles>
+    </TestConsoleAppSourceFiles>
+    <TestConsoleAppSourceFiles Include="SlimBuilderDoesNotDependOnX509Test6.cs">
+      <DisabledFeatureSwitches>System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault</DisabledFeatureSwitches>
+      <AdditionalSourceFiles>X509Utilities.cs</AdditionalSourceFiles>
+    </TestConsoleAppSourceFiles>
+    <TestConsoleAppSourceFiles Include="SlimBuilderDoesNotDependOnX509Test7.cs">
+      <DisabledFeatureSwitches>System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault</DisabledFeatureSwitches>
+      <AdditionalSourceFiles>X509Utilities.cs</AdditionalSourceFiles>
+    </TestConsoleAppSourceFiles>
+    <TestConsoleAppSourceFiles Include="SlimBuilderDoesNotDependOnX509Test8.cs">
+      <DisabledFeatureSwitches>System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault</DisabledFeatureSwitches>
+      <AdditionalSourceFiles>X509Utilities.cs</AdditionalSourceFiles>
+    </TestConsoleAppSourceFiles>
+    <TestConsoleAppSourceFiles Include="SlimBuilderDoesNotDependOnX509Test9.cs">
       <DisabledFeatureSwitches>System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault</DisabledFeatureSwitches>
       <AdditionalSourceFiles>X509Utilities.cs</AdditionalSourceFiles>
     </TestConsoleAppSourceFiles>
