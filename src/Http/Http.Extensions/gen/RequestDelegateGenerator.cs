@@ -155,7 +155,7 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                     }
                     else
                     {
-                        codeWriter.WriteLine($"{SymbolDisplay.FormatLiteral(endpoint.RoutePattern!, true)},");
+                        codeWriter.WriteLine($"{SymbolDisplay.FormatLiteral("{*path:nonfile}", true)},");
                     }
                     codeWriter.WriteLine("handler,");
                     codeWriter.WriteLine($"{endpoint.EmitVerb()},");

@@ -10,7 +10,6 @@ namespace Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerM
 
 internal static class InvocationOperationExtensions
 {
-    private const int RoutePatternArgumentOrdinal = 1;
     public static readonly string[] KnownMethods =
     {
         "MapGet",
@@ -60,33 +59,6 @@ internal static class InvocationOperationExtensions
         {
             methodName = method;
             return true;
-        }
-        return false;
-    }
-
-    public static bool TryGetRouteHandlerPattern(this IInvocationOperation invocation, [NotNullWhen(true)] out string? token)
-    {
-        token = default;
-        if (invocation.Syntax.TryGetMapMethodName(out var methodName))
-        {
-            if (methodName == "MapFallback" && invocation.Arguments.Length == 2)
-            {
-                token = "{*path:nonfile}";
-                return true;
-            }
-            foreach (var argument in invocation.Arguments)
-            {
-                if (argument.Parameter?.Ordinal == RoutePatternArgumentOrdinal)
-                {
-                    if (argument?.Syntax is not ArgumentSyntax routePatternArgumentSyntax ||
-                        routePatternArgumentSyntax.Expression is not LiteralExpressionSyntax routePatternArgumentLiteralSyntax)
-                    {
-                        return false;
-                    }
-                    token = routePatternArgumentLiteralSyntax.Token.ValueText;
-                    return true;
-                }
-            }
         }
         return false;
     }

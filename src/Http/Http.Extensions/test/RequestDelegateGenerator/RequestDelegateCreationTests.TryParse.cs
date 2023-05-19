@@ -161,7 +161,6 @@ app.MapGet("/hello", ([FromQuery]{{parameterType}} p) => p.MagicValue);
 
         VerifyStaticEndpointModel(results, (endpointModel) =>
         {
-            Assert.Equal("/hello", endpointModel.RoutePattern);
             Assert.Equal("MapGet", endpointModel.HttpMethod);
             var p = Assert.Single(endpointModel.Parameters);
             Assert.Equal(EndpointParameterSource.Query, p.Source);
@@ -185,7 +184,6 @@ app.MapGet("/hello", ([FromQuery]TryParseTodo p) => p.Name!);
 
         VerifyStaticEndpointModel(results, endpointModel =>
         {
-            Assert.Equal("/hello", endpointModel.RoutePattern);
             Assert.Equal("MapGet", endpointModel.HttpMethod);
             var p = Assert.Single(endpointModel.Parameters);
             Assert.Equal(EndpointParameterSource.Query, p.Source);
@@ -210,7 +208,6 @@ app.MapGet("/hello", ([FromQuery]TodoStatus p) => p.ToString());
 
         VerifyStaticEndpointModel(results, endpointModel =>
         {
-            Assert.Equal("/hello", endpointModel.RoutePattern);
             Assert.Equal("MapGet", endpointModel.HttpMethod);
             var p = Assert.Single(endpointModel.Parameters);
             Assert.Equal(EndpointParameterSource.Query, p.Source);
