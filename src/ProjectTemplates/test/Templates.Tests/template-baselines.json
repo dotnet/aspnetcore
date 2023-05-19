@@ -574,9 +574,9 @@
       ],
       "AuthOption": "None"
     },
-    "UseClient": {
+    "UseWebAssembly": {
       "Template": "web",
-      "Arguments": "new blazor --use-client",
+      "Arguments": "new blazor --use-wasm",
       "Files": [
         "_Imports.razor",
         "App.razor",
@@ -614,7 +614,7 @@
     },
     "ServerAndClient": {
       "Template": "web",
-      "Arguments": "new blazor --use-client --use-server",
+      "Arguments": "new blazor --use-wasm --use-server",
       "Files": [
         "_Imports.razor",
         "App.razor",

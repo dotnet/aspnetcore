@@ -13,8 +13,8 @@
       "longName": "use-server",
       "isHidden": true
     },
-    "UseClient": {
-      "longName": "use-client",
+    "UseWebAssembly": {
+      "longName": "use-wasm",
       "isHidden": true
     },
     "Framework": {

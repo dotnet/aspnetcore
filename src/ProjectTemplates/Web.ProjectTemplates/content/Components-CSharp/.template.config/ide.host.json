@@ -10,7 +10,7 @@
       "persistenceScope": "templateGroup"
     },
     {
-      "id": "UseClient",
+      "id": "UseWebAssembly",
       "isVisible": false,
       "persistenceScope": "templateGroup"
     },

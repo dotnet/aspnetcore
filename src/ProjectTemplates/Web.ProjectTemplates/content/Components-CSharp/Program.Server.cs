@@ -3,24 +3,24 @@ using Components_CSharp;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-#if (!UseServer && !UseClient)
+#if (!UseServer && !UseWebAssembly)
 builder.Services.AddRazorComponents();
 #else
 builder.Services.AddRazorComponents()
-    #if (UseServer && UseClient)
+    #if (UseServer && UseWebAssembly)
     .AddServerComponents()
-    .AddWebassemblyComponents();
+    .AddWebAssemblyComponents();
     #elif(UseServer)
     .AddServerComponents();
-    #elif(UseClient)
-    .AddWebassemblyComponents();
+    #elif(UseWebAssembly)
+    .AddWebAssemblyComponents();
     #endif
 #endif
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-#if (UseClient)
+#if (UseWebAssembly)
 if (app.Environment.IsDevelopment())
 {
     app.UseWebAssemblyDebugging();

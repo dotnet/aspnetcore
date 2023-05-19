@@ -1,11 +1,11 @@
 ﻿@page "/counter"
-@*#if (UseServer && !UseClient) -->
+@*#if (UseServer && !UseWebAssembly) -->
 @attribute [RenderModeServer]
 ##endif*@
-@*#if (!UseServer && UseClient) -->
+@*#if (!UseServer && UseWebAssembly) -->
 @attribute [RenderModeWebassembly]
 ##endif*@
-@*#if (UseServer && UseClient) -->
+@*#if (UseServer && UseWebAssembly) -->
 @attribute [RenderModeAuto]
 ##endif*@
 

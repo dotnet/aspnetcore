@@ -20,12 +20,14 @@
 </head>
 
 <body>
+    @*#if (UseWebAssembly) -->
 
     <svg class="loading-progress">
         <circle r="40%" cx="50%" cy="50%" />
         <circle r="40%" cx="50%" cy="50%" />
     </svg>
     <div class="loading-progress-text"></div>
+    ##endif*@
 
     <Router AppAssembly="@typeof(App).Assembly">
         <Found Context="routeData">
@@ -39,12 +41,14 @@
             </LayoutView>
         </NotFound>
     </Router>
+    @*#if (UseServer || UseWebAssembly) -->
 
     <div id="blazor-error-ui">
         An unhandled error has occurred.
         <a href="" class="reload">Reload</a>
         <a class="dismiss">🗙</a>
     </div>
+    ##endif*@
 
     <script src="_framework/blazor.web.js" suppress-error="BL9992"></script>
     @*#if PWA -->

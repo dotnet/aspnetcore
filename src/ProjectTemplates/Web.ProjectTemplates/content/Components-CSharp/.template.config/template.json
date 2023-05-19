@@ -48,7 +48,7 @@
           ]
         },
         {
-          "condition": "(!UseClient)",
+          "condition": "(!UseWebAssembly)",
           "exclude": [
             "Program.Browser.Main.cs",
             "Program.Browser.cs",
@@ -68,7 +68,7 @@
           ]
         },
         {
-          "condition": "(UseProgramMain && !UseClient)",
+          "condition": "(UseProgramMain && !UseWebAssembly)",
           "exclude": [
             "Program.Server.cs",
             "Program.Browser.cs"
@@ -78,7 +78,13 @@
           }
         },
         {
-          "condition": "(UseProgramMain && UseClient)",
+          "condition": "(!UseServer && !UseWebAssembly)",
+          "exclude": [
+            "Pages/Counter.razor"
+          ]
+        },
+        {
+          "condition": "(UseProgramMain && UseWebAssembly)",
           "exclude": [
             "Program.Server.cs",
             "Program.Browser.cs"
@@ -211,7 +217,7 @@
       },
       "replaces": "44300"
     },
-    "UseClient": {
+    "UseWebAssembly": {
       "type": "parameter",
       "datatype": "bool",
       "defaultValue": "false",
