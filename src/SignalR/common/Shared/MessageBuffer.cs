@@ -227,7 +227,7 @@ internal sealed class MessageBuffer : IDisposable
 
         if (sequenceMessage.SequenceId > _currentReceivingSequenceId)
         {
-            throw new Exception("Sequence ID greater than amount we've acked");
+            throw new InvalidOperationException("Sequence ID greater than amount we've acked");
         }
         _currentReceivingSequenceId = sequenceMessage.SequenceId;
     }
