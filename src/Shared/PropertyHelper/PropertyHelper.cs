@@ -42,8 +42,6 @@ internal sealed class PropertyHelper
 
     private static readonly ConcurrentDictionary<Type, PropertyHelper[]> VisiblePropertiesCache = new();
 
-    private static readonly Type IsByRefLikeAttribute = typeof(System.Runtime.CompilerServices.IsByRefLikeAttribute);
-
     private Action<object, object?>? _valueSetter;
     private Func<object, object?>? _valueGetter;
 
@@ -565,10 +563,7 @@ internal sealed class PropertyHelper
     // see: https://github.com/aspnet/Mvc/issues/8545
     private static bool IsRefStructProperty(PropertyInfo property)
     {
-        return
-            IsByRefLikeAttribute != null &&
-            property.PropertyType.IsValueType &&
-            property.PropertyType.IsDefined(IsByRefLikeAttribute);
+        return property.PropertyType.IsByRefLike;
     }
 
     internal static class MetadataUpdateHandler
