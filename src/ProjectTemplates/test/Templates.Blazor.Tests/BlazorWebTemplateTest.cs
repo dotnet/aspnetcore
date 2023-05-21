@@ -110,6 +110,6 @@ public class BlazorWebTemplateTest : LoggedTest
     private class BlazorTemplatePages
     {
         internal static readonly string Index = "";
-        internal static readonly string FetchData = "fetchdata";
+        internal static readonly string FetchData = "showdata";
     }
 }
