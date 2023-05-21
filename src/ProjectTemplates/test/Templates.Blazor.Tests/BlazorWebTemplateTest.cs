@@ -75,10 +75,6 @@ public class BlazorWebTemplateTest : LoggedTest
             },
             new Page
             {
-                Url = BlazorTemplatePages.Counter,
-            },
-            new Page
-            {
                 Url = BlazorTemplatePages.FetchData,
             }
         };
@@ -114,7 +110,6 @@ public class BlazorWebTemplateTest : LoggedTest
     private class BlazorTemplatePages
     {
         internal static readonly string Index = "";
-        internal static readonly string Counter = "counter";
         internal static readonly string FetchData = "fetchdata";
     }
 }
