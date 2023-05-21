@@ -32,18 +32,17 @@ public readonly struct FieldIdentifier : IEquatable<FieldIdentifier>
     /// <param name="fieldName">The name of the editable field.</param>
     public FieldIdentifier(object model, string fieldName)
     {
-        ArgumentNullException.ThrowIfNull(model);
+        ArgumentNullException.ThrowIfNull(model, nameof(model));
 
         if (model.GetType().IsValueType)
         {
             throw new ArgumentException("The model must be a reference-typed object.", nameof(model));
         }
 
-        Model = model;
-
         // Note that we do allow an empty string. This is used by some validation systems
         // as a place to store object-level (not per-property) messages.
-        FieldName = fieldName ?? throw new ArgumentNullException(nameof(fieldName));
+        FieldName = fieldName ?? throw new ArgumentNullException(nameof(fieldName), "The field name cannot be null. Please provide a valid field name.");
+        Model = model;
     }
 
     /// <summary>
