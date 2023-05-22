@@ -12,10 +12,10 @@ import sys
 import json
 
 def print_usage():
-	print """
+	print ("""
 		Usage: extract_json_value.py [json file path] [key of value to extract]
 		For nested keys, use . separator
-	"""
+	""")
 
 def help_and_exit(msg=None):
 	print msg
