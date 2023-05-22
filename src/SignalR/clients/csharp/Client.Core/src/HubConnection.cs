@@ -1014,13 +1014,9 @@ public partial class HubConnection : IAsyncDisposable
         Log.ResettingKeepAliveTimer(_logger);
         connectionState.ResetTimeout();
 
-        if (connectionState.UsingAcks())
+        if (!connectionState.ShouldProcessMessage(message))
         {
-            if (!connectionState.ShouldProcessMessage(message))
-            {
-                _logger.LogInformation($"Dropped {((HubInvocationMessage)message).GetType().Name}. ID: {((HubInvocationMessage)message).InvocationId}");
-                return null;
-            }
+            return null;
         }
 
         InvocationRequest? irq;
@@ -1075,18 +1071,12 @@ public partial class HubConnection : IAsyncDisposable
                 // timeout is reset above, on receiving any message
                 break;
             case AckMessage ackMessage:
-                _logger.LogInformation("Received Ack with ID {id}", ackMessage.SequenceId);
-                if (connectionState.UsingAcks())
-                {
-                    connectionState.Ack(ackMessage);
-                }
+                Log.ReceivedAckMessage(_logger, ackMessage.SequenceId);
+                connectionState.Ack(ackMessage);
                 break;
             case SequenceMessage sequenceMessage:
-                _logger.LogInformation("Received SequenceMessage with ID {id}", sequenceMessage.SequenceId);
-                if (connectionState.UsingAcks())
-                {
-                    connectionState.ResetSequence(sequenceMessage);
-                }
+                Log.ReceivedSequenceMessage(_logger, sequenceMessage.SequenceId);
+                connectionState.ResetSequence(sequenceMessage);
                 break;
             default:
                 throw new InvalidOperationException($"Unexpected message type: {message.GetType().FullName}");
@@ -2018,20 +2008,31 @@ public partial class HubConnection : IAsyncDisposable
 
         public bool ShouldProcessMessage(HubMessage message)
         {
-            Debug.Assert(_messageBuffer is not null);
-            return _messageBuffer.ShouldProcessMessage(message);
+            if (UsingAcks())
+            {
+                if (!_messageBuffer.ShouldProcessMessage(message))
+                {
+                    Log.DroppingMessage(_logger, ((HubInvocationMessage)message).GetType().Name, ((HubInvocationMessage)message).InvocationId);
+                    return false;
+                }
+            }
+            return true;
         }
 
         public void Ack(AckMessage ackMessage)
         {
-            Debug.Assert(_messageBuffer is not null);
-            _messageBuffer.Ack(ackMessage);
+            if (UsingAcks())
+            {
+                _messageBuffer.Ack(ackMessage);
+            }
         }
 
         public void ResetSequence(SequenceMessage sequenceMessage)
         {
-            Debug.Assert(_messageBuffer is not null);
-            _messageBuffer.ResetSequence(sequenceMessage);
+            if (UsingAcks())
+            {
+                _messageBuffer.ResetSequence(sequenceMessage);
+            }
         }
 
         [MemberNotNullWhen(true, nameof(_messageBuffer))]

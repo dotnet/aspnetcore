@@ -18,7 +18,7 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
     private volatile bool _aborted;
 
     // Used to determine if the close was graceful or a network issue
-    private bool _closed;
+    private bool _gracefulClose;
 
     public WebSocketsServerTransport(WebSocketOptions options, IDuplexPipe application, HttpConnectionContext connection, ILoggerFactory loggerFactory)
     {
@@ -54,7 +54,7 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
             }
         }
 
-        return _closed;
+        return _gracefulClose;
     }
 
     public async Task ProcessSocketAsync(WebSocket socket)
@@ -141,7 +141,7 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
 
                 if (result.MessageType == WebSocketMessageType.Close)
                 {
-                    _closed = true;
+                    _gracefulClose = true;
                     return;
                 }
 
@@ -152,7 +152,7 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
                 // Need to check again for netcoreapp3.0 and later because a close can happen between a 0-byte read and the actual read
                 if (receiveResult.MessageType == WebSocketMessageType.Close)
                 {
-                    _closed = true;
+                    _gracefulClose = true;
                     return;
                 }
 
@@ -183,13 +183,13 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
         {
             if (!_aborted && !token.IsCancellationRequested)
             {
-                _closed = true;
+                _gracefulClose = true;
                 _application.Output.Complete(ex);
             }
         }
         finally
         {
-            if (_closed)
+            if (_gracefulClose)
             {
                 // We're done writing
                 _application.Output.Complete();
@@ -241,7 +241,7 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
                         }
                         catch (OperationCanceledException ex) when (ex.CancellationToken == _connection.SendingToken)
                         {
-                            _closed = true;
+                            _gracefulClose = true;
                             // TODO: probably log
                             break;
                         }
@@ -286,15 +286,14 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
                 }
             }
 
-            if (_closed)
+            if (_gracefulClose)
             {
                 _application.Input.Complete(error);
             }
-            // TODO
-            //else if (error is not null)
-            //{
-            //    _logger.LogError("Error in send {ex}.", error);
-            //}
+            else if (error is not null)
+            {
+                Log.SendErrored(_logger, error);
+            }
         }
     }
 

@@ -548,6 +548,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
             // TODO: remove transport check once other transports support acks
             if (UseAcks && TransportType == HttpTransportType.WebSockets)
             {
+                // Break transport send loop in case it's still waiting on reading from the application
                 Application.Input.CancelPendingRead();
                 UpdateConnectionPair();
             }
@@ -657,14 +658,16 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         var prevPipe = Application.Input;
         var input = new Pipe(_options.TransportPipeOptions);
 
+        // Add new pipe for reading from and writing to transport from app code
         var transportToApplication = new DuplexPipe(Transport.Input, input.Writer);
         var applicationToTransport = new DuplexPipe(input.Reader, Application.Output);
 
         Application = applicationToTransport;
         Transport = transportToApplication;
 
+        // Close previous pipe with specific error that application code can catch to know a restart is occurring
         prevPipe.Complete(new ConnectionResetException(""));
-        Features.GetRequiredFeature<IReconnectFeature>().NotifyOnReconnect?.Invoke();
+        Features.GetRequiredFeature<IReconnectFeature>().NotifyOnReconnect.Invoke();
     }
 
     private static partial class Log
