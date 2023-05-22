@@ -381,7 +381,6 @@ internal sealed partial class Request
             return MemoryMarshal.CreateReadOnlySpan(
                 ref Unsafe.As<byte, long>(ref MemoryMarshal.GetReference(timingInfo.Span.Slice(sizeof(long)))),
                 timingCount);
-
         }
     }
 
