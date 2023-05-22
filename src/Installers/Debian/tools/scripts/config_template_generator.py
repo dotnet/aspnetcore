@@ -157,7 +157,7 @@ def generate_symlinks(config_data, package_name=None):
 
     symlink_data = config_data.get("symlinks", dict())
 
-    for package_rel_path, symlink_path in symlink_data.iteritems():
+    for package_rel_path, symlink_path in iter(symlink_data.items()):
 
         package_abs_path = os.path.join(package_root_path, package_rel_path)
 
