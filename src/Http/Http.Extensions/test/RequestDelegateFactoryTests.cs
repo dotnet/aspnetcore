@@ -575,26 +575,6 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
     [Theory]
     [MemberData(nameof(TryParsableArrayParameters))]
-    public async Task RequestDelegateHandlesArraysFromQueryString(Delegate action, string[]? queryValues, object? expectedParameterValue)
-    {
-        var httpContext = CreateHttpContext();
-        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
-        {
-            ["tryParsable"] = queryValues
-        });
-
-        var factoryResult = RequestDelegateFactory.Create(action, new() { DisableInferBodyFromParameters = true });
-
-        var requestDelegate = factoryResult.RequestDelegate;
-
-        await requestDelegate(httpContext);
-
-        Assert.NotEmpty(httpContext.Items);
-        Assert.Equal(expectedParameterValue, httpContext.Items["tryParsable"]);
-    }
-
-    [Theory]
-    [MemberData(nameof(TryParsableArrayParameters))]
     public async Task RequestDelegateHandlesDoesNotHandleArraysFromQueryStringWhenBodyIsInferred(Delegate action, string[]? queryValues, object? expectedParameterValue)
     {
         var httpContext = CreateHttpContext();
@@ -638,76 +618,6 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
         Assert.NotEmpty(httpContext.Items);
         Assert.Null(httpContext.Items["tryParsable"]);
-    }
-
-    [Fact]
-    public async Task RequestDelegateHandlesArraysFromExplicitQueryStringSource()
-    {
-        var httpContext = CreateHttpContext();
-        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
-        {
-            ["a"] = new(new[] { "1", "2", "3" })
-        });
-
-        httpContext.Request.Headers["Custom"] = new(new[] { "4", "5", "6" });
-
-        httpContext.Request.Form = new FormCollection(new Dictionary<string, StringValues>
-        {
-            ["form"] = new(new[] { "7", "8", "9" })
-        });
-
-        var factoryResult = RequestDelegateFactory.Create((HttpContext context,
-            [FromHeader(Name = "Custom")] int[] headerValues,
-            [FromQuery(Name = "a")] int[] queryValues,
-            [FromForm(Name = "form")] int[] formValues) =>
-        {
-            context.Items["headers"] = headerValues;
-            context.Items["query"] = queryValues;
-            context.Items["form"] = formValues;
-        });
-
-        var requestDelegate = factoryResult.RequestDelegate;
-
-        await requestDelegate(httpContext);
-
-        Assert.Equal(new[] { 1, 2, 3 }, (int[])httpContext.Items["query"]!);
-        Assert.Equal(new[] { 4, 5, 6 }, (int[])httpContext.Items["headers"]!);
-        Assert.Equal(new[] { 7, 8, 9 }, (int[])httpContext.Items["form"]!);
-    }
-
-    [Fact]
-    public async Task RequestDelegateHandlesStringValuesFromExplicitQueryStringSource()
-    {
-        var httpContext = CreateHttpContext();
-        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
-        {
-            ["a"] = new(new[] { "1", "2", "3" })
-        });
-
-        httpContext.Request.Headers["Custom"] = new(new[] { "4", "5", "6" });
-
-        httpContext.Request.Form = new FormCollection(new Dictionary<string, StringValues>
-        {
-            ["form"] = new(new[] { "7", "8", "9" })
-        });
-
-        var factoryResult = RequestDelegateFactory.Create((HttpContext context,
-            [FromHeader(Name = "Custom")] StringValues headerValues,
-            [FromQuery(Name = "a")] StringValues queryValues,
-            [FromForm(Name = "form")] StringValues formValues) =>
-        {
-            context.Items["headers"] = headerValues;
-            context.Items["query"] = queryValues;
-            context.Items["form"] = formValues;
-        });
-
-        var requestDelegate = factoryResult.RequestDelegate;
-
-        await requestDelegate(httpContext);
-
-        Assert.Equal(new StringValues(new[] { "1", "2", "3" }), httpContext.Items["query"]);
-        Assert.Equal(new StringValues(new[] { "4", "5", "6" }), httpContext.Items["headers"]);
-        Assert.Equal(new StringValues(new[] { "7", "8", "9" }), httpContext.Items["form"]!);
     }
 
     [Fact]
@@ -774,26 +684,6 @@ public partial class RequestDelegateFactoryTests : LoggedTest
     }
 
     [Fact]
-    public async Task RequestDelegateUsesTryParseOverBindAsyncGivenExplicitAttribute()
-    {
-        var fromRouteFactoryResult = RequestDelegateFactory.Create((HttpContext httpContext, [FromRoute] MyBindAsyncRecord myBindAsyncRecord) => { });
-        var fromQueryFactoryResult = RequestDelegateFactory.Create((HttpContext httpContext, [FromQuery] MyBindAsyncRecord myBindAsyncRecord) => { });
-
-        var httpContext = CreateHttpContext();
-        httpContext.Request.RouteValues["myBindAsyncRecord"] = "foo";
-        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
-        {
-            ["myBindAsyncRecord"] = "foo"
-        });
-
-        var fromRouteRequestDelegate = fromRouteFactoryResult.RequestDelegate;
-        var fromQueryRequestDelegate = fromQueryFactoryResult.RequestDelegate;
-
-        await Assert.ThrowsAsync<NotImplementedException>(() => fromRouteRequestDelegate(httpContext));
-        await Assert.ThrowsAsync<NotImplementedException>(() => fromQueryRequestDelegate(httpContext));
-    }
-
-    [Fact]
     public async Task RequestDelegateCanAwaitValueTasksThatAreNotImmediatelyCompleted()
     {
         var httpContext = CreateHttpContext();
@@ -812,25 +702,6 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
         Assert.Equal(new MyAwaitedBindAsyncRecord(new Uri("https://example.org")), httpContext.Items["myAwaitedBindAsyncRecord"]);
         Assert.Equal(new MyAwaitedBindAsyncStruct(new Uri("https://example.org")), httpContext.Items["myAwaitedBindAsyncStruct"]);
-    }
-
-    [Fact]
-    public async Task RequestDelegateUsesBindAsyncFromImplementedInterface()
-    {
-        var httpContext = CreateHttpContext();
-
-        httpContext.Request.Headers.Referer = "https://example.org";
-
-        var resultFactory = RequestDelegateFactory.Create((HttpContext httpContext, MyBindAsyncFromInterfaceRecord myBindAsyncRecord) =>
-        {
-            httpContext.Items["myBindAsyncFromInterfaceRecord"] = myBindAsyncRecord;
-        });
-
-        var requestDelegate = resultFactory.RequestDelegate;
-
-        await requestDelegate(httpContext);
-
-        Assert.Equal(new MyBindAsyncFromInterfaceRecord(new Uri("https://example.org")), httpContext.Items["myBindAsyncFromInterfaceRecord"]);
     }
 
     public static object[][] DelegatesWithAttributesOnNotTryParsableParameters
@@ -900,118 +771,6 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
         Assert.Equal(@"Failed to bind parameter ""Nullable<int>[] values"" from """".", badHttpRequestException.Message);
         Assert.Equal(400, badHttpRequestException.StatusCode);
-    }
-
-    [Fact]
-    public async Task BindAsyncWithBodyArgument()
-    {
-        Todo originalTodo = new()
-        {
-            Name = "Write more tests!"
-        };
-
-        var httpContext = CreateHttpContext();
-
-        var requestBodyBytes = JsonSerializer.SerializeToUtf8Bytes(originalTodo);
-        var stream = new MemoryStream(requestBodyBytes);
-        httpContext.Request.Body = stream;
-
-        httpContext.Request.Headers["Content-Type"] = "application/json";
-        httpContext.Request.Headers["Content-Length"] = stream.Length.ToString(CultureInfo.InvariantCulture);
-        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
-
-        var jsonOptions = new JsonOptions();
-        jsonOptions.SerializerOptions.Converters.Add(new TodoJsonConverter());
-
-        var mock = new Mock<IServiceProvider>();
-        mock.Setup(m => m.GetService(It.IsAny<Type>())).Returns<Type>(t =>
-        {
-            if (t == typeof(IOptions<JsonOptions>))
-            {
-                return Options.Create(jsonOptions);
-            }
-            return null;
-        });
-
-        httpContext.RequestServices = mock.Object;
-        httpContext.Request.Headers.Referer = "https://example.org";
-
-        var invoked = false;
-
-        var factoryResult = RequestDelegateFactory.Create((HttpContext context, MyBindAsyncRecord myBindAsyncRecord, Todo todo) =>
-        {
-            invoked = true;
-            context.Items[nameof(myBindAsyncRecord)] = myBindAsyncRecord;
-            context.Items[nameof(todo)] = todo;
-        });
-
-        var requestDelegate = factoryResult.RequestDelegate;
-
-        await requestDelegate(httpContext);
-
-        Assert.True(invoked);
-        var arg = httpContext.Items["myBindAsyncRecord"] as MyBindAsyncRecord;
-        Assert.NotNull(arg);
-        Assert.Equal("https://example.org/", arg!.Uri.ToString());
-        var todo = httpContext.Items["todo"] as Todo;
-        Assert.NotNull(todo);
-        Assert.Equal("Write more tests!", todo!.Name);
-    }
-
-    [Fact]
-    public async Task BindAsyncRunsBeforeBodyBinding()
-    {
-        Todo originalTodo = new()
-        {
-            Name = "Write more tests!"
-        };
-
-        var httpContext = CreateHttpContext();
-
-        var requestBodyBytes = JsonSerializer.SerializeToUtf8Bytes(originalTodo);
-        var stream = new MemoryStream(requestBodyBytes);
-        httpContext.Request.Body = stream;
-
-        httpContext.Request.Headers["Content-Type"] = "application/json";
-        httpContext.Request.Headers["Content-Length"] = stream.Length.ToString(CultureInfo.InvariantCulture);
-        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
-
-        var jsonOptions = new JsonOptions();
-        jsonOptions.SerializerOptions.Converters.Add(new TodoJsonConverter());
-
-        var mock = new Mock<IServiceProvider>();
-        mock.Setup(m => m.GetService(It.IsAny<Type>())).Returns<Type>(t =>
-        {
-            if (t == typeof(IOptions<JsonOptions>))
-            {
-                return Options.Create(jsonOptions);
-            }
-            return null;
-        });
-
-        httpContext.RequestServices = mock.Object;
-        httpContext.Request.Headers.Referer = "https://example.org";
-
-        var invoked = false;
-
-        var factoryResult = RequestDelegateFactory.Create((HttpContext context, CustomTodo customTodo, Todo todo) =>
-        {
-            invoked = true;
-            context.Items[nameof(customTodo)] = customTodo;
-            context.Items[nameof(todo)] = todo;
-        });
-
-        var requestDelegate = factoryResult.RequestDelegate;
-
-        await requestDelegate(httpContext);
-
-        Assert.True(invoked);
-        var todo0 = httpContext.Items["customTodo"] as Todo;
-        Assert.NotNull(todo0);
-        Assert.Equal("Write more tests!", todo0!.Name);
-        var todo1 = httpContext.Items["todo"] as Todo;
-        Assert.NotNull(todo1);
-        Assert.Equal("Write more tests!", todo1!.Name);
     }
 
     private record ParametersListWithImplictFromBody(HttpContext HttpContext, TodoStruct Todo);
@@ -4520,19 +4279,6 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         public string? Child { get; set; }
     }
 
-    private class CustomTodo : Todo
-    {
-        public static async ValueTask<CustomTodo?> BindAsync(HttpContext context, ParameterInfo parameter)
-        {
-            Assert.Equal(typeof(CustomTodo), parameter.ParameterType);
-            Assert.Equal("customTodo", parameter.Name);
-
-            var body = await context.Request.ReadFromJsonAsync<CustomTodo>();
-            context.Request.Body.Position = 0;
-            return body;
-        }
-    }
-
     [JsonPolymorphic]
     [JsonDerivedType(typeof(JsonTodoChild), nameof(JsonTodoChild))]
     private class JsonTodo : Todo
@@ -4547,53 +4293,6 @@ public partial class RequestDelegateFactoryTests : LoggedTest
     }
 
     private record struct TodoStruct(int Id, string? Name, bool IsComplete) : ITodo;
-
-    private interface ITodo
-    {
-        public int Id { get; }
-        public string? Name { get; }
-        public bool IsComplete { get; }
-    }
-
-    class TodoJsonConverter : JsonConverter<ITodo>
-    {
-        public override ITodo? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-        {
-            var todo = new Todo();
-            while (reader.Read())
-            {
-                if (reader.TokenType == JsonTokenType.EndObject)
-                {
-                    break;
-                }
-
-                var property = reader.GetString()!;
-                reader.Read();
-
-                switch (property.ToLowerInvariant())
-                {
-                    case "id":
-                        todo.Id = reader.GetInt32();
-                        break;
-                    case "name":
-                        todo.Name = reader.GetString();
-                        break;
-                    case "iscomplete":
-                        todo.IsComplete = reader.GetBoolean();
-                        break;
-                    default:
-                        break;
-                }
-            }
-
-            return todo;
-        }
-
-        public override void Write(Utf8JsonWriter writer, ITodo value, JsonSerializerOptions options)
-        {
-            throw new NotImplementedException();
-        }
-    }
 
     private class FromRouteAttribute : Attribute, IFromRouteMetadata
     {

@@ -242,4 +242,25 @@ app.MapGet("/hello/{tryParsable}", (HttpContext context, {{typeName}} tryParsabl
 
         Assert.Equal(expectedParameterValue, httpContext.Items["tryParsable"]);
     }
+
+    [Theory]
+    [InlineData("void TestAction(HttpContext httpContext, [FromRoute] MyBindAsyncRecord myBindAsyncRecord) { }")]
+    [InlineData("void TestAction(HttpContext httpContext, [FromQuery] MyBindAsyncRecord myBindAsyncRecord) { }")]
+    public async Task RequestDelegateUsesTryParseOverBindAsyncGivenExplicitAttribute(string source)
+    {
+        var (_, compilation) = await RunGeneratorAsync($$"""
+{{source}}
+app.MapGet("/{myBindAsyncRecord}", TestAction);
+""");
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.RouteValues["myBindAsyncRecord"] = "foo";
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["myBindAsyncRecord"] = "foo"
+        });
+
+        await Assert.ThrowsAsync<NotImplementedException>(async () => await endpoint.RequestDelegate(httpContext));
+    }
 }

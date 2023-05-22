@@ -567,4 +567,41 @@ app.MapFallback((HttpContext httpContext, int id) =>
         Assert.Equal(42, httpContext.Items["id"]);
         Assert.Equal(200, httpContext.Response.StatusCode);
     }
+
+    [Fact]
+    public async Task RequestDelegateHandlesStringValuesFromExplicitQueryStringSource()
+    {
+        var source = """
+app.MapPost("/", (HttpContext context,
+    [FromHeader(Name = "Custom")] int[] headerValues,
+    [FromQuery(Name = "a")] int[] queryValues,
+    [FromForm(Name = "form")] int[] formValues) =>
+{
+    context.Items["headers"] = headerValues;
+    context.Items["query"] = queryValues;
+    context.Items["form"] = formValues;
+});
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+        var httpContext = CreateHttpContext();
+
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["a"] = new(new[] { "1", "2", "3" })
+        });
+
+        httpContext.Request.Headers["Custom"] = new(new[] { "4", "5", "6" });
+
+        httpContext.Request.Form = new FormCollection(new Dictionary<string, StringValues>
+        {
+            ["form"] = new(new[] { "7", "8", "9" })
+        });
+
+        await endpoint.RequestDelegate(httpContext);
+
+        Assert.Equal(new[] { 1, 2, 3 }, (int[])httpContext.Items["query"]!);
+        Assert.Equal(new[] { 4, 5, 6 }, (int[])httpContext.Items["headers"]!);
+        Assert.Equal(new[] { 7, 8, 9 }, (int[])httpContext.Items["form"]!);
+    }
 }
