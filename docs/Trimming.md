@@ -59,7 +59,7 @@ The two most common tasks are confirming that functionality still works after tr
 Because trimming is only performed during publish, the tests can't be normal xunit tests.
 Instead, we have a system that wraps individual source files in appropriately configured projects and publishes them as standalone executables.
 These executables are then run and the test outcome is based on the exit code.
-The tests are powered by [trimmingTests.targets](..\eng\testing\linker\trimmingTests.targets), which is based on corresponding functionality in https://github.com/dotnet/runtime.
+The tests are powered by [trimmingTests.targets](../eng/testing/linker/trimmingTests.targets), which is based on corresponding functionality in https://github.com/dotnet/runtime.
 
 ### Adding a new test project
 
@@ -73,7 +73,7 @@ Adding a new test project is very simple - just call it *.TrimmingTests.proj and
 ```
 
 Unfortunately, there's no good way to specify which aspnetcore projects the tests depend upon so, to avoid dependency ordering problems, it's easiest to specify that they should be built after the main build.
-Do this by adding an entry to [RequiresDelayedBuildProjects.props](..\eng\RequiresDelayedBuildProjects.props).
+Do this by adding an entry to [RequiresDelayedBuildProjects.props](../eng/RequiresDelayedBuildProjects.props).
 
 ### Adding a new test
 
