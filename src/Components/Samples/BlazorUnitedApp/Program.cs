@@ -8,7 +8,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents();
-builder.Services.AddServerSideBlazor();
 
 builder.Services.AddSingleton<WeatherForecastService>();
 
@@ -23,12 +22,11 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseBlazorFrameworkFiles();
+
 app.UseStaticFiles();
 
 app.UseRouting();
 
 app.MapRazorComponents<App>();
-app.MapBlazorHub();
 
 app.Run();
