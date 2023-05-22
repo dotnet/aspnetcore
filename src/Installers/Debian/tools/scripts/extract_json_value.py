@@ -18,7 +18,7 @@ def print_usage():
 	""")
 
 def help_and_exit(msg=None):
-	print msg
+	print (msg)
 	print_usage()
 	sys.exit(1)
 
@@ -60,5 +60,5 @@ def execute():
 	return value
 
 if __name__ == "__main__":
-	print execute()
+	print (execute())
 
