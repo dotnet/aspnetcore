@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Buffers;
 using System.Buffers.Binary;
@@ -7889,7 +7887,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         // Check lengths are the same, then if the bytes were converted to an ascii string if they would be the same.
                         // We do not consider Utf8 headers for reuse.
                         if (previousValue.Length == value.Length &&
-                            StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, value))
+                            Ascii.Equals(previousValue, value))
                         {
                             // The previous string matches what the bytes would convert to, so we will just use that one.
                             _bits |= flag;
@@ -8105,7 +8103,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         // Check lengths are the same, then if the bytes were converted to an ascii string if they would be the same.
                         // We do not consider Utf8 headers for reuse.
                         if (previousValue.Length == value.Length &&
-                            StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, value))
+                            Ascii.Equals(previousValue, value))
                         {
                             // The previous string matches what the bytes would convert to, so we will just use that one.
                             _bits |= flag;
@@ -8308,7 +8306,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         // Check lengths are the same, then if the bytes were converted to an ascii string if they would be the same.
                         // We do not consider Utf8 headers for reuse.
                         if (previousValue.Length == value.Length &&
-                            StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, value))
+                            Ascii.Equals(previousValue, value))
                         {
                             // The previous string matches what the bytes would convert to, so we will just use that one.
                             _bits |= flag;

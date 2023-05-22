@@ -5,6 +5,7 @@ using System.Buffers;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO.Pipelines;
+using System.Text;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
@@ -339,7 +340,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         var previousValue = _parsedRawTarget;
         if (ServerOptions.DisableStringReuse ||
             previousValue == null || previousValue.Length != target.Length ||
-            !StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, target))
+            !Ascii.Equals(previousValue, target))
         {
             ParseTarget(targetPath, target);
         }
@@ -412,7 +413,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         var queryLength = query.Length;
         if (ServerOptions.DisableStringReuse ||
             previousValue == null || previousValue.Length != queryLength ||
-            !StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, query))
+            !Ascii.Equals(previousValue, query))
         {
             // The previous string does not match what the bytes would convert to,
             // so we will need to generate a new string.
@@ -458,7 +459,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         var previousValue = _parsedRawTarget;
         if (ServerOptions.DisableStringReuse ||
             previousValue == null || previousValue.Length != target.Length ||
-            !StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, target))
+            !Ascii.Equals(previousValue, target))
         {
             // The previous string does not match what the bytes would convert to,
             // so we will need to generate a new string.
@@ -516,7 +517,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         var previousValue = _parsedRawTarget;
         if (disableStringReuse ||
             previousValue == null || previousValue.Length != target.Length ||
-            !StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, target))
+            !Ascii.Equals(previousValue, target))
         {
             try
             {
@@ -548,7 +549,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
             previousValue = _parsedQueryString;
             if (disableStringReuse ||
                 previousValue == null || previousValue.Length != query.Length ||
-                !StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, query))
+                !Ascii.Equals(previousValue, query))
             {
                 // The previous string does not match what the bytes would convert to,
                 // so we will need to generate a new string.
