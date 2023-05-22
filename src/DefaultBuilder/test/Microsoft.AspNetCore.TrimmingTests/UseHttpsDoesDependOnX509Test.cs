@@ -25,7 +25,8 @@ catch (InvalidOperationException)
     // Expected if there's no dev cert installed
 }
 
-if (!X509Utilities.HasCertificateType) {
+if (!X509Utilities.HasCertificateType)
+{
     return -1;
 }
 
