@@ -342,12 +342,6 @@ public sealed class ComponentEndpointsGenerator : IIncrementalGenerator
     private bool FilterAssemblies((IAssemblySymbol assembly, IAssemblySymbol componentsAssembly) context)
     {
         var (assembly, componentsAssembly) = context;
-        if (assembly.Name.StartsWith("System.", StringComparison.Ordinal) ||
-            assembly.Name.StartsWith("Microsoft.", StringComparison.Ordinal))
-        {
-            // Filter out system assemblies as well as our components assemblies.
-            return false;
-        }
 
         if (assembly.Modules.Skip(1).Any())
         {
