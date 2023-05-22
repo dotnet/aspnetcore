@@ -47,7 +47,7 @@ def generate_and_write_all(config_data, template_dir, output_dir, package_name=N
         symlink_contents = generate_symlinks(config_data, package_name=package_name)
         rules_contents = generate_rules(config_data, template_dir)
     except Exception as exc:
-      print exc
+      print(exc)
       help_and_exit("Error: Generation Failed, check your config file.")
 
     write_file(changelog_contents, output_dir, FILE_CHANGELOG)
@@ -222,11 +222,11 @@ def write_file(contents, output_dir, name):
 
 # Tool Functions
 def help_and_exit(msg):
-    print msg
+    print(msg)
     sys.exit(1)
 
 def print_usage():
-    print "Usage: config_template_generator.py [config file path] [template directory path] [output directory] (package name) (package version)"
+    print("Usage: config_template_generator.py [config file path] [template directory path] [output directory] (package name) (package version)")
 
 def parse_and_validate_args():
     if len(sys.argv) < 4:
