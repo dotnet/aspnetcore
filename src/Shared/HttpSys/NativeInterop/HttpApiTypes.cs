@@ -45,7 +45,13 @@ internal static unsafe class HttpApiTypes
         HttpRequestInfoTypeAuth,
         HttpRequestInfoTypeChannelBind,
         HttpRequestInfoTypeSslProtocol,
-        HttpRequestInfoTypeSslTokenBinding
+        HttpRequestInfoTypeSslTokenBindingDraft,
+        HttpRequestInfoTypeSslTokenBinding,
+        HttpRequestInfoTypeRequestTiming,
+        HttpRequestInfoTypeTcpInfoV0,
+        HttpRequestInfoTypeRequestSizing,
+        HttpRequestInfoTypeQuicStats,
+        HttpRequestInfoTypeTcpInfoV1,
     }
 
     internal enum HTTP_RESPONSE_INFO_TYPE
