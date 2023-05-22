@@ -329,7 +329,7 @@ internal sealed partial class WebSocketsTransport : ITransport, IReconnectFeatur
             var trigger = await Task.WhenAny(receiving, sending).ConfigureAwait(false);
 
             _stopCts.CancelAfter(_closeTimeout);
-            _logger.LogInformation("starting close");
+
             if (trigger == receiving)
             {
                 // We're waiting for the application to finish and there are 2 things it could be doing
@@ -437,7 +437,6 @@ internal sealed partial class WebSocketsTransport : ITransport, IReconnectFeatur
                 // or if the consumer is done
                 if (flushResult.IsCanceled || flushResult.IsCompleted)
                 {
-                    _logger.LogInformation("receive: pipe canceled or completed");
                     break;
                 }
             }
@@ -456,10 +455,9 @@ internal sealed partial class WebSocketsTransport : ITransport, IReconnectFeatur
                 }
                 else
                 {
-                    //_application.Output.CancelPendingFlush();
+                    // only logging in this case because the other case gets the exception flowed to application code
+                    Log.ReceiveErrored(_logger, ex);
                 }
-                //_closed = true;
-                _logger.LogInformation(ex, "receive error");
             }
         }
         finally
@@ -511,7 +509,6 @@ internal sealed partial class WebSocketsTransport : ITransport, IReconnectFeatur
                             }
                             else
                             {
-                                socket.Dispose();
                                 break;
                             }
                         }
@@ -526,7 +523,6 @@ internal sealed partial class WebSocketsTransport : ITransport, IReconnectFeatur
                     }
                     else if (result.IsCompleted)
                     {
-                        _logger.LogInformation("send: pipe result completed");
                         break;
                     }
                 }
@@ -572,8 +568,7 @@ internal sealed partial class WebSocketsTransport : ITransport, IReconnectFeatur
             {
                 if (error is not null)
                 {
-                    // TODO: log error in else?
-                    _logger.LogInformation(error, "send error");
+                    Log.SendErrored(_logger, error);
                 }
             }
 
@@ -647,12 +642,14 @@ internal sealed partial class WebSocketsTransport : ITransport, IReconnectFeatur
         var prevPipe = _application!.Input;
         var input = new Pipe(_httpConnectionOptions.TransportPipeOptions);
 
+        // Add new pipe for reading from and writing to transport from app code
         var transportToApplication = new DuplexPipe(_transport!.Input, input.Writer);
         var applicationToTransport = new DuplexPipe(input.Reader, _application!.Output);
 
         _application = applicationToTransport;
         _transport = transportToApplication;
 
+        // Close previous pipe with specific error that application code can catch to know a restart is occurring
         prevPipe.Complete(new ConnectionResetException(""));
 
         Debug.Assert(_notifyOnReconnect is not null);

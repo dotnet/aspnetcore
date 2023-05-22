@@ -108,4 +108,13 @@ internal static partial class DefaultHubDispatcherLog
 
     [LoggerMessage(25, LogLevel.Error, "Invocation ID {InvocationId}: Failed while sending stream items from hub method {HubMethod}.", EventName = "FailedStreaming")]
     public static partial void FailedStreaming(ILogger logger, string invocationId, string hubMethod, Exception exception);
+
+    [LoggerMessage(26, LogLevel.Trace, "Dropping {MessageType} with ID '{InvocationId}'.", EventName = "DroppingMessage")]
+    public static partial void DroppingMessage(ILogger logger, string messageType, string? invocationId);
+
+    [LoggerMessage(27, LogLevel.Trace, "Received AckMessage with Sequence ID '{SequenceId}'.", EventName = "ReceivedAckMessage")]
+     public static partial void ReceivedAckMessage(ILogger logger, long sequenceId);
+
+    [LoggerMessage(28, LogLevel.Trace, "Received SequenceMessage with Sequence ID '{SequenceId}'.", EventName = "ReceivedSequenceMessage")]
+    public static partial void ReceivedSequenceMessage(ILogger logger, long sequenceId);
 }

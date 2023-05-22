@@ -132,13 +132,10 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
 
         // With parallel invokes enabled, messages run sequentially until they go async and then the next message will be allowed to start running.
 
-        if (connection.UseAcks)
+        if (!connection.ShouldProcessMessage(hubMessage))
         {
-            if (!connection.ShouldProcessMessage(hubMessage))
-            {
-                _logger.LogInformation($"dropping {((HubInvocationMessage)hubMessage).GetType().Name}. ID: {((HubInvocationMessage)hubMessage).InvocationId}");
-                return Task.CompletedTask;
-            }
+            Log.DroppingMessage(_logger, ((HubInvocationMessage)hubMessage).GetType().Name, ((HubInvocationMessage)hubMessage).InvocationId);
+            return Task.CompletedTask;
         }
 
         switch (hubMessage)
@@ -198,19 +195,13 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
                 break;
 
             case AckMessage ackMessage:
-                _logger.LogInformation("received ack with id {id}", ackMessage.SequenceId);
-                if (connection.UseAcks)
-                {
-                    connection.Ack(ackMessage);
-                }
+                Log.ReceivedAckMessage(_logger, ackMessage.SequenceId);
+                connection.Ack(ackMessage);
                 break;
 
             case SequenceMessage sequenceMessage:
-                _logger.LogInformation("received sequence message with id {id}", sequenceMessage.SequenceId);
-                if (connection.UseAcks)
-                {
-                    connection.ResetSequence(sequenceMessage);
-                }
+                Log.ReceivedSequenceMessage(_logger, sequenceMessage.SequenceId);
+                connection.ResetSequence(sequenceMessage);
                 break;
 
             // Other kind of message we weren't expecting

@@ -50,8 +50,10 @@ public partial class HubConnectionContext
     private TimeSpan _receivedMessageElapsed;
     private long _receivedMessageTick;
     private ClaimsPrincipal? _user;
+    private bool _useAcks;
 
-    internal bool UseAcks;
+    [MemberNotNullWhen(true, nameof(_messageBuffer))]
+    internal bool UsingAcks() => _useAcks;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HubConnectionContext"/> class.
@@ -258,9 +260,8 @@ public partial class HubConnectionContext
     {
         try
         {
-            if (UseAcks)
+            if (UsingAcks())
             {
-                Debug.Assert(_messageBuffer is not null);
                 return _messageBuffer.WriteAsync(new SerializedHubMessage(message), cancellationToken);
             }
             else
@@ -287,7 +288,7 @@ public partial class HubConnectionContext
     {
         try
         {
-            if (UseAcks)
+            if (UsingAcks())
             {
                 Debug.Assert(_messageBuffer is not null);
                 return _messageBuffer.WriteAsync(message, cancellationToken);
@@ -573,7 +574,7 @@ public partial class HubConnectionContext
 
                                 if (_connectionContext.Features.Get<IReconnectFeature>() is IReconnectFeature feature)
                                 {
-                                    UseAcks = true;
+                                    _useAcks = true;
                                     _messageBuffer = new MessageBuffer(_connectionContext, Protocol);
                                     feature.NotifyOnReconnect = _messageBuffer.Resend;
                                 }
@@ -762,19 +763,26 @@ public partial class HubConnectionContext
 
     internal void Ack(AckMessage ackMessage)
     {
-        Debug.Assert(_messageBuffer is not null);
-        _messageBuffer.Ack(ackMessage);
+        if (UsingAcks())
+        {
+            _messageBuffer.Ack(ackMessage);
+        }
     }
 
     internal bool ShouldProcessMessage(HubMessage message)
     {
-        Debug.Assert(_messageBuffer is not null);
-        return _messageBuffer.ShouldProcessMessage(message);
+        if (UsingAcks())
+        {
+            return _messageBuffer.ShouldProcessMessage(message);
+        }
+        return true;
     }
 
     internal void ResetSequence(SequenceMessage sequenceMessage)
     {
-        Debug.Assert(_messageBuffer is not null);
-        _messageBuffer.ResetSequence(sequenceMessage);
+        if (UsingAcks())
+        {
+            _messageBuffer.ResetSequence(sequenceMessage);
+        }
     }
 }

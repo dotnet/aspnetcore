@@ -14,6 +14,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal;
 
 internal sealed class MessageBuffer : IDisposable
 {
+    private static readonly TaskCompletionSource<FlushResult> _completedTCS = new TaskCompletionSource<FlushResult>();
+
     private readonly (SerializedHubMessage? Message, long SequenceId)[] _buffer;
     private readonly ConnectionContext _connection;
     private readonly IHubProtocol _protocol;
@@ -37,20 +39,25 @@ internal sealed class MessageBuffer : IDisposable
     private long _latestReceivedSequenceId = long.MinValue;
     private long _lastAckedId = long.MinValue;
 
-    private TaskCompletionSource<FlushResult> _resend = new TaskCompletionSource<FlushResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+    private TaskCompletionSource<FlushResult> _resend = _completedTCS;
+
+    static MessageBuffer()
+    {
+        _completedTCS.SetResult(new());
+    }
 
     // TODO: pass in limits
     public MessageBuffer(ConnectionContext connection, IHubProtocol protocol)
     {
-        _buffer = new (SerializedHubMessage? Message, long SequenceId)[10];
+        // Arbitrary size, we can figure out defaults and configurability later
+        const int bufferSize = 10;
+        _buffer = new (SerializedHubMessage? Message, long SequenceId)[bufferSize];
         for (var i = 0; i < _buffer.Length; i++)
         {
             _buffer[i].SequenceId = long.MinValue;
         }
         _connection = connection;
         _protocol = protocol;
-
-        _resend.SetResult(new());
 
 #if !NET8_0_OR_GREATER
         _timer.Start();
@@ -250,21 +257,20 @@ internal sealed class MessageBuffer : IDisposable
 
     private async Task DoResendAsync(TaskCompletionSource<FlushResult> tcs)
     {
-        long latestAckedIndex = -1;
-        for (var i = 0; i < _buffer.Length - 1; i++)
-        {
-            // TODO: this could grab the index of the just written message from WriteAsync which would result in the wrong value for latestAckedIndex if there are more than 1 messages buffered
-            if (_buffer[(_bufferIndex + i + 1) % _buffer.Length].SequenceId > long.MinValue)
-            {
-                latestAckedIndex = (_bufferIndex + i + 1) % _buffer.Length;
-                break;
-            }
-        }
-
         FlushResult finalResult = new();
         await _writeLock.WaitAsync().ConfigureAwait(false);
         try
         {
+            long latestAckedIndex = -1;
+            for (var i = 0; i < _buffer.Length - 1; i++)
+            {
+                if (_buffer[(_bufferIndex + i + 1) % _buffer.Length].SequenceId > long.MinValue)
+                {
+                    latestAckedIndex = (_bufferIndex + i + 1) % _buffer.Length;
+                    break;
+                }
+            }
+
             if (latestAckedIndex == -1)
             {
                 // no unacked messages, still send SequenceMessage?
