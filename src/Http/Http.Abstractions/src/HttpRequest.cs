@@ -154,7 +154,7 @@ public abstract class HttpRequest
 
     private string DebuggerToString()
     {
-        return HttpContextDebugFormatter.RequestToString(this, includeQueryString: true);
+        return HttpContextDebugFormatter.RequestToString(this);
     }
 
     private sealed class HttpRequestDebugView(HttpRequest request)
