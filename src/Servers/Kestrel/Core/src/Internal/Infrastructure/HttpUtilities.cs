@@ -55,7 +55,9 @@ internal static partial class HttpUtilities
         Debug.Assert(str.Length == 8, "String must be exactly 8 (ASCII) characters long.");
 
         Span<byte> bytes = stackalloc byte[8];
-        Debug.Assert(Ascii.FromUtf16(str, bytes, out _) == OperationStatus.Done);
+        OperationStatus operationStatus = Ascii.FromUtf16(str, bytes, out _);
+
+        Debug.Assert(operationStatus == OperationStatus.Done);
 
         return BinaryPrimitives.ReadUInt64LittleEndian(bytes);
     }
@@ -65,7 +67,9 @@ internal static partial class HttpUtilities
         Debug.Assert(str.Length == 4, "String must be exactly 4 (ASCII) characters long.");
 
         Span<byte> bytes = stackalloc byte[4];
-        Debug.Assert(Ascii.FromUtf16(str, bytes, out _) == OperationStatus.Done);
+        OperationStatus operationStatus = Ascii.FromUtf16(str, bytes, out _);
+
+        Debug.Assert(operationStatus == OperationStatus.Done);
 
         return BinaryPrimitives.ReadUInt32LittleEndian(bytes);
     }
