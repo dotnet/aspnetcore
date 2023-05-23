@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 # Copyright (c) .NET Foundation and contributors. All rights reserved.
 # Licensed under the MIT license. See LICENSE file in the project root for full license information.
@@ -12,13 +12,13 @@ import sys
 import json
 
 def print_usage():
-	print """
+	print("""
 		Usage: extract_json_value.py [json file path] [key of value to extract]
 		For nested keys, use . separator
-	"""
+	""")
 
 def help_and_exit(msg=None):
-	print msg
+	print(msg)
 	print_usage()
 	sys.exit(1)
 
@@ -60,5 +60,5 @@ def execute():
 	return value
 
 if __name__ == "__main__":
-	print execute()
+	print(execute())
 
