@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Reflection.Metadata;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http.Abstractions;
@@ -18,6 +19,8 @@ namespace Microsoft.AspNetCore.Routing;
 /// <summary>
 /// An <see cref="IDictionary{String, Object}"/> type for route values.
 /// </summary>
+[DebuggerTypeProxy(typeof(RouteValueDictionaryDebugView))]
+[DebuggerDisplay("Count = {Count}")]
 public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDictionary<string, object?>
 {
     // 4 is a good default capacity here because that leaves enough space for area/controller/action/id
@@ -861,5 +864,13 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
         {
             _propertyCache.Clear();
         }
+    }
+
+    private sealed class RouteValueDictionaryDebugView(RouteValueDictionary dictionary)
+    {
+        private readonly RouteValueDictionary _dictionary = dictionary;
+
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+        public KeyValuePair<string, object?>[] Items => _dictionary.ToArray();
     }
 }

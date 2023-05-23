@@ -117,14 +117,14 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
                     Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
+                    Debug.Assert(options.EndpointBuilder.ApplicationServices != null, "ApplicationServices not found.");
+                    Debug.Assert(options.EndpointBuilder.FilterFactories != null, "FilterFactories not found.");
                     var handler = (System.Func<global::System.String[], global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
                     var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
                     var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
-                    var serviceProviderIsService = serviceProvider?.GetService<IServiceProviderIsService>();
-                    var p_JsonBodyOrServiceResolver = ResolveJsonBodyOrService<global::System.String[]>(logOrThrowExceptionHelper, "string[]", "p", serviceProviderIsService);
 
-                    if (options?.EndpointBuilder?.FilterFactories.Count > 0)
+                    if (options.EndpointBuilder.FilterFactories.Count > 0)
                     {
                         filteredInvocation = GeneratedRouteBuilderExtensionsCore.BuildFilterDelegate(ic =>
                         {
@@ -141,12 +141,21 @@ namespace Microsoft.AspNetCore.Http.Generated
                     async Task RequestHandler(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
-                        // Endpoint Parameter: p (Type = string[], IsOptional = False, IsParsable = False, IsArray = True, Source = JsonBodyOrService)
-                        var p_resolveJsonBodyOrServiceResult = await p_JsonBodyOrServiceResolver(httpContext, false);
-                        var p_local = p_resolveJsonBodyOrServiceResult.Item2;
-                        if (!p_resolveJsonBodyOrServiceResult.Item1)
+                        // Endpoint Parameter: p (Type = string[], IsOptional = False, IsParsable = False, IsArray = True, Source = JsonBodyOrQuery)
+                        global::System.String[] p_local = null!;
+                        if (options.DisableInferBodyFromParameters)
                         {
-                            return;
+                            var p_raw = httpContext.Request.Query["p"];
+                            p_local = p_raw!;
+                        }
+                        else
+                        {
+                            var p_resolveBodyResult = await GeneratedRouteBuilderExtensionsCore.TryResolveBodyAsync<global::System.String[]>(httpContext, logOrThrowExceptionHelper, false, "string[]", "p");
+                            p_local = p_resolveBodyResult.Item2!;
+                            if (!p_resolveBodyResult.Item1)
+                            {
+                                return;
+                            }
                         }
 
                         if (wasParamCheckFailure)
@@ -155,26 +164,35 @@ namespace Microsoft.AspNetCore.Http.Generated
                             return;
                         }
                         httpContext.Response.ContentType ??= "text/plain";
-                        var result = handler(p_local!);
+                        var result = handler(p_local);
                         await httpContext.Response.WriteAsync(result);
                     }
 
                     async Task RequestHandlerFiltered(HttpContext httpContext)
                     {
                         var wasParamCheckFailure = false;
-                        // Endpoint Parameter: p (Type = string[], IsOptional = False, IsParsable = False, IsArray = True, Source = JsonBodyOrService)
-                        var p_resolveJsonBodyOrServiceResult = await p_JsonBodyOrServiceResolver(httpContext, false);
-                        var p_local = p_resolveJsonBodyOrServiceResult.Item2;
-                        if (!p_resolveJsonBodyOrServiceResult.Item1)
+                        // Endpoint Parameter: p (Type = string[], IsOptional = False, IsParsable = False, IsArray = True, Source = JsonBodyOrQuery)
+                        global::System.String[] p_local = null!;
+                        if (options.DisableInferBodyFromParameters)
                         {
-                            return;
+                            var p_raw = httpContext.Request.Query["p"];
+                            p_local = p_raw!;
+                        }
+                        else
+                        {
+                            var p_resolveBodyResult = await GeneratedRouteBuilderExtensionsCore.TryResolveBodyAsync<global::System.String[]>(httpContext, logOrThrowExceptionHelper, false, "string[]", "p");
+                            p_local = p_resolveBodyResult.Item2!;
+                            if (!p_resolveBodyResult.Item1)
+                            {
+                                return;
+                            }
                         }
 
                         if (wasParamCheckFailure)
                         {
                             httpContext.Response.StatusCode = 400;
                         }
-                        var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::System.String[]>(httpContext, p_local!));
+                        var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::System.String[]>(httpContext, p_local));
                         await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
                     }
 
@@ -288,17 +306,6 @@ namespace Microsoft.AspNetCore.Http.Generated
             }
 
             return (allowEmpty, default);
-        }
-        private static Func<HttpContext, bool, ValueTask<(bool, T?)>> ResolveJsonBodyOrService<T>(LogOrThrowExceptionHelper logOrThrowExceptionHelper, string parameterTypeName, string parameterName, IServiceProviderIsService? serviceProviderIsService = null)
-        {
-            if (serviceProviderIsService is not null)
-            {
-                if (serviceProviderIsService.IsService(typeof(T)))
-                {
-                    return static (httpContext, isOptional) => new ValueTask<(bool, T?)>((true, httpContext.RequestServices.GetService<T>()));
-                }
-            }
-            return (httpContext, isOptional) => TryResolveBodyAsync<T>(httpContext, logOrThrowExceptionHelper, isOptional, parameterTypeName, parameterName, isInferred: true);
         }
 
     }

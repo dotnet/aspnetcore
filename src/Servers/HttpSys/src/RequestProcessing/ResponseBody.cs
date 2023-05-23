@@ -599,10 +599,7 @@ internal sealed partial class ResponseBody : Stream
         // It's too expensive to validate the file attributes before opening the file. Open the file and then check the lengths.
         // This all happens inside of ResponseStreamAsyncResult.
         // TODO: Verbose log parameters
-        if (string.IsNullOrWhiteSpace(fileName))
-        {
-            throw new ArgumentNullException(nameof(fileName));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(fileName);
         CheckDisposed();
 
         CheckWriteCount(count);

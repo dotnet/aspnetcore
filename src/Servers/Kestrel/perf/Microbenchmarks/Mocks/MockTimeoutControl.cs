@@ -33,11 +33,11 @@ internal sealed class MockTimeoutControl : ITimeoutControl
     {
     }
 
-    public void ResetTimeout(long ticks, TimeoutReason timeoutReason)
+    public void ResetTimeout(TimeSpan timeout, TimeoutReason timeoutReason)
     {
     }
 
-    public void SetTimeout(long ticks, TimeoutReason timeoutReason)
+    public void SetTimeout(TimeSpan timeout, TimeoutReason timeoutReason)
     {
     }
 
@@ -65,7 +65,7 @@ internal sealed class MockTimeoutControl : ITimeoutControl
     {
     }
 
-    public void Tick(DateTimeOffset now)
+    public void Tick(long timestamp)
     {
     }
 }

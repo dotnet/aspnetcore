@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.Extensions.Localization;
 
@@ -17,10 +18,7 @@ public class ResourceLocationAttribute : Attribute
     /// <param name="resourceLocation">The location of resources for this Assembly.</param>
     public ResourceLocationAttribute(string resourceLocation)
     {
-        if (string.IsNullOrEmpty(resourceLocation))
-        {
-            throw new ArgumentNullException(nameof(resourceLocation));
-        }
+        ArgumentThrowHelper.ThrowIfNullOrEmpty(resourceLocation);
 
         ResourceLocation = resourceLocation;
     }

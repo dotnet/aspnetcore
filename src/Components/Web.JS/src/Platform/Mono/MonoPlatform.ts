@@ -14,7 +14,6 @@ import { Blazor } from '../../GlobalExports';
 import { DotnetModuleConfig, EmscriptenModule, MonoConfig, ModuleAPI, BootJsonData, ICUDataMode, RuntimeAPI } from 'dotnet';
 import { BINDINGType, MONOType } from 'dotnet/dotnet-legacy';
 import { fetchAndInvokeInitializers } from '../../JSInitializers/JSInitializers.WebAssembly';
-import { WebAssemblyConfigLoader } from '../WebAssemblyConfigLoader';
 
 // initially undefined and only fully initialized after createEmscriptenModuleInstance()
 export let BINDING: BINDINGType = undefined as any;
@@ -254,9 +253,9 @@ function prepareRuntimeConfig(options: Partial<WebAssemblyStartOptions>, platfor
       bootConfig.environmentVariables['__ASPNETCORE_BROWSER_TOOLS'] = bootConfig.aspnetCoreBrowserTools;
     }
 
-    platformApi.jsInitializer = await fetchAndInvokeInitializers(bootConfig, options);
+    Blazor._internal.getApplicationEnvironment = () => bootConfig.applicationEnvironment!;
 
-    WebAssemblyConfigLoader.initAsync(bootConfig, bootConfig.applicationEnvironment!, options || {});
+    platformApi.jsInitializer = await fetchAndInvokeInitializers(bootConfig, options);
   };
 
   const moduleConfig = (window['Module'] || {}) as typeof Module;

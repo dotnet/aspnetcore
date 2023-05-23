@@ -83,12 +83,11 @@ internal sealed class KestrelServerImpl : IServer
             trace,
             serverOptions.Limits.MaxConcurrentUpgradedConnections);
 
-        var heartbeatManager = new HeartbeatManager(connectionManager);
-        var dateHeaderValueManager = new DateHeaderValueManager();
+        var dateHeaderValueManager = new DateHeaderValueManager(TimeProvider.System);
 
         var heartbeat = new Heartbeat(
-            new IHeartbeatHandler[] { dateHeaderValueManager, heartbeatManager },
-            new SystemClock(),
+            new IHeartbeatHandler[] { dateHeaderValueManager, connectionManager },
+            TimeProvider.System,
             DebuggerWrapper.Singleton,
             trace,
             Heartbeat.Interval);
@@ -98,7 +97,7 @@ internal sealed class KestrelServerImpl : IServer
             Log = trace,
             Scheduler = PipeScheduler.ThreadPool,
             HttpParser = new HttpParser<Http1ParsingHandler>(trace.IsEnabled(LogLevel.Information), serverOptions.DisableHttp1LineFeedTerminators),
-            SystemClock = heartbeatManager,
+            TimeProvider = TimeProvider.System,
             DateHeaderValueManager = dateHeaderValueManager,
             ConnectionManager = connectionManager,
             Heartbeat = heartbeat,

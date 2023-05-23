@@ -80,16 +80,18 @@ internal sealed partial class HttpConnectionManager
             connectionToken = id;
         }
 
-        var startTimestamp = HttpConnectionsEventSource.Log.IsEnabled() || _metrics.IsEnabled()
+        var metricsContext = _metrics.CreateContext();
+
+        var startTimestamp = HttpConnectionsEventSource.Log.IsEnabled() || metricsContext.ConnectionDurationEnabled
             ? Stopwatch.GetTimestamp()
             : default;
 
         Log.CreatedNewConnection(_logger, id);
         HttpConnectionsEventSource.Log.ConnectionStart(id);
-        _metrics.ConnectionStart();
+        _metrics.ConnectionStart(metricsContext);
 
         var pair = DuplexPipe.CreateConnectionPair(options.TransportPipeOptions, options.AppPipeOptions);
-        var connection = new HttpConnectionContext(id, connectionToken, _connectionLogger, pair.Application, pair.Transport, options);
+        var connection = new HttpConnectionContext(id, connectionToken, _connectionLogger, metricsContext, pair.Application, pair.Transport, options);
 
         _connections.TryAdd(connectionToken, (connection, startTimestamp));
 
@@ -104,8 +106,8 @@ internal sealed partial class HttpConnectionManager
             var currentTimestamp = (pair.StartTimestamp > 0) ? Stopwatch.GetTimestamp() : default;
 
             HttpConnectionsEventSource.Log.ConnectionStop(id, pair.StartTimestamp, currentTimestamp);
-            _metrics.TransportStop(transportType);
-            _metrics.ConnectionStop(transportType, status, pair.StartTimestamp, currentTimestamp);
+            _metrics.TransportStop(pair.Connection.MetricsContext, transportType);
+            _metrics.ConnectionStop(pair.Connection.MetricsContext, transportType, status, pair.StartTimestamp, currentTimestamp);
             Log.RemovedConnection(_logger, id);
         }
     }

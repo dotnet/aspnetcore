@@ -41,8 +41,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <BlazorWebAssemblyLazyLoad Include="Newtonsoft.Json.dll" />
-    <BlazorWebAssemblyLazyLoad Include="LazyTestContentPackage.dll" />
+    <BlazorWebAssemblyLazyLoad Include="Newtonsoft.Json.wasm" />
+    <BlazorWebAssemblyLazyLoad Include="LazyTestContentPackage.wasm" />
   </ItemGroup>
 
   <!-- Workaround for https://github.com/dotnet/aspnetcore/issues/30791 -->

@@ -2,13 +2,17 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http;
 
+[DebuggerDisplay("Count = {Count}")]
+[DebuggerTypeProxy(typeof(RequestCookieCollectionDebugView))]
 internal sealed class RequestCookieCollection : IRequestCookieCollection
 {
     public static readonly RequestCookieCollection Empty = new RequestCookieCollection();
@@ -220,5 +224,13 @@ internal sealed class RequestCookieCollection : IRequestCookieCollection
                 ((IEnumerator)_dictionaryEnumerator).Reset();
             }
         }
+    }
+
+    private sealed class RequestCookieCollectionDebugView(RequestCookieCollection collection)
+    {
+        private readonly RequestCookieCollection _collection = collection;
+
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+        public KeyValuePair<string, string>[] Items => _collection.ToArray();
     }
 }

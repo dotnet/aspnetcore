@@ -20,7 +20,7 @@ internal sealed class Http3Stream<TContext> : Http3Stream, IHostContextContainer
     public override void Execute()
     {
         KestrelEventSource.Log.RequestQueuedStop(this, AspNetCore.Http.HttpProtocol.Http3);
-        ServiceContext.Metrics.RequestQueuedStop(ConnectionContext, AspNetCore.Http.HttpProtocol.Http3);
+        ServiceContext.Metrics.RequestQueuedStop(MetricsContext, AspNetCore.Http.HttpProtocol.Http3);
 
         if (_requestHeaderParsingState == RequestHeaderParsingState.Ready)
         {

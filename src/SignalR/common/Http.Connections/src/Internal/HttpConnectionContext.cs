@@ -57,7 +57,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     /// Creates the DefaultConnectionContext without Pipes to avoid upfront allocations.
     /// The caller is expected to set the <see cref="Transport"/> and <see cref="Application"/> pipes manually.
     /// </summary>
-    public HttpConnectionContext(string connectionId, string connectionToken, ILogger logger, IDuplexPipe transport, IDuplexPipe application, HttpConnectionDispatcherOptions options)
+    public HttpConnectionContext(string connectionId, string connectionToken, ILogger logger, MetricsContext metricsContext, IDuplexPipe transport, IDuplexPipe application, HttpConnectionDispatcherOptions options)
     {
         Transport = transport;
         _applicationStream = new PipeWriterStream(application.Output);
@@ -73,6 +73,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         ActiveFormat = TransferFormat.Text;
 
         _logger = logger ?? NullLogger.Instance;
+        MetricsContext = metricsContext;
 
         // PERF: This type could just implement IFeatureCollection
         Features = new FeatureCollection();
@@ -134,6 +135,8 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     public HttpConnectionStatus Status { get; set; } = HttpConnectionStatus.Inactive;
 
     public override string ConnectionId { get; set; }
+
+    public MetricsContext MetricsContext { get; }
 
     internal string ConnectionToken { get; set; }
 

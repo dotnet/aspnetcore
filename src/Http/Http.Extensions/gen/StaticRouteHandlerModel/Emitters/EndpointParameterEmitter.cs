@@ -225,6 +225,41 @@ internal static class EndpointParameterEmitter
         codeWriter.EndBlock();
     }
 
+    internal static void EmitJsonBodyOrQueryParameterPreparationString(this EndpointParameter endpointParameter, CodeWriter codeWriter)
+    {
+        // Preamble for diagnostics purposes.
+        codeWriter.WriteLine(endpointParameter.EmitParameterDiagnosticComment());
+
+        // Declare handler variable up front.
+        codeWriter.WriteLine($"{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)} {endpointParameter.EmitHandlerArgument()} = null!;");
+        codeWriter.WriteLine("if (options.DisableInferBodyFromParameters)");
+        codeWriter.StartBlock();
+        codeWriter.WriteLine($"""var {endpointParameter.EmitAssigningCodeResult()} = httpContext.Request.Query["{endpointParameter.LookupName}"];""");
+        codeWriter.WriteLine($"""{endpointParameter.EmitHandlerArgument()} = {endpointParameter.EmitAssigningCodeResult()}!;""");
+        codeWriter.EndBlock();
+        codeWriter.WriteLine("else");
+        codeWriter.StartBlock();
+
+        // This code is adapted from the EmitJsonBodyParameterPreparationString method with some modifications
+        // because the handler argument is emitted before the containing if block (which makes it awkward to
+        // simply reuse that emission code) - opted for duplication (with tweaks) over complexity.
+        var shortParameterTypeName = endpointParameter.Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat);
+        var assigningCode = $"await GeneratedRouteBuilderExtensionsCore.TryResolveBodyAsync<{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)}>(httpContext, logOrThrowExceptionHelper, {(endpointParameter.IsOptional ? "true" : "false")}, {SymbolDisplay.FormatLiteral(shortParameterTypeName, true)}, {SymbolDisplay.FormatLiteral(endpointParameter.SymbolName, true)})";
+        var resolveBodyResult = $"{endpointParameter.SymbolName}_resolveBodyResult";
+        codeWriter.WriteLine($"var {resolveBodyResult} = {assigningCode};");
+        codeWriter.WriteLine($"{endpointParameter.EmitHandlerArgument()} = {resolveBodyResult}.Item2!;");
+
+        // If binding from the JSON body fails, we exit early. Don't
+        // set the status code here because assume it has been set by the
+        // TryResolveBody method.
+        codeWriter.WriteLine($"if (!{resolveBodyResult}.Item1)");
+        codeWriter.StartBlock();
+        codeWriter.WriteLine("return;");
+        codeWriter.EndBlock();
+
+        codeWriter.EndBlock();
+    }
+
     internal static void EmitBindAsyncPreparation(this EndpointParameter endpointParameter, CodeWriter codeWriter)
     {
         var unwrappedType = endpointParameter.Type.UnwrapTypeSymbol(unwrapNullable: true);

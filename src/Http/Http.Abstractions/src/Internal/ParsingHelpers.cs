@@ -46,11 +46,8 @@ internal static class ParsingHelpers
     public static void SetHeaderJoined(IHeaderDictionary headers, string key, StringValues value)
     {
         ArgumentNullException.ThrowIfNull(headers);
+        ArgumentException.ThrowIfNullOrEmpty(key);
 
-        if (string.IsNullOrEmpty(key))
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
         if (StringValues.IsNullOrEmpty(value))
         {
             headers.Remove(key);
@@ -87,11 +84,8 @@ internal static class ParsingHelpers
     public static void SetHeaderUnmodified(IHeaderDictionary headers, string key, StringValues? values)
     {
         ArgumentNullException.ThrowIfNull(headers);
+        ArgumentException.ThrowIfNullOrEmpty(key);
 
-        if (string.IsNullOrEmpty(key))
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
         if (!values.HasValue || StringValues.IsNullOrEmpty(values.GetValueOrDefault()))
         {
             headers.Remove(key);

@@ -159,9 +159,10 @@ public sealed class WebAssemblyHostBuilder
 
         foreach (var configFile in configFiles)
         {
-            var appSettingsJson = jsMethods.GetConfig(configFile);
-            if (appSettingsJson != null)
+            if (File.Exists(configFile))
             {
+                var appSettingsJson = File.ReadAllBytes(configFile);
+
                 // Perf: Using this over AddJsonStream. This allows the linker to trim out the "File"-specific APIs and assemblies
                 // for Configuration, of where there are several.
                 Configuration.Add<JsonStreamConfigurationSource>(s => s.Stream = new MemoryStream(appSettingsJson));

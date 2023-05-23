@@ -24,5 +24,7 @@ Microsoft.AspNetCore.Cors.EnableCorsAttribute</Description>
 
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Cors.Test" />
+
+    <Compile Include="$(SharedSourceRoot)Debugger\DebuggerHelpers.cs" LinkBase="Shared" />
   </ItemGroup>
 </Project>

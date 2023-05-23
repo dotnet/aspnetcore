@@ -82,7 +82,7 @@ public class BaselineTest : LoggedTest
             AssertFileExists(Project.TemplateOutputDir, file, shouldExist: true);
         }
 
-        var filesInFolder = Directory.EnumerateFiles(Project.TemplateOutputDir, "*", SearchOption.AllDirectories);
+        var filesInFolder = Directory.EnumerateFiles(Project.TemplateOutputDir, "*", SearchOption.AllDirectories).ToArray();
         foreach (var file in filesInFolder)
         {
             var relativePath = file.Replace(Project.TemplateOutputDir, "").Replace("\\", "/").Trim('/');
