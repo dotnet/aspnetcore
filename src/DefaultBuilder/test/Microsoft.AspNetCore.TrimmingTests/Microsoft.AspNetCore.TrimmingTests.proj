@@ -9,6 +9,7 @@
       <DisabledFeatureSwitches>System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault</DisabledFeatureSwitches>
       <AdditionalSourceFiles>X509Utilities.cs</AdditionalSourceFiles>
     </TestConsoleAppSourceFiles>
+    <TestConsoleAppSourceFiles Include="AlwaysFailsTest.cs" />
   </ItemGroup>
 
 </Project>
