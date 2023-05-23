@@ -2,8 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Linq;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Http;
 
@@ -77,8 +79,7 @@ public abstract class HttpContext
 
     private string DebuggerToString()
     {
-        return $"{Request.Method} {Request.Path.Value} {Request.ContentType}"
-            + $" StatusCode = {Response.StatusCode} {Response.ContentType}";
+        return HttpContextDebugFormatter.ContextToString(this, reasonPhrase: null);
     }
 
     private sealed class HttpContextDebugView(HttpContext context)
@@ -86,9 +87,10 @@ public abstract class HttpContext
         private readonly HttpContext _context = context;
 
         // Hide server specific implementations, they combine IFeatureCollection and many feature interfaces.
-        public IFeatureCollection Features => _context.Features as FeatureCollection ?? new FeatureCollection(_context.Features);
+        public HttpContextFeatureDebugView Features => new HttpContextFeatureDebugView(_context.Features);
         public HttpRequest Request => _context.Request;
         public HttpResponse Response => _context.Response;
+        public Endpoint? Endpoint => _context.GetEndpoint();
         public ConnectionInfo Connection => _context.Connection;
         public WebSocketManager WebSockets => _context.WebSockets;
         public ClaimsPrincipal User => _context.User;
@@ -97,5 +99,14 @@ public abstract class HttpContext
         public string TraceIdentifier => _context.TraceIdentifier;
         // The normal session property throws if accessed before/without the session middleware.
         public ISession? Session => _context.Features.Get<ISessionFeature>()?.Session;
+    }
+
+    [DebuggerDisplay("Count = {Items.Length}")]
+    private sealed class HttpContextFeatureDebugView(IFeatureCollection features)
+    {
+        private readonly IFeatureCollection _features = features;
+
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+        public KeyValuePair<string, object>[] Items => _features.Select(pair => new KeyValuePair<string, object>(pair.Key.FullName ?? string.Empty, pair.Value)).ToArray();
     }
 }
