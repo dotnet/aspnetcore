@@ -31,7 +31,7 @@ internal class Emitter
             EmitAttributeInstance(codeWriter, cm.RenderMode);
             codeWriter.WriteLine();
         }
-        codeWriter.EndBlockWithComma();
+        codeWriter.EndBlockWithComma(newLine: false);
         codeWriter.Flush();
         writer.Flush();
         return builder.ToString();
@@ -141,7 +141,7 @@ internal class Emitter
             codeWriter.WriteLine(",");
         }
         codeWriter.EndBlock();
-        codeWriter.EndBlockWithComma();
+        codeWriter.EndBlockWithComma(newLine: false);
         codeWriter.Flush();
         writer.Flush();
         return builder.ToString();

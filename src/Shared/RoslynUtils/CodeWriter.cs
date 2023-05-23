@@ -46,7 +46,7 @@ internal sealed class CodeWriter : IndentedTextWriter
     public void EndBlockWithComma(bool newLine = true)
     {
         this.Indent--;
-        if (!newLine)
+        if (newLine)
         {
             this.WriteLine("},");
         }
