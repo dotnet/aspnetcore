@@ -594,7 +594,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         var app = new Program(_console);
         app.Run(new[] { "create" });
 
-        Assert.Contains("No project found at `-p|--project` path or current directory.", _console.GetOutput());
+        Assert.Contains($"Could not find a MSBuild project file in '{Directory.GetCurrentDirectory()}'. Specify which project to use with the --project option.", _console.GetOutput());
         Assert.DoesNotContain(Resources.CreateCommand_NoAudience_Error, _console.GetOutput());
     }
 
@@ -607,7 +607,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         var app = new Program(_console);
         app.Run(new[] { "remove", "some-id" });
 
-        Assert.Contains("No project found at `-p|--project` path or current directory.", _console.GetOutput());
+        Assert.Contains($"Could not find a MSBuild project file in '{Directory.GetCurrentDirectory()}'. Specify which project to use with the --project option.", _console.GetOutput());
     }
 
     [Fact]
@@ -619,7 +619,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         var app = new Program(_console);
         app.Run(new[] { "clear" });
 
-        Assert.Contains("No project found at `-p|--project` path or current directory.", _console.GetOutput());
+        Assert.Contains($"Could not find a MSBuild project file in '{Directory.GetCurrentDirectory()}'. Specify which project to use with the --project option.", _console.GetOutput());
     }
 
     [Fact]
@@ -631,7 +631,19 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         var app = new Program(_console);
         app.Run(new[] { "list" });
 
-        Assert.Contains("No project found at `-p|--project` path or current directory.", _console.GetOutput());
+        Assert.Contains($"Could not find a MSBuild project file in '{Directory.GetCurrentDirectory()}'. Specify which project to use with the --project option.", _console.GetOutput());
+    }
+
+    [Fact]
+    public void List_CanHandleProjectOptionAsPath()
+    {
+        var projectPath = _fixture.CreateProject();
+        var project = Path.Combine(projectPath, "TestProject.csproj");
+
+        var app = new Program(_console);
+        app.Run(new[] { "list", "--project", projectPath });
+
+        Assert.Contains(Path.Combine(projectPath, project), _console.GetOutput());
     }
 
     [ConditionalFact]
