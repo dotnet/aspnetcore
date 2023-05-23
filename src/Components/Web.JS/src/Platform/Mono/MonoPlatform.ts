@@ -17,7 +17,6 @@ import { WebAssemblyComponentDescriptor, discoverComponents, discoverPersistedSt
 import { attachRootComponentToElement, attachRootComponentToLogicalElement } from '../../Rendering/Renderer';
 import { WebAssemblyComponentAttacher } from '../WebAssemblyComponentAttacher';
 import { fetchAndInvokeInitializers } from '../../JSInitializers/JSInitializers.WebAssembly';
-import { WebAssemblyConfigLoader } from '../WebAssemblyConfigLoader';
 
 // initially undefined and only fully initialized after createEmscriptenModuleInstance()
 export let BINDING: BINDINGType = undefined as any;
@@ -280,9 +279,9 @@ function prepareRuntimeConfig(options: Partial<WebAssemblyStartOptions>, platfor
       }
     };
 
-    platformApi.jsInitializer = await fetchAndInvokeInitializers(bootConfig, options);
+    Blazor._internal.getApplicationEnvironment = () => bootConfig.applicationEnvironment!;
 
-    WebAssemblyConfigLoader.initAsync(bootConfig, bootConfig.applicationEnvironment!, options || {});
+    platformApi.jsInitializer = await fetchAndInvokeInitializers(bootConfig, options);
   };
 
 
