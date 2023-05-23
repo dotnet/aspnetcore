@@ -27,7 +27,7 @@ export const internalFunctions = {
   navigateTo: navigateToFromDotNet,
   getBaseURI: (): string => document.baseURI,
   getLocationHref: (): string => location.href,
-  scrollToElement
+  scrollToElement,
 };
 
 function listenForNavigationEvents(
@@ -57,12 +57,12 @@ function setHasLocationChangingListeners(hasListeners: boolean) {
 export function scrollToElement(identifier: string): boolean {
   const element = document.getElementById(identifier);
 
-    if (element) {
-      element.scrollIntoView();
-      return true;
-    }
-  
-    return false;
+  if (element) {
+    element.scrollIntoView();
+    return true;
+  }
+
+  return false;
 }
 
 export function attachToEventDelegator(eventDelegator: EventDelegator): void {
@@ -88,9 +88,9 @@ export function attachToEventDelegator(eventDelegator: EventDelegator): void {
     const anchorTarget = findAnchorTarget(event);
 
     if (anchorTarget && canProcessAnchor(anchorTarget)) {
-      let anchorHref = anchorTarget.getAttribute('href')!; 
+      const anchorHref = anchorTarget.getAttribute('href')!;
 
-      const absoluteHref = toAbsoluteUri(anchorHref);     
+      const absoluteHref = toAbsoluteUri(anchorHref);
 
       if (isWithinBaseUriSpace(absoluteHref)) {
         event.preventDefault();
@@ -109,7 +109,7 @@ function performScrollToElementOnTheSamePage(absoluteHref : string, replace: boo
   saveToBrowserHistory(absoluteHref, replace, state);
 
   const hashIndex = absoluteHref.indexOf('#');
-  if (hashIndex == absoluteHref.length - 1) {
+  if (hashIndex === absoluteHref.length - 1) {
     return;
   }
 
@@ -171,7 +171,7 @@ async function performInternalNavigation(absoluteInternalHref: string, intercept
   if (isSamePageWithHash(absoluteInternalHref)) {
     performScrollToElementOnTheSamePage(absoluteInternalHref, replace, state);
     return;
-  }   
+  }
 
   if (!skipLocationChangingCallback && hasLocationChangingEventListeners) {
     const shouldContinueNavigation = await notifyLocationChanging(absoluteInternalHref, state, interceptedLink);

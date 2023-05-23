@@ -13,15 +13,13 @@ import { WebAssemblyBootResourceType, WebAssemblyStartOptions } from '../WebAsse
 import { Blazor } from '../../GlobalExports';
 import { DotnetModuleConfig, EmscriptenModule, MonoConfig, ModuleAPI, BootJsonData, ICUDataMode, RuntimeAPI } from 'dotnet';
 import { BINDINGType, MONOType } from 'dotnet/dotnet-legacy';
-import { WebAssemblyComponentDescriptor, discoverComponents, discoverPersistedState } from '../../Services/ComponentDescriptorDiscovery';
-import { attachRootComponentToElement, attachRootComponentToLogicalElement } from '../../Rendering/Renderer';
-import { WebAssemblyComponentAttacher } from '../WebAssemblyComponentAttacher';
 import { fetchAndInvokeInitializers } from '../../JSInitializers/JSInitializers.WebAssembly';
 
 // initially undefined and only fully initialized after createEmscriptenModuleInstance()
 export let BINDING: BINDINGType = undefined as any;
 export let MONO: MONOType = undefined as any;
 export let Module: DotnetModuleConfig & EmscriptenModule = undefined as any;
+export let dispatcher: DotNet.ICallDispatcher = undefined as any;
 let MONO_INTERNAL: any = undefined as any;
 let runtime: RuntimeAPI = undefined as any;
 
@@ -255,35 +253,10 @@ function prepareRuntimeConfig(options: Partial<WebAssemblyStartOptions>, platfor
       bootConfig.environmentVariables['__ASPNETCORE_BROWSER_TOOLS'] = bootConfig.aspnetCoreBrowserTools;
     }
 
-    // Leverage the time while we are loading boot.config.json from the network to discover any potentially registered component on
-    // the document.
-    const discoveredComponents = discoverComponents(document, 'webassembly') as WebAssemblyComponentDescriptor[];
-    const componentAttacher = new WebAssemblyComponentAttacher(discoveredComponents);
-    Blazor._internal.registeredComponents = {
-      getRegisteredComponentsCount: () => componentAttacher.getCount(),
-      getId: (index) => componentAttacher.getId(index),
-      getAssembly: (id) => componentAttacher.getAssembly(id),
-      getTypeName: (id) => componentAttacher.getTypeName(id),
-      getParameterDefinitions: (id) => componentAttacher.getParameterDefinitions(id) || '',
-      getParameterValues: (id) => componentAttacher.getParameterValues(id) || '',
-    };
-
-    Blazor._internal.getPersistedState = () => discoverPersistedState(document) || '';
-
-    Blazor._internal.attachRootComponentToElement = (selector, componentId, rendererId: any) => {
-      const element = componentAttacher.resolveRegisteredElement(selector);
-      if (!element) {
-        attachRootComponentToElement(selector, componentId, rendererId);
-      } else {
-        attachRootComponentToLogicalElement(rendererId, element, componentId, false);
-      }
-    };
-
     Blazor._internal.getApplicationEnvironment = () => bootConfig.applicationEnvironment!;
 
     platformApi.jsInitializer = await fetchAndInvokeInitializers(bootConfig, options);
   };
-
 
   const moduleConfig = (window['Module'] || {}) as typeof Module;
   // TODO (moduleConfig as any).preloadPlugins = []; // why do we need this ?
@@ -406,7 +379,7 @@ function getArrayDataPointer<T>(array: System_Array<T>): number {
 }
 
 function attachInteropInvoker(): void {
-  DotNet.attachDispatcher({
+  dispatcher = DotNet.attachDispatcher({
     beginInvokeDotNetFromJS: (callId: number, assemblyName: string | null, methodIdentifier: string, dotNetObjectId: any | null, argsJson: string): void => {
       assertHeapIsNotLocked();
       if (!dotNetObjectId && !assemblyName) {
