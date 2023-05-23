@@ -2,13 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Components.Web;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
 /// <summary>
 /// Options associated with the endpoints defined by the components in the
-/// given <see cref="RazorComponentsEndpointRouteBuilderExtensions.MapRazorComponents{TRootComponent}(Routing.IEndpointRouteBuilder)"/>
+/// given <see cref="RazorComponentsEndpointRouteBuilderExtensions.MapRazorComponents{TRootComponent}(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder)"/>
 /// invocation.
 /// </summary>
 public class RazorComponentDataSourceOptions
