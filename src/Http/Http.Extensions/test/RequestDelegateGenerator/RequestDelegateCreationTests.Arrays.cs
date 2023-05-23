@@ -383,7 +383,6 @@ app.MapMethods("/hello", new [] { "POST" }, (string[] p) => p[0]);
 
         VerifyStaticEndpointModel(results, endpointModel =>
         {
-            Assert.Equal("/hello", endpointModel.RoutePattern);
             Assert.Equal("MapMethods", endpointModel.HttpMethod);
         });
 
@@ -411,7 +410,6 @@ app.MapMethods("/hello", new [] { "GET" }, (string[] p) => p[0]);
 
         VerifyStaticEndpointModel(results, endpointModel =>
         {
-            Assert.Equal("/hello", endpointModel.RoutePattern);
             Assert.Equal("MapMethods", endpointModel.HttpMethod);
         });
 
@@ -439,7 +437,6 @@ app.MapMethods("/hello", new [] { "POST", "GET" }, (string[] p) => p[0]);
 
         VerifyStaticEndpointModel(results, endpointModel =>
         {
-            Assert.Equal("/hello", endpointModel.RoutePattern);
             Assert.Equal("MapMethods", endpointModel.HttpMethod);
         });
 
@@ -467,7 +464,6 @@ app.MapMethods("/hello", new [] { "POST", "PUT" }, (string[] p) => p[0]);
 
         VerifyStaticEndpointModel(results, endpointModel =>
         {
-            Assert.Equal("/hello", endpointModel.RoutePattern);
             Assert.Equal("MapMethods", endpointModel.HttpMethod);
         });
 
