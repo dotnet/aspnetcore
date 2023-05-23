@@ -441,6 +441,7 @@ public class ResponseCachingMiddlewareTests
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/48373")]
     public void FinalizeCacheHeadersAsync_ResponseValidity_UseExpiryIfAvailable()
     {
         var timeProvider = new MockTimeProvider();
