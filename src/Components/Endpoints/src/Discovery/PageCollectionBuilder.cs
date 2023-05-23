@@ -79,6 +79,9 @@ internal class PageCollectionBuilder
     {
         // We remove the route attribute since it is captured on the endpoint.
         // This is similar to how MVC behaves.
+        // The RouteEndpoint already contains the information about the route
+        // and since a page can get turned into multiple endpoints, its confusing
+        // to have the route show up in the metadata.
         var attributes = componentType.GetCustomAttributes(inherit: true);
         result.Clear();
         foreach (var attribute in attributes)

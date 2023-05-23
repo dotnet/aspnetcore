@@ -34,24 +34,26 @@ internal class RazorComponentApplication
     /// </summary>
     public IReadOnlyList<ComponentInfo> Components => _components;
 
-    internal ISet<IComponentRenderMode> GetDeclaredRenderModesByDiscoveredComponents()
+    public ISet<IComponentRenderMode> GetDeclaredRenderModesByDiscoveredComponents()
     {
         var set = new HashSet<IComponentRenderMode>();
         for (var i = 0; i < Components.Count; i++)
         {
             var component = Components[i];
-            if (component.RenderMode is ServerRenderMode)
+            switch (component.RenderMode)
             {
-                set.Add(RenderMode.Server);
-            }
-            if (component.RenderMode is WebAssemblyRenderMode)
-            {
-                set.Add(RenderMode.WebAssembly);
-            }
-            if (component.RenderMode is AutoRenderMode)
-            {
-                set.Add(RenderMode.Server);
-                set.Add(RenderMode.WebAssembly);
+                case ServerRenderMode:
+                    set.Add(RenderMode.Server);
+                    break;
+                case WebAssemblyRenderMode:
+                    set.Add(RenderMode.WebAssembly);
+                    break;
+                case AutoRenderMode:
+                    set.Add(RenderMode.Server);
+                    set.Add(RenderMode.WebAssembly);
+                    break;
+                default:
+                    break;
             }
         }
 
