@@ -6,6 +6,7 @@ import { shouldAutoStart } from './BootCommon';
 import { CircuitStartOptions } from './Platform/Circuits/CircuitStartOptions';
 import { startCircuit } from './Boot.Server.Common';
 import { ServerComponentDescriptor, discoverComponents } from './Services/ComponentDescriptorDiscovery';
+import { DotNet } from '@microsoft/dotnet-js-interop';
 
 let started = false;
 
@@ -20,6 +21,7 @@ function boot(userOptions?: Partial<CircuitStartOptions>): Promise<void> {
 }
 
 Blazor.start = boot;
+window['DotNet'] = DotNet;
 
 if (shouldAutoStart()) {
   boot();
