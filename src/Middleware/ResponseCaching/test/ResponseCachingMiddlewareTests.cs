@@ -446,7 +446,7 @@ public class ResponseCachingMiddlewareTests
     {
         var timeProvider = new MockTimeProvider();
         var now = timeProvider.GetUtcNow();
-        now = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second + 1, now.Offset); // Round up to seconds.
+        now = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, now.Offset).AddSeconds(1); // Round up to seconds.
         timeProvider.AdvanceTo(now);
         var sink = new TestSink();
         var middleware = TestUtils.CreateTestMiddleware(testSink: sink, options: new ResponseCachingOptions
