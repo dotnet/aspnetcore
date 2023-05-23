@@ -1,21 +1,24 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Components;
+using System.Diagnostics;
+
+namespace Microsoft.AspNetCore.Components.Discovery;
 
 /// <summary>
 /// The definition for a page, including the type and the associated routes.
 /// </summary>
-public class PageDefinition
+[DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
+internal class PageComponentInfo
 {
     /// <summary>
-    /// Initializes a new instance of <see cref="PageDefinition"/>.
+    /// Initializes a new instance of <see cref="PageComponentInfo"/>.
     /// </summary>
     /// <param name="displayName">The name for the page. Used for logging and debug purposes across the system.</param>
     /// <param name="type">The page <see cref="System.Type"/>.</param>
     /// <param name="route">The see list of routes for the page.</param>
     /// <param name="metadata">The page metadata.</param>
-    internal PageDefinition(
+    internal PageComponentInfo(
         string displayName,
         Type type,
         string route,
@@ -46,4 +49,9 @@ public class PageDefinition
     /// Gets the metadata for the page.
     /// </summary>
     public IReadOnlyList<object> Metadata { get; }
+
+    private string GetDebuggerDisplay()
+    {
+        return $"{Type.FullName}: {DisplayName}";
+    }
 }
