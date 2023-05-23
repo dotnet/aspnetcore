@@ -301,6 +301,7 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                 helperMethods: helperMethods ?? string.Empty,
                 helperTypes: helperTypes ?? string.Empty);
 
-         context.AddSource("GeneratedRouteBuilderExtensions.g.cs", code);        });
+            context.AddSource("GeneratedRouteBuilderExtensions.g.cs", code);
+        });
     }
 }

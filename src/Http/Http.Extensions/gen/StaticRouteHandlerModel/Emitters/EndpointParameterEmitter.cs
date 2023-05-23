@@ -249,9 +249,9 @@ internal static class EndpointParameterEmitter
         codeWriter.WriteLine($"var {resolveBodyResult} = {assigningCode};");
         codeWriter.WriteLine($"{endpointParameter.EmitHandlerArgument()} = {resolveBodyResult}.Item2!;");
 
-        //// If binding from the JSON body fails, we exit early. Don't
-        //// set the status code here because assume it has been set by the
-        //// TryResolveBody method.
+        // If binding from the JSON body fails, we exit early. Don't
+        // set the status code here because assume it has been set by the
+        // TryResolveBody method.
         codeWriter.WriteLine($"if (!{resolveBodyResult}.Item1)");
         codeWriter.StartBlock();
         codeWriter.WriteLine("return;");
