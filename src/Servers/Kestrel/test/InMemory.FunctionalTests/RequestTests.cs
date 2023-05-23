@@ -1628,7 +1628,6 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         var appEvent = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var delayEvent = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var serviceContext = new TestServiceContext(LoggerFactory);
-        var heartbeatManager = new HeartbeatManager(serviceContext.ConnectionManager);
 
         await using (var server = new TestServer(async context =>
         {
@@ -1664,8 +1663,8 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
 
                 await appEvent.Task.DefaultTimeout();
 
-                serviceContext.MockSystemClock.UtcNow += TimeSpan.FromSeconds(5);
-                heartbeatManager.OnHeartbeat(serviceContext.SystemClock.UtcNow);
+                serviceContext.MockTimeProvider.Advance(TimeSpan.FromSeconds(5));
+                serviceContext.ConnectionManager.OnHeartbeat();
 
                 delayEvent.SetResult();
 

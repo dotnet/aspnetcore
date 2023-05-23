@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies;
 
 public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions>
 {
-    private readonly TestTimeProvider _timeProvider = new();
+    private readonly MockTimeProvider _timeProvider = new();
 
     protected override string DefaultScheme => CookieAuthenticationDefaults.AuthenticationScheme;
     protected override Type HandlerType => typeof(CookieAuthenticationHandler);

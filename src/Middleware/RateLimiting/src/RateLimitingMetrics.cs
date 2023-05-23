@@ -46,9 +46,6 @@ internal sealed class RateLimitingMetrics : IDisposable
             description: "Number of HTTP requests that failed to acquire a rate limiting lease. Requests could be rejected by global or endpoint rate limiting policies. Or the request could be canceled while waiting for the lease.");
     }
 
-    public bool CurrentLeasedRequestsCounterEnabled => _currentLeasedRequestsCounter.Enabled;
-    public bool CurrentQueuedRequestsCounterEnabled => _currentQueuedRequestsCounter.Enabled;
-
     public void LeaseFailed(in MetricsContext metricsContext, RequestRejectionReason reason)
     {
         if (_leaseFailedRequestsCounter.Enabled)
@@ -68,7 +65,7 @@ internal sealed class RateLimitingMetrics : IDisposable
 
     public void LeaseStart(in MetricsContext metricsContext)
     {
-        if (metricsContext.CurrentLeaseRequestsCounterEnabled)
+        if (metricsContext.CurrentLeasedRequestsCounterEnabled)
         {
             LeaseStartCore(metricsContext);
         }
@@ -84,7 +81,7 @@ internal sealed class RateLimitingMetrics : IDisposable
 
     public void LeaseEnd(in MetricsContext metricsContext, long startTimestamp, long currentTimestamp)
     {
-        if (metricsContext.CurrentLeaseRequestsCounterEnabled || _leasedRequestDurationCounter.Enabled)
+        if (metricsContext.CurrentLeasedRequestsCounterEnabled || _leasedRequestDurationCounter.Enabled)
         {
             LeaseEndCore(metricsContext, startTimestamp, currentTimestamp);
         }
@@ -96,7 +93,7 @@ internal sealed class RateLimitingMetrics : IDisposable
         var tags = new TagList();
         InitializeRateLimitingTags(ref tags, metricsContext);
 
-        if (metricsContext.CurrentLeaseRequestsCounterEnabled)
+        if (metricsContext.CurrentLeasedRequestsCounterEnabled)
         {
             _currentLeasedRequestsCounter.Add(-1, tags);
         }
@@ -110,7 +107,7 @@ internal sealed class RateLimitingMetrics : IDisposable
 
     public void QueueStart(in MetricsContext metricsContext)
     {
-        if (metricsContext.CurrentRequestsQueuedCounterEnabled)
+        if (metricsContext.CurrentQueuedRequestsCounterEnabled)
         {
             QueueStartCore(metricsContext);
         }
@@ -126,7 +123,7 @@ internal sealed class RateLimitingMetrics : IDisposable
 
     public void QueueEnd(in MetricsContext metricsContext, RequestRejectionReason? reason, long startTimestamp, long currentTimestamp)
     {
-        if (metricsContext.CurrentRequestsQueuedCounterEnabled || _queuedRequestDurationCounter.Enabled)
+        if (metricsContext.CurrentQueuedRequestsCounterEnabled || _queuedRequestDurationCounter.Enabled)
         {
             QueueEndCore(metricsContext, reason, startTimestamp, currentTimestamp);
         }
@@ -138,7 +135,7 @@ internal sealed class RateLimitingMetrics : IDisposable
         var tags = new TagList();
         InitializeRateLimitingTags(ref tags, metricsContext);
 
-        if (metricsContext.CurrentRequestsQueuedCounterEnabled)
+        if (metricsContext.CurrentQueuedRequestsCounterEnabled)
         {
             _currentQueuedRequestsCounter.Add(-1, tags);
         }
@@ -173,5 +170,10 @@ internal sealed class RateLimitingMetrics : IDisposable
         {
             tags.Add("route", metricsContext.Route);
         }
+    }
+
+    public MetricsContext CreateContext(string? policyName, string? method, string? route)
+    {
+        return new MetricsContext(policyName, method, route, _currentLeasedRequestsCounter.Enabled, _currentQueuedRequestsCounter.Enabled);
     }
 }

@@ -39,7 +39,7 @@ public class WebAssemblyLazyLoadTest : ServerTestBase<ToggleExecutionModeServerF
         var app = Browser.MountTestComponent<TestRouterWithLazyAssembly>();
 
         // Ensure that we haven't requested the lazy loaded assembly
-        Assert.False(HasLoadedAssembly("Newtonsoft.Json.dll"));
+        Assert.False(HasLoadedAssembly("Newtonsoft.Json.wasm"));
 
         // Visit the route for the lazy-loaded assembly
         SetUrlViaPushState("/WithLazyAssembly");
@@ -47,7 +47,7 @@ public class WebAssemblyLazyLoadTest : ServerTestBase<ToggleExecutionModeServerF
         var button = Browser.Exists(By.Id("use-package-button"));
 
         // Now we should have requested the DLL
-        Assert.True(HasLoadedAssembly("Newtonsoft.Json.dll"));
+        Assert.True(HasLoadedAssembly("Newtonsoft.Json.wasm"));
 
         button.Click();
 
@@ -66,7 +66,7 @@ public class WebAssemblyLazyLoadTest : ServerTestBase<ToggleExecutionModeServerF
         var button = Browser.Exists(By.Id("use-package-button"));
 
         // We should have requested the DLL
-        Assert.True(HasLoadedAssembly("Newtonsoft.Json.dll"));
+        Assert.True(HasLoadedAssembly("Newtonsoft.Json.wasm"));
 
         button.Click();
 
@@ -82,7 +82,7 @@ public class WebAssemblyLazyLoadTest : ServerTestBase<ToggleExecutionModeServerF
         var app = Browser.MountTestComponent<TestRouterWithLazyAssembly>();
 
         // Ensure that we haven't requested the lazy loaded assembly or its PDB
-        Assert.False(HasLoadedAssembly("LazyTestContentPackage.dll"));
+        Assert.False(HasLoadedAssembly("LazyTestContentPackage.wasm"));
         Assert.False(HasLoadedAssembly("LazyTestContentPackage.pdb"));
 
         // Navigate to the designated route
@@ -92,7 +92,7 @@ public class WebAssemblyLazyLoadTest : ServerTestBase<ToggleExecutionModeServerF
         Browser.Exists(By.Id("lazy-load-msg"));
 
         // Now the assembly has been loaded
-        Assert.True(HasLoadedAssembly("LazyTestContentPackage.dll"));
+        Assert.True(HasLoadedAssembly("LazyTestContentPackage.wasm"));
 
         var button = Browser.Exists(By.Id("go-to-lazy-route"));
         button.Click();
@@ -116,7 +116,7 @@ public class WebAssemblyLazyLoadTest : ServerTestBase<ToggleExecutionModeServerF
         var errorUiElem = Browser.Exists(By.Id("blazor-error-ui"), TimeSpan.FromSeconds(10));
         Assert.NotNull(errorUiElem);
 
-        AssertLogContainsCriticalMessages("DoesNotExist.dll must be marked with 'BlazorWebAssemblyLazyLoad' item group in your project file to allow lazy-loading.");
+        AssertLogContainsCriticalMessages("DoesNotExist.wasm must be marked with 'BlazorWebAssemblyLazyLoad' item group in your project file to allow lazy-loading.");
     }
 
     [Fact]
@@ -127,21 +127,21 @@ public class WebAssemblyLazyLoadTest : ServerTestBase<ToggleExecutionModeServerF
         var app = Browser.MountTestComponent<TestRouterWithLazyAssembly>();
 
         // We start off with no lazy assemblies loaded
-        Assert.False(HasLoadedAssembly("LazyTestContentPackage.dll"));
-        Assert.False(HasLoadedAssembly("Newtonsoft.Json.dll"));
+        Assert.False(HasLoadedAssembly("LazyTestContentPackage.wasm"));
+        Assert.False(HasLoadedAssembly("Newtonsoft.Json.wasm"));
 
         // Click the first link and verify that it worked as expected
         var lazyAssemblyLink = Browser.Exists(By.Id("with-lazy-assembly"));
         lazyAssemblyLink.Click();
         var pkgButton = Browser.Exists(By.Id("use-package-button"));
-        Assert.True(HasLoadedAssembly("Newtonsoft.Json.dll"));
+        Assert.True(HasLoadedAssembly("Newtonsoft.Json.wasm"));
         pkgButton.Click();
 
         // Navigate to the next page and verify that it loaded its assembly
         var lazyRoutesLink = Browser.Exists(By.Id("with-lazy-routes"));
         lazyRoutesLink.Click();
         Browser.Exists(By.Id("lazy-load-msg"));
-        Assert.True(HasLoadedAssembly("LazyTestContentPackage.dll"));
+        Assert.True(HasLoadedAssembly("LazyTestContentPackage.wasm"));
 
         // Interact with that assembly to ensure it was loaded properly
         var button = Browser.Exists(By.Id("go-to-lazy-route"));

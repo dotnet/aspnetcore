@@ -46,7 +46,7 @@ public class HttpConnectionManagerTests : LoggedTest
         var mock = new Mock<DefaultConnectionContext>() { CallBase = true };
         mock.Setup(m => m.ConnectionId).Returns(connectionId);
         var transportConnectionManager = new TransportConnectionManager(httpConnectionManager);
-        var httpConnection = new KestrelConnection<ConnectionContext>(0, serviceContext, transportConnectionManager, _ => Task.CompletedTask, mock.Object, trace);
+        var httpConnection = new KestrelConnection<ConnectionContext>(0, serviceContext, transportConnectionManager, _ => Task.CompletedTask, mock.Object, trace, TestContextFactory.CreateMetricsContext(mock.Object));
         transportConnectionManager.AddConnection(0, httpConnection);
 
         var connectionCount = 0;

@@ -17,9 +17,6 @@ internal sealed class TestInternalJSImportMethods : IInternalJSImportMethods
     public string GetApplicationEnvironment()
         => _environment;
 
-    public byte[] GetConfig(string configFile)
-        => null;
-
     public string GetPersistedState()
         => null;
 

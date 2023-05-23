@@ -57,10 +57,7 @@ public class InMemoryStore<TUser, TRole> :
     // RoleId == rolename for inmemory store tests
     public Task<IList<TUser>> GetUsersInRoleAsync(string roleName, CancellationToken cancellationToken = default(CancellationToken))
     {
-        if (String.IsNullOrEmpty(roleName))
-        {
-            throw new ArgumentNullException(nameof(roleName));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(roleName);
 
         var role = _roles.Values.Where(x => x.NormalizedName.Equals(roleName)).SingleOrDefault();
         if (role == null)

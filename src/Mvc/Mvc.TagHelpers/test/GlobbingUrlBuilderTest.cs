@@ -457,7 +457,7 @@ public class GlobbingUrlBuilderTest
     {
         if (rootNode.Children == null || !rootNode.Children.Any())
         {
-            throw new ArgumentNullException(nameof(rootNode));
+            throw new ArgumentException($"{nameof(rootNode)} must have children.", nameof(rootNode));
         }
 
         var fileProvider = new Mock<IFileProvider>(MockBehavior.Strict);

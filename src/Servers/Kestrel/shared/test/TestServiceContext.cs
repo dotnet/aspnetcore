@@ -38,17 +38,16 @@ internal class TestServiceContext : ServiceContext
 
     public void InitializeHeartbeat()
     {
-        var heartbeatManager = new HeartbeatManager(ConnectionManager);
-        DateHeaderValueManager = new DateHeaderValueManager();
+        DateHeaderValueManager = new DateHeaderValueManager(TimeProvider.System);
         Heartbeat = new Heartbeat(
-            new IHeartbeatHandler[] { DateHeaderValueManager, heartbeatManager },
-            new SystemClock(),
+            new IHeartbeatHandler[] { DateHeaderValueManager, ConnectionManager },
+            TimeProvider.System,
             DebuggerWrapper.Singleton,
             Log,
             Heartbeat.Interval);
 
-        MockSystemClock = null;
-        SystemClock = heartbeatManager;
+        MockTimeProvider = null;
+        TimeProvider = TimeProvider.System;
     }
 
     private void Initialize(ILoggerFactory loggerFactory, KestrelTrace kestrelTrace, bool disableHttp1LineFeedTerminators, KestrelMetrics metrics)
@@ -56,9 +55,9 @@ internal class TestServiceContext : ServiceContext
         LoggerFactory = loggerFactory;
         Log = kestrelTrace;
         Scheduler = PipeScheduler.ThreadPool;
-        MockSystemClock = new MockSystemClock();
-        SystemClock = MockSystemClock;
-        DateHeaderValueManager = new DateHeaderValueManager();
+        MockTimeProvider = new MockTimeProvider();
+        TimeProvider = MockTimeProvider;
+        DateHeaderValueManager = new DateHeaderValueManager(MockTimeProvider);
         ConnectionManager = new ConnectionManager(Log, ResourceCounter.Unlimited);
         HttpParser = new HttpParser<Http1ParsingHandler>(Log.IsEnabled(LogLevel.Information), disableHttp1LineFeedTerminators);
         ServerOptions = new KestrelServerOptions
@@ -66,13 +65,13 @@ internal class TestServiceContext : ServiceContext
             AddServerHeader = false
         };
 
-        DateHeaderValueManager.OnHeartbeat(SystemClock.UtcNow);
+        DateHeaderValueManager.OnHeartbeat();
         Metrics = metrics;
     }
 
     public ILoggerFactory LoggerFactory { get; set; }
 
-    public MockSystemClock MockSystemClock { get; set; }
+    public MockTimeProvider MockTimeProvider { get; set; }
 
     public Func<MemoryPool<byte>> MemoryPoolFactory { get; set; } = System.Buffers.PinnedBlockMemoryPoolFactory.Create;
 

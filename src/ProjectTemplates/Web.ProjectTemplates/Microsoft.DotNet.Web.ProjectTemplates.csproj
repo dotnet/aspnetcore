@@ -65,6 +65,7 @@
     <GeneratedContent Include="WebApi-FSharp.fsproj.in" OutputPath="content/WebApi-FSharp/Company.WebApplication1.fsproj" />
     <GeneratedContent Include="Worker-CSharp.csproj.in" OutputPath="content/Worker-CSharp/Company.Application1.csproj" />
     <GeneratedContent Include="Worker-FSharp.fsproj.in" OutputPath="content/Worker-FSharp/Company.Application1.fsproj" />
+    <GeneratedContent Include="Components-CSharp.csproj.in" OutputPath="content/Components-CSharp/Components-CSharp.csproj" />
     <GeneratedContent Include="ComponentsWebAssembly-CSharp.Client.csproj.in" OutputPath="content/ComponentsWebAssembly-CSharp/Client/ComponentsWebAssembly-CSharp.Client.csproj" />
     <GeneratedContent Include="ComponentsWebAssembly-CSharp.Shared.csproj.in" OutputPath="content/ComponentsWebAssembly-CSharp/Shared/ComponentsWebAssembly-CSharp.Shared.csproj" />
     <GeneratedContent Include="ComponentsWebAssembly-CSharp.Server.csproj.in" OutputPath="content/ComponentsWebAssembly-CSharp/Server/ComponentsWebAssembly-CSharp.Server.csproj" />

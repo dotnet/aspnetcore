@@ -1,5 +1,13 @@
 #nullable enable
 Microsoft.AspNetCore.Routing.RouteHandlerServices
+override Microsoft.AspNetCore.Routing.DataTokensMetadata.ToString() -> string!
+override Microsoft.AspNetCore.Routing.EndpointNameMetadata.ToString() -> string!
+override Microsoft.AspNetCore.Routing.ExcludeFromDescriptionAttribute.ToString() -> string!
+override Microsoft.AspNetCore.Routing.HostAttribute.ToString() -> string!
+override Microsoft.AspNetCore.Routing.HttpMethodMetadata.ToString() -> string!
+override Microsoft.AspNetCore.Routing.RouteNameMetadata.ToString() -> string!
+override Microsoft.AspNetCore.Routing.SuppressLinkGenerationMetadata.ToString() -> string!
+override Microsoft.AspNetCore.Routing.SuppressMatchingMetadata.ToString() -> string!
 Microsoft.AspNetCore.Builder.RouteShortCircuitEndpointConventionBuilderExtensions
 Microsoft.AspNetCore.Routing.RouteShortCircuitEndpointRouteBuilderExtensions
 static Microsoft.AspNetCore.Builder.RouteShortCircuitEndpointConventionBuilderExtensions.ShortCircuit(this Microsoft.AspNetCore.Builder.IEndpointConventionBuilder! builder, int? statusCode = null) -> Microsoft.AspNetCore.Builder.IEndpointConventionBuilder!

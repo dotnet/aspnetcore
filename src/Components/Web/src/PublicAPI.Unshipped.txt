@@ -16,6 +16,7 @@ Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer
 Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.BeginRenderingComponent(Microsoft.AspNetCore.Components.IComponent! component, Microsoft.AspNetCore.Components.ParameterView initialParameters) -> Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent
 Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.BeginRenderingComponent(System.Type! componentType, Microsoft.AspNetCore.Components.ParameterView initialParameters) -> Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent
 Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.StaticHtmlRenderer(System.IServiceProvider! serviceProvider, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
+Microsoft.AspNetCore.Components.RenderTree.WebRenderer.WaitUntilAttachedAsync() -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.Web.AutoRenderMode
 Microsoft.AspNetCore.Components.Web.AutoRenderMode.AutoRenderMode() -> void
 Microsoft.AspNetCore.Components.Web.AutoRenderMode.AutoRenderMode(bool prerender) -> void
