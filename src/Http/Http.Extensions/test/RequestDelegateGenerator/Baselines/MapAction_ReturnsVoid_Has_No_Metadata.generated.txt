@@ -86,6 +86,7 @@ namespace Microsoft.AspNetCore.Http.Generated
     using MetadataPopulator = System.Func<System.Reflection.MethodInfo, Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions?, Microsoft.AspNetCore.Http.RequestDelegateMetadataResult>;
     using RequestDelegateFactoryFunc = System.Func<System.Delegate, Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions, Microsoft.AspNetCore.Http.RequestDelegateMetadataResult?, Microsoft.AspNetCore.Http.RequestDelegateResult>;
 
+    %GENERATEDCODEATTRIBUTE%
     file static class GeneratedRouteBuilderExtensionsCore
     {
 
@@ -205,6 +206,7 @@ namespace Microsoft.AspNetCore.Http.Generated
     }
 
 
+    %GENERATEDCODEATTRIBUTE%
     file sealed class LogOrThrowExceptionHelper
     {
         private readonly ILogger? _rdgLogger;

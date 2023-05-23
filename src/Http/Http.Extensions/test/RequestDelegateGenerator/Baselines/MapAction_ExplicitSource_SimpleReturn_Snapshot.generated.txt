@@ -86,6 +86,7 @@ namespace Microsoft.AspNetCore.Http.Generated
     using MetadataPopulator = System.Func<System.Reflection.MethodInfo, Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions?, Microsoft.AspNetCore.Http.RequestDelegateMetadataResult>;
     using RequestDelegateFactoryFunc = System.Func<System.Delegate, Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions, Microsoft.AspNetCore.Http.RequestDelegateMetadataResult?, Microsoft.AspNetCore.Http.RequestDelegateResult>;
 
+    %GENERATEDCODEATTRIBUTE%
     file static class GeneratedRouteBuilderExtensionsCore
     {
 
@@ -571,6 +572,7 @@ namespace Microsoft.AspNetCore.Http.Generated
 
     }
 
+    %GENERATEDCODEATTRIBUTE%
     file sealed class GeneratedProducesResponseTypeMetadata : IProducesResponseTypeMetadata
     {
         public GeneratedProducesResponseTypeMetadata(Type? type, int statusCode, string[] contentTypes)
@@ -587,6 +589,7 @@ namespace Microsoft.AspNetCore.Http.Generated
         public IEnumerable<string> ContentTypes { get; }
     }
 
+    %GENERATEDCODEATTRIBUTE%
     file static class GeneratedMetadataConstants
     {
         public static readonly string[] JsonContentType = new [] { "application/json" };
@@ -596,6 +599,7 @@ namespace Microsoft.AspNetCore.Http.Generated
     }
 
 
+    %GENERATEDCODEATTRIBUTE%
     file sealed class LogOrThrowExceptionHelper
     {
         private readonly ILogger? _rdgLogger;
