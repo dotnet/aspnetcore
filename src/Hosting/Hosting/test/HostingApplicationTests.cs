@@ -92,7 +92,6 @@ public class HostingApplicationTests
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/35142")]
     public void IHttpActivityFeatureIsPopulated()
     {
         var testSource = new ActivitySource(Path.GetRandomFileName());
