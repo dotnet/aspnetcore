@@ -43,10 +43,17 @@ internal sealed class CodeWriter : IndentedTextWriter
         }
     }
 
-    public void EndBlockWithComma()
+    public void EndBlockWithComma(bool newLine = true)
     {
         this.Indent--;
-        this.WriteLine("},");
+        if (!newLine)
+        {
+            this.WriteLine("},");
+        }
+        else
+        {
+            this.Write("},");
+        }
     }
 
     public void EndBlockWithSemiColon(bool newLine)

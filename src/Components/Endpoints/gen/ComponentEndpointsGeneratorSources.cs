@@ -17,16 +17,22 @@ internal static class ComponentEndpointsGeneratorSources
 """;
 
     public const string RazorComponentApplicationAssemblyAndNamespaceDeclaration = """
-using Microsoft.AspNetCore.Components.Infrastructure;
+using Microsoft.AspNetCore.Components.Discovery;
 
-[assembly: AppRazorComponentApplication]
+[assembly: global::Microsoft.AspNetCore.Components.Infrastructure.AppRazorComponentApplication]
         
 namespace Microsoft.AspNetCore.Components.Infrastructure;
 """;
 
     public const string RazorComponentApplicationAttributeFileHeader = """        
-file class AppRazorComponentApplicationAttribute : RazorComponentApplicationAttribute
+file class AppRazorComponentApplicationAttribute : global::Microsoft.AspNetCore.Components.Infrastructure.RazorComponentApplicationAttribute
 """;
 
     public static string GeneratedCodeAttribute => $@"[System.CodeDom.Compiler.GeneratedCodeAttribute(""{typeof(ComponentEndpointsGeneratorSources).Assembly.FullName}"", ""{typeof(ComponentEndpointsGeneratorSources).Assembly.GetName().Version}"")]";
+
+    public const string PageComponentBuilder = "global::Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder";
+
+    public const string ComponentBuilder = "global::Microsoft.AspNetCore.Components.Discovery.ComponentBuilder";
+
+    public const string AssemblyComponentLibraryDescriptor = "global::Microsoft.AspNetCore.Components.Discovery.AssemblyComponentLibraryDescriptor";
 }

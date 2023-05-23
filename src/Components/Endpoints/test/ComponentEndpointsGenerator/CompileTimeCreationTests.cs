@@ -87,8 +87,8 @@ public class Startup
 {
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddRazorComponents();
-        services.AddDataProtection();
+        services.AddRazorComponents()
+            .AddServerComponents();
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment environment)

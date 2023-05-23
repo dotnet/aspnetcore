@@ -7,112 +7,353 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-using Microsoft.AspNetCore.Components.Infrastructure;
+using Microsoft.AspNetCore.Components.Discovery;
 
-[assembly: AppRazorComponentApplication]
+[assembly: global::Microsoft.AspNetCore.Components.Infrastructure.AppRazorComponentApplication]
         
 namespace Microsoft.AspNetCore.Components.Infrastructure;
 
 %GENERATEDCODEATTRIBUTE%
-file class AppRazorComponentApplicationAttribute : RazorComponentApplicationAttribute
+file class AppRazorComponentApplicationAttribute : global::Microsoft.AspNetCore.Components.Infrastructure.RazorComponentApplicationAttribute
 {
-    private global::System.Collections.Generic.IEnumerable<global::Microsoft.AspNetCore.Components.ComponentBuilder> GetDirectDependencyComponents(string source)
+    private global::Microsoft.AspNetCore.Components.Discovery.ComponentBuilder [] GetDirectDependencyComponents(string source)
     {
-        yield return new global::Microsoft.AspNetCore.Components.ComponentBuilder
+        return new global::Microsoft.AspNetCore.Components.Discovery.ComponentBuilder[]
         {
-            Source = source,
-            ComponentType = typeof(global::DirectDependency.Counter),
-            RenderMode = new global::Microsoft.AspNetCore.Components.Web.RenderModeServerAttribute(
-                true)
-        };
-    }
-
-    private global::System.Collections.Generic.IEnumerable<global::Microsoft.AspNetCore.Components.ComponentBuilder> GetTransitiveDependencyComponents(string source)
-    {
-        yield return new global::Microsoft.AspNetCore.Components.ComponentBuilder
-        {
-            Source = source,
-            ComponentType = typeof(global::TransitiveDependency.TransitiveDependencyComponent),
-        };
-    }
-
-    private global::System.Collections.Generic.IEnumerable<global::Microsoft.AspNetCore.Components.ComponentBuilder> GetUnitedAppComponents(string source)
-    {
-        yield return new global::Microsoft.AspNetCore.Components.ComponentBuilder
-        {
-            Source = source,
-            ComponentType = typeof(global::UnitedApp.App),
-        };
-        yield return new global::Microsoft.AspNetCore.Components.ComponentBuilder
-        {
-            Source = source,
-            ComponentType = typeof(global::MyApp.MyAppComponent),
-        };
-    }
-
-    private global::System.Collections.Generic.IEnumerable<global::Microsoft.AspNetCore.Components.PageComponentBuilder> GetDirectDependencyPages(string source)
-    {
-        yield return new global::Microsoft.AspNetCore.Components.PageComponentBuilder
-        {
-            Source = source,
-            PageType = typeof(global::DirectDependency.Counter),
-            RouteTemplates = new global::System.Collections.Generic.List<string>
+            new global::Microsoft.AspNetCore.Components.Discovery.ComponentBuilder
             {
-                "/dependency",
-            }
+                AssemblyName = source,
+                ComponentType = typeof(global::DirectDependency.Counter),
+                RenderMode = new global::Microsoft.AspNetCore.Components.Web.RenderModeServerAttribute(
+                    true)
+            },
         };
     }
 
-    private global::System.Collections.Generic.IEnumerable<global::Microsoft.AspNetCore.Components.PageComponentBuilder> GetTransitiveDependencyPages(string source)
+    private global::Microsoft.AspNetCore.Components.Discovery.ComponentBuilder [] GetTransitiveDependencyComponents(string source)
     {
-        yield break;
-    }
-
-    private global::System.Collections.Generic.IEnumerable<global::Microsoft.AspNetCore.Components.PageComponentBuilder> GetUnitedAppPages(string source)
-    {
-        yield return new global::Microsoft.AspNetCore.Components.PageComponentBuilder
+        return new global::Microsoft.AspNetCore.Components.Discovery.ComponentBuilder[]
         {
-            Source = source,
-            PageType = typeof(global::MyApp.MyAppComponent),
-            RouteTemplates = new global::System.Collections.Generic.List<string>
+            new global::Microsoft.AspNetCore.Components.Discovery.ComponentBuilder
             {
-                "/app",
-            }
+                AssemblyName = source,
+                ComponentType = typeof(global::TransitiveDependency.TransitiveDependencyComponent),
+            },
         };
     }
 
-    private global::Microsoft.AspNetCore.Components.ComponentLibraryBuilder GetDirectDependencyBuilder()
+    private global::Microsoft.AspNetCore.Components.Discovery.ComponentBuilder [] GetMicrosoft_AspNetCore_Components_AuthorizationComponents(string source)
+    {
+        return new global::Microsoft.AspNetCore.Components.Discovery.ComponentBuilder[]
+        {
+            new global::Microsoft.AspNetCore.Components.Discovery.ComponentBuilder
+            {
+                AssemblyName = source,
+                ComponentType = typeof(global::Microsoft.AspNetCore.Components.Authorization.AuthorizeRouteView),
+            },
+            new global::Microsoft.AspNetCore.Components.Discovery.ComponentBuilder
+            {
+                AssemblyName = source,
+                ComponentType = typeof(global::Microsoft.AspNetCore.Components.Authorization.AuthorizeView),
+            },
+            new global::Microsoft.AspNetCore.Components.Discovery.ComponentBuilder
+            {
+                AssemblyName = source,
+                ComponentType = typeof(global::Microsoft.AspNetCore.Components.Authorization.CascadingAuthenticationState),
+            },
+        };
+    }
+
+    private global::Microsoft.AspNetCore.Components.Discovery.ComponentBuilder [] GetMicrosoft_AspNetCore_Components_EndpointsComponents(string source)
+    {
+        return global::System.Array.Empty<global::Microsoft.AspNetCore.Components.Discovery.ComponentBuilder>();
+    }
+
+    private global::Microsoft.AspNetCore.Components.Discovery.ComponentBuilder [] GetMicrosoft_AspNetCore_Components_FormsComponents(string source)
+    {
+        return new global::Microsoft.AspNetCore.Components.Discovery.ComponentBuilder[]
+        {
+            new global::Microsoft.AspNetCore.Components.Discovery.ComponentBuilder
+            {
+                AssemblyName = source,
+                ComponentType = typeof(global::Microsoft.AspNetCore.Components.Forms.DataAnnotationsValidator),
+            },
+        };
+    }
+
+    private global::Microsoft.AspNetCore.Components.Discovery.ComponentBuilder [] GetMicrosoft_AspNetCore_Components_ServerComponents(string source)
+    {
+        return global::System.Array.Empty<global::Microsoft.AspNetCore.Components.Discovery.ComponentBuilder>();
+    }
+
+    private global::Microsoft.AspNetCore.Components.Discovery.ComponentBuilder [] GetMicrosoft_AspNetCore_Components_WebComponents(string source)
+    {
+        return new global::Microsoft.AspNetCore.Components.Discovery.ComponentBuilder[]
+        {
+            new global::Microsoft.AspNetCore.Components.Discovery.ComponentBuilder
+            {
+                AssemblyName = source,
+                ComponentType = typeof(global::Microsoft.AspNetCore.Components.Forms.EditForm),
+            },
+            new global::Microsoft.AspNetCore.Components.Discovery.ComponentBuilder
+            {
+                AssemblyName = source,
+                ComponentType = typeof(global::Microsoft.AspNetCore.Components.Forms.InputCheckbox),
+            },
+            new global::Microsoft.AspNetCore.Components.Discovery.ComponentBuilder
+            {
+                AssemblyName = source,
+                ComponentType = typeof(global::Microsoft.AspNetCore.Components.Forms.InputDate<>),
+            },
+            new global::Microsoft.AspNetCore.Components.Discovery.ComponentBuilder
+            {
+                AssemblyName = source,
+                ComponentType = typeof(global::Microsoft.AspNetCore.Components.Forms.InputFile),
+            },
+            new global::Microsoft.AspNetCore.Components.Discovery.ComponentBuilder
+            {
+                AssemblyName = source,
+                ComponentType = typeof(global::Microsoft.AspNetCore.Components.Forms.InputNumber<>),
+            },
+            new global::Microsoft.AspNetCore.Components.Discovery.ComponentBuilder
+            {
+                AssemblyName = source,
+                ComponentType = typeof(global::Microsoft.AspNetCore.Components.Forms.InputRadio<>),
+            },
+            new global::Microsoft.AspNetCore.Components.Discovery.ComponentBuilder
+            {
+                AssemblyName = source,
+                ComponentType = typeof(global::Microsoft.AspNetCore.Components.Forms.InputRadioGroup<>),
+            },
+            new global::Microsoft.AspNetCore.Components.Discovery.ComponentBuilder
+            {
+                AssemblyName = source,
+                ComponentType = typeof(global::Microsoft.AspNetCore.Components.Forms.InputSelect<>),
+            },
+            new global::Microsoft.AspNetCore.Components.Discovery.ComponentBuilder
+            {
+                AssemblyName = source,
+                ComponentType = typeof(global::Microsoft.AspNetCore.Components.Forms.InputText),
+            },
+            new global::Microsoft.AspNetCore.Components.Discovery.ComponentBuilder
+            {
+                AssemblyName = source,
+                ComponentType = typeof(global::Microsoft.AspNetCore.Components.Forms.InputTextArea),
+            },
+            new global::Microsoft.AspNetCore.Components.Discovery.ComponentBuilder
+            {
+                AssemblyName = source,
+                ComponentType = typeof(global::Microsoft.AspNetCore.Components.Forms.ValidationMessage<>),
+            },
+            new global::Microsoft.AspNetCore.Components.Discovery.ComponentBuilder
+            {
+                AssemblyName = source,
+                ComponentType = typeof(global::Microsoft.AspNetCore.Components.Forms.ValidationSummary),
+            },
+            new global::Microsoft.AspNetCore.Components.Discovery.ComponentBuilder
+            {
+                AssemblyName = source,
+                ComponentType = typeof(global::Microsoft.AspNetCore.Components.Routing.FocusOnNavigate),
+            },
+            new global::Microsoft.AspNetCore.Components.Discovery.ComponentBuilder
+            {
+                AssemblyName = source,
+                ComponentType = typeof(global::Microsoft.AspNetCore.Components.Routing.NavigationLock),
+            },
+            new global::Microsoft.AspNetCore.Components.Discovery.ComponentBuilder
+            {
+                AssemblyName = source,
+                ComponentType = typeof(global::Microsoft.AspNetCore.Components.Routing.NavLink),
+            },
+            new global::Microsoft.AspNetCore.Components.Discovery.ComponentBuilder
+            {
+                AssemblyName = source,
+                ComponentType = typeof(global::Microsoft.AspNetCore.Components.Web.HeadContent),
+            },
+            new global::Microsoft.AspNetCore.Components.Discovery.ComponentBuilder
+            {
+                AssemblyName = source,
+                ComponentType = typeof(global::Microsoft.AspNetCore.Components.Web.HeadOutlet),
+            },
+            new global::Microsoft.AspNetCore.Components.Discovery.ComponentBuilder
+            {
+                AssemblyName = source,
+                ComponentType = typeof(global::Microsoft.AspNetCore.Components.Web.PageTitle),
+            },
+            new global::Microsoft.AspNetCore.Components.Discovery.ComponentBuilder
+            {
+                AssemblyName = source,
+                ComponentType = typeof(global::Microsoft.AspNetCore.Components.Web.ErrorBoundary),
+            },
+            new global::Microsoft.AspNetCore.Components.Discovery.ComponentBuilder
+            {
+                AssemblyName = source,
+                ComponentType = typeof(global::Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<>),
+            },
+        };
+    }
+
+    private global::Microsoft.AspNetCore.Components.Discovery.ComponentBuilder [] GetUnitedAppComponents(string source)
+    {
+        return new global::Microsoft.AspNetCore.Components.Discovery.ComponentBuilder[]
+        {
+            new global::Microsoft.AspNetCore.Components.Discovery.ComponentBuilder
+            {
+                AssemblyName = source,
+                ComponentType = typeof(global::UnitedApp.App),
+            },
+            new global::Microsoft.AspNetCore.Components.Discovery.ComponentBuilder
+            {
+                AssemblyName = source,
+                ComponentType = typeof(global::MyApp.MyAppComponent),
+            },
+        };
+    }
+
+    private global::Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder [] GetDirectDependencyPages(string source)
+    {
+        return new global::Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder[]
+        {
+            new global::Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder
+            {
+                AssemblyName = source,
+                PageType = typeof(global::DirectDependency.Counter),
+                RouteTemplates = new global::System.Collections.Generic.List<string>
+                {
+                    "/dependency",
+                }
+            },
+        };
+    }
+
+    private global::Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder [] GetTransitiveDependencyPages(string source)
+    {
+        return global::System.Array.Empty<global::Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder>();
+    }
+
+    private global::Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder [] GetMicrosoft_AspNetCore_Components_AuthorizationPages(string source)
+    {
+        return global::System.Array.Empty<global::Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder>();
+    }
+
+    private global::Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder [] GetMicrosoft_AspNetCore_Components_EndpointsPages(string source)
+    {
+        return global::System.Array.Empty<global::Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder>();
+    }
+
+    private global::Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder [] GetMicrosoft_AspNetCore_Components_FormsPages(string source)
+    {
+        return global::System.Array.Empty<global::Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder>();
+    }
+
+    private global::Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder [] GetMicrosoft_AspNetCore_Components_ServerPages(string source)
+    {
+        return global::System.Array.Empty<global::Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder>();
+    }
+
+    private global::Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder [] GetMicrosoft_AspNetCore_Components_WebPages(string source)
+    {
+        return global::System.Array.Empty<global::Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder>();
+    }
+
+    private global::Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder [] GetUnitedAppPages(string source)
+    {
+        return new global::Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder[]
+        {
+            new global::Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder
+            {
+                AssemblyName = source,
+                PageType = typeof(global::MyApp.MyAppComponent),
+                RouteTemplates = new global::System.Collections.Generic.List<string>
+                {
+                    "/app",
+                }
+            },
+        };
+    }
+
+    private global::Microsoft.AspNetCore.Components.Discovery.AssemblyComponentLibraryDescriptor GetDirectDependencyBuilder()
     {
         var source = "DirectDependency";
-        return new global::Microsoft.AspNetCore.Components.ComponentLibraryBuilder(
+        return new global::Microsoft.AspNetCore.Components.Discovery.AssemblyComponentLibraryDescriptor(
             source,
             GetDirectDependencyPages(source),
             GetDirectDependencyComponents(source));
     }
 
-    private global::Microsoft.AspNetCore.Components.ComponentLibraryBuilder GetTransitiveDependencyBuilder()
+    private global::Microsoft.AspNetCore.Components.Discovery.AssemblyComponentLibraryDescriptor GetTransitiveDependencyBuilder()
     {
         var source = "TransitiveDependency";
-        return new global::Microsoft.AspNetCore.Components.ComponentLibraryBuilder(
+        return new global::Microsoft.AspNetCore.Components.Discovery.AssemblyComponentLibraryDescriptor(
             source,
             GetTransitiveDependencyPages(source),
             GetTransitiveDependencyComponents(source));
     }
 
-    private global::Microsoft.AspNetCore.Components.ComponentLibraryBuilder GetUnitedAppBuilder()
+    private global::Microsoft.AspNetCore.Components.Discovery.AssemblyComponentLibraryDescriptor GetMicrosoft_AspNetCore_Components_AuthorizationBuilder()
+    {
+        var source = "Microsoft.AspNetCore.Components.Authorization";
+        return new global::Microsoft.AspNetCore.Components.Discovery.AssemblyComponentLibraryDescriptor(
+            source,
+            GetMicrosoft_AspNetCore_Components_AuthorizationPages(source),
+            GetMicrosoft_AspNetCore_Components_AuthorizationComponents(source));
+    }
+
+    private global::Microsoft.AspNetCore.Components.Discovery.AssemblyComponentLibraryDescriptor GetMicrosoft_AspNetCore_Components_EndpointsBuilder()
+    {
+        var source = "Microsoft.AspNetCore.Components.Endpoints";
+        return new global::Microsoft.AspNetCore.Components.Discovery.AssemblyComponentLibraryDescriptor(
+            source,
+            GetMicrosoft_AspNetCore_Components_EndpointsPages(source),
+            GetMicrosoft_AspNetCore_Components_EndpointsComponents(source));
+    }
+
+    private global::Microsoft.AspNetCore.Components.Discovery.AssemblyComponentLibraryDescriptor GetMicrosoft_AspNetCore_Components_FormsBuilder()
+    {
+        var source = "Microsoft.AspNetCore.Components.Forms";
+        return new global::Microsoft.AspNetCore.Components.Discovery.AssemblyComponentLibraryDescriptor(
+            source,
+            GetMicrosoft_AspNetCore_Components_FormsPages(source),
+            GetMicrosoft_AspNetCore_Components_FormsComponents(source));
+    }
+
+    private global::Microsoft.AspNetCore.Components.Discovery.AssemblyComponentLibraryDescriptor GetMicrosoft_AspNetCore_Components_ServerBuilder()
+    {
+        var source = "Microsoft.AspNetCore.Components.Server";
+        return new global::Microsoft.AspNetCore.Components.Discovery.AssemblyComponentLibraryDescriptor(
+            source,
+            GetMicrosoft_AspNetCore_Components_ServerPages(source),
+            GetMicrosoft_AspNetCore_Components_ServerComponents(source));
+    }
+
+    private global::Microsoft.AspNetCore.Components.Discovery.AssemblyComponentLibraryDescriptor GetMicrosoft_AspNetCore_Components_WebBuilder()
+    {
+        var source = "Microsoft.AspNetCore.Components.Web";
+        return new global::Microsoft.AspNetCore.Components.Discovery.AssemblyComponentLibraryDescriptor(
+            source,
+            GetMicrosoft_AspNetCore_Components_WebPages(source),
+            GetMicrosoft_AspNetCore_Components_WebComponents(source));
+    }
+
+    private global::Microsoft.AspNetCore.Components.Discovery.AssemblyComponentLibraryDescriptor GetUnitedAppBuilder()
     {
         var source = "UnitedApp";
-        return new global::Microsoft.AspNetCore.Components.ComponentLibraryBuilder(
+        return new global::Microsoft.AspNetCore.Components.Discovery.AssemblyComponentLibraryDescriptor(
             source,
             GetUnitedAppPages(source),
             GetUnitedAppComponents(source));
     }
 
-    public override global::Microsoft.AspNetCore.Components.ComponentApplicationBuilder GetBuilder()
+    public override global::Microsoft.AspNetCore.Components.Discovery.ComponentApplicationBuilder GetBuilder()
     {
-        var builder = new global::Microsoft.AspNetCore.Components.ComponentApplicationBuilder();
+        var builder = new global::Microsoft.AspNetCore.Components.Discovery.ComponentApplicationBuilder();
         builder.AddLibrary(GetDirectDependencyBuilder());
         builder.AddLibrary(GetTransitiveDependencyBuilder());
+        builder.AddLibrary(GetMicrosoft_AspNetCore_Components_AuthorizationBuilder());
+        builder.AddLibrary(GetMicrosoft_AspNetCore_Components_EndpointsBuilder());
+        builder.AddLibrary(GetMicrosoft_AspNetCore_Components_FormsBuilder());
+        builder.AddLibrary(GetMicrosoft_AspNetCore_Components_ServerBuilder());
+        builder.AddLibrary(GetMicrosoft_AspNetCore_Components_WebBuilder());
         builder.AddLibrary(GetUnitedAppBuilder());
         return builder;
     }

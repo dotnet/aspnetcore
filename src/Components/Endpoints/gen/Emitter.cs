@@ -1,10 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections;
 using System.Collections.Immutable;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -14,20 +13,25 @@ internal class Emitter
 {
     internal static string GetComponentsBody(ComponentModel cm)
     {
+        var displayName = cm.Component.IsGenericType
+            ? string.Concat(cm.Component.ToDisplayParts(SymbolDisplayFormat.FullyQualifiedFormat)
+                .Where(p => p.Kind != SymbolDisplayPartKind.TypeParameterName))
+            : cm.Component.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+
         var builder = new StringBuilder();
         var writer = new StringWriter(builder);
-        var codeWriter = new CodeWriter(writer, 2);
-        codeWriter.WriteLine("yield return new global::Microsoft.AspNetCore.Components.ComponentBuilder");
+        var codeWriter = new CodeWriter(writer, 3);
+        codeWriter.WriteLine($"new {ComponentEndpointsGeneratorSources.ComponentBuilder}");
         codeWriter.StartBlock();
-        codeWriter.WriteLine($"Source = source,");
-        codeWriter.WriteLine($"ComponentType = typeof({cm.Component.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}),");
+        codeWriter.WriteLine($"AssemblyName = source,");
+        codeWriter.WriteLine($"ComponentType = typeof({displayName}),");
         if (cm.RenderMode != null)
         {
             codeWriter.Write($"RenderMode = ");
             EmitAttributeInstance(codeWriter, cm.RenderMode);
             codeWriter.WriteLine();
         }
-        codeWriter.EndBlockWithSemiColon(newLine: false);
+        codeWriter.EndBlockWithComma();
         codeWriter.Flush();
         writer.Flush();
         return builder.ToString();
@@ -76,25 +80,37 @@ internal class Emitter
         var builder = new StringBuilder();
         var writer = new StringWriter(builder);
         var codeWriter = new CodeWriter(writer, 1);
-        var returnType = "global::System.Collections.Generic.IEnumerable<global::Microsoft.AspNetCore.Components.ComponentBuilder>";
+        var returnType = $"{ComponentEndpointsGeneratorSources.ComponentBuilder} []";
         codeWriter.Write($"private {returnType} Get{name}Components(string source)");
         codeWriter.Flush();
         writer.Flush();
         return builder.ToString();
     }
 
-    internal static string CreateGetMethod(string signature, ImmutableArray<string> body)
+    internal static string CreateGetMethod(string signature, ImmutableArray<string> body, string typeName)
     {
         var builder = new StringBuilder();
         var writer = new StringWriter(builder);
         var codeWriter = new CodeWriter(writer, 1);
         codeWriter.WriteLine(signature);
         codeWriter.StartBlock();
-        for (var i = 0; i < body.Length; i++)
+
+        if (body.Length == 0)
         {
-            var definition = body[i];
-            codeWriter.WriteLine(definition);
+            codeWriter.WriteLine($"return global::System.Array.Empty<{typeName}>();");
         }
+        else
+        {
+            codeWriter.WriteLine($"return new {typeName}[]");
+            codeWriter.StartBlock();
+            for (var i = 0; i < body.Length; i++)
+            {
+                var definition = body[i];
+                codeWriter.WriteLine(definition);
+            }
+            codeWriter.EndBlockWithSemiColon(newLine: true);
+        }
+
         codeWriter.EndBlock();
         codeWriter.Flush();
         writer.Flush();
@@ -103,19 +119,19 @@ internal class Emitter
 
     internal static string GetPagesBody(ComponentModel cm)
     {
-        //        yield return new PageComponentBuilder()
+        //        new PageComponentBuilder()
         //        {
         //            Source = "Blazor.United.Assembly",
         //            PageType = typeof(Counter),
         //            RouteTemplates = new List<string> { "/counter" }
-        //        };
+        //        }
 
         var builder = new StringBuilder();
         var writer = new StringWriter(builder);
-        var codeWriter = new CodeWriter(writer, 2);
-        codeWriter.WriteLine("yield return new global::Microsoft.AspNetCore.Components.PageComponentBuilder");
+        var codeWriter = new CodeWriter(writer, 3);
+        codeWriter.WriteLine($"new {ComponentEndpointsGeneratorSources.PageComponentBuilder}");
         codeWriter.StartBlock();
-        codeWriter.WriteLine($"Source = source,");
+        codeWriter.WriteLine($"AssemblyName = source,");
         codeWriter.WriteLine($"PageType = typeof({cm.Component.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}),");
         codeWriter.WriteLine($$"""RouteTemplates = new global::System.Collections.Generic.List<string>""");
         codeWriter.StartBlock();
@@ -125,7 +141,7 @@ internal class Emitter
             codeWriter.WriteLine(",");
         }
         codeWriter.EndBlock();
-        codeWriter.EndBlockWithSemiColon(newLine: false);
+        codeWriter.EndBlockWithComma();
         codeWriter.Flush();
         writer.Flush();
         return builder.ToString();
@@ -137,7 +153,7 @@ internal class Emitter
         var builder = new StringBuilder();
         var writer = new StringWriter(builder);
         var codeWriter = new CodeWriter(writer, 1);
-        var returnType = "global::System.Collections.Generic.IEnumerable<global::Microsoft.AspNetCore.Components.PageComponentBuilder>";
+        var returnType = $"{ComponentEndpointsGeneratorSources.PageComponentBuilder} []";
         codeWriter.Write($"private {returnType} Get{name}Pages(string source)");
         codeWriter.Flush();
         writer.Flush();
@@ -150,11 +166,11 @@ internal class Emitter
         var builder = new StringBuilder();
         var writer = new StringWriter(builder);
         var codeWriter = new CodeWriter(writer, 1);
-        var returnType = "global::Microsoft.AspNetCore.Components.ComponentLibraryBuilder";
+        var returnType = $"{ComponentEndpointsGeneratorSources.AssemblyComponentLibraryDescriptor}";
         codeWriter.WriteLine($"private {returnType} Get{name}Builder()");
         codeWriter.StartBlock();
         codeWriter.WriteLine($"var source = \"{assembly.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)}\";");
-        codeWriter.Write("return new global::Microsoft.AspNetCore.Components.ComponentLibraryBuilder");
+        codeWriter.Write($"return new {returnType}");
         codeWriter.StartParameterListBlock();
         codeWriter.WriteLine("source,");
         codeWriter.WriteLine($"Get{name}Pages(source),");
@@ -172,9 +188,9 @@ internal class Emitter
         var builder = new StringBuilder();
         var writer = new StringWriter(builder);
         var codeWriter = new CodeWriter(writer, 1);
-        codeWriter.WriteLine("public override global::Microsoft.AspNetCore.Components.ComponentApplicationBuilder GetBuilder()");
+        codeWriter.WriteLine("public override global::Microsoft.AspNetCore.Components.Discovery.ComponentApplicationBuilder GetBuilder()");
         codeWriter.StartBlock();
-        codeWriter.WriteLine("var builder = new global::Microsoft.AspNetCore.Components.ComponentApplicationBuilder();");
+        codeWriter.WriteLine("var builder = new global::Microsoft.AspNetCore.Components.Discovery.ComponentApplicationBuilder();");
         for (var i = 0; i < getLibraryThunks.Length; i++)
         {
             codeWriter.WriteLine(getLibraryThunks[i]);

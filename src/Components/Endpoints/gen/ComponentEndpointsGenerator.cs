@@ -18,7 +18,6 @@ namespace Microsoft.AspNetCore.Components.Endpoints.Generator;
 [Generator]
 public sealed class ComponentEndpointsGenerator : IIncrementalGenerator
 {
-    private static readonly ImmutableArray<string> _yieldBreakStatement = ImmutableArray.Create("yield break;");
     // We are going to generate a file like this one (with some simplifications in the sample),
     // assuming an app Blazor.United.Assembly and a library Razor.Class.Library:
     //[assembly: AppRazorComponentApplication]
@@ -43,13 +42,16 @@ public sealed class ComponentEndpointsGenerator : IIncrementalGenerator
     //              GetBlazorUnitedAssemblyComponents(source));
     //    }
     //
-    //    private IEnumerable<PageComponentBuilder> GetBlazorUnitedAssemblyPages()
+    //    private PageComponentBuilder[] GetBlazorUnitedAssemblyPages()
     //    {
-    //        yield return new PageComponentBuilder()
+    //        return new PageComponentBuilder[]
     //        {
-    //            Source = "Blazor.United.Assembly",
-    //            PageType = typeof(Counter),
-    //            RouteTemplates = new List<string> { "/counter" }
+    //            new
+    //            {
+    //                Source = "Blazor.United.Assembly",
+    //                PageType = typeof(Counter),
+    //                RouteTemplates = new List<string> { "/counter" }
+    //            }
     //        };
     //        ...
     //    }
@@ -244,7 +246,7 @@ public sealed class ComponentEndpointsGenerator : IIncrementalGenerator
             .Select(static (cm, ct) => Emitter.GetPagesBody(cm.Left))
             .Collect()
             .Combine(projectGetPagesSignature)
-            .Select(static (ctx, ct) => Emitter.CreateGetMethod(ctx.Right.signature, ctx.Left));
+            .Select(static (ctx, ct) => Emitter.CreateGetMethod(ctx.Right.signature, ctx.Left, ComponentEndpointsGeneratorSources.PageComponentBuilder));
         var getComponentPagesBodyThunk = allComponentDefinitions
             .Where(c => c.IsPage)
             .Select(static (cm, ct) => (cm.Component.ContainingAssembly, body: Emitter.GetPagesBody(cm)));
@@ -262,8 +264,8 @@ public sealed class ComponentEndpointsGenerator : IIncrementalGenerator
             {
                 var (assembly, signature) = ctx.Left;
                 var bodyStatements = ctx.Right;
-                var body = bodyStatements.TryGetValue(assembly, out var found) ? found : _yieldBreakStatement;
-                return Emitter.CreateGetMethod(signature, body);
+                var body = bodyStatements.TryGetValue(assembly, out var found) ? found : ImmutableArray<string>.Empty;
+                return Emitter.CreateGetMethod(signature, body, ComponentEndpointsGeneratorSources.PageComponentBuilder);
             });
 
         return (projectGetComponentPagesBodyThunk, getPagesMethodThunks);
@@ -283,7 +285,7 @@ public sealed class ComponentEndpointsGenerator : IIncrementalGenerator
             .Select(static (cm, ct) => Emitter.GetComponentsBody(cm.Left))
             .Collect()
             .Combine(projectGetComponentsSignature)
-            .Select(static (ctx, ct) => Emitter.CreateGetMethod(ctx.Right.signature, ctx.Left));
+            .Select(static (ctx, ct) => Emitter.CreateGetMethod(ctx.Right.signature, ctx.Left, ComponentEndpointsGeneratorSources.ComponentBuilder));
 
         var getComponentsSignature = assembliesReferencingComponents.Select(
             static (assembly, ct) => (assembly, signature: Emitter.CreateGetComponentsMethodSignature(assembly)));
@@ -304,8 +306,8 @@ public sealed class ComponentEndpointsGenerator : IIncrementalGenerator
             {
                 var (assembly, signature) = ctx.Left;
                 var bodyStatements = ctx.Right;
-                var body = bodyStatements[assembly];
-                return Emitter.CreateGetMethod(signature, body);
+                var body = bodyStatements.TryGetValue(assembly, out var found) ? found : ImmutableArray<string>.Empty;
+                return Emitter.CreateGetMethod(signature, body, ComponentEndpointsGeneratorSources.ComponentBuilder);
             });
 
         return (projectGetComponentComponentsBodyThunk, getComponentMethodThunks);
@@ -321,9 +323,12 @@ public sealed class ComponentEndpointsGenerator : IIncrementalGenerator
         var componentCollector = new ComponentCollector(componentsInterface, routeAttribute, renderModeAttribute);
         componentCollector.Visit(module.GlobalNamespace);
 
-        foreach (var item in componentCollector.Components!)
+        if (componentCollector.Components != null)
         {
-            yield return item;
+            foreach (var item in componentCollector.Components!)
+            {
+                yield return item;
+            }
         }
     }
 
