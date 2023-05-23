@@ -2539,7 +2539,6 @@ public class HubConnectionTests : FunctionalTestBase
     }
 
     [Fact]
-    [Repeat(500)]
     public async Task CanReconnectAndSendMessageWhileDisconnected()
     {
         var protocol = HubProtocols["json"];
@@ -2599,7 +2598,6 @@ public class HubConnectionTests : FunctionalTestBase
     }
 
     [Fact]
-    [Repeat(1500)]
     public async Task CanReconnectAndSendMessageOnceConnected()
     {
         var protocol = HubProtocols["json"];
@@ -2669,7 +2667,6 @@ public class HubConnectionTests : FunctionalTestBase
     }
 
     [Fact]
-    [Repeat(500)]
     public async Task ServerAbortsConnectionWithAckingEnabledNoReconnectAttempted()
     {
         var protocol = HubProtocols["json"];
