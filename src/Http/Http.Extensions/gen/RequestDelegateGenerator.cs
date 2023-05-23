@@ -74,6 +74,8 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
             codeWriter.StartBlock();
             codeWriter.WriteLine(@"Debug.Assert(options != null, ""RequestDelegateFactoryOptions not found."");");
             codeWriter.WriteLine(@"Debug.Assert(options.EndpointBuilder != null, ""EndpointBuilder not found."");");
+            codeWriter.WriteLine(@"Debug.Assert(options.EndpointBuilder.ApplicationServices != null, ""ApplicationServices not found."");");
+            codeWriter.WriteLine(@"Debug.Assert(options.EndpointBuilder.FilterFactories != null, ""FilterFactories not found."");");
             codeWriter.WriteLine($"var handler = ({endpoint.EmitHandlerDelegateType(considerOptionality: true)})del;");
             codeWriter.WriteLine("EndpointFilterDelegate? filteredInvocation = null;");
             if (endpoint.EmitterContext.RequiresLoggingHelper || endpoint.EmitterContext.HasJsonBodyOrService || endpoint.Response?.IsSerializableJsonResponse(out var _) is true)
@@ -89,7 +91,7 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                 codeWriter.WriteLine("var parameters = del.Method.GetParameters();");
             }
             codeWriter.WriteLineNoTabs(string.Empty);
-            codeWriter.WriteLine("if (options?.EndpointBuilder?.FilterFactories.Count > 0)");
+            codeWriter.WriteLine("if (options.EndpointBuilder.FilterFactories.Count > 0)");
             codeWriter.StartBlock();
             codeWriter.WriteLine(endpoint.Response?.IsAwaitable == true
                 ? "filteredInvocation = GeneratedRouteBuilderExtensionsCore.BuildFilterDelegate(async ic =>"
@@ -173,6 +175,7 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
             .Select((endpoints, _) =>
             {
                 var hasJsonBodyOrService = endpoints.Any(endpoint => endpoint.EmitterContext.HasJsonBodyOrService);
+                var hasJsonBodyOrQuery = endpoints.Any(endpoint => endpoint.EmitterContext.HasJsonBodyOrQuery);
                 var hasJsonBody = endpoints.Any(endpoint => endpoint.EmitterContext.HasJsonBody);
                 var hasFormBody = endpoints.Any(endpoint => endpoint.EmitterContext.HasFormBody);
                 var hasRouteOrQuery = endpoints.Any(endpoint => endpoint.EmitterContext.HasRouteOrQuery);
@@ -196,7 +199,7 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                     codeWriter.WriteLine(RequestDelegateGeneratorSources.WriteToResponseAsyncMethod);
                 }
 
-                if (hasJsonBody || hasJsonBodyOrService)
+                if (hasJsonBody || hasJsonBodyOrService || hasJsonBodyOrQuery)
                 {
                     codeWriter.WriteLine(RequestDelegateGeneratorSources.TryResolveBodyAsyncMethod);
                 }
@@ -244,7 +247,7 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
             .Select((endpoints, _) =>
             {
                 var hasFormBody = endpoints.Any(endpoint => endpoint.EmitterContext.HasFormBody);
-                var hasJsonBody = endpoints.Any(endpoint => endpoint.EmitterContext.HasJsonBody || endpoint.EmitterContext.HasJsonBodyOrService);
+                var hasJsonBody = endpoints.Any(endpoint => endpoint.EmitterContext.HasJsonBody || endpoint.EmitterContext.HasJsonBodyOrService || endpoint.EmitterContext.HasJsonBodyOrQuery);
                 var hasResponseMetadata = endpoints.Any(endpoint => endpoint.EmitterContext.HasResponseMetadata);
                 var requiresPropertyAsParameterInfo = endpoints.Any(endpoint => endpoint.EmitterContext.RequiresPropertyAsParameterInfo);
 

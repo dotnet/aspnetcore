@@ -23,4 +23,5 @@ internal enum EndpointParameterSource
     // Used to track that the parameter is annotated with `AsParameters` and
     // can explode to multiple parameters
     AsParameters,
+    JsonBodyOrQuery,
 }

@@ -373,4 +373,111 @@ app.MapPost("/hello", (string[] p) => p[0]);
         await VerifyAgainstBaselineUsingFile(compilation);
     }
 
+    [Fact]
+    public async Task MapMethods_Post_WithArrayQueryString_AndBody_ShouldUseBody()
+    {
+        var (results, compilation) = await RunGeneratorAsync("""
+app.MapMethods("/hello", new [] { "POST" }, (string[] p) => p[0]);
+""");
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        VerifyStaticEndpointModel(results, endpointModel =>
+        {
+            Assert.Equal("MapMethods", endpointModel.HttpMethod);
+        });
+
+        var httpContext = CreateHttpContext();
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+        httpContext.Request.Headers["Content-Type"] = "application/json";
+        var requestBodyBytes = JsonSerializer.SerializeToUtf8Bytes(new string[] { "ValueFromBody" });
+        var stream = new MemoryStream(requestBodyBytes);
+        httpContext.Request.Body = stream;
+        httpContext.Request.Headers["Content-Length"] = stream.Length.ToString(CultureInfo.InvariantCulture);
+        httpContext.Request.QueryString = new QueryString("?p=ValueFromQueryString");
+
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, "ValueFromBody");
+        await VerifyAgainstBaselineUsingFile(compilation);
+    }
+
+    [Fact]
+    public async Task MapMethods_Get_WithArrayQueryString_AndBody_ShouldUseQueryString()
+    {
+        var (results, compilation) = await RunGeneratorAsync("""
+app.MapMethods("/hello", new [] { "GET" }, (string[] p) => p[0]);
+""");
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        VerifyStaticEndpointModel(results, endpointModel =>
+        {
+            Assert.Equal("MapMethods", endpointModel.HttpMethod);
+        });
+
+        var httpContext = CreateHttpContext();
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+        httpContext.Request.Headers["Content-Type"] = "application/json";
+        var requestBodyBytes = JsonSerializer.SerializeToUtf8Bytes(new string[] { "ValueFromBody" });
+        var stream = new MemoryStream(requestBodyBytes);
+        httpContext.Request.Body = stream;
+        httpContext.Request.Headers["Content-Length"] = stream.Length.ToString(CultureInfo.InvariantCulture);
+        httpContext.Request.QueryString = new QueryString("?p=ValueFromQueryString");
+
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, "ValueFromQueryString");
+        await VerifyAgainstBaselineUsingFile(compilation);
+    }
+
+    [Fact]
+    public async Task MapMethods_PostAndGet_WithArrayQueryString_AndBody_ShouldUseQueryString()
+    {
+        var (results, compilation) = await RunGeneratorAsync("""
+app.MapMethods("/hello", new [] { "POST", "GET" }, (string[] p) => p[0]);
+""");
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        VerifyStaticEndpointModel(results, endpointModel =>
+        {
+            Assert.Equal("MapMethods", endpointModel.HttpMethod);
+        });
+
+        var httpContext = CreateHttpContext();
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+        httpContext.Request.Headers["Content-Type"] = "application/json";
+        var requestBodyBytes = JsonSerializer.SerializeToUtf8Bytes(new string[] { "ValueFromBody" });
+        var stream = new MemoryStream(requestBodyBytes);
+        httpContext.Request.Body = stream;
+        httpContext.Request.Headers["Content-Length"] = stream.Length.ToString(CultureInfo.InvariantCulture);
+        httpContext.Request.QueryString = new QueryString("?p=ValueFromQueryString");
+
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, "ValueFromQueryString");
+        await VerifyAgainstBaselineUsingFile(compilation);
+    }
+
+    [Fact]
+    public async Task MapMethods_PostAndPut_WithArrayQueryString_AndBody_ShouldUseBody()
+    {
+        var (results, compilation) = await RunGeneratorAsync("""
+app.MapMethods("/hello", new [] { "POST", "PUT" }, (string[] p) => p[0]);
+""");
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        VerifyStaticEndpointModel(results, endpointModel =>
+        {
+            Assert.Equal("MapMethods", endpointModel.HttpMethod);
+        });
+
+        var httpContext = CreateHttpContext();
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+        httpContext.Request.Headers["Content-Type"] = "application/json";
+        var requestBodyBytes = JsonSerializer.SerializeToUtf8Bytes(new string[] { "ValueFromBody" });
+        var stream = new MemoryStream(requestBodyBytes);
+        httpContext.Request.Body = stream;
+        httpContext.Request.Headers["Content-Length"] = stream.Length.ToString(CultureInfo.InvariantCulture);
+        httpContext.Request.QueryString = new QueryString("?p=ValueFromQueryString");
+
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, "ValueFromBody");
+        await VerifyAgainstBaselineUsingFile(compilation);
+    }
 }

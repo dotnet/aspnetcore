@@ -201,11 +201,12 @@ internal class EndpointParameter
         {
             Source = EndpointParameterSource.RouteOrQuery;
         }
-        else if (ShouldDisableInferredBodyParameters(endpoint.HttpMethod) && IsArray && ElementType.SpecialType == SpecialType.System_String)
+        else if (IsArray && ElementType.SpecialType == SpecialType.System_String)
         {
-            Source = EndpointParameterSource.Query;
+            endpoint.IsAwaitable = true;
+            Source = EndpointParameterSource.JsonBodyOrQuery;
         }
-        else if (ShouldDisableInferredBodyParameters(endpoint.HttpMethod) && SymbolEqualityComparer.Default.Equals(Type, wellKnownTypes.Get(WellKnownType.Microsoft_Extensions_Primitives_StringValues)))
+        else if (SymbolEqualityComparer.Default.Equals(Type, wellKnownTypes.Get(WellKnownType.Microsoft_Extensions_Primitives_StringValues)))
         {
             Source = EndpointParameterSource.Query;
             IsStringValues = true;
@@ -227,6 +228,7 @@ internal class EndpointParameter
         endpoint.EmitterContext.HasFormBody |= Source == EndpointParameterSource.FormBody;
         endpoint.EmitterContext.HasJsonBody |= Source == EndpointParameterSource.JsonBody;
         endpoint.EmitterContext.HasJsonBodyOrService |= Source == EndpointParameterSource.JsonBodyOrService;
+        endpoint.EmitterContext.HasJsonBodyOrQuery |= Source == EndpointParameterSource.JsonBodyOrQuery;
     }
 
     private static bool ImplementsIEndpointMetadataProvider(ITypeSymbol type, WellKnownTypes wellKnownTypes)
@@ -234,17 +236,6 @@ internal class EndpointParameter
 
     private static bool ImplementsIEndpointParameterMetadataProvider(ITypeSymbol type, WellKnownTypes wellKnownTypes)
         => type.Implements(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IEndpointParameterMetadataProvider));
-
-    private static bool ShouldDisableInferredBodyParameters(string httpMethod)
-    {
-        switch (httpMethod)
-        {
-            case "MapPut" or "MapPatch" or "MapPost":
-                return false;
-            default:
-                return true;
-        }
-    }
 
     public ITypeSymbol Type { get; }
     public ITypeSymbol ElementType { get; }
