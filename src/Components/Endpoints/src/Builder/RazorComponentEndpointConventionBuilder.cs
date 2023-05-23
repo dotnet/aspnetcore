@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Discovery;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Web;
@@ -18,20 +17,20 @@ public class RazorComponentEndpointConventionBuilder : IEndpointConventionBuilde
 {
     private readonly object _lock;
     private readonly ComponentApplicationBuilder _builder;
-    private readonly ConfiguredRenderModes _renderModes;
+    private readonly RazorComponentDataSourceOptions _options;
     private readonly List<Action<EndpointBuilder>> _conventions;
     private readonly List<Action<EndpointBuilder>> _finallyConventions;
 
     internal RazorComponentEndpointConventionBuilder(
         object @lock,
         ComponentApplicationBuilder builder,
-        ConfiguredRenderModes renderModes,
+        RazorComponentDataSourceOptions options,
         List<Action<EndpointBuilder>> conventions,
         List<Action<EndpointBuilder>> finallyConventions)
     {
         _lock = @lock;
         _builder = builder;
-        _renderModes = renderModes;
+        _options = options;
         _conventions = conventions;
         _finallyConventions = finallyConventions;
     }
@@ -42,53 +41,42 @@ public class RazorComponentEndpointConventionBuilder : IEndpointConventionBuilde
     public ComponentApplicationBuilder ApplicationBuilder => _builder;
 
     /// <summary>
-    /// Explicitly configures the <see cref="IComponentRenderMode"/> available for this application.
+    /// Configures the <see cref="RenderMode.WebAssembly"/> for this application.
     /// </summary>
-    /// <param name="renderModes">The list of <see cref="IComponentRenderMode"/> available.</param>
     /// <returns>The <see cref="RazorComponentEndpointConventionBuilder"/>.</returns>
-    public RazorComponentEndpointConventionBuilder SetRenderModes(params IComponentRenderMode[] renderModes)
+    public RazorComponentEndpointConventionBuilder AddWebAssemblyRenderMode()
     {
-        _renderModes.RenderModes ??= new();
-        _renderModes.RenderModes.Clear();
-        _renderModes.RenderModes.AddRange(renderModes);
+        for (var i = 0; i < _options.ConfiguredRenderModes.Count; i++)
+        {
+            var mode = _options.ConfiguredRenderModes[i];
+            if (mode is WebAssemblyRenderMode)
+            {
+                return this;
+            }
+        }
+
+        _options.ConfiguredRenderModes.Add(RenderMode.WebAssembly);
 
         return this;
     }
 
     /// <summary>
-    /// Explicitly configures the <see cref="IComponentRenderMode"/> available for this application to use <see cref="RenderMode.WebAssembly"/>.
+    /// Configures the <see cref="RenderMode.Server"/> for this application.
     /// </summary>
     /// <returns>The <see cref="RazorComponentEndpointConventionBuilder"/>.</returns>
-    public RazorComponentEndpointConventionBuilder SetWebAssemblyRenderMode()
+    public RazorComponentEndpointConventionBuilder AddServerRenderMode()
     {
-        _renderModes.RenderModes ??= new();
-        _renderModes.RenderModes.Clear();
-        _renderModes.RenderModes.Add(RenderMode.WebAssembly);
+        for (var i = 0; i < _options.ConfiguredRenderModes.Count; i++)
+        {
+            var mode = _options.ConfiguredRenderModes[i];
+            if (mode is ServerRenderMode)
+            {
+                return this;
+            }
+        }
 
-        return this;
-    }
+        _options.ConfiguredRenderModes.Add(RenderMode.Server);
 
-    /// <summary>
-    /// Explicitly configures the <see cref="IComponentRenderMode"/> available for this application to use <see cref="RenderMode.Server"/>.
-    /// </summary>
-    /// <returns>The <see cref="RazorComponentEndpointConventionBuilder"/>.</returns>
-    public RazorComponentEndpointConventionBuilder SetServerRenderMode()
-    {
-        _renderModes.RenderModes ??= new();
-        _renderModes.RenderModes.Clear();
-        _renderModes.RenderModes.Add(RenderMode.Server);
-
-        return this;
-    }
-
-    /// <summary>
-    /// Explicitly configures the <see cref="IComponentRenderMode"/> to render exclusively statically.
-    /// </summary>
-    /// <returns>The <see cref="RazorComponentEndpointConventionBuilder"/>.</returns>
-    public RazorComponentEndpointConventionBuilder SetStaticRenderMode()
-    {
-        _renderModes.RenderModes ??= new();
-        _renderModes.RenderModes.Clear();
         return this;
     }
 

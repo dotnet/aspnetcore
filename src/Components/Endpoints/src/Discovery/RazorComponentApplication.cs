@@ -34,7 +34,7 @@ internal class RazorComponentApplication
     /// </summary>
     public IReadOnlyList<ComponentInfo> Components => _components;
 
-    internal IEnumerable<IComponentRenderMode> GetDeclaredRenderModesByDiscoveredComponents()
+    internal ISet<IComponentRenderMode> GetDeclaredRenderModesByDiscoveredComponents()
     {
         var set = new HashSet<IComponentRenderMode>();
         for (var i = 0; i < Components.Count; i++)
@@ -50,7 +50,8 @@ internal class RazorComponentApplication
             }
             if (component.RenderMode is AutoRenderMode)
             {
-                set.Add(RenderMode.Auto);
+                set.Add(RenderMode.Server);
+                set.Add(RenderMode.WebAssembly);
             }
         }
 

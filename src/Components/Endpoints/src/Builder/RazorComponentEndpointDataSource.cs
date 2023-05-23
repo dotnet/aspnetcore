@@ -16,7 +16,7 @@ internal class RazorComponentEndpointDataSource<TRootComponent> : EndpointDataSo
     private readonly object _lock = new();
     private readonly List<Action<EndpointBuilder>> _conventions = new();
     private readonly List<Action<EndpointBuilder>> _finallyConventions = new();
-    private readonly ConfiguredRenderModes _renderModes = new();
+    private readonly RazorComponentDataSourceOptions _options = new();
     private readonly ComponentApplicationBuilder _builder;
     private readonly IApplicationBuilder _applicationBuilder;
     private readonly RenderModeEndpointProvider[] _renderModeEndpointProviders;
@@ -40,7 +40,7 @@ internal class RazorComponentEndpointDataSource<TRootComponent> : EndpointDataSo
         DefaultBuilder = new RazorComponentEndpointConventionBuilder(
             _lock,
             builder,
-            _renderModes,
+            _options,
             _conventions,
             _finallyConventions);
 
@@ -68,6 +68,8 @@ internal class RazorComponentEndpointDataSource<TRootComponent> : EndpointDataSo
         }
     }
 
+    internal RazorComponentDataSourceOptions Options => _options;
+
     private void Initialize()
     {
         if (_endpoints == null)
@@ -86,23 +88,24 @@ internal class RazorComponentEndpointDataSource<TRootComponent> : EndpointDataSo
     {
         var endpoints = new List<Endpoint>();
         var context = _builder.Build();
-        if (_renderModes.RenderModes == null)
-        {
-            _renderModes.RenderModes = new();
-            _renderModes.RenderModes.AddRange(context.GetDeclaredRenderModesByDiscoveredComponents());
-        }
-
-        var renderModes = _renderModes.RenderModes;
 
         foreach (var definition in context.Pages)
         {
             _factory.AddEndpoints(endpoints, typeof(TRootComponent), definition, _conventions, _finallyConventions);
         }
 
-        var found = false;
-        for (var i = 0; i < renderModes.Count; i++)
+        ICollection<IComponentRenderMode> renderModes = Options.ConfiguredRenderModes;
+
+        if (Options.UseDeclaredRenderModes)
         {
-            var renderMode = renderModes[i];
+            var componentRenderModes = context.GetDeclaredRenderModesByDiscoveredComponents();
+            componentRenderModes.UnionWith(Options.ConfiguredRenderModes);
+            renderModes = componentRenderModes;
+        }
+
+        foreach (var renderMode in renderModes)
+        {
+            var found = false;
             foreach (var provider in _renderModeEndpointProviders)
             {
                 if (provider.Supports(renderMode))
@@ -122,8 +125,7 @@ internal class RazorComponentEndpointDataSource<TRootComponent> : EndpointDataSo
             {
                 throw new InvalidOperationException($"Unable to find a provider for the render mode: {renderMode.GetType().FullName}. This generally" +
                     $"means that a call to 'AddWebAssemblyComponents' or 'AddServerComponents' is missing. " +
-                    $"Alternatively call 'UseWebAssemblyRendering', 'UseServerRendering' or 'UseStaticRendering' " +
-                    $"to configure the desired rendering mode.");
+                    $"Alternatively call 'AddWebAssemblyRenderMode', 'AddServerRenderMode' might be missing if you have set UseDeclaredRenderModes = false.");
             }
         }
 
@@ -134,9 +136,4 @@ internal class RazorComponentEndpointDataSource<TRootComponent> : EndpointDataSo
         // TODO: Handle updates if necessary (for hot reload).
         return _changeToken;
     }
-}
-
-internal class ConfiguredRenderModes
-{
-    public List<IComponentRenderMode>? RenderModes { get; set; }
 }
