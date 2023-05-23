@@ -41,6 +41,8 @@ internal sealed class MessageBuffer : IDisposable
 
     private TaskCompletionSource<FlushResult> _resend = _completedTCS;
 
+    private object Lock => _buffer;
+
     static MessageBuffer()
     {
         _completedTCS.SetResult(new());
@@ -99,19 +101,25 @@ internal sealed class MessageBuffer : IDisposable
         }
     }
 
+    /// <summary>
+    /// Calling code is assumed to not call this method in parallel. Currently HubConnection and HubConnectionContext respect that.
+    /// </summary>
     // TODO: WriteAsync(HubMessage) overload, so we don't allocate SerializedHubMessage for messages that aren't going to be buffered
     public async ValueTask<FlushResult> WriteAsync(SerializedHubMessage hubMessage, CancellationToken cancellationToken)
     {
         // TODO: Backpressure based on message count and total message size
-        if (_buffer[_bufferIndex].Message is not null)
+        if (_buffer[_bufferIndex].Message is not null || _buffer[_bufferIndex].SequenceId > long.MinValue)
         {
             // primitive backpressure if buffer is full
             while (await _waitForAck.Reader.WaitToReadAsync(cancellationToken).ConfigureAwait(false))
             {
-                if (_waitForAck.Reader.TryRead(out var index)
-                    && (index == _bufferIndex || _buffer[_bufferIndex].Message is null))
+                lock (Lock)
                 {
-                    break;
+                    if (_waitForAck.Reader.TryRead(out var index)
+                    && (index == _bufferIndex || _buffer[_bufferIndex].Message is null))
+                    {
+                        break;
+                    }
                 }
             }
         }
@@ -138,7 +146,10 @@ internal sealed class MessageBuffer : IDisposable
                 return await _connection.Transport.Output.WriteAsync(hubMessage.GetSerializedMessage(_protocol), cancellationToken).ConfigureAwait(false);
             }
 
-            _buffer[_bufferIndex] = (hubMessage, _totalMessageCount);
+            lock (Lock)
+            {
+                _buffer[_bufferIndex] = (hubMessage, _totalMessageCount);
+            }
             _bufferIndex = (_bufferIndex + 1) % _buffer.Length;
 
             return await _connection.Transport.Output.WriteAsync(hubMessage.GetSerializedMessage(_protocol), cancellationToken).ConfigureAwait(false);
@@ -174,19 +185,23 @@ internal sealed class MessageBuffer : IDisposable
         // Or in exceptional cases we could miss multiple messages, but the next ack will clear them
         var index = _bufferIndex;
         var finalIndex = -1;
-        for (var i = 0; i < _buffer.Length; i++)
+
+        lock (Lock)
         {
-            var currentIndex = (index + i) % _buffer.Length;
-            if (_buffer[currentIndex].Message is not null && _buffer[currentIndex].SequenceId <= ackMessage.SequenceId)
+            for (var i = 0; i < _buffer.Length; i++)
             {
-                _buffer[currentIndex] = (null, long.MinValue);
-                finalIndex = currentIndex;
+                var currentIndex = (index + i) % _buffer.Length;
+                if (_buffer[currentIndex].Message is not null && _buffer[currentIndex].SequenceId <= ackMessage.SequenceId)
+                {
+                    _buffer[currentIndex] = (null, long.MinValue);
+                    finalIndex = currentIndex;
+                }
+                // TODO: figure out an early exit?
             }
-            // TODO: figure out an early exit?
         }
 
         // Release backpressure
-        if (finalIndex > 0)
+        if (finalIndex >= 0)
         {
             _waitForAck.Writer.TryWrite(finalIndex);
         }
@@ -194,7 +209,7 @@ internal sealed class MessageBuffer : IDisposable
 
     internal bool ShouldProcessMessage(HubMessage message)
     {
-        // TODO: if we're expecting a sequence message but get here should we error or ignore?
+        // TODO: if we're expecting a sequence message but get here should we error or ignore or maybe even process them?
         if (_waitForSequenceMessage)
         {
             if (message is SequenceMessage)
@@ -234,7 +249,7 @@ internal sealed class MessageBuffer : IDisposable
 
         if (sequenceMessage.SequenceId > _currentReceivingSequenceId)
         {
-            throw new InvalidOperationException("Sequence ID greater than amount we've acked");
+            throw new InvalidOperationException("Sequence ID greater than amount of messages we've received.");
         }
         _currentReceivingSequenceId = sequenceMessage.SequenceId;
     }
@@ -252,6 +267,7 @@ internal sealed class MessageBuffer : IDisposable
             Interlocked.Exchange(ref _resend, oldTcs);
             tcs = oldTcs;
         }
+
         _ = DoResendAsync(tcs);
     }
 
@@ -264,16 +280,22 @@ internal sealed class MessageBuffer : IDisposable
             long latestAckedIndex = -1;
             for (var i = 0; i < _buffer.Length - 1; i++)
             {
-                if (_buffer[(_bufferIndex + i + 1) % _buffer.Length].SequenceId > long.MinValue)
+                var currentIndex = (_bufferIndex + i + 1) % _buffer.Length;
+                if (_buffer[currentIndex].SequenceId > long.MinValue)
                 {
-                    latestAckedIndex = (_bufferIndex + i + 1) % _buffer.Length;
+                    latestAckedIndex = currentIndex;
                     break;
                 }
             }
 
             if (latestAckedIndex == -1)
             {
-                // no unacked messages, still send SequenceMessage?
+                // no unacked messages, still send SequenceMessage as other side is expecting it, see _waitForSequenceMessage
+
+                // Add 1 because this ID is used to set what the next ID to be received is, and since everything has been received so far, this needs to be the next ID that is going to be sent
+                _sequenceMessage.SequenceId = _totalMessageCount + 1;
+                _protocol.WriteMessage(_sequenceMessage, _connection.Transport.Output);
+                finalResult = await _connection.Transport.Output.FlushAsync().ConfigureAwait(false);
                 return;
             }
 
