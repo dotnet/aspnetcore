@@ -8,6 +8,7 @@
 //  - The capabilities of Boot.Server.ts and Boot.WebAssembly.ts to handle insertion
 //    of interactive components
 
+import { DotNet } from '@microsoft/dotnet-js-interop';
 import { startCircuit } from './Boot.Server.Common';
 import { startWebAssembly } from './Boot.WebAssembly.Common';
 import { shouldAutoStart } from './BootCommon';
@@ -43,6 +44,7 @@ async function activateInteractiveComponents(options?: Partial<WebStartOptions>)
 }
 
 Blazor.start = boot;
+window['DotNet'] = DotNet;
 
 if (shouldAutoStart()) {
   boot();

@@ -8,6 +8,7 @@ import { shouldAutoStart } from './BootCommon';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
 import { startWebAssembly } from './Boot.WebAssembly.Common';
 import { WebAssemblyComponentDescriptor, discoverComponents } from './Services/ComponentDescriptorDiscovery';
+import { DotNet } from '@microsoft/dotnet-js-interop';
 
 let started = false;
 
@@ -22,6 +23,8 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
 }
 
 Blazor.start = boot;
+window['DotNet'] = DotNet;
+
 if (shouldAutoStart()) {
   boot().catch(error => {
     if (typeof Module !== 'undefined' && Module.printErr) {

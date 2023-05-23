@@ -13,9 +13,6 @@ export const rendererAttached = new Promise<void>((resolve) => {
   resolveRendererAttached = resolve;
 });
 
-// TODO: Consider allowing JS initializers to run multiple times.
-// We could add a "platform" argument so the initializer can handle each
-// platform's initialization separately, if needed.
 export function attachWebRendererInterop(
   interopMethods: DotNet.DotNetObject,
   jsComponentParameters: JSComponentParametersByIdentifier,

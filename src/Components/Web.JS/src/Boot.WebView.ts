@@ -39,11 +39,12 @@ async function boot(): Promise<void> {
   await jsInitializer.invokeAfterStartedCallbacks(Blazor);
 }
 
-Blazor.start = boot;
-
 function receiveWebViewDotNetDataStream(streamId: number, data: any, bytesRead: number, errorMessage: string): void {
   receiveDotNetDataStream(dispatcher, streamId, data, bytesRead, errorMessage);
 }
+
+Blazor.start = boot;
+window['DotNet'] = DotNet;
 
 if (shouldAutoStart()) {
   boot();

@@ -4,8 +4,6 @@
 // This is a single-file self-contained module to avoid the need for a Webpack build
 
 export module DotNet {
-  (window as any).DotNet = DotNet; // Ensure reachable from anywhere
-
   export type JsonReviver = ((key: any, value: any) => any);
   const jsonRevivers: JsonReviver[] = [];
 
