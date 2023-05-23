@@ -336,7 +336,7 @@ public class KnownHeaders
                         // Check lengths are the same, then if the bytes were converted to an ascii string if they would be the same.
                         // We do not consider Utf8 headers for reuse.
                         if (previousValue.Length == value.Length &&
-                            StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, value))
+                            Ascii.Equals(previousValue, value))
                         {{
                             // The previous string matches what the bytes would convert to, so we will just use that one.
                             _bits |= flag;
