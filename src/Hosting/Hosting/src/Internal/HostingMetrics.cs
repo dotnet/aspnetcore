@@ -23,11 +23,11 @@ internal sealed class HostingMetrics : IDisposable
         _meter = meterFactory.Create(MeterName);
 
         _currentRequestsCounter = _meter.CreateUpDownCounter<long>(
-            "current-requests",
+            "http-server-current-requests",
             description: "Number of HTTP requests that are currently active on the server.");
 
         _requestDuration = _meter.CreateHistogram<double>(
-            "request-duration",
+            "http-server-request-duration",
             unit: "s",
             description: "The duration of HTTP requests on the server.");
 

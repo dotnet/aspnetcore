@@ -541,9 +541,9 @@ public class DeveloperExceptionPageMiddlewareTest : LoggedTest
         var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         var meterFactory = new TestMeterFactory();
-        using var requestDurationRecorder = new InstrumentRecorder<double>(meterFactory, "Microsoft.AspNetCore.Hosting", "request-duration");
+        using var instrumentRecorder = new InstrumentRecorder<double>(meterFactory, "Microsoft.AspNetCore.Hosting", "http-server-request-duration");
         using var diagnosticsRequestExceptionRecorder = new InstrumentRecorder<long>(meterFactory, DiagnosticsMetrics.MeterName, "diagnostics-handler-exception");
-        using var measurementReporter = new MeasurementReporter<double>(meterFactory, "Microsoft.AspNetCore.Hosting", "request-duration");
+        using var measurementReporter = new MeasurementReporter<double>(meterFactory, "Microsoft.AspNetCore.Hosting", "http-server-request-duration");
         measurementReporter.Register(m =>
         {
             tcs.SetResult();

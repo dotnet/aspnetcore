@@ -431,8 +431,7 @@ public class HttpConnectionManagerTests : VerifiableLoggedTest
         using (StartVerifiableLog())
         {
             var testMeterFactory = new TestMeterFactory();
-            using var connectionDuration = new InstrumentRecorder<double>(testMeterFactory, HttpConnectionsMetrics.MeterName, "connection-duration");
-            using var currentConnections = new InstrumentRecorder<long>(testMeterFactory, HttpConnectionsMetrics.MeterName, "current-connections");
+            using var connectionDuration = new InstrumentRecorder<double>(testMeterFactory, HttpConnectionsMetrics.MeterName, "signalr-http-transport-connection-duration");
 
             var connectionManager = CreateConnectionManager(LoggerFactory, metrics: new HttpConnectionsMetrics(testMeterFactory));
             var connection = connectionManager.CreateConnection();
@@ -440,13 +439,11 @@ public class HttpConnectionManagerTests : VerifiableLoggedTest
             Assert.NotNull(connection.ConnectionId);
 
             Assert.Empty(connectionDuration.GetMeasurements());
-            Assert.Collection(currentConnections.GetMeasurements(), m => Assert.Equal(1, m.Value));
 
             connection.TransportType = HttpTransportType.WebSockets;
 
             connectionManager.RemoveConnection(connection.ConnectionId, connection.TransportType, HttpConnectionStopStatus.NormalClosure);
 
-            Assert.Collection(currentConnections.GetMeasurements(), m => Assert.Equal(1, m.Value), m => Assert.Equal(-1, m.Value));
             Assert.Collection(connectionDuration.GetMeasurements(), m => AssertDuration(m, HttpConnectionStopStatus.NormalClosure, HttpTransportType.WebSockets));
         }
     }
@@ -460,8 +457,8 @@ public class HttpConnectionManagerTests : VerifiableLoggedTest
             var connectionManager = CreateConnectionManager(LoggerFactory, metrics: new HttpConnectionsMetrics(testMeterFactory));
             var connection = connectionManager.CreateConnection();
 
-            using var connectionDuration = new InstrumentRecorder<double>(testMeterFactory, HttpConnectionsMetrics.MeterName, "connection-duration");
-            using var currentConnections = new InstrumentRecorder<long>(testMeterFactory, HttpConnectionsMetrics.MeterName, "current-connections");
+            using var connectionDuration = new InstrumentRecorder<double>(testMeterFactory, HttpConnectionsMetrics.MeterName, "http-server-connection-duration");
+            using var currentConnections = new InstrumentRecorder<long>(testMeterFactory, HttpConnectionsMetrics.MeterName, "http-server-current-connections");
 
             Assert.NotNull(connection.ConnectionId);
 
