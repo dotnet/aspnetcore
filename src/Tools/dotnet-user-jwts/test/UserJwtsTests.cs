@@ -1,23 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Text;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Configuration.UserSecrets;
 using Microsoft.Extensions.Tools.Internal;
-using Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
-using Xunit;
 using Xunit.Abstractions;
 using System.Text.RegularExpressions;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.IdentityModel.Tokens.Jwt;
-using System.Reflection;
-using System.Numerics;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools.Tests;
 
@@ -78,6 +69,22 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         app.Run(new[] { "create", "--project", project });
         Assert.Contains("New JWT saved", _console.GetOutput());
         Assert.Contains("dotnet-user-jwts", File.ReadAllText(appsettings));
+    }
+
+    [Fact]
+    public void Create_CanModifyExistingScheme()
+    {
+        var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
+        var appsettings = Path.Combine(Path.GetDirectoryName(project), "appsettings.Development.json");
+        var app = new Program(_console);
+
+        app.Run(new[] { "create", "--project", project });
+        Assert.Contains("New JWT saved", _console.GetOutput());
+        var exception = Record.Exception(() => JsonSerializer.Deserialize<Dictionary<string, Jwt>>(File.ReadAllText(appsettings)));
+        Assert.Null(exception);
+        app.Run(new[] { "create", "--project", project, "--issuer", "new-issuer"  });
+        exception = Record.Exception(() => JsonSerializer.Deserialize<Dictionary<string, Jwt>>(File.ReadAllText(appsettings)));
+        Assert.Null(exception);
     }
 
     [Fact]
