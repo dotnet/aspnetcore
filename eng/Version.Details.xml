@@ -305,6 +305,27 @@
       <Sha>43c337012443bb42d4baf97b4232dd04b443b5ef</Sha>
       <SourceBuild RepoName="source-build-reference-packages" ManagedOnly="true" />
     </Dependency>
+    <!-- Transitive package to provide coherency in dotnet/extensions -->
+    <Dependency Name="Microsoft.Bcl.TimeProvider" Version="8.0.0-preview.5.23273.1">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>1e421670a6456d9c5b924b7ffea14cab8559a2e9</Sha>
+    </Dependency>
+    <Dependency Name="System.Collections.Immutable" Version="8.0.0-preview.5.23273.1">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>1e421670a6456d9c5b924b7ffea14cab8559a2e9</Sha>
+    </Dependency>
+    <Dependency Name="System.Diagnostics.PerformanceCounter" Version="8.0.0-preview.5.23273.1">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>1e421670a6456d9c5b924b7ffea14cab8559a2e9</Sha>
+    </Dependency>
+    <Dependency Name="System.IO.Hashing" Version="8.0.0-preview.5.23273.1">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>1e421670a6456d9c5b924b7ffea14cab8559a2e9</Sha>
+    </Dependency>
+    <Dependency Name="System.Runtime.Caching" Version="8.0.0-preview.5.23273.1">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>1e421670a6456d9c5b924b7ffea14cab8559a2e9</Sha>
+    </Dependency>
     <!-- Not updated automatically -->
     <Dependency Name="Microsoft.CodeAnalysis.Common" Version="4.4.0-4.22520.2">
       <Uri>https://github.com/dotnet/roslyn</Uri>
