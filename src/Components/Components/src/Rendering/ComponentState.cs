@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Components.Rendering;
 /// detail of <see cref="Renderer"/>.
 /// </summary>
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
-public class ComponentState : IDisposable
+public class ComponentState : IAsyncDisposable
 {
     private readonly Renderer _renderer;
     private readonly IReadOnlyList<CascadingParameterState> _cascadingParameters;
@@ -254,15 +254,25 @@ public class ComponentState : IDisposable
     }
 
     /// <summary>
-    /// Disposes this instance.
+    /// Disposes this instance and its associated component.
     /// </summary>
-    public void Dispose()
+    public ValueTask DisposeAsync()
     {
         DisposeBuffers();
 
-        if (Component is IDisposable disposable)
+        // Components shouldn't need to implement IAsyncDisposable and IDisposable simultaneously,
+        // but in case they do, we prefer the async overload since we understand the sync overload
+        // is implemented for more "constrained" scenarios.
+        // Component authors are responsible for their IAsyncDisposable implementations not taking
+        // forever.
+        if (Component is IAsyncDisposable asyncDisposable)
         {
-            disposable.Dispose();
+            return asyncDisposable.DisposeAsync();
+        }
+        else
+        {
+            (Component as IDisposable)?.Dispose();
+            return ValueTask.CompletedTask;
         }
     }
 
