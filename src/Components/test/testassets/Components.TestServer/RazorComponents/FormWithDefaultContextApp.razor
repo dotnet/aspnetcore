@@ -9,7 +9,7 @@
     <HeadOutlet />
 </head>
 <body>
-    <Router AppAssembly="@typeof(FormWithoutBindingContextApp).Assembly">
+    <Router AppAssembly="@typeof(FormWithDefaultContextApp).Assembly">
         <Found Context="routeData">
             <RouteView RouteData="@routeData" DefaultLayout="@typeof(FormsLayout)" />
             <FocusOnNavigate RouteData="@routeData" Selector="h1" />

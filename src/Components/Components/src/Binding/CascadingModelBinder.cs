@@ -104,7 +104,7 @@ public sealed class CascadingModelBinder : IComponent, ICascadingValueComponent,
         var bindingId = string.IsNullOrEmpty(name) ? "" : GenerateBindingContextId(name);
 
         var bindingContext = _bindingContext != null &&
-            string.Equals(_bindingContext.Name, Name, StringComparison.Ordinal) &&
+            string.Equals(_bindingContext.Name, name, StringComparison.Ordinal) &&
             string.Equals(_bindingContext.BindingContextId, bindingId, StringComparison.Ordinal) ?
             _bindingContext : new ModelBindingContext(name, bindingId);
 
