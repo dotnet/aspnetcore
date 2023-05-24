@@ -107,19 +107,6 @@ public class ComponentState : IAsyncDisposable
         batchBuilder.InvalidateParameterViews();
     }
 
-    private void CleanupComponentStateResources(RenderBatchBuilder batchBuilder)
-    {
-        // We don't expect these things to throw.
-        RenderTreeDiffBuilder.DisposeFrames(batchBuilder, CurrentRenderTree.GetFrames());
-
-        if (_hasAnyCascadingParameterSubscriptions)
-        {
-            RemoveCascadingParameterSubscriptions();
-        }
-
-        DisposeBuffers();
-    }
-
     // Callers expect this method to always return a faulted task.
     internal Task NotifyRenderCompletedAsync()
     {
@@ -263,7 +250,14 @@ public class ComponentState : IAsyncDisposable
 
     internal ValueTask DisposeInBatchAsync(RenderBatchBuilder batchBuilder)
     {
-        CleanupComponentStateResources(batchBuilder);
+        // We don't expect these things to throw.
+        RenderTreeDiffBuilder.DisposeFrames(batchBuilder, CurrentRenderTree.GetFrames());
+
+        if (_hasAnyCascadingParameterSubscriptions)
+        {
+            RemoveCascadingParameterSubscriptions();
+        }
+
         return DisposeAsync();
     }
 
