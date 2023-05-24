@@ -6,7 +6,7 @@ using Microsoft.Extensions.Diagnostics.Metrics;
 
 namespace Microsoft.AspNetCore.Testing;
 
-internal class TestMeterFactory : IMeterFactory
+internal sealed class TestMeterFactory : IMeterFactory
 {
     public List<Meter> Meters { get; } = new List<Meter>();
 
@@ -28,7 +28,7 @@ internal class TestMeterFactory : IMeterFactory
     }
 }
 
-internal class MeasurementReporter<T> : IDisposable where T : struct
+internal sealed class MeasurementReporter<T> : IDisposable where T : struct
 {
     private readonly string _meterName;
     private readonly string _instrumentName;
