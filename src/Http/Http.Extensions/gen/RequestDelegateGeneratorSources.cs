@@ -20,7 +20,8 @@ internal static class RequestDelegateGeneratorSources
 
     public static string GeneratedCodeAttribute => $@"[System.CodeDom.Compiler.GeneratedCodeAttribute(""{typeof(RequestDelegateGeneratorSources).Assembly.FullName}"", ""{typeof(RequestDelegateGeneratorSources).Assembly.GetName().Version}"")]";
 
-    public static string ContentTypeConstantsType => """
+    public static string ContentTypeConstantsType => $$"""
+    {{GeneratedCodeAttribute}}
     file static class GeneratedMetadataConstants
     {
         public static readonly string[] JsonContentType = new [] { "application/json" };
@@ -31,7 +32,8 @@ internal static class RequestDelegateGeneratorSources
 
 """;
 
-    public static string ProducesResponseTypeMetadataType => """
+    public static string ProducesResponseTypeMetadataType => $$"""
+    {{GeneratedCodeAttribute}}
     file sealed class GeneratedProducesResponseTypeMetadata : IProducesResponseTypeMetadata
     {
         public GeneratedProducesResponseTypeMetadata(Type? type, int statusCode, string[] contentTypes)
@@ -50,7 +52,8 @@ internal static class RequestDelegateGeneratorSources
 
 """;
 
-    public static string AcceptsMetadataType => """
+    public static string AcceptsMetadataType => $$"""
+    {{GeneratedCodeAttribute}}
     file sealed class GeneratedAcceptsMetadata : IAcceptsMetadata
     {
         public GeneratedAcceptsMetadata(string[] contentTypes)
@@ -258,6 +261,7 @@ internal static class RequestDelegateGeneratorSources
 """;
 
     public static string LogOrThrowExceptionHelperClass => $$"""
+    {{GeneratedCodeAttribute}}
     file sealed class LogOrThrowExceptionHelper
     {
         private readonly ILogger? _rdgLogger;
@@ -402,7 +406,8 @@ internal static class RequestDelegateGeneratorSources
     }
 """;
 
-    public static string PropertyAsParameterInfoClass = """
+    public static string PropertyAsParameterInfoClass = $$"""
+    {{GeneratedCodeAttribute}}
     file sealed class PropertyAsParameterInfo : ParameterInfo
     {
         private readonly PropertyInfo _underlyingProperty;
@@ -547,6 +552,7 @@ namespace Microsoft.AspNetCore.Http.Generated
     using MetadataPopulator = System.Func<System.Reflection.MethodInfo, Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions?, Microsoft.AspNetCore.Http.RequestDelegateMetadataResult>;
     using RequestDelegateFactoryFunc = System.Func<System.Delegate, Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions, Microsoft.AspNetCore.Http.RequestDelegateMetadataResult?, Microsoft.AspNetCore.Http.RequestDelegateResult>;
 
+    {{GeneratedCodeAttribute}}
     file static class GeneratedRouteBuilderExtensionsCore
     {
 {{GetGenericThunks(genericThunks)}}
