@@ -19,6 +19,12 @@ internal class TestMeterFactory : IMeterFactory
 
     public void Dispose()
     {
+        foreach (var meter in Meters)
+        {
+            meter.Dispose();
+        }
+
+        Meters.Clear();
     }
 }
 

@@ -71,14 +71,9 @@ public class KestrelServer : IServer
     // This factory used when type is created without DI. For example, via KestrelServer.
     private sealed class DummyMeterFactory : IMeterFactory
     {
-        public Meter Create(MeterOptions options)
-        {
-            return new Meter(options);
-        }
+        public Meter Create(MeterOptions options) => new Meter(options);
 
-        public void Dispose()
-        {
-        }
+        public void Dispose() { }
     }
 
     private sealed class SimpleHttpsConfigurationService : IHttpsConfigurationService
