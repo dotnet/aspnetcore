@@ -23,13 +23,6 @@ internal sealed class MetricsBuilder : IMetricsBuilder
     public IServiceCollection Services { get; }
 }
 
-internal sealed class MeterOptions
-{
-    public required string Name { get; set; }
-    public string? Version { get; set; }
-    public IList<KeyValuePair<string, object?>>? DefaultTags { get; set; }
-}
-
 internal interface IMeterFactory
 {
     Meter CreateMeter(string name);

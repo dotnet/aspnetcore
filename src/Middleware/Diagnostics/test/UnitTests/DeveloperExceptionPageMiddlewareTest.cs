@@ -541,7 +541,7 @@ public class DeveloperExceptionPageMiddlewareTest : LoggedTest
 
         var meterFactory = new TestMeterFactory();
         var meterRegistry = new TestMeterRegistry(meterFactory.Meters);
-        var instrumentRecorder = new InstrumentRecorder<double>(meterRegistry, "Microsoft.AspNetCore.Hosting", "request-duration");
+        var instrumentRecorder = new Extensions.Metrics.InstrumentRecorder<double>(meterRegistry, "Microsoft.AspNetCore.Hosting", "request-duration");
         instrumentRecorder.Register(m =>
         {
             tcs.SetResult();

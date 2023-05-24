@@ -27,10 +27,10 @@ internal sealed class DefaultMeterFactory : IMeterFactory
 
     public Meter CreateMeter(MeterOptions options)
     {
-        return CreateMeterCore(options.Name, options.Version, options.DefaultTags);
+        return CreateMeterCore(options.Name, options.Version, options.Tags);
     }
 
-    private Meter CreateMeterCore(string name, string? version, IList<KeyValuePair<string, object?>>? defaultTags)
+    private Meter CreateMeterCore(string name, string? version, IEnumerable<KeyValuePair<string, object?>>? defaultTags)
     {
         var tags = defaultTags?.ToArray();
         if (tags != null)
