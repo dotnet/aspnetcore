@@ -54,11 +54,6 @@ Microsoft.AspNetCore.Http.HttpResponse</Description>
     </Compile>
   </ItemGroup>
 
-  <!-- Temporary hack to make prototype Metrics DI integration types available -->
-  <!-- TODO: Remove when Metrics DI intergration package is available https://github.com/dotnet/aspnetcore/issues/47618 -->
-  <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)Metrics\**\*.cs" LinkBase="Metrics" />
-  </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Hosting" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Hosting.Tests" />

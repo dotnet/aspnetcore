@@ -84,6 +84,7 @@
     <MicrosoftExtensionsConfigurationXmlVersion>8.0.0-preview.5.23274.1</MicrosoftExtensionsConfigurationXmlVersion>
     <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>8.0.0-preview.5.23274.1</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
     <MicrosoftExtensionsDependencyInjectionVersion>8.0.0-preview.5.23274.1</MicrosoftExtensionsDependencyInjectionVersion>
+    <MicrosoftExtensionsDiagnosticsVersion>8.0.0-preview.5.23274.1</MicrosoftExtensionsDiagnosticsVersion>
     <MicrosoftExtensionsFileProvidersAbstractionsVersion>8.0.0-preview.5.23274.1</MicrosoftExtensionsFileProvidersAbstractionsVersion>
     <MicrosoftExtensionsFileProvidersCompositeVersion>8.0.0-preview.5.23274.1</MicrosoftExtensionsFileProvidersCompositeVersion>
     <MicrosoftExtensionsFileProvidersPhysicalVersion>8.0.0-preview.5.23274.1</MicrosoftExtensionsFileProvidersPhysicalVersion>

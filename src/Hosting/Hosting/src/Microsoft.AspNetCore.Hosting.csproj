@@ -25,6 +25,7 @@
     <Reference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
     <Reference Include="Microsoft.Extensions.Configuration.FileExtensions" />
     <Reference Include="Microsoft.Extensions.Configuration" />
+    <Reference Include="Microsoft.Extensions.Diagnostics" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
     <Reference Include="Microsoft.Extensions.FileProviders.Physical" />
     <Reference Include="Microsoft.Extensions.FileProviders.Composite" />
