@@ -3,6 +3,7 @@
 
 #nullable enable
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Text;
 using Microsoft.AspNetCore.Builder;
@@ -29,7 +30,7 @@ internal class TestUtils
         StreamUtilities.BodySegmentSize = 10;
     }
 
-    private static bool TestRequestDelegate(HttpContext context, string guid)
+    private static bool TestRequestDelegate(HttpContext context, [StringSyntax(StringSyntaxAttribute.GuidFormat)] string guid)
     {
         var headers = context.Response.GetTypedHeaders();
         headers.Date = DateTimeOffset.UtcNow;

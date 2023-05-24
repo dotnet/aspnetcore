@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Net.Http;
 using System.Text;
@@ -29,7 +30,7 @@ internal class TestUtils
         StreamUtilities.BodySegmentSize = 10;
     }
 
-    private static bool TestRequestDelegate(HttpContext context, string guid)
+    private static bool TestRequestDelegate(HttpContext context, [StringSyntax(StringSyntaxAttribute.GuidFormat)] string guid)
     {
         var headers = context.Response.GetTypedHeaders();
 
