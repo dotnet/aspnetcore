@@ -126,6 +126,12 @@
     <!-- Only listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
     <MicrosoftNETCorePlatformsVersion>8.0.0-preview.5.23274.1</MicrosoftNETCorePlatformsVersion>
     <MicrosoftBclAsyncInterfacesVersion>8.0.0-preview.5.23274.1</MicrosoftBclAsyncInterfacesVersion>
+    <!-- Transitive package to provide coherency in dotnet/extensions -->
+    <MicrosoftBclTimeProviderVersion>8.0.0-preview.5.23274.1</MicrosoftBclTimeProviderVersion>
+    <SystemCollectionsImmutableVersion>8.0.0-preview.5.23274.1</SystemCollectionsImmutableVersion>
+    <SystemDiagnosticsPerformanceCounterVersion>8.0.0-preview.5.23274.1</SystemDiagnosticsPerformanceCounterVersion>
+    <SystemIOHashingVersion>8.0.0-preview.5.23274.1</SystemIOHashingVersion>
+    <SystemRuntimeCachingVersion>8.0.0-preview.5.23274.1</SystemRuntimeCachingVersion>
     <!-- Packages from dotnet/efcore -->
     <dotnetefVersion>8.0.0-preview.6.23273.4</dotnetefVersion>
     <MicrosoftEntityFrameworkCoreInMemoryVersion>8.0.0-preview.6.23273.4</MicrosoftEntityFrameworkCoreInMemoryVersion>

@@ -876,28 +876,20 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             var disposeComponentId = _batchBuilder.ComponentDisposalQueue.Dequeue();
             var disposeComponentState = GetRequiredComponentState(disposeComponentId);
             Log.DisposingComponent(_logger, disposeComponentState);
-            if (!(disposeComponentState.Component is IAsyncDisposable))
+
+            try
             {
-                if (!disposeComponentState.TryDisposeInBatch(_batchBuilder, out var exception))
+                var disposalTask = disposeComponentState.DisposeInBatchAsync(_batchBuilder);
+                if (disposalTask.IsCompletedSuccessfully)
                 {
-                    exceptions ??= new List<Exception>();
-                    exceptions.Add(exception);
-                }
-            }
-            else
-            {
-                var result = disposeComponentState.DisposeInBatchAsync(_batchBuilder);
-                if (result.IsCompleted)
-                {
-                    if (!result.IsCompletedSuccessfully)
-                    {
-                        exceptions ??= new List<Exception>();
-                        exceptions.Add(result.Exception);
-                    }
+                    // If it's a IValueTaskSource backed ValueTask,
+                    // inform it its result has been read so it can reset
+                    disposalTask.GetAwaiter().GetResult();
                 }
                 else
                 {
                     // We set owningComponentState to null because we don't want exceptions during disposal to be recoverable
+                    var result = disposalTask.AsTask();
                     AddToPendingTasksWithErrorHandling(GetHandledAsynchronousDisposalErrorsTask(result), owningComponentState: null);
 
                     async Task GetHandledAsynchronousDisposalErrorsTask(Task result)
@@ -912,6 +904,11 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
                         }
                     }
                 }
+            }
+            catch (Exception exception)
+            {
+                exceptions ??= new List<Exception>();
+                exceptions.Add(exception);
             }
 
             _componentStateById.Remove(disposeComponentId);
@@ -1080,39 +1077,25 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         {
             Log.DisposingComponent(_logger, componentState);
 
-            // Components shouldn't need to implement IAsyncDisposable and IDisposable simultaneously,
-            // but in case they do, we prefer the async overload since we understand the sync overload
-            // is implemented for more "constrained" scenarios.
-            // Component authors are responsible for their IAsyncDisposable implementations not taking
-            // forever.
-            if (componentState.Component is IAsyncDisposable asyncDisposable)
+            try
             {
-                try
+                var task = componentState.DisposeAsync();
+                if (task.IsCompletedSuccessfully)
                 {
-                    var task = asyncDisposable.DisposeAsync();
-                    if (!task.IsCompletedSuccessfully)
-                    {
-                        asyncDisposables ??= new();
-                        asyncDisposables.Add(task.AsTask());
-                    }
+                    // If it's a IValueTaskSource backed ValueTask,
+                    // inform it its result has been read so it can reset
+                    task.GetAwaiter().GetResult();
                 }
-                catch (Exception exception)
+                else
                 {
-                    exceptions ??= new List<Exception>();
-                    exceptions.Add(exception);
+                    asyncDisposables ??= new();
+                    asyncDisposables.Add(task.AsTask());
                 }
             }
-            else if (componentState.Component is IDisposable disposable)
+            catch (Exception exception)
             {
-                try
-                {
-                    componentState.Dispose();
-                }
-                catch (Exception exception)
-                {
-                    exceptions ??= new List<Exception>();
-                    exceptions.Add(exception);
-                }
+                exceptions ??= new List<Exception>();
+                exceptions.Add(exception);
             }
         }
 
