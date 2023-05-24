@@ -350,11 +350,7 @@ public static class DotNetDispatcher
 
     private static (MethodInfo, Type[]) GetCachedMethodInfo(AssemblyKey assemblyKey, string methodIdentifier)
     {
-         if (string.IsNullOrWhiteSpace(assemblyKey.AssemblyName))
-        {
-            throw new ArgumentException($"Property '{nameof(AssemblyKey.AssemblyName)}' cannot be null, empty, or whitespace.", nameof(assemblyKey));
-        }
-
+        ArgumentException.ThrowIfNullOrWhiteSpace(assemblyKey.AssemblyName);
         ArgumentException.ThrowIfNullOrWhiteSpace(methodIdentifier);
 
         var assemblyMethods = _cachedMethodsByAssembly.GetOrAdd(assemblyKey, ScanAssemblyForCallableMethods);
