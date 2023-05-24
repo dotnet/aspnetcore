@@ -13,10 +13,7 @@ internal class Emitter
 {
     internal static string GetComponentsBody(ComponentModel cm)
     {
-        var displayName = cm.Component.IsGenericType
-            ? string.Concat(cm.Component.ToDisplayParts(SymbolDisplayFormat.FullyQualifiedFormat)
-                .Where(p => p.Kind != SymbolDisplayPartKind.TypeParameterName))
-            : cm.Component.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        var typeofExpression = GetTypeSymbolTypeofExpression(cm);
 
         var builder = new StringBuilder();
         var writer = new StringWriter(builder);
@@ -24,7 +21,7 @@ internal class Emitter
         codeWriter.WriteLine($"new {ComponentEndpointsGeneratorSources.ComponentBuilder}");
         codeWriter.StartBlock();
         codeWriter.WriteLine($"AssemblyName = source,");
-        codeWriter.WriteLine($"ComponentType = typeof({displayName}),");
+        codeWriter.WriteLine($"ComponentType = typeof({typeofExpression}),");
         if (cm.RenderMode != null)
         {
             codeWriter.Write($"RenderMode = ");
@@ -35,6 +32,19 @@ internal class Emitter
         codeWriter.Flush();
         writer.Flush();
         return builder.ToString();
+    }
+
+    // Generates the value that goes inside a typeof expression for a given symbol.
+    // For example, for IEnumerable<T> it would generate "global::System.Collections.Generic.IEnumerable<>"
+    // For KeyValuePair<TKey, TValue> it would generate "global::System.Collections.Generic.KeyValuePair<,>"
+    private static string GetTypeSymbolTypeofExpression(ComponentModel cm)
+    {
+        if (cm.Component.IsGenericType)
+        {
+            return cm.Component.ConstructUnboundGenericType().ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        }
+
+        return cm.Component.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
     }
 
     private static void EmitAttributeInstance(CodeWriter codeWriter, AttributeData renderMode)
@@ -125,6 +135,7 @@ internal class Emitter
         //            PageType = typeof(Counter),
         //            RouteTemplates = new List<string> { "/counter" }
         //        }
+        var typeofExpression = GetTypeSymbolTypeofExpression(cm);
 
         var builder = new StringBuilder();
         var writer = new StringWriter(builder);
@@ -132,7 +143,7 @@ internal class Emitter
         codeWriter.WriteLine($"new {ComponentEndpointsGeneratorSources.PageComponentBuilder}");
         codeWriter.StartBlock();
         codeWriter.WriteLine($"AssemblyName = source,");
-        codeWriter.WriteLine($"PageType = typeof({cm.Component.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}),");
+        codeWriter.WriteLine($"PageType = typeof({typeofExpression}),");
         codeWriter.WriteLine($$"""RouteTemplates = new global::System.Collections.Generic.List<string>""");
         codeWriter.StartBlock();
         foreach (var route in cm.Routes)
