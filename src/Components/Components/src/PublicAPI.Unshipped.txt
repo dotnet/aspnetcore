@@ -56,6 +56,10 @@ Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddComponentParamete
 Microsoft.AspNetCore.Components.StreamRenderingAttribute
 Microsoft.AspNetCore.Components.StreamRenderingAttribute.Enabled.get -> bool
 Microsoft.AspNetCore.Components.StreamRenderingAttribute.StreamRenderingAttribute(bool enabled) -> void
+Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute
+Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute.Name.get -> string?
+Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute.Name.set -> void
+Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute.SupplyParameterFromFormAttribute() -> void
 override Microsoft.AspNetCore.Components.EventCallback.GetHashCode() -> int
 override Microsoft.AspNetCore.Components.EventCallback.Equals(object? obj) -> bool
 override Microsoft.AspNetCore.Components.EventCallback<TValue>.GetHashCode() -> int
