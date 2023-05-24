@@ -40,6 +40,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <LatestPackageReference Include="Microsoft.Extensions.DependencyModel" />
     <LatestPackageReference Include="Microsoft.Extensions.DiagnosticAdapter" />
+    <LatestPackageReference Include="Microsoft.Extensions.Diagnostics.Abstractions" />
     <LatestPackageReference Include="Microsoft.Extensions.Diagnostics" />
     <LatestPackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" />
     <LatestPackageReference Include="Microsoft.Extensions.FileProviders.Composite" />
