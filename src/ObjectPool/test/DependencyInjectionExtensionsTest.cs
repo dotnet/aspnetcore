@@ -15,6 +15,7 @@ namespace Microsoft.Extensions.ObjectPool;
 
 public class DependencyInjectionExtensionsTest
 {
+   
     [Fact]
     public void ConfiguresPoolOptions()
     {
@@ -26,7 +27,9 @@ public class DependencyInjectionExtensionsTest
 
         var sut = provider.GetRequiredService<IOptionsMonitor<PoolOptions>>();
 
-        Assert.Equal(1024, sut.Get(typeof(object).FullName!).Capacity);
+        Assert.Equal(PoolOptions.DefaultCapacity, sut.CurrentValue.Capacity);
+        Assert.Equal(PoolOptions.DefaultCapacity, sut.Get(null).Capacity);
+        Assert.Equal(PoolOptions.DefaultCapacity, sut.Get(typeof(object).FullName!).Capacity);
         Assert.Equal(2048, sut.Get(typeof(TestClass).FullName!).Capacity);
         Assert.Equal(4096, sut.Get(typeof(TestDependency).FullName!).Capacity);
     }
@@ -34,20 +37,20 @@ public class DependencyInjectionExtensionsTest
     [Fact]
     public void AddPool_ServiceTypeOnly_AddsPool()
     {
-        var services = new ServiceCollection().AddPool<TestDependency>();
+        var services = new ServiceCollection().AddPooled<TestDependency>();
 
         var sut = services.BuildServiceProvider(validateScopes: true).GetService<ObjectPool<TestDependency>>();
         using var provider = services.BuildServiceProvider(validateScopes: true);
         var optionsMonitor = provider.GetRequiredService<IOptionsMonitor<PoolOptions>>();
 
         Assert.NotNull(sut);
-        Assert.Equal(1024, optionsMonitor.Get(typeof(TestDependency).FullName).Capacity);
+        Assert.Equal(PoolOptions.DefaultCapacity, optionsMonitor.Get(typeof(TestDependency).FullName).Capacity);
     }
 
     [Fact]
     public void AddPool_ServiceTypeOnlyWithCapacity_AddsPoolAndSetsCapacity()
     {
-        var services = new ServiceCollection().AddPool<TestDependency>(options => options.Capacity = 64);
+        var services = new ServiceCollection().AddPooled<TestDependency>(options => options.Capacity = 64);
 
         var sut = services.BuildServiceProvider().GetService<ObjectPool<TestDependency>>();
         using var provider = services.BuildServiceProvider();
@@ -62,7 +65,7 @@ public class DependencyInjectionExtensionsTest
     {
         var services = new ServiceCollection()
             .AddSingleton<TestDependency>()
-            .AddPool<ITestClass, TestClass>();
+            .AddPooled<ITestClass, TestClass>();
 
         using var provider = services.BuildServiceProvider(validateScopes: true);
         var sut = provider.GetService<ObjectPool<ITestClass>>();
@@ -70,7 +73,7 @@ public class DependencyInjectionExtensionsTest
 
         Assert.NotNull(sut);
         Assert.Equal(TestDependency.Message, sut!.Get().ReadMessage());
-        Assert.Equal(1024, optionsMonitor.Get(typeof(ITestClass).FullName).Capacity);
+        Assert.Equal(PoolOptions.DefaultCapacity, optionsMonitor.Get(typeof(ITestClass).FullName).Capacity);
     }
 
     [Fact]
@@ -78,7 +81,7 @@ public class DependencyInjectionExtensionsTest
     {
         var services = new ServiceCollection()
             .AddSingleton<TestDependency>()
-            .AddPool<ITestClass, TestClass>(options => options.Capacity = 64);
+            .AddPooled<ITestClass, TestClass>(options => options.Capacity = 64);
 
         using var provider = services.BuildServiceProvider(validateScopes: true);
         var sut = provider.GetService<ObjectPool<ITestClass>>();
@@ -94,7 +97,7 @@ public class DependencyInjectionExtensionsTest
     {
         var services = new ServiceCollection()
             .AddSingleton<TestDependency>()
-            .AddPool<ITestClass, TestClass>();
+            .AddPooled<ITestClass, TestClass>();
 
         using var provider = services.BuildServiceProvider(validateScopes: true);
         var sut = provider.GetRequiredService<ObjectPool<ITestClass>>();
@@ -113,7 +116,7 @@ public class DependencyInjectionExtensionsTest
 
         var services = new ServiceCollection()
             .AddSingleton<TestDependency>()
-            .AddPool<ITestClass, TestClass>(options => options.Capacity = capacity);
+            .AddPooled<ITestClass, TestClass>(options => options.Capacity = capacity);
 
         using var provider = services.BuildServiceProvider(validateScopes: true);
         var sut = provider.GetRequiredService<ObjectPool<ITestClass>>();
@@ -148,7 +151,7 @@ public class DependencyInjectionExtensionsTest
 
         var services = new ServiceCollection()
             .AddScoped<TestDependency>()
-            .AddPool<ITestClass, TestClass>();
+            .AddPooled<ITestClass, TestClass>();
 
         using var provider = services.BuildServiceProvider(validateScopes: true);
         Assert.Throws<InvalidOperationException>(() => provider.GetRequiredService<ObjectPool<ITestClass>>().Get());
@@ -159,7 +162,7 @@ public class DependencyInjectionExtensionsTest
     {
         var services = new ServiceCollection()
             .AddSingleton<TestDependency>()
-            .AddPool<TestClass>()
+            .AddPooled<TestClass>()
             .AddScoped<Pooled<TestClass>>()
             .AddScoped<ITestClass>(provider => provider.GetRequiredService<Pooled<TestClass>>().Object)
             ;
@@ -193,7 +196,7 @@ public class DependencyInjectionExtensionsTest
 
         var services = new ServiceCollection()
             .AddSingleton<TestDependency>()
-            .AddPool<TestClass>()
+            .AddPooled<TestClass>()
             .AddTransient<Pooled<TestClass>>()
             .AddTransient<ITestClass>(provider => provider.GetRequiredService<Pooled<TestClass>>().Object)
             ;
@@ -247,7 +250,7 @@ public class DependencyInjectionExtensionsTest
 
         var services = new ServiceCollection()
             .AddSingleton<TestDependency>()
-            .AddPool<TestClass>()
+            .AddPooled<TestClass>()
             .AddScoped<Pooled<TestClass>>()
             .AddScoped<ITestClass>(provider => provider.GetRequiredService<Pooled<TestClass>>().Object)
             ;
