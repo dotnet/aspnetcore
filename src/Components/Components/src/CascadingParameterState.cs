@@ -98,15 +98,23 @@ internal readonly struct CascadingParameterState
             var attribute = prop.GetCustomAttribute<CascadingParameterAttribute>();
             if (attribute != null)
             {
-                if (result == null)
-                {
-                    result = new List<ReflectedCascadingParameterInfo>();
-                }
+                result ??= new List<ReflectedCascadingParameterInfo>();
 
                 result.Add(new ReflectedCascadingParameterInfo(
                     prop.Name,
                     prop.PropertyType,
                     attribute.Name));
+            }
+
+            var fromForm = prop.GetCustomAttribute<SupplyParameterFromFormAttribute>();
+            if (fromForm != null)
+            {
+                result ??= new List<ReflectedCascadingParameterInfo>();
+
+                result.Add(new ReflectedCascadingParameterInfo(
+                    prop.Name,
+                    prop.PropertyType,
+                    fromForm.Name));
             }
         }
 
