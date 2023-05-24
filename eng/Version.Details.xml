@@ -97,6 +97,10 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>1e421670a6456d9c5b924b7ffea14cab8559a2e9</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.Extensions.Diagnostics" Version="8.0.0-preview.5.23273.1">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>1e421670a6456d9c5b924b7ffea14cab8559a2e9</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.Extensions.FileProviders.Abstractions" Version="8.0.0-preview.5.23273.1">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>1e421670a6456d9c5b924b7ffea14cab8559a2e9</Sha>

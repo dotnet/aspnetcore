@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Connections;
-using Microsoft.Extensions.Metrics;
+using Microsoft.Extensions.Diagnostics.Metrics;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Runtime.CompilerServices;
@@ -27,7 +27,7 @@ internal sealed class KestrelMetrics
 
     public KestrelMetrics(IMeterFactory meterFactory)
     {
-        _meter = meterFactory.CreateMeter(MeterName);
+        _meter = meterFactory.Create(MeterName);
 
         _currentConnectionsCounter = _meter.CreateUpDownCounter<long>(
            "current-connections",
