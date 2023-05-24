@@ -57,7 +57,7 @@ public static class RazorComponentsServiceCollectionExtensions
 
         // Form handling
         services.TryAddScoped<FormDataProvider, HttpContextFormDataProvider>();
-        services.TryAddScoped<IFormBinderProvider, DefaultFormBinderProvider>();
+        services.TryAddScoped<IFormValueSupplier, DefaultFormValuesSupplier>();
 
         return new DefaultRazorComponentsBuilder(services);
     }

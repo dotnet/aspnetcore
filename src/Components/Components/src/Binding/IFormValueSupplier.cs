@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Components.Binding;
 /// <summary>
 /// Binds form data valuesto a model.
 /// </summary>
-public interface IFormBinderProvider
+public interface IFormValueSupplier
 {
     /// <summary>
     /// Determines whether the specified value type can be bound.
