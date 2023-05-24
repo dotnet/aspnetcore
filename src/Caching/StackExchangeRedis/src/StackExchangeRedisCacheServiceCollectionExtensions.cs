@@ -32,4 +32,26 @@ public static class StackExchangeRedisCacheServiceCollectionExtensions
 
         return services;
     }
+
+#if NET7_0_OR_GREATER
+    /// <summary>
+    /// Adds Redis distributed caching services to the specified <see cref="IServiceCollection" />.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
+    /// <param name="setupAction">An <see cref="Action{RedisCacheOptions}"/> to configure the provided
+    /// <see cref="RedisCacheOptions"/>.</param>
+    /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+    public static IServiceCollection AddStackExchangeRedisOutputCache(this IServiceCollection services, Action<RedisCacheOptions> setupAction)
+    {
+        ArgumentNullThrowHelper.ThrowIfNull(services);
+        ArgumentNullThrowHelper.ThrowIfNull(setupAction);
+
+        services.AddOptions();
+
+        services.Configure(setupAction);
+        services.Add(ServiceDescriptor.Singleton<AspNetCore.OutputCaching.IOutputCacheStore, RedisOutputCacheStoreImpl>());
+
+        return services;
+    }
+#endif
 }

@@ -13,6 +13,7 @@
   <ItemGroup>
     <Reference Include="Microsoft.Extensions.Caching.Abstractions" />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.OutputCaching" Condition="'$(TargetFramework)' != '$(DefaultNetFxTargetFramework)' and '$(TargetFramework)' != 'netstandard2.0'" />
     <Reference Include="Microsoft.Extensions.Options" />
     <Reference Include="StackExchange.Redis" />
   </ItemGroup>
@@ -21,6 +22,9 @@
     <Compile Include="$(SharedSourceRoot)ThrowHelpers\ArgumentNullThrowHelper.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)ThrowHelpers\ObjectDisposedThrowHelper.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)CallerArgument\CallerArgumentExpressionAttribute.cs" LinkBase="Shared" />
+
+    <AdditionalFiles Include="PublicAPI/$(TargetFramework)/PublicAPI.Shipped.txt" />
+    <AdditionalFiles Include="PublicAPI/$(TargetFramework)/PublicAPI.Unshipped.txt" />
   </ItemGroup>
 
 </Project>
