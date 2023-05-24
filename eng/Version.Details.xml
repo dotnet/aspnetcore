@@ -287,25 +287,25 @@
       <Sha>7a119156cbe958c5c34098434e84010526fac5f1</Sha>
     </Dependency>
     <!-- Transitive package to provide coherency in dotnet/extensions -->
-    <Dependency Name="Microsoft.Bcl.TimeProvider" Version="8.0.0-preview.5.23273.1">
+    <Dependency Name="Microsoft.Bcl.TimeProvider" Version="8.0.0-preview.5.23274.1">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>1e421670a6456d9c5b924b7ffea14cab8559a2e9</Sha>
+      <Sha>7a119156cbe958c5c34098434e84010526fac5f1</Sha>
     </Dependency>
-    <Dependency Name="System.Collections.Immutable" Version="8.0.0-preview.5.23273.1">
+    <Dependency Name="System.Collections.Immutable" Version="8.0.0-preview.5.23274.1">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>1e421670a6456d9c5b924b7ffea14cab8559a2e9</Sha>
+      <Sha>7a119156cbe958c5c34098434e84010526fac5f1</Sha>
     </Dependency>
-    <Dependency Name="System.Diagnostics.PerformanceCounter" Version="8.0.0-preview.5.23273.1">
+    <Dependency Name="System.Diagnostics.PerformanceCounter" Version="8.0.0-preview.5.23274.1">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>1e421670a6456d9c5b924b7ffea14cab8559a2e9</Sha>
+      <Sha>7a119156cbe958c5c34098434e84010526fac5f1</Sha>
     </Dependency>
-    <Dependency Name="System.IO.Hashing" Version="8.0.0-preview.5.23273.1">
+    <Dependency Name="System.IO.Hashing" Version="8.0.0-preview.5.23274.1">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>1e421670a6456d9c5b924b7ffea14cab8559a2e9</Sha>
+      <Sha>7a119156cbe958c5c34098434e84010526fac5f1</Sha>
     </Dependency>
-    <Dependency Name="System.Runtime.Caching" Version="8.0.0-preview.5.23273.1">
+    <Dependency Name="System.Runtime.Caching" Version="8.0.0-preview.5.23274.1">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>1e421670a6456d9c5b924b7ffea14cab8559a2e9</Sha>
+      <Sha>7a119156cbe958c5c34098434e84010526fac5f1</Sha>
     </Dependency>
     <!--
          Win-x64 is used here because we have picked an arbitrary runtime identifier to flow the version of the latest NETCore.App runtime.
