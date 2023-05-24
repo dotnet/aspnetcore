@@ -2334,9 +2334,8 @@ public class RendererTest
 
         // Outer component is still alive and not disposed.
         Assert.False(component.Disposed);
-        var aex = Assert.IsType<AggregateException>(Assert.Single(renderer.HandledExceptions));
-        var innerException = Assert.Single(aex.Flatten().InnerExceptions);
-        Assert.Same(exception1, innerException);
+        var aex = Assert.Single(renderer.HandledExceptions);
+        Assert.Same(exception1, aex);
     }
 
     [Fact]
@@ -2493,8 +2492,7 @@ public class RendererTest
 
         // Outer component is still alive and not disposed.
         Assert.False(component.Disposed);
-        var aex = Assert.IsType<AggregateException>(Assert.Single(renderer.HandledExceptions));
-        Assert.IsType<TaskCanceledException>(Assert.Single(aex.Flatten().InnerExceptions));
+        Assert.IsType<TaskCanceledException>(Assert.Single(renderer.HandledExceptions));
     }
 
     [Fact]
