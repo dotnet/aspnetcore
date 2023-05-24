@@ -412,6 +412,15 @@ internal static class StringUtilities
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool BytesOrdinalEqualsStringAndAscii(string previousValue, ReadOnlySpan<byte> newValue)
+    {
+        // previousValue is a previously materialized string which *must* have already passed validation.
+        Debug.Assert(IsValidHeaderString(previousValue));
+
+        return Ascii.Equals(previousValue, newValue);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static unsafe void WidenFourAsciiBytesToUtf16AndWriteToBuffer(char* output, byte* input, int value, Vector128<sbyte> zero)
     {
         // BMI2 could be used, but this variant is faster on both Intel and AMD.
@@ -427,6 +436,25 @@ internal static class StringUtilities
             output[1] = (char)input[1];
             output[2] = (char)input[2];
             output[3] = (char)input[3];
+        }
+    }
+
+    private static bool IsValidHeaderString(string value)
+    {
+        // Method for Debug.Assert to ensure BytesOrdinalEqualsStringAndAscii
+        // is not called with an unvalidated string comparitor.
+        try
+        {
+            if (value is null)
+            {
+                return false;
+            }
+            new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true).GetByteCount(value);
+            return !value.Contains('\0');
+        }
+        catch (DecoderFallbackException)
+        {
+            return false;
         }
     }
 

@@ -7889,7 +7889,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         // Check lengths are the same, then if the bytes were converted to an ascii string if they would be the same.
                         // We do not consider Utf8 headers for reuse.
                         if (previousValue.Length == value.Length &&
-                            Ascii.Equals(previousValue, value))
+                            StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, value))
                         {
                             // The previous string matches what the bytes would convert to, so we will just use that one.
                             _bits |= flag;
@@ -8105,7 +8105,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         // Check lengths are the same, then if the bytes were converted to an ascii string if they would be the same.
                         // We do not consider Utf8 headers for reuse.
                         if (previousValue.Length == value.Length &&
-                            Ascii.Equals(previousValue, value))
+                            StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, value))
                         {
                             // The previous string matches what the bytes would convert to, so we will just use that one.
                             _bits |= flag;
@@ -8308,7 +8308,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         // Check lengths are the same, then if the bytes were converted to an ascii string if they would be the same.
                         // We do not consider Utf8 headers for reuse.
                         if (previousValue.Length == value.Length &&
-                            Ascii.Equals(previousValue, value))
+                            StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, value))
                         {
                             // The previous string matches what the bytes would convert to, so we will just use that one.
                             _bits |= flag;
