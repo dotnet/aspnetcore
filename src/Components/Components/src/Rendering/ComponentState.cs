@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.RenderTree;
 
 namespace Microsoft.AspNetCore.Components.Rendering;
@@ -106,28 +105,6 @@ public class ComponentState : IAsyncDisposable
             CurrentRenderTree.GetNamedEvents());
         batchBuilder.UpdatedComponentDiffs.Append(diff);
         batchBuilder.InvalidateParameterViews();
-    }
-
-    internal bool TryDisposeInBatch(RenderBatchBuilder batchBuilder, [NotNullWhen(false)] out Exception? exception)
-    {
-        _componentWasDisposed = true;
-        exception = null;
-
-        try
-        {
-            if (Component is IDisposable disposable)
-            {
-                disposable.Dispose();
-            }
-        }
-        catch (Exception ex)
-        {
-            exception = ex;
-        }
-
-        CleanupComponentStateResources(batchBuilder);
-
-        return exception == null;
     }
 
     private void CleanupComponentStateResources(RenderBatchBuilder batchBuilder)
@@ -256,8 +233,9 @@ public class ComponentState : IAsyncDisposable
     /// <summary>
     /// Disposes this instance and its associated component.
     /// </summary>
-    public ValueTask DisposeAsync()
+    public virtual ValueTask DisposeAsync()
     {
+        _componentWasDisposed = true;
         DisposeBuffers();
 
         // Components shouldn't need to implement IAsyncDisposable and IDisposable simultaneously,
@@ -283,33 +261,10 @@ public class ComponentState : IAsyncDisposable
         _latestDirectParametersSnapshot?.Dispose();
     }
 
-    internal Task DisposeInBatchAsync(RenderBatchBuilder batchBuilder)
+    internal ValueTask DisposeInBatchAsync(RenderBatchBuilder batchBuilder)
     {
-        _componentWasDisposed = true;
-
         CleanupComponentStateResources(batchBuilder);
-
-        try
-        {
-            var result = ((IAsyncDisposable)Component).DisposeAsync();
-            if (result.IsCompletedSuccessfully)
-            {
-                // If it's a IValueTaskSource backed ValueTask,
-                // inform it its result has been read so it can reset
-                result.GetAwaiter().GetResult();
-                return Task.CompletedTask;
-            }
-            else
-            {
-                // We know we are dealing with an exception that happened asynchronously, so return a task
-                // to the caller so that he can unwrap it.
-                return result.AsTask();
-            }
-        }
-        catch (Exception e)
-        {
-            return Task.FromException(e);
-        }
+        return DisposeAsync();
     }
 
     private string GetDebuggerDisplay()
