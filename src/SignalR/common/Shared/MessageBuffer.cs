@@ -2,6 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Channels;
@@ -16,12 +19,12 @@ internal sealed class MessageBuffer : IDisposable
 {
     private static readonly TaskCompletionSource<FlushResult> _completedTCS = new TaskCompletionSource<FlushResult>();
 
-    private readonly (SerializedHubMessage? Message, long SequenceId)[] _buffer;
     private readonly ConnectionContext _connection;
     private readonly IHubProtocol _protocol;
     private readonly AckMessage _ackMessage = new(0);
     private readonly SequenceMessage _sequenceMessage = new(0);
     private readonly Channel<int> _waitForAck = Channel.CreateBounded<int>(new BoundedChannelOptions(1) { FullMode = BoundedChannelFullMode.DropOldest });
+    private readonly int _bufferLimit = 100 * 1000;
 
 #if NET8_0_OR_GREATER
     private readonly PeriodicTimer _timer = new(TimeSpan.FromSeconds(1));
@@ -30,7 +33,6 @@ internal sealed class MessageBuffer : IDisposable
 #endif
     private readonly SemaphoreSlim _writeLock = new(1, 1);
 
-    private int _bufferIndex;
     private long _totalMessageCount;
     private bool _waitForSequenceMessage;
 
@@ -43,6 +45,9 @@ internal sealed class MessageBuffer : IDisposable
 
     private object Lock => _buffer;
 
+    private LinkedBuffer _buffer;
+    private int _bufferedByteCount;
+
     static MessageBuffer()
     {
         _completedTCS.SetResult(new());
@@ -51,13 +56,9 @@ internal sealed class MessageBuffer : IDisposable
     // TODO: pass in limits
     public MessageBuffer(ConnectionContext connection, IHubProtocol protocol)
     {
-        // Arbitrary size, we can figure out defaults and configurability later
-        const int bufferSize = 10;
-        _buffer = new (SerializedHubMessage? Message, long SequenceId)[bufferSize];
-        for (var i = 0; i < _buffer.Length; i++)
-        {
-            _buffer[i].SequenceId = long.MinValue;
-        }
+        // TODO: pool
+        _buffer = new LinkedBuffer();
+
         _connection = connection;
         _protocol = protocol;
 
@@ -108,18 +109,14 @@ internal sealed class MessageBuffer : IDisposable
     public async ValueTask<FlushResult> WriteAsync(SerializedHubMessage hubMessage, CancellationToken cancellationToken)
     {
         // TODO: Backpressure based on message count and total message size
-        if (_buffer[_bufferIndex].Message is not null || _buffer[_bufferIndex].SequenceId > long.MinValue)
+        if (_bufferedByteCount > _bufferLimit)
         {
             // primitive backpressure if buffer is full
             while (await _waitForAck.Reader.WaitToReadAsync(cancellationToken).ConfigureAwait(false))
             {
-                lock (Lock)
+                if (_waitForAck.Reader.TryRead(out var count) && count < _bufferLimit)
                 {
-                    if (_waitForAck.Reader.TryRead(out var index)
-                    && (index == _bufferIndex || _buffer[_bufferIndex].Message is null))
-                    {
-                        break;
-                    }
+                    break;
                 }
             }
         }
@@ -146,13 +143,14 @@ internal sealed class MessageBuffer : IDisposable
                 return await _connection.Transport.Output.WriteAsync(hubMessage.GetSerializedMessage(_protocol), cancellationToken).ConfigureAwait(false);
             }
 
+            var messageBytes = hubMessage.GetSerializedMessage(_protocol);
             lock (Lock)
             {
-                _buffer[_bufferIndex] = (hubMessage, _totalMessageCount);
+                _bufferedByteCount += messageBytes.Length;
+                _buffer.AddMessage(hubMessage, _totalMessageCount);
             }
-            _bufferIndex = (_bufferIndex + 1) % _buffer.Length;
 
-            return await _connection.Transport.Output.WriteAsync(hubMessage.GetSerializedMessage(_protocol), cancellationToken).ConfigureAwait(false);
+            return await _connection.Transport.Output.WriteAsync(messageBytes, cancellationToken).ConfigureAwait(false);
         }
         // TODO: figure out what exception to use
         catch (ConnectionResetException)
@@ -181,35 +179,27 @@ internal sealed class MessageBuffer : IDisposable
     {
         // TODO: what if ackMessage.SequenceId is larger than last sent message?
 
-        // Grabbing _bufferIndex unsynchronized should be fine, we might miss the most recent message but the client shouldn't be able to ack that yet
-        // Or in exceptional cases we could miss multiple messages, but the next ack will clear them
-        var index = _bufferIndex;
-        var finalIndex = -1;
+        var newCount = -1;
 
         lock (Lock)
         {
-            for (var i = 0; i < _buffer.Length; i++)
-            {
-                var currentIndex = (index + i) % _buffer.Length;
-                if (_buffer[currentIndex].Message is not null && _buffer[currentIndex].SequenceId <= ackMessage.SequenceId)
-                {
-                    _buffer[currentIndex] = (null, long.MinValue);
-                    finalIndex = currentIndex;
-                }
-                // TODO: figure out an early exit?
-            }
+            var item = _buffer.RemoveMessages(ackMessage.SequenceId, _protocol);
+            _buffer = item.Item1;
+            _bufferedByteCount -= item.Item2;
+
+            newCount = _bufferedByteCount;
         }
 
-        // Release backpressure
-        if (finalIndex >= 0)
+        // Release potential backpressure
+        if (newCount >= 0)
         {
-            _waitForAck.Writer.TryWrite(finalIndex);
+            _waitForAck.Writer.TryWrite(newCount);
         }
     }
 
     internal bool ShouldProcessMessage(HubMessage message)
     {
-        // TODO: if we're expecting a sequence message but get here should we error or ignore or maybe even process them?
+        // TODO: if we're expecting a sequence message but get here should we error or ignore or maybe even continue to process them?
         if (_waitForSequenceMessage)
         {
             if (message is SequenceMessage)
@@ -277,49 +267,26 @@ internal sealed class MessageBuffer : IDisposable
         await _writeLock.WaitAsync().ConfigureAwait(false);
         try
         {
-            long latestAckedIndex = -1;
-            for (var i = 0; i < _buffer.Length - 1; i++)
+            _sequenceMessage.SequenceId = _totalMessageCount + 1;
+
+            var isFirst = true;
+            foreach (var item in _buffer.GetMessages())
             {
-                var currentIndex = (_bufferIndex + i + 1) % _buffer.Length;
-                if (_buffer[currentIndex].SequenceId > long.MinValue)
+                if (item.SequenceId > 0)
                 {
-                    latestAckedIndex = currentIndex;
-                    break;
+                    if (isFirst)
+                    {
+                        _sequenceMessage.SequenceId = item.SequenceId;
+                        _protocol.WriteMessage(_sequenceMessage, _connection.Transport.Output);
+                        isFirst = false;
+                    }
+                    finalResult = await _connection.Transport.Output.WriteAsync(item.HubMessage!.GetSerializedMessage(_protocol)).ConfigureAwait(false);
                 }
             }
 
-            if (latestAckedIndex == -1)
+            if (isFirst)
             {
-                // no unacked messages, still send SequenceMessage as other side is expecting it, see _waitForSequenceMessage
-
-                // Add 1 because this ID is used to set what the next ID to be received is, and since everything has been received so far, this needs to be the next ID that is going to be sent
-                _sequenceMessage.SequenceId = _totalMessageCount + 1;
                 _protocol.WriteMessage(_sequenceMessage, _connection.Transport.Output);
-                finalResult = await _connection.Transport.Output.FlushAsync().ConfigureAwait(false);
-                return;
-            }
-
-            _sequenceMessage.SequenceId = _buffer[latestAckedIndex].SequenceId;
-            _protocol.WriteMessage(_sequenceMessage, _connection.Transport.Output);
-            // don't need to call flush just for the SequenceMessage if we're writing more messages
-            var shouldFlush = true;
-
-            for (var i = 0; i < _buffer.Length; i++)
-            {
-                var item = _buffer[(latestAckedIndex + i) % _buffer.Length];
-                if (item.SequenceId > long.MinValue)
-                {
-                    finalResult = await _connection.Transport.Output.WriteAsync(item.Message!.GetSerializedMessage(_protocol)).ConfigureAwait(false);
-                    shouldFlush = false;
-                }
-                else
-                {
-                    break;
-                }
-            }
-
-            if (shouldFlush)
-            {
                 finalResult = await _connection.Transport.Output.FlushAsync().ConfigureAwait(false);
             }
         }
@@ -337,5 +304,209 @@ internal sealed class MessageBuffer : IDisposable
     public void Dispose()
     {
         ((IDisposable)_timer).Dispose();
+    }
+
+    // Linked list of SerializedHubMessage arrays, sort of like ReadOnlySequence
+    private sealed class LinkedBuffer
+    {
+        private const int BufferLength = 10;
+
+        private int _currentIndex = -1;
+        private int _ackedIndex = -1;
+        private long _startingSequenceId = long.MinValue;
+        private LinkedBuffer? _next;
+
+        private readonly SerializedHubMessage?[] _messages = new SerializedHubMessage?[BufferLength];
+
+        public void AddMessage(SerializedHubMessage hubMessage, long sequenceId)
+        {
+            if (_startingSequenceId < 0)
+            {
+                Debug.Assert(_currentIndex == -1);
+                _startingSequenceId = sequenceId;
+            }
+
+            if (_currentIndex < BufferLength - 1)
+            {
+                Debug.Assert(_startingSequenceId + _currentIndex + 1 == sequenceId);
+
+                _currentIndex++;
+                _messages[_currentIndex] = hubMessage;
+            }
+            else if (_next is null)
+            {
+                _next = new LinkedBuffer();
+                _next.AddMessage(hubMessage, sequenceId);
+            }
+            else
+            {
+                // TODO: Should we avoid this path by keeping a tail pointer?
+                // Debug.Assert(false);
+
+                var linkedBuffer = _next;
+                while (linkedBuffer._next is not null)
+                {
+                    linkedBuffer = linkedBuffer._next;
+                }
+
+                // TODO: verify no stack overflow potential
+                linkedBuffer.AddMessage(hubMessage, sequenceId);
+            }
+        }
+
+        public (LinkedBuffer, int returnCredit) RemoveMessages(long sequenceId, IHubProtocol protocol)
+        {
+            return RemoveMessagesCore(this, sequenceId, protocol);
+        }
+
+        private static (LinkedBuffer, int returnCredit) RemoveMessagesCore(LinkedBuffer linkedBuffer, long sequenceId, IHubProtocol protocol)
+        {
+            var returnCredit = 0;
+            while (linkedBuffer._startingSequenceId <= sequenceId)
+            {
+                var numElements = (int)Math.Min(BufferLength, Math.Max(1, sequenceId - (linkedBuffer._startingSequenceId - 1)));
+                Debug.Assert(numElements > 0 && numElements < BufferLength + 1);
+
+                for (var i = 0; i < numElements; i++)
+                {
+                    returnCredit += linkedBuffer._messages[i]?.GetSerializedMessage(protocol).Length ?? 0;
+                    linkedBuffer._messages[i] = null;
+                }
+
+                linkedBuffer._ackedIndex = numElements - 1;
+
+                if (numElements == BufferLength)
+                {
+                    if (linkedBuffer._next is null)
+                    {
+                        linkedBuffer.Reset(shouldPool: false);
+                        return (linkedBuffer, returnCredit);
+                    }
+                    else
+                    {
+                        var tmp = linkedBuffer;
+                        linkedBuffer = linkedBuffer._next;
+                        tmp.Reset(shouldPool: true);
+                    }
+                }
+                else
+                {
+                    return (linkedBuffer, returnCredit);
+                }
+            }
+
+            return (linkedBuffer, returnCredit);
+        }
+
+        private void Reset(bool shouldPool)
+        {
+            _startingSequenceId = long.MinValue;
+            _currentIndex = -1;
+            _ackedIndex = -1;
+            _next = null;
+
+            Array.Clear(_messages, 0, BufferLength);
+
+            // TODO: Add back to pool
+            if (shouldPool)
+            {
+            }
+        }
+
+        public IEnumerable<(SerializedHubMessage? HubMessage, long SequenceId)> GetMessages()
+        {
+            return new Enumerable(this);
+        }
+
+        private struct Enumerable : IEnumerable<(SerializedHubMessage?, long)>
+        {
+            private readonly LinkedBuffer _linkedBuffer;
+
+            public Enumerable(LinkedBuffer linkedBuffer)
+            {
+                _linkedBuffer = linkedBuffer;
+            }
+
+            public IEnumerator<(SerializedHubMessage?, long)> GetEnumerator()
+            {
+                return new Enumerator(_linkedBuffer);
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        private struct Enumerator : IEnumerator<(SerializedHubMessage?, long)>
+        {
+            private LinkedBuffer? _linkedBuffer;
+            private int _index;
+
+            public Enumerator(LinkedBuffer linkedBuffer)
+            {
+                _linkedBuffer = linkedBuffer;
+            }
+
+            public (SerializedHubMessage?, long) Current
+            {
+                get
+                {
+                    if (_linkedBuffer is null)
+                    {
+                        return (null, long.MinValue);
+                    }
+
+                    var index = _index - 1;
+                    var firstMessageIndex = _linkedBuffer._ackedIndex + 1;
+                    if (firstMessageIndex + index < BufferLength)
+                    {
+                        return (_linkedBuffer._messages[firstMessageIndex + index], _linkedBuffer._startingSequenceId + firstMessageIndex + index);
+                    }
+
+                    return (null, long.MinValue);
+                }
+            }
+
+            object IEnumerator.Current => throw new NotImplementedException();
+
+            public void Dispose()
+            {
+                _linkedBuffer = null;
+            }
+
+            public bool MoveNext()
+            {
+                if (_linkedBuffer is null)
+                {
+                    return false;
+                }
+
+                var firstMessageIndex = _linkedBuffer._ackedIndex + 1;
+                if (firstMessageIndex + _index >= BufferLength)
+                {
+                    _linkedBuffer = _linkedBuffer._next;
+                    _index = 1;
+                }
+                else
+                {
+                    if (_linkedBuffer._messages[firstMessageIndex + _index] is null)
+                    {
+                        _linkedBuffer = null;
+                    }
+                    else
+                    {
+                        _index++;
+                    }
+                }
+
+                return _linkedBuffer is not null;
+            }
+
+            public void Reset()
+            {
+                throw new NotImplementedException();
+            }
+        }
     }
 }
