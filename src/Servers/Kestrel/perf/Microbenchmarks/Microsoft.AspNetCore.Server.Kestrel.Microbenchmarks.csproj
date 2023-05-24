@@ -11,7 +11,7 @@
 
   <ItemGroup>
     <Compile Include="$(KestrelSharedSourceRoot)test\DummyApplication.cs" />
-    <Compile Include="$(KestrelSharedSourceRoot)test\MockSystemClock.cs" />
+    <Compile Include="$(SharedSourceRoot)test\MockTimeProvider.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\Http3\Http3InMemory.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)\CompletionPipeReader.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)\CompletionPipeWriter.cs" />

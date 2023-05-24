@@ -5,6 +5,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -270,7 +271,7 @@ public class SecurityStampTest
     public async Task OnValidateIdentityDoesNotExtendExpirationWhenSlidingIsDisabled()
     {
         var user = new PocoUser("test");
-        var timeProvider = new TestTimeProvider(new DateTimeOffset(2013, 6, 11, 12, 34, 56, 0, TimeSpan.Zero));
+        var timeProvider = new MockTimeProvider();
         var httpContext = new Mock<HttpContext>();
         var userManager = MockHelpers.MockUserManager<PocoUser>();
         var identityOptions = new Mock<IOptions<IdentityOptions>>();
@@ -308,8 +309,10 @@ public class SecurityStampTest
         await SecurityStampValidator.ValidatePrincipalAsync(context);
 
         // Issued is moved forward, expires is not.
-        Assert.Equal(timeProvider.GetUtcNow(), context.Properties.IssuedUtc);
-        Assert.Equal(timeProvider.GetUtcNow() + TimeSpan.FromDays(1), context.Properties.ExpiresUtc);
+        var now = timeProvider.GetUtcNow();
+        now = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, now.Offset); // Truncate to the nearest second.
+        Assert.Equal(now, context.Properties.IssuedUtc);
+        Assert.Equal(now + TimeSpan.FromDays(1), context.Properties.ExpiresUtc);
         Assert.NotNull(context.Principal);
     }
 

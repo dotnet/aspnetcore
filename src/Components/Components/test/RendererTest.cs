@@ -5217,6 +5217,87 @@ public class RendererTest
         Assert.Equal("An event handler 'MyFormSubmit' is already defined in this component.", exception.Message);
     }
 
+    [Fact]
+    public void ThrowsForUnknownRenderMode_OnComponentType()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        var component = new TestComponent(builder =>
+        {
+            builder.OpenComponent<ComponentWithUnknownRenderMode>(0);
+            builder.CloseComponent();
+        });
+
+        // Act
+        var componentId = renderer.AssignRootComponentId(component);
+        var ex = Assert.Throws<NotSupportedException>(() => component.TriggerRender());
+        Assert.Contains($"Cannot supply a component of type '{typeof(ComponentWithUnknownRenderMode)}' because the current platform does not support the render mode '{typeof(ComponentWithUnknownRenderMode.UnknownRenderMode)}'.", ex.Message);
+    }
+
+    [Fact]
+    public void RenderModeResolverCanSupplyComponent_WithComponentTypeRenderMode()
+    {
+        // Arrange
+        var renderer = new RendererWithRenderModeResolver();
+
+        var component = new TestComponent(builder =>
+        {
+            builder.OpenComponent<ComponentWithRenderMode>(0);
+            builder.AddComponentParameter(1, nameof(MessageComponent.Message), "Some message");
+            builder.CloseComponent();
+        });
+
+        // Act
+        var componentId = renderer.AssignRootComponentId(component);
+        component.TriggerRender();
+
+        // Assert
+        var batch = renderer.Batches.Single();
+        var componentFrames = batch.GetComponentFrames<MessageComponent>();
+        var resolvedComponent = (MessageComponent)componentFrames.Single().Component;
+        Assert.Equal("Some message", resolvedComponent.Message);
+    }
+
+    [HasSubstituteComponentRenderMode]
+    private class ComponentWithRenderMode : IComponent
+    {
+        public void Attach(RenderHandle renderHandle) => throw new NotImplementedException();
+        public Task SetParametersAsync(ParameterView parameters) => throw new NotImplementedException();
+
+        public class HasSubstituteComponentRenderMode : RenderModeAttribute
+        {
+            public override IComponentRenderMode Mode => new SubstituteComponentRenderMode();
+        }
+    }
+
+    [HasUnknownRenderMode]
+    private class ComponentWithUnknownRenderMode : IComponent
+    {
+        public void Attach(RenderHandle renderHandle) => throw new NotImplementedException();
+        public Task SetParametersAsync(ParameterView parameters) => throw new NotImplementedException();
+
+        public class HasUnknownRenderMode : RenderModeAttribute
+        {
+            public override IComponentRenderMode Mode => new UnknownRenderMode();
+        }
+
+        public class UnknownRenderMode : IComponentRenderMode { }
+    }
+
+    private class RendererWithRenderModeResolver : TestRenderer
+    {
+        protected internal override IComponent ResolveComponentForRenderMode(Type componentType, int? parentComponentId, IComponentActivator componentActivator, IComponentRenderMode componentTypeRenderMode)
+        {
+            return componentTypeRenderMode switch
+            {
+                SubstituteComponentRenderMode => componentActivator.CreateInstance(typeof(MessageComponent)),
+                var other => throw new NotSupportedException($"{nameof(RendererWithRenderModeResolver)} should not have received rendermode {other}"),
+            };
+        }
+    }
+
+    private class SubstituteComponentRenderMode : IComponentRenderMode { }
+
     private class TestComponentActivator<TResult> : IComponentActivator where TResult : IComponent, new()
     {
         public List<Type> RequestedComponentTypes { get; } = new List<Type>();

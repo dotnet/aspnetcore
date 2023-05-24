@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <root>
-  <!-- 
-    Microsoft ResX Schema 
-    
+  <!--
+    Microsoft ResX Schema
+
     Version 2.0
-    
-    The primary goals of this format is to allow a simple XML format 
-    that is mostly human readable. The generation and parsing of the 
-    various data types are done through the TypeConverter classes 
+
+    The primary goals of this format is to allow a simple XML format
+    that is mostly human readable. The generation and parsing of the
+    various data types are done through the TypeConverter classes
     associated with the data types.
-    
+
     Example:
-    
+
     ... ado.net/XML headers & schema ...
     <resheader name="resmimetype">text/microsoft-resx</resheader>
     <resheader name="version">2.0</resheader>
@@ -26,36 +26,36 @@
         <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
         <comment>This is a comment</comment>
     </data>
-                
-    There are any number of "resheader" rows that contain simple 
+
+    There are any number of "resheader" rows that contain simple
     name/value pairs.
-    
-    Each data row contains a name, and value. The row also contains a 
-    type or mimetype. Type corresponds to a .NET class that support 
-    text/value conversion through the TypeConverter architecture. 
-    Classes that don't support this are serialized and stored with the 
+
+    Each data row contains a name, and value. The row also contains a
+    type or mimetype. Type corresponds to a .NET class that support
+    text/value conversion through the TypeConverter architecture.
+    Classes that don't support this are serialized and stored with the
     mimetype set.
-    
-    The mimetype is used for serialized objects, and tells the 
-    ResXResourceReader how to depersist the object. This is currently not 
+
+    The mimetype is used for serialized objects, and tells the
+    ResXResourceReader how to depersist the object. This is currently not
     extensible. For a given mimetype the value must be set accordingly:
-    
-    Note - application/x-microsoft.net.object.binary.base64 is the format 
-    that the ResXResourceWriter will generate, however the reader can 
+
+    Note - application/x-microsoft.net.object.binary.base64 is the format
+    that the ResXResourceWriter will generate, however the reader can
     read any of the formats listed below.
-    
+
     mimetype: application/x-microsoft.net.object.binary.base64
-    value   : The object must be serialized with 
+    value   : The object must be serialized with
             : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
             : and then encoded with base64 encoding.
-    
+
     mimetype: application/x-microsoft.net.object.soap.base64
-    value   : The object must be serialized with 
+    value   : The object must be serialized with
             : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
             : and then encoded with base64 encoding.
 
     mimetype: application/x-microsoft.net.object.bytearray.base64
-    value   : The object must be serialized into a byte array 
+    value   : The object must be serialized into a byte array
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
@@ -140,5 +140,41 @@
   </data>
   <data name="UnableToResolveAnonymousReturnType_Title" xml:space="preserve">
     <value>Unable to resolve anonymous type</value>
+  </data>
+  <data name="InvalidAsParametersAbstractType_Title" xml:space="preserve">
+    <value>Invalid abstract type</value>
+  </data>
+  <data name="InvalidAsParametersAbstractType_Message" xml:space="preserve">
+    <value>The abstract type '{0}' is not supported.</value>
+  </data>
+  <data name="InvalidAsParametersSignature_Title" xml:space="preserve">
+    <value>Invalid constructor parameters</value>
+  </data>
+  <data name="InvalidAsParametersSignature_Message" xml:space="preserve">
+    <value>The public parameterized constructor must contain only parameters that match the declared public properties for type '{0}'.</value>
+  </data>
+  <data name="InvalidAsParametersNoConstructorFound_Title" xml:space="preserve">
+    <value>No valid constructor found</value>
+  </data>
+  <data name="InvalidAsParametersNoConstructorFound_Message" xml:space="preserve">
+    <value>No public parameterless constructor found for type '{0}'.</value>
+  </data>
+  <data name="InvalidAsParametersSingleConstructorOnly_Title" xml:space="preserve">
+    <value>Multiple public constructors found</value>
+  </data>
+  <data name="InvalidAsParametersSingleConstructorOnly_Message" xml:space="preserve">
+    <value>Only a single public parameterized constructor is allowed for type '{0}'.</value>
+  </data>
+  <data name="InvalidAsParametersNested_Title" xml:space="preserve">
+    <value>Invalid nested AsParameters</value>
+  </data>
+  <data name="InvalidAsParametersNested_Message" xml:space="preserve">
+    <value>Nested AsParametersAttribute is not supported and should be used only for handler parameters.</value>
+  </data>
+  <data name="InvalidAsParametersNullable_Title" xml:space="preserve">
+    <value>Unexpected nullable type</value>
+  </data>
+  <data name="InvalidAsParametersNullable_Message" xml:space="preserve">
+    <value>The nullable type '{0}' is not supported. Mark the parameter as non-nullable.</value>
   </data>
 </root>

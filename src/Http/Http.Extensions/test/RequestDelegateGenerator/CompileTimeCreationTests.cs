@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Http.RequestDelegateGenerator;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
-public class CompileTimeCreationTests : RequestDelegateCreationTests
+public partial class CompileTimeCreationTests : RequestDelegateCreationTests
 {
     protected override bool IsGeneratorEnabled { get; } = true;
 
@@ -39,7 +39,6 @@ app.MapGet("/hello", (HttpContext context) => Task.CompletedTask);
 
         VerifyStaticEndpointModel(result, endpointModel =>
         {
-            Assert.Equal("/", endpointModel.RoutePattern);
             Assert.Equal("MapGet", endpointModel.HttpMethod);
             Assert.Equal(expectedContentType, endpointModel.Response.ContentType);
         });
@@ -56,49 +55,5 @@ app.MapGet("/hello", (HttpContext context) => Task.CompletedTask);
 
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => endpoint.RequestDelegate(httpContext));
         Assert.Equal("'invalidName' is not a route parameter.", exception.Message);
-    }
-
-    [Fact]
-    public async Task MapAction_WarnsForUnsupportedAsParametersAttribute()
-    {
-        var source = """app.MapGet("/{routeValue}", ([AsParameters] Todo todo) => todo);""";
-        var (generatorRunResult, compilation) = await RunGeneratorAsync(source);
-
-        // Emits diagnostic but generates no source
-        var result = Assert.IsType<GeneratorRunResult>(generatorRunResult);
-        var diagnostic = Assert.Single(result.Diagnostics);
-        Assert.Equal(DiagnosticDescriptors.UnableToResolveParameterDescriptor.Id, diagnostic.Id);
-        Assert.Empty(result.GeneratedSources);
-
-        // Falls back to runtime-generated endpoint
-        var endpoint = GetEndpointFromCompilation(compilation, false);
-
-        var httpContext = CreateHttpContext();
-        httpContext.Request.QueryString = new QueryString($"?Id=0&Name=Test&IsComplete=false");
-        await endpoint.RequestDelegate(httpContext);
-        await VerifyResponseBodyAsync(httpContext, """{"id":0,"name":"Test","isComplete":false}""");
-    }
-
-    [Fact]
-    public async Task MapAction_WarnsForUnsupportedRouteVariable()
-    {
-        var source = """
-var route = "/hello";
-app.MapGet(route, () => "Hello world!");
-""";
-        var (generatorRunResult, compilation) = await RunGeneratorAsync(source);
-
-        // Emits diagnostic but generates no source
-        var result = Assert.IsType<GeneratorRunResult>(generatorRunResult);
-        var diagnostic = Assert.Single(result.Diagnostics);
-        Assert.Equal(DiagnosticDescriptors.UnableToResolveRoutePattern.Id, diagnostic.Id);
-        Assert.Empty(result.GeneratedSources);
-
-        // Falls back to runtime-generated endpoint
-        var endpoint = GetEndpointFromCompilation(compilation, false);
-
-        var httpContext = CreateHttpContext();
-        await endpoint.RequestDelegate(httpContext);
-        await VerifyResponseBodyAsync(httpContext, "Hello world!");
     }
 }

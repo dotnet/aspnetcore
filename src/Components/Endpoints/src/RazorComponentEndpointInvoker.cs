@@ -15,12 +15,14 @@ internal class RazorComponentEndpointInvoker
 {
     private readonly HttpContext _context;
     private readonly EndpointHtmlRenderer _renderer;
+    private readonly Type _rootComponentType;
     private readonly Type _componentType;
 
-    public RazorComponentEndpointInvoker(HttpContext context, Type componentType)
+    public RazorComponentEndpointInvoker(HttpContext context, Type rootComponentType, Type componentType)
     {
         _context = context;
         _renderer = _context.RequestServices.GetRequiredService<EndpointHtmlRenderer>();
+        _rootComponentType = rootComponentType;
         _componentType = componentType;
     }
 
@@ -40,17 +42,9 @@ internal class RazorComponentEndpointInvoker
             return;
         }
 
-        // We could pool these dictionary instances if we wanted, and possibly even the ParameterView
-        // backing buffers could come from a pool like they do during rendering.
-        var hostParameters = ParameterView.FromDictionary(new Dictionary<string, object?>
-        {
-            { nameof(RazorComponentEndpointHost.RenderMode), RenderMode.Static },
-            { nameof(RazorComponentEndpointHost.ComponentType), _componentType },
-            { nameof(RazorComponentEndpointHost.ComponentParameters), null },
-        });
-
         await EndpointHtmlRenderer.InitializeStandardComponentServicesAsync(
             _context,
+            componentType: _componentType,
             handler: handler,
             form: handler != null && _context.Request.HasFormContentType ? await _context.Request.ReadFormAsync() : null);
 
@@ -61,8 +55,8 @@ internal class RazorComponentEndpointInvoker
         // component takes care of switching into your desired render mode when it produces its own output.
         var htmlContent = await _renderer.RenderEndpointComponent(
             _context,
-            typeof(RazorComponentEndpointHost),
-            hostParameters,
+            _rootComponentType,
+            ParameterView.Empty,
             waitForQuiescence: isPost);
 
         if (isPost && !_renderer.HasCapturedEvent())

@@ -43,7 +43,7 @@ internal static class RoutePatternParametersDetector
         static string ResolveRouteParameterName(ISymbol parameterSymbol, WellKnownTypes wellKnownTypes)
         {
             var fromRouteMetadata = wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromRouteMetadata);
-            if (!parameterSymbol.HasAttributeImplementingInterface(fromRouteMetadata, out var attributeData))
+            if (!parameterSymbol.TryGetAttributeImplementingInterface(fromRouteMetadata, out var attributeData))
             {
                 return parameterSymbol.Name; // No route metadata attribute!
             }

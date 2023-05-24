@@ -4,8 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Reflection.PortableExecutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
@@ -59,14 +61,47 @@ internal static class SymbolExtensions
         return false;
     }
 
-    public static bool HasAttributeImplementingInterface(this ISymbol symbol, INamedTypeSymbol interfaceType)
+    public static bool HasAttribute(this ImmutableArray<AttributeData> attributes, INamedTypeSymbol attributeType)
     {
-        return symbol.HasAttributeImplementingInterface(interfaceType, out var _);
+        foreach (var attributeData in attributes)
+        {
+            if (SymbolEqualityComparer.Default.Equals(attributeData.AttributeClass, attributeType))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
-    public static bool HasAttributeImplementingInterface(this ISymbol symbol, INamedTypeSymbol interfaceType, [NotNullWhen(true)] out AttributeData? matchedAttribute)
+    public static bool HasAttributeImplementingInterface(this ISymbol symbol, INamedTypeSymbol interfaceType)
+    {
+        return symbol.TryGetAttributeImplementingInterface(interfaceType, out var _);
+    }
+
+    public static bool TryGetAttributeImplementingInterface(this ISymbol symbol, INamedTypeSymbol interfaceType, [NotNullWhen(true)] out AttributeData? matchedAttribute)
     {
         foreach (var attributeData in symbol.GetAttributes())
+        {
+            if (attributeData.AttributeClass is not null && attributeData.AttributeClass.Implements(interfaceType))
+            {
+                matchedAttribute = attributeData;
+                return true;
+            }
+        }
+
+        matchedAttribute = null;
+        return false;
+    }
+
+    public static bool HasAttributeImplementingInterface(this ImmutableArray<AttributeData> attributes, INamedTypeSymbol interfaceType)
+    {
+        return attributes.TryGetAttributeImplementingInterface(interfaceType, out var _);
+    }
+
+    public static bool TryGetAttributeImplementingInterface(this ImmutableArray<AttributeData> attributes, INamedTypeSymbol interfaceType, [NotNullWhen(true)] out AttributeData? matchedAttribute)
+    {
+        foreach (var attributeData in attributes)
         {
             if (attributeData.AttributeClass is not null && attributeData.AttributeClass.Implements(interfaceType))
             {
@@ -124,6 +159,12 @@ internal static class SymbolExtensions
             NullableAnnotation: NullableAnnotation.Annotated
         } || parameterSymbol.HasExplicitDefaultValue;
 
+    public static bool IsOptional(this IPropertySymbol propertySymbol) =>
+        propertySymbol.Type is INamedTypeSymbol
+        {
+            NullableAnnotation: NullableAnnotation.Annotated
+        } && !propertySymbol.IsRequired;
+
     public static string GetDefaultValueString(this IParameterSymbol parameterSymbol)
     {
         return !parameterSymbol.HasExplicitDefaultValue
@@ -144,5 +185,18 @@ internal static class SymbolExtensions
             }
         }
         return false;
+    }
+
+    public static string GetParameterInfoFromConstructorCode(this IParameterSymbol parameterSymbol)
+    {
+        if (parameterSymbol is { ContainingSymbol: IMethodSymbol constructor })
+        {
+            var constructedType = $"typeof({parameterSymbol.ContainingType.ToDisplayString()})";
+            var parameterTypes = constructor.Parameters.Select(parameter => $"typeof({parameter.Type.ToDisplayString()})");
+            var parameterTypesString = string.Join(", ", parameterTypes);
+            var getConstructorParameters = $$"""new[] { {{parameterTypesString}} }""";
+            return $"{constructedType}.GetConstructor({getConstructorParameters})?.GetParameters()[{parameterSymbol.Ordinal}]";
+        }
+        return "null";
     }
 }

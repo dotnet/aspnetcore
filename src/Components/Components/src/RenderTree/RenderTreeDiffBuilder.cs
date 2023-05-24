@@ -952,15 +952,8 @@ internal static class RenderTreeDiffBuilder
     {
         var frames = diffContext.NewTree;
         ref var frame = ref frames[frameIndex];
-
-        if (frame.ComponentStateField != null)
-        {
-            throw new InvalidOperationException($"Child component already exists during {nameof(InitializeNewComponentFrame)}");
-        }
-
         var parentComponentId = diffContext.ComponentId;
-        diffContext.Renderer.InstantiateChildComponentOnFrame(ref frame, parentComponentId);
-        var childComponentState = frame.ComponentStateField;
+        var childComponentState = diffContext.Renderer.InstantiateChildComponentOnFrame(ref frame, parentComponentId);
 
         // Set initial parameters
         var initialParametersLifetime = new ParameterViewLifetime(diffContext.BatchBuilder);

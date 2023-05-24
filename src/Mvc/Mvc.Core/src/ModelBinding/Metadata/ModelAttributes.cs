@@ -214,6 +214,25 @@ public class ModelAttributes
 
     private static Type? GetMetadataType(Type type)
     {
-        return type.GetCustomAttribute<ModelMetadataTypeAttribute>()?.MetadataType;
+        // GetCustomAttribute will examine the members inheritance chain
+        // for attributes of a particular type by default. Meaning that
+        // in the following scenario, the `ModelMetadataType` attribute on
+        // both the derived _and_ base class will be returned.
+        // [ModelMetadataType<BaseModel>]
+        // private class BaseViewModel { }
+        // [ModelMetadataType<DerivedModel>]
+        // private class DerivedViewModel : BaseViewModel { }
+        // To avoid this, we call `GetCustomAttributes` directly
+        // to avoid examining the inheritance hierarchy.
+        // See https://source.dot.net/#System.Private.CoreLib/src/System/Attribute.CoreCLR.cs,677
+        var modelMetadataTypeAttributes = type.GetCustomAttributes<ModelMetadataTypeAttribute>(inherit: false);
+        try
+        {
+            return modelMetadataTypeAttributes?.SingleOrDefault()?.MetadataType;
+        }
+        catch (InvalidOperationException e)
+        {
+            throw new InvalidOperationException("Only one ModelMetadataType attribute is permitted per type.", e);
+        }
     }
 }

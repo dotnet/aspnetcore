@@ -11,19 +11,17 @@ import { WebAssemblyResourceLoader, LoadingResource } from '../WebAssemblyResour
 import { Platform, System_Array, Pointer, System_Object, System_String, HeapLock, PlatformApi } from '../Platform';
 import { WebAssemblyBootResourceType, WebAssemblyStartOptions } from '../WebAssemblyStartOptions';
 import { Blazor } from '../../GlobalExports';
-import { DotnetModuleConfig, EmscriptenModule, MonoConfig, ModuleAPI, BootJsonData, ICUDataMode } from 'dotnet';
+import { DotnetModuleConfig, EmscriptenModule, MonoConfig, ModuleAPI, BootJsonData, ICUDataMode, RuntimeAPI } from 'dotnet';
 import { BINDINGType, MONOType } from 'dotnet/dotnet-legacy';
-import { WebAssemblyComponentDescriptor, discoverComponents, discoverPersistedState } from '../../Services/ComponentDescriptorDiscovery';
-import { attachRootComponentToElement, attachRootComponentToLogicalElement } from '../../Rendering/Renderer';
-import { WebAssemblyComponentAttacher } from '../WebAssemblyComponentAttacher';
 import { fetchAndInvokeInitializers } from '../../JSInitializers/JSInitializers.WebAssembly';
-import { WebAssemblyConfigLoader } from '../WebAssemblyConfigLoader';
 
 // initially undefined and only fully initialized after createEmscriptenModuleInstance()
 export let BINDING: BINDINGType = undefined as any;
 export let MONO: MONOType = undefined as any;
 export let Module: DotnetModuleConfig & EmscriptenModule = undefined as any;
+export let dispatcher: DotNet.ICallDispatcher = undefined as any;
 let MONO_INTERNAL: any = undefined as any;
+let runtime: RuntimeAPI = undefined as any;
 
 const uint64HighOrderShift = Math.pow(2, 32);
 const maxSafeNumberHighPart = Math.pow(2, 21) - 1; // The high-order int32 from Number.MAX_SAFE_INTEGER
@@ -62,10 +60,8 @@ export const monoPlatform: Platform = {
   },
 
   callEntryPoint: async function callEntryPoint(assemblyName: string): Promise<any> {
-    const emptyArray = [[]];
-
     try {
-      await BINDING.call_assembly_entry_point(assemblyName, emptyArray, 'm');
+      await runtime.runMain(assemblyName, []);
     } catch (error) {
       console.error(error);
       showErrorNotification();
@@ -131,18 +127,7 @@ export const monoPlatform: Platform = {
       return unboxedValue;
     }
 
-    let decodedString: string | null | undefined;
-    if (currentHeapLock) {
-      decodedString = currentHeapLock.stringCache.get(fieldValue);
-      if (decodedString === undefined) {
-        decodedString = BINDING.conv_string(fieldValue as any as System_String);
-        currentHeapLock.stringCache.set(fieldValue, decodedString);
-      }
-    } else {
-      decodedString = BINDING.conv_string(fieldValue as any as System_String);
-    }
-
-    return decodedString;
+    return BINDING.conv_string(fieldValue as any as System_String);
   },
 
   readStructField: function readStructField<T extends Pointer>(baseAddress: Pointer, fieldOffset?: number): T {
@@ -268,35 +253,10 @@ function prepareRuntimeConfig(options: Partial<WebAssemblyStartOptions>, platfor
       bootConfig.environmentVariables['__ASPNETCORE_BROWSER_TOOLS'] = bootConfig.aspnetCoreBrowserTools;
     }
 
-    // Leverage the time while we are loading boot.config.json from the network to discover any potentially registered component on
-    // the document.
-    const discoveredComponents = discoverComponents(document, 'webassembly') as WebAssemblyComponentDescriptor[];
-    const componentAttacher = new WebAssemblyComponentAttacher(discoveredComponents);
-    Blazor._internal.registeredComponents = {
-      getRegisteredComponentsCount: () => componentAttacher.getCount(),
-      getId: (index) => componentAttacher.getId(index),
-      getAssembly: (id) => componentAttacher.getAssembly(id),
-      getTypeName: (id) => componentAttacher.getTypeName(id),
-      getParameterDefinitions: (id) => componentAttacher.getParameterDefinitions(id) || '',
-      getParameterValues: (id) => componentAttacher.getParameterValues(id) || '',
-    };
-
-    Blazor._internal.getPersistedState = () => discoverPersistedState(document) || '';
-
-    Blazor._internal.attachRootComponentToElement = (selector, componentId, rendererId: any) => {
-      const element = componentAttacher.resolveRegisteredElement(selector);
-      if (!element) {
-        attachRootComponentToElement(selector, componentId, rendererId);
-      } else {
-        attachRootComponentToLogicalElement(rendererId, element, componentId, false);
-      }
-    };
+    Blazor._internal.getApplicationEnvironment = () => bootConfig.applicationEnvironment!;
 
     platformApi.jsInitializer = await fetchAndInvokeInitializers(bootConfig, options);
-
-    WebAssemblyConfigLoader.initAsync(bootConfig, bootConfig.applicationEnvironment!, options || {});
   };
-
 
   const moduleConfig = (window['Module'] || {}) as typeof Module;
   // TODO (moduleConfig as any).preloadPlugins = []; // why do we need this ?
@@ -321,7 +281,7 @@ async function createRuntimeInstance(options: Partial<WebAssemblyStartOptions>):
 
   anyDotnet.withStartupOptions(options).withModuleConfig(moduleConfig);
 
-  const runtime = await dotnet.create();
+  runtime = await dotnet.create();
   const { MONO: mono, BINDING: binding, Module: module, setModuleImports, INTERNAL: mono_internal } = runtime;
   Module = module;
   BINDING = binding;
@@ -419,7 +379,7 @@ function getArrayDataPointer<T>(array: System_Array<T>): number {
 }
 
 function attachInteropInvoker(): void {
-  DotNet.attachDispatcher({
+  dispatcher = DotNet.attachDispatcher({
     beginInvokeDotNetFromJS: (callId: number, assemblyName: string | null, methodIdentifier: string, dotNetObjectId: any | null, argsJson: string): void => {
       assertHeapIsNotLocked();
       if (!dotNetObjectId && !assemblyName) {
@@ -472,9 +432,6 @@ function assertHeapIsNotLocked() {
 }
 
 class MonoHeapLock implements HeapLock {
-  // Within a given heap lock, it's safe to cache decoded strings since the memory can't change
-  stringCache = new Map<number, string | null>();
-
   // eslint-disable-next-line @typescript-eslint/ban-types
   private postReleaseActions?: Function[];
 

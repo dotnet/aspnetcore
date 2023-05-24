@@ -19,7 +19,7 @@
     <UsagePattern IdentityGlob="Microsoft.CodeAnalysis.Workspaces.Common/*3.3.1*" />
     <UsagePattern IdentityGlob="System.Composition/*1.0.31*" />
     <UsagePattern IdentityGlob="System.Threading.Tasks.Extensions/*4.5.3*" />
-    
+
     <!-- Added to unblock dependency flow, needs review. -->
     <UsagePattern IdentityGlob="System.Security.Cryptography.Xml/*6.0.0*" />
 

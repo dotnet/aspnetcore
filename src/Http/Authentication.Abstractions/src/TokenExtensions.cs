@@ -36,7 +36,7 @@ public static class AuthenticationTokenExtensions
         {
             if (token.Name is null)
             {
-                throw new ArgumentNullException(nameof(tokens), "Token name cannot be null.");
+                throw new ArgumentException("Token name cannot be null for any token.", nameof(tokens));
             }
 
             // REVIEW: should probably check that there are no ; in the token name and throw or encode

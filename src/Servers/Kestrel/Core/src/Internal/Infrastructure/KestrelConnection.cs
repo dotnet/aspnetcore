@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
-internal abstract class KestrelConnection : IConnectionHeartbeatFeature, IConnectionCompleteFeature, IConnectionLifetimeNotificationFeature
+internal abstract class KestrelConnection : IConnectionHeartbeatFeature, IConnectionCompleteFeature, IConnectionLifetimeNotificationFeature, IConnectionMetricsContextFeature
 {
     private List<(Action<object> handler, object state)>? _heartbeatHandlers;
     private readonly object _heartbeatLock = new object();
@@ -24,18 +24,20 @@ internal abstract class KestrelConnection : IConnectionHeartbeatFeature, IConnec
     public KestrelConnection(long id,
                              ServiceContext serviceContext,
                              TransportConnectionManager transportConnectionManager,
-                             KestrelTrace logger)
+                             KestrelTrace logger,
+                             ConnectionMetricsContext connectionMetricsContext)
     {
         _id = id;
         _serviceContext = serviceContext;
         _transportConnectionManager = transportConnectionManager;
         Logger = logger;
-
+        MetricsContext = connectionMetricsContext;
         ConnectionClosedRequested = _connectionClosingCts.Token;
     }
 
     protected KestrelTrace Logger { get; }
 
+    public ConnectionMetricsContext MetricsContext { get; set; }
     public CancellationToken ConnectionClosedRequested { get; set; }
     public Task ExecutionTask => _completionTcs.Task;
 

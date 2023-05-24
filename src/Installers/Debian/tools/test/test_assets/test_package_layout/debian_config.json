@@ -31,7 +31,7 @@
         "curl": {
             "package_version" : "0.5.3"                         
         },
-        "python":{}
+        "python3":{}
     }, 
 
     "symlinks": {                                               

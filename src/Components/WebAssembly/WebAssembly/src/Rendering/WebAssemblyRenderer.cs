@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.JavaScript;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
@@ -25,8 +26,6 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
     public WebAssemblyRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, JSComponentInterop jsComponentInterop)
         : base(serviceProvider, loggerFactory, DefaultWebAssemblyJSRuntime.Instance.ReadJsonSerializerOptions(), jsComponentInterop)
     {
-        // The WebAssembly renderer registers and unregisters itself with the static registry
-        RendererId = RendererRegistry.Add(this);
         _logger = loggerFactory.CreateLogger<WebAssemblyRenderer>();
 
         ElementReferenceContext = DefaultWebAssemblyJSRuntime.Instance.ElementReferenceContext;
@@ -53,7 +52,6 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
     protected override void Dispose(bool disposing)
     {
         base.Dispose(disposing);
-        RendererRegistry.TryRemove(RendererId);
     }
 
     /// <inheritdoc />
@@ -131,6 +129,13 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
             Log.UnhandledExceptionRenderingComponent(_logger, exception.Message, exception);
         }
     }
+
+    protected override IComponent ResolveComponentForRenderMode([DynamicallyAccessedMembers(Component)] Type componentType, int? parentComponentId, IComponentActivator componentActivator, IComponentRenderMode componentTypeRenderMode)
+        => componentTypeRenderMode switch
+        {
+            WebAssemblyRenderMode or AutoRenderMode => componentActivator.CreateInstance(componentType),
+            _ => throw new NotSupportedException($"Cannot create a component of type '{componentType}' because its render mode '{componentTypeRenderMode}' is not supported by WebAssembly rendering."),
+        };
 
     private static partial class Log
     {

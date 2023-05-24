@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.Authorization" />
+    <Reference Include="Microsoft.AspNetCore.Components.Endpoints" />
     <Reference Include="Microsoft.AspNetCore.Components.Web" />
     <Reference Include="Microsoft.AspNetCore.DataProtection.Extensions" />
     <Reference Include="Microsoft.AspNetCore.SignalR" />
@@ -32,6 +33,7 @@
     <Compile Include="$(SharedSourceRoot)\PooledArrayBufferWriter.cs" LinkBase="Shared" />
 
     <Compile Include="$(ComponentsSharedSourceRoot)src\DefaultFormDataProvider.cs" LinkBase="Shared" />
+
 
     <!-- Add a project dependency without reference output assemblies to enforce build order -->
     <!-- Applying workaround for https://github.com/microsoft/msbuild/issues/2661 and https://github.com/dotnet/sdk/issues/952 -->

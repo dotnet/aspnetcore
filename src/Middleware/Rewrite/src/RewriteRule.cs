@@ -16,15 +16,8 @@ internal sealed class RewriteRule : IRule
     public bool StopProcessing { get; }
     public RewriteRule(string regex, string replacement, bool stopProcessing)
     {
-        if (string.IsNullOrEmpty(regex))
-        {
-            throw new ArgumentNullException(nameof(regex));
-        }
-
-        if (string.IsNullOrEmpty(replacement))
-        {
-            throw new ArgumentNullException(nameof(replacement));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(regex);
+        ArgumentException.ThrowIfNullOrEmpty(replacement);
 
         InitialMatch = new Regex(regex, RegexOptions.Compiled | RegexOptions.CultureInvariant, _regexTimeout);
         Replacement = replacement;

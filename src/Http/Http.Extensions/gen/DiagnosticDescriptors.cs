@@ -42,4 +42,52 @@ internal static class DiagnosticDescriptors
         "Usage",
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true);
+
+    public static DiagnosticDescriptor InvalidAsParametersAbstractType { get; } = new(
+        "RDG005",
+        new LocalizableResourceString(nameof(Resources.InvalidAsParametersAbstractType_Title), Resources.ResourceManager, typeof(Resources)),
+        new LocalizableResourceString(nameof(Resources.InvalidAsParametersAbstractType_Message), Resources.ResourceManager, typeof(Resources)),
+        "Usage",
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    public static DiagnosticDescriptor InvalidAsParametersSignature { get; } = new(
+        "RDG006",
+        new LocalizableResourceString(nameof(Resources.InvalidAsParametersSignature_Title), Resources.ResourceManager, typeof(Resources)),
+        new LocalizableResourceString(nameof(Resources.InvalidAsParametersSignature_Message), Resources.ResourceManager, typeof(Resources)),
+        "Usage",
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    public static DiagnosticDescriptor InvalidAsParametersNoConstructorFound { get; } = new(
+        "RDG007",
+        new LocalizableResourceString(nameof(Resources.InvalidAsParametersNoConstructorFound_Title), Resources.ResourceManager, typeof(Resources)),
+        new LocalizableResourceString(nameof(Resources.InvalidAsParametersNoConstructorFound_Message), Resources.ResourceManager, typeof(Resources)),
+        "Usage",
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    public static DiagnosticDescriptor InvalidAsParametersSingleConstructorOnly { get; } = new(
+        "RDG008",
+        new LocalizableResourceString(nameof(Resources.InvalidAsParametersSingleConstructorOnly_Title), Resources.ResourceManager, typeof(Resources)),
+        new LocalizableResourceString(nameof(Resources.InvalidAsParametersSingleConstructorOnly_Message), Resources.ResourceManager, typeof(Resources)),
+        "Usage",
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    public static DiagnosticDescriptor InvalidAsParametersNested { get; } = new(
+        "RDG009",
+        new LocalizableResourceString(nameof(Resources.InvalidAsParametersNested_Title), Resources.ResourceManager, typeof(Resources)),
+        new LocalizableResourceString(nameof(Resources.InvalidAsParametersNested_Message), Resources.ResourceManager, typeof(Resources)),
+        "Usage",
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    public static DiagnosticDescriptor InvalidAsParametersNullable { get; } = new(
+        "RDG010",
+        new LocalizableResourceString(nameof(Resources.InvalidAsParametersNullable_Title), Resources.ResourceManager, typeof(Resources)),
+        new LocalizableResourceString(nameof(Resources.InvalidAsParametersNullable_Message), Resources.ResourceManager, typeof(Resources)),
+        "Usage",
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
 }

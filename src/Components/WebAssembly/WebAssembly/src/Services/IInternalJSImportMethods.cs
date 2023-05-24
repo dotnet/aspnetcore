@@ -9,8 +9,6 @@ internal interface IInternalJSImportMethods
 
     string GetApplicationEnvironment();
 
-    byte[]? GetConfig(string configFile);
-
     void NavigationManager_EnableNavigationInterception();
 
     void NavigationManager_ScrollToElement(string id);

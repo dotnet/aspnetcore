@@ -103,9 +103,9 @@ public readonly struct ParameterView
     /// Returns a dictionary populated with the contents of the <see cref="ParameterView"/>.
     /// </summary>
     /// <returns>A dictionary populated with the contents of the <see cref="ParameterView"/>.</returns>
-    public IReadOnlyDictionary<string, object> ToDictionary()
+    public IReadOnlyDictionary<string, object?> ToDictionary()
     {
-        var result = new Dictionary<string, object>();
+        var result = new Dictionary<string, object?>();
         foreach (var entry in this)
         {
             result[entry.Name] = entry.Value;

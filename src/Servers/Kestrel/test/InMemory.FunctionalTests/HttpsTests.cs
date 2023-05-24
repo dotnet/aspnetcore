@@ -64,14 +64,18 @@ public class HttpsTests : LoggedTest
 
         Assert.False(serverOptions.IsDevelopmentCertificateLoaded);
 
+        var ranUseHttpsAction = false;
         serverOptions.ListenLocalhost(5001, options =>
         {
             options.UseHttps(opt =>
             {
                 // The default cert is applied after UseHttps.
                 Assert.Null(opt.ServerCertificate);
+                ranUseHttpsAction = true;
             });
         });
+
+        Assert.True(ranUseHttpsAction);
         Assert.False(serverOptions.IsDevelopmentCertificateLoaded);
     }
 
@@ -117,14 +121,19 @@ public class HttpsTests : LoggedTest
             options.ServerCertificate = _x509Certificate2;
             options.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
         });
+        var ranUseHttpsAction = false;
         serverOptions.ListenLocalhost(5000, options =>
         {
             options.UseHttps(opt =>
             {
                 Assert.Equal(_x509Certificate2, opt.ServerCertificate);
                 Assert.Equal(ClientCertificateMode.RequireCertificate, opt.ClientCertificateMode);
+                ranUseHttpsAction = true;
             });
         });
+
+        Assert.True(ranUseHttpsAction);
+
         // Never lazy loaded
         Assert.False(serverOptions.IsDevelopmentCertificateLoaded);
         Assert.Null(serverOptions.DevelopmentCertificate);
@@ -144,6 +153,7 @@ public class HttpsTests : LoggedTest
             };
             options.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
         });
+        var ranUseHttpsAction = false;
         serverOptions.ListenLocalhost(5000, options =>
         {
             options.UseHttps(opt =>
@@ -151,8 +161,12 @@ public class HttpsTests : LoggedTest
                 Assert.Null(opt.ServerCertificate);
                 Assert.NotNull(opt.ServerCertificateSelector);
                 Assert.Equal(ClientCertificateMode.RequireCertificate, opt.ClientCertificateMode);
+                ranUseHttpsAction = true;
             });
         });
+
+        Assert.True(ranUseHttpsAction);
+
         // Never lazy loaded
         Assert.False(serverOptions.IsDevelopmentCertificateLoaded);
         Assert.Null(serverOptions.DevelopmentCertificate);

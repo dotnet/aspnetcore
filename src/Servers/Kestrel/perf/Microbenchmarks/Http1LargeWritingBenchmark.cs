@@ -71,13 +71,13 @@ public class Http1LargeWritingBenchmark
         var serviceContext = TestContextFactory.CreateServiceContext(
             serverOptions: new KestrelServerOptions(),
             httpParser: new HttpParser<Http1ParsingHandler>(),
-            dateHeaderValueManager: new DateHeaderValueManager());
+            dateHeaderValueManager: new DateHeaderValueManager(TimeProvider.System));
 
         var connectionContext = TestContextFactory.CreateHttpConnectionContext(
             serviceContext: serviceContext,
             connectionContext: null,
             transport: pair.Transport,
-            timeoutControl: new TimeoutControl(timeoutHandler: null),
+            timeoutControl: new TimeoutControl(timeoutHandler: null, TimeProvider.System),
             memoryPool: _memoryPool,
             connectionFeatures: new FeatureCollection());
 
@@ -85,7 +85,7 @@ public class Http1LargeWritingBenchmark
 
         http1Connection.Reset();
         http1Connection.InitializeBodyControl(MessageBody.ZeroContentLengthKeepAlive);
-        serviceContext.DateHeaderValueManager.OnHeartbeat(DateTimeOffset.UtcNow);
+        serviceContext.DateHeaderValueManager.OnHeartbeat();
 
         return http1Connection;
     }

@@ -528,7 +528,7 @@ internal sealed partial class HttpConnectionDispatcher
         if (connection.TransportType == HttpTransportType.None)
         {
             connection.TransportType = transportType;
-            _metrics.TransportStart(transportType);
+            _metrics.TransportStart(connection.MetricsContext, transportType);
         }
         else if (connection.TransportType != transportType)
         {

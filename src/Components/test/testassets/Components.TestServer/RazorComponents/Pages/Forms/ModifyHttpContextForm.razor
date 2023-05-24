@@ -27,15 +27,15 @@ else if (_submitted)
     bool _submitted = false;
     bool _submitting = false;
     EditContext _editContext = new EditContext(new object());
+    [Parameter] public string? OperationId { get; set; }
 
     public async Task HandleSubmit()
     {
-        var id = new Uri(Navigation.Uri).AbsolutePath.Split('/')[^1];
         _submitting = true;
         // The response can be accessed before any async work happens.
         // We might want to provide APIs to control when streaming rendering starts.
-        Accessor.HttpContext.Response.Cookies.Append("operation", id);
-        await AsyncOperation.Start(id);
+        Accessor.HttpContext.Response.Cookies.Append("operation", OperationId);
+        await AsyncOperation.Start(OperationId);
         _submitting = false;
         _submitted = true;
     }

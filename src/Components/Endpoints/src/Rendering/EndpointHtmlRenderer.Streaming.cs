@@ -162,8 +162,34 @@ internal partial class EndpointHtmlRenderer
     {
         _visitedComponentIdsInCurrentStreamingBatch?.Add(componentId);
 
-        var renderBoundaryMarkers = allowBoundaryMarkers
-            && ((EndpointComponentState)GetComponentState(componentId)).StreamRendering;
+        var componentState = (EndpointComponentState)GetComponentState(componentId);
+        var renderBoundaryMarkers = allowBoundaryMarkers && componentState.StreamRendering;
+
+        // TODO: It's not clear that we actually want to emit the interactive component markers using this
+        // HTML-comment syntax that we've used historically, plus we likely want some way to coalesce both
+        // marker types into a single thing for auto mode (the code below emits both separately for auto).
+        // It may be better to use a custom element like <blazor-component ...>[prerendered]<blazor-component>
+        // so it's easier for the JS code to react automatically whenever this gets inserted or updated during
+        // streaming SSR or progressively-enhanced navigation.
+
+        var (serverMarker, webAssemblyMarker) = componentState.Component is SSRRenderModeBoundary boundary
+            ? boundary.ToMarkers(_httpContext)
+            : default;
+
+        if (serverMarker.HasValue)
+        {
+            if (!_httpContext.Response.HasStarted)
+            {
+                _httpContext.Response.Headers.CacheControl = "no-cache, no-store, max-age=0";
+            }
+
+            ServerComponentSerializer.AppendPreamble(output, serverMarker.Value);
+        }
+
+        if (webAssemblyMarker.HasValue)
+        {
+            WebAssemblyComponentSerializer.AppendPreamble(output, webAssemblyMarker.Value);
+        }
 
         if (renderBoundaryMarkers)
         {
@@ -179,6 +205,16 @@ internal partial class EndpointHtmlRenderer
             output.Write("<!--/bl:");
             output.Write(componentId);
             output.Write("-->");
+        }
+
+        if (webAssemblyMarker.HasValue && webAssemblyMarker.Value.PrerenderId is not null)
+        {
+            WebAssemblyComponentSerializer.AppendEpilogue(output, webAssemblyMarker.Value);
+        }
+
+        if (serverMarker.HasValue && serverMarker.Value.PrerenderId is not null)
+        {
+            ServerComponentSerializer.AppendEpilogue(output, serverMarker.Value);
         }
     }
 
