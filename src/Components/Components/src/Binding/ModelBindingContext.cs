@@ -34,4 +34,7 @@ public sealed class ModelBindingContext
     /// The computed identifier used to determine what parts of the app can bind data.
     /// </summary>
     public string BindingContextId { get; }
+
+    internal static string Combine(ModelBindingContext? parentContext, string name) =>
+        string.IsNullOrEmpty(parentContext?.Name) ? name : $"{parentContext.Name}.{name}";
 }

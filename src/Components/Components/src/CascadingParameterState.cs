@@ -45,11 +45,8 @@ internal readonly struct CascadingParameterState
             var supplier = GetMatchingCascadingValueSupplier(info, componentState);
             if (supplier != null)
             {
-                if (resultStates == null)
-                {
-                    // Although not all parameters might be matched, we know the maximum number
-                    resultStates = new List<CascadingParameterState>(infos.Length - infoIndex);
-                }
+                // Although not all parameters might be matched, we know the maximum number
+                resultStates ??= new List<CascadingParameterState>(infos.Length - infoIndex);
 
                 resultStates.Add(new CascadingParameterState(info.ConsumerValueName, supplier));
             }

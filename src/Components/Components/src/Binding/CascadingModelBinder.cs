@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection.Metadata;
+using Microsoft.AspNetCore.Components.Binding;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Routing;
 
 namespace Microsoft.AspNetCore.Components;
@@ -9,11 +11,12 @@ namespace Microsoft.AspNetCore.Components;
 /// <summary>
 /// Defines the binding context for data bound from external sources.
 /// </summary>
-public sealed class CascadingModelBinder : IComponent, IDisposable
+public sealed class CascadingModelBinder : IComponent, ICascadingValueComponent, IDisposable
 {
     private RenderHandle _handle;
     private ModelBindingContext? _bindingContext;
     private bool _hasPendingQueuedRender;
+    private BindingInfo? _bindingInfo;
 
     /// <summary>
     /// The binding context name.
@@ -36,6 +39,8 @@ public sealed class CascadingModelBinder : IComponent, IDisposable
     [CascadingParameter] ModelBindingContext? ParentContext { get; set; }
 
     [Inject] private NavigationManager Navigation { get; set; } = null!;
+
+    [Inject] private IFormBinderProvider Binder { get; set; }
 
     void IComponent.Attach(RenderHandle renderHandle)
     {
@@ -103,7 +108,7 @@ public sealed class CascadingModelBinder : IComponent, IDisposable
         // 3) Parent has a name "parent-name"
         // Name = "parent-name.my-handler";
         // BindingContextId = <<base-relative-uri>>((<<existing-query>>&)|?)handler=my-handler
-        var name = string.IsNullOrEmpty(ParentContext?.Name) ? Name : $"{ParentContext.Name}.{Name}";
+        var name = ModelBindingContext.Combine(ParentContext, Name);
         var bindingId = string.IsNullOrEmpty(name) ? "" : GenerateBindingContextId(name);
 
         var bindingContext = _bindingContext != null &&
@@ -135,5 +140,65 @@ public sealed class CascadingModelBinder : IComponent, IDisposable
     void IDisposable.Dispose()
     {
         Navigation.LocationChanged -= HandleLocationChanged;
+    }
+
+    bool ICascadingValueComponent.CanSupplyValue(Type valueType, string? valueName)
+    {
+        var formName = string.IsNullOrEmpty(valueName) ?
+            (_bindingContext?.Name) :
+            ModelBindingContext.Combine(_bindingContext, valueName);
+
+        if (_bindingInfo != null &&
+            string.Equals(_bindingInfo.FormName, formName, StringComparison.Ordinal) &&
+            _bindingInfo.ValueType.Equals(valueType))
+        {
+            // We already bound the value, but some component might have been destroyed and
+            // re-created. If the type and name of the value that we bound are the same,
+            // we can provide the value that we bound.
+            return true;
+        }
+
+        // Can't supply the value if this context is for a form with a different name.
+        if (Binder.CanBind(formName, valueType))
+        {
+            var bindingSucceeded = Binder.TryBind(formName, valueType, out var boundValue);
+            _bindingInfo = new BindingInfo(formName, valueType)
+            {
+                BindingResult = bindingSucceeded,
+                BoundValue = boundValue,
+            };
+
+            if (!bindingSucceeded)
+            {
+                // Report errors
+            }
+
+            return true;
+        }
+        
+        return false;
+    }
+
+    void ICascadingValueComponent.Subscribe(ComponentState subscriber)
+    {
+        throw new InvalidOperationException("Form values are always fixed.");
+    }
+
+    void ICascadingValueComponent.Unsubscribe(ComponentState subscriber)
+    {
+        throw new InvalidOperationException("Form values are always fixed.");
+    }
+
+    object? ICascadingValueComponent.CurrentValue => _bindingInfo == null ?
+        throw new InvalidOperationException("Tried to access form value before it was bound.") :
+        _bindingInfo.BoundValue;
+
+    bool ICascadingValueComponent.CurrentValueIsFixed => true;
+
+    private record BindingInfo(string? FormName, Type ValueType)
+    {
+        public required bool BindingResult { get; set; }
+
+        public required object? BoundValue { get; set; }
     }
 }

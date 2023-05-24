@@ -1,5 +1,8 @@
 #nullable enable
 abstract Microsoft.AspNetCore.Components.RenderModeAttribute.Mode.get -> Microsoft.AspNetCore.Components.IComponentRenderMode!
+Microsoft.AspNetCore.Components.Binding.IFormBinderProvider
+Microsoft.AspNetCore.Components.Binding.IFormBinderProvider.CanBind(string! formName, System.Type! valueType) -> bool
+Microsoft.AspNetCore.Components.Binding.IFormBinderProvider.TryBind(string! formName, System.Type! valueType, out object? boundValue) -> bool
 Microsoft.AspNetCore.Components.CascadingModelBinder
 Microsoft.AspNetCore.Components.CascadingModelBinder.CascadingModelBinder() -> void
 Microsoft.AspNetCore.Components.CascadingModelBinder.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.ModelBindingContext!>!
@@ -10,6 +13,9 @@ Microsoft.AspNetCore.Components.CascadingModelBinder.Name.get -> string!
 Microsoft.AspNetCore.Components.CascadingModelBinder.Name.set -> void
 Microsoft.AspNetCore.Components.ComponentBase.DispatchExceptionAsync(System.Exception! exception) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.IComponentRenderMode
+Microsoft.AspNetCore.Components.IFormBinderProvider
+Microsoft.AspNetCore.Components.IFormBinderProvider.CanBind(string! formName, System.Type! valueType) -> bool
+Microsoft.AspNetCore.Components.IFormBinderProvider.TryBind(string! formName, System.Type! valueType, out object! boundValue) -> bool
 Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.PersistStateAsync(Microsoft.AspNetCore.Components.IPersistentComponentStateStore! store, Microsoft.AspNetCore.Components.Dispatcher! dispatcher) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.ModelBindingContext
 Microsoft.AspNetCore.Components.ModelBindingContext.BindingContextId.get -> string!

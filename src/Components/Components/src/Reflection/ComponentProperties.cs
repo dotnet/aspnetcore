@@ -168,11 +168,14 @@ internal static class ComponentProperties
         var propertyInfo = targetType.GetProperty(parameterName, BindablePropertyFlags);
         if (propertyInfo != null)
         {
-            if (!propertyInfo.IsDefined(typeof(ParameterAttribute)) && !propertyInfo.IsDefined(typeof(CascadingParameterAttribute)))
+            if (!propertyInfo.IsDefined(typeof(ParameterAttribute)) &&
+                !propertyInfo.IsDefined(typeof(CascadingParameterAttribute)) &&
+                !propertyInfo.IsDefined(typeof(SupplyParameterFromFormAttribute)))
             {
                 throw new InvalidOperationException(
                     $"Object of type '{targetType.FullName}' has a property matching the name '{parameterName}', " +
-                    $"but it does not have [{nameof(ParameterAttribute)}] or [{nameof(CascadingParameterAttribute)}] applied.");
+                    $"but it does not have [{nameof(ParameterAttribute)}], [{nameof(CascadingParameterAttribute)}] or " +
+                    $"[{nameof(SupplyParameterFromFormAttribute)}] applied.");
             }
             else
             {
@@ -259,7 +262,9 @@ internal static class ComponentProperties
             {
                 var parameterAttribute = propertyInfo.GetCustomAttribute<ParameterAttribute>();
                 var cascadingParameterAttribute = propertyInfo.GetCustomAttribute<CascadingParameterAttribute>();
-                var isParameter = parameterAttribute != null || cascadingParameterAttribute != null;
+                var supplyParameterFromFormAttribute = propertyInfo.GetCustomAttribute<SupplyParameterFromFormAttribute>();
+
+                var isParameter = parameterAttribute != null || cascadingParameterAttribute != null || supplyParameterFromFormAttribute != null;
                 if (!isParameter)
                 {
                     continue;
@@ -274,7 +279,7 @@ internal static class ComponentProperties
 
                 var propertySetter = new PropertySetter(targetType, propertyInfo)
                 {
-                    Cascading = cascadingParameterAttribute != null,
+                    Cascading = cascadingParameterAttribute != null || supplyParameterFromFormAttribute != null,
                 };
 
                 if (_underlyingWriters.ContainsKey(propertyName))

@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Binding;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Endpoints.DependencyInjection;
 using Microsoft.AspNetCore.Components.Forms;
@@ -56,6 +57,7 @@ public static class RazorComponentsServiceCollectionExtensions
 
         // Form handling
         services.TryAddScoped<FormDataProvider, HttpContextFormDataProvider>();
+        services.TryAddScoped<IFormBinderProvider, DefaultFormBinderProvider>();
 
         return new DefaultRazorComponentsBuilder(services);
     }
