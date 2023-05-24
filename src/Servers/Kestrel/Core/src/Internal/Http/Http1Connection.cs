@@ -633,6 +633,9 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
                     // ignored.
                     // We don't want to leave the invalid value for the app to accidentally consume,
                     // replace it with the value from the request line.
+                    // This is insecure in the sense that we would ordinarily regard a mismatched
+                    // request target and host as suspicious (e.g. indicative of a spoofing attempt)
+                    // and reject the request.
                     if (_context.ServiceContext.ServerOptions.EnableInsecureAbsoluteFormHostOverride)
                     {
                         hostText = _absoluteRequestTarget.Authority + ":" + _absoluteRequestTarget.Port.ToString(CultureInfo.InvariantCulture);
