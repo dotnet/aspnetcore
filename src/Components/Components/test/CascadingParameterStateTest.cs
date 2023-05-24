@@ -1,8 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Components.Binding;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Test.Helpers;
+using Moq;
 
 namespace Microsoft.AspNetCore.Components;
 
@@ -355,6 +358,68 @@ public class CascadingParameterStateTest
             });
     }
 
+    [Fact]
+    public void FindCascadingParameters_HandlesSupplyParameterFromFormValues()
+    {
+        // Arrange
+        var cascadingModelBinder = new CascadingModelBinder
+        {
+            FormValueSupplier = new TestFormValueSupplier()
+            {
+                FormName = "",
+                ValueType = typeof(string),
+                BindResult = true,
+                BoundValue = "some value"
+            },
+            Navigation = Mock.Of<NavigationManager>(),
+            Name = ""
+        };
+
+        cascadingModelBinder.UpdateBindingInformation("https://localhost/");
+
+        var states = CreateAncestry(
+            cascadingModelBinder,
+            new FormParametersComponent());
+
+        // Act
+        var result = CascadingParameterState.FindCascadingParameters(states.Last());
+
+        // Assert
+        var supplier = Assert.Single(result);
+        Assert.Equal(cascadingModelBinder, supplier.ValueSupplier);
+    }
+
+    [Fact]
+    public void FindCascadingParameters_HandlesSupplyParameterFromFormValues_WithName()
+    {
+        // Arrange
+        var cascadingModelBinder = new CascadingModelBinder
+        {
+            FormValueSupplier = new TestFormValueSupplier()
+            {
+                FormName = "some-name",
+                ValueType = typeof(string),
+                BindResult = true,
+                BoundValue = "some value"
+            },
+            Navigation = new TestNavigationManager(),
+            Name = ""
+        };
+
+        cascadingModelBinder.UpdateBindingInformation("https://localhost/");
+
+        var states = CreateAncestry(
+            cascadingModelBinder,
+            new FormParametersComponentWithName());
+
+        // Act
+        var result = CascadingParameterState.FindCascadingParameters(states.Last());
+
+        // Assert
+        var supplier = Assert.Single(result);
+        Assert.Equal(cascadingModelBinder, supplier.ValueSupplier);
+    }
+
     static ComponentState[] CreateAncestry(params IComponent[] components)
     {
         var result = new ComponentState[components.Length];
@@ -397,6 +462,16 @@ public class CascadingParameterStateTest
 
     class ComponentWithNoParams : TestComponentBase
     {
+    }
+
+    class FormParametersComponent : TestComponentBase
+    {
+        [SupplyParameterFromForm] public string FormParameter { get; set; }
+    }
+
+    class FormParametersComponentWithName : TestComponentBase
+    {
+        [SupplyParameterFromForm(Name = "some-name")] public string FormParameter { get; set; }
     }
 
     class ComponentWithNoCascadingParams : TestComponentBase
@@ -443,4 +518,35 @@ public class CascadingParameterStateTest
     class CascadingValueTypeBaseClass { }
     class CascadingValueTypeDerivedClass : CascadingValueTypeBaseClass, ICascadingValueTypeDerivedClassInterface { }
     interface ICascadingValueTypeDerivedClassInterface { }
+
+    private class TestFormValueSupplier : IFormValueSupplier
+    {
+        public string FormName { get; set; }
+
+        public Type ValueType { get; set; }
+
+        public object BoundValue { get; set; }
+
+        public bool BindResult { get; set; }
+
+        public bool CanBind(string formName, Type valueType)
+        {
+            return string.Equals(formName, FormName, StringComparison.Ordinal) &&
+                valueType == ValueType;
+        }
+
+        public bool TryBind(string formName, Type valueType, [NotNullWhen(true)] out object boundValue)
+        {
+            boundValue = BoundValue;
+            return BindResult;
+        }
+    }
+
+    class TestNavigationManager : NavigationManager
+    {
+        public TestNavigationManager()
+        {
+            Initialize("https://localhost:85/subdir/", "https://localhost:85/subdir/path?query=value#hash");
+        }
+    }
 }

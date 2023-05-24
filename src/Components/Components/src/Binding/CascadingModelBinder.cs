@@ -30,9 +30,9 @@ public sealed class CascadingModelBinder : IComponent, ICascadingValueComponent,
 
     [CascadingParameter] ModelBindingContext? ParentContext { get; set; }
 
-    [Inject] private NavigationManager Navigation { get; set; } = null!;
+    [Inject] internal NavigationManager Navigation { get; set; } = null!;
 
-    [Inject] private IFormValueSupplier FormValueSupplier { get; set; } = null!;
+    [Inject] internal IFormValueSupplier FormValueSupplier { get; set; } = null!;
 
     void IComponent.Attach(RenderHandle renderHandle)
     {
@@ -84,7 +84,7 @@ public sealed class CascadingModelBinder : IComponent, ICascadingValueComponent,
         Render();
     }
 
-    private void UpdateBindingInformation(string url)
+    internal void UpdateBindingInformation(string url)
     {
         // BindingContextId: action parameter used to define the handler
         // Name: form name and context used to bind
