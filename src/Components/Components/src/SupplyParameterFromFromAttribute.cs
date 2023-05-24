@@ -4,15 +4,14 @@
 namespace Microsoft.AspNetCore.Components;
 
 /// <summary>
-/// Indicates that routing components may supply a value for the parameter from the
-/// current URL querystring. They may also supply further values if the URL querystring changes.
-/// </summary>
+/// Indicates that the value of the associated property should be supplied from
+/// the form data for the form with the specified name.
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
 public sealed class SupplyParameterFromFormAttribute : Attribute
 {
     /// <summary>
-    /// Gets or sets the name of the querystring parameter. If null, the querystring
-    /// parameter is assumed to have the same name as the associated property.
+    /// Gets or sets the name for the parameter. The name is used to match
+    /// the form data and decide whether or not the value needs to be bound.
     /// </summary>
     public string? Name { get; set; }
 }
