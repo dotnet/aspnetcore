@@ -6,6 +6,7 @@ namespace Microsoft.AspNetCore.Components;
 /// <summary>
 /// Indicates that the value of the associated property should be supplied from
 /// the form data for the form with the specified name.
+/// </summary>
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
 public sealed class SupplyParameterFromFormAttribute : Attribute
 {
