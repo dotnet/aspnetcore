@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Http.Generators.Tests;
 public abstract class RequestDelegateCreationTestBase : LoggedTest
 {
     // Change this to true and run tests in development to regenerate baseline files.
-    public bool RegenerateBaselines ;
+    public bool RegenerateBaselines;
 
     protected abstract bool IsGeneratorEnabled { get; }
 
