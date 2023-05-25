@@ -95,6 +95,7 @@ public class HttpConnectionManagerTests : VerifiableLoggedTest
                     {
                         throw new Exception("Transport failed");
                     }
+                    return false;
                 });
 
             }
@@ -102,7 +103,7 @@ public class HttpConnectionManagerTests : VerifiableLoggedTest
             {
                 // If the transport is faulted then we want to make sure the transport task only completes after
                 // the application completes
-                connection.TransportTask = Task.FromException(new Exception("Application failed"));
+                connection.TransportTask = Task.FromException<bool>(new Exception("Application failed"));
                 connection.ApplicationTask = Task.Run(async () =>
                 {
                     // Wait for the application to end
@@ -113,7 +114,7 @@ public class HttpConnectionManagerTests : VerifiableLoggedTest
             else
             {
                 connection.ApplicationTask = Task.CompletedTask;
-                connection.TransportTask = Task.CompletedTask;
+                connection.TransportTask = Task.FromResult(true);
             }
 
             try
@@ -271,6 +272,7 @@ public class HttpConnectionManagerTests : VerifiableLoggedTest
                 {
                     connection.Application.Input.AdvanceTo(result.Buffer.End);
                 }
+                return true;
             });
 
             connectionManager.CloseConnections();
@@ -286,7 +288,7 @@ public class HttpConnectionManagerTests : VerifiableLoggedTest
         {
             var connectionManager = CreateConnectionManager(LoggerFactory);
             var connection = connectionManager.CreateConnection();
-            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             connection.ApplicationTask = tcs.Task;
             connection.TransportTask = tcs.Task;
@@ -296,7 +298,7 @@ public class HttpConnectionManagerTests : VerifiableLoggedTest
             Assert.False(firstTask.IsCompleted);
             Assert.False(secondTask.IsCompleted);
 
-            tcs.TrySetResult();
+            tcs.TrySetResult(true);
 
             await Task.WhenAll(firstTask, secondTask).DefaultTimeout();
         }
@@ -309,7 +311,7 @@ public class HttpConnectionManagerTests : VerifiableLoggedTest
         {
             var connectionManager = CreateConnectionManager(LoggerFactory);
             var connection = connectionManager.CreateConnection();
-            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             connection.ApplicationTask = tcs.Task;
             connection.TransportTask = tcs.Task;
@@ -336,7 +338,7 @@ public class HttpConnectionManagerTests : VerifiableLoggedTest
         {
             var connectionManager = CreateConnectionManager(LoggerFactory);
             var connection = connectionManager.CreateConnection();
-            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             connection.ApplicationTask = tcs.Task;
             connection.TransportTask = tcs.Task;

@@ -8,6 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Abstractions;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.SignalR.Internal;
@@ -36,6 +37,7 @@ public partial class HubConnectionContext
     private readonly CancellationTokenRegistration _closedRegistration;
     private readonly CancellationTokenRegistration? _closedRequestedRegistration;
 
+    private MessageBuffer? _messageBuffer;
     private StreamTracker? _streamTracker;
     private long _lastSendTick;
     private ReadOnlyMemory<byte> _cachedPingMessage;
@@ -48,6 +50,10 @@ public partial class HubConnectionContext
     private TimeSpan _receivedMessageElapsed;
     private long _receivedMessageTick;
     private ClaimsPrincipal? _user;
+    private bool _useAcks;
+
+    [MemberNotNullWhen(true, nameof(_messageBuffer))]
+    internal bool UsingAcks() => _useAcks;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HubConnectionContext"/> class.
@@ -254,11 +260,18 @@ public partial class HubConnectionContext
     {
         try
         {
-            // We know that we are only writing this message to one receiver, so we can
-            // write it without caching.
-            Protocol.WriteMessage(message, _connectionContext.Transport.Output);
+            if (UsingAcks())
+            {
+                return _messageBuffer.WriteAsync(new SerializedHubMessage(message), cancellationToken);
+            }
+            else
+            {
+                // We know that we are only writing this message to one receiver, so we can
+                // write it without caching.
+                Protocol.WriteMessage(message, _connectionContext.Transport.Output);
 
-            return _connectionContext.Transport.Output.FlushAsync(cancellationToken);
+                return _connectionContext.Transport.Output.FlushAsync(cancellationToken);
+            }
         }
         catch (Exception ex)
         {
@@ -275,10 +288,18 @@ public partial class HubConnectionContext
     {
         try
         {
-            // Grab a preserialized buffer for this protocol.
-            var buffer = message.GetSerializedMessage(Protocol);
+            if (UsingAcks())
+            {
+                Debug.Assert(_messageBuffer is not null);
+                return _messageBuffer.WriteAsync(message, cancellationToken);
+            }
+            else
+            {
+                // Grab a potentially pre-serialized buffer for this protocol.
+                var buffer = message.GetSerializedMessage(Protocol);
 
-            return _connectionContext.Transport.Output.WriteAsync(buffer, cancellationToken);
+                return _connectionContext.Transport.Output.WriteAsync(buffer, cancellationToken);
+            }
         }
         catch (Exception ex)
         {
@@ -550,6 +571,13 @@ public partial class HubConnectionContext
                                 Log.HandshakeComplete(_logger, Protocol.Name);
 
                                 await WriteHandshakeResponseAsync(HandshakeResponseMessage.Empty);
+
+                                if (_connectionContext.Features.Get<IReconnectFeature>() is IReconnectFeature feature)
+                                {
+                                    _useAcks = true;
+                                    _messageBuffer = new MessageBuffer(_connectionContext, Protocol);
+                                    feature.NotifyOnReconnect = _messageBuffer.Resend;
+                                }
                                 return true;
                             }
                             else if (overLength)
@@ -725,10 +753,36 @@ public partial class HubConnectionContext
 
     internal void Cleanup()
     {
+        _messageBuffer?.Dispose();
         _closedRegistration.Dispose();
         _closedRequestedRegistration?.Dispose();
 
         // Use _streamTracker to avoid lazy init from StreamTracker getter if it doesn't exist
         _streamTracker?.CompleteAll(new OperationCanceledException("The underlying connection was closed."));
+    }
+
+    internal void Ack(AckMessage ackMessage)
+    {
+        if (UsingAcks())
+        {
+            _messageBuffer.Ack(ackMessage);
+        }
+    }
+
+    internal bool ShouldProcessMessage(HubMessage message)
+    {
+        if (UsingAcks())
+        {
+            return _messageBuffer.ShouldProcessMessage(message);
+        }
+        return true;
+    }
+
+    internal void ResetSequence(SequenceMessage sequenceMessage)
+    {
+        if (UsingAcks())
+        {
+            _messageBuffer.ResetSequence(sequenceMessage);
+        }
     }
 }

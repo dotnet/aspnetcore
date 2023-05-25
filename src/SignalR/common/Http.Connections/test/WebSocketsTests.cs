@@ -110,7 +110,8 @@ public class WebSocketsTests : VerifiableLoggedTest
 
     private HttpConnectionContext CreateHttpConnectionContext(DuplexPipe.DuplexPipePair pair, string loggerName = null)
     {
-        return new HttpConnectionContext("foo", connectionToken: null, LoggerFactory.CreateLogger(loggerName ?? nameof(HttpConnectionContext)), metricsContext: default, pair.Transport, pair.Application, new());
+        return new HttpConnectionContext("foo", connectionToken: null, LoggerFactory.CreateLogger(loggerName ?? nameof(HttpConnectionContext)),
+            metricsContext: default, pair.Transport, pair.Application, new(), useAcks: false);
     }
 
     [Fact]
