@@ -2,10 +2,10 @@
 
 <PageTitle>Index</PageTitle>
 
-<h1>@Parameter</h1>
+<h1>Your said @Parameter</h1>
 
 <EditForm method="POST" Model="Parameter">
-    <InputText @bind-Value="Parameter" />
+    <InputCheckbox @bind-Value="Parameter" />
     <input type="submit" value="Send" />
 </EditForm>
 
@@ -15,7 +15,7 @@
 }
 
 @code{
-    [SupplyParameterFromForm] string Parameter { get; set; } = "Hello, world!";
+    [SupplyParameterFromForm] bool Parameter { get; set; } = false;
 
     bool _submitted = false;
     public void Submit()
