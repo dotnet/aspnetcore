@@ -33,10 +33,12 @@ public class OutputCacheGetSetTests : IClassFixture<RedisConnectionFixture>
 
     private async ValueTask<IOutputCacheStore> Cache()
     {
+#if DEBUG
         if (_cache is RedisOutputCacheStore real)
         {
-            Log.WriteLine(await real.GetConfigurationInfo().ConfigureAwait(false));
+            Log.WriteLine(await real.GetConfigurationInfoAsync().ConfigureAwait(false));
         }
+#endif
         return _cache;
     }
 

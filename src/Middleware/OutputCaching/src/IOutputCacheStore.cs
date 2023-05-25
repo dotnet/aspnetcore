@@ -45,9 +45,25 @@ public interface IOutputCacheStore
     /// <param name="tags">The tags associated with the cache entry to store.</param>
     /// <param name="validFor">The amount of time the entry will be kept in the cache before expiring, relative to now.</param>
     /// <param name="cancellationToken">Indicates that the operation should be cancelled.</param>
-    ValueTask SetAsync(string key, ReadOnlySequence<byte> value, IReadOnlySet<string>? tags, TimeSpan validFor, CancellationToken cancellationToken)
+    ValueTask SetAsync(string key, ReadOnlySequence<byte> value, ReadOnlyMemory<string> tags, TimeSpan validFor, CancellationToken cancellationToken)
     {
         // compatibility implementation using the original API
-        return SetAsync(key, value.ToArray(), tags is { Count: > 0 } nonEmpty ? nonEmpty.ToArray() : null, validFor, cancellationToken);
+        return SetAsync(key, value.ToArray(), tags.ToArray(), validFor, cancellationToken);
     }
+}
+
+/// <summary>
+/// Represents a store for cached responses that uses a <see cref="IBufferWriter{byte}"/> as the target.
+/// </summary>
+public interface IOutputCacheBufferWriterStore : IOutputCacheStore
+{
+    /// <summary>
+    /// Gets the cached response for the given key, if it exists.
+    /// If no cached response exists for the given key, <c>null</c> is returned.
+    /// </summary>
+    /// <param name="key">The cache key to look up.</param>
+    /// <param name="destination">The location to which the value should be written.</param>
+    /// <param name="cancellationToken">Indicates that the operation should be cancelled.</param>
+    /// <returns><c>True</c> if the response cache entry if it exists; otherwise <c>False</c>.</returns>
+    ValueTask<bool> GetAsync(string key, IBufferWriter<byte> destination, CancellationToken cancellationToken);
 }
