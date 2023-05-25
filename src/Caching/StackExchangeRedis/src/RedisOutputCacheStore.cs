@@ -31,6 +31,7 @@ internal class RedisOutputCacheStore : IOutputCacheStore, IDisposable
     private long _lastConnectTicks = DateTimeOffset.UtcNow.Ticks;
     private long _firstErrorTimeTicks;
     private long _previousErrorTimeTicks;
+    private bool _useMultiExec, _use62Features;
 
     // Never reconnect within 60 seconds of the last attempt to connect or reconnect.
     private readonly TimeSpan ReconnectMinInterval = TimeSpan.FromSeconds(60);
@@ -45,6 +46,12 @@ internal class RedisOutputCacheStore : IOutputCacheStore, IDisposable
     public RedisOutputCacheStore(IOptions<RedisCacheOptions> optionsAccessor) // TODO: OC-specific options?
         : this(optionsAccessor, Logging.Abstractions.NullLoggerFactory.Instance.CreateLogger<RedisCache>())
     {
+    }
+
+    internal async ValueTask<string> GetConfigurationInfo(CancellationToken cancellationToken = default)
+    {
+        await ConnectAsync(cancellationToken).ConfigureAwait(false);
+        return $"redis output-cache; MULTI/EXEC: {_useMultiExec}, v6.2+: {_use62Features}";
     }
 
     /// <summary>
@@ -219,8 +226,32 @@ internal class RedisOutputCacheStore : IOutputCacheStore, IDisposable
     private void PrepareConnection(IConnectionMultiplexer connection)
     {
         WriteTimeTicks(ref _lastConnectTicks, DateTimeOffset.UtcNow);
-        // ValidateServerFeatures(connection);
+        ValidateServerFeatures(connection);
         TryRegisterProfiler(connection);
+    }
+
+    private void ValidateServerFeatures(IConnectionMultiplexer connection)
+    {
+        int serverCount = 0, standaloneCount = 0, v62_Count = 0;
+        foreach (var ep in connection.GetEndPoints())
+        {
+            var server = connection.GetServer(ep);
+            if (server is null)
+            {
+                continue; // wat?
+            }
+            serverCount++;
+            if (server.ServerType == ServerType.Standalone)
+            {
+                standaloneCount++;
+            }
+            if (server.Features.SortedSetRangeStore) // just a random v6.2 feature
+            {
+                v62_Count++;
+            }
+        }
+        _useMultiExec = serverCount == standaloneCount;
+        _use62Features = serverCount == v62_Count;
     }
 
     private void TryRegisterProfiler(IConnectionMultiplexer connection)

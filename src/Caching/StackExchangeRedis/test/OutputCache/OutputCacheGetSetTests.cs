@@ -9,13 +9,17 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.OutputCaching;
 using StackExchange.Redis;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.Extensions.Caching.StackExchangeRedis;
 
 public class OutputCacheGetSetTests : IClassFixture<RedisConnectionFixture>
 {
     private readonly IOutputCacheStore _cache;
-    public OutputCacheGetSetTests(RedisConnectionFixture connection)
+    private readonly RedisConnectionFixture _fixture;
+    private readonly ITestOutputHelper Log;
+
+    public OutputCacheGetSetTests(RedisConnectionFixture connection, ITestOutputHelper log)
     {
         _fixture = connection;
         _cache = new RedisOutputCacheStore(new RedisCacheOptions
@@ -23,20 +27,30 @@ public class OutputCacheGetSetTests : IClassFixture<RedisConnectionFixture>
             ConnectionMultiplexerFactory = () => Task.FromResult(_fixture.Connection),
             InstanceName = "TestPrefix",
         });
+        Log = log;
     }
 
-    private readonly RedisConnectionFixture _fixture;
+    private async ValueTask<IOutputCacheStore> Cache()
+    {
+        if (_cache is RedisOutputCacheStore real)
+        {
+            Log.WriteLine(await real.GetConfigurationInfo().ConfigureAwait(false));
+        }
+        return _cache;
+    }
 
     [Fact]
     public async Task GetMissingKeyReturnsNull()
     {
-        var result = await _cache.GetAsync("non-existent-key", CancellationToken.None);
+        var cache = await Cache().ConfigureAwait(false);
+        var result = await cache.GetAsync("non-existent-key", CancellationToken.None);
         Assert.Null(result);
     }
 
     [Fact]
     public async Task SetStoresValueWithPrefixAndTimeout()
     {
+        var cache = await Cache().ConfigureAwait(false);
         var key = Guid.NewGuid().ToString();
         byte[] storedValue = new byte[1017];
         Random.Shared.NextBytes(storedValue);
@@ -47,7 +61,7 @@ public class OutputCacheGetSetTests : IClassFixture<RedisConnectionFixture>
         Assert.Null(timeout); // means doesn't exist
 
         // act
-        await _cache.SetAsync(key, storedValue, null, TimeSpan.FromSeconds(30), CancellationToken.None);
+        await cache.SetAsync(key, storedValue, null, TimeSpan.FromSeconds(30), CancellationToken.None);
 
         // validate via redis direct
         timeout = await _fixture.Database.KeyTimeToLiveAsync(underlyingKey);
@@ -61,17 +75,18 @@ public class OutputCacheGetSetTests : IClassFixture<RedisConnectionFixture>
     [Fact]
     public async Task CanFetchStoredValue()
     {
+        var cache = await Cache().ConfigureAwait(false);
         var key = Guid.NewGuid().ToString();
         byte[] storedValue = new byte[1017];
         Random.Shared.NextBytes(storedValue);
 
         // pre-check
-        var fetchedValue = await _cache.GetAsync(key, CancellationToken.None);
+        var fetchedValue = await cache.GetAsync(key, CancellationToken.None);
         Assert.Null(fetchedValue);
 
         // store and fetch via service
-        await _cache.SetAsync(key, storedValue, null, TimeSpan.FromSeconds(30), CancellationToken.None);
-        fetchedValue = await _cache.GetAsync(key, CancellationToken.None);
+        await cache.SetAsync(key, storedValue, null, TimeSpan.FromSeconds(30), CancellationToken.None);
+        fetchedValue = await cache.GetAsync(key, CancellationToken.None);
         Assert.NotNull(fetchedValue);
 
         Assert.True(((ReadOnlySpan<byte>)storedValue).SequenceEqual(fetchedValue), "payload should match");
