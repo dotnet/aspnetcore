@@ -20,14 +20,14 @@ internal class DefaultFormValuesSupplier : IFormValueSupplier
                 BindingFlags.NonPublic | BindingFlags.Static) ??
             throw new InvalidOperationException($"Unable to find method '{nameof(DeserializeCore)}'.");
 
-    private readonly FormDataProvider _formData;
+    private readonly HttpContextFormDataProvider _formData;
     private readonly FormDataSerializerOptions _options = new();
     private static readonly ConcurrentDictionary<Type, Func<IReadOnlyDictionary<string, StringValues>, FormDataSerializerOptions, string, object>> _cache =
         new();
 
     public DefaultFormValuesSupplier(FormDataProvider formData)
     {
-        _formData = formData;
+        _formData = (HttpContextFormDataProvider)formData;
     }
 
     public bool CanBind(string formName, Type valueType)
@@ -67,7 +67,9 @@ internal class DefaultFormValuesSupplier : IFormValueSupplier
 
     private static object? DeserializeCore<T>(IReadOnlyDictionary<string, StringValues> form, FormDataSerializerOptions options, string value)
     {
-        // Culture needs to come from the request.
+        // Form values are parsed according to the culture of the request, which is set to the current culture by the localization middleware.
+        // Some form input types use the invariant culture when sending the data to the server. For those cases, we'll
+        // provide a way to override the culture to use to parse that value.
         var reader = new FormDataReader(form, CultureInfo.CurrentCulture);
         reader.PushPrefix(value);
         return FormDataDeserializer.Deserialize<T>(reader, options);
