@@ -19,77 +19,66 @@ public static class ObjectPoolServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add to.</param>
     /// <param name="configureOptions">The action used to configure the options of the pool.</param>
-    /// <typeparam name="TDefinition">The type of objects to pool.</typeparam>
+    /// <typeparam name="TService">The type of objects to pool.</typeparam>
     /// <returns>Provided service collection.</returns>
     /// <exception cref="ArgumentNullException">When <paramref name="services"/> is <see langword="null"/>.</exception>
     /// <remarks>
-    /// The default capacity is 1024.
+    /// The default capacity is <c>Environment.ProcessorCount * 2</c>.
     /// The pooled type instances are obtainable the same way like any other type instances from the DI container.
     /// </remarks>
-    public static IServiceCollection AddPooled<TDefinition>(this IServiceCollection services, Action<PoolOptions>? configureOptions = null)
-        where TDefinition : class
+    public static IServiceCollection AddPooled<TService>(this IServiceCollection services, Action<PoolOptions>? configureOptions = null)
+        where TService : class
     {
-        return services.AddPooledInternal<TDefinition, TDefinition>(configureOptions);
+        return services.AddPooledInternal<TService, TService>(configureOptions);
     }
 
     /// <summary>
-    /// Adds an <see cref="ObjectPool{T}"/> and let DI return scoped instances of T.
+    /// Adds an <see cref="ObjectPool{TService}"/> and let DI return scoped instances of TService.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add to.</param>
     /// <param name="configureOptions">Configuration of the pool.</param>
-    /// <typeparam name="TDefinition">The type of objects to pool.</typeparam>
+    /// <typeparam name="TService">The type of objects to pool.</typeparam>
     /// <typeparam name="TImplementation">The type of the implementation to use.</typeparam>
     /// <returns>Provided service collection.</returns>
     /// <exception cref="ArgumentNullException">When <paramref name="services"/> is <see langword="null"/>.</exception>
     /// <remarks>
-    /// The default capacity is 1024.
+    /// The default capacity is <c>Environment.ProcessorCount * 2</c>.
     /// The pooled type instances are obtainable the same way like any other type instances from the DI container.
     /// </remarks>
-    public static IServiceCollection AddPooled<TDefinition, TImplementation>(this IServiceCollection services, Action<PoolOptions>? configureOptions = null)
-        where TDefinition : class
-        where TImplementation : class, TDefinition
+    public static IServiceCollection AddPooled<TService, TImplementation>(this IServiceCollection services, Action<PoolOptions>? configureOptions = null)
+        where TService : class
+        where TImplementation : class, TService
     {
-        return services.AddPooledInternal<TDefinition, TImplementation>(configureOptions);
+        return services.AddPooledInternal<TService, TImplementation>(configureOptions);
     }
 
     /// <summary>
     /// Registers an action used to configure the <see cref="PoolOptions"/> of a typed pool.
     /// </summary>
-    /// <typeparam name="TDefinition">The type of objects to pool.</typeparam>
+    /// <typeparam name="TService">The type of objects to pool.</typeparam>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
     /// <param name="configureOptions">The action used to configure the options.</param>
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
-    public static IServiceCollection ConfigurePools<TDefinition>(this IServiceCollection services, Action<PoolOptions> configureOptions)
-        where TDefinition : class
+    public static IServiceCollection ConfigurePool<TService>(this IServiceCollection services, Action<PoolOptions> configureOptions)
+        where TService : class
     {
-        return services.Configure<PoolOptions>(typeof(TDefinition).FullName, configureOptions);
+        return services.Configure<PoolOptions>(typeof(TService).FullName, configureOptions);
     }
 
-    /// <summary>
-    /// Registers an action used to configure the <see cref="PoolOptions"/> for all pools.
-    /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
-    /// <param name="configureOptions">The action used to configure the options.</param>
-    /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
-    public static IServiceCollection ConfigurePools(this IServiceCollection services, Action<PoolOptions> configureOptions)
-    {
-        return services.Configure<PoolOptions>(configureOptions);
-    }
-
-    private static IServiceCollection AddPooledInternal<TDefinition, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>(this IServiceCollection services, Action<PoolOptions>? configureOptions)
-        where TDefinition : class
-        where TImplementation : class, TDefinition
+    private static IServiceCollection AddPooledInternal<TService, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>(this IServiceCollection services, Action<PoolOptions>? configureOptions)
+        where TService : class
+        where TImplementation : class, TService
     {
         // Register a PoolOption instance specific to the type, even if there is no specific configuration action
         // as this will be resolved when the pool is initialized.
 
-        services.ConfigurePools<TDefinition>(configureOptions ?? (_ => { }));
+        services.ConfigurePool<TService>(configureOptions ?? (_ => { }));
 
         return services
-            .AddSingleton<ObjectPool<TDefinition>>(provider =>
+            .AddSingleton<ObjectPool<TService>>(provider =>
             {
-                var options = provider.GetRequiredService<IOptionsMonitor<PoolOptions>>().Get(typeof(TDefinition).FullName);
-                return new DefaultObjectPool<TDefinition>(new DependencyInjectionPooledObjectPolicy<TDefinition, TImplementation>(provider), options.Capacity);
+                var options = provider.GetRequiredService<IOptionsMonitor<PoolOptions>>().Get(typeof(TService).FullName);
+                return new DefaultObjectPool<TService>(new DependencyInjectionPooledObjectPolicy<TService, TImplementation>(provider), options.Capacity);
             });
     }
 }

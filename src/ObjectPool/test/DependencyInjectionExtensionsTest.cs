@@ -10,6 +10,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.ObjectPool.TestResources;
 using Xunit;
 using System.Linq;
+using AlwaysTestTests;
 
 namespace Microsoft.Extensions.ObjectPool;
 
@@ -45,6 +46,24 @@ public class DependencyInjectionExtensionsTest
 
         Assert.NotNull(sut);
         Assert.Equal(PoolOptions.DefaultCapacity, optionsMonitor.Get(typeof(TestDependency).FullName).Capacity);
+    }
+
+    [Fact]
+    public void AddPool_NewTImplementation_AddsPool()
+    {
+        var services = new ServiceCollection()
+                    .AddSingleton<TestDependency>()
+                    .AddPooled<ITestClass, TestClass>()
+                    .AddPooled<ITestClass, OtherTestClass>()
+                    ;
+
+        using var provider = services.BuildServiceProvider(validateScopes: true);
+        var sut = provider.GetRequiredService<ObjectPool<ITestClass>>();
+
+        var pooled = sut.Get();
+
+        Assert.NotNull(pooled);
+        Assert.True(pooled is OtherTestClass);
     }
 
     [Fact]

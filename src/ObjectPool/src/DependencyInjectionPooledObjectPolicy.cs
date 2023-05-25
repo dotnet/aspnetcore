@@ -7,9 +7,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Extensions.ObjectPool;
 
-internal sealed class DependencyInjectionPooledObjectPolicy<TDefinition, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation> : IPooledObjectPolicy<TDefinition>
-    where TDefinition : class
-    where TImplementation : class, TDefinition
+internal sealed class DependencyInjectionPooledObjectPolicy<TService, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation> : IPooledObjectPolicy<TService>
+    where TService : class
+    where TImplementation : class, TService
 {
     private readonly IServiceProvider _provider;
     private readonly ObjectFactory _factory;
@@ -22,9 +22,9 @@ internal sealed class DependencyInjectionPooledObjectPolicy<TDefinition, [Dynami
         _isResettable = typeof(IResettable).IsAssignableFrom(typeof(TImplementation));
     }
 
-    public TDefinition Create() => (TDefinition)_factory(_provider, Array.Empty<object?>());
+    public TService Create() => (TService)_factory(_provider, Array.Empty<object?>());
 
-    public bool Return(TDefinition obj)
+    public bool Return(TService obj)
     {
         if (_isResettable)
         {

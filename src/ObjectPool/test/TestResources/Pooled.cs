@@ -10,14 +10,14 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.ObjectPool.TestResources;
 
-public class Pooled<TDefinition> : IDisposable
-    where TDefinition : class
+public class Pooled<TService> : IDisposable
+    where TService : class
 {
-    private readonly ObjectPool<TDefinition> _pool;
+    private readonly ObjectPool<TService> _pool;
 
-    public TDefinition Object { get; }
+    public TService Object { get; }
 
-    public Pooled(ObjectPool<TDefinition> pool)
+    public Pooled(ObjectPool<TService> pool)
     {
         _pool = pool;
         Object = pool.Get();
