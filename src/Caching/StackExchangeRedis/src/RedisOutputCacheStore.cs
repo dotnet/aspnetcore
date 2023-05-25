@@ -73,6 +73,9 @@ internal class RedisOutputCacheStore : IOutputCacheStore, IDisposable
     ValueTask IOutputCacheStore.EvictByTagAsync(string tag, CancellationToken cancellationToken)
         => throw new NotImplementedException();
 
+    private RedisKey GetValueKey(string key)
+        => _valueKeyPrefix.Append(key);
+
     async ValueTask<byte[]?> IOutputCacheStore.GetAsync(string key, CancellationToken cancellationToken)
     {
         ArgumentNullThrowHelper.ThrowIfNull(key);
@@ -82,7 +85,7 @@ internal class RedisOutputCacheStore : IOutputCacheStore, IDisposable
 
         try
         {
-            return (byte[]?)(await cache.StringGetAsync(key).ConfigureAwait(false));
+            return (byte[]?)(await cache.StringGetAsync(GetValueKey(key)).ConfigureAwait(false));
         }
         catch (Exception ex)
         {
@@ -101,7 +104,7 @@ internal class RedisOutputCacheStore : IOutputCacheStore, IDisposable
         var cache = await ConnectAsync(cancellationToken).ConfigureAwait(false);
         Debug.Assert(cache is not null);
 
-        await cache.StringSetAsync(key, value, validFor).ConfigureAwait(false);
+        await cache.StringSetAsync(GetValueKey(key), value, validFor).ConfigureAwait(false);
     }
 
     private ValueTask<IDatabase> ConnectAsync(CancellationToken token = default)

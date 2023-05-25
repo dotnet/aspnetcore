@@ -16,6 +16,7 @@
     <Reference Include="Microsoft.AspNetCore.OutputCaching" Condition="'$(TargetFramework)' != '$(DefaultNetFxTargetFramework)' and '$(TargetFramework)' != 'netstandard2.0'" />
     <Reference Include="Microsoft.Extensions.Options" />
     <Reference Include="StackExchange.Redis" />
+    <InternalsVisibleTo Include="Microsoft.Extensions.Caching.StackExchangeRedis.Tests"/>
   </ItemGroup>
 
   <ItemGroup>

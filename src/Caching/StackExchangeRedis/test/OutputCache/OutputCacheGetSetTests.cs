@@ -1,0 +1,81 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+#if NET7_0_OR_GREATER
+
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.OutputCaching;
+using StackExchange.Redis;
+using Xunit;
+
+namespace Microsoft.Extensions.Caching.StackExchangeRedis;
+
+public class OutputCacheGetSetTests : IClassFixture<RedisConnectionFixture>
+{
+    private readonly IOutputCacheStore _cache;
+    public OutputCacheGetSetTests(RedisConnectionFixture connection)
+    {
+        _fixture = connection;
+        _cache = new RedisOutputCacheStore(new RedisCacheOptions
+        {
+            ConnectionMultiplexerFactory = () => Task.FromResult(_fixture.Connection),
+            InstanceName = "TestPrefix",
+        });
+    }
+
+    private readonly RedisConnectionFixture _fixture;
+
+    [Fact]
+    public async Task GetMissingKeyReturnsNull()
+    {
+        var result = await _cache.GetAsync("non-existent-key", CancellationToken.None);
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task SetStoresValueWithPrefixAndTimeout()
+    {
+        var key = Guid.NewGuid().ToString();
+        byte[] storedValue = new byte[1017];
+        Random.Shared.NextBytes(storedValue);
+        RedisKey underlyingKey = "TestPrefix__MSOCV_" + key;
+
+        // pre-check
+        var timeout = await _fixture.Database.KeyTimeToLiveAsync(underlyingKey);
+        Assert.Null(timeout); // means doesn't exist
+
+        // act
+        await _cache.SetAsync(key, storedValue, null, TimeSpan.FromSeconds(30), CancellationToken.None);
+
+        // validate via redis direct
+        timeout = await _fixture.Database.KeyTimeToLiveAsync(underlyingKey);
+        Assert.NotNull(timeout); // means exists
+        var seconds = timeout.Value.TotalSeconds;
+        Assert.True(seconds >= 28 && seconds <= 32, "timeout should be in range");
+        var redisValue = (byte[])(await _fixture.Database.StringGetAsync(underlyingKey));
+        Assert.True(((ReadOnlySpan<byte>)storedValue).SequenceEqual(redisValue), "payload should match");
+    }
+
+    [Fact]
+    public async Task CanFetchStoredValue()
+    {
+        var key = Guid.NewGuid().ToString();
+        byte[] storedValue = new byte[1017];
+        Random.Shared.NextBytes(storedValue);
+
+        // pre-check
+        var fetchedValue = await _cache.GetAsync(key, CancellationToken.None);
+        Assert.Null(fetchedValue);
+
+        // store and fetch via service
+        await _cache.SetAsync(key, storedValue, null, TimeSpan.FromSeconds(30), CancellationToken.None);
+        fetchedValue = await _cache.GetAsync(key, CancellationToken.None);
+        Assert.NotNull(fetchedValue);
+
+        Assert.True(((ReadOnlySpan<byte>)storedValue).SequenceEqual(fetchedValue), "payload should match");
+    }
+}
+
+#endif
