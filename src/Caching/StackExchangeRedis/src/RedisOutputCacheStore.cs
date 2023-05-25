@@ -4,6 +4,7 @@
 #if NET7_0_OR_GREATER // IOutputCacheStore only exists from net7
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -112,6 +113,39 @@ internal class RedisOutputCacheStore : IOutputCacheStore, IDisposable
         Debug.Assert(cache is not null);
 
         await cache.StringSetAsync(GetValueKey(key), value, validFor).ConfigureAwait(false);
+    }
+
+    async ValueTask IOutputCacheStore.SetAsync(string key, ReadOnlySequence<byte> value, IReadOnlySet<string>? tags, TimeSpan validFor, CancellationToken cancellationToken)
+    {
+        if (tags is not null && tags.Count > 0)
+        {
+            throw new NotImplementedException("tags");
+        }
+
+        var cache = await ConnectAsync(cancellationToken).ConfigureAwait(false);
+        Debug.Assert(cache is not null);
+
+        byte[]? leased = null;
+        ReadOnlyMemory<byte> singleChunk;
+        if (value.IsSingleSegment)
+        {
+            singleChunk = value.First;
+        }
+        else
+        {
+            int len = checked((int)value.Length);
+            leased = ArrayPool<byte>.Shared.Rent(len);
+            value.CopyTo(leased);
+            singleChunk = new(leased, 0, len);
+        }
+
+        await cache.StringSetAsync(GetValueKey(key), singleChunk, validFor).ConfigureAwait(false);
+
+        // only return lease on success
+        if (leased is not null)
+        {
+            ArrayPool<byte>.Shared.Return(leased);
+        }
     }
 
     private ValueTask<IDatabase> ConnectAsync(CancellationToken token = default)

@@ -4,6 +4,7 @@
 #if NET7_0_OR_GREATER
 
 using System;
+using System.Buffers;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.OutputCaching;
@@ -47,8 +48,10 @@ public class OutputCacheGetSetTests : IClassFixture<RedisConnectionFixture>
         Assert.Null(result);
     }
 
-    [Fact]
-    public async Task SetStoresValueWithPrefixAndTimeout()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task SetStoresValueWithPrefixAndTimeout(bool useReadOnlySequence)
     {
         var cache = await Cache().ConfigureAwait(false);
         var key = Guid.NewGuid().ToString();
@@ -61,7 +64,14 @@ public class OutputCacheGetSetTests : IClassFixture<RedisConnectionFixture>
         Assert.Null(timeout); // means doesn't exist
 
         // act
-        await cache.SetAsync(key, storedValue, null, TimeSpan.FromSeconds(30), CancellationToken.None);
+        if (useReadOnlySequence)
+        {
+            await cache.SetAsync(key, new ReadOnlySequence<byte>(storedValue), null, TimeSpan.FromSeconds(30), CancellationToken.None);
+        }
+        else
+        {
+            await cache.SetAsync(key, storedValue, null, TimeSpan.FromSeconds(30), CancellationToken.None);
+        }
 
         // validate via redis direct
         timeout = await _fixture.Database.KeyTimeToLiveAsync(underlyingKey);
@@ -72,8 +82,10 @@ public class OutputCacheGetSetTests : IClassFixture<RedisConnectionFixture>
         Assert.True(((ReadOnlySpan<byte>)storedValue).SequenceEqual(redisValue), "payload should match");
     }
 
-    [Fact]
-    public async Task CanFetchStoredValue()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CanFetchStoredValue(bool useReadOnlySequence)
     {
         var cache = await Cache().ConfigureAwait(false);
         var key = Guid.NewGuid().ToString();
@@ -85,7 +97,14 @@ public class OutputCacheGetSetTests : IClassFixture<RedisConnectionFixture>
         Assert.Null(fetchedValue);
 
         // store and fetch via service
-        await cache.SetAsync(key, storedValue, null, TimeSpan.FromSeconds(30), CancellationToken.None);
+        if (useReadOnlySequence)
+        {
+            await cache.SetAsync(key, new ReadOnlySequence<byte>(storedValue), null, TimeSpan.FromSeconds(30), CancellationToken.None);
+        }
+        else
+        {
+            await cache.SetAsync(key, storedValue, null, TimeSpan.FromSeconds(30), CancellationToken.None);
+        }
         fetchedValue = await cache.GetAsync(key, CancellationToken.None);
         Assert.NotNull(fetchedValue);
 
