@@ -4,7 +4,7 @@
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Runtime.CompilerServices;
-using Microsoft.Extensions.Metrics;
+using Microsoft.Extensions.Diagnostics.Metrics;
 
 namespace Microsoft.AspNetCore.RateLimiting;
 
@@ -21,7 +21,7 @@ internal sealed class RateLimitingMetrics : IDisposable
 
     public RateLimitingMetrics(IMeterFactory meterFactory)
     {
-        _meter = meterFactory.CreateMeter(MeterName);
+        _meter = meterFactory.Create(MeterName);
 
         _currentLeasedRequestsCounter = _meter.CreateUpDownCounter<long>(
             "current-leased-requests",

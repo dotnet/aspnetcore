@@ -36,7 +36,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
-using Microsoft.Extensions.Metrics;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Tokens;
@@ -1091,9 +1090,9 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         using (StartVerifiableLog())
         {
             var testMeterFactory = new TestMeterFactory();
-            using var connectionDuration = new InstrumentRecorder<double>(new TestMeterRegistry(testMeterFactory.Meters), HttpConnectionsMetrics.MeterName, "connection-duration");
-            using var currentConnections = new InstrumentRecorder<long>(new TestMeterRegistry(testMeterFactory.Meters), HttpConnectionsMetrics.MeterName, "current-connections");
-            using var currentTransports = new InstrumentRecorder<long>(new TestMeterRegistry(testMeterFactory.Meters), HttpConnectionsMetrics.MeterName, "current-transports");
+            using var connectionDuration = new InstrumentRecorder<double>(testMeterFactory, HttpConnectionsMetrics.MeterName, "connection-duration");
+            using var currentConnections = new InstrumentRecorder<long>(testMeterFactory, HttpConnectionsMetrics.MeterName, "current-connections");
+            using var currentTransports = new InstrumentRecorder<long>(testMeterFactory, HttpConnectionsMetrics.MeterName, "current-transports");
 
             var metrics = new HttpConnectionsMetrics(testMeterFactory);
             var manager = CreateConnectionManager(LoggerFactory, metrics);
