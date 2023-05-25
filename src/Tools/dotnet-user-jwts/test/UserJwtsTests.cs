@@ -80,11 +80,14 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
 
         app.Run(new[] { "create", "--project", project });
         Assert.Contains("New JWT saved", _console.GetOutput());
-        var exception = Record.Exception(() => JsonSerializer.Deserialize<Dictionary<string, Jwt>>(File.ReadAllText(appsettings)));
-        Assert.Null(exception);
+        var matches = Regex.Matches(_console.GetOutput(), "New JWT saved with ID '(.*?)'");
+        var id = matches.SingleOrDefault().Groups[1].Value;
+
+        var appSettings = JsonSerializer.Deserialize<JsonObject>(File.ReadAllText(appsettings));
+        Assert.Equal("dotnet-user-jwts", appSettings["Authentication"]["Schemes"]["Bearer"]["ValidIssuer"].GetValue<string>());
         app.Run(new[] { "create", "--project", project, "--issuer", "new-issuer"  });
-        exception = Record.Exception(() => JsonSerializer.Deserialize<Dictionary<string, Jwt>>(File.ReadAllText(appsettings)));
-        Assert.Null(exception);
+        appSettings = JsonSerializer.Deserialize<JsonObject>(File.ReadAllText(appsettings));
+        Assert.Equal("new-issuer", appSettings["Authentication"]["Schemes"]["Bearer"]["ValidIssuer"].GetValue<string>());
     }
 
     [Fact]
