@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)Metrics\TestMeterFactory.cs" LinkBase="shared" />
     <Compile Include="$(KestrelSharedSourceRoot)test\DummyApplication.cs" />
     <Compile Include="$(SharedSourceRoot)test\MockTimeProvider.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\Http3\Http3InMemory.cs" />

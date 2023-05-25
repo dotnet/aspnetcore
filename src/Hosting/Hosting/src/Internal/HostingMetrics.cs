@@ -5,7 +5,7 @@ using System.Collections.Frozen;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Metrics;
+using Microsoft.Extensions.Diagnostics.Metrics;
 
 namespace Microsoft.AspNetCore.Hosting;
 
@@ -19,7 +19,7 @@ internal sealed class HostingMetrics : IDisposable
 
     public HostingMetrics(IMeterFactory meterFactory)
     {
-        _meter = meterFactory.CreateMeter(MeterName);
+        _meter = meterFactory.Create(MeterName);
 
         _currentRequestsCounter = _meter.CreateUpDownCounter<long>(
             "current-requests",

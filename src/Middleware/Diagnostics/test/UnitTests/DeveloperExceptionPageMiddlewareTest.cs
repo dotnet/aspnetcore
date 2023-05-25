@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -14,8 +15,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Metrics;
 
 namespace Microsoft.AspNetCore.Diagnostics;
 
@@ -540,9 +541,9 @@ public class DeveloperExceptionPageMiddlewareTest : LoggedTest
         var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         var meterFactory = new TestMeterFactory();
-        var meterRegistry = new TestMeterRegistry(meterFactory.Meters);
-        var instrumentRecorder = new InstrumentRecorder<double>(meterRegistry, "Microsoft.AspNetCore.Hosting", "request-duration");
-        instrumentRecorder.Register(m =>
+        using var instrumentRecorder = new InstrumentRecorder<double>(meterFactory, "Microsoft.AspNetCore.Hosting", "request-duration");
+        using var measurementReporter = new MeasurementReporter<double>(meterFactory, "Microsoft.AspNetCore.Hosting", "request-duration");
+        measurementReporter.Register(m =>
         {
             tcs.SetResult();
         });
