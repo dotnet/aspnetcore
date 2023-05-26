@@ -307,6 +307,36 @@ namespace Microsoft.AspNetCore.Builder
                 filePath,
                 lineNumber);
         }
+        internal static global::Microsoft.AspNetCore.Builder.RouteHandlerBuilder MapGet(
+            this global::Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints,
+            [global::System.Diagnostics.CodeAnalysis.StringSyntax("Route")] string pattern,
+            global::System.Func<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncFromInterfaceRecord, global::System.String> handler,
+            [global::System.Runtime.CompilerServices.CallerFilePath] string filePath = "",
+            [global::System.Runtime.CompilerServices.CallerLineNumber]int lineNumber = 0)
+        {
+            return global::Microsoft.AspNetCore.Http.Generated.GeneratedRouteBuilderExtensionsCore.MapCore(
+                endpoints,
+                pattern,
+                handler,
+                GetVerb,
+                filePath,
+                lineNumber);
+        }
+        internal static global::Microsoft.AspNetCore.Builder.RouteHandlerBuilder MapGet(
+            this global::Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints,
+            [global::System.Diagnostics.CodeAnalysis.StringSyntax("Route")] string pattern,
+            global::System.Func<global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncFromInterfaceRecord?, global::System.String> handler,
+            [global::System.Runtime.CompilerServices.CallerFilePath] string filePath = "",
+            [global::System.Runtime.CompilerServices.CallerLineNumber]int lineNumber = 0)
+        {
+            return global::Microsoft.AspNetCore.Http.Generated.GeneratedRouteBuilderExtensionsCore.MapCore(
+                endpoints,
+                pattern,
+                handler,
+                GetVerb,
+                filePath,
+                lineNumber);
+        }
 
     }
 }
@@ -1774,6 +1804,164 @@ namespace Microsoft.AspNetCore.Http.Generated
                             httpContext.Response.StatusCode = 400;
                         }
                         var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromExplicitStaticAbstractInterface?>(httpContext, myBindAsyncParam_local));
+                        await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
+                    }
+
+                    RequestDelegate targetDelegate = filteredInvocation is null ? RequestHandler : RequestHandlerFiltered;
+                    var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
+                    return new RequestDelegateResult(targetDelegate, metadata);
+                }),
+            [(@"TestMapActions.cs", 43)] = (
+                (methodInfo, options) =>
+                {
+                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
+                    Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
+                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 43));
+                    options.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
+                    return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
+                },
+                (del, options, inferredMetadataResult) =>
+                {
+                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
+                    Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
+                    Debug.Assert(options.EndpointBuilder.ApplicationServices != null, "ApplicationServices not found.");
+                    Debug.Assert(options.EndpointBuilder.FilterFactories != null, "FilterFactories not found.");
+                    var handler = (System.Func<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncFromInterfaceRecord, global::System.String>)del;
+                    EndpointFilterDelegate? filteredInvocation = null;
+                    var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
+                    var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
+
+                    if (options.EndpointBuilder.FilterFactories.Count > 0)
+                    {
+                        filteredInvocation = GeneratedRouteBuilderExtensionsCore.BuildFilterDelegate(ic =>
+                        {
+                            if (ic.HttpContext.Response.StatusCode == 400)
+                            {
+                                return ValueTask.FromResult<object?>(Results.Empty);
+                            }
+                            return ValueTask.FromResult<object?>(handler(ic.GetArgument<global::Microsoft.AspNetCore.Http.HttpContext>(0)!, ic.GetArgument<global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncFromInterfaceRecord>(1)!));
+                        },
+                        options.EndpointBuilder,
+                        handler.Method);
+                    }
+
+                    async Task RequestHandler(HttpContext httpContext)
+                    {
+                        var wasParamCheckFailure = false;
+                        var httpContext_local = httpContext;
+                        var myBindAsyncParam_temp = await global::Microsoft.AspNetCore.Http.Generators.Tests.IBindAsync<global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncFromInterfaceRecord>.BindAsync(httpContext);
+                        global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncFromInterfaceRecord myBindAsyncParam_local;
+                        if ((object?)myBindAsyncParam_temp == null)
+                        {
+                            logOrThrowExceptionHelper.RequiredParameterNotProvided("MyBindAsyncFromInterfaceRecord", "myBindAsyncParam", "MyBindAsyncFromInterfaceRecord.BindAsync(HttpContext)");
+                            wasParamCheckFailure = true;
+                            myBindAsyncParam_local = default!;
+                        }
+                        else
+                        {
+                            myBindAsyncParam_local = (global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncFromInterfaceRecord)myBindAsyncParam_temp;
+                        }
+
+                        if (wasParamCheckFailure)
+                        {
+                            httpContext.Response.StatusCode = 400;
+                            return;
+                        }
+                        httpContext.Response.ContentType ??= "text/plain";
+                        var result = handler(httpContext_local, myBindAsyncParam_local);
+                        await httpContext.Response.WriteAsync(result);
+                    }
+
+                    async Task RequestHandlerFiltered(HttpContext httpContext)
+                    {
+                        var wasParamCheckFailure = false;
+                        var httpContext_local = httpContext;
+                        var myBindAsyncParam_temp = await global::Microsoft.AspNetCore.Http.Generators.Tests.IBindAsync<global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncFromInterfaceRecord>.BindAsync(httpContext);
+                        global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncFromInterfaceRecord myBindAsyncParam_local;
+                        if ((object?)myBindAsyncParam_temp == null)
+                        {
+                            logOrThrowExceptionHelper.RequiredParameterNotProvided("MyBindAsyncFromInterfaceRecord", "myBindAsyncParam", "MyBindAsyncFromInterfaceRecord.BindAsync(HttpContext)");
+                            wasParamCheckFailure = true;
+                            myBindAsyncParam_local = default!;
+                        }
+                        else
+                        {
+                            myBindAsyncParam_local = (global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncFromInterfaceRecord)myBindAsyncParam_temp;
+                        }
+
+                        if (wasParamCheckFailure)
+                        {
+                            httpContext.Response.StatusCode = 400;
+                        }
+                        var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncFromInterfaceRecord>(httpContext, httpContext_local, myBindAsyncParam_local));
+                        await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
+                    }
+
+                    RequestDelegate targetDelegate = filteredInvocation is null ? RequestHandler : RequestHandlerFiltered;
+                    var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
+                    return new RequestDelegateResult(targetDelegate, metadata);
+                }),
+            [(@"TestMapActions.cs", 44)] = (
+                (methodInfo, options) =>
+                {
+                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
+                    Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
+                    options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 44));
+                    options.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
+                    return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
+                },
+                (del, options, inferredMetadataResult) =>
+                {
+                    Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
+                    Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
+                    Debug.Assert(options.EndpointBuilder.ApplicationServices != null, "ApplicationServices not found.");
+                    Debug.Assert(options.EndpointBuilder.FilterFactories != null, "FilterFactories not found.");
+                    var handler = (System.Func<global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncFromInterfaceRecord?, global::System.String>)del;
+                    EndpointFilterDelegate? filteredInvocation = null;
+                    var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
+                    var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
+
+                    if (options.EndpointBuilder.FilterFactories.Count > 0)
+                    {
+                        filteredInvocation = GeneratedRouteBuilderExtensionsCore.BuildFilterDelegate(ic =>
+                        {
+                            if (ic.HttpContext.Response.StatusCode == 400)
+                            {
+                                return ValueTask.FromResult<object?>(Results.Empty);
+                            }
+                            return ValueTask.FromResult<object?>(handler(ic.GetArgument<global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncFromInterfaceRecord?>(0)!));
+                        },
+                        options.EndpointBuilder,
+                        handler.Method);
+                    }
+
+                    async Task RequestHandler(HttpContext httpContext)
+                    {
+                        var wasParamCheckFailure = false;
+                        var myBindAsyncParam_temp = await global::Microsoft.AspNetCore.Http.Generators.Tests.IBindAsync<global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncFromInterfaceRecord>.BindAsync(httpContext);
+                        var myBindAsyncParam_local = (global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncFromInterfaceRecord?)myBindAsyncParam_temp;
+
+                        if (wasParamCheckFailure)
+                        {
+                            httpContext.Response.StatusCode = 400;
+                            return;
+                        }
+                        httpContext.Response.ContentType ??= "text/plain";
+                        var result = handler(myBindAsyncParam_local);
+                        await httpContext.Response.WriteAsync(result);
+                    }
+
+                    async Task RequestHandlerFiltered(HttpContext httpContext)
+                    {
+                        var wasParamCheckFailure = false;
+                        var myBindAsyncParam_temp = await global::Microsoft.AspNetCore.Http.Generators.Tests.IBindAsync<global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncFromInterfaceRecord>.BindAsync(httpContext);
+                        var myBindAsyncParam_local = (global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncFromInterfaceRecord?)myBindAsyncParam_temp;
+
+                        if (wasParamCheckFailure)
+                        {
+                            httpContext.Response.StatusCode = 400;
+                        }
+                        var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncFromInterfaceRecord?>(httpContext, myBindAsyncParam_local));
                         await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
                     }
 
