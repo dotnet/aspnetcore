@@ -176,6 +176,11 @@ internal class RedisOutputCacheStore : IOutputCacheStore, IOutputCacheBufferWrit
         }
 
         await cache.StringSetAsync(GetValueKey(key), singleChunk, validFor).ConfigureAwait(false);
+        // only return lease on success
+        if (leased is not null)
+        {
+            ArrayPool<byte>.Shared.Return(leased);
+        }
 
         if (!tags.IsEmpty)
         {
@@ -209,12 +214,6 @@ internal class RedisOutputCacheStore : IOutputCacheStore, IOutputCacheBufferWrit
                 }
                 await cache.SortedSetAddAsync(GetTagKey(tag), key, expiryTimestamp, SortedSetWhen.Always, TagCommandFlags).ConfigureAwait(false);
             }
-        }
-
-        // only return lease on success
-        if (leased is not null)
-        {
-            ArrayPool<byte>.Shared.Return(leased);
         }
     }
 
