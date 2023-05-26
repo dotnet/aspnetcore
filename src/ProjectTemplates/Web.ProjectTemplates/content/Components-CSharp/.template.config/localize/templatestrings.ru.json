@@ -1,7 +1,7 @@
 ﻿{
   "author": "Майкрософт",
   "name": "Веб-приложение Blazor",
-  "description": "A project template for creating a Blazor web app that supports both server-side rendering and client interactivity. This template can be used for web apps with rich dynamic user interfaces (UIs).",
+  "description": "Шаблон проекта для создания приложения Blazor, поддерживающего как отрисовку на стороне сервера, так и интерактивные возможности клиента. Этот шаблон можно использовать для веб-приложений с многофункциональными динамическими пользовательскими интерфейсами (UI).",
   "symbols/Framework/description": "Целевая платформа для проекта.",
   "symbols/Framework/choices/net8.0/description": "Целевая net8.0",
   "symbols/skipRestore/description": "Если установлено, автоматическое восстановление проекта при создании пропускается.",

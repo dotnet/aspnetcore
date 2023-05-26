@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
   "name": "Aplicativo Web Blazor",
-  "description": "A project template for creating a Blazor web app that supports both server-side rendering and client interactivity. This template can be used for web apps with rich dynamic user interfaces (UIs).",
+  "description": "Um modelo de projeto para criar um aplicativo Web Blazor que dá suporte à renderização do lado do servidor e à interatividade do cliente. Este modelo pode ser usado para aplicativos da Web com interfaces de usuário (UIs) dinâmicas avançadas.",
   "symbols/Framework/description": "A estrutura de destino do projeto.",
   "symbols/Framework/choices/net8.0/description": "net8.0 de destino",
   "symbols/skipRestore/description": "Se especificado, ignora a restauração automática do projeto sendo criado.",
