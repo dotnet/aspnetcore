@@ -522,6 +522,290 @@ public class PollyHttpClientBuilderExtensionsTest
         Assert.Same(registry, services.GetService<IReadOnlyPolicyRegistry<string>>());
     }
 
+    [Fact]
+    public async Task AddPolicyRegistry_WithConfigureDelegate_ThrowsWhenServicesRequiredByDelegateAreMissing()
+    {
+        var options = new PollyPolicyOptions
+        {
+            PolicyName = "retrypolicy"
+        };
+
+        var serviceCollection = new ServiceCollection();
+
+        // Act and Assert
+        Assert.Throws<InvalidOperationException>(() => serviceCollection.AddPolicyRegistry((serviceProvider, registry) =>
+        {
+            // Required service
+            var policyName = serviceProvider.GetRequiredService<PollyPolicyOptions>().PolicyName;
+
+            registry.Add<IAsyncPolicy<HttpResponseMessage>>(policyName, RetryPolicy);
+        }));
+
+        // Required service registered after delegate invocation
+        serviceCollection.AddSingleton(options);
+    }
+
+    [Fact]
+    public void AddPolicyRegistry_DoesNotOverrideOrAddExtraRegistrations()
+    {
+        // Arrange
+        var serviceCollection = new ServiceCollection();
+
+        // Act 1
+        var existingRegistry = serviceCollection.AddPolicyRegistry();
+
+        // Act 2
+        var registry = serviceCollection.AddPolicyRegistry();
+        var services = serviceCollection.BuildServiceProvider();
+
+        // Assert
+        Assert.NotNull(existingRegistry);
+        Assert.Same(existingRegistry, registry);
+
+        Assert.Same(existingRegistry, services.GetService<IPolicyRegistry<string>>());
+        Assert.Same(existingRegistry, services.GetService<IConcurrentPolicyRegistry<string>>());
+        Assert.Same(existingRegistry, services.GetService<IReadOnlyPolicyRegistry<string>>());
+
+        Assert.Single(serviceCollection, sd => sd.ServiceType == typeof(IPolicyRegistry<string>));
+        Assert.Single(serviceCollection, sd => sd.ServiceType == typeof(IReadOnlyPolicyRegistry<string>));
+        Assert.Single(serviceCollection, sd => sd.ServiceType == typeof(IConcurrentPolicyRegistry<string>));
+    }
+
+    [Fact]
+    public void AddPolicyRegistry_WithRegistry_DoesNotOverrideOrAddExtraRegistrations()
+    {
+        // Arrange
+        var serviceCollection = new ServiceCollection();
+
+        // Act 1
+        var existingRegistry = serviceCollection.AddPolicyRegistry();
+
+        // Act 2
+        var registry = serviceCollection.AddPolicyRegistry(new PolicyRegistry());
+        var services = serviceCollection.BuildServiceProvider();
+
+        // Assert
+        Assert.NotNull(existingRegistry);
+        Assert.Same(existingRegistry, registry);
+
+        Assert.Same(existingRegistry, services.GetService<IPolicyRegistry<string>>());
+        Assert.Same(existingRegistry, services.GetService<IConcurrentPolicyRegistry<string>>());
+        Assert.Same(existingRegistry, services.GetService<IReadOnlyPolicyRegistry<string>>());
+
+        Assert.Single(serviceCollection, sd => sd.ServiceType == typeof(IPolicyRegistry<string>));
+        Assert.Single(serviceCollection, sd => sd.ServiceType == typeof(IReadOnlyPolicyRegistry<string>));
+        Assert.Single(serviceCollection, sd => sd.ServiceType == typeof(IConcurrentPolicyRegistry<string>));
+    }
+
+    [Fact]
+    public void AddPolicyRegistry_WithConfigureDelegate_DoesNotOverrideOrAddExtraRegistrations()
+    {
+        // Arrange
+        var serviceCollection = new ServiceCollection();
+
+        // Act 1
+        var existingRegistry = serviceCollection.AddPolicyRegistry();
+
+        // Act 2
+        IPolicyRegistry<string> configureRegistry = null;
+        serviceCollection.AddPolicyRegistry((serviceProvider, registry) =>
+        {
+            configureRegistry = registry;
+            // no-op
+        });
+        var services = serviceCollection.BuildServiceProvider();
+
+        // Assert
+        Assert.NotNull(existingRegistry);
+        Assert.Same(existingRegistry, configureRegistry);
+
+        Assert.Same(existingRegistry, services.GetService<IPolicyRegistry<string>>());
+        Assert.Same(existingRegistry, services.GetService<IConcurrentPolicyRegistry<string>>());
+        Assert.Same(existingRegistry, services.GetService<IReadOnlyPolicyRegistry<string>>());
+
+        Assert.Single(serviceCollection, sd => sd.ServiceType == typeof(IPolicyRegistry<string>));
+        Assert.Single(serviceCollection, sd => sd.ServiceType == typeof(IReadOnlyPolicyRegistry<string>));
+        Assert.Single(serviceCollection, sd => sd.ServiceType == typeof(IConcurrentPolicyRegistry<string>));
+    }
+
+    [Theory]
+    [InlineData(typeof(IPolicyRegistry<string>))]
+    [InlineData(typeof(IReadOnlyPolicyRegistry<string>))]
+    [InlineData(typeof(IConcurrentPolicyRegistry<string>))]
+    public void AddPolicyRegistry_AddsOnlyMissingRegistrations(Type missingType)
+    {
+        // Arrange
+        var serviceCollection = new ServiceCollection();
+        var registry = new PolicyRegistry();
+        var policyTypes = new List<Type>
+        {
+            typeof(IPolicyRegistry<string>),
+            typeof(IReadOnlyPolicyRegistry<string>),
+            typeof(IConcurrentPolicyRegistry<string>)
+        };
+
+        // Act 1
+        foreach (var policyType in policyTypes.Where(x => x != missingType))
+        {
+            serviceCollection.AddSingleton(policyType, registry);
+        }
+
+        // Act 2
+        serviceCollection.AddPolicyRegistry();
+
+        // Assert
+        Assert.Single(serviceCollection, sd => sd.ServiceType == typeof(IPolicyRegistry<string>));
+        Assert.Single(serviceCollection, sd => sd.ServiceType == typeof(IReadOnlyPolicyRegistry<string>));
+        Assert.Single(serviceCollection, sd => sd.ServiceType == typeof(IConcurrentPolicyRegistry<string>));
+    }
+
+    [Theory]
+    [InlineData(typeof(IPolicyRegistry<string>))]
+    [InlineData(typeof(IReadOnlyPolicyRegistry<string>))]
+    [InlineData(typeof(IConcurrentPolicyRegistry<string>))]
+    public void AddPolicyRegistry_WithRegistry_AddsOnlyMissingRegistrations(Type missingType)
+    {
+        // Arrange
+        var serviceCollection = new ServiceCollection();
+        var existingRegistry = new PolicyRegistry();
+        var policyTypes = new List<Type>
+        {
+            typeof(IPolicyRegistry<string>),
+            typeof(IReadOnlyPolicyRegistry<string>),
+            typeof(IConcurrentPolicyRegistry<string>)
+        };
+
+        // Act 1
+        foreach (var policyType in policyTypes.Where(x => x != missingType))
+        {
+            serviceCollection.AddSingleton(policyType, existingRegistry);
+        }
+
+        // Act 2
+        serviceCollection.AddPolicyRegistry(new PolicyRegistry());
+
+        // Assert
+        Assert.Single(serviceCollection, sd => sd.ServiceType == typeof(IPolicyRegistry<string>));
+        Assert.Single(serviceCollection, sd => sd.ServiceType == typeof(IReadOnlyPolicyRegistry<string>));
+        Assert.Single(serviceCollection, sd => sd.ServiceType == typeof(IConcurrentPolicyRegistry<string>));
+    }
+
+    [Theory]
+    [InlineData(typeof(IPolicyRegistry<string>))]
+    [InlineData(typeof(IReadOnlyPolicyRegistry<string>))]
+    [InlineData(typeof(IConcurrentPolicyRegistry<string>))]
+    public void AddPolicyRegistry_WithConfigureDelegate_AddsOnlyMissingRegistrations(Type missingType)
+    {
+        // Arrange
+        var serviceCollection = new ServiceCollection();
+        var registry = new PolicyRegistry();
+        var policyTypes = new List<Type>
+        {
+            typeof(IPolicyRegistry<string>),
+            typeof(IReadOnlyPolicyRegistry<string>),
+            typeof(IConcurrentPolicyRegistry<string>)
+        };
+
+        // Act 1
+        foreach (var policyType in policyTypes.Where(x => x != missingType))
+        {
+            serviceCollection.AddSingleton(policyType, registry);
+        }
+
+        // Act 2
+        serviceCollection.AddPolicyRegistry((serviceProvider, registry) =>
+        {
+            // no-op
+        });
+
+        // Assert
+        Assert.Single(serviceCollection, sd => sd.ServiceType == typeof(IPolicyRegistry<string>));
+        Assert.Single(serviceCollection, sd => sd.ServiceType == typeof(IReadOnlyPolicyRegistry<string>));
+        Assert.Single(serviceCollection, sd => sd.ServiceType == typeof(IConcurrentPolicyRegistry<string>));
+    }
+
+    [Fact]
+    public void AddPolicyRegistry_WithRegistry_MovesPoliciesToExistingRegistry()
+    {
+        // Arrange
+        var serviceCollection = new ServiceCollection();
+
+        // Act 1
+        var existingRegistry = new PolicyRegistry();
+        existingRegistry.Add<IAsyncPolicy<HttpResponseMessage>>("retry1", RetryPolicy);
+        serviceCollection.AddPolicyRegistry(existingRegistry);
+
+        // Act 2
+        var registry = new PolicyRegistry();
+        registry.Add<IAsyncPolicy<HttpResponseMessage>>("retry2", RetryPolicy);
+        serviceCollection.AddPolicyRegistry(registry);
+
+        // Act and Assert
+        Assert.Equal(2, existingRegistry.Count);
+    }
+
+    [Fact]
+    public void AddPolicyRegistry_WithConfigureDelegate_MovesPoliciesToExistingRegistry()
+    {
+        // Arrange
+        var serviceCollection = new ServiceCollection();
+
+        // Act 1
+        var existingRegistry = new PolicyRegistry();
+        existingRegistry.Add<IAsyncPolicy<HttpResponseMessage>>("retry1", RetryPolicy);
+        serviceCollection.AddPolicyRegistry(existingRegistry);
+
+        // Act 2
+        serviceCollection.AddPolicyRegistry((serviceProvider, registry) =>
+        {
+            registry.Add<IAsyncPolicy<HttpResponseMessage>>("retry2", RetryPolicy);
+        });
+
+        // Assert
+        Assert.Equal(2, existingRegistry.Count);
+    }
+
+    [Fact]
+    public void AddPolicyRegistry_WithRegistry_ThrowsWhenMovingPoliciesWithSameKey()
+    {
+        // Arrange
+        var serviceCollection = new ServiceCollection();
+
+        // Act 1
+        var existingRegistry = new PolicyRegistry();
+        existingRegistry.Add<IAsyncPolicy<HttpResponseMessage>>("retry", RetryPolicy);
+        serviceCollection.AddPolicyRegistry(existingRegistry);
+
+        // Act 2 and Assert
+        var registry = new PolicyRegistry();
+        registry.Add<IAsyncPolicy<HttpResponseMessage>>("retry", RetryPolicy);
+        Assert.Throws<ArgumentException>(() => serviceCollection.AddPolicyRegistry(registry));
+
+        // Assert
+        Assert.Equal(1, existingRegistry.Count);
+    }
+
+    [Fact]
+    public void AddPolicyRegistry_WithConfigureDelegate_ThrowsWhenMovingPoliciesWithSameKey()
+    {
+        // Arrange
+        var serviceCollection = new ServiceCollection();
+
+        // Act 1
+        var existingRegistry = new PolicyRegistry();
+        existingRegistry.Add<IAsyncPolicy<HttpResponseMessage>>("retry", RetryPolicy);
+        serviceCollection.AddPolicyRegistry(existingRegistry);
+
+        // Act 2 and Assert
+        Assert.Throws<ArgumentException>(() => serviceCollection.AddPolicyRegistry((serviceProvider, registry) =>
+        {
+            registry.Add<IAsyncPolicy<HttpResponseMessage>>("retry", RetryPolicy);
+        }));
+
+        // Assert
+        Assert.Equal(1, existingRegistry.Count);
+    }
+
     // Throws an exception or fails on even numbered requests, otherwise succeeds.
     private class FaultyMessageHandler : DelegatingHandler
     {

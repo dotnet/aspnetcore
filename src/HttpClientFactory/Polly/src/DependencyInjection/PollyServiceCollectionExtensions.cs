@@ -28,13 +28,21 @@ public static class PollyServiceCollectionExtensions
             throw new ArgumentNullException(nameof(services));
         }
 
-        // Create an empty registry, register and return it as an instance. This is the best way to get a
-        // single instance registered using all the interfaces.
-        var registry = new PolicyRegistry();
+        // Get existing registry or an empty instance
+        var registry = services.BuildServiceProvider().GetService<IPolicyRegistry<string>>();
+        if (registry == null)
+        {
+            registry = new PolicyRegistry();
+        }
 
+        // Try to register for the missing interfaces
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IPolicyRegistry<string>>(registry));
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IReadOnlyPolicyRegistry<string>>(registry));
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IConcurrentPolicyRegistry<string>>(registry));
+
+        if (registry is IConcurrentPolicyRegistry<string> concurrentRegistry)
+        {
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IConcurrentPolicyRegistry<string>>(concurrentRegistry));
+        }
 
         return registry;
     }
@@ -60,15 +68,31 @@ public static class PollyServiceCollectionExtensions
             throw new ArgumentNullException(nameof(registry));
         }
 
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IPolicyRegistry<string>>(registry));
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IReadOnlyPolicyRegistry<string>>(registry));
+        // Get existing registry or use the given instance
+        var existingRegistry = services.BuildServiceProvider().GetService<IPolicyRegistry<string>>();
+        if (existingRegistry != null)
+        {
+            // Move the new policies to the existing registry
+            foreach (var keyValuePair in registry)
+            {
+                existingRegistry.Add(keyValuePair.Key, keyValuePair.Value);
+            }
+        }
+        else
+        {
+            existingRegistry = registry;
+        }
 
-        if (registry is IConcurrentPolicyRegistry<string> concurrentRegistry)
+        // Try to register for the missing interfaces
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IPolicyRegistry<string>>(existingRegistry));
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IReadOnlyPolicyRegistry<string>>(existingRegistry));
+
+        if (existingRegistry is IConcurrentPolicyRegistry<string> concurrentRegistry)
         {
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IConcurrentPolicyRegistry<string>>(concurrentRegistry));
         }
 
-        return registry;
+        return existingRegistry;
     }
 
     /// <summary>
@@ -92,20 +116,29 @@ public static class PollyServiceCollectionExtensions
             throw new ArgumentNullException(nameof(configureRegistry));
         }
 
-        // Create an empty registry, configure it and register it as an instance.
-        // This is the best way to get a single instance registered using all the interfaces.
-        services.TryAddSingleton(serviceProvider =>
+        // Build the service provider to be able to configure the registry.
+        // Building the services at this point may throw an exception
+        // if the delegate has required dependencies that were not yet registered,
+        // but it's necessary to not lose configurations when this method is invoked multiple times
+        var serviceProvider = services.BuildServiceProvider();
+
+        // Get existing registry or an empty instance
+        var registry = serviceProvider.GetService<IPolicyRegistry<string>>();
+        if (registry == null)
         {
-            var registry = new PolicyRegistry();
+            registry = new PolicyRegistry();
+        }
 
-            configureRegistry(serviceProvider, registry);
+        configureRegistry(serviceProvider, registry);
 
-            return registry;
-        });
+        // Try to register for the missing interfaces
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IPolicyRegistry<string>>(registry));
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IReadOnlyPolicyRegistry<string>>(registry));
 
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IPolicyRegistry<string>, PolicyRegistry>(serviceProvider => serviceProvider.GetRequiredService<PolicyRegistry>()));
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IReadOnlyPolicyRegistry<string>, PolicyRegistry>(serviceProvider => serviceProvider.GetRequiredService<PolicyRegistry>()));
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IConcurrentPolicyRegistry<string>, PolicyRegistry>(serviceProvider => serviceProvider.GetRequiredService<PolicyRegistry>()));
+        if (registry is IConcurrentPolicyRegistry<string> concurrentRegistry)
+        {
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IConcurrentPolicyRegistry<string>>(concurrentRegistry));
+        }
 
         return services;
     }
