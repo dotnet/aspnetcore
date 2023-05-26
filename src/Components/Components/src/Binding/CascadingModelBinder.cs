@@ -162,12 +162,7 @@ public sealed class CascadingModelBinder : IComponent, ICascadingValueComponent,
         if (FormValueSupplier.CanBind(formName!, valueType))
         {
             var bindingSucceeded = FormValueSupplier.TryBind(formName!, valueType, out var boundValue);
-            _bindingInfo = new BindingInfo(formName, valueType)
-            {
-                BindingResult = bindingSucceeded,
-                BoundValue = boundValue,
-            };
-
+            _bindingInfo = new BindingInfo(formName, valueType, bindingSucceeded, boundValue);
             if (!bindingSucceeded)
             {
                 // Report errors
@@ -175,7 +170,7 @@ public sealed class CascadingModelBinder : IComponent, ICascadingValueComponent,
 
             return true;
         }
-        
+
         return false;
     }
 
@@ -195,10 +190,5 @@ public sealed class CascadingModelBinder : IComponent, ICascadingValueComponent,
 
     bool ICascadingValueComponent.CurrentValueIsFixed => true;
 
-    private record BindingInfo(string? FormName, Type ValueType)
-    {
-        public required bool BindingResult { get; set; }
-
-        public required object? BoundValue { get; set; }
-    }
+    private record BindingInfo(string? FormName, Type ValueType, bool BindingResult, object? BoundValue);
 }
