@@ -626,17 +626,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
                 if (!_absoluteRequestTarget.IsDefaultPort
                     || hostText != _absoluteRequestTarget.Authority + ":" + _absoluteRequestTarget.Port.ToString(CultureInfo.InvariantCulture))
                 {
-                    // Superseded by RFC 7230, but notable for back-compat.
-                    // https://datatracker.ietf.org/doc/html/rfc2616/#section-5.2
-                    //    1. If Request-URI is an absoluteURI, the host is part of the
-                    // Request-URI. Any Host header field value in the request MUST be
-                    // ignored.
-                    // We don't want to leave the invalid value for the app to accidentally consume,
-                    // replace it with the value from the request line.
-                    // This is insecure in the sense that we would ordinarily regard a mismatched
-                    // request target and host as suspicious (e.g. indicative of a spoofing attempt)
-                    // and reject the request.
-                    if (_context.ServiceContext.ServerOptions.EnableInsecureAbsoluteFormHostOverride)
+                    if (_context.ServiceContext.ServerOptions.AllowUnsafeHostHeaderOverride)
                     {
                         hostText = _absoluteRequestTarget.Authority + ":" + _absoluteRequestTarget.Port.ToString(CultureInfo.InvariantCulture);
                         HttpRequestHeaders.HeaderHost = hostText;

@@ -153,11 +153,12 @@ public class BadHttpRequestTests : LoggedTest
         {
             ServerOptions = new KestrelServerOptions()
             {
-                EnableInsecureAbsoluteFormHostOverride = true,
+                AllowUnsafeHostHeaderOverride = true,
             }
         });
         using var client = server.CreateConnection();
 
+        // Note the missing line-reak between the Host and Connection headers
         await client.SendAll($"GET http://www.foo.com/api/data HTTP/1.1\r\nHost: www.foo.comConnection: keep-alive\r\n\r\n");
 
         await client.Receive("HTTP/1.1 200 OK");
