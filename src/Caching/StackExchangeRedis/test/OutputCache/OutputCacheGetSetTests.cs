@@ -142,7 +142,7 @@ public class OutputCacheGetSetTests : IClassFixture<RedisConnectionFixture>
     }
 
     [Fact]
-    public async Task TagScoreWorksWithGreaterThan()
+    public async Task MasterTagScoreShouldOnlyIncrease()
     {
         // store some data
         var cache = await Cache().ConfigureAwait(false);
