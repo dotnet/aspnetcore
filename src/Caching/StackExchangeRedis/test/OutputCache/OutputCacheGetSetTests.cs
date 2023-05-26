@@ -5,6 +5,7 @@
 
 using System;
 using System.Buffers;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.OutputCaching;
@@ -51,9 +52,11 @@ public class OutputCacheGetSetTests : IClassFixture<RedisConnectionFixture>
     }
 
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task SetStoresValueWithPrefixAndTimeout(bool useReadOnlySequence)
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    public async Task SetStoresValueWithPrefixAndTimeout(bool useReadOnlySequence, bool withTags)
     {
         var cache = await Cache().ConfigureAwait(false);
         var key = Guid.NewGuid().ToString();
@@ -62,17 +65,24 @@ public class OutputCacheGetSetTests : IClassFixture<RedisConnectionFixture>
         RedisKey underlyingKey = "TestPrefix__MSOCV_" + key;
 
         // pre-check
+        await _fixture.Database.KeyDeleteAsync(new RedisKey[] { "TestPrefix__MSOCT", "TestPrefix__MSOCT_tagA", "TestPrefix__MSOCT_tagB" });
         var timeout = await _fixture.Database.KeyTimeToLiveAsync(underlyingKey);
         Assert.Null(timeout); // means doesn't exist
+        Assert.False(await _fixture.Database.KeyExistsAsync("TestPrefix__MSOCT"));
+        Assert.False(await _fixture.Database.KeyExistsAsync("TestPrefix__MSOCT_tagA"));
+        Assert.False(await _fixture.Database.KeyExistsAsync("TestPrefix__MSOCT_tagB"));
 
         // act
+        var actTime = DateTime.UtcNow;
+        var ttl = TimeSpan.FromSeconds(30);
+        var tags = withTags ? new[] { "tagA", "tagB" } : null;
         if (useReadOnlySequence)
         {
-            await cache.SetAsync(key, new ReadOnlySequence<byte>(storedValue), null, TimeSpan.FromSeconds(30), CancellationToken.None);
+            await cache.SetAsync(key, new ReadOnlySequence<byte>(storedValue), tags, ttl, CancellationToken.None);
         }
         else
         {
-            await cache.SetAsync(key, storedValue, null, TimeSpan.FromSeconds(30), CancellationToken.None);
+            await cache.SetAsync(key, storedValue, tags, ttl, CancellationToken.None);
         }
 
         // validate via redis direct
@@ -82,6 +92,24 @@ public class OutputCacheGetSetTests : IClassFixture<RedisConnectionFixture>
         Assert.True(seconds >= 28 && seconds <= 32, "timeout should be in range");
         var redisValue = (byte[])(await _fixture.Database.StringGetAsync(underlyingKey));
         Assert.True(((ReadOnlySpan<byte>)storedValue).SequenceEqual(redisValue), "payload should match");
+
+        double expected = (long)((actTime + ttl) - DateTime.UnixEpoch).TotalMilliseconds;
+        if (withTags)
+        {
+            // we expect the tag structure to now exist, with the scores within a bit of a second
+            const double Tolerance = 100.0;
+            Assert.Equal((await _fixture.Database.SortedSetScoreAsync("TestPrefix__MSOCT", "tagA")).Value, expected, Tolerance);
+            Assert.Equal((await _fixture.Database.SortedSetScoreAsync("TestPrefix__MSOCT", "tagB")).Value, expected, Tolerance);
+            Assert.Equal((await _fixture.Database.SortedSetScoreAsync("TestPrefix__MSOCT_tagA", key)).Value, expected, Tolerance);
+            Assert.Equal((await _fixture.Database.SortedSetScoreAsync("TestPrefix__MSOCT_tagB", key)).Value, expected, Tolerance);
+        }
+        else
+        {
+            // we do *not* expect the tag structure to exist
+            Assert.False(await _fixture.Database.KeyExistsAsync("TestPrefix__MSOCT"));
+            Assert.False(await _fixture.Database.KeyExistsAsync("TestPrefix__MSOCT_tagA"));
+            Assert.False(await _fixture.Database.KeyExistsAsync("TestPrefix__MSOCT_tagB"));
+        }
     }
 
     [Theory]
@@ -111,6 +139,83 @@ public class OutputCacheGetSetTests : IClassFixture<RedisConnectionFixture>
         Assert.NotNull(fetchedValue);
 
         Assert.True(((ReadOnlySpan<byte>)storedValue).SequenceEqual(fetchedValue), "payload should match");
+    }
+
+    [Fact]
+    public async Task CanEvictByTag()
+    {
+        // store some data
+        var cache = await Cache().ConfigureAwait(false);
+        byte[] storedValue = new byte[1017];
+        Random.Shared.NextBytes(storedValue);
+        var ttl = TimeSpan.FromSeconds(30);
+
+        var noTags = Guid.NewGuid().ToString();
+        await cache.SetAsync(noTags, storedValue, null, ttl, CancellationToken.None);
+
+        var foo = Guid.NewGuid().ToString();
+        await cache.SetAsync(foo, storedValue, new[] {"foo"}, ttl, CancellationToken.None);
+
+        var bar = Guid.NewGuid().ToString();
+        await cache.SetAsync(bar, storedValue, new[] { "bar" }, ttl, CancellationToken.None);
+
+        var fooBar = Guid.NewGuid().ToString();
+        await cache.SetAsync(fooBar, storedValue, new[] { "foo", "bar" }, ttl, CancellationToken.None);
+
+        // assert prior state
+        Assert.NotNull(await cache.GetAsync(noTags, CancellationToken.None));
+        Assert.NotNull(await cache.GetAsync(foo, CancellationToken.None));
+        Assert.NotNull(await cache.GetAsync(bar, CancellationToken.None));
+        Assert.NotNull(await cache.GetAsync(fooBar, CancellationToken.None));
+        Assert.Null(await _fixture.Database.SortedSetScoreAsync("TestPrefix__MSOCT_foo", noTags));
+        Assert.NotNull(await _fixture.Database.SortedSetScoreAsync("TestPrefix__MSOCT_foo", foo));
+        Assert.Null(await _fixture.Database.SortedSetScoreAsync("TestPrefix__MSOCT_foo", bar));
+        Assert.NotNull(await _fixture.Database.SortedSetScoreAsync("TestPrefix__MSOCT_foo", fooBar));
+        Assert.Null(await _fixture.Database.SortedSetScoreAsync("TestPrefix__MSOCT_bar", noTags));
+        Assert.Null(await _fixture.Database.SortedSetScoreAsync("TestPrefix__MSOCT_bar", foo));
+        Assert.NotNull(await _fixture.Database.SortedSetScoreAsync("TestPrefix__MSOCT_bar", bar));
+        Assert.NotNull(await _fixture.Database.SortedSetScoreAsync("TestPrefix__MSOCT_bar", fooBar));
+
+        // act
+        for (int i = 0; i < 2; i++) // loop is to ensure no oddity when working on tags that *don't* have entries
+        {
+            await cache.EvictByTagAsync("foo", CancellationToken.None);
+            Assert.NotNull(await cache.GetAsync(noTags, CancellationToken.None));
+            Assert.Null(await cache.GetAsync(foo, CancellationToken.None));
+            Assert.NotNull(await cache.GetAsync(bar, CancellationToken.None));
+            Assert.Null(await cache.GetAsync(fooBar, CancellationToken.None));
+        }
+        Assert.Null(await _fixture.Database.SortedSetScoreAsync("TestPrefix__MSOCT_foo", noTags));
+        Assert.Null(await _fixture.Database.SortedSetScoreAsync("TestPrefix__MSOCT_foo", foo));
+        Assert.Null(await _fixture.Database.SortedSetScoreAsync("TestPrefix__MSOCT_foo", bar));
+        Assert.Null(await _fixture.Database.SortedSetScoreAsync("TestPrefix__MSOCT_foo", fooBar));
+        Assert.Null(await _fixture.Database.SortedSetScoreAsync("TestPrefix__MSOCT_bar", noTags));
+        Assert.Null(await _fixture.Database.SortedSetScoreAsync("TestPrefix__MSOCT_bar", foo));
+        Assert.NotNull(await _fixture.Database.SortedSetScoreAsync("TestPrefix__MSOCT_bar", bar));
+        Assert.NotNull(await _fixture.Database.SortedSetScoreAsync("TestPrefix__MSOCT_bar", fooBar));
+
+        for (int i = 0; i < 2; i++) // loop is to ensure no oddity when working on tags that *don't* have entries
+        {
+            await cache.EvictByTagAsync("bar", CancellationToken.None);
+            Assert.NotNull(await cache.GetAsync(noTags, CancellationToken.None));
+            Assert.Null(await cache.GetAsync(foo, CancellationToken.None));
+            Assert.Null(await cache.GetAsync(bar, CancellationToken.None));
+            Assert.Null(await cache.GetAsync(fooBar, CancellationToken.None));
+        }
+        Assert.Null(await _fixture.Database.SortedSetScoreAsync("TestPrefix__MSOCT_foo", noTags));
+        Assert.Null(await _fixture.Database.SortedSetScoreAsync("TestPrefix__MSOCT_foo", foo));
+        Assert.Null(await _fixture.Database.SortedSetScoreAsync("TestPrefix__MSOCT_foo", bar));
+        Assert.Null(await _fixture.Database.SortedSetScoreAsync("TestPrefix__MSOCT_foo", fooBar));
+        Assert.Null(await _fixture.Database.SortedSetScoreAsync("TestPrefix__MSOCT_bar", noTags));
+        Assert.Null(await _fixture.Database.SortedSetScoreAsync("TestPrefix__MSOCT_bar", foo));
+        Assert.Null(await _fixture.Database.SortedSetScoreAsync("TestPrefix__MSOCT_bar", bar));
+        Assert.Null(await _fixture.Database.SortedSetScoreAsync("TestPrefix__MSOCT_bar", fooBar));
+
+        // assert expected state
+        Assert.NotNull(await cache.GetAsync(noTags, CancellationToken.None));
+        Assert.Null(await cache.GetAsync(foo, CancellationToken.None));
+        Assert.Null(await cache.GetAsync(bar, CancellationToken.None));
+        Assert.Null(await cache.GetAsync(fooBar, CancellationToken.None));
     }
 }
 

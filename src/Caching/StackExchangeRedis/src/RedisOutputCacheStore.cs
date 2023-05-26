@@ -7,7 +7,6 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
@@ -25,6 +24,7 @@ internal class RedisOutputCacheStore : IOutputCacheStore, IOutputCacheBufferWrit
     private readonly RedisCacheOptions _options;
     private readonly ILogger _logger;
     private readonly RedisKey _valueKeyPrefix, _tagKeyPrefix, _tagMasterKey;
+    private readonly RedisKey[] _tagMasterKeyArray; // for use with Lua if needed (to avoid array allocs)
     private readonly SemaphoreSlim _connectionLock = new SemaphoreSlim(initialCount: 1, maxCount: 1);
 
     private bool _disposed;
@@ -78,13 +78,31 @@ internal class RedisOutputCacheStore : IOutputCacheStore, IOutputCacheBufferWrit
         _valueKeyPrefix = (RedisKey)Encoding.UTF8.GetBytes(_options.InstanceName + "__MSOCV_");
         _tagKeyPrefix = (RedisKey)Encoding.UTF8.GetBytes(_options.InstanceName + "__MSOCT_");
         _tagMasterKey = (RedisKey)Encoding.UTF8.GetBytes(_options.InstanceName + "__MSOCT");
+        _tagMasterKeyArray = new[] { _tagMasterKey };
     }
 
-    ValueTask IOutputCacheStore.EvictByTagAsync(string tag, CancellationToken cancellationToken)
-        => throw new NotImplementedException();
+    async ValueTask IOutputCacheStore.EvictByTagAsync(string tag, CancellationToken cancellationToken)
+    {
+        var cache = await ConnectAsync(cancellationToken).ConfigureAwait(false);
+        Debug.Assert(cache is not null);
+
+        // we'll use fire-and-forget on individual deletes, relying on the paging mechanism
+        // of ZSCAN to detect fundamental connection problems - so failure will still be reported
+        const CommandFlags DeleteFlags = CommandFlags.FireAndForget;
+
+        var tagKey = GetTagKey(tag);
+        await foreach (var entry in cache.SortedSetScanAsync(tagKey).WithCancellation(cancellationToken))
+        {
+            await cache.KeyDeleteAsync(GetValueKey((string)entry.Element!), DeleteFlags).ConfigureAwait(false);
+            await cache.SortedSetRemoveAsync(tagKey, entry.Element, DeleteFlags).ConfigureAwait(false);
+        }
+    }
 
     private RedisKey GetValueKey(string key)
         => _valueKeyPrefix.Append(key);
+
+    private RedisKey GetTagKey(string tag)
+        => _tagKeyPrefix.Append(tag);
 
     async ValueTask<byte[]?> IOutputCacheStore.GetAsync(string key, CancellationToken cancellationToken)
     {
@@ -132,26 +150,14 @@ internal class RedisOutputCacheStore : IOutputCacheStore, IOutputCacheBufferWrit
         }
     }
 
-    async ValueTask IOutputCacheStore.SetAsync(string key, byte[] value, string[]? tags, TimeSpan validFor, CancellationToken cancellationToken)
+    ValueTask IOutputCacheStore.SetAsync(string key, byte[] value, string[]? tags, TimeSpan validFor, CancellationToken cancellationToken)
     {
-        if (tags is not null && tags.Length > 0)
-        {
-            throw new NotImplementedException("tags");
-        }
-
-        var cache = await ConnectAsync(cancellationToken).ConfigureAwait(false);
-        Debug.Assert(cache is not null);
-
-        await cache.StringSetAsync(GetValueKey(key), value, validFor).ConfigureAwait(false);
+        ArgumentNullException.ThrowIfNull(value);
+        return ((IOutputCacheStore)this).SetAsync(key, new ReadOnlySequence<byte>(value), tags.AsMemory(), validFor, cancellationToken);
     }
 
     async ValueTask IOutputCacheStore.SetAsync(string key, ReadOnlySequence<byte> value, ReadOnlyMemory<string> tags, TimeSpan validFor, CancellationToken cancellationToken)
     {
-        if (!tags.IsEmpty)
-        {
-            throw new NotImplementedException("tags");
-        }
-
         var cache = await ConnectAsync(cancellationToken).ConfigureAwait(false);
         Debug.Assert(cache is not null);
 
@@ -171,12 +177,54 @@ internal class RedisOutputCacheStore : IOutputCacheStore, IOutputCacheBufferWrit
 
         await cache.StringSetAsync(GetValueKey(key), singleChunk, validFor).ConfigureAwait(false);
 
+        if (!tags.IsEmpty)
+        {
+            long expiryTimestamp = GetExpirationTimestamp(validFor);
+            var len = tags.Length;
+            RedisValue[] argv = _use62Features ? null! : new RedisValue[] { RedisValue.Null, expiryTimestamp };
+
+            // tags are secondary; to avoid latency costs, we'll use fire-and-forget when adding tags - this does
+            // mean that in theory tag-related error may go undetected, but: this is an acceptable trade-off
+            const CommandFlags TagCommandFlags = CommandFlags.FireAndForget;
+
+            for (int i = 0; i < len; i++) // can't use span in async method, so: eat a little overhead here
+            {
+                var tag = tags.Span[i];
+                if (_use62Features)
+                {
+                    await cache.SortedSetAddAsync(_tagMasterKey, tag, expiryTimestamp, SortedSetWhen.GreaterThan, TagCommandFlags).ConfigureAwait(false);
+                }
+                else
+                {
+                    // semantic equivalent of ZADD GT
+                    const string ZADD_GT = """
+                    local oldScore = tonumber(redis.call('ZSCORE', KEYS[1], ARGV[1]))
+                    if oldScore == nil or oldScore < tonumber(ARGV[2]) then
+                        redis.call('ZADD', KEYS[1], ARGV[2], ARGV[1])
+                    end
+                    """;
+
+                    argv[0] = tag;
+                    await cache.ScriptEvaluateAsync(ZADD_GT, _tagMasterKeyArray, argv, TagCommandFlags).ConfigureAwait(false);
+                }
+                await cache.SortedSetAddAsync(GetTagKey(tag), key, expiryTimestamp, SortedSetWhen.Always, TagCommandFlags).ConfigureAwait(false);
+            }
+        }
+
         // only return lease on success
         if (leased is not null)
         {
             ArrayPool<byte>.Shared.Return(leased);
         }
     }
+
+    // note that by necessity we're interleaving two time systems here; the local time, and the
+    // time according to redis (and used internally for redis TTLs); in reality, if we disagree
+    // on time, we have bigger problems, so: this will have to suffice - we cannot reasonably
+    // push our in-proc time into out-of-proc redis
+    // TODO: TimeProvider? ISystemClock?
+    private static long GetExpirationTimestamp(TimeSpan timeout) =>
+        (long)((DateTime.UtcNow + timeout) - DateTime.UnixEpoch).TotalMilliseconds;
 
     private ValueTask<IDatabase> ConnectAsync(CancellationToken token = default)
     {

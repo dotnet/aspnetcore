@@ -48,7 +48,7 @@ public interface IOutputCacheStore
     ValueTask SetAsync(string key, ReadOnlySequence<byte> value, ReadOnlyMemory<string> tags, TimeSpan validFor, CancellationToken cancellationToken)
     {
         // compatibility implementation using the original API
-        return SetAsync(key, value.ToArray(), tags.ToArray(), validFor, cancellationToken);
+        return SetAsync(key, value.ToArray(), tags.IsEmpty ? null : tags.ToArray(), validFor, cancellationToken);
     }
 }
 
