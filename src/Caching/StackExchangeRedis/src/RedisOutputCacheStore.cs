@@ -181,7 +181,7 @@ internal class RedisOutputCacheStore : IOutputCacheStore, IOutputCacheBufferWrit
         {
             long expiryTimestamp = GetExpirationTimestamp(validFor);
             var len = tags.Length;
-            RedisValue[] argv = _use62Features ? null! : new RedisValue[] { RedisValue.Null, expiryTimestamp };
+            RedisValue[] argv = _use62Features ? null! : new RedisValue[] { expiryTimestamp, RedisValue.Null };
 
             // tags are secondary; to avoid latency costs, we'll use fire-and-forget when adding tags - this does
             // mean that in theory tag-related error may go undetected, but: this is an acceptable trade-off
@@ -198,13 +198,13 @@ internal class RedisOutputCacheStore : IOutputCacheStore, IOutputCacheBufferWrit
                 {
                     // semantic equivalent of ZADD GT
                     const string ZADD_GT = """
-                    local oldScore = tonumber(redis.call('ZSCORE', KEYS[1], ARGV[1]))
-                    if oldScore == nil or oldScore < tonumber(ARGV[2]) then
-                        redis.call('ZADD', KEYS[1], ARGV[2], ARGV[1])
+                    local oldScore = tonumber(redis.call('ZSCORE', KEYS[1], ARGV[2]))
+                    if oldScore == nil or oldScore < tonumber(ARGV[1]) then
+                        redis.call('ZADD', KEYS[1], ARGV[1], ARGV[2])
                     end
                     """;
 
-                    argv[0] = tag;
+                    argv[1] = tag;
                     await cache.ScriptEvaluateAsync(ZADD_GT, _tagMasterKeyArray, argv, TagCommandFlags).ConfigureAwait(false);
                 }
                 await cache.SortedSetAddAsync(GetTagKey(tag), key, expiryTimestamp, SortedSetWhen.Always, TagCommandFlags).ConfigureAwait(false);
