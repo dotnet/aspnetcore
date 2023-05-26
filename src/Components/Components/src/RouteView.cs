@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Components;
 public class RouteView : IComponent
 {
     private RenderHandle _renderHandle;
-    private static ConcurrentDictionary<Type, Type?> _layoutAttributeCache = new();
+    private static readonly ConcurrentDictionary<Type, Type?> _layoutAttributeCache = new();
 
     [Inject]
     private NavigationManager NavigationManager { get; set; }
