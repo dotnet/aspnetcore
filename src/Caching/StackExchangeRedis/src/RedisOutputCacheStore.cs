@@ -181,7 +181,6 @@ internal class RedisOutputCacheStore : IOutputCacheStore, IOutputCacheBufferWrit
         {
             long expiryTimestamp = GetExpirationTimestamp(validFor);
             var len = tags.Length;
-            RedisValue[] argv = _use62Features ? null! : new RedisValue[] { expiryTimestamp, RedisValue.Null };
 
             // tags are secondary; to avoid latency costs, we'll use fire-and-forget when adding tags - this does
             // mean that in theory tag-related error may go undetected, but: this is an acceptable trade-off
@@ -204,8 +203,9 @@ internal class RedisOutputCacheStore : IOutputCacheStore, IOutputCacheBufferWrit
                     end
                     """;
 
-                    argv[1] = tag;
-                    await cache.ScriptEvaluateAsync(ZADD_GT, _tagMasterKeyArray, argv, TagCommandFlags).ConfigureAwait(false);
+                    // note we're not sharing an ARGV array between tags here because then we'd need to wait on latency to avoid conflicts;
+                    // in reality most caches have very limited tags (if any), so this is not perceived as an issue
+                    await cache.ScriptEvaluateAsync(ZADD_GT, _tagMasterKeyArray, new RedisValue[] { expiryTimestamp, tag }, TagCommandFlags).ConfigureAwait(false);
                 }
                 await cache.SortedSetAddAsync(GetTagKey(tag), key, expiryTimestamp, SortedSetWhen.Always, TagCommandFlags).ConfigureAwait(false);
             }
