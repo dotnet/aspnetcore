@@ -1391,7 +1391,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var options = new HttpConnectionDispatcherOptions();
             var request1 = dispatcher.ExecuteAsync(context1, options, app);
 
-            await dispatcher.ExecuteAsync(context2, options, app);
+            await dispatcher.ExecuteAsync(context2, options, app).DefaultTimeout();
 
             Assert.Equal(StatusCodes.Status409Conflict, context2.Response.StatusCode);
 

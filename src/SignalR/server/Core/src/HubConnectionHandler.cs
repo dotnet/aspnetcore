@@ -94,6 +94,8 @@ public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
             new HubContext<THub>(lifetimeManager),
             _enableDetailedErrors,
             disableImplicitFromServiceParameters,
+            // TODO
+            useAcks: true,
             new Logger<DefaultHubDispatcher<THub>>(loggerFactory),
             hubFilters,
             lifetimeManager);
