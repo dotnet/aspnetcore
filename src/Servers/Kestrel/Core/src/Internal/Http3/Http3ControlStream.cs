@@ -69,7 +69,7 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
     public PipeReader Input => _context.Transport.Input;
     public KestrelTrace Log => _context.ServiceContext.Log;
 
-    public long StreamTimeoutTicks { get; set; }
+    public long StreamTimeoutTimestamp { get; set; }
     public bool IsReceivingHeader => _headerType == -1;
     public bool IsDraining => false;
     public bool IsRequestStream => false;

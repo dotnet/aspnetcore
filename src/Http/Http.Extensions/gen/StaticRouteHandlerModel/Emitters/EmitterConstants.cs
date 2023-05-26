@@ -10,4 +10,9 @@ internal static class EmitterConstants
         genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters,
         typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
         miscellaneousOptions: SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier);
+
+    public static SymbolDisplayFormat DisplayFormatWithoutNullability => new SymbolDisplayFormat(
+        globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Included,
+        genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters,
+        typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces);
 }

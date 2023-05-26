@@ -23,15 +23,15 @@ namespace Microsoft.AspNetCore.E2ETesting;
 
 public class SeleniumStandaloneServer : IDisposable
 {
+    private const string SeleniumHost = "127.0.0.1";
+    private const int SeleniumProcessTimeout = 3600; // 1h 30 min
+
     private static readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1);
 
     private Process _process;
     private string _sentinelPath;
     private Process _sentinelProcess;
     private static IMessageSink _diagnosticsMessageSink;
-
-    // 1h 30 min
-    private const int SeleniumProcessTimeout = 3600;
 
     public SeleniumStandaloneServer(IMessageSink diagnosticsMessageSink)
     {
@@ -85,7 +85,7 @@ public class SeleniumStandaloneServer : IDisposable
     private static async Task InitializeInstance(ITestOutputHelper output)
     {
         var port = FindAvailablePort();
-        var uri = new UriBuilder("http", "localhost", port, "/wd/hub").Uri;
+        var uri = new UriBuilder("http", SeleniumHost, port, "/wd/hub").Uri;
 
         var seleniumConfigPath = typeof(SeleniumStandaloneServer).Assembly
             .GetCustomAttributes<AssemblyMetadataAttribute>()
@@ -111,7 +111,7 @@ public class SeleniumStandaloneServer : IDisposable
         var psi = new ProcessStartInfo
         {
             FileName = "npm",
-            Arguments = $"run selenium-standalone start -- --config \"{seleniumConfigPath}\" {chromeDriverArg} -- -port {port}",
+            Arguments = $"run selenium-standalone start -- --config \"{seleniumConfigPath}\" {chromeDriverArg} -- -host {SeleniumHost} -port {port}",
             RedirectStandardOutput = true,
             RedirectStandardError = true,
         };

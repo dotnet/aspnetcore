@@ -634,7 +634,7 @@ public class Http2ConnectionTests : Http2TestBase
         // TriggerTick will trigger the stream to be returned to the pool so we can assert it
         TriggerTick();
 
-        AdvanceClock(TimeSpan.FromTicks(Constants.RequestBodyDrainTimeout.Ticks + 1));
+        AdvanceTime(TimeSpan.FromTicks(Constants.RequestBodyDrainTimeout.Ticks + 1));
 
         // TriggerTick will trigger the stream to attempt to be returned to the pool
         TriggerTick();
@@ -670,12 +670,12 @@ public class Http2ConnectionTests : Http2TestBase
 
         _connection.StreamPool.TryPeek(out var pooledStream);
 
-        AdvanceClock(TimeSpan.FromSeconds(1));
+        AdvanceTime(TimeSpan.FromSeconds(1));
 
         // Stream has not expired and is still in pool
         Assert.Equal(1, _connection.StreamPool.Count);
 
-        AdvanceClock(TimeSpan.FromSeconds(6));
+        AdvanceTime(TimeSpan.FromSeconds(6));
 
         // Stream has expired and has been removed from pool
         Assert.Equal(0, _connection.StreamPool.Count);

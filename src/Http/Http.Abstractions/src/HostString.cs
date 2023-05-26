@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Globalization;
 using Microsoft.AspNetCore.Http.Abstractions;
 using Microsoft.Extensions.Primitives;
@@ -11,6 +12,7 @@ namespace Microsoft.AspNetCore.Http;
 /// Represents the host portion of a URI can be used to construct URI's properly formatted and encoded for use in
 /// HTTP headers.
 /// </summary>
+[DebuggerDisplay("{Value}")]
 public readonly struct HostString : IEquatable<HostString>
 {
     private readonly string _value;

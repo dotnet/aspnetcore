@@ -17,11 +17,12 @@ public abstract partial class RequestDelegateCreationTests : RequestDelegateCrea
     public async Task RequestDelegateLogsStringValuesFromExplicitQueryStringSourceForUnpresentedValuesFailuresAsDebugAndSets400Response()
     {
         var source = """
-app.MapGet("/", (
+app.MapGet("/{baz}", (
     HttpContext httpContext,
     [FromHeader(Name = "foo")] StringValues headerValues,
     [FromQuery(Name = "bar")] StringValues queryValues,
-    [FromForm(Name = "form")] StringValues formValues
+    [FromForm(Name = "form")] StringValues formValues,
+    [FromRoute(Name = "baz")] string routeValues
 ) =>
 {
     httpContext.Items["invoked"] = true;
@@ -43,7 +44,7 @@ app.MapGet("/", (
 
         var logs = TestSink.Writes.ToArray();
 
-        Assert.Equal(3, logs.Length);
+        Assert.Equal(4, logs.Length);
 
         Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), logs[0].EventId);
         Assert.Equal(LogLevel.Debug, logs[0].LogLevel);
@@ -68,6 +69,14 @@ app.MapGet("/", (
         Assert.Equal("StringValues", log3Values[0].Value);
         Assert.Equal("formValues", log3Values[1].Value);
         Assert.Equal("form", log3Values[2].Value);
+
+        Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), logs[3].EventId);
+        Assert.Equal(LogLevel.Debug, logs[3].LogLevel);
+        Assert.Equal(@"Required parameter ""string routeValues"" was not provided from route.", logs[3].Message);
+        var log4Values = Assert.IsAssignableFrom<IReadOnlyList<KeyValuePair<string, object>>>(logs[3].State);
+        Assert.Equal("string", log4Values[0].Value);
+        Assert.Equal("routeValues", log4Values[1].Value);
+        Assert.Equal("route", log4Values[2].Value);
     }
 
     [Fact]

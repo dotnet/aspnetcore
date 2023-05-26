@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
+using System.IO.Pipelines;
 using System.Linq;
 using System.Net;
 using System.Reflection;
@@ -16,6 +17,7 @@ using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Abstractions;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Shared;
@@ -946,11 +948,19 @@ public partial class HubConnection : IAsyncDisposable
     private async Task SendHubMessage(ConnectionState connectionState, HubMessage hubMessage, CancellationToken cancellationToken = default)
     {
         _state.AssertConnectionValid();
-        _protocol.WriteMessage(hubMessage, connectionState.Connection.Transport.Output);
 
         Log.SendingMessage(_logger, hubMessage);
 
-        await connectionState.Connection.Transport.Output.FlushAsync(cancellationToken).ConfigureAwait(false);
+        if (connectionState.UsingAcks())
+        {
+            await connectionState.WriteAsync(new SerializedHubMessage(hubMessage), cancellationToken).ConfigureAwait(false);
+        }
+        else
+        {
+            _protocol.WriteMessage(hubMessage, connectionState.Connection.Transport.Output);
+
+            await connectionState.Connection.Transport.Output.FlushAsync(cancellationToken).ConfigureAwait(false);
+        }
         Log.MessageSent(_logger, hubMessage);
 
         // We've sent a message, so don't ping for a while
@@ -1004,6 +1014,11 @@ public partial class HubConnection : IAsyncDisposable
         Log.ResettingKeepAliveTimer(_logger);
         connectionState.ResetTimeout();
 
+        if (!connectionState.ShouldProcessMessage(message))
+        {
+            return null;
+        }
+
         InvocationRequest? irq;
         switch (message)
         {
@@ -1054,6 +1069,14 @@ public partial class HubConnection : IAsyncDisposable
             case PingMessage _:
                 Log.ReceivedPing(_logger);
                 // timeout is reset above, on receiving any message
+                break;
+            case AckMessage ackMessage:
+                Log.ReceivedAckMessage(_logger, ackMessage.SequenceId);
+                connectionState.Ack(ackMessage);
+                break;
+            case SequenceMessage sequenceMessage:
+                Log.ReceivedSequenceMessage(_logger, sequenceMessage.SequenceId);
+                connectionState.ResetSequence(sequenceMessage);
                 break;
             default:
                 throw new InvalidOperationException($"Unexpected message type: {message.GetType().FullName}");
@@ -1235,6 +1258,7 @@ public partial class HubConnection : IAsyncDisposable
                                 }
 
                                 Log.HandshakeComplete(_logger);
+
                                 break;
                             }
                         }
@@ -1813,6 +1837,7 @@ public partial class HubConnection : IAsyncDisposable
         private readonly HubConnection _hubConnection;
         private readonly ILogger _logger;
         private readonly bool _hasInherentKeepAlive;
+        private readonly MessageBuffer? _messageBuffer;
 
         private readonly object _lock = new object();
         private readonly Dictionary<string, InvocationRequest> _pendingCalls = new Dictionary<string, InvocationRequest>(StringComparer.Ordinal);
@@ -1850,6 +1875,13 @@ public partial class HubConnection : IAsyncDisposable
 
             _logger = _hubConnection._logger;
             _hasInherentKeepAlive = connection.Features.Get<IConnectionInherentKeepAliveFeature>()?.HasInherentKeepAlive ?? false;
+
+            if (Connection.Features.Get<IReconnectFeature>() is IReconnectFeature feature)
+            {
+                _messageBuffer = new MessageBuffer(connection, hubConnection._protocol);
+
+                feature.NotifyOnReconnect = _messageBuffer.Resend;
+            }
         }
 
         public string GetNextId() => (++_nextInvocationId).ToString(CultureInfo.InvariantCulture);
@@ -1935,6 +1967,8 @@ public partial class HubConnection : IAsyncDisposable
         {
             Log.Stopping(_logger);
 
+            _messageBuffer?.Dispose();
+
             // Complete our write pipe, which should cause everything to shut down
             Log.TerminatingReceiveLoop(_logger);
             Connection.Transport.Input.CancelPendingRead();
@@ -1965,6 +1999,44 @@ public partial class HubConnection : IAsyncDisposable
                 }
             }
         }
+
+        public ValueTask<FlushResult> WriteAsync(SerializedHubMessage message, CancellationToken cancellationToken)
+        {
+            Debug.Assert(_messageBuffer is not null);
+            return _messageBuffer.WriteAsync(message, cancellationToken);
+        }
+
+        public bool ShouldProcessMessage(HubMessage message)
+        {
+            if (UsingAcks())
+            {
+                if (!_messageBuffer.ShouldProcessMessage(message))
+                {
+                    Log.DroppingMessage(_logger, ((HubInvocationMessage)message).GetType().Name, ((HubInvocationMessage)message).InvocationId);
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        public void Ack(AckMessage ackMessage)
+        {
+            if (UsingAcks())
+            {
+                _messageBuffer.Ack(ackMessage);
+            }
+        }
+
+        public void ResetSequence(SequenceMessage sequenceMessage)
+        {
+            if (UsingAcks())
+            {
+                _messageBuffer.ResetSequence(sequenceMessage);
+            }
+        }
+
+        [MemberNotNullWhen(true, nameof(_messageBuffer))]
+        public bool UsingAcks() => _messageBuffer is not null;
 
         public void ResetSendPing()
         {

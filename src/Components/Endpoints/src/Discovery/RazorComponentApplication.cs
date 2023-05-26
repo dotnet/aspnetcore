@@ -1,26 +1,67 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Components;
+using System.Diagnostics;
+using Microsoft.AspNetCore.Components.Web;
+
+namespace Microsoft.AspNetCore.Components.Discovery;
 
 /// <summary>
 /// The definition of a component based application.
 /// </summary>
-public class RazorComponentApplication
+[DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
+internal class RazorComponentApplication
 {
-    private readonly PageCollection _pageCollection;
+    private readonly PageComponentInfo[] _pages;
+    private readonly ComponentInfo[] _components;
 
-    // TODO: we define the concepts explicitly (like the collection of pages)
-    // In the future we need to decide if we want to do generalize this concept and use
-    // something "generic" like a list of "features".
-    internal RazorComponentApplication(PageCollection pagesCollection)
+    internal RazorComponentApplication(
+        PageComponentInfo[] pageCollection,
+        ComponentInfo[] componentCollection)
     {
-        _pageCollection = pagesCollection;
+        _pages = pageCollection;
+        _components = componentCollection;
     }
 
     /// <summary>
-    /// Gets the list of <see cref="PageDefinition"/> associated with the application.
+    /// Gets the list of <see cref="PageComponentInfo"/> associated with the application.
     /// </summary>
     /// <returns>The list of pages.</returns>
-    public IEnumerable<PageDefinition> Pages => _pageCollection.Pages;
+    public IReadOnlyList<PageComponentInfo> Pages => _pages;
+
+    /// <summary>
+    /// Gets the list of <see cref="ComponentInfo"/> associated with the application.
+    /// </summary>
+    public IReadOnlyList<ComponentInfo> Components => _components;
+
+    public ISet<IComponentRenderMode> GetDeclaredRenderModesByDiscoveredComponents()
+    {
+        var set = new HashSet<IComponentRenderMode>();
+        for (var i = 0; i < Components.Count; i++)
+        {
+            var component = Components[i];
+            switch (component.RenderMode)
+            {
+                case ServerRenderMode:
+                    set.Add(RenderMode.Server);
+                    break;
+                case WebAssemblyRenderMode:
+                    set.Add(RenderMode.WebAssembly);
+                    break;
+                case AutoRenderMode:
+                    set.Add(RenderMode.Server);
+                    set.Add(RenderMode.WebAssembly);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        return set;
+    }
+
+    private string GetDebuggerDisplay()
+    {
+        return $"Pages: {Pages.Count}, Components: {Components.Count}";
+    }
 }

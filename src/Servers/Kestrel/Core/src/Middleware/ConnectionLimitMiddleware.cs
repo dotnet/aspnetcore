@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
@@ -34,7 +35,7 @@ internal sealed class ConnectionLimitMiddleware<T> where T : BaseConnectionConte
         {
             KestrelEventSource.Log.ConnectionRejected(connection.ConnectionId);
             _trace.ConnectionRejected(connection.ConnectionId);
-            _metrics.ConnectionRejected(connection);
+            _metrics.ConnectionRejected(connection.Features.GetRequiredFeature<IConnectionMetricsContextFeature>().MetricsContext);
             await connection.DisposeAsync();
             return;
         }

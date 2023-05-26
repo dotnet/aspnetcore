@@ -56,6 +56,6 @@ internal sealed class WebViewJSRuntime : JSRuntime
 
     protected override Task TransmitStreamAsync(long streamId, DotNetStreamReference dotNetStreamReference)
     {
-        return TransmitDataStreamToJS.TransmitStreamAsync(this, streamId, dotNetStreamReference);
+        return TransmitDataStreamToJS.TransmitStreamAsync(this, "Blazor._internal.receiveWebViewDotNetDataStream", streamId, dotNetStreamReference);
     }
 }

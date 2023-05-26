@@ -38,6 +38,22 @@ app.MapGet("/", () => "Hello, world!");
     }
 
     [Fact]
+    public async Task MapAction_ReturnsTodo_Has_Metadata()
+    {
+        var (_, compilation) = await RunGeneratorAsync("""
+app.MapGet("/", () => new Todo());
+""");
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var metadata = endpoint.Metadata.OfType<IProducesResponseTypeMetadata>().Single();
+        Assert.Equal(200, metadata.StatusCode);
+        Assert.Equal("application/json", metadata.ContentTypes.Single());
+        Assert.Equal(typeof(Todo), metadata.Type);
+
+        await VerifyAgainstBaselineUsingFile(compilation);
+    }
+
+    [Fact]
     public async Task MapAction_ReturnsVoid_Has_No_Metadata()
     {
         var (_, compilation) = await RunGeneratorAsync("""
@@ -365,5 +381,143 @@ app.MapPost("/", (AccessesServicesMetadataBinder parameter1) => "Test");
 
         // Assert
         Assert.Contains(endpoint.Metadata, m => m is MetadataService);
+    }
+
+    [Fact]
+    public async Task Create_CombinesDefaultMetadata_AndMetadataFromReturnTypesImplementingIEndpointMetadataProvider()
+    {
+        var (_, compilation) = await RunGeneratorAsync("""
+app.MapPost("/", () => new CountsDefaultEndpointMetadataResult()).WithMetadata(new CustomEndpointMetadata { Source = MetadataSource.Caller });
+""");
+
+        // Act
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        // Assert
+        Assert.Contains(endpoint.Metadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Caller });
+        // Differs from RDF test because we end up with more metadata in RDG.
+        Assert.Contains(endpoint.Metadata, m => m is MetadataCountMetadata { Count: > 1 });
+    }
+
+    [Fact]
+    public async Task Create_CombinesDefaultMetadata_AndMetadataFromTaskWrappedReturnTypesImplementingIEndpointMetadataProvider()
+    {
+        // Arrange
+        var (_, compilation) = await RunGeneratorAsync("""
+app.MapPost("/", () => Task.FromResult(new CountsDefaultEndpointMetadataResult())).WithMetadata(new CustomEndpointMetadata { Source = MetadataSource.Caller });
+""");
+
+        // Act
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        // Assert
+        Assert.Contains(endpoint.Metadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Caller });
+        // Differs from RDF test because we end up with more metadata in RDG.
+        Assert.Contains(endpoint.Metadata, m => m is MetadataCountMetadata { Count: > 1 });
+    }
+
+    [Fact]
+    public async Task AndMetadataFromValueTaskWrappedReturnTypesImplementingIEndpointMetadataProvider()
+    {
+        // Arrange
+        var (_, compilation) = await RunGeneratorAsync("""
+app.MapPost("/", () => ValueTask.FromResult(new CountsDefaultEndpointMetadataResult())).WithMetadata(new CustomEndpointMetadata { Source = MetadataSource.Caller });
+""");
+
+        // Act
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        // Assert
+        Assert.Contains(endpoint.Metadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Caller });
+        // Differs from RDF test because we end up with more metadata in RDG.
+        Assert.Contains(endpoint.Metadata, m => m is MetadataCountMetadata { Count: > 1 });
+    }
+
+    [Fact]
+    public async Task Create_CombinesDefaultMetadata_AndMetadataFromParameterTypesImplementingIEndpointParameterMetadataProvider()
+    {
+        // Arrange
+        var (_, compilation) = await RunGeneratorAsync("""
+app.MapPost("/", (AddsCustomParameterMetadata param1) => "Hello").WithMetadata(new CustomEndpointMetadata { Source = MetadataSource.Caller });
+""");
+
+        // Act
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        // Assert
+        Assert.Contains(endpoint.Metadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Caller });
+        Assert.Contains(endpoint.Metadata, m => m is ParameterNameMetadata { Name: "param1" });
+    }
+
+    [Fact]
+    public async Task Create_CombinesDefaultMetadata_AndMetadataFromParameterTypesImplementingIEndpointMetadataProvider()
+    {
+        // Arrange
+        var (_, compilation) = await RunGeneratorAsync("""
+app.MapPost("/", (AddsCustomParameterMetadata param1) => "Hello").WithMetadata(new CustomEndpointMetadata { Source = MetadataSource.Caller });
+""");
+
+        // Act
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        // Assert
+        Assert.Contains(endpoint.Metadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Caller });
+        Assert.Contains(endpoint.Metadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Parameter });
+    }
+
+    [Fact]
+    public async Task Create_FlowsRoutePattern_ToMetadataProvider()
+    {
+        // Arrange
+        var (_, compilation) = await RunGeneratorAsync("""
+app.MapPost("/test/pattern", (AddsRoutePatternMetadata param1) => {});
+""");
+
+        // Act
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        // Assert
+        Assert.Contains(endpoint.Metadata, m => m is RoutePatternMetadata { RoutePattern: "/test/pattern" });
+    }
+
+    [Fact]
+    public async Task InferMetadata_ThenCreate_CombinesAllMetadata_InCorrectOrder()
+    {
+        // Arrange
+        var (_, compilation) = await RunGeneratorAsync("""
+app.MapPost("/test/pattern", [Attribute1, Attribute2] (AddsCustomParameterMetadata param1) => new CountsDefaultEndpointMetadataPoco())
+   .WithMetadata(new CustomEndpointMetadata { Source = MetadataSource.Caller });
+""");
+        // Act
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        // Assert
+        // NOTE: Depending on whether we are running under RDG or RDG, there are some generated types which
+        //       don't have equivalents in the opposite. The two examples here are NullableContextAttribute which
+        //       is generated by Roslyn depending on the context, and SourceKey which is RDF specific. So we filter
+        //       them out so that the collection-based assertion below remains consistent with the original version
+        //       of this test from RDF.
+        var filteredMetadata = endpoint.Metadata.Where(
+            m => m.GetType().Name != "NullableContextAttribute" &&
+            m.GetType().Name != "SourceKey" &&
+            m is not MethodInfo &&
+            m is not HttpMethodMetadata &&
+            m is not Attribute1 &&
+            m is not Attribute2 &&
+            m is not IRouteDiagnosticsMetadata);
+
+        Assert.Collection(filteredMetadata,
+            // Inferred AcceptsMetadata from RDF for complex type
+            m => Assert.True(m is IAcceptsMetadata am && am.RequestType == typeof(AddsCustomParameterMetadata)),
+            // Inferred ProducesResopnseTypeMetadata from RDF for complex type
+            m => Assert.Equal(typeof(CountsDefaultEndpointMetadataPoco), ((IProducesResponseTypeMetadata)m).Type),
+            // Metadata provided by parameters implementing IEndpointParameterMetadataProvider
+            m => Assert.True(m is ParameterNameMetadata { Name: "param1" }),
+            // Metadata provided by parameters implementing IEndpointMetadataProvider
+            m => Assert.True(m is CustomEndpointMetadata { Source: MetadataSource.Parameter }),
+            // Metadata provided by return type implementing IEndpointMetadataProvider
+            m => Assert.True(m is MetadataCountMetadata),
+            // Entry-specific metadata added after a call to InferMetadata
+            m => Assert.True(m is CustomEndpointMetadata { Source: MetadataSource.Caller }));
     }
 }

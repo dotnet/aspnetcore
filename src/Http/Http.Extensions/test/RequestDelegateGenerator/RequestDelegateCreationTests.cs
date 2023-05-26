@@ -38,7 +38,6 @@ app.MapGet("/hello", ({parameterType} p) => p == null ? "null!" : "Hello world!"
 
         VerifyStaticEndpointModel(results, endpointModel =>
         {
-            Assert.Equal("/hello", endpointModel.RoutePattern);
             Assert.Equal("MapGet", endpointModel.HttpMethod);
             var p = Assert.Single(endpointModel.Parameters);
             Assert.Equal(EndpointParameterSource.SpecialType, p.Source);
@@ -60,7 +59,6 @@ app.MapGet("/hello", (HttpRequest req, HttpResponse res) => req is null || res i
 
         VerifyStaticEndpointModel(results, endpointModel =>
         {
-            Assert.Equal("/hello", endpointModel.RoutePattern);
             Assert.Equal("MapGet", endpointModel.HttpMethod);
 
             Assert.Collection(endpointModel.Parameters,
@@ -96,7 +94,7 @@ app.MapGet("/hello", () =>
 
         VerifyStaticEndpointModel(result, endpointModel =>
         {
-            Assert.Equal("/hello", endpointModel.RoutePattern);
+            Assert.Equal("MapGet", endpointModel.HttpMethod);
         });
 
         var httpContext = CreateHttpContext();
@@ -133,7 +131,6 @@ app.MapGet("/zh", (HttpRequest req, HttpResponse res) => "你好世界！");
         VerifyStaticEndpointModels(results, endpointModels => Assert.Collection(endpointModels,
             endpointModel =>
             {
-                Assert.Equal("/en", endpointModel.RoutePattern);
                 Assert.Equal("MapGet", endpointModel.HttpMethod);
                 var reqParam = Assert.Single(endpointModel.Parameters);
                 Assert.Equal(EndpointParameterSource.SpecialType, reqParam.Source);
@@ -141,7 +138,6 @@ app.MapGet("/zh", (HttpRequest req, HttpResponse res) => "你好世界！");
             },
             endpointModel =>
             {
-                Assert.Equal("/es", endpointModel.RoutePattern);
                 Assert.Equal("MapGet", endpointModel.HttpMethod);
                 var reqParam = Assert.Single(endpointModel.Parameters);
                 Assert.Equal(EndpointParameterSource.SpecialType, reqParam.Source);
@@ -149,7 +145,6 @@ app.MapGet("/zh", (HttpRequest req, HttpResponse res) => "你好世界！");
             },
             endpointModel =>
             {
-                Assert.Equal("/zh", endpointModel.RoutePattern);
                 Assert.Equal("MapGet", endpointModel.HttpMethod);
                 Assert.Collection(endpointModel.Parameters,
                     reqParam =>
@@ -430,6 +425,129 @@ app.MapGet("/", () => GetString())
     {
         var source = """
 app.MapGet("/", (HttpContext httpContext, int id) =>
+{
+    httpContext.Items["id"] = id;
+});
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["id"] = "42",
+        });
+
+        httpContext.Request.Headers.Referer = "https://example.org";
+        await endpoint.RequestDelegate(httpContext);
+
+        Assert.Equal(42, httpContext.Items["id"]);
+        Assert.Equal(200, httpContext.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task RequestDelegateCreation_SupportMapMethods()
+    {
+        var source = """
+var supportedMethods = new[] { "GET", "POST" };
+app.MapMethods("/", supportedMethods, (HttpContext httpContext, int id) =>
+{
+    httpContext.Items["id"] = id;
+});
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["id"] = "42",
+        });
+
+        httpContext.Request.Headers.Referer = "https://example.org";
+        await endpoint.RequestDelegate(httpContext);
+
+        Assert.Equal(42, httpContext.Items["id"]);
+        Assert.Equal(200, httpContext.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task RequestDelegateCreation_SupportMapMethods_InvalidRequestMethod()
+    {
+        var source = """
+var supportedMethods = new[] { "DELETE", "PATCH" };
+app.MapMethods("/", supportedMethods, (HttpContext httpContext, int id) =>
+{
+    httpContext.Items["id"] = id;
+});
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Method = "GET";
+
+        await endpoint.RequestDelegate(httpContext);
+
+        Assert.Null(httpContext.Items["id"]);
+        Assert.Equal(400, httpContext.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task RequestDelegateCreation_SupportsMap()
+    {
+        var source = """
+app.Map("/", (HttpContext httpContext, int id) =>
+{
+    httpContext.Items["id"] = id;
+});
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["id"] = "42",
+        });
+
+        httpContext.Request.Headers.Referer = "https://example.org";
+        await endpoint.RequestDelegate(httpContext);
+
+        Assert.Equal(42, httpContext.Items["id"]);
+        Assert.Equal(200, httpContext.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task RequestDelegateCreation_SupportsMapFallback()
+    {
+        var source = """
+app.MapFallback("/", (HttpContext httpContext, int id) =>
+{
+    httpContext.Items["id"] = id;
+});
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["id"] = "42",
+        });
+
+        httpContext.Request.Headers.Referer = "https://example.org";
+        await endpoint.RequestDelegate(httpContext);
+
+        Assert.Equal(42, httpContext.Items["id"]);
+        Assert.Equal(200, httpContext.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task RequestDelegateCreation_SupportsMapFallback_NoRoute()
+    {
+        var source = """
+app.MapFallback((HttpContext httpContext, int id) =>
 {
     httpContext.Items["id"] = id;
 });

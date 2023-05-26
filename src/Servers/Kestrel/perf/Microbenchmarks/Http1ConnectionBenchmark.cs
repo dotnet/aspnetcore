@@ -39,7 +39,7 @@ public class Http1ConnectionBenchmark
             serviceContext: serviceContext,
             connectionContext: null,
             transport: pair.Transport,
-            timeoutControl: new TimeoutControl(timeoutHandler: null),
+            timeoutControl: new TimeoutControl(timeoutHandler: null, TimeProvider.System),
             memoryPool: memoryPool,
             connectionFeatures: new FeatureCollection());
 

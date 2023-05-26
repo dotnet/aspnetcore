@@ -117,7 +117,10 @@ public class AspNetProcess : IDisposable
         foreach (var page in pages)
         {
             await AssertOk(page.Url);
-            await ContainsLinks(page);
+            if (page.Links?.Count() > 0)
+            {
+                await ContainsLinks(page);
+            }
         }
     }
 

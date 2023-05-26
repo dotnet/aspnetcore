@@ -86,7 +86,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         // has always taken ILoggerFactory so to avoid the per-instance string allocation of the logger name we just pass the
         // logger name in here as a string literal.
         _logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Components.RenderTree.Renderer");
-        _componentFactory = new ComponentFactory(componentActivator);
+        _componentFactory = new ComponentFactory(componentActivator, this);
     }
 
     internal HotReloadManager HotReloadManager { get; set; } = HotReloadManager.Default;
@@ -162,9 +162,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     /// <param name="componentType">The type of the component to instantiate.</param>
     /// <returns>The component instance.</returns>
     protected IComponent InstantiateComponent([DynamicallyAccessedMembers(Component)] Type componentType)
-    {
-        return _componentFactory.InstantiateComponent(_serviceProvider, componentType);
-    }
+        => _componentFactory.InstantiateComponent(_serviceProvider, componentType, null);
 
     /// <summary>
     /// Associates the <see cref="IComponent"/> with the <see cref="Renderer"/>, assigning
@@ -475,7 +473,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             : EventArgsTypeCache.GetEventArgsType(methodInfo);
     }
 
-    internal void InstantiateChildComponentOnFrame(ref RenderTreeFrame frame, int parentComponentId)
+    internal ComponentState InstantiateChildComponentOnFrame(ref RenderTreeFrame frame, int parentComponentId)
     {
         if (frame.FrameTypeField != RenderTreeFrameType.Component)
         {
@@ -487,10 +485,12 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             throw new ArgumentException($"The frame already has a non-null component instance", nameof(frame));
         }
 
-        var newComponent = InstantiateComponent(frame.ComponentTypeField);
+        var newComponent = _componentFactory.InstantiateComponent(_serviceProvider, frame.ComponentTypeField, parentComponentId);
         var newComponentState = AttachAndInitComponent(newComponent, parentComponentId);
         frame.ComponentStateField = newComponentState;
         frame.ComponentIdField = newComponentState.ComponentId;
+
+        return newComponentState;
     }
 
     internal void AddToPendingTasksWithErrorHandling(Task task, ComponentState? owningComponentState)
@@ -876,28 +876,20 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             var disposeComponentId = _batchBuilder.ComponentDisposalQueue.Dequeue();
             var disposeComponentState = GetRequiredComponentState(disposeComponentId);
             Log.DisposingComponent(_logger, disposeComponentState);
-            if (!(disposeComponentState.Component is IAsyncDisposable))
+
+            try
             {
-                if (!disposeComponentState.TryDisposeInBatch(_batchBuilder, out var exception))
+                var disposalTask = disposeComponentState.DisposeInBatchAsync(_batchBuilder);
+                if (disposalTask.IsCompletedSuccessfully)
                 {
-                    exceptions ??= new List<Exception>();
-                    exceptions.Add(exception);
-                }
-            }
-            else
-            {
-                var result = disposeComponentState.DisposeInBatchAsync(_batchBuilder);
-                if (result.IsCompleted)
-                {
-                    if (!result.IsCompletedSuccessfully)
-                    {
-                        exceptions ??= new List<Exception>();
-                        exceptions.Add(result.Exception);
-                    }
+                    // If it's a IValueTaskSource backed ValueTask,
+                    // inform it its result has been read so it can reset
+                    disposalTask.GetAwaiter().GetResult();
                 }
                 else
                 {
                     // We set owningComponentState to null because we don't want exceptions during disposal to be recoverable
+                    var result = disposalTask.AsTask();
                     AddToPendingTasksWithErrorHandling(GetHandledAsynchronousDisposalErrorsTask(result), owningComponentState: null);
 
                     async Task GetHandledAsynchronousDisposalErrorsTask(Task result)
@@ -912,6 +904,11 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
                         }
                     }
                 }
+            }
+            catch (Exception exception)
+            {
+                exceptions ??= new List<Exception>();
+                exceptions.Add(exception);
             }
 
             _componentStateById.Remove(disposeComponentId);
@@ -1080,39 +1077,25 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         {
             Log.DisposingComponent(_logger, componentState);
 
-            // Components shouldn't need to implement IAsyncDisposable and IDisposable simultaneously,
-            // but in case they do, we prefer the async overload since we understand the sync overload
-            // is implemented for more "constrained" scenarios.
-            // Component authors are responsible for their IAsyncDisposable implementations not taking
-            // forever.
-            if (componentState.Component is IAsyncDisposable asyncDisposable)
+            try
             {
-                try
+                var task = componentState.DisposeAsync();
+                if (task.IsCompletedSuccessfully)
                 {
-                    var task = asyncDisposable.DisposeAsync();
-                    if (!task.IsCompletedSuccessfully)
-                    {
-                        asyncDisposables ??= new();
-                        asyncDisposables.Add(task.AsTask());
-                    }
+                    // If it's a IValueTaskSource backed ValueTask,
+                    // inform it its result has been read so it can reset
+                    task.GetAwaiter().GetResult();
                 }
-                catch (Exception exception)
+                else
                 {
-                    exceptions ??= new List<Exception>();
-                    exceptions.Add(exception);
+                    asyncDisposables ??= new();
+                    asyncDisposables.Add(task.AsTask());
                 }
             }
-            else if (componentState.Component is IDisposable disposable)
+            catch (Exception exception)
             {
-                try
-                {
-                    componentState.Dispose();
-                }
-                catch (Exception exception)
-                {
-                    exceptions ??= new List<Exception>();
-                    exceptions.Add(exception);
-                }
+                exceptions ??= new List<Exception>();
+                exceptions.Add(exception);
             }
         }
 
@@ -1157,6 +1140,27 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
                 HandleException(exceptions[0]);
             }
         }
+    }
+
+    /// <summary>
+    /// Determines how to handle an <see cref="IComponentRenderMode"/> when obtaining a component instance.
+    /// This is only called for components that have specified a render mode. Subclasses may override this
+    /// method to return a component of a different type, or throw, depending on whether the renderer
+    /// supports the render mode and how it implements that support.
+    /// </summary>
+    /// <param name="componentType">The type of component that was requested.</param>
+    /// <param name="parentComponentId">The parent component ID, or null if it is a root component.</param>
+    /// <param name="componentActivator">An <see cref="IComponentActivator"/> that should be used when instantiating component objects.</param>
+    /// <param name="componentTypeRenderMode">The <see cref="IComponentRenderMode"/> declared on <paramref name="componentType"/>.</param>
+    /// <returns>An <see cref="IComponent"/> instance.</returns>
+    protected internal virtual IComponent ResolveComponentForRenderMode(
+        [DynamicallyAccessedMembers(Component)] Type componentType,
+        int? parentComponentId,
+        IComponentActivator componentActivator,
+        IComponentRenderMode componentTypeRenderMode)
+    {
+        // Nothing is supported by default. Subclasses must override this to opt into supporting specific render modes.
+        throw new NotSupportedException($"Cannot supply a component of type '{componentType}' because the current platform does not support the render mode '{componentTypeRenderMode}'.");
     }
 
     /// <summary>

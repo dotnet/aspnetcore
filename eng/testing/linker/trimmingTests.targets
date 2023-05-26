@@ -5,7 +5,7 @@
     <TestConsoleAppSourceFiles Condition="'@(TestConsoleAppSourceFiles)' == ''" Include="$(MSBuildProjectDirectory)\*.cs" />
 
     <TestSupportFiles Include="$(MSBuildThisFileDirectory)SupportFiles\Directory.Build.*">
-      <DestinationFolder>$(TrimmingTestDir)</DestinationFolder>
+      <DestinationFolder>$([MSBuild]::NormalizeDirectory('$(TrimmingTestProjectsDir)', '$(MSBuildProjectName)'))</DestinationFolder>
     </TestSupportFiles>
   </ItemGroup>
 
@@ -13,7 +13,9 @@
           Inputs="@(TestSupportFiles)"
           Outputs="@(TestSupportFiles->'%(DestinationFolder)\%(FileName)%(Extension)')">
     <MakeDir Directories="%(TestSupportFiles.DestinationFolder)" />
-    <Copy SourceFiles="@(TestSupportFiles)" DestinationFolder="%(TestSupportFiles.DestinationFolder)" />
+    <Copy SourceFiles="@(TestSupportFiles)"
+          DestinationFolder="%(TestSupportFiles.DestinationFolder)"
+          SkipUnchangedFiles="true" />
   </Target>
 
   <Target Name="GetTestConsoleApps">
@@ -120,7 +122,7 @@
       <Output TaskParameter="ExitCode" PropertyName="ExecutionExitCode" />
     </Exec>
 
-    <Error Condition="'$(ExecutionExitCode)' != '100'" Text="Error: [Failed Test]: %(TestConsoleApps.ProjectCompileItems). The Command %(TestConsoleApps.TestCommand) return a non-success exit code." ContinueOnError="ErrorAndContinue" />
+    <Error Condition="'$(ExecutionExitCode)' != '100'" Text="Error: [Failed Test]: %(TestConsoleApps.ProjectCompileItems). The Command %(TestConsoleApps.TestCommand) returned a non-success exit code: $(ExecutionExitCode)." ContinueOnError="ErrorAndContinue" />
   </Target>
 
   <Target Name="Test" DependsOnTargets="ExecuteApplications" />

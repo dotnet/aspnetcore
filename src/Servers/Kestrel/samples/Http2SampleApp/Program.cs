@@ -50,7 +50,7 @@ public class Program
                                     throw new NotSupportedException("Prohibited cipher: " + tlsFeature.CipherAlgorithm);
                                 }
 
-                                return next();
+                                return next(context);
                             });
                         });
 

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
@@ -67,7 +68,7 @@ public class Http3HttpProtocolFeatureCollectionTests
         }
     }
 
-    private class TestConnectionFeatures : IProtocolErrorCodeFeature, IStreamIdFeature, IStreamAbortFeature, IStreamClosedFeature
+    private class TestConnectionFeatures : IProtocolErrorCodeFeature, IStreamIdFeature, IStreamAbortFeature, IStreamClosedFeature, IConnectionMetricsContextFeature
     {
         public TestConnectionFeatures()
         {
@@ -76,11 +77,13 @@ public class Http3HttpProtocolFeatureCollectionTests
             featureCollection.Set<IStreamIdFeature>(this);
             featureCollection.Set<IStreamAbortFeature>(this);
             featureCollection.Set<IStreamClosedFeature>(this);
+            featureCollection.Set<IConnectionMetricsContextFeature>(this);
 
             FeatureCollection = featureCollection;
         }
 
         public IFeatureCollection FeatureCollection { get; }
+        public ConnectionMetricsContext MetricsContext { get; }
         long IProtocolErrorCodeFeature.Error { get; set; }
         long IStreamIdFeature.StreamId { get; }
 

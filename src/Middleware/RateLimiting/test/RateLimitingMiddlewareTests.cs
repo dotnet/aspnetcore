@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
-using Microsoft.Extensions.Metrics;
 using Microsoft.Extensions.Options;
 using Moq;
 

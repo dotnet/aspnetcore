@@ -2,13 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Routing;
 
 /// <summary>
 /// Metadata used during link generation to find the associated endpoint using route name.
 /// </summary>
-[DebuggerDisplay("{DebuggerToString(),nq}")]
+[DebuggerDisplay("{ToString(),nq}")]
 public sealed class RouteNameMetadata : IRouteNameMetadata
 {
     /// <summary>
@@ -25,8 +26,9 @@ public sealed class RouteNameMetadata : IRouteNameMetadata
     /// </summary>
     public string? RouteName { get; }
 
-    internal string DebuggerToString()
+    /// <inheritdoc/>
+    public override string ToString()
     {
-        return $"Name: {RouteName}";
+        return DebuggerHelpers.GetDebugText(nameof(RouteName), RouteName);
     }
 }

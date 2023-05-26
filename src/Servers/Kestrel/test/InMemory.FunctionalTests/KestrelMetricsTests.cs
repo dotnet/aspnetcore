@@ -18,7 +18,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.Metrics;
+using Microsoft.Extensions.Diagnostics.Metrics;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
 
@@ -46,9 +46,9 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
         });
 
         var testMeterFactory = new TestMeterFactory();
-        using var connectionDuration = new InstrumentRecorder<double>(new TestMeterRegistry(testMeterFactory.Meters), "Microsoft.AspNetCore.Server.Kestrel", "connection-duration");
-        using var currentConnections = new InstrumentRecorder<long>(new TestMeterRegistry(testMeterFactory.Meters), "Microsoft.AspNetCore.Server.Kestrel", "current-connections");
-        using var queuedConnections = new InstrumentRecorder<long>(new TestMeterRegistry(testMeterFactory.Meters), "Microsoft.AspNetCore.Server.Kestrel", "queued-connections");
+        using var connectionDuration = new InstrumentRecorder<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "connection-duration");
+        using var currentConnections = new InstrumentRecorder<long>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "current-connections");
+        using var queuedConnections = new InstrumentRecorder<long>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "queued-connections");
 
         var serviceContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
 
@@ -89,6 +89,64 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
     }
 
     [Fact]
+    public async Task Http1Connection_BeginListeningAfterConnectionStarted()
+    {
+        var sync = new SyncPoint();
+        bool? hasConnectionMetricsTagsFeature = null;
+
+        var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
+        listenOptions.Use(next =>
+        {
+            return async connectionContext =>
+            {
+                hasConnectionMetricsTagsFeature = connectionContext.Features.Get<IConnectionMetricsTagsFeature>() != null;
+
+                // Wait for the test to verify the connection has started.
+                await sync.WaitToContinue();
+
+                await next(connectionContext);
+            };
+        });
+
+        var testMeterFactory = new TestMeterFactory();
+        var serviceContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
+
+        var sendString = "POST / HTTP/1.0\r\nContent-Length: 12\r\n\r\nHello World?";
+
+        await using var server = new TestServer(EchoApp, serviceContext, listenOptions);
+
+        using (var connection = server.CreateConnection())
+        {
+            await connection.Send(sendString);
+
+            // Wait for connection to start on the server.
+            await sync.WaitForSyncPoint();
+
+            using var connectionDuration = new InstrumentRecorder<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "connection-duration");
+            using var currentConnections = new InstrumentRecorder<long>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "current-connections");
+            using var queuedConnections = new InstrumentRecorder<long>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "queued-connections");
+
+            // Signal that connection can continue.
+            sync.Continue();
+
+            await connection.ReceiveEnd(
+                "HTTP/1.1 200 OK",
+                "Connection: close",
+                $"Date: {serviceContext.DateHeaderValue}",
+                "",
+                "Hello World?");
+
+            await connection.WaitForConnectionClose();
+
+            Assert.Empty(connectionDuration.GetMeasurements());
+            Assert.Empty(currentConnections.GetMeasurements());
+            Assert.Empty(queuedConnections.GetMeasurements());
+
+            Assert.False(hasConnectionMetricsTagsFeature);
+        }
+    }
+
+    [Fact]
     public async Task Http1Connection_IHttpConnectionTagsFeatureIgnoreFeatureSetOnTransport()
     {
         var sync = new SyncPoint();
@@ -111,9 +169,9 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
         });
 
         var testMeterFactory = new TestMeterFactory();
-        using var connectionDuration = new InstrumentRecorder<double>(new TestMeterRegistry(testMeterFactory.Meters), "Microsoft.AspNetCore.Server.Kestrel", "connection-duration");
-        using var currentConnections = new InstrumentRecorder<long>(new TestMeterRegistry(testMeterFactory.Meters), "Microsoft.AspNetCore.Server.Kestrel", "current-connections");
-        using var queuedConnections = new InstrumentRecorder<long>(new TestMeterRegistry(testMeterFactory.Meters), "Microsoft.AspNetCore.Server.Kestrel", "queued-connections");
+        using var connectionDuration = new InstrumentRecorder<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "connection-duration");
+        using var currentConnections = new InstrumentRecorder<long>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "current-connections");
+        using var queuedConnections = new InstrumentRecorder<long>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "queued-connections");
 
         var serviceContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
 
@@ -186,9 +244,9 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
         });
 
         var testMeterFactory = new TestMeterFactory();
-        using var connectionDuration = new InstrumentRecorder<double>(new TestMeterRegistry(testMeterFactory.Meters), "Microsoft.AspNetCore.Server.Kestrel", "connection-duration");
-        using var currentConnections = new InstrumentRecorder<long>(new TestMeterRegistry(testMeterFactory.Meters), "Microsoft.AspNetCore.Server.Kestrel", "current-connections");
-        using var queuedConnections = new InstrumentRecorder<long>(new TestMeterRegistry(testMeterFactory.Meters), "Microsoft.AspNetCore.Server.Kestrel", "queued-connections");
+        using var connectionDuration = new InstrumentRecorder<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "connection-duration");
+        using var currentConnections = new InstrumentRecorder<long>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "current-connections");
+        using var queuedConnections = new InstrumentRecorder<long>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "queued-connections");
 
         var serviceContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
 
@@ -229,9 +287,9 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
         var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
 
         var testMeterFactory = new TestMeterFactory();
-        using var connectionDuration = new InstrumentRecorder<double>(new TestMeterRegistry(testMeterFactory.Meters), "Microsoft.AspNetCore.Server.Kestrel", "connection-duration");
-        using var currentConnections = new InstrumentRecorder<long>(new TestMeterRegistry(testMeterFactory.Meters), "Microsoft.AspNetCore.Server.Kestrel", "current-connections");
-        using var currentUpgradedRequests = new InstrumentRecorder<long>(new TestMeterRegistry(testMeterFactory.Meters), "Microsoft.AspNetCore.Server.Kestrel", "current-upgraded-connections");
+        using var connectionDuration = new InstrumentRecorder<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "connection-duration");
+        using var currentConnections = new InstrumentRecorder<long>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "current-connections");
+        using var currentUpgradedRequests = new InstrumentRecorder<long>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "current-upgraded-connections");
 
         var serviceContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
 
@@ -273,12 +331,12 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
         var requestsReceived = 0;
 
         var testMeterFactory = new TestMeterFactory();
-        using var connectionDuration = new InstrumentRecorder<double>(new TestMeterRegistry(testMeterFactory.Meters), "Microsoft.AspNetCore.Server.Kestrel", "connection-duration");
-        using var currentConnections = new InstrumentRecorder<long>(new TestMeterRegistry(testMeterFactory.Meters), "Microsoft.AspNetCore.Server.Kestrel", "current-connections");
-        using var queuedConnections = new InstrumentRecorder<long>(new TestMeterRegistry(testMeterFactory.Meters), "Microsoft.AspNetCore.Server.Kestrel", "queued-connections");
-        using var queuedRequests = new InstrumentRecorder<long>(new TestMeterRegistry(testMeterFactory.Meters), "Microsoft.AspNetCore.Server.Kestrel", "queued-requests");
-        using var tlsHandshakeDuration = new InstrumentRecorder<double>(new TestMeterRegistry(testMeterFactory.Meters), "Microsoft.AspNetCore.Server.Kestrel", "tls-handshake-duration");
-        using var currentTlsHandshakes = new InstrumentRecorder<long>(new TestMeterRegistry(testMeterFactory.Meters), "Microsoft.AspNetCore.Server.Kestrel", "current-tls-handshakes");
+        using var connectionDuration = new InstrumentRecorder<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "connection-duration");
+        using var currentConnections = new InstrumentRecorder<long>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "current-connections");
+        using var queuedConnections = new InstrumentRecorder<long>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "queued-connections");
+        using var queuedRequests = new InstrumentRecorder<long>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "queued-requests");
+        using var tlsHandshakeDuration = new InstrumentRecorder<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "tls-handshake-duration");
+        using var currentTlsHandshakes = new InstrumentRecorder<long>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "current-tls-handshakes");
 
         await using (var server = new TestServer(context =>
         {

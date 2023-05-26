@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Components;
 /// </Summary>
 internal static class TransmitDataStreamToJS
 {
-    internal static async Task TransmitStreamAsync(IJSRuntime runtime, long streamId, DotNetStreamReference dotNetStreamReference)
+    internal static async Task TransmitStreamAsync(IJSRuntime runtime, string methodIdentifier, long streamId, DotNetStreamReference dotNetStreamReference)
     {
         var buffer = ArrayPool<byte>.Shared.Rent(32 * 1024);
 
@@ -21,18 +21,18 @@ internal static class TransmitDataStreamToJS
             int bytesRead;
             while ((bytesRead = await dotNetStreamReference.Stream.ReadAsync(buffer)) > 0)
             {
-                await runtime.InvokeVoidAsync("Blazor._internal.receiveDotNetDataStream", streamId, buffer, bytesRead, null);
+                await runtime.InvokeVoidAsync(methodIdentifier, streamId, buffer, bytesRead, null);
             }
 
             // Notify client that the stream has completed
-            await runtime.InvokeVoidAsync("Blazor._internal.receiveDotNetDataStream", streamId, Array.Empty<byte>(), 0, null);
+            await runtime.InvokeVoidAsync(methodIdentifier, streamId, Array.Empty<byte>(), 0, null);
         }
         catch (Exception ex)
         {
             try
             {
                 // Attempt to notify the client of the error.
-                await runtime.InvokeVoidAsync("Blazor._internal.receiveDotNetDataStream", streamId, Array.Empty<byte>(), 0, ex.Message);
+                await runtime.InvokeVoidAsync(methodIdentifier, streamId, Array.Empty<byte>(), 0, ex.Message);
             }
             catch
             {
@@ -51,5 +51,4 @@ internal static class TransmitDataStreamToJS
             }
         }
     }
-
 }

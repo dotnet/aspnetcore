@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json.schemastore.org/ide.host",
+  "order": 610,
+  "icon": "icon.png",
+  "disableHttpsSymbol": "NoHttps",
+  "symbolInfo": [
+    {
+      "id": "UseServer",
+      "isVisible": false,
+      "persistenceScope": "templateGroup"
+    },
+    {
+      "id": "UseWebAssembly",
+      "isVisible": false,
+      "persistenceScope": "templateGroup"
+    },
+    {
+      "id": "PWA",
+      "isVisible": false,
+      "persistenceScope": "templateGroup"
+    },
+    {
+      "id": "UseProgramMain",
+      "isVisible": true,
+      "persistenceScope": "shared",
+      "persistenceScopeName": "Microsoft"
+    }
+  ]
+}
