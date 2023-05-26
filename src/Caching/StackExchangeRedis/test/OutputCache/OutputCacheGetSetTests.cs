@@ -142,6 +142,17 @@ public class OutputCacheGetSetTests : IClassFixture<RedisConnectionFixture>
     }
 
     [Fact]
+    public async Task GetMissingKeyReturnsFalse_BufferWriter() // "true" result checked in MultiSegmentWriteWorksAsExpected_BufferWriter
+    {
+        var cache = Assert.IsAssignableFrom<IOutputCacheBufferWriterStore>(await Cache().ConfigureAwait(false));
+        var key = Guid.NewGuid().ToString();
+
+        var bufferWriter = new ArrayBufferWriter<byte>();
+        Assert.False(await cache.GetAsync(key, bufferWriter, CancellationToken.None));
+        Assert.Equal(0, bufferWriter.WrittenCount);
+    }
+
+    [Fact]
     public async Task MasterTagScoreShouldOnlyIncrease()
     {
         // store some data
@@ -181,7 +192,7 @@ public class OutputCacheGetSetTests : IClassFixture<RedisConnectionFixture>
         await cache.SetAsync(noTags, storedValue, null, ttl, CancellationToken.None);
 
         var foo = Guid.NewGuid().ToString();
-        await cache.SetAsync(foo, storedValue, new[] {"foo"}, ttl, CancellationToken.None);
+        await cache.SetAsync(foo, storedValue, new[] { "foo" }, ttl, CancellationToken.None);
 
         var bar = Guid.NewGuid().ToString();
         await cache.SetAsync(bar, storedValue, new[] { "bar" }, ttl, CancellationToken.None);
@@ -243,6 +254,72 @@ public class OutputCacheGetSetTests : IClassFixture<RedisConnectionFixture>
         Assert.Null(await cache.GetAsync(foo, CancellationToken.None));
         Assert.Null(await cache.GetAsync(bar, CancellationToken.None));
         Assert.Null(await cache.GetAsync(fooBar, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task MultiSegmentWriteWorksAsExpected_Array()
+    {
+        // store some data
+        var first = new Segment(1024, null);
+        var second = new Segment(1024, first);
+        var third = new Segment(1024, second);
+
+        Random.Shared.NextBytes(first.Array);
+        Random.Shared.NextBytes(second.Array);
+        Random.Shared.NextBytes(third.Array);
+        var payload = new ReadOnlySequence<byte>(first, 800, third, 42);
+        Assert.False(payload.IsSingleSegment, "multi-segment");
+        Assert.Equal(1290, payload.Length); // partial from first and last
+
+        var cache = await Cache().ConfigureAwait(false);
+        var key = Guid.NewGuid().ToString();
+        await cache.SetAsync(key, payload, default, TimeSpan.FromSeconds(30), CancellationToken.None);
+
+        var fetched = await cache.GetAsync(key, CancellationToken.None);
+        Assert.NotNull(fetched);
+        ReadOnlyMemory<byte> linear = payload.ToArray();
+        Assert.True(linear.Span.SequenceEqual(fetched), "payload match");
+    }
+
+    [Fact]
+    public async Task MultiSegmentWriteWorksAsExpected_BufferWriter()
+    {
+        // store some data
+        var first = new Segment(1024, null);
+        var second = new Segment(1024, first);
+        var third = new Segment(1024, second);
+
+        Random.Shared.NextBytes(first.Array);
+        Random.Shared.NextBytes(second.Array);
+        Random.Shared.NextBytes(third.Array);
+        var payload = new ReadOnlySequence<byte>(first, 800, third, 42);
+        Assert.False(payload.IsSingleSegment, "multi-segment");
+        Assert.Equal(1290, payload.Length); // partial from first and last
+
+        var cache = Assert.IsAssignableFrom<IOutputCacheBufferWriterStore>(await Cache().ConfigureAwait(false));
+        var key = Guid.NewGuid().ToString();
+        await cache.SetAsync(key, payload, default, TimeSpan.FromSeconds(30), CancellationToken.None);
+
+        var bufferWriter = new ArrayBufferWriter<byte>();
+        Assert.True(await cache.GetAsync(key, bufferWriter, CancellationToken.None));
+        Assert.Equal(1290, bufferWriter.WrittenCount);
+        ReadOnlyMemory<byte> linear = payload.ToArray();
+        Assert.True(linear.Span.SequenceEqual(bufferWriter.WrittenSpan), "payload match");
+    }
+
+    private class Segment : ReadOnlySequenceSegment<byte>
+    {
+        public Segment(int length, Segment previous = null)
+        {
+            if (previous is not null)
+            {
+                previous.Next = this;
+                RunningIndex = previous.RunningIndex + previous.Memory.Length;
+            }
+            Array = new byte[length];
+            Memory = Array;
+        }
+        public byte[] Array { get; }
     }
 }
 
