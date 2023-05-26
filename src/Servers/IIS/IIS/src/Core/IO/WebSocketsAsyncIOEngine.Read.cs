@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO;
 
 internal partial class WebSocketsAsyncIOEngine
 {
-    internal sealed class WebSocketReadOperation : AsyncIOOperation
+    internal sealed class WebSocketReadOperation : AsyncIOOperation, IDisposable
     {
         [UnmanagedCallersOnly]
         public static NativeMethods.REQUEST_NOTIFICATION_STATUS ReadCallback(IntPtr httpContext, IntPtr completionInfo, IntPtr completionContext)
@@ -26,13 +26,14 @@ internal partial class WebSocketsAsyncIOEngine
         }
 
         private readonly WebSocketsAsyncIOEngine _engine;
-        private GCHandle _thisHandle;
+        private readonly GCHandle _thisHandle;
         private MemoryHandle _inputHandle;
         private NativeSafeHandle? _requestHandler;
         private Memory<byte> _memory;
 
         public WebSocketReadOperation(WebSocketsAsyncIOEngine engine)
         {
+            _thisHandle = GCHandle.Alloc(this);
             _engine = engine;
         }
 
@@ -40,7 +41,6 @@ internal partial class WebSocketsAsyncIOEngine
         {
             Debug.Assert(_requestHandler != null, "Must initialize first.");
 
-            _thisHandle = GCHandle.Alloc(this);
             _inputHandle = _memory.Pin();
 
             hr = NativeMethods.HttpWebsocketsReadBytes(
@@ -70,8 +70,6 @@ internal partial class WebSocketsAsyncIOEngine
         {
             base.ResetOperation();
 
-            _thisHandle.Free();
-
             _memory = default;
             _inputHandle.Dispose();
             _inputHandle = default;
@@ -81,5 +79,10 @@ internal partial class WebSocketsAsyncIOEngine
         }
 
         protected override bool IsSuccessfulResult(int hr) => hr == NativeMethods.ERROR_HANDLE_EOF;
+
+        public void Dispose()
+        {
+            _thisHandle.Free();
+        }
     }
 }

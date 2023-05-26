@@ -139,4 +139,10 @@ internal sealed partial class WebSocketsAsyncIOEngine : IAsyncIOEngine
 
     private void ReturnOperation(WebSocketReadOperation operation) =>
         Volatile.Write(ref _cachedWebSocketReadOperation, operation);
+
+    public void Dispose()
+    {
+        _cachedWebSocketWriteOperation?.Dispose();
+        _cachedWebSocketReadOperation?.Dispose();
+    }
 }
