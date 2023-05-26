@@ -3,6 +3,7 @@
 
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Reflection;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
@@ -170,12 +171,12 @@ internal static class ComponentProperties
         {
             if (!propertyInfo.IsDefined(typeof(ParameterAttribute)) &&
                 !propertyInfo.IsDefined(typeof(CascadingParameterAttribute)) &&
-                !propertyInfo.IsDefined(typeof(SupplyParameterFromFormAttribute)))
+                !propertyInfo.GetCustomAttributes().OfType<IHostEnvironmentCascadingParameter>().Any())
             {
                 throw new InvalidOperationException(
                     $"Object of type '{targetType.FullName}' has a property matching the name '{parameterName}', " +
                     $"but it does not have [{nameof(ParameterAttribute)}], [{nameof(CascadingParameterAttribute)}] or " +
-                    $"[{nameof(SupplyParameterFromFormAttribute)}] applied.");
+                    $"[SupplyParameterFromFormAttribute] applied.");
             }
             else
             {
@@ -260,11 +261,30 @@ internal static class ComponentProperties
 
             foreach (var propertyInfo in GetCandidateBindableProperties(targetType))
             {
-                var parameterAttribute = propertyInfo.GetCustomAttribute<ParameterAttribute>();
-                var cascadingParameterAttribute = propertyInfo.GetCustomAttribute<CascadingParameterAttribute>();
-                var supplyParameterFromFormAttribute = propertyInfo.GetCustomAttribute<SupplyParameterFromFormAttribute>();
+                ParameterAttribute? parameterAttribute = null;
+                CascadingParameterAttribute? cascadingParameterAttribute = null;
+                IHostEnvironmentCascadingParameter? hostEnvironmentCascadingParameter = null;
 
-                var isParameter = parameterAttribute != null || cascadingParameterAttribute != null || supplyParameterFromFormAttribute != null;
+                var attributes = propertyInfo.GetCustomAttributes();
+                foreach (var attribute in attributes)
+                {
+                    switch (attribute)
+                    {
+                        case ParameterAttribute parameter:
+                            parameterAttribute = parameter;
+                            break;
+                        case CascadingParameterAttribute cascadingParameter:
+                            cascadingParameterAttribute = cascadingParameter;
+                            break;
+                        case IHostEnvironmentCascadingParameter hostEnvironmentAttribute:
+                            hostEnvironmentCascadingParameter = hostEnvironmentAttribute;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
+                var isParameter = parameterAttribute != null || cascadingParameterAttribute != null || hostEnvironmentCascadingParameter != null;
                 if (!isParameter)
                 {
                     continue;
@@ -279,7 +299,7 @@ internal static class ComponentProperties
 
                 var propertySetter = new PropertySetter(targetType, propertyInfo)
                 {
-                    Cascading = cascadingParameterAttribute != null || supplyParameterFromFormAttribute != null,
+                    Cascading = cascadingParameterAttribute != null || hostEnvironmentCascadingParameter != null,
                 };
 
                 if (_underlyingWriters.ContainsKey(propertyName))

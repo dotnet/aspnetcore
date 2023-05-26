@@ -3,6 +3,7 @@
 
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -103,15 +104,16 @@ internal readonly struct CascadingParameterState
                     attribute.Name));
             }
 
-            var fromForm = prop.GetCustomAttribute<SupplyParameterFromFormAttribute>();
-            if (fromForm != null)
+            var hostParameterAttribute = prop.GetCustomAttributes()
+                .OfType<IHostEnvironmentCascadingParameter>().SingleOrDefault();
+            if (hostParameterAttribute != null)
             {
                 result ??= new List<ReflectedCascadingParameterInfo>();
 
                 result.Add(new ReflectedCascadingParameterInfo(
                     prop.Name,
                     prop.PropertyType,
-                    fromForm.Name));
+                    hostParameterAttribute.Name));
             }
         }
 

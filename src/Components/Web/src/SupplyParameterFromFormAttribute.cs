@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Components;
 /// the form data for the form with the specified name.
 /// </summary>
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
-public sealed class SupplyParameterFromFormAttribute : Attribute
+public sealed class SupplyParameterFromFormAttribute : Attribute, IHostEnvironmentCascadingParameter
 {
     /// <summary>
     /// Gets or sets the name for the parameter. The name is used to match
