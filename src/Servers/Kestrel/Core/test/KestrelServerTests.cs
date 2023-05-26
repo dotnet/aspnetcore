@@ -16,7 +16,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Metrics;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -711,6 +710,7 @@ public class KestrelServerTests
     [Fact]
     public void StartingServerInitializesHeartbeat()
     {
+        var timeProvider = new MockTimeProvider();
         var testContext = new TestServiceContext
         {
             ServerOptions =
@@ -720,12 +720,14 @@ public class KestrelServerTests
                         new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
                     }
                 },
-            DateHeaderValueManager = new DateHeaderValueManager()
+            MockTimeProvider = timeProvider,
+            TimeProvider = timeProvider,
+            DateHeaderValueManager = new DateHeaderValueManager(timeProvider)
         };
 
         testContext.Heartbeat = new Heartbeat(
             new IHeartbeatHandler[] { testContext.DateHeaderValueManager },
-            testContext.MockSystemClock,
+            timeProvider,
             DebuggerWrapper.Singleton,
             testContext.Log,
             Heartbeat.Interval);
@@ -736,11 +738,11 @@ public class KestrelServerTests
 
             // Ensure KestrelServer is started at a different time than when it was constructed, since we're
             // verifying the heartbeat is initialized during KestrelServer.StartAsync().
-            testContext.MockSystemClock.UtcNow += TimeSpan.FromDays(1);
+            testContext.MockTimeProvider.Advance(TimeSpan.FromDays(1));
 
             StartDummyApplication(server);
 
-            Assert.Equal(HeaderUtilities.FormatDate(testContext.MockSystemClock.UtcNow),
+            Assert.Equal(HeaderUtilities.FormatDate(testContext.MockTimeProvider.GetUtcNow()),
                          testContext.DateHeaderValueManager.GetDateHeaderValues().String);
         }
     }

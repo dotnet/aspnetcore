@@ -11,8 +11,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
-    <Reference Include="Microsoft.CodeAnalysis.Common" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="All" IsImplicitlyDefined="true" Version="$(MicrosoftCodeAnalysisVersion_LatestVS)" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Common" PrivateAssets="All" IsImplicitlyDefined="true" Version="$(MicrosoftCodeAnalysisVersion_LatestVS)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -30,6 +30,7 @@
     <Compile Include="$(SharedSourceRoot)RoslynUtils\SyntaxTreeExtensions.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)RoslynUtils\ParsabilityHelper.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)RoslynUtils\CodeWriter.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)Diagnostics\AnalyzerDebug.cs" LinkBase="Shared" />
   </ItemGroup>
 
 </Project>

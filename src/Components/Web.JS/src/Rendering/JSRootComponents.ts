@@ -133,7 +133,7 @@ export function enableJSRootComponents(
   // on the .NET side - just those of them that require some JS-side initialization (e.g., to register them
   // as custom elements).
   for (const [initializerIdentifier, componentIdentifiers] of Object.entries(jsComponentInitializers)) {
-    const initializerFunc = DotNet.jsCallDispatcher.findJSFunction(initializerIdentifier, 0) as JSComponentInitializerCallback;
+    const initializerFunc = DotNet.findJSFunction(initializerIdentifier, 0) as JSComponentInitializerCallback;
     for (const componentIdentifier of componentIdentifiers) {
       const parameters = jsComponentParameters[componentIdentifier];
       initializerFunc(componentIdentifier, parameters);

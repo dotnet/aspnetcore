@@ -20,7 +20,7 @@ internal interface IHttp3Stream
     /// 2. Between when the request delegate is complete and the transport draining.
     ///    Value is driven by <see cref="KestrelServerLimits.MinResponseDataRate"/>.
     /// </summary>
-    long StreamTimeoutTicks { get; set; }
+    long StreamTimeoutTimestamp { get; set; }
 
     /// <summary>
     /// The stream is receiving the header frame.

@@ -2,8 +2,9 @@
 
 @using BlazorServerWeb_CSharp
 @using Microsoft.Identity.Web
+@using Microsoft.Identity.Abstractions
 
-@inject IDownstreamWebApi downstreamAPI
+@inject IDownstreamApi downstreamAPI
 @inject MicrosoftIdentityConsentAndConditionalAccessHandler ConsentHandler
 
 <h1>Call an API</h1>
@@ -28,7 +29,7 @@ else
     {
         try
         {
-            response = await downstreamAPI.CallWebApiForUserAsync(
+            response = await downstreamAPI.CallApiForUserAsync(
                     "DownstreamApi",
                     options => options.RelativePath = "");
 

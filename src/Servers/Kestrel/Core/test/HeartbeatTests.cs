@@ -28,15 +28,14 @@ public class HeartbeatTests : LoggedTest
     {
         var heartbeatCallCount = 0;
         var tcs = new TaskCompletionSource();
-        var systemClock = new MockSystemClock();
+        var timeProvider = new MockTimeProvider();
         var heartbeatHandler = new Mock<IHeartbeatHandler>();
         var debugger = new Mock<IDebugger>();
         var kestrelTrace = new KestrelTrace(LoggerFactory);
-        var now = systemClock.UtcNow;
 
         var splits = new List<TimeSpan>();
         Stopwatch sw = null;
-        heartbeatHandler.Setup(h => h.OnHeartbeat(now)).Callback(() =>
+        heartbeatHandler.Setup(h => h.OnHeartbeat()).Callback(() =>
         {
             heartbeatCallCount++;
             if (sw == null)
@@ -62,7 +61,7 @@ public class HeartbeatTests : LoggedTest
 
         var intervalMs = 300;
 
-        using (var heartbeat = new Heartbeat(new[] { heartbeatHandler.Object }, systemClock, debugger.Object, kestrelTrace, TimeSpan.FromMilliseconds(intervalMs)))
+        using (var heartbeat = new Heartbeat(new[] { heartbeatHandler.Object }, timeProvider, debugger.Object, kestrelTrace, TimeSpan.FromMilliseconds(intervalMs)))
         {
             heartbeat.Start();
 
@@ -99,16 +98,15 @@ public class HeartbeatTests : LoggedTest
     [Fact]
     public async Task HeartbeatTakingLongerThanIntervalIsLoggedAsWarning()
     {
-        var systemClock = new MockSystemClock();
+        var timeProvider = new MockTimeProvider();
         var heartbeatHandler = new Mock<IHeartbeatHandler>();
         var debugger = new Mock<IDebugger>();
         var kestrelTrace = new KestrelTrace(LoggerFactory);
         var handlerMre = new ManualResetEventSlim();
         var handlerStartedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var now = systemClock.UtcNow;
         var heartbeatDuration = TimeSpan.FromSeconds(2);
 
-        heartbeatHandler.Setup(h => h.OnHeartbeat(now)).Callback(() =>
+        heartbeatHandler.Setup(h => h.OnHeartbeat()).Callback(() =>
         {
             handlerStartedTcs.SetResult();
             handlerMre.Wait();
@@ -117,7 +115,7 @@ public class HeartbeatTests : LoggedTest
 
         Task blockedHeartbeatTask;
 
-        using (var heartbeat = new Heartbeat(new[] { heartbeatHandler.Object }, systemClock, debugger.Object, kestrelTrace, Heartbeat.Interval))
+        using (var heartbeat = new Heartbeat(new[] { heartbeatHandler.Object }, timeProvider, debugger.Object, kestrelTrace, Heartbeat.Interval))
         {
             blockedHeartbeatTask = Task.Run(() => heartbeat.OnHeartbeat());
 
@@ -125,16 +123,16 @@ public class HeartbeatTests : LoggedTest
         }
 
         // 2 seconds passes...
-        systemClock.UtcNow = systemClock.UtcNow.AddSeconds(2);
+        timeProvider.Advance(TimeSpan.FromSeconds(2));
 
         handlerMre.Set();
 
         await blockedHeartbeatTask.DefaultTimeout();
 
-        heartbeatHandler.Verify(h => h.OnHeartbeat(now), Times.Once());
+        heartbeatHandler.Verify(h => h.OnHeartbeat(), Times.Once());
 
         var warningMessage = TestSink.Writes.Single(message => message.LogLevel == LogLevel.Warning).Message;
-        Assert.Equal($"As of \"{now.ToString(CultureInfo.InvariantCulture)}\", the heartbeat has been running for "
+        Assert.Equal($"As of \"{timeProvider.GetUtcNow().ToString(CultureInfo.InvariantCulture)}\", the heartbeat has been running for "
             + $"\"{heartbeatDuration.ToString("c", CultureInfo.InvariantCulture)}\" which is longer than "
             + $"\"{Heartbeat.Interval.ToString("c", CultureInfo.InvariantCulture)}\". "
             + "This could be caused by thread pool starvation.", warningMessage);
@@ -143,15 +141,14 @@ public class HeartbeatTests : LoggedTest
     [Fact]
     public async Task HeartbeatTakingLongerThanIntervalIsNotLoggedIfDebuggerAttached()
     {
-        var systemClock = new MockSystemClock();
+        var timeProvider = new MockTimeProvider();
         var heartbeatHandler = new Mock<IHeartbeatHandler>();
         var debugger = new Mock<IDebugger>();
         var kestrelTrace = new KestrelTrace(LoggerFactory);
         var handlerMre = new ManualResetEventSlim();
         var handlerStartedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var now = systemClock.UtcNow;
 
-        heartbeatHandler.Setup(h => h.OnHeartbeat(now)).Callback(() =>
+        heartbeatHandler.Setup(h => h.OnHeartbeat()).Callback(() =>
         {
             handlerStartedTcs.SetResult();
             handlerMre.Wait();
@@ -161,7 +158,7 @@ public class HeartbeatTests : LoggedTest
 
         Task blockedHeartbeatTask;
 
-        using (var heartbeat = new Heartbeat(new[] { heartbeatHandler.Object }, systemClock, debugger.Object, kestrelTrace, Heartbeat.Interval))
+        using (var heartbeat = new Heartbeat(new[] { heartbeatHandler.Object }, timeProvider, debugger.Object, kestrelTrace, Heartbeat.Interval))
         {
             blockedHeartbeatTask = Task.Run(() => heartbeat.OnHeartbeat());
 
@@ -169,13 +166,13 @@ public class HeartbeatTests : LoggedTest
         }
 
         // 2 seconds passes...
-        systemClock.UtcNow = systemClock.UtcNow.AddSeconds(2);
+        timeProvider.Advance(TimeSpan.FromSeconds(2));
 
         handlerMre.Set();
 
         await blockedHeartbeatTask.DefaultTimeout();
 
-        heartbeatHandler.Verify(h => h.OnHeartbeat(now), Times.Once());
+        heartbeatHandler.Verify(h => h.OnHeartbeat(), Times.Once());
 
         Assert.Empty(TestSink.Writes.Where(w => w.EventId.Name == "HeartbeatSlow"));
     }
@@ -183,14 +180,14 @@ public class HeartbeatTests : LoggedTest
     [Fact]
     public void ExceptionFromHeartbeatHandlerIsLoggedAsError()
     {
-        var systemClock = new MockSystemClock();
+        var timeProvider = new MockTimeProvider();
         var heartbeatHandler = new Mock<IHeartbeatHandler>();
         var kestrelTrace = new KestrelTrace(LoggerFactory);
         var ex = new Exception();
 
-        heartbeatHandler.Setup(h => h.OnHeartbeat(systemClock.UtcNow)).Throws(ex);
+        heartbeatHandler.Setup(h => h.OnHeartbeat()).Throws(ex);
 
-        using (var heartbeat = new Heartbeat(new[] { heartbeatHandler.Object }, systemClock, DebuggerWrapper.Singleton, kestrelTrace, Heartbeat.Interval))
+        using (var heartbeat = new Heartbeat(new[] { heartbeatHandler.Object }, timeProvider, DebuggerWrapper.Singleton, kestrelTrace, Heartbeat.Interval))
         {
             heartbeat.OnHeartbeat();
         }

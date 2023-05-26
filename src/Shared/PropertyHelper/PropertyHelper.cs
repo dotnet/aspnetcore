@@ -42,8 +42,6 @@ internal sealed class PropertyHelper
 
     private static readonly ConcurrentDictionary<Type, PropertyHelper[]> VisiblePropertiesCache = new();
 
-    private static readonly Type IsByRefLikeAttribute = typeof(System.Runtime.CompilerServices.IsByRefLikeAttribute);
-
     private Action<object, object?>? _valueSetter;
     private Func<object, object?>? _valueGetter;
 
@@ -552,23 +550,14 @@ internal sealed class PropertyHelper
             property.GetMethod.IsPublic &&
             !property.GetMethod.IsStatic &&
 
-            // PropertyHelper can't work with ref structs.
-            !IsRefStructProperty(property) &&
+            // PropertyHelper can't really interact with ref-struct properties since they can't be
+            // boxed and can't be used as generic types. We just ignore them.
+            //
+            // see: https://github.com/aspnet/Mvc/issues/8545
+            !property.PropertyType.IsByRefLike &&
 
             // Indexed properties are not useful (or valid) for grabbing properties off an object.
             property.GetMethod.GetParameters().Length == 0;
-    }
-
-    // PropertyHelper can't really interact with ref-struct properties since they can't be
-    // boxed and can't be used as generic types. We just ignore them.
-    //
-    // see: https://github.com/aspnet/Mvc/issues/8545
-    private static bool IsRefStructProperty(PropertyInfo property)
-    {
-        return
-            IsByRefLikeAttribute != null &&
-            property.PropertyType.IsValueType &&
-            property.PropertyType.IsDefined(IsByRefLikeAttribute);
     }
 
     internal static class MetadataUpdateHandler

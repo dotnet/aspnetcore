@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <RazorLangVersion>8.0</RazorLangVersion>
   </PropertyGroup>
 
   <ItemGroup>

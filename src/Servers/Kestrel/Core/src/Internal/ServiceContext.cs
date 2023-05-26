@@ -21,7 +21,7 @@ internal class ServiceContext
 
     public IHttpParser<Http1ParsingHandler> HttpParser { get; set; } = default!;
 
-    public ISystemClock SystemClock { get; set; } = default!;
+    public TimeProvider TimeProvider { get; set; } = default!;
 
     public DateHeaderValueManager DateHeaderValueManager { get; set; } = default!;
 

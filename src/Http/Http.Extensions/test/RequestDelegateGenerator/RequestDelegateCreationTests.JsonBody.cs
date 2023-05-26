@@ -35,6 +35,7 @@ IResult postTodoWithDefault([FromBody] Todo todo = null) => TypedResults.Ok(todo
 app.MapPost("/", postTodoWithDefault);
 #nullable restore
 """;
+            var fromBodyAsParametersRequiredSource = """app.MapPost("/", ([AsParameters] ParametersListWithExplicitFromBody args) => TypedResults.Ok(args.Todo));""";
             var fromBodyRequiredWithFilterSource = $"""app.MapPost("/", ([FromBody] Todo todo) => TypedResults.Ok(todo)){withFilter}""";
             var fromBodyEmptyBehaviorWithFilterSource = $"""app.MapPost("/", ([FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] Todo todo) => TypedResults.Ok(todo)){withFilter}""";
             var fromBodyAllowEmptyWithFilterSource = $"""app.MapPost("/", ([CustomFromBody(AllowEmpty = true)] Todo todo) => TypedResults.Ok(todo)){withFilter}""";
@@ -50,6 +51,7 @@ app.MapPost("/", postTodoWithDefault){withFilter}
             {
                 new object[] { fromBodyRequiredSource, todo, 200, expectedBody },
                 new object[] { fromBodyRequiredSource, null, 400, string.Empty },
+                new object[] { fromBodyAsParametersRequiredSource, todo, 200, expectedBody },
                 new object[] { fromBodyEmptyBodyBehaviorSource, todo, 200, expectedBody },
                 new object[] { fromBodyEmptyBodyBehaviorSource, null, 200, string.Empty },
                 new object[] { fromBodyAllowEmptySource, todo, 200, expectedBody },

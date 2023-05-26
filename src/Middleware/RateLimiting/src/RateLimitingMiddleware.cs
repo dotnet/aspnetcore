@@ -94,15 +94,14 @@ internal sealed partial class RateLimitingMiddleware
         // This ensures that the state is consistent for the entire request.
         // For example, if a meter listener starts after a request is queued, when the request exits the queue
         // the requests queued counter won't go into a negative value.
-        var metricsContext = new MetricsContext(policyName, method, route,
-            _metrics.CurrentLeasedRequestsCounterEnabled, _metrics.CurrentQueuedRequestsCounterEnabled);
+        var metricsContext = _metrics.CreateContext(policyName, method, route);
 
         using var leaseContext = await TryAcquireAsync(context, metricsContext);
 
         if (leaseContext.Lease?.IsAcquired == true)
         {
             var startTimestamp = Stopwatch.GetTimestamp();
-            var currentLeaseStart = _metrics.CurrentLeasedRequestsCounterEnabled;
+            var currentLeaseStart = metricsContext.CurrentLeasedRequestsCounterEnabled;
             try
             {
 

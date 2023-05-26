@@ -9,7 +9,7 @@
       "src\\DataProtection\\Cryptography.KeyDerivation\\src\\Microsoft.AspNetCore.Cryptography.KeyDerivation.csproj",
       "src\\DataProtection\\Cryptography.KeyDerivation\\test\\Microsoft.AspNetCore.Cryptography.KeyDerivation.Tests.csproj",
       "src\\DataProtection\\DataProtection\\src\\Microsoft.AspNetCore.DataProtection.csproj",
-      "src\\DataProtection\\DataProtection\\test\\Microsoft.AspNetCore.DataProtection.Tests.csproj",
+      "src\\DataProtection\\DataProtection\\test\\Microsoft.AspNetCore.DataProtection.Tests\\Microsoft.AspNetCore.DataProtection.Tests.csproj",
       "src\\DataProtection\\EntityFrameworkCore\\src\\Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.csproj",
       "src\\DataProtection\\EntityFrameworkCore\\test\\Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.Test.csproj",
       "src\\DataProtection\\Extensions\\src\\Microsoft.AspNetCore.DataProtection.Extensions.csproj",

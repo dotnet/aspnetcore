@@ -7,6 +7,7 @@
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)NullScope.cs" />
     <Compile Include="$(SharedSourceRoot)TestResources.cs" Link="shared\TestResources.cs" />
+    <Compile Include="$(SharedSourceRoot)Metrics\TestMeterFactory.cs" LinkBase="shared" />
     <Content Include="$(SharedSourceRoot)TestCertificates\*.pfx" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="$(SharedSourceRoot)TestCertificates\*.crt" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="$(SharedSourceRoot)TestCertificates\*.key" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />

@@ -25,12 +25,12 @@ public class Program
                 {
                     factory.AddConfiguration(c.Configuration.GetSection("Logging"));
                     factory.AddConsole();
-                    //factory.SetMinimumLevel(LogLevel.Trace);
+                    factory.SetMinimumLevel(LogLevel.Debug);
                 })
                 .UseKestrel(options =>
                 {
                     // Default port
-                    options.ListenAnyIP(0);
+                    options.ListenAnyIP(5000);
 
                     // Hub bound to TCP end point
                     //options.Listen(IPAddress.Any, 9001, builder =>

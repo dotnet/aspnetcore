@@ -11,6 +11,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\testassets\ClassLibraryWithPortablePdbs\ClassLibraryWithPortablePdbs.csproj" />
+
+    <Compile Include="$(SharedSourceRoot)Metrics\TestMeterFactory.cs" LinkBase="shared" />
   </ItemGroup>
 
   <ItemGroup>

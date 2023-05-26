@@ -31,6 +31,7 @@
     <PackageReference Include="Microsoft.Identity.Web" Version="${MicrosoftIdentityWebVersion}" Condition=" '$(IndividualB2CAuth)' == 'True' OR '$(OrganizationalAuth)' == 'True'" />
     <PackageReference Include="Microsoft.Identity.Web.MicrosoftGraph" Version="${MicrosoftIdentityWebMicrosoftGraphVersion}" Condition=" '$(GenerateGraph)' == 'True' " />
     <PackageReference Include="Microsoft.Identity.Web.UI" Version="${MicrosoftIdentityWebUIVersion}" Condition=" '$(IndividualB2CAuth)' == 'True' OR '$(OrganizationalAuth)' == 'True'" />
+    <PackageReference Include="Microsoft.Identity.Web.DownstreamApi" Version="${MicrosoftIdentityWebDownstreamApiVersion}" Condition=" '$(IndividualB2CAuth)' == 'True' OR '$(OrganizationalAuth)' == 'True'" />
   </ItemGroup>
 
   <!--#endif -->

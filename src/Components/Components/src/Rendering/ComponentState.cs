@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.RenderTree;
 
 namespace Microsoft.AspNetCore.Components.Rendering;
@@ -13,7 +12,7 @@ namespace Microsoft.AspNetCore.Components.Rendering;
 /// detail of <see cref="Renderer"/>.
 /// </summary>
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
-public class ComponentState : IDisposable
+public class ComponentState : IAsyncDisposable
 {
     private readonly Renderer _renderer;
     private readonly IReadOnlyList<CascadingParameterState> _cascadingParameters;
@@ -106,41 +105,6 @@ public class ComponentState : IDisposable
             CurrentRenderTree.GetNamedEvents());
         batchBuilder.UpdatedComponentDiffs.Append(diff);
         batchBuilder.InvalidateParameterViews();
-    }
-
-    internal bool TryDisposeInBatch(RenderBatchBuilder batchBuilder, [NotNullWhen(false)] out Exception? exception)
-    {
-        _componentWasDisposed = true;
-        exception = null;
-
-        try
-        {
-            if (Component is IDisposable disposable)
-            {
-                disposable.Dispose();
-            }
-        }
-        catch (Exception ex)
-        {
-            exception = ex;
-        }
-
-        CleanupComponentStateResources(batchBuilder);
-
-        return exception == null;
-    }
-
-    private void CleanupComponentStateResources(RenderBatchBuilder batchBuilder)
-    {
-        // We don't expect these things to throw.
-        RenderTreeDiffBuilder.DisposeFrames(batchBuilder, CurrentRenderTree.GetFrames());
-
-        if (_hasAnyCascadingParameterSubscriptions)
-        {
-            RemoveCascadingParameterSubscriptions();
-        }
-
-        DisposeBuffers();
     }
 
     // Callers expect this method to always return a faulted task.
@@ -254,15 +218,26 @@ public class ComponentState : IDisposable
     }
 
     /// <summary>
-    /// Disposes this instance.
+    /// Disposes this instance and its associated component.
     /// </summary>
-    public void Dispose()
+    public virtual ValueTask DisposeAsync()
     {
+        _componentWasDisposed = true;
         DisposeBuffers();
 
-        if (Component is IDisposable disposable)
+        // Components shouldn't need to implement IAsyncDisposable and IDisposable simultaneously,
+        // but in case they do, we prefer the async overload since we understand the sync overload
+        // is implemented for more "constrained" scenarios.
+        // Component authors are responsible for their IAsyncDisposable implementations not taking
+        // forever.
+        if (Component is IAsyncDisposable asyncDisposable)
         {
-            disposable.Dispose();
+            return asyncDisposable.DisposeAsync();
+        }
+        else
+        {
+            (Component as IDisposable)?.Dispose();
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -273,33 +248,17 @@ public class ComponentState : IDisposable
         _latestDirectParametersSnapshot?.Dispose();
     }
 
-    internal Task DisposeInBatchAsync(RenderBatchBuilder batchBuilder)
+    internal ValueTask DisposeInBatchAsync(RenderBatchBuilder batchBuilder)
     {
-        _componentWasDisposed = true;
+        // We don't expect these things to throw.
+        RenderTreeDiffBuilder.DisposeFrames(batchBuilder, CurrentRenderTree.GetFrames());
 
-        CleanupComponentStateResources(batchBuilder);
+        if (_hasAnyCascadingParameterSubscriptions)
+        {
+            RemoveCascadingParameterSubscriptions();
+        }
 
-        try
-        {
-            var result = ((IAsyncDisposable)Component).DisposeAsync();
-            if (result.IsCompletedSuccessfully)
-            {
-                // If it's a IValueTaskSource backed ValueTask,
-                // inform it its result has been read so it can reset
-                result.GetAwaiter().GetResult();
-                return Task.CompletedTask;
-            }
-            else
-            {
-                // We know we are dealing with an exception that happened asynchronously, so return a task
-                // to the caller so that he can unwrap it.
-                return result.AsTask();
-            }
-        }
-        catch (Exception e)
-        {
-            return Task.FromException(e);
-        }
+        return DisposeAsync();
     }
 
     private string GetDebuggerDisplay()

@@ -3,6 +3,7 @@
 
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Components.Infrastructure;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
@@ -57,25 +58,25 @@ internal partial class EndpointHtmlRenderer
     }
 
     // Internal for test only
-    internal static void UpdateSaveStateRenderMode(HttpContext httpContext, RenderMode mode)
+    internal static void UpdateSaveStateRenderMode(HttpContext httpContext, IComponentRenderMode? mode)
     {
         // TODO: This will all have to change when we support multiple render modes in the same response
-        if (mode == RenderMode.ServerPrerendered || mode == RenderMode.WebAssemblyPrerendered)
+        if (ModeEnablesPrerendering(mode))
         {
+            var currentInvocation = mode switch
+            {
+                ServerRenderMode => InvokedRenderModes.Mode.Server,
+                WebAssemblyRenderMode => InvokedRenderModes.Mode.WebAssembly,
+                AutoRenderMode => throw new NotImplementedException("TODO: To be able to support AutoRenderMode, we have to serialize persisted state in both WebAssembly and Server formats, or unify the two formats."),
+                _ => throw new ArgumentException(Resources.FormatUnsupportedRenderMode(mode), nameof(mode)),
+            };
+
             if (!httpContext.Items.TryGetValue(InvokedRenderModesKey, out var result))
             {
-                result = new InvokedRenderModes(mode is RenderMode.ServerPrerendered ?
-                    InvokedRenderModes.Mode.Server :
-                    InvokedRenderModes.Mode.WebAssembly);
-
-                httpContext.Items[InvokedRenderModesKey] = result;
+                httpContext.Items[InvokedRenderModesKey] = new InvokedRenderModes(currentInvocation);
             }
             else
             {
-                var currentInvocation = mode is RenderMode.ServerPrerendered ?
-                    InvokedRenderModes.Mode.Server :
-                    InvokedRenderModes.Mode.WebAssembly;
-
                 var invokedMode = (InvokedRenderModes)result!;
                 if (invokedMode.Value != currentInvocation)
                 {
@@ -84,6 +85,14 @@ internal partial class EndpointHtmlRenderer
             }
         }
     }
+
+    private static bool ModeEnablesPrerendering(IComponentRenderMode? mode) => mode switch
+    {
+        ServerRenderMode { Prerender: true } => true,
+        WebAssemblyRenderMode { Prerender: true } => true,
+        AutoRenderMode { Prerender: true } => true,
+        _ => false
+    };
 
     internal static InvokedRenderModes.Mode GetPersistStateRenderMode(HttpContext httpContext)
     {

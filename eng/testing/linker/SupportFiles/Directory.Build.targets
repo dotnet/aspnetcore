@@ -1,5 +1,5 @@
 <Project>
-  
+
   <PropertyGroup>
     <!-- Used to silence the warning caused by the workaround for https://github.com/dotnet/runtime/issues/81382 -->
     <SuppressGenerateILCompilerExplicitPackageReferenceWarning>true</SuppressGenerateILCompilerExplicitPackageReferenceWarning>
@@ -20,6 +20,7 @@
   -->
   <ItemGroup>
     <ProjectReference Include="$(RepoRoot)src\DefaultBuilder\src\Microsoft.AspNetCore.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\DataProtection\Extensions\src\Microsoft.AspNetCore.DataProtection.Extensions.csproj" />
   </ItemGroup>
-  
+
 </Project>

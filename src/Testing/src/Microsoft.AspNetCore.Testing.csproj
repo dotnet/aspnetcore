@@ -61,6 +61,7 @@
       <PackagePath>contentFiles\cs\netstandard2.0\</PackagePath>
     </Content>
     <Compile Include="$(SharedSourceRoot)TaskExtensions.cs" LinkBase="Shared\TaskExtensions.cs" />
+    <Compile Include="$(SharedSourceRoot)ThrowHelpers\ArgumentThrowHelper.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)ThrowHelpers\ArgumentNullThrowHelper.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)CallerArgument\CallerArgumentExpressionAttribute.cs" LinkBase="Shared" />
   </ItemGroup>

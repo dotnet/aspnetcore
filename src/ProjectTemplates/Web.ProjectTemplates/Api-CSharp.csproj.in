@@ -7,8 +7,8 @@
     <NoDefaultLaunchSettingsFile Condition="'$(ExcludeLaunchSettings)' == 'True'">true</NoDefaultLaunchSettingsFile>
     <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">Company.WebApplication1</RootNamespace>
     <ServerGarbageCollection>false</ServerGarbageCollection>
-    <InvariantGlobalization>true</InvariantGlobalization>
     <!--#if (NativeAot) -->
+    <InvariantGlobalization>true</InvariantGlobalization>
     <PublishAot>true</PublishAot>
     <!--#endif -->
   </PropertyGroup>

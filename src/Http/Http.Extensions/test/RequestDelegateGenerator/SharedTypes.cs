@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 using System.Diagnostics;
 using System.Reflection;
+using System.Security.Claims;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Security.Cryptography.X509Certificates;
@@ -9,6 +10,8 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
@@ -203,7 +206,8 @@ public record MyBindAsyncRecord(Uri Uri)
         {
             throw new UnreachableException($"Unexpected parameter type: {parameter.ParameterType}");
         }
-        if (parameter.Name?.StartsWith("myBindAsyncParam", StringComparison.Ordinal) == false)
+        if (parameter.Name?.StartsWith("myBindAsyncParam", StringComparison.OrdinalIgnoreCase
+        ) == false)
         {
             throw new UnreachableException("Unexpected parameter name");
         }
@@ -462,7 +466,7 @@ public struct BodyStruct
 
 public class ExceptionThrowingRequestBodyStream : Stream
 {
-    private readonly Exception _exceptionToThrow;
+    public readonly Exception _exceptionToThrow;
 
     public ExceptionThrowingRequestBodyStream(Exception exceptionToThrow)
     {
@@ -507,7 +511,7 @@ public class ExceptionThrowingRequestBodyStream : Stream
 
 public readonly struct TraceIdentifier
 {
-    private TraceIdentifier(string id)
+    public TraceIdentifier(string id)
     {
         Id = id;
     }
@@ -675,3 +679,280 @@ public class AccessesServicesMetadataBinder : IEndpointMetadataProvider
 }
 
 public record MetadataService;
+public record ParameterListFromQuery(HttpContext HttpContext, [FromQuery] int Value);
+public record ParameterListFromRoute(HttpContext HttpContext, int Value);
+public record ParameterListFromHeader(HttpContext HttpContext, [FromHeader(Name = "X-Custom-Header")] int Value);
+public record ParametersListWithImplicitFromBody(HttpContext HttpContext, TodoStruct Todo);
+public record struct TodoStruct(int Id, string Name, bool IsComplete, TodoStatus Status) : ITodo;
+public record ParametersListWithExplicitFromBody(HttpContext HttpContext, [FromBody] Todo Todo);
+public record ParametersListWithHttpContext(
+    HttpContext HttpContext,
+    ClaimsPrincipal User,
+    HttpRequest Request,
+    HttpResponse Response);
+
+public record struct ParameterListRecordStruct(HttpContext HttpContext, [FromRoute] int Value);
+
+public record ParameterListRecordClass(HttpContext HttpContext, [FromRoute] int Value);
+
+#nullable enable
+public record ParameterListRecordWithoutPositionalParameters
+{
+    public HttpContext? HttpContext { get; set; }
+
+    [FromRoute]
+    public required int Value { get; set; }
+}
+#nullable restore
+
+public struct ParameterListStruct
+{
+    public HttpContext HttpContext { get; set; }
+
+    [FromRoute]
+    public int Value { get; set; }
+}
+
+public struct ParameterListMutableStruct
+{
+    public ParameterListMutableStruct()
+    {
+        Value = -1;
+        HttpContext = default!;
+    }
+
+    public HttpContext HttpContext { get; set; }
+
+    [FromRoute]
+    public int Value { get; set; }
+}
+
+public class ParameterListStructWithParameterizedContructor
+{
+    public ParameterListStructWithParameterizedContructor(HttpContext httpContext)
+    {
+        HttpContext = httpContext;
+        Value = 42;
+    }
+
+    public HttpContext HttpContext { get; set; }
+
+    public int Value { get; set; }
+}
+
+public struct ParameterListStructWithMultipleParameterizedContructor
+{
+    public ParameterListStructWithMultipleParameterizedContructor(HttpContext httpContext)
+    {
+        HttpContext = httpContext;
+        Value = 10;
+    }
+
+    public ParameterListStructWithMultipleParameterizedContructor(HttpContext httpContext, [FromHeader(Name = "Value")] int value)
+    {
+        HttpContext = httpContext;
+        Value = value;
+    }
+
+    public HttpContext HttpContext { get; set; }
+
+    [FromRoute]
+    public int Value { get; set; }
+}
+
+#nullable enable
+public class ParameterListClass
+{
+    public HttpContext? HttpContext { get; set; }
+
+    [FromRoute]
+    public int Value { get; set; }
+}
+#nullable restore
+
+public class ParameterListClassWithParameterizedContructor
+{
+    public ParameterListClassWithParameterizedContructor(HttpContext httpContext)
+    {
+        HttpContext = httpContext;
+        Value = 42;
+    }
+
+    public HttpContext HttpContext { get; set; }
+
+    public int Value { get; set; }
+}
+
+public class ParameterListWitDefaultValue
+{
+    public ParameterListWitDefaultValue(HttpContext httpContext, [FromRoute] int value = 42)
+    {
+        HttpContext = httpContext;
+        Value = value;
+    }
+
+    public HttpContext HttpContext { get; }
+    public int Value { get; }
+}
+
+public class ParameterListWithReadOnlyProperties
+{
+    public ParameterListWithReadOnlyProperties()
+    {
+        ReadOnlyValue = 1;
+        PrivateSetValue = 2;
+    }
+
+    public int Value { get; set; }
+
+    public int ConstantValue => 1;
+
+    public int ReadOnlyValue { get; }
+
+    public int PrivateSetValue { get; private set;  }
+}
+
+public record struct SampleParameterList(int Foo);
+public record struct AdditionalSampleParameterList(int Bar);
+
+public record ParametersListWithBindAsyncType(
+    HttpContext HttpContext,
+    InheritBindAsync Value,
+    MyBindAsyncRecord MyBindAsyncParam);
+
+public record ParametersListWithMetadataType(
+    HttpContext HttpContext,
+    AddsCustomParameterMetadataAsProperty Value);
+
+public class ParameterListRequiredStringFromDifferentSources
+{
+    public HttpContext HttpContext { get; set; }
+
+    [FromRoute]
+    public required string RequiredRouteParam { get; set; }
+
+    [FromQuery]
+    public required string RequiredQueryParam { get; set; }
+
+    [FromHeader]
+    public required string RequiredHeaderParam { get; set; }
+}
+
+public record BadArgumentListRecord(int Foo)
+{
+    public BadArgumentListRecord(int foo, int bar)
+        : this(foo)
+    {
+    }
+
+    public int Bar { get; set; }
+}
+
+public class BadNoPublicConstructorArgumentListClass
+{
+    private BadNoPublicConstructorArgumentListClass()
+    { }
+
+    public int Foo { get; set; }
+}
+
+public abstract class BadAbstractArgumentListClass
+{
+    public int Foo { get; set; }
+}
+
+public class BadArgumentListClass
+{
+    public BadArgumentListClass(int foo, string name)
+    {
+    }
+
+    public int Foo { get; set; }
+    public int Bar { get; set; }
+}
+
+public class BadArgumentListClassMultipleCtors
+{
+    public BadArgumentListClassMultipleCtors(int foo)
+    {
+    }
+
+    public BadArgumentListClassMultipleCtors(int foo, int bar)
+    {
+    }
+
+    public int Foo { get; set; }
+    public int Bar { get; set; }
+}
+
+public record NestedArgumentListRecord([AsParameters] object NestedParameterList);
+
+public class ClassWithParametersConstructor
+{
+    public ClassWithParametersConstructor([AsParameters] object nestedParameterList)
+    {
+        NestedParameterList = nestedParameterList;
+    }
+
+    public object NestedParameterList { get; set; }
+}
+
+public class CountsDefaultEndpointMetadataResult : IEndpointMetadataProvider, IResult
+{
+    public static void PopulateMetadata(MethodInfo method, EndpointBuilder builder)
+    {
+        var currentMetadataCount = builder.Metadata.Count;
+        builder.Metadata.Add(new MetadataCountMetadata { Count = currentMetadataCount });
+    }
+
+    public Task ExecuteAsync(HttpContext httpContext) => Task.CompletedTask;
+}
+
+public class MetadataCountMetadata
+{
+    public int Count { get; init; }
+}
+public class RoutePatternMetadata
+{
+    public string RoutePattern { get; init; } = String.Empty;
+}
+
+public class AddsRoutePatternMetadata : IEndpointMetadataProvider
+{
+    public static void PopulateMetadata(MethodInfo method, EndpointBuilder builder)
+    {
+        if (builder is not RouteEndpointBuilder reb)
+        {
+            return;
+        }
+
+        builder.Metadata.Add(new RoutePatternMetadata { RoutePattern = reb.RoutePattern?.RawText ?? string.Empty });
+    }
+}
+
+public class CountsDefaultEndpointMetadataPoco : IEndpointMetadataProvider
+{
+    public static void PopulateMetadata(MethodInfo method, EndpointBuilder builder)
+    {
+        var currentMetadataCount = builder.Metadata.Count;
+        builder.Metadata.Add(new MetadataCountMetadata { Count = currentMetadataCount });
+    }
+}
+
+public class Attribute1 : Attribute
+{
+}
+
+public class Attribute2 : Attribute
+{
+}
+
+public class Status410Result : IResult
+{
+    Task IResult.ExecuteAsync(HttpContext httpContext)
+    {
+        httpContext.Response.StatusCode = StatusCodes.Status410Gone;
+        httpContext.Response.WriteAsync("Already gone!");
+        return Task.CompletedTask;
+    }
+}

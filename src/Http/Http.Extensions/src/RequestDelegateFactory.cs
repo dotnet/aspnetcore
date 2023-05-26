@@ -1495,7 +1495,7 @@ public static partial class RequestDelegateFactory
             for (var i = 0; i < properties.Length; i++)
             {
                 // For parameterless ctor we will init only writable properties.
-                if (properties[i].CanWrite)
+                if (properties[i].CanWrite && properties[i].GetSetMethod(nonPublic: false) != null)
                 {
                     var parameterInfo = new PropertyAsParameterInfo(properties[i], factoryContext.NullabilityContext);
                     bindings.Add(Expression.Bind(properties[i], CreateArgument(parameterInfo, factoryContext)));

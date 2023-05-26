@@ -52,15 +52,15 @@ public abstract class Http3ConnectionBenchmarkBase
         _httpRequestHeaders[InternalHeaderNames.Scheme] = new StringValues("http");
         _httpRequestHeaders[InternalHeaderNames.Authority] = new StringValues("localhost:80");
 
+        var mockTimeProvider = new MockTimeProvider();
+
         var serviceContext = TestContextFactory.CreateServiceContext(
             serverOptions: new KestrelServerOptions(),
-            dateHeaderValueManager: new DateHeaderValueManager(),
-            systemClock: new MockSystemClock());
-        serviceContext.DateHeaderValueManager.OnHeartbeat(default);
+            dateHeaderValueManager: new DateHeaderValueManager(mockTimeProvider),
+            timeProvider: mockTimeProvider);
+        serviceContext.DateHeaderValueManager.OnHeartbeat();
 
-        var mockSystemClock = new Microsoft.AspNetCore.Testing.MockSystemClock();
-
-        _http3 = new Http3InMemory(serviceContext, mockSystemClock, new DefaultTimeoutHandler(), NullLoggerFactory.Instance);
+        _http3 = new Http3InMemory(serviceContext, mockTimeProvider, new DefaultTimeoutHandler(), NullLoggerFactory.Instance);
 
         _http3.InitializeConnectionAsync(ProcessRequest).GetAwaiter().GetResult();
     }

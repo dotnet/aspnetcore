@@ -32,12 +32,30 @@ public partial class StaticHtmlRenderer : Renderer
     /// <inheritdoc/>
     public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Adds a root component of the specified type and begins rendering it.
+    /// </summary>
+    /// <param name="componentType">The component type. This must implement <see cref="IComponent"/>.</param>
+    /// <param name="initialParameters">Parameters for the component.</param>
+    /// <returns>An <see cref="HtmlRootComponent"/> that can be used to obtain the rendered HTML.</returns>
     public HtmlRootComponent BeginRenderingComponent(
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type componentType,
         ParameterView initialParameters)
     {
         var component = InstantiateComponent(componentType);
+        return BeginRenderingComponent(component, initialParameters);
+    }
+
+    /// <summary>
+    /// Adds a root component and begins rendering it.
+    /// </summary>
+    /// <param name="component">The root component instance to be added and rendered. This must not already be associated with any renderer.</param>
+    /// <param name="initialParameters">Parameters for the component.</param>
+    /// <returns>An <see cref="HtmlRootComponent"/> that can be used to obtain the rendered HTML.</returns>
+    public HtmlRootComponent BeginRenderingComponent(
+        IComponent component,
+        ParameterView initialParameters)
+    {
         var componentId = AssignRootComponentId(component);
         var quiescenceTask = RenderRootComponentAsync(componentId, initialParameters);
 

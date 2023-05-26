@@ -31,7 +31,6 @@ public class RazorComponentResultExecutorTest
         // Act
         await RazorComponentResultExecutor.RenderComponentToResponse(
             httpContext,
-            RenderMode.Static,
             typeof(SimpleComponent),
             componentParameters: null,
             preventStreamingRendering: false);
@@ -52,7 +51,6 @@ public class RazorComponentResultExecutorTest
         // Act/Assert 1: Emits the initial pre-quiescent output to the response
         var completionTask = RazorComponentResultExecutor.RenderComponentToResponse(
             httpContext,
-            RenderMode.Static,
             typeof(StreamingAsyncLoadingComponent),
             PropertyHelper.ObjectToDictionary(new { LoadingTask = tcs.Task }).AsReadOnly(),
             preventStreamingRendering: false);
@@ -85,7 +83,6 @@ public class RazorComponentResultExecutorTest
         // Act/Assert 1: Emits the initial pre-quiescent output to the response
         var completionTask = RazorComponentResultExecutor.RenderComponentToResponse(
             httpContext,
-            RenderMode.Static,
             typeof(DoubleRenderingStreamingAsyncComponent),
             PropertyHelper.ObjectToDictionary(new { WaitFor = tcs.Task }).AsReadOnly(),
             preventStreamingRendering: false);
@@ -118,7 +115,6 @@ public class RazorComponentResultExecutorTest
         // Act/Assert 1: Emits the initial pre-quiescent output to the response
         var completionTask = RazorComponentResultExecutor.RenderComponentToResponse(
             httpContext,
-            RenderMode.Static,
             typeof(StreamingComponentWithChild),
             PropertyHelper.ObjectToDictionary(new { LoadingTask = tcs.Task }).AsReadOnly(),
             preventStreamingRendering: false);
@@ -148,7 +144,6 @@ public class RazorComponentResultExecutorTest
         // Act/Assert: Doesn't complete until loading finishes
         var completionTask = RazorComponentResultExecutor.RenderComponentToResponse(
             httpContext,
-            RenderMode.Static,
             typeof(StreamingAsyncLoadingComponent),
             PropertyHelper.ObjectToDictionary(new { LoadingTask = tcs.Task }).AsReadOnly(),
             preventStreamingRendering: true);
@@ -173,7 +168,7 @@ public class RazorComponentResultExecutorTest
 
         // Act
         await RazorComponentResultExecutor.RenderComponentToResponse(
-            httpContext, RenderMode.Static, typeof(ComponentWithLayout),
+            httpContext, typeof(ComponentWithLayout),
             null, false);
 
         // Assert
@@ -188,7 +183,7 @@ public class RazorComponentResultExecutorTest
 
         // Act
         await RazorComponentResultExecutor.RenderComponentToResponse(
-            httpContext, RenderMode.Static, typeof(ComponentThatRedirectsSynchronously),
+            httpContext, typeof(ComponentThatRedirectsSynchronously),
             null, false);
 
         // Assert
@@ -207,7 +202,7 @@ public class RazorComponentResultExecutorTest
         // Act
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(
             () => RazorComponentResultExecutor.RenderComponentToResponse(
-            httpContext, RenderMode.Static, typeof(StreamingComponentThatRedirectsAsynchronously),
+            httpContext, typeof(StreamingComponentThatRedirectsAsynchronously),
             null, preventStreamingRendering: true));
 
         // Assert
@@ -224,7 +219,7 @@ public class RazorComponentResultExecutorTest
 
         // Act
         await RazorComponentResultExecutor.RenderComponentToResponse(
-            httpContext, RenderMode.Static, typeof(StreamingComponentThatRedirectsAsynchronously),
+            httpContext, typeof(StreamingComponentThatRedirectsAsynchronously),
             null, preventStreamingRendering: false);
 
         // Assert
@@ -241,7 +236,7 @@ public class RazorComponentResultExecutorTest
 
         // Act
         var ex = await Assert.ThrowsAsync<InvalidTimeZoneException>(() => RazorComponentResultExecutor.RenderComponentToResponse(
-            httpContext, RenderMode.Static, typeof(ComponentThatThrowsSynchronously),
+            httpContext, typeof(ComponentThatThrowsSynchronously),
             null, false));
 
         // Assert
@@ -256,7 +251,7 @@ public class RazorComponentResultExecutorTest
 
         // Act
         var ex = await Assert.ThrowsAsync<InvalidTimeZoneException>(() => RazorComponentResultExecutor.RenderComponentToResponse(
-            httpContext, RenderMode.Static, typeof(StreamingComponentThatThrowsAsynchronously),
+            httpContext, typeof(StreamingComponentThatThrowsAsynchronously),
             null, preventStreamingRendering: true));
 
         // Assert
@@ -279,7 +274,7 @@ public class RazorComponentResultExecutorTest
 
         // Act
         var ex = await Assert.ThrowsAsync<InvalidTimeZoneException>(() => RazorComponentResultExecutor.RenderComponentToResponse(
-            httpContext, RenderMode.Static, typeof(StreamingComponentThatThrowsAsynchronously),
+            httpContext, typeof(StreamingComponentThatThrowsAsynchronously),
             null, preventStreamingRendering: false));
 
         // Assert
@@ -383,7 +378,7 @@ public class RazorComponentResultExecutorTest
         };
 
         var quiescence = RazorComponentResultExecutor.RenderComponentToResponse(
-            httpContext, RenderMode.Static, typeof(VaryStreamingScenarios),
+            httpContext, typeof(VaryStreamingScenarios),
             parameters, preventStreamingRendering: false);
 
         return new(renderer, quiescence, responseBody, topLevelComponentTask, withinStreamingRegionTask, withinNestedNonstreamingRegionTask);

@@ -22,7 +22,7 @@ internal sealed class PropertyAsParameterInfo : ParameterInfo
 
     public PropertyAsParameterInfo(PropertyInfo propertyInfo, NullabilityInfoContext? nullabilityContext = null)
     {
-        Debug.Assert(null != propertyInfo);
+        Debug.Assert(propertyInfo != null, "PropertyInfo must be provided.");
 
         AttrsImpl = (ParameterAttributes)propertyInfo.Attributes;
         NameImpl = propertyInfo.Name;

@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Metrics;
+using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -71,9 +71,9 @@ public class KestrelServer : IServer
     // This factory used when type is created without DI. For example, via KestrelServer.
     private sealed class DummyMeterFactory : IMeterFactory
     {
-        public Meter CreateMeter(string name) => new Meter(name);
+        public Meter Create(MeterOptions options) => new Meter(options);
 
-        public Meter CreateMeter(MeterOptions options) => new Meter(options.Name, options.Version);
+        public void Dispose() { }
     }
 
     private sealed class SimpleHttpsConfigurationService : IHttpsConfigurationService

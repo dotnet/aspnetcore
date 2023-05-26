@@ -3,6 +3,8 @@
 
 using System.Globalization;
 using System.Net;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Security;
 using System.Security.Authentication;
 using System.Security.Cryptography;
@@ -348,6 +350,37 @@ internal sealed partial class Request
                 _requestInfo = RequestContext.GetRequestInfo();
             }
             return _requestInfo;
+        }
+    }
+
+    public ReadOnlySpan<long> RequestTimestamps
+    {
+        get
+        {
+            /*
+                Below is the definition of the timing info structure we are accessing the memory for.
+                ULONG is 32-bit and maps to int. ULONGLONG is 64-bit and maps to long.
+
+                typedef struct _HTTP_REQUEST_TIMING_INFO
+                {
+                    ULONG RequestTimingCount;
+                    ULONGLONG RequestTiming[HttpRequestTimingTypeMax];
+
+                } HTTP_REQUEST_TIMING_INFO, *PHTTP_REQUEST_TIMING_INFO;
+            */
+
+            if (!RequestInfo.TryGetValue((int)HttpApiTypes.HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeRequestTiming, out var timingInfo))
+            {
+                return ReadOnlySpan<long>.Empty;
+            }
+
+            var timingCount = MemoryMarshal.Read<int>(timingInfo.Span);
+
+            // Note that even though RequestTimingCount is an int, the compiler enforces alignment of data in the struct which causes 4 bytes
+            // of padding to be added after RequestTimingCount, so we need to skip 64-bits before we get to the start of the RequestTiming array
+            return MemoryMarshal.CreateReadOnlySpan(
+                ref Unsafe.As<byte, long>(ref MemoryMarshal.GetReference(timingInfo.Span.Slice(sizeof(long)))),
+                timingCount);
         }
     }
 

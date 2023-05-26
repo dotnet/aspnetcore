@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <!--#if UseWebAssembly -->
+    <TargetFrameworks>${DefaultNetCoreTargetFramework};${DefaultNetCoreTargetFramework}-browser</TargetFrameworks>
+    <!--#else -->
+    <TargetFramework>${DefaultNetCoreTargetFramework}</TargetFramework>
+    <!--#endif -->
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <NoDefaultLaunchSettingsFile Condition="'$(ExcludeLaunchSettings)' == 'True'">True</NoDefaultLaunchSettingsFile>
+    <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">ComponentsWebAssembly-CSharp.Server</RootNamespace>
+    <AssemblyName Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">`$(AssemblyName.Replace(' ', '_'))</AssemblyName>
+    <!--#if UseWebAssembly && PWA -->
+    <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
+    <!--#endif -->
+  </PropertyGroup>
+  <!--#if UseWebAssembly -->
+
+  <ItemGroup Condition="'$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'browser'">
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="${MicrosoftAspNetCoreComponentsWebAssemblyVersion}" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == ''">
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="${MicrosoftAspNetCoreComponentsWebAssemblyServerVersion}" />
+  </ItemGroup>
+  <!--#endif -->
+  <!--#if UseWebAssembly && PWA -->
+
+  <ItemGroup>
+    <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
+  </ItemGroup>
+  <!--#endif -->
+
+</Project>
