@@ -41,7 +41,6 @@ internal partial class WebSocketsAsyncIOEngine
         {
             base.ResetOperation();
 
-
             _engine.ReturnOperation(this);
         }
 
