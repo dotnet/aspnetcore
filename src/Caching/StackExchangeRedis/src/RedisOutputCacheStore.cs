@@ -34,6 +34,8 @@ internal class RedisOutputCacheStore : IOutputCacheStore, IOutputCacheBufferWrit
     private long _previousErrorTimeTicks;
     private bool _useMultiExec, _use62Features;
 
+    internal bool GarbageCollectionEnabled { get; set; } = true;
+
     // Never reconnect within 60 seconds of the last attempt to connect or reconnect.
     private readonly TimeSpan ReconnectMinInterval = TimeSpan.FromSeconds(60);
     // Only reconnect if errors have occurred for at least the last 30 seconds.
@@ -79,6 +81,77 @@ internal class RedisOutputCacheStore : IOutputCacheStore, IOutputCacheBufferWrit
         _tagKeyPrefix = (RedisKey)Encoding.UTF8.GetBytes(_options.InstanceName + "__MSOCT_");
         _tagMasterKey = (RedisKey)Encoding.UTF8.GetBytes(_options.InstanceName + "__MSOCT");
         _tagMasterKeyArray = new[] { _tagMasterKey };
+
+        _ = Task.Run(RunGarbageCollectionLoopAsync);
+    }
+
+    private async Task RunGarbageCollectionLoopAsync()
+    {
+        try
+        {
+            while (!Volatile.Read(ref _disposed))
+            {
+                // approx every 5 minutes, with some randomization to prevent spikes of pile-on
+                var secondsWithJitter = 300 + Random.Shared.Next(-30, 30);
+                Debug.Assert(secondsWithJitter >= 270 && secondsWithJitter <= 330);
+                await Task.Delay(TimeSpan.FromSeconds(secondsWithJitter)).ConfigureAwait(false);
+                try
+                {
+                    if (GarbageCollectionEnabled)
+                    {
+                        await ExecuteGarbageCollectionAsync(GetExpirationTimestamp(TimeSpan.Zero)).ConfigureAwait(false);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // this sweep failed; log it
+                    _logger.LogDebug(ex, "Transient error occurred executing redis output-cache GC loop");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            // the entire loop is dead
+            _logger.LogDebug(ex, "Fatal error occurred executing redis output-cache GC loop");
+        }
+    }
+
+    internal async ValueTask<long> ExecuteGarbageCollectionAsync(long keepValuesGreaterThan, CancellationToken cancellationToken = default)
+    {
+        var cache = await ConnectAsync(CancellationToken.None).ConfigureAwait(false);
+
+        var gcKey = _tagMasterKey.Append("GC");
+        var gcLifetime = TimeSpan.FromMinutes(5);
+        if (!await cache.StringSetAsync(gcKey, "", gcLifetime, when: When.NotExists).ConfigureAwait(false))
+        {
+            return -1; // signal competition
+        }
+        try
+        {
+            // we'll rely on the enumeration of ZSCAN to spot connection failures, and use "best efforts"
+            // on the individual operations - this avoids per-call latency
+            const CommandFlags GarbageCollectionFlags = CommandFlags.FireAndForget;
+
+            // the score is the effective timeout, so we simply need to cull everything with scores below "cull",
+            // for the individual tag sorted-sets, and also the master sorted-set
+            const int EXTEND_EVERY = 250; // some non-trivial number of work
+            int extendCountdown = EXTEND_EVERY;
+            await foreach (var entry in cache.SortedSetScanAsync(_tagMasterKey).WithCancellation(cancellationToken))
+            {
+                await cache.SortedSetRemoveRangeByScoreAsync(GetTagKey((string)entry.Element!), start: 0, stop: keepValuesGreaterThan, flags: GarbageCollectionFlags).ConfigureAwait(false);
+                if (--extendCountdown <= 0)
+                {
+                    await cache.KeyExpireAsync(gcKey, gcLifetime).ConfigureAwait(false);
+                    extendCountdown = EXTEND_EVERY;
+                }
+            }
+            // paying latency on the final master-tag purge: is fine
+            return await cache.SortedSetRemoveRangeByScoreAsync(_tagMasterKey, start: 0, stop: keepValuesGreaterThan).ConfigureAwait(false);
+        }
+        finally
+        {
+            await cache.KeyDeleteAsync(gcKey, CommandFlags.FireAndForget).ConfigureAwait(false);
+        }
     }
 
     async ValueTask IOutputCacheStore.EvictByTagAsync(string tag, CancellationToken cancellationToken)

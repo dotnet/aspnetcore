@@ -6,9 +6,11 @@
 using System;
 using System.Buffers;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.OutputCaching;
+using Microsoft.Diagnostics.Runtime.Interop;
 using StackExchange.Redis;
 using Xunit;
 using Xunit.Abstractions;
@@ -28,7 +30,10 @@ public class OutputCacheGetSetTests : IClassFixture<RedisConnectionFixture>
         {
             ConnectionMultiplexerFactory = () => Task.FromResult(_fixture.Connection),
             InstanceName = "TestPrefix",
-        });
+        })
+        {
+            GarbageCollectionEnabled = false,
+        };
         Log = log;
     }
 
@@ -305,6 +310,85 @@ public class OutputCacheGetSetTests : IClassFixture<RedisConnectionFixture>
         Assert.Equal(1290, bufferWriter.WrittenCount);
         ReadOnlyMemory<byte> linear = payload.ToArray();
         Assert.True(linear.Span.SequenceEqual(bufferWriter.WrittenSpan), "payload match");
+    }
+
+    [Fact]
+    public async Task GarbageCollectionDoesNotRunWhenGCKeyHeld()
+    {
+        var cache = await Cache().ConfigureAwait(false);
+        var impl = Assert.IsAssignableFrom<RedisOutputCacheStore>(cache);
+        await _fixture.Database.StringSetAsync("TestPrefix__MSOCTGC", "dummy", TimeSpan.FromMinutes(1));
+        try
+        {
+            Assert.Equal(-1, await impl.ExecuteGarbageCollectionAsync(42));
+        }
+        finally
+        {
+            await _fixture.Database.KeyDeleteAsync("TestPrefix__MSOCTGC");
+        }
+    }
+
+    [Fact]
+    public async Task GarbageCollectionCleansUpTagData()
+    {
+        // importantly, we're not interested in the lifetime of the *values* - redis deals with that
+        // itself; we're only interested in the tag-expiry metadata
+        var blob = new byte[16];
+        Random.Shared.NextBytes(blob);
+        var cache = await Cache().ConfigureAwait(false);
+        var impl = Assert.IsAssignableFrom<RedisOutputCacheStore>(cache);
+
+        // start vanilla
+        await _fixture.Database.KeyDeleteAsync(new RedisKey[] { "TestPrefix__MSOCT",
+            "TestPrefix__MSOCT_a", "TestPrefix__MSOCT_b",
+            "TestPrefix__MSOCT_c", "TestPrefix__MSOCT_d" });
+
+        await cache.SetAsync(Guid.NewGuid().ToString(), blob, new[] { "a", "b" }, TimeSpan.FromSeconds(5), CancellationToken.None); // a=b=5
+        await cache.SetAsync(Guid.NewGuid().ToString(), blob, new[] { "b", "c" }, TimeSpan.FromSeconds(10), CancellationToken.None); // a=5, b=c=10
+        await cache.SetAsync(Guid.NewGuid().ToString(), blob, new[] { "c", "d" }, TimeSpan.FromSeconds(15), CancellationToken.None); // a=5, b=10, c=d=15
+
+        long aScore = (long)await _fixture.Database.SortedSetScoreAsync("TestPrefix__MSOCT", "a"),
+             bScore = (long)await _fixture.Database.SortedSetScoreAsync("TestPrefix__MSOCT", "b"),
+             cScore = (long)await _fixture.Database.SortedSetScoreAsync("TestPrefix__MSOCT", "c"),
+             dScore = (long)await _fixture.Database.SortedSetScoreAsync("TestPrefix__MSOCT", "d");
+
+        Assert.False(await _fixture.Database.KeyExistsAsync("TestPrefix__MSOCTGC"), "GC key should not exist");
+        Assert.True(await _fixture.Database.KeyExistsAsync("TestPrefix__MSOCT"), "master tag should exist");
+        Assert.True(await _fixture.Database.KeyExistsAsync("TestPrefix__MSOCT_a"), "tag a should exist");
+        Assert.True(await _fixture.Database.KeyExistsAsync("TestPrefix__MSOCT_b"), "tag b should exist");
+        Assert.True(await _fixture.Database.KeyExistsAsync("TestPrefix__MSOCT_c"), "tag c should exist");
+        Assert.True(await _fixture.Database.KeyExistsAsync("TestPrefix__MSOCT_d"), "tag d should exist");
+
+        await CheckCounts(4, 1, 2, 2, 1);
+        Assert.Equal(0, await impl.ExecuteGarbageCollectionAsync(0)); // should not change anything
+        await CheckCounts(4, 1, 2, 2, 1);
+        Assert.Equal(1, await impl.ExecuteGarbageCollectionAsync(aScore)); // 1=removes a
+        await CheckCounts(3, 0, 1, 2, 1);
+        Assert.Equal(1, await impl.ExecuteGarbageCollectionAsync(bScore)); // 1=removes b
+        await CheckCounts(2, 0, 0, 1, 1);
+        Assert.Equal(2, await impl.ExecuteGarbageCollectionAsync(cScore)); // 2=removes c+d
+        await CheckCounts(0, 0, 0, 0, 0);
+        Assert.Equal(0, await impl.ExecuteGarbageCollectionAsync(dScore));
+        await CheckCounts(0, 0, 0, 0, 0);
+        Assert.Equal(0, await impl.ExecuteGarbageCollectionAsync(dScore + 1000)); // should have nothing left to do
+        await CheckCounts(0, 0, 0, 0, 0);
+
+        // we should now not have any of these left
+        Assert.False(await _fixture.Database.KeyExistsAsync("TestPrefix__MSOCTGC"), "GC key should not exist");
+        Assert.False(await _fixture.Database.KeyExistsAsync("TestPrefix__MSOCT"), "master tag still exists");
+        Assert.False(await _fixture.Database.KeyExistsAsync("TestPrefix__MSOCT_a"), "tag a still exists");
+        Assert.False(await _fixture.Database.KeyExistsAsync("TestPrefix__MSOCT_b"), "tag b still exists");
+        Assert.False(await _fixture.Database.KeyExistsAsync("TestPrefix__MSOCT_c"), "tag c still exists");
+        Assert.False(await _fixture.Database.KeyExistsAsync("TestPrefix__MSOCT_d"), "tag d still exists");
+
+        async Task CheckCounts(int master, int a, int b, int c, int d)
+        {
+            Assert.Equal(master, (int)await _fixture.Database.SortedSetLengthAsync("TestPrefix__MSOCT"));
+            Assert.Equal(a, (int)await _fixture.Database.SortedSetLengthAsync("TestPrefix__MSOCT_a"));
+            Assert.Equal(b, (int)await _fixture.Database.SortedSetLengthAsync("TestPrefix__MSOCT_b"));
+            Assert.Equal(c, (int)await _fixture.Database.SortedSetLengthAsync("TestPrefix__MSOCT_c"));
+            Assert.Equal(d, (int)await _fixture.Database.SortedSetLengthAsync("TestPrefix__MSOCT_d"));
+        }
     }
 
     private class Segment : ReadOnlySequenceSegment<byte>
