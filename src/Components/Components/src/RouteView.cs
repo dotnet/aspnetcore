@@ -6,6 +6,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Routing;
 
@@ -19,6 +20,14 @@ public class RouteView : IComponent
 {
     private RenderHandle _renderHandle;
     private static readonly ConcurrentDictionary<Type, Type?> _layoutAttributeCache = new();
+
+    static RouteView()
+    {
+        if (HotReloadManager.Default.MetadataUpdateSupported)
+        {
+            HotReloadManager.Default.OnDeltaApplied += _layoutAttributeCache.Clear;
+        }
+    }
 
     [Inject]
     private NavigationManager NavigationManager { get; set; }
