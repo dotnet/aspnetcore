@@ -7,6 +7,7 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
@@ -122,7 +123,8 @@ internal class RedisOutputCacheStore : IOutputCacheStore, IOutputCacheBufferWrit
 
         var gcKey = _tagMasterKey.Append("GC");
         var gcLifetime = TimeSpan.FromMinutes(5);
-        if (!await cache.StringSetAsync(gcKey, "", gcLifetime, when: When.NotExists).ConfigureAwait(false))
+        // value is purely placeholder; it is the existence that matters
+        if (!await cache.StringSetAsync(gcKey, DateTime.UtcNow.ToString(CultureInfo.InvariantCulture), gcLifetime, when: When.NotExists).ConfigureAwait(false))
         {
             return -1; // signal competition
         }
