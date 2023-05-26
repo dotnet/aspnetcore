@@ -142,6 +142,33 @@ public class OutputCacheGetSetTests : IClassFixture<RedisConnectionFixture>
     }
 
     [Fact]
+    public async Task TagScoreWorksWithGreaterThan()
+    {
+        // store some data
+        var cache = await Cache().ConfigureAwait(false);
+        byte[] storedValue = new byte[1017];
+        Random.Shared.NextBytes(storedValue);
+        var tags = new[] { "gtonly" };
+        await _fixture.Database.KeyDeleteAsync("TestPrefix__MSOCT"); // start from nil state
+
+        await cache.SetAsync(Guid.NewGuid().ToString(), storedValue, tags, TimeSpan.FromSeconds(30), CancellationToken.None);
+        var originalScore = await _fixture.Database.SortedSetScoreAsync("TestPrefix__MSOCT", "gtonly");
+        Assert.NotNull(originalScore);
+
+        // now store something with a shorter ttl; the score should not change
+        await cache.SetAsync(Guid.NewGuid().ToString(), storedValue, tags, TimeSpan.FromSeconds(15), CancellationToken.None);
+        var newScore = await _fixture.Database.SortedSetScoreAsync("TestPrefix__MSOCT", "gtonly");
+        Assert.NotNull(newScore);
+        Assert.Equal(originalScore, newScore);
+
+        // now store something with a longer ttl; the score should increase
+        await cache.SetAsync(Guid.NewGuid().ToString(), storedValue, tags, TimeSpan.FromSeconds(45), CancellationToken.None);
+        newScore = await _fixture.Database.SortedSetScoreAsync("TestPrefix__MSOCT", "gtonly");
+        Assert.NotNull(newScore);
+        Assert.True(newScore > originalScore, "should increase");
+    }
+
+    [Fact]
     public async Task CanEvictByTag()
     {
         // store some data
