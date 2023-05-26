@@ -15,7 +15,7 @@ public interface IFormValueSupplier
     /// </summary>
     /// <param name="formName">The form name to bind data from.</param>
     /// <param name="valueType">The <see cref="Type"/> for the value to bind.</param>
-    /// <returns></returns>
+    /// <returns><c>true</c> if the value type can be bound; otherwise, <c>false</c>.</returns>
     bool CanBind(string formName, Type valueType);
 
     /// <summary>
