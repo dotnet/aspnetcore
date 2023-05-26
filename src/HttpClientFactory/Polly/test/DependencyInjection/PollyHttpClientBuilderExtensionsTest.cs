@@ -523,7 +523,7 @@ public class PollyHttpClientBuilderExtensionsTest
     }
 
     [Fact]
-    public async Task AddPolicyRegistry_WithConfigureDelegate_ThrowsWhenServicesRequiredByDelegateAreMissing()
+    public void AddPolicyRegistry_WithConfigureDelegate_ThrowsWhenServicesRequiredByDelegateAreMissing()
     {
         var options = new PollyPolicyOptions
         {
