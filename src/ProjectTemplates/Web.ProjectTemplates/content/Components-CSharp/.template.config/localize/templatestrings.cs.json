@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
   "name": "Webová aplikace Blazor",
-  "description": "A project template for creating a Blazor web app that supports both server-side rendering and client interactivity. This template can be used for web apps with rich dynamic user interfaces (UIs).",
+  "description": "Šablona projektu pro vytvoření webové aplikace Blazor, která podporuje vykreslování na straně serveru i interaktivitu klienta. Tato šablona se dá použít pro webové aplikace s bohatými dynamickými uživatelskými rozhraními (UI).",
   "symbols/Framework/description": "Cílová architektura pro projekt",
   "symbols/Framework/choices/net8.0/description": "Cílový net8.0",
   "symbols/skipRestore/description": "Pokud se tato možnost zadá, přeskočí automatické obnovení projektu při vytvoření.",
