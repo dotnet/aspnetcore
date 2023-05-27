@@ -1,12 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { HttpClient } from "./HttpClient";
-import { ILogger, LogLevel } from "./ILogger";
-import { NullLogger } from "./Loggers";
-import { IStreamSubscriber, ISubscription } from "./Stream";
-import { Subject } from "./Subject";
-import { IHttpConnectionOptions } from "./IHttpConnectionOptions";
+import { HttpClient } from "./HttpClient.js";
+import { ILogger, LogLevel } from "./ILogger.js";
+import { NullLogger } from "./Loggers.js";
+import { IStreamSubscriber, ISubscription } from "./Stream.js";
+import { Subject } from "./Subject.js";
+import { IHttpConnectionOptions } from "./IHttpConnectionOptions.js";
 
 // Version token that will be replaced by the prepack command
 /** The version of the SignalR client. */

@@ -1,7 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { HttpTransportType } from "./ITransport";
+import { HttpTransportType } from "./ITransport.js";
 
 /** Error thrown when an HTTP request fails. */
 export class HttpError extends Error {

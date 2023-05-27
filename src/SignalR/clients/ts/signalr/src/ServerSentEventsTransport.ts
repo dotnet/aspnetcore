@@ -1,12 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { HttpClient } from "./HttpClient";
-import { MessageHeaders } from "./IHubProtocol";
-import { ILogger, LogLevel } from "./ILogger";
-import { ITransport, TransferFormat } from "./ITransport";
-import { Arg, getDataDetail, getUserAgentHeader, Platform, sendMessage } from "./Utils";
-import { IHttpConnectionOptions } from "./IHttpConnectionOptions";
+import { HttpClient } from "./HttpClient.js";
+import { MessageHeaders } from "./IHubProtocol.js";
+import { ILogger, LogLevel } from "./ILogger.js";
+import { ITransport, TransferFormat } from "./ITransport.js";
+import { Arg, getDataDetail, getUserAgentHeader, Platform, sendMessage } from "./Utils.js";
+import { IHttpConnectionOptions } from "./IHttpConnectionOptions.js";
 
 /** @private */
 export class ServerSentEventsTransport implements ITransport {

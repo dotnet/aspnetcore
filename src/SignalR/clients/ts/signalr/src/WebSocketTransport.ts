@@ -1,13 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { HeaderNames } from "./HeaderNames";
-import { HttpClient } from "./HttpClient";
-import { MessageHeaders } from "./IHubProtocol";
-import { ILogger, LogLevel } from "./ILogger";
-import { ITransport, TransferFormat } from "./ITransport";
-import { WebSocketConstructor } from "./Polyfills";
-import { Arg, getDataDetail, getUserAgentHeader, Platform } from "./Utils";
+import { HeaderNames } from "./HeaderNames.js";
+import { HttpClient } from "./HttpClient.js";
+import { MessageHeaders } from "./IHubProtocol.js";
+import { ILogger, LogLevel } from "./ILogger.js";
+import { ITransport, TransferFormat } from "./ITransport.js";
+import { WebSocketConstructor } from "./Polyfills.js";
+import { Arg, getDataDetail, getUserAgentHeader, Platform } from "./Utils.js";
 
 /** @private */
 export class WebSocketTransport implements ITransport {

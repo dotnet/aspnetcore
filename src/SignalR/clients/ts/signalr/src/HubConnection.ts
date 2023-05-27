@@ -1,15 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { HandshakeProtocol, HandshakeRequestMessage, HandshakeResponseMessage } from "./HandshakeProtocol";
-import { IConnection } from "./IConnection";
-import { AbortError } from "./Errors";
-import { CancelInvocationMessage, CompletionMessage, IHubProtocol, InvocationMessage, MessageType, StreamInvocationMessage, StreamItemMessage } from "./IHubProtocol";
-import { ILogger, LogLevel } from "./ILogger";
-import { IRetryPolicy } from "./IRetryPolicy";
-import { IStreamResult } from "./Stream";
-import { Subject } from "./Subject";
-import { Arg, getErrorString, Platform } from "./Utils";
+import { HandshakeProtocol, HandshakeRequestMessage, HandshakeResponseMessage } from "./HandshakeProtocol.js";
+import { IConnection } from "./IConnection.js";
+import { AbortError } from "./Errors.js";
+import { CancelInvocationMessage, CompletionMessage, IHubProtocol, InvocationMessage, MessageType, StreamInvocationMessage, StreamItemMessage } from "./IHubProtocol.js";
+import { ILogger, LogLevel } from "./ILogger.js";
+import { IRetryPolicy } from "./IRetryPolicy.js";
+import { IStreamResult } from "./Stream.js";
+import { Subject } from "./Subject.js";
+import { Arg, getErrorString, Platform } from "./Utils.js";
 
 const DEFAULT_TIMEOUT_IN_MS: number = 30 * 1000;
 const DEFAULT_PING_INTERVAL_IN_MS: number = 15 * 1000;

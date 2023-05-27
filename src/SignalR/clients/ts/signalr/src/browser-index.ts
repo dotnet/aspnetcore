@@ -27,4 +27,4 @@ if (!Uint8Array.prototype.forEach) {
     });
 }
 
-export * from "./index";
+export * from "./index.js";

@@ -1,8 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { IStreamResult, IStreamSubscriber, ISubscription } from "./Stream";
-import { SubjectSubscription } from "./Utils";
+import { IStreamResult, IStreamSubscriber, ISubscription } from "./Stream.js";
+import { SubjectSubscription } from "./Utils.js";
 
 /** Stream implementation to stream items to the server. */
 export class Subject<T> implements IStreamResult<T> {

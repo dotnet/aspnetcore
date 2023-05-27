@@ -1,10 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { AbortError, HttpError, TimeoutError } from "./Errors";
-import { HttpClient, HttpRequest, HttpResponse } from "./HttpClient";
-import { ILogger, LogLevel } from "./ILogger";
-import { isArrayBuffer } from "./Utils";
+import { AbortError, HttpError, TimeoutError } from "./Errors.js";
+import { HttpClient, HttpRequest, HttpResponse } from "./HttpClient.js";
+import { ILogger, LogLevel } from "./ILogger.js";
+import { isArrayBuffer } from "./Utils.js";
 
 export class XhrHttpClient extends HttpClient {
     private readonly _logger: ILogger;

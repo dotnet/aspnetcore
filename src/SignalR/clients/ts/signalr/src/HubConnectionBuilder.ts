@@ -1,17 +1,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { DefaultReconnectPolicy } from "./DefaultReconnectPolicy";
-import { HttpConnection } from "./HttpConnection";
-import { HubConnection } from "./HubConnection";
-import { IHttpConnectionOptions } from "./IHttpConnectionOptions";
-import { IHubProtocol } from "./IHubProtocol";
-import { ILogger, LogLevel } from "./ILogger";
-import { IRetryPolicy } from "./IRetryPolicy";
-import { HttpTransportType } from "./ITransport";
-import { JsonHubProtocol } from "./JsonHubProtocol";
-import { NullLogger } from "./Loggers";
-import { Arg, ConsoleLogger } from "./Utils";
+import { DefaultReconnectPolicy } from "./DefaultReconnectPolicy.js";
+import { HttpConnection } from "./HttpConnection.js";
+import { HubConnection } from "./HubConnection.js";
+import { IHttpConnectionOptions } from "./IHttpConnectionOptions.js";
+import { IHubProtocol } from "./IHubProtocol.js";
+import { ILogger, LogLevel } from "./ILogger.js";
+import { IRetryPolicy } from "./IRetryPolicy.js";
+import { HttpTransportType } from "./ITransport.js";
+import { JsonHubProtocol } from "./JsonHubProtocol.js";
+import { NullLogger } from "./Loggers.js";
+import { Arg, ConsoleLogger } from "./Utils.js";
 
 const LogLevelNameMapping: {[k: string]: LogLevel} = {
     trace: LogLevel.Trace,

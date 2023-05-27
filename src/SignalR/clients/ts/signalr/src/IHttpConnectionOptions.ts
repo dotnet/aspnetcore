@@ -1,11 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { HttpClient } from "./HttpClient";
-import { MessageHeaders } from "./IHubProtocol";
-import { ILogger, LogLevel } from "./ILogger";
-import { HttpTransportType, ITransport } from "./ITransport";
-import { EventSourceConstructor, WebSocketConstructor } from "./Polyfills";
+import { HttpClient } from "./HttpClient.js";
+import { MessageHeaders } from "./IHubProtocol.js";
+import { ILogger, LogLevel } from "./ILogger.js";
+import { HttpTransportType, ITransport } from "./ITransport.js";
+import { EventSourceConstructor, WebSocketConstructor } from "./Polyfills.js";
 
 /** Options provided to the 'withUrl' method on {@link @microsoft/signalr.HubConnectionBuilder} to configure options for the HTTP-based transports. */
 export interface IHttpConnectionOptions {

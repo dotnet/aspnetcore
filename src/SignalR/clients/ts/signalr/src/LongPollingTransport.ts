@@ -1,13 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { AbortController } from "./AbortController";
-import { HttpError, TimeoutError } from "./Errors";
-import { HttpClient, HttpRequest } from "./HttpClient";
-import { ILogger, LogLevel } from "./ILogger";
-import { ITransport, TransferFormat } from "./ITransport";
-import { Arg, getDataDetail, getUserAgentHeader, sendMessage } from "./Utils";
-import { IHttpConnectionOptions } from "./IHttpConnectionOptions";
+import { AbortController } from "./AbortController.js";
+import { HttpError, TimeoutError } from "./Errors.js";
+import { HttpClient, HttpRequest } from "./HttpClient.js";
+import { ILogger, LogLevel } from "./ILogger.js";
+import { ITransport, TransferFormat } from "./ITransport.js";
+import { Arg, getDataDetail, getUserAgentHeader, sendMessage } from "./Utils.js";
+import { IHttpConnectionOptions } from "./IHttpConnectionOptions.js";
 
 // Not exported from 'index', this type is internal.
 /** @private */

@@ -4,10 +4,10 @@
 // @ts-ignore: This will be removed from built files and is here to make the types available during dev work
 import { CookieJar } from "@types/tough-cookie";
 
-import { AbortError, HttpError, TimeoutError } from "./Errors";
-import { HttpClient, HttpRequest, HttpResponse } from "./HttpClient";
-import { ILogger, LogLevel } from "./ILogger";
-import { Platform, getGlobalThis, isArrayBuffer } from "./Utils";
+import { AbortError, HttpError, TimeoutError } from "./Errors.js";
+import { HttpClient, HttpRequest, HttpResponse } from "./HttpClient.js";
+import { ILogger, LogLevel } from "./ILogger.js";
+import { Platform, getGlobalThis, isArrayBuffer } from "./Utils.js";
 
 export class FetchHttpClient extends HttpClient {
     private readonly _abortControllerType: { prototype: AbortController, new(): AbortController };

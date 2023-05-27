@@ -1,17 +1,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { AccessTokenHttpClient } from "./AccessTokenHttpClient";
-import { DefaultHttpClient } from "./DefaultHttpClient";
-import { AggregateErrors, DisabledTransportError, FailedToNegotiateWithServerError, FailedToStartTransportError, HttpError, UnsupportedTransportError, AbortError } from "./Errors";
-import { IConnection } from "./IConnection";
-import { IHttpConnectionOptions } from "./IHttpConnectionOptions";
-import { ILogger, LogLevel } from "./ILogger";
-import { HttpTransportType, ITransport, TransferFormat } from "./ITransport";
-import { LongPollingTransport } from "./LongPollingTransport";
-import { ServerSentEventsTransport } from "./ServerSentEventsTransport";
-import { Arg, createLogger, getUserAgentHeader, Platform } from "./Utils";
-import { WebSocketTransport } from "./WebSocketTransport";
+import { AccessTokenHttpClient } from "./AccessTokenHttpClient.js";
+import { DefaultHttpClient } from "./DefaultHttpClient.js";
+import { AggregateErrors, DisabledTransportError, FailedToNegotiateWithServerError, FailedToStartTransportError, HttpError, UnsupportedTransportError, AbortError } from "./Errors.js";
+import { IConnection } from "./IConnection.js";
+import { IHttpConnectionOptions } from "./IHttpConnectionOptions.js";
+import { ILogger, LogLevel } from "./ILogger.js";
+import { HttpTransportType, ITransport, TransferFormat } from "./ITransport.js";
+import { LongPollingTransport } from "./LongPollingTransport.js";
+import { ServerSentEventsTransport } from "./ServerSentEventsTransport.js";
+import { Arg, createLogger, getUserAgentHeader, Platform } from "./Utils.js";
+import { WebSocketTransport } from "./WebSocketTransport.js";
 
 /** @private */
 const enum ConnectionState {

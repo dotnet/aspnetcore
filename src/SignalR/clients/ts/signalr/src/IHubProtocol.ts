@@ -1,8 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { ILogger } from "./ILogger";
-import { TransferFormat } from "./ITransport";
+import { ILogger } from "./ILogger.js";
+import { TransferFormat } from "./ITransport.js";
 
 /** Defines the type of a Hub Message. */
 export enum MessageType {

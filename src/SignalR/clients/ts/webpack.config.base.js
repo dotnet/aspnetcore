@@ -39,6 +39,9 @@ module.exports = function (modulePath, browserBaseName, options) {
             ]
         },
         resolve: {
+            extensionAlias: {
+                ".js": [".js", ".ts"]
+            },
             extensions: [".ts", ".js"],
             alias: {
                 ...options.alias,
