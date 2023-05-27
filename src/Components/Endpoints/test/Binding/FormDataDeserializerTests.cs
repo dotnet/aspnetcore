@@ -77,7 +77,8 @@ public class FormDataDeserializerTests
         // Assert
         Assert.Equal(expected, result);
     }
-
+    
+#nullable enable
     [Fact]
     public void CanDeserialize_NullableCustomParsableTypes()
     {
@@ -110,6 +111,7 @@ public class FormDataDeserializerTests
         // Assert
         Assert.Null(result);
     }
+#nullable disable
 
     public static TheoryData<string, Type, object> NullableBasicTypes
     {
