@@ -21,6 +21,11 @@ internal struct FormDataReader
 
     public IFormatProvider Culture { get; internal set; }
 
+    internal void PopPrefix(string v)
+    {
+        _prefix = "";
+    }
+
     internal void PushPrefix(string prefix)
     {
         _prefix = prefix;
