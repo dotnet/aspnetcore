@@ -28,21 +28,26 @@ internal class FormDataSerializerOptions
 
     internal FormDataConverter<T> ResolveConverter<T>()
     {
-        if (!_converters.TryGetValue(typeof(T), out var converter))
+        return (FormDataConverter<T>)_converters.GetOrAdd(typeof(T), CreateConverter, this);
+    }
+
+    private static FormDataConverter CreateConverter(Type type, FormDataSerializerOptions options)
+    {
+        FormDataConverter? converter;
+        foreach (var factory in options._factories)
         {
-            throw new InvalidOperationException($"No converter registered for type '{typeof(T).FullName}'.");
+            converter = factory(type, options);
+            if (converter != null)
+            {
+                return converter;
+            }
         }
 
-        return (FormDataConverter<T>)converter;
+        throw new InvalidOperationException($"No converter registered for type '{type.FullName}'.");
     }
 
     internal FormDataConverter ResolveConverter(Type type)
     {
-        if (!_converters.TryGetValue(type, out var converter))
-        {
-            throw new InvalidOperationException($"No converter registered for type '{type.FullName}'.");
-        }
-
-        return converter;
+        return _converters.GetOrAdd(type, CreateConverter, this);
     }
 }

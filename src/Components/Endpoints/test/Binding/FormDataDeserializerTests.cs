@@ -1,8 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.Extensions.Primitives;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
 
@@ -54,6 +56,56 @@ public class FormDataDeserializerTests
 
         // Act
         var result = CallDeserialize(reader, options, type);
+
+        // Assert
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public void CanDeserialize_CustomParsableTypes()
+    {
+        // Arrange
+        var expected = new Point { X = 1, Y = 1 };
+        var collection = new Dictionary<string, StringValues>() { ["value"] = new StringValues("(1,1)") };
+        var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
+        reader.PushPrefix("value");
+        var options = new FormDataSerializerOptions();
+
+        // Act
+        var result = FormDataDeserializer.Deserialize<Point>(reader, options);
+
+        // Assert
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void CanDeserialize_NullableCustomParsableTypes()
+    {
+        // Arrange
+        var expected = new ValuePoint { X = 1, Y = 1 };
+        var collection = new Dictionary<string, StringValues>() { ["value"] = new StringValues("(1,1)") };
+        var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
+        reader.PushPrefix("value");
+        var options = new FormDataSerializerOptions();
+
+        // Act
+        var result = FormDataDeserializer.Deserialize<ValuePoint?>(reader, options);
+
+        // Assert
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void CanDeserialize_NullableCustomParsableTypes_NullValue()
+    {
+        // Arrange
+        var collection = new Dictionary<string, StringValues>() { };
+        var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
+        reader.PushPrefix("value");
+        var options = new FormDataSerializerOptions();
+
+        // Act
+        var result = FormDataDeserializer.Deserialize<ValuePoint?>(reader, options);
 
         // Assert
         Assert.Null(result);
@@ -193,5 +245,133 @@ public class FormDataDeserializerTests
             throw new InvalidOperationException("Unable to find method 'Deserialize'.");
 
         return method.MakeGenericMethod(type).Invoke(null, new object[] { reader, options })!;
+    }
+}
+
+internal class Point : IParsable<Point>, IEquatable<Point>
+{
+    public int X { get; set; }
+    public int Y { get; set; }
+
+    public static Point Parse(string s, IFormatProvider provider)
+    {
+        // Parses points. Points start with ( and end with ).
+        // Points define two components, X and Y, separated by a comma.
+        var components = s.Trim('(', ')').Split(',');
+        if (components.Length != 2)
+        {
+            throw new FormatException("Invalid point format.");
+        }
+        var result = new Point();
+        result.X = int.Parse(components[0], provider);
+        result.Y = int.Parse(components[1], provider);
+        return result;
+    }
+
+    public static bool TryParse([NotNullWhen(true)] string s, IFormatProvider provider, [MaybeNullWhen(false)] out Point result)
+    {
+        // Try parse points is similar to Parse, but returns a bool to indicate success.
+        // It also uses the out parameter to return the result.
+        try
+        {
+            result = Parse(s, provider);
+            return true;
+        }
+        catch (FormatException)
+        {
+            result = null;
+            return false;
+        }
+    }
+
+    public override bool Equals(object obj)
+    {
+        return Equals(obj as Point);
+    }
+
+    public bool Equals(Point other)
+    {
+        return other is not null &&
+               X == other.X &&
+               Y == other.Y;
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(X, Y);
+    }
+
+    public static bool operator ==(Point left, Point right)
+    {
+        return EqualityComparer<Point>.Default.Equals(left, right);
+    }
+
+    public static bool operator !=(Point left, Point right)
+    {
+        return !(left == right);
+    }
+}
+
+internal class ValuePoint : IParsable<ValuePoint>, IEquatable<ValuePoint>
+{
+    public int X { get; set; }
+    public int Y { get; set; }
+
+    public static ValuePoint Parse(string s, IFormatProvider provider)
+    {
+        // Parses points. Points start with ( and end with ).
+        // Points define two components, X and Y, separated by a comma.
+        var components = s.Trim('(', ')').Split(',');
+        if (components.Length != 2)
+        {
+            throw new FormatException("Invalid point format.");
+        }
+        var result = new ValuePoint();
+        result.X = int.Parse(components[0], provider);
+        result.Y = int.Parse(components[1], provider);
+        return result;
+    }
+
+    public static bool TryParse([NotNullWhen(true)] string s, IFormatProvider provider, [MaybeNullWhen(false)] out ValuePoint result)
+    {
+        // Try parse points is similar to Parse, but returns a bool to indicate success.
+        // It also uses the out parameter to return the result.
+        try
+        {
+            result = Parse(s, provider);
+            return true;
+        }
+        catch (FormatException)
+        {
+            result = null;
+            return false;
+        }
+    }
+
+    public override bool Equals(object obj)
+    {
+        return Equals(obj as ValuePoint);
+    }
+
+    public bool Equals(ValuePoint other)
+    {
+        return other is not null &&
+               X == other.X &&
+               Y == other.Y;
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(X, Y);
+    }
+
+    public static bool operator ==(ValuePoint left, ValuePoint right)
+    {
+        return EqualityComparer<ValuePoint>.Default.Equals(left, right);
+    }
+
+    public static bool operator !=(ValuePoint left, ValuePoint right)
+    {
+        return !(left == right);
     }
 }
