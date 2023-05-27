@@ -164,10 +164,8 @@ public class CookieHeaderValue
 
     internal static void CheckNameFormat(StringSegment name, string parameterName)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(name, parameterName);
+        ArgumentException.ThrowIfNullOrEmpty(name.Value, parameterName);
 
         if (HttpRuleParser.GetTokenLength(name, 0) != name.Length)
         {
@@ -177,10 +175,7 @@ public class CookieHeaderValue
 
     internal static void CheckValueFormat(StringSegment value, string parameterName)
     {
-        if (value == null)
-        {
-            throw new ArgumentNullException(nameof(value));
-        }
+        ArgumentException.ThrowIfNullOrWhiteSpace(value.Value);
 
         var offset = 0;
         var result = CookieHeaderParserShared.GetCookieValue(value, ref offset);

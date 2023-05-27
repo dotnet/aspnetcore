@@ -305,16 +305,8 @@ public static class LinkGeneratorEndpointNameAddressExtensions
     {
         ArgumentNullException.ThrowIfNull(generator);
         ArgumentNullException.ThrowIfNull(endpointName);
-
-        if (string.IsNullOrEmpty(scheme))
-        {
-            throw new ArgumentException("A scheme must be provided.", nameof(scheme));
-        }
-
-        if (!host.HasValue)
-        {
-            throw new ArgumentException("A host must be provided.", nameof(host));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(scheme);
+        ArgumentException.ThrowIfNullOrEmpty(host.Value, nameof(host));
 
         return generator.GetUriByAddress<string>(endpointName, new RouteValueDictionary(values), scheme, host, pathBase, fragment, options);
     }
@@ -358,11 +350,7 @@ public static class LinkGeneratorEndpointNameAddressExtensions
     {
         ArgumentNullException.ThrowIfNull(generator);
         ArgumentNullException.ThrowIfNull(endpointName);
-
-        if (string.IsNullOrEmpty(scheme))
-        {
-            throw new ArgumentException("A scheme must be provided.", nameof(scheme));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(scheme);
 
         if (!host.HasValue)
         {

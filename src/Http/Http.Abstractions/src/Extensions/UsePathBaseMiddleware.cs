@@ -21,11 +21,7 @@ public class UsePathBaseMiddleware
     public UsePathBaseMiddleware(RequestDelegate next, PathString pathBase)
     {
         ArgumentNullException.ThrowIfNull(next);
-
-        if (!pathBase.HasValue)
-        {
-            throw new ArgumentException($"{nameof(pathBase)} cannot be null or empty.");
-        }
+        ArgumentException.ThrowIfNullOrEmpty(pathBase.Value, nameof(pathBase));
 
         _next = next;
         _pathBase = pathBase;

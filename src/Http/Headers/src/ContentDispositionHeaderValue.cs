@@ -333,10 +333,7 @@ public class ContentDispositionHeaderValue
 
     private static void CheckDispositionTypeFormat(StringSegment dispositionType, string parameterName)
     {
-        if (StringSegment.IsNullOrEmpty(dispositionType))
-        {
-            throw new ArgumentException("An empty string is not allowed.", parameterName);
-        }
+        ArgumentException.ThrowIfNullOrEmpty(dispositionType.Value, parameterName);
 
         // When adding values using strongly typed objects, no leading/trailing LWS (whitespaces) are allowed.
         var dispositionTypeLength = GetDispositionTypeExpressionLength(dispositionType, 0, out var tempDispositionType);

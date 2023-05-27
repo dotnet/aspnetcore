@@ -47,10 +47,7 @@ public class EntityTagHeaderValue
     /// <param name="isWeak">A value that indicates if this entity-tag header is a weak validator.</param>
     public EntityTagHeaderValue(StringSegment tag, bool isWeak)
     {
-        if (StringSegment.IsNullOrEmpty(tag))
-        {
-            throw new ArgumentException("An empty string is not allowed.", nameof(tag));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(tag.Value, nameof(tag));
 
         if (!isWeak && StringSegment.Equals(tag, "*", StringComparison.Ordinal))
         {

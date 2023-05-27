@@ -152,15 +152,8 @@ internal sealed partial class DefaultLinkGenerator : LinkGenerator, IDisposable
         FragmentString fragment = default,
         LinkOptions? options = null)
     {
-        if (string.IsNullOrEmpty(scheme))
-        {
-            throw new ArgumentException("A scheme must be provided.", nameof(scheme));
-        }
-
-        if (!host.HasValue)
-        {
-            throw new ArgumentException("A host must be provided.", nameof(host));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(scheme);
+        ArgumentException.ThrowIfNullOrEmpty(host.Value, nameof(host));
 
         var endpoints = GetEndpoints(address);
         if (endpoints.Count == 0)

@@ -20,12 +20,7 @@ internal sealed class DefaultSpaStaticFileProvider : ISpaStaticFileProvider
         SpaStaticFilesOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
-
-        if (string.IsNullOrEmpty(options.RootPath))
-        {
-            throw new ArgumentException($"The {nameof(options.RootPath)} property " +
-                $"of {nameof(options)} cannot be null or empty.");
-        }
+        ArgumentException.ThrowIfNullOrEmpty(options.RootPath, nameof(options.RootPath));
 
         var env = serviceProvider.GetRequiredService<IWebHostEnvironment>();
         var absoluteRootPath = Path.Combine(

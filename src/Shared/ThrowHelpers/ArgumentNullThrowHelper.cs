@@ -37,4 +37,20 @@ internal static partial class ArgumentNullThrowHelper
     internal static void Throw(string? paramName) =>
         throw new ArgumentNullException(paramName);
 #endif
+
+    public static void ThrowIfNullOrWhiteSpace(
+#if INTERNAL_NULLABLE_ATTRIBUTES || NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
+        [NotNull]
+#endif
+        string? argument, [CallerArgumentExpression("argument")] string? paramName = null)
+    {
+#if !NET7_0_OR_GREATER || NETSTANDARD || NETFRAMEWORK
+        if (argument is null)
+        {
+            Throw(paramName);
+        }
+#else
+        ArgumentException.ThrowIfNullOrWhiteSpace(argument, paramName);
+#endif
+    }
 }

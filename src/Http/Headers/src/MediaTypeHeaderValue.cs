@@ -652,10 +652,7 @@ public class MediaTypeHeaderValue
 
     private static void CheckMediaTypeFormat(StringSegment mediaType, string parameterName)
     {
-        if (StringSegment.IsNullOrEmpty(mediaType))
-        {
-            throw new ArgumentException("An empty string is not allowed.", parameterName);
-        }
+        ArgumentException.ThrowIfNullOrEmpty(mediaType.Value, parameterName);
 
         // When adding values using strongly typed objects, no leading/trailing LWS (whitespace) is allowed.
         // Also no LWS between type and subtype is allowed.

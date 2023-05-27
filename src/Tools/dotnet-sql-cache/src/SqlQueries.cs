@@ -30,14 +30,8 @@ internal sealed class SqlQueries
 
     public SqlQueries(string schemaName, string tableName)
     {
-        if (string.IsNullOrEmpty(schemaName))
-        {
-            throw new ArgumentException("Schema name cannot be empty or null");
-        }
-        if (string.IsNullOrEmpty(tableName))
-        {
-            throw new ArgumentException("Table name cannot be empty or null");
-        }
+        ArgumentException.ThrowIfNullOrEmpty(schemaName);
+        ArgumentException.ThrowIfNullOrEmpty(tableName);
 
         var tableNameWithSchema = string.Format(
             CultureInfo.InvariantCulture, "{0}.{1}", DelimitIdentifier(schemaName), DelimitIdentifier(tableName));

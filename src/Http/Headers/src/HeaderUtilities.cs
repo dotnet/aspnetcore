@@ -70,10 +70,7 @@ public static class HeaderUtilities
 
     internal static void CheckValidToken(StringSegment value, string parameterName)
     {
-        if (StringSegment.IsNullOrEmpty(value))
-        {
-            throw new ArgumentException("An empty string is not allowed.", parameterName);
-        }
+        ArgumentException.ThrowIfNullOrEmpty(value.Value, parameterName);
 
         if (HttpRuleParser.GetTokenLength(value, 0) != value.Length)
         {

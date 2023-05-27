@@ -54,10 +54,7 @@ internal static class FlagParser
 
     public static Flags Parse(string flagString)
     {
-        if (string.IsNullOrEmpty(flagString))
-        {
-            throw new ArgumentException("Argument cannot be null or empty string.", nameof(flagString));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(flagString);
 
         // Check that flags are contained within []
         // Guaranteed to have a length of at least 1 here, so this will never throw for indexing.
