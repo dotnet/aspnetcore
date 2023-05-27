@@ -5,6 +5,6 @@
 /** The version of the SignalR Message Pack protocol library. */
 export const VERSION = "0.0.0-DEV_BUILD";
 
-export { MessagePackHubProtocol } from "./MessagePackHubProtocol";
+export { MessagePackHubProtocol } from "./MessagePackHubProtocol.js";
 
-export { MessagePackOptions } from "./MessagePackOptions";
+export { MessagePackOptions } from "./MessagePackOptions.js";

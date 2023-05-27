@@ -3,7 +3,7 @@
 
 import { Encoder, Decoder } from "@msgpack/msgpack";
 
-import { MessagePackOptions } from "./MessagePackOptions";
+import { MessagePackOptions } from "./MessagePackOptions.js";
 
 import {
     CancelInvocationMessage, CompletionMessage, HubMessage, IHubProtocol, ILogger, InvocationMessage,
