@@ -1,23 +1,23 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { HttpRequest, HttpResponse } from "../src/HttpClient";
-import { HttpConnection, INegotiateResponse, TransportSendQueue } from "../src/HttpConnection";
-import { IHttpConnectionOptions } from "../src/IHttpConnectionOptions";
-import { HttpTransportType, ITransport, TransferFormat } from "../src/ITransport";
-import { getUserAgentHeader } from "../src/Utils";
+import { HttpRequest, HttpResponse } from "../src/HttpClient.js";
+import { HttpConnection, INegotiateResponse, TransportSendQueue } from "../src/HttpConnection.js";
+import { IHttpConnectionOptions } from "../src/IHttpConnectionOptions.js";
+import { HttpTransportType, ITransport, TransferFormat } from "../src/ITransport.js";
+import { getUserAgentHeader } from "../src/Utils.js";
 
-import { AbortError, HttpError } from "../src/Errors";
-import { ILogger, LogLevel } from "../src/ILogger";
-import { NullLogger } from "../src/Loggers";
-import { EventSourceConstructor, WebSocketConstructor } from "../src/Polyfills";
+import { AbortError, HttpError } from "../src/Errors.js";
+import { ILogger, LogLevel } from "../src/ILogger.js";
+import { NullLogger } from "../src/Loggers.js";
+import { EventSourceConstructor, WebSocketConstructor } from "../src/Polyfills.js";
 
-import { eachEndpointUrl, eachTransport, VerifyLogger } from "./Common";
-import { TestHttpClient } from "./TestHttpClient";
-import { TestTransport } from "./TestTransport";
-import { TestEvent, TestWebSocket } from "./TestWebSocket";
-import { PromiseSource, registerUnhandledRejectionHandler, SyncPoint } from "./Utils";
-import { HeaderNames } from "../src/HeaderNames";
+import { eachEndpointUrl, eachTransport, VerifyLogger } from "./Common.js";
+import { TestHttpClient } from "./TestHttpClient.js";
+import { TestTransport } from "./TestTransport.js";
+import { TestEvent, TestWebSocket } from "./TestWebSocket.js";
+import { PromiseSource, registerUnhandledRejectionHandler, SyncPoint } from "./Utils.js";
+import { HeaderNames } from "../src/HeaderNames.js";
 
 const commonOptions: IHttpConnectionOptions = {
     logger: NullLogger.instance,
