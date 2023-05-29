@@ -39,7 +39,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
 
         var app = Browser.MountTestComponent<TestRouter>();
         Assert.Equal("This is the default page.", app.FindElement(By.Id("test-info")).Text);
-        AssertHighlightedLinks("Instance (matches all)", "Instance with base-relative URL (matches all)");
+        AssertHighlightedLinks("Default (matches all)", "Default with base-relative URL (matches all)");
     }
 
     [Fact]
@@ -53,7 +53,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
 
         var app = Browser.MountTestComponent<TestRouter>();
         Assert.Equal("This is the default page.", app.FindElement(By.Id("test-info")).Text);
-        AssertHighlightedLinks("Instance (matches all)", "Instance with base-relative URL (matches all)", "Instance, no trailing slash (matches all)");
+        AssertHighlightedLinks("Default (matches all)", "Default with base-relative URL (matches all)", "Default, no trailing slash (matches all)");
     }
 
     [Fact]
@@ -240,9 +240,9 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         SetUrlViaPushState("/Other");
 
         var app = Browser.MountTestComponent<TestRouter>();
-        app.FindElement(By.LinkText("Instance with base-relative URL (matches all)")).Click();
+        app.FindElement(By.LinkText("Default with base-relative URL (matches all)")).Click();
         Browser.Equal("This is the default page.", () => app.FindElement(By.Id("test-info")).Text);
-        AssertHighlightedLinks("Instance (matches all)", "Instance with base-relative URL (matches all)");
+        AssertHighlightedLinks("Default (matches all)", "Default with base-relative URL (matches all)");
     }
 
     [Fact]
@@ -272,9 +272,9 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         SetUrlViaPushState("/Other");
 
         var app = Browser.MountTestComponent<TestRouter>();
-        app.FindElement(By.LinkText("Instance (matches all)")).Click();
+        app.FindElement(By.LinkText("Default (matches all)")).Click();
         Browser.Equal("This is the default page.", () => app.FindElement(By.Id("test-info")).Text);
-        AssertHighlightedLinks("Instance (matches all)", "Instance with base-relative URL (matches all)");
+        AssertHighlightedLinks("Default (matches all)", "Default with base-relative URL (matches all)");
     }
 
     [Fact]
@@ -283,9 +283,9 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         SetUrlViaPushState("/Other");
 
         var app = Browser.MountTestComponent<TestRouter>();
-        app.FindElement(By.LinkText("Instance, no trailing slash (matches all)")).Click();
+        app.FindElement(By.LinkText("Default, no trailing slash (matches all)")).Click();
         Browser.Equal("This is the default page.", () => app.FindElement(By.Id("test-info")).Text);
-        AssertHighlightedLinks("Instance (matches all)", "Instance with base-relative URL (matches all)", "Instance, no trailing slash (matches all)");
+        AssertHighlightedLinks("Default (matches all)", "Default with base-relative URL (matches all)", "Default, no trailing slash (matches all)");
     }
 
     [Fact]
@@ -305,9 +305,9 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         SetUrlViaPushState("/Other");
 
         var app = Browser.MountTestComponent<TestRouter>();
-        app.FindElement(By.LinkText("Instance with query")).Click();
+        app.FindElement(By.LinkText("Default with query")).Click();
         Browser.Equal("This is the default page.", () => app.FindElement(By.Id("test-info")).Text);
-        AssertHighlightedLinks("Instance with query");
+        AssertHighlightedLinks("Default with query");
     }
 
     [Fact]
@@ -316,9 +316,9 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         SetUrlViaPushState("/Other");
 
         var app = Browser.MountTestComponent<TestRouter>();
-        app.FindElement(By.LinkText("Instance with query, no trailing slash")).Click();
+        app.FindElement(By.LinkText("Default with query, no trailing slash")).Click();
         Browser.Equal("This is the default page.", () => app.FindElement(By.Id("test-info")).Text);
-        AssertHighlightedLinks("Instance with query, no trailing slash");
+        AssertHighlightedLinks("Default with query, no trailing slash");
     }
 
     [Fact]
@@ -338,9 +338,9 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         SetUrlViaPushState("/Other");
 
         var app = Browser.MountTestComponent<TestRouter>();
-        app.FindElement(By.LinkText("Instance with hash")).Click();
+        app.FindElement(By.LinkText("Default with hash")).Click();
         Browser.Equal("This is the default page.", () => app.FindElement(By.Id("test-info")).Text);
-        AssertHighlightedLinks("Instance with hash");
+        AssertHighlightedLinks("Default with hash");
     }
 
     [Fact]
@@ -349,9 +349,9 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         SetUrlViaPushState("/Other");
 
         var app = Browser.MountTestComponent<TestRouter>();
-        app.FindElement(By.LinkText("Instance with hash, no trailing slash")).Click();
+        app.FindElement(By.LinkText("Default with hash, no trailing slash")).Click();
         Browser.Equal("This is the default page.", () => app.FindElement(By.Id("test-info")).Text);
-        AssertHighlightedLinks("Instance with hash, no trailing slash");
+        AssertHighlightedLinks("Default with hash, no trailing slash");
     }
 
     [Fact]
@@ -501,7 +501,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         // If history would not have been replaced we would have ended up at the "/ProgrammaticNavigationCases" page
         Browser.Navigate().Back();
         Browser.True(() => Browser.Url.EndsWith("/", StringComparison.Ordinal));
-        AssertHighlightedLinks("Instance (matches all)", "Instance with base-relative URL (matches all)");
+        AssertHighlightedLinks("Default (matches all)", "Default with base-relative URL (matches all)");
 
         // Because this was all with client-side navigation, we didn't lose the state in the test selector
         Assert.Equal(typeof(TestRouter).FullName, testSelector.SelectedOption.GetAttribute("value"));
@@ -579,7 +579,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         // If history would not have been replaced we would have ended up at the "/ProgrammaticNavigationCases" page
         Browser.Navigate().Back();
         Browser.True(() => Browser.Url.EndsWith("/", StringComparison.Ordinal));
-        AssertHighlightedLinks("Instance (matches all)", "Instance with base-relative URL (matches all)");
+        AssertHighlightedLinks("Default (matches all)", "Default with base-relative URL (matches all)");
 
         // Because this was all with client-side navigation, we didn't lose the state in the test selector
         Assert.Equal(typeof(TestRouter).FullName, testSelector.SelectedOption.GetAttribute("value"));
@@ -621,7 +621,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         app.FindElement(By.Id("anchor-with-no-href")).Click();
 
         Assert.Equal(initialUrl, Browser.Url);
-        AssertHighlightedLinks("Instance (matches all)", "Instance with base-relative URL (matches all)");
+        AssertHighlightedLinks("Default (matches all)", "Default with base-relative URL (matches all)");
     }
 
     [Fact]
@@ -1221,7 +1221,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     {
         // This is an odd test, but it's primarily here to verify routing for routeablecomponentfrompackage isn't available due to
         // some unknown reason
-        SetUrlViaPushState("/Instance.html");
+        SetUrlViaPushState("/Default.html");
 
         var app = Browser.MountTestComponent<TestRouter>();
         Assert.Equal("This is the default page.", app.FindElement(By.Id("test-info")).Text);

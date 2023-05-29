@@ -57,4 +57,10 @@ internal sealed class FormDataMapperOptions
     {
         return _converters.GetOrAdd(type, CreateConverter, this);
     }
+
+    // For testing
+    internal void AddConverter<T>(FormDataConverter<T> converter)
+    {
+        _converters[typeof(T)] = converter;
+    }
 }

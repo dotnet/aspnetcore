@@ -35,7 +35,7 @@ public class WebAssemblyConfigurationTest : ServerTestBase<BlazorWasmTestAppFixt
     public void WebAssemblyConfiguration_Works()
     {
         // Verify values from the default 'appsettings.json' are read.
-        Browser.Equal("Instance key1-value", () => _appElement.FindElement(By.Id("key1")).Text);
+        Browser.Equal("Default key1-value", () => _appElement.FindElement(By.Id("key1")).Text);
 
         if (_serverFixture.TestTrimmedApps)
         {
@@ -59,7 +59,7 @@ public class WebAssemblyConfigurationTest : ServerTestBase<BlazorWasmTestAppFixt
     public void WebAssemblyConfiguration_ReloadingWorks()
     {
         // Verify values from the default 'appsettings.json' are read.
-        Browser.Equal("Instance key1-value", () => _appElement.FindElement(By.Id("key1")).Text);
+        Browser.Equal("Default key1-value", () => _appElement.FindElement(By.Id("key1")).Text);
 
         // Change the value of key1 using the form in the UI
         var input = _appElement.FindElement(By.Id("key1-input"));

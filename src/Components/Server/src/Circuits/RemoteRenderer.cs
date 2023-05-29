@@ -154,7 +154,7 @@ internal partial class RemoteRenderer : WebRenderer
                 new TaskCompletionSource(),
                 ValueStopwatch.StartNew());
 
-            // Data the rendered batches no matter what. We'll send it down immediately when the client
+            // Buffer the rendered batches no matter what. We'll send it down immediately when the client
             // is connected or right after the client reconnects.
 
             _unacknowledgedRenderBatches.Enqueue(pendingRender);

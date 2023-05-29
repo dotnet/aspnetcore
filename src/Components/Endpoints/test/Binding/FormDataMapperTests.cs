@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
@@ -149,11 +150,85 @@ public class FormDataMapperTests
         Assert.Equal(10, value);
     }
 
-    [Fact]
-    public void Deserialize_Collections_ParsesUpToMaxCollectionSize()
+    [Theory]
+    [InlineData(99)]
+    [InlineData(100)]
+    [InlineData(101)]
+    public void Deserialize_Collections_HandlesComputedIndexesBoundaryCorrectly(int size)
     {
         // Arrange
-        var data = new Dictionary<string, StringValues>(Enumerable.Range(0, 110)
+        var data = new Dictionary<string, StringValues>(Enumerable.Range(0, size)
+            .Select(i => new KeyValuePair<string, StringValues>(
+                $"[{i.ToString(CultureInfo.InvariantCulture)}]",
+                (i + 10).ToString(CultureInfo.InvariantCulture))));
+
+        var reader = new FormDataReader(data, CultureInfo.InvariantCulture);
+        reader.PushPrefix("value");
+        var options = new FormDataSerializerOptions
+        {
+            MaxCollectionSize = 110
+        };
+
+        // Act
+        var result = FormDataDeserializer.Deserialize<List<int>>(reader, options);
+
+        // Assert
+        Assert.Equal(size, result.Count);
+    }
+
+    [Theory]
+    [InlineData(99)]
+    [InlineData(100)]
+    [InlineData(101)]
+    [InlineData(109)]
+    [InlineData(110)]
+    [InlineData(120)]
+    public void Deserialize_Collections_PoolsArraysCorrectly(int size)
+    {
+        // Arrange
+        var rented = new List<int[]>();
+        var returned = new List<int[]>();
+
+        var data = new Dictionary<string, StringValues>(Enumerable.Range(0, size)
+            .Select(i => new KeyValuePair<string, StringValues>(
+                $"[{i.ToString(CultureInfo.InvariantCulture)}]",
+                (i + 10).ToString(CultureInfo.InvariantCulture))));
+
+        var reader = new FormDataReader(data, CultureInfo.InvariantCulture);
+        reader.PushPrefix("value");
+        var options = new FormDataSerializerOptions
+        {
+            MaxCollectionSize = 110
+        };
+
+        var converter = new CollectionConverter<
+                int[],
+                TestArrayPoolBufferAdapter,
+                TestArrayPoolBufferAdapter.PooledBuffer,
+                int>(new ParsableConverter<int>());
+
+        options.AddConverter(converter);
+
+        TestArrayPoolBufferAdapter.OnRent += rented.Add;
+        TestArrayPoolBufferAdapter.OnReturn += returned.Add;
+
+        // Act
+        var result = FormDataDeserializer.Deserialize<int[]>(reader, options);
+
+        TestArrayPoolBufferAdapter.OnRent -= rented.Add;
+        TestArrayPoolBufferAdapter.OnReturn -= returned.Add;
+
+        // Assert
+        Assert.Equal(rented.Count, returned.Count);
+    }
+
+    [Theory]
+    [InlineData(110)]
+    [InlineData(120)]
+    public void Deserialize_Collections_ParsesUpToMaxCollectionSize(int size)
+    {
+        // Arrange
+        var data = new Dictionary<string, StringValues>(Enumerable.Range(0, size)
             .Select(i => new KeyValuePair<string, StringValues>(
                 $"[{i.ToString(CultureInfo.InvariantCulture)}]",
                 (i + 10).ToString(CultureInfo.InvariantCulture))));
@@ -669,4 +744,54 @@ internal struct ValuePoint : IParsable<ValuePoint>, IEquatable<ValuePoint>
     public static bool operator ==(ValuePoint left, ValuePoint right) => EqualityComparer<ValuePoint>.Default.Equals(left, right);
 
     public static bool operator !=(ValuePoint left, ValuePoint right) => !(left == right);
+}
+
+internal abstract class TestArrayPoolBufferAdapter
+    : ICollectionBufferAdapter<int[], TestArrayPoolBufferAdapter.PooledBuffer, int>
+{
+    public static event Action<int[]> OnRent;
+    public static event Action<int[]> OnReturn;
+
+    public static PooledBuffer CreateBuffer() => new() { Data = Rent(16), Count = 0 };
+
+    public static PooledBuffer Add(ref PooledBuffer buffer, int element)
+    {
+        if (buffer.Count >= buffer.Data.Length)
+        {
+            var newBuffer = Rent(buffer.Data.Length * 2);
+            Array.Copy(buffer.Data, newBuffer, buffer.Data.Length);
+            Return(buffer.Data);
+            buffer.Data = newBuffer;
+        }
+
+        buffer.Data[buffer.Count++] = element;
+        return buffer;
+    }
+
+    public static int[] ToResult(PooledBuffer buffer)
+    {
+        var result = new int[buffer.Count];
+        Array.Copy(buffer.Data, result, buffer.Count);
+        Return(buffer.Data);
+        return result;
+    }
+
+    public struct PooledBuffer
+    {
+        public int[] Data { get; set; }
+        public int Count { get; set; }
+    }
+
+    public static int[] Rent(int size)
+    {
+        var result = ArrayPool<int>.Shared.Rent(size);
+        OnRent?.Invoke(result);
+        return result;
+    }
+
+    public static void Return(int[] array)
+    {
+        OnReturn?.Invoke(array);
+        ArrayPool<int>.Shared.Return(array);
+    }
 }
