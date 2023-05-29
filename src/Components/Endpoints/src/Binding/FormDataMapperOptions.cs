@@ -18,6 +18,13 @@ internal sealed class FormDataMapperOptions
         _factories.Add((type, options) => NullableConverterFactory.Instance.CanConvert(type, options) ? NullableConverterFactory.Instance.CreateConverter(type, options) : null);
     }
 
+    // Not configurable for now, this is the max number of elements we will bind. This is important for
+    // security reasons, as we don't want to bind a huge collection and cause perf issues.
+    // Some examples of this are:
+    // Binding to collection using hashes, where the payload can be crafted to force the worst case on insertion
+    // which is O(n).
+    internal readonly int MaxCollectionSize = 100;
+
     internal bool HasConverter(Type valueType) => _converters.ContainsKey(valueType);
 
     internal bool IsSingleValueConverter(Type type)

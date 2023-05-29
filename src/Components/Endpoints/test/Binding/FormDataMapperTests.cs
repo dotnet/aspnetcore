@@ -1,8 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
+using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Xml.Linq;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
@@ -111,6 +115,329 @@ public class FormDataMapperTests
         Assert.Null(result);
     }
 #nullable disable
+
+    [Fact]
+    public void Deserialize_Collections_NoElements_ReturnsNull()
+    {
+        // Arrange
+        var data = new Dictionary<string, StringValues>() { };
+        var reader = new FormDataReader(data, CultureInfo.InvariantCulture);
+        reader.PushPrefix("value");
+        var options = new FormDataSerializerOptions();
+
+        // Act
+        var result = FormDataDeserializer.Deserialize<List<int>>(reader, options);
+
+        // Assert
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public void Deserialize_Collections_SingleElement_ReturnsCollection()
+    {
+        // Arrange
+        var data = new Dictionary<string, StringValues>() { ["[0]"] = "10" };
+        var reader = new FormDataReader(data, CultureInfo.InvariantCulture);
+        reader.PushPrefix("value");
+        var options = new FormDataSerializerOptions();
+
+        // Act
+        var result = FormDataDeserializer.Deserialize<List<int>>(reader, options);
+
+        // Assert
+        var value = Assert.Single(result);
+        Assert.Equal(10, value);
+    }
+
+    [Fact]
+    public void Deserialize_Collections_ParsesUpToMaxCollectionSize()
+    {
+        // Arrange
+        var data = new Dictionary<string, StringValues>(Enumerable.Range(0, 110)
+            .Select(i => new KeyValuePair<string, StringValues>(
+                $"[{i.ToString(CultureInfo.InvariantCulture)}]",
+                (i + 10).ToString(CultureInfo.InvariantCulture))));
+
+        var reader = new FormDataReader(data, CultureInfo.InvariantCulture);
+        reader.PushPrefix("value");
+        var options = new FormDataSerializerOptions
+        {
+            MaxCollectionSize = 110
+        };
+
+        // Act
+        var result = FormDataDeserializer.Deserialize<List<int>>(reader, options);
+
+        // Assert
+        Assert.Equal(110, result.Count);
+    }
+
+    [Fact]
+    public void CanDeserialize_Collections_IReadOnlySet()
+    {
+        // Arrange
+        var expected = new HashSet<int> { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 };
+        CanDeserialize_Collection<IReadOnlySet<int>, HashSet<int>, int>(expected);
+    }
+
+    [Fact]
+    public void CanDeserialize_Collections_IReadOnlyListOfT()
+    {
+        // Arrange
+        var expected = new List<int> { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 };
+        CanDeserialize_Collection<IReadOnlyList<int>, List<int>, int>(expected);
+    }
+
+    [Fact]
+    public void CanDeserialize_Collections_IReadOnlyCollection()
+    {
+        // Arrange
+        var expected = new List<int> { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 };
+        CanDeserialize_Collection<IReadOnlyCollection<int>, List<int>, int>(expected);
+    }
+
+    [Fact]
+    public void CanDeserialize_Collections_ISet()
+    {
+        // Arrange
+        var expected = new HashSet<int> { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 };
+        CanDeserialize_Collection<ISet<int>, HashSet<int>, int>(expected);
+    }
+
+    [Fact]
+    public void CanDeserialize_Collections_IListOfT()
+    {
+        // Arrange
+        var expected = new List<int> { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 };
+        CanDeserialize_Collection<IList<int>, List<int>, int>(expected);
+    }
+
+    [Fact]
+    public void CanDeserialize_Collections_ICollectionOfT()
+    {
+        // Arrange
+        var expected = new List<int> { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 };
+        CanDeserialize_Collection<ICollection<int>, List<int>, int>(expected);
+    }
+
+    [Fact]
+    public void CanDeserialize_Collections_IEnumerableOfT()
+    {
+        // Arrange
+        var expected = new List<int> { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 };
+        CanDeserialize_Collection<IEnumerable<int>, List<int>, int>(expected);
+    }
+
+    [Fact]
+    public void CanDeserialize_Collections_ArrayOfT()
+    {
+        // Arrange
+        var expected = new int[] { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 };
+        CanDeserialize_Collection<int[], int[], int>(expected);
+    }
+
+    [Fact]
+    public void CanDeserialize_Collections_SortedSet()
+    {
+        // Arrange
+        var expected = new SortedSet<int>(new[] { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 });
+        CanDeserialize_Collection<SortedSet<int>, SortedSet<int>, int>(expected);
+    }
+
+    [Fact]
+    public void CanDeserialize_Collections_HashSet()
+    {
+        // Arrange
+        var expected = new HashSet<int> { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 };
+        CanDeserialize_Collection<HashSet<int>, HashSet<int>, int>(expected);
+    }
+
+    [Fact]
+    public void CanDeserialize_Collections_ReadOnlyCollectionOfT()
+    {
+        // Arrange
+        var expected = new ReadOnlyCollection<int>(new List<int> { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 });
+        CanDeserialize_Collection<ReadOnlyCollection<int>, ReadOnlyCollection<int>, int>(expected);
+    }
+
+    [Fact]
+    public void CanDeserialize_Collections_CollectionOfT()
+    {
+        // Arrange
+        var expected = new Collection<int>(new[] { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 });
+        CanDeserialize_Collection<Collection<int>, Collection<int>, int>(expected);
+    }
+
+    [Fact]
+    public void CanDeserialize_Collections_ListOfT()
+    {
+        // Arrange
+        var expected = new List<int> { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 };
+        CanDeserialize_Collection<List<int>, List<int>, int>(expected);
+    }
+
+    [Fact]
+    public void CanDeserialize_Collections_LinkedList()
+    {
+        // Arrange
+        var expected = new LinkedList<int>(new[] { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 });
+        CanDeserialize_Collection<LinkedList<int>, LinkedList<int>, int>(expected);
+    }
+
+    [Fact]
+    public void CanDeserialize_Collections_Queue()
+    {
+        // Arrange
+        var expected = new Queue<int>(new[] { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 });
+        CanDeserialize_Collection<Queue<int>, Queue<int>, int>(expected);
+    }
+
+    [Fact]
+    public void CanDeserialize_Collections_Stack()
+    {
+        // Arrange
+        var expected = new Stack<int>(new[] { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 });
+        CanDeserialize_Collection<Stack<int>, Stack<int>, int>(expected);
+    }
+
+    [Fact]
+    public void CanDeserialize_Collections_ConcurrentBag()
+    {
+        // Arrange
+        var expected = new ConcurrentBag<int>(new[] { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 });
+        CanDeserialize_Collection<ConcurrentBag<int>, ConcurrentBag<int>, int>(expected);
+    }
+
+    [Fact]
+    public void CanDeserialize_Collections_ConcurrentQueue()
+    {
+        // Arrange
+        var expected = new ConcurrentQueue<int>(new[] { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 });
+        CanDeserialize_Collection<ConcurrentQueue<int>, ConcurrentQueue<int>, int>(expected);
+    }
+
+    [Fact]
+    public void CanDeserialize_Collections_ConcurrentStack()
+    {
+        // Arrange
+        var expected = new ConcurrentStack<int>(new[] { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 });
+        CanDeserialize_Collection<ConcurrentStack<int>, ConcurrentStack<int>, int>(expected);
+    }
+
+    [Fact]
+    public void CanDeserialize_Collections_ImmutableArray()
+    {
+        // Arrange
+        var expected = ImmutableArray.CreateRange(new[] { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 });
+        CanDeserialize_Collection<ImmutableArray<int>, ImmutableArray<int>, int>(expected, sequenceEquals: true);
+    }
+
+    [Fact]
+    public void CanDeserialize_Collections_ImmutableList()
+    {
+        // Arrange
+        var expected = ImmutableList.CreateRange(new[] { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 });
+        CanDeserialize_Collection<ImmutableList<int>, ImmutableList<int>, int>(expected);
+    }
+
+    [Fact]
+    public void CanDeserialize_Collections_ImmutableHashSet()
+    {
+        // Arrange
+        var expected = ImmutableHashSet.CreateRange(new[] { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 });
+        CanDeserialize_Collection<ImmutableHashSet<int>, ImmutableHashSet<int>, int>(expected);
+    }
+
+    [Fact]
+    public void CanDeserialize_Collections_ImmutableSortedSet()
+    {
+        // Arrange
+        var expected = ImmutableSortedSet.CreateRange(new[] { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 });
+        CanDeserialize_Collection<ImmutableSortedSet<int>, ImmutableSortedSet<int>, int>(expected);
+    }
+
+    [Fact]
+    public void CanDeserialize_Collections_ImmutableQueue()
+    {
+        // Arrange
+        var expected = ImmutableQueue.CreateRange(new[] { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 });
+        CanDeserialize_Collection<ImmutableQueue<int>, ImmutableQueue<int>, int>(expected);
+    }
+
+    [Fact]
+    public void CanDeserialize_Collections_ImmutableStack()
+    {
+        // Arrange
+        var expected = ImmutableStack.CreateRange(new[] { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 });
+        CanDeserialize_Collection<ImmutableStack<int>, ImmutableStack<int>, int>(expected);
+    }
+
+    [Fact]
+    public void CanDeserialize_Collections_IImmutableList()
+    {
+        // Arrange
+        var expected = ImmutableList.CreateRange(new[] { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 });
+        CanDeserialize_Collection<IImmutableList<int>, ImmutableList<int>, int>(expected);
+    }
+
+    [Fact]
+    public void CanDeserialize_Collections_IImmutableSet()
+    {
+        // Arrange
+        var expected = ImmutableHashSet.CreateRange(new[] { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 });
+        CanDeserialize_Collection<IImmutableSet<int>, ImmutableHashSet<int>, int>(expected);
+    }
+
+    [Fact]
+    public void CanDeserialize_Collections_IImmutableQueue()
+    {
+        // Arrange
+        var expected = ImmutableQueue.CreateRange(new[] { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 });
+        CanDeserialize_Collection<IImmutableQueue<int>, ImmutableQueue<int>, int>(expected);
+    }
+
+    [Fact]
+    public void CanDeserialize_Collections_IImmutableStack()
+    {
+        // Arrange
+        var expected = ImmutableStack.CreateRange(new[] { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 });
+        CanDeserialize_Collection<IImmutableStack<int>, ImmutableStack<int>, int>(expected);
+    }
+
+    private void CanDeserialize_Collection<TCollection, TImplementation, TElement>(TImplementation expected, bool sequenceEquals = false)
+    {
+        // Arrange
+        var collection = new Dictionary<string, StringValues>()
+        {
+            ["[0]"] = "10",
+            ["[1]"] = "11",
+            ["[2]"] = "12",
+            ["[3]"] = "13",
+            ["[4]"] = "14",
+            ["[5]"] = "15",
+            ["[6]"] = "16",
+            ["[7]"] = "17",
+            ["[8]"] = "18",
+            ["[9]"] = "19",
+        };
+        var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
+        reader.PushPrefix("value");
+        var options = new FormDataSerializerOptions();
+
+        // Act
+        var result = CallDeserialize(reader, options, typeof(TCollection));
+
+        // Assert
+        var list = Assert.IsType<TImplementation>(result);
+        if (!sequenceEquals)
+        {
+            Assert.Equal(expected, list);
+        }
+        else
+        {
+            Assert.True(((IEnumerable<TElement>)expected).SequenceEqual((IEnumerable<TElement>)list));
+        }
+    }
 
     public static TheoryData<string, Type, object> NullableBasicTypes
     {
