@@ -44,7 +44,9 @@
       "IIS Express": {
         "commandName": "IISExpress",
         "launchBrowser": true,
+        //#if (UseWebAssembly)
         "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
+        //#endif
         "environmentVariables": {
           "ASPNETCORE_ENVIRONMENT": "Development"
         }
