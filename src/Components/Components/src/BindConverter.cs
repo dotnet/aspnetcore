@@ -1223,7 +1223,7 @@ public static class BindConverter
         return ConvertToDateTimeCore(obj, culture, format: null, out value);
     }
 
-    private static bool ConvertToDateTimeCore(object? obj, CultureInfo? culture, string? format, out DateTime value)
+    private static bool ConvertToDateTimeCore(object? obj, CultureInfo? culture, [StringSyntax(StringSyntaxAttribute.TimeSpanFormat)] string? format, out DateTime value)
     {
         var text = (string?)obj;
         if (string.IsNullOrEmpty(text))
@@ -1252,7 +1252,7 @@ public static class BindConverter
         return ConvertToNullableDateTimeCore(obj, culture, format: null, out value);
     }
 
-    private static bool ConvertToNullableDateTimeCore(object? obj, CultureInfo? culture, string? format, out DateTime? value)
+    private static bool ConvertToNullableDateTimeCore(object? obj, CultureInfo? culture,  [StringSyntax(StringSyntaxAttribute.DateTimeFormat)] string? format, out DateTime? value)
     {
         var text = (string?)obj;
         if (string.IsNullOrEmpty(text))
@@ -1336,7 +1336,7 @@ public static class BindConverter
         return ConvertToDateTimeOffsetCore(obj, culture, format: null, out value);
     }
 
-    private static bool ConvertToDateTimeOffsetCore(object? obj, CultureInfo? culture, string? format, out DateTimeOffset value)
+    private static bool ConvertToDateTimeOffsetCore(object? obj, CultureInfo? culture, [StringSyntax(StringSyntaxAttribute.DateTimeFormat)] string? format, out DateTimeOffset value)
     {
         var text = (string?)obj;
         if (string.IsNullOrEmpty(text))
@@ -1365,7 +1365,7 @@ public static class BindConverter
         return ConvertToNullableDateTimeOffsetCore(obj, culture, format: null, out value);
     }
 
-    private static bool ConvertToNullableDateTimeOffsetCore(object? obj, CultureInfo? culture, string? format, out DateTimeOffset? value)
+    private static bool ConvertToNullableDateTimeOffsetCore(object? obj, CultureInfo? culture, [StringSyntax(StringSyntaxAttribute.DateTimeFormat)] string? format, out DateTimeOffset? value)
     {
         var text = (string?)obj;
         if (string.IsNullOrEmpty(text))
