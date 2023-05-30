@@ -5,7 +5,7 @@
 
     <PublishTrimmed>true</PublishTrimmed>
     <TrimMode>full</TrimMode>
-    <PublishSelfContained>true</PublishSelfContained>
+    <SelfContained>true</SelfContained>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <!-- Enable NuGet static graph evaluation to optimize incremental restore -->
     <RestoreUseStaticGraphEvaluation>true</RestoreUseStaticGraphEvaluation>
