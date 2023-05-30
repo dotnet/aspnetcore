@@ -68,7 +68,7 @@ internal class DictionaryConverter<TDictionary, TDictionaryPolicy, TBuffer, TKey
 
             TDictionaryPolicy.Add(ref buffer, keyValue!, currentValue);
             keyCount++;
-            if (keyCount > maxCollectionSize)
+            if (keyCount == maxCollectionSize)
             {
                 succeded = false;
                 break;

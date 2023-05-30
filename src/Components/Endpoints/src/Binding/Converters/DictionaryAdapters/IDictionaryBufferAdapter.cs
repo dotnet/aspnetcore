@@ -3,6 +3,11 @@
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
 
+// Interface for constructing a dictionary like instance using the
+// dictionary converter.
+// This interface abstracts over the different ways of constructing a dictionary.
+// For example, Immutable types use a builder as a buffer, while other types
+// use an instance of the dictionary itself as a buffer.
 internal interface IDictionaryBufferAdapter<TDictionary, TBuffer, TKey, TValue>
     where TKey : IParsable<TKey>
 {
