@@ -52,12 +52,13 @@ public class DefaultApiProblemDetailsWriterTest
     }
 
         [Fact]
-    public async Task WriteAsync_Works_WhenUsingProblemDetailsSetter()
+    public async Task WriteAsync_Works_WhenReplacingProblemDetailsUsingSetter()
     {
         // Arrange
         var writer = GetWriter();
         var stream = new MemoryStream();
         var context = CreateContext(stream);
+        var originalProblemDetails = new ProblemDetails();
 
         var expectedProblem = new ProblemDetails()
         {
@@ -69,7 +70,8 @@ public class DefaultApiProblemDetailsWriterTest
         };
         var problemDetailsContext = new ProblemDetailsContext()
         {
-            HttpContext = context
+            HttpContext = context,
+            ProblemDetails = originalProblemDetails
         };
 
         problemDetailsContext.ProblemDetails = expectedProblem;
