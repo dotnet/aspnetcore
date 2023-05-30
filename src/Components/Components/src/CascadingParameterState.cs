@@ -69,7 +69,7 @@ internal readonly struct CascadingParameterState
                 return candidateSupplier;
             }
 
-            candidate = candidate.ParentComponentState;
+            candidate = candidate.LogicalParentComponentState;
         } while (candidate != null);
 
         // No match

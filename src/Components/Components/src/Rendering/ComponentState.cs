@@ -33,6 +33,7 @@ public class ComponentState : IAsyncDisposable
     {
         ComponentId = componentId;
         ParentComponentState = parentComponentState;
+        LogicalParentComponentState = parentComponentState;
         Component = component ?? throw new ArgumentNullException(nameof(component));
         _renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
         _cascadingParameters = CascadingParameterState.FindCascadingParameters(this);
@@ -61,7 +62,20 @@ public class ComponentState : IAsyncDisposable
     /// </summary>
     public ComponentState? ParentComponentState { get; }
 
+    /// <summary>
+    /// Gets the <see cref="ComponentState"/> of the logical parent component, or null if this is a root component.
+    /// </summary>
+    public ComponentState? LogicalParentComponentState { get; private set; }
+
     internal RenderTreeBuilder CurrentRenderTree { get; set; }
+
+    /// <summary>
+    /// Changes the <see cref="ComponentState"/> of the logical parent component.
+    /// </summary>
+    protected internal virtual void LogicalParentComponentStateChanged(ComponentState? logicalParentComponent)
+    {
+        LogicalParentComponentState = logicalParentComponent;
+    }
 
     internal void RenderIntoBatch(RenderBatchBuilder batchBuilder, RenderFragment renderFragment, out Exception? renderFragmentException)
     {

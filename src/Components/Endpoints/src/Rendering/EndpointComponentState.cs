@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.ComponentModel;
 using System.Reflection;
 using System.Reflection.Metadata;
 using Microsoft.AspNetCore.Components.Endpoints;
@@ -19,8 +20,22 @@ internal sealed class EndpointComponentState : ComponentState
     public EndpointComponentState(Renderer renderer, int componentId, IComponent component, ComponentState? parentComponentState)
         : base(renderer, componentId, component, parentComponentState)
     {
-        var streamRenderingAttribute = _streamRenderingAttributeByComponentType.GetOrAdd(component.GetType(),
-            type => type.GetCustomAttribute<StreamRenderingAttribute>());
+        SetStreamingRendering();
+    }
+
+    public bool StreamRendering { get; private set; }
+
+    protected override void LogicalParentComponentStateChanged(ComponentState? logicalParentComponent)
+    {
+        base.LogicalParentComponentStateChanged(logicalParentComponent);
+
+        SetStreamingRendering();
+    }
+
+    private void SetStreamingRendering()
+    {
+        var streamRenderingAttribute = _streamRenderingAttributeByComponentType.GetOrAdd(Component.GetType(),
+                    type => type.GetCustomAttribute<StreamRenderingAttribute>());
 
         if (streamRenderingAttribute is not null)
         {
@@ -28,12 +43,10 @@ internal sealed class EndpointComponentState : ComponentState
         }
         else
         {
-            var parentEndpointComponentState = (EndpointComponentState?)parentComponentState;
-            StreamRendering = parentEndpointComponentState?.StreamRendering ?? false;
+            var logicalParentEndpointComponentState = (EndpointComponentState?)LogicalParentComponentState;
+            StreamRendering = logicalParentEndpointComponentState?.StreamRendering ?? false;
         }
     }
-
-    public bool StreamRendering { get; }
 
     /// <summary>
     /// MetadataUpdateHandler event. This is invoked by the hot reload host via reflection.

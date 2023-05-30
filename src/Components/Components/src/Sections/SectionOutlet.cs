@@ -6,8 +6,7 @@ namespace Microsoft.AspNetCore.Components.Sections;
 /// <summary>
 /// Renders content provided by <see cref="SectionContent"/> components with matching <see cref="SectionId"/>s.
 /// </summary>
-[StreamRendering(true)] // Because the content may be provided by a streaming component
-public sealed class SectionOutlet : ISectionContentSubscriber, IComponent, IDisposable
+public sealed class SectionOutlet : IComponent, IDisposable
 {
     private static readonly RenderFragment _emptyRenderFragment = _ => { };
 
@@ -73,7 +72,12 @@ public sealed class SectionOutlet : ISectionContentSubscriber, IComponent, IDisp
         return Task.CompletedTask;
     }
 
-    void ISectionContentSubscriber.ContentChanged(RenderFragment? content)
+    internal void LogicalParentComponentChanged(IComponent? logicalParentComponent)
+    {
+        _renderHandle.LogicalParentComponentChanged(logicalParentComponent);
+    }
+
+    internal void ContentChanged(RenderFragment? content)
     {
         _content = content;
         RenderContent();

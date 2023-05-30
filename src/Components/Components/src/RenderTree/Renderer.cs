@@ -352,6 +352,16 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     protected virtual ComponentState CreateComponentState(int componentId, IComponent component, ComponentState? parentComponentState)
         => new ComponentState(this, componentId, component, parentComponentState);
 
+    internal void LogicalParentComponentChanged(int componentId, IComponent? logicalParentComponent)
+    {
+        var component = _componentStateById[componentId];
+
+        var logicalParentComponentState = logicalParentComponent != null ?
+            _componentStateByComponent[logicalParentComponent] : component.ParentComponentState;
+
+        component.LogicalParentComponentStateChanged(logicalParentComponentState);
+    }
+
     /// <summary>
     /// Updates the visible UI.
     /// </summary>
@@ -1039,7 +1049,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
                 return; // Handled successfully
             }
 
-            candidate = candidate.ParentComponentState;
+            candidate = candidate.LogicalParentComponentState;
         }
 
         // It's unhandled, so treat as fatal
