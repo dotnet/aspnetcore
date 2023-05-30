@@ -4,11 +4,11 @@
 using System.Buffers;
 using System.Collections;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Xml.Linq;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
@@ -478,6 +478,14 @@ public class FormDataMapperTests
         // Arrange
         var expected = ImmutableStack.CreateRange(new[] { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 });
         CanDeserialize_Collection<IImmutableStack<int>, ImmutableStack<int>, int>(expected);
+    }
+
+    [Fact]
+    public void CanDeserialize_Collections_CustomCollection()
+    {
+        // Arrange
+        var expected = new CustomCollection<int> { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 };
+        CanDeserialize_Collection<CustomCollection<int>, CustomCollection<int>, int>(expected);
     }
 
     [Fact]
