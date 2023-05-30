@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
 
-internal class CompiledComplextTypeConverter<T>(CompiledComplextTypeConverter<T>.ConverterDelegate body) : FormDataConverter<T>
+internal class CompiledComplexTypeConverter<T>(CompiledComplexTypeConverter<T>.ConverterDelegate body) : FormDataConverter<T>
 {
     public delegate bool ConverterDelegate(ref FormDataReader reader, Type type, FormDataSerializerOptions options, out T? result, out bool found);
 

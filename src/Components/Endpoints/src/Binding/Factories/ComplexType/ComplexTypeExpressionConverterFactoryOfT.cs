@@ -8,13 +8,13 @@ namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
 
 internal class ComplexTypeExpressionConverterFactory<T> : ComplexTypeExpressionConverterFactory
 {
-    internal override CompiledComplextTypeConverter<T> CreateConverter(Type type, FormDataSerializerOptions options)
+    internal override CompiledComplexTypeConverter<T> CreateConverter(Type type, FormDataSerializerOptions options)
     {
         var body = CreateConverterBody(type, options);
-        return new CompiledComplextTypeConverter<T>(body);
+        return new CompiledComplexTypeConverter<T>(body);
     }
 
-    private CompiledComplextTypeConverter<T>.ConverterDelegate CreateConverterBody(Type type, FormDataSerializerOptions options)
+    private CompiledComplexTypeConverter<T>.ConverterDelegate CreateConverterBody(Type type, FormDataSerializerOptions options)
     {
         var properties = PropertyHelper.GetVisibleProperties(type);
 
@@ -122,12 +122,12 @@ internal class ComplexTypeExpressionConverterFactory<T> : ComplexTypeExpressionC
         }
     }
 
-    private CompiledComplextTypeConverter<T>.ConverterDelegate CreateConverterFunction(
+    private CompiledComplexTypeConverter<T>.ConverterDelegate CreateConverterFunction(
         List<ParameterExpression> parameters,
         List<ParameterExpression> variables,
         List<Expression> body)
     {
-        var lambda = Expression.Lambda<CompiledComplextTypeConverter<T>.ConverterDelegate>(
+        var lambda = Expression.Lambda<CompiledComplexTypeConverter<T>.ConverterDelegate>(
             Expression.Block(variables, body),
             parameters);
 
