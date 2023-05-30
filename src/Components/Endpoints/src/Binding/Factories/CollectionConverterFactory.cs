@@ -12,14 +12,20 @@ internal class CollectionConverterFactory : IFormDataConverterFactory
     public bool CanConvert(Type type, FormDataMapperOptions options)
     {
         var enumerable = ClosedGenericMatcher.ExtractGenericInterface(type, typeof(IEnumerable<>));
-        if (enumerable == null && !type.IsArray && type.GetArrayRank() != 1)
+        if (enumerable == null && !(type.IsArray && type.GetArrayRank() == 1))
         {
             return false;
         }
 
         var element = enumerable != null ? enumerable.GetGenericArguments()[0] : type.GetElementType()!;
 
-        return options.HasConverter(element);
+        if (Activator.CreateInstance(typeof(TypedCollectionConverterFactory<,>)
+            .MakeGenericType(type, element!)) is not IFormDataConverterFactory factory)
+        {
+            return false;
+        }
+
+        return factory.CanConvert(type, options);
     }
 
     public FormDataConverter CreateConverter(Type type, FormDataMapperOptions options)

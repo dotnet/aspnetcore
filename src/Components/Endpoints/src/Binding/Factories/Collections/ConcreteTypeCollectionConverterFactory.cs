@@ -3,15 +3,15 @@
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
 
-internal sealed class CollectionLikeTypedCollectionConverterFactory<TCollection, TElement>
+internal class ConcreteTypeCollectionConverterFactory<TCollection, TElement>
     : IFormDataConverterFactory
 {
-    public static readonly CollectionLikeTypedCollectionConverterFactory<TCollection, TElement> Instance =
+    public static readonly ConcreteTypeCollectionConverterFactory<TCollection, TElement> Instance =
         new();
 
-    public bool CanConvert(Type _, FormDataMapperOptions options) => true;
+    public bool CanConvert(Type _, FormDataSerializerOptions options) => true;
 
-    public FormDataConverter CreateConverter(Type _, FormDataMapperOptions options)
+    public FormDataConverter CreateConverter(Type _, FormDataSerializerOptions options)
     {
         // Resolve the element type converter
         var elementTypeConverter = options.ResolveConverter<TElement>() ??

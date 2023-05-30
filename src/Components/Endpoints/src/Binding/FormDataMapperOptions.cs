@@ -16,6 +16,7 @@ internal sealed class FormDataMapperOptions
 
         _factories.Add((type, options) => ParsableConverterFactory.Instance.CanConvert(type, options) ? ParsableConverterFactory.Instance.CreateConverter(type, options) : null);
         _factories.Add((type, options) => NullableConverterFactory.Instance.CanConvert(type, options) ? NullableConverterFactory.Instance.CreateConverter(type, options) : null);
+        _factories.Add((type, options) => DictionaryConverterFactory.Instance.CanConvert(type, options) ? DictionaryConverterFactory.Instance.CreateConverter(type, options) : null);
         _factories.Add((type, options) => CollectionConverterFactory.Instance.CanConvert(type, options) ? CollectionConverterFactory.Instance.CreateConverter(type, options) : null);
     }
 
