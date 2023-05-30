@@ -10,6 +10,7 @@ Microsoft.AspNetCore.Http.Metadata.IRouteDiagnosticsMetadata
 Microsoft.AspNetCore.Http.Metadata.IRouteDiagnosticsMetadata.Route.get -> string!
 Microsoft.AspNetCore.Http.ProblemDetailsContext.Exception.get -> System.Exception?
 Microsoft.AspNetCore.Http.ProblemDetailsContext.Exception.init -> void
+*REMOVED*Microsoft.AspNetCore.Http.ProblemDetailsContext.ProblemDetails.init -> void
 Microsoft.AspNetCore.Http.ProblemDetailsContext.ProblemDetails.set -> void
 Microsoft.AspNetCore.Mvc.ProblemDetails.Extensions.set -> void
 static Microsoft.AspNetCore.Http.EndpointFilterInvocationContext.Create(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> Microsoft.AspNetCore.Http.EndpointFilterInvocationContext!
