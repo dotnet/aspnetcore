@@ -1,0 +1,29 @@
+﻿@using Microsoft.AspNetCore.Components.Sections
+
+<SectionOutlet SectionName="page" />
+
+<button id="render-second-section-content" @onclick="() => SecondSectionContentIsRendered = true">Render second section content</button>
+
+<CascadingValue Value="@AdditionalTextForFirstSection">
+    <SectionContent SectionName="page">
+        <TextComponentWithCascadingParameter Text="First Section" />
+    </SectionContent>
+</CascadingValue>
+
+@if (SecondSectionContentIsRendered) {
+    <CascadingValue Value="@AdditionalTextForSecondSection">
+        <SectionContent SectionName="page">
+            <TextComponentWithCascadingParameter Text="Second Section" />
+        </SectionContent>
+    </CascadingValue>
+}
+
+
+@code {
+    private bool SecondSectionContentIsRendered = false;
+
+    private string AdditionalTextForFirstSection = "with additional text for first section";
+
+    private string AdditionalTextForSecondSection = "with additional text for second section";
+
+}
