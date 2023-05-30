@@ -1,0 +1,31 @@
+﻿@using Microsoft.AspNetCore.Components.Sections
+
+<SectionOutlet SectionName="page" />
+
+<button id="change-section-content" @onclick="() => ChangeSectionContent = true">Render second section content</button>
+
+@if (!ChangeSectionContent) {
+    <ErrorBoundary>
+        <SectionContent SectionName="page">
+            <h1>First Section</h1>
+            <ComponentThatThrowsException />
+        </SectionContent>
+    </ErrorBoundary>
+}
+else {
+    <ErrorBoundary>
+        <ChildContent>
+            <SectionContent SectionName="page">
+                <h1>Second Section</h1>
+                <ComponentThatThrowsException />
+            </SectionContent>
+        </ChildContent>
+        <ErrorContent>
+            <p>Sorry!</p>
+        </ErrorContent>
+    </ErrorBoundary>
+}
+
+@code {
+    private bool ChangeSectionContent = false;
+}
