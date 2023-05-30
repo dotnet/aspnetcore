@@ -106,6 +106,8 @@ public partial class HubConnectionContext
 
     internal Exception? CloseException { get; private set; }
 
+    internal CloseMessage? CloseMessage { get; set; }
+
     internal ChannelBasedSemaphore ActiveInvocationLimit { get; }
 
     /// <summary>

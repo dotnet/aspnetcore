@@ -559,6 +559,12 @@ public partial class HubConnection : IAsyncDisposable
             if (connectionState != null)
             {
                 connectionState.Stopping = true;
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
+                try
+                {
+                    await SendHubMessage(connectionState, new CloseMessage(error: null), cancellationToken: cts.Token).ConfigureAwait(false);
+                }
+                catch { }
             }
             else
             {

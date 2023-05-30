@@ -368,6 +368,11 @@ public class MethodHub : TestHub
         var sum = await Clients.Caller.InvokeAsync<int>("Sum", 1, cancellationToken: default);
         yield return sum;
     }
+
+    public void Close()
+    {
+        Context.Abort();
+    }
 }
 
 internal class SelfRef

@@ -4923,6 +4923,58 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
         }
     }
 
+    [Fact]
+    public async Task ConnectionClosesWhenClientSendsCloseMessage()
+    {
+        using (StartVerifiableLog())
+        {
+            var state = new ConnectionLifetimeState();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(s => s.AddSingleton(state), LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ConnectionLifetimeHub>>();
+
+            using var client = new TestClient();
+
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+            await client.SendHubMessageAsync(new CloseMessage(error: null));
+
+            var message = Assert.IsType<CloseMessage>(await client.ReadAsync().DefaultTimeout());
+            Assert.Null(message.Error);
+
+            await connectionHandlerTask.DefaultTimeout();
+
+            Assert.Null(state.DisconnectedException);
+       }
+    }
+
+    [Fact]
+    public async Task ConnectionClosesWhenClientSendsCloseMessageWithError()
+    {
+        using (StartVerifiableLog())
+        {
+            var state = new ConnectionLifetimeState();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(s => s.AddSingleton(state), LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ConnectionLifetimeHub>>();
+
+            using var client = new TestClient();
+
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+            var errorMessage = "custom client error";
+            await client.SendHubMessageAsync(new CloseMessage(error: errorMessage));
+
+            var message = Assert.IsType<CloseMessage>(await client.ReadAsync().DefaultTimeout());
+            // Verify no error sent to client
+            Assert.Null(message.Error);
+
+            await connectionHandlerTask.DefaultTimeout();
+
+            // Verify OnDisconnectedAsync was called with the error sent by the client
+            var ex = Assert.IsType<HubException>(state.DisconnectedException);
+            Assert.Equal(errorMessage, ex.Message);
+        }
+    }
+
     private class CustomHubActivator<THub> : IHubActivator<THub> where THub : Hub
     {
         public int ReleaseCount;

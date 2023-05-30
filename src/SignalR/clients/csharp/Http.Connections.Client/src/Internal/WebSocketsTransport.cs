@@ -491,7 +491,6 @@ internal sealed partial class WebSocketsTransport : ITransport, IReconnectFeatur
                 {
                     if (result.IsCanceled && !ignoreFirstCanceled)
                     {
-                        _logger.LogInformation("send canceled");
                         break;
                     }
 

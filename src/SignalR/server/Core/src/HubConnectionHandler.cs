@@ -192,6 +192,17 @@ public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
 
     private async Task HubOnDisconnectedAsync(HubConnectionContext connection, Exception? exception)
     {
+        var disconnectException = exception;
+        if (connection.CloseMessage is not null)
+        {
+            disconnectException = null;
+            exception = null;
+            if (connection.CloseMessage.Error is not null)
+            {
+                disconnectException = new HubException(connection.CloseMessage.Error);
+            }
+        }
+
         // send close message before aborting the connection
         await SendCloseAsync(connection, exception, connection.AllowReconnect);
 
@@ -206,7 +217,7 @@ public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
 
         try
         {
-            await _dispatcher.OnDisconnectedAsync(connection, exception);
+            await _dispatcher.OnDisconnectedAsync(connection, disconnectException);
         }
         catch (Exception ex)
         {
