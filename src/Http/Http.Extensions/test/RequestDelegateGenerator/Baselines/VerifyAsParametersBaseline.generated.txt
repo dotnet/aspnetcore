@@ -198,7 +198,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         }
                         var Value_raw = (string?)httpContext.Request.RouteValues["Value"];
                         var Value_temp = (string?)Value_raw;
-                        int Value_parsed_temp = default;
+                        global::System.Int32 Value_parsed_temp = default;
                         if (GeneratedRouteBuilderExtensionsCore.TryParseExplicit<int>(Value_temp!, CultureInfo.InvariantCulture, out var Value_temp_parsed_non_nullable))
                         {
                             Value_parsed_temp = Value_temp_parsed_non_nullable;
@@ -236,7 +236,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         }
                         var Value_raw = (string?)httpContext.Request.RouteValues["Value"];
                         var Value_temp = (string?)Value_raw;
-                        int Value_parsed_temp = default;
+                        global::System.Int32 Value_parsed_temp = default;
                         if (GeneratedRouteBuilderExtensionsCore.TryParseExplicit<int>(Value_temp!, CultureInfo.InvariantCulture, out var Value_temp_parsed_non_nullable))
                         {
                             Value_parsed_temp = Value_temp_parsed_non_nullable;
