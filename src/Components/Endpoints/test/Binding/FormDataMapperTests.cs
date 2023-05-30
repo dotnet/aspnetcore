@@ -523,6 +523,58 @@ public class FormDataMapperTests
         }
     }
 
+    [Fact]
+    public void CanDeserialize_ComplexValueType_Address()
+    {
+        // Arrange
+        var expected = new Address() { City = "Redmond", Street = "1 Microsoft Way", Country = "United States", ZipCode = 98052 };
+        var data = new Dictionary<string, StringValues>()
+        {
+            ["City"] = "Redmond",
+            ["Country"] = "United States",
+            ["Street"] = "1 Microsoft Way",
+            ["ZipCode"] = "98052",
+        };
+        var reader = new FormDataReader(data, CultureInfo.InvariantCulture);
+        var options = new FormDataSerializerOptions();
+
+        // Act
+        var result = FormDataDeserializer.Deserialize<Address>(reader, options);
+
+        // Assert
+        Assert.Equal(expected.City, result.City);
+        Assert.Equal(expected.Street, result.Street);
+        Assert.Equal(expected.Country, result.Country);
+        Assert.Equal(expected.ZipCode, result.ZipCode);
+    }
+
+    [Fact]
+    public void CanDeserialize_ComplexReferenceType_Customer()
+    {
+        // Arrange
+        var expected = new Customer() { Age = 20, Name = "John Doe", Email = "john.doe@example.com", IsPreferred = true };
+        var data = new Dictionary<string, StringValues>()
+        {
+            ["Age"] = "20",
+            ["Name"] = "John Doe",
+            ["Email"] = "john.doe@example.com",
+            ["IsPreferred"] = "true",
+        };
+
+        var reader = new FormDataReader(data, CultureInfo.InvariantCulture);
+        var options = new FormDataSerializerOptions();
+
+        // Act
+        var result = FormDataDeserializer.Deserialize<Customer>(reader, options);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(expected.Age, result.Age);
+        Assert.Equal(expected.Name, result.Name);
+        Assert.Equal(expected.Email, result.Email);
+        Assert.Equal(expected.IsPreferred, result.IsPreferred);
+    }
+
     public static TheoryData<string, Type, object> NullableBasicTypes
     {
         get
@@ -803,6 +855,22 @@ internal abstract class TestArrayPoolBufferAdapter
         OnReturn?.Invoke(array);
         ArrayPool<int>.Shared.Return(array);
     }
+}
+
+internal struct Address
+{
+    public string Street { get; set; }
+    public string City { get; set; }
+    public string Country { get; set; }
+    public int ZipCode { get; set; }
+}
+
+internal class Customer
+{
+    public string Name { get; set; }
+    public string Email { get; set; }
+    public int Age { get; set; }
+    public bool IsPreferred { get; set; }
 }
 
 // Implements ICollection<T> delegating to List<T> _inner;
