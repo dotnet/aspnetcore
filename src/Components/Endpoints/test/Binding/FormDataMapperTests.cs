@@ -479,6 +479,213 @@ public class FormDataMapperTests
         CanDeserialize_Collection<IImmutableStack<int>, ImmutableStack<int>, int>(expected);
     }
 
+    [Fact]
+    public void CanDeserialize_Dictionary_Dictionary()
+    {
+        // Arrange
+        var expected = new Dictionary<int, int>() { [0] = 10, [1] = 11, [2] = 12, [3] = 13, [4] = 14, [5] = 15, [6] = 16, [7] = 17, [8] = 18, [9] = 19, };
+        CanDeserialize_Dictionary<Dictionary<int, int>, Dictionary<int, int>, int, int>(expected);
+    }
+
+    [Fact]
+    public void CanDeserialize_Dictionary_ConcurrentDictionary()
+    {
+        // Arrange
+        var expected = new ConcurrentDictionary<int, int>(new Dictionary<int, int>() { [0] = 10, [1] = 11, [2] = 12, [3] = 13, [4] = 14, [5] = 15, [6] = 16, [7] = 17, [8] = 18, [9] = 19, });
+        CanDeserialize_Dictionary<ConcurrentDictionary<int, int>, ConcurrentDictionary<int, int>, int, int>(expected);
+    }
+
+    [Fact]
+    public void CanDeserialize_Dictionary_ImmutableDictionary()
+    {
+        // Arrange
+        var expected = ImmutableDictionary.CreateRange(new Dictionary<int, int>() { [0] = 10, [1] = 11, [2] = 12, [3] = 13, [4] = 14, [5] = 15, [6] = 16, [7] = 17, [8] = 18, [9] = 19, });
+        CanDeserialize_Dictionary<ImmutableDictionary<int, int>, ImmutableDictionary<int, int>, int, int>(expected);
+    }
+
+    [Fact]
+    public void CanDeserialize_Dictionary_ImmutableSortedDictionary()
+    {
+        // Arrange
+        var expected = ImmutableSortedDictionary.CreateRange(new Dictionary<int, int>() { [0] = 10, [1] = 11, [2] = 12, [3] = 13, [4] = 14, [5] = 15, [6] = 16, [7] = 17, [8] = 18, [9] = 19, });
+        CanDeserialize_Dictionary<ImmutableSortedDictionary<int, int>, ImmutableSortedDictionary<int, int>, int, int>(expected);
+    }
+
+    [Fact]
+    public void CanDeserialize_Dictionary_IImmutableDictionary()
+    {
+        // Arrange
+        var expected = ImmutableDictionary.CreateRange(new Dictionary<int, int>() { [0] = 10, [1] = 11, [2] = 12, [3] = 13, [4] = 14, [5] = 15, [6] = 16, [7] = 17, [8] = 18, [9] = 19, });
+        // Arrange
+        var collection = new Dictionary<string, StringValues>()
+        {
+            ["[0]"] = "10",
+            ["[1]"] = "11",
+            ["[2]"] = "12",
+            ["[3]"] = "13",
+            ["[4]"] = "14",
+            ["[5]"] = "15",
+            ["[6]"] = "16",
+            ["[7]"] = "17",
+            ["[8]"] = "18",
+            ["[9]"] = "19",
+        };
+        var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
+        var options = new FormDataSerializerOptions();
+
+        // Act
+        var result = FormDataDeserializer.Deserialize<IImmutableDictionary<int, int>>(reader, options);
+
+        // Assert
+        var dictionary = Assert.IsType<ImmutableDictionary<int, int>>(result);
+        Assert.Equal(expected.Count, dictionary.Count);
+        Assert.Equal(expected.OrderBy(o => o.Key).ToArray(), dictionary.OrderBy(o => o.Key).ToArray());
+    }
+
+    [Fact]
+    public void CanDeserialize_Dictionary_IDictionary()
+    {
+        // Arrange
+        var expected = new Dictionary<int, int>() { [0] = 10, [1] = 11, [2] = 12, [3] = 13, [4] = 14, [5] = 15, [6] = 16, [7] = 17, [8] = 18, [9] = 19, };
+        CanDeserialize_Dictionary<IDictionary<int, int>, Dictionary<int, int>, int, int>(expected);
+    }
+
+    [Fact]
+    public void CanDeserialize_Dictionary_SortedList()
+    {
+        // Arrange
+        var expected = new SortedList<int, int>() { [0] = 10, [1] = 11, [2] = 12, [3] = 13, [4] = 14, [5] = 15, [6] = 16, [7] = 17, [8] = 18, [9] = 19, };
+        CanDeserialize_Dictionary<SortedList<int, int>, SortedList<int, int>, int, int>(expected);
+    }
+
+    [Fact]
+    public void CanDeserialize_Dictionary_SortedDictionary()
+    {
+        // Arrange
+        var expected = new SortedDictionary<int, int>() { [0] = 10, [1] = 11, [2] = 12, [3] = 13, [4] = 14, [5] = 15, [6] = 16, [7] = 17, [8] = 18, [9] = 19, };
+        CanDeserialize_Dictionary<SortedDictionary<int, int>, SortedDictionary<int, int>, int, int>(expected);
+    }
+
+    [Fact]
+    public void CanDeserialize_Dictionary_IReadOnlyDictionary()
+    {
+        // Arrange
+        var expected = new Dictionary<int, int>() { [0] = 10, [1] = 11, [2] = 12, [3] = 13, [4] = 14, [5] = 15, [6] = 16, [7] = 17, [8] = 18, [9] = 19, };
+        var collection = new Dictionary<string, StringValues>()
+        {
+            ["[0]"] = "10",
+            ["[1]"] = "11",
+            ["[2]"] = "12",
+            ["[3]"] = "13",
+            ["[4]"] = "14",
+            ["[5]"] = "15",
+            ["[6]"] = "16",
+            ["[7]"] = "17",
+            ["[8]"] = "18",
+            ["[9]"] = "19",
+        };
+        var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
+        var options = new FormDataSerializerOptions();
+
+        // Act
+        var result = FormDataDeserializer.Deserialize<IReadOnlyDictionary<int, int>>(reader, options);
+
+        // Assert
+        var dictionary = Assert.IsType<ReadOnlyDictionary<int, int>>(result);
+        Assert.Equal(expected.Count, dictionary.Count);
+        Assert.Equal(expected.OrderBy(o => o.Key).ToArray(), dictionary.OrderBy(o => o.Key).ToArray());
+    }
+
+    [Fact]
+    public void CanDeserialize_Dictionary_ReadOnlyDictionary()
+    {
+        // Arrange
+        var expected = new Dictionary<int, int>() { [0] = 10, [1] = 11, [2] = 12, [3] = 13, [4] = 14, [5] = 15, [6] = 16, [7] = 17, [8] = 18, [9] = 19, };
+        var collection = new Dictionary<string, StringValues>()
+        {
+            ["[0]"] = "10",
+            ["[1]"] = "11",
+            ["[2]"] = "12",
+            ["[3]"] = "13",
+            ["[4]"] = "14",
+            ["[5]"] = "15",
+            ["[6]"] = "16",
+            ["[7]"] = "17",
+            ["[8]"] = "18",
+            ["[9]"] = "19",
+        };
+        var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
+        var options = new FormDataSerializerOptions();
+
+        // Act
+        var result = FormDataDeserializer.Deserialize<ReadOnlyDictionary<int, int>>(reader, options);
+
+        // Assert
+        var dictionary = Assert.IsType<ReadOnlyDictionary<int, int>>(result);
+        Assert.Equal(expected.Count, dictionary.Count);
+        Assert.Equal(expected.OrderBy(o => o.Key).ToArray(), dictionary.OrderBy(o => o.Key).ToArray());
+    }
+
+    [Fact]
+    public void Deserialize_EmptyDictionary_ReturnsNull()
+    {
+        // Arrange
+        var collection = new Dictionary<string, StringValues>() { };
+        var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
+        var options = new FormDataSerializerOptions();
+
+        // Act
+        var result = FormDataDeserializer.Deserialize<IReadOnlyDictionary<int, int>>(reader, options);
+
+        // Assert
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public void Deserialize_Dictionary_RespectsMaxCollectionSize()
+    {
+        // Arrange
+        var collection = new Dictionary<string, StringValues>() { };
+        var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
+        var options = new FormDataSerializerOptions();
+
+        // Act
+        var result = FormDataDeserializer.Deserialize<IReadOnlyDictionary<int, int>>(reader, options);
+
+        // Assert
+        Assert.Null(result);
+    }
+
+    private void CanDeserialize_Dictionary<TDictionary, TImplementation, TKey, TValue>(TImplementation expected)
+        where TDictionary : IDictionary<TKey, TValue>
+        where TImplementation : TDictionary
+    {
+        // Arrange
+        var collection = new Dictionary<string, StringValues>()
+        {
+            ["[0]"] = "10",
+            ["[1]"] = "11",
+            ["[2]"] = "12",
+            ["[3]"] = "13",
+            ["[4]"] = "14",
+            ["[5]"] = "15",
+            ["[6]"] = "16",
+            ["[7]"] = "17",
+            ["[8]"] = "18",
+            ["[9]"] = "19",
+        };
+        var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
+        var options = new FormDataSerializerOptions();
+
+        // Act
+        var result = CallDeserialize(reader, options, typeof(TDictionary));
+
+        // Assert
+        var dictionary = Assert.IsType<TImplementation>(result);
+        Assert.Equal(expected.Count, dictionary.Count);
+        Assert.Equal(expected.OrderBy(o => o.Key).ToArray(), dictionary.OrderBy(o => o.Key).ToArray());
+    }
+
     private void CanDeserialize_Collection<TCollection, TImplementation, TElement>(TImplementation expected, bool sequenceEquals = false)
     {
         // Arrange
