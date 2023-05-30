@@ -555,7 +555,7 @@ export module DotNet {
       throw new Error(`JS object instance with ID ${targetInstanceId} does not exist (has it been disposed?).`);
   }
 
-  function disposeJSObjectReferenceById(id: number) {
+  export function disposeJSObjectReferenceById(id: number) {
       delete cachedJSObjectsById[id];
   }
 
