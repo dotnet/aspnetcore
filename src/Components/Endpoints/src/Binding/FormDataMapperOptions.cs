@@ -18,6 +18,7 @@ internal sealed class FormDataMapperOptions
         _factories.Add((type, options) => NullableConverterFactory.Instance.CanConvert(type, options) ? NullableConverterFactory.Instance.CreateConverter(type, options) : null);
         _factories.Add((type, options) => DictionaryConverterFactory.Instance.CanConvert(type, options) ? DictionaryConverterFactory.Instance.CreateConverter(type, options) : null);
         _factories.Add((type, options) => CollectionConverterFactory.Instance.CanConvert(type, options) ? CollectionConverterFactory.Instance.CreateConverter(type, options) : null);
+        _factories.Add((type, options) => ComplexTypeConverterFactory.Instance.CanConvert(type, options) ? ComplexTypeConverterFactory.Instance.CreateConverter(type, options) : null);
     }
 
     // Not configurable for now, this is the max number of elements we will bind. This is important for
