@@ -141,8 +141,10 @@ public class BadHttpRequestTests : LoggedTest
             CoreStrings.FormatBadRequest_InvalidHostHeader_Detail(host.Trim()));
     }
 
-    [Fact]
-    public async Task CanOptOutOfBadRequestIfHostHeaderDoesNotMatchRequestTarget()
+    [Theory]
+    [InlineData("Host: www.foo.comConnection: keep-alive")] // Corrupted - missing line-break
+    [InlineData("Host: www.notfoo.com")] // Syntactically correct but not matching
+    public async Task CanOptOutOfBadRequestIfHostHeaderDoesNotMatchRequestTarget(string hostHeader)
     {
         var receivedHost = StringValues.Empty;
         await using var server = new TestServer(context =>
@@ -158,8 +160,7 @@ public class BadHttpRequestTests : LoggedTest
         });
         using var client = server.CreateConnection();
 
-        // Note the missing line-reak between the Host and Connection headers
-        await client.SendAll($"GET http://www.foo.com/api/data HTTP/1.1\r\nHost: www.foo.comConnection: keep-alive\r\n\r\n");
+        await client.SendAll($"GET http://www.foo.com/api/data HTTP/1.1\r\n{hostHeader}\r\n\r\n");
 
         await client.Receive("HTTP/1.1 200 OK");
 
