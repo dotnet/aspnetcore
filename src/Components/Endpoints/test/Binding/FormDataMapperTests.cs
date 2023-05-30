@@ -2,12 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using System.Collections;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Xml.Linq;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
@@ -477,6 +478,14 @@ public class FormDataMapperTests
         // Arrange
         var expected = ImmutableStack.CreateRange(new[] { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 });
         CanDeserialize_Collection<IImmutableStack<int>, ImmutableStack<int>, int>(expected);
+    }
+
+    [Fact]
+    public void CanDeserialize_Collections_CustomCollection()
+    {
+        // Arrange
+        var expected = new CustomCollection<int> { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 };
+        CanDeserialize_Collection<CustomCollection<int>, CustomCollection<int>, int>(expected);
     }
 
     [Fact]
@@ -1001,4 +1010,52 @@ internal abstract class TestArrayPoolBufferAdapter
         OnReturn?.Invoke(array);
         ArrayPool<int>.Shared.Return(array);
     }
+}
+
+// Implements ICollection<T> delegating to List<T> _inner;
+internal class CustomCollection<T> : ICollection<T>
+{
+    private readonly List<T> _inner = new();
+
+    public int Count => _inner.Count;
+
+    public bool IsReadOnly => false;
+
+    public void Add(T item) => _inner.Add(item);
+
+    public void Clear() => _inner.Clear();
+
+    public bool Contains(T item) => _inner.Contains(item);
+
+    public bool Remove(T item) => _inner.Remove(item);
+
+    public IEnumerator<T> GetEnumerator() => _inner.GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator() => _inner.GetEnumerator();
+
+    public void CopyTo(T[] array, int arrayIndex) => _inner.CopyTo(array, arrayIndex);
+}
+
+// Implements IDictionary<TKey, TValue> delegating to Dictionary<TKey, TValue> _inner;
+internal class CustomDictionary<TKey, TValue> : IDictionary<TKey, TValue>
+{
+    private readonly Dictionary<TKey, TValue> _inner = new();
+
+    public TValue this[TKey key] { get => _inner[key]; set => _inner[key] = value; }
+
+    public ICollection<TKey> Keys => _inner.Keys;
+    public ICollection<TValue> Values => _inner.Values;
+    public int Count => _inner.Count;
+    public bool IsReadOnly => false;
+    public void Add(TKey key, TValue value) => _inner.Add(key, value);
+    public void Add(KeyValuePair<TKey, TValue> item) => _inner.Add(item.Key, item.Value);
+    public void Clear() => _inner.Clear();
+    public bool Contains(KeyValuePair<TKey, TValue> item) => _inner.TryGetValue(item.Key, out var value);
+    public bool ContainsKey(TKey key) => _inner.ContainsKey(key);
+    public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex) => ((ICollection<KeyValuePair<TKey, TValue>>)_inner).CopyTo(array, arrayIndex);
+    public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() => _inner.GetEnumerator();
+    public bool Remove(TKey key) => _inner.Remove(key);
+    public bool Remove(KeyValuePair<TKey, TValue> item) => _inner.Remove(item.Key);
+    public bool TryGetValue(TKey key, [MaybeNullWhen(false)] out TValue value) => _inner.TryGetValue(key, out value);
+    IEnumerator IEnumerable.GetEnumerator() => _inner.GetEnumerator();
 }
