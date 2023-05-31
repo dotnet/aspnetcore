@@ -12,7 +12,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
-internal class DefaultFormValuesSupplier : IFormValueSupplier
+internal sealed class DefaultFormValuesSupplier : IFormValueSupplier
 {
     private static readonly MethodInfo _method = typeof(DefaultFormValuesSupplier)
             .GetMethod(
@@ -21,8 +21,8 @@ internal class DefaultFormValuesSupplier : IFormValueSupplier
             throw new InvalidOperationException($"Unable to find method '{nameof(DeserializeCore)}'.");
 
     private readonly HttpContextFormDataProvider _formData;
-    private readonly FormDataSerializerOptions _options = new();
-    private static readonly ConcurrentDictionary<Type, Func<IReadOnlyDictionary<string, StringValues>, FormDataSerializerOptions, string, object>> _cache =
+    private readonly FormDataMapperOptions _options = new();
+    private static readonly ConcurrentDictionary<Type, Func<IReadOnlyDictionary<string, StringValues>, FormDataMapperOptions, string, object>> _cache =
         new();
 
     public DefaultFormValuesSupplier(FormDataProvider formData)
@@ -61,18 +61,18 @@ internal class DefaultFormValuesSupplier : IFormValueSupplier
         return false;
     }
 
-    private Func<IReadOnlyDictionary<string, StringValues>, FormDataSerializerOptions, string, object> CreateDeserializer(Type type) =>
+    private Func<IReadOnlyDictionary<string, StringValues>, FormDataMapperOptions, string, object> CreateDeserializer(Type type) =>
         _method.MakeGenericMethod(type)
-        .CreateDelegate<Func<IReadOnlyDictionary<string, StringValues>, FormDataSerializerOptions, string, object>>();
+        .CreateDelegate<Func<IReadOnlyDictionary<string, StringValues>, FormDataMapperOptions, string, object>>();
 
-    private static object? DeserializeCore<T>(IReadOnlyDictionary<string, StringValues> form, FormDataSerializerOptions options, string value)
+    private static object? DeserializeCore<T>(IReadOnlyDictionary<string, StringValues> form, FormDataMapperOptions options, string value)
     {
         // Form values are parsed according to the culture of the request, which is set to the current culture by the localization middleware.
         // Some form input types use the invariant culture when sending the data to the server. For those cases, we'll
         // provide a way to override the culture to use to parse that value.
         var reader = new FormDataReader(form, CultureInfo.CurrentCulture);
         reader.PushPrefix(value);
-        return FormDataDeserializer.Deserialize<T>(reader, options);
+        return FormDataMapper.Map<T>(reader, options);
     }
 
     public bool CanConvertSingleValue(Type type)

@@ -5,12 +5,12 @@ using System.Collections.Concurrent;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
 
-internal class FormDataSerializerOptions
+internal sealed class FormDataMapperOptions
 {
     private readonly ConcurrentDictionary<Type, FormDataConverter> _converters = new();
-    private readonly List<Func<Type, FormDataSerializerOptions, FormDataConverter?>> _factories = new();
+    private readonly List<Func<Type, FormDataMapperOptions, FormDataConverter?>> _factories = new();
 
-    public FormDataSerializerOptions()
+    public FormDataMapperOptions()
     {
         _converters = new(WellKnownConverters.Converters);
 
@@ -31,7 +31,7 @@ internal class FormDataSerializerOptions
         return (FormDataConverter<T>)_converters.GetOrAdd(typeof(T), CreateConverter, this);
     }
 
-    private static FormDataConverter CreateConverter(Type type, FormDataSerializerOptions options)
+    private static FormDataConverter CreateConverter(Type type, FormDataMapperOptions options)
     {
         FormDataConverter? converter;
         foreach (var factory in options._factories)

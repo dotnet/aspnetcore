@@ -3,11 +3,11 @@
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
 
-internal static class FormDataDeserializer
+internal static class FormDataMapper
 {
-    public static T? Deserialize<T>(
+    public static T? Map<T>(
         FormDataReader reader,
-        FormDataSerializerOptions options)
+        FormDataMapperOptions options)
     {
         try
         {

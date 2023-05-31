@@ -5,15 +5,15 @@ using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
 
-internal class NullableConverterFactory : IFormDataConverterFactory
+internal sealed class NullableConverterFactory : IFormDataConverterFactory
 {
-    public static bool CanConvert(Type type, FormDataSerializerOptions options)
+    public static bool CanConvert(Type type, FormDataMapperOptions options)
     {
         var underlyingType = Nullable.GetUnderlyingType(type);
         return underlyingType != null && options.HasConverter(underlyingType);
     }
 
-    public static FormDataConverter CreateConverter(Type type, FormDataSerializerOptions options)
+    public static FormDataConverter CreateConverter(Type type, FormDataMapperOptions options)
     {
         var underlyingType = Nullable.GetUnderlyingType(type);
         Debug.Assert(underlyingType != null);
@@ -35,7 +35,7 @@ internal class NullableConverter<T> : FormDataConverter<T?> where T : struct
         _nonNullableConverter = nonNullableConverter;
     }
 
-    internal override bool TryRead(ref FormDataReader context, Type type, FormDataSerializerOptions options, out T? result, out bool found)
+    internal override bool TryRead(ref FormDataReader context, Type type, FormDataMapperOptions options, out T? result, out bool found)
     {
         if (!(_nonNullableConverter.TryRead(ref context, type, options, out var innerResult, out found) && found))
         {

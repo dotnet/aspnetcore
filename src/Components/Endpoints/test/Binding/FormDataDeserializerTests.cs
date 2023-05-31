@@ -18,7 +18,7 @@ public class FormDataDeserializerTests
         var collection = new Dictionary<string, StringValues>() { ["value"] = new StringValues(value) };
         var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
         reader.PushPrefix("value");
-        var options = new FormDataSerializerOptions();
+        var options = new FormDataMapperOptions();
 
         // Act
         var result = CallDeserialize(reader, options, type);
@@ -35,7 +35,7 @@ public class FormDataDeserializerTests
         var collection = new Dictionary<string, StringValues>() { ["value"] = new StringValues(value) };
         var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
         reader.PushPrefix("value");
-        var options = new FormDataSerializerOptions();
+        var options = new FormDataMapperOptions();
 
         // Act
         var result = CallDeserialize(reader, options, type);
@@ -52,7 +52,7 @@ public class FormDataDeserializerTests
         var collection = new Dictionary<string, StringValues>() { };
         var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
         reader.PushPrefix("value");
-        var options = new FormDataSerializerOptions();
+        var options = new FormDataMapperOptions();
 
         // Act
         var result = CallDeserialize(reader, options, type);
@@ -69,10 +69,10 @@ public class FormDataDeserializerTests
         var collection = new Dictionary<string, StringValues>() { ["value"] = new StringValues("(1,1)") };
         var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
         reader.PushPrefix("value");
-        var options = new FormDataSerializerOptions();
+        var options = new FormDataMapperOptions();
 
         // Act
-        var result = FormDataDeserializer.Deserialize<Point>(reader, options);
+        var result = FormDataMapper.Map<Point>(reader, options);
 
         // Assert
         Assert.Equal(expected, result);
@@ -87,10 +87,10 @@ public class FormDataDeserializerTests
         var collection = new Dictionary<string, StringValues>() { ["value"] = new StringValues("(1,1)") };
         var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
         reader.PushPrefix("value");
-        var options = new FormDataSerializerOptions();
+        var options = new FormDataMapperOptions();
 
         // Act
-        var result = FormDataDeserializer.Deserialize<ValuePoint?>(reader, options);
+        var result = FormDataMapper.Map<ValuePoint?>(reader, options);
 
         // Assert
         Assert.Equal(expected, result);
@@ -103,10 +103,10 @@ public class FormDataDeserializerTests
         var collection = new Dictionary<string, StringValues>() { };
         var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
         reader.PushPrefix("value");
-        var options = new FormDataSerializerOptions();
+        var options = new FormDataMapperOptions();
 
         // Act
-        var result = FormDataDeserializer.Deserialize<ValuePoint?>(reader, options);
+        var result = FormDataMapper.Map<ValuePoint?>(reader, options);
 
         // Assert
         Assert.Null(result);
@@ -240,11 +240,11 @@ public class FormDataDeserializerTests
         }
     }
 
-    private object CallDeserialize(FormDataReader reader, FormDataSerializerOptions options, Type type)
+    private object CallDeserialize(FormDataReader reader, FormDataMapperOptions options, Type type)
     {
-        var method = typeof(FormDataDeserializer)
-            .GetMethod("Deserialize", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public) ??
-            throw new InvalidOperationException("Unable to find method 'Deserialize'.");
+        var method = typeof(FormDataMapper)
+            .GetMethod("Map", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public) ??
+            throw new InvalidOperationException("Unable to find method 'Map'.");
 
         return method.MakeGenericMethod(type).Invoke(null, new object[] { reader, options })!;
     }

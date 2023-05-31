@@ -3,15 +3,15 @@
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
 
-internal class ParsableConverterFactory : IFormDataConverterFactory
+internal sealed class ParsableConverterFactory : IFormDataConverterFactory
 {
-    public static bool CanConvert(Type type, FormDataSerializerOptions options)
+    public static bool CanConvert(Type type, FormDataMapperOptions options)
     {
         // returns whether type implements IParsable<T>
         return typeof(IParsable<>).MakeGenericType(type).IsAssignableFrom(type);
     }
 
-    public static FormDataConverter CreateConverter(Type type, FormDataSerializerOptions options)
+    public static FormDataConverter CreateConverter(Type type, FormDataMapperOptions options)
     {
         return typeof(ParsableConverter<>)
             .MakeGenericType(type)
@@ -23,7 +23,7 @@ internal class ParsableConverterFactory : IFormDataConverterFactory
 
 internal class ParsableConverter<T> : FormDataConverter<T>, ISingleValueConverter where T : IParsable<T>
 {
-    internal override bool TryRead(ref FormDataReader reader, Type type, FormDataSerializerOptions options, out T? result, out bool found)
+    internal override bool TryRead(ref FormDataReader reader, Type type, FormDataMapperOptions options, out T? result, out bool found)
     {
         found = reader.TryGetValue(out var value);
         if (found && T.TryParse(value, reader.Culture, out result))
