@@ -40,8 +40,6 @@ internal partial class WebSocketsAsyncIOEngine
         protected override void ResetOperation()
         {
             base.ResetOperation();
-
-            _engine.ReturnOperation(this);
         }
 
         public void Dispose()

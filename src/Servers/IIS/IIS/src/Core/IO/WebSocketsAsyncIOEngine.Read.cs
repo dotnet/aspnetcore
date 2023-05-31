@@ -74,8 +74,6 @@ internal partial class WebSocketsAsyncIOEngine
             _inputHandle.Dispose();
             _inputHandle = default;
             _requestHandler = default;
-
-            _engine.ReturnOperation(this);
         }
 
         protected override bool IsSuccessfulResult(int hr) => hr == NativeMethods.ERROR_HANDLE_EOF;
