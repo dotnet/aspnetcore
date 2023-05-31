@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Components;
 /// supplies values with a compatible type and name.
 /// </summary>
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
-public sealed class CascadingParameterAttribute : Attribute
+public sealed class CascadingParameterAttribute : Attribute, ICascadingParameterAttribute
 {
     /// <summary>
     /// If specified, the parameter value will be supplied by the closest

@@ -552,7 +552,7 @@ public class CascadingParameterStateTest
 }
 
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
-public sealed class SupplyParameterFromFormAttribute : Attribute, IHostEnvironmentCascadingParameter
+public sealed class SupplyParameterFromFormAttribute : Attribute, ICascadingParameterAttribute
 {
     /// <summary>
     /// Gets or sets the name for the parameter. The name is used to match

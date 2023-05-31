@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components;
@@ -8,7 +9,7 @@ namespace Microsoft.AspNetCore.Components;
 /// <summary>
 /// A component that provides a cascading value to all descendant components.
 /// </summary>
-public class CascadingValue<TValue> : ICascadingValueComponent, IComponent
+public class CascadingValue<TValue> : ICascadingValueSupplierFactory, ICascadingValueSupplier, IComponent
 {
     private RenderHandle _renderHandle;
     private HashSet<ComponentState>? _subscribers; // Lazily instantiated
@@ -41,9 +42,9 @@ public class CascadingValue<TValue> : ICascadingValueComponent, IComponent
     /// </summary>
     [Parameter] public bool IsFixed { get; set; }
 
-    object? ICascadingValueComponent.CurrentValue => Value;
+    object? ICascadingValueSupplier.CurrentValue => Value;
 
-    bool ICascadingValueComponent.CurrentValueIsFixed => IsFixed;
+    bool ICascadingValueSupplier.CurrentValueIsFixed => IsFixed;
 
     /// <inheritdoc />
     public void Attach(RenderHandle renderHandle)
@@ -130,18 +131,29 @@ public class CascadingValue<TValue> : ICascadingValueComponent, IComponent
         return Task.CompletedTask;
     }
 
-    bool ICascadingValueComponent.CanSupplyValue(Type requestedType, string? requestedName)
+    bool ICascadingValueSupplierFactory.TryGetValueSupplier(object propertyAttribute, Type requestedType, string? requestedName, [NotNullWhen(true)] out ICascadingValueSupplier? result)
     {
-        if (!requestedType.IsAssignableFrom(typeof(TValue)))
+        result = default;
+
+        if (propertyAttribute is not CascadingParameterAttribute || !requestedType.IsAssignableFrom(typeof(TValue)))
         {
             return false;
         }
 
-        return (requestedName == null && Name == null) // Match on type alone
-            || string.Equals(requestedName, Name, StringComparison.OrdinalIgnoreCase); // Also match on name
+        var isMatch =
+            (requestedName == null && Name == null) || // Match on type alone
+            string.Equals(requestedName, Name, StringComparison.OrdinalIgnoreCase); // Also match on name
+
+        if (!isMatch)
+        {
+            return false;
+        }
+
+        result = this;
+        return true;
     }
 
-    void ICascadingValueComponent.Subscribe(ComponentState subscriber)
+    void ICascadingValueSupplier.Subscribe(ComponentState subscriber)
     {
 #if DEBUG
         if (IsFixed)
@@ -160,7 +172,7 @@ public class CascadingValue<TValue> : ICascadingValueComponent, IComponent
         _subscribers.Add(subscriber);
     }
 
-    void ICascadingValueComponent.Unsubscribe(ComponentState subscriber)
+    void ICascadingValueSupplier.Unsubscribe(ComponentState subscriber)
     {
         _subscribers?.Remove(subscriber);
     }

@@ -595,7 +595,7 @@ public partial class ParameterViewTest
             => throw new NotImplementedException();
     }
 
-    private class TestCascadingValue : ICascadingValueComponent
+    private class TestCascadingValue : ICascadingValueSupplier
     {
         public TestCascadingValue(object value)
         {

@@ -684,7 +684,7 @@ public partial class ParameterViewTest
         }
     }
 
-    private class TestCascadingValueProvider : ICascadingValueComponent
+    private class TestCascadingValueProvider : ICascadingValueSupplier
     {
         public TestCascadingValueProvider(object value)
         {
