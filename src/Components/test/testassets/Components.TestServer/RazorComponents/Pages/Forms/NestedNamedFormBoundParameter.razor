@@ -1,0 +1,8 @@
+﻿@page "/forms/nested-named-form-bound-parameter"
+@using Microsoft.AspNetCore.Components.Forms
+
+<h2>Nested named form bound parameter</h2>
+
+<CascadingModelBinder Name="parent-context" Context="bindingContext">
+    <ComponentWithFormBoundParameter />
+</CascadingModelBinder>
