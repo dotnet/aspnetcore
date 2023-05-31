@@ -10,6 +10,7 @@ using System.Text;
 using Microsoft.AspNetCore.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
+using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel.Emitters;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using WellKnownType = Microsoft.AspNetCore.App.Analyzers.Infrastructure.WellKnownTypeData.WellKnownType;
@@ -347,7 +348,7 @@ internal class EndpointParameter
         {
             parsingBlockEmitter = (writer, inputArgument, outputArgument) =>
             {
-                writer.WriteLine($"""{typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)} {outputArgument} = default;""");
+                writer.WriteLine($"""{typeSymbol.ToDisplayString(EmitterConstants.DisplayFormat)} {outputArgument} = default;""");
                 writer.WriteLine($$"""if ({{preferredTryParseInvocation(inputArgument, $"{inputArgument}_parsed_non_nullable")}})""");
                 writer.StartBlock();
                 writer.WriteLine($$"""{{outputArgument}} = {{$"{inputArgument}_parsed_non_nullable"}};""");
