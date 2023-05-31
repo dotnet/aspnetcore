@@ -559,10 +559,17 @@ public partial class HubConnection : IAsyncDisposable
             if (connectionState != null)
             {
                 connectionState.Stopping = true;
-                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
+                // Try to send CloseMessage
+                var writeTask = SendHubMessage(connectionState, CloseMessage.Empty);
+                if (!writeTask.IsCompleted)
+                {
+                    // if there is backpressure we aren't going to try waiting for it to clear
+                    connectionState.Connection.Transport.Output.CancelPendingFlush();
+                }
+
                 try
                 {
-                    await SendHubMessage(connectionState, new CloseMessage(error: null), cancellationToken: cts.Token).ConfigureAwait(false);
+                    await writeTask.ConfigureAwait(false);
                 }
                 catch { }
             }
