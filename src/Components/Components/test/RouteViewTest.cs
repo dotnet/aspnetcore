@@ -89,7 +89,7 @@ public class RouteViewTest
         var cascadingModelBinderFrames = _renderer.GetCurrentRenderTreeFrames(cascadingModelBinderComponentId).AsEnumerable();
         Assert.Collection(cascadingModelBinderFrames,
             frame => AssertFrame.Component<CascadingValue<ModelBindingContext>>(frame, sequence: 0, subtreeLength: 4),
-            frame => AssertFrame.Attribute(frame, nameof(CascadingValue<ModelBindingContext>.IsFixed), true, sequence: 1),
+            frame => AssertFrame.Attribute(frame, nameof(CascadingValue<ModelBindingContext>.IsFixed), false, sequence: 1),
             frame => AssertFrame.Attribute(frame, nameof(CascadingValue<ModelBindingContext>.Value), typeof(ModelBindingContext), sequence: 2),
             frame => AssertFrame.Attribute(frame, nameof(CascadingValue<ModelBindingContext>.ChildContent), typeof(RenderFragment), sequence: 3));
 

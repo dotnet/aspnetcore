@@ -24,6 +24,14 @@ public sealed class CascadingModelBinder : IComponent, ICascadingValueComponent,
     [Parameter] public string Name { get; set; } = "";
 
     /// <summary>
+    /// If true, indicates that <see cref="ModelBindingContext.BindingContextId"/> will not change.
+    /// This is a performance optimization that allows the framework to skip setting up
+    /// change notifications. Set this flag only if you will not change
+    /// <see cref="Name"/> of this context or its parents' context during the component's lifetime.
+    /// </summary>
+    [Parameter] public bool IsFixed { get; set; }
+
+    /// <summary>
     /// Specifies the content to be rendered inside this <see cref="CascadingModelBinder"/>.
     /// </summary>
     [Parameter] public RenderFragment<ModelBindingContext> ChildContent { get; set; } = default!;
@@ -70,7 +78,7 @@ public sealed class CascadingModelBinder : IComponent, ICascadingValueComponent,
         {
             _hasPendingQueuedRender = false;
             builder.OpenComponent<CascadingValue<ModelBindingContext>>(0);
-            builder.AddComponentParameter(1, nameof(CascadingValue<ModelBindingContext>.IsFixed), true);
+            builder.AddComponentParameter(1, nameof(CascadingValue<ModelBindingContext>.IsFixed), IsFixed);
             builder.AddComponentParameter(2, nameof(CascadingValue<ModelBindingContext>.Value), _bindingContext);
             builder.AddComponentParameter(3, nameof(CascadingValue<ModelBindingContext>.ChildContent), ChildContent?.Invoke(_bindingContext!));
             builder.CloseComponent();
@@ -109,7 +117,7 @@ public sealed class CascadingModelBinder : IComponent, ICascadingValueComponent,
             _bindingContext : new ModelBindingContext(name, bindingId);
 
         // It doesn't matter that we don't check IsFixed, since the CascadingValue we are setting up will throw if the app changes.
-        if (_bindingContext != null && _bindingContext != bindingContext)
+        if (IsFixed && _bindingContext != null && _bindingContext != bindingContext)
         {
             // Throw an exception if either the Name or the BindingContextId changed. Once a CascadingModelBinder has been initialized
             // as fixed, it can't change it's name nor its BindingContextId. This can happen in several situations:
