@@ -1343,29 +1343,6 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         }
     }
 
-    // TODO: Remove once test is migrated.
-    //[Theory]
-    //[MemberData(nameof(ComplexResult))]
-    //public async Task RequestDelegateWritesComplexReturnValueAsJsonResponseBody(Delegate @delegate)
-    //{
-    //    var httpContext = CreateHttpContext();
-    //    var responseBodyStream = new MemoryStream();
-    //    httpContext.Response.Body = responseBodyStream;
-
-    //    var factoryResult = RequestDelegateFactory.Create(@delegate);
-    //    var requestDelegate = factoryResult.RequestDelegate;
-
-    //    await requestDelegate(httpContext);
-
-    //    var deserializedResponseBody = JsonSerializer.Deserialize<Todo>(responseBodyStream.ToArray(), new JsonSerializerOptions
-    //    {
-    //        PropertyNameCaseInsensitive = true
-    //    });
-
-    //    Assert.NotNull(deserializedResponseBody);
-    //    Assert.Equal("Write even more tests!", deserializedResponseBody!.Name);
-    //}
-
     [Fact]
     public async Task RequestDelegateWritesComplexStructReturnValueAsJsonResponseBody()
     {
