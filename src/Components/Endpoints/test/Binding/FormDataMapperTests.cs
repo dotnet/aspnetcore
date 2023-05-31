@@ -4,11 +4,10 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.Extensions.Primitives;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
 
-public class FormDataDeserializerTests
+public class FormDataMapperTests
 {
     [Theory]
     [MemberData(nameof(PrimitiveTypesData))]
@@ -286,35 +285,18 @@ internal class Point : IParsable<Point>, IEquatable<Point>
         }
     }
 
-    public override bool Equals(object obj)
-    {
-        return Equals(obj as Point);
-    }
+    public override bool Equals(object obj) => Equals(obj as Point);
 
-    public bool Equals(Point other)
-    {
-        return other is not null &&
-               X == other.X &&
-               Y == other.Y;
-    }
+    public bool Equals(Point other) => other is not null && X == other.X && Y == other.Y;
 
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(X, Y);
-    }
+    public override int GetHashCode() => HashCode.Combine(X, Y);
 
-    public static bool operator ==(Point left, Point right)
-    {
-        return EqualityComparer<Point>.Default.Equals(left, right);
-    }
+    public static bool operator ==(Point left, Point right) => EqualityComparer<Point>.Default.Equals(left, right);
 
-    public static bool operator !=(Point left, Point right)
-    {
-        return !(left == right);
-    }
+    public static bool operator !=(Point left, Point right) => !(left == right);
 }
 
-internal class ValuePoint : IParsable<ValuePoint>, IEquatable<ValuePoint>
+internal struct ValuePoint : IParsable<ValuePoint>, IEquatable<ValuePoint>
 {
     public int X { get; set; }
     public int Y { get; set; }
@@ -345,35 +327,18 @@ internal class ValuePoint : IParsable<ValuePoint>, IEquatable<ValuePoint>
         }
         catch (FormatException)
         {
-            result = null;
+            result = default;
             return false;
         }
     }
 
-    public override bool Equals(object obj)
-    {
-        return Equals(obj as ValuePoint);
-    }
+    public override bool Equals(object obj) => Equals((ValuePoint)obj);
 
-    public bool Equals(ValuePoint other)
-    {
-        return other is not null &&
-               X == other.X &&
-               Y == other.Y;
-    }
+    public bool Equals(ValuePoint other) => X == other.X && Y == other.Y;
 
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(X, Y);
-    }
+    public override int GetHashCode() => HashCode.Combine(X, Y);
 
-    public static bool operator ==(ValuePoint left, ValuePoint right)
-    {
-        return EqualityComparer<ValuePoint>.Default.Equals(left, right);
-    }
+    public static bool operator ==(ValuePoint left, ValuePoint right) => EqualityComparer<ValuePoint>.Default.Equals(left, right);
 
-    public static bool operator !=(ValuePoint left, ValuePoint right)
-    {
-        return !(left == right);
-    }
+    public static bool operator !=(ValuePoint left, ValuePoint right) => !(left == right);
 }

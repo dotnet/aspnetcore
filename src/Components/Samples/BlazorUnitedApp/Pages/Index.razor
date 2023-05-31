@@ -2,10 +2,10 @@
 
 <PageTitle>Index</PageTitle>
 
-<h1>Your said @(Parameter?.ToString() ?? "(null)")</h1>
+<h1>@Parameter</h1>
 
-<EditForm method="POST" Model="@(Parameter ?? 0)">
-    <input name="value" @bind-value="@Parameter" />
+<EditForm method="POST" Model="Parameter">
+    <InputText @bind-Value="Parameter" />
     <input type="submit" value="Send" />
 </EditForm>
 
@@ -15,7 +15,7 @@
 }
 
 @code{
-    [SupplyParameterFromForm] int? Parameter { get; set; } = 18;
+    [SupplyParameterFromForm] string Parameter { get; set; } = "Hello, world!";
 
     bool _submitted = false;
     public void Submit()
