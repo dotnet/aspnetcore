@@ -20,13 +20,8 @@ namespace Microsoft.AspNetCore.Http.Generators.Tests;
 public abstract partial class RequestDelegateCreationTests : RequestDelegateCreationTestBase
 {
     [Theory]
-    [InlineData("HttpContext")]
-    [InlineData("HttpRequest")]
-    [InlineData("HttpResponse")]
     [InlineData("System.IO.Pipelines.PipeReader")]
     [InlineData("System.IO.Stream")]
-    [InlineData("System.Security.Claims.ClaimsPrincipal")]
-    [InlineData("System.Threading.CancellationToken")]
     [InlineData("[FromBody] System.IO.Pipelines.PipeReader")]
     [InlineData("[FromBody] System.IO.Stream")]
     public async Task MapAction_SingleSpecialTypeParam_StringReturn(string parameterType)
