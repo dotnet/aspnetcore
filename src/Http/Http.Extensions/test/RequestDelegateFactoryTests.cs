@@ -895,27 +895,6 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(400, httpContext.Response.StatusCode);
     }
 
-    [Theory]
-    [MemberData(nameof(ImplicitFromBodyActions))]
-    public async Task RequestDelegateRejectsEmptyBodyGivenImplicitFromBodyParameter(Delegate action)
-    {
-        var httpContext = new DefaultHttpContext();
-        httpContext.Request.Headers["Content-Type"] = "application/json";
-        httpContext.Request.Headers["Content-Length"] = "0";
-        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(false));
-
-        var serviceCollection = new ServiceCollection();
-        serviceCollection.AddSingleton(LoggerFactory);
-        httpContext.RequestServices = serviceCollection.BuildServiceProvider();
-
-        var factoryResult = RequestDelegateFactory.Create(action, new RequestDelegateFactoryOptions() { ThrowOnBadRequest = true });
-        var requestDelegate = factoryResult.RequestDelegate;
-
-        var ex = await Assert.ThrowsAsync<BadHttpRequestException>(() => requestDelegate(httpContext));
-        Assert.StartsWith("Implicit body inferred for parameter", ex.Message);
-        Assert.EndsWith("but no body was provided. Did you mean to use a Service instead?", ex.Message);
-    }
-
     [Fact]
     public void RequestDelegateFactoryThrowsForByRefReturnTypes()
     {

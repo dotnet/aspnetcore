@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -131,5 +132,70 @@ app.MapPost("/", handler);
         {
             await VerifyResponseBodyAsync(httpContext, expectedBody);
         }
+    }
+
+    public static object[][] ImplicitFromBodyActions
+    {
+        get
+        {
+            var testImpliedFromBody = """
+void TestAction(HttpContext httpContext, Todo todo)
+{
+    httpContext.Items.Add("body", todo);
+}
+""";
+            var testImpliedFromBodyInterface = """
+void TestAction(HttpContext httpContext, ITodo todo)
+{
+    httpContext.Items.Add("body", todo);
+}
+""";
+            var testImpliedFromBodyStruct = """
+void TestAction(HttpContext httpContext, TodoStruct todo)
+{
+    httpContext.Items.Add("body", todo);
+}
+""";
+
+            var testImpliedFromBodyStructParameterList = """
+void TestAction([AsParameters] ParametersListWithImplicitFromBody args)
+{
+    args.HttpContext.Items.Add("body", args.Todo);
+}
+""";
+
+            return new[]
+            {
+                new object[] { testImpliedFromBody },
+                new object[] { testImpliedFromBodyInterface },
+                new object[] { testImpliedFromBodyStruct },
+                new object[] { testImpliedFromBodyStructParameterList },
+            };
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(ImplicitFromBodyActions))]
+    public async Task RequestDelegateRejectsEmptyBodyGivenImplicitFromBodyParameter(string innerSource)
+    {
+        var source = $"""
+{innerSource}
+app.MapPost("/", TestAction);
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var serviceProvider = CreateServiceProvider(serviceCollection =>
+        {
+            serviceCollection.Configure<RouteHandlerOptions>(options => options.ThrowOnBadRequest = true);
+        });
+        var endpoint = GetEndpointFromCompilation(compilation, serviceProvider: serviceProvider);
+
+        var httpContext = CreateHttpContext(serviceProvider);
+        httpContext.Request.Headers["Content-Type"] = "application/json";
+        httpContext.Request.Headers["Content-Length"] = "0";
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(false));
+
+        var ex = await Assert.ThrowsAsync<BadHttpRequestException>(() => endpoint.RequestDelegate(httpContext));
+        Assert.StartsWith("Implicit body inferred for parameter", ex.Message);
+        Assert.EndsWith("but no body was provided. Did you mean to use a Service instead?", ex.Message);
     }
 }
