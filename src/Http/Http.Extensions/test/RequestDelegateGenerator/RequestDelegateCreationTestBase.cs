@@ -3,6 +3,7 @@
 
 using System.Globalization;
 using System.IO.Pipelines;
+using System.Net.Http;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Loader;
@@ -218,12 +219,29 @@ public abstract class RequestDelegateCreationTestBase : LoggedTest
         return httpContext;
     }
 
-    internal static async Task VerifyResponseBodyAsync(HttpContext httpContext, string expectedBody, int expectedStatusCode = 200)
+    internal static async Task<string> GetResponseBodyAsync(HttpContext httpContext)
     {
         var httpResponse = httpContext.Response;
         httpResponse.Body.Seek(0, SeekOrigin.Begin);
         var streamReader = new StreamReader(httpResponse.Body);
-        var body = await streamReader.ReadToEndAsync();
+        return await streamReader.ReadToEndAsync();
+    }
+
+    internal static async Task VerifyResponseJsonBodyAsync<T>(HttpContext httpContext, Action<T> check, int expectedStatusCode = 200)
+    {
+        var body = await GetResponseBodyAsync(httpContext);
+        var deserializedObject = JsonSerializer.Deserialize<T>(body, new JsonSerializerOptions()
+        {
+            PropertyNameCaseInsensitive = true
+        });
+
+        Assert.Equal(expectedStatusCode, httpContext.Response.StatusCode);
+        check(deserializedObject);
+    }
+
+    internal static async Task VerifyResponseBodyAsync(HttpContext httpContext, string expectedBody, int expectedStatusCode = 200)
+    {
+        var body = await GetResponseBodyAsync(httpContext);
         Assert.Equal(expectedStatusCode, httpContext.Response.StatusCode);
         Assert.Equal(expectedBody, body);
     }
