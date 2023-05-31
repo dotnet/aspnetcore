@@ -418,4 +418,27 @@ static ValueTask<Todo> StaticValueTaskTestAction() => ValueTask.FromResult(new T
             Assert.Equal("Write even more tests!", todo!.Name);
         });
     }
+
+    [Fact]
+    public async Task RequestDelegateWritesComplexStructReturnValueAsJsonResponseBody()
+    {
+        var source = """
+app.MapPost("/", () => new TodoStruct(42, "Bob", true, TodoStatus.Done));
+""";
+
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+
+        await endpoint.RequestDelegate(httpContext);
+
+        await VerifyResponseJsonBodyAsync<TodoStruct>(httpContext, (todo) =>
+        {
+            Assert.Equal(42, todo.Id);
+            Assert.Equal("Bob", todo.Name);
+            Assert.True(todo.IsComplete);
+            Assert.Equal(TodoStatus.Done, todo.Status);
+        });
+    }
 }
