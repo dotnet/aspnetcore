@@ -163,7 +163,7 @@ public class RoutePatternCompletionProvider : CompletionProvider
         context.IsExclusive = true;
     }
 
-    private void ProvideCompletions(EmbeddedCompletionContext context)
+    private static void ProvideCompletions(EmbeddedCompletionContext context)
     {
         var result = GetCurrentToken(context);
         if (result == null)
@@ -216,7 +216,7 @@ public class RoutePatternCompletionProvider : CompletionProvider
         }
     }
 
-    private (RoutePatternNode Parent, RoutePatternToken Token)? GetCurrentToken(EmbeddedCompletionContext context)
+    private static (RoutePatternNode Parent, RoutePatternToken Token)? GetCurrentToken(EmbeddedCompletionContext context)
     {
         var previousVirtualCharOpt = context.RouteUsage.RoutePattern.Text.Find(context.Position - 1);
         if (previousVirtualCharOpt == null)
