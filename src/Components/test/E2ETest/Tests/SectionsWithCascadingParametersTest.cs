@@ -14,8 +14,6 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests;
 
 public class SectionsWithCascadingParametersTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
 {
-    private IWebElement _appElement;
-
     public SectionsWithCascadingParametersTest
         (BrowserFixture browserFixture,
         ToggleExecutionModeServerFixture<Program> serverFixture,
@@ -27,19 +25,15 @@ public class SectionsWithCascadingParametersTest : ServerTestBase<ToggleExecutio
     protected override void InitializeAsyncCore()
     {
         Navigate(ServerPathBase, noReload: _serverFixture.ExecutionMode == ExecutionMode.Client);
-        _appElement = Browser.MountTestComponent<BasicTestApp.SectionsTest.SectionsWithCascadingParameters>();
+        Browser.MountTestComponent<BasicTestApp.SectionsTest.SectionsWithCascadingParameters>();
     }
 
     [Fact]
-    public void SectionOutletRendersContentProvidedBySectionContentWithCascadingParameter()
+    public void CascadingParameterForSectionOutletContentIsDeterminedByMatchingSectionContent()
     {
         Browser.Equal("First Section with additional text for first section", () => Browser.Exists(By.TagName("p")).Text);
-    }
 
-    [Fact]
-    public void SectionContentChanged_SectionOutletRendersContentWithCorrectCascadingParameter()
-    {
-        _appElement.FindElement(By.Id("render-second-section-content")).Click();
+        Browser.FindElement(By.Id("render-second-section-content")).Click();
 
         Browser.Equal("Second Section with additional text for second section", () => Browser.Exists(By.TagName("p")).Text);
     }

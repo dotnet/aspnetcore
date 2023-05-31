@@ -14,8 +14,6 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests;
 
 public class SectionsWithErrorBoundaryTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
 {
-    private IWebElement _appElement;
-
     public SectionsWithErrorBoundaryTest
         (BrowserFixture browserFixture,
         ToggleExecutionModeServerFixture<Program> serverFixture,
@@ -27,27 +25,25 @@ public class SectionsWithErrorBoundaryTest : ServerTestBase<ToggleExecutionModeS
     protected override void InitializeAsyncCore()
     {
         Navigate(ServerPathBase, noReload: _serverFixture.ExecutionMode == ExecutionMode.Client);
-        _appElement = Browser.MountTestComponent<BasicTestApp.SectionsTest.SectionsWithErrorBoundary>();
+        Browser.MountTestComponent<BasicTestApp.SectionsTest.SectionsWithErrorBoundary>();
     }
 
     [Fact]
-    public void ErrorBoundaryForSectionContentHandlesExceptionInSectionOutlet()
+    public void ErrorBoundaryForSectionOutletContentIsDeterminedByMatchingSectionContent()
     {
         Browser.Equal("First Section", () => Browser.Exists(By.TagName("h1")).Text);
 
-        _appElement.FindElement(By.Id("error-button")).Click();
+        Browser.FindElement(By.Id("error-button")).Click();
 
         Browser.Exists(By.ClassName("blazor-error-boundary"));
-    }
 
-    [Fact]
-    public void SectionContentChanged_ErrorBoundaryHandlesExceptionInSectionOutlet()
-    {
-        _appElement.FindElement(By.Id("change-section-content")).Click();
+        // Switch to the second SectionContent
+
+        Browser.FindElement(By.Id("change-section-content")).Click();
 
         Browser.Equal("Second Section", () => Browser.Exists(By.TagName("h1")).Text);
 
-        _appElement.FindElement(By.Id("error-button")).Click();
+        Browser.FindElement(By.Id("error-button")).Click();
 
         Browser.Equal("Sorry!", () => Browser.Exists(By.TagName("p")).Text);
     }
