@@ -279,7 +279,7 @@ If there are two arguments then the string length must be greater than, or equal
         }
     }
 
-    private (RoutePatternNode Parent, RoutePatternToken Token)? FindToken(RoutePatternNode parent, VirtualChar ch)
+    private static (RoutePatternNode Parent, RoutePatternToken Token)? FindToken(RoutePatternNode parent, VirtualChar ch)
     {
         foreach (var child in parent)
         {
