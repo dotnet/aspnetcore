@@ -785,7 +785,7 @@ public class FormDataMapperTests
     public void CanDeserialize_ComplexReferenceType_Inheritance()
     {
         // Arrange
-        var expected = new FrequentCustomer() { Age = 20, Name = "John Doe", Email = "john@example.com"        , IsPreferred = true, TotalVisits = 10, PreferredStore = "Redmond", MonthlyFrequency = 0.8 };
+        var expected = new FrequentCustomer() { Age = 20, Name = "John Doe", Email = "john@example.com", IsPreferred = true, TotalVisits = 10, PreferredStore = "Redmond", MonthlyFrequency = 0.8 };
         var data = new Dictionary<string, StringValues>()
         {
             ["Age"] = "20",
@@ -887,6 +887,68 @@ public class FormDataMapperTests
         Assert.Equal(expected.Lines[2].Price, result.Lines[2].Price);
         Assert.Equal(expected.Lines[2].Product, result.Lines[2].Product);
         Assert.Equal(expected.Lines[2].Quantity, result.Lines[2].Quantity);
+    }
+
+    [Fact]
+    public void CanDeserialize_ComplexTypeWithDictionary_Company()
+    {
+        // Arrange
+        var expected = new Company()
+        {
+            Name = "Microsoft",
+            WareHousesByLocation = new Dictionary<string, WareHouse>()
+            {
+                ["Redmond"] = new WareHouse() { Name = "Redmond", Address = new Address() { City = "Redmond", Street = "1 Microsoft Way", Country = "United States", ZipCode = 98052 } },
+                ["Seattle"] = new WareHouse() { Name = "Seattle", Address = new Address() { City = "Seattle", Street = "1 Microsoft Way", Country = "United States", ZipCode = 98052 } },
+                ["New York"] = new WareHouse() { Name = "New York", Address = new Address() { City = "New York", Street = "1 Microsoft Way", Country = "United States", ZipCode = 98052 } },
+            },
+        };
+
+        var data = new Dictionary<string, StringValues>()
+        {
+            ["Name"] = "Microsoft",
+            ["WareHousesByLocation[Redmond]Name"] = "Redmond",
+            ["WareHousesByLocation[Redmond]Address.City"] = "Redmond",
+            ["WareHousesByLocation[Redmond]Address.Country"] = "United States",
+            ["WareHousesByLocation[Redmond]Address.Street"] = "1 Microsoft Way",
+            ["WareHousesByLocation[Redmond]Address.ZipCode"] = "98052",
+            ["WareHousesByLocation[Seattle]Name"] = "Seattle",
+            ["WareHousesByLocation[Seattle]Address.City"] = "Seattle",
+            ["WareHousesByLocation[Seattle]Address.Country"] = "United States",
+            ["WareHousesByLocation[Seattle]Address.Street"] = "1 Microsoft Way",
+            ["WareHousesByLocation[Seattle]Address.ZipCode"] = "98052",
+            ["WareHousesByLocation[New York]Name"] = "New York",
+            ["WareHousesByLocation[New York]Address.City"] = "New York",
+            ["WareHousesByLocation[New York]Address.Country"] = "United States",
+            ["WareHousesByLocation[New York]Address.Street"] = "1 Microsoft Way",
+            ["WareHousesByLocation[New York]Address.ZipCode"] = "98052",
+        };
+
+        var reader = new FormDataReader(data, CultureInfo.InvariantCulture);
+        var options = new FormDataMapperOptions();
+
+        // Act
+        var result = FormDataMapper.Map<Company>(reader, options);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(expected.Name, result.Name);
+        Assert.Equal(expected.WareHousesByLocation.Count, result.WareHousesByLocation.Count);
+        Assert.Equal(expected.WareHousesByLocation["Redmond"].Name, result.WareHousesByLocation["Redmond"].Name);
+        Assert.Equal(expected.WareHousesByLocation["Redmond"].Address.City, result.WareHousesByLocation["Redmond"].Address.City);
+        Assert.Equal(expected.WareHousesByLocation["Redmond"].Address.Street, result.WareHousesByLocation["Redmond"].Address.Street);
+        Assert.Equal(expected.WareHousesByLocation["Redmond"].Address.Country, result.WareHousesByLocation["Redmond"].Address.Country);
+        Assert.Equal(expected.WareHousesByLocation["Redmond"].Address.ZipCode, result.WareHousesByLocation["Redmond"].Address.ZipCode);
+        Assert.Equal(expected.WareHousesByLocation["Seattle"].Name, result.WareHousesByLocation["Seattle"].Name);
+        Assert.Equal(expected.WareHousesByLocation["Seattle"].Address.City, result.WareHousesByLocation["Seattle"].Address.City);
+        Assert.Equal(expected.WareHousesByLocation["Seattle"].Address.Street, result.WareHousesByLocation["Seattle"].Address.Street);
+        Assert.Equal(expected.WareHousesByLocation["Seattle"].Address.Country, result.WareHousesByLocation["Seattle"].Address.Country);
+        Assert.Equal(expected.WareHousesByLocation["Seattle"].Address.ZipCode, result.WareHousesByLocation["Seattle"].Address.ZipCode);
+        Assert.Equal(expected.WareHousesByLocation["New York"].Name, result.WareHousesByLocation["New York"].Name);
+        Assert.Equal(expected.WareHousesByLocation["New York"].Address.City, result.WareHousesByLocation["New York"].Address.City);
+        Assert.Equal(expected.WareHousesByLocation["New York"].Address.Street, result.WareHousesByLocation["New York"].Address.Street);
+        Assert.Equal(expected.WareHousesByLocation["New York"].Address.Country, result.WareHousesByLocation["New York"].Address.Country);
+        Assert.Equal(expected.WareHousesByLocation["New York"].Address.ZipCode, result.WareHousesByLocation["New York"].Address.ZipCode);
     }
 
     public static TheoryData<string, Type, object> NullableBasicTypes
@@ -1209,12 +1271,26 @@ internal class Order
     public decimal Total { get; set; }
 }
 
-public class OrderLine
+internal class OrderLine
 {
     public int Id { get; set; }
     public string Product { get; set; }
     public int Quantity { get; set; }
     public decimal Price { get; set; }
+}
+
+internal class Company
+{
+    public string Name { get; set; }
+
+    public IDictionary<string, WareHouse> WareHousesByLocation { get; set; }
+}
+
+internal class WareHouse
+{
+    public string Name { get; set; }
+
+    public Address Address { get; set; }
 }
 
 // Implements ICollection<T> delegating to List<T> _inner;
