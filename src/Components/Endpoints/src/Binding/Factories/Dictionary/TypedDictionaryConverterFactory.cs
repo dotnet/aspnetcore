@@ -7,10 +7,10 @@ using System.Collections.ObjectModel;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
 
-internal class TypedDictionaryConverterFactory<TDictionaryType, TKey, TValue> : IFormDataConverterFactory
+internal sealed class TypedDictionaryConverterFactory<TDictionaryType, TKey, TValue> : IFormDataConverterFactory
     where TKey : IParsable<TKey>
 {
-    public bool CanConvert(Type type, FormDataSerializerOptions options)
+    public bool CanConvert(Type type, FormDataMapperOptions options)
     {
         // Resolve the value type converter
         var valueTypeConverter = options.ResolveConverter<TValue>();
@@ -70,7 +70,7 @@ internal class TypedDictionaryConverterFactory<TDictionaryType, TKey, TValue> : 
         return false;
     }
 
-    public FormDataConverter CreateConverter(Type type, FormDataSerializerOptions options)
+    public FormDataConverter CreateConverter(Type type, FormDataMapperOptions options)
     {
         // Resolve the value type converter
         var valueTypeConverter = options.ResolveConverter<TValue>();

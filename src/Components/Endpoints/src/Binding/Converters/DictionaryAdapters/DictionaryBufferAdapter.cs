@@ -4,7 +4,7 @@
 namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
 
 // Uses a concrete type that implements IDictionary<TKey, TValue> as a buffer.
-internal class DictionaryBufferAdapter<TDictionaryType, TKey, TValue>
+internal sealed class DictionaryBufferAdapter<TDictionaryType, TKey, TValue>
     : IDictionaryBufferAdapter<TDictionaryType, TDictionaryType, TKey, TValue>
     where TDictionaryType : IDictionary<TKey, TValue>, new()
     where TKey : IParsable<TKey>

@@ -9,9 +9,9 @@ internal class ConcreteTypeCollectionConverterFactory<TCollection, TElement>
     public static readonly ConcreteTypeCollectionConverterFactory<TCollection, TElement> Instance =
         new();
 
-    public bool CanConvert(Type _, FormDataSerializerOptions options) => true;
+    public bool CanConvert(Type _, FormDataMapperOptions options) => true;
 
-    public FormDataConverter CreateConverter(Type _, FormDataSerializerOptions options)
+    public FormDataConverter CreateConverter(Type _, FormDataMapperOptions options)
     {
         // Resolve the element type converter
         var elementTypeConverter = options.ResolveConverter<TElement>() ??

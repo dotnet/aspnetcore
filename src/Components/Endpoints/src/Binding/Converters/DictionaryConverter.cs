@@ -9,7 +9,7 @@ internal abstract class DictionaryConverter<TDictionary> : FormDataConverter<TDi
 {
 }
 
-internal class DictionaryConverter<TDictionary, TDictionaryPolicy, TBuffer, TKey, TValue> : DictionaryConverter<TDictionary>
+internal sealed class DictionaryConverter<TDictionary, TDictionaryPolicy, TBuffer, TKey, TValue> : DictionaryConverter<TDictionary>
     where TKey : IParsable<TKey>
     where TDictionaryPolicy : IDictionaryBufferAdapter<TDictionary, TBuffer, TKey, TValue>
 {
@@ -25,7 +25,7 @@ internal class DictionaryConverter<TDictionary, TDictionaryPolicy, TBuffer, TKey
     internal override bool TryRead(
         ref FormDataReader context,
         Type type,
-        FormDataSerializerOptions options,
+        FormDataMapperOptions options,
         [NotNullWhen(true)] out TDictionary? result,
         out bool found)
     {
