@@ -1,3 +1,5 @@
+<!-- Whenever altering this or other Source Build files, please include @dotnet/source-build-internal as a reviewer. -->
+
 <Project>
 
   <PropertyGroup>
