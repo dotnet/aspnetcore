@@ -1,11 +1,11 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
 
-internal class ImmutableSortedDictionaryBufferAdapter<TKey, TValue>
+internal sealed class ImmutableSortedDictionaryBufferAdapter<TKey, TValue>
     : IDictionaryBufferAdapter<ImmutableSortedDictionary<TKey, TValue>, ImmutableSortedDictionary<TKey, TValue>.Builder, TKey, TValue>
     where TKey : IParsable<TKey>
 {
