@@ -479,6 +479,14 @@ public class FormDataMapperTests
         CanDeserialize_Collection<IImmutableStack<int>, ImmutableStack<int>, int>(expected);
     }
 
+    [Fact]
+    public void CanDeserialize_Collections_CustomCollection()
+    {
+        // Arrange
+        var expected = new CustomCollection<int> { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 };
+        CanDeserialize_Collection<CustomCollection<int>, CustomCollection<int>, int>(expected);
+    }
+    
     private void CanDeserialize_Collection<TCollection, TImplementation, TElement>(TImplementation expected, bool sequenceEquals = false)
     {
         // Arrange
@@ -794,4 +802,20 @@ internal abstract class TestArrayPoolBufferAdapter
         OnReturn?.Invoke(array);
         ArrayPool<int>.Shared.Return(array);
     }
+}
+
+// Implements ICollection<T> delegating to List<T> _inner;
+internal class CustomCollection<T> : ICollection<T>
+{
+    private readonly List<T> _inner = new();
+
+    public int Count => _inner.Count;
+    public bool IsReadOnly => false;
+    public void Add(T item) => _inner.Add(item);
+    public void Clear() => _inner.Clear();
+    public bool Contains(T item) => _inner.Contains(item);
+    public bool Remove(T item) => _inner.Remove(item);
+    public IEnumerator<T> GetEnumerator() => _inner.GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() => _inner.GetEnumerator();
+    public void CopyTo(T[] array, int arrayIndex) => _inner.CopyTo(array, arrayIndex);
 }
