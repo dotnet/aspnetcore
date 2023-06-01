@@ -11,7 +11,7 @@ internal class ComplexTypeConverterFactory : IFormDataConverterFactory
 {
     internal static readonly ComplexTypeConverterFactory Instance = new();
 
-    public bool CanConvert(Type type, FormDataSerializerOptions options)
+    public bool CanConvert(Type type, FormDataMapperOptions options)
     {
         if (type.GetConstructor(Type.EmptyTypes) == null && !type.IsValueType)
         {
@@ -106,7 +106,7 @@ internal class ComplexTypeConverterFactory : IFormDataConverterFactory
     //     }
     // }
 
-    public FormDataConverter CreateConverter(Type type, FormDataSerializerOptions options)
+    public FormDataConverter CreateConverter(Type type, FormDataMapperOptions options)
     {
         if (Activator.CreateInstance(typeof(ComplexTypeExpressionConverterFactory<>).MakeGenericType(type))
             is not ComplexTypeExpressionConverterFactory factory)

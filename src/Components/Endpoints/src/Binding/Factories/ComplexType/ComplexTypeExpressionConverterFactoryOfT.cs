@@ -6,15 +6,15 @@ using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
 
-internal class ComplexTypeExpressionConverterFactory<T> : ComplexTypeExpressionConverterFactory
+internal sealed class ComplexTypeExpressionConverterFactory<T> : ComplexTypeExpressionConverterFactory
 {
-    internal override CompiledComplexTypeConverter<T> CreateConverter(Type type, FormDataSerializerOptions options)
+    internal override CompiledComplexTypeConverter<T> CreateConverter(Type type, FormDataMapperOptions options)
     {
         var body = CreateConverterBody(type, options);
         return new CompiledComplexTypeConverter<T>(body);
     }
 
-    private CompiledComplexTypeConverter<T>.ConverterDelegate CreateConverterBody(Type type, FormDataSerializerOptions options)
+    private CompiledComplexTypeConverter<T>.ConverterDelegate CreateConverterBody(Type type, FormDataMapperOptions options)
     {
         var properties = PropertyHelper.GetVisibleProperties(type);
 
@@ -62,7 +62,7 @@ internal class ComplexTypeExpressionConverterFactory<T> : ComplexTypeExpressionC
                 propertyConverterVar,
                 Expression.Call(
                     optionsParam,
-                    nameof(FormDataSerializerOptions.ResolveConverter),
+                    nameof(FormDataMapperOptions.ResolveConverter),
                     new[] { property.PropertyType },
                     Array.Empty<Expression>()));
             body.Add(propertyConverter);
@@ -122,7 +122,7 @@ internal class ComplexTypeExpressionConverterFactory<T> : ComplexTypeExpressionC
         }
     }
 
-    private CompiledComplexTypeConverter<T>.ConverterDelegate CreateConverterFunction(
+    private static CompiledComplexTypeConverter<T>.ConverterDelegate CreateConverterFunction(
         List<ParameterExpression> parameters,
         List<ParameterExpression> variables,
         List<Expression> body)
@@ -139,7 +139,7 @@ internal class ComplexTypeExpressionConverterFactory<T> : ComplexTypeExpressionC
         return new(
             Expression.Parameter(typeof(FormDataReader).MakeByRefType(), "reader"),
             Expression.Parameter(typeof(Type), "type"),
-            Expression.Parameter(typeof(FormDataSerializerOptions), "options"),
+            Expression.Parameter(typeof(FormDataMapperOptions), "options"),
             Expression.Parameter(typeof(T).MakeByRefType(), "result"),
             Expression.Parameter(typeof(bool).MakeByRefType(), "foundValue"));
     }
@@ -150,5 +150,4 @@ internal class ComplexTypeExpressionConverterFactory<T> : ComplexTypeExpressionC
         ParameterExpression OptionsParam,
         ParameterExpression ResultParam,
         ParameterExpression FoundValueParam);
-
 }
