@@ -742,10 +742,10 @@ public class FormDataMapperTests
             ["ZipCode"] = "98052",
         };
         var reader = new FormDataReader(data, CultureInfo.InvariantCulture);
-        var options = new FormDataSerializerOptions();
+        var options = new FormDataMapperOptions();
 
         // Act
-        var result = FormDataDeserializer.Deserialize<Address>(reader, options);
+        var result = FormDataMapper.Map<Address>(reader, options);
 
         // Assert
         Assert.Equal(expected.City, result.City);
@@ -768,10 +768,10 @@ public class FormDataMapperTests
         };
 
         var reader = new FormDataReader(data, CultureInfo.InvariantCulture);
-        var options = new FormDataSerializerOptions();
+        var options = new FormDataMapperOptions();
 
         // Act
-        var result = FormDataDeserializer.Deserialize<Customer>(reader, options);
+        var result = FormDataMapper.Map<Customer>(reader, options);
 
         // Assert
         Assert.NotNull(result);
@@ -779,6 +779,37 @@ public class FormDataMapperTests
         Assert.Equal(expected.Name, result.Name);
         Assert.Equal(expected.Email, result.Email);
         Assert.Equal(expected.IsPreferred, result.IsPreferred);
+    }
+
+    [Fact]
+    public void CanDeserialize_ComplexReferenceType_Inheritance()
+    {
+        // Arrange
+        var expected = new FrequentCustomer() { Age = 20, Name = "John Doe", Email = "john@example.com"        , IsPreferred = true, TotalVisits = 10, PreferredStore = "Redmond", MonthlyFrequency = 0.8 };
+        var data = new Dictionary<string, StringValues>()
+        {
+            ["Age"] = "20",
+            ["Name"] = "John Doe",
+            ["Email"] = "john@example.com",
+            ["IsPreferred"] = "true",
+            ["TotalVisits"] = "10",
+            ["PreferredStore"] = "Redmond",
+            ["MonthlyFrequency"] = "0.8",
+        };
+
+        var reader = new FormDataReader(data, CultureInfo.InvariantCulture);
+        var options = new FormDataMapperOptions();
+
+        // Act
+        var result = FormDataMapper.Map<FrequentCustomer>(reader, options);
+        Assert.NotNull(result);
+        Assert.Equal(expected.Age, result.Age);
+        Assert.Equal(expected.Name, result.Name);
+        Assert.Equal(expected.Email, result.Email);
+        Assert.Equal(expected.IsPreferred, result.IsPreferred);
+        Assert.Equal(expected.TotalVisits, result.TotalVisits);
+        Assert.Equal(expected.PreferredStore, result.PreferredStore);
+        Assert.Equal(expected.MonthlyFrequency, result.MonthlyFrequency);
     }
 
     public static TheoryData<string, Type, object> NullableBasicTypes
@@ -1077,6 +1108,15 @@ internal class Customer
     public string Email { get; set; }
     public int Age { get; set; }
     public bool IsPreferred { get; set; }
+}
+
+internal class FrequentCustomer : Customer
+{
+    public int TotalVisits { get; set; }
+
+    public string PreferredStore { get; set; }
+
+    public double MonthlyFrequency { get; set; }
 }
 
 // Implements ICollection<T> delegating to List<T> _inner;
