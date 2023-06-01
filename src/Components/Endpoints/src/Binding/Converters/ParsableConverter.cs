@@ -15,7 +15,7 @@ internal sealed class ParsableConverter<T> : FormDataConverter<T>, ISingleValueC
         else
         {
             result = default;
-            return true;
+            return false;
         }
     }
 }
