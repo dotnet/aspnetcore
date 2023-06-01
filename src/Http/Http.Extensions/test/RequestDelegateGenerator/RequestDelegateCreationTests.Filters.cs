@@ -22,6 +22,7 @@ app.MapGet("/", (HttpContext httpContext, string name) =>
 })
 .AddEndpointFilterFactory((routeHandlerContext, next) => async (context) =>
 {
+    context.HttpContext.Items["filterInvoked"] = true;
     context.Arguments[1] = context.Arguments[1] != null ? $"{((string)context.Arguments[1]!)}Prefix" : "NULL";
     return await next(context);
 });
@@ -34,6 +35,7 @@ app.MapGet("/", (HttpContext httpContext, string name) =>
 
         // Assert
         Assert.Null(httpContext.Items["invoked"]);
+        Assert.True(httpContext.Items["filterInvoked"] as bool?);
         await VerifyResponseBodyAsync(httpContext, string.Empty, StatusCodes.Status400BadRequest);
     }
 
@@ -49,6 +51,7 @@ app.MapGet("/", (HttpContext httpContext, string name) =>
 })
 .AddEndpointFilterFactory((routeHandlerContext, next) => async (context) =>
 {
+    context.HttpContext.Items["filterInvoked"] = true;
     return await next(context);
 });
 """;
@@ -66,6 +69,7 @@ app.MapGet("/", (HttpContext httpContext, string name) =>
 
         // Assert
         Assert.True(httpContext.Items["invoked"] as bool?);
+        Assert.True(httpContext.Items["filterInvoked"] as bool?);
         await VerifyResponseBodyAsync(httpContext, "Hello, TestName!");
     }
 
