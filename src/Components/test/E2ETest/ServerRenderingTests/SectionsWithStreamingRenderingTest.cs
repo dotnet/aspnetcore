@@ -31,7 +31,7 @@ public class SectionsWithStreamingRenderingTest : ServerTestBase<BasicTestAppSer
 
         Browser.Equal("Sections with Streaming", () => Browser.Exists(By.TagName("h1")).Text);
 
-        // Second SectionContent overrides the content for SectionOutlet
+        // Second SectionContent overrides the content and StreamingRendering attribute for SectionOutlet
 
         Browser.DoesNotExist(By.Id("first-section-content"));
 

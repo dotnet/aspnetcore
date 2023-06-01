@@ -46,7 +46,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             {
                 endpoints.MapRazorComponents<TRootComponent>();
 
-                StreamingRendering.MapEndpoints(endpoints);
+                NotEnabledStreamingRenderingComponent.MapEndpoints(endpoints);
                 StreamingRenderingForm.MapEndpoints(endpoints);
             });
         });

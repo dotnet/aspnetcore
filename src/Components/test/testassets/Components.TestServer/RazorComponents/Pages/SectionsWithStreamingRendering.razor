@@ -1,17 +1,21 @@
 ﻿@page "/sections-with-streaming"
 @using Microsoft.AspNetCore.Components.Sections
 
-
 <h1>Sections with Streaming</h1>
 
-<SectionOutlet SectionName="test" />
+<DisableStreaming>
+    <SectionOutlet SectionName="test" />
+</DisableStreaming>
 
-<SectionContent SectionName="test">
-    <p id="first-section-content">First Section Content</p>
-</SectionContent>
+<DisableStreaming>
+    <SectionContent SectionName="test">
+        <p id="first-section-content">First Section Content</p>
+    </SectionContent>
+</DisableStreaming>
 
-<SectionContent SectionName="test">
-    <StreamingRendering />
-</SectionContent>
-
+<EnableStreaming>
+    <SectionContent SectionName="test">
+        <NotEnabledStreamingRenderingComponent />
+    </SectionContent>
+</EnableStreaming>
 
