@@ -266,7 +266,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         {
                             if (ic.HttpContext.Response.StatusCode == 400)
                             {
-                                return ValueTask.FromResult<object?>(Results.Empty);
+                                return (object?)Results.Empty;
                             }
                             var result = await handler();
                             return (object?)result;
@@ -327,7 +327,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         {
                             if (ic.HttpContext.Response.StatusCode == 400)
                             {
-                                return ValueTask.FromResult<object?>(Results.Empty);
+                                return (object?)Results.Empty;
                             }
                             var result = await handler();
                             return (object?)result;
