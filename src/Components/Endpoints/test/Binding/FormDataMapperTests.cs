@@ -812,6 +812,83 @@ public class FormDataMapperTests
         Assert.Equal(expected.MonthlyFrequency, result.MonthlyFrequency);
     }
 
+    [Fact]
+    public void CanDeserialize_ComplexReferenceType_RecursiveMapping()
+    {
+        // Arrange
+        var expected = new Order()
+        {
+            Id = 10,
+            BillingAddress = new Address() { City = "Redmond", Street = "1 Microsoft Way", Country = "United States", ZipCode = 98052 },
+            ShippingAddress = new Address() { City = "Redmond", Street = "1 Microsoft Way", Country = "United States", ZipCode = 98052 },
+            Total = 100m,
+            Lines = new List<OrderLine>()
+            {
+                new OrderLine() { Id = 1, Price = 10m, Product = "Product 1", Quantity = 10 },
+                new OrderLine() { Id = 2, Price = 20m, Product = "Product 2", Quantity = 20 },
+                new OrderLine() { Id = 3, Price = 30m, Product = "Product 3", Quantity = 30 },
+            },
+        };
+
+        var data = new Dictionary<string, StringValues>()
+        {
+            ["Id"] = "10",
+            ["BillingAddress.City"] = "Redmond",
+            ["BillingAddress.Country"] = "United States",
+            ["BillingAddress.Street"] = "1 Microsoft Way",
+            ["BillingAddress.ZipCode"] = "98052",
+            ["ShippingAddress.City"] = "Redmond",
+            ["ShippingAddress.Country"] = "United States",
+            ["ShippingAddress.Street"] = "1 Microsoft Way",
+            ["ShippingAddress.ZipCode"] = "98052",
+            ["Total"] = "100",
+            ["Lines[0]Id"] = "1",
+            ["Lines[0]Price"] = "10",
+            ["Lines[0]Product"] = "Product 1",
+            ["Lines[0]Quantity"] = "10",
+            ["Lines[1]Id"] = "2",
+            ["Lines[1]Price"] = "20",
+            ["Lines[1]Product"] = "Product 2",
+            ["Lines[1]Quantity"] = "20",
+            ["Lines[2]Id"] = "3",
+            ["Lines[2]Price"] = "30",
+            ["Lines[2]Product"] = "Product 3",
+            ["Lines[2]Quantity"] = "30",
+        };
+
+        var reader = new FormDataReader(data, CultureInfo.InvariantCulture);
+        var options = new FormDataMapperOptions();
+
+        // Act
+        var result = FormDataMapper.Map<Order>(reader, options);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(expected.Id, result.Id);
+        Assert.Equal(expected.Total, result.Total);
+        Assert.Equal(expected.BillingAddress.City, result.BillingAddress.City);
+        Assert.Equal(expected.BillingAddress.Street, result.BillingAddress.Street);
+        Assert.Equal(expected.BillingAddress.Country, result.BillingAddress.Country);
+        Assert.Equal(expected.BillingAddress.ZipCode, result.BillingAddress.ZipCode);
+        Assert.Equal(expected.ShippingAddress.City, result.ShippingAddress.City);
+        Assert.Equal(expected.ShippingAddress.Street, result.ShippingAddress.Street);
+        Assert.Equal(expected.ShippingAddress.Country, result.ShippingAddress.Country);
+        Assert.Equal(expected.ShippingAddress.ZipCode, result.ShippingAddress.ZipCode);
+        Assert.Equal(expected.Lines.Count, result.Lines.Count);
+        Assert.Equal(expected.Lines[0].Id, result.Lines[0].Id);
+        Assert.Equal(expected.Lines[0].Price, result.Lines[0].Price);
+        Assert.Equal(expected.Lines[0].Product, result.Lines[0].Product);
+        Assert.Equal(expected.Lines[0].Quantity, result.Lines[0].Quantity);
+        Assert.Equal(expected.Lines[1].Id, result.Lines[1].Id);
+        Assert.Equal(expected.Lines[1].Price, result.Lines[1].Price);
+        Assert.Equal(expected.Lines[1].Product, result.Lines[1].Product);
+        Assert.Equal(expected.Lines[1].Quantity, result.Lines[1].Quantity);
+        Assert.Equal(expected.Lines[2].Id, result.Lines[2].Id);
+        Assert.Equal(expected.Lines[2].Price, result.Lines[2].Price);
+        Assert.Equal(expected.Lines[2].Product, result.Lines[2].Product);
+        Assert.Equal(expected.Lines[2].Quantity, result.Lines[2].Quantity);
+    }
+
     public static TheoryData<string, Type, object> NullableBasicTypes
     {
         get
@@ -1117,6 +1194,27 @@ internal class FrequentCustomer : Customer
     public string PreferredStore { get; set; }
 
     public double MonthlyFrequency { get; set; }
+}
+
+internal class Order
+{
+    public int Id { get; set; }
+
+    public Address ShippingAddress { get; set; }
+
+    public Address BillingAddress { get; set; }
+
+    public IList<OrderLine> Lines { get; set; }
+
+    public decimal Total { get; set; }
+}
+
+public class OrderLine
+{
+    public int Id { get; set; }
+    public string Product { get; set; }
+    public int Quantity { get; set; }
+    public decimal Price { get; set; }
 }
 
 // Implements ICollection<T> delegating to List<T> _inner;
