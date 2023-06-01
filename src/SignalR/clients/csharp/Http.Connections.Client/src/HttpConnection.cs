@@ -6,12 +6,12 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Abstractions;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Connections.Client.Internal;
 using Microsoft.AspNetCore.Http.Features;
@@ -313,7 +313,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
             if (_httpConnectionOptions.Transports == HttpTransportType.WebSockets)
             {
                 Log.StartingTransport(_logger, _httpConnectionOptions.Transports, uri);
-                await StartTransport(uri, _httpConnectionOptions.Transports, transferFormat, cancellationToken).ConfigureAwait(false);
+                await StartTransport(uri, _httpConnectionOptions.Transports, transferFormat, cancellationToken, useAck: false).ConfigureAwait(false);
             }
             else
             {
@@ -398,12 +398,14 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
                         // The negotiation response gets cleared in the fallback scenario.
                         if (negotiationResponse == null)
                         {
+                            // Temporary until other transports work
+                            _httpConnectionOptions.UseAcks = transportType == HttpTransportType.WebSockets ? _httpConnectionOptions.UseAcks : false;
                             negotiationResponse = await GetNegotiationResponseAsync(uri, cancellationToken).ConfigureAwait(false);
                             connectUrl = CreateConnectUrl(uri, negotiationResponse.ConnectionToken);
                         }
 
                         Log.StartingTransport(_logger, transportType, uri);
-                        await StartTransport(connectUrl, transportType, transferFormat, cancellationToken).ConfigureAwait(false);
+                        await StartTransport(connectUrl, transportType, transferFormat, cancellationToken, negotiationResponse.UseAcking).ConfigureAwait(false);
                         break;
                     }
                 }
@@ -455,6 +457,11 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
                 uri = Utils.AppendQueryString(urlBuilder.Uri, $"negotiateVersion={_protocolVersionNumber}");
             }
 
+            if (_httpConnectionOptions.UseAcks)
+            {
+                uri = Utils.AppendQueryString(uri, "useAck=true");
+            }
+
             using (var request = new HttpRequestMessage(HttpMethod.Post, uri))
             {
 #if NET5_0_OR_GREATER
@@ -500,10 +507,10 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
         return Utils.AppendQueryString(url, $"id={connectionId}");
     }
 
-    private async Task StartTransport(Uri connectUrl, HttpTransportType transportType, TransferFormat transferFormat, CancellationToken cancellationToken)
+    private async Task StartTransport(Uri connectUrl, HttpTransportType transportType, TransferFormat transferFormat, CancellationToken cancellationToken, bool useAck)
     {
         // Construct the transport
-        var transport = _transportFactory.CreateTransport(transportType);
+        var transport = _transportFactory.CreateTransport(transportType, useAck);
 
         // Start the transport, giving it one end of the pipe
         try
@@ -523,6 +530,11 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
 
         // We successfully started, set the transport properties (we don't want to set these until the transport is definitely running).
         _transport = transport;
+
+        if (useAck && _transport is IReconnectFeature reconnectFeature)
+        {
+            Features.Set(reconnectFeature);
+        }
 
         Log.TransportStarted(_logger, transportType);
     }

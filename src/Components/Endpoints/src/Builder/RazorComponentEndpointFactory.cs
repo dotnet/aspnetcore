@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Components.Discovery;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
@@ -17,7 +18,7 @@ internal class RazorComponentEndpointFactory
 #pragma warning restore CA1822 // It's a singleton
         List<Endpoint> endpoints,
         Type rootComponent,
-        PageDefinition pageDefinition,
+        PageComponentInfo pageDefinition,
         IReadOnlyList<Action<EndpointBuilder>> conventions,
         IReadOnlyList<Action<EndpointBuilder>> finallyConventions)
     {

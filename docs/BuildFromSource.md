@@ -28,15 +28,7 @@ To get started, fork this repo and then clone it locally. This workflow assumes 
 
     > :warning: All Windows commands below assume a PowerShell prompt.
 
-The steps you follow next depend on your preferred development environment:
-
-- [Visual Studio on Windows](#visual-studio-on-windows)
-- [Visual Studio Code (VS Code) or other editors on Windows, Linux, Mac](#visual-studio-code-or-other-editor-on-windows-linux-mac)
-- [Codespaces on GitHub](#codespaces-on-github)
-
-## Visual Studio on Windows
-
-1. To install Visual Studio on your machine, use the official installer script in the repo.
+1. If you're on Windows, install Visual Studio (even if you aren't using it to build) to get the required C++ components and native tools. To install Visual Studio on your machine, use the official installer script in the repo.
 
     > :warning: Even if you have Visual Studio installed on your machine, we recommend running this installation script to make sure that the correct Visual Studio components are installed.
     >
@@ -50,6 +42,14 @@ The steps you follow next depend on your preferred development environment:
     The preview channel is currently required as it supports the preview version of the SDK that is used.
 
     If you are seeing errors similar to `the imported project "....\aspnetcore.tools\msbuild\17.1.0\tools\MSBuild\Microsoft\VC\v170\Microsoft.Cpp.Default.props" was not found`, try installing/updating Visual Studio as above.
+
+The steps you follow next depend on your preferred development environment:
+
+- [Visual Studio on Windows](#visual-studio-on-windows)
+- [Visual Studio Code (VS Code) or other editors on Windows, Linux, Mac](#visual-studio-code-or-other-editor-on-windows-linux-mac)
+- [Codespaces on GitHub](#codespaces-on-github)
+
+## Visual Studio on Windows
 
 1. Before you open project in Visual Studio, install the required dependencies and set up the repo by running the `restore.cmd` script in the root of the repo:
 

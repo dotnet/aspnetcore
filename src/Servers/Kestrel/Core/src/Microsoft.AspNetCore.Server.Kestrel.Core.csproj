@@ -20,6 +20,8 @@
     <Compile Include="$(KestrelSharedSourceRoot)\HPackHeaderWriter.cs" Link="Internal\Http2\HPackHeaderWriter.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)\Http2HeadersEnumerator.cs" Link="Internal\Http2\Http2HeadersEnumerator.cs" />
     <Compile Include="$(SharedSourceRoot)CertificateGeneration\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)UrlDecoder\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)InternalHeaderNames.cs" Link="Shared\InternalHeaderNames.cs"/>
     <Compile Include="$(SharedSourceRoot)Buffers\**\*.cs" LinkBase="Internal\Infrastructure\PipeWriterHelpers" />
     <Compile Include="$(SharedSourceRoot)runtime\*.cs" Link="Shared\runtime\%(Filename)%(Extension)" />
@@ -37,6 +39,7 @@
     <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.WebUtilities" />
     <Reference Include="Microsoft.Extensions.Configuration.Binder" />
+    <Reference Include="Microsoft.Extensions.Diagnostics" />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <Reference Include="Microsoft.Extensions.Options" />
     <Reference Include="Microsoft.Net.Http.Headers" />

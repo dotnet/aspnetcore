@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Components;
 namespace TestServer;
 
 public class RazorComponentEndpointsStartup<TRootComponent>
-    where TRootComponent : IRazorComponentApplication<TRootComponent>
 {
     public RazorComponentEndpointsStartup(IConfiguration configuration)
     {

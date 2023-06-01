@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Components.Discovery;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 
@@ -17,7 +18,7 @@ public class RazorComponentEndpointFactoryTest
         var factory = new RazorComponentEndpointFactory();
         var conventions = new List<Action<EndpointBuilder>>();
         var finallyConventions = new List<Action<EndpointBuilder>>();
-        factory.AddEndpoints(endpoints, typeof(App), new PageDefinition(
+        factory.AddEndpoints(endpoints, typeof(App), new PageComponentInfo(
             "App",
             typeof(App),
             "/",
@@ -56,7 +57,7 @@ public class RazorComponentEndpointFactoryTest
         factory.AddEndpoints(
             endpoints,
             typeof(App),
-            new PageDefinition(
+            new PageComponentInfo(
                 "App",
                 typeof(App),
                 "/",
@@ -83,7 +84,7 @@ public class RazorComponentEndpointFactoryTest
         factory.AddEndpoints(
             endpoints,
             typeof(App),
-            new PageDefinition(
+            new PageComponentInfo(
                 "App",
                 typeof(App),
                 "/",
@@ -110,7 +111,7 @@ public class RazorComponentEndpointFactoryTest
         factory.AddEndpoints(
             endpoints,
             typeof(App),
-            new PageDefinition(
+            new PageComponentInfo(
                 "App",
                 typeof(App),
                 "/",
@@ -141,7 +142,7 @@ public class RazorComponentEndpointFactoryTest
         factory.AddEndpoints(
             endpoints,
             typeof(App),
-            new PageDefinition(
+            new PageComponentInfo(
                 "App",
                 typeof(App),
                 "/",

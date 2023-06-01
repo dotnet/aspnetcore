@@ -146,6 +146,7 @@ namespace Microsoft.AspNetCore.Http.Generated
     using MetadataPopulator = System.Func<System.Reflection.MethodInfo, Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions?, Microsoft.AspNetCore.Http.RequestDelegateMetadataResult>;
     using RequestDelegateFactoryFunc = System.Func<System.Delegate, Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions, Microsoft.AspNetCore.Http.RequestDelegateMetadataResult?, Microsoft.AspNetCore.Http.RequestDelegateResult>;
 
+    %GENERATEDCODEATTRIBUTE%
     file static class GeneratedRouteBuilderExtensionsCore
     {
 
@@ -163,12 +164,14 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
                     Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
+                    Debug.Assert(options.EndpointBuilder.ApplicationServices != null, "ApplicationServices not found.");
+                    Debug.Assert(options.EndpointBuilder.FilterFactories != null, "FilterFactories not found.");
                     var handler = (System.Action<global::Microsoft.AspNetCore.Http.Generators.Tests.ParameterListWitDefaultValue>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
                     var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
                     var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
 
-                    if (options?.EndpointBuilder?.FilterFactories.Count > 0)
+                    if (options.EndpointBuilder.FilterFactories.Count > 0)
                     {
                         filteredInvocation = GeneratedRouteBuilderExtensionsCore.BuildFilterDelegate(ic =>
                         {
@@ -195,7 +198,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         }
                         var Value_raw = (string?)httpContext.Request.RouteValues["Value"];
                         var Value_temp = (string?)Value_raw;
-                        int Value_parsed_temp = default;
+                        global::System.Int32 Value_parsed_temp = default;
                         if (GeneratedRouteBuilderExtensionsCore.TryParseExplicit<int>(Value_temp!, CultureInfo.InvariantCulture, out var Value_temp_parsed_non_nullable))
                         {
                             Value_parsed_temp = Value_temp_parsed_non_nullable;
@@ -233,7 +236,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         }
                         var Value_raw = (string?)httpContext.Request.RouteValues["Value"];
                         var Value_temp = (string?)Value_raw;
-                        int Value_parsed_temp = default;
+                        global::System.Int32 Value_parsed_temp = default;
                         if (GeneratedRouteBuilderExtensionsCore.TryParseExplicit<int>(Value_temp!, CultureInfo.InvariantCulture, out var Value_temp_parsed_non_nullable))
                         {
                             Value_parsed_temp = Value_temp_parsed_non_nullable;
@@ -274,13 +277,15 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
                     Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
+                    Debug.Assert(options.EndpointBuilder.ApplicationServices != null, "ApplicationServices not found.");
+                    Debug.Assert(options.EndpointBuilder.FilterFactories != null, "FilterFactories not found.");
                     var handler = (System.Action<global::Microsoft.AspNetCore.Http.Generators.Tests.ParameterListRecordStruct>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
                     var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
                     var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
-                    var Value_RouteOrQueryResolver = GeneratedRouteBuilderExtensionsCore.ResolveFromRouteOrQuery("Value", options?.RouteParameterNames);
+                    var Value_RouteOrQueryResolver = GeneratedRouteBuilderExtensionsCore.ResolveFromRouteOrQuery("Value", options.RouteParameterNames);
 
-                    if (options?.EndpointBuilder?.FilterFactories.Count > 0)
+                    if (options.EndpointBuilder.FilterFactories.Count > 0)
                     {
                         filteredInvocation = GeneratedRouteBuilderExtensionsCore.BuildFilterDelegate(ic =>
                         {
@@ -378,12 +383,14 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
                     Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
+                    Debug.Assert(options.EndpointBuilder.ApplicationServices != null, "ApplicationServices not found.");
+                    Debug.Assert(options.EndpointBuilder.FilterFactories != null, "FilterFactories not found.");
                     var handler = (System.Action<global::Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithHttpContext>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
                     var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
                     var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
 
-                    if (options?.EndpointBuilder?.FilterFactories.Count > 0)
+                    if (options.EndpointBuilder.FilterFactories.Count > 0)
                     {
                         filteredInvocation = GeneratedRouteBuilderExtensionsCore.BuildFilterDelegate(ic =>
                         {
@@ -455,6 +462,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
                     Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
+                    Debug.Assert(options.EndpointBuilder.ApplicationServices != null, "ApplicationServices not found.");
+                    Debug.Assert(options.EndpointBuilder.FilterFactories != null, "FilterFactories not found.");
                     var handler = (System.Func<global::Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithImplicitFromBody, global::System.String>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
                     var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
@@ -462,7 +471,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     var serviceProviderIsService = serviceProvider?.GetService<IServiceProviderIsService>();
                     var Todo_JsonBodyOrServiceResolver = ResolveJsonBodyOrService<global::Microsoft.AspNetCore.Http.Generators.Tests.TodoStruct>(logOrThrowExceptionHelper, "TodoStruct", "Todo", serviceProviderIsService);
 
-                    if (options?.EndpointBuilder?.FilterFactories.Count > 0)
+                    if (options.EndpointBuilder.FilterFactories.Count > 0)
                     {
                         filteredInvocation = GeneratedRouteBuilderExtensionsCore.BuildFilterDelegate(ic =>
                         {
@@ -545,6 +554,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
                     Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
+                    Debug.Assert(options.EndpointBuilder.ApplicationServices != null, "ApplicationServices not found.");
+                    Debug.Assert(options.EndpointBuilder.FilterFactories != null, "FilterFactories not found.");
                     var handler = (System.Action<global::Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithMetadataType>)del;
                     EndpointFilterDelegate? filteredInvocation = null;
                     var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
@@ -552,7 +563,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     var serviceProviderIsService = serviceProvider?.GetService<IServiceProviderIsService>();
                     var Value_JsonBodyOrServiceResolver = ResolveJsonBodyOrService<global::Microsoft.AspNetCore.Http.Generators.Tests.AddsCustomParameterMetadataAsProperty>(logOrThrowExceptionHelper, "AddsCustomParameterMetadataAsProperty", "Value", serviceProviderIsService);
 
-                    if (options?.EndpointBuilder?.FilterFactories.Count > 0)
+                    if (options.EndpointBuilder.FilterFactories.Count > 0)
                     {
                         filteredInvocation = GeneratedRouteBuilderExtensionsCore.BuildFilterDelegate(ic =>
                         {
@@ -756,6 +767,7 @@ namespace Microsoft.AspNetCore.Http.Generated
 
     }
 
+    %GENERATEDCODEATTRIBUTE%
     file sealed class GeneratedAcceptsMetadata : IAcceptsMetadata
     {
         public GeneratedAcceptsMetadata(string[] contentTypes)
@@ -781,6 +793,7 @@ namespace Microsoft.AspNetCore.Http.Generated
 
         public bool IsOptional { get; }
     }
+    %GENERATEDCODEATTRIBUTE%
     file sealed class GeneratedProducesResponseTypeMetadata : IProducesResponseTypeMetadata
     {
         public GeneratedProducesResponseTypeMetadata(Type? type, int statusCode, string[] contentTypes)
@@ -797,6 +810,7 @@ namespace Microsoft.AspNetCore.Http.Generated
         public IEnumerable<string> ContentTypes { get; }
     }
 
+    %GENERATEDCODEATTRIBUTE%
     file static class GeneratedMetadataConstants
     {
         public static readonly string[] JsonContentType = new [] { "application/json" };
@@ -805,6 +819,7 @@ namespace Microsoft.AspNetCore.Http.Generated
         public static readonly string[] FormContentType = new[] { "multipart/form-data", "application/x-www-form-urlencoded" };
     }
 
+    %GENERATEDCODEATTRIBUTE%
     file sealed class PropertyAsParameterInfo : ParameterInfo
     {
         private readonly PropertyInfo _underlyingProperty;
@@ -897,6 +912,7 @@ namespace Microsoft.AspNetCore.Http.Generated
         public new bool IsOptional { get; }
     }
 
+    %GENERATEDCODEATTRIBUTE%
     file sealed class LogOrThrowExceptionHelper
     {
         private readonly ILogger? _rdgLogger;

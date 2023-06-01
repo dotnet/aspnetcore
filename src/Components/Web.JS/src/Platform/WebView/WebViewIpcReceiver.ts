@@ -8,6 +8,7 @@ import { attachRootComponentToElement, renderBatch } from '../../Rendering/Rende
 import { setApplicationIsTerminated, tryDeserializeMessage } from './WebViewIpcCommon';
 import { sendRenderCompleted } from './WebViewIpcSender';
 import { internalFunctions as navigationManagerFunctions } from '../../Services/NavigationManager';
+import { dispatcher } from '../../Boot.WebView';
 
 export function startIpcReceiver(): void {
   const messageHandlers = {
@@ -32,9 +33,9 @@ export function startIpcReceiver(): void {
       showErrorNotification();
     },
 
-    'BeginInvokeJS': DotNet.jsCallDispatcher.beginInvokeJSFromDotNet,
+    'BeginInvokeJS': dispatcher.beginInvokeJSFromDotNet,
 
-    'EndInvokeDotNet': DotNet.jsCallDispatcher.endInvokeDotNetFromJS,
+    'EndInvokeDotNet': dispatcher.endInvokeDotNetFromJS,
 
     'SendByteArrayToJS': receiveBase64ByteArray,
 
@@ -60,7 +61,7 @@ export function startIpcReceiver(): void {
 
 function receiveBase64ByteArray(id: number, base64Data: string) {
   const data = base64ToArrayBuffer(base64Data);
-  DotNet.jsCallDispatcher.receiveByteArray(id, data);
+  dispatcher.receiveByteArray(id, data);
 }
 
 // https://stackoverflow.com/a/21797381

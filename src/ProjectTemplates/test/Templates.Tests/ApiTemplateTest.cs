@@ -73,7 +73,10 @@ public class ApiTemplateTest : LoggedTest
             : new[] { "http", "IIS Express" };
         await project.VerifyLaunchSettings(expectedLaunchProfileNames);
 
-        await project.VerifyHasProperty("InvariantGlobalization", "true");
+        if (nativeAot)
+        {
+            await project.VerifyHasProperty("InvariantGlobalization", "true");
+        }
 
         // Avoid the F# compiler. See https://github.com/dotnet/aspnetcore/issues/14022
         if (languageOverride != null)

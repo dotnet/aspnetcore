@@ -45,7 +45,7 @@ public class ExceptionHandlerMiddlewareTest
                 .UseTestServer()
                 .Configure(app =>
                 {
-                    app.UseDeveloperExceptionPage();
+                    app.UseExceptionHandler();
                     app.Run(context =>
                     {
                         throw new Exception("Test exception");

@@ -2,10 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using System.Globalization;
 using System.IO.Pipelines;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Http;
 
@@ -154,8 +154,7 @@ public abstract class HttpRequest
 
     private string DebuggerToString()
     {
-        return $"{Protocol} {Method} {Scheme}://{Host.Value}{PathBase.Value}{Path.Value}{QueryString.Value} {ContentType}"
-            + $" Length = {ContentLength?.ToString(CultureInfo.InvariantCulture) ?? "(null)"}";
+        return HttpContextDebugFormatter.RequestToString(this);
     }
 
     private sealed class HttpRequestDebugView(HttpRequest request)

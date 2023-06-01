@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Components.Binding;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,6 +19,7 @@ public class CascadingModelBinderTest
         var serviceCollection = new ServiceCollection();
         _navigationManager = new TestNavigationManager();
         serviceCollection.AddSingleton<NavigationManager>(_navigationManager);
+        serviceCollection.AddSingleton<IFormValueSupplier, TestFormValueSupplier>();
         var services = serviceCollection.BuildServiceProvider();
         _renderer = new TestRenderer(services);
     }
@@ -327,5 +329,19 @@ public class CascadingModelBinderTest
 
         protected override void BuildRenderTree(RenderTreeBuilder builder)
             => _renderFragment(builder);
+    }
+
+    private class TestFormValueSupplier : IFormValueSupplier
+    {
+        public bool CanBind(string formName, Type valueType)
+        {
+            return false;
+        }
+
+        public bool TryBind(string formName, Type valueType, [NotNullWhen(true)] out object boundValue)
+        {
+            boundValue = null;
+            return false;
+        }
     }
 }

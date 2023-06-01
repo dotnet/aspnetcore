@@ -17,8 +17,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree;
 /// </summary>
 public abstract class WebRenderer : Renderer
 {
-    private readonly IServiceProvider _serviceProvider;
     private readonly DotNetObjectReference<WebRendererInteropMethods> _interopMethodsReference;
+    private readonly Task<int> _attachTask;
 
     /// <summary>
     /// Constructs an instance of <see cref="WebRenderer"/>.
@@ -34,25 +34,50 @@ public abstract class WebRenderer : Renderer
         JSComponentInterop jsComponentInterop)
         : base(serviceProvider, loggerFactory)
     {
-        _serviceProvider = serviceProvider;
         _interopMethodsReference = DotNetObjectReference.Create(
             new WebRendererInteropMethods(this, jsonOptions, jsComponentInterop));
 
         // Supply a DotNetObjectReference to JS that it can use to call us back for events etc.
         jsComponentInterop.AttachToRenderer(this);
-        var jsRuntime = _serviceProvider.GetRequiredService<IJSRuntime>();
-        jsRuntime.InvokeVoidAsync(
+        var jsRuntime = serviceProvider.GetRequiredService<IJSRuntime>();
+        _attachTask = jsRuntime.InvokeAsync<int>(
             "Blazor._internal.attachWebRendererInterop",
-            RendererId,
             _interopMethodsReference,
             jsComponentInterop.Configuration.JSComponentParametersByIdentifier,
-            jsComponentInterop.Configuration.JSComponentIdentifiersByInitializer).Preserve();
+            jsComponentInterop.Configuration.JSComponentIdentifiersByInitializer)
+            .AsTask();
     }
 
     /// <summary>
     /// Gets the identifier for the renderer.
     /// </summary>
-    protected int RendererId { get; init; } // Only used on WebAssembly. Will be zero in other cases.
+    /// <remarks>
+    /// Accessing <see cref="RendererId"/> before the renderer is attached will throw an <see cref="InvalidOperationException"/>. Call
+    /// <see cref="WaitUntilAttachedAsync"/> to wait until the renderer gets attached to the browser.
+    /// </remarks>
+    protected int RendererId
+    {
+        get
+        {
+            if (!_attachTask.IsCompletedSuccessfully)
+            {
+                throw new InvalidOperationException($"'{nameof(RendererId)}' does not have a value until {nameof(WaitUntilAttachedAsync)} completes successfully.");
+            }
+
+            return _attachTask.Result;
+        }
+
+        [Obsolete($"The renderer ID gets assigned automatically upon construction.")]
+        init { /* No-op */ }
+    }
+
+    /// <summary>
+    /// Waits until the renderer is attached to the browser. The renderer must be attached before
+    /// renders can be processed.
+    /// </summary>
+    /// <returns></returns>
+    public Task WaitUntilAttachedAsync()
+        => _attachTask;
 
     /// <summary>
     /// Instantiates a root component and attaches it to the browser within the specified element.

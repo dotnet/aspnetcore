@@ -51,5 +51,8 @@ internal sealed partial class WebSocketsServerTransport
 
         [LoggerMessage(15, LogLevel.Debug, "Closing webSocket failed.", EventName = "ClosingWebSocketFailed")]
         public static partial void ClosingWebSocketFailed(ILogger logger, Exception ex);
+
+        [LoggerMessage(16, LogLevel.Debug, "Send loop errored.", EventName = "SendErrored")]
+        public static partial void SendErrored(ILogger logger, Exception exception);
     }
 }

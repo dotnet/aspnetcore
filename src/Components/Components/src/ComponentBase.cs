@@ -327,7 +327,7 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
     Task IHandleAfterRender.OnAfterRenderAsync()
     {
         var firstRender = !_hasCalledOnAfterRender;
-        _hasCalledOnAfterRender |= true;
+        _hasCalledOnAfterRender = true;
 
         OnAfterRender(firstRender);
 
