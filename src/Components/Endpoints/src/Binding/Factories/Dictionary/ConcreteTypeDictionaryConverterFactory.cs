@@ -3,14 +3,14 @@
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
 
-internal class ConcreteTypeDictionaryConverterFactory<TDictionary, TKey, TValue> : IFormDataConverterFactory
+internal sealed class ConcreteTypeDictionaryConverterFactory<TDictionary, TKey, TValue> : IFormDataConverterFactory
     where TKey : IParsable<TKey>
 {
     public static readonly ConcreteTypeDictionaryConverterFactory<TDictionary, TKey, TValue> Instance = new();
 
-    public bool CanConvert(Type type, FormDataSerializerOptions options) => true;
+    public bool CanConvert(Type type, FormDataMapperOptions options) => true;
 
-    public FormDataConverter CreateConverter(Type type, FormDataSerializerOptions options)
+    public FormDataConverter CreateConverter(Type type, FormDataMapperOptions options)
     {
         // Resolve the element type converter
         var keyConverter = options.ResolveConverter<TKey>() ??

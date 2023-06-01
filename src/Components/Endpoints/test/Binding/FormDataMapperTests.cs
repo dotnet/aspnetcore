@@ -4,7 +4,6 @@
 using System.Buffers;
 using System.Collections;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
@@ -540,10 +539,10 @@ public class FormDataMapperTests
             ["[9]"] = "19",
         };
         var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
-        var options = new FormDataSerializerOptions();
+        var options = new FormDataMapperOptions();
 
         // Act
-        var result = FormDataDeserializer.Deserialize<IImmutableDictionary<int, int>>(reader, options);
+        var result = FormDataMapper.Map<IImmutableDictionary<int, int>>(reader, options);
 
         // Assert
         var dictionary = Assert.IsType<ImmutableDictionary<int, int>>(result);
@@ -594,10 +593,10 @@ public class FormDataMapperTests
             ["[9]"] = "19",
         };
         var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
-        var options = new FormDataSerializerOptions();
+        var options = new FormDataMapperOptions();
 
         // Act
-        var result = FormDataDeserializer.Deserialize<IReadOnlyDictionary<int, int>>(reader, options);
+        var result = FormDataMapper.Map<IReadOnlyDictionary<int, int>>(reader, options);
 
         // Assert
         var dictionary = Assert.IsType<ReadOnlyDictionary<int, int>>(result);
@@ -624,10 +623,10 @@ public class FormDataMapperTests
             ["[9]"] = "19",
         };
         var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
-        var options = new FormDataSerializerOptions();
+        var options = new FormDataMapperOptions();
 
         // Act
-        var result = FormDataDeserializer.Deserialize<ReadOnlyDictionary<int, int>>(reader, options);
+        var result = FormDataMapper.Map<ReadOnlyDictionary<int, int>>(reader, options);
 
         // Assert
         var dictionary = Assert.IsType<ReadOnlyDictionary<int, int>>(result);
@@ -641,10 +640,10 @@ public class FormDataMapperTests
         // Arrange
         var collection = new Dictionary<string, StringValues>() { };
         var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
-        var options = new FormDataSerializerOptions();
+        var options = new FormDataMapperOptions();
 
         // Act
-        var result = FormDataDeserializer.Deserialize<IReadOnlyDictionary<int, int>>(reader, options);
+        var result = FormDataMapper.Map<IReadOnlyDictionary<int, int>>(reader, options);
 
         // Assert
         Assert.Null(result);
@@ -656,10 +655,10 @@ public class FormDataMapperTests
         // Arrange
         var collection = new Dictionary<string, StringValues>() { };
         var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
-        var options = new FormDataSerializerOptions();
+        var options = new FormDataMapperOptions();
 
         // Act
-        var result = FormDataDeserializer.Deserialize<IReadOnlyDictionary<int, int>>(reader, options);
+        var result = FormDataMapper.Map<IReadOnlyDictionary<int, int>>(reader, options);
 
         // Assert
         Assert.Null(result);
@@ -684,7 +683,7 @@ public class FormDataMapperTests
             ["[9]"] = "19",
         };
         var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
-        var options = new FormDataSerializerOptions();
+        var options = new FormDataMapperOptions();
 
         // Act
         var result = CallDeserialize(reader, options, typeof(TDictionary));

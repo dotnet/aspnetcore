@@ -9,7 +9,7 @@ internal class DictionaryConverterFactory : IFormDataConverterFactory
 {
     internal static readonly DictionaryConverterFactory Instance = new();
 
-    public bool CanConvert(Type type, FormDataSerializerOptions options)
+    public bool CanConvert(Type type, FormDataMapperOptions options)
     {
         // Well-known dictionary types
         // IDictionary<TKey, TValue>
@@ -68,7 +68,7 @@ internal class DictionaryConverterFactory : IFormDataConverterFactory
         return factory.CanConvert(type, options);
     }
 
-    public FormDataConverter CreateConverter(Type type, FormDataSerializerOptions options)
+    public FormDataConverter CreateConverter(Type type, FormDataMapperOptions options)
     {
         // Type must implement IDictionary<TKey, TValue> IReadOnlyDictionary<TKey, TValue>
         // Note that IDictionary doesn't extend IReadOnlyDictionary, hence the need for two checks

@@ -4,7 +4,7 @@
 namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
 
 // Adapts a concrete dictionary type into an interface.
-internal class DictionaryStaticCastAdapter<TDictionaryInterface, TDictionaryImplementation, TDictionaryAdapter, TBuffer, TKey, TValue>
+internal sealed class DictionaryStaticCastAdapter<TDictionaryInterface, TDictionaryImplementation, TDictionaryAdapter, TBuffer, TKey, TValue>
     : IDictionaryBufferAdapter<TDictionaryInterface, TBuffer, TKey, TValue>
     where TDictionaryAdapter : IDictionaryBufferAdapter<TDictionaryImplementation, TBuffer, TKey, TValue>
     where TDictionaryImplementation : TDictionaryInterface
