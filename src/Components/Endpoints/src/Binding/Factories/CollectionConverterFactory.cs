@@ -9,7 +9,7 @@ internal class CollectionConverterFactory : IFormDataConverterFactory
 {
     public static readonly CollectionConverterFactory Instance = new();
 
-    public bool CanConvert(Type type, FormDataSerializerOptions options)
+    public bool CanConvert(Type type, FormDataMapperOptions options)
     {
         var enumerable = ClosedGenericMatcher.ExtractGenericInterface(type, typeof(IEnumerable<>));
         if (enumerable == null && !type.IsArray && type.GetArrayRank() != 1)
@@ -22,7 +22,7 @@ internal class CollectionConverterFactory : IFormDataConverterFactory
         return options.HasConverter(element);
     }
 
-    public FormDataConverter CreateConverter(Type type, FormDataSerializerOptions options)
+    public FormDataConverter CreateConverter(Type type, FormDataMapperOptions options)
     {
         ArgumentNullException.ThrowIfNull(type);
         ArgumentNullException.ThrowIfNull(options);

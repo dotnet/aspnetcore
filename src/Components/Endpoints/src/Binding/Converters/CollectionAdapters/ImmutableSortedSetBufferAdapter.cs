@@ -5,7 +5,7 @@ using System.Collections.Immutable;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
 
-internal class ImmutableSortedSetBufferAdapter<TElement> : ICollectionBufferAdapter<ImmutableSortedSet<TElement>, ImmutableSortedSet<TElement>.Builder, TElement>
+internal sealed class ImmutableSortedSetBufferAdapter<TElement> : ICollectionBufferAdapter<ImmutableSortedSet<TElement>, ImmutableSortedSet<TElement>.Builder, TElement>
 {
     public static ImmutableSortedSet<TElement>.Builder CreateBuffer() => ImmutableSortedSet.CreateBuilder<TElement>();
 

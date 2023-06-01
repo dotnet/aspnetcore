@@ -9,14 +9,14 @@ namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
 
 internal abstract class TypedCollectionConverterFactory : IFormDataConverterFactory
 {
-    public abstract bool CanConvert(Type type, FormDataSerializerOptions options);
+    public abstract bool CanConvert(Type type, FormDataMapperOptions options);
 
-    public abstract FormDataConverter CreateConverter(Type type, FormDataSerializerOptions options);
+    public abstract FormDataConverter CreateConverter(Type type, FormDataMapperOptions options);
 }
 
-internal class TypedCollectionConverterFactory<TCollection, TElement> : TypedCollectionConverterFactory
+internal sealed class TypedCollectionConverterFactory<TCollection, TElement> : TypedCollectionConverterFactory
 {
-    public override bool CanConvert(Type _, FormDataSerializerOptions options)
+    public override bool CanConvert(Type _, FormDataMapperOptions options)
     {
         // Resolve the element type converter
         var elementTypeConverter = options.ResolveConverter<TElement>();
@@ -101,7 +101,7 @@ internal class TypedCollectionConverterFactory<TCollection, TElement> : TypedCol
     //   the Queue directly as the buffer (queues don't implement ICollection<T>, so the adapter uses Push instead),
     //   or for ImmutableXXX<T> we either use ImmuttableXXX.CreateBuilder<T> to create a builder we use as a buffer,
     //   or collect the collection into an array buffer and call CreateRange to build the final collection.
-    public override FormDataConverter CreateConverter(Type _, FormDataSerializerOptions options)
+    public override FormDataConverter CreateConverter(Type _, FormDataMapperOptions options)
     {
         // Resolve the element type converter
         var elementTypeConverter = options.ResolveConverter<TElement>() ??

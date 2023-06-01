@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
 
-internal class ArrayCollectionFactory<TElement> : ICollectionFactory<TElement[], TElement>
+internal sealed class ArrayCollectionFactory<TElement> : ICollectionFactory<TElement[], TElement>
 {
     public static TElement[] ToResultCore(TElement[] buffer, int size)
     {

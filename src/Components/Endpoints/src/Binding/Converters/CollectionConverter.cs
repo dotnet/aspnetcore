@@ -48,7 +48,7 @@ internal class CollectionConverter<TCollection, TCollectionPolicy, TBuffer, TEle
     internal override bool TryRead(
         ref FormDataReader context,
         Type type,
-        FormDataSerializerOptions options,
+        FormDataMapperOptions options,
         [NotNullWhen(true)] out TCollection? result,
         out bool found)
     {
@@ -76,7 +76,7 @@ internal class CollectionConverter<TCollection, TCollectionPolicy, TBuffer, TEle
 
         // Read element 1 and set conditions to enter the loop
         context.PushPrefix("[1]");
-        currentElementSuccess = _elementConverter.TryRead(ref context, typeof(TElement), options, out currentElement, out foundCurrentElement);
+        currentElementSuccess = _elementConverter.TryRead(ref context, typeof(TElement), options, out currentElement!, out foundCurrentElement);
         succeded = succeded && currentElementSuccess;
         context.PopPrefix("[1]");
         // We need to iterate while we keep finding values, even if some of them have errors. This is because we don't want data to be lost just

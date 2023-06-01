@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
 
-internal class ImmutableQueueBufferAdapter<TElement>
+internal sealed class ImmutableQueueBufferAdapter<TElement>
     : ArrayPoolBufferAdapter<ImmutableQueue<TElement>, ImmutableQueueBufferAdapter<TElement>.ImmutableQueueFactory, TElement>
 {
     internal class ImmutableQueueFactory : ICollectionFactory<ImmutableQueue<TElement>, TElement>

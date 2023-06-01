@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
 
-internal class ImplementingCollectionBufferAdapter<TCollection, TBuffer, TElement> : ICollectionBufferAdapter<TCollection, TBuffer, TElement>
+internal sealed class ImplementingCollectionBufferAdapter<TCollection, TBuffer, TElement> : ICollectionBufferAdapter<TCollection, TBuffer, TElement>
     where TBuffer : TCollection, ICollection<TElement>, new()
 {
     public static TBuffer CreateBuffer() => new();

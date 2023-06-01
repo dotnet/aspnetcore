@@ -5,7 +5,7 @@ using System.Collections.Immutable;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
 
-internal class ImmutableListBufferAdapter<TElement> : ICollectionBufferAdapter<ImmutableList<TElement>, ImmutableList<TElement>.Builder, TElement>
+internal sealed class ImmutableListBufferAdapter<TElement> : ICollectionBufferAdapter<ImmutableList<TElement>, ImmutableList<TElement>.Builder, TElement>
 {
     public static ImmutableList<TElement>.Builder CreateBuffer() => ImmutableList.CreateBuilder<TElement>();
 

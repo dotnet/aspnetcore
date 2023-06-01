@@ -13,11 +13,11 @@ using Components.TestServer.RazorComponents;
 
 namespace Microsoft.AspNetCore.Components.E2ETests.ServerRenderingTests.FormHandlingTests;
 
-public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<FormWithoutBindingContextApp>>>
+public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<FormWithDefaultContextApp>>>
 {
     public FormWithParentBindingContextTest(
         BrowserFixture browserFixture,
-        BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<FormWithoutBindingContextApp>> serverFixture,
+        BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<FormWithDefaultContextApp>> serverFixture,
         ITestOutputHelper output)
         : base(browserFixture, serverFixture, output)
     {

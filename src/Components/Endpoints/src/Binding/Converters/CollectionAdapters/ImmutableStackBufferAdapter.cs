@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
 
-internal class ImmutableStackBufferAdapter<TElement>
+internal sealed class ImmutableStackBufferAdapter<TElement>
     : ArrayPoolBufferAdapter<ImmutableStack<TElement>, ImmutableStackBufferAdapter<TElement>.ImmutableStackFactory, TElement>
 {
     internal class ImmutableStackFactory : ICollectionFactory<ImmutableStack<TElement>, TElement>

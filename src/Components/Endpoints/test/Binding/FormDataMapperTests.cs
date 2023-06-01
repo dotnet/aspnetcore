@@ -124,10 +124,10 @@ public class FormDataMapperTests
         var data = new Dictionary<string, StringValues>() { };
         var reader = new FormDataReader(data, CultureInfo.InvariantCulture);
         reader.PushPrefix("value");
-        var options = new FormDataSerializerOptions();
+        var options = new FormDataMapperOptions();
 
         // Act
-        var result = FormDataDeserializer.Deserialize<List<int>>(reader, options);
+        var result = FormDataMapper.Map<List<int>>(reader, options);
 
         // Assert
         Assert.Null(result);
@@ -140,10 +140,10 @@ public class FormDataMapperTests
         var data = new Dictionary<string, StringValues>() { ["[0]"] = "10" };
         var reader = new FormDataReader(data, CultureInfo.InvariantCulture);
         reader.PushPrefix("value");
-        var options = new FormDataSerializerOptions();
+        var options = new FormDataMapperOptions();
 
         // Act
-        var result = FormDataDeserializer.Deserialize<List<int>>(reader, options);
+        var result = FormDataMapper.Map<List<int>>(reader, options);
 
         // Assert
         var value = Assert.Single(result);
@@ -164,13 +164,13 @@ public class FormDataMapperTests
 
         var reader = new FormDataReader(data, CultureInfo.InvariantCulture);
         reader.PushPrefix("value");
-        var options = new FormDataSerializerOptions
+        var options = new FormDataMapperOptions
         {
             MaxCollectionSize = 110
         };
 
         // Act
-        var result = FormDataDeserializer.Deserialize<List<int>>(reader, options);
+        var result = FormDataMapper.Map<List<int>>(reader, options);
 
         // Assert
         Assert.Equal(size, result.Count);
@@ -196,7 +196,7 @@ public class FormDataMapperTests
 
         var reader = new FormDataReader(data, CultureInfo.InvariantCulture);
         reader.PushPrefix("value");
-        var options = new FormDataSerializerOptions
+        var options = new FormDataMapperOptions
         {
             MaxCollectionSize = 110
         };
@@ -213,7 +213,7 @@ public class FormDataMapperTests
         TestArrayPoolBufferAdapter.OnReturn += returned.Add;
 
         // Act
-        var result = FormDataDeserializer.Deserialize<int[]>(reader, options);
+        var result = FormDataMapper.Map<int[]>(reader, options);
 
         TestArrayPoolBufferAdapter.OnRent -= rented.Add;
         TestArrayPoolBufferAdapter.OnReturn -= returned.Add;
@@ -235,13 +235,13 @@ public class FormDataMapperTests
 
         var reader = new FormDataReader(data, CultureInfo.InvariantCulture);
         reader.PushPrefix("value");
-        var options = new FormDataSerializerOptions
+        var options = new FormDataMapperOptions
         {
             MaxCollectionSize = 110
         };
 
         // Act
-        var result = FormDataDeserializer.Deserialize<List<int>>(reader, options);
+        var result = FormDataMapper.Map<List<int>>(reader, options);
 
         // Assert
         Assert.Equal(110, result.Count);
@@ -497,7 +497,7 @@ public class FormDataMapperTests
         };
         var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
         reader.PushPrefix("value");
-        var options = new FormDataSerializerOptions();
+        var options = new FormDataMapperOptions();
 
         // Act
         var result = CallDeserialize(reader, options, typeof(TCollection));

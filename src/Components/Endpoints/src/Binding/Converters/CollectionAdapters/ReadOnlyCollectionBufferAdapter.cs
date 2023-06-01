@@ -5,7 +5,7 @@ using System.Collections.ObjectModel;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
 
-internal class ReadOnlyCollectionBufferAdapter<TElement> : ICollectionBufferAdapter<ReadOnlyCollection<TElement>, IList<TElement>, TElement>
+internal sealed class ReadOnlyCollectionBufferAdapter<TElement> : ICollectionBufferAdapter<ReadOnlyCollection<TElement>, IList<TElement>, TElement>
 {
     public static IList<TElement> CreateBuffer() => new List<TElement>();
 

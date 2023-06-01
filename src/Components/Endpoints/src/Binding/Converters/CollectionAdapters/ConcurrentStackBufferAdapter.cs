@@ -5,7 +5,7 @@ using System.Collections.Concurrent;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
 
-internal class ConcurrentStackBufferAdapter<TElement> : ICollectionBufferAdapter<ConcurrentStack<TElement>, ConcurrentStack<TElement>, TElement>
+internal sealed class ConcurrentStackBufferAdapter<TElement> : ICollectionBufferAdapter<ConcurrentStack<TElement>, ConcurrentStack<TElement>, TElement>
 {
     public static ConcurrentStack<TElement> CreateBuffer() => new();
 

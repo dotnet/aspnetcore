@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
 
-internal class StackBufferAdapter<TElement> : ICollectionBufferAdapter<Stack<TElement>, Stack<TElement>, TElement>
+internal sealed class StackBufferAdapter<TElement> : ICollectionBufferAdapter<Stack<TElement>, Stack<TElement>, TElement>
 {
     public static Stack<TElement> CreateBuffer() => new();
 

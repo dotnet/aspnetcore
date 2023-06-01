@@ -5,7 +5,7 @@ using System.Collections.Immutable;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
 
-internal class ImmutableHashSetBufferAdapter<TElement> : ICollectionBufferAdapter<ImmutableHashSet<TElement>, ImmutableHashSet<TElement>.Builder, TElement>
+internal sealed class ImmutableHashSetBufferAdapter<TElement> : ICollectionBufferAdapter<ImmutableHashSet<TElement>, ImmutableHashSet<TElement>.Builder, TElement>
 {
     public static ImmutableHashSet<TElement>.Builder CreateBuffer() => ImmutableHashSet.CreateBuilder<TElement>();
 
