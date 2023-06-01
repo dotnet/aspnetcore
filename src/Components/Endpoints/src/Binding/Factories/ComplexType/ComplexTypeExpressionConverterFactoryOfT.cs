@@ -88,6 +88,13 @@ internal sealed class ComplexTypeExpressionConverterFactory<T> : ComplexTypeExpr
                     propertyFoundValue));
             body.Add(callTryRead);
 
+            // reader.PopPrefix("Property");
+            body.Add(Expression.Call(
+                readerParam,
+                nameof(FormDataReader.PopPrefix),
+                Array.Empty<Type>(),
+                Expression.Constant(property.Name)));
+
             body.Add(Expression.OrAssign(localFoundValueVar, propertyFoundValue));
         }
 
