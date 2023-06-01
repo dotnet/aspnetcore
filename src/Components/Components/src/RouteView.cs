@@ -3,8 +3,10 @@
 
 #nullable disable warnings
 
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Routing;
 
@@ -17,6 +19,15 @@ namespace Microsoft.AspNetCore.Components;
 public class RouteView : IComponent
 {
     private RenderHandle _renderHandle;
+    private static readonly ConcurrentDictionary<Type, Type?> _layoutAttributeCache = new();
+
+    static RouteView()
+    {
+        if (HotReloadManager.Default.MetadataUpdateSupported)
+        {
+            HotReloadManager.Default.OnDeltaApplied += _layoutAttributeCache.Clear;
+        }
+    }
 
     [Inject]
     private NavigationManager NavigationManager { get; set; }
@@ -65,7 +76,8 @@ public class RouteView : IComponent
     [UnconditionalSuppressMessage("Trimming", "IL2118", Justification = "Layout components are preserved because the LayoutAttribute constructor parameter is correctly annotated.")]
     protected virtual void Render(RenderTreeBuilder builder)
     {
-        var pageLayoutType = RouteData.PageType.GetCustomAttribute<LayoutAttribute>()?.LayoutType
+        var pageLayoutType = _layoutAttributeCache
+            .GetOrAdd(RouteData.PageType, static type => type.GetCustomAttribute<LayoutAttribute>()?.LayoutType)
             ?? DefaultLayout;
 
         builder.OpenComponent<LayoutView>(0);
