@@ -11,16 +11,6 @@ internal class DictionaryConverterFactory : IFormDataConverterFactory
 
     public bool CanConvert(Type type, FormDataMapperOptions options)
     {
-        // Well-known dictionary types
-        // IDictionary<TKey, TValue>
-        // IReadOnlyDictionary<TKey, TValue>
-        // Dictionary<TKey, TValue>
-        // SortedDictionary<TKey, TValue>
-        // SortedList<TKey, TValue>
-        // ConcurrentDictionary<TKey, TValue>
-        // ImmutableDictionary<TKey, TValue>
-        // ImmutableSortedDictionary<TKey, TValue>
-
         // Type must implement IDictionary<TKey, TValue> IReadOnlyDictionary<TKey, TValue>
         // Note that IDictionary doesn't extend IReadOnlyDictionary, hence the need for two checks
         var dictionaryType = ClosedGenericMatcher.ExtractGenericInterface(type, typeof(IDictionary<,>)) ??

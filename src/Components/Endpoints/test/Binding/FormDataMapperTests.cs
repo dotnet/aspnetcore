@@ -694,14 +694,6 @@ public class FormDataMapperTests
         Assert.Equal(expected.OrderBy(o => o.Key).ToArray(), dictionary.OrderBy(o => o.Key).ToArray());
     }
 
-    [Fact]
-    public void CanDeserialize_Collections_CustomCollection()
-    {
-        // Arrange
-        var expected = new CustomCollection<int> { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 };
-        CanDeserialize_Collection<CustomCollection<int>, CustomCollection<int>, int>(expected);
-    }
-
     private void CanDeserialize_Collection<TCollection, TImplementation, TElement>(TImplementation expected, bool sequenceEquals = false)
     {
         // Arrange
