@@ -77,12 +77,6 @@
   </Target>
 
   <ItemGroup>
-    <Compile Update="Binding\converters\CollectionConverter.*.cs">
-      <DependentUpon>Binding\converters\CollectionConverter.cs</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Endpoints.Tests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.TagHelpers.Test" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" Key="$(MoqPublicKey)" />
