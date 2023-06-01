@@ -26,27 +26,42 @@ internal struct FormDataReader
         return _formCollection.Keys;
     }
 
-    internal void PopPrefix(string _)
+    internal void PopPrefix(string key)
     {
-        // For right now, we don't need to do anything with the prefix
-        _prefix = "";
+        var length = key.Length;
+        // If length is bigger than the current scope length typically means there is a 
+        // bug where some part of the code has not popped the scope appropriately.
+        if (_prefix.Length == length || _prefix[^(length + 1)] != '.')
+        {
+            _prefix = _prefix[..^length];
+        }
+        else
+        {
+            _prefix = _prefix[..^(length + 1)];
+        }
     }
 
-    internal void PopPrefix(ReadOnlySpan<char> _)
+    internal void PopPrefix(ReadOnlySpan<char> key)
     {
-        // For right now, we don't need to do anything with the prefix
-        _prefix = "";
+        // For right now, we don't need to do anything with the key
+        PopPrefix(key.ToString());
     }
 
-    internal void PushPrefix(string prefix)
+    internal void PushPrefix(string key)
     {
-        _prefix = prefix;
+        // We automatically append a "." before adding the suffix, except when its the first element pushed to the
+        // scope, or when we are accessing a property after a collection or an indexer like items[1].
+        var separator = _prefix.Length > 0 && _prefix[_prefix.Length - 1] != ']' && key[0] != '['
+            ? "."
+            : "";
+
+        _prefix = _prefix + separator + key;
     }
 
-    internal void PushPrefix(ReadOnlySpan<char> prefix)
+    internal void PushPrefix(ReadOnlySpan<char> key)
     {
         // For right now, just make it a string
-        _prefix = prefix.ToString();
+        PushPrefix(key.ToString());
     }
 
     internal readonly bool TryGetValue([NotNullWhen(true)] out string? value)
