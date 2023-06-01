@@ -14,8 +14,8 @@ internal sealed class FormDataMapperOptions
     {
         _converters = new(WellKnownConverters.Converters);
 
-        _factories.Add((type, options) => ParsableConverterFactory.CanConvert(type, options) ? ParsableConverterFactory.CreateConverter(type, options) : null);
-        _factories.Add((type, options) => NullableConverterFactory.CanConvert(type, options) ? NullableConverterFactory.CreateConverter(type, options) : null);
+        _factories.Add((type, options) => ParsableConverterFactory.Instance.CanConvert(type, options) ? ParsableConverterFactory.Instance.CreateConverter(type, options) : null);
+        _factories.Add((type, options) => NullableConverterFactory.Instance.CanConvert(type, options) ? NullableConverterFactory.Instance.CreateConverter(type, options) : null);
     }
 
     internal bool HasConverter(Type valueType) => _converters.ContainsKey(valueType);

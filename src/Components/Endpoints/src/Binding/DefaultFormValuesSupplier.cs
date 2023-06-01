@@ -34,7 +34,7 @@ internal sealed class DefaultFormValuesSupplier : IFormValueSupplier
     {
         return _formData.IsFormDataAvailable &&
             string.Equals(formName, _formData.Name, StringComparison.Ordinal) &&
-            _options.HasConverter(valueType);
+            _options.ResolveConverter(valueType) != null;
     }
 
     public bool TryBind(string formName, Type valueType, [NotNullWhen(true)] out object? boundValue)

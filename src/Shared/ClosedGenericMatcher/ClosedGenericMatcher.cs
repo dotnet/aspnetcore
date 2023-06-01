@@ -32,8 +32,13 @@ internal static class ClosedGenericMatcher
     /// </remarks>
     public static Type? ExtractGenericInterface(Type queryType, Type interfaceType)
     {
+#if !NET8_0_OR_GREATER
         ArgumentNullThrowHelper.ThrowIfNull(queryType);
         ArgumentNullThrowHelper.ThrowIfNull(interfaceType);
+#else
+        ArgumentNullException.ThrowIfNull(queryType);
+        ArgumentNullException.ThrowIfNull(interfaceType);
+#endif
 
         if (IsGenericInstantiation(queryType, interfaceType))
         {

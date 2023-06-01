@@ -76,7 +76,7 @@ public class FormDataMapperTests
         // Assert
         Assert.Equal(expected, result);
     }
-    
+
 #nullable enable
     [Fact]
     public void CanDeserialize_NullableCustomParsableTypes()
@@ -299,6 +299,7 @@ internal class Point : IParsable<Point>, IEquatable<Point>
 internal struct ValuePoint : IParsable<ValuePoint>, IEquatable<ValuePoint>
 {
     public int X { get; set; }
+
     public int Y { get; set; }
 
     public static ValuePoint Parse(string s, IFormatProvider provider)
