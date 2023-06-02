@@ -106,12 +106,11 @@ internal sealed class RequestBufferingStream : BufferingStream
 
     public void LogRequestBody()
     {
-        var requestBody = GetString(_encoding);
-        if (requestBody != null)
+        if (!HasLogged)
         {
-            _logger.RequestBody(requestBody);
+            _logger.RequestBody(GetString(_encoding));
+            HasLogged = true;
         }
-        HasLogged = true;
     }
 
     public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)

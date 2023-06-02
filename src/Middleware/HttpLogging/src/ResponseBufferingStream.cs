@@ -4,10 +4,8 @@
 using System.Buffers;
 using System.IO.Pipelines;
 using System.Text;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
-using static Microsoft.AspNetCore.HttpLogging.MediaTypeOptions;
 
 namespace Microsoft.AspNetCore.HttpLogging;
 
@@ -17,33 +15,29 @@ namespace Microsoft.AspNetCore.HttpLogging;
 internal sealed class ResponseBufferingStream : BufferingStream, IHttpResponseBodyFeature
 {
     private readonly IHttpResponseBodyFeature _innerBodyFeature;
-    private readonly int _limit;
+    private int _limit;
     private PipeWriter? _pipeAdapter;
 
-    private readonly HttpContext _context;
-    private readonly List<MediaTypeState> _encodings;
-    private readonly HashSet<string> _allowedResponseHeaders;
-    private readonly HttpLoggingFields _loggingFields;
+    private readonly HttpLoggingContext _logContext;
+    private readonly HttpLoggingOptions _options;
+    private readonly IHttpLoggingInterceptor[] _interceptors;
+    private bool _logBody;
     private Encoding? _encoding;
 
     private static readonly StreamPipeWriterOptions _pipeWriterOptions = new StreamPipeWriterOptions(leaveOpen: true);
 
     internal ResponseBufferingStream(IHttpResponseBodyFeature innerBodyFeature,
-        int limit,
         ILogger logger,
-        HttpContext context,
-        List<MediaTypeState> encodings,
-        HashSet<string> allowedResponseHeaders,
-        HttpLoggingFields loggingFields)
+        HttpLoggingContext logContext,
+        HttpLoggingOptions options,
+        IHttpLoggingInterceptor[] interceptors)
         : base(innerBodyFeature.Stream, logger)
     {
         _innerBodyFeature = innerBodyFeature;
         _innerStream = innerBodyFeature.Stream;
-        _limit = limit;
-        _context = context;
-        _encodings = encodings;
-        _allowedResponseHeaders = allowedResponseHeaders;
-        _loggingFields = loggingFields;
+        _logContext = logContext;
+        _options = options;
+        _interceptors = interceptors;
     }
 
     public bool HeadersWritten { get; private set; }
@@ -51,8 +45,6 @@ internal sealed class ResponseBufferingStream : BufferingStream, IHttpResponseBo
     public Stream Stream => this;
 
     public PipeWriter Writer => _pipeAdapter ??= PipeWriter.Create(Stream, _pipeWriterOptions);
-
-    public Encoding? Encoding { get => _encoding; }
 
     public override void Write(byte[] buffer, int offset, int count)
     {
@@ -90,12 +82,11 @@ internal sealed class ResponseBufferingStream : BufferingStream, IHttpResponseBo
 
     private void CommonWrite(ReadOnlySpan<byte> span)
     {
+        OnFirstWrite();
         var remaining = _limit - _bytesBuffered;
         var innerCount = Math.Min(remaining, span.Length);
 
-        OnFirstWrite();
-
-        if (innerCount > 0)
+        if (_logBody && innerCount > 0)
         {
             var slice = span.Slice(0, innerCount);
             if (slice.TryCopyTo(_tailMemory.Span))
@@ -116,9 +107,16 @@ internal sealed class ResponseBufferingStream : BufferingStream, IHttpResponseBo
         if (!HeadersWritten)
         {
             // Log headers as first write occurs (headers locked now)
-            HttpLoggingMiddleware.LogResponseHeaders(_context.Response, _loggingFields, _allowedResponseHeaders, _logger);
+            HttpLoggingMiddleware.LogResponseHeaders(_logContext, _options._internalResponseHeaders, _interceptors, _logger);
 
-            MediaTypeHelpers.TryGetEncodingForMediaType(_context.Response.ContentType, _encodings, out _encoding);
+            // The callback in LogResponseHeaders could disable body logging or adjust limits.
+            if (_logContext.LoggingFields.HasFlag(HttpLoggingFields.ResponseBody) && _logContext.ResponseBodyLogLimit > 0
+                && MediaTypeHelpers.TryGetEncodingForMediaType(_logContext.HttpContext.Response.ContentType,
+                _options.MediaTypeOptions.MediaTypeStates, out _encoding))
+            {
+                _logBody = true;
+                _limit = _logContext.ResponseBodyLogLimit;
+            }
             HeadersWritten = true;
         }
     }
@@ -155,5 +153,14 @@ internal sealed class ResponseBufferingStream : BufferingStream, IHttpResponseBo
     {
         OnFirstWrite();
         return base.FlushAsync(cancellationToken);
+    }
+
+    public void LogResponseBody()
+    {
+        if (_logBody)
+        {
+            var requestBody = GetString(_encoding);
+            _logger.ResponseBody(requestBody);
+        }
     }
 }
