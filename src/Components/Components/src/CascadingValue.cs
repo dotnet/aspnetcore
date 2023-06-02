@@ -131,18 +131,21 @@ public class CascadingValue<TValue> : ICascadingValueSupplierFactory, ICascading
         return Task.CompletedTask;
     }
 
-    bool ICascadingValueSupplierFactory.TryGetValueSupplier(object propertyAttribute, Type requestedType, string? requestedName, [NotNullWhen(true)] out ICascadingValueSupplier? result)
+    bool ICascadingValueSupplierFactory.TryGetValueSupplier(object attribute, Type parameterType, string parameterName, [NotNullWhen(true)] out ICascadingValueSupplier? result)
     {
         result = default;
 
-        if (propertyAttribute is not CascadingParameterAttribute || !requestedType.IsAssignableFrom(typeof(TValue)))
+        if (attribute is not CascadingParameterAttribute cascadingParameterAttribute || !parameterType.IsAssignableFrom(typeof(TValue)))
         {
             return false;
         }
 
+        // We only consider explicitly specified names, not the property name.
+        var parameterSpecifiedName = cascadingParameterAttribute.Name;
+
         var isMatch =
-            (requestedName == null && Name == null) || // Match on type alone
-            string.Equals(requestedName, Name, StringComparison.OrdinalIgnoreCase); // Also match on name
+            (parameterSpecifiedName == null && Name == null) || // Match on type alone
+            string.Equals(parameterSpecifiedName, Name, StringComparison.OrdinalIgnoreCase); // Also match on name
 
         if (!isMatch)
         {

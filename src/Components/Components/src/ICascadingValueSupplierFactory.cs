@@ -7,5 +7,5 @@ namespace Microsoft.AspNetCore.Components;
 
 internal interface ICascadingValueSupplierFactory
 {
-    bool TryGetValueSupplier(object propertyAttribute, Type valueType, string? valueName, [NotNullWhen(true)] out ICascadingValueSupplier? result);
+    bool TryGetValueSupplier(object attribute, Type parameterType, string parameterName, [NotNullWhen(true)] out ICascadingValueSupplier? result);
 }

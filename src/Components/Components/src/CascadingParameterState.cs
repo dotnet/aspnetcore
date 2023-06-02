@@ -48,7 +48,7 @@ internal readonly struct CascadingParameterState
             {
                 // Although not all parameters might be matched, we know the maximum number
                 resultStates ??= new List<CascadingParameterState>(infos.Length - infoIndex);
-                resultStates.Add(new CascadingParameterState(info.ConsumerValueName, supplier));
+                resultStates.Add(new CascadingParameterState(info.PropertyName, supplier));
             }
         }
 
@@ -62,7 +62,7 @@ internal readonly struct CascadingParameterState
         {
             var candidateComponent = candidate.Component;
             if (candidateComponent is ICascadingValueSupplierFactory valueSupplierFactory && 
-                valueSupplierFactory.TryGetValueSupplier(info.PropertyAttribute, info.ValueType, info.SupplierValueName, out var valueSupplier))
+                valueSupplierFactory.TryGetValueSupplier(info.Attribute, info.PropertyType, info.PropertyName, out var valueSupplier))
             {
                 return valueSupplier;
             }
@@ -101,8 +101,7 @@ internal readonly struct CascadingParameterState
                 result.Add(new ReflectedCascadingParameterInfo(
                     cascadingParameterAttribute,
                     prop.Name,
-                    prop.PropertyType,
-                    cascadingParameterAttribute.Name));
+                    prop.PropertyType));
             }
         }
 
@@ -111,21 +110,18 @@ internal readonly struct CascadingParameterState
 
     readonly struct ReflectedCascadingParameterInfo
     {
-        public object PropertyAttribute { get; }
-        public string ConsumerValueName { get; }
-        public string? SupplierValueName { get; }
-        public Type ValueType { get; }
+        public object Attribute { get; }
+        public string PropertyName { get; }
+        public Type PropertyType { get; }
 
         public ReflectedCascadingParameterInfo(
-            object propertyAttribute,
-            string consumerValueName,
-            Type valueType,
-            string? supplierValueName)
+            object attribute,
+            string propertyName,
+            Type propertyType)
         {
-            PropertyAttribute = propertyAttribute;
-            ConsumerValueName = consumerValueName;
-            SupplierValueName = supplierValueName;
-            ValueType = valueType;
+            Attribute = attribute;
+            PropertyName = propertyName;
+            PropertyType = propertyType;
         }
     }
 }

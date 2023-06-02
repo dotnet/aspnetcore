@@ -84,30 +84,18 @@ public class RouteView : IComponent
 
         void RenderPageCore(RenderTreeBuilder builder)
         {
-            builder.OpenComponent(0, RouteData.PageType);
-
-            foreach (var kvp in RouteData.RouteValues)
+            builder.OpenComponent<CascadingQueryValueProvider>(0);
+            builder.AddComponentParameter(1, nameof(CascadingQueryValueProvider.ChildContent), (RenderFragment)(builder =>
             {
-                builder.AddComponentParameter(1, kvp.Key, kvp.Value);
-            }
+                builder.OpenComponent(0, RouteData.PageType);
 
-            var queryParameterSupplier = QueryParameterValueSupplier.ForType(RouteData.PageType);
-            if (queryParameterSupplier is not null)
-            {
-                // Since this component does accept some parameters from query, we must supply values for all of them,
-                // even if the querystring in the URI is empty. So don't skip the following logic.
-                var relativeUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
-                var url = NavigationManager.Uri;
-                ReadOnlyMemory<char> query = default;
-                var queryStartPos = url.IndexOf('?');
-                if (queryStartPos >= 0)
+                foreach (var kvp in RouteData.RouteValues)
                 {
-                    var queryEndPos = url.IndexOf('#', queryStartPos);
-                    query = url.AsMemory(queryStartPos..(queryEndPos < 0 ? url.Length : queryEndPos));
+                    builder.AddComponentParameter(1, kvp.Key, kvp.Value);
                 }
-                queryParameterSupplier.RenderParametersFromQueryString(builder, query);
-            }
 
+                builder.CloseComponent();
+            }));
             builder.CloseComponent();
         }
     }
