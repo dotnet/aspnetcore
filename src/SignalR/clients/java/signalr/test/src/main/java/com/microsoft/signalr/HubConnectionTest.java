@@ -4022,4 +4022,21 @@ class HubConnectionTest {
             assertEquals(1, count);
         }
     }
+
+    @Test
+    public void sendsCloseMessageOnStop() throws InterruptedException {
+        MockTransport mockTransport = new MockTransport(true, false);
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
+
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
+
+        hubConnection.stop().timeout(30, TimeUnit.SECONDS).blockingAwait();
+
+        ByteBuffer[] messages = mockTransport.getSentMessages();
+
+        // handshake, close
+        assertEquals(2, messages.length);
+        String message = TestUtils.byteBufferToString(messages[1]);
+        assertEquals("{\"type\":7,\"allowReconnect\":false}" + RECORD_SEPARATOR, message);
+    }
 }

@@ -2855,6 +2855,42 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
     }
 
     [Fact]
+    public async Task OnDisconnectedAsyncReceivesExceptionOnPingTimeout()
+    {
+        using (StartVerifiableLog())
+        {
+            var timeout = TimeSpan.FromMilliseconds(100);
+            var timeProvider = new MockTimeProvider();
+            var state = new ConnectionLifetimeState();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+            {
+                services.Configure<HubOptions>(options =>
+                    options.ClientTimeoutInterval = timeout);
+
+                services.AddSingleton(state);
+            }, LoggerFactory);
+
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ConnectionLifetimeHub>>();
+            connectionHandler.TimeProvider = timeProvider;
+
+            using (var client = new TestClient(new NewtonsoftJsonHubProtocol()))
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                await client.SendHubMessageAsync(PingMessage.Instance);
+
+                timeProvider.Advance(timeout + TimeSpan.FromMilliseconds(1));
+                client.TickHeartbeat();
+
+                await connectionHandlerTask.DefaultTimeout();
+
+                var ex = Assert.IsType<OperationCanceledException>(state.DisconnectedException);
+                Assert.Equal("Client hasn't sent a message/ping within the configured ClientTimeoutInterval.", ex.Message);
+            }
+        }
+    }
+
+    [Fact]
     public async Task ReceivingMessagesPreventsConnectionTimeoutFromOccuring()
     {
         using (StartVerifiableLog())

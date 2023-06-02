@@ -19,7 +19,6 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 
 public final class GsonHubProtocol implements HubProtocol {
-    private final JsonParser jsonParser = new JsonParser();
     private final Gson gson;
     private static final String RECORD_SEPARATOR = "\u001e";
 
@@ -95,7 +94,7 @@ public final class GsonHubProtocol implements HubProtocol {
                         case "result":
                         case "item":
                             if (invocationId == null || binder.getReturnType(invocationId) == null) {
-                                resultToken = jsonParser.parse(reader);
+                                resultToken = JsonParser.parseReader(reader);
                             } else {
                                 result = gson.fromJson(reader, binder.getReturnType(invocationId));
                             }
@@ -123,7 +122,7 @@ public final class GsonHubProtocol implements HubProtocol {
                                     }
                                 }
                             } else {
-                                argumentsToken = (JsonArray)jsonParser.parse(reader);
+                                argumentsToken = (JsonArray)JsonParser.parseReader(reader);
                             }
                             break;
                         case "headers":
