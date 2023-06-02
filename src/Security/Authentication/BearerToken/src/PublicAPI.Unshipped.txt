@@ -5,21 +5,32 @@ Microsoft.AspNetCore.Authentication.BearerToken.BearerTokenEvents
 Microsoft.AspNetCore.Authentication.BearerToken.BearerTokenEvents.BearerTokenEvents() -> void
 Microsoft.AspNetCore.Authentication.BearerToken.BearerTokenEvents.OnMessageReceived.get -> System.Func<Microsoft.AspNetCore.Authentication.BearerToken.MessageReceivedContext!, System.Threading.Tasks.Task!>!
 Microsoft.AspNetCore.Authentication.BearerToken.BearerTokenEvents.OnMessageReceived.set -> void
+Microsoft.AspNetCore.Authentication.BearerToken.BearerTokenEvents.OnSigningIn.get -> System.Func<Microsoft.AspNetCore.Authentication.BearerToken.SigningInContext!, System.Threading.Tasks.Task!>!
+Microsoft.AspNetCore.Authentication.BearerToken.BearerTokenEvents.OnSigningIn.set -> void
 Microsoft.AspNetCore.Authentication.BearerToken.BearerTokenOptions
 Microsoft.AspNetCore.Authentication.BearerToken.BearerTokenOptions.BearerTokenExpiration.get -> System.TimeSpan
 Microsoft.AspNetCore.Authentication.BearerToken.BearerTokenOptions.BearerTokenExpiration.set -> void
 Microsoft.AspNetCore.Authentication.BearerToken.BearerTokenOptions.BearerTokenOptions() -> void
-Microsoft.AspNetCore.Authentication.BearerToken.BearerTokenOptions.BearerTokenProtector.get -> Microsoft.AspNetCore.Authentication.ISecureDataFormat<Microsoft.AspNetCore.Authentication.AuthenticationTicket!>?
-Microsoft.AspNetCore.Authentication.BearerToken.BearerTokenOptions.BearerTokenProtector.set -> void
 Microsoft.AspNetCore.Authentication.BearerToken.BearerTokenOptions.Events.get -> Microsoft.AspNetCore.Authentication.BearerToken.BearerTokenEvents!
 Microsoft.AspNetCore.Authentication.BearerToken.BearerTokenOptions.Events.set -> void
+Microsoft.AspNetCore.Authentication.BearerToken.BearerTokenOptions.RefreshTokenExpiration.get -> System.TimeSpan
+Microsoft.AspNetCore.Authentication.BearerToken.BearerTokenOptions.RefreshTokenExpiration.set -> void
+Microsoft.AspNetCore.Authentication.BearerToken.BearerTokenOptions.TokenProtector.get -> Microsoft.AspNetCore.Authentication.ISecureDataFormat<Microsoft.AspNetCore.Authentication.AuthenticationTicket!>?
+Microsoft.AspNetCore.Authentication.BearerToken.BearerTokenOptions.TokenProtector.set -> void
 Microsoft.AspNetCore.Authentication.BearerToken.MessageReceivedContext
 Microsoft.AspNetCore.Authentication.BearerToken.MessageReceivedContext.MessageReceivedContext(Microsoft.AspNetCore.Http.HttpContext! context, Microsoft.AspNetCore.Authentication.AuthenticationScheme! scheme, Microsoft.AspNetCore.Authentication.BearerToken.BearerTokenOptions! options) -> void
 Microsoft.AspNetCore.Authentication.BearerToken.MessageReceivedContext.Token.get -> string?
 Microsoft.AspNetCore.Authentication.BearerToken.MessageReceivedContext.Token.set -> void
+Microsoft.AspNetCore.Authentication.BearerToken.SigningInContext
+Microsoft.AspNetCore.Authentication.BearerToken.SigningInContext.AccessToken.get -> string?
+Microsoft.AspNetCore.Authentication.BearerToken.SigningInContext.AccessToken.set -> void
+Microsoft.AspNetCore.Authentication.BearerToken.SigningInContext.RefreshToken.get -> string?
+Microsoft.AspNetCore.Authentication.BearerToken.SigningInContext.RefreshToken.set -> void
+Microsoft.AspNetCore.Authentication.BearerToken.SigningInContext.SigningInContext(Microsoft.AspNetCore.Http.HttpContext! context, Microsoft.AspNetCore.Authentication.AuthenticationScheme! scheme, Microsoft.AspNetCore.Authentication.BearerToken.BearerTokenOptions! options, System.Security.Claims.ClaimsPrincipal! principal, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) -> void
 Microsoft.Extensions.DependencyInjection.BearerTokenExtensions
 static Microsoft.Extensions.DependencyInjection.BearerTokenExtensions.AddBearerToken(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder! builder) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
 static Microsoft.Extensions.DependencyInjection.BearerTokenExtensions.AddBearerToken(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder! builder, string! authenticationScheme) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
 static Microsoft.Extensions.DependencyInjection.BearerTokenExtensions.AddBearerToken(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder! builder, string! authenticationScheme, System.Action<Microsoft.AspNetCore.Authentication.BearerToken.BearerTokenOptions!>! configure) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
 static Microsoft.Extensions.DependencyInjection.BearerTokenExtensions.AddBearerToken(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder! builder, System.Action<Microsoft.AspNetCore.Authentication.BearerToken.BearerTokenOptions!>! configure) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
-virtual Microsoft.AspNetCore.Authentication.BearerToken.BearerTokenEvents.MessageReceived(Microsoft.AspNetCore.Authentication.BearerToken.MessageReceivedContext! context) -> System.Threading.Tasks.Task!
+virtual Microsoft.AspNetCore.Authentication.BearerToken.BearerTokenEvents.MessageReceivedAsync(Microsoft.AspNetCore.Authentication.BearerToken.MessageReceivedContext! context) -> System.Threading.Tasks.Task!
+virtual Microsoft.AspNetCore.Authentication.BearerToken.BearerTokenEvents.SigningInAsync(Microsoft.AspNetCore.Authentication.BearerToken.SigningInContext! context) -> System.Threading.Tasks.Task!

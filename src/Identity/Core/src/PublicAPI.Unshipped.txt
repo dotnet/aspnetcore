@@ -1,15 +1,16 @@
 #nullable enable
-Microsoft.AspNetCore.Identity.IdentityApiEndpointsIdentityBuilderExtensions
+Microsoft.AspNetCore.Identity.IdentityAuthenticationBuilderExtensions
 Microsoft.AspNetCore.Identity.SecurityStampValidator<TUser>.SecurityStampValidator(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Identity.SecurityStampValidatorOptions!>! options, Microsoft.AspNetCore.Identity.SignInManager<TUser!>! signInManager, Microsoft.Extensions.Logging.ILoggerFactory! logger) -> void
 Microsoft.AspNetCore.Identity.SecurityStampValidator<TUser>.TimeProvider.get -> System.TimeProvider!
 Microsoft.AspNetCore.Identity.SecurityStampValidatorOptions.TimeProvider.get -> System.TimeProvider?
 Microsoft.AspNetCore.Identity.SecurityStampValidatorOptions.TimeProvider.set -> void
 Microsoft.AspNetCore.Identity.TwoFactorSecurityStampValidator<TUser>.TwoFactorSecurityStampValidator(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Identity.SecurityStampValidatorOptions!>! options, Microsoft.AspNetCore.Identity.SignInManager<TUser!>! signInManager, Microsoft.Extensions.Logging.ILoggerFactory! logger) -> void
 Microsoft.AspNetCore.Routing.IdentityApiEndpointRouteBuilderExtensions
-Microsoft.Extensions.DependencyInjection.IdentityApiEndpointsServiceCollectionExtensions
-static Microsoft.AspNetCore.Identity.IdentityApiEndpointsIdentityBuilderExtensions.AddApiEndpoints(this Microsoft.AspNetCore.Identity.IdentityBuilder! builder) -> Microsoft.AspNetCore.Identity.IdentityBuilder!
+static Microsoft.AspNetCore.Identity.IdentityAuthenticationBuilderExtensions.AddIdentityBearerToken<TUser>(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder! builder) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
+static Microsoft.AspNetCore.Identity.IdentityAuthenticationBuilderExtensions.AddIdentityBearerToken<TUser>(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder! builder, System.Action<Microsoft.AspNetCore.Authentication.BearerToken.BearerTokenOptions!>! configureOptions) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
+static Microsoft.AspNetCore.Identity.IdentityBuilderExtensions.AddApiEndpoints(this Microsoft.AspNetCore.Identity.IdentityBuilder! builder) -> Microsoft.AspNetCore.Identity.IdentityBuilder!
 static Microsoft.AspNetCore.Routing.IdentityApiEndpointRouteBuilderExtensions.MapIdentityApi<TUser>(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints) -> Microsoft.AspNetCore.Builder.IEndpointConventionBuilder!
-static Microsoft.Extensions.DependencyInjection.IdentityApiEndpointsServiceCollectionExtensions.AddIdentityApiEndpoints<TUser>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.AspNetCore.Identity.IdentityBuilder!
-static Microsoft.Extensions.DependencyInjection.IdentityApiEndpointsServiceCollectionExtensions.AddIdentityApiEndpoints<TUser>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Identity.IdentityOptions!>! configure) -> Microsoft.AspNetCore.Identity.IdentityBuilder!
+static Microsoft.Extensions.DependencyInjection.IdentityServiceCollectionExtensions.AddIdentityApiEndpoints<TUser>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.AspNetCore.Identity.IdentityBuilder!
+static Microsoft.Extensions.DependencyInjection.IdentityServiceCollectionExtensions.AddIdentityApiEndpoints<TUser>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Identity.IdentityOptions!>! configure) -> Microsoft.AspNetCore.Identity.IdentityBuilder!
 static readonly Microsoft.AspNetCore.Identity.IdentityConstants.BearerScheme -> string!
 virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.IsTwoFactorEnabledAsync(TUser! user) -> System.Threading.Tasks.Task<bool>!

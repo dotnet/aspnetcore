@@ -23,14 +23,26 @@ public sealed class BearerTokenOptions : AuthenticationSchemeOptions
     /// The expiration information is stored in the protected token. Because of that, an expired token will be rejected
     /// even if it is passed to the server after the client should have purged it.
     /// </summary>
+    /// <remarks>
+    /// Defaults to 1 hour.
+    /// </remarks>
     public TimeSpan BearerTokenExpiration { get; set; } = TimeSpan.FromHours(1);
 
     /// <summary>
-    /// If set, the <see cref="BearerTokenProtector"/> is used to protect and unprotect the identity and other properties which are stored in the
-    /// bearer token value. If not provided, one will be created using <see cref="TicketDataFormat"/> and the <see cref="IDataProtectionProvider"/>
+    /// Controls how much time the refresh token will remain valid from the point it is created.
+    /// The expiration information is stored in the protected token.
+    /// </summary>
+    /// <remarks>
+    /// Defaults to 14 days.
+    /// </remarks>
+    public TimeSpan RefreshTokenExpiration { get; set; } = TimeSpan.FromDays(14);
+
+    /// <summary>
+    /// If set, the <see cref="TokenProtector"/> is used to protect and unprotect the identity and other properties which are stored in the
+    /// bearer token and refresh token. If not provided, one will be created using <see cref="TicketDataFormat"/> and the <see cref="IDataProtectionProvider"/>
     /// from the application <see cref="IServiceProvider"/>.
     /// </summary>
-    public ISecureDataFormat<AuthenticationTicket>? BearerTokenProtector { get; set; }
+    public ISecureDataFormat<AuthenticationTicket>? TokenProtector { get; set; }
 
     /// <summary>
     /// The object provided by the application to process events raised by the bearer token authentication handler.

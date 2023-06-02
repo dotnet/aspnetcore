@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.BearerToken.DTO;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -18,6 +20,7 @@ namespace Microsoft.AspNetCore.Routing;
 /// </summary>
 public static class IdentityApiEndpointRouteBuilderExtensions
 {
+
     /// <summary>
     /// Add endpoints for registering, logging in, and logging out using ASP.NET Core Identity.
     /// </summary>
@@ -70,6 +73,20 @@ public static class IdentityApiEndpointRouteBuilderExtensions
             var scheme = useCookies ? IdentityConstants.ApplicationScheme : IdentityConstants.BearerScheme;
 
             return TypedResults.SignIn(claimsPrincipal, authenticationScheme: scheme);
+        });
+
+        routeGroup.MapPost("/refresh", Results<UnauthorizedHttpResult, Ok<AccessTokenResponse>, SignInHttpResult>
+            ([FromBody] RefreshRequest refreshRequest) =>
+        {
+            // This is the minimal principal that IsAuthenticated. The BearerTokenHander will recreate the full principal
+            // from the refresh token if it is able. The sign in will fail without an identity name.
+            var refreshPrincipal =  new ClaimsPrincipal(new ClaimsIdentity(IdentityConstants.BearerScheme));
+            var properties = new AuthenticationProperties
+            {
+                RefreshToken = refreshRequest.RefreshToken
+            };
+
+            return TypedResults.SignIn(refreshPrincipal, properties, IdentityConstants.BearerScheme);
         });
 
         return new IdentityEndpointsConventionBuilder(routeGroup);

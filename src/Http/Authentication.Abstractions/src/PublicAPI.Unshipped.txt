@@ -2,3 +2,5 @@
 Microsoft.AspNetCore.Authentication.AuthenticationFailureException
 Microsoft.AspNetCore.Authentication.AuthenticationFailureException.AuthenticationFailureException(string? message) -> void
 Microsoft.AspNetCore.Authentication.AuthenticationFailureException.AuthenticationFailureException(string? message, System.Exception? innerException) -> void
+Microsoft.AspNetCore.Authentication.AuthenticationProperties.RefreshToken.get -> string?
+Microsoft.AspNetCore.Authentication.AuthenticationProperties.RefreshToken.set -> void
