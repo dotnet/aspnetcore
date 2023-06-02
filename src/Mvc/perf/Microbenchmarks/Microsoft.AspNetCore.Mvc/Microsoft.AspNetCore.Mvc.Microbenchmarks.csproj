@@ -10,9 +10,14 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Mvc" />
     <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.Views\Microsoft.AspNetCore.Mvc.Views.Microbenchmarks.csproj" />
+    <Reference Include="Microsoft.AspNetCore.Components.Endpoints" />
     <Reference Include="BenchmarkDotNet" />
 
     <Compile Include="$(SharedSourceRoot)BenchmarkRunner\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="BenchmarkDotNet.Artifacts\" />
   </ItemGroup>
 
 </Project>
