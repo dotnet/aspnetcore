@@ -9,6 +9,7 @@ using Microsoft.Extensions.Primitives;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Microsoft.AspNetCore.Testing;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
@@ -279,7 +280,7 @@ app.MapGet("/value-task", () => ValueTask.CompletedTask);
         }
     }
 
-    [Theory]
+    [ConditionalTheory(Skip = "https://github.com/dotnet/runtime/issues/87073")]
     [MemberData(nameof(JsonContextActions))]
     public async Task RequestDelegateWritesAsJsonResponseBody_WithJsonSerializerContext(string delegateName, string delegateSource)
     {
@@ -309,7 +310,7 @@ app.MapGet("/test", {delegateName});
         Assert.Equal("Write even more tests!", deserializedResponseBody!.Name);
     }
 
-    [Theory]
+    [ConditionalTheory(Skip = "https://github.com/dotnet/runtime/issues/87073")]
     [InlineData(true)]
     [InlineData(false)]
     public async Task RequestDelegateWritesAsJsonResponseBody_UnspeakableType(bool useJsonContext)
@@ -326,6 +327,41 @@ static async IAsyncEnumerable<JsonTodo> GetTodosAsync()
 
     yield return new JsonTodoChild() { Id = 2, IsComplete = false, Name = "Two", Child = "TwoChild" };
 }
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var serviceProvider = CreateServiceProvider(serviceCollection =>
+        {
+            if (useJsonContext)
+            {
+                serviceCollection.ConfigureHttpJsonOptions(o =>
+                {
+                    o.SerializerOptions.TypeInfoResolverChain.Insert(0, SharedTestJsonContext.Default);
+                    o.SerializerOptions.TypeInfoResolver = SharedTestJsonContext.Default;
+                });
+            }
+        });
+        var endpoint = GetEndpointFromCompilation(compilation, serviceProvider: serviceProvider);
+
+        var httpContext = CreateHttpContext(serviceProvider);
+
+        await endpoint.RequestDelegate(httpContext);
+
+        var expectedBody = """[{"id":1,"name":"One","isComplete":true},{"$type":"JsonTodoChild","child":"TwoChild","id":2,"name":"Two","isComplete":false}]""";
+        await VerifyResponseBodyAsync(httpContext, expectedBody);
+    }
+
+    [ConditionalTheory(Skip = "https://github.com/dotnet/runtime/issues/87073")]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task RequestDelegateWritesAsJsonResponseBody_UnspeakableType_InFilter(bool useJsonContext)
+    {
+        var source = """
+app.MapGet("/todos", () => "not going to be returned")
+.AddEndpointFilterFactory((routeHandlerContext, next) => async (context) =>
+{
+    var result = await next(context);
+    return new Todo { Name = "Write even more tests!" };
+});
 """;
         var (_, compilation) = await RunGeneratorAsync(source);
         var serviceProvider = CreateServiceProvider(serviceCollection =>

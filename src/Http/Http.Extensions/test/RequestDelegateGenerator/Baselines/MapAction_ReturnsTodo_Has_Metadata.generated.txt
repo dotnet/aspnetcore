@@ -111,7 +111,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                     EndpointFilterDelegate? filteredInvocation = null;
                     var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
                     var serializerOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value.SerializerOptions ?? new JsonOptions().SerializerOptions;
-                    var jsonTypeInfo =  (JsonTypeInfo<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo>)serializerOptions.GetTypeInfo(typeof(global::Microsoft.AspNetCore.Http.Generators.Tests.Todo));
+                    var objectJsonTypeInfo =  (JsonTypeInfo<object?>)serializerOptions.GetTypeInfo(typeof(object));
+                    var responseJsonTypeInfo =  (JsonTypeInfo<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo>)serializerOptions.GetTypeInfo(typeof(global::Microsoft.AspNetCore.Http.Generators.Tests.Todo));
 
                     if (options.EndpointBuilder.FilterFactories.Count > 0)
                     {
@@ -136,7 +137,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                             return Task.CompletedTask;
                         }
                         var result = handler();
-                        return GeneratedRouteBuilderExtensionsCore.WriteToResponseAsync(result, httpContext, jsonTypeInfo);
+                        return GeneratedRouteBuilderExtensionsCore.WriteJsonResponseAsync(result, httpContext, responseJsonTypeInfo);
                     }
 
                     async Task RequestHandlerFiltered(HttpContext httpContext)
@@ -147,7 +148,10 @@ namespace Microsoft.AspNetCore.Http.Generated
                             httpContext.Response.StatusCode = 400;
                         }
                         var result = await filteredInvocation(EndpointFilterInvocationContext.Create(httpContext));
-                        await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
+                        if (result is not null)
+                        {
+                            await GeneratedRouteBuilderExtensionsCore.ExecuteReturnAsync(result, httpContext, objectJsonTypeInfo);
+                        }
                     }
 
                     RequestDelegate targetDelegate = filteredInvocation is null ? RequestHandler : RequestHandlerFiltered;
@@ -189,7 +193,7 @@ namespace Microsoft.AspNetCore.Http.Generated
         [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode",
             Justification = "The 'JsonSerializer.IsReflectionEnabledByDefault' feature switch, which is set to false by default for trimmed ASP.NET apps, ensures the JsonSerializer doesn't use Reflection.")]
         [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode", Justification = "See above.")]
-        private static Task ExecuteObjectResult(object? obj, HttpContext httpContext)
+        private static Task ExecuteReturnAsync(object? obj, HttpContext httpContext, JsonTypeInfo<object?> jsonTypeInfo)
         {
             if (obj is IResult r)
             {
@@ -201,14 +205,14 @@ namespace Microsoft.AspNetCore.Http.Generated
             }
             else
             {
-                return httpContext.Response.WriteAsJsonAsync(obj);
+                return WriteJsonResponseAsync(obj, httpContext, jsonTypeInfo);
             }
         }
 
         [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode",
             Justification = "The 'JsonSerializer.IsReflectionEnabledByDefault' feature switch, which is set to false by default for trimmed ASP.NET apps, ensures the JsonSerializer doesn't use Reflection.")]
         [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode", Justification = "See above.")]
-        private static Task WriteToResponseAsync<T>(T? value, HttpContext httpContext, JsonTypeInfo<T> jsonTypeInfo)
+        private static Task WriteJsonResponseAsync<T>(T? value, HttpContext httpContext, JsonTypeInfo<T> jsonTypeInfo)
         {
             var runtimeType = value?.GetType();
             if (runtimeType is null || jsonTypeInfo.Type == runtimeType || jsonTypeInfo.PolymorphismOptions is not null)
@@ -218,6 +222,7 @@ namespace Microsoft.AspNetCore.Http.Generated
 
             return httpContext.Response.WriteAsJsonAsync<object?>(value, jsonTypeInfo.Options);
         }
+
 
     }
 

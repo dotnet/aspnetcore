@@ -131,7 +131,7 @@ internal static class StaticRouteHandlerModelEmitter
         }
         else if (endpointResponse.ResponseType?.SpecialType == SpecialType.System_Object)
         {
-            return $"{returnOrAwait} GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);";
+            return $"{returnOrAwait} GeneratedRouteBuilderExtensionsCore.ExecuteReturnAsync(result, httpContext, objectJsonTypeInfo);";
         }
         else if (!endpointResponse.HasNoResponse)
         {
@@ -178,7 +178,10 @@ internal static class StaticRouteHandlerModelEmitter
         codeWriter.WriteLine("httpContext.Response.StatusCode = 400;");
         codeWriter.EndBlock(); // End if-statement block
         codeWriter.WriteLine($"var result = await filteredInvocation({invocationCreator}{invocationGenericArgs}(httpContext{argumentList}));");
-        codeWriter.WriteLine("await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);");
+        codeWriter.WriteLine("if (result is not null)");
+        codeWriter.StartBlock();
+        codeWriter.WriteLine("await GeneratedRouteBuilderExtensionsCore.ExecuteReturnAsync(result, httpContext, objectJsonTypeInfo);");
+        codeWriter.EndBlock();
         codeWriter.EndBlock(); // End handler method block
     }
 
