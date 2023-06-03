@@ -20,15 +20,15 @@ async function boot(): Promise<void> {
   }
   started = true;
 
-  const jsInitializer = await fetchAndInvokeInitializers();
-
-  startIpcReceiver();
-
   dispatcher = DotNet.attachDispatcher({
     beginInvokeDotNetFromJS: sendBeginInvokeDotNetFromJS,
     endInvokeJSFromDotNet: sendEndInvokeJSFromDotNet,
     sendByteArray: sendByteArray,
   });
+
+  const jsInitializer = await fetchAndInvokeInitializers();
+
+  startIpcReceiver();
 
   Blazor._internal.receiveWebViewDotNetDataStream = receiveWebViewDotNetDataStream;
 
