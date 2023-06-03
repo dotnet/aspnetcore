@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -70,9 +71,23 @@ internal sealed class DefaultFormValuesSupplier : IFormValueSupplier
         // Form values are parsed according to the culture of the request, which is set to the current culture by the localization middleware.
         // Some form input types use the invariant culture when sending the data to the server. For those cases, we'll
         // provide a way to override the culture to use to parse that value.
-        var reader = new FormDataReader(form, CultureInfo.CurrentCulture);
+        var buffer = ArrayPool<char>.Shared.Rent(2048);
+        var reader = new FormDataReader(CreateReadOnlyMemoryKeys(form), CultureInfo.CurrentCulture, buffer.AsMemory(0, 2048));
         reader.PushPrefix(value);
-        return FormDataMapper.Map<T>(reader, options);
+        var result = FormDataMapper.Map<T>(reader, options);
+        ArrayPool<char>.Shared.Return(buffer);
+        return result;
+    }
+
+    private static IReadOnlyDictionary<Prefix, StringValues> CreateReadOnlyMemoryKeys(IReadOnlyDictionary<string, StringValues> formCollection)
+    {
+        var result = new Dictionary<Prefix, StringValues>(formCollection.Count);
+        foreach (var key in formCollection.Keys)
+        {
+            result.Add(new Prefix(key.AsMemory()), formCollection[key]);
+        }
+
+        return result;
     }
 
     public bool CanConvertSingleValue(Type type)

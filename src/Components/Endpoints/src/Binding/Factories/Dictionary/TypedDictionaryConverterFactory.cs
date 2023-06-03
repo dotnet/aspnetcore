@@ -8,7 +8,7 @@ using System.Collections.ObjectModel;
 namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
 
 internal sealed class TypedDictionaryConverterFactory<TDictionaryType, TKey, TValue> : IFormDataConverterFactory
-    where TKey : IParsable<TKey>
+    where TKey : ISpanParsable<TKey>
 {
     public bool CanConvert(Type type, FormDataMapperOptions options)
     {

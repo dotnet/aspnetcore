@@ -4,7 +4,7 @@
 namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
 
 internal sealed class ConcreteTypeDictionaryConverterFactory<TDictionary, TKey, TValue> : IFormDataConverterFactory
-    where TKey : IParsable<TKey>
+    where TKey : ISpanParsable<TKey>
 {
     public static readonly ConcreteTypeDictionaryConverterFactory<TDictionary, TKey, TValue> Instance = new();
 

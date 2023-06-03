@@ -10,24 +10,26 @@ namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
 public class FormDataMapperCollectionBenchmark
 {
     private FormDataMapperOptions _formMapperOptions;
-    private Dictionary<string, StringValues> _formDataEntries;
+    private Dictionary<Prefix, StringValues> _formDataEntries;
     private FormDataReader _formDataReader;
 
     [Params(0, 1, 10, 100, 1000)]
     public int CollectionSize { get; set; }
+
+    public static char[] Buffer = new char[2048];
 
     [GlobalSetup]
     public void Setup()
     {
         _formMapperOptions = new FormDataMapperOptions();
         _formDataEntries = Enumerable.Range(0, CollectionSize)
-            .ToDictionary(i => $"[{i}]", i => new StringValues(i.ToString(CultureInfo.InvariantCulture)));
+            .ToDictionary(i => new Prefix($"[{i}]".AsMemory()), i => new StringValues(i.ToString(CultureInfo.InvariantCulture)));
     }
 
     [IterationSetup]
     public void IterationSetup()
     {
-        _formDataReader = new FormDataReader(_formDataEntries, CultureInfo.InvariantCulture);
+        _formDataReader = new FormDataReader(_formDataEntries, CultureInfo.InvariantCulture, Buffer);
     }
 
     [Benchmark]

@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
 
-public class Address
+public struct Address
 {
     public string Street { get; set; }
     public string PostalCode { get; set; }

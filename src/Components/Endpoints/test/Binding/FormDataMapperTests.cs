@@ -19,8 +19,9 @@ public class FormDataMapperTests
     public void CanDeserialize_PrimitiveTypes(string value, Type type, object expected)
     {
         // Arrange
-        var collection = new Dictionary<string, StringValues>() { ["value"] = new StringValues(value) };
-        var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
+        var prefixBuffer = new char[2048];
+        var collection = ToPrefixDictionary(new Dictionary<string, StringValues>() { ["value"] = new StringValues(value) });
+        var reader = new FormDataReader(collection, CultureInfo.InvariantCulture, prefixBuffer);
         reader.PushPrefix("value");
         var options = new FormDataMapperOptions();
 
@@ -31,13 +32,25 @@ public class FormDataMapperTests
         Assert.Equal(expected, result);
     }
 
+    private IReadOnlyDictionary<Prefix, StringValues> ToPrefixDictionary(Dictionary<string, StringValues> dictionary)
+    {
+        var result = new Dictionary<Prefix, StringValues>(dictionary.Count);
+        foreach (var (key, value) in dictionary)
+        {
+            result.Add(new Prefix(key.AsMemory()), value);
+        }
+
+        return result;
+    }
+
     [Theory]
     [MemberData(nameof(NullableBasicTypes))]
     public void CanDeserialize_NullablePrimitiveTypes(string value, Type type, object expected)
     {
         // Arrange
-        var collection = new Dictionary<string, StringValues>() { ["value"] = new StringValues(value) };
-        var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
+        var prefixBuffer = new char[2048];
+        var collection = ToPrefixDictionary(new Dictionary<string, StringValues>() { ["value"] = new StringValues(value) });
+        var reader = new FormDataReader(collection, CultureInfo.InvariantCulture, prefixBuffer);
         reader.PushPrefix("value");
         var options = new FormDataMapperOptions();
 
@@ -53,8 +66,9 @@ public class FormDataMapperTests
     public void CanDeserialize_NullValues(Type type)
     {
         // Arrange
-        var collection = new Dictionary<string, StringValues>() { };
-        var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
+        var prefixBuffer = new char[2048];
+        var collection = ToPrefixDictionary(new Dictionary<string, StringValues>() { });
+        var reader = new FormDataReader(collection, CultureInfo.InvariantCulture, prefixBuffer);
         reader.PushPrefix("value");
         var options = new FormDataMapperOptions();
 
@@ -69,9 +83,10 @@ public class FormDataMapperTests
     public void CanDeserialize_CustomParsableTypes()
     {
         // Arrange
+        var prefixBuffer = new char[2048];
         var expected = new Point { X = 1, Y = 1 };
-        var collection = new Dictionary<string, StringValues>() { ["value"] = new StringValues("(1,1)") };
-        var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
+        var collection = ToPrefixDictionary(new Dictionary<string, StringValues>() { ["value"] = new StringValues("(1,1)") });
+        var reader = new FormDataReader(collection, CultureInfo.InvariantCulture, prefixBuffer);
         reader.PushPrefix("value");
         var options = new FormDataMapperOptions();
 
@@ -87,9 +102,10 @@ public class FormDataMapperTests
     public void CanDeserialize_NullableCustomParsableTypes()
     {
         // Arrange
+        var prefixBuffer = new char[2048];
         var expected = new ValuePoint { X = 1, Y = 1 };
-        var collection = new Dictionary<string, StringValues>() { ["value"] = new StringValues("(1,1)") };
-        var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
+        var collection = ToPrefixDictionary(new Dictionary<string, StringValues>() { ["value"] = new StringValues("(1,1)") });
+        var reader = new FormDataReader(collection, CultureInfo.InvariantCulture, prefixBuffer);
         reader.PushPrefix("value");
         var options = new FormDataMapperOptions();
 
@@ -104,8 +120,9 @@ public class FormDataMapperTests
     public void CanDeserialize_NullableCustomParsableTypes_NullValue()
     {
         // Arrange
-        var collection = new Dictionary<string, StringValues>() { };
-        var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
+        var prefixBuffer = new char[2048];
+        var collection = ToPrefixDictionary(new Dictionary<string, StringValues>() { });
+        var reader = new FormDataReader(collection, CultureInfo.InvariantCulture, prefixBuffer);
         reader.PushPrefix("value");
         var options = new FormDataMapperOptions();
 
@@ -121,8 +138,9 @@ public class FormDataMapperTests
     public void Deserialize_Collections_NoElements_ReturnsNull()
     {
         // Arrange
-        var data = new Dictionary<string, StringValues>() { };
-        var reader = new FormDataReader(data, CultureInfo.InvariantCulture);
+        var prefixBuffer = new char[2048];
+        var data = ToPrefixDictionary(new Dictionary<string, StringValues>() { });
+        var reader = new FormDataReader(data, CultureInfo.InvariantCulture, prefixBuffer);
         reader.PushPrefix("value");
         var options = new FormDataMapperOptions();
 
@@ -137,9 +155,9 @@ public class FormDataMapperTests
     public void Deserialize_Collections_SingleElement_ReturnsCollection()
     {
         // Arrange
-        var data = new Dictionary<string, StringValues>() { ["[0]"] = "10" };
-        var reader = new FormDataReader(data, CultureInfo.InvariantCulture);
-        reader.PushPrefix("value");
+        var prefixBuffer = new char[2048];
+        var data = ToPrefixDictionary(new Dictionary<string, StringValues>() { ["[0]"] = "10" });
+        var reader = new FormDataReader(data, CultureInfo.InvariantCulture, prefixBuffer);
         var options = new FormDataMapperOptions();
 
         // Act
@@ -157,13 +175,13 @@ public class FormDataMapperTests
     public void Deserialize_Collections_HandlesComputedIndexesBoundaryCorrectly(int size)
     {
         // Arrange
-        var data = new Dictionary<string, StringValues>(Enumerable.Range(0, size)
+        var prefixBuffer = new char[2048];
+        var data = ToPrefixDictionary(new Dictionary<string, StringValues>(Enumerable.Range(0, size)
             .Select(i => new KeyValuePair<string, StringValues>(
                 $"[{i.ToString(CultureInfo.InvariantCulture)}]",
-                (i + 10).ToString(CultureInfo.InvariantCulture))));
+                (i + 10).ToString(CultureInfo.InvariantCulture)))));
 
-        var reader = new FormDataReader(data, CultureInfo.InvariantCulture);
-        reader.PushPrefix("value");
+        var reader = new FormDataReader(data, CultureInfo.InvariantCulture, prefixBuffer);
         var options = new FormDataMapperOptions
         {
             MaxCollectionSize = 110
@@ -186,15 +204,16 @@ public class FormDataMapperTests
     public void Deserialize_Collections_PoolsArraysCorrectly(int size)
     {
         // Arrange
+        var prefixBuffer = new char[2048];
         var rented = new List<int[]>();
         var returned = new List<int[]>();
 
-        var data = new Dictionary<string, StringValues>(Enumerable.Range(0, size)
+        var data = ToPrefixDictionary(new Dictionary<string, StringValues>(Enumerable.Range(0, size)
             .Select(i => new KeyValuePair<string, StringValues>(
                 $"[{i.ToString(CultureInfo.InvariantCulture)}]",
-                (i + 10).ToString(CultureInfo.InvariantCulture))));
+                (i + 10).ToString(CultureInfo.InvariantCulture)))));
 
-        var reader = new FormDataReader(data, CultureInfo.InvariantCulture);
+        var reader = new FormDataReader(data, CultureInfo.InvariantCulture, prefixBuffer);
         reader.PushPrefix("value");
         var options = new FormDataMapperOptions
         {
@@ -228,13 +247,13 @@ public class FormDataMapperTests
     public void Deserialize_Collections_ParsesUpToMaxCollectionSize(int size)
     {
         // Arrange
+        var prefixBuffer = new char[2048];
         var data = new Dictionary<string, StringValues>(Enumerable.Range(0, size)
             .Select(i => new KeyValuePair<string, StringValues>(
                 $"[{i.ToString(CultureInfo.InvariantCulture)}]",
                 (i + 10).ToString(CultureInfo.InvariantCulture))));
 
-        var reader = new FormDataReader(data, CultureInfo.InvariantCulture);
-        reader.PushPrefix("value");
+        var reader = new FormDataReader(ToPrefixDictionary(data), CultureInfo.InvariantCulture, prefixBuffer);
         var options = new FormDataMapperOptions
         {
             MaxCollectionSize = 110
@@ -523,6 +542,7 @@ public class FormDataMapperTests
     public void CanDeserialize_Dictionary_IImmutableDictionary()
     {
         // Arrange
+        var prefixBuffer = new char[2048];
         var expected = ImmutableDictionary.CreateRange(new Dictionary<int, int>() { [0] = 10, [1] = 11, [2] = 12, [3] = 13, [4] = 14, [5] = 15, [6] = 16, [7] = 17, [8] = 18, [9] = 19, });
         // Arrange
         var collection = new Dictionary<string, StringValues>()
@@ -538,7 +558,7 @@ public class FormDataMapperTests
             ["[8]"] = "18",
             ["[9]"] = "19",
         };
-        var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
+        var reader = new FormDataReader(ToPrefixDictionary(collection), CultureInfo.InvariantCulture, prefixBuffer);
         var options = new FormDataMapperOptions();
 
         // Act
@@ -578,6 +598,7 @@ public class FormDataMapperTests
     public void CanDeserialize_Dictionary_IReadOnlyDictionary()
     {
         // Arrange
+        var prefixBuffer = new char[2048];
         var expected = new Dictionary<int, int>() { [0] = 10, [1] = 11, [2] = 12, [3] = 13, [4] = 14, [5] = 15, [6] = 16, [7] = 17, [8] = 18, [9] = 19, };
         var collection = new Dictionary<string, StringValues>()
         {
@@ -592,7 +613,7 @@ public class FormDataMapperTests
             ["[8]"] = "18",
             ["[9]"] = "19",
         };
-        var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
+        var reader = new FormDataReader(ToPrefixDictionary(collection), CultureInfo.InvariantCulture, prefixBuffer);
         var options = new FormDataMapperOptions();
 
         // Act
@@ -608,6 +629,7 @@ public class FormDataMapperTests
     public void CanDeserialize_Dictionary_ReadOnlyDictionary()
     {
         // Arrange
+        var prefixBuffer = new char[2048];
         var expected = new Dictionary<int, int>() { [0] = 10, [1] = 11, [2] = 12, [3] = 13, [4] = 14, [5] = 15, [6] = 16, [7] = 17, [8] = 18, [9] = 19, };
         var collection = new Dictionary<string, StringValues>()
         {
@@ -622,7 +644,7 @@ public class FormDataMapperTests
             ["[8]"] = "18",
             ["[9]"] = "19",
         };
-        var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
+        var reader = new FormDataReader(ToPrefixDictionary(collection), CultureInfo.InvariantCulture, prefixBuffer);
         var options = new FormDataMapperOptions();
 
         // Act
@@ -638,8 +660,9 @@ public class FormDataMapperTests
     public void Deserialize_EmptyDictionary_ReturnsNull()
     {
         // Arrange
+        var prefixBuffer = new char[2048];
         var collection = new Dictionary<string, StringValues>() { };
-        var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
+        var reader = new FormDataReader(ToPrefixDictionary(collection), CultureInfo.InvariantCulture, prefixBuffer);
         var options = new FormDataMapperOptions();
 
         // Act
@@ -653,8 +676,9 @@ public class FormDataMapperTests
     public void Deserialize_Dictionary_RespectsMaxCollectionSize()
     {
         // Arrange
+        var prefixBuffer = new char[2048];
         var collection = new Dictionary<string, StringValues>() { };
-        var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
+        var reader = new FormDataReader(ToPrefixDictionary(collection), CultureInfo.InvariantCulture, prefixBuffer);
         var options = new FormDataMapperOptions();
 
         // Act
@@ -669,7 +693,7 @@ public class FormDataMapperTests
         where TImplementation : TDictionary
     {
         // Arrange
-        var collection = new Dictionary<string, StringValues>()
+        var collection = ToPrefixDictionary(new Dictionary<string, StringValues>()
         {
             ["[0]"] = "10",
             ["[1]"] = "11",
@@ -681,8 +705,10 @@ public class FormDataMapperTests
             ["[7]"] = "17",
             ["[8]"] = "18",
             ["[9]"] = "19",
-        };
-        var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
+        });
+
+        var prefixBuffer = new char[2048];
+        var reader = new FormDataReader(collection, CultureInfo.InvariantCulture, prefixBuffer);
         var options = new FormDataMapperOptions();
 
         // Act
@@ -697,6 +723,7 @@ public class FormDataMapperTests
     private void CanDeserialize_Collection<TCollection, TImplementation, TElement>(TImplementation expected, bool sequenceEquals = false)
     {
         // Arrange
+        var prefixBuffer = new char[2048];
         var collection = new Dictionary<string, StringValues>()
         {
             ["[0]"] = "10",
@@ -710,8 +737,8 @@ public class FormDataMapperTests
             ["[8]"] = "18",
             ["[9]"] = "19",
         };
-        var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
-        reader.PushPrefix("value");
+
+        var reader = new FormDataReader(ToPrefixDictionary(collection), CultureInfo.InvariantCulture, prefixBuffer);
         var options = new FormDataMapperOptions();
 
         // Act
@@ -733,6 +760,7 @@ public class FormDataMapperTests
     public void CanDeserialize_ComplexValueType_Address()
     {
         // Arrange
+        var prefixBuffer = new char[2048];
         var expected = new Address() { City = "Redmond", Street = "1 Microsoft Way", Country = "United States", ZipCode = 98052 };
         var data = new Dictionary<string, StringValues>()
         {
@@ -741,7 +769,7 @@ public class FormDataMapperTests
             ["Street"] = "1 Microsoft Way",
             ["ZipCode"] = "98052",
         };
-        var reader = new FormDataReader(data, CultureInfo.InvariantCulture);
+        var reader = new FormDataReader(ToPrefixDictionary(data), CultureInfo.InvariantCulture, prefixBuffer);
         var options = new FormDataMapperOptions();
 
         // Act
@@ -758,6 +786,7 @@ public class FormDataMapperTests
     public void CanDeserialize_ComplexReferenceType_Customer()
     {
         // Arrange
+        var prefixBuffer = new char[2048];
         var expected = new Customer() { Age = 20, Name = "John Doe", Email = "john.doe@example.com", IsPreferred = true };
         var data = new Dictionary<string, StringValues>()
         {
@@ -767,7 +796,7 @@ public class FormDataMapperTests
             ["IsPreferred"] = "true",
         };
 
-        var reader = new FormDataReader(data, CultureInfo.InvariantCulture);
+        var reader = new FormDataReader(ToPrefixDictionary(data), CultureInfo.InvariantCulture, prefixBuffer);
         var options = new FormDataMapperOptions();
 
         // Act
@@ -785,6 +814,7 @@ public class FormDataMapperTests
     public void CanDeserialize_ComplexReferenceType_Inheritance()
     {
         // Arrange
+        var prefixBuffer = new char[2048];
         var expected = new FrequentCustomer() { Age = 20, Name = "John Doe", Email = "john@example.com", IsPreferred = true, TotalVisits = 10, PreferredStore = "Redmond", MonthlyFrequency = 0.8 };
         var data = new Dictionary<string, StringValues>()
         {
@@ -797,7 +827,7 @@ public class FormDataMapperTests
             ["MonthlyFrequency"] = "0.8",
         };
 
-        var reader = new FormDataReader(data, CultureInfo.InvariantCulture);
+        var reader = new FormDataReader(ToPrefixDictionary(data), CultureInfo.InvariantCulture, prefixBuffer);
         var options = new FormDataMapperOptions();
 
         // Act
@@ -816,6 +846,7 @@ public class FormDataMapperTests
     public void CanDeserialize_ComplexReferenceType_RecursiveMapping()
     {
         // Arrange
+        var prefixBuffer = new char[2048];
         var expected = new Order()
         {
             Id = 10,
@@ -856,7 +887,7 @@ public class FormDataMapperTests
             ["Lines[2]Quantity"] = "30",
         };
 
-        var reader = new FormDataReader(data, CultureInfo.InvariantCulture);
+        var reader = new FormDataReader(ToPrefixDictionary(data), CultureInfo.InvariantCulture, prefixBuffer);
         var options = new FormDataMapperOptions();
 
         // Act
@@ -893,6 +924,7 @@ public class FormDataMapperTests
     public void CanDeserialize_ComplexTypeWithDictionary_Company()
     {
         // Arrange
+        var prefixBuffer = new char[2048];
         var expected = new Company()
         {
             Name = "Microsoft",
@@ -924,7 +956,7 @@ public class FormDataMapperTests
             ["WareHousesByLocation[New York]Address.ZipCode"] = "98052",
         };
 
-        var reader = new FormDataReader(data, CultureInfo.InvariantCulture);
+        var reader = new FormDataReader(ToPrefixDictionary(data), CultureInfo.InvariantCulture, prefixBuffer);
         var options = new FormDataMapperOptions();
 
         // Act
