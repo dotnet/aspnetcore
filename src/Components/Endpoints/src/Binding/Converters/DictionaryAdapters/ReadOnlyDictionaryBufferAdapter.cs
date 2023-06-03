@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
 
 internal sealed class ReadOnlyDictionaryBufferAdapter<TKey, TValue>
     : IDictionaryBufferAdapter<ReadOnlyDictionary<TKey, TValue>, Dictionary<TKey, TValue>, TKey, TValue>
-    where TKey : IParsable<TKey>
+    where TKey : ISpanParsable<TKey>
 {
     public static Dictionary<TKey, TValue> Add(ref Dictionary<TKey, TValue> buffer, TKey key, TValue value)
     {

@@ -6,8 +6,7 @@ using BenchmarkDotNet.Attributes;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
-
-public class FormDataMapperPrimitiveTypeBenchmark
+public class FormDataMapperComplexValueTypeBenchmark
 {
     private FormDataMapperOptions _formMapperOptions;
     private Dictionary<Prefix, StringValues> _formDataEntries;
@@ -19,19 +18,25 @@ public class FormDataMapperPrimitiveTypeBenchmark
     public void Setup()
     {
         _formMapperOptions = new FormDataMapperOptions();
-        _formDataEntries = new Dictionary<Prefix, StringValues> { [new Prefix("value".AsMemory())] = "3" };
+        _formDataEntries = new Dictionary<Prefix, StringValues>
+        {
+            [new Prefix("Street".AsMemory())] = new StringValues("Qux"),
+            [new Prefix("PostalCode".AsMemory())] = new StringValues("12345"),
+            [new Prefix("City".AsMemory())] = new StringValues("Seattle"),
+            [new Prefix("Country".AsMemory())] = new StringValues("USA"),
+        };
         _formDataReader = new FormDataReader(_formDataEntries, CultureInfo.InvariantCulture, Buffer);
-        _formDataReader.PushPrefix("value");
+        _formMapperOptions.ResolveConverter<Address>();
+    }
+
+    [IterationSetup]
+    public void IterationSetup()
+    {
     }
 
     [Benchmark]
-    public int ModelBinding_PrimitiveType_Components()
+    public Address ModelBinding_ComplexValueType_Components()
     {
-        var result = FormDataMapper.Map<int>(_formDataReader, _formMapperOptions);
-        if (result != 3)
-        {
-            throw new InvalidOperationException();
-        }
-        return result;
+        return FormDataMapper.Map<Address>(_formDataReader, _formMapperOptions);
     }
 }
