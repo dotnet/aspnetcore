@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Http.Generated
         private static readonly string[] PatchVerb = new[] { Microsoft.AspNetCore.Http.HttpMethods.Patch };
 
         [InterceptsLocation(@"TestMapActions.cs", 25, 13)]
-        internal static RouteHandlerBuilder MapGet_25(
+        internal static RouteHandlerBuilder MapGet_25_13(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
             Delegate handler)
@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.Http.Generated
         }
 
 [InterceptsLocation(@"TestMapActions.cs", 26, 5)]
-        internal static RouteHandlerBuilder MapGet_26(
+        internal static RouteHandlerBuilder MapGet_26_5(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
             Delegate handler)
@@ -225,7 +225,7 @@ namespace Microsoft.AspNetCore.Http.Generated
         }
 
 [InterceptsLocation(@"TestMapActions.cs", 27, 5)]
-        internal static RouteHandlerBuilder MapGet_27(
+        internal static RouteHandlerBuilder MapGet_27_5(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
             Delegate handler)
@@ -300,7 +300,7 @@ namespace Microsoft.AspNetCore.Http.Generated
         }
 
 [InterceptsLocation(@"TestMapActions.cs", 28, 5)]
-        internal static RouteHandlerBuilder MapGet_28(
+        internal static RouteHandlerBuilder MapGet_28_5(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
             Delegate handler)

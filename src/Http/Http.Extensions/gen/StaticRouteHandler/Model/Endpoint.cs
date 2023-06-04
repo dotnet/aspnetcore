@@ -146,7 +146,7 @@ internal class Endpoint
         var lineNumber = span.StartLinePosition.Line + 1;
         // Calculate the character offset to the end of the Map invocation detected
         var invocationLength = ((MemberAccessExpressionSyntax)((InvocationExpressionSyntax)operation.Syntax).Expression).Expression.Span.Length;
-        var characterNumber = span.StartLinePosition.Character + invocationLength + 1;
+        var characterNumber = span.StartLinePosition.Character + invocationLength + 2;
         return (filePath, lineNumber, characterNumber);
     }
 

@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Http.Generated
         private static readonly string[] PatchVerb = new[] { Microsoft.AspNetCore.Http.HttpMethods.Patch };
 
         [InterceptsLocation(@"TestMapActions.cs", 29, 5)]
-        internal static RouteHandlerBuilder MapPost_29(
+        internal static RouteHandlerBuilder MapPost_29_5(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
             Delegate handler)

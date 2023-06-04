@@ -62,4 +62,27 @@ app.MapGet("/hello2", (string? name) => $"Hello {name ?? string.Empty}!");
             await VerifyResponseBodyAsync(httpContext, "Hello world!");
         }
     }
+
+    [Fact]
+    public async Task MapAction_SupportsMultipleMapsOnTheSameLine()
+    {
+        var source = """
+app.MapGet("/hello", (string name) => $"Hello {name}!"); app.MapGet("/hello2", (string? name) => $"Hello {name ?? string.Empty}!");
+""";
+        var (result, compilation) = await RunGeneratorAsync(source);
+        var endpoints = GetEndpointsFromCompilation(compilation);
+
+        foreach (var endpoint in endpoints)
+        {
+            var httpContext = CreateHttpContext();
+            httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>()
+            {
+                {
+                    "name", "world"
+                }
+            });
+            await endpoint.RequestDelegate(httpContext);
+            await VerifyResponseBodyAsync(httpContext, "Hello world!");
+        }
+    }
 }
