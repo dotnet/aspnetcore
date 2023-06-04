@@ -145,22 +145,23 @@ public sealed class CascadingModelBinder : IComponent, ICascadingValueSupplierFa
         Navigation.LocationChanged -= HandleLocationChanged;
     }
 
-    bool ICascadingValueSupplierFactory.TryGetValueSupplier(object propertyAttribute, Type valueType, string? valueName, [NotNullWhen(true)] out ICascadingValueSupplier? result)
+    bool ICascadingValueSupplierFactory.TryGetValueSupplier(object propertyAttribute, Type parameterType, string? parameterName, [NotNullWhen(true)] out ICascadingValueSupplier? result)
     {
         result = default;
 
-        if (propertyAttribute is not IFormValueCascadingParameterAttribute)
+        if (propertyAttribute is not IFormValueCascadingParameterAttribute formCascadingParameterAttribute)
         {
             return false;
         }
 
+        var valueName = formCascadingParameterAttribute.Name;
         var formName = string.IsNullOrEmpty(valueName) ?
             (_bindingContext?.Name) :
             ModelBindingContext.Combine(_bindingContext, valueName);
 
         if (_bindingInfo != null &&
             string.Equals(_bindingInfo.FormName, formName, StringComparison.Ordinal) &&
-            _bindingInfo.ValueType.Equals(valueType))
+            _bindingInfo.ValueType.Equals(parameterType))
         {
             // We already bound the value, but some component might have been destroyed and
             // re-created. If the type and name of the value that we bound are the same,
@@ -170,10 +171,10 @@ public sealed class CascadingModelBinder : IComponent, ICascadingValueSupplierFa
         }
 
         // Can't supply the value if this context is for a form with a different name.
-        if (FormValueSupplier.CanBind(formName!, valueType))
+        if (FormValueSupplier.CanBind(formName!, parameterType))
         {
-            var bindingSucceeded = FormValueSupplier.TryBind(formName!, valueType, out var boundValue);
-            _bindingInfo = new BindingInfo(formName, valueType, bindingSucceeded, boundValue);
+            var bindingSucceeded = FormValueSupplier.TryBind(formName!, parameterType, out var boundValue);
+            _bindingInfo = new BindingInfo(formName, parameterType, bindingSucceeded, boundValue);
             if (!bindingSucceeded)
             {
                 // Report errors

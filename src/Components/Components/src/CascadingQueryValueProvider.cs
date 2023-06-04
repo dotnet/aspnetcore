@@ -117,8 +117,8 @@ internal sealed class CascadingQueryValueProvider : IComponent, ICascadingValueS
             return false;
         }
 
-        var specifiedName = supplyFromQueryAttribute.Name;
-        var valueName = string.IsNullOrEmpty(specifiedName) ? parameterName : specifiedName;
+        var parameterSpecifiedName = supplyFromQueryAttribute.Name;
+        var valueName = string.IsNullOrEmpty(parameterSpecifiedName) ? parameterName : parameterSpecifiedName;
         var key = new SupplierKey(parameterType, valueName.AsMemory());
 
         if (!_cachedSuppliers.TryGetValue(key, out var supplier))
