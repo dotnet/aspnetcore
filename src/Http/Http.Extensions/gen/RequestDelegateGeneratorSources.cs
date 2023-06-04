@@ -542,6 +542,7 @@ namespace Microsoft.AspNetCore.Http.Generated
     using System.Globalization;
     using System.Linq;
     using System.Reflection;
+    using System.Runtime.CompilerServices;
     using System.Text.Json;
     using System.Text.Json.Serialization.Metadata;
     using System.Threading.Tasks;
@@ -564,11 +565,11 @@ namespace Microsoft.AspNetCore.Http.Generated
     {{GeneratedCodeAttribute}}
     file static class GeneratedRouteBuilderExtensionsCore
     {
-        private static readonly string[] GetVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Get };
-        private static readonly string[] PostVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Post };
-        private static readonly string[] PutVerb = new[]  { global::Microsoft.AspNetCore.Http.HttpMethods.Put };
-        private static readonly string[] DeleteVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Delete };
-        private static readonly string[] PatchVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Patch };
+        private static readonly string[] GetVerb = new[] { Microsoft.AspNetCore.Http.HttpMethods.Get };
+        private static readonly string[] PostVerb = new[] { Microsoft.AspNetCore.Http.HttpMethods.Post };
+        private static readonly string[] PutVerb = new[]  { Microsoft.AspNetCore.Http.HttpMethods.Put };
+        private static readonly string[] DeleteVerb = new[] { Microsoft.AspNetCore.Http.HttpMethods.Delete };
+        private static readonly string[] PatchVerb = new[] { Microsoft.AspNetCore.Http.HttpMethods.Patch };
 
         {{endpoints}}
 

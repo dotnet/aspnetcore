@@ -90,13 +90,12 @@ internal class Endpoint
     public string HttpMethod { get; }
     public bool IsAwaitable { get; set; }
     public bool NeedsParameterArray { get; }
-    public string? RoutePattern { get; }
     public EmitterContext EmitterContext { get; }
     public EndpointResponse? Response { get; }
     public EndpointParameter[] Parameters { get; } = Array.Empty<EndpointParameter>();
     public List<Diagnostic> Diagnostics { get; } = new List<Diagnostic>();
 
-    public (string File, int LineNumber, int CharaceterNumber) Location { get; }
+    public (string File, int LineNumber, int CharacterNumber) Location { get; }
     public IInvocationOperation Operation { get; }
 
     public override bool Equals(object o) =>

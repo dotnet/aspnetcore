@@ -346,7 +346,7 @@ public static class TestMapActions
                 .Replace(RequestDelegateGeneratorSources.GeneratedCodeAttribute, "%GENERATEDCODEATTRIBUTE%")
                 + Environment.NewLine;
             await File.WriteAllTextAsync(baselineFilePath, newSource);
-            // Assert.Fail("RegenerateBaselines=true. Do not merge PRs with this set.");
+            Assert.Fail("RegenerateBaselines=true. Do not merge PRs with this set.");
         }
 
         var baseline = await File.ReadAllTextAsync(baselineFilePath);

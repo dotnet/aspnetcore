@@ -47,6 +47,7 @@ namespace Microsoft.AspNetCore.Http.Generated
     using System.Globalization;
     using System.Linq;
     using System.Reflection;
+    using System.Runtime.CompilerServices;
     using System.Text.Json;
     using System.Text.Json.Serialization.Metadata;
     using System.Threading.Tasks;
@@ -69,17 +70,17 @@ namespace Microsoft.AspNetCore.Http.Generated
     %GENERATEDCODEATTRIBUTE%
     file static class GeneratedRouteBuilderExtensionsCore
     {
-        private static readonly string[] GetVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Get };
-        private static readonly string[] PostVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Post };
-        private static readonly string[] PutVerb = new[]  { global::Microsoft.AspNetCore.Http.HttpMethods.Put };
-        private static readonly string[] DeleteVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Delete };
-        private static readonly string[] PatchVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Patch };
+        private static readonly string[] GetVerb = new[] { Microsoft.AspNetCore.Http.HttpMethods.Get };
+        private static readonly string[] PostVerb = new[] { Microsoft.AspNetCore.Http.HttpMethods.Post };
+        private static readonly string[] PutVerb = new[]  { Microsoft.AspNetCore.Http.HttpMethods.Put };
+        private static readonly string[] DeleteVerb = new[] { Microsoft.AspNetCore.Http.HttpMethods.Delete };
+        private static readonly string[] PatchVerb = new[] { Microsoft.AspNetCore.Http.HttpMethods.Patch };
 
-        [global::System.Runtime.CompilerServices.InterceptsLocation(@"TestMapActions.cs", 25, 13)]
-        internal static global::Microsoft.AspNetCore.Builder.RouteHandlerBuilder MapGet_25(
-            this global::Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints,
-            [global::System.Diagnostics.CodeAnalysis.StringSyntax("Route")] string pattern,
-            global::System.Delegate handler)
+        [InterceptsLocation(@"TestMapActions.cs", 25, 13)]
+        internal static RouteHandlerBuilder MapGet_25(
+            this IEndpointRouteBuilder endpoints,
+            [StringSyntax("Route")] string pattern,
+            Delegate handler)
         {
             MetadataPopulator populateMetadata = (methodInfo, options) =>
             {
@@ -95,7 +96,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                 Debug.Assert(options.EndpointBuilder.ApplicationServices != null, "ApplicationServices not found.");
                 Debug.Assert(options.EndpointBuilder.FilterFactories != null, "FilterFactories not found.");
-                var handler = Cast(del, global::System.String (global::Microsoft.AspNetCore.Http.Generators.Tests.TodoStatus arg0) => throw null!);
+                var handler = Cast(del, System.String (Microsoft.AspNetCore.Http.Generators.Tests.TodoStatus arg0) => throw null!);
                 EndpointFilterDelegate? filteredInvocation = null;
                 if (options.EndpointBuilder.FilterFactories.Count > 0)
                 {
@@ -105,7 +106,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         {
                             return ValueTask.FromResult<object?>(Results.Empty);
                         }
-                        return ValueTask.FromResult<object?>(handler(ic.GetArgument<global::Microsoft.AspNetCore.Http.Generators.Tests.TodoStatus>(0)!));
+                        return ValueTask.FromResult<object?>(handler(ic.GetArgument<Microsoft.AspNetCore.Http.Generators.Tests.TodoStatus>(0)!));
                     },
                     options.EndpointBuilder,
                     handler.Method);
@@ -170,7 +171,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     {
                         httpContext.Response.StatusCode = 400;
                     }
-                    var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::Microsoft.AspNetCore.Http.Generators.Tests.TodoStatus>(httpContext, p_local));
+                    var result = await filteredInvocation(EndpointFilterInvocationContext.Create<Microsoft.AspNetCore.Http.Generators.Tests.TodoStatus>(httpContext, p_local));
                     await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
                 }
 
@@ -178,7 +179,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
                 return new RequestDelegateResult(targetDelegate, metadata);
             };
-            return global::Microsoft.AspNetCore.Http.Generated.GeneratedRouteBuilderExtensionsCore.MapCore(
+            return GeneratedRouteBuilderExtensionsCore.MapCore(
                 endpoints,
                 pattern,
                 handler,

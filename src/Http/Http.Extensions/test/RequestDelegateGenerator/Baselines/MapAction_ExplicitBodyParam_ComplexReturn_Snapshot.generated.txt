@@ -47,6 +47,7 @@ namespace Microsoft.AspNetCore.Http.Generated
     using System.Globalization;
     using System.Linq;
     using System.Reflection;
+    using System.Runtime.CompilerServices;
     using System.Text.Json;
     using System.Text.Json.Serialization.Metadata;
     using System.Threading.Tasks;
@@ -69,25 +70,25 @@ namespace Microsoft.AspNetCore.Http.Generated
     %GENERATEDCODEATTRIBUTE%
     file static class GeneratedRouteBuilderExtensionsCore
     {
-        private static readonly string[] GetVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Get };
-        private static readonly string[] PostVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Post };
-        private static readonly string[] PutVerb = new[]  { global::Microsoft.AspNetCore.Http.HttpMethods.Put };
-        private static readonly string[] DeleteVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Delete };
-        private static readonly string[] PatchVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Patch };
+        private static readonly string[] GetVerb = new[] { Microsoft.AspNetCore.Http.HttpMethods.Get };
+        private static readonly string[] PostVerb = new[] { Microsoft.AspNetCore.Http.HttpMethods.Post };
+        private static readonly string[] PutVerb = new[]  { Microsoft.AspNetCore.Http.HttpMethods.Put };
+        private static readonly string[] DeleteVerb = new[] { Microsoft.AspNetCore.Http.HttpMethods.Delete };
+        private static readonly string[] PatchVerb = new[] { Microsoft.AspNetCore.Http.HttpMethods.Patch };
 
-        [global::System.Runtime.CompilerServices.InterceptsLocation(@"TestMapActions.cs", 25, 13)]
-        internal static global::Microsoft.AspNetCore.Builder.RouteHandlerBuilder MapPost_25(
-            this global::Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints,
-            [global::System.Diagnostics.CodeAnalysis.StringSyntax("Route")] string pattern,
-            global::System.Delegate handler)
+        [InterceptsLocation(@"TestMapActions.cs", 25, 13)]
+        internal static RouteHandlerBuilder MapPost_25(
+            this IEndpointRouteBuilder endpoints,
+            [StringSyntax("Route")] string pattern,
+            Delegate handler)
         {
             MetadataPopulator populateMetadata = (methodInfo, options) =>
             {
                 Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
                 Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                 options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 25));
-                options.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(type: typeof(global::Microsoft.AspNetCore.Http.Generators.Tests.Todo), isOptional: false, contentTypes: GeneratedMetadataConstants.JsonContentType));
-                PopulateMetadataForEndpoint<global::Microsoft.AspNetCore.Http.HttpResults.Ok<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo>>(methodInfo, options.EndpointBuilder);
+                options.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(type: typeof(Microsoft.AspNetCore.Http.Generators.Tests.Todo), isOptional: false, contentTypes: GeneratedMetadataConstants.JsonContentType));
+                PopulateMetadataForEndpoint<Microsoft.AspNetCore.Http.HttpResults.Ok<Microsoft.AspNetCore.Http.Generators.Tests.Todo>>(methodInfo, options.EndpointBuilder);
                 return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
             };
             RequestDelegateFactoryFunc createRequestDelegate = (del, options, inferredMetadataResult) =>
@@ -96,7 +97,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                 Debug.Assert(options.EndpointBuilder.ApplicationServices != null, "ApplicationServices not found.");
                 Debug.Assert(options.EndpointBuilder.FilterFactories != null, "FilterFactories not found.");
-                var handler = Cast(del, global::Microsoft.AspNetCore.Http.HttpResults.Ok<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo> (global::Microsoft.AspNetCore.Http.Generators.Tests.Todo arg0) => throw null!);
+                var handler = Cast(del, Microsoft.AspNetCore.Http.HttpResults.Ok<Microsoft.AspNetCore.Http.Generators.Tests.Todo> (Microsoft.AspNetCore.Http.Generators.Tests.Todo arg0) => throw null!);
                 EndpointFilterDelegate? filteredInvocation = null;
                 if (options.EndpointBuilder.FilterFactories.Count > 0)
                 {
@@ -106,7 +107,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         {
                             return ValueTask.FromResult<object?>(Results.Empty);
                         }
-                        return ValueTask.FromResult<object?>(handler(ic.GetArgument<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo>(0)!));
+                        return ValueTask.FromResult<object?>(handler(ic.GetArgument<Microsoft.AspNetCore.Http.Generators.Tests.Todo>(0)!));
                     },
                     options.EndpointBuilder,
                     handler.Method);
@@ -119,7 +120,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var wasParamCheckFailure = false;
                     // Endpoint Parameter: todo (Type = Microsoft.AspNetCore.Http.Generators.Tests.Todo, IsOptional = False, IsParsable = False, IsArray = False, Source = JsonBody)
-                    var todo_resolveBodyResult = await GeneratedRouteBuilderExtensionsCore.TryResolveBodyAsync<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo>(httpContext, logOrThrowExceptionHelper, false, "Todo", "todo");
+                    var todo_resolveBodyResult = await GeneratedRouteBuilderExtensionsCore.TryResolveBodyAsync<Microsoft.AspNetCore.Http.Generators.Tests.Todo>(httpContext, logOrThrowExceptionHelper, false, "Todo", "todo");
                     var todo_local = todo_resolveBodyResult.Item2;
                     if (!todo_resolveBodyResult.Item1)
                     {
@@ -139,7 +140,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var wasParamCheckFailure = false;
                     // Endpoint Parameter: todo (Type = Microsoft.AspNetCore.Http.Generators.Tests.Todo, IsOptional = False, IsParsable = False, IsArray = False, Source = JsonBody)
-                    var todo_resolveBodyResult = await GeneratedRouteBuilderExtensionsCore.TryResolveBodyAsync<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo>(httpContext, logOrThrowExceptionHelper, false, "Todo", "todo");
+                    var todo_resolveBodyResult = await GeneratedRouteBuilderExtensionsCore.TryResolveBodyAsync<Microsoft.AspNetCore.Http.Generators.Tests.Todo>(httpContext, logOrThrowExceptionHelper, false, "Todo", "todo");
                     var todo_local = todo_resolveBodyResult.Item2;
                     if (!todo_resolveBodyResult.Item1)
                     {
@@ -150,7 +151,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     {
                         httpContext.Response.StatusCode = 400;
                     }
-                    var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo>(httpContext, todo_local!));
+                    var result = await filteredInvocation(EndpointFilterInvocationContext.Create<Microsoft.AspNetCore.Http.Generators.Tests.Todo>(httpContext, todo_local!));
                     await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
                 }
 
@@ -158,7 +159,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
                 return new RequestDelegateResult(targetDelegate, metadata);
             };
-            return global::Microsoft.AspNetCore.Http.Generated.GeneratedRouteBuilderExtensionsCore.MapCore(
+            return GeneratedRouteBuilderExtensionsCore.MapCore(
                 endpoints,
                 pattern,
                 handler,
@@ -167,19 +168,19 @@ namespace Microsoft.AspNetCore.Http.Generated
                 createRequestDelegate);
         }
 
-[global::System.Runtime.CompilerServices.InterceptsLocation(@"TestMapActions.cs", 27, 5)]
-        internal static global::Microsoft.AspNetCore.Builder.RouteHandlerBuilder MapPost_27(
-            this global::Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints,
-            [global::System.Diagnostics.CodeAnalysis.StringSyntax("Route")] string pattern,
-            global::System.Delegate handler)
+[InterceptsLocation(@"TestMapActions.cs", 27, 5)]
+        internal static RouteHandlerBuilder MapPost_27(
+            this IEndpointRouteBuilder endpoints,
+            [StringSyntax("Route")] string pattern,
+            Delegate handler)
         {
             MetadataPopulator populateMetadata = (methodInfo, options) =>
             {
                 Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
                 Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                 options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 27));
-                options.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(type: typeof(global::Microsoft.AspNetCore.Http.Generators.Tests.Todo), isOptional: true, contentTypes: GeneratedMetadataConstants.JsonContentType));
-                PopulateMetadataForEndpoint<global::Microsoft.AspNetCore.Http.HttpResults.Ok<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo>>(methodInfo, options.EndpointBuilder);
+                options.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(type: typeof(Microsoft.AspNetCore.Http.Generators.Tests.Todo), isOptional: true, contentTypes: GeneratedMetadataConstants.JsonContentType));
+                PopulateMetadataForEndpoint<Microsoft.AspNetCore.Http.HttpResults.Ok<Microsoft.AspNetCore.Http.Generators.Tests.Todo>>(methodInfo, options.EndpointBuilder);
                 return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
             };
             RequestDelegateFactoryFunc createRequestDelegate = (del, options, inferredMetadataResult) =>
@@ -188,7 +189,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                 Debug.Assert(options.EndpointBuilder.ApplicationServices != null, "ApplicationServices not found.");
                 Debug.Assert(options.EndpointBuilder.FilterFactories != null, "FilterFactories not found.");
-                var handler = Cast(del, global::Microsoft.AspNetCore.Http.HttpResults.Ok<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo> (global::Microsoft.AspNetCore.Http.Generators.Tests.Todo? arg0) => throw null!);
+                var handler = Cast(del, Microsoft.AspNetCore.Http.HttpResults.Ok<Microsoft.AspNetCore.Http.Generators.Tests.Todo> (Microsoft.AspNetCore.Http.Generators.Tests.Todo? arg0) => throw null!);
                 EndpointFilterDelegate? filteredInvocation = null;
                 if (options.EndpointBuilder.FilterFactories.Count > 0)
                 {
@@ -198,7 +199,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         {
                             return ValueTask.FromResult<object?>(Results.Empty);
                         }
-                        return ValueTask.FromResult<object?>(handler(ic.GetArgument<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo?>(0)!));
+                        return ValueTask.FromResult<object?>(handler(ic.GetArgument<Microsoft.AspNetCore.Http.Generators.Tests.Todo?>(0)!));
                     },
                     options.EndpointBuilder,
                     handler.Method);
@@ -211,7 +212,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var wasParamCheckFailure = false;
                     // Endpoint Parameter: todo (Type = Microsoft.AspNetCore.Http.Generators.Tests.Todo?, IsOptional = True, IsParsable = False, IsArray = False, Source = JsonBody)
-                    var todo_resolveBodyResult = await GeneratedRouteBuilderExtensionsCore.TryResolveBodyAsync<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo?>(httpContext, logOrThrowExceptionHelper, true, "Todo?", "todo");
+                    var todo_resolveBodyResult = await GeneratedRouteBuilderExtensionsCore.TryResolveBodyAsync<Microsoft.AspNetCore.Http.Generators.Tests.Todo?>(httpContext, logOrThrowExceptionHelper, true, "Todo?", "todo");
                     var todo_local = todo_resolveBodyResult.Item2;
                     if (!todo_resolveBodyResult.Item1)
                     {
@@ -231,7 +232,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var wasParamCheckFailure = false;
                     // Endpoint Parameter: todo (Type = Microsoft.AspNetCore.Http.Generators.Tests.Todo?, IsOptional = True, IsParsable = False, IsArray = False, Source = JsonBody)
-                    var todo_resolveBodyResult = await GeneratedRouteBuilderExtensionsCore.TryResolveBodyAsync<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo?>(httpContext, logOrThrowExceptionHelper, true, "Todo?", "todo");
+                    var todo_resolveBodyResult = await GeneratedRouteBuilderExtensionsCore.TryResolveBodyAsync<Microsoft.AspNetCore.Http.Generators.Tests.Todo?>(httpContext, logOrThrowExceptionHelper, true, "Todo?", "todo");
                     var todo_local = todo_resolveBodyResult.Item2;
                     if (!todo_resolveBodyResult.Item1)
                     {
@@ -242,7 +243,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     {
                         httpContext.Response.StatusCode = 400;
                     }
-                    var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo?>(httpContext, todo_local));
+                    var result = await filteredInvocation(EndpointFilterInvocationContext.Create<Microsoft.AspNetCore.Http.Generators.Tests.Todo?>(httpContext, todo_local));
                     await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
                 }
 
@@ -250,7 +251,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
                 return new RequestDelegateResult(targetDelegate, metadata);
             };
-            return global::Microsoft.AspNetCore.Http.Generated.GeneratedRouteBuilderExtensionsCore.MapCore(
+            return GeneratedRouteBuilderExtensionsCore.MapCore(
                 endpoints,
                 pattern,
                 handler,

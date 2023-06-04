@@ -60,21 +60,21 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
             {
                 using var stringWriter = new StringWriter(CultureInfo.InvariantCulture);
                 using var codeWriter = new CodeWriter(stringWriter, baseIndent: 2);
-                codeWriter.WriteLine($$"""[global::System.Runtime.CompilerServices.InterceptsLocation(@"{{endpoint!.Location.File}}", {{endpoint.Location.LineNumber}}, {{endpoint.Location.CharaceterNumber + 1}})]""");
-                codeWriter.WriteLine($"internal static global::Microsoft.AspNetCore.Builder.RouteHandlerBuilder {endpoint!.HttpMethod}_{endpoint.Location.LineNumber}(");
+                codeWriter.WriteLine($$"""[InterceptsLocation(@"{{endpoint.Location.File}}", {{endpoint.Location.LineNumber}}, {{endpoint.Location.CharacterNumber + 1}})]""");
+                codeWriter.WriteLine($"internal static RouteHandlerBuilder {endpoint.HttpMethod}_{endpoint.Location.LineNumber}(");
                 codeWriter.Indent++;
-                codeWriter.WriteLine("this global::Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints,");
+                codeWriter.WriteLine("this IEndpointRouteBuilder endpoints,");
                 // MapFallback overloads that only take a delegate do not need a pattern argument
                 if (endpoint.HttpMethod != "MapFallback" || endpoint.Operation.Arguments.Length != 2)
                 {
-                    codeWriter.WriteLine(@"[global::System.Diagnostics.CodeAnalysis.StringSyntax(""Route"")] string pattern,");
+                    codeWriter.WriteLine(@"[StringSyntax(""Route"")] string pattern,");
                 }
                 // MapMethods overloads define an additional `httpMethods` parameter
                 if (endpoint.HttpMethod == "MapMethods")
                 {
-                    codeWriter.WriteLine("global::System.Collections.Generic.IEnumerable<string> httpMethods,");
+                    codeWriter.WriteLine("IEnumerable<string> httpMethods,");
                 }
-                codeWriter.WriteLine($"global::System.Delegate handler)");
+                codeWriter.WriteLine("Delegate handler)");
                 codeWriter.Indent--;
                 codeWriter.StartBlock();
                 codeWriter.WriteLine("MetadataPopulator populateMetadata = (methodInfo, options) =>");
@@ -135,7 +135,7 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                 codeWriter.WriteLine("return new RequestDelegateResult(targetDelegate, metadata);");
                 codeWriter.EndBlockWithSemicolon();
 
-                codeWriter.WriteLine("return global::Microsoft.AspNetCore.Http.Generated.GeneratedRouteBuilderExtensionsCore.MapCore(");
+                codeWriter.WriteLine("return GeneratedRouteBuilderExtensionsCore.MapCore(");
                 codeWriter.Indent++;
                 codeWriter.WriteLine("endpoints,");
                 // For `MapFallback` overloads that only take a delegate, provide the assumed default
@@ -149,7 +149,7 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                     codeWriter.WriteLine($"{SymbolDisplay.FormatLiteral("{*path:nonfile}", true)},");
                 }
                 codeWriter.WriteLine("handler,");
-                codeWriter.WriteLine($"{endpoint!.EmitVerb()},");
+                codeWriter.WriteLine($"{endpoint.EmitVerb()},");
                 codeWriter.WriteLine("populateMetadata,");
                 codeWriter.WriteLine($"createRequestDelegate);");
                 codeWriter.Indent--;

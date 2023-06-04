@@ -47,6 +47,7 @@ namespace Microsoft.AspNetCore.Http.Generated
     using System.Globalization;
     using System.Linq;
     using System.Reflection;
+    using System.Runtime.CompilerServices;
     using System.Text.Json;
     using System.Text.Json.Serialization.Metadata;
     using System.Threading.Tasks;
@@ -69,17 +70,17 @@ namespace Microsoft.AspNetCore.Http.Generated
     %GENERATEDCODEATTRIBUTE%
     file static class GeneratedRouteBuilderExtensionsCore
     {
-        private static readonly string[] GetVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Get };
-        private static readonly string[] PostVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Post };
-        private static readonly string[] PutVerb = new[]  { global::Microsoft.AspNetCore.Http.HttpMethods.Put };
-        private static readonly string[] DeleteVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Delete };
-        private static readonly string[] PatchVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Patch };
+        private static readonly string[] GetVerb = new[] { Microsoft.AspNetCore.Http.HttpMethods.Get };
+        private static readonly string[] PostVerb = new[] { Microsoft.AspNetCore.Http.HttpMethods.Post };
+        private static readonly string[] PutVerb = new[]  { Microsoft.AspNetCore.Http.HttpMethods.Put };
+        private static readonly string[] DeleteVerb = new[] { Microsoft.AspNetCore.Http.HttpMethods.Delete };
+        private static readonly string[] PatchVerb = new[] { Microsoft.AspNetCore.Http.HttpMethods.Patch };
 
-        [global::System.Runtime.CompilerServices.InterceptsLocation(@"TestMapActions.cs", 29, 5)]
-        internal static global::Microsoft.AspNetCore.Builder.RouteHandlerBuilder MapPost_29(
-            this global::Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints,
-            [global::System.Diagnostics.CodeAnalysis.StringSyntax("Route")] string pattern,
-            global::System.Delegate handler)
+        [InterceptsLocation(@"TestMapActions.cs", 29, 5)]
+        internal static RouteHandlerBuilder MapPost_29(
+            this IEndpointRouteBuilder endpoints,
+            [StringSyntax("Route")] string pattern,
+            Delegate handler)
         {
             MetadataPopulator populateMetadata = (methodInfo, options) =>
             {
@@ -95,7 +96,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                 Debug.Assert(options.EndpointBuilder.ApplicationServices != null, "ApplicationServices not found.");
                 Debug.Assert(options.EndpointBuilder.FilterFactories != null, "FilterFactories not found.");
-                var handler = Cast(del, void (global::Microsoft.AspNetCore.Http.HttpContext arg0, global::Microsoft.AspNetCore.Http.IFormFile arg1, global::Microsoft.AspNetCore.Http.IFormFileCollection arg2, global::Microsoft.AspNetCore.Http.IFormCollection arg3, global::Microsoft.AspNetCore.Http.Generators.Tests.MyTryParseRecord arg4) => throw null!);
+                var handler = Cast(del, void (Microsoft.AspNetCore.Http.HttpContext arg0, Microsoft.AspNetCore.Http.IFormFile arg1, Microsoft.AspNetCore.Http.IFormFileCollection arg2, Microsoft.AspNetCore.Http.IFormCollection arg3, Microsoft.AspNetCore.Http.Generators.Tests.MyTryParseRecord arg4) => throw null!);
                 EndpointFilterDelegate? filteredInvocation = null;
                 if (options.EndpointBuilder.FilterFactories.Count > 0)
                 {
@@ -105,7 +106,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         {
                             return ValueTask.FromResult<object?>(Results.Empty);
                         }
-                        handler(ic.GetArgument<global::Microsoft.AspNetCore.Http.HttpContext>(0)!, ic.GetArgument<global::Microsoft.AspNetCore.Http.IFormFile>(1)!, ic.GetArgument<global::Microsoft.AspNetCore.Http.IFormFileCollection>(2)!, ic.GetArgument<global::Microsoft.AspNetCore.Http.IFormCollection>(3)!, ic.GetArgument<global::Microsoft.AspNetCore.Http.Generators.Tests.MyTryParseRecord>(4)!);
+                        handler(ic.GetArgument<Microsoft.AspNetCore.Http.HttpContext>(0)!, ic.GetArgument<Microsoft.AspNetCore.Http.IFormFile>(1)!, ic.GetArgument<Microsoft.AspNetCore.Http.IFormFileCollection>(2)!, ic.GetArgument<Microsoft.AspNetCore.Http.IFormCollection>(3)!, ic.GetArgument<Microsoft.AspNetCore.Http.Generators.Tests.MyTryParseRecord>(4)!);
                         return ValueTask.FromResult<object?>(Results.Empty);
                     },
                     options.EndpointBuilder,
@@ -235,7 +236,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     {
                         httpContext.Response.StatusCode = 400;
                     }
-                    var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.IFormFile, global::Microsoft.AspNetCore.Http.IFormFileCollection, global::Microsoft.AspNetCore.Http.IFormCollection, global::Microsoft.AspNetCore.Http.Generators.Tests.MyTryParseRecord>(httpContext, httpContext_local, file_local!, fileCollection_local!, collection_local!, tryParseRecord_local!));
+                    var result = await filteredInvocation(EndpointFilterInvocationContext.Create<Microsoft.AspNetCore.Http.HttpContext, Microsoft.AspNetCore.Http.IFormFile, Microsoft.AspNetCore.Http.IFormFileCollection, Microsoft.AspNetCore.Http.IFormCollection, Microsoft.AspNetCore.Http.Generators.Tests.MyTryParseRecord>(httpContext, httpContext_local, file_local!, fileCollection_local!, collection_local!, tryParseRecord_local!));
                     await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
                 }
 
@@ -243,7 +244,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
                 return new RequestDelegateResult(targetDelegate, metadata);
             };
-            return global::Microsoft.AspNetCore.Http.Generated.GeneratedRouteBuilderExtensionsCore.MapCore(
+            return GeneratedRouteBuilderExtensionsCore.MapCore(
                 endpoints,
                 pattern,
                 handler,
