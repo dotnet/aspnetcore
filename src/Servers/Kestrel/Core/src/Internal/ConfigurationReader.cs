@@ -390,35 +390,41 @@ internal sealed class CertificateConfig
     // File
     public bool IsFileCert => !string.IsNullOrEmpty(Path);
 
-    public string? Path { get; set; }
+    public string? Path { get; init; }
 
-    public string? KeyPath { get; set; }
+    public string? KeyPath { get; init; }
 
-    public string? Password { get; set; }
+    public string? Password { get; init; }
+
+    /// <remarks>
+    /// Vacuously false if this isn't a file cert.
+    /// </remarks>
+    public bool FileHasChanged { get; internal set; }
 
     // Cert store
 
     public bool IsStoreCert => !string.IsNullOrEmpty(Subject);
 
-    public string? Subject { get; set; }
+    public string? Subject { get; init; }
 
-    public string? Store { get; set; }
+    public string? Store { get; init; }
 
-    public string? Location { get; set; }
+    public string? Location { get; init; }
 
-    public bool? AllowInvalid { get; set; }
+    public bool? AllowInvalid { get; init; }
 
     public override bool Equals(object? obj) =>
         obj is CertificateConfig other &&
         Path == other.Path &&
         KeyPath == other.KeyPath &&
         Password == other.Password &&
+        FileHasChanged == other.FileHasChanged &&
         Subject == other.Subject &&
         Store == other.Store &&
         Location == other.Location &&
         (AllowInvalid ?? false) == (other.AllowInvalid ?? false);
 
-    public override int GetHashCode() => HashCode.Combine(Path, KeyPath, Password, Subject, Store, Location, AllowInvalid ?? false);
+    public override int GetHashCode() => HashCode.Combine(Path, KeyPath, Password, FileHasChanged, Subject, Store, Location, AllowInvalid ?? false);
 
     public static bool operator ==(CertificateConfig? lhs, CertificateConfig? rhs) => lhs is null ? rhs is null : lhs.Equals(rhs);
     public static bool operator !=(CertificateConfig? lhs, CertificateConfig? rhs) => !(lhs == rhs);
