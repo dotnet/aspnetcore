@@ -507,13 +507,11 @@ public class CascadingParameterTest
         public string Name { get; set; }
     }
 
-    class CustomCascadingValueProducer<TAttribute> : AutoRenderComponent, ICascadingValueSupplierFactory, ICascadingValueSupplier
+    class CustomCascadingValueProducer<TAttribute> : AutoRenderComponent, ICascadingValueSupplier
     {
         [Parameter] public object Value { get; set; }
 
         [Parameter] public RenderFragment ChildContent { get; set; }
-
-        object ICascadingValueSupplier.CurrentValue => Value;
 
         bool ICascadingValueSupplier.CurrentValueIsFixed => true;
 
@@ -522,18 +520,21 @@ public class CascadingParameterTest
             builder.AddContent(0, ChildContent);
         }
 
-        bool ICascadingValueSupplierFactory.TryGetValueSupplier(object propertyAttribute, Type valueType, string valueName, out ICascadingValueSupplier result)
+        bool ICascadingValueSupplier.CanSupplyValue(in CascadingParameterInfo parameterInfo)
         {
-            if (propertyAttribute is not TAttribute ||
-                valueType != typeof(object) ||
-                valueName != nameof(Value))
+            if (parameterInfo.Attribute is not TAttribute ||
+                parameterInfo.PropertyType != typeof(object) ||
+                parameterInfo.PropertyName != nameof(Value))
             {
-                result = default;
                 return false;
             }
 
-            result = this;
             return true;
+        }
+
+        object ICascadingValueSupplier.GetCurrentValue(in CascadingParameterInfo cascadingParameterState)
+        {
+            return Value;
         }
 
         void ICascadingValueSupplier.Subscribe(ComponentState subscriber)

@@ -10,7 +10,9 @@ internal interface ICascadingValueSupplier
     // This interface exists only so that CascadingParameterState has a way
     // to work with all CascadingValue<T> types regardless of T.
 
-    object? CurrentValue { get; }
+    bool CanSupplyValue(in CascadingParameterInfo parameterInfo);
+
+    object? GetCurrentValue(in CascadingParameterInfo parameterInfo);
 
     bool CurrentValueIsFixed { get; }
 

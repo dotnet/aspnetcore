@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components;
@@ -9,7 +8,7 @@ namespace Microsoft.AspNetCore.Components;
 /// <summary>
 /// A component that provides a cascading value to all descendant components.
 /// </summary>
-public class CascadingValue<TValue> : ICascadingValueSupplierFactory, ICascadingValueSupplier, IComponent
+public class CascadingValue<TValue> : ICascadingValueSupplier, IComponent
 {
     private RenderHandle _renderHandle;
     private HashSet<ComponentState>? _subscribers; // Lazily instantiated
@@ -41,8 +40,6 @@ public class CascadingValue<TValue> : ICascadingValueSupplierFactory, ICascading
     /// <see cref="Value"/> during the component's lifetime.
     /// </summary>
     [Parameter] public bool IsFixed { get; set; }
-
-    object? ICascadingValueSupplier.CurrentValue => Value;
 
     bool ICascadingValueSupplier.CurrentValueIsFixed => IsFixed;
 
@@ -131,11 +128,9 @@ public class CascadingValue<TValue> : ICascadingValueSupplierFactory, ICascading
         return Task.CompletedTask;
     }
 
-    bool ICascadingValueSupplierFactory.TryGetValueSupplier(object attribute, Type parameterType, string parameterName, [NotNullWhen(true)] out ICascadingValueSupplier? result)
+    bool ICascadingValueSupplier.CanSupplyValue(in CascadingParameterInfo parameterInfo)
     {
-        result = default;
-
-        if (attribute is not CascadingParameterAttribute cascadingParameterAttribute || !parameterType.IsAssignableFrom(typeof(TValue)))
+        if (parameterInfo.Attribute is not CascadingParameterAttribute cascadingParameterAttribute || !parameterInfo.PropertyType.IsAssignableFrom(typeof(TValue)))
         {
             return false;
         }
@@ -143,17 +138,13 @@ public class CascadingValue<TValue> : ICascadingValueSupplierFactory, ICascading
         // We only consider explicitly specified names, not the property name.
         var parameterSpecifiedName = cascadingParameterAttribute.Name;
 
-        var isMatch =
-            (parameterSpecifiedName == null && Name == null) || // Match on type alone
+        return (parameterSpecifiedName == null && Name == null) || // Match on type alone
             string.Equals(parameterSpecifiedName, Name, StringComparison.OrdinalIgnoreCase); // Also match on name
+    }
 
-        if (!isMatch)
-        {
-            return false;
-        }
-
-        result = this;
-        return true;
+    object? ICascadingValueSupplier.GetCurrentValue(in CascadingParameterInfo parameterInfo)
+    {
+        return Value;
     }
 
     void ICascadingValueSupplier.Subscribe(ComponentState subscriber)

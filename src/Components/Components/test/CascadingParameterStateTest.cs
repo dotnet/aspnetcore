@@ -83,7 +83,7 @@ public class CascadingParameterStateTest
         // Assert
         Assert.Collection(result, match =>
         {
-            Assert.Equal(nameof(ComponentWithCascadingParams.CascadingParam2), match.LocalValueName);
+            Assert.Equal(nameof(ComponentWithCascadingParams.CascadingParam2), match.ParameterInfo.PropertyName);
             Assert.Same(states[1].Component, match.ValueSupplier);
         });
     }
@@ -103,15 +103,15 @@ public class CascadingParameterStateTest
         var result = CascadingParameterState.FindCascadingParameters(states.Last());
 
         // Assert
-        Assert.Collection(result.OrderBy(x => x.LocalValueName),
+        Assert.Collection(result.OrderBy(x => x.ParameterInfo.PropertyName),
             match =>
             {
-                Assert.Equal(nameof(ComponentWithCascadingParams.CascadingParam1), match.LocalValueName);
+                Assert.Equal(nameof(ComponentWithCascadingParams.CascadingParam1), match.ParameterInfo.PropertyName);
                 Assert.Same(states[3].Component, match.ValueSupplier);
             },
             match =>
             {
-                Assert.Equal(nameof(ComponentWithCascadingParams.CascadingParam2), match.LocalValueName);
+                Assert.Equal(nameof(ComponentWithCascadingParams.CascadingParam2), match.ParameterInfo.PropertyName);
                 Assert.Same(states[1].Component, match.ValueSupplier);
             });
     }
@@ -129,15 +129,15 @@ public class CascadingParameterStateTest
         var result = CascadingParameterState.FindCascadingParameters(states.Last());
 
         // Assert
-        Assert.Collection(result.OrderBy(x => x.LocalValueName),
+        Assert.Collection(result.OrderBy(x => x.ParameterInfo.PropertyName),
             match =>
             {
-                Assert.Equal(nameof(ComponentWithCascadingParams.CascadingParam1), match.LocalValueName);
+                Assert.Equal(nameof(ComponentWithCascadingParams.CascadingParam1), match.ParameterInfo.PropertyName);
                 Assert.Same(states[0].Component, match.ValueSupplier);
             },
             match =>
             {
-                Assert.Equal(nameof(ComponentWithInheritedCascadingParams.CascadingParam3), match.LocalValueName);
+                Assert.Equal(nameof(ComponentWithInheritedCascadingParams.CascadingParam3), match.ParameterInfo.PropertyName);
                 Assert.Same(states[1].Component, match.ValueSupplier);
             });
     }
@@ -156,7 +156,7 @@ public class CascadingParameterStateTest
         // Assert
         Assert.Collection(result, match =>
         {
-            Assert.Equal(nameof(ComponentWithGenericCascadingParam<object>.LocalName), match.LocalValueName);
+            Assert.Equal(nameof(ComponentWithGenericCascadingParam<object>.LocalName), match.ParameterInfo.PropertyName);
             Assert.Same(states[0].Component, match.ValueSupplier);
         });
     }
@@ -175,7 +175,7 @@ public class CascadingParameterStateTest
         // Assert
         Assert.Collection(result, match =>
         {
-            Assert.Equal(nameof(ComponentWithGenericCascadingParam<object>.LocalName), match.LocalValueName);
+            Assert.Equal(nameof(ComponentWithGenericCascadingParam<object>.LocalName), match.ParameterInfo.PropertyName);
             Assert.Same(states[0].Component, match.ValueSupplier);
         });
     }
@@ -209,7 +209,7 @@ public class CascadingParameterStateTest
         // Assert
         Assert.Collection(result, match =>
         {
-            Assert.Equal(nameof(ComponentWithGenericCascadingParam<object>.LocalName), match.LocalValueName);
+            Assert.Equal(nameof(ComponentWithGenericCascadingParam<object>.LocalName), match.ParameterInfo.PropertyName);
             Assert.Same(states[0].Component, match.ValueSupplier);
         });
     }
@@ -303,7 +303,7 @@ public class CascadingParameterStateTest
         // Assert
         Assert.Collection(result, match =>
         {
-            Assert.Equal(nameof(ComponentWithNamedCascadingParam.SomeLocalName), match.LocalValueName);
+            Assert.Equal(nameof(ComponentWithNamedCascadingParam.SomeLocalName), match.ParameterInfo.PropertyName);
             Assert.Same(states[0].Component, match.ValueSupplier);
         });
     }
@@ -323,15 +323,15 @@ public class CascadingParameterStateTest
         var result = CascadingParameterState.FindCascadingParameters(states.Last());
 
         // Assert
-        Assert.Collection(result.OrderBy(x => x.LocalValueName),
+        Assert.Collection(result.OrderBy(x => x.ParameterInfo.PropertyName),
             match =>
             {
-                Assert.Equal(nameof(ComponentWithCascadingParams.CascadingParam1), match.LocalValueName);
+                Assert.Equal(nameof(ComponentWithCascadingParams.CascadingParam1), match.ParameterInfo.PropertyName);
                 Assert.Same(states[2].Component, match.ValueSupplier);
             },
             match =>
             {
-                Assert.Equal(nameof(ComponentWithCascadingParams.CascadingParam2), match.LocalValueName);
+                Assert.Equal(nameof(ComponentWithCascadingParams.CascadingParam2), match.ParameterInfo.PropertyName);
                 Assert.Same(states[3].Component, match.ValueSupplier);
             });
     }
@@ -349,12 +349,12 @@ public class CascadingParameterStateTest
         var result = CascadingParameterState.FindCascadingParameters(states.Last());
 
         // Assert
-        Assert.Collection(result.OrderBy(x => x.LocalValueName),
+        Assert.Collection(result.OrderBy(x => x.ParameterInfo.PropertyName),
             match =>
             {
-                Assert.Equal(nameof(ComponentWithCascadingParams.CascadingParam1), match.LocalValueName);
+                Assert.Equal(nameof(ComponentWithCascadingParams.CascadingParam1), match.ParameterInfo.PropertyName);
                 Assert.Same(states[1].Component, match.ValueSupplier);
-                Assert.Null(match.ValueSupplier.CurrentValue);
+                Assert.Null(match.ValueSupplier.GetCurrentValue(match.ParameterInfo));
             });
     }
 
@@ -552,7 +552,7 @@ public class CascadingParameterStateTest
 }
 
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
-public sealed class SupplyParameterFromFormAttribute : Attribute, ICascadingParameterAttribute
+public sealed class SupplyParameterFromFormAttribute : Attribute, IFormValueCascadingParameterAttribute
 {
     /// <summary>
     /// Gets or sets the name for the parameter. The name is used to match

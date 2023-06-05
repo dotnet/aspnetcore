@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection.Metadata;
 using Microsoft.AspNetCore.Components.Binding;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -12,7 +11,7 @@ namespace Microsoft.AspNetCore.Components;
 /// <summary>
 /// Defines the binding context for data bound from external sources.
 /// </summary>
-public sealed class CascadingModelBinder : IComponent, ICascadingValueSupplierFactory, ICascadingValueSupplier, IDisposable
+public sealed class CascadingModelBinder : IComponent, ICascadingValueSupplier, IDisposable
 {
     private RenderHandle _handle;
     private ModelBindingContext? _bindingContext;
@@ -145,15 +144,14 @@ public sealed class CascadingModelBinder : IComponent, ICascadingValueSupplierFa
         Navigation.LocationChanged -= HandleLocationChanged;
     }
 
-    bool ICascadingValueSupplierFactory.TryGetValueSupplier(object propertyAttribute, Type parameterType, string? parameterName, [NotNullWhen(true)] out ICascadingValueSupplier? result)
+    bool ICascadingValueSupplier.CanSupplyValue(in CascadingParameterInfo parameterInfo)
     {
-        result = default;
-
-        if (propertyAttribute is not IFormValueCascadingParameterAttribute formCascadingParameterAttribute)
+        if (parameterInfo.Attribute is not IFormValueCascadingParameterAttribute formCascadingParameterAttribute)
         {
             return false;
         }
 
+        var parameterType = parameterInfo.PropertyType;
         var valueName = formCascadingParameterAttribute.Name;
         var formName = string.IsNullOrEmpty(valueName) ?
             (_bindingContext?.Name) :
@@ -166,7 +164,6 @@ public sealed class CascadingModelBinder : IComponent, ICascadingValueSupplierFa
             // We already bound the value, but some component might have been destroyed and
             // re-created. If the type and name of the value that we bound are the same,
             // we can provide the value that we bound.
-            result = this;
             return true;
         }
 
@@ -180,7 +177,6 @@ public sealed class CascadingModelBinder : IComponent, ICascadingValueSupplierFa
                 // Report errors
             }
 
-            result = this;
             return true;
         }
 
@@ -197,7 +193,7 @@ public sealed class CascadingModelBinder : IComponent, ICascadingValueSupplierFa
         throw new InvalidOperationException("Form values are always fixed.");
     }
 
-    object? ICascadingValueSupplier.CurrentValue => _bindingInfo == null ?
+    object? ICascadingValueSupplier.GetCurrentValue(in CascadingParameterInfo parameterInfo) => _bindingInfo == null ?
         throw new InvalidOperationException("Tried to access form value before it was bound.") :
         _bindingInfo.BoundValue;
 
