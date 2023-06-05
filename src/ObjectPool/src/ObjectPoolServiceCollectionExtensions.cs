@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 public static class ObjectPoolServiceCollectionExtensions
 {
     /// <summary>
-    /// Adds an <see cref="ObjectPool{T}"/> and lets DI return scoped instances of T.
+    /// Adds an <see cref="ObjectPool{TService}"/> and lets DI return scoped instances of TService.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add to.</param>
     /// <param name="configureOptions">The action used to configure the options of the pool.</param>
@@ -24,7 +24,7 @@ public static class ObjectPoolServiceCollectionExtensions
     /// <exception cref="ArgumentNullException">When <paramref name="services"/> is <see langword="null"/>.</exception>
     /// <remarks>
     /// The default capacity is <c>Environment.ProcessorCount * 2</c>.
-    /// The pooled type instances are obtainable the same way like any other type instances from the DI container.
+    /// The pooled type instances are obtainable by resolving <see cref="ObjectPool{TService}"/> from the DI container.
     /// </remarks>
     public static IServiceCollection AddPooled<TService>(this IServiceCollection services, Action<PoolOptions>? configureOptions = null)
         where TService : class
@@ -43,7 +43,7 @@ public static class ObjectPoolServiceCollectionExtensions
     /// <exception cref="ArgumentNullException">When <paramref name="services"/> is <see langword="null"/>.</exception>
     /// <remarks>
     /// The default capacity is <c>Environment.ProcessorCount * 2</c>.
-    /// The pooled type instances are obtainable the same way like any other type instances from the DI container.
+    /// The pooled type instances are obtainable by resolving <see cref="ObjectPool{TService}"/> from the DI container.
     /// </remarks>
     public static IServiceCollection AddPooled<TService, TImplementation>(this IServiceCollection services, Action<PoolOptions>? configureOptions = null)
         where TService : class
@@ -77,7 +77,7 @@ public static class ObjectPoolServiceCollectionExtensions
         return services
             .AddSingleton<ObjectPool<TService>>(provider =>
             {
-                var options = provider.GetRequiredService<IOptionsMonitor<PoolOptions>>().Get(typeof(TService).FullName);
+                var options = provider.GetRequiredService<IOptionsFactory<PoolOptions>>().Create(typeof(TService).FullName!);
                 return new DefaultObjectPool<TService>(new DependencyInjectionPooledObjectPolicy<TService, TImplementation>(provider), options.Capacity);
             });
     }
