@@ -1,16 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Routing;
-using Microsoft.AspNetCore.Internal;
 
 namespace Microsoft.AspNetCore.Components;
 
 internal sealed class CascadingQueryValueProvider : IComponent, ICascadingValueSupplier, IDisposable
 {
-    private readonly Dictionary<ReadOnlyMemory<char>, StringSegmentAccumulator> _queryParameterValuesByName = new(QueryParameterNameComparer.Instance);
+    private readonly QueryParameterValueSupplier _queryParameterValueSupplier = new();
 
     private HashSet<ComponentState>? _subscribers;
     private RenderHandle _handle;
@@ -32,7 +30,6 @@ internal sealed class CascadingQueryValueProvider : IComponent, ICascadingValueS
             _hasSetInitialParameters = true;
 
             UpdateQueryParameterValues();
-            UpdateAllSubscribers();
 
             Navigation.LocationChanged += HandleLocationChanged;
         }
@@ -45,40 +42,14 @@ internal sealed class CascadingQueryValueProvider : IComponent, ICascadingValueS
     }
 
     private void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
-    {
-        UpdateQueryParameterValues();
-        UpdateAllSubscribers();
-    }
+        => UpdateQueryParameterValues();
 
     private void UpdateQueryParameterValues()
     {
-        _queryParameterValuesByName.Clear();
+        var query = GetQueryString(Navigation.Uri);
 
-        var url = Navigation.Uri;
-        var queryStartPos = url.IndexOf('?');
+        _queryParameterValueSupplier.ReadParametersFromQuery(query);
 
-        if (queryStartPos < 0)
-        {
-            return;
-        }
-
-        var queryEndPos = url.IndexOf('#', queryStartPos);
-        var query = url.AsMemory(queryStartPos..(queryEndPos < 0 ? url.Length : queryEndPos));
-        var queryStringEnumerable = new QueryStringEnumerable(query);
-
-        foreach (var suppliedPair in queryStringEnumerable)
-        {
-            var decodedName = suppliedPair.DecodeName();
-            var decodedValue = suppliedPair.DecodeValue();
-
-            // This is safe because we don't mutate the dictionary while the ref local is in scope.
-            ref var values = ref CollectionsMarshal.GetValueRefOrAddDefault(_queryParameterValuesByName, decodedName, out _);
-            values.Add(decodedValue);
-        }
-    }
-
-    private void UpdateAllSubscribers()
-    {
         if (_subscribers is null)
         {
             return;
@@ -87,6 +58,19 @@ internal sealed class CascadingQueryValueProvider : IComponent, ICascadingValueS
         foreach (var subscriber in _subscribers)
         {
             subscriber.NotifyCascadingValueChanged(ParameterViewLifetime.Unbound);
+        }
+
+        static ReadOnlyMemory<char> GetQueryString(string url)
+        {
+            var queryStartPos = url.IndexOf('?');
+
+            if (queryStartPos < 0)
+            {
+                return default;
+            }
+
+            var queryEndPos = url.IndexOf('#', queryStartPos);
+            return url.AsMemory(queryStartPos..(queryEndPos < 0 ? url.Length : queryEndPos));
         }
     }
 
@@ -102,29 +86,8 @@ internal sealed class CascadingQueryValueProvider : IComponent, ICascadingValueS
 
     object? ICascadingValueSupplier.GetCurrentValue(in CascadingParameterInfo parameterInfo)
     {
-        var expectedValueType = parameterInfo.PropertyType;
-        var isArray = expectedValueType.IsArray;
-        var elementType = isArray ? expectedValueType.GetElementType()! : expectedValueType;
-
-        if (!UrlValueConstraint.TryGetByTargetType(elementType, out var parser))
-        {
-            throw new InvalidOperationException($"Querystring values cannot be parsed as type '{elementType}'.");
-        }
-
-        var valueName = parameterInfo.Attribute.Name ?? parameterInfo.PropertyName;
-        var values = _queryParameterValuesByName.GetValueOrDefault(valueName.AsMemory());
-
-        if (isArray)
-        {
-            return parser.ParseMultiple(values, valueName);
-        }
-
-        if (values.Count > 0)
-        {
-            return parser.Parse(values[0].Span, valueName);
-        }
-
-        return default;
+        var queryParameterName = parameterInfo.Attribute.Name ?? parameterInfo.PropertyName;
+        return _queryParameterValueSupplier.GetQueryParameterValue(parameterInfo.PropertyType, queryParameterName);
     }
 
     void ICascadingValueSupplier.Subscribe(ComponentState subscriber)

@@ -60,8 +60,7 @@ internal readonly struct CascadingParameterState
         var candidate = componentState;
         do
         {
-            var candidateComponent = candidate.Component;
-            if (candidateComponent is ICascadingValueSupplier valueSupplier && valueSupplier.CanSupplyValue(info))
+            if (candidate.Component is ICascadingValueSupplier valueSupplier && valueSupplier.CanSupplyValue(info))
             {
                 return valueSupplier;
             }

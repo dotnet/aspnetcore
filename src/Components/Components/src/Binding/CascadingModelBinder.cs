@@ -151,7 +151,7 @@ public sealed class CascadingModelBinder : IComponent, ICascadingValueSupplier, 
             return false;
         }
 
-        var parameterType = parameterInfo.PropertyType;
+        var valueType = parameterInfo.PropertyType;
         var valueName = formCascadingParameterAttribute.Name;
         var formName = string.IsNullOrEmpty(valueName) ?
             (_bindingContext?.Name) :
@@ -159,7 +159,7 @@ public sealed class CascadingModelBinder : IComponent, ICascadingValueSupplier, 
 
         if (_bindingInfo != null &&
             string.Equals(_bindingInfo.FormName, formName, StringComparison.Ordinal) &&
-            _bindingInfo.ValueType.Equals(parameterType))
+            _bindingInfo.ValueType.Equals(valueType))
         {
             // We already bound the value, but some component might have been destroyed and
             // re-created. If the type and name of the value that we bound are the same,
@@ -168,10 +168,10 @@ public sealed class CascadingModelBinder : IComponent, ICascadingValueSupplier, 
         }
 
         // Can't supply the value if this context is for a form with a different name.
-        if (FormValueSupplier.CanBind(formName!, parameterType))
+        if (FormValueSupplier.CanBind(formName!, valueType))
         {
-            var bindingSucceeded = FormValueSupplier.TryBind(formName!, parameterType, out var boundValue);
-            _bindingInfo = new BindingInfo(formName, parameterType, bindingSucceeded, boundValue);
+            var bindingSucceeded = FormValueSupplier.TryBind(formName!, valueType, out var boundValue);
+            _bindingInfo = new BindingInfo(formName, valueType, bindingSucceeded, boundValue);
             if (!bindingSucceeded)
             {
                 // Report errors
