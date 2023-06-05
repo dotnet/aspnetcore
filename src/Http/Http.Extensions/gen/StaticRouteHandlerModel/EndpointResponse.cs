@@ -92,7 +92,7 @@ internal class EndpointResponse
         // from an IResult. Typically, this would be done via an
         // IEndpointMetadataProvider so we don't need to set a
         // Content-Type here.
-        if (method.ReturnsVoid || IsIResult)
+        if (method.ReturnsVoid || IsIResult || HasNoResponse)
         {
             return null;
         }

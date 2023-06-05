@@ -32,7 +32,7 @@ app.MapGet("/hello", (HttpContext context) => Task.CompletedTask);
     [InlineData(@"app.MapGet(""/"", () => TypedResults.Ok(""Alright!""));", null)]
     [InlineData(@"app.MapGet(""/"", () => Results.NotFound(""Oops!""));", null)]
     [InlineData(@"app.MapGet(""/"", () => Task.FromResult(new Todo() { Name = ""Test Item""}));", "application/json")]
-    [InlineData(@"app.MapGet(""/"", () => ""Hello world!"");", "text/plain")]
+    [InlineData(@"app.MapGet(""/"", () => ""Hello world!"");", "text/plain; charset=utf-8")]
     public async Task MapAction_ProducesCorrectContentType(string source, string expectedContentType)
     {
         var (result, compilation) = await RunGeneratorAsync(source);
