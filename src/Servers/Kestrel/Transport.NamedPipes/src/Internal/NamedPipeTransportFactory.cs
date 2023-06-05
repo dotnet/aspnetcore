@@ -59,7 +59,7 @@ internal sealed class NamedPipeTransportFactory : IConnectionListenerFactory, IC
         }
         catch (UnauthorizedAccessException ex)
         {
-            throw new AddressInUseException($"Named pipe '{namedPipeEndPoint.PipeName}' is already in use by Kestrel.", ex);
+            throw new AddressInUseException($"Named pipe '{namedPipeEndPoint.PipeName}' is already in use.", ex);
         }
 
         return new ValueTask<IConnectionListener>(listener);
