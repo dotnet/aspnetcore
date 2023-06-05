@@ -4,8 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Net.Mime;
 using System.Text;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel.Emitters;
 using Microsoft.CodeAnalysis;
@@ -104,17 +102,6 @@ internal static class StaticRouteHandlerModelEmitter
 
     private static void EmitHttpResponseContentType(this EndpointResponse endpointResponse, CodeWriter codeWriter)
     {
-        //if (!endpointResponse.HasNoResponse && endpointResponse is { ContentType: { } contentType })
-        //{
-        //    codeWriter.WriteLine("if (result is string)");
-        //    codeWriter.StartBlock();
-        //    codeWriter.WriteLine($@"httpContext.Response.ContentType ??= ""text/plain; charset=utf-8"";");
-        //    codeWriter.EndBlock();
-        //    codeWriter.WriteLine("else");
-        //    codeWriter.StartBlock();
-        //    codeWriter.WriteLine($@"httpContext.Response.ContentType ??= ""{contentType}"";");
-        //    codeWriter.EndBlock();
-        //}
         if (!endpointResponse.HasNoResponse
             && endpointResponse.ResponseType is { } responseType
             && (responseType.SpecialType == SpecialType.System_Object || responseType.SpecialType == SpecialType.System_String))
