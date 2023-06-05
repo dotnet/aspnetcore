@@ -185,6 +185,9 @@ public class HttpsTests
 
             var keyExchangeStrength = result.GetProperty("keyExchangeStrength").GetInt32();
             Assert.True(keyExchangeStrength >= 0, "KeyExchangeStrength: " + keyExchangeStrength);
+
+            var hostName = result.GetProperty("hostName").ToString();
+            Assert.Equal("localhost", hostName);
         }
     }
 
