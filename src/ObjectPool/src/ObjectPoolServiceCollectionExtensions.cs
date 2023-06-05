@@ -26,7 +26,7 @@ public static class ObjectPoolServiceCollectionExtensions
     /// The default capacity is <c>Environment.ProcessorCount * 2</c>.
     /// The pooled type instances are obtainable by resolving <see cref="ObjectPool{TService}"/> from the DI container.
     /// </remarks>
-    public static IServiceCollection AddPooled<TService>(this IServiceCollection services, Action<PoolOptions>? configureOptions = null)
+    public static IServiceCollection AddPooled<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]  TService>(this IServiceCollection services, Action<PoolOptions>? configureOptions = null)
         where TService : class
     {
         return services.AddPooledInternal<TService, TService>(configureOptions);
@@ -45,7 +45,7 @@ public static class ObjectPoolServiceCollectionExtensions
     /// The default capacity is <c>Environment.ProcessorCount * 2</c>.
     /// The pooled type instances are obtainable by resolving <see cref="ObjectPool{TService}"/> from the DI container.
     /// </remarks>
-    public static IServiceCollection AddPooled<TService, TImplementation>(this IServiceCollection services, Action<PoolOptions>? configureOptions = null)
+    public static IServiceCollection AddPooled<TService, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>(this IServiceCollection services, Action<PoolOptions>? configureOptions = null)
         where TService : class
         where TImplementation : class, TService
     {
