@@ -162,6 +162,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                             return;
                         }
                         handler(x_local!);
+                        httpContext.Response.ContentType ??= "text/plain";
                     }
 
                     async Task RequestHandlerFiltered(HttpContext httpContext)

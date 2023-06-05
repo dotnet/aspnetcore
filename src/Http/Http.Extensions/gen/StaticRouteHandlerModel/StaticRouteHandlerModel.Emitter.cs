@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Mime;
 using System.Text;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel.Emitters;
 using Microsoft.CodeAnalysis;
@@ -76,10 +78,6 @@ internal static class StaticRouteHandlerModelEmitter
         {
             return;
         }
-        if (!endpoint.Response.HasNoResponse && endpoint.Response is { ContentType: { } contentType })
-        {
-            codeWriter.WriteLine($@"httpContext.Response.ContentType ??= ""{contentType}"";");
-        }
         if (!endpoint.Response.HasNoResponse)
         {
             codeWriter.Write("var result = ");
@@ -89,6 +87,9 @@ internal static class StaticRouteHandlerModelEmitter
             codeWriter.Write("await ");
         }
         codeWriter.WriteLine($"handler({endpoint.EmitArgumentList()});");
+
+        endpoint.Response.EmitHttpResponseContentType(codeWriter);
+
         if (!endpoint.Response.HasNoResponse)
         {
             codeWriter.WriteLine(endpoint.Response.EmitResponseWritingCall(endpoint.IsAwaitable));
@@ -97,7 +98,40 @@ internal static class StaticRouteHandlerModelEmitter
         {
             codeWriter.WriteLine("return Task.CompletedTask;");
         }
+
         codeWriter.EndBlock(); // End handler method block
+    }
+
+    private static void EmitHttpResponseContentType(this EndpointResponse endpointResponse, CodeWriter codeWriter)
+    {
+        //if (!endpointResponse.HasNoResponse && endpointResponse is { ContentType: { } contentType })
+        //{
+        //    codeWriter.WriteLine("if (result is string)");
+        //    codeWriter.StartBlock();
+        //    codeWriter.WriteLine($@"httpContext.Response.ContentType ??= ""text/plain; charset=utf-8"";");
+        //    codeWriter.EndBlock();
+        //    codeWriter.WriteLine("else");
+        //    codeWriter.StartBlock();
+        //    codeWriter.WriteLine($@"httpContext.Response.ContentType ??= ""{contentType}"";");
+        //    codeWriter.EndBlock();
+        //}
+        if (!endpointResponse.HasNoResponse
+            && endpointResponse.ResponseType is { } responseType
+            && (responseType.SpecialType == SpecialType.System_Object || responseType.SpecialType == SpecialType.System_String))
+        {
+            codeWriter.WriteLine("if (result is string)");
+            codeWriter.StartBlock();
+            codeWriter.WriteLine($@"httpContext.Response.ContentType ??= ""text/plain; charset=utf-8"";");
+            codeWriter.EndBlock();
+            codeWriter.WriteLine("else");
+            codeWriter.StartBlock();
+            codeWriter.WriteLine($@"httpContext.Response.ContentType ??= ""application/json"";");
+            codeWriter.EndBlock();
+        }
+        else
+        {
+            codeWriter.WriteLine($@"httpContext.Response.ContentType ??= ""text/plain"";");
+        }
     }
 
     private static string EmitResponseWritingCall(this EndpointResponse endpointResponse, bool isAwaitable)

@@ -221,6 +221,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                             return Task.CompletedTask;
                         }
                         handler(args_local);
+                        httpContext.Response.ContentType ??= "text/plain";
                         return Task.CompletedTask;
                     }
 
@@ -331,6 +332,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                             return Task.CompletedTask;
                         }
                         handler(args_local);
+                        httpContext.Response.ContentType ??= "text/plain";
                         return Task.CompletedTask;
                     }
 
@@ -422,6 +424,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                             return Task.CompletedTask;
                         }
                         handler(args_local);
+                        httpContext.Response.ContentType ??= "text/plain";
                         return Task.CompletedTask;
                     }
 
@@ -505,8 +508,15 @@ namespace Microsoft.AspNetCore.Http.Generated
                             httpContext.Response.StatusCode = 400;
                             return;
                         }
-                        httpContext.Response.ContentType ??= "text/plain";
                         var result = handler(args_local);
+                        if (result is string)
+                        {
+                            httpContext.Response.ContentType ??= "text/plain; charset=utf-8";
+                        }
+                        else
+                        {
+                            httpContext.Response.ContentType ??= "application/json";
+                        }
                         await httpContext.Response.WriteAsync(result);
                     }
 
@@ -599,6 +609,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                             return;
                         }
                         handler(args_local);
+                        httpContext.Response.ContentType ??= "text/plain";
                     }
 
                     async Task RequestHandlerFiltered(HttpContext httpContext)

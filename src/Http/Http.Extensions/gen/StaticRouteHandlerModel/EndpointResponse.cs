@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
@@ -95,7 +96,8 @@ internal class EndpointResponse
         {
             return null;
         }
-        return method.ReturnType.SpecialType is SpecialType.System_String ? "text/plain" : "application/json";
+
+        return ResponseType!.SpecialType is SpecialType.System_String ? "text/plain; charset=utf-8" : "application/json";
     }
 
     public override bool Equals(object obj)

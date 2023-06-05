@@ -1248,6 +1248,111 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal("With type hierarchies!", deserializedResponseBody!.Child);
     }
 
+    [Fact]
+    public async Task RequestDelegatePopulatesHttpContextParameterWithoutAttribute()
+    {
+        HttpContext? httpContextArgument = null;
+
+        void TestAction(HttpContext httpContext)
+        {
+            httpContextArgument = httpContext;
+        }
+
+        var httpContext = CreateHttpContext();
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Same(httpContext, httpContextArgument);
+    }
+
+    [Fact]
+    public async Task RequestDelegatePassHttpContextRequestAbortedAsCancellationToken()
+    {
+        CancellationToken? cancellationTokenArgument = null;
+
+        void TestAction(CancellationToken cancellationToken)
+        {
+            cancellationTokenArgument = cancellationToken;
+        }
+
+        using var cts = new CancellationTokenSource();
+        var httpContext = CreateHttpContext();
+        // Reset back to default HttpRequestLifetimeFeature that implements a setter for RequestAborted.
+        httpContext.Features.Set<IHttpRequestLifetimeFeature>(new HttpRequestLifetimeFeature());
+        httpContext.RequestAborted = cts.Token;
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(httpContext.RequestAborted, cancellationTokenArgument);
+    }
+
+    [Fact]
+    public async Task RequestDelegatePassHttpContextUserAsClaimsPrincipal()
+    {
+        ClaimsPrincipal? userArgument = null;
+
+        void TestAction(ClaimsPrincipal user)
+        {
+            userArgument = user;
+        }
+
+        var httpContext = CreateHttpContext();
+        httpContext.User = new ClaimsPrincipal();
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(httpContext.User, userArgument);
+    }
+
+    [Fact]
+    public async Task RequestDelegatePassHttpContextRequestAsHttpRequest()
+    {
+        HttpRequest? httpRequestArgument = null;
+
+        void TestAction(HttpRequest httpRequest)
+        {
+            httpRequestArgument = httpRequest;
+        }
+
+        var httpContext = CreateHttpContext();
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(httpContext.Request, httpRequestArgument);
+    }
+
+    [Fact]
+    public async Task RequestDelegatePassesHttpContextRresponseAsHttpResponse()
+    {
+        HttpResponse? httpResponseArgument = null;
+
+        void TestAction(HttpResponse httpResponse)
+        {
+            httpResponseArgument = httpResponse;
+        }
+
+        var httpContext = CreateHttpContext();
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(httpContext.Response, httpResponseArgument);
+    }
+
     public static IEnumerable<object[]> PolymorphicResult
     {
         get
@@ -1285,6 +1390,9 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         }
     }
 
+    // NOTE: This test needs to be retained here because it tests a specific capability to create a delegate
+    //       from the request delegate factory without passing in an instance of a service provider which
+    //       is not something we can get at with the shared compiler/runtime test harness.
     [Theory]
     [MemberData(nameof(PolymorphicResult))]
     public async Task RequestDelegateWritesMembersFromChildTypesToJsonResponseBody_WithJsonPolymorphicOptions(Delegate @delegate)
@@ -1312,33 +1420,11 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal("With type hierarchies!", deserializedResponseBody!.Child);
     }
 
-    [Theory]
-    [MemberData(nameof(PolymorphicResult))]
-    public async Task RequestDelegateWritesMembersFromChildTypesToJsonResponseBody_WithJsonPolymorphicOptionsAndConfiguredJsonOptions(Delegate @delegate)
-    {
-        var httpContext = CreateHttpContext();
-        httpContext.RequestServices = new ServiceCollection()
-            .AddSingleton(LoggerFactory)
-            .AddSingleton(Options.Create(new JsonOptions()))
-            .BuildServiceProvider();
-        var responseBodyStream = new MemoryStream();
-        httpContext.Response.Body = responseBodyStream;
-
-        var factoryResult = RequestDelegateFactory.Create(@delegate, new RequestDelegateFactoryOptions { ServiceProvider = httpContext.RequestServices });
-        var requestDelegate = factoryResult.RequestDelegate;
-
-        await requestDelegate(httpContext);
-
-        var deserializedResponseBody = JsonSerializer.Deserialize<JsonTodoChild>(responseBodyStream.ToArray(), new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        });
-
-        Assert.NotNull(deserializedResponseBody);
-        Assert.Equal("Write even more tests!", deserializedResponseBody!.Name);
-        Assert.Equal("With type hierarchies!", deserializedResponseBody!.Child);
-    }
-
+    // NOTE: This test needs to be retained here because it tests a specific capability to create a delegate
+    //       from the request delegate factory without passing in an instance of a service provider which
+    //       is not something we can get at with the shared compiler/runtime test harness. There is a variant
+    //       of this test that has been added to the shared test harness to make sure that we do write the
+    //       type discriminator.
     [Theory]
     [MemberData(nameof(PolymorphicResult))]
     public async Task RequestDelegateWritesJsonTypeDiscriminatorToJsonResponseBody_WithJsonPolymorphicOptions(Delegate @delegate)
@@ -3417,11 +3503,6 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         public int Id { get; set; }
         public string? Name { get; set; } = "Todo";
         public bool IsComplete { get; set; }
-    }
-
-    private class TodoChild : Todo
-    {
-        public string? Child { get; set; }
     }
 
     private class JsonTodoChild : JsonTodo
