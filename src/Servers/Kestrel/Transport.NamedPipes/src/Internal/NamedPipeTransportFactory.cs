@@ -45,19 +45,15 @@ internal sealed class NamedPipeTransportFactory : IConnectionListenerFactory, IC
             throw new NotSupportedException($@"Server name '{namedPipeEndPoint.ServerName}' is invalid. The server name must be ""{LocalComputerServerName}"".");
         }
 
-        // Creating a named pipe server with an name isn't exclusive. Create a mutex with the pipe name to prevent multiple endpoints
-        // accidently sharing the same pipe name. Will detect across Kestrel processes.
-        // Note that this doesn't prevent other applications from using the pipe name.
-        var mutexName = "Kestrel-NamedPipe-" + namedPipeEndPoint.PipeName;
-        var mutex = new Mutex(false, mutexName, out var createdNew);
-        if (!createdNew)
+        var listener = new NamedPipeConnectionListener(namedPipeEndPoint, _options, _loggerFactory, _objectPoolProvider);
+        try
         {
-            mutex.Dispose();
-            throw new AddressInUseException($"Named pipe '{namedPipeEndPoint.PipeName}' is already in use by Kestrel.");
+            listener.Start();
         }
-
-        var listener = new NamedPipeConnectionListener(namedPipeEndPoint, _options, _loggerFactory, _objectPoolProvider, mutex);
-        listener.Start();
+        catch (UnauthorizedAccessException ex)
+        {
+            throw new AddressInUseException($"Named pipe '{namedPipeEndPoint.PipeName}' is already in use by Kestrel.", ex);
+        }
 
         return new ValueTask<IConnectionListener>(listener);
     }
