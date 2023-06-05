@@ -26,13 +26,13 @@ public class DependencyInjectionExtensionsTest
             ;
         using var provider = services.BuildServiceProvider(validateScopes: true);
 
-        var sut = provider.GetRequiredService<IOptionsMonitor<PoolOptions>>();
+        var options = provider.GetRequiredService<IOptionsMonitor<PoolOptions>>();
 
-        Assert.Equal(PoolOptions.DefaultCapacity, sut.CurrentValue.Capacity);
-        Assert.Equal(PoolOptions.DefaultCapacity, sut.Get(null).Capacity);
-        Assert.Equal(PoolOptions.DefaultCapacity, sut.Get(typeof(object).FullName!).Capacity);
-        Assert.Equal(2048, sut.Get(typeof(TestClass).FullName!).Capacity);
-        Assert.Equal(4096, sut.Get(typeof(TestDependency).FullName!).Capacity);
+        Assert.Equal(PoolOptions.DefaultCapacity, options.CurrentValue.Capacity);
+        Assert.Equal(PoolOptions.DefaultCapacity, options.Get(null).Capacity);
+        Assert.Equal(PoolOptions.DefaultCapacity, options.Get(typeof(object).FullName!).Capacity);
+        Assert.Equal(2048, options.Get(typeof(TestClass).FullName!).Capacity);
+        Assert.Equal(4096, options.Get(typeof(TestDependency).FullName!).Capacity);
     }
 
     [Fact]
@@ -40,11 +40,11 @@ public class DependencyInjectionExtensionsTest
     {
         var services = new ServiceCollection().AddPooled<TestDependency>();
 
-        var sut = services.BuildServiceProvider(validateScopes: true).GetService<ObjectPool<TestDependency>>();
+        var pool = services.BuildServiceProvider(validateScopes: true).GetService<ObjectPool<TestDependency>>();
         using var provider = services.BuildServiceProvider(validateScopes: true);
         var optionsMonitor = provider.GetRequiredService<IOptionsMonitor<PoolOptions>>();
 
-        Assert.NotNull(sut);
+        Assert.NotNull(pool);
         Assert.Equal(PoolOptions.DefaultCapacity, optionsMonitor.Get(typeof(TestDependency).FullName).Capacity);
     }
 
@@ -58,9 +58,9 @@ public class DependencyInjectionExtensionsTest
                     ;
 
         using var provider = services.BuildServiceProvider(validateScopes: true);
-        var sut = provider.GetRequiredService<ObjectPool<ITestClass>>();
+        var pool = provider.GetRequiredService<ObjectPool<ITestClass>>();
 
-        var pooled = sut.Get();
+        var pooled = pool.Get();
 
         Assert.NotNull(pooled);
         Assert.True(pooled is OtherTestClass);
@@ -71,11 +71,11 @@ public class DependencyInjectionExtensionsTest
     {
         var services = new ServiceCollection().AddPooled<TestDependency>(options => options.Capacity = 64);
 
-        var sut = services.BuildServiceProvider().GetService<ObjectPool<TestDependency>>();
+        var pool = services.BuildServiceProvider().GetService<ObjectPool<TestDependency>>();
         using var provider = services.BuildServiceProvider();
         var optionsMonitor = provider.GetRequiredService<IOptionsMonitor<PoolOptions>>();
 
-        Assert.NotNull(sut);
+        Assert.NotNull(pool);
         Assert.Equal(64, optionsMonitor.Get(typeof(TestDependency).FullName).Capacity);
     }
 
@@ -87,11 +87,11 @@ public class DependencyInjectionExtensionsTest
             .AddPooled<ITestClass, TestClass>();
 
         using var provider = services.BuildServiceProvider(validateScopes: true);
-        var sut = provider.GetService<ObjectPool<ITestClass>>();
+        var pool = provider.GetService<ObjectPool<ITestClass>>();
         var optionsMonitor = provider.GetRequiredService<IOptionsMonitor<PoolOptions>>();
 
-        Assert.NotNull(sut);
-        Assert.Equal(TestDependency.Message, sut!.Get().ReadMessage());
+        Assert.NotNull(pool);
+        Assert.Equal(TestDependency.Message, pool!.Get().ReadMessage());
         Assert.Equal(PoolOptions.DefaultCapacity, optionsMonitor.Get(typeof(ITestClass).FullName).Capacity);
     }
 
@@ -103,11 +103,11 @@ public class DependencyInjectionExtensionsTest
             .AddPooled<ITestClass, TestClass>(options => options.Capacity = 64);
 
         using var provider = services.BuildServiceProvider(validateScopes: true);
-        var sut = provider.GetService<ObjectPool<ITestClass>>();
+        var pool = provider.GetService<ObjectPool<ITestClass>>();
         var optionsMonitor = provider.GetRequiredService<IOptionsMonitor<PoolOptions>>();
 
-        Assert.NotNull(sut);
-        Assert.Equal(TestDependency.Message, sut!.Get().ReadMessage());
+        Assert.NotNull(pool);
+        Assert.Equal(TestDependency.Message, pool!.Get().ReadMessage());
         Assert.Equal(64, optionsMonitor.Get(typeof(ITestClass).FullName).Capacity);
     }
 
@@ -119,10 +119,10 @@ public class DependencyInjectionExtensionsTest
             .AddPooled<ITestClass, TestClass>();
 
         using var provider = services.BuildServiceProvider(validateScopes: true);
-        var sut = provider.GetRequiredService<ObjectPool<ITestClass>>();
+        var pool = provider.GetRequiredService<ObjectPool<ITestClass>>();
 
-        var pooled = sut.Get();
-        sut.Return(pooled);
+        var pooled = pool.Get();
+        pool.Return(pooled);
 
         Assert.Equal(1, pooled.ResetCalled);
         Assert.Equal(0, pooled.DisposedCalled);
@@ -138,27 +138,27 @@ public class DependencyInjectionExtensionsTest
             .AddPooled<ITestClass, TestClass>(options => options.Capacity = capacity);
 
         using var provider = services.BuildServiceProvider(validateScopes: true);
-        var sut = provider.GetRequiredService<ObjectPool<ITestClass>>();
+        var pool = provider.GetRequiredService<ObjectPool<ITestClass>>();
 
         var instances = new ITestClass[capacity];
 
         for (var i = 0; i< capacity; i++)
         {
-            instances[i] = sut.Get();
+            instances[i] = pool.Get();
         }
 
         for (var i = 0; i < capacity; i++)
         {
-            sut.Return(instances[i]);
+            pool.Return(instances[i]);
         }
 
         for (var i = 0; i < capacity; i++)
         {
-            var pooled = sut.Get();
+            var pooled = pool.Get();
             Assert.Contains(pooled, instances);
         }
 
-        var newPooled = sut.Get();
+        var newPooled = pool.Get();
         Assert.DoesNotContain(newPooled, instances);
     }
 
