@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Data.Common;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
@@ -15,6 +16,7 @@ using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpSys.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 
@@ -186,8 +188,11 @@ public class HttpsTests
             var keyExchangeStrength = result.GetProperty("keyExchangeStrength").GetInt32();
             Assert.True(keyExchangeStrength >= 0, "KeyExchangeStrength: " + keyExchangeStrength);
 
-            var hostName = result.GetProperty("hostName").ToString();
-            Assert.Equal("localhost", hostName);
+            if (Environment.OSVersion.Version > new Version(10, 0, 19043, 0))
+            {
+                var hostName = result.GetProperty("hostName").ToString();
+                Assert.Equal("localhost", hostName);
+            }
         }
     }
 
