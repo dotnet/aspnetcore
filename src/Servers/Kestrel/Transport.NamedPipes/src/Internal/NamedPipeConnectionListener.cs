@@ -198,6 +198,10 @@ internal sealed class NamedPipeConnectionListener : IConnectionListener
             var pipeOptions = NamedPipeOptions.Asynchronous | NamedPipeOptions.WriteThrough;
             if (!_hasFirstPipeStarted)
             {
+                // It's important to validate no one else is listening to pipe:
+                // 1. Some settings, such as ACL, are chosen by the first pipe to start with a given name.
+                // 2. It's easy to run two Kestrel app instances. Want to avoid two apps listening on the same pipe and creating confusion.
+                //    The second launched app instance should immediately fail with an error message, just like port binding conflicts.
                 pipeOptions |= NamedPipeOptions.FirstPipeInstance;
             }
             if (_options.CurrentUserOnly)

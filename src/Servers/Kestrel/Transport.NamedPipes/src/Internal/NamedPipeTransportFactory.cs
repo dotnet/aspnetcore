@@ -46,6 +46,13 @@ internal sealed class NamedPipeTransportFactory : IConnectionListenerFactory, IC
         }
 
         var listener = new NamedPipeConnectionListener(namedPipeEndPoint, _options, _loggerFactory, _objectPoolProvider);
+
+        // Start the listener and create NamedPipeServerStream instances immediately.
+        // The first server stream is created with the FirstPipeInstance flag. The FirstPipeInstance flag ensures
+        // that no other apps have a running pipe with the configured name. This check is important because:
+        // 1. Some settings, such as ACL, are chosen by the first pipe to start with a given name.
+        // 2. It's easy to run two Kestrel app instances. Want to avoid two apps listening on the same pipe and creating confusion.
+        //    The second launched app instance should immediately fail with an error message, just like port binding conflicts.
         try
         {
             listener.Start();
