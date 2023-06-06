@@ -731,7 +731,6 @@ static ValueTask<object> StaticValueTaskTestAction() => ValueTask.FromResult<obj
         Assert.Equal("application/json; charset=utf-8", httpContext.Response.ContentType);
     }
 
-
     public static IEnumerable<object[]> BoolResult
     {
         get

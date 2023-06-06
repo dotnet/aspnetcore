@@ -1475,81 +1475,6 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal("Still not enough tests!", decodedResponseBody);
     }
 
-    public static IEnumerable<object[]> StringResult
-    {
-        get
-        {
-            var test = "String Test";
-
-            string TestAction() => test;
-            Task<string> TaskTestAction() => Task.FromResult(test);
-            ValueTask<string> ValueTaskTestAction() => ValueTask.FromResult(test);
-
-            static string StaticTestAction() => "String Test";
-            static Task<string> StaticTaskTestAction() => Task.FromResult("String Test");
-            static ValueTask<string> StaticValueTaskTestAction() => ValueTask.FromResult("String Test");
-
-            // Dynamic via object
-            static object StaticStringAsObjectTestAction() => "String Test";
-
-            // Dynamic via Task<object>
-            static Task<object> StaticStringAsTaskObjectTestAction() => Task.FromResult<object>("String Test");
-
-            // Dynamic via ValueTask<object>
-            static ValueTask<object> StaticStringAsValueTaskObjectTestAction() => ValueTask.FromResult<object>("String Test");
-
-            return new List<object[]>
-                {
-                    new object[] { (Func<string>)TestAction },
-                    new object[] { (Func<Task<string>>)TaskTestAction },
-                    new object[] { (Func<ValueTask<string>>)ValueTaskTestAction },
-                    new object[] { (Func<string>)StaticTestAction },
-                    new object[] { (Func<Task<string>>)StaticTaskTestAction },
-                    new object[] { (Func<ValueTask<string>>)StaticValueTaskTestAction },
-
-                    new object[] { (Func<object>)StaticStringAsObjectTestAction },
-
-                    new object[] { (Func<Task<object>>)StaticStringAsTaskObjectTestAction },
-                    new object[] { (Func<ValueTask<object>>)StaticStringAsValueTaskObjectTestAction },
-
-                };
-        }
-    }
-
-    [Theory]
-    [MemberData(nameof(StringResult))]
-    public async Task RequestDelegateWritesStringReturnValueAndSetContentTypeWhenNull(Delegate @delegate)
-    {
-        var httpContext = CreateHttpContext();
-        var responseBodyStream = new MemoryStream();
-        httpContext.Response.Body = responseBodyStream;
-
-        var factoryResult = RequestDelegateFactory.Create(@delegate);
-        var requestDelegate = factoryResult.RequestDelegate;
-
-        await requestDelegate(httpContext);
-
-        var responseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
-
-        Assert.Equal("String Test", responseBody);
-        Assert.Equal("text/plain; charset=utf-8", httpContext.Response.ContentType);
-    }
-
-    [Theory]
-    [MemberData(nameof(StringResult))]
-    public async Task RequestDelegateWritesStringReturnDoNotChangeContentType(Delegate @delegate)
-    {
-        var httpContext = CreateHttpContext();
-        httpContext.Response.ContentType = "application/json; charset=utf-8";
-
-        var factoryResult = RequestDelegateFactory.Create(@delegate);
-        var requestDelegate = factoryResult.RequestDelegate;
-
-        await requestDelegate(httpContext);
-
-        Assert.Equal("application/json; charset=utf-8", httpContext.Response.ContentType);
-    }
-
     public static IEnumerable<object[]> NullResult
     {
         get
@@ -2742,37 +2667,6 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         // and most of the other unit tests don't pass in a metadataResult without a cached factory context.
         Assert.True(result.RequestDelegate(httpContext).IsCompletedSuccessfully);
         Assert.Equal(1, invokeCount);
-    }
-
-    [Fact]
-    public void InferMetadata_ThenCreate_CombinesAllMetadata_InCorrectOrder()
-    {
-        // Arrange
-        var @delegate = [Attribute1, Attribute2] (AddsCustomParameterMetadata param1) => new CountsDefaultEndpointMetadataPoco();
-        var options = new RequestDelegateFactoryOptions
-        {
-            EndpointBuilder = CreateEndpointBuilder(),
-        };
-
-        // Act
-        var metadataResult = RequestDelegateFactory.InferMetadata(@delegate.Method, options);
-        options.EndpointBuilder.Metadata.Add(new CustomEndpointMetadata { Source = MetadataSource.Caller });
-        var result = RequestDelegateFactory.Create(@delegate, options, metadataResult);
-
-        // Assert
-        Assert.Collection(result.EndpointMetadata,
-            // Inferred AcceptsMetadata from RDF for complex type
-            m => Assert.True(m is AcceptsMetadata am && am.RequestType == typeof(AddsCustomParameterMetadata)),
-            // Inferred ProducesResopnseTypeMetadata from RDF for complex type
-            m => Assert.Equal(typeof(CountsDefaultEndpointMetadataPoco), ((IProducesResponseTypeMetadata)m).Type),
-            // Metadata provided by parameters implementing IEndpointParameterMetadataProvider
-            m => Assert.True(m is ParameterNameMetadata { Name: "param1" }),
-            // Metadata provided by parameters implementing IEndpointMetadataProvider
-            m => Assert.True(m is CustomEndpointMetadata { Source: MetadataSource.Parameter }),
-            // Metadata provided by return type implementing IEndpointMetadataProvider
-            m => Assert.True(m is MetadataCountMetadata { Count: 4 }),
-            // Entry-specific metadata added after a call to InferMetadata
-            m => Assert.True(m is CustomEndpointMetadata { Source: MetadataSource.Caller }));
     }
 
     [Fact]
