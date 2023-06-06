@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -23,9 +24,11 @@ internal struct FormDataReader
         _prefixBuffer = buffer;
     }
 
+    internal ReadOnlyMemory<char> CurrentPrefix => _currentPrefixBuffer;
+
     public IFormatProvider Culture { get; internal set; }
 
-    internal IEnumerable<FormKey> GetKeys()
+    internal FormKeyCollection GetKeys()
     {
         if (_formDictionaryKeysByPrefix == null)
         {
@@ -34,13 +37,14 @@ internal struct FormDataReader
 
         if (_formDictionaryKeysByPrefix.TryGetValue(new FormKey(_currentPrefixBuffer), out var foundKeys))
         {
-            return foundKeys;
+            return new FormKeyCollection(foundKeys);
         }
 
-        return Array.Empty<FormKey>();
+        return FormKeyCollection.Empty;
     }
 
-    private IReadOnlyDictionary<FormKey, HashSet<FormKey>> ProcessFormKeys()
+    // Internal for testing purposes
+    internal IReadOnlyDictionary<FormKey, HashSet<FormKey>> ProcessFormKeys()
     {
         var keys = _readOnlyMemoryKeys.Keys;
         var result = new Dictionary<FormKey, HashSet<FormKey>>();
@@ -56,7 +60,7 @@ internal struct FormDataReader
             var startIndex = key.Value.Span.IndexOf('[');
             while (startIndex >= 0)
             {
-                var endIndex = key.Value.Span.IndexOf(']');
+                var endIndex = key.Value.Span[startIndex..].IndexOf(']') + startIndex;
                 if (endIndex == -1)
                 {
                     // Ignore malformed keys
@@ -74,7 +78,9 @@ internal struct FormDataReader
                     result.Add(new FormKey(prefix), new HashSet<FormKey> { new FormKey(keyValue) });
                 }
 
-                startIndex = key.Value.Span[(endIndex + 1)..].IndexOf('[');
+                var nextOpenBracket = key.Value.Span[(endIndex + 1)..].IndexOf('[');
+
+                startIndex = nextOpenBracket != -1 ? endIndex + 1 + nextOpenBracket : -1;
             }
         }
 
@@ -88,17 +94,17 @@ internal struct FormDataReader
 
     internal void PopPrefix(ReadOnlySpan<char> key)
     {
-        var length = key.Length;
-        // If length is bigger than the current scope length typically means there is a 
+        var keyLength = key.Length;
+        // If keyLength is bigger than the current scope keyLength typically means there is a 
         // bug where some part of the code has not popped the scope appropriately.
-        Debug.Assert(_currentPrefixBuffer.Length >= length);
-        if (_currentPrefixBuffer.Length == length || _currentPrefixBuffer.Span[^(length + 1)] != '.')
+        Debug.Assert(_currentPrefixBuffer.Length >= keyLength);
+        if (_currentPrefixBuffer.Length == keyLength || _currentPrefixBuffer.Span[^(keyLength + 1)] != '.')
         {
-            _currentPrefixBuffer = _currentPrefixBuffer[..^length];
+            _currentPrefixBuffer = _currentPrefixBuffer[..^keyLength];
         }
         else
         {
-            _currentPrefixBuffer = _currentPrefixBuffer[..^(length + 1)];
+            _currentPrefixBuffer = _currentPrefixBuffer[..^(keyLength + 1)];
         }
     }
 
@@ -111,7 +117,7 @@ internal struct FormDataReader
     {
         // We automatically append a "." before adding the suffix, except when its the first element pushed to the
         // scope, or when we are accessing a property after a collection or an indexer like items[1].
-        var separator = _currentPrefixBuffer.Length > 0 && _currentPrefixBuffer.Span[_currentPrefixBuffer.Length - 1] != ']' && key[0] != '['
+        var separator = _currentPrefixBuffer.Length > 0 && key[0] != '['
             ? ".".AsSpan()
             : "".AsSpan();
 
@@ -137,5 +143,41 @@ internal struct FormDataReader
         }
 
         return foundSingleValue;
+    }
+
+    internal readonly struct FormKeyCollection : IEnumerable<FormKey>
+    {
+        private readonly HashSet<FormKey> _values;
+        internal static readonly FormKeyCollection Empty;
+
+        public bool HasValues() => _values != null;
+
+        public FormKeyCollection(HashSet<FormKey> values) => _values = values;
+
+        public Enumerator GetEnumerator() => new Enumerator(_values.GetEnumerator());
+
+        IEnumerator<FormKey> IEnumerable<FormKey>.GetEnumerator() => GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        internal struct Enumerator : IEnumerator<FormKey>
+        {
+            private HashSet<FormKey>.Enumerator _enumerator;
+
+            public Enumerator(HashSet<FormKey>.Enumerator enumerator)
+            {
+                _enumerator = enumerator;
+            }
+
+            public FormKey Current => _enumerator.Current;
+
+            object IEnumerator.Current => _enumerator.Current;
+
+            void IDisposable.Dispose() => _enumerator.Dispose();
+
+            public bool MoveNext() => _enumerator.MoveNext();
+
+            void IEnumerator.Reset() { }
+        }
     }
 }
