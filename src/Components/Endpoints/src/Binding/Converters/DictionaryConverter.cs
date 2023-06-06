@@ -54,11 +54,11 @@ internal sealed class DictionaryConverter<TDictionary, TDictionaryPolicy, TBuffe
 
         foreach (var key in keys)
         {
-            context.PushPrefix(key.Value.Span);
+            context.PushPrefix(key.Span);
             currentElementSuccess = _valueConverter.TryRead(ref context, typeof(TValue), options, out currentValue!, out foundCurrentValue);
-            context.PopPrefix(key.Value.Span);
+            context.PopPrefix(key.Span);
 
-            if (!TKey.TryParse(key.Value.Span[1..^1], CultureInfo.InvariantCulture, out var keyValue))
+            if (!TKey.TryParse(key.Span[1..^1], CultureInfo.InvariantCulture, out var keyValue))
             {
                 succeded = false;
                 // Will report an error about unparsable key here.
