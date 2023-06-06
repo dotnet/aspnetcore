@@ -22,11 +22,11 @@ internal sealed class RoutingMetrics
 
         _matchSuccessCounter = _meter.CreateCounter<long>(
            "routing-match-success",
-            description: "Number of connections rejected by the server. Connections are rejected when the currently active count exceeds the value configured with MaxConcurrentConnections.");
+            description: "Number of requests successfully matched to an endpoint by routing.");
 
         _matchFailureCounter = _meter.CreateCounter<long>(
            "routing-match-failure",
-            description: "Number of connections rejected by the server. Connections are rejected when the currently active count exceeds the value configured with MaxConcurrentConnections.");
+            description: "Number of requests that failed to match to an endpoint by routing.");
     }
 
     public bool MatchSuccessCounterEnabled => _matchSuccessCounter.Enabled;
