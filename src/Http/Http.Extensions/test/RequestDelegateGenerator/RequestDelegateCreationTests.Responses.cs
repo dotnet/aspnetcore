@@ -846,4 +846,79 @@ static ValueTask<int> StaticValueTaskTestAction() => ValueTask.FromResult(42);
 
         await VerifyResponseBodyAsync(httpContext, "42");
     }
+
+    public static IEnumerable<object[]> NullContentResult
+    {
+        get
+        {
+            var testBoolAction = """
+app.MapPost("/", bool? () => null);
+""";
+
+            var testTaskBoolAction = """
+app.MapPost("/", () => Task.FromResult<bool?>(null));
+""";
+
+            var testValueTaskBoolAction = """
+app.MapPost("/", () => ValueTask.FromResult<bool?>(null));
+""";
+
+            var testIntAction = """
+app.MapPost("/", int? () => null);
+""";
+
+            var testTaskIntAction = """
+app.MapPost("/", () => Task.FromResult<int?>(null));
+""";
+
+            var testValueTaskIntAction = """
+app.MapPost("/", () => ValueTask.FromResult<int?>(null));
+""";
+
+            var testTodoAction = """
+app.MapPost("/", Todo? () => null);
+""";
+
+            var testTaskTodoAction = """
+app.MapPost("/", () => Task.FromResult<Todo?>(null));
+""";
+
+            var testValueTaskTodoAction = """
+app.MapPost("/", () => ValueTask.FromResult<Todo?>(null));
+""";
+
+            var testTodoStructAction = """
+app.MapPost("/", TodoStruct? () => null);
+""";
+
+            return new List<object[]>
+                {
+                    new object[] { testBoolAction },
+                    new object[] { testTaskBoolAction },
+                    new object[] { testValueTaskBoolAction },
+                    new object[] { testIntAction },
+                    new object[] { testTaskIntAction },
+                    new object[] { testValueTaskIntAction },
+                    new object[] { testTodoAction },
+                    new object[] { testTaskTodoAction },
+                    new object[] { testValueTaskTodoAction },
+                    new object[] { testTodoStructAction },
+                };
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(NullContentResult))]
+    public async Task RequestDelegateWritesNullReturnNullValue(string source)
+    {
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Response.ContentType = "application/json; charset=utf-8";
+
+        await endpoint.RequestDelegate(httpContext);
+
+        await VerifyResponseBodyAsync(httpContext, "null");
+    }
 }
