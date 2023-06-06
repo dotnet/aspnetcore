@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.TestObjects;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
@@ -90,7 +91,6 @@ public class EndpointRoutingMiddlewareTest
     {
         // Arrange
         var httpContext = CreateHttpContext();
-
         var middleware = CreateMiddleware();
 
         // Act
@@ -282,6 +282,7 @@ public class EndpointRoutingMiddlewareTest
         logger ??= new Logger<EndpointRoutingMiddleware>(NullLoggerFactory.Instance);
         matcherFactory ??= new TestMatcherFactory(true);
         listener ??= new DiagnosticListener("Microsoft.AspNetCore");
+        var metrics = new RoutingMetrics(new TestMeterFactory());
 
         var middleware = new EndpointRoutingMiddleware(
             matcherFactory,
@@ -290,6 +291,7 @@ public class EndpointRoutingMiddlewareTest
             new DefaultEndpointDataSource(),
             listener,
             Options.Create(new RouteOptions()),
+            metrics,
             next);
 
         return middleware;
