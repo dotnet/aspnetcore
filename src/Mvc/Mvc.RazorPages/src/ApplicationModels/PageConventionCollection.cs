@@ -249,7 +249,7 @@ public class PageConventionCollection : Collection<IPageConvention>
     // Internal for unit testing
     internal static void EnsureValidPageName(string pageName, string argumentName = "pageName")
     {
-        ArgumentException.ThrowIfNullOrEmpty(pageName);
+        ArgumentException.ThrowIfNullOrEmpty(pageName, argumentName);
 
         if (pageName[0] != '/' || pageName.EndsWith(".cshtml", StringComparison.OrdinalIgnoreCase))
         {
@@ -260,7 +260,7 @@ public class PageConventionCollection : Collection<IPageConvention>
     // Internal for unit testing
     internal static void EnsureValidFolderPath(string folderPath)
     {
-        ArgumentException.ThrowIfNullOrEmpty(folderPath);
+        ArgumentException.ThrowIfNullOrEmpty(folderPath, nameof(folderPath));
 
         if (folderPath[0] != '/')
         {

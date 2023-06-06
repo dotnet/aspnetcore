@@ -13,7 +13,11 @@ internal static class HostingEnvironmentExtensions
 #pragma warning restore CS0618 // Type or member is obsolete
     {
         ArgumentNullException.ThrowIfNull(options);
-        ArgumentException.ThrowIfNullOrEmpty(contentRootPath);
+
+       if (string.IsNullOrEmpty(contentRootPath))
+        {
+            throw new ArgumentException("A valid non-empty content root must be provided.", nameof(contentRootPath));
+        }
 
         if (!Directory.Exists(contentRootPath))
         {
@@ -65,7 +69,11 @@ internal static class HostingEnvironmentExtensions
         IHostEnvironment? baseEnvironment = null)
     {
         ArgumentNullException.ThrowIfNull(options);
-        ArgumentException.ThrowIfNullOrEmpty(contentRootPath);
+
+        if (string.IsNullOrEmpty(contentRootPath))
+        {
+            throw new ArgumentException("A valid non-empty content root must be provided.", nameof(contentRootPath));
+        }
 
         if (!Directory.Exists(contentRootPath))
         {

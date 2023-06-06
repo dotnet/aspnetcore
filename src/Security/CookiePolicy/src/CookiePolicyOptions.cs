@@ -59,7 +59,7 @@ public class CookiePolicyOptions
         get => _consentCookieValue;
         set
         {
-            ArgumentException.ThrowIfNullOrEmpty(value);
+            ArgumentException.ThrowIfNullOrEmpty(value, nameof(value));
             _consentCookieValue = value;
         }
     }
