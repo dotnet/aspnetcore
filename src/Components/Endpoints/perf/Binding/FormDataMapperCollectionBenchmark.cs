@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
 public class FormDataMapperCollectionBenchmark
 {
     private FormDataMapperOptions _formMapperOptions;
-    private Dictionary<Prefix, StringValues> _formDataEntries;
+    private Dictionary<FormKey, StringValues> _formDataEntries;
     private FormDataReader _formDataReader;
 
     [Params(0, 1, 10, 100, 1000)]
@@ -23,7 +23,7 @@ public class FormDataMapperCollectionBenchmark
     {
         _formMapperOptions = new FormDataMapperOptions();
         _formDataEntries = Enumerable.Range(0, CollectionSize)
-            .ToDictionary(i => new Prefix($"[{i}]".AsMemory()), i => new StringValues(i.ToString(CultureInfo.InvariantCulture)));
+            .ToDictionary(i => new FormKey($"[{i}]".AsMemory()), i => new StringValues(i.ToString(CultureInfo.InvariantCulture)));
     }
 
     [IterationSetup]

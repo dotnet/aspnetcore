@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
 public class FormDataMapperPrimitiveTypeBenchmark
 {
     private FormDataMapperOptions _formMapperOptions;
-    private Dictionary<Prefix, StringValues> _formDataEntries;
+    private Dictionary<FormKey, StringValues> _formDataEntries;
     private FormDataReader _formDataReader;
 
     public static char[] Buffer = new char[2048];
@@ -19,7 +19,7 @@ public class FormDataMapperPrimitiveTypeBenchmark
     public void Setup()
     {
         _formMapperOptions = new FormDataMapperOptions();
-        _formDataEntries = new Dictionary<Prefix, StringValues> { [new Prefix("value".AsMemory())] = "3" };
+        _formDataEntries = new Dictionary<FormKey, StringValues> { [new FormKey("value".AsMemory())] = "3" };
         _formDataReader = new FormDataReader(_formDataEntries, CultureInfo.InvariantCulture, Buffer);
         _formDataReader.PushPrefix("value");
     }

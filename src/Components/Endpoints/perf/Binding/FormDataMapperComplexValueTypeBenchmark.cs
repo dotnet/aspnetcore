@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
 public class FormDataMapperComplexValueTypeBenchmark
 {
     private FormDataMapperOptions _formMapperOptions;
-    private Dictionary<Prefix, StringValues> _formDataEntries;
+    private Dictionary<FormKey, StringValues> _formDataEntries;
     private FormDataReader _formDataReader;
 
     public static char[] Buffer = new char[2048];
@@ -18,12 +18,12 @@ public class FormDataMapperComplexValueTypeBenchmark
     public void Setup()
     {
         _formMapperOptions = new FormDataMapperOptions();
-        _formDataEntries = new Dictionary<Prefix, StringValues>
+        _formDataEntries = new Dictionary<FormKey, StringValues>
         {
-            [new Prefix("Street".AsMemory())] = new StringValues("Qux"),
-            [new Prefix("PostalCode".AsMemory())] = new StringValues("12345"),
-            [new Prefix("City".AsMemory())] = new StringValues("Seattle"),
-            [new Prefix("Country".AsMemory())] = new StringValues("USA"),
+            [new FormKey("Street".AsMemory())] = new StringValues("Qux"),
+            [new FormKey("PostalCode".AsMemory())] = new StringValues("12345"),
+            [new FormKey("City".AsMemory())] = new StringValues("Seattle"),
+            [new FormKey("Country".AsMemory())] = new StringValues("USA"),
         };
         _formDataReader = new FormDataReader(_formDataEntries, CultureInfo.InvariantCulture, Buffer);
         _formMapperOptions.ResolveConverter<Address>();

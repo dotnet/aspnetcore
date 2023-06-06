@@ -72,26 +72,33 @@ internal sealed class DefaultFormValuesSupplier : IFormValueSupplier
         // Some form input types use the invariant culture when sending the data to the server. For those cases, we'll
         // provide a way to override the culture to use to parse that value.
         var buffer = ArrayPool<char>.Shared.Rent(2048);
-        var reader = new FormDataReader(CreateReadOnlyMemoryKeys(form), CultureInfo.CurrentCulture, buffer.AsMemory(0, 2048));
-        reader.PushPrefix(value);
-        var result = FormDataMapper.Map<T>(reader, options);
-        ArrayPool<char>.Shared.Return(buffer);
-        return result;
+        try
+        {
+            // For right now, put the data in the shape that the form reader expects it.
+            // We'll process the data into a dictionary of the right shape directly in the future.
+            var formData = CreateReadOnlyMemoryKeys(form);
+            var reader = new FormDataReader(formData, CultureInfo.CurrentCulture, buffer.AsMemory(0, 2048));
+            reader.PushPrefix(value);
+            var result = FormDataMapper.Map<T>(reader, options);
+
+            return result;
+        }
+        finally
+        {
+            ArrayPool<char>.Shared.Return(buffer);
+        }
     }
 
-    private static IReadOnlyDictionary<Prefix, StringValues> CreateReadOnlyMemoryKeys(IReadOnlyDictionary<string, StringValues> formCollection)
+    private static IReadOnlyDictionary<FormKey, StringValues> CreateReadOnlyMemoryKeys(IReadOnlyDictionary<string, StringValues> formCollection)
     {
-        var result = new Dictionary<Prefix, StringValues>(formCollection.Count);
+        var result = new Dictionary<FormKey, StringValues>(formCollection.Count);
         foreach (var key in formCollection.Keys)
         {
-            result.Add(new Prefix(key.AsMemory()), formCollection[key]);
+            result.Add(new FormKey(key.AsMemory()), formCollection[key]);
         }
 
         return result;
     }
 
-    public bool CanConvertSingleValue(Type type)
-    {
-        return _options.IsSingleValueConverter(type);
-    }
+    public bool CanConvertSingleValue(Type type) => _options.IsSingleValueConverter(type);
 }

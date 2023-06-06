@@ -32,12 +32,12 @@ public class FormDataMapperTests
         Assert.Equal(expected, result);
     }
 
-    private IReadOnlyDictionary<Prefix, StringValues> ToPrefixDictionary(Dictionary<string, StringValues> dictionary)
+    private IReadOnlyDictionary<FormKey, StringValues> ToPrefixDictionary(Dictionary<string, StringValues> dictionary)
     {
-        var result = new Dictionary<Prefix, StringValues>(dictionary.Count);
+        var result = new Dictionary<FormKey, StringValues>(dictionary.Count);
         foreach (var (key, value) in dictionary)
         {
-            result.Add(new Prefix(key.AsMemory()), value);
+            result.Add(new FormKey(key.AsMemory()), value);
         }
 
         return result;
