@@ -187,7 +187,6 @@ namespace Microsoft.AspNetCore.Http.Generated
                             return;
                         }
                         handler(httpContext_local, file_local!, fileCollection_local!, collection_local!, tryParseRecord_local!);
-                        httpContext.Response.ContentType ??= "text/plain";
                     }
 
                     async Task RequestHandlerFiltered(HttpContext httpContext)

@@ -156,7 +156,6 @@ namespace Microsoft.AspNetCore.Http.Generated
                             return Task.CompletedTask;
                         }
                         var result = handler(p_local!);
-                        httpContext.Response.ContentType ??= "text/plain";
                         return httpContext.Response.WriteAsJsonAsync(result, jsonTypeInfo);
                     }
 

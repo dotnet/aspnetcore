@@ -441,7 +441,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         }
                         else
                         {
-                            httpContext.Response.ContentType ??= "application/json";
+                            httpContext.Response.ContentType ??= "application/json; charset=utf-8";
                         }
                         await httpContext.Response.WriteAsync(result);
                     }
@@ -528,7 +528,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         }
                         else
                         {
-                            httpContext.Response.ContentType ??= "application/json";
+                            httpContext.Response.ContentType ??= "application/json; charset=utf-8";
                         }
                         await httpContext.Response.WriteAsync(result);
                     }
@@ -615,7 +615,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         }
                         else
                         {
-                            httpContext.Response.ContentType ??= "application/json";
+                            httpContext.Response.ContentType ??= "application/json; charset=utf-8";
                         }
                         await httpContext.Response.WriteAsync(result);
                     }
@@ -702,7 +702,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         }
                         else
                         {
-                            httpContext.Response.ContentType ??= "application/json";
+                            httpContext.Response.ContentType ??= "application/json; charset=utf-8";
                         }
                         await httpContext.Response.WriteAsync(result);
                     }
@@ -789,7 +789,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         }
                         else
                         {
-                            httpContext.Response.ContentType ??= "application/json";
+                            httpContext.Response.ContentType ??= "application/json; charset=utf-8";
                         }
                         await httpContext.Response.WriteAsync(result);
                     }
@@ -876,7 +876,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         }
                         else
                         {
-                            httpContext.Response.ContentType ??= "application/json";
+                            httpContext.Response.ContentType ??= "application/json; charset=utf-8";
                         }
                         await httpContext.Response.WriteAsync(result);
                     }
@@ -963,7 +963,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         }
                         else
                         {
-                            httpContext.Response.ContentType ??= "application/json";
+                            httpContext.Response.ContentType ??= "application/json; charset=utf-8";
                         }
                         await httpContext.Response.WriteAsync(result);
                     }
@@ -1050,7 +1050,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         }
                         else
                         {
-                            httpContext.Response.ContentType ??= "application/json";
+                            httpContext.Response.ContentType ??= "application/json; charset=utf-8";
                         }
                         await httpContext.Response.WriteAsync(result);
                     }
@@ -1136,7 +1136,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         }
                         else
                         {
-                            httpContext.Response.ContentType ??= "application/json";
+                            httpContext.Response.ContentType ??= "application/json; charset=utf-8";
                         }
                         await httpContext.Response.WriteAsync(result);
                     }
@@ -1222,7 +1222,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         }
                         else
                         {
-                            httpContext.Response.ContentType ??= "application/json";
+                            httpContext.Response.ContentType ??= "application/json; charset=utf-8";
                         }
                         await httpContext.Response.WriteAsync(result);
                     }
@@ -1308,7 +1308,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         }
                         else
                         {
-                            httpContext.Response.ContentType ??= "application/json";
+                            httpContext.Response.ContentType ??= "application/json; charset=utf-8";
                         }
                         await httpContext.Response.WriteAsync(result);
                     }
@@ -1394,7 +1394,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         }
                         else
                         {
-                            httpContext.Response.ContentType ??= "application/json";
+                            httpContext.Response.ContentType ??= "application/json; charset=utf-8";
                         }
                         await httpContext.Response.WriteAsync(result);
                     }
@@ -1481,7 +1481,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         }
                         else
                         {
-                            httpContext.Response.ContentType ??= "application/json";
+                            httpContext.Response.ContentType ??= "application/json; charset=utf-8";
                         }
                         await httpContext.Response.WriteAsync(result);
                     }
@@ -1568,7 +1568,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         }
                         else
                         {
-                            httpContext.Response.ContentType ??= "application/json";
+                            httpContext.Response.ContentType ??= "application/json; charset=utf-8";
                         }
                         await httpContext.Response.WriteAsync(result);
                     }
@@ -1654,7 +1654,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         }
                         else
                         {
-                            httpContext.Response.ContentType ??= "application/json";
+                            httpContext.Response.ContentType ??= "application/json; charset=utf-8";
                         }
                         await httpContext.Response.WriteAsync(result);
                     }
@@ -1740,7 +1740,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         }
                         else
                         {
-                            httpContext.Response.ContentType ??= "application/json";
+                            httpContext.Response.ContentType ??= "application/json; charset=utf-8";
                         }
                         await httpContext.Response.WriteAsync(result);
                     }
@@ -1827,7 +1827,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         }
                         else
                         {
-                            httpContext.Response.ContentType ??= "application/json";
+                            httpContext.Response.ContentType ??= "application/json; charset=utf-8";
                         }
                         await httpContext.Response.WriteAsync(result);
                     }
@@ -1914,7 +1914,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         }
                         else
                         {
-                            httpContext.Response.ContentType ??= "application/json";
+                            httpContext.Response.ContentType ??= "application/json; charset=utf-8";
                         }
                         await httpContext.Response.WriteAsync(result);
                     }
@@ -2000,7 +2000,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         }
                         else
                         {
-                            httpContext.Response.ContentType ??= "application/json";
+                            httpContext.Response.ContentType ??= "application/json; charset=utf-8";
                         }
                         await httpContext.Response.WriteAsync(result);
                     }
@@ -2086,7 +2086,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         }
                         else
                         {
-                            httpContext.Response.ContentType ??= "application/json";
+                            httpContext.Response.ContentType ??= "application/json; charset=utf-8";
                         }
                         await httpContext.Response.WriteAsync(result);
                     }

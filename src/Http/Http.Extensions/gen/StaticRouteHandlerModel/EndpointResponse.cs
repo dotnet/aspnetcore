@@ -33,7 +33,7 @@ internal class EndpointResponse
         HasNoResponse = method.ReturnsVoid || awaitableIsVoid;
         IsIResult = GetIsIResult();
         IsSerializable = GetIsSerializable();
-        ContentType = GetContentType(method);
+        ContentType = GetContentType();
         IsAnonymousType = method.ReturnType.IsAnonymousType;
         IsEndpointMetadataProvider = ImplementsIEndpointMetadataProvider(ResponseType, wellKnownTypes);
     }
@@ -83,14 +83,14 @@ internal class EndpointResponse
             SymbolEqualityComparer.Default.Equals(ResponseType, resultType);
     }
 
-    private string? GetContentType(IMethodSymbol method)
+    private string? GetContentType()
     {
         // `void` returning methods do not have a Content-Type.
         // We don't have a strategy for resolving a Content-Type
         // from an IResult. Typically, this would be done via an
         // IEndpointMetadataProvider so we don't need to set a
         // Content-Type here.
-        if (method.ReturnsVoid || IsIResult || HasNoResponse)
+        if (IsIResult || HasNoResponse)
         {
             return null;
         }

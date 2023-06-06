@@ -144,7 +144,6 @@ namespace Microsoft.AspNetCore.Http.Generated
                             return;
                         }
                         var result = handler(todo_local!);
-                        httpContext.Response.ContentType ??= "text/plain";
                         await GeneratedRouteBuilderExtensionsCore.ExecuteAsyncExplicit(result, httpContext);
                     }
 
@@ -223,7 +222,6 @@ namespace Microsoft.AspNetCore.Http.Generated
                             return;
                         }
                         var result = handler(todo_local);
-                        httpContext.Response.ContentType ??= "text/plain";
                         await GeneratedRouteBuilderExtensionsCore.ExecuteAsyncExplicit(result, httpContext);
                     }
 

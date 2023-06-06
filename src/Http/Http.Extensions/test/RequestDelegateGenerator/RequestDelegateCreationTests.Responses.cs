@@ -716,18 +716,18 @@ static ValueTask<object> StaticValueTaskTestAction() => ValueTask.FromResult<obj
         Assert.Equal("text/plain; charset=utf-8", httpContext.Response.ContentType);
     }
 
-    //[Theory]
-    //[MemberData(nameof(StringResult))]
-    //public async Task RequestDelegateWritesStringReturnDoNotChangeContentType(Delegate @delegate)
-    //{
-    //    var httpContext = CreateHttpContext();
-    //    httpContext.Response.ContentType = "application/json; charset=utf-8";
+    [Theory]
+    [MemberData(nameof(StringResult))]
+    public async Task RequestDelegateWritesStringReturnDoNotChangeContentType(string source)
+    {
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
 
-    //    var factoryResult = RequestDelegateFactory.Create(@delegate);
-    //    var requestDelegate = factoryResult.RequestDelegate;
+        var httpContext = CreateHttpContext();
+        httpContext.Response.ContentType = "application/json; charset=utf-8";
 
-    //    await requestDelegate(httpContext);
+        await endpoint.RequestDelegate(httpContext);
 
-    //    Assert.Equal("application/json; charset=utf-8", httpContext.Response.ContentType);
-    //}
+        Assert.Equal("application/json; charset=utf-8", httpContext.Response.ContentType);
+    }
 }

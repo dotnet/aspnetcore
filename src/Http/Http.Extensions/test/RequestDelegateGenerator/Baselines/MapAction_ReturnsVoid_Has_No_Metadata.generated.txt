@@ -133,7 +133,6 @@ namespace Microsoft.AspNetCore.Http.Generated
                             return Task.CompletedTask;
                         }
                         handler();
-                        httpContext.Response.ContentType ??= "text/plain";
                         return Task.CompletedTask;
                     }
 

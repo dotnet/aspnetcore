@@ -133,7 +133,6 @@ namespace Microsoft.AspNetCore.Http.Generated
                             return Task.CompletedTask;
                         }
                         var result = handler();
-                        httpContext.Response.ContentType ??= "text/plain";
                         return GeneratedRouteBuilderExtensionsCore.ExecuteAsyncExplicit(result, httpContext);
                     }
 

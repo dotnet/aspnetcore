@@ -167,7 +167,6 @@ namespace Microsoft.AspNetCore.Http.Generated
                             return;
                         }
                         var result = handler(p_local);
-                        httpContext.Response.ContentType ??= "text/plain";
                         await httpContext.Response.WriteAsJsonAsync(result, jsonTypeInfo);
                     }
 

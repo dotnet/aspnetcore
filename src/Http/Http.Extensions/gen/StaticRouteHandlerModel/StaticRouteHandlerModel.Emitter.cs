@@ -112,12 +112,8 @@ internal static class StaticRouteHandlerModelEmitter
             codeWriter.EndBlock();
             codeWriter.WriteLine("else");
             codeWriter.StartBlock();
-            codeWriter.WriteLine($@"httpContext.Response.ContentType ??= ""application/json"";");
+            codeWriter.WriteLine($@"httpContext.Response.ContentType ??= ""application/json; charset=utf-8"";");
             codeWriter.EndBlock();
-        }
-        else
-        {
-            codeWriter.WriteLine($@"httpContext.Response.ContentType ??= ""text/plain"";");
         }
     }
 
