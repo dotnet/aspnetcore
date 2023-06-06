@@ -571,7 +571,12 @@ public partial class HubConnection : IAsyncDisposable
                 {
                     await writeTask.ConfigureAwait(false);
                 }
-                catch { }
+                catch
+                {
+                    // Ignore exception from write, this is a best effort attempt to let the server know the client closed gracefully.
+                    // We are already closing the connection via an explicit StopAsync call from the user so don't care about any potential
+                    // errors that might happen.
+                }
             }
             else
             {
@@ -1472,6 +1477,7 @@ public partial class HubConnection : IAsyncDisposable
 
             // Cancel any outstanding invocations within the connection lock
             connectionState.CancelOutstandingInvocations(connectionState.CloseException);
+            connectionState.Complete();
 
             if (connectionState.Stopping || _reconnectPolicy == null)
             {
@@ -1863,6 +1869,8 @@ public partial class HubConnection : IAsyncDisposable
         private long _nextActivationServerTimeout;
         private long _nextActivationSendPing;
 
+        private bool _complete;
+
         public ConnectionContext Connection { get; }
         public Task? ReceiveTask { get; set; }
         public Exception? CloseException { get; set; }
@@ -1964,6 +1972,12 @@ public partial class HubConnection : IAsyncDisposable
             // to wait for the same "stop" to complete.
             lock (_lock)
             {
+                // If the ConnectionState is completed that means the connection was closed from the transport side already.
+                // We don't need to do anything in that case as the Reconnect logic or the Closed logic has already run/is running.
+                if (_complete)
+                {
+                    return Task.CompletedTask;
+                }
                 if (_stopTcs != null)
                 {
                     return _stopTcs.Task;
@@ -1994,6 +2008,21 @@ public partial class HubConnection : IAsyncDisposable
 
             _hubConnection._logScope.ConnectionId = null;
             _stopTcs!.TrySetResult(null);
+        }
+
+        // Marks ConnectionState as no longer in use. State checked by StopAsync so that we don't access properties that might be disposed already
+        public void Complete()
+        {
+            lock (_lock)
+            {
+                if (_stopTcs != null || _complete)
+                {
+                    return;
+                }
+
+                _messageBuffer?.Dispose();
+                _complete = true;
+            }
         }
 
         public async Task TimerLoop(TimerAwaitable timer)
