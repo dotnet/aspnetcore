@@ -26,7 +26,7 @@ public interface ITlsHandshakeFeature
     TlsCipherSuite? NegotiatedCipherSuite => null;
 
     /// <summary>
-    /// Gets the host name from the "server_name" extension of the client hello if present.
+    /// Gets the host name from the "server_name" (SNI) extension of the client hello if present.
     /// See <see href="https://www.rfc-editor.org/rfc/rfc6066#section-3">RFC 6066</see>.
     /// </summary>
     string? HostName => null;
