@@ -15,6 +15,9 @@ internal struct FormDataReader
     private readonly Memory<char> _prefixBuffer;
     private Memory<char> _currentPrefixBuffer;
 
+    // As an implementation detail, reuse FormKey for the values.
+    // It's just a thin wrapper over ReadOnlyMemory<char> that caches
+    // the computed hash code.
     private IReadOnlyDictionary<FormKey, HashSet<FormKey>>? _formDictionaryKeysByPrefix;
 
     public FormDataReader(IReadOnlyDictionary<FormKey, StringValues> formCollection, CultureInfo culture, Memory<char> buffer)
@@ -145,7 +148,7 @@ internal struct FormDataReader
         return foundSingleValue;
     }
 
-    internal readonly struct FormKeyCollection : IEnumerable<FormKey>
+    internal readonly struct FormKeyCollection : IEnumerable<ReadOnlyMemory<char>>
     {
         private readonly HashSet<FormKey> _values;
         internal static readonly FormKeyCollection Empty;
@@ -156,11 +159,11 @@ internal struct FormDataReader
 
         public Enumerator GetEnumerator() => new Enumerator(_values.GetEnumerator());
 
-        IEnumerator<FormKey> IEnumerable<FormKey>.GetEnumerator() => GetEnumerator();
+        IEnumerator<ReadOnlyMemory<char>> IEnumerable<ReadOnlyMemory<char>>.GetEnumerator() => GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        internal struct Enumerator : IEnumerator<FormKey>
+        internal struct Enumerator : IEnumerator<ReadOnlyMemory<char>>
         {
             private HashSet<FormKey>.Enumerator _enumerator;
 
@@ -169,7 +172,7 @@ internal struct FormDataReader
                 _enumerator = enumerator;
             }
 
-            public FormKey Current => _enumerator.Current;
+            public ReadOnlyMemory<char> Current => _enumerator.Current.Value;
 
             object IEnumerator.Current => _enumerator.Current;
 
