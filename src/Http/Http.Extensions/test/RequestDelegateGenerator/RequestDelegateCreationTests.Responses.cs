@@ -730,4 +730,121 @@ static ValueTask<object> StaticValueTaskTestAction() => ValueTask.FromResult<obj
 
         Assert.Equal("application/json; charset=utf-8", httpContext.Response.ContentType);
     }
+
+
+    public static IEnumerable<object[]> BoolResult
+    {
+        get
+        {
+            var testAction = """
+app.MapPost("/", () => true);
+""";
+
+            var taskTestAction = """
+app.MapPost("/", () => Task.FromResult(true));
+""";
+
+            var valueTaskTestAction = """
+app.MapPost("/", () => ValueTask.FromResult(true));
+""";
+
+            var staticTestAction = """
+app.MapPost("/", StaticTestAction);
+static bool StaticTestAction() => true;
+""";
+
+            var staticTaskTestAction = """
+app.MapPost("/", StaticTaskTestAction);
+static Task<bool> StaticTaskTestAction() => Task.FromResult(true);
+""";
+
+            var staticValueTaskTestAction = """
+app.MapPost("/", StaticValueTaskTestAction);
+static ValueTask<bool> StaticValueTaskTestAction() => ValueTask.FromResult(true);
+""";
+
+            return new List<object[]>
+                {
+                    new object[] { testAction },
+                    new object[] { taskTestAction },
+                    new object[] { valueTaskTestAction },
+                    new object[] { staticTestAction },
+                    new object[] { staticTaskTestAction },
+                    new object[] { staticValueTaskTestAction },
+                };
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(BoolResult))]
+    public async Task RequestDelegateWritesBoolReturnValue(string source)
+    {
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Response.ContentType = "application/json; charset=utf-8";
+
+        await endpoint.RequestDelegate(httpContext);
+
+        await VerifyResponseBodyAsync(httpContext, "true");
+    }
+
+    public static IEnumerable<object[]> IntResult
+    {
+        get
+        {
+            var testAction = """
+app.MapPost("/", () => 42);
+""";
+
+            var taskTestAction = """
+app.MapPost("/", () => Task.FromResult(42));
+""";
+
+            var valueTaskTestAction = """
+app.MapPost("/", () => ValueTask.FromResult(42));
+""";
+
+            var staticTestAction = """
+app.MapPost("/", StaticTestAction);
+static int StaticTestAction() => 42;
+""";
+
+            var staticTaskTestAction = """
+app.MapPost("/", StaticTaskTestAction);
+static Task<int> StaticTaskTestAction() => Task.FromResult(42);
+""";
+
+            var staticValueTaskTestAction = """
+app.MapPost("/", StaticValueTaskTestAction);
+static ValueTask<int> StaticValueTaskTestAction() => ValueTask.FromResult(42);
+""";
+
+            return new List<object[]>
+                {
+                    new object[] { testAction },
+                    new object[] { taskTestAction },
+                    new object[] { valueTaskTestAction },
+                    new object[] { staticTestAction },
+                    new object[] { staticTaskTestAction },
+                    new object[] { staticValueTaskTestAction },
+                };
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(IntResult))]
+    public async Task RequestDelegateWritesIntReturnValue(string source)
+    {
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Response.ContentType = "application/json; charset=utf-8";
+
+        await endpoint.RequestDelegate(httpContext);
+
+        await VerifyResponseBodyAsync(httpContext, "42");
+    }
 }
