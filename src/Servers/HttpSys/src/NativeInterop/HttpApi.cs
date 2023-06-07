@@ -81,6 +81,10 @@ internal static unsafe partial class HttpApi
     internal static unsafe partial uint HttpDelegateRequestEx(SafeHandle pReqQueueHandle, SafeHandle pDelegateQueueHandle, ulong requestId,
         ulong delegateUrlGroupId, ulong propertyInfoSetSize, HTTP_DELEGATE_REQUEST_PROPERTY_INFO* pRequestPropertyBuffer);
 
+    [LibraryImport(HTTPAPI, SetLastError = true)]
+    internal static unsafe partial uint HttpQueryRequestProperty(SafeHandle requestQueueHandle, ulong requestId, HTTP_REQUEST_PROPERTY propertyId,
+        void* qualifier, ulong qualifierSize, void* output, ulong outputSize, ulong* bytesReturned, IntPtr overlapped);
+
     internal delegate uint HttpSetRequestPropertyInvoker(SafeHandle requestQueueHandle, ulong requestId, HTTP_REQUEST_PROPERTY propertyId, void* input, uint inputSize, IntPtr overlapped);
 
     private static HTTPAPI_VERSION version;
