@@ -17,9 +17,9 @@ internal static class FormDataMapper
                 return result;
             }
 
-            // We don't do error handling yet.
-
-            return default;
+            // Always return the result, even if it has failures. This is because we do not want
+            // to loose the data that we were able to deserialize.
+            return result;
         }
         finally
         {
