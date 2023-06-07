@@ -3,6 +3,7 @@
 
 using System.Collections;
 using System.Globalization;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 
@@ -12,7 +13,7 @@ internal sealed class ConnectionLogScope : IReadOnlyList<KeyValuePair<string, ob
 
     private string? _cachedToString;
 
-    public ConnectionLogScope(string connectionId)
+    public ConnectionLogScope([StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId)
     {
         _connectionId = connectionId;
     }

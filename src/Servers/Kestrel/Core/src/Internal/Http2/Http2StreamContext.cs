@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 internal sealed class Http2StreamContext : HttpConnectionContext
 {
     public Http2StreamContext(
-        string connectionId,
+        [StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId,
         HttpProtocols protocols,
         AltSvcHeader? altSvcHeader,
         BaseConnectionContext connectionContext,

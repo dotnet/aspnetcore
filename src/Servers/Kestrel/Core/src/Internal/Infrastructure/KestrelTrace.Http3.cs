@@ -10,17 +10,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 internal sealed partial class KestrelTrace : ILogger
 {
-    public void Http3ConnectionError(string connectionId, Http3ConnectionErrorException ex)
+    public void Http3ConnectionError([StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, Http3ConnectionErrorException ex)
     {
         Http3Log.Http3ConnectionError(_http3Logger, connectionId, ex);
     }
 
-    public void Http3ConnectionClosing(string connectionId)
+    public void Http3ConnectionClosing([StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId)
     {
         Http3Log.Http3ConnectionClosing(_http3Logger, connectionId);
     }
 
-    public void Http3ConnectionClosed(string connectionId, long? highestOpenedStreamId)
+    public void Http3ConnectionClosed([StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, long? highestOpenedStreamId)
     {
         Http3Log.Http3ConnectionClosed(_http3Logger, connectionId, highestOpenedStreamId);
     }
@@ -33,7 +33,7 @@ internal sealed partial class KestrelTrace : ILogger
         }
     }
 
-    public void Http3FrameReceived(string connectionId, long streamId, Http3RawFrame frame)
+    public void Http3FrameReceived([StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, long streamId, Http3RawFrame frame)
     {
         if (_http3Logger.IsEnabled(LogLevel.Trace))
         {
@@ -41,7 +41,7 @@ internal sealed partial class KestrelTrace : ILogger
         }
     }
 
-    public void Http3FrameSending(string connectionId, long streamId, Http3RawFrame frame)
+    public void Http3FrameSending([StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, long streamId, Http3RawFrame frame)
     {
         if (_http3Logger.IsEnabled(LogLevel.Trace))
         {
@@ -49,22 +49,22 @@ internal sealed partial class KestrelTrace : ILogger
         }
     }
 
-    public void Http3OutboundControlStreamError(string connectionId, Exception ex)
+    public void Http3OutboundControlStreamError([StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, Exception ex)
     {
         Http3Log.Http3OutboundControlStreamError(_http3Logger, connectionId, ex);
     }
 
-    public void QPackDecodingError(string connectionId, long streamId, Exception ex)
+    public void QPackDecodingError([StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, long streamId, Exception ex)
     {
         Http3Log.QPackDecodingError(_http3Logger, connectionId, streamId, ex);
     }
 
-    public void QPackEncodingError(string connectionId, long streamId, Exception ex)
+    public void QPackEncodingError([StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, long streamId, Exception ex)
     {
         Http3Log.QPackEncodingError(_http3Logger, connectionId, streamId, ex);
     }
 
-    public void Http3GoAwayStreamId(string connectionId, long goAwayStreamId)
+    public void Http3GoAwayStreamId([StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, long goAwayStreamId)
     {
         Http3Log.Http3GoAwayStreamId(_http3Logger, connectionId, goAwayStreamId);
     }
@@ -72,34 +72,34 @@ internal sealed partial class KestrelTrace : ILogger
     private static partial class Http3Log
     {
         [LoggerMessage(42, LogLevel.Debug, @"Connection id ""{ConnectionId}"": HTTP/3 connection error.", EventName = "Http3ConnectionError")]
-        public static partial void Http3ConnectionError(ILogger logger, string connectionId, Http3ConnectionErrorException ex);
+        public static partial void Http3ConnectionError(ILogger logger, [StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, Http3ConnectionErrorException ex);
 
         [LoggerMessage(43, LogLevel.Debug, @"Connection id ""{ConnectionId}"" is closing.", EventName = "Http3ConnectionClosing")]
-        public static partial void Http3ConnectionClosing(ILogger logger, string connectionId);
+        public static partial void Http3ConnectionClosing(ILogger logger, [StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId);
 
         [LoggerMessage(44, LogLevel.Debug, @"Connection id ""{ConnectionId}"" is closed. The last processed stream ID was {HighestOpenedStreamId}.", EventName = "Http3ConnectionClosed")]
-        public static partial void Http3ConnectionClosed(ILogger logger, string connectionId, long? highestOpenedStreamId);
+        public static partial void Http3ConnectionClosed(ILogger logger, [StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, long? highestOpenedStreamId);
 
         [LoggerMessage(45, LogLevel.Debug, @"Trace id ""{TraceIdentifier}"": HTTP/3 stream error ""{error}"". An abort is being sent to the stream.", EventName = "Http3StreamAbort", SkipEnabledCheck = true)]
         public static partial void Http3StreamAbort(ILogger logger, string traceIdentifier, string error, ConnectionAbortedException abortReason);
 
         [LoggerMessage(46, LogLevel.Trace, @"Connection id ""{ConnectionId}"" received {type} frame for stream ID {id} with length {length}.", EventName = "Http3FrameReceived", SkipEnabledCheck = true)]
-        public static partial void Http3FrameReceived(ILogger logger, string connectionId, string type, long id, long length);
+        public static partial void Http3FrameReceived(ILogger logger, [StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, string type, long id, long length);
 
         [LoggerMessage(47, LogLevel.Trace, @"Connection id ""{ConnectionId}"" sending {type} frame for stream ID {id} with length {length}.", EventName = "Http3FrameSending", SkipEnabledCheck = true)]
-        public static partial void Http3FrameSending(ILogger logger, string connectionId, string type, long id, long length);
+        public static partial void Http3FrameSending(ILogger logger, [StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, string type, long id, long length);
 
         [LoggerMessage(50, LogLevel.Debug, @"Connection id ""{ConnectionId}"": Unexpected error when initializing outbound control stream.", EventName = "Http3OutboundControlStreamError")]
-        public static partial void Http3OutboundControlStreamError(ILogger logger, string connectionId, Exception ex);
+        public static partial void Http3OutboundControlStreamError(ILogger logger, [StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, Exception ex);
 
         [LoggerMessage(51, LogLevel.Debug, @"Connection id ""{ConnectionId}"": QPACK decoding error while decoding headers for stream ID {StreamId}.", EventName = "QPackDecodingError")]
-        public static partial void QPackDecodingError(ILogger logger, string connectionId, long streamId, Exception ex);
+        public static partial void QPackDecodingError(ILogger logger, [StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, long streamId, Exception ex);
 
         [LoggerMessage(52, LogLevel.Information, @"Connection id ""{ConnectionId}"": QPACK encoding error while encoding headers for stream ID {StreamId}.", EventName = "QPackEncodingError")]
-        public static partial void QPackEncodingError(ILogger logger, string connectionId, long streamId, Exception ex);
+        public static partial void QPackEncodingError(ILogger logger, [StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, long streamId, Exception ex);
 
         [LoggerMessage(53, LogLevel.Debug, @"Connection id ""{ConnectionId}"": GOAWAY stream ID {GoAwayStreamId}.", EventName = "Http3GoAwayHighestOpenedStreamId")]
-        public static partial void Http3GoAwayStreamId(ILogger logger, string connectionId, long goAwayStreamId);
+        public static partial void Http3GoAwayStreamId(ILogger logger, [StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, long goAwayStreamId);
 
         // Highest shared ID is 63. New consecutive IDs start at 64
     }

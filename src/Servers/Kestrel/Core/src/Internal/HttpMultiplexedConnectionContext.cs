@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 internal sealed class HttpMultiplexedConnectionContext : BaseHttpConnectionContext
 {
     public HttpMultiplexedConnectionContext(
-        string connectionId,
+        [StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId,
         HttpProtocols protocols,
         AltSvcHeader? altSvcHeader,
         MultiplexedConnectionContext connectionContext,

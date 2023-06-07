@@ -4,6 +4,7 @@
 using System.Buffers;
 using System.Diagnostics;
 using System.IO.Pipelines;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
@@ -69,7 +70,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
 
     public Http1OutputProducer(
         PipeWriter pipeWriter,
-        string connectionId,
+        [StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId,
         BaseConnectionContext connectionContext,
         MemoryPool<byte> memoryPool,
         KestrelTrace log,

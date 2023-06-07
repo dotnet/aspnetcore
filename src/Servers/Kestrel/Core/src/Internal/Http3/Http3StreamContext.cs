@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 internal sealed class Http3StreamContext : HttpConnectionContext
 {
     public Http3StreamContext(
-        string connectionId,
+        [StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId,
         HttpProtocols protocols,
         AltSvcHeader? altSvcHeader,
         BaseConnectionContext connectionContext,
