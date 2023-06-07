@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.AspNetCore.SignalR;
 
 /// <summary>
@@ -27,7 +28,7 @@ public interface IHubClients<T>
     /// </summary>
     /// <param name="connectionId">The connection ID.</param>
     /// <returns>A client caller.</returns>
-    T Client(string connectionId);
+    T Client([StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId);
 
     /// <summary>
     /// Gets a <typeparamref name="T" /> that can be used to invoke methods on the specified client connections.

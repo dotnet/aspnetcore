@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.SignalR;
+using System.Diagnostics.CodeAnalysis;
 
 namespace SignalRSamples.Hubs;
 
@@ -29,7 +30,7 @@ public class Chat : Hub
         return Clients.Others.SendAsync("Send", $"{name}: {message}");
     }
 
-    public Task SendToConnection(string connectionId, string name, string message)
+    public Task SendToConnection([StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, string name, string message)
     {
         return Clients.Client(connectionId).SendAsync("Send", $"Private message from {name}: {message}");
     }

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.AspNetCore.SignalR;
 
 /// <summary>
@@ -15,7 +16,7 @@ public interface IGroupManager
     /// <param name="groupName">The group name.</param>
     /// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None" />.</param>
     /// <returns>A <see cref="Task"/> that represents the asynchronous add.</returns>
-    Task AddToGroupAsync(string connectionId, string groupName, CancellationToken cancellationToken = default);
+    Task AddToGroupAsync([StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, string groupName, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Removes a connection from the specified group.
@@ -24,5 +25,5 @@ public interface IGroupManager
     /// <param name="groupName">The group name.</param>
     /// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None" />.</param>
     /// <returns>A <see cref="Task"/> that represents the asynchronous remove.</returns>
-    Task RemoveFromGroupAsync(string connectionId, string groupName, CancellationToken cancellationToken = default);
+    Task RemoveFromGroupAsync([StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, string groupName, CancellationToken cancellationToken = default);
 }

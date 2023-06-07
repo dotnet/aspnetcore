@@ -3,6 +3,7 @@
 
 using System.Collections;
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace Microsoft.AspNetCore.SignalR.Internal;
@@ -28,7 +29,7 @@ internal sealed class HubGroupList : IReadOnlyCollection<ConcurrentDictionary<st
         CreateOrUpdateGroupWithConnection(groupName, connection);
     }
 
-    public void Remove(string connectionId, string groupName)
+    public void Remove([StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, string groupName)
     {
         if (_groups.TryGetValue(groupName, out var connections))
         {
@@ -43,7 +44,7 @@ internal sealed class HubGroupList : IReadOnlyCollection<ConcurrentDictionary<st
         }
     }
 
-    public void RemoveDisconnectedConnection(string connectionId)
+    public void RemoveDisconnectedConnection([StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId)
     {
         var groupNames = _groups.Where(x => x.Value.ContainsKey(connectionId)).Select(x => x.Key);
         foreach (var groupName in groupNames)

@@ -163,7 +163,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
     }
 
     /// <inheritdoc />
-    public override Task SendConnectionAsync(string connectionId, string methodName, object?[] args, CancellationToken cancellationToken = default)
+    public override Task SendConnectionAsync([StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, string methodName, object?[] args, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(connectionId);
 
@@ -205,7 +205,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
     }
 
     /// <inheritdoc />
-    public override Task AddToGroupAsync(string connectionId, string groupName, CancellationToken cancellationToken = default)
+    public override Task AddToGroupAsync([StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, string groupName, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(connectionId);
         ArgumentNullException.ThrowIfNull(groupName);
@@ -221,7 +221,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
     }
 
     /// <inheritdoc />
-    public override Task RemoveFromGroupAsync(string connectionId, string groupName, CancellationToken cancellationToken = default)
+    public override Task RemoveFromGroupAsync([StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, string groupName, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(connectionId);
         ArgumentNullException.ThrowIfNull(groupName);
@@ -342,7 +342,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
         }
     }
 
-    private async Task SendGroupActionAndWaitForAck(string connectionId, string groupName, GroupAction action)
+    private async Task SendGroupActionAndWaitForAck([StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, string groupName, GroupAction action)
     {
         var id = Interlocked.Increment(ref _internalAckId);
         var ack = _ackHandler.CreateAck(id);
@@ -376,7 +376,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
     }
 
     /// <inheritdoc/>
-    public override async Task<T> InvokeConnectionAsync<T>(string connectionId, string methodName, object?[] args, CancellationToken cancellationToken)
+    public override async Task<T> InvokeConnectionAsync<T>([StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, string methodName, object?[] args, CancellationToken cancellationToken)
     {
         // send thing
         ArgumentNullException.ThrowIfNull(connectionId);
@@ -433,7 +433,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
     }
 
     /// <inheritdoc/>
-    public override Task SetConnectionResultAsync(string connectionId, CompletionMessage result)
+    public override Task SetConnectionResultAsync([StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, CompletionMessage result)
     {
         _clientResultsManager.TryCompleteResult(connectionId, result);
         return Task.CompletedTask;

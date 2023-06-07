@@ -3,6 +3,7 @@
 
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Security.Claims;
 using System.Security.Principal;
@@ -57,7 +58,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     /// Creates the DefaultConnectionContext without Pipes to avoid upfront allocations.
     /// The caller is expected to set the <see cref="Transport"/> and <see cref="Application"/> pipes manually.
     /// </summary>
-    public HttpConnectionContext(string connectionId, string connectionToken, ILogger logger, MetricsContext metricsContext, IDuplexPipe transport, IDuplexPipe application, HttpConnectionDispatcherOptions options)
+    public HttpConnectionContext([StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, string connectionToken, ILogger logger, MetricsContext metricsContext, IDuplexPipe transport, IDuplexPipe application, HttpConnectionDispatcherOptions options)
     {
         Transport = transport;
         _applicationStream = new PipeWriterStream(application.Output);

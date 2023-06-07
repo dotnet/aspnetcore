@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.AspNetCore.SignalR.Internal;
 
 internal sealed class HubCallerClients : IHubCallerClients
@@ -16,7 +17,7 @@ internal sealed class HubCallerClients : IHubCallerClients
     // so we can prevent users from making blocking client calls by returning a custom ISingleClientProxy instance
     internal bool InvokeAllowed { get; set; }
 
-    public HubCallerClients(IHubClients hubClients, string connectionId, ChannelBasedSemaphore parallelInvokes)
+    public HubCallerClients(IHubClients hubClients, [StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, ChannelBasedSemaphore parallelInvokes)
     {
         _connectionId = connectionId;
         _hubClients = hubClients;
@@ -45,8 +46,8 @@ internal sealed class HubCallerClients : IHubCallerClients
         return _hubClients.AllExcept(excludedConnectionIds);
     }
 
-    IClientProxy IHubClients<IClientProxy>.Client(string connectionId) => Client(connectionId);
-    public ISingleClientProxy Client(string connectionId)
+    IClientProxy IHubClients<IClientProxy>.Client([StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId) => Client(connectionId);
+    public ISingleClientProxy Client([StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId)
     {
         if (!InvokeAllowed)
         {

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.AspNetCore.SignalR.Internal;
 
 internal sealed class UserProxy<THub> : IClientProxy where THub : Hub
@@ -144,7 +145,7 @@ internal sealed class SingleClientProxy<THub> : ISingleClientProxy where THub : 
     private readonly string _connectionId;
     private readonly HubLifetimeManager<THub> _lifetimeManager;
 
-    public SingleClientProxy(HubLifetimeManager<THub> lifetimeManager, string connectionId)
+    public SingleClientProxy(HubLifetimeManager<THub> lifetimeManager, [StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId)
     {
         _lifetimeManager = lifetimeManager;
         _connectionId = connectionId;
