@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 internal class HttpConnectionContext : BaseHttpConnectionContext
 {
     public HttpConnectionContext(
-        string connectionId,
+        [StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId,
         HttpProtocols protocols,
         AltSvcHeader? altSvcHeader,
         BaseConnectionContext connectionContext,

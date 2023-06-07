@@ -78,7 +78,7 @@ internal sealed class Http3FrameWriter
             : (int)clientPeerSettings.MaxRequestHeaderFieldSectionSize;
     }
 
-    public void Reset(PipeWriter output, string connectionId)
+    public void Reset(PipeWriter output, [StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId)
     {
         _outputWriter = output;
         _flusher.Initialize(output);

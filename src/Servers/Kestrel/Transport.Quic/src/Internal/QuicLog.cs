@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal;
 internal static partial class QuicLog
 {
     [LoggerMessage(1, LogLevel.Debug, @"Connection id ""{ConnectionId}"" accepted.", EventName = "AcceptedConnection", SkipEnabledCheck = true)]
-    private static partial void AcceptedConnectionCore(ILogger logger, string connectionId);
+    private static partial void AcceptedConnectionCore(ILogger logger, [StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId);
 
     public static void AcceptedConnection(ILogger logger, BaseConnectionContext connection)
     {
@@ -22,7 +22,7 @@ internal static partial class QuicLog
     }
 
     [LoggerMessage(2, LogLevel.Debug, @"Stream id ""{ConnectionId}"" type {StreamType} accepted.", EventName = "AcceptedStream", SkipEnabledCheck = true)]
-    private static partial void AcceptedStreamCore(ILogger logger, string connectionId, StreamType streamType);
+    private static partial void AcceptedStreamCore(ILogger logger, [StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, StreamType streamType);
 
     public static void AcceptedStream(ILogger logger, QuicStreamContext streamContext)
     {
@@ -33,7 +33,7 @@ internal static partial class QuicLog
     }
 
     [LoggerMessage(3, LogLevel.Debug, @"Stream id ""{ConnectionId}"" type {StreamType} connected.", EventName = "ConnectedStream", SkipEnabledCheck = true)]
-    private static partial void ConnectedStreamCore(ILogger logger, string connectionId, StreamType streamType);
+    private static partial void ConnectedStreamCore(ILogger logger, [StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, StreamType streamType);
 
     public static void ConnectedStream(ILogger logger, QuicStreamContext streamContext)
     {
@@ -44,7 +44,7 @@ internal static partial class QuicLog
     }
 
     [LoggerMessage(4, LogLevel.Debug, @"Connection id ""{ConnectionId}"" unexpected error.", EventName = "ConnectionError", SkipEnabledCheck = true)]
-    private static partial void ConnectionErrorCore(ILogger logger, string connectionId, Exception ex);
+    private static partial void ConnectionErrorCore(ILogger logger, [StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, Exception ex);
 
     public static void ConnectionError(ILogger logger, BaseConnectionContext connection, Exception ex)
     {
@@ -55,7 +55,7 @@ internal static partial class QuicLog
     }
 
     [LoggerMessage(5, LogLevel.Debug, @"Connection id ""{ConnectionId}"" aborted by peer with error code {ErrorCode}.", EventName = "ConnectionAborted", SkipEnabledCheck = true)]
-    private static partial void ConnectionAbortedCore(ILogger logger, string connectionId, long errorCode, Exception ex);
+    private static partial void ConnectionAbortedCore(ILogger logger, [StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, long errorCode, Exception ex);
 
     public static void ConnectionAborted(ILogger logger, BaseConnectionContext connection, long errorCode, Exception ex)
     {
@@ -66,7 +66,7 @@ internal static partial class QuicLog
     }
 
     [LoggerMessage(6, LogLevel.Debug, @"Connection id ""{ConnectionId}"" aborted by application with error code {ErrorCode} because: ""{Reason}"".", EventName = "ConnectionAbort", SkipEnabledCheck = true)]
-    private static partial void ConnectionAbortCore(ILogger logger, string connectionId, long errorCode, string reason);
+    private static partial void ConnectionAbortCore(ILogger logger, [StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, long errorCode, string reason);
 
     public static void ConnectionAbort(ILogger logger, BaseConnectionContext connection, long errorCode, string reason)
     {
@@ -77,7 +77,7 @@ internal static partial class QuicLog
     }
 
     [LoggerMessage(7, LogLevel.Debug, @"Stream id ""{ConnectionId}"" unexpected error.", EventName = "StreamError", SkipEnabledCheck = true)]
-    private static partial void StreamErrorCore(ILogger logger, string connectionId, Exception ex);
+    private static partial void StreamErrorCore(ILogger logger, [StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, Exception ex);
 
     public static void StreamError(ILogger logger, QuicStreamContext streamContext, Exception ex)
     {
@@ -88,7 +88,7 @@ internal static partial class QuicLog
     }
 
     [LoggerMessage(8, LogLevel.Debug, @"Stream id ""{ConnectionId}"" paused.", EventName = "StreamPause", SkipEnabledCheck = true)]
-    private static partial void StreamPauseCore(ILogger logger, string connectionId);
+    private static partial void StreamPauseCore(ILogger logger, [StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId);
 
     public static void StreamPause(ILogger logger, QuicStreamContext streamContext)
     {
@@ -99,7 +99,7 @@ internal static partial class QuicLog
     }
 
     [LoggerMessage(9, LogLevel.Debug, @"Stream id ""{ConnectionId}"" resumed.", EventName = "StreamResume", SkipEnabledCheck = true)]
-    private static partial void StreamResumeCore(ILogger logger, string connectionId);
+    private static partial void StreamResumeCore(ILogger logger, [StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId);
 
     public static void StreamResume(ILogger logger, QuicStreamContext streamContext)
     {
@@ -110,7 +110,7 @@ internal static partial class QuicLog
     }
 
     [LoggerMessage(10, LogLevel.Debug, @"Stream id ""{ConnectionId}"" shutting down writes because: ""{Reason}"".", EventName = "StreamShutdownWrite", SkipEnabledCheck = true)]
-    private static partial void StreamShutdownWriteCore(ILogger logger, string connectionId, string reason);
+    private static partial void StreamShutdownWriteCore(ILogger logger, [StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, string reason);
 
     public static void StreamShutdownWrite(ILogger logger, QuicStreamContext streamContext, string reason)
     {
@@ -121,7 +121,7 @@ internal static partial class QuicLog
     }
 
     [LoggerMessage(11, LogLevel.Debug, @"Stream id ""{ConnectionId}"" read aborted by peer with error code {ErrorCode}.", EventName = "StreamAbortedRead", SkipEnabledCheck = true)]
-    private static partial void StreamAbortedReadCore(ILogger logger, string connectionId, long errorCode);
+    private static partial void StreamAbortedReadCore(ILogger logger, [StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, long errorCode);
 
     public static void StreamAbortedRead(ILogger logger, QuicStreamContext streamContext, long errorCode)
     {
@@ -132,7 +132,7 @@ internal static partial class QuicLog
     }
 
     [LoggerMessage(12, LogLevel.Debug, @"Stream id ""{ConnectionId}"" write aborted by peer with error code {ErrorCode}.", EventName = "StreamAbortedWrite", SkipEnabledCheck = true)]
-    private static partial void StreamAbortedWriteCore(ILogger logger, string connectionId, long errorCode);
+    private static partial void StreamAbortedWriteCore(ILogger logger, [StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, long errorCode);
 
     public static void StreamAbortedWrite(ILogger logger, QuicStreamContext streamContext, long errorCode)
     {
@@ -143,7 +143,7 @@ internal static partial class QuicLog
     }
 
     [LoggerMessage(13, LogLevel.Debug, @"Stream id ""{ConnectionId}"" aborted by application with error code {ErrorCode} because: ""{Reason}"".", EventName = "StreamAbort", SkipEnabledCheck = true)]
-    private static partial void StreamAbortCore(ILogger logger, string connectionId, long errorCode, string reason);
+    private static partial void StreamAbortCore(ILogger logger, [StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, long errorCode, string reason);
 
     public static void StreamAbort(ILogger logger, QuicStreamContext streamContext, long errorCode, string reason)
     {
@@ -154,7 +154,7 @@ internal static partial class QuicLog
     }
 
     [LoggerMessage(14, LogLevel.Debug, @"Stream id ""{ConnectionId}"" read side aborted by application with error code {ErrorCode} because: ""{Reason}"".", EventName = "StreamAbortRead", SkipEnabledCheck = true)]
-    private static partial void StreamAbortReadCore(ILogger logger, string connectionId, long errorCode, string reason);
+    private static partial void StreamAbortReadCore(ILogger logger, [StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, long errorCode, string reason);
 
     public static void StreamAbortRead(ILogger logger, QuicStreamContext streamContext, long errorCode, string reason)
     {
@@ -165,7 +165,7 @@ internal static partial class QuicLog
     }
 
     [LoggerMessage(15, LogLevel.Debug, @"Stream id ""{ConnectionId}"" write side aborted by application with error code {ErrorCode} because: ""{Reason}"".", EventName = "StreamAbortWrite", SkipEnabledCheck = true)]
-    private static partial void StreamAbortWriteCore(ILogger logger, string connectionId, long errorCode, string reason);
+    private static partial void StreamAbortWriteCore(ILogger logger, [StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, long errorCode, string reason);
 
     public static void StreamAbortWrite(ILogger logger, QuicStreamContext streamContext, long errorCode, string reason)
     {
@@ -176,7 +176,7 @@ internal static partial class QuicLog
     }
 
     [LoggerMessage(16, LogLevel.Trace, @"Stream id ""{ConnectionId}"" pooled for reuse.", EventName = "StreamPooled", SkipEnabledCheck = true)]
-    private static partial void StreamPooledCore(ILogger logger, string connectionId);
+    private static partial void StreamPooledCore(ILogger logger, [StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId);
 
     public static void StreamPooled(ILogger logger, QuicStreamContext streamContext)
     {
@@ -187,7 +187,7 @@ internal static partial class QuicLog
     }
 
     [LoggerMessage(17, LogLevel.Trace, @"Stream id ""{ConnectionId}"" reused from pool.", EventName = "StreamReused", SkipEnabledCheck = true)]
-    private static partial void StreamReusedCore(ILogger logger, string connectionId);
+    private static partial void StreamReusedCore(ILogger logger, [StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId);
 
     public static void StreamReused(ILogger logger, QuicStreamContext streamContext)
     {
@@ -211,7 +211,7 @@ internal static partial class QuicLog
     public static partial void ConnectionListenerAborted(ILogger logger, Exception exception);
 
     [LoggerMessage(22, LogLevel.Debug, @"Stream id ""{ConnectionId}"" read timed out.", EventName = "StreamTimeoutRead", SkipEnabledCheck = true)]
-    private static partial void StreamTimeoutReadCore(ILogger logger, string connectionId);
+    private static partial void StreamTimeoutReadCore(ILogger logger, [StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId);
 
     public static void StreamTimeoutRead(ILogger logger, QuicStreamContext streamContext)
     {
@@ -222,7 +222,7 @@ internal static partial class QuicLog
     }
 
     [LoggerMessage(23, LogLevel.Debug, @"Stream id ""{ConnectionId}"" write timed out.", EventName = "StreamTimeoutWrite", SkipEnabledCheck = true)]
-    private static partial void StreamTimeoutWriteCore(ILogger logger, string connectionId);
+    private static partial void StreamTimeoutWriteCore(ILogger logger, [StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId);
 
     public static void StreamTimeoutWrite(ILogger logger, QuicStreamContext streamContext)
     {

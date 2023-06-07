@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.Internal;
 internal static partial class NamedPipeLog
 {
     [LoggerMessage(1, LogLevel.Debug, @"Connection id ""{ConnectionId}"" accepted.", EventName = "AcceptedConnection", SkipEnabledCheck = true)]
-    private static partial void AcceptedConnectionCore(ILogger logger, string connectionId);
+    private static partial void AcceptedConnectionCore(ILogger logger, [StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId);
 
     public static void AcceptedConnection(ILogger logger, BaseConnectionContext connection)
     {
@@ -20,7 +20,7 @@ internal static partial class NamedPipeLog
     }
 
     [LoggerMessage(2, LogLevel.Debug, @"Connection id ""{ConnectionId}"" unexpected error.", EventName = "ConnectionError", SkipEnabledCheck = true)]
-    private static partial void ConnectionErrorCore(ILogger logger, string connectionId, Exception ex);
+    private static partial void ConnectionErrorCore(ILogger logger, [StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, Exception ex);
 
     public static void ConnectionError(ILogger logger, BaseConnectionContext connection, Exception ex)
     {
@@ -34,7 +34,7 @@ internal static partial class NamedPipeLog
     public static partial void ConnectionListenerAborted(ILogger logger, Exception exception);
 
     [LoggerMessage(4, LogLevel.Debug, @"Connection id ""{ConnectionId}"" paused.", EventName = "ConnectionPause", SkipEnabledCheck = true)]
-    private static partial void ConnectionPauseCore(ILogger logger, string connectionId);
+    private static partial void ConnectionPauseCore(ILogger logger, [StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId);
 
     public static void ConnectionPause(ILogger logger, NamedPipeConnection connection)
     {
@@ -45,7 +45,7 @@ internal static partial class NamedPipeLog
     }
 
     [LoggerMessage(5, LogLevel.Debug, @"Connection id ""{ConnectionId}"" resumed.", EventName = "ConnectionResume", SkipEnabledCheck = true)]
-    private static partial void ConnectionResumeCore(ILogger logger, string connectionId);
+    private static partial void ConnectionResumeCore(ILogger logger, [StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId);
 
     public static void ConnectionResume(ILogger logger, NamedPipeConnection connection)
     {
@@ -56,7 +56,7 @@ internal static partial class NamedPipeLog
     }
 
     [LoggerMessage(6, LogLevel.Debug, @"Connection id ""{ConnectionId}"" received end of stream.", EventName = "ConnectionReadEnd", SkipEnabledCheck = true)]
-    private static partial void ConnectionReadEndCore(ILogger logger, string connectionId);
+    private static partial void ConnectionReadEndCore(ILogger logger, [StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId);
 
     public static void ConnectionReadEnd(ILogger logger, NamedPipeConnection connection)
     {
@@ -67,7 +67,7 @@ internal static partial class NamedPipeLog
     }
 
     [LoggerMessage(7, LogLevel.Debug, @"Connection id ""{ConnectionId}"" disconnecting stream because: ""{Reason}""", EventName = "ConnectionDisconnect", SkipEnabledCheck = true)]
-    private static partial void ConnectionDisconnectCore(ILogger logger, string connectionId, string reason);
+    private static partial void ConnectionDisconnectCore(ILogger logger, [StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, string reason);
 
     public static void ConnectionDisconnect(ILogger logger, NamedPipeConnection connection, string reason)
     {

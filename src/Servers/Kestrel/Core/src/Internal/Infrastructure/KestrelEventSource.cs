@@ -70,7 +70,7 @@ internal sealed class KestrelEventSource : EventSource
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     [Event(1, Level = EventLevel.Informational)]
-    private void ConnectionStart(string connectionId, string? localEndPoint, string? remoteEndPoint)
+    private void ConnectionStart([StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, string? localEndPoint, string? remoteEndPoint)
     {
         WriteEvent(1, connectionId, localEndPoint, remoteEndPoint);
     }
@@ -88,7 +88,7 @@ internal sealed class KestrelEventSource : EventSource
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     [Event(2, Level = EventLevel.Informational)]
-    private void ConnectionStop(string connectionId)
+    private void ConnectionStop([StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId)
     {
         WriteEvent(2, connectionId);
     }
@@ -113,7 +113,7 @@ internal sealed class KestrelEventSource : EventSource
     }
 
     [Event(3, Level = EventLevel.Informational)]
-    private void RequestStart(string connectionId, string requestId, string httpVersion, string path, string method)
+    private void RequestStart([StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, string requestId, string httpVersion, string path, string method)
     {
         WriteEvent(3, connectionId, requestId, httpVersion, path, method);
     }
@@ -138,14 +138,14 @@ internal sealed class KestrelEventSource : EventSource
     }
 
     [Event(4, Level = EventLevel.Informational)]
-    private void RequestStop(string connectionId, string requestId, string httpVersion, string path, string method)
+    private void RequestStop([StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, string requestId, string httpVersion, string path, string method)
     {
         WriteEvent(4, connectionId, requestId, httpVersion, path, method);
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     [Event(5, Level = EventLevel.Informational)]
-    public void ConnectionRejected(string connectionId)
+    public void ConnectionRejected([StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId)
     {
         if (IsEnabled(EventLevel.Informational, EventKeywords.None))
         {
@@ -179,7 +179,7 @@ internal sealed class KestrelEventSource : EventSource
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     [Event(8, Level = EventLevel.Informational)]
-    private void TlsHandshakeStart(string connectionId, string sslProtocols)
+    private void TlsHandshakeStart([StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, string sslProtocols)
     {
         WriteEvent(8, connectionId, sslProtocols);
     }
@@ -202,14 +202,14 @@ internal sealed class KestrelEventSource : EventSource
     [MethodImpl(MethodImplOptions.NoInlining)]
     [Event(9, Level = EventLevel.Informational)]
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Parameters passed to WriteEvent are all primative values.")]
-    private void TlsHandshakeStop(string connectionId, string sslProtocols, string applicationProtocol, string hostName)
+    private void TlsHandshakeStop([StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, string sslProtocols, string applicationProtocol, string hostName)
     {
         WriteEvent(9, connectionId, sslProtocols, applicationProtocol, hostName);
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     [Event(10, Level = EventLevel.Error)]
-    public void TlsHandshakeFailed(string connectionId)
+    public void TlsHandshakeFailed([StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId)
     {
         Interlocked.Increment(ref _failedTlsHandshakes);
 
