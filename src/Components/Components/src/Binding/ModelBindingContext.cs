@@ -8,10 +8,13 @@ namespace Microsoft.AspNetCore.Components;
 /// </summary>
 public sealed class ModelBindingContext
 {
-    internal ModelBindingContext(string name, string bindingContextId)
+    private readonly Predicate<Type> _canBind;
+
+    internal ModelBindingContext(string name, string bindingContextId, Predicate<Type> canBind)
     {
         ArgumentNullException.ThrowIfNull(name);
         ArgumentNullException.ThrowIfNull(bindingContextId);
+        ArgumentNullException.ThrowIfNull(canBind);
         // We are initializing the root context, that can be a "named" root context, or the default context.
         // A named root context only provides a name, and that acts as the BindingId
         // A "default" root context does not provide a name, and instead it provides an explicit Binding ID.
@@ -23,6 +26,7 @@ public sealed class ModelBindingContext
 
         Name = name;
         BindingContextId = bindingContextId ?? name;
+        _canBind = canBind;
     }
 
     /// <summary>
@@ -37,4 +41,9 @@ public sealed class ModelBindingContext
 
     internal static string Combine(ModelBindingContext? parentContext, string name) =>
         string.IsNullOrEmpty(parentContext?.Name) ? name : $"{parentContext.Name}.{name}";
+
+    internal bool CanConvert(Type type)
+    {
+        return _canBind(type);
+    }
 }

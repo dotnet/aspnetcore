@@ -2,6 +2,7 @@
 abstract Microsoft.AspNetCore.Components.RenderModeAttribute.Mode.get -> Microsoft.AspNetCore.Components.IComponentRenderMode!
 Microsoft.AspNetCore.Components.Binding.IFormValueSupplier
 Microsoft.AspNetCore.Components.Binding.IFormValueSupplier.CanBind(string! formName, System.Type! valueType) -> bool
+Microsoft.AspNetCore.Components.Binding.IFormValueSupplier.CanConvertSingleValue(System.Type! type) -> bool
 Microsoft.AspNetCore.Components.Binding.IFormValueSupplier.TryBind(string! formName, System.Type! valueType, out object? boundValue) -> bool
 Microsoft.AspNetCore.Components.CascadingModelBinder
 Microsoft.AspNetCore.Components.CascadingModelBinder.CascadingModelBinder() -> void
