@@ -57,7 +57,7 @@ app {
         font-size: 1.1rem;
     }
 
-    .sidebar .oi {
+    .sidebar .bi {
         width: 2rem;
         font-size: 1.1rem;
         vertical-align: text-top;
@@ -185,9 +185,4 @@ app {
         height: calc(100vh - 3.5rem);
         overflow-y: auto;
     }
-}
-
-.bi-blazor {
-    font-size: 1rem;
-    margin-right: 1rem;
 }
