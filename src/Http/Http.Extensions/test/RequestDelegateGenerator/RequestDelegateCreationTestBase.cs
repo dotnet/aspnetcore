@@ -237,11 +237,12 @@ public abstract class RequestDelegateCreationTestBase : LoggedTest
         check(deserializedObject);
     }
 
-    internal static async Task VerifyResponseJsonNodeAsync(HttpContext httpContext, Action<JsonNode> check, int expectedStatusCode = 200)
+    internal static async Task VerifyResponseJsonNodeAsync(HttpContext httpContext, Action<JsonNode> check, int expectedStatusCode = 200, string expectedContentType = "application/json; charset=utf-8")
     {
         var body = await GetResponseBodyAsync(httpContext);
         var node = JsonNode.Parse(body);
 
+        Assert.Equal(expectedContentType, httpContext.Response.ContentType);
         Assert.Equal(expectedStatusCode, httpContext.Response.StatusCode);
         check(node);
     }

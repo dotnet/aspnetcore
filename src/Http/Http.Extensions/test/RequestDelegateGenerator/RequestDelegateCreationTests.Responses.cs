@@ -724,11 +724,11 @@ static ValueTask<object> StaticValueTaskTestAction() => ValueTask.FromResult<obj
         var endpoint = GetEndpointFromCompilation(compilation);
 
         var httpContext = CreateHttpContext();
-        httpContext.Response.ContentType = "application/json; charset=utf-8";
+        httpContext.Response.ContentType = "binary; charset=utf-31";
 
         await endpoint.RequestDelegate(httpContext);
 
-        Assert.Equal("application/json; charset=utf-8", httpContext.Response.ContentType);
+        Assert.Equal("binary; charset=utf-31", httpContext.Response.ContentType);
     }
 
     public static IEnumerable<object[]> BoolResult
@@ -782,8 +782,6 @@ static ValueTask<bool> StaticValueTaskTestAction() => ValueTask.FromResult(true)
         var endpoint = GetEndpointFromCompilation(compilation);
 
         var httpContext = CreateHttpContext();
-        httpContext.Response.ContentType = "application/json; charset=utf-8";
-
         await endpoint.RequestDelegate(httpContext);
 
         await VerifyResponseBodyAsync(httpContext, "true");
@@ -840,8 +838,6 @@ static ValueTask<int> StaticValueTaskTestAction() => ValueTask.FromResult(42);
         var endpoint = GetEndpointFromCompilation(compilation);
 
         var httpContext = CreateHttpContext();
-        httpContext.Response.ContentType = "application/json; charset=utf-8";
-
         await endpoint.RequestDelegate(httpContext);
 
         await VerifyResponseBodyAsync(httpContext, "42");
@@ -915,10 +911,25 @@ app.MapPost("/", TodoStruct? () => null);
         var endpoint = GetEndpointFromCompilation(compilation);
 
         var httpContext = CreateHttpContext();
-        httpContext.Response.ContentType = "application/json; charset=utf-8";
-
         await endpoint.RequestDelegate(httpContext);
 
         await VerifyResponseBodyAsync(httpContext, "null");
+    }
+
+    [Theory]
+    [InlineData(@"app.MapGet(""/"", () => Console.WriteLine(""Returns void""));", null)]
+    [InlineData(@"app.MapGet(""/"", () => TypedResults.Ok(""Alright!""));", null)]
+    [InlineData(@"app.MapGet(""/"", () => Results.NotFound(""Oops!""));", null)]
+    [InlineData(@"app.MapGet(""/"", () => Task.FromResult(new Todo() { Name = ""Test Item""}));", "application/json")]
+    [InlineData(@"app.MapGet(""/"", () => ""Hello world!"");", "text/plain; charset=utf-8")]
+    public async Task MapAction_ProducesCorrectContentType(string source, string expectedContentType)
+    {
+        var (result, compilation) = await RunGeneratorAsync(source);
+
+        VerifyStaticEndpointModel(result, endpointModel =>
+        {
+            Assert.Equal("MapGet", endpointModel.HttpMethod);
+            Assert.Equal(expectedContentType, endpointModel.Response.ContentType);
+        });
     }
 }
