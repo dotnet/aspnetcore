@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
 
@@ -9,12 +10,16 @@ internal sealed class NullableConverterFactory : IFormDataConverterFactory
 {
     public static readonly NullableConverterFactory Instance = new();
 
+    [RequiresDynamicCode(FormBindingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormBindingHelpers.RequiresUnreferencedCodeMessage)]
     public bool CanConvert(Type type, FormDataMapperOptions options)
     {
         var underlyingType = Nullable.GetUnderlyingType(type);
         return underlyingType != null && options.ResolveConverter(underlyingType) != null;
     }
 
+    [RequiresDynamicCode(FormBindingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormBindingHelpers.RequiresUnreferencedCodeMessage)]
     public FormDataConverter CreateConverter(Type type, FormDataMapperOptions options)
     {
         var underlyingType = Nullable.GetUnderlyingType(type);
