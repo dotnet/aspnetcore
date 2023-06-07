@@ -31,7 +31,7 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
     }
 
     /// <inheritdoc />
-    public override Task AddToGroupAsync(string connectionId, string groupName, CancellationToken cancellationToken = default)
+    public override Task AddToGroupAsync([StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, string groupName, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(connectionId);
         ArgumentNullException.ThrowIfNull(groupName);
@@ -53,7 +53,7 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
     }
 
     /// <inheritdoc />
-    public override Task RemoveFromGroupAsync(string connectionId, string groupName, CancellationToken cancellationToken = default)
+    public override Task RemoveFromGroupAsync([StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, string groupName, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(connectionId);
         ArgumentNullException.ThrowIfNull(groupName);
@@ -159,7 +159,7 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
     }
 
     /// <inheritdoc />
-    public override Task SendConnectionAsync(string connectionId, string methodName, object?[] args, CancellationToken cancellationToken = default)
+    public override Task SendConnectionAsync([StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, string methodName, object?[] args, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(connectionId);
 
@@ -302,7 +302,7 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
     }
 
     /// <inheritdoc/>
-    public override async Task<T> InvokeConnectionAsync<T>(string connectionId, string methodName, object?[] args, CancellationToken cancellationToken)
+    public override async Task<T> InvokeConnectionAsync<T>([StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, string methodName, object?[] args, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(connectionId);
 
@@ -352,7 +352,7 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
     }
 
     /// <inheritdoc/>
-    public override Task SetConnectionResultAsync(string connectionId, CompletionMessage result)
+    public override Task SetConnectionResultAsync([StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, CompletionMessage result)
     {
         _clientResultsManager.TryCompleteResult(connectionId, result);
         return Task.CompletedTask;

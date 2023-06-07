@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Tracing;
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal;
@@ -35,7 +36,7 @@ internal sealed class HttpConnectionsEventSource : EventSource
     // This has to go through NonEvent because only Primitive types are allowed
     // in function parameters for Events
     [NonEvent]
-    public void ConnectionStop(string connectionId, long startTimestamp, long currentTimestamp)
+    public void ConnectionStop([StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, long startTimestamp, long currentTimestamp)
     {
         Interlocked.Increment(ref _connectionsStopped);
         Interlocked.Decrement(ref _currentConnections);
@@ -53,7 +54,7 @@ internal sealed class HttpConnectionsEventSource : EventSource
     }
 
     [Event(eventId: 1, Level = EventLevel.Informational, Message = "Started connection '{0}'.")]
-    public void ConnectionStart(string connectionId)
+    public void ConnectionStart([StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId)
     {
         Interlocked.Increment(ref _connectionsStarted);
         Interlocked.Increment(ref _currentConnections);
@@ -65,10 +66,10 @@ internal sealed class HttpConnectionsEventSource : EventSource
     }
 
     [Event(eventId: 2, Level = EventLevel.Informational, Message = "Stopped connection '{0}'.")]
-    private void ConnectionStop(string connectionId) => WriteEvent(2, connectionId);
+    private void ConnectionStop([StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId) => WriteEvent(2, connectionId);
 
     [Event(eventId: 3, Level = EventLevel.Informational, Message = "Connection '{0}' timed out.")]
-    public void ConnectionTimedOut(string connectionId)
+    public void ConnectionTimedOut([StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId)
     {
         Interlocked.Increment(ref _connectionsTimedOut);
 

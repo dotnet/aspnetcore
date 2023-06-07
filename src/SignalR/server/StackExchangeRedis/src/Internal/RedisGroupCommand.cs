@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal;
 
 internal readonly struct RedisGroupCommand
@@ -30,7 +31,7 @@ internal readonly struct RedisGroupCommand
     /// </summary>
     public string ConnectionId { get; }
 
-    public RedisGroupCommand(int id, string serverName, GroupAction action, string groupName, string connectionId)
+    public RedisGroupCommand(int id, string serverName, GroupAction action, string groupName, [StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId)
     {
         Id = id;
         ServerName = serverName;

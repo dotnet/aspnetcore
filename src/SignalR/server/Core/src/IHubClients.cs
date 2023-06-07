@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.SignalR.Internal;
 
 namespace Microsoft.AspNetCore.SignalR;
@@ -15,5 +16,5 @@ public interface IHubClients : IHubClients<IClientProxy>
     /// </summary>
     /// <param name="connectionId">The connection ID.</param>
     /// <returns>A client caller.</returns>
-    new ISingleClientProxy Client(string connectionId) => new NonInvokingSingleClientProxy(((IHubClients<IClientProxy>)this).Client(connectionId), "IHubClients.Client(string connectionId)");
+    new ISingleClientProxy Client([StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId) => new NonInvokingSingleClientProxy(((IHubClients<IClientProxy>)this).Client(connectionId), "IHubClients.Client([StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId)");
 }

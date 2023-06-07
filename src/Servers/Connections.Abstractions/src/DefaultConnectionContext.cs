@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Net;
 using System.Security.Claims;
@@ -40,7 +41,7 @@ public class DefaultConnectionContext : ConnectionContext,
     /// The caller is expected to set the <see cref="Transport"/> and <see cref="Application"/> pipes manually.
     /// </summary>
     /// <param name="id">The <see cref="ConnectionId"/>.</param>
-    public DefaultConnectionContext(string id)
+    public DefaultConnectionContext([StringSyntax(StringSyntaxAttribute.GuidFormat)] string id)
     {
         ConnectionId = id;
 
@@ -61,7 +62,7 @@ public class DefaultConnectionContext : ConnectionContext,
     /// <param name="id">The <see cref="ConnectionId"/>.</param>
     /// <param name="transport">The <see cref="Transport"/>.</param>
     /// <param name="application">The <see cref="Application"/>.</param>
-    public DefaultConnectionContext(string id, IDuplexPipe transport, IDuplexPipe application)
+    public DefaultConnectionContext([StringSyntax(StringSyntaxAttribute.GuidFormat)] string id, IDuplexPipe transport, IDuplexPipe application)
         : this(id)
     {
         Transport = transport;

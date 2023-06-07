@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal;
@@ -42,7 +43,7 @@ internal sealed class RedisChannels
     /// </summary>
     /// <param name="connectionId">The ID of the connection to get the channel for.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public string Connection(string connectionId)
+    public string Connection([StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId)
     {
         return _prefix + ":connection:" + connectionId;
     }

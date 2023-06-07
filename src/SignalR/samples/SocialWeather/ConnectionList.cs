@@ -3,6 +3,7 @@
 
 using System.Collections;
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Connections;
 
 namespace SocialWeather;
@@ -12,7 +13,7 @@ internal class ConnectionList : IReadOnlyCollection<ConnectionContext>
     private readonly ConcurrentDictionary<string, ConnectionContext> _connections =
         new ConcurrentDictionary<string, ConnectionContext>(StringComparer.Ordinal);
 
-    public ConnectionContext this[string connectionId]
+    public ConnectionContext this[[StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId]
     {
         get
         {

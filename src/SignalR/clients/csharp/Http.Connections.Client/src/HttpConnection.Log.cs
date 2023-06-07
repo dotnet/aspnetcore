@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Logging;
@@ -45,7 +46,7 @@ public partial class HttpConnection
         public static partial void EstablishingConnection(ILogger logger, Uri url);
 
         [LoggerMessage(9, LogLevel.Debug, "Established connection '{ConnectionId}' with the server.", EventName = "Established")]
-        public static partial void ConnectionEstablished(ILogger logger, string connectionId);
+        public static partial void ConnectionEstablished(ILogger logger, [StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId);
 
         [LoggerMessage(10, LogLevel.Error, "Failed to start connection. Error getting negotiation response from '{Url}'.", EventName = "ErrorWithNegotiation")]
         public static partial void ErrorWithNegotiation(ILogger logger, Uri url, Exception exception);

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Connections;
@@ -51,7 +52,7 @@ public class PersistentConnectionLifeTimeManager
         }
     }
 
-    public Task InvokeConnectionAsync(string connectionId, object data)
+    public Task InvokeConnectionAsync([StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, object data)
     {
         throw new NotImplementedException();
     }

@@ -15,7 +15,7 @@ internal sealed class ClientResultsManager : IInvocationBinder
 {
     private readonly ConcurrentDictionary<string, (Type Type, string ConnectionId, object Tcs, Action<object, CompletionMessage> Complete)> _pendingInvocations = new();
 
-    public Task<T> AddInvocation<T>(string connectionId, string invocationId, CancellationToken cancellationToken)
+    public Task<T> AddInvocation<T>([StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, string invocationId, CancellationToken cancellationToken)
     {
         var tcs = new TaskCompletionSourceWithCancellation<T>(this, connectionId, invocationId, cancellationToken);
         var result = _pendingInvocations.TryAdd(invocationId, (typeof(T), connectionId, tcs, static (state, completionMessage) =>
@@ -38,7 +38,7 @@ internal sealed class ClientResultsManager : IInvocationBinder
         return tcs.Task;
     }
 
-    public void AddInvocation(string invocationId, (Type Type, string ConnectionId, object Tcs, Action<object, CompletionMessage> Complete) invocationInfo)
+    public void AddInvocation(string invocationId, (Type Type, [StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, object Tcs, Action<object, CompletionMessage> Complete) invocationInfo)
     {
         var result = _pendingInvocations.TryAdd(invocationId, invocationInfo);
         Debug.Assert(result);
@@ -49,7 +49,7 @@ internal sealed class ClientResultsManager : IInvocationBinder
         }
     }
 
-    public void TryCompleteResult(string connectionId, CompletionMessage message)
+    public void TryCompleteResult([StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, CompletionMessage message)
     {
         if (_pendingInvocations.TryGetValue(message.InvocationId!, out var item))
         {
@@ -72,7 +72,7 @@ internal sealed class ClientResultsManager : IInvocationBinder
         }
     }
 
-    public (Type Type, string ConnectionId, object Tcs, Action<object, CompletionMessage> Completion)? RemoveInvocation(string invocationId)
+    public (Type Type, [StringSyntax(StringSyntaxAttribute.GuidFormat)] string connectionId, object Tcs, Action<object, CompletionMessage> Completion)? RemoveInvocation(string invocationId)
     {
         _pendingInvocations.TryRemove(invocationId, out var item);
         return item;
