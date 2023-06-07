@@ -61,7 +61,8 @@ public class ModelBindingDictionaryBenchmark : BaseModelBindingBenchmark
     [Benchmark]
     public Dictionary<int, int> ModelBinding_Dictionary_Components()
     {
-        _formDataReader = new FormDataReader(new FormCollectionReadOnlyDictionary(_testContext.HttpContext.Request.Form), CultureInfo.InvariantCulture);
+        var form = _testContext.HttpContext.Request.Form;
+        _formDataReader = new FormDataReader(ToPrefixDictionary(form, form.Count), CultureInfo.InvariantCulture, _buffer);
         return FormDataMapper.Map<Dictionary<int, int>>(_formDataReader, _formMapperOptions);
     }
 }

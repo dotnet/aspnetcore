@@ -33,15 +33,16 @@ public class BaseModelBindingBenchmark
 {
     private static MemoryStream _stream;
 
-    private protected ParameterDescriptor _parameter;
-    private protected ModelBindingTestContext _testContext;
-    private protected ModelStateDictionary _modelState;
-    private protected ModelMetadata _metadata;
-    private protected IModelBinder _modelBinder;
-    private protected CompositeValueProvider _valueProvider;
-    private protected ParameterBinder _parameterBinder;
+    protected ParameterDescriptor _parameter;
+    protected ModelBindingTestContext _testContext;
+    protected ModelStateDictionary _modelState;
+    protected ModelMetadata _metadata;
+    protected IModelBinder _modelBinder;
+    protected CompositeValueProvider _valueProvider;
+    protected ParameterBinder _parameterBinder;
     private protected FormDataReader _formDataReader;
     private protected FormDataMapperOptions _formMapperOptions;
+    protected char[] _buffer = new char[4096];
 
     [GlobalSetup]
     public async Task Setup()
@@ -61,9 +62,21 @@ public class BaseModelBindingBenchmark
         _valueProvider = await CompositeValueProvider.CreateAsync(_testContext);
         _parameterBinder = ModelBindingTestHelper.GetParameterBinder(_testContext);
 
-        _formDataReader = new FormDataReader(new FormCollectionReadOnlyDictionary(_testContext.HttpContext.Request.Form), CultureInfo.InvariantCulture);
+        var form = _testContext.HttpContext.Request.Form;
+        _formDataReader = new FormDataReader(ToPrefixDictionary(form, form.Count), CultureInfo.InvariantCulture, _buffer);
         _formMapperOptions = new FormDataMapperOptions();
         _formMapperOptions.ResolveConverter<Customer>();
+    }
+
+    private protected IReadOnlyDictionary<FormKey, StringValues> ToPrefixDictionary(IEnumerable<KeyValuePair<string, StringValues>> dictionary, int count)
+    {
+        var result = new Dictionary<FormKey, StringValues>(count);
+        foreach (var (key, value) in dictionary)
+        {
+            result.Add(new FormKey(key.AsMemory()), value);
+        }
+
+        return result;
     }
 
     protected virtual Type GetParameterType()

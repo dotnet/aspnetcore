@@ -43,7 +43,8 @@ public class ModelBindingPrimitiveTypeBenchmark : BaseModelBindingBenchmark
     [Benchmark]
     public int ModelBinding_PrimitiveType_Components()
     {
-        _formDataReader = new FormDataReader(new FormCollectionReadOnlyDictionary(_testContext.HttpContext.Request.Form), CultureInfo.InvariantCulture);
+        var form = _testContext.HttpContext.Request.Form;
+        _formDataReader = new FormDataReader(ToPrefixDictionary(form, form.Count), CultureInfo.InvariantCulture, _buffer);
         _formDataReader.PushPrefix("parameter");
         return FormDataMapper.Map<int>(_formDataReader, _formMapperOptions);
     }
