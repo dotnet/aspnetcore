@@ -74,15 +74,15 @@ public static class ActualApiResponseMetadataFactory
 
         var statementReturnType = returnedValue.Type;
 
-        if (!symbolCache.IActionResult.IsAssignableFrom(statementReturnType))
+        if (statementReturnType is not null && !symbolCache.IActionResult.IsAssignableFrom(statementReturnType))
         {
             // Return expression is not an instance of IActionResult. Must be returning the "model".
             return new ActualApiResponseMetadata(returnOperation, statementReturnType);
         }
 
         var defaultStatusCodeAttribute = statementReturnType
-            .GetAttributes(defaultStatusCodeAttributeSymbol, inherit: true)
-            .FirstOrDefault();
+            ?.GetAttributes(defaultStatusCodeAttributeSymbol, inherit: true)
+            ?.FirstOrDefault();
 
         // If the type is not annotated with a default status code, then examine
         // the attributes on any invoked method returning the type.
@@ -225,7 +225,7 @@ public static class ActualApiResponseMetadataFactory
         return false;
     }
 
-    internal static int? GetDefaultStatusCode(AttributeData attribute)
+    internal static int? GetDefaultStatusCode(AttributeData? attribute)
     {
         if (attribute != null &&
             attribute.ConstructorArguments.Length == 1 &&
