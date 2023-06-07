@@ -114,7 +114,7 @@ public sealed class CascadingModelBinder : IComponent, ICascadingValueComponent,
         var bindingContext = _bindingContext != null &&
             string.Equals(_bindingContext.Name, name, StringComparison.Ordinal) &&
             string.Equals(_bindingContext.BindingContextId, bindingId, StringComparison.Ordinal) ?
-            _bindingContext : new ModelBindingContext(name, bindingId);
+            _bindingContext : new ModelBindingContext(name, bindingId, FormValueSupplier.CanConvertSingleValue);
 
         // It doesn't matter that we don't check IsFixed, since the CascadingValue we are setting up will throw if the app changes.
         if (IsFixed && _bindingContext != null && _bindingContext != bindingContext)

@@ -99,7 +99,9 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
             codeWriter.StartBlock();
             codeWriter.WriteLine("if (ic.HttpContext.Response.StatusCode == 400)");
             codeWriter.StartBlock();
-            codeWriter.WriteLine("return ValueTask.FromResult<object?>(Results.Empty);");
+            codeWriter.WriteLine(endpoint.Response?.IsAwaitable == true
+                ? "return (object?)Results.Empty;"
+                : "return ValueTask.FromResult<object?>(Results.Empty);");
             codeWriter.EndBlock();
             endpoint.EmitFilteredInvocation(codeWriter);
             codeWriter.EndBlockWithComma();

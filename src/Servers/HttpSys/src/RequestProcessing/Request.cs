@@ -327,6 +327,8 @@ internal sealed partial class Request
 
     internal WindowsPrincipal User { get; }
 
+    public string? SniHostName { get; private set; }
+
     public SslProtocols Protocol { get; private set; }
 
     public CipherAlgorithmType CipherAlgorithm { get; private set; }
@@ -428,6 +430,9 @@ internal sealed partial class Request
         HashStrength = (int)handshake.HashStrength;
         KeyExchangeAlgorithm = handshake.KeyExchangeType;
         KeyExchangeStrength = (int)handshake.KeyExchangeStrength;
+
+        var sni = RequestContext.GetClientSni();
+        SniHostName = sni.Hostname;
     }
 
     public X509Certificate2? ClientCertificate
