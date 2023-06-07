@@ -64,8 +64,3 @@ a, .btn-link {
     .blazor-error-boundary::after {
         content: "An error has occurred."
     }
-
-.bi-blazor {
-    font-size: 1rem;
-    margin-right: 1rem;
-}
