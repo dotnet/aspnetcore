@@ -21,6 +21,11 @@ internal struct FormDataReader
 
     public IFormatProvider Culture { get; internal set; }
 
+    internal IEnumerable<string> GetKeys()
+    {
+        return _formCollection.Keys;
+    }
+
     internal void PopPrefix(string _)
     {
         // For right now, we don't need to do anything with the prefix
