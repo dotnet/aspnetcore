@@ -152,7 +152,7 @@ internal sealed partial class DefaultLinkGenerator : LinkGenerator, IDisposable
         FragmentString fragment = default,
         LinkOptions? options = null)
     {
-         if (string.IsNullOrEmpty(scheme))
+        if (string.IsNullOrEmpty(scheme))
         {
             throw new ArgumentException("A scheme must be provided.", nameof(scheme));
         }
