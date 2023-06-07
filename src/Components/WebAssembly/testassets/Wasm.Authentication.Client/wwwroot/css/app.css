@@ -179,3 +179,8 @@ app {
         display: block;
     }
 }
+
+.bi-blazor {
+    font-size: 1rem;
+    margin-right: 1rem;
+}
