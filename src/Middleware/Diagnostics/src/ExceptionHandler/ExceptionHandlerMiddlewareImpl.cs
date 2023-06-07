@@ -7,7 +7,7 @@ using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -26,23 +26,16 @@ internal sealed class ExceptionHandlerMiddlewareImpl
     private readonly Func<object, Task> _clearCacheHeadersDelegate;
     private readonly DiagnosticListener _diagnosticListener;
     private readonly IExceptionHandler[] _exceptionHandlers;
+    private readonly DiagnosticsMetrics _metrics;
     private readonly IProblemDetailsService? _problemDetailsService;
 
-    /// <summary>
-    /// Creates a new <see cref="ExceptionHandlerMiddleware"/>
-    /// </summary>
-    /// <param name="next">The <see cref="RequestDelegate"/> representing the next middleware in the pipeline.</param>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> used for logging.</param>
-    /// <param name="options">The options for configuring the middleware.</param>
-    /// <param name="diagnosticListener">The <see cref="DiagnosticListener"/> used for writing diagnostic messages.</param>
-    /// <param name="exceptionHandlers"></param>
-    /// <param name="problemDetailsService">The <see cref="IProblemDetailsService"/> used for writing <see cref="ProblemDetails"/> messages.</param>
     public ExceptionHandlerMiddlewareImpl(
         RequestDelegate next,
         ILoggerFactory loggerFactory,
         IOptions<ExceptionHandlerOptions> options,
         DiagnosticListener diagnosticListener,
         IEnumerable<IExceptionHandler> exceptionHandlers,
+        IMeterFactory meterFactory,
         IProblemDetailsService? problemDetailsService = null)
     {
         _next = next;
@@ -51,6 +44,7 @@ internal sealed class ExceptionHandlerMiddlewareImpl
         _clearCacheHeadersDelegate = ClearCacheHeaders;
         _diagnosticListener = diagnosticListener;
         _exceptionHandlers = exceptionHandlers as IExceptionHandler[] ?? new List<IExceptionHandler>(exceptionHandlers).ToArray();
+        _metrics = new DiagnosticsMetrics(meterFactory);
         _problemDetailsService = problemDetailsService;
 
         if (_options.ExceptionHandler == null)
@@ -116,6 +110,8 @@ internal sealed class ExceptionHandlerMiddlewareImpl
 
     private async Task HandleException(HttpContext context, ExceptionDispatchInfo edi)
     {
+        var exceptionName = edi.SourceException.GetType().FullName!;
+
         if ((edi.SourceException is OperationCanceledException || edi.SourceException is IOException) && context.RequestAborted.IsCancellationRequested)
         {
             _logger.RequestAbortedException();
@@ -125,6 +121,7 @@ internal sealed class ExceptionHandlerMiddlewareImpl
                 context.Response.StatusCode = StatusCodes.Status499ClientClosedRequest;
             }
 
+            _metrics.RequestException(exceptionName, ExceptionResult.Aborted, handler: null);
             return;
         }
 
@@ -134,6 +131,8 @@ internal sealed class ExceptionHandlerMiddlewareImpl
         if (context.Response.HasStarted)
         {
             _logger.ResponseStartedErrorHandler();
+
+            _metrics.RequestException(exceptionName, ExceptionResult.Skipped, handler: null);
             edi.Throw();
         }
 
@@ -159,12 +158,14 @@ internal sealed class ExceptionHandlerMiddlewareImpl
             context.Response.StatusCode = DefaultStatusCode;
             context.Response.OnStarting(_clearCacheHeadersDelegate, context.Response);
 
+            string? handler = null;
             var handled = false;
             foreach (var exceptionHandler in _exceptionHandlers)
             {
                 handled = await exceptionHandler.TryHandleAsync(context, edi.SourceException, context.RequestAborted);
                 if (handled)
                 {
+                    handler = exceptionHandler.GetType().FullName;
                     break;
                 }
             }
@@ -184,6 +185,10 @@ internal sealed class ExceptionHandlerMiddlewareImpl
                         ProblemDetails = { Status = DefaultStatusCode },
                         Exception = edi.SourceException,
                     });
+                    if (handled)
+                    {
+                        handler = _problemDetailsService.GetType().FullName;
+                    }
                 }
             }
             // If the response has already started, assume exception handler was successful.
@@ -195,6 +200,7 @@ internal sealed class ExceptionHandlerMiddlewareImpl
                     WriteDiagnosticEvent(_diagnosticListener, eventName, new { httpContext = context, exception = edi.SourceException });
                 }
 
+                _metrics.RequestException(exceptionName, ExceptionResult.Handled, handler);
                 return;
             }
 
@@ -212,6 +218,7 @@ internal sealed class ExceptionHandlerMiddlewareImpl
             context.Request.Path = originalPath;
         }
 
+        _metrics.RequestException(exceptionName, ExceptionResult.Unhandled, handler: null);
         edi.Throw(); // Re-throw wrapped exception or the original if we couldn't handle it
 
         [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026",
