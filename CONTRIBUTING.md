@@ -2,6 +2,10 @@
 
 One of the easiest ways to contribute is to participate in discussions on GitHub issues. You can also contribute by submitting pull requests with code changes.
 
+Here are videos where members of the AspNetCore Team provide guidance, advice and samples on how to contribute to this project.
+* For ASP.NET Core - https://www.youtube.com/watch?v=hVdwb41FPvU
+* For Blazor - https://www.youtube.com/watch?v=gRg0xxK8L6w
+
 ## General feedback and discussions?
 
 Start a discussion on the [repository issue tracker](https://github.com/dotnet/aspnetcore/issues).
