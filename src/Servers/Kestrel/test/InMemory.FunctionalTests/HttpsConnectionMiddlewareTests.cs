@@ -126,15 +126,25 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
     [Fact]
     public async Task HandshakeDetailsAreAvailable()
     {
+        string expectedHostname = null;
         void ConfigureListenOptions(ListenOptions listenOptions)
         {
-            listenOptions.UseHttps(new HttpsConnectionAdapterOptions { ServerCertificate = _x509Certificate2 });
+            listenOptions.UseHttps(
+                new HttpsConnectionAdapterOptions
+                {
+                    ServerCertificateSelector = (connection, name) =>
+                    {
+                        expectedHostname = name;
+                        return _x509Certificate2;
+                    }
+                });
         };
 
         await using (var server = new TestServer(context =>
         {
             var tlsFeature = context.Features.Get<ITlsHandshakeFeature>();
             Assert.NotNull(tlsFeature);
+            Assert.Equal(expectedHostname, tlsFeature.HostName);
             Assert.True(tlsFeature.Protocol > SslProtocols.None, "Protocol");
             Assert.True(tlsFeature.NegotiatedCipherSuite >= TlsCipherSuite.TLS_NULL_WITH_NULL_NULL, "NegotiatedCipherSuite");
             Assert.True(tlsFeature.CipherAlgorithm > CipherAlgorithmType.Null, "Cipher");

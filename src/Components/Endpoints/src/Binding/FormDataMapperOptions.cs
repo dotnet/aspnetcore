@@ -25,7 +25,7 @@ internal sealed class FormDataMapperOptions
     // Binding to collection using hashes, where the payload can be crafted to force the worst case on insertion
     // which is O(n).
     internal int MaxCollectionSize = 100;
-
+  
     internal bool HasConverter(Type valueType) => _converters.ContainsKey(valueType);
 
     internal bool IsSingleValueConverter(Type type)
