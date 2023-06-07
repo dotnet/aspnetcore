@@ -75,7 +75,7 @@ internal static class EndpointParameterEmitter
         }
 
         codeWriter.WriteLine($"var {endpointParameter.EmitAssigningCodeResult()} = {endpointParameter.AssigningCode};");
-        if (!endpointParameter.IsOptional)
+        if (!endpointParameter.IsOptional && !endpointParameter.IsArray)
         {
             codeWriter.WriteLine($"if ({endpointParameter.EmitAssigningCodeResult()} == null)");
             codeWriter.StartBlock();
@@ -262,8 +262,16 @@ internal static class EndpointParameterEmitter
 
     internal static void EmitBindAsyncPreparation(this EndpointParameter endpointParameter, CodeWriter codeWriter)
     {
+        // Invoke the `BindAsync` method on an interface if it is the target receiver.
+        var receiverType = endpointParameter.BindableMethodSymbol?.ReceiverType is { TypeKind: TypeKind.Interface } targetType
+            ? targetType
+            : endpointParameter.Type;
+        var bindMethodReceiverType = receiverType?.UnwrapTypeSymbol(unwrapNullable: true);
+        var bindMethodReceiverTypeString = bindMethodReceiverType?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+
         var unwrappedType = endpointParameter.Type.UnwrapTypeSymbol(unwrapNullable: true);
-        var unwrappedTypeString = unwrappedType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        var unwrappedTypeString = unwrappedType?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+
         var resolveParameterInfo = endpointParameter.IsProperty
             ? endpointParameter.PropertyAsParameterInfoConstruction
             : $"parameters[{endpointParameter.Ordinal}]";
@@ -274,10 +282,10 @@ internal static class EndpointParameterEmitter
                 codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = await BindAsync<{unwrappedTypeString}>(httpContext, {resolveParameterInfo});");
                 break;
             case BindabilityMethod.BindAsyncWithParameter:
-                codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = await {unwrappedTypeString}.BindAsync(httpContext, {resolveParameterInfo});");
+                codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = await {bindMethodReceiverTypeString}.BindAsync(httpContext, {resolveParameterInfo});");
                 break;
             case BindabilityMethod.BindAsync:
-                codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = await {unwrappedTypeString}.BindAsync(httpContext);");
+                codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = await {bindMethodReceiverTypeString}.BindAsync(httpContext);");
                 break;
             default:
                 throw new NotImplementedException($"Unreachable! Unexpected {nameof(BindabilityMethod)}: {endpointParameter.BindMethod}");

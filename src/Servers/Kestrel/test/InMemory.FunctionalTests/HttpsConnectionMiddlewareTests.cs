@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Globalization;
-using System.Net;
 using System.Net.Http;
 using System.Net.Security;
 using System.Security.Authentication;
@@ -24,7 +22,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Metrics;
 using Moq;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
@@ -129,15 +126,25 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
     [Fact]
     public async Task HandshakeDetailsAreAvailable()
     {
+        string expectedHostname = null;
         void ConfigureListenOptions(ListenOptions listenOptions)
         {
-            listenOptions.UseHttps(new HttpsConnectionAdapterOptions { ServerCertificate = _x509Certificate2 });
+            listenOptions.UseHttps(
+                new HttpsConnectionAdapterOptions
+                {
+                    ServerCertificateSelector = (connection, name) =>
+                    {
+                        expectedHostname = name;
+                        return _x509Certificate2;
+                    }
+                });
         };
 
         await using (var server = new TestServer(context =>
         {
             var tlsFeature = context.Features.Get<ITlsHandshakeFeature>();
             Assert.NotNull(tlsFeature);
+            Assert.Equal(expectedHostname, tlsFeature.HostName);
             Assert.True(tlsFeature.Protocol > SslProtocols.None, "Protocol");
             Assert.True(tlsFeature.NegotiatedCipherSuite >= TlsCipherSuite.TLS_NULL_WITH_NULL_NULL, "NegotiatedCipherSuite");
             Assert.True(tlsFeature.CipherAlgorithm > CipherAlgorithmType.Null, "Cipher");

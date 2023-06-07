@@ -31,13 +31,13 @@ internal sealed partial class DefaultTransportFactory : ITransportFactory
         _accessTokenProvider = accessTokenProvider;
     }
 
-    public ITransport CreateTransport(HttpTransportType availableServerTransports)
+    public ITransport CreateTransport(HttpTransportType availableServerTransports, bool useAck)
     {
         if (_websocketsSupported && (availableServerTransports & HttpTransportType.WebSockets & _requestedTransportType) == HttpTransportType.WebSockets)
         {
             try
             {
-                return new WebSocketsTransport(_httpConnectionOptions, _loggerFactory, _accessTokenProvider, _httpClient);
+                return new WebSocketsTransport(_httpConnectionOptions, _loggerFactory, _accessTokenProvider, _httpClient, useAck);
             }
             catch (PlatformNotSupportedException ex)
             {
@@ -49,13 +49,13 @@ internal sealed partial class DefaultTransportFactory : ITransportFactory
         if ((availableServerTransports & HttpTransportType.ServerSentEvents & _requestedTransportType) == HttpTransportType.ServerSentEvents)
         {
             // We don't need to give the transport the accessTokenProvider because the HttpClient has a message handler that does the work for us.
-            return new ServerSentEventsTransport(_httpClient!, _httpConnectionOptions, _loggerFactory);
+            return new ServerSentEventsTransport(_httpClient!, _httpConnectionOptions, _loggerFactory, useAck);
         }
 
         if ((availableServerTransports & HttpTransportType.LongPolling & _requestedTransportType) == HttpTransportType.LongPolling)
         {
             // We don't need to give the transport the accessTokenProvider because the HttpClient has a message handler that does the work for us.
-            return new LongPollingTransport(_httpClient!, _httpConnectionOptions, _loggerFactory);
+            return new LongPollingTransport(_httpClient!, _httpConnectionOptions, _loggerFactory, useAck);
         }
 
         throw new InvalidOperationException("No requested transports available on the server.");

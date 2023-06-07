@@ -10,6 +10,7 @@
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)NullScope.cs" />
     <Compile Include="$(SharedSourceRoot)SyncPoint\SyncPoint.cs" Link="SyncPoint.cs" />
+    <Compile Include="$(SharedSourceRoot)Metrics\TestMeterFactory.cs" LinkBase="shared" />
     <Compile Include="$(KestrelSharedSourceRoot)test\*.cs" LinkBase="shared" />
     <Compile Include="$(SharedSourceRoot)test\MockTimeProvider.cs" LinkBase="shared" />
     <Compile Include="$(KestrelSharedSourceRoot)test\Http3\*.cs" LinkBase="shared" />

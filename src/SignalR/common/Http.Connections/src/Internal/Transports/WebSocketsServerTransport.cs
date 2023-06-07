@@ -17,6 +17,9 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
     private readonly HttpConnectionContext _connection;
     private volatile bool _aborted;
 
+    // Used to determine if the close was graceful or a network issue
+    private bool _gracefulClose;
+
     public WebSocketsServerTransport(WebSocketOptions options, IDuplexPipe application, HttpConnectionContext connection, ILoggerFactory loggerFactory)
     {
         ArgumentNullException.ThrowIfNull(options);
@@ -31,7 +34,7 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
         _logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Connections.Internal.Transports.WebSocketsTransport");
     }
 
-    public async Task ProcessRequestAsync(HttpContext context, CancellationToken token)
+    public async Task<bool> ProcessRequestAsync(HttpContext context, CancellationToken token)
     {
         Debug.Assert(context.WebSockets.IsWebSocketRequest, "Not a websocket request");
 
@@ -50,13 +53,16 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
                 Log.SocketClosed(_logger);
             }
         }
+
+        return _gracefulClose;
     }
 
     public async Task ProcessSocketAsync(WebSocket socket)
     {
-        // Begin sending and receiving. Receiving must be started first because ExecuteAsync enables SendAsync.
+        var ignoreFirstCancel = false;
+
         var receiving = StartReceiving(socket);
-        var sending = StartSending(socket);
+        var sending = StartSending(socket, ignoreFirstCancel);
 
         // Wait for send or receive to complete
         var trigger = await Task.WhenAny(receiving, sending);
@@ -135,6 +141,7 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
 
                 if (result.MessageType == WebSocketMessageType.Close)
                 {
+                    _gracefulClose = true;
                     return;
                 }
 
@@ -145,6 +152,7 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
                 // Need to check again for netcoreapp3.0 and later because a close can happen between a 0-byte read and the actual read
                 if (receiveResult.MessageType == WebSocketMessageType.Close)
                 {
+                    _gracefulClose = true;
                     return;
                 }
 
@@ -175,17 +183,21 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
         {
             if (!_aborted && !token.IsCancellationRequested)
             {
+                _gracefulClose = true;
                 _application.Output.Complete(ex);
             }
         }
         finally
         {
-            // We're done writing
-            _application.Output.Complete();
+            if (_gracefulClose)
+            {
+                // We're done writing
+                _application.Output.Complete();
+            }
         }
     }
 
-    private async Task StartSending(WebSocket socket)
+    private async Task StartSending(WebSocket socket, bool ignoreFirstCancel)
     {
         Exception? error = null;
 
@@ -200,10 +212,12 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
 
                 try
                 {
-                    if (result.IsCanceled)
+                    if (result.IsCanceled && !ignoreFirstCancel)
                     {
                         break;
                     }
+
+                    ignoreFirstCancel = false;
 
                     if (!buffer.IsEmpty)
                     {
@@ -224,6 +238,12 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
                             {
                                 break;
                             }
+                        }
+                        catch (OperationCanceledException ex) when (ex.CancellationToken == _connection.SendingToken)
+                        {
+                            _gracefulClose = true;
+                            // TODO: probably log
+                            break;
                         }
                         catch (Exception ex)
                         {
@@ -266,7 +286,14 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
                 }
             }
 
-            _application.Input.Complete();
+            if (_gracefulClose)
+            {
+                _application.Input.Complete(error);
+            }
+            else if (error is not null)
+            {
+                Log.SendErrored(_logger, error);
+            }
         }
     }
 

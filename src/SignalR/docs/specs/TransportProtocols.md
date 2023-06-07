@@ -20,11 +20,19 @@ Throughout this document, the term `[endpoint-base]` is used to refer to the rou
 
 The `POST [endpoint-base]/negotiate` request is used to establish a connection between the client and the server.
 
+*negotiateVersion:*
+
 In the POST request the client sends a query string parameter with the key "negotiateVersion" and the value as the negotiate protocol version it would like to use. If the query string is omitted, the server treats the version as zero. The server will include a "negotiateVersion" property in the json response that says which version it will be using. The version is chosen as described below:
 * If the servers minimum supported protocol version is greater than the version requested by the client it will send an error response and close the connection
 * If the server supports the request version it will respond with the requested version
 * If the requested version is greater than the servers largest supported version the server will respond with its largest supported version
 The client may close the connection if the "negotiateVersion" in the response is not acceptable.
+
+*useAck:*
+
+In the POST request the client may include a query string parameter with the key "useAck" and the value of "true". If this is included the server will decide if it supports/allows the [ack protocol](#todo) described below, and return "useAck": "true" as a json property in the negotiate response if it will use the ack protocol. If true, the client can reconnect using the same transport and reuse the connectionToken/connectionId. The server may still reject the reconnect if it takes too long or for any reason it chooses. If false, the client must not reuse connectionToken/connectionId. If the "useAck" property is missing from the negotiate response this also implies false, so the ack protocol should not be used.
+
+-----------
 
 The content type of the response is `application/json` and is a JSON payload containing properties to assist the client in establishing a persistent connection. Extra JSON properties that the client does not know about should be ignored. This allows for future additions without breaking older clients.
 

@@ -1,5 +1,6 @@
 ﻿@using Microsoft.Identity.Web
 @using Microsoft.Extensions.Options
+@using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 @inject IOptionsMonitor<MicrosoftIdentityOptions> microsoftIdentityOptions
 
 <AuthorizeView>
@@ -23,8 +24,8 @@
     private bool canEditProfile;
 
     protected override void OnInitialized()
-    {
-        var options = microsoftIdentityOptions.CurrentValue;
+    {        
+        var options = microsoftIdentityOptions.Get(OpenIdConnectDefaults.AuthenticationScheme);
         canEditProfile = !string.IsNullOrEmpty(options.EditProfilePolicyId);
     }
 }

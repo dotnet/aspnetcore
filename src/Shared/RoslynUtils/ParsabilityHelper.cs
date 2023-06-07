@@ -151,9 +151,10 @@ internal static class ParsabilityHelper
             SymbolEqualityComparer.Default.Equals(returnType.TypeArguments[0].UnwrapTypeSymbol(unwrapNullable: true), containingType);
     }
 
-    internal static Bindability GetBindability(ITypeSymbol typeSymbol, WellKnownTypes wellKnownTypes, out BindabilityMethod? bindabilityMethod)
+    internal static Bindability GetBindability(ITypeSymbol typeSymbol, WellKnownTypes wellKnownTypes, out BindabilityMethod? bindabilityMethod, out IMethodSymbol? bindMethodSymbol)
     {
         bindabilityMethod = null;
+        bindMethodSymbol = null;
 
         if (IsBindableViaIBindableFromHttpContext(typeSymbol, wellKnownTypes))
         {
@@ -165,6 +166,7 @@ internal static class ParsabilityHelper
         // It's easy to find, but we need to flow the interface back to the emitter to call it.
         // With parent types, we can continue to pretend we're calling a method directly on the child.
         var bindAsyncMethods = typeSymbol.GetThisAndBaseTypes()
+            .Concat(typeSymbol.AllInterfaces)
             .SelectMany(t => t.GetMembers("BindAsync"))
             .OfType<IMethodSymbol>();
 
@@ -173,11 +175,13 @@ internal static class ParsabilityHelper
             if (IsBindAsyncWithParameter(methodSymbol, typeSymbol, wellKnownTypes))
             {
                 bindabilityMethod = BindabilityMethod.BindAsyncWithParameter;
+                bindMethodSymbol = methodSymbol;
                 break;
             }
             if (IsBindAsync(methodSymbol, typeSymbol, wellKnownTypes))
             {
                 bindabilityMethod = BindabilityMethod.BindAsync;
+                bindMethodSymbol = methodSymbol;
             }
         }
 

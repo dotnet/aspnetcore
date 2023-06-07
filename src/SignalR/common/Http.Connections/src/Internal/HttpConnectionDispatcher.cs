@@ -153,67 +153,74 @@ internal sealed partial class HttpConnectionDispatcher
             // We only need to provide the Input channel since writing to the application is handled through /send.
             var sse = new ServerSentEventsServerTransport(connection.Application.Input, connection.ConnectionId, connection, _loggerFactory);
 
-            await DoPersistentConnection(connectionDelegate, sse, context, connection);
-        }
-        else if (context.WebSockets.IsWebSocketRequest)
-        {
-            // Connection can be established lazily
-            var connection = await GetOrCreateConnectionAsync(context, options);
-            if (connection == null)
+            if (connection.TryActivatePersistentConnection(connectionDelegate, sse, Task.CompletedTask, context, _logger))
             {
-                // No such connection, GetOrCreateConnection already set the response status code
-                return;
+                await DoPersistentConnection(connection);
             }
-
-            if (!await EnsureConnectionStateAsync(connection, context, HttpTransportType.WebSockets, supportedTransports, logScope))
-            {
-                // Bad connection state. It's already set the response status code.
-                return;
-            }
-
-            Log.EstablishedConnection(_logger);
-
-            // Allow the reads to be canceled
-            connection.Cancellation = new CancellationTokenSource();
-
-            var ws = new WebSocketsServerTransport(options.WebSockets, connection.Application, connection, _loggerFactory);
-
-            await DoPersistentConnection(connectionDelegate, ws, context, connection);
         }
         else
         {
-            // GET /{path} maps to long polling
+            // GET /{path} maps to long polling or WebSockets
 
-            AddNoCacheHeaders(context.Response);
+            HttpConnectionContext? connection;
+            var transport = HttpTransportType.LongPolling;
+            if (context.WebSockets.IsWebSocketRequest)
+            {
+                transport = HttpTransportType.WebSockets;
+                connection = await GetOrCreateConnectionAsync(context, options);
+            }
+            else
+            {
+                AddNoCacheHeaders(context.Response);
+                // Connection must already exist
+                connection = await GetConnectionAsync(context);
+            }
 
-            // Connection must already exist
-            var connection = await GetConnectionAsync(context);
             if (connection == null)
             {
                 // No such connection, GetConnection already set the response status code
                 return;
             }
 
-            if (!await EnsureConnectionStateAsync(connection, context, HttpTransportType.LongPolling, supportedTransports, logScope))
+            if (!await EnsureConnectionStateAsync(connection, context, transport, supportedTransports, logScope))
             {
                 // Bad connection state. It's already set the response status code.
                 return;
             }
 
-            if (!await connection.CancelPreviousPoll(context))
+            if (connection.TransportType != HttpTransportType.WebSockets || connection.UseAcks)
             {
-                // Connection closed. It's already set the response status code.
-                return;
+                if (!await connection.CancelPreviousPoll(context))
+                {
+                    // Connection closed. It's already set the response status code.
+                    return;
+                }
             }
 
             // Create a new Tcs every poll to keep track of the poll finishing, so we can properly wait on previous polls
             var currentRequestTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            if (!connection.TryActivateLongPollingConnection(
-                    connectionDelegate, context, options.LongPolling.PollTimeout,
-                    currentRequestTcs.Task, _loggerFactory, _logger))
+            switch (transport)
             {
-                return;
+                case HttpTransportType.None:
+                    break;
+                case HttpTransportType.WebSockets:
+                    var ws = new WebSocketsServerTransport(options.WebSockets, connection.Application, connection, _loggerFactory);
+                    if (!connection.TryActivatePersistentConnection(connectionDelegate, ws, currentRequestTcs.Task, context, _logger))
+                    {
+                        return;
+                    }
+                    break;
+                case HttpTransportType.LongPolling:
+                    if (!connection.TryActivateLongPollingConnection(
+                        connectionDelegate, context, options.LongPolling.PollTimeout,
+                        currentRequestTcs.Task, _loggerFactory, _logger))
+                    {
+                        return;
+                    }
+                    break;
+                default:
+                    break;
             }
 
             context.Features.Get<IHttpRequestTimeoutFeature>()?.DisableTimeout();
@@ -244,8 +251,15 @@ internal sealed partial class HttpConnectionDispatcher
                     }
                     else
                     {
-                        // Only allow repoll if we aren't removing the connection.
-                        connection.MarkInactive();
+                        if (transport != HttpTransportType.LongPolling)
+                        {
+                            await _manager.DisposeAndRemoveAsync(connection, closeGracefully: false, HttpConnectionStopStatus.NormalClosure);
+                        }
+                        else
+                        {
+                            // Only allow repoll if we aren't removing the connection.
+                            connection.MarkInactive();
+                        }
                     }
                 }
                 else if (resultTask.IsFaulted || resultTask.IsCanceled)
@@ -258,8 +272,18 @@ internal sealed partial class HttpConnectionDispatcher
                 }
                 else
                 {
-                    // Only allow repoll if we aren't removing the connection.
-                    connection.MarkInactive();
+                    // If false then the transport was ungracefully closed, this can mean a temporary network disconnection
+                    // We'll mark the connection as inactive and allow the connection to reconnect if that's the case.
+                    // TODO: If acks aren't enabled we can close the connection immediately (not LongPolling)
+                    if (await connection.TransportTask!)
+                    {
+                        await _manager.DisposeAndRemoveAsync(connection, closeGracefully: true, HttpConnectionStopStatus.NormalClosure);
+                    }
+                    else
+                    {
+                        // Only allow repoll if we aren't removing the connection.
+                        connection.MarkInactive();
+                    }
                 }
             }
             finally
@@ -271,19 +295,12 @@ internal sealed partial class HttpConnectionDispatcher
         }
     }
 
-    private async Task DoPersistentConnection(ConnectionDelegate connectionDelegate,
-                                              IHttpTransport transport,
-                                              HttpContext context,
-                                              HttpConnectionContext connection)
+    private async Task DoPersistentConnection(HttpConnectionContext connection)
     {
-        if (connection.TryActivatePersistentConnection(connectionDelegate, transport, context, _logger))
-        {
-            context.Features.Get<IHttpRequestTimeoutFeature>()?.DisableTimeout();
-            // Wait for any of them to end
-            await Task.WhenAny(connection.ApplicationTask!, connection.TransportTask!);
+        // Wait for any of them to end
+        await Task.WhenAny(connection.ApplicationTask!, connection.TransportTask!);
 
-            await _manager.DisposeAndRemoveAsync(connection, closeGracefully: true, HttpConnectionStopStatus.NormalClosure);
-        }
+        await _manager.DisposeAndRemoveAsync(connection, closeGracefully: true, HttpConnectionStopStatus.NormalClosure);
     }
 
     private async Task ProcessNegotiate(HttpContext context, HttpConnectionDispatcherOptions options, ConnectionLogScope logScope)
@@ -317,11 +334,18 @@ internal sealed partial class HttpConnectionDispatcher
             Log.NegotiateProtocolVersionMismatch(_logger, 0);
         }
 
+        var useAck = false;
+        if (context.Request.Query.TryGetValue("UseAck", out var useAckValue))
+        {
+            var useAckStringValue = useAckValue.ToString();
+            bool.TryParse(useAckStringValue, out useAck);
+        }
+
         // Establish the connection
         HttpConnectionContext? connection = null;
         if (error == null)
         {
-            connection = CreateConnection(options, clientProtocolVersion);
+            connection = CreateConnection(options, clientProtocolVersion, useAck);
         }
 
         // Set the Connection ID on the logging scope so that logs from now on will have the
@@ -334,7 +358,7 @@ internal sealed partial class HttpConnectionDispatcher
         try
         {
             // Get the bytes for the connection id
-            WriteNegotiatePayload(writer, connection?.ConnectionId, connection?.ConnectionToken, context, options, clientProtocolVersion, error);
+            WriteNegotiatePayload(writer, connection?.ConnectionId, connection?.ConnectionToken, context, options, clientProtocolVersion, error, useAck);
 
             Log.NegotiationRequest(_logger);
 
@@ -349,7 +373,7 @@ internal sealed partial class HttpConnectionDispatcher
     }
 
     private static void WriteNegotiatePayload(IBufferWriter<byte> writer, string? connectionId, string? connectionToken, HttpContext context, HttpConnectionDispatcherOptions options,
-        int clientProtocolVersion, string? error)
+        int clientProtocolVersion, string? error, bool useAck)
     {
         var response = new NegotiationResponse();
 
@@ -364,6 +388,7 @@ internal sealed partial class HttpConnectionDispatcher
         response.ConnectionId = connectionId;
         response.ConnectionToken = connectionToken;
         response.AvailableTransports = new List<AvailableTransport>();
+        response.UseAcking = useAck;
 
         if ((options.Transports & HttpTransportType.WebSockets) != 0 && ServerHasWebSockets(context.Features))
         {
@@ -745,9 +770,9 @@ internal sealed partial class HttpConnectionDispatcher
         return connection;
     }
 
-    private HttpConnectionContext CreateConnection(HttpConnectionDispatcherOptions options, int clientProtocolVersion = 0)
+    private HttpConnectionContext CreateConnection(HttpConnectionDispatcherOptions options, int clientProtocolVersion = 0, bool useAck = false)
     {
-        return _manager.CreateConnection(options, clientProtocolVersion);
+        return _manager.CreateConnection(options, clientProtocolVersion, useAck);
     }
 
     private static void AddNoCacheHeaders(HttpResponse response)
