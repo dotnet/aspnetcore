@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using Microsoft.AspNetCore.Components.Binding;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components.Forms;
@@ -120,6 +121,11 @@ public class EditForm : ComponentBase
         if (Model != null && Model != _editContext?.Model)
         {
             _editContext = new EditContext(Model!);
+        }
+
+        if (_editContext != null && BindingContext != null)
+        {
+            _editContext.SetConvertibleValues(BindingContext);
         }
     }
 

@@ -455,30 +455,6 @@ public sealed class FrameworkParametersCompletionProvider : CompletionProvider
         }
     }
 
-    private (RoutePatternNode parent, RoutePatternToken Token)? FindToken(RoutePatternNode parent, VirtualChar ch)
-    {
-        foreach (var child in parent)
-        {
-            if (child.IsNode)
-            {
-                var result = FindToken(child.Node, ch);
-                if (result != null)
-                {
-                    return result;
-                }
-            }
-            else
-            {
-                if (child.Token.VirtualChars.Contains(ch))
-                {
-                    return (parent, child.Token);
-                }
-            }
-        }
-
-        return null;
-    }
-
     private readonly struct RoutePatternItem
     {
         public readonly string DisplayText;
