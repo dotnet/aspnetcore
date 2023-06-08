@@ -163,9 +163,11 @@ class ItemListSubset<T> implements ItemList<T> {
 
   constructor(private source: ItemList<T>, private startIndex: number, public length: number) {
   }
+
   item(index: number): T | null {
     return this.source.item(index + this.startIndex);
   }
+
   forEach(callbackfn: (value: T, key: number, parent: ItemList<T>) => void, thisArg?: any): void {
     for (let i = 0; i < this.length; i++) {
       callbackfn(this.item(i)!, i, this);
