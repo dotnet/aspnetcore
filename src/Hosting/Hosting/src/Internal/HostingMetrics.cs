@@ -33,7 +33,7 @@ internal sealed class HostingMetrics : IDisposable
 
         _unhandledRequestsCounter = _meter.CreateCounter<long>(
             "unhandled-requests",
-            description: "Number of HTTP requests that reached the end of the app pipeline without being handled by application code.");
+            description: "Number of HTTP requests that reached the end of the middleware pipeline without being handled by application code.");
     }
 
     // Note: Calling code checks whether counter is enabled.

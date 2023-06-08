@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Hosting;
 
 internal sealed class HostingRequestUnhandledLog : IReadOnlyList<KeyValuePair<string, object?>>
 {
-    private const string OriginalFormat = "Request reached the end of the app pipeline without being handled by application code. Request path: {Method} {Scheme}://{Host}{PathBase}{Path}, Response status code: {StatusCode}";
+    private const string OriginalFormat = "Request reached the end of the middleware pipeline without being handled by application code. Request path: {Method} {Scheme}://{Host}{PathBase}{Path}, Response status code: {StatusCode}";
 
     internal static readonly Func<object, Exception?, string> Callback = (state, exception) => ((HostingRequestUnhandledLog)state).ToString();
 
@@ -43,7 +43,7 @@ internal sealed class HostingRequestUnhandledLog : IReadOnlyList<KeyValuePair<st
         {
             var request = _httpContext.Request;
             var response = _httpContext.Response;
-            _cachedToString = $"Request reached the end of the app pipeline without being handled by application code. Request path: {request.Method} {request.Scheme}://{request.Host}{request.PathBase}{request.Path}, Response status code: {response.StatusCode}";
+            _cachedToString = $"Request reached the end of the middleware pipeline without being handled by application code. Request path: {request.Method} {request.Scheme}://{request.Host}{request.PathBase}{request.Path}, Response status code: {response.StatusCode}";
         }
 
         return _cachedToString;

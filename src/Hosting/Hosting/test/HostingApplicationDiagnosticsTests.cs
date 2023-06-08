@@ -702,7 +702,7 @@ public class HostingApplicationDiagnosticsTests
         var endLog = testSink.Writes.Single(w => w.EventId == LoggerEventIds.RequestFinished);
 
         Assert.Equal("Request starting 1.1 POST http://localhost/hello - text/plain 1024", startLog.Message);
-        Assert.Equal("Request reached the end of the app pipeline without being handled by application code. Request path: POST http://localhost/hello, Response status code: 404", unhandedLog.Message);        
+        Assert.Equal("Request reached the end of the middleware pipeline without being handled by application code. Request path: POST http://localhost/hello, Response status code: 404", unhandedLog.Message);        
         Assert.StartsWith("Request finished 1.1 POST http://localhost/hello - 404", endLog.Message);
     }
 
