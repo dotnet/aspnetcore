@@ -1,19 +1,26 @@
 type Comparer<T> = (a: T, b: T) => ComparisonResult;
 
-export function compareArrays<T>(before: ItemList<T>, after: ItemList<T>, comparer: Comparer<T>): Operation[] {
+export interface ArrayComparisonResult<T> {
+  skip: number,
+  edits?: Operation[],
+}
+
+export function compareArrays<T>(before: ItemList<T>, after: ItemList<T>, comparer: Comparer<T>): ArrayComparisonResult<T> {
   // In common cases where nothing has changed or only one thing changed, we can reduce the task dramatically
-  // by identifying the common prefix/suffix, and only doing Levenshtein on the subset in between
+  // by identifying the common prefix/suffix, and only doing Levenshtein on the subset in between. The end results can entirely
+  // ignore any trailing identical entries.
   const commonPrefixLength = lengthOfCommonPrefix(before, after, comparer);
+  if (commonPrefixLength === before.length && commonPrefixLength === after.length) {
+    // If by now we know there are no edits, bail out early
+    return { skip: 0 };
+  }
   const commonSuffixLength = lengthOfCommonSuffix(before, after, commonPrefixLength, commonPrefixLength, comparer);
   before = ItemListSubset.create(before, commonPrefixLength, before.length - commonPrefixLength - commonSuffixLength);
   after =  ItemListSubset.create(after, commonPrefixLength, after.length - commonPrefixLength - commonSuffixLength);
 
   const operations = computeOperations(before, after, comparer);
   const edits = toEditScript(operations);
-
-  return Array(commonPrefixLength).fill(Operation.Keep)
-    .concat(edits)
-    .concat(Array(commonSuffixLength).fill(Operation.Keep));
+  return { skip: commonPrefixLength, edits };
 }
 
 function lengthOfCommonPrefix<T>(before: ItemList<T>, after: ItemList<T>, comparer: Comparer<T>): number {
