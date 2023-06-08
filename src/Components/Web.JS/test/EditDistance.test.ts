@@ -1,5 +1,5 @@
 import { expect, test, describe } from '@jest/globals';
-import { computeEditScript, ComparisonResult, ItemList, Operation } from '../src/Rendering/DomMerging/EditScript';
+import { computeEditScript, UpdateCost, ItemList, Operation } from '../src/Rendering/DomMerging/EditScript';
 
 describe('EditDistance', () => {
   test('should return no operations for empty arrays', () => {
@@ -45,9 +45,9 @@ describe('EditDistance', () => {
   test('should prefer to substitute rather than insert+delete when allowed', () => {
     const before = new ArrayItemList<number>([1, 2]);
     const after = new ArrayItemList<number>([3, 2]);
-    const result = computeEditScript(before, after, (a, b) => (a === b) ? ComparisonResult.Same : ComparisonResult.CanSubstitute);
+    const result = computeEditScript(before, after, (a, b) => (a === b) ? UpdateCost.None : UpdateCost.Some);
     expect(result.skipCount).toEqual(0);
-    expect(result.edits).toEqual([Operation.Substitute]);
+    expect(result.edits).toEqual([Operation.Update]);
   });
 
   test('should return correct operations for multiple mixed changes', () => {
@@ -60,7 +60,7 @@ describe('EditDistance', () => {
 });
 
 function exactEqualityComparer<T>(a: T, b: T) {
-  return a === b ? ComparisonResult.Same : ComparisonResult.CannotSubstitute;
+  return a === b ? UpdateCost.None : UpdateCost.Infinite;
 }
 
 class ArrayItemList<T> implements ItemList<T> {

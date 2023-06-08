@@ -1,32 +1,30 @@
-type Comparer<T> = (a: T, b: T) => ComparisonResult;
-
 export interface EditScript {
   skipCount: number,
   edits?: Operation[],
 }
 
-export function computeEditScript<T>(before: ItemList<T>, after: ItemList<T>, comparer: Comparer<T>): EditScript {
+export function computeEditScript<T>(before: ItemList<T>, after: ItemList<T>, updateCost: UpdateCostFunc<T>): EditScript {
   // In common cases where nothing has changed or only one thing changed, we can reduce the task dramatically
   // by identifying the common prefix/suffix, and only doing Levenshtein on the subset in between. The end results can entirely
   // ignore any trailing identical entries.
-  const commonPrefixLength = lengthOfCommonPrefix(before, after, comparer);
+  const commonPrefixLength = lengthOfCommonPrefix(before, after, updateCost);
   if (commonPrefixLength === before.length && commonPrefixLength === after.length) {
     // If by now we know there are no edits, bail out early
     return { skipCount: 0 };
   }
-  const commonSuffixLength = lengthOfCommonSuffix(before, after, commonPrefixLength, commonPrefixLength, comparer);
+  const commonSuffixLength = lengthOfCommonSuffix(before, after, commonPrefixLength, commonPrefixLength, updateCost);
   before = ItemListSubset.create(before, commonPrefixLength, before.length - commonPrefixLength - commonSuffixLength);
   after =  ItemListSubset.create(after, commonPrefixLength, after.length - commonPrefixLength - commonSuffixLength);
 
-  const operations = computeOperations(before, after, comparer);
+  const operations = computeOperations(before, after, updateCost);
   const edits = toEditScript(operations);
   return { skipCount: commonPrefixLength, edits };
 }
 
-function lengthOfCommonPrefix<T>(before: ItemList<T>, after: ItemList<T>, comparer: Comparer<T>): number {
+function lengthOfCommonPrefix<T>(before: ItemList<T>, after: ItemList<T>, updateCost: UpdateCostFunc<T>): number {
   const shorterLength = Math.min(before.length, after.length);
   for (let index = 0; index < shorterLength; index++) {
-    if (comparer(before.item(index)!, after.item(index)!) !== ComparisonResult.Same) {
+    if (updateCost(before.item(index)!, after.item(index)!) !== UpdateCost.None) {
       return index;
     }
   }
@@ -34,12 +32,12 @@ function lengthOfCommonPrefix<T>(before: ItemList<T>, after: ItemList<T>, compar
   return shorterLength;
 }
 
-function lengthOfCommonSuffix<T>(before: ItemList<T>, after: ItemList<T>, beforeStartIndex: number, afterStartIndex: number, comparer: Comparer<T>): number {
+function lengthOfCommonSuffix<T>(before: ItemList<T>, after: ItemList<T>, beforeStartIndex: number, afterStartIndex: number, updateCost: UpdateCostFunc<T>): number {
   let beforeIndex = before.length - 1;
   let afterIndex = after.length - 1;
   let count = 0;
   while (beforeIndex >= beforeStartIndex && afterIndex >= afterStartIndex) {
-    if (comparer(before.item(beforeIndex)!, after.item(afterIndex)!) !== ComparisonResult.Same) {
+    if (updateCost(before.item(beforeIndex)!, after.item(afterIndex)!) !== UpdateCost.None) {
       break;
     }
     beforeIndex--;
@@ -49,7 +47,7 @@ function lengthOfCommonSuffix<T>(before: ItemList<T>, after: ItemList<T>, before
   return count;
 }
 
-function computeOperations<T>(before: ItemList<T>, after: ItemList<T>, comparer: Comparer<T>): Operation[][] {
+function computeOperations<T>(before: ItemList<T>, after: ItemList<T>, updateCost: UpdateCostFunc<T>): Operation[][] {
   // Initialize matrices
   const costs: number[][] = [];
   const operations: Operation[][] = [];
@@ -70,25 +68,25 @@ function computeOperations<T>(before: ItemList<T>, after: ItemList<T>, comparer:
 
   for (let beforeIndex = 1; beforeIndex <= beforeLength; beforeIndex++) {
     for (let afterIndex = 1; afterIndex <= afterLength; afterIndex++) {
-      const comparisonResult = comparer(before.item(beforeIndex - 1)!, after.item(afterIndex - 1)!);
+      const comparisonResult = updateCost(before.item(beforeIndex - 1)!, after.item(afterIndex - 1)!);
       const costAsDelete = costs[beforeIndex - 1][afterIndex] + 1;
       const costAsInsert = costs[beforeIndex][afterIndex - 1] + 1;
       let costAsRetain: number;
       switch (comparisonResult) {
-        case ComparisonResult.Same:
+        case UpdateCost.None:
           costAsRetain = costs[beforeIndex - 1][afterIndex - 1];
           break;
-        case ComparisonResult.CanSubstitute:
+        case UpdateCost.Some:
           costAsRetain = costs[beforeIndex - 1][afterIndex - 1] + 1;
           break;
-        case ComparisonResult.CannotSubstitute:
+        case UpdateCost.Infinite:
           costAsRetain = Number.MAX_VALUE;
           break;
       }
 
       if (costAsRetain < costAsInsert && costAsRetain < costAsDelete) {
         costs[beforeIndex][afterIndex] = costAsRetain;
-        operations[beforeIndex][afterIndex] = comparisonResult === ComparisonResult.Same ? Operation.Keep : Operation.Substitute;
+        operations[beforeIndex][afterIndex] = comparisonResult === UpdateCost.None ? Operation.Keep : Operation.Update;
       } else if (costAsInsert < costAsDelete) {
         costs[beforeIndex][afterIndex] = costAsInsert;
         operations[beforeIndex][afterIndex] = Operation.Insert;
@@ -119,7 +117,7 @@ function toEditScript(operations: Operation[][]) {
 
     switch (operation) {
       case Operation.Keep:
-      case Operation.Substitute:
+      case Operation.Update:
         beforeIndex--;
         afterIndex--;
         break;
@@ -135,15 +133,19 @@ function toEditScript(operations: Operation[][]) {
   return result;
 }
 
-export enum ComparisonResult {
-  Same,             // Treated like a substitution cost of zero
-  CanSubstitute,    // Treated like a substitution cost of 1
-  CannotSubstitute, // Treated like a substitution cost of infinity
+// Levenshtein naturally deals with these three specific cost values, so they are the only ones allowed.
+// If we allowed arbitrary cost numbers, things quickly get very unpredictable.
+export enum UpdateCost {
+  None,     // Implemented as cost 0
+  Some,     // Implemented as cost 1 (same as a single insertion or deletion)
+  Infinite, // Implemented as cost infinity (so we would always choose to insert+delete instead of update)
 }
+
+type UpdateCostFunc<T> = (a: T, b: T) => UpdateCost;
 
 export enum Operation {
   Keep = 'keep',
-  Substitute = 'substitute',
+  Update = 'update',
   Insert = 'insert',
   Delete = 'delete',
 }

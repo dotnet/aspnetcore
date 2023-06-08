@@ -1,4 +1,4 @@
-import { ComparisonResult, ItemList, Operation, computeEditScript } from './EditScript';
+import { UpdateCost, ItemList, Operation, computeEditScript } from './EditScript';
 
 export function synchronizeDomContent(destination: CommentBoundedRange, source: DocumentFragment) {
   const destinationParent = destination.startExclusive.parentNode!;
@@ -31,7 +31,7 @@ export function synchronizeDomContent(destination: CommentBoundedRange, source: 
           nextDestinationNode = nextDestinationNode.nextSibling!;
           nextSourceNode = nextSourceNode!.nextSibling;
           break;
-        case Operation.Substitute:
+        case Operation.Update:
           treatAsSubstitution(nextDestinationNode, nextSourceNode!);
           nextDestinationNode = nextDestinationNode.nextSibling!;
           nextSourceNode = nextSourceNode!.nextSibling;
@@ -87,31 +87,25 @@ function treatAsSubstitution(destination: Node, source: Node) {
   }
 }
 
-function domNodeComparer(a: Node, b: Node): ComparisonResult {
+function domNodeComparer(a: Node, b: Node): UpdateCost {
   if (a.nodeType !== b.nodeType) {
-    return ComparisonResult.CannotSubstitute;
+    return UpdateCost.Infinite;
   }
-
-  // The meainings of the comparison results differ for different node types, because the "update" logic will vary
-  // by node type, and is optimizing for different things.
-  //  - For text nodes or comment nodes,
-  //    - "Same" is used to mean "deeply identical so update can be skipped completely", determined by comparing textContent
-  //    - "CanSubstitute" is the only other outcome, because we can always update the textContent
-  //  - For elements, it's a bit different
-  //    - "Same" is used to mean "same element type", even though the update logic still has to deal with attributes and descendants
-  //      It's desirable to use "Same" for this case because the edit distance calculation treats this as a candidate for inclusion
-  //      in the common prefix/suffix set, making the algorithm dramatically cheaper for unchanged DOMs
-  //    - "CannotSubstitute" is the only other outcome, since we never want to treat distinct element types as being the same element
 
   switch (a.nodeType) {
     case Node.TEXT_NODE:
     case Node.COMMENT_NODE:
-      return a.textContent === b.textContent ? ComparisonResult.Same : ComparisonResult.CanSubstitute;
+      // We're willing to update text and comment nodes in place, but treat the update operation as being
+      // as costly as an insertion or deletion
+      return a.textContent === b.textContent ? UpdateCost.None : UpdateCost.Some;
     case Node.ELEMENT_NODE:
-      return (a as Element).tagName === (b as Element).tagName ? ComparisonResult.Same : ComparisonResult.CannotSubstitute;
+      // For elements, we're only doing a shallow comparison and don't know if attributes/descendants are different.
+      // We never 'update' one element type into another. We regard the update cost for same-type elements as zero because
+      // then the 'find common prefix/suffix' optimization can include elements in those prefixes/suffixes.
+      return (a as Element).tagName === (b as Element).tagName ? UpdateCost.None : UpdateCost.Infinite;
     default:
       // For anything else we know nothing, so the risk-averse choice is to say we can't retain or update the old value
-      return ComparisonResult.CannotSubstitute;
+      return UpdateCost.Infinite;
   }
 }
 
