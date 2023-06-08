@@ -45,19 +45,22 @@ internal sealed class NamedPipeTransportFactory : IConnectionListenerFactory, IC
             throw new NotSupportedException($@"Server name '{namedPipeEndPoint.ServerName}' is invalid. The server name must be ""{LocalComputerServerName}"".");
         }
 
-        // Creating a named pipe server with an name isn't exclusive. Create a mutex with the pipe name to prevent multiple endpoints
-        // accidently sharing the same pipe name. Will detect across Kestrel processes.
-        // Note that this doesn't prevent other applications from using the pipe name.
-        var mutexName = "Kestrel-NamedPipe-" + namedPipeEndPoint.PipeName;
-        var mutex = new Mutex(false, mutexName, out var createdNew);
-        if (!createdNew)
-        {
-            mutex.Dispose();
-            throw new AddressInUseException($"Named pipe '{namedPipeEndPoint.PipeName}' is already in use by Kestrel.");
-        }
+        var listener = new NamedPipeConnectionListener(namedPipeEndPoint, _options, _loggerFactory, _objectPoolProvider);
 
-        var listener = new NamedPipeConnectionListener(namedPipeEndPoint, _options, _loggerFactory, _objectPoolProvider, mutex);
-        listener.Start();
+        // Start the listener and create NamedPipeServerStream instances immediately.
+        // The first server stream is created with the FirstPipeInstance flag. The FirstPipeInstance flag ensures
+        // that no other apps have a running pipe with the configured name. This check is important because:
+        // 1. Some settings, such as ACL, are chosen by the first pipe to start with a given name.
+        // 2. It's easy to run two Kestrel app instances. Want to avoid two apps listening on the same pipe and creating confusion.
+        //    The second launched app instance should immediately fail with an error message, just like port binding conflicts.
+        try
+        {
+            listener.Start();
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            throw new AddressInUseException($"Named pipe '{namedPipeEndPoint.PipeName}' is already in use.", ex);
+        }
 
         return new ValueTask<IConnectionListener>(listener);
     }

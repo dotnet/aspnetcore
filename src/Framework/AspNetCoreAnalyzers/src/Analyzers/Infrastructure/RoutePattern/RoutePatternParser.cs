@@ -373,7 +373,7 @@ internal partial struct RoutePatternParser
         }
     }
 
-    private void CollectDiagnostics(RoutePatternNode node, HashSet<EmbeddedDiagnostic> seenDiagnostics, IList<EmbeddedDiagnostic> diagnostics)
+    private static void CollectDiagnostics(RoutePatternNode node, HashSet<EmbeddedDiagnostic> seenDiagnostics, IList<EmbeddedDiagnostic> diagnostics)
     {
         foreach (var child in node)
         {

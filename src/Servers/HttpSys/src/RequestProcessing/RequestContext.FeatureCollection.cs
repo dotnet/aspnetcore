@@ -587,6 +587,8 @@ internal partial class RequestContext :
 
     int ITlsHandshakeFeature.KeyExchangeStrength => Request.KeyExchangeStrength;
 
+    string? ITlsHandshakeFeature.HostName => Request.SniHostName;
+
     IReadOnlyDictionary<int, ReadOnlyMemory<byte>> IHttpSysRequestInfoFeature.RequestInfo => Request.RequestInfo;
 
     ReadOnlySpan<long> IHttpSysRequestTimingFeature.Timestamps => Request.RequestTimestamps;

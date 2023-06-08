@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
+using Microsoft.AspNetCore.Components.Binding;
 
 namespace Microsoft.AspNetCore.Components.Forms;
 
@@ -205,7 +206,9 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
             {
                 if (_formattedValueExpression is null && ValueExpression is not null)
                 {
-                    _formattedValueExpression = ExpressionFormatter.FormatLambda(ValueExpression);
+                    _formattedValueExpression = ExpressionFormatter.FormatLambda(
+                        ValueExpression,
+                        EditContext.GetConvertibleValues());
                 }
 
                 return _formattedValueExpression ?? string.Empty;

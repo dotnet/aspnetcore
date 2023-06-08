@@ -1,23 +1,22 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
+using System.Net.Http;
+using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
+using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using OpenQA.Selenium;
 using TestServer;
 using Xunit.Abstractions;
-using OpenQA.Selenium;
-using System.Net.Http;
-using static System.Net.Mime.MediaTypeNames;
-using Components.TestServer.RazorComponents;
 
 namespace Microsoft.AspNetCore.Components.E2ETests.ServerRenderingTests.FormHandlingTests;
 
-public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<FormWithoutBindingContextApp>>>
+public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<FormWithDefaultContextApp>>>
 {
     public FormWithParentBindingContextTest(
         BrowserFixture browserFixture,
-        BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<FormWithoutBindingContextApp>> serverFixture,
+        BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<FormWithDefaultContextApp>> serverFixture,
         ITestOutputHelper output)
         : base(browserFixture, serverFixture, output)
     {
@@ -52,6 +51,21 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     }
 
     [Fact]
+    public void CanBindParameterToTheDefaultForm()
+    {
+        var dispatchToForm = new DispatchToForm(this)
+        {
+            Url = "forms/default-form-bound-parameter",
+            FormCssSelector = "form",
+            ExpectedActionValue = null,
+            InputFieldId = "value",
+            InputFieldCssSelector = "input[name=value]",
+            InputFieldValue = "stranger",
+        };
+        DispatchToFormCore(dispatchToForm);
+    }
+
+    [Fact]
     public void CanReadFormValuesDuringOnInitialized()
     {
         var dispatchToForm = new DispatchToForm(this)
@@ -77,6 +91,21 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     }
 
     [Fact]
+    public void CanBindFormValueFromNamedFormWithBody()
+    {
+        var dispatchToForm = new DispatchToForm(this)
+        {
+            Url = "forms/named-form-bound-parameter",
+            FormCssSelector = "form[name=named-form-handler]",
+            ExpectedActionValue = "forms/named-form-bound-parameter?handler=named-form-handler",
+            InputFieldId = "value",
+            InputFieldCssSelector = "input[name=value]",
+            InputFieldValue = "stranger",
+        };
+        DispatchToFormCore(dispatchToForm);
+    }
+
+    [Fact]
     public void CanDispatchToNamedFormInNestedContext()
     {
         var dispatchToForm = new DispatchToForm(this)
@@ -84,6 +113,21 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
             Url = "forms/nested-named-form",
             FormCssSelector = "form[name=\"parent-context.named-form-handler\"]",
             ExpectedActionValue = "forms/nested-named-form?handler=parent-context.named-form-handler",
+        };
+        DispatchToFormCore(dispatchToForm);
+    }
+
+    [Fact]
+    public void CanBindFormValueFromNestedNamedFormWithBody()
+    {
+        var dispatchToForm = new DispatchToForm(this)
+        {
+            Url = "forms/nested-named-form-bound-parameter",
+            FormCssSelector = """form[name="parent-context.named-form-handler"]""",
+            ExpectedActionValue = "forms/nested-named-form-bound-parameter?handler=parent-context.named-form-handler",
+            InputFieldId = "value",
+            InputFieldCssSelector = "input[name=value]",
+            InputFieldValue = "stranger",
         };
         DispatchToFormCore(dispatchToForm);
     }
@@ -251,7 +295,11 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
 
         if (dispatch.InputFieldValue != null)
         {
-            Browser.Exists(By.Id(dispatch.InputFieldId)).SendKeys(dispatch.InputFieldValue);
+            var criteria = dispatch.InputFieldCssSelector != null ?
+                By.CssSelector(dispatch.InputFieldCssSelector) :
+                By.Id(dispatch.InputFieldId);
+
+            Browser.Exists(criteria).SendKeys(dispatch.InputFieldValue);
         }
 
         Browser.Click(By.Id(dispatch.SubmitButtonId));
@@ -284,6 +332,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
 
         public string SubmitButtonId { get; internal set; } = "send";
         public string InputFieldId { get; internal set; } = "firstName";
+        public string InputFieldCssSelector { get; internal set; } = null;
     }
 
     private void GoTo(string relativePath)

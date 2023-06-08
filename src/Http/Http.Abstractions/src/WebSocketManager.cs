@@ -50,8 +50,8 @@ public abstract class WebSocketManager
     {
         return IsWebSocketRequest switch
         {
-            false => "IsWebSocketRequest = False",
-            true => $"IsWebSocketRequest = True, RequestedProtocols = {string.Join(",", WebSocketRequestedProtocols)}",
+            false => "IsWebSocketRequest = false",
+            true => $"IsWebSocketRequest = true, RequestedProtocols = {string.Join(",", WebSocketRequestedProtocols)}",
         };
     }
 

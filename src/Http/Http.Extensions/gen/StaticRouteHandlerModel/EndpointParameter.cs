@@ -10,6 +10,7 @@ using System.Text;
 using Microsoft.AspNetCore.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
+using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel.Emitters;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using WellKnownType = Microsoft.AspNetCore.App.Analyzers.Infrastructure.WellKnownTypeData.WellKnownType;
@@ -106,7 +107,9 @@ internal class EndpointParameter
             }
             else
             {
-                AssigningCode = $"(string?)httpContext.Request.Form[{SymbolDisplay.FormatLiteral(LookupName, true)}]";
+                AssigningCode = !IsArray
+                    ? $"(string?)httpContext.Request.Form[{SymbolDisplay.FormatLiteral(LookupName, true)}]"
+                    : $"httpContext.Request.Form[{SymbolDisplay.FormatLiteral(LookupName, true)}].ToArray()";
                 IsParsable = TryGetParsability(Type, wellKnownTypes, out var parsingBlockEmitter);
                 ParsingBlockEmitter = parsingBlockEmitter;
             }
@@ -190,12 +193,13 @@ internal class EndpointParameter
             LookupName = symbol.Name;
             AssigningCode = "httpContext.Request.Form";
         }
-        else if (HasBindAsync(Type, wellKnownTypes, out var bindMethod))
+        else if (HasBindAsync(Type, wellKnownTypes, out var bindMethod, out var bindMethodSymbol))
         {
             endpoint.IsAwaitable = true;
             endpoint.EmitterContext.RequiresPropertyAsParameterInfo = IsProperty && bindMethod is BindabilityMethod.BindAsyncWithParameter or BindabilityMethod.IBindableFromHttpContext;
             Source = EndpointParameterSource.BindAsync;
             BindMethod = bindMethod;
+            BindableMethodSymbol = bindMethodSymbol;
         }
         else if (Type.SpecialType == SpecialType.System_String)
         {
@@ -264,11 +268,12 @@ internal class EndpointParameter
     public bool IsStringValues { get; set; }
 
     public BindabilityMethod? BindMethod { get; set; }
+    public IMethodSymbol? BindableMethodSymbol { get; set; }
 
-    private static bool HasBindAsync(ITypeSymbol typeSymbol, WellKnownTypes wellKnownTypes, [NotNullWhen(true)] out BindabilityMethod? bindMethod)
+    private static bool HasBindAsync(ITypeSymbol typeSymbol, WellKnownTypes wellKnownTypes, [NotNullWhen(true)] out BindabilityMethod? bindMethod, [NotNullWhen(true)] out IMethodSymbol? bindMethodSymbol)
     {
         var parameterType = typeSymbol.UnwrapTypeSymbol(unwrapArray: true, unwrapNullable: true);
-        return ParsabilityHelper.GetBindability(parameterType, wellKnownTypes, out bindMethod) == Bindability.Bindable;
+        return ParsabilityHelper.GetBindability(parameterType, wellKnownTypes, out bindMethod, out bindMethodSymbol) == Bindability.Bindable;
     }
 
     private static bool TryGetArrayElementType(ITypeSymbol type, [NotNullWhen(true)]out ITypeSymbol elementType)
@@ -343,7 +348,7 @@ internal class EndpointParameter
         {
             parsingBlockEmitter = (writer, inputArgument, outputArgument) =>
             {
-                writer.WriteLine($"""{typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)} {outputArgument} = default;""");
+                writer.WriteLine($"""{typeSymbol.ToDisplayString(EmitterConstants.DisplayFormat)} {outputArgument} = default;""");
                 writer.WriteLine($$"""if ({{preferredTryParseInvocation(inputArgument, $"{inputArgument}_parsed_non_nullable")}})""");
                 writer.StartBlock();
                 writer.WriteLine($$"""{{outputArgument}} = {{$"{inputArgument}_parsed_non_nullable"}};""");

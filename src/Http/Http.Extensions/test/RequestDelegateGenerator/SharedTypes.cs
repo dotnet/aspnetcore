@@ -46,7 +46,14 @@ public class CustomMetadataEmitter : IEndpointMetadataProvider, IEndpointParamet
     }
 }
 
-public class Todo
+public interface ITodo
+{
+    public int Id { get; }
+    public string? Name { get; }
+    public bool IsComplete { get; }
+}
+
+public class Todo : ITodo
 {
     public int Id { get; set; }
     public string? Name { get; set; } = "Todo";
@@ -109,14 +116,6 @@ public enum TodoStatus
     Done,
     InProgress,
     NotDone
-}
-
-public interface ITodo
-{
-    public int Id { get; }
-    public string? Name { get; }
-    public bool IsComplete { get; }
-    public TodoStatus Status { get; }
 }
 
 public class PrecedenceCheckTodo
@@ -184,9 +183,9 @@ public class ParsableTodo : IParsable<ParsableTodo>
         {
             result = new ParsableTodo
             {
-            Id = 1,
-            Name = "Knit kitten mittens.",
-            IsComplete = false
+                Id = 1,
+                Name = "Knit kitten mittens.",
+                IsComplete = false
             };
             return true;
         }
@@ -198,6 +197,19 @@ public class ParsableTodo : IParsable<ParsableTodo>
     }
 }
 
+public class CustomTodo : Todo
+{
+    public static async ValueTask<CustomTodo?> BindAsync(HttpContext context, ParameterInfo parameter)
+    {
+        Assert.Equal(typeof(CustomTodo), parameter.ParameterType);
+        Assert.Equal("customTodo", parameter.Name);
+
+        var body = await context.Request.ReadFromJsonAsync<CustomTodo>();
+        context.Request.Body.Position = 0;
+        return body;
+    }
+}
+
 public record MyBindAsyncRecord(Uri Uri)
 {
     public static ValueTask<MyBindAsyncRecord?> BindAsync(HttpContext context, ParameterInfo parameter)
@@ -206,8 +218,7 @@ public record MyBindAsyncRecord(Uri Uri)
         {
             throw new UnreachableException($"Unexpected parameter type: {parameter.ParameterType}");
         }
-        if (parameter.Name?.StartsWith("myBindAsyncParam", StringComparison.OrdinalIgnoreCase
-        ) == false)
+        if (parameter.Name?.StartsWith("myBindAsyncParam", StringComparison.OrdinalIgnoreCase) == false)
         {
             throw new UnreachableException("Unexpected parameter name");
         }
@@ -954,5 +965,45 @@ public class Status410Result : IResult
         httpContext.Response.StatusCode = StatusCodes.Status410Gone;
         httpContext.Response.WriteAsync("Already gone!");
         return Task.CompletedTask;
+    }
+}
+
+public class TodoJsonConverter : JsonConverter<ITodo>
+{
+    public override ITodo Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        var todo = new Todo();
+        while (reader.Read())
+        {
+            if (reader.TokenType == JsonTokenType.EndObject)
+            {
+                break;
+            }
+
+            var property = reader.GetString()!;
+            reader.Read();
+
+            switch (property.ToLowerInvariant())
+            {
+                case "id":
+                    todo.Id = reader.GetInt32();
+                    break;
+                case "name":
+                    todo.Name = reader.GetString();
+                    break;
+                case "iscomplete":
+                    todo.IsComplete = reader.GetBoolean();
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        return todo;
+    }
+
+    public override void Write(Utf8JsonWriter writer, ITodo value, JsonSerializerOptions options)
+    {
+        throw new NotImplementedException();
     }
 }

@@ -338,7 +338,9 @@ internal static class StaticRouteHandlerModelEmitter
             codeWriter.WriteLine(endpoint.Response?.IsAwaitable == true
                 ? $"await handler({endpoint.EmitFilteredArgumentList()});"
                 : $"handler({endpoint.EmitFilteredArgumentList()});");
-            codeWriter.WriteLine("return ValueTask.FromResult<object?>(Results.Empty);");
+            codeWriter.WriteLine(endpoint.Response?.IsAwaitable == true
+                ? "return (object?)Results.Empty;"
+                : "return ValueTask.FromResult<object?>(Results.Empty);");
         }
         else if (endpoint.Response?.IsAwaitable == true)
         {

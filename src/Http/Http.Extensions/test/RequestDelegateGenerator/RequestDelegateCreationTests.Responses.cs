@@ -357,4 +357,88 @@ app.MapPost("/", () => new Status410Result());
 
         await VerifyResponseBodyAsync(httpContext, "Already gone!", StatusCodes.Status410Gone);
     }
+
+    public static IEnumerable<object[]> ComplexResult
+    {
+        get
+        {
+            var testAction = """
+app.MapPost("/", () => new Todo() { Name = "Write even more tests!" });
+""";
+
+            var taskTestAction = """
+app.MapPost("/", () => Task.FromResult(new Todo() { Name = "Write even more tests!" }));
+""";
+
+            var valueTaskTestAction = """
+app.MapPost("/", () => ValueTask.FromResult(new Todo() { Name = "Write even more tests!" }));
+""";
+
+            var staticTestAction = """
+app.MapPost("/", StaticTestAction);
+static Todo StaticTestAction() => new Todo() { Name = "Write even more tests!" };
+""";
+
+            var staticTaskTestAction = """
+app.MapPost("/", StaticTaskTestAction);
+static Task<Todo> StaticTaskTestAction() => Task.FromResult(new Todo() { Name = "Write even more tests!" });
+""";
+
+            var staticValueTaskTestAction = """
+app.MapPost("/", StaticValueTaskTestAction);
+static ValueTask<Todo> StaticValueTaskTestAction() => ValueTask.FromResult(new Todo() { Name = "Write even more tests!" });
+""";
+
+            return new List<object[]>
+                {
+                    new object[] { testAction },
+                    new object[] { taskTestAction },
+                    new object[] { valueTaskTestAction },
+                    new object[] { staticTestAction },
+                    new object[] { staticTaskTestAction },
+                    new object[] { staticValueTaskTestAction }
+                };
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(ComplexResult))]
+    public async Task RequestDelegateWritesComplexReturnValueAsJsonResponseBody(string source)
+    {
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+
+        await endpoint.RequestDelegate(httpContext);
+
+        await VerifyResponseJsonBodyAsync<Todo>(httpContext, (todo) =>
+        {
+            Assert.NotNull(todo);
+            Assert.Equal("Write even more tests!", todo!.Name);
+        });
+    }
+
+    [Fact]
+    public async Task RequestDelegateWritesComplexStructReturnValueAsJsonResponseBody()
+    {
+        var source = """
+app.MapPost("/", () => new TodoStruct(42, "Bob", true, TodoStatus.Done));
+""";
+
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+
+        await endpoint.RequestDelegate(httpContext);
+
+        await VerifyResponseJsonBodyAsync<TodoStruct>(httpContext, (todo) =>
+        {
+            Assert.Equal(42, todo.Id);
+            Assert.Equal("Bob", todo.Name);
+            Assert.True(todo.IsComplete);
+            Assert.Equal(TodoStatus.Done, todo.Status);
+        });
+    }
 }
