@@ -1,9 +1,9 @@
-import { ComparisonResult, ItemList, Operation, compareArrays } from './EditDistance';
+import { ComparisonResult, ItemList, Operation, computeEditScript } from './EditScript';
 
 export function synchronizeDomContent(destination: CommentBoundedRange, source: DocumentFragment) {
   const destinationParent = destination.startExclusive.parentNode!;
 
-  const editScript = compareArrays(
+  const editScript = computeEditScript(
     new SiblingSubsetNodeList(destination),
     source.childNodes,
     domNodeComparer);

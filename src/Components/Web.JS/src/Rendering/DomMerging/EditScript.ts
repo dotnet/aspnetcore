@@ -1,11 +1,11 @@
 type Comparer<T> = (a: T, b: T) => ComparisonResult;
 
-export interface ArrayComparisonResult<T> {
+export interface EditScript {
   skipCount: number,
   edits?: Operation[],
 }
 
-export function compareArrays<T>(before: ItemList<T>, after: ItemList<T>, comparer: Comparer<T>): ArrayComparisonResult<T> {
+export function computeEditScript<T>(before: ItemList<T>, after: ItemList<T>, comparer: Comparer<T>): EditScript {
   // In common cases where nothing has changed or only one thing changed, we can reduce the task dramatically
   // by identifying the common prefix/suffix, and only doing Levenshtein on the subset in between. The end results can entirely
   // ignore any trailing identical entries.
