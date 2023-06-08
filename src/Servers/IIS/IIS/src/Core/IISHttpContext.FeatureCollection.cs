@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
+using Microsoft.AspNetCore.Server.HttpSys;
 using Microsoft.AspNetCore.Server.IIS.Core.IO;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
@@ -31,7 +32,9 @@ internal partial class IISHttpContext : IFeatureCollection,
                                         IHttpMaxRequestBodySizeFeature,
                                         IHttpResponseTrailersFeature,
                                         IHttpResetFeature,
-                                        IConnectionLifetimeNotificationFeature
+                                        IConnectionLifetimeNotificationFeature,
+                                        IHttpSysRequestInfoFeature,
+                                        IHttpSysRequestTimingFeature
 {
     private int _featureRevision;
     private string? _httpProtocolVersion;
