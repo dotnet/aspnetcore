@@ -24,6 +24,8 @@ internal sealed class HostingApplicationDiagnostics
     private const string DeprecatedDiagnosticsEndRequestKey = "Microsoft.AspNetCore.Hosting.EndRequest";
     private const string DiagnosticsUnhandledExceptionKey = "Microsoft.AspNetCore.Hosting.UnhandledException";
 
+    private const string RequestUnhandledKey = "__RequestUnhandled";
+
     private readonly ActivitySource _activitySource;
     private readonly DiagnosticListener _diagnosticListener;
     private readonly DistributedContextPropagator _propagator;
@@ -121,11 +123,15 @@ internal sealed class HostingApplicationDiagnostics
         var startTimestamp = context.StartTimestamp;
         long currentTimestamp = 0;
 
-        // If startTimestamp was 0, then Information logging wasn't enabled at for this request (and calculated time will be wildly wrong)
-        // Is used as proxy to reduce calls to virtual: _logger.IsEnabled(LogLevel.Information)
+        // startTimestamp has a value if:
+        // - Information logging was enabled at for this request (and calculated time will be wildly wrong)
+        //   Is used as proxy to reduce calls to virtual: _logger.IsEnabled(LogLevel.Information)
+        // - EventLog or metrics was enabled
         if (startTimestamp != 0)
         {
             currentTimestamp = Stopwatch.GetTimestamp();
+            var reachedPipelineEnd = httpContext.Items.ContainsKey(RequestUnhandledKey);
+
             // Non-inline
             LogRequestFinished(context, startTimestamp, currentTimestamp);
 
@@ -146,6 +152,16 @@ internal sealed class HostingApplicationDiagnostics
                     customTags,
                     startTimestamp,
                     currentTimestamp);
+
+                if (reachedPipelineEnd)
+                {
+                    _metrics.UnhandledRequest();
+                }
+            }
+
+            if (reachedPipelineEnd)
+            {
+                LogRequestUnhandled(context);
             }
         }
 
@@ -245,6 +261,17 @@ internal sealed class HostingApplicationDiagnostics
                 exception: null,
                 formatter: HostingRequestFinishedLog.Callback);
         }
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void LogRequestUnhandled(HostingApplication.Context context)
+    {
+        _logger.Log(
+            logLevel: LogLevel.Information,
+            eventId: LoggerEventIds.RequestUnhandled,
+            state: new HostingRequestUnhandledLog(context.HttpContext!),
+            exception: null,
+            formatter: HostingRequestUnhandledLog.Callback);
     }
 
     [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026",

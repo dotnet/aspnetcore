@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Moq;
 
 namespace Microsoft.AspNetCore.Hosting.Tests;
@@ -670,6 +671,39 @@ public class HostingApplicationDiagnosticsTests
 
         hostingApplication.CreateContext(features);
         Assert.Equal("0123456789abcdef", parentSpanId);
+    }
+
+    [Fact]
+    public void RequestLogs()
+    {
+        var testSink = new TestSink();
+        var loggerFactory = new TestLoggerFactory(testSink, enabled: true);
+
+        var hostingApplication = CreateApplication(out var features, logger: loggerFactory.CreateLogger("Test"), configure: c =>
+        {
+            c.Request.Protocol = "1.1";
+            c.Request.Scheme = "http";
+            c.Request.Method = "POST";
+            c.Request.Host = new HostString("localhost");
+            c.Request.Path = "/hello";
+            c.Request.ContentType = "text/plain";
+            c.Request.ContentLength = 1024;
+        });
+
+        var context = hostingApplication.CreateContext(features);
+
+        context.HttpContext.Items["__RequestUnhandled"] = true;
+        context.HttpContext.Response.StatusCode = 404;
+
+        hostingApplication.DisposeContext(context, exception: null);
+
+        var startLog = testSink.Writes.Single(w => w.EventId == LoggerEventIds.RequestStarting);
+        var unhandedLog = testSink.Writes.Single(w => w.EventId == LoggerEventIds.RequestUnhandled);
+        var endLog = testSink.Writes.Single(w => w.EventId == LoggerEventIds.RequestFinished);
+
+        Assert.Equal("Request starting 1.1 POST http://localhost/hello - text/plain 1024", startLog.Message);
+        Assert.Equal("Request reached the end of the app pipeline without being handled by application code. Request path: POST http://localhost/hello, Response status code: 404", unhandedLog.Message);        
+        Assert.StartsWith("Request finished 1.1 POST http://localhost/hello - 404", endLog.Message);
     }
 
     private static void AssertProperty<T>(object o, string name)

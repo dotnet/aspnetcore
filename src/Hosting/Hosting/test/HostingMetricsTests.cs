@@ -27,6 +27,7 @@ public class HostingMetricsTests
 
         using var requestDurationRecorder = new InstrumentRecorder<double>(meterFactory, HostingMetrics.MeterName, "request-duration");
         using var currentRequestsRecorder = new InstrumentRecorder<long>(meterFactory, HostingMetrics.MeterName, "current-requests");
+        using var unhandledRequestsRecorder = new InstrumentRecorder<long>(meterFactory, HostingMetrics.MeterName, "unhandled-requests");
 
         // Act/Assert
         Assert.Equal(HostingMetrics.MeterName, meter.Name);
@@ -62,7 +63,8 @@ public class HostingMetricsTests
         // Request 3
         httpContext.Request.Protocol = HttpProtocol.Http3;
         var context3 = hostingApplication.CreateContext(httpContext.Features);
-        context3.HttpContext.Response.StatusCode = StatusCodes.Status200OK;
+        context3.HttpContext.Items["__RequestUnhandled"] = true;
+        context3.HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
 
         Assert.Collection(currentRequestsRecorder.GetMeasurements(),
             m => Assert.Equal(1, m.Value),
@@ -86,7 +88,9 @@ public class HostingMetricsTests
         Assert.Collection(requestDurationRecorder.GetMeasurements(),
             m => AssertRequestDuration(m, HttpProtocol.Http11, StatusCodes.Status200OK),
             m => AssertRequestDuration(m, HttpProtocol.Http2, StatusCodes.Status500InternalServerError, exceptionName: "System.InvalidOperationException"),
-            m => AssertRequestDuration(m, HttpProtocol.Http3, StatusCodes.Status200OK));
+            m => AssertRequestDuration(m, HttpProtocol.Http3, StatusCodes.Status404NotFound));
+        Assert.Collection(unhandledRequestsRecorder.GetMeasurements(),
+            m => Assert.Equal(1, m.Value));
 
         static void AssertRequestDuration(Measurement<double> measurement, string protocol, int statusCode, string exceptionName = null)
         {
