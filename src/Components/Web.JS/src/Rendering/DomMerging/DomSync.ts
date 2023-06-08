@@ -31,6 +31,11 @@ export function synchronizeDomContent(destination: CommentBoundedRange, source: 
           nextDestinationNode = nextDestinationNode.nextSibling!;
           nextSourceNode = nextSourceNode!.nextSibling;
           break;
+        case Operation.Substitute:
+          treatAsSubstitution(nextDestinationNode, nextSourceNode!);
+          nextDestinationNode = nextDestinationNode.nextSibling!;
+          nextSourceNode = nextSourceNode!.nextSibling;
+          break;
         case Operation.Delete:
           const nodeToRemove = nextDestinationNode;
           nextDestinationNode = nodeToRemove.nextSibling!;
@@ -62,12 +67,52 @@ export function synchronizeDomContent(destination: CommentBoundedRange, source: 
 }
 
 function treatAsMatch(destination: Node, source: Node) {
-  throw new Error('Function not implemented.');
+  switch (destination.nodeType) {
+    case Node.TEXT_NODE:
+    case Node.COMMENT_NODE:
+      break;
+    default:
+      throw new Error(`Not implemented: matching nodes of type ${destination.nodeType}`);
+  }
+}
+
+function treatAsSubstitution(destination: Node, source: Node) {
+  switch (destination.nodeType) {
+    case Node.TEXT_NODE:
+    case Node.COMMENT_NODE:
+      (destination as Text).textContent = (source as Text).textContent;
+      break;
+    default:
+      throw new Error(`Not implemented: substituting nodes of type ${destination.nodeType}`);
+  }
 }
 
 function domNodeComparer(a: Node, b: Node): ComparisonResult {
-  // TODO
-  return ComparisonResult.CannotSubstitute;
+  if (a.nodeType !== b.nodeType) {
+    return ComparisonResult.CannotSubstitute;
+  }
+
+  // The meainings of the comparison results differ for different node types, because the "update" logic will vary
+  // by node type, and is optimizing for different things.
+  //  - For text nodes or comment nodes,
+  //    - "Same" is used to mean "deeply identical so update can be skipped completely", determined by comparing textContent
+  //    - "CanSubstitute" is the only other outcome, because we can always update the textContent
+  //  - For elements, it's a bit different
+  //    - "Same" is used to mean "same element type", even though the update logic still has to deal with attributes and descendants
+  //      It's desirable to use "Same" for this case because the edit distance calculation treats this as a candidate for inclusion
+  //      in the common prefix/suffix set, making the algorithm dramatically cheaper for unchanged DOMs
+  //    - "CannotSubstitute" is the only other outcome, since we never want to treat distinct element types as being the same element
+
+  switch (a.nodeType) {
+    case Node.TEXT_NODE:
+    case Node.COMMENT_NODE:
+      return a.textContent === b.textContent ? ComparisonResult.Same : ComparisonResult.CanSubstitute;
+    case Node.ELEMENT_NODE:
+      return (a as Element).tagName === (b as Element).tagName ? ComparisonResult.Same : ComparisonResult.CannotSubstitute;
+    default:
+      // For anything else we know nothing, so the risk-averse choice is to say we can't retain or update the old value
+      return ComparisonResult.CannotSubstitute;
+  }
 }
 
 export interface CommentBoundedRange {

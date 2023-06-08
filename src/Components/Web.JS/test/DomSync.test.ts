@@ -35,6 +35,25 @@ describe('DomSync', () => {
     // Assert
     expect(destination.startExclusive.nextSibling).not.toBe(destination.endExclusive);
   });
+
+  test('should retain text and comment nodes, whether or not the text must be updated', () => {
+    // Arrange
+    const destination = makeExistingContent(`First<!--comment1-->Second<!--comment2-->Third`);
+    const newContent = makeNewContent(`First edited<!--comment1 edited-->Second<!--comment2-->Third edited`);
+    const originalDestinationNodes = toNodeArray(destination);
+
+    // Act
+    synchronizeDomContent(destination, newContent);
+    const newDestinationNodes = toNodeArray(destination);
+
+    // Assert
+    assertSameContentsByIdentity(newDestinationNodes, originalDestinationNodes);
+    expect(newDestinationNodes[0].textContent).toBe('First edited');
+    expect(newDestinationNodes[1].textContent).toBe('comment1 edited');
+    expect(newDestinationNodes[2].textContent).toBe('Second');
+    expect(newDestinationNodes[3].textContent).toBe('comment2');
+    expect(newDestinationNodes[4].textContent).toBe('Third edited');
+  });
 });
 
 function makeExistingContent(html: string): CommentBoundedRange {
@@ -64,4 +83,25 @@ function makeNewContent(html: string): DocumentFragment {
   const template = document.createElement('template');
   template.innerHTML = html;
   return template.content;
+}
+
+function toNodeArray(range: CommentBoundedRange): Node[] {
+  const result: Node[] = [];
+  let next = range.startExclusive.nextSibling!;
+  while (next !== range.endExclusive) {
+    result.push(next);
+    next = next.nextSibling!;
+  }
+
+  return result;
+}
+
+function assertSameContentsByIdentity<T>(actual: T[], expected: T[]) {
+  if (actual.length !== expected.length) {
+    throw new Error(`Expected ${actual} to have length ${expected.length}, but found length ${actual.length}`);
+  }
+
+  for (let i = 0; i < actual.length; i++) {
+    expect(actual[i]).toBe(expected[i]);
+  }
 }
