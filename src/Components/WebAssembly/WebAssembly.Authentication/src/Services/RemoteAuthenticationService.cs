@@ -255,4 +255,4 @@ internal class RemoteAuthenticationServiceJavaScriptLoggingOptions
 }
 
 // Internal for testing purposes
-internal record struct InternalAccessTokenResult([property: JsonConverter(typeof(JsonStringEnumConverter))] AccessTokenResultStatus Status, AccessToken Token);
+internal record struct InternalAccessTokenResult([property: JsonConverter(typeof(JsonStringEnumConverter<AccessTokenResultStatus>))] AccessTokenResultStatus Status, AccessToken Token);
