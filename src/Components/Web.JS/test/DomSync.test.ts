@@ -20,6 +20,20 @@ describe('DomSync', () => {
   });
 
   test('should insert everything if old content is empty', () => {
+    // Arrange
+    const destination = makeExistingContent(``);
+    const newContent = makeNewContent(`
+      <elem a=1><child>Hello</child></elem>
+      Text node
+      <!-- comment node -->`);
+
+    expect(destination.startExclusive.nextSibling).toBe(destination.endExclusive);
+
+    // Act
+    synchronizeDomContent(destination, newContent);
+
+    // Assert
+    expect(destination.startExclusive.nextSibling).not.toBe(destination.endExclusive);
   });
 });
 

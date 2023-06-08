@@ -33,8 +33,13 @@ export function synchronizeDomContent(destination: CommentBoundedRange, source: 
           break;
         case Operation.Delete:
           const nodeToRemove = nextDestinationNode;
-          nextDestinationNode = nextDestinationNode.nextSibling!;
+          nextDestinationNode = nodeToRemove.nextSibling!;
           destinationParent.removeChild(nodeToRemove);
+          break;
+        case Operation.Insert:
+          const nodeToInsert = nextSourceNode!;
+          nextSourceNode = nodeToInsert.nextSibling;
+          destinationParent.insertBefore(nodeToInsert, nextDestinationNode);
           break;
         default:
           throw new Error(`Unexpected operation: '${operation}'`);
