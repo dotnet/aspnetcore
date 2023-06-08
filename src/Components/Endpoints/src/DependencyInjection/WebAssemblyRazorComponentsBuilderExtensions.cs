@@ -8,25 +8,32 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
-/// Extension methods to configure an <see cref="IServiceCollection"/> for components.
+/// Extension methods to configure an <see cref="IServiceCollection"/> for WebAssembly components.
 /// </summary>
-public static class RazorComponentsBuilderExtensions
+public static class WebAssemblyRazorComponentsBuilderExtensions
 {
     /// <summary>
-    /// Adds services to support rendering interactive server components in a razor components
+    /// Adds services to support rendering interactive WebAssembly components in a razor components
     /// application.
     /// </summary>
     /// <param name="builder">The <see cref="IRazorComponentsBuilder"/>.</param>
+    /// <param name="configure">A callback to configure <see cref="WebAssemblyComponentsEndpointOptions"/>.</param>
     /// <returns>An <see cref="IRazorComponentsBuilder"/> that can be used to further customize the configuration.</returns>
-    public static IRazorComponentsBuilder AddWebAssemblyComponents(this IRazorComponentsBuilder builder)
+    public static IRazorComponentsBuilder AddWebAssemblyComponents(this IRazorComponentsBuilder builder, Action<WebAssemblyComponentsEndpointOptions>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(builder, nameof(builder));
 
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<RenderModeEndpointProvider, WebAssemblyEndpointProvider>());
+
+        if (configure is not null)
+        {
+            builder.Services.Configure(configure);
+        }
 
         return builder;
     }
@@ -34,19 +41,23 @@ public static class RazorComponentsBuilderExtensions
     private class WebAssemblyEndpointProvider : RenderModeEndpointProvider
     {
         private readonly IServiceProvider _services;
+        private readonly WebAssemblyComponentsEndpointOptions _options;
 
-        public WebAssemblyEndpointProvider(IServiceProvider services)
+        public WebAssemblyEndpointProvider(IServiceProvider services, IOptions<WebAssemblyComponentsEndpointOptions> options)
         {
             _services = services;
+            _options = options.Value;
         }
 
         public override IEnumerable<RouteEndpointBuilder> GetEndpointBuilders(IComponentRenderMode renderMode, IApplicationBuilder applicationBuilder)
         {
             var endpointRouteBuilder = new EndpointRouteBuilder(_services, applicationBuilder);
-            applicationBuilder.UseBlazorFrameworkFiles();
+            var pathPrefix = _options.FrameworkFilesPathPrefix;
+
+            applicationBuilder.UseBlazorFrameworkFiles(pathPrefix);
             var app = applicationBuilder.Build();
 
-            endpointRouteBuilder.Map("/_framework/{*path}", context =>
+            endpointRouteBuilder.Map($"{pathPrefix}/_framework/{{*path}}", context =>
             {
                 // Set endpoint to null so the static files middleware will handle the request.
                 context.SetEndpoint(null);

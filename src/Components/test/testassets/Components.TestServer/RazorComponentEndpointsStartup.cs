@@ -22,7 +22,12 @@ public class RazorComponentEndpointsStartup<TRootComponent>
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddRazorComponents();
+        services.AddRazorComponents()
+            .AddServerComponents()
+            .AddWebAssemblyComponents(options =>
+            {
+                options.FrameworkFilesPathPrefix = "/WasmMinimal";
+            });
         services.AddHttpContextAccessor();
         services.AddSingleton<AsyncOperationService>();
     }
@@ -41,6 +46,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
         app.Map("/subdir", app =>
         {
+            app.UseStaticFiles();
             app.UseRouting();
             app.UseEndpoints(endpoints =>
             {

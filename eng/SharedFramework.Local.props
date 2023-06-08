@@ -109,5 +109,6 @@
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.SignalR" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Components.Endpoints" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Components.Server" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
   </ItemGroup>
 </Project>

@@ -1,0 +1,9 @@
+﻿@attribute [RenderModeWebAssembly]
+
+<strong>WebAssembly counter</strong>
+<TestContentPackage.Counter IncrementAmount="IncrementAmount" IdSuffix="wasm" />
+
+@code {
+    [Parameter]
+    public int IncrementAmount { get; set; } = 1;
+}
