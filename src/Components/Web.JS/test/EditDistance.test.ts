@@ -6,7 +6,7 @@ describe('EditDistance', () => {
     const before = new ArrayItemList<number>([]);
     const after = new ArrayItemList<number>([]);
     const result = compareArrays(before, after, exactEqualityComparer);
-    expect(result.skip).toBe(0);
+    expect(result.skipCount).toBe(0);
     expect(result.edits).toBeFalsy();
   });
 
@@ -14,7 +14,7 @@ describe('EditDistance', () => {
     const before = new ArrayItemList<number>([]);
     const after = new ArrayItemList<number>([1, 2, 3]);
     const result = compareArrays(before, after, exactEqualityComparer);
-    expect(result.skip).toBe(0);
+    expect(result.skipCount).toBe(0);
     expect(result.edits).toEqual([Operation.Insert, Operation.Insert, Operation.Insert]);
   });
 
@@ -22,7 +22,7 @@ describe('EditDistance', () => {
     const before = new ArrayItemList<number>([1, 2, 3]);
     const after = new ArrayItemList<number>([]);
     const result = compareArrays(before, after, exactEqualityComparer);
-    expect(result.skip).toBe(0);
+    expect(result.skipCount).toBe(0);
     expect(result.edits).toEqual([Operation.Delete, Operation.Delete, Operation.Delete]);
   });
 
@@ -30,7 +30,7 @@ describe('EditDistance', () => {
     const before = new ArrayItemList<number>([1, 2, 3]);
     const after = new ArrayItemList<number>([1, 2, 3]);
     const result = compareArrays(before, after, exactEqualityComparer);
-    expect(result.skip).toBe(0);
+    expect(result.skipCount).toBe(0);
     expect(result.edits).toBeFalsy();
   });
 
@@ -38,7 +38,7 @@ describe('EditDistance', () => {
     const before = new ArrayItemList<number>([1]);
     const after = new ArrayItemList<number>([2]);
     const result = compareArrays(before, after, exactEqualityComparer);
-    expect(result.skip).toBe(0);
+    expect(result.skipCount).toBe(0);
     expect(result.edits).toEqual([Operation.Insert, Operation.Delete]);
   });
 
@@ -46,7 +46,7 @@ describe('EditDistance', () => {
     const before = new ArrayItemList<number>([1, 2]);
     const after = new ArrayItemList<number>([3, 2]);
     const result = compareArrays(before, after, (a, b) => (a === b) ? ComparisonResult.Same : ComparisonResult.CanSubstitute);
-    expect(result.skip).toEqual(0);
+    expect(result.skipCount).toEqual(0);
     expect(result.edits).toEqual([Operation.Substitute]);
   });
 
@@ -54,7 +54,7 @@ describe('EditDistance', () => {
     const before = new ArrayItemList<number>([1, 2, 3, 4]);
     const after = new ArrayItemList<number>([1, 3, 5, 4]);
     const result = compareArrays(before, after, exactEqualityComparer);
-    expect(result.skip).toEqual(1);
+    expect(result.skipCount).toEqual(1);
     expect(result.edits).toEqual([Operation.Delete, Operation.Keep, Operation.Insert]);
   });
 });

@@ -1,7 +1,7 @@
 type Comparer<T> = (a: T, b: T) => ComparisonResult;
 
 export interface ArrayComparisonResult<T> {
-  skip: number,
+  skipCount: number,
   edits?: Operation[],
 }
 
@@ -12,7 +12,7 @@ export function compareArrays<T>(before: ItemList<T>, after: ItemList<T>, compar
   const commonPrefixLength = lengthOfCommonPrefix(before, after, comparer);
   if (commonPrefixLength === before.length && commonPrefixLength === after.length) {
     // If by now we know there are no edits, bail out early
-    return { skip: 0 };
+    return { skipCount: 0 };
   }
   const commonSuffixLength = lengthOfCommonSuffix(before, after, commonPrefixLength, commonPrefixLength, comparer);
   before = ItemListSubset.create(before, commonPrefixLength, before.length - commonPrefixLength - commonSuffixLength);
@@ -20,7 +20,7 @@ export function compareArrays<T>(before: ItemList<T>, after: ItemList<T>, compar
 
   const operations = computeOperations(before, after, comparer);
   const edits = toEditScript(operations);
-  return { skip: commonPrefixLength, edits };
+  return { skipCount: commonPrefixLength, edits };
 }
 
 function lengthOfCommonPrefix<T>(before: ItemList<T>, after: ItemList<T>, comparer: Comparer<T>): number {
