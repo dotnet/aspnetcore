@@ -46,7 +46,7 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="_GeneratePublishTestManifest" BeforeTargets="Publish" DependsOnTargets="_ResolveMvcTestProjectReferences">
+  <Target Name="_GeneratePublishTestManifest" Condition="$(IsPublishable) == 'true'" BeforeTargets="Publish" DependsOnTargets="_ResolveMvcTestProjectReferences">
     <ItemGroup>
       <_PublishManifestProjects Include="%(_ContentRootProjectReferences.FusionName)">
         <ContentRoot>~</ContentRoot>
