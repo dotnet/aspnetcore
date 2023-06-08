@@ -17,10 +17,10 @@ public static class PollyServiceCollectionExtensions
     /// Registers an empty <see cref="PolicyRegistry"/> in the service collection with service types
     /// <see cref="IPolicyRegistry{String}"/>, <see cref="IReadOnlyPolicyRegistry{String}"/>, and
      /// <see cref="IConcurrentPolicyRegistry{String}"/> if the service types haven't already been registered
-    /// and returns the newly created registry.
+    /// and returns the existing or newly created registry.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/>.</param>
-    /// <returns>The newly created <see cref="IPolicyRegistry{String}"/>.</returns>
+    /// <returns>The existing or newly created <see cref="IPolicyRegistry{String}"/>.</returns>
     public static IPolicyRegistry<string> AddPolicyRegistry(this IServiceCollection services)
     {
         if (services == null)
@@ -50,8 +50,7 @@ public static class PollyServiceCollectionExtensions
     /// <summary>
     /// Registers the provided <see cref="IPolicyRegistry{String}"/> in the service collection with service types
     /// <see cref="IPolicyRegistry{String}"/>, <see cref="IReadOnlyPolicyRegistry{String}"/>, and
-    /// <see cref="IConcurrentPolicyRegistry{String}"/> if the service types haven't already been registered
-    /// and returns the newly created registry.
+    /// <see cref="IConcurrentPolicyRegistry{String}"/> and returns the provided registry.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/>.</param>
     /// <param name="registry">The <see cref="IPolicyRegistry{String}"/>.</param>
@@ -68,38 +67,21 @@ public static class PollyServiceCollectionExtensions
             throw new ArgumentNullException(nameof(registry));
         }
 
-        // Get existing registry or use the given instance
-        var existingRegistry = services.BuildServiceProvider().GetService<IPolicyRegistry<string>>();
-        if (existingRegistry != null)
+        services.AddSingleton<IPolicyRegistry<string>>(registry);
+        services.AddSingleton<IReadOnlyPolicyRegistry<string>>(registry);
+
+        if (registry is IConcurrentPolicyRegistry<string> concurrentRegistry)
         {
-            // Move the new policies to the existing registry
-            foreach (var keyValuePair in registry)
-            {
-                existingRegistry.Add(keyValuePair.Key, keyValuePair.Value);
-            }
-        }
-        else
-        {
-            existingRegistry = registry;
+            services.AddSingleton<IConcurrentPolicyRegistry<string>>(concurrentRegistry);
         }
 
-        // Try to register for the missing interfaces
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IPolicyRegistry<string>>(existingRegistry));
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IReadOnlyPolicyRegistry<string>>(existingRegistry));
-
-        if (existingRegistry is IConcurrentPolicyRegistry<string> concurrentRegistry)
-        {
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<IConcurrentPolicyRegistry<string>>(concurrentRegistry));
-        }
-
-        return existingRegistry;
+        return registry;
     }
 
     /// <summary>
     /// Registers an empty <see cref="PolicyRegistry"/> in the service collection with service types
     /// <see cref="IPolicyRegistry{String}"/>, <see cref="IReadOnlyPolicyRegistry{String}"/>, and
-    /// <see cref="IConcurrentPolicyRegistry{String}"/> if the service types haven't already been registered
-    /// and uses the specified delegate to configure it.
+    /// <see cref="IConcurrentPolicyRegistry{String}"/> and uses the specified delegate to configure it.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/>.</param>
     /// <param name="configureRegistry">A delegate that is used to configure an <see cref="IPolicyRegistry{String}"/>.</param>
@@ -116,29 +98,20 @@ public static class PollyServiceCollectionExtensions
             throw new ArgumentNullException(nameof(configureRegistry));
         }
 
-        // Build the service provider to be able to configure the registry.
-        // Building the services at this point may throw an exception
-        // if the delegate has required dependencies that were not yet registered,
-        // but it's necessary to not lose configurations when this method is invoked multiple times
-        var serviceProvider = services.BuildServiceProvider();
-
-        // Get existing registry or an empty instance
-        var registry = serviceProvider.GetService<IPolicyRegistry<string>>();
-        if (registry == null)
+        // Create an empty registry, configure it and register it as an instance.
+        // This is the best way to get a single instance registered using all the interfaces.
+        services.AddSingleton(serviceProvider =>
         {
-            registry = new PolicyRegistry();
-        }
+            var registry = new PolicyRegistry();
 
-        configureRegistry(serviceProvider, registry);
+            configureRegistry(serviceProvider, registry);
 
-        // Try to register for the missing interfaces
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IPolicyRegistry<string>>(registry));
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IReadOnlyPolicyRegistry<string>>(registry));
+            return registry;
+        });
 
-        if (registry is IConcurrentPolicyRegistry<string> concurrentRegistry)
-        {
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<IConcurrentPolicyRegistry<string>>(concurrentRegistry));
-        }
+        services.AddSingleton<IConcurrentPolicyRegistry<string>>(serviceProvider => serviceProvider.GetRequiredService<PolicyRegistry>());
+        services.AddSingleton<IPolicyRegistry<string>>(serviceProvider => serviceProvider.GetRequiredService<PolicyRegistry>());
+        services.AddSingleton<IReadOnlyPolicyRegistry<string>>(serviceProvider => serviceProvider.GetRequiredService<PolicyRegistry>());
 
         return services;
     }
