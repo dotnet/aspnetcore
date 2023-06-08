@@ -9,7 +9,6 @@ using Microsoft.Extensions.Primitives;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Microsoft.AspNetCore.Testing;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
@@ -280,7 +279,7 @@ app.MapGet("/value-task", () => ValueTask.CompletedTask);
         }
     }
 
-    [ConditionalTheory(Skip = "https://github.com/dotnet/runtime/issues/87073")]
+    [Theory]
     [MemberData(nameof(JsonContextActions))]
     public async Task RequestDelegateWritesAsJsonResponseBody_WithJsonSerializerContext(string delegateName, string delegateSource)
     {
@@ -310,7 +309,7 @@ app.MapGet("/test", {delegateName});
         Assert.Equal("Write even more tests!", deserializedResponseBody!.Name);
     }
 
-    [ConditionalTheory(Skip = "https://github.com/dotnet/runtime/issues/87073")]
+    [Theory]
     [InlineData(true)]
     [InlineData(false)]
     public async Task RequestDelegateWritesAsJsonResponseBody_UnspeakableType(bool useJsonContext)
@@ -350,7 +349,7 @@ static async IAsyncEnumerable<JsonTodo> GetTodosAsync()
         await VerifyResponseBodyAsync(httpContext, expectedBody);
     }
 
-    [ConditionalTheory(Skip = "https://github.com/dotnet/runtime/issues/87073")]
+    [Theory]
     [InlineData(true)]
     [InlineData(false)]
     public async Task RequestDelegateWritesAsJsonResponseBody_UnspeakableType_InFilter(bool useJsonContext)
@@ -377,8 +376,10 @@ app.MapGet("/todos", () => "not going to be returned")
 
         await endpoint.RequestDelegate(httpContext);
 
-        var expectedBody = """[{"id":1,"name":"One","isComplete":true},{"$type":"JsonTodoChild","child":"TwoChild","id":2,"name":"Two","isComplete":false}]""";
-        await VerifyResponseBodyAsync(httpContext, expectedBody);
+        await VerifyResponseJsonBodyAsync<Todo>(httpContext, (todo) =>
+        {
+            Assert.Equal("Write even more tests!", todo.Name);
+        });
     }
 
     [Fact]

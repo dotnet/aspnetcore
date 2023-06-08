@@ -147,13 +147,6 @@ internal static class StaticRouteHandlerModelEmitter
         }
     }
 
-    /*
-     * TODO: Emit invocation to the `filteredInvocation` pipeline by constructing
-     * the `EndpointFilterInvocationContext` using the bound arguments for the handler.
-     * In the source generator context, the generic overloads for `EndpointFilterInvocationContext`
-     * can be used to reduce the boxing that happens at runtime when constructing
-     * the context object.
-     */
     public static void EmitFilteredRequestHandler(this Endpoint endpoint, CodeWriter codeWriter)
     {
         var argumentList = endpoint.Parameters.Length == 0 ? string.Empty : $", {endpoint.EmitArgumentList()}";

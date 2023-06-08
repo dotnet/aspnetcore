@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
                     var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
                     var serializerOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value.SerializerOptions ?? new JsonOptions().SerializerOptions;
-                    var objectJsonTypeInfo =  (JsonTypeInfo<object?>)serializerOptions.GetTypeInfo(typeof(object));
+                    var objectJsonTypeInfo = (JsonTypeInfo<object>)serializerOptions.GetTypeInfo(typeof(object));
                     var responseJsonTypeInfo =  (JsonTypeInfo<global::System.Int32>)serializerOptions.GetTypeInfo(typeof(global::System.Int32));
                     var p_JsonTypeInfo =  (JsonTypeInfo<global::System.String[]>)serializerOptions.GetTypeInfo(typeof(global::System.String[]));
 
@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         }
                         else
                         {
-                            var p_resolveBodyResult = await GeneratedRouteBuilderExtensionsCore.TryResolveBodyAsync<global::System.String[]>(httpContext, logOrThrowExceptionHelper, false, "string[]", "p");
+                            var p_resolveBodyResult = await GeneratedRouteBuilderExtensionsCore.TryResolveBodyAsync<global::System.String[]>(httpContext, logOrThrowExceptionHelper, false, "string[]", "p", p_JsonTypeInfo);
                             p_local = p_resolveBodyResult.Item2!;
                             if (!p_resolveBodyResult.Item1)
                             {
@@ -184,7 +184,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         }
                         else
                         {
-                            var p_resolveBodyResult = await GeneratedRouteBuilderExtensionsCore.TryResolveBodyAsync<global::System.String[]>(httpContext, logOrThrowExceptionHelper, false, "string[]", "p");
+                            var p_resolveBodyResult = await GeneratedRouteBuilderExtensionsCore.TryResolveBodyAsync<global::System.String[]>(httpContext, logOrThrowExceptionHelper, false, "string[]", "p", p_JsonTypeInfo);
                             p_local = p_resolveBodyResult.Item2!;
                             if (!p_resolveBodyResult.Item1)
                             {
@@ -239,10 +239,7 @@ namespace Microsoft.AspNetCore.Http.Generated
             return filteredInvocation;
         }
 
-        [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode",
-            Justification = "The 'JsonSerializer.IsReflectionEnabledByDefault' feature switch, which is set to false by default for trimmed ASP.NET apps, ensures the JsonSerializer doesn't use Reflection.")]
-        [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode", Justification = "See above.")]
-        private static Task ExecuteReturnAsync(object? obj, HttpContext httpContext, JsonTypeInfo<object?> jsonTypeInfo)
+        private static Task ExecuteReturnAsync(object? obj, HttpContext httpContext, JsonTypeInfo<object> jsonTypeInfo)
         {
             if (obj is IResult r)
             {
@@ -272,7 +269,7 @@ namespace Microsoft.AspNetCore.Http.Generated
             return httpContext.Response.WriteAsJsonAsync<object?>(value, jsonTypeInfo.Options);
         }
 
-        private static async ValueTask<(bool, T?)> TryResolveBodyAsync<T>(HttpContext httpContext, LogOrThrowExceptionHelper logOrThrowExceptionHelper, bool allowEmpty, string parameterTypeName, string parameterName, bool isInferred = false)
+        private static async ValueTask<(bool, T?)> TryResolveBodyAsync<T>(HttpContext httpContext, LogOrThrowExceptionHelper logOrThrowExceptionHelper, bool allowEmpty, string parameterTypeName, string parameterName, JsonTypeInfo<T> jsonTypeInfo, bool isInferred = false)
         {
             var feature = httpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpRequestBodyDetectionFeature>();
             T? bodyValue = default;
@@ -288,7 +285,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 }
                 try
                 {
-                    bodyValue = await httpContext.Request.ReadFromJsonAsync<T>();
+                    bodyValue = await httpContext.Request.ReadFromJsonAsync(jsonTypeInfo);
                     bodyValueSet = bodyValue != null;
                 }
                 catch (BadHttpRequestException badHttpRequestException)

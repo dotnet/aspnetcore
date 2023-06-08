@@ -126,12 +126,12 @@ namespace Microsoft.AspNetCore.Http.Generated
                     var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
                     var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
                     var serializerOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value.SerializerOptions ?? new JsonOptions().SerializerOptions;
-                    var objectJsonTypeInfo =  (JsonTypeInfo<object?>)serializerOptions.GetTypeInfo(typeof(object));
+                    var objectJsonTypeInfo = (JsonTypeInfo<object>)serializerOptions.GetTypeInfo(typeof(object));
                     var todo_JsonTypeInfo =  (JsonTypeInfo<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo>)serializerOptions.GetTypeInfo(typeof(global::Microsoft.AspNetCore.Http.Generators.Tests.Todo));
                     var svc_JsonTypeInfo =  (JsonTypeInfo<global::Microsoft.AspNetCore.Http.Generators.Tests.TestService>)serializerOptions.GetTypeInfo(typeof(global::Microsoft.AspNetCore.Http.Generators.Tests.TestService));
                     var serviceProviderIsService = serviceProvider?.GetService<IServiceProviderIsService>();
-                    var todo_JsonBodyOrServiceResolver = ResolveJsonBodyOrService<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo>(logOrThrowExceptionHelper, "Todo", "todo", serviceProviderIsService);
-                    var svc_JsonBodyOrServiceResolver = ResolveJsonBodyOrService<global::Microsoft.AspNetCore.Http.Generators.Tests.TestService>(logOrThrowExceptionHelper, "TestService", "svc", serviceProviderIsService);
+                    var todo_JsonBodyOrServiceResolver = ResolveJsonBodyOrService<global::Microsoft.AspNetCore.Http.Generators.Tests.Todo>(logOrThrowExceptionHelper, "Todo", "todo", todo_JsonTypeInfo, serviceProviderIsService);
+                    var svc_JsonBodyOrServiceResolver = ResolveJsonBodyOrService<global::Microsoft.AspNetCore.Http.Generators.Tests.TestService>(logOrThrowExceptionHelper, "TestService", "svc", svc_JsonTypeInfo, serviceProviderIsService);
 
                     if (options.EndpointBuilder.FilterFactories.Count > 0)
                     {
@@ -247,10 +247,7 @@ namespace Microsoft.AspNetCore.Http.Generated
             return filteredInvocation;
         }
 
-        [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode",
-            Justification = "The 'JsonSerializer.IsReflectionEnabledByDefault' feature switch, which is set to false by default for trimmed ASP.NET apps, ensures the JsonSerializer doesn't use Reflection.")]
-        [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode", Justification = "See above.")]
-        private static Task ExecuteReturnAsync(object? obj, HttpContext httpContext, JsonTypeInfo<object?> jsonTypeInfo)
+        private static Task ExecuteReturnAsync(object? obj, HttpContext httpContext, JsonTypeInfo<object> jsonTypeInfo)
         {
             if (obj is IResult r)
             {
@@ -280,7 +277,7 @@ namespace Microsoft.AspNetCore.Http.Generated
             return httpContext.Response.WriteAsJsonAsync<object?>(value, jsonTypeInfo.Options);
         }
 
-        private static async ValueTask<(bool, T?)> TryResolveBodyAsync<T>(HttpContext httpContext, LogOrThrowExceptionHelper logOrThrowExceptionHelper, bool allowEmpty, string parameterTypeName, string parameterName, bool isInferred = false)
+        private static async ValueTask<(bool, T?)> TryResolveBodyAsync<T>(HttpContext httpContext, LogOrThrowExceptionHelper logOrThrowExceptionHelper, bool allowEmpty, string parameterTypeName, string parameterName, JsonTypeInfo<T> jsonTypeInfo, bool isInferred = false)
         {
             var feature = httpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpRequestBodyDetectionFeature>();
             T? bodyValue = default;
@@ -296,7 +293,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 }
                 try
                 {
-                    bodyValue = await httpContext.Request.ReadFromJsonAsync<T>();
+                    bodyValue = await httpContext.Request.ReadFromJsonAsync(jsonTypeInfo);
                     bodyValueSet = bodyValue != null;
                 }
                 catch (BadHttpRequestException badHttpRequestException)
@@ -335,7 +332,7 @@ namespace Microsoft.AspNetCore.Http.Generated
 
             return (true, bodyValue);
         }
-        private static Func<HttpContext, bool, ValueTask<(bool, T?)>> ResolveJsonBodyOrService<T>(LogOrThrowExceptionHelper logOrThrowExceptionHelper, string parameterTypeName, string parameterName, IServiceProviderIsService? serviceProviderIsService = null)
+        private static Func<HttpContext, bool, ValueTask<(bool, T?)>> ResolveJsonBodyOrService<T>(LogOrThrowExceptionHelper logOrThrowExceptionHelper, string parameterTypeName, string parameterName, JsonTypeInfo<T> jsonTypeInfo, IServiceProviderIsService? serviceProviderIsService = null)
         {
             if (serviceProviderIsService is not null)
             {
@@ -344,7 +341,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     return static (httpContext, isOptional) => new ValueTask<(bool, T?)>((true, httpContext.RequestServices.GetService<T>()));
                 }
             }
-            return (httpContext, isOptional) => TryResolveBodyAsync<T>(httpContext, logOrThrowExceptionHelper, isOptional, parameterTypeName, parameterName, isInferred: true);
+            return (httpContext, isOptional) => TryResolveBodyAsync<T>(httpContext, logOrThrowExceptionHelper, isOptional, parameterTypeName, parameterName, jsonTypeInfo, isInferred: true);
         }
 
     }
