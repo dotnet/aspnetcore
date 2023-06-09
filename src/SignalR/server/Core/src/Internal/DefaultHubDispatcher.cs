@@ -28,15 +28,17 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
     private readonly Func<HubLifetimeContext, Task>? _onConnectedMiddleware;
     private readonly Func<HubLifetimeContext, Exception?, Task>? _onDisconnectedMiddleware;
     private readonly HubLifetimeManager<THub> _hubLifetimeManager;
+    private readonly bool _useAcks;
 
     public DefaultHubDispatcher(IServiceScopeFactory serviceScopeFactory, IHubContext<THub> hubContext, bool enableDetailedErrors,
-        bool disableImplicitFromServiceParameters, ILogger<DefaultHubDispatcher<THub>> logger, List<IHubFilter>? hubFilters, HubLifetimeManager<THub> lifetimeManager)
+        bool disableImplicitFromServiceParameters, bool useAcks, ILogger<DefaultHubDispatcher<THub>> logger, List<IHubFilter>? hubFilters, HubLifetimeManager<THub> lifetimeManager)
     {
         _serviceScopeFactory = serviceScopeFactory;
         _hubContext = hubContext;
         _enableDetailedErrors = enableDetailedErrors;
         _logger = logger;
         _hubLifetimeManager = lifetimeManager;
+        _useAcks = useAcks;
         DiscoverHubMethods(disableImplicitFromServiceParameters);
 
         var count = hubFilters?.Count ?? 0;
@@ -130,6 +132,12 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
 
         // With parallel invokes enabled, messages run sequentially until they go async and then the next message will be allowed to start running.
 
+        if (!connection.ShouldProcessMessage(hubMessage))
+        {
+            Log.DroppingMessage(_logger, ((HubInvocationMessage)hubMessage).GetType().Name, ((HubInvocationMessage)hubMessage).InvocationId);
+            return Task.CompletedTask;
+        }
+
         switch (hubMessage)
         {
             case InvocationBindingFailureMessage bindingFailureMessage:
@@ -184,6 +192,16 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
                 {
                     Log.UnexpectedCompletion(_logger, completionMessage.InvocationId!);
                 }
+                break;
+
+            case AckMessage ackMessage:
+                Log.ReceivedAckMessage(_logger, ackMessage.SequenceId);
+                connection.Ack(ackMessage);
+                break;
+
+            case SequenceMessage sequenceMessage:
+                Log.ReceivedSequenceMessage(_logger, sequenceMessage.SequenceId);
+                connection.ResetSequence(sequenceMessage);
                 break;
 
             // Other kind of message we weren't expecting
@@ -374,7 +392,7 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
                         // No InvocationId - Send Async, no response expected
                         if (!string.IsNullOrEmpty(hubMethodInvocationMessage.InvocationId))
                         {
-                            // Invoke Async, one reponse expected
+                            // Invoke Async, one response expected
                             await connection.WriteAsync(CompletionMessage.WithResult(hubMethodInvocationMessage.InvocationId, result));
                         }
                     }
@@ -555,8 +573,7 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
         }
     }
 
-    private static async Task SendInvocationError(string? invocationId,
-        HubConnectionContext connection, string errorMessage)
+    private static async Task SendInvocationError(string? invocationId, HubConnectionContext connection, string errorMessage)
     {
         if (string.IsNullOrEmpty(invocationId))
         {

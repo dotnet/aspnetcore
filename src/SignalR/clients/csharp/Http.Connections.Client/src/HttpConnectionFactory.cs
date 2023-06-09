@@ -88,7 +88,8 @@ public class HttpConnectionFactory : IConnectionFactory
             CloseTimeout = options.CloseTimeout,
             DefaultTransferFormat = options.DefaultTransferFormat,
             ApplicationMaxBufferSize = options.ApplicationMaxBufferSize,
-            TransportMaxBufferSize = options.TransportMaxBufferSize
+            TransportMaxBufferSize = options.TransportMaxBufferSize,
+            UseAcks = options.UseAcks,
         };
 
         if (!OperatingSystem.IsBrowser())

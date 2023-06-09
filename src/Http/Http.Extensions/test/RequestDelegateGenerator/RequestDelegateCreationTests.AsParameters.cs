@@ -88,34 +88,6 @@ app.MapGet("/", TestAction);
         Assert.Equal(originalHeaderParam, httpContext.Items["input"]);
     }
 
-    [Fact]
-    public async Task RequestDelegatePopulatesHttpContextParametersWithoutAttribute_FromParameterList()
-    {
-        var source = """
-static void TestAction([AsParameters] ParametersListWithHttpContext args)
-{
-    args.HttpContext.Items.Add("input", args.HttpContext);
-    args.HttpContext.Items.Add("user", args.User);
-    args.HttpContext.Items.Add("request", args.Request);
-    args.HttpContext.Items.Add("response", args.Response);
-}
-app.MapGet("/", TestAction);
-""";
-
-        var (_, compilation) = await RunGeneratorAsync(source);
-        var endpoint = GetEndpointFromCompilation(compilation);
-
-        var httpContext = CreateHttpContext();
-        httpContext.User = new ClaimsPrincipal();
-
-        await endpoint.RequestDelegate(httpContext);
-
-        Assert.Same(httpContext, httpContext.Items["input"]);
-        Assert.Same(httpContext.User, httpContext.Items["user"]);
-        Assert.Same(httpContext.Request, httpContext.Items["request"]);
-        Assert.Same(httpContext.Response, httpContext.Items["response"]);
-    }
-
     public static object[][] FromParameterListActions
     {
         get

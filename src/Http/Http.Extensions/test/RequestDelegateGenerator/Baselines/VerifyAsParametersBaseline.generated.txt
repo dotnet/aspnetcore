@@ -198,7 +198,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         }
                         var Value_raw = (string?)httpContext.Request.RouteValues["Value"];
                         var Value_temp = (string?)Value_raw;
-                        int Value_parsed_temp = default;
+                        global::System.Int32 Value_parsed_temp = default;
                         if (GeneratedRouteBuilderExtensionsCore.TryParseExplicit<int>(Value_temp!, CultureInfo.InvariantCulture, out var Value_temp_parsed_non_nullable))
                         {
                             Value_parsed_temp = Value_temp_parsed_non_nullable;
@@ -236,7 +236,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         }
                         var Value_raw = (string?)httpContext.Request.RouteValues["Value"];
                         var Value_temp = (string?)Value_raw;
-                        int Value_parsed_temp = default;
+                        global::System.Int32 Value_parsed_temp = default;
                         if (GeneratedRouteBuilderExtensionsCore.TryParseExplicit<int>(Value_temp!, CultureInfo.InvariantCulture, out var Value_temp_parsed_non_nullable))
                         {
                             Value_parsed_temp = Value_temp_parsed_non_nullable;
@@ -505,8 +505,15 @@ namespace Microsoft.AspNetCore.Http.Generated
                             httpContext.Response.StatusCode = 400;
                             return;
                         }
-                        httpContext.Response.ContentType ??= "text/plain";
                         var result = handler(args_local);
+                        if (result is string)
+                        {
+                            httpContext.Response.ContentType ??= "text/plain; charset=utf-8";
+                        }
+                        else
+                        {
+                            httpContext.Response.ContentType ??= "application/json; charset=utf-8";
+                        }
                         await httpContext.Response.WriteAsync(result);
                     }
 
@@ -688,6 +695,8 @@ namespace Microsoft.AspNetCore.Http.Generated
         private static async ValueTask<(bool, T?)> TryResolveBodyAsync<T>(HttpContext httpContext, LogOrThrowExceptionHelper logOrThrowExceptionHelper, bool allowEmpty, string parameterTypeName, string parameterName, bool isInferred = false)
         {
             var feature = httpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpRequestBodyDetectionFeature>();
+            T? bodyValue = default;
+            var bodyValueSet = false;
 
             if (feature?.CanHaveBody == true)
             {
@@ -699,21 +708,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                 }
                 try
                 {
-                    var bodyValue = await httpContext.Request.ReadFromJsonAsync<T>();
-                    if (!allowEmpty && bodyValue == null)
-                    {
-                        if (!isInferred)
-                        {
-                            logOrThrowExceptionHelper.RequiredParameterNotProvided(parameterTypeName, parameterName, "body");
-                        }
-                        else
-                        {
-                            logOrThrowExceptionHelper.ImplicitBodyNotProvided(parameterName);
-                        }
-                        httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
-                        return (false, bodyValue);
-                    }
-                    return (true, bodyValue);
+                    bodyValue = await httpContext.Request.ReadFromJsonAsync<T>();
+                    bodyValueSet = bodyValue != null;
                 }
                 catch (BadHttpRequestException badHttpRequestException)
                 {
@@ -734,12 +730,22 @@ namespace Microsoft.AspNetCore.Http.Generated
                     return (false, default);
                 }
             }
-            else if (!allowEmpty)
+
+            if (!allowEmpty && !bodyValueSet)
             {
+                if (!isInferred)
+                {
+                    logOrThrowExceptionHelper.RequiredParameterNotProvided(parameterTypeName, parameterName, "body");
+                }
+                else
+                {
+                    logOrThrowExceptionHelper.ImplicitBodyNotProvided(parameterName);
+                }
                 httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                return (false, bodyValue);
             }
 
-            return (allowEmpty, default);
+            return (true, bodyValue);
         }
         private static Func<HttpContext, bool, ValueTask<(bool, T?)>> ResolveJsonBodyOrService<T>(LogOrThrowExceptionHelper logOrThrowExceptionHelper, string parameterTypeName, string parameterName, IServiceProviderIsService? serviceProviderIsService = null)
         {

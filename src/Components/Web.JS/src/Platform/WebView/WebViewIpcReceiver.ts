@@ -33,9 +33,9 @@ export function startIpcReceiver(): void {
       showErrorNotification();
     },
 
-    'BeginInvokeJS': dispatcher.beginInvokeJSFromDotNet,
+    'BeginInvokeJS': dispatcher.beginInvokeJSFromDotNet.bind(dispatcher),
 
-    'EndInvokeDotNet': dispatcher.endInvokeDotNetFromJS,
+    'EndInvokeDotNet': dispatcher.endInvokeDotNetFromJS.bind(dispatcher),
 
     'SendByteArrayToJS': receiveBase64ByteArray,
 

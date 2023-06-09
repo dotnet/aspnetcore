@@ -3,7 +3,7 @@
 
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
-using Microsoft.Extensions.Metrics;
+using Microsoft.Extensions.Diagnostics.Metrics;
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal;
 
@@ -32,7 +32,7 @@ internal sealed class HttpConnectionsMetrics : IDisposable
 
     public HttpConnectionsMetrics(IMeterFactory meterFactory)
     {
-        _meter = meterFactory.CreateMeter(MeterName);
+        _meter = meterFactory.Create(MeterName);
 
         _currentConnectionsCounter = _meter.CreateUpDownCounter<long>(
             "current-connections",

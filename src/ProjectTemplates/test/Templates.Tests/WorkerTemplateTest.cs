@@ -58,7 +58,10 @@ public class WorkerTemplateTest : LoggedTest
 
         await project.RunDotNetNewAsync("worker", language: language, args: args);
 
-        await project.VerifyHasProperty("InvariantGlobalization", "true");
+        if (nativeAot)
+        {
+            await project.VerifyHasProperty("InvariantGlobalization", "true");
+        }
 
         // Force a restore if native AOT so that RID-specific assets are restored
         await project.RunDotNetPublishAsync(noRestore: !nativeAot);

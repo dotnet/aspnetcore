@@ -44,6 +44,6 @@ public partial class JSInProcessObjectReference : JSObjectReference, IJSInProces
         }
     }
 
-    [JSImport("DotNet.jsCallDispatcher.disposeJSObjectReferenceById", "blazor-internal")]
+    [JSImport("globalThis.DotNet.disposeJSObjectReferenceById")]
     private static partial void DisposeJSObjectReferenceById([JSMarshalAs<JSType.Number>] long id);
 }

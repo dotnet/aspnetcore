@@ -135,7 +135,6 @@ namespace Microsoft.AspNetCore.Http.Generated
                             httpContext.Response.StatusCode = 400;
                             return Task.CompletedTask;
                         }
-                        httpContext.Response.ContentType ??= "application/json";
                         var result = handler();
                         return GeneratedRouteBuilderExtensionsCore.WriteToResponseAsync(result, httpContext, jsonTypeInfo);
                     }

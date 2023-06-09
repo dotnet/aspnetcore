@@ -11,10 +11,13 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
+using Moq;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
@@ -31,8 +34,7 @@ public abstract partial class RequestDelegateCreationTests : RequestDelegateCrea
         new object[] { "BindAsyncFromImplicitStaticAbstractInterface", false },
         new object[] { "InheritBindAsync", false },
         new object[] { "BindAsyncFromExplicitStaticAbstractInterface", false },
-        // TODO: Fix this
-        //new object[] { "MyBindAsyncFromInterfaceRecord", false },
+        new object[] { "MyBindAsyncFromInterfaceRecord", false },
     };
 
     public static IEnumerable<object[]> BindAsyncUriTypes =>
@@ -140,7 +142,7 @@ app.MapGet("/", (HttpContext httpContext, {{bindAsyncType}} myBindAsyncParam) =>
             var log = Assert.Single(TestSink.Writes);
             Assert.Equal(LogLevel.Debug, log.LogLevel);
             Assert.Equal(new EventId(4, "RequiredParameterNotProvided"), log.EventId);
-            var parameters = bindAsyncType is "MySimpleBindAsyncRecord" || bindAsyncType is "InheritBindAsync"
+            var parameters = bindAsyncType is "MySimpleBindAsyncRecord" || bindAsyncType is "InheritBindAsync" || bindAsyncType is "MyBindAsyncFromInterfaceRecord"
                 ? "(HttpContext)"
                 : "(HttpContext, ParameterInfo)";
             Assert.Equal($@"Required parameter ""{bindAsyncType} myBindAsyncParam"" was not provided from {bindAsyncType}.BindAsync{parameters}.", log.Message);
@@ -194,5 +196,117 @@ app.MapGet("/", (HttpContext httpContext, MyBindAsyncTypeThatThrows myBindAsyncP
 
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => endpoint.RequestDelegate(httpContext));
         Assert.Equal("BindAsync failed", ex.Message);
+    }
+
+    [Fact]
+    public async Task BindAsyncWithBodyArgument()
+    {
+        Todo originalTodo = new()
+        {
+            Name = "Write more tests!"
+        };
+
+        var httpContext = CreateHttpContext();
+
+        var requestBodyBytes = JsonSerializer.SerializeToUtf8Bytes(originalTodo);
+        var stream = new MemoryStream(requestBodyBytes);
+        httpContext.Request.Body = stream;
+
+        httpContext.Request.Headers["Content-Type"] = "application/json";
+        httpContext.Request.Headers["Content-Length"] = stream.Length.ToString(CultureInfo.InvariantCulture);
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        var jsonOptions = new JsonOptions();
+        jsonOptions.SerializerOptions.Converters.Add(new TodoJsonConverter());
+
+        var mock = new Mock<IServiceProvider>();
+        mock.Setup(m => m.GetService(It.IsAny<Type>())).Returns<Type>(t =>
+        {
+            if (t == typeof(IOptions<JsonOptions>))
+            {
+                return Options.Create(jsonOptions);
+            }
+            return null;
+        });
+
+        httpContext.RequestServices = mock.Object;
+        httpContext.Request.Headers.Referer = "https://example.org";
+
+        var source = """
+app.MapPost("/", (HttpContext context, MyBindAsyncRecord myBindAsyncParam, Todo todo) =>
+{
+    context.Items["invoked"] = true;
+    context.Items[nameof(myBindAsyncParam)] = myBindAsyncParam;
+    context.Items[nameof(todo)] = todo;
+});
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        await endpoint.RequestDelegate(httpContext);
+
+        Assert.True(httpContext.Items["invoked"] as bool?);
+        var arg = httpContext.Items["myBindAsyncParam"] as MyBindAsyncRecord;
+        Assert.NotNull(arg);
+        Assert.Equal("https://example.org/", arg!.Uri.ToString());
+        var todo = httpContext.Items["todo"] as Todo;
+        Assert.NotNull(todo);
+        Assert.Equal("Write more tests!", todo!.Name);
+    }
+
+    [Fact]
+    public async Task BindAsyncRunsBeforeBodyBinding()
+    {
+        Todo originalTodo = new()
+        {
+            Name = "Write more tests!"
+        };
+
+        var httpContext = CreateHttpContext();
+
+        var requestBodyBytes = JsonSerializer.SerializeToUtf8Bytes(originalTodo);
+        var stream = new MemoryStream(requestBodyBytes);
+        httpContext.Request.Body = stream;
+
+        httpContext.Request.Headers["Content-Type"] = "application/json";
+        httpContext.Request.Headers["Content-Length"] = stream.Length.ToString(CultureInfo.InvariantCulture);
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        var jsonOptions = new JsonOptions();
+        jsonOptions.SerializerOptions.Converters.Add(new TodoJsonConverter());
+
+        var mock = new Mock<IServiceProvider>();
+        mock.Setup(m => m.GetService(It.IsAny<Type>())).Returns<Type>(t =>
+        {
+            if (t == typeof(IOptions<JsonOptions>))
+            {
+                return Options.Create(jsonOptions);
+            }
+            return null;
+        });
+
+        httpContext.RequestServices = mock.Object;
+        httpContext.Request.Headers.Referer = "https://example.org";
+
+        var source = """
+app.MapPost("/", (HttpContext context, CustomTodo customTodo, Todo todo) =>
+{
+    context.Items["invoked"] = true;
+    context.Items[nameof(customTodo)] = customTodo;
+    context.Items[nameof(todo)] = todo;
+});
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        await endpoint.RequestDelegate(httpContext);
+
+        Assert.True(httpContext.Items["invoked"] as bool?);
+        var todo0 = httpContext.Items["customTodo"] as Todo;
+        Assert.NotNull(todo0);
+        Assert.Equal("Write more tests!", todo0!.Name);
+        var todo1 = httpContext.Items["todo"] as Todo;
+        Assert.NotNull(todo1);
+        Assert.Equal("Write more tests!", todo1!.Name);
     }
 }

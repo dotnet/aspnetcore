@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -14,8 +15,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Metrics;
 
 namespace Microsoft.AspNetCore.Diagnostics;
 
@@ -540,9 +541,10 @@ public class DeveloperExceptionPageMiddlewareTest : LoggedTest
         var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         var meterFactory = new TestMeterFactory();
-        var meterRegistry = new TestMeterRegistry(meterFactory.Meters);
-        var instrumentRecorder = new InstrumentRecorder<double>(meterRegistry, "Microsoft.AspNetCore.Hosting", "request-duration");
-        instrumentRecorder.Register(m =>
+        using var requestDurationRecorder = new InstrumentRecorder<double>(meterFactory, "Microsoft.AspNetCore.Hosting", "request-duration");
+        using var diagnosticsRequestExceptionRecorder = new InstrumentRecorder<long>(meterFactory, DiagnosticsMetrics.MeterName, "diagnostics-handler-exception");
+        using var measurementReporter = new MeasurementReporter<double>(meterFactory, "Microsoft.AspNetCore.Hosting", "request-duration");
+        measurementReporter.Register(m =>
         {
             tcs.SetResult();
         });
@@ -579,13 +581,30 @@ public class DeveloperExceptionPageMiddlewareTest : LoggedTest
 
         // Assert
         Assert.Collection(
-            instrumentRecorder.GetMeasurements(),
+            requestDurationRecorder.GetMeasurements(),
             m =>
             {
                 Assert.True(m.Value > 0);
                 Assert.Equal(500, (int)m.Tags.ToArray().Single(t => t.Key == "status-code").Value);
                 Assert.Equal("System.Exception", (string)m.Tags.ToArray().Single(t => t.Key == "exception-name").Value);
             });
+        Assert.Collection(diagnosticsRequestExceptionRecorder.GetMeasurements(),
+            m => AssertRequestException(m, "System.Exception", "Unhandled"));
+    }
+
+    private static void AssertRequestException(Measurement<long> measurement, string exceptionName, string result, string handler = null)
+    {
+        Assert.Equal(1, measurement.Value);
+        Assert.Equal(exceptionName, (string)measurement.Tags.ToArray().Single(t => t.Key == "exception-name").Value);
+        Assert.Equal(result, measurement.Tags.ToArray().Single(t => t.Key == "result").Value.ToString());
+        if (handler == null)
+        {
+            Assert.DoesNotContain(measurement.Tags.ToArray(), t => t.Key == "handler");
+        }
+        else
+        {
+            Assert.Equal(handler, (string)measurement.Tags.ToArray().Single(t => t.Key == "handler").Value);
+        }
     }
 
     public class CustomCompilationException : Exception, ICompilationException

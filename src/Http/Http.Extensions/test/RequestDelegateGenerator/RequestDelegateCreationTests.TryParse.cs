@@ -21,7 +21,7 @@ public abstract partial class RequestDelegateCreationTests
 
             return new[]
             {
-                //// string is not technically "TryParsable", but it's the special case.
+                // string is not technically "TryParsable", but it's the special case.
                 new object[] { "string", "plain string", "plain string" },
                 new object[] { "int", "-42", -42 },
                 new object[] { "uint", "42", 42U },
@@ -37,6 +37,8 @@ public abstract partial class RequestDelegateCreationTests
                 new object[] { "Half", "0.5", (Half)0.5f },
                 new object[] { "decimal", "0.5", 0.5m },
                 new object[] { "Uri", "https://example.org", new Uri("https://example.org") },
+                new object[] { "Uri?", "https://example.org", new Uri("https://example.org") },
+                new object[] { "Uri?", null, null },
                 new object[] { "DateTime", now.ToString("o"), now.ToUniversalTime() },
                 new object[] { "DateTimeOffset", "1970-01-01T00:00:00.0000000+00:00", DateTimeOffset.UnixEpoch },
                 new object[] { "TimeSpan", "00:00:42", TimeSpan.FromSeconds(42) },
@@ -241,5 +243,26 @@ app.MapGet("/hello/{tryParsable}", (HttpContext context, {{typeName}} tryParsabl
         await requestDelegate(httpContext);
 
         Assert.Equal(expectedParameterValue, httpContext.Items["tryParsable"]);
+    }
+
+    [Theory]
+    [InlineData("void TestAction(HttpContext httpContext, [FromRoute] MyBindAsyncRecord myBindAsyncRecord) { }")]
+    [InlineData("void TestAction(HttpContext httpContext, [FromQuery] MyBindAsyncRecord myBindAsyncRecord) { }")]
+    public async Task RequestDelegateUsesTryParseOverBindAsyncGivenExplicitAttribute(string source)
+    {
+        var (_, compilation) = await RunGeneratorAsync($$"""
+{{source}}
+app.MapGet("/{myBindAsyncRecord}", TestAction);
+""");
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.RouteValues["myBindAsyncRecord"] = "foo";
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["myBindAsyncRecord"] = "foo"
+        });
+
+        await Assert.ThrowsAsync<NotImplementedException>(async () => await endpoint.RequestDelegate(httpContext));
     }
 }

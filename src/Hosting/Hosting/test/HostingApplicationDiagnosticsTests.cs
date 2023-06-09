@@ -2,13 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using System.Diagnostics.Tracing;
 using System.Reflection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Metrics;
 using Moq;
 
 namespace Microsoft.AspNetCore.Hosting.Tests;
@@ -44,17 +46,15 @@ public class HostingApplicationDiagnosticsTests
             });
 
         var testMeterFactory1 = new TestMeterFactory();
-        var testMeterRegister1 = new TestMeterRegistry(testMeterFactory1.Meters);
         var testMeterFactory2 = new TestMeterFactory();
-        var testMeterRegister2 = new TestMeterRegistry(testMeterFactory2.Meters);
 
         var hostingApplication1 = CreateApplication(out var features1, eventSource: hostingEventSource, meterFactory: testMeterFactory1);
         var hostingApplication2 = CreateApplication(out var features2, eventSource: hostingEventSource, meterFactory: testMeterFactory2);
 
-        using var currentRequestsRecorder1 = new InstrumentRecorder<long>(testMeterRegister1, HostingMetrics.MeterName, "current-requests");
-        using var currentRequestsRecorder2 = new InstrumentRecorder<long>(testMeterRegister2, HostingMetrics.MeterName, "current-requests");
-        using var requestDurationRecorder1 = new InstrumentRecorder<double>(testMeterRegister1, HostingMetrics.MeterName, "request-duration");
-        using var requestDurationRecorder2 = new InstrumentRecorder<double>(testMeterRegister2, HostingMetrics.MeterName, "request-duration");
+        using var currentRequestsRecorder1 = new InstrumentRecorder<long>(testMeterFactory1, HostingMetrics.MeterName, "current-requests");
+        using var currentRequestsRecorder2 = new InstrumentRecorder<long>(testMeterFactory2, HostingMetrics.MeterName, "current-requests");
+        using var requestDurationRecorder1 = new InstrumentRecorder<double>(testMeterFactory1, HostingMetrics.MeterName, "request-duration");
+        using var requestDurationRecorder2 = new InstrumentRecorder<double>(testMeterFactory2, HostingMetrics.MeterName, "request-duration");
 
         // Act/Assert 1
         var context1 = hostingApplication1.CreateContext(features1);

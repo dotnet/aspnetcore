@@ -9,6 +9,7 @@
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)NullScope.cs" />
     <Compile Include="$(SharedSourceRoot)Buffers.Testing\*.cs" />
+    <Compile Include="$(SharedSourceRoot)Metrics\TestMeterFactory.cs" LinkBase="shared" />
     <Compile Include="$(KestrelSharedSourceRoot)test\*.cs" LinkBase="shared" />
     <Compile Include="$(SharedSourceRoot)test\MockTimeProvider.cs" LinkBase="shared" />
     <Compile Include="$(KestrelSharedSourceRoot)KnownHeaders.cs" LinkBase="shared" />

@@ -41,6 +41,10 @@ public class ApiConventionAnalyzerIntegrationTest
         => RunNoDiagnosticsAreReturned();
 
     [Fact]
+    public Task NoDiagnosticsAreReturned_ForApiController_WhenMethodNeverReturns()
+        => RunNoDiagnosticsAreReturned();
+
+    [Fact]
     public async Task DiagnosticsAreReturned_ForIncompleteActionResults()
     {
         // Arrange

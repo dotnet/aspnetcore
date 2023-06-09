@@ -4,13 +4,13 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.IO.Pipelines;
 using System.Net.WebSockets;
 using System.Security.Cryptography;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using static System.IO.Pipelines.DuplexPipe;
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal;
 
@@ -67,7 +67,7 @@ internal sealed partial class HttpConnectionManager
     /// Creates a connection without Pipes setup to allow saving allocations until Pipes are needed.
     /// </summary>
     /// <returns></returns>
-    internal HttpConnectionContext CreateConnection(HttpConnectionDispatcherOptions options, int negotiateVersion = 0)
+    internal HttpConnectionContext CreateConnection(HttpConnectionDispatcherOptions options, int negotiateVersion = 0, bool useAck = false)
     {
         string connectionToken;
         var id = MakeNewConnectionId();
@@ -90,8 +90,8 @@ internal sealed partial class HttpConnectionManager
         HttpConnectionsEventSource.Log.ConnectionStart(id);
         _metrics.ConnectionStart(metricsContext);
 
-        var pair = DuplexPipe.CreateConnectionPair(options.TransportPipeOptions, options.AppPipeOptions);
-        var connection = new HttpConnectionContext(id, connectionToken, _connectionLogger, metricsContext, pair.Application, pair.Transport, options);
+        var pair = CreateConnectionPair(options.TransportPipeOptions, options.AppPipeOptions);
+        var connection = new HttpConnectionContext(id, connectionToken, _connectionLogger, metricsContext, pair.Application, pair.Transport, options, useAck);
 
         _connections.TryAdd(connectionToken, (connection, startTimestamp));
 
