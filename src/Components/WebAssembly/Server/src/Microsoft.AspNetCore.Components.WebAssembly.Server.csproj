@@ -3,7 +3,8 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <Description>Runtime server features for ASP.NET Core Blazor applications.</Description>
-    <IsShippingPackage>true</IsShippingPackage>
+    <IsAspNetCoreApp>true</IsAspNetCoreApp>
+    <IsPackable>false</IsPackable>
 
     <!-- We're deliberately bundling assemblies as content files. Suppress the warning. -->
     <NoWarn>$(NoWarn);NU5100</NoWarn>
