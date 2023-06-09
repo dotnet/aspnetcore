@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.WsFederation;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens.Saml;
 using Microsoft.IdentityModel.Tokens.Saml2;
 
@@ -18,12 +19,21 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation;
 /// </summary>
 public class WsFederationOptions : RemoteAuthenticationOptions
 {
-    private ICollection<ISecurityTokenValidator> _securityTokenHandlers = new Collection<ISecurityTokenValidator>()
-        {
-            new Saml2SecurityTokenHandler(),
-            new SamlSecurityTokenHandler(),
-            new JwtSecurityTokenHandler()
-        };
+    private ICollection<TokenHandler> _tokenHandlers = new Collection<TokenHandler>
+    {
+        new Saml2SecurityTokenHandler(),
+        new SamlSecurityTokenHandler(),
+        new JsonWebTokenHandler()
+    };
+
+    // left for now so tests still work.
+    private ICollection<ISecurityTokenValidator> _securityTokenValidators = new Collection<ISecurityTokenValidator>
+    {
+        new Saml2SecurityTokenHandler(),
+        new SamlSecurityTokenHandler(),
+        new JwtSecurityTokenHandler()
+    };
+
     private TokenValidationParameters _tokenValidationParameters = new TokenValidationParameters();
 
     /// <summary>
@@ -94,17 +104,32 @@ public class WsFederationOptions : RemoteAuthenticationOptions
     }
 
     /// <summary>
-    /// Gets or sets the collection of <see cref="ISecurityTokenValidator"/> used to read and validate the <see cref="SecurityToken"/>s.
+    /// Gets or sets the collection of <see cref="TokenHandler"/> used to read and validate the <see cref="SecurityToken"/>s.
+    /// </summary>
+    public ICollection<TokenHandler> TokenHandlers
+    {
+        get
+        {
+            return _tokenHandlers;
+        }
+        set
+        {
+            _tokenHandlers = value ?? throw new ArgumentNullException(nameof(TokenHandlers));
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets the collection of <see cref="TokenHandler"/> used to read and validate the <see cref="SecurityToken"/>s.
     /// </summary>
     public ICollection<ISecurityTokenValidator> SecurityTokenHandlers
     {
         get
         {
-            return _securityTokenHandlers;
+            return _securityTokenValidators;
         }
         set
         {
-            _securityTokenHandlers = value ?? throw new ArgumentNullException(nameof(SecurityTokenHandlers));
+            _securityTokenValidators = value ?? throw new ArgumentNullException(nameof(SecurityTokenHandlers));
         }
     }
 

@@ -233,32 +233,32 @@ public class WsFederationHandler : RemoteAuthenticationHandler<WsFederationOptio
             {
                 ProtocolMessage = wsFederationMessage
             };
+
             await Events.SecurityTokenReceived(securityTokenReceivedContext);
             if (securityTokenReceivedContext.Result != null)
             {
                 return securityTokenReceivedContext.Result;
             }
+
             wsFederationMessage = securityTokenReceivedContext.ProtocolMessage;
             properties = messageReceivedContext.Properties!;
 
-            if (_configuration == null)
-            {
-                _configuration = await Options.ConfigurationManager.GetConfigurationAsync(Context.RequestAborted);
-            }
-
-            // Copy and augment to avoid cross request race conditions for updated configurations.
+            // Copy to avoid cross request race conditions for updated configurations.
             var tvp = Options.TokenValidationParameters.Clone();
-            var issuers = new[] { _configuration.Issuer };
-            tvp.ValidIssuers = (tvp.ValidIssuers == null ? issuers : tvp.ValidIssuers.Concat(issuers));
-            tvp.IssuerSigningKeys = (tvp.IssuerSigningKeys == null ? _configuration.SigningKeys : tvp.IssuerSigningKeys.Concat(_configuration.SigningKeys));
 
+            // TODO - Options.ConfigurationManager is not necessarily a BaseConfigurationManager.
+            // TODO - need to update API to pass CancellationToken: Context.RequestAborted
+
+            tvp.ConfigurationManager = Options.ConfigurationManager as BaseConfigurationManager;
             ClaimsPrincipal? principal = null;
             SecurityToken? parsedToken = null;
-            foreach (var validator in Options.SecurityTokenHandlers)
+            foreach (var validator in Options.TokenHandlers)
             {
-                if (validator.CanReadToken(token))
+                TokenValidationResult tokenValidationResult = await validator.ValidateTokenAsync(token, tvp);
+                if (tokenValidationResult.IsValid)
                 {
-                    principal = validator.ValidateToken(token, tvp, out parsedToken);
+                    principal = new ClaimsPrincipal(tokenValidationResult.ClaimsIdentity);
+                    parsedToken = tokenValidationResult.SecurityToken;
                     break;
                 }
             }

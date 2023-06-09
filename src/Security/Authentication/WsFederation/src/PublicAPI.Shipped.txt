@@ -106,6 +106,8 @@ Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions.SkipUnrecog
 Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions.SkipUnrecognizedRequests.set -> void
 Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions.StateDataFormat.get -> Microsoft.AspNetCore.Authentication.ISecureDataFormat<Microsoft.AspNetCore.Authentication.AuthenticationProperties!>!
 Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions.StateDataFormat.set -> void
+Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions.TokenHandlers.get -> System.Collections.Generic.ICollection<Microsoft.IdentityModel.Tokens.TokenHandler!>!
+Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions.TokenHandlers.set -> void
 Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions.TokenValidationParameters.get -> Microsoft.IdentityModel.Tokens.TokenValidationParameters!
 Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions.TokenValidationParameters.set -> void
 Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions.UseTokenLifetime.get -> bool
