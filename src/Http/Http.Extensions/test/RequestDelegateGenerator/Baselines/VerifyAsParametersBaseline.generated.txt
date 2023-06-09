@@ -505,8 +505,15 @@ namespace Microsoft.AspNetCore.Http.Generated
                             httpContext.Response.StatusCode = 400;
                             return;
                         }
-                        httpContext.Response.ContentType ??= "text/plain";
                         var result = handler(args_local);
+                        if (result is string)
+                        {
+                            httpContext.Response.ContentType ??= "text/plain; charset=utf-8";
+                        }
+                        else
+                        {
+                            httpContext.Response.ContentType ??= "application/json; charset=utf-8";
+                        }
                         await httpContext.Response.WriteAsync(result);
                     }
 

@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.Loader;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator;
@@ -26,7 +27,7 @@ namespace Microsoft.AspNetCore.Http.Generators.Tests;
 public abstract class RequestDelegateCreationTestBase : LoggedTest
 {
     // Change this to true and run tests in development to regenerate baseline files.
-    public bool RegenerateBaselines;
+    public bool RegenerateBaselines = false;
 
     protected abstract bool IsGeneratorEnabled { get; }
 
@@ -234,6 +235,16 @@ public abstract class RequestDelegateCreationTestBase : LoggedTest
 
         Assert.Equal(expectedStatusCode, httpContext.Response.StatusCode);
         check(deserializedObject);
+    }
+
+    internal static async Task VerifyResponseJsonNodeAsync(HttpContext httpContext, Action<JsonNode> check, int expectedStatusCode = 200, string expectedContentType = "application/json; charset=utf-8")
+    {
+        var body = await GetResponseBodyAsync(httpContext);
+        var node = JsonNode.Parse(body);
+
+        Assert.Equal(expectedContentType, httpContext.Response.ContentType);
+        Assert.Equal(expectedStatusCode, httpContext.Response.StatusCode);
+        check(node);
     }
 
     internal static async Task VerifyResponseBodyAsync(HttpContext httpContext, string expectedBody, int expectedStatusCode = 200)

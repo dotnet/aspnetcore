@@ -1188,64 +1188,109 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Same(myOriginalService, httpContext.Items["service"]);
     }
 
-    public static IEnumerable<object[]> ChildResult
+    [Fact]
+    public async Task RequestDelegatePopulatesHttpContextParameterWithoutAttribute()
     {
-        get
+        HttpContext? httpContextArgument = null;
+
+        void TestAction(HttpContext httpContext)
         {
-            TodoChild originalTodo = new()
-            {
-                Name = "Write even more tests!",
-                Child = "With type hierarchies!",
-            };
-
-            Todo TestAction() => originalTodo;
-
-            Task<Todo> TaskTestAction() => Task.FromResult<Todo>(originalTodo);
-            async Task<Todo> TaskTestActionAwaited()
-            {
-                await Task.Yield();
-                return originalTodo;
-            }
-
-            ValueTask<Todo> ValueTaskTestAction() => ValueTask.FromResult<Todo>(originalTodo);
-            async ValueTask<Todo> ValueTaskTestActionAwaited()
-            {
-                await Task.Yield();
-                return originalTodo;
-            }
-
-            return new List<object[]>
-                {
-                    new object[] { (Func<Todo>)TestAction },
-                    new object[] { (Func<Task<Todo>>)TaskTestAction},
-                    new object[] { (Func<Task<Todo>>)TaskTestActionAwaited},
-                    new object[] { (Func<ValueTask<Todo>>)ValueTaskTestAction},
-                    new object[] { (Func<ValueTask<Todo>>)ValueTaskTestActionAwaited},
-                };
+            httpContextArgument = httpContext;
         }
-    }
 
-    [Theory]
-    [MemberData(nameof(ChildResult))]
-    public async Task RequestDelegateWritesMembersFromChildTypesToJsonResponseBody(Delegate @delegate)
-    {
         var httpContext = CreateHttpContext();
-        var responseBodyStream = new MemoryStream();
-        httpContext.Response.Body = responseBodyStream;
 
-        var factoryResult = RequestDelegateFactory.Create(@delegate);
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
         var requestDelegate = factoryResult.RequestDelegate;
 
         await requestDelegate(httpContext);
 
-        var deserializedResponseBody = JsonSerializer.Deserialize<TodoChild>(responseBodyStream.ToArray(), new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        });
+        Assert.Same(httpContext, httpContextArgument);
+    }
 
-        Assert.NotNull(deserializedResponseBody);
-        Assert.Equal("Write even more tests!", deserializedResponseBody!.Name);
-        Assert.Equal("With type hierarchies!", deserializedResponseBody!.Child);
+    [Fact]
+    public async Task RequestDelegatePassHttpContextRequestAbortedAsCancellationToken()
+    {
+        CancellationToken? cancellationTokenArgument = null;
+
+        void TestAction(CancellationToken cancellationToken)
+        {
+            cancellationTokenArgument = cancellationToken;
+        }
+
+        using var cts = new CancellationTokenSource();
+        var httpContext = CreateHttpContext();
+        // Reset back to default HttpRequestLifetimeFeature that implements a setter for RequestAborted.
+        httpContext.Features.Set<IHttpRequestLifetimeFeature>(new HttpRequestLifetimeFeature());
+        httpContext.RequestAborted = cts.Token;
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(httpContext.RequestAborted, cancellationTokenArgument);
+    }
+
+    [Fact]
+    public async Task RequestDelegatePassHttpContextUserAsClaimsPrincipal()
+    {
+        ClaimsPrincipal? userArgument = null;
+
+        void TestAction(ClaimsPrincipal user)
+        {
+            userArgument = user;
+        }
+
+        var httpContext = CreateHttpContext();
+        httpContext.User = new ClaimsPrincipal();
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(httpContext.User, userArgument);
+    }
+
+    [Fact]
+    public async Task RequestDelegatePassHttpContextRequestAsHttpRequest()
+    {
+        HttpRequest? httpRequestArgument = null;
+
+        void TestAction(HttpRequest httpRequest)
+        {
+            httpRequestArgument = httpRequest;
+        }
+
+        var httpContext = CreateHttpContext();
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(httpContext.Request, httpRequestArgument);
+    }
+
+    [Fact]
+    public async Task RequestDelegatePassesHttpContextRresponseAsHttpResponse()
+    {
+        HttpResponse? httpResponseArgument = null;
+
+        void TestAction(HttpResponse httpResponse)
+        {
+            httpResponseArgument = httpResponse;
+        }
+
+        var httpContext = CreateHttpContext();
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(httpContext.Response, httpResponseArgument);
     }
 
     public static IEnumerable<object[]> PolymorphicResult
@@ -1285,6 +1330,9 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         }
     }
 
+    // NOTE: This test needs to be retained here because it tests a specific capability to create a delegate
+    //       from the request delegate factory without passing in an instance of a service provider which
+    //       is not something we can get at with the shared compiler/runtime test harness.
     [Theory]
     [MemberData(nameof(PolymorphicResult))]
     public async Task RequestDelegateWritesMembersFromChildTypesToJsonResponseBody_WithJsonPolymorphicOptions(Delegate @delegate)
@@ -1312,33 +1360,11 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal("With type hierarchies!", deserializedResponseBody!.Child);
     }
 
-    [Theory]
-    [MemberData(nameof(PolymorphicResult))]
-    public async Task RequestDelegateWritesMembersFromChildTypesToJsonResponseBody_WithJsonPolymorphicOptionsAndConfiguredJsonOptions(Delegate @delegate)
-    {
-        var httpContext = CreateHttpContext();
-        httpContext.RequestServices = new ServiceCollection()
-            .AddSingleton(LoggerFactory)
-            .AddSingleton(Options.Create(new JsonOptions()))
-            .BuildServiceProvider();
-        var responseBodyStream = new MemoryStream();
-        httpContext.Response.Body = responseBodyStream;
-
-        var factoryResult = RequestDelegateFactory.Create(@delegate, new RequestDelegateFactoryOptions { ServiceProvider = httpContext.RequestServices });
-        var requestDelegate = factoryResult.RequestDelegate;
-
-        await requestDelegate(httpContext);
-
-        var deserializedResponseBody = JsonSerializer.Deserialize<JsonTodoChild>(responseBodyStream.ToArray(), new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        });
-
-        Assert.NotNull(deserializedResponseBody);
-        Assert.Equal("Write even more tests!", deserializedResponseBody!.Name);
-        Assert.Equal("With type hierarchies!", deserializedResponseBody!.Child);
-    }
-
+    // NOTE: This test needs to be retained here because it tests a specific capability to create a delegate
+    //       from the request delegate factory without passing in an instance of a service provider which
+    //       is not something we can get at with the shared compiler/runtime test harness. There is a variant
+    //       of this test that has been added to the shared test harness to make sure that we do write the
+    //       type discriminator.
     [Theory]
     [MemberData(nameof(PolymorphicResult))]
     public async Task RequestDelegateWritesJsonTypeDiscriminatorToJsonResponseBody_WithJsonPolymorphicOptions(Delegate @delegate)
@@ -1449,165 +1475,6 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal("Still not enough tests!", decodedResponseBody);
     }
 
-    public static IEnumerable<object[]> StringResult
-    {
-        get
-        {
-            var test = "String Test";
-
-            string TestAction() => test;
-            Task<string> TaskTestAction() => Task.FromResult(test);
-            ValueTask<string> ValueTaskTestAction() => ValueTask.FromResult(test);
-
-            static string StaticTestAction() => "String Test";
-            static Task<string> StaticTaskTestAction() => Task.FromResult("String Test");
-            static ValueTask<string> StaticValueTaskTestAction() => ValueTask.FromResult("String Test");
-
-            // Dynamic via object
-            static object StaticStringAsObjectTestAction() => "String Test";
-
-            // Dynamic via Task<object>
-            static Task<object> StaticStringAsTaskObjectTestAction() => Task.FromResult<object>("String Test");
-
-            // Dynamic via ValueTask<object>
-            static ValueTask<object> StaticStringAsValueTaskObjectTestAction() => ValueTask.FromResult<object>("String Test");
-
-            return new List<object[]>
-                {
-                    new object[] { (Func<string>)TestAction },
-                    new object[] { (Func<Task<string>>)TaskTestAction },
-                    new object[] { (Func<ValueTask<string>>)ValueTaskTestAction },
-                    new object[] { (Func<string>)StaticTestAction },
-                    new object[] { (Func<Task<string>>)StaticTaskTestAction },
-                    new object[] { (Func<ValueTask<string>>)StaticValueTaskTestAction },
-
-                    new object[] { (Func<object>)StaticStringAsObjectTestAction },
-
-                    new object[] { (Func<Task<object>>)StaticStringAsTaskObjectTestAction },
-                    new object[] { (Func<ValueTask<object>>)StaticStringAsValueTaskObjectTestAction },
-
-                };
-        }
-    }
-
-    [Theory]
-    [MemberData(nameof(StringResult))]
-    public async Task RequestDelegateWritesStringReturnValueAndSetContentTypeWhenNull(Delegate @delegate)
-    {
-        var httpContext = CreateHttpContext();
-        var responseBodyStream = new MemoryStream();
-        httpContext.Response.Body = responseBodyStream;
-
-        var factoryResult = RequestDelegateFactory.Create(@delegate);
-        var requestDelegate = factoryResult.RequestDelegate;
-
-        await requestDelegate(httpContext);
-
-        var responseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
-
-        Assert.Equal("String Test", responseBody);
-        Assert.Equal("text/plain; charset=utf-8", httpContext.Response.ContentType);
-    }
-
-    [Theory]
-    [MemberData(nameof(StringResult))]
-    public async Task RequestDelegateWritesStringReturnDoNotChangeContentType(Delegate @delegate)
-    {
-        var httpContext = CreateHttpContext();
-        httpContext.Response.ContentType = "application/json; charset=utf-8";
-
-        var factoryResult = RequestDelegateFactory.Create(@delegate);
-        var requestDelegate = factoryResult.RequestDelegate;
-
-        await requestDelegate(httpContext);
-
-        Assert.Equal("application/json; charset=utf-8", httpContext.Response.ContentType);
-    }
-
-    public static IEnumerable<object[]> IntResult
-    {
-        get
-        {
-            int TestAction() => 42;
-            Task<int> TaskTestAction() => Task.FromResult(42);
-            ValueTask<int> ValueTaskTestAction() => ValueTask.FromResult(42);
-
-            static int StaticTestAction() => 42;
-            static Task<int> StaticTaskTestAction() => Task.FromResult(42);
-            static ValueTask<int> StaticValueTaskTestAction() => ValueTask.FromResult(42);
-
-            return new List<object[]>
-                {
-                    new object[] { (Func<int>)TestAction },
-                    new object[] { (Func<Task<int>>)TaskTestAction },
-                    new object[] { (Func<ValueTask<int>>)ValueTaskTestAction },
-                    new object[] { (Func<int>)StaticTestAction },
-                    new object[] { (Func<Task<int>>)StaticTaskTestAction },
-                    new object[] { (Func<ValueTask<int>>)StaticValueTaskTestAction },
-                };
-        }
-    }
-
-    [Theory]
-    [MemberData(nameof(IntResult))]
-    public async Task RequestDelegateWritesIntReturnValue(Delegate @delegate)
-    {
-        var httpContext = CreateHttpContext();
-        var responseBodyStream = new MemoryStream();
-        httpContext.Response.Body = responseBodyStream;
-
-        var factoryResult = RequestDelegateFactory.Create(@delegate);
-        var requestDelegate = factoryResult.RequestDelegate;
-
-        await requestDelegate(httpContext);
-
-        var responseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
-
-        Assert.Equal("42", responseBody);
-    }
-
-    public static IEnumerable<object[]> BoolResult
-    {
-        get
-        {
-            bool TestAction() => true;
-            Task<bool> TaskTestAction() => Task.FromResult(true);
-            ValueTask<bool> ValueTaskTestAction() => ValueTask.FromResult(true);
-
-            static bool StaticTestAction() => true;
-            static Task<bool> StaticTaskTestAction() => Task.FromResult(true);
-            static ValueTask<bool> StaticValueTaskTestAction() => ValueTask.FromResult(true);
-
-            return new List<object[]>
-                {
-                    new object[] { (Func<bool>)TestAction },
-                    new object[] { (Func<Task<bool>>)TaskTestAction },
-                    new object[] { (Func<ValueTask<bool>>)ValueTaskTestAction },
-                    new object[] { (Func<bool>)StaticTestAction },
-                    new object[] { (Func<Task<bool>>)StaticTaskTestAction },
-                    new object[] { (Func<ValueTask<bool>>)StaticValueTaskTestAction },
-                };
-        }
-    }
-
-    [Theory]
-    [MemberData(nameof(BoolResult))]
-    public async Task RequestDelegateWritesBoolReturnValue(Delegate @delegate)
-    {
-        var httpContext = CreateHttpContext();
-        var responseBodyStream = new MemoryStream();
-        httpContext.Response.Body = responseBodyStream;
-
-        var factoryResult = RequestDelegateFactory.Create(@delegate);
-        var requestDelegate = factoryResult.RequestDelegate;
-
-        await requestDelegate(httpContext);
-
-        var responseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
-
-        Assert.Equal("true", responseBody);
-    }
-
     public static IEnumerable<object[]> NullResult
     {
         get
@@ -1642,58 +1509,6 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
         var exception = await Assert.ThrowsAnyAsync<InvalidOperationException>(async () => await requestDelegate(httpContext));
         Assert.Contains(message, exception.Message);
-    }
-
-    public static IEnumerable<object[]> NullContentResult
-    {
-        get
-        {
-            bool? TestBoolAction() => null;
-            Task<bool?> TaskTestBoolAction() => Task.FromResult<bool?>(null);
-            ValueTask<bool?> ValueTaskTestBoolAction() => ValueTask.FromResult<bool?>(null);
-
-            int? TestIntAction() => null;
-            Task<int?> TaskTestIntAction() => Task.FromResult<int?>(null);
-            ValueTask<int?> ValueTaskTestIntAction() => ValueTask.FromResult<int?>(null);
-
-            Todo? TestTodoAction() => null;
-            Task<Todo?> TaskTestTodoAction() => Task.FromResult<Todo?>(null);
-            ValueTask<Todo?> ValueTaskTestTodoAction() => ValueTask.FromResult<Todo?>(null);
-
-            TodoStruct? TodoStructAction() => null;
-
-            return new List<object[]>
-                {
-                    new object[] { (Func<bool?>)TestBoolAction },
-                    new object[] { (Func<Task<bool?>>)TaskTestBoolAction },
-                    new object[] { (Func<ValueTask<bool?>>)ValueTaskTestBoolAction },
-                    new object[] { (Func<int?>)TestIntAction },
-                    new object[] { (Func<Task<int?>>)TaskTestIntAction },
-                    new object[] { (Func<ValueTask<int?>>)ValueTaskTestIntAction },
-                    new object[] { (Func<Todo?>)TestTodoAction },
-                    new object[] { (Func<Task<Todo?>>)TaskTestTodoAction },
-                    new object[] { (Func<ValueTask<Todo?>>)ValueTaskTestTodoAction },
-                    new object[] { (Func<TodoStruct?>)TodoStructAction },
-                };
-        }
-    }
-
-    [Theory]
-    [MemberData(nameof(NullContentResult))]
-    public async Task RequestDelegateWritesNullReturnNullValue(Delegate @delegate)
-    {
-        var httpContext = CreateHttpContext();
-        var responseBodyStream = new MemoryStream();
-        httpContext.Response.Body = responseBodyStream;
-
-        var factoryResult = RequestDelegateFactory.Create(@delegate);
-        var requestDelegate = factoryResult.RequestDelegate;
-
-        await requestDelegate(httpContext);
-
-        var responseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
-
-        Assert.Equal("null", responseBody);
     }
 
     public static IEnumerable<object?[]> RouteParamOptionalityData
@@ -2803,37 +2618,6 @@ public partial class RequestDelegateFactoryTests : LoggedTest
     }
 
     [Fact]
-    public void InferMetadata_ThenCreate_CombinesAllMetadata_InCorrectOrder()
-    {
-        // Arrange
-        var @delegate = [Attribute1, Attribute2] (AddsCustomParameterMetadata param1) => new CountsDefaultEndpointMetadataPoco();
-        var options = new RequestDelegateFactoryOptions
-        {
-            EndpointBuilder = CreateEndpointBuilder(),
-        };
-
-        // Act
-        var metadataResult = RequestDelegateFactory.InferMetadata(@delegate.Method, options);
-        options.EndpointBuilder.Metadata.Add(new CustomEndpointMetadata { Source = MetadataSource.Caller });
-        var result = RequestDelegateFactory.Create(@delegate, options, metadataResult);
-
-        // Assert
-        Assert.Collection(result.EndpointMetadata,
-            // Inferred AcceptsMetadata from RDF for complex type
-            m => Assert.True(m is AcceptsMetadata am && am.RequestType == typeof(AddsCustomParameterMetadata)),
-            // Inferred ProducesResopnseTypeMetadata from RDF for complex type
-            m => Assert.Equal(typeof(CountsDefaultEndpointMetadataPoco), ((IProducesResponseTypeMetadata)m).Type),
-            // Metadata provided by parameters implementing IEndpointParameterMetadataProvider
-            m => Assert.True(m is ParameterNameMetadata { Name: "param1" }),
-            // Metadata provided by parameters implementing IEndpointMetadataProvider
-            m => Assert.True(m is CustomEndpointMetadata { Source: MetadataSource.Parameter }),
-            // Metadata provided by return type implementing IEndpointMetadataProvider
-            m => Assert.True(m is MetadataCountMetadata { Count: 4 }),
-            // Entry-specific metadata added after a call to InferMetadata
-            m => Assert.True(m is CustomEndpointMetadata { Source: MetadataSource.Caller }));
-    }
-
-    [Fact]
     public void InferMetadata_PopulatesAcceptsMetadata_WhenReadFromForm()
     {
         // Arrange
@@ -3417,11 +3201,6 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         public int Id { get; set; }
         public string? Name { get; set; } = "Todo";
         public bool IsComplete { get; set; }
-    }
-
-    private class TodoChild : Todo
-    {
-        public string? Child { get; set; }
     }
 
     private class JsonTodoChild : JsonTodo

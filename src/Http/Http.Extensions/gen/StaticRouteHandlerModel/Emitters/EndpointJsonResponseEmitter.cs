@@ -9,7 +9,7 @@ internal static class EndpointJsonResponseEmitter
     {
         if (endpointResponse.IsSerializableJsonResponse(out var responseType))
         {
-            var typeName = responseType.ToDisplayString(EmitterConstants.DisplayFormat);
+            var typeName = responseType.ToDisplayString(EmitterConstants.DisplayFormatWithoutNullability);
 
             codeWriter.WriteLine("var serializerOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value.SerializerOptions ?? new JsonOptions().SerializerOptions;");
             codeWriter.WriteLine($"var jsonTypeInfo =  (JsonTypeInfo<{typeName}>)serializerOptions.GetTypeInfo(typeof({typeName}));");
