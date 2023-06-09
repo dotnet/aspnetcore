@@ -190,7 +190,6 @@ describe('DomSync', () => {
   });
 
   test('should delete removed attributes, including ones with namespace', () => {
-    debugger;
     // Arrange
     const destination = makeExistingContent(
       `<elem will-delete='val1' preserved='preserved value' another-to-delete='val2'></elem>`);
