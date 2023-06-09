@@ -26,6 +26,7 @@
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Components.Authorization" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Components" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Components.Forms" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Components.Web" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.FileProviders.Embedded" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.Configuration.KeyPerFile" />
@@ -109,6 +110,5 @@
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.SignalR" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Components.Endpoints" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Components.Server" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
   </ItemGroup>
 </Project>
