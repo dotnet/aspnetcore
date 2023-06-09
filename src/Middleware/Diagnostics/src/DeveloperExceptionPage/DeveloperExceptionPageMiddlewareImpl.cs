@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
@@ -34,23 +35,13 @@ internal class DeveloperExceptionPageMiddlewareImpl
     private readonly ILogger _logger;
     private readonly IFileProvider _fileProvider;
     private readonly DiagnosticSource _diagnosticSource;
+    private readonly DiagnosticsMetrics _metrics;
     private readonly ExceptionDetailsProvider _exceptionDetailsProvider;
     private readonly Func<ErrorContext, Task> _exceptionHandler;
     private static readonly MediaTypeHeaderValue _textHtmlMediaType = new MediaTypeHeaderValue("text/html");
     private readonly ExtensionsExceptionJsonContext _serializationContext;
     private readonly IProblemDetailsService? _problemDetailsService;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="DeveloperExceptionPageMiddleware"/> class
-    /// </summary>
-    /// <param name="next">The <see cref="RequestDelegate"/> representing the next middleware in the pipeline.</param>
-    /// <param name="options">The options for configuring the middleware.</param>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> used for logging.</param>
-    /// <param name="hostingEnvironment"></param>
-    /// <param name="diagnosticSource">The <see cref="DiagnosticSource"/> used for writing diagnostic messages.</param>
-    /// <param name="filters">The list of registered <see cref="IDeveloperPageExceptionFilter"/>.</param>
-    /// <param name="jsonOptions">The <see cref="JsonOptions"/> used for serialization.</param>
-    /// <param name="problemDetailsService">The <see cref="IProblemDetailsService"/> used for writing <see cref="ProblemDetails"/> messages.</param>
     public DeveloperExceptionPageMiddlewareImpl(
         RequestDelegate next,
         IOptions<DeveloperExceptionPageOptions> options,
@@ -58,6 +49,7 @@ internal class DeveloperExceptionPageMiddlewareImpl
         IWebHostEnvironment hostingEnvironment,
         DiagnosticSource diagnosticSource,
         IEnumerable<IDeveloperPageExceptionFilter> filters,
+        IMeterFactory meterFactory,
         IOptions<JsonOptions>? jsonOptions = null,
         IProblemDetailsService? problemDetailsService = null)
     {
@@ -70,6 +62,7 @@ internal class DeveloperExceptionPageMiddlewareImpl
         _logger = loggerFactory.CreateLogger<DeveloperExceptionPageMiddleware>();
         _fileProvider = _options.FileProvider ?? hostingEnvironment.ContentRootFileProvider;
         _diagnosticSource = diagnosticSource;
+        _metrics = new DiagnosticsMetrics(meterFactory);
         _exceptionDetailsProvider = new ExceptionDetailsProvider(_fileProvider, _logger, _options.SourceCodeLineCount);
         _exceptionHandler = DisplayException;
         _serializationContext = CreateSerializationContext(jsonOptions?.Value);
@@ -117,9 +110,12 @@ internal class DeveloperExceptionPageMiddlewareImpl
         }
         catch (Exception ex)
         {
+            var exceptionName = ex.GetType().FullName!;
+
             if ((ex is OperationCanceledException || ex is IOException) && context.RequestAborted.IsCancellationRequested)
             {
                 _logger.RequestAbortedException();
+                _metrics.RequestException(exceptionName, ExceptionResult.Aborted, handler: null);
 
                 if (!context.Response.HasStarted)
                 {
@@ -134,6 +130,7 @@ internal class DeveloperExceptionPageMiddlewareImpl
             if (context.Response.HasStarted)
             {
                 _logger.ResponseStartedErrorPageMiddleware();
+                _metrics.RequestException(exceptionName, ExceptionResult.Skipped, handler: null);
                 throw;
             }
 
@@ -159,6 +156,7 @@ internal class DeveloperExceptionPageMiddlewareImpl
                     WriteDiagnosticEvent(_diagnosticSource, eventName, new { httpContext = context, exception = ex });
                 }
 
+                _metrics.RequestException(exceptionName, ExceptionResult.Unhandled, handler: null);
                 return;
             }
             catch (Exception ex2)
@@ -166,6 +164,8 @@ internal class DeveloperExceptionPageMiddlewareImpl
                 // If there's a Exception while generating the error page, re-throw the original exception.
                 _logger.DisplayErrorPageException(ex2);
             }
+
+            _metrics.RequestException(exceptionName, ExceptionResult.Unhandled, handler: null);
             throw;
         }
 
