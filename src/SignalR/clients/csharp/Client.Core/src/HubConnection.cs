@@ -489,6 +489,8 @@ public partial class HubConnection : IAsyncDisposable
         {
             Log.ErrorStartingConnection(_logger, ex);
 
+            startingConnectionState.Cleanup();
+
             // Can't have any invocations to cancel, we're in the lock.
             await CloseAsync(startingConnectionState.Connection).ConfigureAwait(false);
             throw;
@@ -1988,8 +1990,6 @@ public partial class HubConnection : IAsyncDisposable
 
             Log.Stopping(_logger);
 
-            Cleanup();
-
             // Complete our write pipe, which should cause everything to shut down
             Log.TerminatingReceiveLoop(_logger);
             Connection.Transport.Input.CancelPendingRead();
@@ -2004,7 +2004,6 @@ public partial class HubConnection : IAsyncDisposable
             _stopTcs!.TrySetResult(null);
         }
 
-        // Common cleanup logic called by StopAsync, or when the connection is closing from the network side
         public void Cleanup()
         {
             _messageBuffer?.Dispose();

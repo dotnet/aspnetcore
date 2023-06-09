@@ -283,7 +283,7 @@ export class HubConnection {
         }
     }
 
-    private async _stopInternal(error?: Error): Promise<void> {
+    private _stopInternal(error?: Error): Promise<void> {
         if (this._connectionState === HubConnectionState.Disconnected) {
             this._logger.log(LogLevel.Debug, `Call to HubConnection.stop(${error}) ignored because it is already in the disconnected state.`);
             return Promise.resolve();
@@ -296,14 +296,6 @@ export class HubConnection {
 
         const state = this._connectionState;
         this._connectionState = HubConnectionState.Disconnecting;
-
-        if (state === HubConnectionState.Connected) {
-            await this._sendWithProtocol(this._createCloseMessage());
-            // Transport can close during the above 'await', we should check if that occurred and noop.
-            if (this._connectionState !== HubConnectionState.Disconnecting) {
-                return this._stopPromise!;
-            }
-        }
 
         this._logger.log(LogLevel.Debug, "Stopping HubConnection.");
 
@@ -320,6 +312,11 @@ export class HubConnection {
             return Promise.resolve();
         }
 
+        if (state === HubConnectionState.Connected) {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            this._sendCloseMessage();
+        }
+
         this._cleanupTimeout();
         this._cleanupPingTimer();
         this._stopDuringStartError = error || new AbortError("The connection was stopped before the hub handshake could complete.");
@@ -327,7 +324,15 @@ export class HubConnection {
         // HttpConnection.stop() should not complete until after either HttpConnection.start() fails
         // or the onclose callback is invoked. The onclose callback will transition the HubConnection
         // to the disconnected state if need be before HttpConnection.stop() completes.
-        await this.connection.stop(error);
+        return this.connection.stop(error);
+    }
+
+    private async _sendCloseMessage() {
+        try {
+            await this._sendWithProtocol(this._createCloseMessage());
+        } catch {
+            // Ignore, this is a best effort attempt to let the server know the client closed gracefully.
+        }
     }
 
     /** Invokes a streaming hub method on the server using the specified name and arguments.
@@ -795,8 +800,6 @@ export class HubConnection {
         if (this._connectionStarted) {
             this._connectionState = HubConnectionState.Disconnected;
             this._connectionStarted = false;
-
-            this._stopPromise = undefined;
 
             if (Platform.isBrowser) {
                 window.document.removeEventListener("freeze", this._freezeEventListener);
