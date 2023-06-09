@@ -124,8 +124,8 @@ internal sealed partial class EndpointRoutingMiddleware
                 }
 
                 // It shouldn't be possible for a route to be matched via the route matcher and not have a route.
-                // Just in case, add a special (unknown) value as the route tag to metrics.
-                var route = endpoint.Metadata.GetMetadata<IRouteDiagnosticsMetadata>()?.Route ?? "(unknown)";
+                // Just in case, add a special (missing) value as the route tag to metrics.
+                var route = endpoint.Metadata.GetMetadata<IRouteDiagnosticsMetadata>()?.Route ?? "(missing)";
                 _metrics.MatchSuccess(route, isFallback);
             }
 

@@ -86,6 +86,35 @@ public class RoutingMetricsTests
     }
 
     [Fact]
+    public async Task Match_Success_MissingRoute()
+    {
+        // Arrange
+        var meterFactory = new TestMeterFactory();
+        var middleware = CreateMiddleware(
+            matcherFactory: new TestMatcherFactory(true, c =>
+            {
+                c.SetEndpoint(new Endpoint(c => Task.CompletedTask, EndpointMetadataCollection.Empty, "Test name"));
+            }),
+            meterFactory: meterFactory);
+        var httpContext = new DefaultHttpContext();
+        var meter = meterFactory.Meters.Single();
+
+        using var routingMatchSuccessRecorder = new InstrumentRecorder<long>(meterFactory, RoutingMetrics.MeterName, "routing-match-success");
+        using var routingMatchFailureRecorder = new InstrumentRecorder<long>(meterFactory, RoutingMetrics.MeterName, "routing-match-failure");
+
+        // Act
+        await middleware.Invoke(httpContext);
+
+        // Assert
+        Assert.Equal(RoutingMetrics.MeterName, meter.Name);
+        Assert.Null(meter.Version);
+
+        Assert.Collection(routingMatchSuccessRecorder.GetMeasurements(),
+            m => AssertSuccess(m, "(missing)", fallback: false));
+        Assert.Empty(routingMatchFailureRecorder.GetMeasurements());
+    }
+
+    [Fact]
     public async Task Match_Failure()
     {
         // Arrange
