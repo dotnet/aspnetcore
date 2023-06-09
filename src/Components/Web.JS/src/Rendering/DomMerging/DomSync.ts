@@ -71,6 +71,10 @@ function treatAsMatch(destination: Node, source: Node) {
     case Node.TEXT_NODE:
     case Node.COMMENT_NODE:
       break;
+    case Node.ELEMENT_NODE:
+      // TODO: Handle attributes
+      // TODO: Recurse into descendants
+      break;
     default:
       throw new Error(`Not implemented: matching nodes of type ${destination.nodeType}`);
   }
