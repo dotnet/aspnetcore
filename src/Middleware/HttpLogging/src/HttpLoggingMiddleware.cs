@@ -47,18 +47,26 @@ internal sealed class HttpLoggingMiddleware
             return _next(context);
         }
 
-        return InvokeInternal(context);
-    }
-
-    private async Task InvokeInternal(HttpContext context)
-    {
         var options = _options.CurrentValue;
-        RequestBufferingStream? requestBufferingStream = null;
-        Stream? originalBody = null;
-
         var loggingAttribute = context.GetEndpoint()?.Metadata.GetMetadata<HttpLoggingAttribute>();
         var loggingFields = loggingAttribute?.LoggingFields ?? options.LoggingFields;
 
+        if (_interceptors.Length == 0 && loggingFields == HttpLoggingFields.None)
+        {
+            // Logging is disabled for this endpoint and there are no interceptors to turn it on.
+            return _next(context);
+        }
+
+        return InvokeInternal(context, options, loggingAttribute, loggingFields);
+    }
+
+    private async Task InvokeInternal(HttpContext context, HttpLoggingOptions options,
+        HttpLoggingAttribute? loggingAttribute, HttpLoggingFields loggingFields)
+    {
+        RequestBufferingStream? requestBufferingStream = null;
+        Stream? originalBody = null;
+
+        // TODO: Cache this
         var logContext = new HttpLoggingContext(context)
         {
             LoggingFields = loggingFields,
@@ -82,7 +90,7 @@ internal sealed class HttpLoggingMiddleware
 
         loggingFields = logContext.LoggingFields;
 
-        if ((HttpLoggingFields.Request & loggingFields) != HttpLoggingFields.None)
+        if (logContext.IsAnyEnabled(HttpLoggingFields.Request))
         {
             var request = context.Request;
 

@@ -31,7 +31,10 @@ public sealed class HttpLoggingContext(HttpContext httpContext)
     /// </summary>
     public int ResponseBodyLogLimit { get; set; }
 
-    internal List<KeyValuePair<string, object?>> Parameters { get; } = new();
+    /// <summary>
+    /// The parameters to log.
+    /// </summary>
+    public IList<KeyValuePair<string, object?>> Parameters { get; } = new List<KeyValuePair<string, object?>>();
 
     /// <summary>
     /// Adds a parameter to the log context.
@@ -41,5 +44,48 @@ public sealed class HttpLoggingContext(HttpContext httpContext)
     public void Add(string key, object? value)
     {
         Parameters.Add(new(key, value));
+    }
+
+    /// <summary>
+    /// Adds the given fields to what's currently enabled in <see cref="LoggingFields"/>.
+    /// </summary>
+    /// <param name="fields"></param>
+    public void Enable(HttpLoggingFields fields)
+    {
+        LoggingFields |= fields;
+    }
+
+    /// <summary>
+    /// Checks if any of the given fields are currently enabled in <see cref="LoggingFields"/>.
+    /// </summary>
+    public bool IsAnyEnabled(HttpLoggingFields fields)
+    {
+        return (LoggingFields & fields) != HttpLoggingFields.None;
+    }
+
+    /// <summary>
+    /// Removes the given fields from what's currently enabled in <see cref="LoggingFields"/>.
+    /// </summary>
+    /// <param name="fields"></param>
+    public void Disable(HttpLoggingFields fields)
+    {
+        LoggingFields &= ~fields;
+    }
+
+    /// <summary>
+    /// Checks if the given field is currently enabled in <see cref="LoggingFields"/>
+    /// and disables it so that a custom log value can be provided instead.
+    /// </summary>
+    /// <param name="field">A single field flag to check.</param>
+    /// <returns>`true` if the field was enabled.</returns>
+    public bool TryOverride(HttpLoggingFields field)
+    {
+        if (LoggingFields.HasFlag(field))
+        {
+            Disable(field);
+            return true;
+        }
+
+        return false;
     }
 }
