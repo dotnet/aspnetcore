@@ -36,10 +36,10 @@ describe('DomSync', () => {
     expect(destination.startExclusive.nextSibling).not.toBe(destination.endExclusive);
   });
 
-  test('should retain text and comment nodes, whether or not the text must be updated', () => {
+  test('should retain text and comment nodes while inserting and deleting others, updating textContent in place', () => {
     // Arrange
-    const destination = makeExistingContent(`First<!--comment1-->Second<!--comment2-->Third`);
-    const newContent = makeNewContent(`First edited<!--comment1 edited-->Second<!--comment2-->Third edited`);
+    const destination = makeExistingContent(`First<!--comment1-->Second<!--comment2--><!--comment3-will-delete-->Third`);
+    const newContent = makeNewContent(`<!--inserted-->First edited<!--comment1 edited-->Second<!--comment2-->Third edited`);
     const oldNodes = toNodeArray(destination);
 
     // Act
@@ -47,15 +47,22 @@ describe('DomSync', () => {
     const newNodes = toNodeArray(destination);
 
     // Assert
-    assertSameContentsByIdentity(newNodes, oldNodes);
-    expect(newNodes[0].textContent).toBe('First edited');
-    expect(newNodes[1].textContent).toBe('comment1 edited');
-    expect(newNodes[2].textContent).toBe('Second');
-    expect(newNodes[3].textContent).toBe('comment2');
-    expect(newNodes[4].textContent).toBe('Third edited');
+    expect(newNodes.length).toBe(6);
+    expect(newNodes[0].textContent).toBe('inserted');
+    expect(newNodes[1].textContent).toBe('First edited');
+    expect(newNodes[2].textContent).toBe('comment1 edited');
+    expect(newNodes[3].textContent).toBe('Second');
+    expect(newNodes[4].textContent).toBe('comment2');
+    expect(newNodes[5].textContent).toBe('Third edited');
+
+    expect(newNodes[1]).toBe(oldNodes[0]);
+    expect(newNodes[2]).toBe(oldNodes[1]);
+    expect(newNodes[3]).toBe(oldNodes[2]);
+    expect(newNodes[4]).toBe(oldNodes[3]);
+    expect(newNodes[5]).toBe(oldNodes[5]);
   });
 
-  test('Should retain elements when nothing has changed', () => {
+  test('should retain elements when nothing has changed', () => {
     // Arrange
     const destination = makeExistingContent(`<a></a><b></b><a></a><b></b>`);
     const newContent = makeNewContent(`<a></a><b></b><a></a><b></b>`);
@@ -69,7 +76,7 @@ describe('DomSync', () => {
     assertSameContentsByIdentity(newNodes, oldNodes);
   });
 
-  test('Should retain elements when inserting new ones', () => {
+  test('should retain elements when inserting new ones', () => {
     // Arrange
     const destination = makeExistingContent(
       `<a></a>` +
@@ -97,7 +104,7 @@ describe('DomSync', () => {
     expect(newNodes[5].tagName).toBe('NEW');
   });
 
-  test('Should retain elements when deleting some', () => {
+  test('should retain elements when deleting some', () => {
     // Arrange
     const destination = makeExistingContent(
       `<will-delete></will-delete>` +
