@@ -168,10 +168,10 @@ function synchronizeAttributes(destination: Element, source: Element) {
   }
 
   // Collect the destination attributes in a map so we can match them to the end-state attributes
-  const destinationAttributesByName = new Map<string, string>();
+  const destinationAttributesByName = new Map<string, Attr>();
   for (let i = 0; i < destinationAttributesLength; i++) {
     const attrib = destination.attributes[i];
-    destinationAttributesByName.set(attrib.name, attrib.value);
+    destinationAttributesByName.set(attrib.name, attrib);
   }
 
   // Loop through end state and insert/update. Track which ones we saw because any that are left
@@ -197,7 +197,11 @@ function synchronizeAttributes(destination: Element, source: Element) {
     destinationAttributesByName.delete(sourceAttribName);
   }
 
-  for (let name of destinationAttributesByName.keys()) {
-    destination.removeAttribute(name);
+  for (let attr of destinationAttributesByName.values()) {
+    if (attr.namespaceURI) {
+      destination.removeAttributeNS(attr.namespaceURI, attr.localName);
+    } else {
+      destination.removeAttribute(attr.name);
+    }
   }
 }

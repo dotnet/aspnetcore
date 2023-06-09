@@ -188,6 +188,31 @@ describe('DomSync', () => {
     expect(targetNodeAttribs.getNamedItemNS('http://example/namespace2', 'attributeWithNamespaceAndPrefix')?.value).toBe('new namespaced value 2');
     expect(targetNodeAttribs.getNamedItemNS('http://example/namespace2', 'attributeWithNamespaceAndPrefix')?.name).toBe('exampleprefix:attributeWithNamespaceAndPrefix');
   });
+
+  test('should delete removed attributes, including ones with namespace', () => {
+    debugger;
+    // Arrange
+    const destination = makeExistingContent(
+      `<elem will-delete='val1' preserved='preserved value' another-to-delete='val2'></elem>`);
+    const newContent = makeNewContent(
+      `<elem preserved='preserved value'></elem>`);
+    const targetNode = destination.startExclusive.nextSibling as Element;
+    const newContentNode = newContent.firstChild as Element;
+
+    targetNode.setAttributeNS('http://example/namespace1', 'attributeWithNamespaceButNoPrefix', 'new namespaced value 1');
+    targetNode.setAttributeNS('http://example/namespace2', 'exampleprefix:attributeWithNamespaceAndPrefix', 'new namespaced value 2');
+    expect(targetNode.attributes.length).toBe(5);
+
+    // Act
+    synchronizeDomContent(destination, newContent);
+
+    // Assert
+    expect(destination.startExclusive.nextSibling).toBe(targetNode); // Preserved the element
+    expect(newContentNode).not.toBe(targetNode);
+    const targetNodeAttribs = targetNode.attributes;
+    expect(targetNodeAttribs.length).toBe(1);
+    expect(targetNodeAttribs.getNamedItem('preserved')?.value).toBe('preserved value');
+  });
 });
 
 function makeExistingContent(html: string): CommentBoundedRange {
