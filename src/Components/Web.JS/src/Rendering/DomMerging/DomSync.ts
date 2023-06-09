@@ -146,17 +146,19 @@ class SiblingSubsetNodeList implements ItemList<Node> {
     this.length = this.endIndexExcl - this.startIndex;
   }
 }
+
 function synchronizeAttributes(destination: Element, source: Element) {
+  const destAttrs = destination.attributes;
+  const sourceAttrs = source.attributes;
+
   // Optimize for the common case where all attributes are unchanged and are even still in the same order
-  // In this case, we don't even have to build the name/value map
-  const destinationAttributesLength = destination.attributes.length;
-  const sourceAttributesLength = source.attributes.length;
-  let hasDifference = false;
-  if (destinationAttributesLength === sourceAttributesLength) {
-    for (let i = 0; i < destinationAttributesLength; i++) {
-      const destAttrib = destination.attributes[i];
-      const sourceAttrib = source.attributes[i];
-      if (destAttrib.name !== sourceAttrib.name || destAttrib.value !== sourceAttrib.value || destAttrib.namespaceURI !== sourceAttrib.namespaceURI) {
+  const destAttrsLength = destAttrs.length;
+  if (destAttrsLength === destAttrs.length) {
+    let hasDifference = false;
+    for (let i = 0; i < destAttrsLength; i++) {
+      const sourceAttr = sourceAttrs.item(i)!;
+      const destAttr = destAttrs.item(i)!;
+      if (sourceAttr.name !== destAttr.name || sourceAttr.value !== destAttr.value) {
         hasDifference = true;
         break;
       }
@@ -167,41 +169,39 @@ function synchronizeAttributes(destination: Element, source: Element) {
     }
   }
 
-  // Collect the destination attributes in a map so we can match them to the end-state attributes
-  const destinationAttributesByName = new Map<string, Attr>();
-  for (let i = 0; i < destinationAttributesLength; i++) {
-    const attrib = destination.attributes[i];
-    destinationAttributesByName.set(attrib.name, attrib);
+  // There's some difference
+  const remainingDestAttrs = new Map<string, Attr>();
+  for (const destAttr of destination.attributes as any) {
+    remainingDestAttrs.set(destAttr.name, destAttr);
   }
 
-  // Loop through end state and insert/update. Track which ones we saw because any that are left
-  // over will then be deleted.
-  for (let i = 0; i < sourceAttributesLength; i++) {
-    const sourceAttrib = source.attributes[i];
-    const sourceAttribName = sourceAttrib.name;
-    const sourceAttribNamespaceURI = sourceAttrib.namespaceURI;
-    const sourceAttribValue = sourceAttrib.value;
-    const destinationAttribValue = sourceAttribNamespaceURI
-      ? destination.getAttributeNS(sourceAttribNamespaceURI, sourceAttribName)
-      : destination.getAttribute(sourceAttribName);
+  for (const sourceAttr of source.attributes as any as Attr[]) {
+    const existingDestAttr = sourceAttr.namespaceURI
+      ? destination.getAttributeNodeNS(sourceAttr.namespaceURI, sourceAttr.localName)
+      : destination.getAttributeNode(sourceAttr.name);
+    if (existingDestAttr) {
+      if (existingDestAttr.value !== sourceAttr.value) {
+        // Update
+        existingDestAttr.value = sourceAttr.value;
+      }
 
-    if (destinationAttribValue !== sourceAttribValue) {
-      // This deals with both 'insert' and 'update' cases
-      if (sourceAttribNamespaceURI) {
-        destination.setAttributeNS(sourceAttribNamespaceURI, sourceAttribName, sourceAttribValue);
+      remainingDestAttrs.delete(existingDestAttr.name);
+    } else {
+      // Insert
+      if (sourceAttr.namespaceURI) {
+        destination.setAttributeNS(sourceAttr.namespaceURI, sourceAttr.name, sourceAttr.value);
       } else {
-        destination.setAttribute(sourceAttribName, sourceAttribValue);
+        destination.setAttribute(sourceAttr.name, sourceAttr.value);
       }
     }
-
-    destinationAttributesByName.delete(sourceAttribName);
   }
 
-  for (let attr of destinationAttributesByName.values()) {
-    if (attr.namespaceURI) {
-      destination.removeAttributeNS(attr.namespaceURI, attr.localName);
+  for (const attrToDelete of remainingDestAttrs.values()) {
+    // Delete
+    if (attrToDelete.namespaceURI) {
+      destination.removeAttributeNS(attrToDelete.namespaceURI, attrToDelete.localName);
     } else {
-      destination.removeAttribute(attr.name);
+      destination.removeAttribute(attrToDelete.name);
     }
   }
 }

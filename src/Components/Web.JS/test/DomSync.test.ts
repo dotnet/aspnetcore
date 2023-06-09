@@ -208,9 +208,8 @@ describe('DomSync', () => {
     // Assert
     expect(destination.startExclusive.nextSibling).toBe(targetNode); // Preserved the element
     expect(newContentNode).not.toBe(targetNode);
-    const targetNodeAttribs = targetNode.attributes;
-    expect(targetNodeAttribs.length).toBe(1);
-    expect(targetNodeAttribs.getNamedItem('preserved')?.value).toBe('preserved value');
+    expect(targetNode.getAttributeNames()).toEqual(['preserved']);
+    expect(targetNode.getAttribute('preserved')).toBe('preserved value');
   });
 });
 
