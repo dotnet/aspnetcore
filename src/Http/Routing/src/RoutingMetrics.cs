@@ -20,11 +20,11 @@ internal sealed class RoutingMetrics
 
         _matchSuccessCounter = _meter.CreateCounter<long>(
            "routing-match-success",
-            description: "Number of requests successfully matched to an endpoint by routing.");
+            description: "Number of requests that successfully matched to an endpoint.");
 
         _matchFailureCounter = _meter.CreateCounter<long>(
            "routing-match-failure",
-            description: "Number of requests that failed to match to an endpoint by routing.");
+            description: "Number of requests that failed to match to an endpoint.");
     }
 
     public bool MatchSuccessCounterEnabled => _matchSuccessCounter.Enabled;
