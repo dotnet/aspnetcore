@@ -160,8 +160,34 @@ describe('DomSync', () => {
     expect(targetNodeAttribs.getNamedItemNS('http://example/namespace2', 'attributeWithNamespaceAndPrefix')?.name).toBe('exampleprefix:attributeWithNamespaceAndPrefix');
   });
 
-  // should insert added attributes, including ones with namespace
-  // should delete removed attributes, including ones with namespace
+  test('should insert added attributes, including ones with namespace', () => {
+    // Arrange
+    const destination = makeExistingContent(
+      `<elem preserved='preserved value'></elem>`);
+    const newContent = makeNewContent(
+      `<elem added='added value 1' preserved='preserved value' yetanother='added value 2'></elem>`);
+    const targetNode = destination.startExclusive.nextSibling as Element;
+    expect(targetNode.attributes.length).toBe(1);
+
+    const newContentNode = newContent.firstChild as Element;
+    newContentNode.setAttributeNS('http://example/namespace1', 'attributeWithNamespaceButNoPrefix', 'new namespaced value 1');
+    newContentNode.setAttributeNS('http://example/namespace2', 'exampleprefix:attributeWithNamespaceAndPrefix', 'new namespaced value 2');
+
+    // Act
+    synchronizeDomContent(destination, newContent);
+
+    // Assert
+    expect(destination.startExclusive.nextSibling).toBe(targetNode); // Preserved the element
+    expect(newContentNode).not.toBe(targetNode);
+    const targetNodeAttribs = targetNode.attributes;
+    expect(targetNodeAttribs.length).toBe(5);
+    expect(targetNodeAttribs.getNamedItem('preserved')?.value).toBe('preserved value');
+    expect(targetNodeAttribs.getNamedItem('added')?.value).toBe('added value 1');
+    expect(targetNodeAttribs.getNamedItem('yetanother')?.value).toBe('added value 2');
+    expect(targetNodeAttribs.getNamedItemNS('http://example/namespace1', 'attributeWithNamespaceButNoPrefix')?.value).toBe('new namespaced value 1');
+    expect(targetNodeAttribs.getNamedItemNS('http://example/namespace2', 'attributeWithNamespaceAndPrefix')?.value).toBe('new namespaced value 2');
+    expect(targetNodeAttribs.getNamedItemNS('http://example/namespace2', 'attributeWithNamespaceAndPrefix')?.name).toBe('exampleprefix:attributeWithNamespaceAndPrefix');
+  });
 });
 
 function makeExistingContent(html: string): CommentBoundedRange {

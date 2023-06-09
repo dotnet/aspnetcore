@@ -185,23 +185,16 @@ function synchronizeAttributes(destination: Element, source: Element) {
       ? destination.getAttributeNS(sourceAttribNamespaceURI, sourceAttribName)
       : destination.getAttribute(sourceAttribName);
 
-    if (destinationAttribValue !== undefined) {
-      if (destinationAttribValue !== sourceAttribValue) {
-        if (sourceAttribNamespaceURI) {
-          destination.setAttributeNS(sourceAttribNamespaceURI, sourceAttribName, sourceAttribValue);
-        } else {
-          destination.setAttribute(sourceAttribName, sourceAttribValue);
-        }
-      }
-
-      destinationAttributesByName.delete(sourceAttribName);
-    } else {
+    if (destinationAttribValue !== sourceAttribValue) {
+      // This deals with both 'insert' and 'update' cases
       if (sourceAttribNamespaceURI) {
         destination.setAttributeNS(sourceAttribNamespaceURI, sourceAttribName, sourceAttribValue);
       } else {
         destination.setAttribute(sourceAttribName, sourceAttribValue);
       }
     }
+
+    destinationAttributesByName.delete(sourceAttribName);
   }
 
   for (let name of destinationAttributesByName.keys()) {
