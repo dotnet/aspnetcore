@@ -72,7 +72,7 @@ function treatAsMatch(destination: Node, source: Node) {
     case Node.COMMENT_NODE:
       break;
     case Node.ELEMENT_NODE:
-      // TODO: Handle attributes
+      synchronizeAttributes(destination as Element, source as Element);
       // TODO: Recurse into descendants
       break;
     default:
@@ -144,5 +144,67 @@ class SiblingSubsetNodeList implements ItemList<Node> {
     this.startIndex = Array.prototype.indexOf.call(this.siblings, range.startExclusive) + 1;
     this.endIndexExcl = Array.prototype.indexOf.call(this.siblings, range.endExclusive);
     this.length = this.endIndexExcl - this.startIndex;
+  }
+}
+function synchronizeAttributes(destination: Element, source: Element) {
+  // Optimize for the common case where all attributes are unchanged and are even still in the same order
+  // In this case, we don't even have to build the name/value map
+  const destinationAttributesLength = destination.attributes.length;
+  const sourceAttributesLength = source.attributes.length;
+  let hasDifference = false;
+  if (destinationAttributesLength === sourceAttributesLength) {
+    for (let i = 0; i < destinationAttributesLength; i++) {
+      const destAttrib = destination.attributes[i];
+      const sourceAttrib = source.attributes[i];
+      if (destAttrib.name !== sourceAttrib.name || destAttrib.value !== sourceAttrib.value || destAttrib.namespaceURI !== sourceAttrib.namespaceURI) {
+        hasDifference = true;
+        break;
+      }
+    }
+
+    if (!hasDifference) {
+      return;
+    }
+  }
+
+  // Collect the destination attributes in a map so we can match them to the end-state attributes
+  const destinationAttributesByName = new Map<string, string>();
+  for (let i = 0; i < destinationAttributesLength; i++) {
+    const attrib = destination.attributes[i];
+    destinationAttributesByName.set(attrib.name, attrib.value);
+  }
+
+  // Loop through end state and insert/update. Track which ones we saw because any that are left
+  // over will then be deleted.
+  for (let i = 0; i < sourceAttributesLength; i++) {
+    const sourceAttrib = source.attributes[i];
+    const sourceAttribName = sourceAttrib.name;
+    const sourceAttribNamespaceURI = sourceAttrib.namespaceURI;
+    const sourceAttribValue = sourceAttrib.value;
+    const destinationAttribValue = sourceAttribNamespaceURI
+      ? destination.getAttributeNS(sourceAttribNamespaceURI, sourceAttribName)
+      : destination.getAttribute(sourceAttribName);
+
+    if (destinationAttribValue !== undefined) {
+      if (destinationAttribValue !== sourceAttribValue) {
+        if (sourceAttribNamespaceURI) {
+          destination.setAttributeNS(sourceAttribNamespaceURI, sourceAttribName, sourceAttribValue);
+        } else {
+          destination.setAttribute(sourceAttribName, sourceAttribValue);
+        }
+      }
+
+      destinationAttributesByName.delete(sourceAttribName);
+    } else {
+      if (sourceAttribNamespaceURI) {
+        destination.setAttributeNS(sourceAttribNamespaceURI, sourceAttribName, sourceAttribValue);
+      } else {
+        destination.setAttribute(sourceAttribName, sourceAttribValue);
+      }
+    }
+  }
+
+  for (let name of destinationAttributesByName.keys()) {
+    destination.removeAttribute(name);
   }
 }

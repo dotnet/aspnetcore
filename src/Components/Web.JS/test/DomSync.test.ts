@@ -129,6 +129,39 @@ describe('DomSync', () => {
     expect(newNodes[1]).toBe(oldNodes[3]);
     expect(newNodes[2]).toBe(oldNodes[4]);
   });
+
+  test('should update attribute values, respecting namespaces', () => {
+    // Arrange
+    const destination = makeExistingContent(
+      `<elem a='A' b='B' c='C'></elem>`);
+    const newContent = makeNewContent(
+      `<elem a='A updated' b='B' c='C updated'></elem>`);
+    const targetNode = destination.startExclusive.nextSibling as Element;
+    const newContentNode = newContent.firstChild as Element;
+
+    targetNode.setAttributeNS('http://example/namespace1', 'attributeWithNamespaceButNoPrefix', 'oldval 1');
+    targetNode.setAttributeNS('http://example/namespace2', 'exampleprefix:attributeWithNamespaceAndPrefix', 'oldval 2');
+
+    newContentNode.setAttributeNS('http://example/namespace1', 'attributeWithNamespaceButNoPrefix', 'updatedval 1');
+    newContentNode.setAttributeNS('http://example/namespace2', 'exampleprefix:attributeWithNamespaceAndPrefix', 'updatedval 2');
+
+    // Act
+    synchronizeDomContent(destination, newContent);
+
+    // Assert
+    expect(destination.startExclusive.nextSibling).toBe(targetNode); // Preserved the element
+    const targetNodeAttribs = targetNode.attributes;
+    expect(targetNodeAttribs.length).toBe(5);
+    expect(targetNodeAttribs.getNamedItem('a')?.value).toBe('A updated');
+    expect(targetNodeAttribs.getNamedItem('b')?.value).toBe('B');
+    expect(targetNodeAttribs.getNamedItem('c')?.value).toBe('C updated');
+    expect(targetNodeAttribs.getNamedItemNS('http://example/namespace1', 'attributeWithNamespaceButNoPrefix')?.value).toBe('updatedval 1');
+    expect(targetNodeAttribs.getNamedItemNS('http://example/namespace2', 'attributeWithNamespaceAndPrefix')?.value).toBe('updatedval 2');
+    expect(targetNodeAttribs.getNamedItemNS('http://example/namespace2', 'attributeWithNamespaceAndPrefix')?.name).toBe('exampleprefix:attributeWithNamespaceAndPrefix');
+  });
+
+  // should insert added attributes, including ones with namespace
+  // should delete removed attributes, including ones with namespace
 });
 
 function makeExistingContent(html: string): CommentBoundedRange {

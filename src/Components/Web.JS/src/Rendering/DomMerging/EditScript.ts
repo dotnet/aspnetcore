@@ -10,7 +10,7 @@ export function computeEditScript<T>(before: ItemList<T>, after: ItemList<T>, up
   const commonPrefixLength = lengthOfCommonPrefix(before, after, updateCost);
   if (commonPrefixLength === before.length && commonPrefixLength === after.length) {
     // If by now we know there are no edits, bail out early
-    return { skipCount: 0 };
+    return { skipCount: commonPrefixLength };
   }
   const commonSuffixLength = lengthOfCommonSuffix(before, after, commonPrefixLength, commonPrefixLength, updateCost);
   before = ItemListSubset.create(before, commonPrefixLength, before.length - commonPrefixLength - commonSuffixLength);

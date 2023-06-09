@@ -30,7 +30,7 @@ describe('EditDistance', () => {
     const before = new ArrayItemList<number>([1, 2, 3]);
     const after = new ArrayItemList<number>([1, 2, 3]);
     const result = computeEditScript(before, after, exactEqualityComparer);
-    expect(result.skipCount).toBe(0);
+    expect(result.skipCount).toBe(3);
     expect(result.edits).toBeFalsy();
   });
 
