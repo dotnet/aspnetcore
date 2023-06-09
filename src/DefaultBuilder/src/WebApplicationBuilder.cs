@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Builder;
 /// <summary>
 /// A builder for web applications and services.
 /// </summary>
-public sealed class WebApplicationBuilder
+public sealed class WebApplicationBuilder : IHostApplicationBuilder
 {
     private const string EndpointRouteBuilderKey = "__EndpointRouteBuilder";
     private const string AuthenticationMiddlewareSetKey = "__AuthenticationMiddlewareSet";
@@ -300,6 +300,12 @@ public sealed class WebApplicationBuilder
     /// </summary>
     public ConfigureHostBuilder Host { get; }
 
+    IDictionary<object, object> IHostApplicationBuilder.Properties => ((IHostApplicationBuilder)_hostApplicationBuilder).Properties;
+
+    IConfigurationManager IHostApplicationBuilder.Configuration => Configuration;
+
+    IHostEnvironment IHostApplicationBuilder.Environment => Environment;
+
     /// <summary>
     /// Builds the <see cref="WebApplication"/>.
     /// </summary>
@@ -407,4 +413,7 @@ public sealed class WebApplicationBuilder
             app.Properties[EndpointRouteBuilderKey] = priorRouteBuilder;
         }
     }
+
+    void IHostApplicationBuilder.ConfigureContainer<TContainerBuilder>(IServiceProviderFactory<TContainerBuilder> factory, Action<TContainerBuilder>? configure) =>
+        _hostApplicationBuilder.ConfigureContainer(factory, configure);
 }
