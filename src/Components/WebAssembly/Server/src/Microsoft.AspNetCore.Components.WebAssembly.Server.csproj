@@ -4,6 +4,7 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <Description>Runtime server features for ASP.NET Core Blazor applications.</Description>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
+    <IsShippingPackage>true</IsShippingPackage>
 
     <!-- We're deliberately bundling assemblies as content files. Suppress the warning. -->
     <NoWarn>$(NoWarn);NU5100</NoWarn>
