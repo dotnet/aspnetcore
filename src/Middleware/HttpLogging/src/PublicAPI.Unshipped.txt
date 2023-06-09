@@ -11,19 +11,24 @@ Microsoft.AspNetCore.HttpLogging.HttpLoggingAttribute.ResponseBodyLogLimit.get -
 Microsoft.AspNetCore.HttpLogging.HttpLoggingAttribute.ResponseBodyLogLimit.set -> void
 Microsoft.AspNetCore.HttpLogging.HttpLoggingContext
 Microsoft.AspNetCore.HttpLogging.HttpLoggingContext.Add(string! key, object? value) -> void
+Microsoft.AspNetCore.HttpLogging.HttpLoggingContext.Disable(Microsoft.AspNetCore.HttpLogging.HttpLoggingFields fields) -> void
+Microsoft.AspNetCore.HttpLogging.HttpLoggingContext.Enable(Microsoft.AspNetCore.HttpLogging.HttpLoggingFields fields) -> void
 Microsoft.AspNetCore.HttpLogging.HttpLoggingContext.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!
 Microsoft.AspNetCore.HttpLogging.HttpLoggingContext.HttpLoggingContext(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> void
+Microsoft.AspNetCore.HttpLogging.HttpLoggingContext.IsAnyEnabled(Microsoft.AspNetCore.HttpLogging.HttpLoggingFields fields) -> bool
 Microsoft.AspNetCore.HttpLogging.HttpLoggingContext.LoggingFields.get -> Microsoft.AspNetCore.HttpLogging.HttpLoggingFields
 Microsoft.AspNetCore.HttpLogging.HttpLoggingContext.LoggingFields.set -> void
+Microsoft.AspNetCore.HttpLogging.HttpLoggingContext.Parameters.get -> System.Collections.Generic.IList<System.Collections.Generic.KeyValuePair<string!, object?>>!
 Microsoft.AspNetCore.HttpLogging.HttpLoggingContext.RequestBodyLogLimit.get -> int
 Microsoft.AspNetCore.HttpLogging.HttpLoggingContext.RequestBodyLogLimit.set -> void
 Microsoft.AspNetCore.HttpLogging.HttpLoggingContext.ResponseBodyLogLimit.get -> int
 Microsoft.AspNetCore.HttpLogging.HttpLoggingContext.ResponseBodyLogLimit.set -> void
+Microsoft.AspNetCore.HttpLogging.HttpLoggingContext.TryOverride(Microsoft.AspNetCore.HttpLogging.HttpLoggingFields field) -> bool
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.RequestLoggingSelector.get -> System.Action<Microsoft.AspNetCore.HttpLogging.HttpLoggingContext!>?
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.RequestLoggingSelector.set -> void
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.ResponseLoggingSelector.get -> System.Action<Microsoft.AspNetCore.HttpLogging.HttpLoggingContext!>?
 Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.ResponseLoggingSelector.set -> void
-Microsoft.AspNetCore.HttpLogging.IRequestLoggingInterceptors
-Microsoft.AspNetCore.HttpLogging.IRequestLoggingInterceptors.OnRequest(Microsoft.AspNetCore.HttpLogging.HttpLoggingContext! logContext) -> void
-Microsoft.AspNetCore.HttpLogging.IRequestLoggingInterceptors.OnResponse(Microsoft.AspNetCore.HttpLogging.HttpLoggingContext! logContext) -> void
+Microsoft.AspNetCore.HttpLogging.IHttpLoggingInterceptor
+Microsoft.AspNetCore.HttpLogging.IHttpLoggingInterceptor.OnRequest(Microsoft.AspNetCore.HttpLogging.HttpLoggingContext! logContext) -> void
+Microsoft.AspNetCore.HttpLogging.IHttpLoggingInterceptor.OnResponse(Microsoft.AspNetCore.HttpLogging.HttpLoggingContext! logContext) -> void
 static Microsoft.AspNetCore.Builder.HttpLoggingEndpointConventionBuilderExtensions.WithHttpLogging<TBuilder>(this TBuilder builder, Microsoft.AspNetCore.HttpLogging.HttpLoggingFields loggingFields, int? requestBodyLogLimit = null, int? responseBodyLogLimit = null) -> TBuilder
