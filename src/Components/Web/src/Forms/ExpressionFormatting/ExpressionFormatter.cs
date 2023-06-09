@@ -23,7 +23,7 @@ internal static class ExpressionFormatter
         s_methodInfoDataCache.Clear();
     }
 
-    public static string FormatLambda(LambdaExpression expression)
+    public static string FormatLambda(LambdaExpression expression, Predicate<Type>? canConvertDirectly = null)
     {
         var builder = new ReverseStringBuilder(stackalloc char[StackAllocBufferSize]);
         var node = expression.Body;
@@ -76,8 +76,8 @@ internal static class ExpressionFormatter
                     {
                         // Special case primitive values that are bound directly from the form.
                         // By convention, the name for the field will be "value".
-                        if (memberExpression.Member.IsDefined(typeof(SupplyParameterFromFormAttribute), inherit: false)
-                            && memberExpression.Type == typeof(string))
+                        if (canConvertDirectly?.Invoke(memberExpression.Type) == true &&
+                            memberExpression.Member.IsDefined(typeof(SupplyParameterFromFormAttribute), inherit: false))
                         {
                             builder.InsertFront("value");
                         }

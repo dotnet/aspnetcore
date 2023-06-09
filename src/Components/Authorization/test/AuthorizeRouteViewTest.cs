@@ -478,6 +478,11 @@ public class AuthorizeRouteViewTest
             return false;
         }
 
+        public bool CanConvertSingleValue(Type type)
+        {
+            return false;
+        }
+
         public bool TryBind(string formName, Type valueType, [NotNullWhen(true)] out object boundValue)
         {
             boundValue = null;

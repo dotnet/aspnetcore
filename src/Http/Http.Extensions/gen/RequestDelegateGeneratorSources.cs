@@ -101,6 +101,8 @@ internal static class RequestDelegateGeneratorSources
         private static async ValueTask<(bool, T?)> TryResolveBodyAsync<T>(HttpContext httpContext, LogOrThrowExceptionHelper logOrThrowExceptionHelper, bool allowEmpty, string parameterTypeName, string parameterName, bool isInferred = false)
         {
             var feature = httpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpRequestBodyDetectionFeature>();
+            T? bodyValue = default;
+            var bodyValueSet = false;
 
             if (feature?.CanHaveBody == true)
             {
@@ -112,21 +114,8 @@ internal static class RequestDelegateGeneratorSources
                 }
                 try
                 {
-                    var bodyValue = await httpContext.Request.ReadFromJsonAsync<T>();
-                    if (!allowEmpty && bodyValue == null)
-                    {
-                        if (!isInferred)
-                        {
-                            logOrThrowExceptionHelper.RequiredParameterNotProvided(parameterTypeName, parameterName, "body");
-                        }
-                        else
-                        {
-                            logOrThrowExceptionHelper.ImplicitBodyNotProvided(parameterName);
-                        }
-                        httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
-                        return (false, bodyValue);
-                    }
-                    return (true, bodyValue);
+                    bodyValue = await httpContext.Request.ReadFromJsonAsync<T>();
+                    bodyValueSet = bodyValue != null;
                 }
                 catch (BadHttpRequestException badHttpRequestException)
                 {
@@ -147,12 +136,22 @@ internal static class RequestDelegateGeneratorSources
                     return (false, default);
                 }
             }
-            else if (!allowEmpty)
+
+            if (!allowEmpty && !bodyValueSet)
             {
+                if (!isInferred)
+                {
+                    logOrThrowExceptionHelper.RequiredParameterNotProvided(parameterTypeName, parameterName, "body");
+                }
+                else
+                {
+                    logOrThrowExceptionHelper.ImplicitBodyNotProvided(parameterName);
+                }
                 httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                return (false, bodyValue);
             }
 
-            return (allowEmpty, default);
+            return (true, bodyValue);
         }
 """;
 

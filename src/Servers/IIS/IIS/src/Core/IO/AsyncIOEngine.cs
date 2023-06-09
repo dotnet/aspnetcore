@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core.IO;
 
-internal sealed partial class AsyncIOEngine : IAsyncIOEngine
+internal sealed partial class AsyncIOEngine : IAsyncIOEngine, IDisposable
 {
     private const ushort ResponseMaxChunks = 65533;
 
@@ -243,5 +243,10 @@ internal sealed partial class AsyncIOEngine : IAsyncIOEngine
     private void ReturnOperation(AsyncFlushOperation operation)
     {
         Volatile.Write(ref _cachedAsyncFlushOperation, operation);
+    }
+
+    public void Dispose()
+    {
+        _stopped = true;
     }
 }

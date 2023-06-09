@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Data.Common;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
@@ -185,6 +186,12 @@ public class HttpsTests
 
             var keyExchangeStrength = result.GetProperty("keyExchangeStrength").GetInt32();
             Assert.True(keyExchangeStrength >= 0, "KeyExchangeStrength: " + keyExchangeStrength);
+
+            if (Environment.OSVersion.Version > new Version(10, 0, 19043, 0))
+            {
+                var hostName = result.GetProperty("hostName").ToString();
+                Assert.Equal("localhost", hostName);
+            }
         }
     }
 

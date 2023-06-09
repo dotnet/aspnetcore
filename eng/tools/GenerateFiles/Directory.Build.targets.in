@@ -139,7 +139,7 @@
           BeforeTargets="ProcessFrameworkReferences">
     <ItemGroup>
       <KnownILLinkPack Include="@(KnownILLinkPack)"
-                       Condition="'%(TargetFramework)' == '${DefaultNetCoreTargetFramework}'"
+                       Condition="'%(TargetFramework)' == 'net7.0'"
                        TargetFramework="netstandard2.1"
                        ILLinkPackVersion="%(KnownILLinkPack.ILLinkPackVersion)" />
     </ItemGroup>

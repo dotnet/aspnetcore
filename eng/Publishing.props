@@ -17,6 +17,7 @@
   <ItemGroup>
     <!-- Include our "loose" PDBs when publishing symbols. -->
     <FilesToPublishToSymbolServer Include="$(ArtifactsDir)symbols\**\*.pdb" />
+    <WixPacksToPublish Include="$(ArtifactsDir)installers\**\*.wixpack.zip" />
 
     <!-- Prepare for _PublishInstallersAndChecksums target. -->
     <_InstallersToPublish Remove="@(_InstallersToPublish)" />
@@ -32,6 +33,8 @@
         Condition=" '$(PublishInstallerBaseVersion)' == 'true' " />
     <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.wixlib" UploadPathSegment="Runtime" />
     <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.zip" UploadPathSegment="Runtime" />
+    <!-- Remove wixpacks if not doing post-build signing, since they are not needed -->
+    <_InstallersToPublish Remove="@(WixPacksToPublish)" Condition="'$(PostBuildSign)' != 'true'" />
     <_ChecksumsToPublish Include="$(ArtifactsDir)installers\**\*.sha512" />
   </ItemGroup>
 

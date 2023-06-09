@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Authentication;
 using Microsoft.AspNetCore.Http;
@@ -106,6 +107,28 @@ internal static unsafe class HttpApiTypes
     internal struct HTTP_REQUEST_PROPERTY_STREAM_ERROR
     {
         internal uint ErrorCode;
+    }
+
+    internal const int HTTP_REQUEST_PROPERTY_SNI_HOST_MAX_LENGTH = 255;
+    internal const int SniPropertySizeInBytes = (sizeof(ushort) * (HTTP_REQUEST_PROPERTY_SNI_HOST_MAX_LENGTH + 1)) + sizeof(ulong);
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode, Size = SniPropertySizeInBytes)]
+    internal struct HTTP_REQUEST_PROPERTY_SNI
+    {
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = HTTP_REQUEST_PROPERTY_SNI_HOST_MAX_LENGTH + 1)]
+        internal string Hostname;
+
+        internal HTTP_REQUEST_PROPERTY_SNI_FLAGS Flags;
+    }
+
+    [Flags]
+    internal enum HTTP_REQUEST_PROPERTY_SNI_FLAGS : uint
+    {
+        // Indicates that SNI was used for successful endpoint lookup during handshake.
+        // If client sent the SNI but Http.sys still decided to use IP endpoint binding then this flag will not be set.
+        HTTP_REQUEST_PROPERTY_SNI_FLAG_SNI_USED = 0x00000001,
+        // Indicates that client did not send the SNI.
+        HTTP_REQUEST_PROPERTY_SNI_FLAG_NO_SNI = 0x00000002,
     }
 
     internal const int MaxTimeout = 6;

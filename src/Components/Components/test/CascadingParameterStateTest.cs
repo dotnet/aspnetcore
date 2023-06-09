@@ -535,6 +535,11 @@ public class CascadingParameterStateTest
                 valueType == ValueType;
         }
 
+        public bool CanConvertSingleValue(Type type)
+        {
+            return type == ValueType;
+        }
+
         public bool TryBind(string formName, Type valueType, [NotNullWhen(true)] out object boundValue)
         {
             boundValue = BoundValue;

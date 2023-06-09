@@ -36,6 +36,7 @@ public class ExceptionHandlerMiddleware
             options,
             diagnosticListener,
             Enumerable.Empty<IExceptionHandler>(),
+            new DummyMeterFactory(),
             problemDetailsService: null);
     }
 
