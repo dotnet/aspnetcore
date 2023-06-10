@@ -32,7 +32,7 @@ internal sealed class HostingMetrics : IDisposable
             description: "The duration of HTTP requests on the server.");
 
         _unhandledRequestsCounter = _meter.CreateCounter<long>(
-            "unhandled-requests",
+            "http-server-unhandled-requests",
             description: "Number of HTTP requests that reached the end of the middleware pipeline without being handled by application code.");
     }
 
