@@ -25,6 +25,7 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures.Filters;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -382,6 +383,7 @@ public class MvcServiceCollectionExtensionsTest
         services.AddSingleton<DiagnosticSource>(diagnosticListener);
         services.AddSingleton<DiagnosticListener>(diagnosticListener);
         services.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
+        services.AddMetrics();
         services.AddLogging();
         services.AddOptions();
         services.AddMvc();
