@@ -541,8 +541,8 @@ public class DeveloperExceptionPageMiddlewareTest : LoggedTest
         var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         var meterFactory = new TestMeterFactory();
-        using var instrumentRecorder = new InstrumentRecorder<double>(meterFactory, "Microsoft.AspNetCore.Hosting", "http-server-request-duration");
-        using var diagnosticsRequestExceptionRecorder = new InstrumentRecorder<long>(meterFactory, DiagnosticsMetrics.MeterName, "diagnostics-handler-exception");
+        using var requestDurationRecorder = new InstrumentRecorder<double>(meterFactory, "Microsoft.AspNetCore.Hosting", "http-server-request-duration");
+        using var requestExceptionRecorder = new InstrumentRecorder<long>(meterFactory, DiagnosticsMetrics.MeterName, "diagnostics-handler-exception");
         using var measurementReporter = new MeasurementReporter<double>(meterFactory, "Microsoft.AspNetCore.Hosting", "http-server-request-duration");
         measurementReporter.Register(m =>
         {
@@ -588,7 +588,7 @@ public class DeveloperExceptionPageMiddlewareTest : LoggedTest
                 Assert.Equal(500, (int)m.Tags.ToArray().Single(t => t.Key == "status-code").Value);
                 Assert.Equal("System.Exception", (string)m.Tags.ToArray().Single(t => t.Key == "exception-name").Value);
             });
-        Assert.Collection(diagnosticsRequestExceptionRecorder.GetMeasurements(),
+        Assert.Collection(requestExceptionRecorder.GetMeasurements(),
             m => AssertRequestException(m, "System.Exception", "Unhandled"));
     }
 
