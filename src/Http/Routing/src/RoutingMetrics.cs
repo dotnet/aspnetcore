@@ -24,7 +24,7 @@ internal sealed class RoutingMetrics
 
         _matchFailureCounter = _meter.CreateCounter<long>(
            "routing-match-failure",
-            description: "Number of requests that failed to match to an endpoint.");
+            description: "Number of requests that failed to match to an endpoint. An unmatched request may be handled by later middleware, such as the static files or authentication middleware.");
     }
 
     public bool MatchSuccessCounterEnabled => _matchSuccessCounter.Enabled;
