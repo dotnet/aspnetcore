@@ -99,8 +99,7 @@ public class ApplicationBuilderTests : LoggedTest
 
         Assert.Equal(404, httpContext.Response.StatusCode);
 
-        var log = TestSink.Writes.Single(w => w.EventId.Name == "RequestPipelineEnd");
-        Assert.Equal("Request reached the end of the middleware pipeline without being handled by application code. Request path: GET https://localhost:5000/pathbase/path, Response status code: 404", log.Message);
+        Assert.True(httpContext.Items.ContainsKey("__RequestUnhandled"), "Request unhandled flag should be set.");
     }
 
     [Fact]
