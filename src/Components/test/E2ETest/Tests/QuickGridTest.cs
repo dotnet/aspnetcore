@@ -124,7 +124,7 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
         var classList = grid.GetAttribute("class")?.Split(" ");
 
         Assert.Equal("quick-grid", idValue);
-        Assert.Equal("custom-style", styleValue);
+        Assert.Equal("color:red;", styleValue);
         Assert.Contains("custom-class", classList);
     }
 }
