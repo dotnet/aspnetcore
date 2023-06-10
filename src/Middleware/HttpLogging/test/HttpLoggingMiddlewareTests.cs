@@ -1,10 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net.Http;
 using System.Text;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
@@ -419,6 +425,33 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             async c =>
             {
                 var arr = new byte[4096];
+                var res = await c.Request.Body.ReadAsync(arr);
+            },
+            options,
+            LoggerFactory.CreateLogger<HttpLoggingMiddleware>());
+
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.ContentType = "text/plain";
+        httpContext.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(input));
+
+        await middleware.Invoke(httpContext);
+        var expected = input.Substring(0, 4096);
+
+        Assert.Contains(TestSink.Writes, w => w.Message.Equals("RequestBody: " + expected));
+    }
+
+    [Fact]
+    public async Task ZeroByteReadStillLogsRequestBody()
+    {
+        var input = string.Concat(new string('a', 60000), new string('b', 3000));
+        var options = CreateOptionsAccessor();
+        options.CurrentValue.LoggingFields = HttpLoggingFields.RequestBody;
+
+        var middleware = new HttpLoggingMiddleware(
+            async c =>
+            {
+                var arr = new byte[4096];
+                _ = await c.Request.Body.ReadAsync(new byte[0]);
                 var res = await c.Request.Body.ReadAsync(arr);
             },
             options,
@@ -1115,10 +1148,209 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         Assert.False(httpContext.Features.Get<IHttpUpgradeFeature>() is UpgradeFeatureLoggingDecorator);
     }
 
+    [Fact]
+    public async Task HttpLoggingAttributeWithLessOptionsAppliesToEndpoint()
+    {
+        var app = CreateApp();
+        await app.StartAsync();
+
+        using var server = app.GetTestServer();
+        var client = server.CreateClient();
+        var initialResponse = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, "/attr_responseonly"));
+
+        var filteredLogs = TestSink.Writes.Where(w => w.LoggerName.Contains("HttpLogging"));
+        Assert.DoesNotContain(filteredLogs, w => w.Message.Contains("Request"));
+        Assert.Contains(filteredLogs, w => w.Message.Contains("StatusCode: 200"));
+    }
+
+    [Fact]
+    public async Task HttpLoggingAttributeWithMoreOptionsAppliesToEndpoint()
+    {
+        var app = CreateApp(defaultFields: HttpLoggingFields.None);
+        await app.StartAsync();
+
+        using var server = app.GetTestServer();
+        var client = server.CreateClient();
+        var initialResponse = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, "/attr_responseandrequest"));
+
+        var filteredLogs = TestSink.Writes.Where(w => w.LoggerName.Contains("HttpLogging"));
+        Assert.Contains(filteredLogs, w => w.Message.Contains("Request"));
+        Assert.Contains(filteredLogs, w => w.Message.Contains("StatusCode: 200"));
+    }
+
+    [Fact]
+    public async Task HttpLoggingAttributeCanRestrictHeaderOutputOnEndpoint()
+    {
+        var app = CreateApp();
+        await app.StartAsync();
+
+        using var server = app.GetTestServer();
+        var client = server.CreateClient();
+        var initialResponse = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, "/attr_restrictedheaders"));
+
+        var filteredLogs = TestSink.Writes.Where(w => w.LoggerName.Contains("HttpLogging"));
+        Assert.DoesNotContain(filteredLogs, w => w.Message.Contains("Scheme"));
+        Assert.DoesNotContain(filteredLogs, w => w.Message.Contains("StatusCode: 200"));
+    }
+
+    [Fact]
+    public async Task HttpLoggingAttributeCanModifyRequestAndResponseSizeOnEndpoint()
+    {
+        var app = CreateApp();
+        await app.StartAsync();
+
+        using var server = app.GetTestServer();
+        var client = server.CreateClient();
+        var request = new HttpRequestMessage(HttpMethod.Get, "/attr_restrictedsize") { Content = new ReadOnlyMemoryContent("from request"u8.ToArray()) };
+        request.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("text/plain");
+        var initialResponse = await client.SendAsync(request);
+
+        var filteredLogs = TestSink.Writes.Where(w => w.LoggerName.Contains("HttpLogging"));
+        Assert.Contains(filteredLogs, w => w.Message.Equals("RequestBody: fro"));
+        Assert.Contains(filteredLogs, w => w.Message.Equals("ResponseBody: testin"));
+    }
+
+    [Fact]
+    public async Task HttpLoggingExtensionWithLessOptionsAppliesToEndpoint()
+    {
+        var app = CreateApp();
+        await app.StartAsync();
+
+        using var server = app.GetTestServer();
+        var client = server.CreateClient();
+        var initialResponse = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, "/ext_responseonly"));
+
+        var filteredLogs = TestSink.Writes.Where(w => w.LoggerName.Contains("HttpLogging"));
+        Assert.DoesNotContain(filteredLogs, w => w.Message.Contains("Request"));
+        Assert.Contains(filteredLogs, w => w.Message.Contains("StatusCode: 200"));
+    }
+
+    [Fact]
+    public async Task HttpLoggingExtensionWithMoreOptionsAppliesToEndpoint()
+    {
+        var app = CreateApp(defaultFields: HttpLoggingFields.None);
+        await app.StartAsync();
+
+        using var server = app.GetTestServer();
+        var client = server.CreateClient();
+        var initialResponse = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, "/ext_responseandrequest"));
+
+        var filteredLogs = TestSink.Writes.Where(w => w.LoggerName.Contains("HttpLogging"));
+        Assert.Contains(filteredLogs, w => w.Message.Contains("Request"));
+        Assert.Contains(filteredLogs, w => w.Message.Contains("StatusCode: 200"));
+    }
+
+    [Fact]
+    public async Task HttpLoggingExtensionCanRestrictHeaderOutputOnEndpoint()
+    {
+        var app = CreateApp();
+        await app.StartAsync();
+
+        using var server = app.GetTestServer();
+        var client = server.CreateClient();
+        var initialResponse = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, "/ext_restrictedheaders"));
+
+        var filteredLogs = TestSink.Writes.Where(w => w.LoggerName.Contains("HttpLogging"));
+        Assert.DoesNotContain(filteredLogs, w => w.Message.Contains("Scheme"));
+        Assert.DoesNotContain(filteredLogs, w => w.Message.Contains("StatusCode: 200"));
+    }
+
+    [Fact]
+    public async Task HttpLoggingExtensionCanModifyRequestAndResponseSizeOnEndpoint()
+    {
+        var app = CreateApp();
+        await app.StartAsync();
+
+        using var server = app.GetTestServer();
+        var client = server.CreateClient();
+        var request = new HttpRequestMessage(HttpMethod.Get, "/ext_restrictedsize") { Content = new ReadOnlyMemoryContent("from request"u8.ToArray()) };
+        request.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("text/plain");
+        var initialResponse = await client.SendAsync(request);
+
+        var filteredLogs = TestSink.Writes.Where(w => w.LoggerName.Contains("HttpLogging"));
+        Assert.Contains(filteredLogs, w => w.Message.Equals("RequestBody: fro"));
+        Assert.Contains(filteredLogs, w => w.Message.Equals("ResponseBody: testin"));
+    }
+
     private IOptionsMonitor<HttpLoggingOptions> CreateOptionsAccessor()
     {
         var options = new HttpLoggingOptions();
         var optionsAccessor = Mock.Of<IOptionsMonitor<HttpLoggingOptions>>(o => o.CurrentValue == options);
         return optionsAccessor;
+    }
+
+    private IHost CreateApp(HttpLoggingFields defaultFields = HttpLoggingFields.All)
+    {
+        var builder = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
+                    {
+                        services.AddRouting();
+                        services.AddHttpLogging(o =>
+                        {
+                            o.LoggingFields = defaultFields;
+                        });
+                        services.AddSingleton(LoggerFactory);
+                    })
+                    .Configure(app =>
+                    {
+                        app.UseRouting();
+                        app.UseHttpLogging();
+                        app.UseEndpoints(endpoint =>
+                        {
+                            endpoint.MapGet("/attr_responseonly", [HttpLogging(HttpLoggingFields.Response)] async (HttpContext c) =>
+                            {
+                                await c.Request.Body.ReadAsync(new byte[100]);
+                                return "testing";
+                            });
+
+                            endpoint.MapGet("/ext_responseonly", async (HttpContext c) =>
+                            {
+                                await c.Request.Body.ReadAsync(new byte[100]);
+                                return "testing";
+                            }).WithHttpLogging(HttpLoggingFields.Response);
+
+                            endpoint.MapGet("/attr_responseandrequest", [HttpLogging(HttpLoggingFields.Request | HttpLoggingFields.Response)] async (HttpContext c) =>
+                            {
+                                await c.Request.Body.ReadAsync(new byte[100]);
+                                return "testing";
+                            });
+
+                            endpoint.MapGet("/ext_responseandrequest", async(HttpContext c) =>
+                            {
+                                await c.Request.Body.ReadAsync(new byte[100]);
+                                return "testing";
+                            }).WithHttpLogging(HttpLoggingFields.Request | HttpLoggingFields.Response);
+
+                            endpoint.MapGet("/attr_restrictedheaders", [HttpLogging((HttpLoggingFields.Request & ~HttpLoggingFields.RequestScheme) | (HttpLoggingFields.Response & ~HttpLoggingFields.ResponseStatusCode))] async (HttpContext c) =>
+                            {
+                                await c.Request.Body.ReadAsync(new byte[100]);
+                                return "testing";
+                            });
+
+                            endpoint.MapGet("/ext_restrictedheaders", async (HttpContext c) =>
+                            {
+                                await c.Request.Body.ReadAsync(new byte[100]);
+                                return "testing";
+                            }).WithHttpLogging((HttpLoggingFields.Request & ~HttpLoggingFields.RequestScheme) | (HttpLoggingFields.Response & ~HttpLoggingFields.ResponseStatusCode));
+
+                            endpoint.MapGet("/attr_restrictedsize", [HttpLogging(HttpLoggingFields.Request | HttpLoggingFields.Response, RequestBodyLogLimit = 3, ResponseBodyLogLimit = 6)] async (HttpContext c) =>
+                            {
+                                await c.Request.Body.ReadAsync(new byte[100]);
+                                return "testing";
+                            });
+
+                            endpoint.MapGet("/ext_restrictedsize", async (HttpContext c) =>
+                            {
+                                await c.Request.Body.ReadAsync(new byte[100]);
+                                return "testing";
+                            }).WithHttpLogging(HttpLoggingFields.Request | HttpLoggingFields.Response, requestBodyLogLimit: 3, responseBodyLogLimit: 6);
+                        });
+                    });
+                });
+        return builder.Build();
     }
 }

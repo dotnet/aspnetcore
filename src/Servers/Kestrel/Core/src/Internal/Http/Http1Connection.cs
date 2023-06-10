@@ -28,8 +28,6 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
     private readonly HttpConnectionContext _context;
     private readonly IHttpParser<Http1ParsingHandler> _parser;
     private readonly Http1OutputProducer _http1Output;
-    protected readonly long _keepAliveTicks;
-    private readonly long _requestHeadersTimeoutTicks;
 
     private volatile bool _requestTimedOut;
     private uint _requestCount;
@@ -55,8 +53,6 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
 
         _context = context;
         _parser = ServiceContext.HttpParser;
-        _keepAliveTicks = ServerOptions.Limits.KeepAliveTimeout.Ticks;
-        _requestHeadersTimeoutTicks = ServerOptions.Limits.RequestHeadersTimeout.Ticks;
 
         _http1Output = new Http1OutputProducer(
             _context.Transport.Output,
@@ -86,6 +82,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         if (IsUpgraded)
         {
             KestrelEventSource.Log.RequestUpgradedStop(this);
+            ServiceContext.Metrics.RequestUpgradedStop(_context.MetricsContext);
 
             ServiceContext.ConnectionManager.UpgradedConnectionCount.ReleaseOne();
         }
@@ -165,7 +162,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
                     break;
                 }
 
-                TimeoutControl.ResetTimeout(_requestHeadersTimeoutTicks, TimeoutReason.RequestHeaders);
+                TimeoutControl.ResetTimeout(ServerOptions.Limits.RequestHeadersTimeout, TimeoutReason.RequestHeaders);
 
                 _requestProcessingStatus = RequestProcessingStatus.ParsingRequestLine;
                 goto case RequestProcessingStatus.ParsingRequestLine;
@@ -670,7 +667,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         // Reset the features and timeout.
         Reset();
         _requestCount++;
-        TimeoutControl.SetTimeout(_keepAliveTicks, TimeoutReason.KeepAlive);
+        TimeoutControl.SetTimeout(ServerOptions.Limits.KeepAliveTimeout, TimeoutReason.KeepAlive);
     }
 
     protected override bool BeginRead(out ValueTask<ReadResult> awaitable)
@@ -789,5 +786,5 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         return base.TryProduceInvalidRequestResponse();
     }
 
-    void IRequestProcessor.Tick(DateTimeOffset now) { }
+    void IRequestProcessor.Tick(long timestamp) { }
 }

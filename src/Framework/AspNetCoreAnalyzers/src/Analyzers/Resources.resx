@@ -295,7 +295,7 @@
     <value>When implementing BindAsync(...) method, the return type must be ValueTask&lt;T&gt;.</value>
   </data>
   <data name="Analyzer_BindAsyncSignatureMustReturnValueTaskOfT_Message" xml:space="preserve">
-    <value>Parameter '{0}' of type {1} has a BindAsync(...) method, but the return type is not ValueTask&lt;{1}&gt;. Consider implementing IBindFromHttpContext&lt;{1}&gt; to enforce implementation.</value>
+    <value>Parameter '{0}' of type {1} has a BindAsync(...) method, but the return type is not ValueTask&lt;{1}&gt;. Consider implementing IBindableFromHttpContext&lt;{1}&gt; to enforce implementation.</value>
   </data>
   <data name="Analyzer_AmbiguousRouteHandlerRoute_Title" xml:space="preserve">
     <value>Route conflict detected between route handlers</value>
@@ -308,5 +308,11 @@
   </data>
   <data name="Analyzer_AmbiguousActionRoute_Message" xml:space="preserve">
     <value>Route '{0}' conflicts with another action route. An HTTP request that matches multiple routes results in an ambiguous match error. Fix the conflict by changing the route's pattern, HTTP method, or route constraints.</value>
+  </data>
+  <data name="Analyzer_UseAddAuthorizationBuilder_Message" xml:space="preserve">
+    <value>Use AddAuthorizationBuilder to register authorization services and construct policies.</value>
+  </data>
+  <data name="Analyzer_UseAddAuthorizationBuilder_Title" xml:space="preserve">
+    <value>Use AddAuthorizationBuilder</value>
   </data>
 </root>

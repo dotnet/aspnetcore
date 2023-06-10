@@ -4,14 +4,14 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.Tests;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Authentication;
 
 public abstract class SharedAuthenticationTests<TOptions> where TOptions : AuthenticationSchemeOptions
 {
-    protected TestClock Clock { get; } = new TestClock();
+    protected MockTimeProvider TimeProvider { get; } = new();
 
     protected abstract string DefaultScheme { get; }
     protected virtual string DisplayName { get; }

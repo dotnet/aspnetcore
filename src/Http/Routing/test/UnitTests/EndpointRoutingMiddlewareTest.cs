@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.TestObjects;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
@@ -58,9 +59,7 @@ public class EndpointRoutingMiddlewareTest
         var expectedMessage = "Request matched endpoint 'Test endpoint'";
         bool eventFired = false;
 
-        var sink = new TestSink(
-            TestSink.EnableWithTypeName<EndpointRoutingMiddleware>,
-            TestSink.EnableWithTypeName<EndpointRoutingMiddleware>);
+        var sink = new TestSink(TestSink.EnableWithTypeName<EndpointRoutingMiddleware>);
         var loggerFactory = new TestLoggerFactory(sink, enabled: true);
         var listener = new DiagnosticListener("TestListener");
 
@@ -92,7 +91,6 @@ public class EndpointRoutingMiddlewareTest
     {
         // Arrange
         var httpContext = CreateHttpContext();
-
         var middleware = CreateMiddleware();
 
         // Act
@@ -224,6 +222,46 @@ public class EndpointRoutingMiddlewareTest
         await Assert.ThrowsAsync<InvalidOperationException>(() => middleware.Invoke(httpContext));
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Invoke_CheckForFallbackMetadata_LogIfPresent(bool hasFallbackMetadata)
+    {
+        // Arrange
+        var sink = new TestSink(TestSink.EnableWithTypeName<EndpointRoutingMiddleware>);
+        var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+        var logger = new Logger<EndpointRoutingMiddleware>(loggerFactory);
+
+        var metadata = new List<object>();
+        if (hasFallbackMetadata)
+        {
+            metadata.Add(FallbackMetadata.Instance);
+        }
+
+        var httpContext = CreateHttpContext();
+
+        var middleware = CreateMiddleware(
+            logger: logger,
+            matcherFactory: new TestMatcherFactory(isHandled: true, setEndpointCallback: c =>
+            {
+                c.SetEndpoint(new Endpoint(c => Task.CompletedTask, new EndpointMetadataCollection(metadata), "myapp"));
+            }));
+
+        // Act
+        await middleware.Invoke(httpContext);
+
+        // Assert
+        if (hasFallbackMetadata)
+        {
+            var write = Assert.Single(sink.Writes.Where(w => w.EventId.Name == "FallbackMatch"));
+            Assert.Equal("Matched endpoint 'myapp' is a fallback endpoint.", write.Message);
+        }
+        else
+        {
+            Assert.DoesNotContain(sink.Writes, w => w.EventId.Name == "FallbackMatch");
+        }
+    }
+
     private HttpContext CreateHttpContext()
     {
         var httpContext = new DefaultHttpContext
@@ -235,7 +273,7 @@ public class EndpointRoutingMiddlewareTest
     }
 
     private EndpointRoutingMiddleware CreateMiddleware(
-        Logger<EndpointRoutingMiddleware> logger = null,
+        ILogger<EndpointRoutingMiddleware> logger = null,
         MatcherFactory matcherFactory = null,
         DiagnosticListener listener = null,
         RequestDelegate next = null)
@@ -244,6 +282,7 @@ public class EndpointRoutingMiddlewareTest
         logger ??= new Logger<EndpointRoutingMiddleware>(NullLoggerFactory.Instance);
         matcherFactory ??= new TestMatcherFactory(true);
         listener ??= new DiagnosticListener("Microsoft.AspNetCore");
+        var metrics = new RoutingMetrics(new TestMeterFactory());
 
         var middleware = new EndpointRoutingMiddleware(
             matcherFactory,
@@ -252,6 +291,7 @@ public class EndpointRoutingMiddlewareTest
             new DefaultEndpointDataSource(),
             listener,
             Options.Create(new RouteOptions()),
+            metrics,
             next);
 
         return middleware;

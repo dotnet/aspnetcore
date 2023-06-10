@@ -2,12 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Linq;
+using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
-using Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel.Emitters;
+using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel.Emitters;
 using Microsoft.CodeAnalysis;
 
-namespace Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel;
+namespace Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel;
 
 using WellKnownType = WellKnownTypeData.WellKnownType;
 
@@ -17,28 +17,34 @@ internal class EndpointResponse
     public string WrappedResponseType { get; set; }
     public string? ContentType { get; set; }
     public bool IsAwaitable { get; set; }
-    public bool IsVoid { get; set; }
+    public bool HasNoResponse { get; set; }
     public bool IsIResult { get; set; }
     public bool IsSerializable { get; set; }
     public bool IsAnonymousType { get; set; }
-
+    public bool IsEndpointMetadataProvider { get; set; }
     private WellKnownTypes WellKnownTypes { get; init; }
 
     internal EndpointResponse(IMethodSymbol method, WellKnownTypes wellKnownTypes)
     {
         WellKnownTypes = wellKnownTypes;
-        ResponseType = UnwrapResponseType(method);
+        ResponseType = UnwrapResponseType(method, out bool isAwaitable, out bool awaitableIsVoid);
         WrappedResponseType = method.ReturnType.ToDisplayString(EmitterConstants.DisplayFormat);
-        IsAwaitable = GetIsAwaitable(method);
-        IsVoid = method.ReturnsVoid;
+        IsAwaitable = isAwaitable;
+        HasNoResponse = method.ReturnsVoid || awaitableIsVoid;
         IsIResult = GetIsIResult();
         IsSerializable = GetIsSerializable();
-        ContentType = GetContentType(method);
+        ContentType = GetContentType();
         IsAnonymousType = method.ReturnType.IsAnonymousType;
+        IsEndpointMetadataProvider = ImplementsIEndpointMetadataProvider(ResponseType, wellKnownTypes);
     }
 
-    private ITypeSymbol? UnwrapResponseType(IMethodSymbol method)
+    private static bool ImplementsIEndpointMetadataProvider(ITypeSymbol? responseType, WellKnownTypes wellKnownTypes)
+        => responseType == null ? false : responseType.Implements(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IEndpointMetadataProvider));
+
+    private ITypeSymbol? UnwrapResponseType(IMethodSymbol method, out bool isAwaitable, out bool awaitableIsVoid)
     {
+        isAwaitable = false;
+        awaitableIsVoid = false;
         var returnType = method.ReturnType;
         var task = WellKnownTypes.Get(WellKnownType.System_Threading_Tasks_Task);
         var taskOfT = WellKnownTypes.Get(WellKnownType.System_Threading_Tasks_Task_T);
@@ -47,12 +53,16 @@ internal class EndpointResponse
         if (returnType.OriginalDefinition.Equals(taskOfT, SymbolEqualityComparer.Default) ||
             returnType.OriginalDefinition.Equals(valueTaskOfT, SymbolEqualityComparer.Default))
         {
+            isAwaitable = true;
+            awaitableIsVoid = false;
             return ((INamedTypeSymbol)returnType).TypeArguments[0];
         }
 
         if (returnType.OriginalDefinition.Equals(task, SymbolEqualityComparer.Default) ||
             returnType.OriginalDefinition.Equals(valueTask, SymbolEqualityComparer.Default))
         {
+            isAwaitable = true;
+            awaitableIsVoid = true;
             return null;
         }
 
@@ -61,7 +71,7 @@ internal class EndpointResponse
 
     private bool GetIsSerializable() =>
         !IsIResult &&
-        !IsVoid &&
+        !HasNoResponse &&
         ResponseType != null &&
         ResponseType.SpecialType != SpecialType.System_String &&
         ResponseType.SpecialType != SpecialType.System_Object;
@@ -73,52 +83,19 @@ internal class EndpointResponse
             SymbolEqualityComparer.Default.Equals(ResponseType, resultType);
     }
 
-    private static bool GetIsAwaitable(IMethodSymbol method)
-    {
-        var potentialGetAwaiters = method.ReturnType.OriginalDefinition.GetMembers(WellKnownMemberNames.GetAwaiter);
-        var getAwaiters = potentialGetAwaiters.OfType<IMethodSymbol>().Where(x => !x.Parameters.Any());
-        return getAwaiters.Any(symbol => symbol.Name == WellKnownMemberNames.GetAwaiter && VerifyGetAwaiter(symbol));
-
-        static bool VerifyGetAwaiter(IMethodSymbol getAwaiter)
-        {
-            var returnType = getAwaiter.ReturnType;
-
-            // bool IsCompleted { get }
-            if (!returnType.GetMembers()
-                .OfType<IPropertySymbol>()
-                .Any(p => p.Name == WellKnownMemberNames.IsCompleted &&
-                    p.Type.SpecialType == SpecialType.System_Boolean && p.GetMethod != null))
-            {
-                return false;
-            }
-
-            var methods = returnType.GetMembers().OfType<IMethodSymbol>();
-
-            if (!methods.Any(x => x.Name == WellKnownMemberNames.OnCompleted &&
-                x.ReturnsVoid &&
-                x.Parameters.Length == 1 &&
-                x.Parameters.First().Type.TypeKind == TypeKind.Delegate))
-            {
-                return false;
-            }
-
-            // void GetResult() || T GetResult()
-            return methods.Any(m => m.Name == WellKnownMemberNames.GetResult && !m.Parameters.Any());
-        }
-    }
-
-    private string? GetContentType(IMethodSymbol method)
+    private string? GetContentType()
     {
         // `void` returning methods do not have a Content-Type.
         // We don't have a strategy for resolving a Content-Type
         // from an IResult. Typically, this would be done via an
         // IEndpointMetadataProvider so we don't need to set a
         // Content-Type here.
-        if (method.ReturnsVoid || IsIResult)
+        if (IsIResult || HasNoResponse)
         {
             return null;
         }
-        return method.ReturnType.SpecialType is SpecialType.System_String ? "text/plain" : "application/json";
+
+        return ResponseType!.SpecialType is SpecialType.System_String ? "text/plain; charset=utf-8" : "application/json";
     }
 
     public override bool Equals(object obj)
@@ -127,11 +104,11 @@ internal class EndpointResponse
             SymbolEqualityComparer.Default.Equals(otherEndpointResponse.ResponseType, ResponseType) &&
             otherEndpointResponse.WrappedResponseType.Equals(WrappedResponseType, StringComparison.Ordinal) &&
             otherEndpointResponse.IsAwaitable == IsAwaitable &&
-            otherEndpointResponse.IsVoid == IsVoid &&
+            otherEndpointResponse.HasNoResponse == HasNoResponse &&
             otherEndpointResponse.IsIResult == IsIResult &&
             string.Equals(otherEndpointResponse.ContentType, ContentType, StringComparison.OrdinalIgnoreCase);
     }
 
     public override int GetHashCode() =>
-        HashCode.Combine(SymbolEqualityComparer.Default.GetHashCode(ResponseType), WrappedResponseType, IsAwaitable, IsVoid, IsIResult, ContentType);
+        HashCode.Combine(SymbolEqualityComparer.Default.GetHashCode(ResponseType), WrappedResponseType, IsAwaitable, HasNoResponse, IsIResult, ContentType);
 }

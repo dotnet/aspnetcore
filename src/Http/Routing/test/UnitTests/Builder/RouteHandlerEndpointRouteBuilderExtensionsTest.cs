@@ -765,6 +765,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         Assert.Single(routeEndpointBuilder.RoutePattern.Parameters);
         Assert.True(routeEndpointBuilder.RoutePattern.Parameters[0].IsCatchAll);
         Assert.Equal(int.MaxValue, routeEndpointBuilder.Order);
+        Assert.Contains(FallbackMetadata.Instance, routeEndpointBuilder.Metadata);
     }
 
     [Fact]
@@ -892,6 +893,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         Assert.Equal(expectedPattern, routeEndpoint.RoutePattern.RawText);
 
         var httpContext = new DefaultHttpContext();
+        httpContext.RequestServices = new ServiceCollection().BuildServiceProvider();
         httpContext.Request.RouteValues["id"] = "2";
         var outStream = new MemoryStream();
         httpContext.Response.Body = outStream;

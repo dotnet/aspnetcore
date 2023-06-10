@@ -355,6 +355,7 @@ public class QuicConnectionListenerTests : TestApplicationErrorLoggerLoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/48678")]
     public async Task AcceptAsync_NoCertificateCallback_RemovedFromPendingConnections()
     {
         // Arrange

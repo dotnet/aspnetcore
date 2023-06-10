@@ -1,0 +1,12 @@
+﻿[Top level component: <AsyncComponent WaitFor="@TopLevelComponentTask" />]
+<EnableStreaming>
+    [Within streaming region: <AsyncComponent WaitFor="@WithinStreamingRegionTask" />]
+    <DisableStreaming>
+        [Within nested nonstreaming region: <AsyncComponent WaitFor="@WithinNestedNonstreamingRegionTask" />]
+    </DisableStreaming>
+</EnableStreaming>
+@code {
+    [Parameter] public Task TopLevelComponentTask { get; set; }
+    [Parameter] public Task WithinStreamingRegionTask { get; set; }
+    [Parameter] public Task WithinNestedNonstreamingRegionTask { get; set; }
+}

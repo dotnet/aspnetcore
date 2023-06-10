@@ -1,9 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
-using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -27,7 +27,7 @@ public partial class ProblemDetailsServiceCollectionExtensionsTest
         // Assert
         Assert.Single(collection, (sd) => sd.ServiceType == typeof(IProblemDetailsService) && sd.ImplementationType == typeof(ProblemDetailsService));
         Assert.Single(collection, (sd) => sd.ServiceType == typeof(IProblemDetailsWriter) && sd.ImplementationType == typeof(DefaultProblemDetailsWriter));
-        Assert.Single(collection, (sd) => sd.ServiceType == typeof(IPostConfigureOptions<JsonOptions>) && sd.ImplementationType == typeof(ProblemDetailsJsonOptionsSetup));
+        Assert.Single(collection, (sd) => sd.ServiceType == typeof(IConfigureOptions<JsonOptions>) && sd.ImplementationType == typeof(ProblemDetailsJsonOptionsSetup));
     }
 
     [Fact]
@@ -43,7 +43,7 @@ public partial class ProblemDetailsServiceCollectionExtensionsTest
         // Assert
         Assert.Single(collection, (sd) => sd.ServiceType == typeof(IProblemDetailsService) && sd.ImplementationType == typeof(ProblemDetailsService));
         Assert.Single(collection, (sd) => sd.ServiceType == typeof(IProblemDetailsWriter) && sd.ImplementationType == typeof(DefaultProblemDetailsWriter));
-        Assert.Single(collection, (sd) => sd.ServiceType == typeof(IPostConfigureOptions<JsonOptions>) && sd.ImplementationType == typeof(ProblemDetailsJsonOptionsSetup));
+        Assert.Single(collection, (sd) => sd.ServiceType == typeof(IConfigureOptions<JsonOptions>) && sd.ImplementationType == typeof(ProblemDetailsJsonOptionsSetup));
     }
 
     [Fact]
@@ -109,7 +109,8 @@ public partial class ProblemDetailsServiceCollectionExtensionsTest
         // Arrange
         var collection = new ServiceCollection();
         collection.AddOptions<JsonOptions>();
-        collection.ConfigureAll<JsonOptions>(options => {
+        collection.ConfigureAll<JsonOptions>(options =>
+        {
             options.SerializerOptions.TypeInfoResolver = new TestExtensionsJsonContext();
             options.SerializerOptions.MakeReadOnly();
         });
@@ -124,13 +125,35 @@ public partial class ProblemDetailsServiceCollectionExtensionsTest
         Assert.Throws<InvalidOperationException>(() => jsonOptions.Value);
     }
 
-    [Fact]
-    public void AddProblemDetails_CombinesProblemDetailsContext_WhenAddContext()
+    public enum CustomContextBehavior
+    {
+        Prepend,
+        Append,
+        Replace,
+    }
+
+    [Theory]
+    [InlineData(CustomContextBehavior.Prepend)]
+    [InlineData(CustomContextBehavior.Append)]
+    [InlineData(CustomContextBehavior.Replace)]
+    public void AddProblemDetails_CombinesProblemDetailsContext_WhenAddingCustomContext(CustomContextBehavior behavior)
     {
         // Arrange
         var collection = new ServiceCollection();
         collection.AddOptions<JsonOptions>();
-        collection.ConfigureAll<JsonOptions>(options => options.SerializerOptions.AddContext<TestExtensionsJsonContext>());
+
+        if (behavior == CustomContextBehavior.Prepend)
+        {
+            collection.ConfigureAll<JsonOptions>(options => options.SerializerOptions.TypeInfoResolverChain.Insert(0, TestExtensionsJsonContext.Default));
+        }
+        else if (behavior == CustomContextBehavior.Append)
+        {
+            collection.ConfigureAll<JsonOptions>(options => options.SerializerOptions.TypeInfoResolverChain.Add(TestExtensionsJsonContext.Default));
+        }
+        else
+        {
+            collection.ConfigureAll<JsonOptions>(options => options.SerializerOptions.TypeInfoResolver = TestExtensionsJsonContext.Default);
+        }
 
         // Act
         collection.AddProblemDetails();
@@ -146,7 +169,7 @@ public partial class ProblemDetailsServiceCollectionExtensionsTest
     }
 
     [Fact]
-    public void AddProblemDetails_DoesNotCombineProblemDetailsContext_WhenNullTypeInfoResolver()
+    public void AddProblemDetails_CombinesProblemDetailsContext_EvenWhenNullTypeInfoResolver()
     {
         // Arrange
         var collection = new ServiceCollection();
@@ -161,7 +184,8 @@ public partial class ProblemDetailsServiceCollectionExtensionsTest
         var jsonOptions = services.GetService<IOptions<JsonOptions>>();
 
         Assert.NotNull(jsonOptions.Value);
-        Assert.Null(jsonOptions.Value.SerializerOptions.TypeInfoResolver);
+        Assert.NotNull(jsonOptions.Value.SerializerOptions.TypeInfoResolver);
+        Assert.NotNull(jsonOptions.Value.SerializerOptions.TypeInfoResolver.GetTypeInfo(typeof(ProblemDetails), jsonOptions.Value.SerializerOptions));
     }
 
     [Fact]
@@ -186,9 +210,55 @@ public partial class ProblemDetailsServiceCollectionExtensionsTest
         Assert.NotNull(jsonOptions.Value.SerializerOptions.TypeInfoResolver.GetTypeInfo(typeof(TypeA), jsonOptions.Value.SerializerOptions));
     }
 
+    [Fact]
+    public void AddProblemDetails_CanHaveCustomJsonTypeInfo()
+    {
+        // Arrange
+        var collection = new ServiceCollection();
+        collection.AddOptions<JsonOptions>();
+
+        // Act
+        collection.AddProblemDetails();
+
+        // add any custom ProblemDetails TypeInfoResolvers after calling AddProblemDetails()
+        var customProblemDetailsResolver = new CustomProblemDetailsTypeInfoResolver();
+        collection.ConfigureAll<JsonOptions>(options => options.SerializerOptions.TypeInfoResolverChain.Insert(0, customProblemDetailsResolver));
+
+        // Assert
+        var services = collection.BuildServiceProvider();
+        var jsonOptions = services.GetService<IOptions<JsonOptions>>();
+
+        Assert.NotNull(jsonOptions.Value);
+        Assert.NotNull(jsonOptions.Value.SerializerOptions.TypeInfoResolver);
+
+        Assert.Equal(3, jsonOptions.Value.SerializerOptions.TypeInfoResolverChain.Count);
+        Assert.IsType<CustomProblemDetailsTypeInfoResolver>(jsonOptions.Value.SerializerOptions.TypeInfoResolverChain[0]);
+        Assert.Equal("Microsoft.AspNetCore.Http.ProblemDetailsJsonContext", jsonOptions.Value.SerializerOptions.TypeInfoResolverChain[1].GetType().FullName);
+        Assert.IsType<DefaultJsonTypeInfoResolver>(jsonOptions.Value.SerializerOptions.TypeInfoResolverChain[2]);
+
+        var pdTypeInfo = jsonOptions.Value.SerializerOptions.GetTypeInfo(typeof(ProblemDetails));
+        Assert.Same(customProblemDetailsResolver.LastProblemDetailsInfo, pdTypeInfo);
+    }
+
     [JsonSerializable(typeof(TypeA))]
     internal partial class TestExtensionsJsonContext : JsonSerializerContext
     { }
 
     public class TypeA { }
+
+    internal class CustomProblemDetailsTypeInfoResolver : IJsonTypeInfoResolver
+    {
+        public JsonTypeInfo LastProblemDetailsInfo { get; set; }
+
+        public JsonTypeInfo GetTypeInfo(Type type, JsonSerializerOptions options)
+        {
+            if (type == typeof(ProblemDetails))
+            {
+                LastProblemDetailsInfo = JsonTypeInfo.CreateJsonTypeInfo<ProblemDetails>(options);
+                return LastProblemDetailsInfo;
+            }
+
+            return null;
+        }
+    }
 }

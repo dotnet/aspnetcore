@@ -164,9 +164,9 @@ public class AuthorizationMiddleware
             return;
         }
 
-        if (authenticateResult != null && !authenticateResult.Succeeded)
+        if (authenticateResult != null && !authenticateResult.Succeeded && _logger is ILogger log && log.IsEnabled(LogLevel.Debug))
         {
-            _logger?.LogDebug("Policy authentication schemes {policyName} did not succeed", String.Join(", ", policy.AuthenticationSchemes));
+            log.LogDebug("Policy authentication schemes {policyName} did not succeed", String.Join(", ", policy.AuthenticationSchemes));
         }
 
         object? resource;

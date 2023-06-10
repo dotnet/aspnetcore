@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Endpoints;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.DependencyInjection;
@@ -63,17 +64,16 @@ public static class HtmlHelperComponentExtensions
         return await componentRenderer.PrerenderComponentAsync(httpContext, componentType, MapRenderMode(renderMode), parameterView);
     }
 
-    // This is unfortunate, and we might want to find a better solution. There's an existing public
-    // type Microsoft.AspNetCore.Mvc.Rendering.RenderMode which we now need to use in a lower layer,
-    // M.A.C.Endpoints. Even type-forwarding is not a good solution because we really want to change
-    // the namespace. So this code maps the old enum to the newer one.
-    internal static Components.RenderMode MapRenderMode(RenderMode renderMode) => renderMode switch
+    // The tag helper uses a simple enum to represent render mode, whereas Blazor internally has a richer
+    // object-based way to represent render modes. This converts from tag helper enum values to the
+    // object representation.
+    internal static IComponentRenderMode MapRenderMode(RenderMode renderMode) => renderMode switch
     {
-        RenderMode.Static => Components.RenderMode.Static,
-        RenderMode.Server => Components.RenderMode.Server,
-        RenderMode.ServerPrerendered => Components.RenderMode.ServerPrerendered,
-        RenderMode.WebAssembly => Components.RenderMode.WebAssembly,
-        RenderMode.WebAssemblyPrerendered => Components.RenderMode.WebAssemblyPrerendered,
+        RenderMode.Static => null,
+        RenderMode.Server => new ServerRenderMode(prerender: false),
+        RenderMode.ServerPrerendered => Components.Web.RenderMode.Server,
+        RenderMode.WebAssembly => new WebAssemblyRenderMode(prerender: false),
+        RenderMode.WebAssemblyPrerendered => Components.Web.RenderMode.WebAssembly,
         _ => throw new ArgumentException($"Unsupported render mode {renderMode}", nameof(renderMode)),
     };
 }

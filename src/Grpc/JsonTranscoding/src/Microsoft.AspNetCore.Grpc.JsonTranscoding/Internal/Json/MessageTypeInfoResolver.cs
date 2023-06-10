@@ -2,8 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using Google.Protobuf;
 using Google.Protobuf.Reflection;
@@ -92,57 +94,36 @@ internal sealed class MessageTypeInfoResolver : IJsonTypeInfoResolver
             JsonConverterHelper.GetFieldType(field),
             name);
 
-        // Properties that don't have this flag set are only used to deserialize incoming JSON.
-        if (isSerializable)
+        propertyInfo.ShouldSerialize = (o, v) =>
         {
-            propertyInfo.ShouldSerialize = (o, v) =>
+            // Properties that don't have this flag set are only used to deserialize incoming JSON.
+            if (!isSerializable)
             {
-                return JsonConverterHelper.ShouldFormatFieldValue((IMessage)o, field, v, !_context.Settings.IgnoreDefaultValues);
-            };
-            propertyInfo.Get = (o) =>
-            {
-                return field.Accessor.GetValue((IMessage)o);
-            };
-        }
+                return false;
+            }
+            return JsonConverterHelper.ShouldFormatFieldValue((IMessage)o, field, v, !_context.Settings.IgnoreDefaultValues);
+        };
+        propertyInfo.Get = (o) =>
+        {
+            return field.Accessor.GetValue((IMessage)o);
+        };
 
-        propertyInfo.Set = GetSetMethod(field);
+        if (field.IsMap || field.IsRepeated)
+        {
+            // Collection properties are read-only. Populate values into existing collection.
+            propertyInfo.ObjectCreationHandling = JsonObjectCreationHandling.Populate;
+        }
+        else
+        {
+            propertyInfo.Set = GetSetMethod(field);
+        }
 
         return propertyInfo;
     }
 
     private static Action<object, object?> GetSetMethod(FieldDescriptor field)
     {
-        if (field.IsMap)
-        {
-            return (o, v) =>
-            {
-                // The serializer creates a collection. Copy contents to collection on read-only property.
-                // An extra collection is being created here that's then thrown away.
-                // This will be removed once S.T.J supports deserializing onto a read-only property.
-                // https://github.com/dotnet/runtime/issues/30258
-                var existingValue = (IDictionary)field.Accessor.GetValue((IMessage)o);
-                foreach (DictionaryEntry item in (IDictionary)v!)
-                {
-                    existingValue[item.Key] = item.Value;
-                }
-            };
-        }
-
-        if (field.IsRepeated)
-        {
-            return (o, v) =>
-            {
-                // The serializer creates a collection. Copy contents to collection on read-only property.
-                // An extra collection is being created here that's then thrown away.
-                // This will be removed once S.T.J supports deserializing onto a read-only property.
-                // https://github.com/dotnet/runtime/issues/30258
-                var existingValue = (IList)field.Accessor.GetValue((IMessage)o);
-                foreach (var item in (IList)v!)
-                {
-                    existingValue.Add(item);
-                }
-            };
-        }
+        Debug.Assert(!field.IsRepeated && !field.IsMap, "Collections shouldn't have a setter.");
 
         if (field.RealContainingOneof != null)
         {
@@ -167,9 +148,15 @@ internal sealed class MessageTypeInfoResolver : IJsonTypeInfoResolver
     private static Dictionary<string, FieldDescriptor> CreateJsonFieldMap(IList<FieldDescriptor> fields)
     {
         var map = new Dictionary<string, FieldDescriptor>();
+        // The ordering is important here: JsonName takes priority over Name,
+        // which means we need to put JsonName values in the map after *all*
+        // Name keys have been added. See https://github.com/protocolbuffers/protobuf/issues/11987
         foreach (var field in fields)
         {
             map[field.Name] = field;
+        }
+        foreach (var field in fields)
+        {
             map[field.JsonName] = field;
         }
         return map;

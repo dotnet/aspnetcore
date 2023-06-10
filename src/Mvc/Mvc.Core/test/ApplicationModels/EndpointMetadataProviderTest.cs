@@ -31,7 +31,7 @@ public class EndpointMetadataProviderTest
     [InlineData(typeof(TestController), nameof(TestController.ActionWithMetadataInActionResult))]
     public void DiscoversEndpointMetadata_FromReturnTypeImplementingIEndpointMetadataProvider(Type controllerType, string actionName)
     {
-        // Act 
+        // Act
         var endpoint = GetEndpoint(controllerType, actionName);
 
         // Assert
@@ -125,7 +125,8 @@ public class EndpointMetadataProviderTest
             m => Assert.True(m is ControllerActionDescriptor),
             m => Assert.True(m is RouteNameMetadata),
             m => Assert.True(m is SuppressLinkGenerationMetadata),
-            m => Assert.True(m is CustomEndpointMetadata { Source: MetadataSource.Finally }));
+            m => Assert.True(m is CustomEndpointMetadata { Source: MetadataSource.Finally }),
+            m => Assert.True(m is IRouteDiagnosticsMetadata { Route: "/{controller}/{action}/{id?}" }));
     }
 
     [Theory]

@@ -22,7 +22,7 @@ internal sealed class EndpointFilterInvocationContext<T0> : EndpointFilterInvoca
         get => index switch
         {
             0 => Arg0,
-            _ => new IndexOutOfRangeException()
+            _ => new ArgumentOutOfRangeException(nameof(index))
         };
         set
         {
@@ -85,7 +85,7 @@ internal sealed class EndpointFilterInvocationContext<T0> : EndpointFilterInvoca
         return index switch
         {
            0 => (T)(object)Arg0!,
-           _ => throw new IndexOutOfRangeException()
+           _ => throw new ArgumentOutOfRangeException(nameof(index))
         };
     }
 
@@ -130,7 +130,7 @@ internal sealed class EndpointFilterInvocationContext<T0, T1> : EndpointFilterIn
         {
             0 => Arg0,
             1 => Arg1,
-            _ => new IndexOutOfRangeException()
+            _ => new ArgumentOutOfRangeException(nameof(index))
         };
         set
         {
@@ -198,7 +198,7 @@ internal sealed class EndpointFilterInvocationContext<T0, T1> : EndpointFilterIn
         {
            0 => (T)(object)Arg0!,
            1 => (T)(object)Arg1!,
-           _ => throw new IndexOutOfRangeException()
+           _ => throw new ArgumentOutOfRangeException(nameof(index))
         };
     }
 
@@ -245,7 +245,7 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2> : EndpointFilt
             0 => Arg0,
             1 => Arg1,
             2 => Arg2,
-            _ => new IndexOutOfRangeException()
+            _ => new ArgumentOutOfRangeException(nameof(index))
         };
         set
         {
@@ -318,7 +318,7 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2> : EndpointFilt
            0 => (T)(object)Arg0!,
            1 => (T)(object)Arg1!,
            2 => (T)(object)Arg2!,
-           _ => throw new IndexOutOfRangeException()
+           _ => throw new ArgumentOutOfRangeException(nameof(index))
         };
     }
 
@@ -367,7 +367,7 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3> : Endpoint
             1 => Arg1,
             2 => Arg2,
             3 => Arg3,
-            _ => new IndexOutOfRangeException()
+            _ => new ArgumentOutOfRangeException(nameof(index))
         };
         set
         {
@@ -445,7 +445,7 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3> : Endpoint
            1 => (T)(object)Arg1!,
            2 => (T)(object)Arg2!,
            3 => (T)(object)Arg3!,
-           _ => throw new IndexOutOfRangeException()
+           _ => throw new ArgumentOutOfRangeException(nameof(index))
         };
     }
 
@@ -496,7 +496,7 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4> : Endp
             2 => Arg2,
             3 => Arg3,
             4 => Arg4,
-            _ => new IndexOutOfRangeException()
+            _ => new ArgumentOutOfRangeException(nameof(index))
         };
         set
         {
@@ -579,7 +579,7 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4> : Endp
            2 => (T)(object)Arg2!,
            3 => (T)(object)Arg3!,
            4 => (T)(object)Arg4!,
-           _ => throw new IndexOutOfRangeException()
+           _ => throw new ArgumentOutOfRangeException(nameof(index))
         };
     }
 
@@ -632,7 +632,7 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5> : 
             3 => Arg3,
             4 => Arg4,
             5 => Arg5,
-            _ => new IndexOutOfRangeException()
+            _ => new ArgumentOutOfRangeException(nameof(index))
         };
         set
         {
@@ -720,7 +720,7 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5> : 
            3 => (T)(object)Arg3!,
            4 => (T)(object)Arg4!,
            5 => (T)(object)Arg5!,
-           _ => throw new IndexOutOfRangeException()
+           _ => throw new ArgumentOutOfRangeException(nameof(index))
         };
     }
 
@@ -775,7 +775,7 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5, T6
             4 => Arg4,
             5 => Arg5,
             6 => Arg6,
-            _ => new IndexOutOfRangeException()
+            _ => new ArgumentOutOfRangeException(nameof(index))
         };
         set
         {
@@ -868,7 +868,7 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5, T6
            4 => (T)(object)Arg4!,
            5 => (T)(object)Arg5!,
            6 => (T)(object)Arg6!,
-           _ => throw new IndexOutOfRangeException()
+           _ => throw new ArgumentOutOfRangeException(nameof(index))
         };
     }
 
@@ -925,7 +925,7 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5, T6
             5 => Arg5,
             6 => Arg6,
             7 => Arg7,
-            _ => new IndexOutOfRangeException()
+            _ => new ArgumentOutOfRangeException(nameof(index))
         };
         set
         {
@@ -1023,7 +1023,7 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5, T6
            5 => (T)(object)Arg5!,
            6 => (T)(object)Arg6!,
            7 => (T)(object)Arg7!,
-           _ => throw new IndexOutOfRangeException()
+           _ => throw new ArgumentOutOfRangeException(nameof(index))
         };
     }
 
@@ -1082,7 +1082,7 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5, T6
             6 => Arg6,
             7 => Arg7,
             8 => Arg8,
-            _ => new IndexOutOfRangeException()
+            _ => new ArgumentOutOfRangeException(nameof(index))
         };
         set
         {
@@ -1185,7 +1185,7 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5, T6
            6 => (T)(object)Arg6!,
            7 => (T)(object)Arg7!,
            8 => (T)(object)Arg8!,
-           _ => throw new IndexOutOfRangeException()
+           _ => throw new ArgumentOutOfRangeException(nameof(index))
         };
     }
 
@@ -1246,7 +1246,7 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5, T6
             7 => Arg7,
             8 => Arg8,
             9 => Arg9,
-            _ => new IndexOutOfRangeException()
+            _ => new ArgumentOutOfRangeException(nameof(index))
         };
         set
         {
@@ -1354,7 +1354,7 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5, T6
            7 => (T)(object)Arg7!,
            8 => (T)(object)Arg8!,
            9 => (T)(object)Arg9!,
-           _ => throw new IndexOutOfRangeException()
+           _ => throw new ArgumentOutOfRangeException(nameof(index))
         };
     }
 

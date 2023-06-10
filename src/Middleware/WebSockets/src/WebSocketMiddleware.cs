@@ -6,6 +6,7 @@ using System.Net.WebSockets;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Timeouts;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
@@ -71,7 +72,10 @@ public partial class WebSocketMiddleware
                     // Check allowed origins to see if request is allowed
                     if (!_allowedOrigins.Contains(originHeader.ToString(), StringComparer.Ordinal))
                     {
-                        _logger.LogDebug("Request origin {Origin} is not in the list of allowed origins.", originHeader.ToString());
+                        if (_logger.IsEnabled(LogLevel.Debug))
+                        {
+                            _logger.LogDebug("Request origin {Origin} is not in the list of allowed origins.", originHeader.ToString());
+                        }
                         context.Response.StatusCode = StatusCodes.Status403Forbidden;
                         return Task.CompletedTask;
                     }
@@ -200,6 +204,9 @@ public partial class WebSocketMiddleware
             {
                 opaqueTransport = await _upgradeFeature!.UpgradeAsync(); // Sets status code to 101
             }
+
+            // Disable request timeout, if there is one, after the websocket has been accepted
+            _context.Features.Get<IHttpRequestTimeoutFeature>()?.DisableTimeout();
 
             return WebSocket.CreateFromStream(opaqueTransport, new WebSocketCreationOptions()
             {

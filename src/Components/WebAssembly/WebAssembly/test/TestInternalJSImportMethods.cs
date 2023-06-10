@@ -17,13 +17,12 @@ internal sealed class TestInternalJSImportMethods : IInternalJSImportMethods
     public string GetApplicationEnvironment()
         => _environment;
 
-    public byte[] GetConfig(string configFile)
-        => null;
-
     public string GetPersistedState()
         => null;
 
     public void NavigationManager_EnableNavigationInterception() { }
+
+    public void NavigationManager_ScrollToElement(string id) { }
 
     public string NavigationManager_GetBaseUri()
         => "https://www.example.com/awesome-part-that-will-be-truncated-in-tests";

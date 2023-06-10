@@ -1,0 +1,26 @@
+<Project>
+
+  <PropertyGroup>
+    <!-- Used to silence the warning caused by the workaround for https://github.com/dotnet/runtime/issues/81382 -->
+    <SuppressGenerateILCompilerExplicitPackageReferenceWarning>true</SuppressGenerateILCompilerExplicitPackageReferenceWarning>
+  </PropertyGroup>
+
+  <!-- needed to reference a specific version of NetCoreApp. Workaround https://github.com/dotnet/runtime/issues/81382 -->
+  <ItemGroup>
+    <FrameworkReference Update="Microsoft.NETCore.App"
+                        RuntimeFrameworkVersion="$(MicrosoftNETCoreAppRuntimeVersion)" />
+
+    <PackageReference Include="Microsoft.Dotnet.ILCompiler"
+                      Version="$(MicrosoftNETCoreAppRuntimeVersion)" />
+  </ItemGroup>
+
+  <!--
+  Reference the Microsoft.AspNetCore.App shared framework assemblies with ProjectReference.
+  This allows for easy dev workflow. Just need to update the product code, and re-run the tests.
+  -->
+  <ItemGroup>
+    <ProjectReference Include="$(RepoRoot)src\DefaultBuilder\src\Microsoft.AspNetCore.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\DataProtection\Extensions\src\Microsoft.AspNetCore.DataProtection.Extensions.csproj" />
+  </ItemGroup>
+
+</Project>

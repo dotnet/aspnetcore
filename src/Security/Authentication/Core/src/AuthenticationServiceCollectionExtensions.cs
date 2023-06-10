@@ -23,7 +23,10 @@ public static class AuthenticationServiceCollectionExtensions
         services.AddAuthenticationCore();
         services.AddDataProtection();
         services.AddWebEncoders();
+        services.TryAddSingleton(TimeProvider.System);
+#pragma warning disable CS0618 // Type or member is obsolete
         services.TryAddSingleton<ISystemClock, SystemClock>();
+#pragma warning restore CS0618 // Type or member is obsolete
         services.TryAddSingleton<IAuthenticationConfigurationProvider, DefaultAuthenticationConfigurationProvider>();
 
         return new AuthenticationBuilder(services);

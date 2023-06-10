@@ -3,6 +3,7 @@
 
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -45,11 +46,8 @@ internal readonly struct CascadingParameterState
             var supplier = GetMatchingCascadingValueSupplier(info, componentState);
             if (supplier != null)
             {
-                if (resultStates == null)
-                {
-                    // Although not all parameters might be matched, we know the maximum number
-                    resultStates = new List<CascadingParameterState>(infos.Length - infoIndex);
-                }
+                // Although not all parameters might be matched, we know the maximum number
+                resultStates ??= new List<CascadingParameterState>(infos.Length - infoIndex);
 
                 resultStates.Add(new CascadingParameterState(info.ConsumerValueName, supplier));
             }
@@ -60,16 +58,17 @@ internal readonly struct CascadingParameterState
 
     private static ICascadingValueComponent? GetMatchingCascadingValueSupplier(in ReflectedCascadingParameterInfo info, ComponentState componentState)
     {
+        var candidate = componentState;
         do
         {
-            if (componentState.Component is ICascadingValueComponent candidateSupplier
+            if (candidate.Component is ICascadingValueComponent candidateSupplier
                 && candidateSupplier.CanSupplyValue(info.ValueType, info.SupplierValueName))
             {
                 return candidateSupplier;
             }
 
-            componentState = componentState.ParentComponentState;
-        } while (componentState != null);
+            candidate = candidate.ParentComponentState;
+        } while (candidate != null);
 
         // No match
         return null;
@@ -97,15 +96,24 @@ internal readonly struct CascadingParameterState
             var attribute = prop.GetCustomAttribute<CascadingParameterAttribute>();
             if (attribute != null)
             {
-                if (result == null)
-                {
-                    result = new List<ReflectedCascadingParameterInfo>();
-                }
+                result ??= new List<ReflectedCascadingParameterInfo>();
 
                 result.Add(new ReflectedCascadingParameterInfo(
                     prop.Name,
                     prop.PropertyType,
                     attribute.Name));
+            }
+
+            var hostParameterAttribute = prop.GetCustomAttributes()
+                .OfType<IHostEnvironmentCascadingParameter>().SingleOrDefault();
+            if (hostParameterAttribute != null)
+            {
+                result ??= new List<ReflectedCascadingParameterInfo>();
+
+                result.Add(new ReflectedCascadingParameterInfo(
+                    prop.Name,
+                    prop.PropertyType,
+                    hostParameterAttribute.Name));
             }
         }
 

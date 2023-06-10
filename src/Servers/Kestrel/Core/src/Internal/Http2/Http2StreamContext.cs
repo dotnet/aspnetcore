@@ -3,6 +3,7 @@
 
 using System.Buffers;
 using System.Net;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -15,6 +16,7 @@ internal sealed class Http2StreamContext : HttpConnectionContext
         string connectionId,
         HttpProtocols protocols,
         AltSvcHeader? altSvcHeader,
+        BaseConnectionContext connectionContext,
         ServiceContext serviceContext,
         IFeatureCollection connectionFeatures,
         MemoryPool<byte> memoryPool,
@@ -25,7 +27,8 @@ internal sealed class Http2StreamContext : HttpConnectionContext
         Http2PeerSettings clientPeerSettings,
         Http2PeerSettings serverPeerSettings,
         Http2FrameWriter frameWriter,
-        InputFlowControl connectionInputFlowControl) : base(connectionId, protocols, altSvcHeader, connectionContext: null!, serviceContext, connectionFeatures, memoryPool, localEndPoint, remoteEndPoint)
+        InputFlowControl connectionInputFlowControl,
+        ConnectionMetricsContext metricsContext) : base(connectionId, protocols, altSvcHeader, connectionContext, serviceContext, connectionFeatures, memoryPool, localEndPoint, remoteEndPoint, metricsContext)
     {
         StreamId = streamId;
         StreamLifetimeHandler = streamLifetimeHandler;

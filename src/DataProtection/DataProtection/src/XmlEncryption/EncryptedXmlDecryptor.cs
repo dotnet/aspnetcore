@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography.Xml;
 using System.Xml;
@@ -43,6 +45,15 @@ public sealed class EncryptedXmlDecryptor : IInternalEncryptedXmlDecryptor, IXml
     /// </summary>
     /// <param name="encryptedElement">An encrypted XML element.</param>
     /// <returns>The decrypted form of <paramref name="encryptedElement"/>.</returns>
+#pragma warning disable SYSLIB0022 // Rijndael types are obsolete
+    // RijndaelManaged (aka AES) is used by default. If we find another important algorithm, we should add it here as well.
+    // In the meantime, a useful exception will be thrown in a trimmed app if the algorithm can't be found.
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(RijndaelManaged))]
+#pragma warning restore SYSLIB0022
+    [UnconditionalSuppressMessage("AOT", "IL2026:RequiresUnreferencedCode",
+        Justification = "The common algorithms are being preserved by the above DynamicDependency attributes.")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode",
+        Justification = "Only XSLTs require dynamic code. The usage of EncryptedXml doesn't use XSLTs.")]
     public XElement Decrypt(XElement encryptedElement)
     {
         ArgumentNullThrowHelper.ThrowIfNull(encryptedElement);
@@ -79,6 +90,8 @@ public sealed class EncryptedXmlDecryptor : IInternalEncryptedXmlDecryptor, IXml
     {
         private readonly XmlKeyDecryptionOptions? _options;
 
+        [RequiresDynamicCode("XmlDsigXsltTransform uses XslCompiledTransform which requires dynamic code.")]
+        [RequiresUnreferencedCode("The algorithm implementations referenced in the XML payload might be removed.")]
         public EncryptedXmlWithCertificateKeys(XmlKeyDecryptionOptions? options, XmlDocument document)
             : base(document)
         {

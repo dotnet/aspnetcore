@@ -2456,7 +2456,7 @@ public class DefaultApiDescriptionProviderTest
     }
 
     // This will show up as source = unknown
-    private void AcceptsProduct_Custom([ModelBinder(BinderType = typeof(BodyModelBinder))] Product product)
+    private void AcceptsProduct_Custom([ModelBinder<BodyModelBinder>] Product product)
     {
     }
 
@@ -2556,7 +2556,7 @@ public class DefaultApiDescriptionProviderTest
     {
     }
 
-    private void FromCustom([ModelBinder(typeof(BodyModelBinder))] int id)
+    private void FromCustom([ModelBinder<BodyModelBinder>] int id)
     {
     }
 

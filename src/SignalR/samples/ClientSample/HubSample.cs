@@ -99,7 +99,7 @@ internal class HubSample
 
                 try
                 {
-                    await connection.InvokeAsync<object>("Send", line);
+                    await connection.InvokeAsync<object>("Send", "C#", line);
                 }
                 catch when (closedTokenSource.IsCancellationRequested)
                 {

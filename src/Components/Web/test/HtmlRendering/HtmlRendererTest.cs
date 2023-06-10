@@ -6,6 +6,7 @@ using System.Text;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Sections;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.Web.HtmlRendering;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -880,7 +881,7 @@ public class HtmlRendererTest
         {
             // Act/Assert: state before quiescence
             var result = htmlRenderer.BeginRenderingComponent<AsyncLoadingComponent>();
-            var quiescenceTask = result.WaitForQuiescenceAsync();
+            var quiescenceTask = result.QuiescenceTask;
             Assert.False(quiescenceTask.IsCompleted);
             Assert.Equal("Loading...", result.ToHtmlString());
 
@@ -976,16 +977,16 @@ public class HtmlRendererTest
             var ex = await Assert.ThrowsAsync<InvalidTimeZoneException>(() =>
             {
                 completionTcs.SetResult();
-                return content.WaitForQuiescenceAsync();
+                return content.QuiescenceTask;
             });
             Assert.Equal("async", ex.Message);
         });
     }
 
-    void AssertHtmlContentEquals(IEnumerable<string> expected, HtmlComponent actual)
+    void AssertHtmlContentEquals(IEnumerable<string> expected, HtmlRootComponent actual)
         => AssertHtmlContentEquals(string.Join(string.Empty, expected), actual);
 
-    void AssertHtmlContentEquals(string expected, HtmlComponent actual)
+    void AssertHtmlContentEquals(string expected, HtmlRootComponent actual)
     {
         var actualHtml = actual.ToHtmlString();
         Assert.Equal(expected, actualHtml);

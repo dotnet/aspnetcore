@@ -3,7 +3,9 @@
 
 using System;
 using System.Buffers;
+using System.Diagnostics.Metrics;
 using System.IO.Pipelines;
+using System.Xml.Linq;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
@@ -15,19 +17,17 @@ namespace Microsoft.AspNetCore.Testing;
 
 internal class TestServiceContext : ServiceContext
 {
-    public TestServiceContext()
+    public TestServiceContext() : this(disableHttp1LineFeedTerminators: true)
     {
-        Initialize(NullLoggerFactory.Instance, CreateLoggingTrace(NullLoggerFactory.Instance), false);
     }
 
-    public TestServiceContext(ILoggerFactory loggerFactory, bool disableHttp1LineFeedTerminators = true)
+    public TestServiceContext(ILoggerFactory loggerFactory = null, KestrelTrace kestrelTrace = null, bool disableHttp1LineFeedTerminators = true, KestrelMetrics metrics = null)
     {
-        Initialize(loggerFactory, CreateLoggingTrace(loggerFactory), disableHttp1LineFeedTerminators);
-    }
+        loggerFactory ??= NullLoggerFactory.Instance;
+        kestrelTrace ??= CreateLoggingTrace(loggerFactory);
+        metrics ??= new KestrelMetrics(new TestMeterFactory());
 
-    public TestServiceContext(ILoggerFactory loggerFactory, KestrelTrace kestrelTrace, bool disableHttp1LineFeedTerminators = true)
-    {
-        Initialize(loggerFactory, kestrelTrace, disableHttp1LineFeedTerminators);
+        Initialize(loggerFactory, kestrelTrace, disableHttp1LineFeedTerminators, metrics);
     }
 
     private static KestrelTrace CreateLoggingTrace(ILoggerFactory loggerFactory)
@@ -37,26 +37,26 @@ internal class TestServiceContext : ServiceContext
 
     public void InitializeHeartbeat()
     {
-        var heartbeatManager = new HeartbeatManager(ConnectionManager);
-        DateHeaderValueManager = new DateHeaderValueManager();
+        DateHeaderValueManager = new DateHeaderValueManager(TimeProvider.System);
         Heartbeat = new Heartbeat(
-            new IHeartbeatHandler[] { DateHeaderValueManager, heartbeatManager },
-            new SystemClock(),
+            new IHeartbeatHandler[] { DateHeaderValueManager, ConnectionManager },
+            TimeProvider.System,
             DebuggerWrapper.Singleton,
-            Log);
+            Log,
+            Heartbeat.Interval);
 
-        MockSystemClock = null;
-        SystemClock = heartbeatManager;
+        MockTimeProvider = null;
+        TimeProvider = TimeProvider.System;
     }
 
-    private void Initialize(ILoggerFactory loggerFactory, KestrelTrace kestrelTrace, bool disableHttp1LineFeedTerminators)
+    private void Initialize(ILoggerFactory loggerFactory, KestrelTrace kestrelTrace, bool disableHttp1LineFeedTerminators, KestrelMetrics metrics)
     {
         LoggerFactory = loggerFactory;
         Log = kestrelTrace;
         Scheduler = PipeScheduler.ThreadPool;
-        MockSystemClock = new MockSystemClock();
-        SystemClock = MockSystemClock;
-        DateHeaderValueManager = new DateHeaderValueManager();
+        MockTimeProvider = new MockTimeProvider();
+        TimeProvider = MockTimeProvider;
+        DateHeaderValueManager = new DateHeaderValueManager(MockTimeProvider);
         ConnectionManager = new ConnectionManager(Log, ResourceCounter.Unlimited);
         HttpParser = new HttpParser<Http1ParsingHandler>(Log.IsEnabled(LogLevel.Information), disableHttp1LineFeedTerminators);
         ServerOptions = new KestrelServerOptions
@@ -64,12 +64,13 @@ internal class TestServiceContext : ServiceContext
             AddServerHeader = false
         };
 
-        DateHeaderValueManager.OnHeartbeat(SystemClock.UtcNow);
+        DateHeaderValueManager.OnHeartbeat();
+        Metrics = metrics;
     }
 
     public ILoggerFactory LoggerFactory { get; set; }
 
-    public MockSystemClock MockSystemClock { get; set; }
+    public MockTimeProvider MockTimeProvider { get; set; }
 
     public Func<MemoryPool<byte>> MemoryPoolFactory { get; set; } = System.Buffers.PinnedBlockMemoryPoolFactory.Create;
 

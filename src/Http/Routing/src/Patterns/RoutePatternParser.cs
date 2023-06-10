@@ -16,7 +16,7 @@ internal static class RoutePatternParser
     private const char QuestionMark = '?';
     private const string PeriodString = ".";
 
-    internal static readonly IndexOfAnyValues<char> InvalidParameterNameChars = IndexOfAnyValues.Create("/{}?*");
+    internal static readonly SearchValues<char> InvalidParameterNameChars = SearchValues.Create("/{}?*");
 
     public static RoutePattern Parse(string pattern)
     {

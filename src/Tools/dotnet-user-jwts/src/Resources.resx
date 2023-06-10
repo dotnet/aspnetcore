@@ -148,7 +148,7 @@
     <value>Issue a new JSON Web Token</value>
   </data>
   <data name="CreateCommand_ExpiresOnOption_Description" xml:space="preserve">
-    <value>The UTC date &amp; time the JWT should expire in the format 'yyyy-MM-dd [[[[HH:mm]]:ss]]'. Defaults to 6 months after the --not-before date. Do not use this option in conjunction with the --valid-for option.</value>
+    <value>The UTC date &amp; time the JWT should expire in the format 'yyyy-MM-dd [[[[HH:mm]]:ss]]'. Defaults to 3 months after the --not-before date. Do not use this option in conjunction with the --valid-for option.</value>
   </data>
   <data name="CreateCommand_InvalidClaims_Error" xml:space="preserve">
     <value>Malformed claims supplied. Ensure each claim is in the format "name=value".</value>

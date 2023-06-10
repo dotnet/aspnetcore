@@ -300,7 +300,7 @@ internal static partial class MvcCoreLoggerExtensions
                 {
                     return new KeyValuePair<string, object>("ActionName", _action.DisplayName ?? string.Empty);
                 }
-                throw new IndexOutOfRangeException(nameof(index));
+                throw new ArgumentOutOfRangeException(nameof(index));
             }
         }
 

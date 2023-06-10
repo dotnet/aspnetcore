@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Security.Cryptography;
@@ -13,6 +14,8 @@ namespace Microsoft.AspNetCore.Session;
 /// <summary>
 /// An <see cref="ISession"/> backed by an <see cref="IDistributedCache"/>.
 /// </summary>
+[DebuggerDisplay("Count = {System.Linq.Enumerable.Count(Keys)}")]
+[DebuggerTypeProxy(typeof(DistributedSessionDebugView))]
 public class DistributedSession : ISession
 {
     private const int IdByteCount = 16;
@@ -433,5 +436,14 @@ public class DistributedSession : ISession
             total += read;
         }
         return output;
+    }
+
+    private sealed class DistributedSessionDebugView(DistributedSession session)
+    {
+        private readonly DistributedSession _session = session;
+
+        public bool IsAvailable => _session.IsAvailable;
+        public string Id => _session.Id;
+        public IEnumerable<string> Keys => new List<string>(_session.Keys);
     }
 }

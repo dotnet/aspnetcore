@@ -1,0 +1,9 @@
+﻿@attribute [StreamRendering(true)]
+[LoadingTask: @LoadingTask.Status]
+<StreamingComponentChild SomeParameterToEnsureRerendering="@(new object())" />
+@code {
+    [Parameter] public Task LoadingTask { get; set; }
+
+    protected override Task OnInitializedAsync()
+        => LoadingTask;
+}

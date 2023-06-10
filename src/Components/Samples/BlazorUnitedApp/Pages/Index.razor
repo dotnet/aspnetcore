@@ -2,8 +2,24 @@
 
 <PageTitle>Index</PageTitle>
 
-<h1>Hello, world!</h1>
+<h1>@Parameter</h1>
 
-Welcome to your new app.
+<EditForm method="POST" Model="Parameter">
+    <InputText @bind-Value="Parameter" />
+    <input type="submit" value="Send" />
+</EditForm>
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+@if (_submitted)
+{
+    <p>Submited.</p>
+}
+
+@code{
+    [SupplyParameterFromForm] string Parameter { get; set; } = "Hello, world!";
+
+    bool _submitted = false;
+    public void Submit()
+    {
+        _submitted = true;
+    }
+}

@@ -43,7 +43,7 @@ internal sealed class ConfigureBuilder
                     }
                     catch (Exception ex)
                     {
-                        throw new Exception(string.Format(
+                        throw new InvalidOperationException(string.Format(
                             CultureInfo.InvariantCulture,
                             "Could not resolve a service of type '{0}' for the parameter '{1}' of method '{2}' on type '{3}'.",
                             parameterInfo.ParameterType.FullName,

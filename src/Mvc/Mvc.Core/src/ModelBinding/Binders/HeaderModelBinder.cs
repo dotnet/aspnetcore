@@ -104,7 +104,7 @@ public class HeaderModelBinder : IModelBinder
         // Prevent breaking existing users in scenarios where they are binding to a 'string' property
         // and expect the whole comma separated string, if any, as a single string and not as a string array.
         var values = Array.Empty<string>();
-        if (request.Headers.ContainsKey(headerName))
+        if (request.Headers.TryGetValue(headerName, out var header))
         {
             if (bindingContext.ModelMetadata.IsEnumerableType)
             {
@@ -112,7 +112,7 @@ public class HeaderModelBinder : IModelBinder
             }
             else
             {
-                values = new[] { request.Headers[headerName].ToString() };
+                values = new[] { header.ToString() };
             }
         }
 

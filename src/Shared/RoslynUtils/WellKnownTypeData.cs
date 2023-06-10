@@ -9,6 +9,8 @@ internal static class WellKnownTypeData
     {
         Microsoft_AspNetCore_Components_Rendering_RenderTreeBuilder,
         Microsoft_AspNetCore_Http_IHeaderDictionary,
+        Microsoft_AspNetCore_Http_Metadata_IEndpointMetadataProvider,
+        Microsoft_AspNetCore_Http_Metadata_IEndpointParameterMetadataProvider,
         Microsoft_AspNetCore_Http_Metadata_IFromBodyMetadata,
         Microsoft_AspNetCore_Http_Metadata_IFromFormMetadata,
         Microsoft_AspNetCore_Http_Metadata_IFromHeaderMetadata,
@@ -107,13 +109,17 @@ internal static class WellKnownTypeData
         Microsoft_AspNetCore_Mvc_ValidateAntiForgeryTokenAttribute,
         Microsoft_AspNetCore_Mvc_ModelBinding_EmptyBodyBehavior,
         Microsoft_AspNetCore_Authorization_AllowAnonymousAttribute,
-        Microsoft_AspNetCore_Authorization_AuthorizeAttribute
+        Microsoft_AspNetCore_Authorization_AuthorizeAttribute,
+        Microsoft_Extensions_DependencyInjection_PolicyServiceCollectionExtensions,
+        Microsoft_AspNetCore_Authorization_AuthorizationOptions
     }
 
     public static string[] WellKnownTypeNames = new[]
     {
         "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder",
         "Microsoft.AspNetCore.Http.IHeaderDictionary",
+        "Microsoft.AspNetCore.Http.Metadata.IEndpointMetadataProvider",
+        "Microsoft.AspNetCore.Http.Metadata.IEndpointParameterMetadataProvider",
         "Microsoft.AspNetCore.Http.Metadata.IFromBodyMetadata",
         "Microsoft.AspNetCore.Http.Metadata.IFromFormMetadata",
         "Microsoft.AspNetCore.Http.Metadata.IFromHeaderMetadata",
@@ -212,6 +218,8 @@ internal static class WellKnownTypeData
         "Microsoft.AspNetCore.Mvc.ValidateAntiForgeryTokenAttribute",
         "Microsoft.AspNetCore.Mvc.ModelBinding.EmptyBodyBehavior",
         "Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute",
-        "Microsoft.AspNetCore.Authorization.AuthorizeAttribute"
+        "Microsoft.AspNetCore.Authorization.AuthorizeAttribute",
+        "Microsoft.Extensions.DependencyInjection.PolicyServiceCollectionExtensions",
+        "Microsoft.AspNetCore.Authorization.AuthorizationOptions"
     };
 }

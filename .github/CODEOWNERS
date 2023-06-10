@@ -32,6 +32,7 @@
 /src/Http/Routing/**/PublicAPI.*Shipped.txt                                       @dotnet/aspnet-api-review @javiercn
 /src/HttpClientFactory/                                                           @captainsafia @halter73
 /src/HttpClientFactory/**/PublicAPI.*Shipped.txt                                  @dotnet/aspnet-api-review @captainsafia @halter73
+/src/Installers/                                                                  @dotnet/aspnet-build @wtgodbe
 /src/JSInterop/                                                                   @dotnet/aspnet-blazor-eng
 /src/Middleware/                                                                  @tratcher @BrennanConroy
 /src/Middleware/**/PublicAPI.*Shipped.txt                                         @dotnet/aspnet-api-review @tratcher @BrennanConroy

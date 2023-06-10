@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics;
 using Microsoft.AspNetCore.Components.RenderTree;
 
 namespace Microsoft.AspNetCore.Components.Rendering;
@@ -11,7 +11,8 @@ namespace Microsoft.AspNetCore.Components.Rendering;
 /// within the context of a <see cref="Renderer"/>. This is an internal implementation
 /// detail of <see cref="Renderer"/>.
 /// </summary>
-internal sealed class ComponentState : IDisposable
+[DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
+public class ComponentState : IAsyncDisposable
 {
     private readonly Renderer _renderer;
     private readonly IReadOnlyList<CascadingParameterState> _cascadingParameters;
@@ -28,7 +29,7 @@ internal sealed class ComponentState : IDisposable
     /// <param name="componentId">The externally visible identifier for the <see cref="IComponent"/>. The identifier must be unique in the context of the <see cref="Renderer"/>.</param>
     /// <param name="component">The <see cref="IComponent"/> whose state is being tracked.</param>
     /// <param name="parentComponentState">The <see cref="ComponentState"/> for the parent component, or null if this is a root component.</param>
-    public ComponentState(Renderer renderer, int componentId, IComponent component, ComponentState parentComponentState)
+    public ComponentState(Renderer renderer, int componentId, IComponent component, ComponentState? parentComponentState)
     {
         ComponentId = componentId;
         ParentComponentState = parentComponentState;
@@ -45,13 +46,24 @@ internal sealed class ComponentState : IDisposable
         }
     }
 
-    // TODO: Change the type to 'long' when the Mono runtime has more complete support for passing longs in .NET->JS calls
+    /// <summary>
+    /// Gets the component ID.
+    /// </summary>
     public int ComponentId { get; }
-    public IComponent Component { get; }
-    public ComponentState ParentComponentState { get; }
-    public RenderTreeBuilder CurrentRenderTree { get; private set; }
 
-    public void RenderIntoBatch(RenderBatchBuilder batchBuilder, RenderFragment renderFragment, out Exception? renderFragmentException)
+    /// <summary>
+    /// Gets the component instance.
+    /// </summary>
+    public IComponent Component { get; }
+
+    /// <summary>
+    /// Gets the <see cref="ComponentState"/> of the parent component, or null if this is a root component.
+    /// </summary>
+    public ComponentState? ParentComponentState { get; }
+
+    internal RenderTreeBuilder CurrentRenderTree { get; set; }
+
+    internal void RenderIntoBatch(RenderBatchBuilder batchBuilder, RenderFragment renderFragment, out Exception? renderFragmentException)
     {
         renderFragmentException = null;
 
@@ -63,6 +75,7 @@ internal sealed class ComponentState : IDisposable
         }
 
         _nextRenderTree.Clear();
+        _nextRenderTree.TrackNamedEventHandlers = _renderer.ShouldTrackNamedEventHandlers();
 
         try
         {
@@ -88,48 +101,14 @@ internal sealed class ComponentState : IDisposable
             batchBuilder,
             ComponentId,
             _nextRenderTree.GetFrames(),
-            CurrentRenderTree.GetFrames());
+            CurrentRenderTree.GetFrames(),
+            CurrentRenderTree.GetNamedEvents());
         batchBuilder.UpdatedComponentDiffs.Append(diff);
         batchBuilder.InvalidateParameterViews();
     }
 
-    public bool TryDisposeInBatch(RenderBatchBuilder batchBuilder, [NotNullWhen(false)] out Exception? exception)
-    {
-        _componentWasDisposed = true;
-        exception = null;
-
-        try
-        {
-            if (Component is IDisposable disposable)
-            {
-                disposable.Dispose();
-            }
-        }
-        catch (Exception ex)
-        {
-            exception = ex;
-        }
-
-        CleanupComponentStateResources(batchBuilder);
-
-        return exception == null;
-    }
-
-    private void CleanupComponentStateResources(RenderBatchBuilder batchBuilder)
-    {
-        // We don't expect these things to throw.
-        RenderTreeDiffBuilder.DisposeFrames(batchBuilder, CurrentRenderTree.GetFrames());
-
-        if (_hasAnyCascadingParameterSubscriptions)
-        {
-            RemoveCascadingParameterSubscriptions();
-        }
-
-        DisposeBuffers();
-    }
-
     // Callers expect this method to always return a faulted task.
-    public Task NotifyRenderCompletedAsync()
+    internal Task NotifyRenderCompletedAsync()
     {
         if (Component is IHandleAfterRender handlerAfterRender)
         {
@@ -150,7 +129,7 @@ internal sealed class ComponentState : IDisposable
         return Task.CompletedTask;
     }
 
-    public void SetDirectParameters(ParameterView parameters)
+    internal void SetDirectParameters(ParameterView parameters)
     {
         // Note: We should be careful to ensure that the framework never calls
         // IComponent.SetParametersAsync directly elsewhere. We should only call it
@@ -179,7 +158,7 @@ internal sealed class ComponentState : IDisposable
         SupplyCombinedParameters(parameters);
     }
 
-    public void NotifyCascadingValueChanged(in ParameterViewLifetime lifetime)
+    internal void NotifyCascadingValueChanged(in ParameterViewLifetime lifetime)
     {
         var directParams = _latestDirectParametersSnapshot != null
             ? new ParameterView(lifetime, _latestDirectParametersSnapshot.Buffer, 0)
@@ -204,7 +183,7 @@ internal sealed class ComponentState : IDisposable
             setParametersAsyncTask = Task.FromException(ex);
         }
 
-        _renderer.AddToPendingTasks(setParametersAsyncTask, owningComponentState: this);
+        _renderer.AddToPendingTasksWithErrorHandling(setParametersAsyncTask, owningComponentState: this);
     }
 
     private bool AddCascadingParameterSubscriptions()
@@ -238,13 +217,27 @@ internal sealed class ComponentState : IDisposable
         }
     }
 
-    public void Dispose()
+    /// <summary>
+    /// Disposes this instance and its associated component.
+    /// </summary>
+    public virtual ValueTask DisposeAsync()
     {
+        _componentWasDisposed = true;
         DisposeBuffers();
 
-        if (Component is IDisposable disposable)
+        // Components shouldn't need to implement IAsyncDisposable and IDisposable simultaneously,
+        // but in case they do, we prefer the async overload since we understand the sync overload
+        // is implemented for more "constrained" scenarios.
+        // Component authors are responsible for their IAsyncDisposable implementations not taking
+        // forever.
+        if (Component is IAsyncDisposable asyncDisposable)
         {
-            disposable.Dispose();
+            return asyncDisposable.DisposeAsync();
+        }
+        else
+        {
+            (Component as IDisposable)?.Dispose();
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -255,32 +248,21 @@ internal sealed class ComponentState : IDisposable
         _latestDirectParametersSnapshot?.Dispose();
     }
 
-    public Task DisposeInBatchAsync(RenderBatchBuilder batchBuilder)
+    internal ValueTask DisposeInBatchAsync(RenderBatchBuilder batchBuilder)
     {
-        _componentWasDisposed = true;
+        // We don't expect these things to throw.
+        RenderTreeDiffBuilder.DisposeFrames(batchBuilder, CurrentRenderTree.GetFrames());
 
-        CleanupComponentStateResources(batchBuilder);
+        if (_hasAnyCascadingParameterSubscriptions)
+        {
+            RemoveCascadingParameterSubscriptions();
+        }
 
-        try
-        {
-            var result = ((IAsyncDisposable)Component).DisposeAsync();
-            if (result.IsCompletedSuccessfully)
-            {
-                // If it's a IValueTaskSource backed ValueTask,
-                // inform it its result has been read so it can reset
-                result.GetAwaiter().GetResult();
-                return Task.CompletedTask;
-            }
-            else
-            {
-                // We know we are dealing with an exception that happened asynchronously, so return a task
-                // to the caller so that he can unwrap it.
-                return result.AsTask();
-            }
-        }
-        catch (Exception e)
-        {
-            return Task.FromException(e);
-        }
+        return DisposeAsync();
+    }
+
+    private string GetDebuggerDisplay()
+    {
+        return $"{ComponentId} - {Component.GetType().Name} - Disposed: {_componentWasDisposed}";
     }
 }

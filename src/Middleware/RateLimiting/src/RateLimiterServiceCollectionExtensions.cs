@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.Metrics;
 
 namespace Microsoft.AspNetCore.Builder;
 
@@ -22,6 +23,8 @@ public static class RateLimiterServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configureOptions);
 
+        services.AddMetrics();
+        services.AddSingleton<RateLimitingMetrics>();
         services.Configure(configureOptions);
         return services;
     }

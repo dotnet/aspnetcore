@@ -7,6 +7,7 @@ using System.Text.Unicode;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.OutputCaching.Memory;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Primitives;
@@ -334,44 +335,38 @@ public class OutputCacheMiddlewareTests
     [Fact]
     public void StartResponseAsync_IfAllowResponseCaptureIsTrue_SetsResponseTime()
     {
-        var clock = new TestClock
-        {
-            UtcNow = DateTimeOffset.UtcNow
-        };
+        var timeProvider = new MockTimeProvider();
         var middleware = TestUtils.CreateTestMiddleware(options: new OutputCacheOptions
         {
-            SystemClock = clock
+            TimeProvider = timeProvider
         });
         var context = TestUtils.CreateTestContext();
         context.ResponseTime = null;
 
         middleware.StartResponse(context);
 
-        Assert.Equal(clock.UtcNow, context.ResponseTime);
+        Assert.Equal(timeProvider.GetUtcNow(), context.ResponseTime);
     }
 
     [Fact]
     public void StartResponseAsync_IfAllowResponseCaptureIsTrue_SetsResponseTimeOnlyOnce()
     {
-        var clock = new TestClock
-        {
-            UtcNow = DateTimeOffset.UtcNow
-        };
+        var timeProvider = new MockTimeProvider();
         var middleware = TestUtils.CreateTestMiddleware(options: new OutputCacheOptions
         {
-            SystemClock = clock
+            TimeProvider = timeProvider
         });
         var context = TestUtils.CreateTestContext();
-        var initialTime = clock.UtcNow;
+        var initialTime = timeProvider.GetUtcNow();
         context.ResponseTime = null;
 
         middleware.StartResponse(context);
         Assert.Equal(initialTime, context.ResponseTime);
 
-        clock.UtcNow += TimeSpan.FromSeconds(10);
+        timeProvider.Advance(TimeSpan.FromSeconds(10));
 
         middleware.StartResponse(context);
-        Assert.NotEqual(clock.UtcNow, context.ResponseTime);
+        Assert.NotEqual(timeProvider.GetUtcNow(), context.ResponseTime);
         Assert.Equal(initialTime, context.ResponseTime);
     }
 
@@ -393,20 +388,17 @@ public class OutputCacheMiddlewareTests
     {
         // The Expires header should not be used when set in the response
 
-        var clock = new TestClock
-        {
-            UtcNow = DateTimeOffset.MinValue
-        };
+        var timeProvider = new MockTimeProvider();
         var options = new OutputCacheOptions
         {
-            SystemClock = clock
+            TimeProvider = timeProvider
         };
         var sink = new TestSink();
         var middleware = TestUtils.CreateTestMiddleware(testSink: sink, options: options);
         var context = TestUtils.CreateTestContext();
 
-        context.ResponseTime = clock.UtcNow;
-        context.HttpContext.Response.Headers.Expires = HeaderUtilities.FormatDate(clock.UtcNow + TimeSpan.FromSeconds(11));
+        context.ResponseTime = timeProvider.GetUtcNow();
+        context.HttpContext.Response.Headers.Expires = HeaderUtilities.FormatDate(timeProvider.GetUtcNow() + TimeSpan.FromSeconds(11));
 
         middleware.FinalizeCacheHeaders(context);
 
@@ -419,25 +411,22 @@ public class OutputCacheMiddlewareTests
     {
         // The MaxAge header should not be used if set in the response
 
-        var clock = new TestClock
-        {
-            UtcNow = DateTimeOffset.UtcNow
-        };
+        var timeProvider = new MockTimeProvider();
         var sink = new TestSink();
         var options = new OutputCacheOptions
         {
-            SystemClock = clock
+            TimeProvider = timeProvider
         };
         var middleware = TestUtils.CreateTestMiddleware(testSink: sink, options: options);
         var context = TestUtils.CreateTestContext();
 
-        context.ResponseTime = clock.UtcNow;
+        context.ResponseTime = timeProvider.GetUtcNow();
         context.HttpContext.Response.Headers.CacheControl = new CacheControlHeaderValue()
         {
             MaxAge = TimeSpan.FromSeconds(12)
         }.ToString();
 
-        context.HttpContext.Response.Headers.Expires = HeaderUtilities.FormatDate(clock.UtcNow + TimeSpan.FromSeconds(11));
+        context.HttpContext.Response.Headers.Expires = HeaderUtilities.FormatDate(timeProvider.GetUtcNow() + TimeSpan.FromSeconds(11));
 
         middleware.FinalizeCacheHeaders(context);
 
@@ -448,25 +437,22 @@ public class OutputCacheMiddlewareTests
     [Fact]
     public void FinalizeCacheHeadersAsync_ResponseValidity_UseSharedMaxAgeIfAvailable()
     {
-        var clock = new TestClock
-        {
-            UtcNow = DateTimeOffset.UtcNow
-        };
+        var timeProvider = new MockTimeProvider();
         var sink = new TestSink();
         var options = new OutputCacheOptions
         {
-            SystemClock = clock
+            TimeProvider = timeProvider
         };
         var middleware = TestUtils.CreateTestMiddleware(testSink: sink, options: options);
         var context = TestUtils.CreateTestContext();
 
-        context.ResponseTime = clock.UtcNow;
+        context.ResponseTime = timeProvider.GetUtcNow();
         context.HttpContext.Response.Headers.CacheControl = new CacheControlHeaderValue()
         {
             MaxAge = TimeSpan.FromSeconds(12),
             SharedMaxAge = TimeSpan.FromSeconds(13)
         }.ToString();
-        context.HttpContext.Response.Headers.Expires = HeaderUtilities.FormatDate(clock.UtcNow + TimeSpan.FromSeconds(11));
+        context.HttpContext.Response.Headers.Expires = HeaderUtilities.FormatDate(timeProvider.GetUtcNow() + TimeSpan.FromSeconds(11));
 
         middleware.FinalizeCacheHeaders(context);
 
@@ -961,5 +947,73 @@ public class OutputCacheMiddlewareTests
         TestUtils.AssertLoggedMessages(
             sink.Writes,
             LoggedMessage.ResponseCached);
+    }
+
+    public class RefreshableCachePolicy : IOutputCachePolicy
+    {
+        public ValueTask CacheRequestAsync(OutputCacheContext context, CancellationToken cancellation)
+        {
+            context.AllowCacheLookup = !context.HttpContext.Request.Headers.ContainsKey("X-Refresh");
+            context.AllowCacheStorage = true;
+            return ValueTask.CompletedTask;
+        }
+
+        public ValueTask ServeFromCacheAsync(OutputCacheContext context, CancellationToken cancellation)
+        {
+            return ValueTask.CompletedTask;
+        }
+
+        public ValueTask ServeResponseAsync(OutputCacheContext context, CancellationToken cancellation)
+        {
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    [Fact]
+    public async Task Can_Implement_Policy_That_Enables_Storage_Without_Serving()
+    {
+        var options = new OutputCacheOptions();
+        options.AddBasePolicy(builder =>
+        {
+            builder.AddPolicy(new RefreshableCachePolicy());
+            builder.Cache();
+        }, true);
+
+        var cache = new TestOutputCache();
+        var sink = new TestSink();
+        var middleware = TestUtils.CreateTestMiddleware(options: options, testSink: sink, cache: cache, next: async c =>
+        {
+            await c.Response.WriteAsync(Guid.NewGuid().ToString());
+        });
+
+        // Act - Four requests are executed. The third request
+        //       should trigger a cache refresh so that the first two requests
+        //       have matching output, and the last two have matching output.
+        var initialResponse = await SendRequestAsync(includeRefreshHeader: false);
+        var cachedResponse = await SendRequestAsync(includeRefreshHeader: false);
+        var refreshedResponse = await SendRequestAsync(includeRefreshHeader: true);
+        var cachedResponseAfterRefresh = await SendRequestAsync(includeRefreshHeader: false);
+
+        Assert.Equal(initialResponse, cachedResponse);
+        Assert.NotEqual(cachedResponse, refreshedResponse);
+        Assert.Equal(refreshedResponse, cachedResponseAfterRefresh);
+
+        async Task<string> SendRequestAsync(bool includeRefreshHeader)
+        {
+            var requestContext = TestUtils.CreateTestContext(cache: cache);
+            requestContext.HttpContext.Request.Method = "GET";
+            requestContext.HttpContext.Request.Path = "/";
+            var responseStream = new MemoryStream();
+            requestContext.HttpContext.Response.Body = responseStream;
+
+            if (includeRefreshHeader)
+            {
+                requestContext.HttpContext.Request.Headers.Add("X-Refresh", "randomvalue");
+            }
+
+            await middleware.Invoke(requestContext.HttpContext);
+            var response = Encoding.UTF8.GetString(responseStream.GetBuffer());
+            return response;
+        }
     }
 }

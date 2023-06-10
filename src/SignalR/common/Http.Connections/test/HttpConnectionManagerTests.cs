@@ -2,9 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.Metrics;
 using System.IO.Pipelines;
+using System.Net;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Connections.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Hosting;
@@ -90,6 +94,7 @@ public class HttpConnectionManagerTests : VerifiableLoggedTest
                     {
                         throw new Exception("Transport failed");
                     }
+                    return false;
                 });
 
             }
@@ -97,7 +102,7 @@ public class HttpConnectionManagerTests : VerifiableLoggedTest
             {
                 // If the transport is faulted then we want to make sure the transport task only completes after
                 // the application completes
-                connection.TransportTask = Task.FromException(new Exception("Application failed"));
+                connection.TransportTask = Task.FromException<bool>(new Exception("Application failed"));
                 connection.ApplicationTask = Task.Run(async () =>
                 {
                     // Wait for the application to end
@@ -108,7 +113,7 @@ public class HttpConnectionManagerTests : VerifiableLoggedTest
             else
             {
                 connection.ApplicationTask = Task.CompletedTask;
-                connection.TransportTask = Task.CompletedTask;
+                connection.TransportTask = Task.FromResult(true);
             }
 
             try
@@ -185,7 +190,7 @@ public class HttpConnectionManagerTests : VerifiableLoggedTest
             Assert.Same(newConnection, connection);
             Assert.Same(transport, newConnection.Transport);
 
-            connectionManager.RemoveConnection(connection.ConnectionToken);
+            connectionManager.RemoveConnection(connection.ConnectionToken, connection.TransportType, HttpConnectionStopStatus.Timeout);
             Assert.False(connectionManager.TryGetConnection(connection.ConnectionToken, out newConnection));
         }
     }
@@ -266,6 +271,7 @@ public class HttpConnectionManagerTests : VerifiableLoggedTest
                 {
                     connection.Application.Input.AdvanceTo(result.Buffer.End);
                 }
+                return true;
             });
 
             connectionManager.CloseConnections();
@@ -281,7 +287,7 @@ public class HttpConnectionManagerTests : VerifiableLoggedTest
         {
             var connectionManager = CreateConnectionManager(LoggerFactory);
             var connection = connectionManager.CreateConnection();
-            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             connection.ApplicationTask = tcs.Task;
             connection.TransportTask = tcs.Task;
@@ -291,7 +297,7 @@ public class HttpConnectionManagerTests : VerifiableLoggedTest
             Assert.False(firstTask.IsCompleted);
             Assert.False(secondTask.IsCompleted);
 
-            tcs.TrySetResult();
+            tcs.TrySetResult(true);
 
             await Task.WhenAll(firstTask, secondTask).DefaultTimeout();
         }
@@ -304,7 +310,7 @@ public class HttpConnectionManagerTests : VerifiableLoggedTest
         {
             var connectionManager = CreateConnectionManager(LoggerFactory);
             var connection = connectionManager.CreateConnection();
-            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             connection.ApplicationTask = tcs.Task;
             connection.TransportTask = tcs.Task;
@@ -331,7 +337,7 @@ public class HttpConnectionManagerTests : VerifiableLoggedTest
         {
             var connectionManager = CreateConnectionManager(LoggerFactory);
             var connection = connectionManager.CreateConnection();
-            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             connection.ApplicationTask = tcs.Task;
             connection.TransportTask = tcs.Task;
@@ -419,10 +425,66 @@ public class HttpConnectionManagerTests : VerifiableLoggedTest
         }
     }
 
-    private static HttpConnectionManager CreateConnectionManager(ILoggerFactory loggerFactory, IHostApplicationLifetime lifetime = null)
+    [Fact]
+    public void Metrics()
     {
-        lifetime = lifetime ?? new EmptyApplicationLifetime();
-        return new HttpConnectionManager(loggerFactory, lifetime, Options.Create(new ConnectionOptions()));
+        using (StartVerifiableLog())
+        {
+            var testMeterFactory = new TestMeterFactory();
+            using var connectionDuration = new InstrumentRecorder<double>(testMeterFactory, HttpConnectionsMetrics.MeterName, "connection-duration");
+            using var currentConnections = new InstrumentRecorder<long>(testMeterFactory, HttpConnectionsMetrics.MeterName, "current-connections");
+
+            var connectionManager = CreateConnectionManager(LoggerFactory, metrics: new HttpConnectionsMetrics(testMeterFactory));
+            var connection = connectionManager.CreateConnection();
+
+            Assert.NotNull(connection.ConnectionId);
+
+            Assert.Empty(connectionDuration.GetMeasurements());
+            Assert.Collection(currentConnections.GetMeasurements(), m => Assert.Equal(1, m.Value));
+
+            connection.TransportType = HttpTransportType.WebSockets;
+
+            connectionManager.RemoveConnection(connection.ConnectionId, connection.TransportType, HttpConnectionStopStatus.NormalClosure);
+
+            Assert.Collection(currentConnections.GetMeasurements(), m => Assert.Equal(1, m.Value), m => Assert.Equal(-1, m.Value));
+            Assert.Collection(connectionDuration.GetMeasurements(), m => AssertDuration(m, HttpConnectionStopStatus.NormalClosure, HttpTransportType.WebSockets));
+        }
+    }
+
+    [Fact]
+    public void Metrics_ListenStartAfterConnection_Empty()
+    {
+        using (StartVerifiableLog())
+        {
+            var testMeterFactory = new TestMeterFactory();
+            var connectionManager = CreateConnectionManager(LoggerFactory, metrics: new HttpConnectionsMetrics(testMeterFactory));
+            var connection = connectionManager.CreateConnection();
+
+            using var connectionDuration = new InstrumentRecorder<double>(testMeterFactory, HttpConnectionsMetrics.MeterName, "connection-duration");
+            using var currentConnections = new InstrumentRecorder<long>(testMeterFactory, HttpConnectionsMetrics.MeterName, "current-connections");
+
+            Assert.NotNull(connection.ConnectionId);
+
+            connection.TransportType = HttpTransportType.WebSockets;
+
+            connectionManager.RemoveConnection(connection.ConnectionId, connection.TransportType, HttpConnectionStopStatus.NormalClosure);
+
+            Assert.Empty(currentConnections.GetMeasurements());
+            Assert.Empty(connectionDuration.GetMeasurements());
+        }
+    }
+
+    private static void AssertDuration(Measurement<double> measurement, HttpConnectionStopStatus status, HttpTransportType transportType)
+    {
+        Assert.True(measurement.Value > 0);
+        Assert.Equal(status.ToString(), (string)measurement.Tags.ToArray().Single(t => t.Key == "status").Value);
+        Assert.Equal(transportType.ToString(), (string)measurement.Tags.ToArray().Single(t => t.Key == "transport").Value);
+    }
+
+    private static HttpConnectionManager CreateConnectionManager(ILoggerFactory loggerFactory, IHostApplicationLifetime lifetime = null, HttpConnectionsMetrics metrics = null)
+    {
+        lifetime ??= new EmptyApplicationLifetime();
+        return new HttpConnectionManager(loggerFactory, lifetime, Options.Create(new ConnectionOptions()), metrics ?? new HttpConnectionsMetrics(new TestMeterFactory()));
     }
 
     [Flags]

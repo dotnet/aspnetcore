@@ -70,7 +70,10 @@ internal sealed class ConfigureSigningCredentials : IConfigureOptions<ApiAuthori
             case KeySources.Development:
                 var developmentKeyPath = Path.Combine(Directory.GetCurrentDirectory(), key.FilePath ?? DefaultTempKeyRelativePath);
                 var createIfMissing = key.Persisted ?? true;
-                _logger.LogInformation(LoggerEventIds.DevelopmentKeyLoaded, "Loading development key at '{developmentKeyPath}'.", developmentKeyPath);
+                if (_logger.IsEnabled(LogLevel.Information))
+                {
+                    _logger.LogInformation(LoggerEventIds.DevelopmentKeyLoaded, "Loading development key at '{developmentKeyPath}'.", developmentKeyPath);
+                }
                 var developmentKey = new RsaSecurityKey(SigningKeysLoader.LoadDevelopment(developmentKeyPath, createIfMissing))
                 {
                     KeyId = "Development"
@@ -79,14 +82,20 @@ internal sealed class ConfigureSigningCredentials : IConfigureOptions<ApiAuthori
             case KeySources.File:
                 var pfxPath = Path.Combine(Directory.GetCurrentDirectory(), key.FilePath);
                 var storageFlags = GetStorageFlags(key);
-                _logger.LogInformation(LoggerEventIds.CertificateLoadedFromFile, "Loading certificate file at '{CertificatePath}' with storage flags '{CertificateStorageFlags}'.", pfxPath, key.StorageFlags);
+                if (_logger.IsEnabled(LogLevel.Information))
+                {
+                    _logger.LogInformation(LoggerEventIds.CertificateLoadedFromFile, "Loading certificate file at '{CertificatePath}' with storage flags '{CertificateStorageFlags}'.", pfxPath, key.StorageFlags);
+                }
                 return new SigningCredentials(new X509SecurityKey(SigningKeysLoader.LoadFromFile(pfxPath, key.Password, storageFlags)), "RS256");
             case KeySources.Store:
                 if (!Enum.TryParse<StoreLocation>(key.StoreLocation, out var storeLocation))
                 {
                     throw new InvalidOperationException($"Invalid certificate store location '{key.StoreLocation}'.");
                 }
-                _logger.LogInformation(LoggerEventIds.CertificateLoadedFromStore, "Loading certificate with subject '{CertificateSubject}' in '{CertificateStoreLocation}\\{CertificateStoreName}'.", key.Name, key.StoreLocation, key.StoreName);
+                if (_logger.IsEnabled(LogLevel.Information))
+                {
+                    _logger.LogInformation(LoggerEventIds.CertificateLoadedFromStore, "Loading certificate with subject '{CertificateSubject}' in '{CertificateStoreLocation}\\{CertificateStoreName}'.", key.Name, key.StoreLocation, key.StoreName);
+                }
                 return new SigningCredentials(new X509SecurityKey(SigningKeysLoader.LoadFromStoreCert(key.Name, key.StoreName, storeLocation, GetCurrentTime())), "RS256");
             default:
                 throw new InvalidOperationException($"Invalid key type '{key.Type ?? "(null)"}'.");

@@ -738,7 +738,7 @@ public static class NavigationManagerExtensions
         var hashStartIndex = uri.IndexOf('#');
         hash = hashStartIndex < 0 ? "" : uri.AsSpan(hashStartIndex);
 
-        var queryStartIndex = uri.IndexOf('?');
+        var queryStartIndex = (hashStartIndex > 0 ? uri.AsSpan(0, hashStartIndex) : uri).IndexOf('?');
 
         if (queryStartIndex < 0)
         {

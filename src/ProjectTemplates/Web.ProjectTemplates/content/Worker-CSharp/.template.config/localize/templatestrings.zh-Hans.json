@@ -8,6 +8,8 @@
   "symbols/skipRestore/description": "如果指定，则在创建时跳过项目的自动还原。",
   "symbols/UseProgramMain/displayName": "不使用顶级语句(_T)",
   "symbols/UseProgramMain/description": "是否生成显式程序类和主方法，而不是顶级语句。",
+  "symbols/NativeAot/displayName": "启用 native AOT 发布(_N)",
+  "symbols/NativeAot/description": "是否启用将项目以 native AOT 发布。",
   "postActions/restore/description": "还原此项目所需的 NuGet 包。",
   "postActions/restore/manualInstructions/default/text": "运行 \"dotnet restore\""
 }

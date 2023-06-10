@@ -2,8 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
+using Microsoft.AspNetCore.Components.Binding;
 
 namespace Microsoft.AspNetCore.Components.Forms;
 
@@ -18,6 +20,7 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
     private bool _hasInitializedParameters;
     private bool _parsingFailed;
     private string? _incomingValueBeforeParsing;
+    private string? _formattedValueExpression;
     private bool _previousParsingAttemptFailed;
     private ValidationMessageStore? _parsingValidationMessages;
     private Type? _nullableUnderlyingType;
@@ -156,7 +159,7 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
     }
 
     /// <summary>
-    /// Formats the value as a string. Derived classes can override this to determine the formating used for <see cref="CurrentValueAsString"/>.
+    /// Formats the value as a string. Derived classes can override this to determine the formatting used for <see cref="CurrentValueAsString"/>.
     /// </summary>
     /// <param name="value">The value to format.</param>
     /// <returns>A string representation of the value.</returns>
@@ -184,6 +187,34 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
         {
             var fieldClass = EditContext?.FieldCssClass(FieldIdentifier);
             return AttributeUtilities.CombineClassNames(AdditionalAttributes, fieldClass) ?? string.Empty;
+        }
+    }
+
+    /// <summary>
+    /// Gets the value to be used for the input's "name" attribute.
+    /// </summary>
+    protected string NameAttributeValue
+    {
+        get
+        {
+            if (AdditionalAttributes?.TryGetValue("name", out var nameAttributeValue) ?? false)
+            {
+                return Convert.ToString(nameAttributeValue, CultureInfo.InvariantCulture) ?? string.Empty;
+            }
+
+            if (EditContext?.ShouldUseFieldIdentifiers ?? false)
+            {
+                if (_formattedValueExpression is null && ValueExpression is not null)
+                {
+                    _formattedValueExpression = ExpressionFormatter.FormatLambda(
+                        ValueExpression,
+                        EditContext.GetConvertibleValues());
+                }
+
+                return _formattedValueExpression ?? string.Empty;
+            }
+
+            return string.Empty;
         }
     }
 

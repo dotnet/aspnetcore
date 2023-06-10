@@ -2,12 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Reflection.Metadata;
 using Microsoft.AspNetCore.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 
-namespace Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel.Emitters;
+namespace Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel.Emitters;
 
 internal static class EndpointParameterEmitter
 {
@@ -33,7 +33,7 @@ internal static class EndpointParameterEmitter
         }
         else if (endpointParameter.IsOptional)
         {
-            codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = {endpointParameter.EmitAssigningCodeResult()}.Count > 0 ? (string?){endpointParameter.EmitAssigningCodeResult()} : null;");
+            codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = {endpointParameter.EmitAssigningCodeResult()}.Count > 0 ? (string?){endpointParameter.EmitAssigningCodeResult()} : {endpointParameter.DefaultValue};");
         }
         else if (endpointParameter.IsStringValues)
         {
@@ -44,10 +44,46 @@ internal static class EndpointParameterEmitter
             codeWriter.WriteLine($"if (StringValues.IsNullOrEmpty({endpointParameter.EmitAssigningCodeResult()}))");
             codeWriter.StartBlock();
             codeWriter.WriteLine("wasParamCheckFailure = true;");
+            codeWriter.WriteLine($@"logOrThrowExceptionHelper.RequiredParameterNotProvided({SymbolDisplay.FormatLiteral(endpointParameter.Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat), true)}, {SymbolDisplay.FormatLiteral(endpointParameter.SymbolName, true)}, {SymbolDisplay.FormatLiteral(endpointParameter.ToMessageString(), true)});");
             codeWriter.EndBlock();
             codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = (string?){endpointParameter.EmitAssigningCodeResult()};");
         }
 
+        endpointParameter.EmitParsingBlock(codeWriter);
+    }
+
+    internal static void EmitFormParameterPreparation(this EndpointParameter endpointParameter, CodeWriter codeWriter, ref bool readFormEmitted)
+    {
+        codeWriter.WriteLine(endpointParameter.EmitParameterDiagnosticComment());
+
+        // Invoke TryResolveFormAsync once per handler so that we can
+        // avoid the blocking code-path that occurs when `httpContext.Request.Form`
+        // is invoked.
+        if (!readFormEmitted)
+        {
+            var shortParameterTypeName = endpointParameter.Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat);
+            var assigningCode = $"await GeneratedRouteBuilderExtensionsCore.TryResolveFormAsync(httpContext, logOrThrowExceptionHelper, {SymbolDisplay.FormatLiteral(shortParameterTypeName, true)}, {SymbolDisplay.FormatLiteral(endpointParameter.SymbolName, true)})";
+            var resolveFormResult = $"{endpointParameter.SymbolName}_resolveFormResult";
+            codeWriter.WriteLine($"var {resolveFormResult} = {assigningCode};");
+
+            // Exit early if binding from the form has failed.
+            codeWriter.WriteLine($"if (!{resolveFormResult}.Item1)");
+            codeWriter.StartBlock();
+            codeWriter.WriteLine("return;");
+            codeWriter.EndBlock();
+            readFormEmitted = true;
+        }
+
+        codeWriter.WriteLine($"var {endpointParameter.EmitAssigningCodeResult()} = {endpointParameter.AssigningCode};");
+        if (!endpointParameter.IsOptional && !endpointParameter.IsArray)
+        {
+            codeWriter.WriteLine($"if ({endpointParameter.EmitAssigningCodeResult()} == null)");
+            codeWriter.StartBlock();
+            codeWriter.WriteLine("wasParamCheckFailure = true;");
+            codeWriter.WriteLine($@"logOrThrowExceptionHelper.RequiredParameterNotProvided({SymbolDisplay.FormatLiteral(endpointParameter.Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat), true)}, {SymbolDisplay.FormatLiteral(endpointParameter.SymbolName, true)}, {SymbolDisplay.FormatLiteral(endpointParameter.ToMessageString(), true)});");
+            codeWriter.EndBlock();
+        }
+        codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = {endpointParameter.EmitAssigningCodeResult()};");
         endpointParameter.EmitParsingBlock(codeWriter);
     }
 
@@ -107,6 +143,7 @@ internal static class EndpointParameterEmitter
             codeWriter.WriteLine($"if ({endpointParameter.EmitAssigningCodeResult()} == null)");
             codeWriter.StartBlock();
             codeWriter.WriteLine("wasParamCheckFailure = true;");
+            codeWriter.WriteLine($@"logOrThrowExceptionHelper.RequiredParameterNotProvided({SymbolDisplay.FormatLiteral(endpointParameter.Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat), true)}, {SymbolDisplay.FormatLiteral(endpointParameter.SymbolName, true)}, {SymbolDisplay.FormatLiteral(endpointParameter.ToMessageString(), true)});");
             codeWriter.EndBlock();
         }
 
@@ -127,13 +164,17 @@ internal static class EndpointParameterEmitter
         }
         else if (endpointParameter.IsOptional)
         {
-            codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = {endpointParameter.EmitAssigningCodeResult()}.Count > 0 ? (string?){endpointParameter.EmitAssigningCodeResult()} : null;");
+            // For non-string parameters, the TryParse logic takes care of setting the default value fallback.
+            // Strings don't undergo the TryParse treatment so we set the default value here.
+            var fallback = endpointParameter.Type.SpecialType == SpecialType.System_String ? endpointParameter.DefaultValue : "null";
+            codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = {endpointParameter.EmitAssigningCodeResult()}.Count > 0 ? (string?){endpointParameter.EmitAssigningCodeResult()} : {fallback};");
         }
         else
         {
             codeWriter.WriteLine($"if ({endpointParameter.EmitAssigningCodeResult()} is StringValues {{ Count: 0 }})");
             codeWriter.StartBlock();
             codeWriter.WriteLine("wasParamCheckFailure = true;");
+            codeWriter.WriteLine($@"logOrThrowExceptionHelper.RequiredParameterNotProvided({SymbolDisplay.FormatLiteral(endpointParameter.Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat), true)}, {SymbolDisplay.FormatLiteral(endpointParameter.SymbolName, true)}, {SymbolDisplay.FormatLiteral(endpointParameter.ToMessageString(), true)});");
             codeWriter.EndBlock();
             codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = (string?){endpointParameter.EmitAssigningCodeResult()};");
         }
@@ -148,7 +189,8 @@ internal static class EndpointParameterEmitter
 
         // Invoke TryResolveBody method to parse JSON and set
         // status codes on exceptions.
-        var assigningCode = $"await GeneratedRouteBuilderExtensionsCore.TryResolveBodyAsync<{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)}>(httpContext, {(endpointParameter.IsOptional ? "true" : "false")})";
+        var shortParameterTypeName = endpointParameter.Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat);
+        var assigningCode = $"await GeneratedRouteBuilderExtensionsCore.TryResolveBodyAsync<{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)}>(httpContext, logOrThrowExceptionHelper, {(endpointParameter.IsOptional ? "true" : "false")}, {SymbolDisplay.FormatLiteral(shortParameterTypeName, true)}, {SymbolDisplay.FormatLiteral(endpointParameter.SymbolName, true)})";
         var resolveBodyResult = $"{endpointParameter.SymbolName}_resolveBodyResult";
         codeWriter.WriteLine($"var {resolveBodyResult} = {assigningCode};");
         codeWriter.WriteLine($"var {endpointParameter.EmitHandlerArgument()} = {resolveBodyResult}.Item2;");
@@ -183,24 +225,70 @@ internal static class EndpointParameterEmitter
         codeWriter.EndBlock();
     }
 
+    internal static void EmitJsonBodyOrQueryParameterPreparationString(this EndpointParameter endpointParameter, CodeWriter codeWriter)
+    {
+        // Preamble for diagnostics purposes.
+        codeWriter.WriteLine(endpointParameter.EmitParameterDiagnosticComment());
+
+        // Declare handler variable up front.
+        codeWriter.WriteLine($"{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)} {endpointParameter.EmitHandlerArgument()} = null!;");
+        codeWriter.WriteLine("if (options.DisableInferBodyFromParameters)");
+        codeWriter.StartBlock();
+        codeWriter.WriteLine($"""var {endpointParameter.EmitAssigningCodeResult()} = httpContext.Request.Query["{endpointParameter.LookupName}"];""");
+        codeWriter.WriteLine($"""{endpointParameter.EmitHandlerArgument()} = {endpointParameter.EmitAssigningCodeResult()}!;""");
+        codeWriter.EndBlock();
+        codeWriter.WriteLine("else");
+        codeWriter.StartBlock();
+
+        // This code is adapted from the EmitJsonBodyParameterPreparationString method with some modifications
+        // because the handler argument is emitted before the containing if block (which makes it awkward to
+        // simply reuse that emission code) - opted for duplication (with tweaks) over complexity.
+        var shortParameterTypeName = endpointParameter.Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat);
+        var assigningCode = $"await GeneratedRouteBuilderExtensionsCore.TryResolveBodyAsync<{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)}>(httpContext, logOrThrowExceptionHelper, {(endpointParameter.IsOptional ? "true" : "false")}, {SymbolDisplay.FormatLiteral(shortParameterTypeName, true)}, {SymbolDisplay.FormatLiteral(endpointParameter.SymbolName, true)})";
+        var resolveBodyResult = $"{endpointParameter.SymbolName}_resolveBodyResult";
+        codeWriter.WriteLine($"var {resolveBodyResult} = {assigningCode};");
+        codeWriter.WriteLine($"{endpointParameter.EmitHandlerArgument()} = {resolveBodyResult}.Item2!;");
+
+        // If binding from the JSON body fails, we exit early. Don't
+        // set the status code here because assume it has been set by the
+        // TryResolveBody method.
+        codeWriter.WriteLine($"if (!{resolveBodyResult}.Item1)");
+        codeWriter.StartBlock();
+        codeWriter.WriteLine("return;");
+        codeWriter.EndBlock();
+
+        codeWriter.EndBlock();
+    }
+
     internal static void EmitBindAsyncPreparation(this EndpointParameter endpointParameter, CodeWriter codeWriter)
     {
+        // Invoke the `BindAsync` method on an interface if it is the target receiver.
+        var receiverType = endpointParameter.BindableMethodSymbol?.ReceiverType is { TypeKind: TypeKind.Interface } targetType
+            ? targetType
+            : endpointParameter.Type;
+        var bindMethodReceiverType = receiverType?.UnwrapTypeSymbol(unwrapNullable: true);
+        var bindMethodReceiverTypeString = bindMethodReceiverType?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+
         var unwrappedType = endpointParameter.Type.UnwrapTypeSymbol(unwrapNullable: true);
-        var unwrappedTypeString = unwrappedType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        var unwrappedTypeString = unwrappedType?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+
+        var resolveParameterInfo = endpointParameter.IsProperty
+            ? endpointParameter.PropertyAsParameterInfoConstruction
+            : $"parameters[{endpointParameter.Ordinal}]";
 
         switch (endpointParameter.BindMethod)
         {
             case BindabilityMethod.IBindableFromHttpContext:
-                codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = await BindAsync<{unwrappedTypeString}>(httpContext, parameters[{endpointParameter.Ordinal}]);");
+                codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = await BindAsync<{unwrappedTypeString}>(httpContext, {resolveParameterInfo});");
                 break;
             case BindabilityMethod.BindAsyncWithParameter:
-                codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = await {unwrappedTypeString}.BindAsync(httpContext, parameters[{endpointParameter.Ordinal}]);");
+                codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = await {bindMethodReceiverTypeString}.BindAsync(httpContext, {resolveParameterInfo});");
                 break;
             case BindabilityMethod.BindAsync:
-                codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = await {unwrappedTypeString}.BindAsync(httpContext);");
+                codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = await {bindMethodReceiverTypeString}.BindAsync(httpContext);");
                 break;
             default:
-                throw new Exception("Unreachable!");
+                throw new NotImplementedException($"Unreachable! Unexpected {nameof(BindabilityMethod)}: {endpointParameter.BindMethod}");
         }
 
         // TODO: Generate more compact code if the type is a reference type and/or the BindAsync return nullability matches the handler parameter type.
@@ -211,9 +299,9 @@ internal static class EndpointParameterEmitter
         else
         {
             codeWriter.WriteLine($"{unwrappedTypeString} {endpointParameter.EmitHandlerArgument()};");
-
             codeWriter.WriteLine($"if ((object?){endpointParameter.EmitTempArgument()} == null)");
             codeWriter.StartBlock();
+            codeWriter.WriteLine($@"logOrThrowExceptionHelper.RequiredParameterNotProvided({SymbolDisplay.FormatLiteral(endpointParameter.Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat), true)}, {SymbolDisplay.FormatLiteral(endpointParameter.SymbolName, true)}, {SymbolDisplay.FormatLiteral(endpointParameter.ToMessageString(), true)});");
             codeWriter.WriteLine("wasParamCheckFailure = true;");
             codeWriter.WriteLine($"{endpointParameter.EmitHandlerArgument()} = default!;");
             codeWriter.EndBlock();
@@ -238,17 +326,17 @@ internal static class EndpointParameterEmitter
         codeWriter.WriteLine($"var {endpointParameter.EmitHandlerArgument()} = {assigningCode};");
     }
 
+    internal static void EmitAsParametersParameterPreparation(this EndpointParameter endpointParameter, CodeWriter codeWriter, EmitterContext emitterContext)
+    {
+        codeWriter.WriteLine(endpointParameter.EmitParameterDiagnosticComment());
+        codeWriter.WriteLine(endpointParameter.EndpointParameters?.EmitParameterPreparation(baseIndent: codeWriter.Indent, emitterContext: emitterContext));
+        codeWriter.WriteLine($"var {endpointParameter.EmitHandlerArgument()} = {endpointParameter.AssigningCode};");
+    }
+
     private static string EmitParameterDiagnosticComment(this EndpointParameter endpointParameter) => $"// Endpoint Parameter: {endpointParameter.SymbolName} (Type = {endpointParameter.Type}, IsOptional = {endpointParameter.IsOptional}, IsParsable = {endpointParameter.IsParsable}, IsArray = {endpointParameter.IsArray}, Source = {endpointParameter.Source})";
-    private static string EmitHandlerArgument(this EndpointParameter endpointParameter) => $"{endpointParameter.SymbolName}_local";
+
     private static string EmitTempArgument(this EndpointParameter endpointParameter) => $"{endpointParameter.SymbolName}_temp";
 
     private static string EmitParsedTempArgument(this EndpointParameter endpointParameter) => $"{endpointParameter.SymbolName}_parsed_temp";
     private static string EmitAssigningCodeResult(this EndpointParameter endpointParameter) => $"{endpointParameter.SymbolName}_raw";
-
-    public static string EmitArgument(this EndpointParameter endpointParameter) => endpointParameter.Source switch
-    {
-        EndpointParameterSource.JsonBody or EndpointParameterSource.Route or EndpointParameterSource.RouteOrQuery or EndpointParameterSource.JsonBodyOrService => endpointParameter.IsOptional ? endpointParameter.EmitHandlerArgument() : $"{endpointParameter.EmitHandlerArgument()}!",
-        EndpointParameterSource.Unknown => throw new Exception("Unreachable!"),
-        _ => endpointParameter.EmitHandlerArgument()
-    };
 }

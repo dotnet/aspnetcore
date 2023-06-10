@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.Builder;
 
 namespace Microsoft.AspNetCore.RateLimiting;
 
@@ -11,12 +12,18 @@ namespace Microsoft.AspNetCore.RateLimiting;
 public static class RateLimiterOptionsExtensions
 {
     /// <summary>
-    /// Adds a new <see cref="TokenBucketRateLimiter"/> with the given <see cref="TokenBucketRateLimiterOptions"/> to the <see cref="RateLimiterOptions"/>.
+    /// Registers a new <see cref="TokenBucketRateLimiter"/> with the given <see cref="TokenBucketRateLimiterOptions"/> to the application.
+    /// The limiter can be added to an endpoint via <see cref="RateLimiterEndpointConventionBuilderExtensions.RequireRateLimiting{TBuilder}(TBuilder, string)"/>,
+    /// or via the <see cref="EnableRateLimitingAttribute"/>.
     /// </summary>
     /// <param name="options">The <see cref="RateLimiterOptions"/> to add a limiter to.</param>
     /// <param name="policyName">The name that will be associated with the limiter.</param>
     /// <param name="configureOptions">A callback to configure the <see cref="TokenBucketRateLimiterOptions"/> to be used for the limiter.</param>
     /// <returns>This <see cref="RateLimiterOptions"/>.</returns>
+    /// <remarks>
+    /// Setting <see cref="TokenBucketRateLimiterOptions.AutoReplenishment"/> will have no effect here, as the <see cref="PartitionedRateLimiter"/> that this limiter is added to
+    /// will control replenishing it.
+    /// </remarks>
     public static RateLimiterOptions AddTokenBucketLimiter(this RateLimiterOptions options, string policyName, Action<TokenBucketRateLimiterOptions> configureOptions)
     {
         ArgumentNullException.ThrowIfNull(configureOptions);
@@ -34,12 +41,18 @@ public static class RateLimiterOptionsExtensions
     }
 
     /// <summary>
-    /// Adds a new <see cref="FixedWindowRateLimiter"/> with the given <see cref="FixedWindowRateLimiterOptions"/> to the <see cref="RateLimiterOptions"/>.
+    /// Registers a new <see cref="FixedWindowRateLimiter"/> with the given <see cref="FixedWindowRateLimiterOptions"/> to the application.
+    /// The limiter can be added to an endpoint via <see cref="RateLimiterEndpointConventionBuilderExtensions.RequireRateLimiting{TBuilder}(TBuilder, string)"/>,
+    /// or via the <see cref="EnableRateLimitingAttribute"/>.
     /// </summary>
     /// <param name="options">The <see cref="RateLimiterOptions"/> to add a limiter to.</param>
     /// <param name="policyName">The name that will be associated with the limiter.</param>
     /// <param name="configureOptions">A callback to configure the <see cref="FixedWindowRateLimiterOptions"/> to be used for the limiter.</param>
     /// <returns>This <see cref="RateLimiterOptions"/>.</returns>
+    /// <remarks>
+    /// Setting <see cref="FixedWindowRateLimiterOptions.AutoReplenishment"/> will have no effect here, as the <see cref="PartitionedRateLimiter"/> that this limiter is added to
+    /// will control replenishing it.
+    /// </remarks>
     public static RateLimiterOptions AddFixedWindowLimiter(this RateLimiterOptions options, string policyName, Action<FixedWindowRateLimiterOptions> configureOptions)
     {
         ArgumentNullException.ThrowIfNull(configureOptions);
@@ -57,12 +70,18 @@ public static class RateLimiterOptionsExtensions
     }
 
     /// <summary>
-    /// Adds a new <see cref="SlidingWindowRateLimiter"/> with the given <see cref="SlidingWindowRateLimiterOptions"/> to the <see cref="RateLimiterOptions"/>.
+    /// Registers a new <see cref="SlidingWindowRateLimiter"/> with the given <see cref="SlidingWindowRateLimiterOptions"/> to the application.
+    /// The limiter can be added to an endpoint via <see cref="RateLimiterEndpointConventionBuilderExtensions.RequireRateLimiting{TBuilder}(TBuilder, string)"/>,
+    /// or via the <see cref="EnableRateLimitingAttribute"/>.
     /// </summary>
     /// <param name="options">The <see cref="RateLimiterOptions"/> to add a limiter to.</param>
     /// <param name="policyName">The name that will be associated with the limiter.</param>
     /// <param name="configureOptions">A callback to configure the <see cref="SlidingWindowRateLimiterOptions"/> to be used for the limiter.</param>
     /// <returns>This <see cref="RateLimiterOptions"/>.</returns>
+    /// <remarks>
+    /// Setting <see cref="SlidingWindowRateLimiterOptions.AutoReplenishment"/> will have no effect here, as the <see cref="PartitionedRateLimiter"/> that this limiter is added to
+    /// will control replenishing it.
+    /// </remarks>
     public static RateLimiterOptions AddSlidingWindowLimiter(this RateLimiterOptions options, string policyName, Action<SlidingWindowRateLimiterOptions> configureOptions)
     {
         ArgumentNullException.ThrowIfNull(configureOptions);
@@ -80,7 +99,9 @@ public static class RateLimiterOptionsExtensions
     }
 
     /// <summary>
-    /// Adds a new <see cref="ConcurrencyLimiter"/> with the given <see cref="ConcurrencyLimiterOptions"/> to the <see cref="RateLimiterOptions"/>.
+    /// Registers a new <see cref="ConcurrencyLimiter"/> with the given <see cref="ConcurrencyLimiterOptions"/> to the application.
+    /// The limiter can be added to an endpoint via <see cref="RateLimiterEndpointConventionBuilderExtensions.RequireRateLimiting{TBuilder}(TBuilder, string)"/>,
+    /// or via the <see cref="EnableRateLimitingAttribute"/>.
     /// </summary>
     /// <param name="options">The <see cref="RateLimiterOptions"/> to add a limiter to.</param>
     /// <param name="policyName">The name that will be associated with the limiter.</param>

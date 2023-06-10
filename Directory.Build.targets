@@ -1,6 +1,8 @@
-﻿<Project>
+<Project>
   <PropertyGroup>
     <EnableAOTAnalyzer Condition=" '$(EnableAOTAnalyzer)' == '' ">$([MSBuild]::ValueOrDefault($(IsTrimmable),'false'))</EnableAOTAnalyzer>
+    <!-- TODO: Remove when analyzer is enabled by default with AOT in SDK. See https://github.com/dotnet/sdk/issues/31284 -->
+    <EnableSingleFileAnalyzer Condition=" '$(EnableSingleFileAnalyzer)' == '' ">$(EnableAOTAnalyzer)</EnableSingleFileAnalyzer>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -177,6 +179,7 @@
   <Import Project="eng\targets\Wix.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.wixproj'" />
   <Import Project="eng\targets\Npm.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.npmproj'" />
   <Import Project="eng\targets\Java.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.javaproj'" />
+  <Import Project="eng\testing\linker\trimmingTests.targets" Condition="'$(IsPublishedAppTestProject)' == 'true'" />
   <Import Project="eng\targets\Helix.targets" Condition=" $(IsTestProject) " />
   <Import Project="eng\targets\FunctionalTestWithAssets.targets"
       Condition=" $(IsTestProject) AND $(ContainsFunctionalTestAssets) " />

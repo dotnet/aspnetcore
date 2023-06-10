@@ -11,6 +11,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)test\MockTimeProvider.cs" LinkBase="Shared" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.ResponseCaching" />
     <Reference Include="Microsoft.AspNetCore.TestHost" />
   </ItemGroup>

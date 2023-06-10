@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
   <Import Project="eng\Common.props" />
 
   <PropertyGroup>
@@ -30,6 +30,9 @@
           $(MSBuildProjectName.EndsWith('.Test')) OR
           $(MSBuildProjectName.EndsWith('.FunctionalTest')) ) ">true</IsUnitTestProject>
     <IsUnitTestProject Condition=" '$(IsUnitTestProject)' == '' ">false</IsUnitTestProject>
+    <IsTrimmingTestProject Condition="$(MSBuildProjectName.EndsWith('.TrimmingTests'))">true</IsTrimmingTestProject>
+    <IsNativeAotTestProject Condition="$(MSBuildProjectName.EndsWith('.NativeAotTests'))">true</IsNativeAotTestProject>
+    <IsPublishedAppTestProject Condition="'$(IsTrimmingTestProject)' == 'true' or '$(IsNativeAotTestProject)' == 'true'">true</IsPublishedAppTestProject>
     <IsTestAssetProject Condition=" $(RepoRelativeProjectDir.Contains('testassets')) OR $(MSBuildProjectName.Contains('TestCommon'))">true</IsTestAssetProject>
     <IsProjectTemplateProject Condition=" ($(RepoRelativeProjectDir.Contains('ProjectTemplates')) OR $(MSBuildProjectName.Contains('ProjectTemplates')) ) AND
         '$(IsUnitTestProject)' != 'true' AND
@@ -39,6 +42,7 @@
     <IsShipping Condition=" '$(IsSampleProject)' == 'true' OR
         '$(IsTestAssetProject)' == 'true' OR
         '$(IsBenchmarkProject)' == 'true' OR
+        '$(IsPublishedAppTestProject)' == 'true' OR
         $(IsUnitTestProject) ">false</IsShipping>
 
     <!--
@@ -157,23 +161,9 @@
   <PropertyGroup>
     <BuildArchitecture>$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture.ToString().ToLowerInvariant())</BuildArchitecture>
 
-    <!-- This defines the list of RIDs supported by the ASP.NET Core shared framework. -->
-    <SupportedRuntimeIdentifiers>
-      win-x64;
-      win-x86;
-      win-arm;
-      win-arm64;
-      osx-x64;
-      osx-arm64;
-      linux-musl-x64;
-      linux-musl-arm;
-      linux-musl-arm64;
-      linux-x64;
-      linux-arm;
-      linux-arm64;
-      freebsd-x64
-    </SupportedRuntimeIdentifiers>
-
+    <!-- This defines the list of RIDs supported by the ASP.NET Core shared framework.
+         The list is a semicolon separated list of RIDs. Whitespace may not be added to the property. -->
+    <SupportedRuntimeIdentifiers>win-x64;win-x86;win-arm;win-arm64;osx-x64;osx-arm64;linux-musl-x64;linux-musl-arm;linux-musl-arm64;linux-x64;linux-arm;linux-arm64;freebsd-x64</SupportedRuntimeIdentifiers>
     <SupportedRuntimeIdentifiers Condition=" '$(PortableBuild)' == 'false' ">$(SupportedRuntimeIdentifiers);$(TargetRuntimeIdentifier)</SupportedRuntimeIdentifiers>
 
     <!-- Playwright provides binaries for Windows (x86 and x64), macOS (x64) and Linux (x64, non musl). We can't use it on other architectures. -->
@@ -258,6 +248,7 @@
   <Import Project="eng\targets\Wix.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.wixproj'" />
   <Import Project="eng\targets\Npm.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.npmproj'" />
   <Import Project="eng\targets\Java.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.javaproj'" />
+  <Import Project="eng\testing\linker\trimmingTests.props" Condition="'$(IsPublishedAppTestProject)' == 'true'" />
   <Import Project="eng\targets\Helix.props" Condition=" $(IsTestProject) " />
   <Import Project="eng\targets\FunctionalTestWithAssets.props" Condition=" $(IsTestProject) " />
 

@@ -1,8 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Components.Binding;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
@@ -32,9 +34,12 @@ public class AuthorizeRouteViewTest
         serviceCollection.AddSingleton<IAuthorizationPolicyProvider, TestAuthorizationPolicyProvider>();
         serviceCollection.AddSingleton<IAuthorizationService>(_testAuthorizationService);
         serviceCollection.AddSingleton<NavigationManager, TestNavigationManager>();
+        serviceCollection.AddSingleton<IFormValueSupplier, TestFormValueSupplier>();
 
-        _renderer = new TestRenderer(serviceCollection.BuildServiceProvider());
-        _authorizeRouteViewComponent = new AuthorizeRouteView();
+        var services = serviceCollection.BuildServiceProvider();
+        _renderer = new TestRenderer(services);
+        var componentFactory = new ComponentFactory(new DefaultComponentActivator(), _renderer);
+        _authorizeRouteViewComponent = (AuthorizeRouteView)componentFactory.InstantiateComponent(services, typeof(AuthorizeRouteView), null);
         _authorizeRouteViewComponentId = _renderer.AssignRootComponentId(_authorizeRouteViewComponent);
     }
 
@@ -63,9 +68,25 @@ public class AuthorizeRouteViewTest
             edit =>
             {
                 Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
-                AssertFrame.Component<TestPageRequiringAuthorization>(batch.ReferenceFrames[edit.ReferenceFrameIndex]);
+                AssertFrame.Component<CascadingModelBinder>(batch.ReferenceFrames[edit.ReferenceFrameIndex]);
             },
             edit => AssertPrependText(batch, edit, "Layout ends here"));
+
+        var cascadingModelBinderDiff = batch.GetComponentDiffs<CascadingModelBinder>().Single();
+        Assert.Collection(cascadingModelBinderDiff.Edits,
+            edit =>
+            {
+                Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
+                AssertFrame.Component<CascadingValue<ModelBindingContext>>(batch.ReferenceFrames[edit.ReferenceFrameIndex]);
+            });
+
+        var cascadingValueDiff = batch.GetComponentDiffs<CascadingValue<ModelBindingContext>>().Single();
+        Assert.Collection(cascadingValueDiff.Edits,
+            edit =>
+            {
+                Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
+                AssertFrame.Component<TestPageRequiringAuthorization>(batch.ReferenceFrames[edit.ReferenceFrameIndex]);
+            });
 
         // Assert: renders page
         var pageDiff = batch.GetComponentDiffs<TestPageRequiringAuthorization>().Single();
@@ -100,9 +121,25 @@ public class AuthorizeRouteViewTest
             edit =>
             {
                 Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
-                AssertFrame.Component<TestPageRequiringAuthorization>(batch.ReferenceFrames[edit.ReferenceFrameIndex]);
+                AssertFrame.Component<CascadingModelBinder>(batch.ReferenceFrames[edit.ReferenceFrameIndex]);
             },
             edit => AssertPrependText(batch, edit, "Layout ends here"));
+
+        var cascadingModelBinderDiff = batch.GetComponentDiffs<CascadingModelBinder>().Single();
+        Assert.Collection(cascadingModelBinderDiff.Edits,
+            edit =>
+            {
+                Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
+                AssertFrame.Component<CascadingValue<ModelBindingContext>>(batch.ReferenceFrames[edit.ReferenceFrameIndex]);
+            });
+
+        var cascadingValueDiff = batch.GetComponentDiffs<CascadingValue<ModelBindingContext>>().Single();
+        Assert.Collection(cascadingValueDiff.Edits,
+            edit =>
+            {
+                Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
+                AssertFrame.Component<TestPageRequiringAuthorization>(batch.ReferenceFrames[edit.ReferenceFrameIndex]);
+            });
 
         // Assert: renders page
         var pageDiff = batch.GetComponentDiffs<TestPageRequiringAuthorization>().Single();
@@ -291,6 +328,8 @@ public class AuthorizeRouteViewTest
             component => Assert.IsType<CascadingValue<Task<AuthenticationState>>>(component),
             component => Assert.IsAssignableFrom<AuthorizeViewCore>(component),
             component => Assert.IsType<LayoutView>(component),
+            component => Assert.IsType<CascadingModelBinder>(component),
+            component => Assert.IsType<CascadingValue<ModelBindingContext>>(component),
             component => Assert.IsType<TestPageWithNoAuthorization>(component));
     }
 
@@ -322,6 +361,8 @@ public class AuthorizeRouteViewTest
             // further CascadingAuthenticationState
             component => Assert.IsAssignableFrom<AuthorizeViewCore>(component),
             component => Assert.IsType<LayoutView>(component),
+            component => Assert.IsType<CascadingModelBinder>(component),
+            component => Assert.IsType<CascadingValue<ModelBindingContext>>(component),
             component => Assert.IsType<TestPageWithNoAuthorization>(component));
     }
 
@@ -424,5 +465,28 @@ public class AuthorizeRouteViewTest
 
     class TestNavigationManager : NavigationManager
     {
+        public TestNavigationManager()
+        {
+            Initialize("https://localhost:85/subdir/", "https://localhost:85/subdir/path?query=value#hash");
+        }
+    }
+
+    private class TestFormValueSupplier : IFormValueSupplier
+    {
+        public bool CanBind(string formName, Type valueType)
+        {
+            return false;
+        }
+
+        public bool CanConvertSingleValue(Type type)
+        {
+            return false;
+        }
+
+        public bool TryBind(string formName, Type valueType, [NotNullWhen(true)] out object boundValue)
+        {
+            boundValue = null;
+            return false;
+        }
     }
 }

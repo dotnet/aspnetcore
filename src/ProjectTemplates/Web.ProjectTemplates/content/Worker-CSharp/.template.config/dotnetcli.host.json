@@ -15,6 +15,10 @@
     "UseProgramMain": {
       "longName": "use-program-main",
       "shortName": ""
+    },
+    "NativeAot": {
+      "longName": "aot",
+      "shortName": ""
     }
   },
   "usageExamples": [

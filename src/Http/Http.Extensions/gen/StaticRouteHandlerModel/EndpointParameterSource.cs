@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel;
+namespace Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel;
 
 internal enum EndpointParameterSource
 {
@@ -20,4 +20,8 @@ internal enum EndpointParameterSource
     BindAsync,
     // Unknown should be temporary for development.
     Unknown,
+    // Used to track that the parameter is annotated with `AsParameters` and
+    // can explode to multiple parameters
+    AsParameters,
+    JsonBodyOrQuery,
 }

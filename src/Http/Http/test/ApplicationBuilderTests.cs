@@ -3,20 +3,22 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Builder.Internal;
 
-public class ApplicationBuilderTests
+public class ApplicationBuilderTests : LoggedTest
 {
     [Fact]
-    public void BuildReturnsCallableDelegate()
+    public async Task BuildReturnsCallableDelegate()
     {
         var builder = new ApplicationBuilder(null);
         var app = builder.Build();
 
         var httpContext = new DefaultHttpContext();
 
-        app.Invoke(httpContext);
+        await app.Invoke(httpContext);
         Assert.Equal(404, httpContext.Response.StatusCode);
     }
 
@@ -72,6 +74,54 @@ public class ApplicationBuilderTests
             "using routing.";
         Assert.Equal(expected, ex.Message);
         Assert.False(endpointCalled);
+    }
+
+    [Fact]
+    public async Task BuildLogAtRequestPipelineEnd()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton(LoggerFactory);
+        var serviceProvider = services.BuildServiceProvider();
+
+        var builder = new ApplicationBuilder(serviceProvider);
+        var app = builder.Build();
+
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.Protocol = "HTTP/2";
+        httpContext.Request.Scheme = "https";
+        httpContext.Request.Method = "GET";
+        httpContext.Request.Host = new HostString("localhost:5000");
+        httpContext.Request.Path = "/path";
+        httpContext.Request.PathBase = "/pathbase";
+        httpContext.Request.QueryString = new QueryString("?query=true");
+
+        await app.Invoke(httpContext);
+
+        Assert.Equal(404, httpContext.Response.StatusCode);
+
+        Assert.True(httpContext.Items.ContainsKey("__RequestUnhandled"), "Request unhandled flag should be set.");
+    }
+
+    [Fact]
+    public async Task BuildDoesNotLogOrChangeStatusWithTerminalMiddleware()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton(LoggerFactory);
+        var serviceProvider = services.BuildServiceProvider();
+
+        var builder = new ApplicationBuilder(serviceProvider);
+        builder.Use((HttpContext context, RequestDelegate next) =>
+        {
+            context.Response.StatusCode = StatusCodes.Status204NoContent;
+            return Task.CompletedTask;
+        });
+        var app = builder.Build();
+
+        var httpContext = new DefaultHttpContext();
+        await app.Invoke(httpContext);
+
+        Assert.Equal(StatusCodes.Status204NoContent, httpContext.Response.StatusCode);
+        Assert.DoesNotContain(TestSink.Writes, w => w.EventId.Name == "RequestPipelineEnd");
     }
 
     [Fact]

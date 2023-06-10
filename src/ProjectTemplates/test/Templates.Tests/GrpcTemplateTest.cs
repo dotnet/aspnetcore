@@ -34,32 +34,36 @@ public class GrpcTemplateTest : LoggedTest
         }
     }
 
+    // TODO (https://github.com/dotnet/aspnetcore/issues/47336): Don't skip on macos 11
     [ConditionalFact]
-    [SkipOnHelix("Not supported queues", Queues = "windows.11.arm64.open;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+    [SkipOnHelix("Not supported queues", Queues = "OSX.1100.Amd64.Open;windows.11.arm64.open;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
     [SkipOnAlpine("https://github.com/grpc/grpc/issues/18338")] // protoc doesn't support Alpine. Note that the issue was closed with a workaround which isn't applied to our OS image.
     public async Task GrpcTemplate()
     {
         await GrpcTemplateCore();
     }
 
-    [ConditionalFact(Skip = "Unskip when there are no more build or publish warnings for native AOT.")]
-    [SkipOnHelix("Not supported queues", Queues = "windows.11.arm64.open;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+    // TODO (https://github.com/dotnet/aspnetcore/issues/47336): Don't skip on macos 11
+    [ConditionalFact]
+    [SkipOnHelix("Not supported queues", Queues = HelixConstants.NativeAotNotSupportedHelixQueues)]
     [SkipOnAlpine("https://github.com/grpc/grpc/issues/18338")] // protoc doesn't support Alpine. Note that the issue was closed with a workaround which isn't applied to our OS image.
     public async Task GrpcTemplateNativeAot()
     {
         await GrpcTemplateCore(args: new[] { ArgConstants.PublishNativeAot });
     }
 
+    // TODO (https://github.com/dotnet/aspnetcore/issues/47336): Don't skip on macos 11
     [ConditionalFact]
-    [SkipOnHelix("Not supported queues", Queues = "windows.11.arm64.open;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+    [SkipOnHelix("Not supported queues", Queues = "OSX.1100.Amd64.Open;windows.11.arm64.open;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
     [SkipOnAlpine("https://github.com/grpc/grpc/issues/18338")] // protoc doesn't support Alpine. Note that the issue was closed with a workaround which isn't applied to our OS image.
     public async Task GrpcTemplateProgramMain()
     {
         await GrpcTemplateCore(args: new[] { ArgConstants.UseProgramMain });
     }
 
-    [ConditionalFact(Skip = "Unskip when there are no more build or publish warnings for native AOT.")]
-    [SkipOnHelix("Not supported queues", Queues = "windows.11.arm64.open;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+    // TODO (https://github.com/dotnet/aspnetcore/issues/47336): Don't skip on macos 11
+    [ConditionalFact]
+    [SkipOnHelix("Not supported queues", Queues = HelixConstants.NativeAotNotSupportedHelixQueues)]
     [SkipOnAlpine("https://github.com/grpc/grpc/issues/18338")] // protoc doesn't support Alpine. Note that the issue was closed with a workaround which isn't applied to our OS image.
     public async Task GrpcTemplateProgramMainNativeAot()
     {
@@ -68,16 +72,30 @@ public class GrpcTemplateTest : LoggedTest
 
     private async Task GrpcTemplateCore(string[] args = null)
     {
+        var nativeAot = args?.Contains(ArgConstants.PublishNativeAot) ?? false;
+
         var project = await ProjectFactory.CreateProject(Output);
+        if (nativeAot)
+        {
+            project.SetCurrentRuntimeIdentifier();
+        }
 
         await project.RunDotNetNewAsync("grpc", args: args);
 
         var expectedLaunchProfileNames = new[] { "http", "https" };
         await project.VerifyLaunchSettings(expectedLaunchProfileNames);
 
-        await project.VerifyHasProperty("InvariantGlobalization", "true");
+        if (nativeAot)
+        {
+            await project.VerifyHasProperty("InvariantGlobalization", "true");
+        }
 
-        await project.RunDotNetPublishAsync();
+        // Force a restore if native AOT so that RID-specific assets are restored
+        await project.RunDotNetPublishAsync(noRestore: !nativeAot);
+
+        // Run dotnet build after publish. The reason is that one uses Config = Debug and the other uses Config = Release
+        // The output from publish will go into bin/Release/netcoreappX.Y/publish and won't be affected by calling build
+        // later, while the opposite is not true.
 
         await project.RunDotNetBuildAsync();
 
@@ -101,7 +119,7 @@ public class GrpcTemplateTest : LoggedTest
             }
         }
 
-        using (var aspNetProcess = project.StartPublishedProjectAsync(hasListeningUri: !isWindowsOld))
+        using (var aspNetProcess = project.StartPublishedProjectAsync(hasListeningUri: !isWindowsOld, usePublishedAppHost: nativeAot))
         {
             // These templates are HTTPS + HTTP/2 only which is not supported on some platforms.
             if (isWindowsOld)

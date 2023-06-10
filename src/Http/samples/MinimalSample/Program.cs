@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Reflection;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Http.Metadata;
@@ -8,6 +9,8 @@ using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
+
+app.Logger.LogInformation($"Current process ID: {Process.GetCurrentProcess().Id}");
 
 string Plaintext() => "Hello, World!";
 app.MapGet("/plaintext", Plaintext);
@@ -27,7 +30,8 @@ inner.AddEndpointFilterFactory((routeContext, next) =>
 
     return async invocationContext =>
     {
-        tags ??= invocationContext.HttpContext.GetEndpoint()?.Metadata.GetMetadata<ITagsMetadata>()?.Tags ?? Array.Empty<string>();
+        var endpoint = invocationContext.HttpContext.GetEndpoint();
+        tags ??= endpoint?.Metadata.GetMetadata<ITagsMetadata>()?.Tags ?? Array.Empty<string>();
 
         Console.WriteLine("Running filter!");
         var result = await next(invocationContext);

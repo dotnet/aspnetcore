@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Shared;
 
@@ -12,6 +13,8 @@ namespace Microsoft.AspNetCore.Http.Features;
 /// <summary>
 /// Default implementation for <see cref="IFeatureCollection"/>.
 /// </summary>
+[DebuggerDisplay("Count = {GetCount()}")]
+[DebuggerTypeProxy(typeof(FeatureCollectionDebugView))]
 public class FeatureCollection : IFeatureCollection
 {
     private static readonly KeyComparer FeatureKeyComparer = new KeyComparer();
@@ -117,6 +120,17 @@ public class FeatureCollection : IFeatureCollection
     /// <inheritdoc />
     public TFeature? Get<TFeature>()
     {
+        if (typeof(TFeature).IsValueType)
+        {
+            var feature = this[typeof(TFeature)];
+            if (feature is null && Nullable.GetUnderlyingType(typeof(TFeature)) is null)
+            {
+                throw new InvalidOperationException(
+                    $"{typeof(TFeature).FullName} does not exist in the feature collection " +
+                    $"and because it is a struct the method can't return null. Use 'featureCollection[typeof({typeof(TFeature).FullName})] is not null' to check if the feature exists.");
+            }
+            return (TFeature?)feature;
+        }
         return (TFeature?)this[typeof(TFeature)];
     }
 
@@ -125,6 +139,9 @@ public class FeatureCollection : IFeatureCollection
     {
         this[typeof(TFeature)] = instance;
     }
+
+    // Used by the debugger. Count over enumerable is required to get the correct value.
+    private int GetCount() => this.Count();
 
     private sealed class KeyComparer : IEqualityComparer<KeyValuePair<Type, object>>
     {
@@ -137,5 +154,13 @@ public class FeatureCollection : IFeatureCollection
         {
             return obj.Key.GetHashCode();
         }
+    }
+
+    private sealed class FeatureCollectionDebugView(FeatureCollection features)
+    {
+        private readonly FeatureCollection _features = features;
+
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+        public KeyValuePair<string, object>[] Items => _features.Select(pair => new KeyValuePair<string, object>(pair.Key.FullName ?? string.Empty, pair.Value)).ToArray();
     }
 }

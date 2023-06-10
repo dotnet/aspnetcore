@@ -21,7 +21,7 @@ internal class ServiceContext
 
     public IHttpParser<Http1ParsingHandler> HttpParser { get; set; } = default!;
 
-    public ISystemClock SystemClock { get; set; } = default!;
+    public TimeProvider TimeProvider { get; set; } = default!;
 
     public DateHeaderValueManager DateHeaderValueManager { get; set; } = default!;
 
@@ -32,4 +32,6 @@ internal class ServiceContext
     public KestrelServerOptions ServerOptions { get; set; } = default!;
 
     public DiagnosticSource? DiagnosticSource { get; set; }
+
+    public KestrelMetrics Metrics { get; set; } = default!;
 }

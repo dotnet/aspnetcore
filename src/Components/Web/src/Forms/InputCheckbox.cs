@@ -34,11 +34,17 @@ public class InputCheckbox : InputBase<bool>
         builder.OpenElement(0, "input");
         builder.AddMultipleAttributes(1, AdditionalAttributes);
         builder.AddAttribute(2, "type", "checkbox");
-        builder.AddAttribute(3, "class", CssClass);
-        builder.AddAttribute(4, "checked", BindConverter.FormatValue(CurrentValue));
-        builder.AddAttribute(5, "onchange", EventCallback.Factory.CreateBinder<bool>(this, __value => CurrentValue = __value, CurrentValue));
+        builder.AddAttributeIfNotNullOrEmpty(3, "name", NameAttributeValue);
+        builder.AddAttribute(4, "class", CssClass);
+        builder.AddAttribute(5, "checked", BindConverter.FormatValue(CurrentValue));
+        // Include the "value" attribute so that when this is posted by a form, "true"
+        // is included in the form fields. That's how <input type="checkbox"> works normally.
+        // It sends the "on" value when the checkbox is checked, and nothing otherwise.
+        builder.AddAttribute(6, "value", bool.TrueString);
+
+        builder.AddAttribute(7, "onchange", EventCallback.Factory.CreateBinder<bool>(this, __value => CurrentValue = __value, CurrentValue));
         builder.SetUpdatesAttributeName("checked");
-        builder.AddElementReferenceCapture(6, __inputReference => Element = __inputReference);
+        builder.AddElementReferenceCapture(8, __inputReference => Element = __inputReference);
         builder.CloseElement();
     }
 

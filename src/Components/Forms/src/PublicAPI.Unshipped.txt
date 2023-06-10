@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.AspNetCore.Components.Forms.EditContext.ShouldUseFieldIdentifiers.get -> bool
+Microsoft.AspNetCore.Components.Forms.EditContext.ShouldUseFieldIdentifiers.set -> void

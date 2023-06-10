@@ -1,14 +1,19 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.IO.Pipelines;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Http;
 
 /// <summary>
 /// Represents the incoming side of an individual HTTP request.
 /// </summary>
+[DebuggerDisplay("{DebuggerToString(),nq}")]
+[DebuggerTypeProxy(typeof(HttpRequestDebugView))]
 public abstract class HttpRequest
 {
     /// <summary>
@@ -120,11 +125,24 @@ public abstract class HttpRequest
     /// <summary>
     /// Gets or sets the request body as a form.
     /// </summary>
+    /// <exception cref="System.InvalidOperationException">
+    ///     incorrect content-type.
+    /// </exception>
+    /// <remarks>
+    ///     <para>
+    ///     Invoking this property could result in thread exhaustion since it's wrapping an asynchronous implementation.
+    ///     To prevent this the method <see cref="ReadFormAsync(CancellationToken)"/> can be used.
+    ///     For more information, see <see href="https://aka.ms/aspnet/forms-async" />.
+    ///     </para>
+    /// </remarks>
     public abstract IFormCollection Form { get; set; }
 
     /// <summary>
     /// Reads the request body if it is a form.
     /// </summary>
+    /// <exception cref="System.InvalidOperationException">
+    ///     incorrect content-type.
+    /// </exception>
     /// <returns></returns>
     public abstract Task<IFormCollection> ReadFormAsync(CancellationToken cancellationToken = new CancellationToken());
 
@@ -133,4 +151,31 @@ public abstract class HttpRequest
     /// </summary>
     /// <returns>The collection of route values for this request.</returns>
     public virtual RouteValueDictionary RouteValues { get; set; } = null!;
+
+    private string DebuggerToString()
+    {
+        return HttpContextDebugFormatter.RequestToString(this);
+    }
+
+    private sealed class HttpRequestDebugView(HttpRequest request)
+    {
+        private readonly HttpRequest _request = request;
+
+        public string Method => _request.Method;
+        public string Scheme => _request.Scheme;
+        public bool IsHttps => _request.IsHttps;
+        public HostString Host => _request.Host;
+        public PathString PathBase => _request.PathBase;
+        public PathString Path => _request.Path;
+        public QueryString QueryString => _request.QueryString;
+        public IQueryCollection Query => _request.Query;
+        public string Protocol => _request.Protocol;
+        public IHeaderDictionary Headers => _request.Headers;
+        public IRequestCookieCollection Cookies => _request.Cookies;
+        public long? ContentLength => _request.ContentLength;
+        public string? ContentType => _request.ContentType;
+        public bool HasFormContentType => _request.HasFormContentType;
+        public IFormCollection? Form => _request.HttpContext.Features.Get<IFormFeature>()?.Form;
+        public RouteValueDictionary RouteValues => _request.RouteValues;
+    }
 }

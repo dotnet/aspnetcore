@@ -6,12 +6,12 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
-using Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel.Emitters;
+using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel.Emitters;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 
-namespace Microsoft.AspNetCore.Http.Generators.StaticRouteHandlerModel;
+namespace Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel;
 
 internal class Endpoint
 {
@@ -22,15 +22,7 @@ internal class Endpoint
         HttpMethod = GetHttpMethod(operation);
         EmitterContext = new EmitterContext();
 
-        if (!operation.TryGetRouteHandlerPattern(out var routeToken))
-        {
-            Diagnostics.Add(Diagnostic.Create(DiagnosticDescriptors.UnableToResolveRoutePattern, Operation.Syntax.GetLocation()));
-            return;
-        }
-
-        RoutePattern = routeToken.ValueText;
-
-        if (!operation.TryGetRouteHandlerMethod(semanticModel, out var method) || method == null)
+        if (!operation.TryGetRouteHandlerMethod(semanticModel, out var method))
         {
             Diagnostics.Add(Diagnostic.Create(DiagnosticDescriptors.UnableToResolveMethod, Operation.Syntax.GetLocation()));
             return;
@@ -46,8 +38,17 @@ internal class Endpoint
         EmitterContext.HasJsonResponse = Response is not { ResponseType: { IsSealed: true } or { IsValueType: true } };
         IsAwaitable = Response?.IsAwaitable == true;
 
+        EmitterContext.HasResponseMetadata = Response is { } response && !(response.IsIResult || response.HasNoResponse);
+
+        // NOTE: We set this twice. It is possible that we don't have any parameters so we
+        //       want this to be true if the response type implements IEndpointMetadataProvider.
+        //       Later on we set this to be true if the parameters or the response type
+        //       implement the interface.
+        EmitterContext.HasEndpointMetadataProvider = Response!.IsEndpointMetadataProvider;
+
         if (method.Parameters.Length == 0)
         {
+            EmitterContext.RequiresLoggingHelper = false;
             return;
         }
 
@@ -60,7 +61,6 @@ internal class Endpoint
             switch (parameter.Source)
             {
                 case EndpointParameterSource.BindAsync:
-                    IsAwaitable = true;
                     switch (parameter.BindMethod)
                     {
                         case BindabilityMethod.IBindableFromHttpContext:
@@ -68,10 +68,6 @@ internal class Endpoint
                             NeedsParameterArray = true;
                             break;
                     }
-                    break;
-                case EndpointParameterSource.JsonBody:
-                case EndpointParameterSource.JsonBodyOrService:
-                    IsAwaitable = true;
                     break;
                 case EndpointParameterSource.Unknown:
                     Diagnostics.Add(Diagnostic.Create(
@@ -86,18 +82,16 @@ internal class Endpoint
 
         Parameters = parameters;
 
-        EmitterContext.HasJsonBodyOrService = Parameters.Any(parameter => parameter.Source == EndpointParameterSource.JsonBodyOrService);
-        EmitterContext.HasJsonBody = Parameters.Any(parameter => parameter.Source == EndpointParameterSource.JsonBody);
-        EmitterContext.HasRouteOrQuery = Parameters.Any(parameter => parameter.Source == EndpointParameterSource.RouteOrQuery);
-        EmitterContext.HasBindAsync = Parameters.Any(parameter => parameter.Source == EndpointParameterSource.BindAsync);
-        EmitterContext.HasParsable = Parameters.Any(parameter => parameter.IsParsable);
+        EmitterContext.RequiresLoggingHelper = !Parameters.All(parameter =>
+            parameter.Source == EndpointParameterSource.SpecialType ||
+            parameter is { IsArray: true, ElementType.SpecialType: SpecialType.System_String, Source: EndpointParameterSource.Query });
     }
 
     public string HttpMethod { get; }
-    public bool IsAwaitable { get; }
+    public bool IsAwaitable { get; set; }
     public bool NeedsParameterArray { get; }
     public string? RoutePattern { get; }
-    public EmitterContext EmitterContext { get;  }
+    public EmitterContext EmitterContext { get; }
     public EndpointResponse? Response { get; }
     public EndpointParameter[] Parameters { get; } = Array.Empty<EndpointParameter>();
     public List<Diagnostic> Diagnostics { get; } = new List<Diagnostic>();
@@ -147,8 +141,9 @@ internal class Endpoint
 
     private static (string, int) GetLocation(IInvocationOperation operation)
     {
-        var filePath = operation.Syntax.SyntaxTree.FilePath;
-        var span = operation.Syntax.SyntaxTree.GetLineSpan(operation.Syntax.Span);
+        var operationSpan = operation.Syntax.Span;
+        var filePath = operation.Syntax.SyntaxTree.GetDisplayPath(operationSpan, operation.SemanticModel?.Compilation.Options.SourceReferenceResolver);
+        var span = operation.Syntax.SyntaxTree.GetLineSpan(operationSpan);
         var lineNumber = span.StartLinePosition.Line + 1;
         return (filePath, lineNumber);
     }

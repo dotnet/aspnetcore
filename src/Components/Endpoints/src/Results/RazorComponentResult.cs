@@ -75,9 +75,13 @@ public class RazorComponentResult : IResult
     public IReadOnlyDictionary<string, object?> Parameters { get; }
 
     /// <summary>
-    /// Gets or sets the rendering mode.
+    /// Gets or sets a flag to indicate whether streaming rendering should be prevented. If true, the renderer will
+    /// wait for the component hierarchy to complete asynchronous tasks such as loading before supplying the HTML response.
+    /// If false, streaming rendering will be determined by the components being rendered.
+    ///
+    /// The default value is false.
     /// </summary>
-    public RenderMode RenderMode { get; set; } = RenderMode.Static;
+    public bool PreventStreamingRendering { get; set; }
 
     /// <summary>
     /// Requests the service of

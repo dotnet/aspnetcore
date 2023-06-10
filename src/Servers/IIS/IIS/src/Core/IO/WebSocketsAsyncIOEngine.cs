@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core.IO;
 
@@ -15,11 +16,9 @@ internal sealed partial class WebSocketsAsyncIOEngine : IAsyncIOEngine
 
     private AsyncInitializeOperation? _initializationFlush;
 
-    private WebSocketWriteOperation? _cachedWebSocketWriteOperation;
+    private WebSocketWriteOperation? _webSocketWriteOperation;
 
-    private WebSocketReadOperation? _cachedWebSocketReadOperation;
-
-    private AsyncInitializeOperation? _cachedAsyncInitializeOperation;
+    private WebSocketReadOperation? _webSocketReadOperation;
 
     public WebSocketsAsyncIOEngine(IISHttpContext context, NativeSafeHandle handler)
     {
@@ -33,7 +32,10 @@ internal sealed partial class WebSocketsAsyncIOEngine : IAsyncIOEngine
         {
             ThrowIfNotInitialized();
 
-            var read = GetReadOperation();
+            var read = _webSocketReadOperation ??= new WebSocketReadOperation(this);
+
+            Debug.Assert(!read.InUse());
+
             read.Initialize(_handler, memory);
             read.Invoke();
             return new ValueTask<int>(read, 0);
@@ -46,7 +48,10 @@ internal sealed partial class WebSocketsAsyncIOEngine : IAsyncIOEngine
         {
             ThrowIfNotInitialized();
 
-            var write = GetWriteOperation();
+            var write = _webSocketWriteOperation ??= new WebSocketWriteOperation(this);
+
+            Debug.Assert(!write.InUse());
+
             write.Initialize(_handler, data);
             write.Invoke();
             return new ValueTask<int>(write, 0);
@@ -64,7 +69,7 @@ internal sealed partial class WebSocketsAsyncIOEngine : IAsyncIOEngine
 
             NativeMethods.HttpEnableWebsockets(_handler);
 
-            var init = GetInitializeOperation();
+            var init = new AsyncInitializeOperation(this);
             init.Initialize(_handler);
 
             var continuation = init.Invoke();
@@ -119,24 +124,9 @@ internal sealed partial class WebSocketsAsyncIOEngine : IAsyncIOEngine
         }
     }
 
-    private WebSocketReadOperation GetReadOperation() =>
-        Interlocked.Exchange(ref _cachedWebSocketReadOperation, null) ??
-        new WebSocketReadOperation(this);
-
-    private WebSocketWriteOperation GetWriteOperation() =>
-        Interlocked.Exchange(ref _cachedWebSocketWriteOperation, null) ??
-        new WebSocketWriteOperation(this);
-
-    private AsyncInitializeOperation GetInitializeOperation() =>
-        Interlocked.Exchange(ref _cachedAsyncInitializeOperation, null) ??
-        new AsyncInitializeOperation(this);
-
-    private void ReturnOperation(AsyncInitializeOperation operation) =>
-        Volatile.Write(ref _cachedAsyncInitializeOperation, operation);
-
-    private void ReturnOperation(WebSocketWriteOperation operation) =>
-        Volatile.Write(ref _cachedWebSocketWriteOperation, operation);
-
-    private void ReturnOperation(WebSocketReadOperation operation) =>
-        Volatile.Write(ref _cachedWebSocketReadOperation, operation);
+    public void Dispose()
+    {
+        _webSocketWriteOperation?.Dispose();
+        _webSocketReadOperation?.Dispose();
+    }
 }

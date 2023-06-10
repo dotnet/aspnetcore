@@ -1,21 +1,33 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Components.Binding;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Test.Helpers;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Components.Test;
 
 public class RouteViewTest
 {
     private readonly TestRenderer _renderer;
+    private readonly RouteViewTestNavigationManager _navigationManager;
     private readonly RouteView _routeViewComponent;
     private readonly int _routeViewComponentId;
 
     public RouteViewTest()
     {
-        _renderer = new TestRenderer();
-        _routeViewComponent = new RouteView();
+        var serviceCollection = new ServiceCollection();
+        _navigationManager = new RouteViewTestNavigationManager();
+        serviceCollection.AddSingleton<NavigationManager>(_navigationManager);
+        serviceCollection.AddSingleton<IFormValueSupplier, TestFormValueSupplier>();
+        var services = serviceCollection.BuildServiceProvider();
+        _renderer = new TestRenderer(services);
+
+        var componentFactory = new ComponentFactory(new DefaultComponentActivator(), _renderer);
+        _routeViewComponent = (RouteView)componentFactory.InstantiateComponent(services, typeof(RouteView), null);
+
         _routeViewComponentId = _renderer.AssignRootComponentId(_routeViewComponent);
     }
 
@@ -62,15 +74,32 @@ public class RouteViewTest
             frame => AssertFrame.Component<TestLayout>(frame, subtreeLength: 2, sequence: 0),
             frame => AssertFrame.Attribute(frame, nameof(LayoutComponentBase.Body), sequence: 1));
 
-        // Assert: TestLayout renders page
+        // Assert: TestLayout renders cascading model binder
         var testLayoutComponentId = batch.GetComponentFrames<TestLayout>().Single().ComponentId;
         var testLayoutFrames = _renderer.GetCurrentRenderTreeFrames(testLayoutComponentId).AsEnumerable();
         Assert.Collection(testLayoutFrames,
             frame => AssertFrame.Text(frame, "Layout starts here", sequence: 0),
             frame => AssertFrame.Region(frame, subtreeLength: 3),
-            frame => AssertFrame.Component<ComponentWithLayout>(frame, sequence: 0, subtreeLength: 2),
-            frame => AssertFrame.Attribute(frame, nameof(ComponentWithLayout.Message), "Test message", sequence: 1),
+            frame => AssertFrame.Component<CascadingModelBinder>(frame, sequence: 0, subtreeLength: 2),
+            frame => AssertFrame.Attribute(frame, nameof(CascadingModelBinder.ChildContent), typeof(RenderFragment<ModelBindingContext>), sequence: 1),
             frame => AssertFrame.Text(frame, "Layout ends here", sequence: 2));
+
+        // Assert: Cascading model binder renders CascadingValue<ModelBindingContext>
+        var cascadingModelBinderComponentId = batch.GetComponentFrames<CascadingModelBinder>().Single().ComponentId;
+        var cascadingModelBinderFrames = _renderer.GetCurrentRenderTreeFrames(cascadingModelBinderComponentId).AsEnumerable();
+        Assert.Collection(cascadingModelBinderFrames,
+            frame => AssertFrame.Component<CascadingValue<ModelBindingContext>>(frame, sequence: 0, subtreeLength: 4),
+            frame => AssertFrame.Attribute(frame, nameof(CascadingValue<ModelBindingContext>.IsFixed), false, sequence: 1),
+            frame => AssertFrame.Attribute(frame, nameof(CascadingValue<ModelBindingContext>.Value), typeof(ModelBindingContext), sequence: 2),
+            frame => AssertFrame.Attribute(frame, nameof(CascadingValue<ModelBindingContext>.ChildContent), typeof(RenderFragment), sequence: 3));
+
+        // Assert: CascadingValue<ModelBindingContext> renders page
+        var cascadingValueComponentId = batch.GetComponentFrames<CascadingValue<ModelBindingContext>>().Single().ComponentId;
+        var cascadingValueFrames = _renderer.GetCurrentRenderTreeFrames(cascadingValueComponentId).AsEnumerable();
+        Assert.Collection(cascadingValueFrames,
+            frame => AssertFrame.Region(frame, sequence: 0, subtreeLength: 3),
+            frame => AssertFrame.Component<ComponentWithLayout>(frame, sequence: 0, subtreeLength: 2),
+            frame => AssertFrame.Attribute(frame, nameof(ComponentWithLayout.Message), "Test message", sequence: 1));
 
         // Assert: page itself is rendered, having received parameters from the original route data
         var pageComponentId = batch.GetComponentFrames<ComponentWithLayout>().Single().ComponentId;
@@ -79,7 +108,7 @@ public class RouteViewTest
             frame => AssertFrame.Text(frame, "Hello from the page with message 'Test message'", sequence: 0));
 
         // Assert: nothing else was rendered
-        Assert.Equal(4, batch.DiffsInOrder.Count);
+        Assert.Equal(6, batch.DiffsInOrder.Count);
     }
 
     [Fact]
@@ -153,6 +182,18 @@ public class RouteViewTest
             frame => AssertFrame.Attribute(frame, nameof(LayoutView.ChildContent), sequence: 2));
     }
 
+    private class RouteViewTestNavigationManager : NavigationManager
+    {
+        public RouteViewTestNavigationManager() =>
+            Initialize("https://www.example.com/subdir/", "https://www.example.com/subdir/");
+
+        public void NotifyLocationChanged(string uri)
+        {
+            Uri = uri;
+            NotifyLocationChanged(false);
+        }
+    }
+
     private class ComponentWithoutLayout : AutoRenderComponent
     {
         [Parameter] public string Message { get; set; }
@@ -197,6 +238,25 @@ public class RouteViewTest
             builder.AddContent(0, "OtherLayout starts here");
             builder.AddContent(1, Body);
             builder.AddContent(2, "OtherLayout ends here");
+        }
+    }
+
+    private class TestFormValueSupplier : IFormValueSupplier
+    {
+        public bool CanBind(string formName, Type valueType)
+        {
+            return false;
+        }
+
+        public bool CanConvertSingleValue(Type type)
+        {
+            return false;
+        }
+
+        public bool TryBind(string formName, Type valueType, [NotNullWhen(true)] out object boundValue)
+        {
+            boundValue = null;
+            return false;
         }
     }
 }

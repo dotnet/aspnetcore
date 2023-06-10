@@ -145,7 +145,7 @@ public abstract class Http3TestBase : TestApplicationErrorLoggerLoggedTest, IDis
             Scheduler = PipeScheduler.Inline,
         };
 
-        Http3Api = new Http3InMemory(_serviceContext, _serviceContext.MockSystemClock, _mockTimeoutHandler.Object, LoggerFactory);
+        Http3Api = new Http3InMemory(_serviceContext, _serviceContext.MockTimeProvider, _mockTimeoutHandler.Object, LoggerFactory);
     }
 
     public void AssertExpectedErrorMessages(string expectedErrorMessage)

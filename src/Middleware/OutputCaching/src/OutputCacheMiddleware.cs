@@ -119,6 +119,8 @@ internal sealed class OutputCacheMiddleware
                 // Should we store the response to this request?
                 if (context.AllowCacheStorage)
                 {
+                    CreateCacheKey(context);
+
                     // It is also a pre-condition to response locking
 
                     var executed = false;
@@ -241,7 +243,7 @@ internal sealed class OutputCacheMiddleware
         }
 
         context.CachedResponse = cacheEntry;
-        context.ResponseTime = _options.SystemClock.UtcNow;
+        context.ResponseTime = _options.TimeProvider.GetUtcNow();
         var cacheEntryAge = context.ResponseTime.Value - context.CachedResponse.Created;
         context.CachedEntryAge = cacheEntryAge > TimeSpan.Zero ? cacheEntryAge : TimeSpan.Zero;
 
@@ -462,7 +464,7 @@ internal sealed class OutputCacheMiddleware
         if (!context.ResponseStarted)
         {
             context.ResponseStarted = true;
-            context.ResponseTime = _options.SystemClock.UtcNow;
+            context.ResponseTime = _options.TimeProvider.GetUtcNow();
 
             return true;
         }

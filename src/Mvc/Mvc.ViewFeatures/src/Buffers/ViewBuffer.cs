@@ -75,7 +75,7 @@ internal sealed class ViewBuffer : IHtmlContentBuilder
             {
                 return _currentPage;
             }
-            throw new IndexOutOfRangeException();
+            throw new ArgumentOutOfRangeException(nameof(index));
         }
     }
 

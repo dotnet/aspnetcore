@@ -10,10 +10,11 @@ namespace Microsoft.AspNetCore.Builder;
 /// <summary>
 /// Default implementation for <see cref="IApplicationBuilder"/>.
 /// </summary>
-public class ApplicationBuilder : IApplicationBuilder
+public partial class ApplicationBuilder : IApplicationBuilder
 {
     private const string ServerFeaturesKey = "server.Features";
     private const string ApplicationServicesKey = "application.Services";
+    private const string RequestUnhandledKey = "__RequestUnhandled";
 
     private readonly List<Func<RequestDelegate, RequestDelegate>> _components = new();
 
@@ -139,6 +140,10 @@ public class ApplicationBuilder : IApplicationBuilder
             {
                 context.Response.StatusCode = StatusCodes.Status404NotFound;
             }
+
+            // Communicates to higher layers that the request wasn't handled by the app pipeline.
+            context.Items[RequestUnhandledKey] = true;
+
             return Task.CompletedTask;
         };
 

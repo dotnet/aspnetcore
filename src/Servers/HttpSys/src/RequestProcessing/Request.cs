@@ -31,8 +31,6 @@ internal sealed partial class Request
     private AspNetCore.HttpSys.Internal.SocketAddress? _localEndPoint;
     private AspNetCore.HttpSys.Internal.SocketAddress? _remoteEndPoint;
 
-    private IReadOnlyDictionary<int, ReadOnlyMemory<byte>>? _requestInfo;
-
     private bool _isDisposed;
 
     internal Request(RequestContext requestContext)
@@ -325,6 +323,8 @@ internal sealed partial class Request
 
     internal WindowsPrincipal User { get; }
 
+    public string? SniHostName { get; private set; }
+
     public SslProtocols Protocol { get; private set; }
 
     public CipherAlgorithmType CipherAlgorithm { get; private set; }
@@ -338,18 +338,6 @@ internal sealed partial class Request
     public ExchangeAlgorithmType KeyExchangeAlgorithm { get; private set; }
 
     public int KeyExchangeStrength { get; private set; }
-
-    public IReadOnlyDictionary<int, ReadOnlyMemory<byte>> RequestInfo
-    {
-        get
-        {
-            if (_requestInfo == null)
-            {
-                _requestInfo = RequestContext.GetRequestInfo();
-            }
-            return _requestInfo;
-        }
-    }
 
     private void GetTlsHandshakeResults()
     {
@@ -395,6 +383,9 @@ internal sealed partial class Request
         HashStrength = (int)handshake.HashStrength;
         KeyExchangeAlgorithm = handshake.KeyExchangeType;
         KeyExchangeStrength = (int)handshake.KeyExchangeStrength;
+
+        var sni = RequestContext.GetClientSni();
+        SniHostName = sni.Hostname;
     }
 
     public X509Certificate2? ClientCertificate

@@ -132,6 +132,14 @@ type MonoConfig = {
      * initial number of workers to add to the emscripten pthread pool
      */
     pthreadPoolSize?: number;
+    /**
+     * If true, the snapshot of runtime's memory will be stored in the browser and used for faster startup next time. Default is false.
+     */
+    startupMemoryCache?: boolean;
+    /**
+     * application environment
+     */
+    applicationEnvironment?: string;
 };
 interface ResourceRequest {
     name: string;
@@ -180,8 +188,10 @@ type DotnetModuleConfig = {
     disableDotnet6Compatibility?: boolean;
     config?: MonoConfig;
     configSrc?: string;
-    onConfigLoaded?: (config: MonoConfig) => void | Promise<void>;
+    onConfigLoaded?: (config: MonoConfig & BootJsonData) => void | Promise<void>;
     onDotnetReady?: () => void | Promise<void>;
+    onDownloadResourceProgress?: (resourcesLoaded: number, totalResources: number) => void;
+    getApplicationEnvironment?: (bootConfigResponse: Response) => string | null;
     imports?: any;
     exports?: string[];
     downloadResource?: (request: ResourceRequest) => LoadingResource | undefined;
@@ -274,4 +284,49 @@ declare global {
 declare const dotnet: ModuleAPI["dotnet"];
 declare const exit: ModuleAPI["exit"];
 
-export { AssetEntry, CreateDotnetRuntimeType, DotnetModuleConfig, EmscriptenModule, IMemoryView, ModuleAPI, MonoConfig, ResourceRequest, RuntimeAPI, createDotnetRuntime as default, dotnet, exit };
+interface BootJsonData {
+    readonly entryAssembly: string;
+    readonly resources: ResourceGroups;
+    /** Gets a value that determines if this boot config was produced from a non-published build (i.e. dotnet build or dotnet run) */
+    readonly debugBuild: boolean;
+    readonly linkerEnabled: boolean;
+    readonly cacheBootResources: boolean;
+    readonly config: string[];
+    readonly icuDataMode: ICUDataMode;
+    readonly startupMemoryCache: boolean | undefined;
+    readonly runtimeOptions: string[] | undefined;
+
+    // These properties are tacked on, and not found in the boot.json file
+    modifiableAssemblies: string | null;
+    aspnetCoreBrowserTools: string | null;
+}
+
+type BootJsonDataExtension = { [extensionName: string]: ResourceList };
+
+interface ResourceGroups {
+    readonly assembly: ResourceList;
+    readonly lazyAssembly: ResourceList;
+    readonly pdb?: ResourceList;
+    readonly runtime: ResourceList;
+    readonly satelliteResources?: { [cultureName: string]: ResourceList };
+    readonly libraryInitializers?: ResourceList,
+    readonly extensions?: BootJsonDataExtension
+    readonly runtimeAssets: ExtendedResourceList;
+}
+
+type ResourceList = { [name: string]: string };
+type ExtendedResourceList = {
+    [name: string]: {
+        hash: string,
+        behavior: string
+    }
+};
+
+declare const enum ICUDataMode {
+    Sharded,
+    All,
+    Invariant,
+    Custom
+}
+
+export { AssetEntry, CreateDotnetRuntimeType, DotnetModuleConfig, EmscriptenModule, IMemoryView, ModuleAPI, MonoConfig, ResourceRequest, RuntimeAPI, BootJsonData, ICUDataMode, createDotnetRuntime as default, dotnet, exit };

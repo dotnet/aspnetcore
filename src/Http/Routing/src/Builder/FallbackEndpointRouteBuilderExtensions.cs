@@ -77,6 +77,7 @@ public static class FallbackEndpointRouteBuilderExtensions
         var conventionBuilder = endpoints.Map(pattern, requestDelegate);
         conventionBuilder.WithDisplayName("Fallback " + pattern);
         conventionBuilder.Add(b => ((RouteEndpointBuilder)b).Order = int.MaxValue);
+        conventionBuilder.WithMetadata(FallbackMetadata.Instance);
         return conventionBuilder;
     }
 }

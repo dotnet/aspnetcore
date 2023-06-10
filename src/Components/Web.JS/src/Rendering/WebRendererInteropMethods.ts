@@ -5,7 +5,7 @@ import { DotNet } from '@microsoft/dotnet-js-interop';
 import { EventDescriptor } from './Events/EventDelegator';
 import { enableJSRootComponents, JSComponentParametersByIdentifier, JSComponentIdentifiersByInitializer } from './JSRootComponents';
 
-const interopMethodsByRenderer = new Map<number, DotNet.DotNetObject>();
+const interopMethodsByRendererId: DotNet.DotNetObject[] = [];
 
 let resolveRendererAttached : () => void;
 
@@ -14,16 +14,12 @@ export const rendererAttached = new Promise<void>((resolve) => {
 });
 
 export function attachWebRendererInterop(
-  rendererId: number,
   interopMethods: DotNet.DotNetObject,
   jsComponentParameters: JSComponentParametersByIdentifier,
   jsComponentInitializers: JSComponentIdentifiersByInitializer,
-): void {
-  if (interopMethodsByRenderer.has(rendererId)) {
-    throw new Error(`Interop methods are already registered for renderer ${rendererId}`);
-  }
-
-  interopMethodsByRenderer.set(rendererId, interopMethods);
+): number {
+  const rendererId = interopMethodsByRendererId.length;
+  interopMethodsByRendererId.push(interopMethods);
 
   if (Object.keys(jsComponentParameters).length > 0) {
     const manager = getInteropMethods(rendererId);
@@ -31,6 +27,7 @@ export function attachWebRendererInterop(
   }
 
   resolveRendererAttached();
+  return rendererId;
 }
 
 export function dispatchEvent(browserRendererId: number, eventDescriptor: EventDescriptor, eventArgs: any): void {
@@ -41,7 +38,7 @@ export function dispatchEvent(browserRendererId: number, eventDescriptor: EventD
 }
 
 function getInteropMethods(rendererId: number): DotNet.DotNetObject {
-  const interopMethods = interopMethodsByRenderer.get(rendererId);
+  const interopMethods = interopMethodsByRendererId[rendererId];
   if (!interopMethods) {
     throw new Error(`No interop methods are registered for renderer ${rendererId}`);
   }
@@ -51,7 +48,11 @@ function getInteropMethods(rendererId: number): DotNet.DotNetObject {
 
 // On some hosting platforms, we may need to defer the event dispatch, so they can register this middleware to do so
 type DispatchEventMiddlware = (browserRendererId: number, eventHandlerId: number, continuation: () => void) => void;
+
 let dispatchEventMiddleware: DispatchEventMiddlware = (browserRendererId, eventHandlerId, continuation) => continuation();
-export function setDispatchEventMiddleware(middleware: DispatchEventMiddlware): void {
-  dispatchEventMiddleware = middleware;
+export function addDispatchEventMiddleware(middleware: DispatchEventMiddlware): void {
+  const next = dispatchEventMiddleware;
+  dispatchEventMiddleware = (browserRendererId, eventHandlerId, continuation) => {
+    middleware(browserRendererId, eventHandlerId, () => next(browserRendererId, eventHandlerId, continuation));
+  };
 }

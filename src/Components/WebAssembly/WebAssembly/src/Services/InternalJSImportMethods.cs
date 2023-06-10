@@ -19,11 +19,11 @@ internal partial class InternalJSImportMethods : IInternalJSImportMethods
     public string GetApplicationEnvironment()
         => GetApplicationEnvironmentCore();
 
-    public byte[]? GetConfig(string configFile)
-        => GetConfigCore(configFile);
-
     public void NavigationManager_EnableNavigationInterception()
         => NavigationManager_EnableNavigationInterceptionCore();
+
+    public void NavigationManager_ScrollToElement(string id)
+        => NavigationManager_ScrollToElementCore(id);
 
     public string NavigationManager_GetLocationHref()
         => NavigationManager_GetLocationHrefCore();
@@ -58,11 +58,11 @@ internal partial class InternalJSImportMethods : IInternalJSImportMethods
     [JSImport("Blazor._internal.getApplicationEnvironment", "blazor-internal")]
     private static partial string GetApplicationEnvironmentCore();
 
-    [JSImport("Blazor._internal.getConfig", "blazor-internal")]
-    private static partial byte[] GetConfigCore(string configFile);
-
     [JSImport(BrowserNavigationManagerInterop.EnableNavigationInterception, "blazor-internal")]
     private static partial void NavigationManager_EnableNavigationInterceptionCore();
+
+    [JSImport(BrowserNavigationManagerInterop.ScrollToElement, "blazor-internal")]
+    private static partial void NavigationManager_ScrollToElementCore(string id);
 
     [JSImport(BrowserNavigationManagerInterop.GetLocationHref, "blazor-internal")]
     private static partial string NavigationManager_GetLocationHrefCore();

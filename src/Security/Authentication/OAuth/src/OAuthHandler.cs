@@ -41,8 +41,17 @@ public class OAuthHandler<TOptions> : RemoteAuthenticationHandler<TOptions> wher
     /// Initializes a new instance of <see cref="OAuthHandler{TOptions}"/>.
     /// </summary>
     /// <inheritdoc />
+    [Obsolete("ISystemClock is obsolete, use TimeProvider on AuthenticationSchemeOptions instead.")]
     public OAuthHandler(IOptionsMonitor<TOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
         : base(options, logger, encoder, clock)
+    { }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="OAuthHandler{TOptions}"/>.
+    /// </summary>
+    /// <inheritdoc />
+    public OAuthHandler(IOptionsMonitor<TOptions> options, ILoggerFactory logger, UrlEncoder encoder)
+        : base(options, logger, encoder)
     { }
 
     /// <summary>
@@ -87,7 +96,7 @@ public class OAuthHandler<TOptions> : RemoteAuthenticationHandler<TOptions> wher
                 {
                     return result;
                 }
-                var deniedEx = new Exception("Access was denied by the resource owner or by the remote server.");
+                var deniedEx = new AuthenticationFailureException("Access was denied by the resource owner or by the remote server.");
                 deniedEx.Data["error"] = error.ToString();
                 deniedEx.Data["error_description"] = errorDescription.ToString();
                 deniedEx.Data["error_uri"] = errorUri.ToString();
@@ -106,7 +115,7 @@ public class OAuthHandler<TOptions> : RemoteAuthenticationHandler<TOptions> wher
                 failureMessage.Append(";Uri=").Append(errorUri);
             }
 
-            var ex = new Exception(failureMessage.ToString());
+            var ex = new AuthenticationFailureException(failureMessage.ToString());
             ex.Data["error"] = error.ToString();
             ex.Data["error_description"] = errorDescription.ToString();
             ex.Data["error_uri"] = errorUri.ToString();
@@ -158,7 +167,7 @@ public class OAuthHandler<TOptions> : RemoteAuthenticationHandler<TOptions> wher
                 {
                     // https://www.w3.org/TR/xmlschema-2/#dateTime
                     // https://msdn.microsoft.com/en-us/library/az4se3k1(v=vs.110).aspx
-                    var expiresAt = Clock.UtcNow + TimeSpan.FromSeconds(value);
+                    var expiresAt = TimeProvider.GetUtcNow() + TimeSpan.FromSeconds(value);
                     authTokens.Add(new AuthenticationToken
                     {
                         Name = "expires_at",
@@ -227,7 +236,7 @@ public class OAuthHandler<TOptions> : RemoteAuthenticationHandler<TOptions> wher
         if (exception is null)
         {
             var errorMessage = $"OAuth token endpoint failure: Status: {response.StatusCode};Headers: {response.Headers};Body: {body};";
-            return OAuthTokenResponse.Failed(new Exception(errorMessage));
+            return OAuthTokenResponse.Failed(new AuthenticationFailureException(errorMessage));
         }
 
         return OAuthTokenResponse.Failed(exception);

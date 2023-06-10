@@ -15,6 +15,7 @@
     <ExcludeFromBuild Condition="'$(IsPackable)' != 'true' and
         '$(SkipTestBuild)' == 'true' and
         ($(IsTestProject) or
+         '$(IsPublishedAppTestProject)' == 'true' or
          '$(IsTestAssetProject)' == 'true' or
          '$(IsBenchmarkProject)' == 'true' or
          '$(IsSampleProject)' == 'true' or

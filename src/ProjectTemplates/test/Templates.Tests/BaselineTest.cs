@@ -75,12 +75,14 @@ public class BaselineTest : LoggedTest
         Project = await ProjectFactory.CreateProject(Output);
         await Project.RunDotNetNewRawAsync(arguments);
 
+        expectedFiles = expectedFiles.Select(f => f.Replace("{ProjectName}", Project.ProjectName)).ToArray();
+
         foreach (var file in expectedFiles)
         {
             AssertFileExists(Project.TemplateOutputDir, file, shouldExist: true);
         }
 
-        var filesInFolder = Directory.EnumerateFiles(Project.TemplateOutputDir, "*", SearchOption.AllDirectories);
+        var filesInFolder = Directory.EnumerateFiles(Project.TemplateOutputDir, "*", SearchOption.AllDirectories).ToArray();
         foreach (var file in filesInFolder)
         {
             var relativePath = file.Replace(Project.TemplateOutputDir, "").Replace("\\", "/").Trim('/');

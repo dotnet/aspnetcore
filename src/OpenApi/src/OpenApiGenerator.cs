@@ -78,7 +78,7 @@ internal sealed class OpenApiGenerator
             Description = metadata.GetMetadata<IEndpointDescriptionMetadata>()?.Description,
             Tags = GetOperationTags(methodInfo, metadata),
             Parameters = GetOpenApiParameters(methodInfo, pattern, disableInferredBody),
-            RequestBody = GetOpenApiRequestBody(methodInfo, metadata, pattern),
+            RequestBody = GetOpenApiRequestBody(methodInfo, metadata, pattern, disableInferredBody),
             Responses = GetOpenApiResponses(methodInfo, metadata)
         };
 
@@ -251,7 +251,7 @@ internal sealed class OpenApiGenerator
         }
     }
 
-    private OpenApiRequestBody? GetOpenApiRequestBody(MethodInfo methodInfo, EndpointMetadataCollection metadata, RoutePattern pattern)
+    private OpenApiRequestBody? GetOpenApiRequestBody(MethodInfo methodInfo, EndpointMetadataCollection metadata, RoutePattern pattern, bool disableInferredBody)
     {
         var hasFormOrBodyParameter = false;
         ParameterInfo? requestBodyParameter = null;
@@ -259,7 +259,7 @@ internal sealed class OpenApiGenerator
         var parameters = PropertyAsParameterInfo.Flatten(methodInfo.GetParameters(), ParameterBindingMethodCache);
         foreach (var parameter in parameters)
         {
-            var (bodyOrFormParameter, _, _) = GetOpenApiParameterLocation(parameter, pattern, false);
+            var (bodyOrFormParameter, _, _) = GetOpenApiParameterLocation(parameter, pattern, disableInferredBody);
             hasFormOrBodyParameter |= bodyOrFormParameter;
             if (hasFormOrBodyParameter)
             {

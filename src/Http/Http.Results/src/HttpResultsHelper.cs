@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
@@ -19,6 +20,9 @@ internal static partial class HttpResultsHelper
     internal const string DefaultContentType = "text/plain; charset=utf-8";
     private static readonly Encoding DefaultEncoding = Encoding.UTF8;
 
+    [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode",
+        Justification = "The 'JsonSerializer.IsReflectionEnabledByDefault' feature switch, which is set to false by default for trimmed ASP.NET apps, ensures the JsonSerializer doesn't use Reflection.")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode", Justification = "See above.")]
     public static Task WriteResultAsJsonAsync<TValue>(
         HttpContext httpContext,
         ILogger logger,
@@ -34,8 +38,8 @@ internal static partial class HttpResultsHelper
         jsonSerializerOptions ??= ResolveJsonOptions(httpContext).SerializerOptions;
         var jsonTypeInfo = (JsonTypeInfo<TValue>)jsonSerializerOptions.GetTypeInfo(typeof(TValue));
 
-        Type? runtimeType;
-        if (jsonTypeInfo.IsValid(runtimeType = value.GetType()))
+        Type? runtimeType = value.GetType();
+        if (jsonTypeInfo.ShouldUseWith(runtimeType))
         {
             Log.WritingResultAsJson(logger, jsonTypeInfo.Type.Name);
             return httpContext.Response.WriteAsJsonAsync(
@@ -46,14 +50,14 @@ internal static partial class HttpResultsHelper
 
         Log.WritingResultAsJson(logger, runtimeType.Name);
         // Since we don't know the type's polymorphic characteristics
-        // our best option is use the runtime type, so,
-        // call WriteAsJsonAsync() with the runtime type to serialize the runtime type rather than the declared type
+        // our best option is to serialize the value as 'object'.
+        // call WriteAsJsonAsync<object>() rather than the declared type
         // and avoid source generators issues.
         // https://github.com/dotnet/aspnetcore/issues/43894
         // https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json-polymorphism
-        return httpContext.Response.WriteAsJsonAsync(
+        return httpContext.Response.WriteAsJsonAsync<object>(
            value,
-           jsonSerializerOptions.GetTypeInfo(runtimeType),
+           jsonSerializerOptions,
            contentType: contentType);
     }
 

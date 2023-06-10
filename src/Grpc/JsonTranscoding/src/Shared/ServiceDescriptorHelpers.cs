@@ -103,11 +103,11 @@ internal static class ServiceDescriptorHelpers
     private static FieldDescriptor? GetFieldByName(MessageDescriptor messageDescriptor, string fieldName)
     {
         // Search fields by field name and JSON name. Both names can be referenced.
-        // If there are conflicts, then the last field with a name wins.
+        // JSON name takes precendence. If there are conflicts, then the last field with a name wins.
         // This logic matches how properties are used in JSON serialization's MessageTypeInfoResolver.
         var fields = messageDescriptor.Fields.InFieldNumberOrder();
 
-        FieldDescriptor? fieldDescriptor = null;
+        FieldDescriptor? fieldNameDescriptorMatch = null;
         for (var i = fields.Count - 1; i >= 0; i--)
         {
             // We're checking JSON name first, in reverse order through fields.
@@ -115,17 +115,18 @@ internal static class ServiceDescriptorHelpers
             var field = fields[i];
             if (field.JsonName == fieldName)
             {
-                fieldDescriptor = field;
-                break;
+                return field;
             }
-            else if (field.Name == fieldName)
+
+            // If there is a match on field name then store the first match.
+            if (fieldNameDescriptorMatch is null && field.Name == fieldName)
             {
-                fieldDescriptor = field;
-                break;
+                fieldNameDescriptorMatch = field;
             }
         }
 
-        return fieldDescriptor;
+        // No match with JSON name. If there is a field name match then return it.
+        return fieldNameDescriptorMatch;
     }
 
     private static object? ConvertValue(object? value, FieldDescriptor descriptor)
@@ -248,7 +249,22 @@ internal static class ServiceDescriptorHelpers
 
     public static void SetValue(IMessage message, FieldDescriptor field, object? values)
     {
-        if (field.IsRepeated)
+        if (field.IsMap)
+        {
+            var map = (IDictionary)field.Accessor.GetValue(message);
+            if (values is IDictionary dictionaryValues)
+            {
+                foreach (DictionaryEntry value in dictionaryValues)
+                {
+                    map[value.Key] = value.Value;
+                }
+            }
+            else
+            {
+                throw new InvalidOperationException("Map field requires repeating keys and values.");
+            }
+        }
+        else if (field.IsRepeated)
         {
             var list = (IList)field.Accessor.GetValue(message);
             if (values is StringValues stringValues)
@@ -262,7 +278,11 @@ internal static class ServiceDescriptorHelpers
             {
                 foreach (var value in listValues)
                 {
-                    list.Add(ConvertValue(value, field));
+                    var v = field.Accessor.Descriptor.FieldType == FieldType.Message
+                        ? value
+                        : ConvertValue(value, field);
+
+                    list.Add(v);
                 }
             }
             else
@@ -304,10 +324,27 @@ internal static class ServiceDescriptorHelpers
         }
     }
 
+    // Transcoding assumes that the app is referencing Google.Api.CommonProtos and HttpRule is from that assembly.
+    // However, it's possible the app has compiled http.proto with Grpc.Tools, so the extension value is HttpRule from a different assembly.
+    // This custom extension uses the HttpRule field number but has a return type of object.
+    // The method always returns the extension value, and the calling code can convert it to the expected type.
+    // See https://github.com/protocolbuffers/protobuf/issues/9626 for more details.
+    private static readonly Extension<MethodOptions, object> UntypedHttpExtension =
+        new Extension<MethodOptions, object>(AnnotationsExtensions.Http.FieldNumber, codec: null);
+
     public static bool TryGetHttpRule(MethodDescriptor methodDescriptor, [NotNullWhen(true)] out HttpRule? httpRule)
     {
         var options = methodDescriptor.GetOptions();
-        httpRule = options?.GetExtension(AnnotationsExtensions.Http);
+
+        // The untyped extension always returns the extension value. If the type is already the expected HttpRule then use it directly.
+        // A different message indicates a custom HttpRule was used. Convert the message to bytes and reparse it to the known HttpRule type.
+        var extensionValue = options?.GetExtension(UntypedHttpExtension);
+        httpRule = extensionValue switch
+        {
+            HttpRule rule => rule,
+            IMessage message => HttpRule.Parser.ParseFrom(message.ToByteArray()),
+            _ => null
+        };
 
         return httpRule != null;
     }

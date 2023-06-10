@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Components.Discovery;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 
@@ -17,7 +18,7 @@ public class RazorComponentEndpointFactoryTest
         var factory = new RazorComponentEndpointFactory();
         var conventions = new List<Action<EndpointBuilder>>();
         var finallyConventions = new List<Action<EndpointBuilder>>();
-        factory.AddEndpoints(endpoints, new PageDefinition(
+        factory.AddEndpoints(endpoints, typeof(App), new PageComponentInfo(
             "App",
             typeof(App),
             "/",
@@ -30,14 +31,17 @@ public class RazorComponentEndpointFactoryTest
         var routeEndpoint = Assert.IsType<RouteEndpoint>(endpoint);
         Assert.Equal(0, routeEndpoint.Order);
         Assert.Equal("/", routeEndpoint.RoutePattern.RawText);
+        Assert.Contains(endpoint.Metadata, m => m is RootComponentMetadata);
         Assert.Contains(endpoint.Metadata, m => m is ComponentTypeMetadata);
         Assert.Contains(endpoint.Metadata, m => m is SuppressLinkGenerationMetadata);
         Assert.Contains(endpoint.Metadata, m => m is AuthorizeAttribute);
         Assert.NotNull(endpoint.RequestDelegate);
 
         var methods = Assert.Single(endpoint.Metadata.GetOrderedMetadata<HttpMethodMetadata>());
-        var method = Assert.Single(methods.HttpMethods);
-        Assert.Equal("GET", method);
+        Assert.Collection(methods.HttpMethods,
+            method => Assert.Equal("GET", method),
+            method => Assert.Equal("POST", method)
+            );
     }
 
     [Fact]
@@ -52,7 +56,8 @@ public class RazorComponentEndpointFactoryTest
         var finallyConventions = new List<Action<EndpointBuilder>>();
         factory.AddEndpoints(
             endpoints,
-            new PageDefinition(
+            typeof(App),
+            new PageComponentInfo(
                 "App",
                 typeof(App),
                 "/",
@@ -78,7 +83,8 @@ public class RazorComponentEndpointFactoryTest
 
         factory.AddEndpoints(
             endpoints,
-            new PageDefinition(
+            typeof(App),
+            new PageComponentInfo(
                 "App",
                 typeof(App),
                 "/",
@@ -104,7 +110,8 @@ public class RazorComponentEndpointFactoryTest
 
         factory.AddEndpoints(
             endpoints,
-            new PageDefinition(
+            typeof(App),
+            new PageComponentInfo(
                 "App",
                 typeof(App),
                 "/",
@@ -134,7 +141,8 @@ public class RazorComponentEndpointFactoryTest
 
         factory.AddEndpoints(
             endpoints,
-            new PageDefinition(
+            typeof(App),
+            new PageComponentInfo(
                 "App",
                 typeof(App),
                 "/",

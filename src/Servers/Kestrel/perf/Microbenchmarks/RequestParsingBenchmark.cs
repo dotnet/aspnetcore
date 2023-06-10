@@ -31,7 +31,7 @@ public class RequestParsingBenchmark
         var serviceContext = TestContextFactory.CreateServiceContext(
             serverOptions: new KestrelServerOptions(),
             httpParser: new HttpParser<Http1ParsingHandler>(),
-            dateHeaderValueManager: new DateHeaderValueManager());
+            dateHeaderValueManager: new DateHeaderValueManager(TimeProvider.System));
 
         var connectionContext = TestContextFactory.CreateHttpConnectionContext(
             serviceContext: serviceContext,
@@ -39,7 +39,7 @@ public class RequestParsingBenchmark
             transport: pair.Transport,
             memoryPool: _memoryPool,
             connectionFeatures: new FeatureCollection(),
-            timeoutControl: new TimeoutControl(timeoutHandler: null));
+            timeoutControl: new TimeoutControl(timeoutHandler: null, TimeProvider.System));
 
         var http1Connection = new Http1Connection(connectionContext);
 

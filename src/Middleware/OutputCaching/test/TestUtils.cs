@@ -146,7 +146,7 @@ internal class TestUtils
                             {
                                 outputCachingOptions.MaximumBodySize = options.MaximumBodySize;
                                 outputCachingOptions.UseCaseSensitivePaths = options.UseCaseSensitivePaths;
-                                outputCachingOptions.SystemClock = options.SystemClock;
+                                outputCachingOptions.TimeProvider = options.TimeProvider;
                                 outputCachingOptions.BasePolicies = options.BasePolicies;
                                 outputCachingOptions.DefaultExpirationTimeSpan = options.DefaultExpirationTimeSpan;
                                 outputCachingOptions.SizeLimit = options.SizeLimit;
@@ -345,11 +345,6 @@ internal class TestOutputCache : IOutputCacheStore
             return ValueTask.CompletedTask;
         }
     }
-}
-
-internal class TestClock : ISystemClock
-{
-    public DateTimeOffset UtcNow { get; set; }
 }
 
 internal class AllowTestPolicy : IOutputCachePolicy
