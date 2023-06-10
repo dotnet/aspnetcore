@@ -51,20 +51,24 @@ public class XmlKeyManagerTests
     }
 
     [Fact]
-    public void Ctor_WithEncryptorButNoRepository_IgnoresFallback_FailsWithServiceNotFound()
+    public void Ctor_WithEncryptorButNoRepository_UsesFallback()
     {
         // Arrange
+        var expectedXmlEncryptor = new Mock<IXmlEncryptor>().Object;
         var options = Options.Create(new KeyManagementOptions()
         {
             AuthenticatedEncryptorConfiguration = new Mock<AlgorithmConfiguration>().Object,
             XmlRepository = null,
-            XmlEncryptor = new Mock<IXmlEncryptor>().Object
+            XmlEncryptor = expectedXmlEncryptor
         });
 
-        // Act & assert - we don't care about exception type, only exception message
-        Exception ex = Assert.ThrowsAny<Exception>(
-            () => new XmlKeyManager(options, SimpleActivator.DefaultWithoutServices, NullLoggerFactory.Instance));
-        Assert.Contains("IXmlRepository", ex.Message);
+        // Act
+        var keyManager = new XmlKeyManager(options, SimpleActivator.DefaultWithoutServices, NullLoggerFactory.Instance);
+
+        // Assert
+        Assert.NotNull(keyManager.KeyRepository);
+
+        Assert.Same(expectedXmlEncryptor, keyManager.KeyEncryptor);
     }
 
     [Fact]
