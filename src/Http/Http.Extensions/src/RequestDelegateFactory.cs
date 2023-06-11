@@ -1055,6 +1055,14 @@ public static partial class RequestDelegateFactory
                         methodCall,
                         HttpContextExpr);
                 }
+                else if (typeArg == typeof(object))
+                {
+                    return Expression.Call(
+                        ExecuteTaskOfObjectMethod,
+                        methodCall,
+                        HttpContextExpr,
+                        Expression.Constant(factoryContext.JsonSerializerOptions.GetReadOnlyTypeInfo(typeof(object)), typeof(JsonTypeInfo<object>)));
+                }
                 else
                 {
                     var jsonTypeInfo = factoryContext.JsonSerializerOptions.GetReadOnlyTypeInfo(typeArg);
@@ -1094,6 +1102,14 @@ public static partial class RequestDelegateFactory
                         ExecuteValueTaskOfStringMethod,
                         methodCall,
                         HttpContextExpr);
+                }
+                else if (typeArg == typeof(object))
+                {
+                    return Expression.Call(
+                        ExecuteValueTaskOfObjectMethod,
+                        methodCall,
+                        HttpContextExpr,
+                        Expression.Constant(factoryContext.JsonSerializerOptions.GetReadOnlyTypeInfo(typeof(object)), typeof(JsonTypeInfo<object>)));
                 }
                 else
                 {
