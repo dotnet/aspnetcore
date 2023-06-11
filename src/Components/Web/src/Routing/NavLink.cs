@@ -201,6 +201,6 @@ public class NavLink : ComponentBase, IDisposable
 
     private static bool IsAllowedUriSeparator(char separator)
     {
-        return separator is '/' or '?';
+        return separator is '/';
     }
 }
