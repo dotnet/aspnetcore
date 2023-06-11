@@ -178,22 +178,29 @@ public class NavLink : ComponentBase, IDisposable
     private static bool IsStrictlyPrefixWithSeparator(string value, string prefix)
     {
         var prefixLength = prefix.Length;
+
         if (value.Length > prefixLength)
         {
             return value.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
-                && (
-                    // Only match when there's a separator character either at the end of the
-                    // prefix or right after it.
-                    // Example: "/abc" is treated as a prefix of "/abc/def" but not "/abcdef"
-                    // Example: "/abc/" is treated as a prefix of "/abc/def" but not "/abcdef"
-                    prefixLength == 0
-                    || !char.IsLetterOrDigit(prefix[prefixLength - 1])
-                    || !char.IsLetterOrDigit(value[prefixLength])
-                );
+                   && (
+                       // Only match when there's a separator character either at the end of the
+                       // prefix or right after it.
+                       // Example: "/abc" is treated as a prefix of "/abc/def" but not "/abcdef"
+                       // Example: "/abc/" is treated as a prefix of "/abc/def" but not "/abcdef"
+                       // Example: "/abc?" is treated as a prefix of "/abc?def" but not "/abcdef"
+                       prefixLength == 0
+                       || (!char.IsLetterOrDigit(prefix[prefixLength - 1]) && IsAllowedUriSeparator(prefix[prefixLength - 1]))
+                       || (!char.IsLetterOrDigit(value[prefixLength]) && IsAllowedUriSeparator(value[prefixLength]))
+                   );
         }
         else
         {
             return false;
         }
+    }
+
+    private static bool IsAllowedUriSeparator(char separator)
+    {
+        return separator is '/' or '?';
     }
 }
