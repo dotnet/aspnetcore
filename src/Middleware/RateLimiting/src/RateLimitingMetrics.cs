@@ -162,18 +162,10 @@ internal sealed class RateLimitingMetrics : IDisposable
         {
             tags.Add("policy", metricsContext.PolicyName);
         }
-        if (metricsContext.Method is not null)
-        {
-            tags.Add("method", metricsContext.Method);
-        }
-        if (metricsContext.Route is not null)
-        {
-            tags.Add("route", metricsContext.Route);
-        }
     }
 
-    public MetricsContext CreateContext(string? policyName, string? method, string? route)
+    public MetricsContext CreateContext(string? policyName)
     {
-        return new MetricsContext(policyName, method, route, _currentLeasedRequestsCounter.Enabled, _currentQueuedRequestsCounter.Enabled);
+        return new MetricsContext(policyName, _currentLeasedRequestsCounter.Enabled, _currentQueuedRequestsCounter.Enabled);
     }
 }
