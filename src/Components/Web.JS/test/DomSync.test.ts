@@ -211,6 +211,52 @@ describe('DomSync', () => {
     expect(targetNode.getAttributeNames()).toEqual(['preserved']);
     expect(targetNode.getAttribute('preserved')).toBe('preserved value');
   });
+
+  test('should recurse into all elements', () => {
+    // Arrange
+    const destination = makeExistingContent(
+      `<root>` +
+        `Text that will change` +
+        `<child-will-retain>Text that will be removed</child-will-retain>` +
+        `<child-will-delete>Any content</child-will-delete>` +
+      `</root>` +
+      `<root>` +
+        `<another-child-will-retain attr='will-remove'></another-child-will-retain>` +
+      `</root>`);
+    const newContent = makeNewContent(
+      `<root>` +
+        `<inserted-child></inserted-child>` +
+        `Text that was changed` +
+        `<child-will-retain><new-thing attr=val></new-thing></child-will-retain>` +
+      `</root>` +
+      `<!--newcomment-->` +
+      `<root>` +
+        `<another-child-will-retain attr='added'>` +
+            `<inserted-grandchild></inserted-grandchild>` +
+        `</another-child-will-retain>` +
+      `</root>`);
+    const newContentHtml = toHtml(newContent);
+    const oldNodes = toNodeArray(destination);
+    const origRoot1 = oldNodes[0];
+    const origRoot2 = oldNodes[1];
+    const textThatWillChange = oldNodes[0].childNodes[0];
+    const childWillRetain = oldNodes[0].childNodes[1];
+    const anotherChildWillRetain = oldNodes[1].childNodes[0];
+
+    // Act
+    synchronizeDomContent(destination, newContent);
+    const newNodes = toNodeArray(destination) as Element[];
+
+    // Assert: we inserted and changed the right elements/textnodes/comments/attributes
+    expect(toHtml(newNodes)).toEqual(newContentHtml);
+
+    // Assert: we retained the expected original nodes
+    expect(newNodes[0]).toBe(origRoot1);
+    expect(newNodes[0].childNodes[1]).toBe(textThatWillChange);
+    expect(newNodes[0].childNodes[2]).toBe(childWillRetain);
+    expect(newNodes[2]).toBe(origRoot2);
+    expect(newNodes[2].childNodes[0]).toBe(anotherChildWillRetain);
+  });
 });
 
 function makeExistingContent(html: string): CommentBoundedRange {
@@ -250,6 +296,28 @@ function toNodeArray(range: CommentBoundedRange): Node[] {
     next = next.nextSibling!;
   }
 
+  return result;
+}
+
+function toHtml(content: DocumentFragment | Node[]) {
+  let result = '';
+  const nodes = content instanceof DocumentFragment ? content.childNodes : content;
+  for (let i = 0; i < nodes.length; i++) {
+    const node = nodes[i];
+    switch (node.nodeType) {
+      case Node.ELEMENT_NODE:
+        result += (node as Element).outerHTML;
+        break;
+      case Node.TEXT_NODE:
+        result += node.textContent;
+        break;
+      case Node.COMMENT_NODE:
+        result += `<!--${node.textContent}-->`;
+        break;
+      default:
+        throw new Error(`Not implemented toHTML for node type ${node.nodeType}`);
+    }
+  }
   return result;
 }
 

@@ -1,21 +1,33 @@
 import { UpdateCost, ItemList, Operation, computeEditScript } from './EditScript';
 
-export function synchronizeDomContent(destination: CommentBoundedRange, source: DocumentFragment) {
-  const destinationParent = destination.startExclusive.parentNode!;
+export function synchronizeDomContent(destination: CommentBoundedRange | Element, newContent: DocumentFragment | Element) {
+  let destinationParent: Node;
+  let nextDestinationNode: Node | null;
+  let originalNodesForDiff: ItemList<Node>;
 
+  // Figure out how to interpret the 'destination' parameter, since it can come in two very different forms
+  if (destination instanceof Element) {
+    destinationParent = destination;
+    nextDestinationNode = destination.firstChild;
+    originalNodesForDiff = destination.childNodes;
+  } else {
+    destinationParent = destination.startExclusive.parentNode!;
+    nextDestinationNode = destination.startExclusive.nextSibling;
+    originalNodesForDiff = new SiblingSubsetNodeList(destination);
+  }
+
+  // Run the diff
   const editScript = computeEditScript(
-    new SiblingSubsetNodeList(destination),
-    source.childNodes,
+    originalNodesForDiff,
+    newContent.childNodes,
     domNodeComparer);
 
-  let nextDestinationNode = destination.startExclusive.nextSibling!; // Never null because it walks a range that ends with the end comment
-  let nextSourceNode = source.firstChild; // Could be null
-
   // Handle any common leading items
+  let nextNewContentNode = newContent.firstChild; // Could be null
   for (let i = 0; i < editScript.skipCount; i++) {
-    treatAsMatch(nextDestinationNode, nextSourceNode!);
-    nextDestinationNode = nextDestinationNode.nextSibling!;
-    nextSourceNode = nextSourceNode!.nextSibling;
+    treatAsMatch(nextDestinationNode!, nextNewContentNode!);
+    nextDestinationNode = nextDestinationNode!.nextSibling!;
+    nextNewContentNode = nextNewContentNode!.nextSibling;
   }
 
   // Handle any edited region
@@ -27,23 +39,23 @@ export function synchronizeDomContent(destination: CommentBoundedRange, source: 
       const operation = edits[editIndex];
       switch (operation) {
         case Operation.Keep:
-          treatAsMatch(nextDestinationNode, nextSourceNode!);
-          nextDestinationNode = nextDestinationNode.nextSibling!;
-          nextSourceNode = nextSourceNode!.nextSibling;
+          treatAsMatch(nextDestinationNode!, nextNewContentNode!);
+          nextDestinationNode = nextDestinationNode!.nextSibling;
+          nextNewContentNode = nextNewContentNode!.nextSibling;
           break;
         case Operation.Update:
-          treatAsSubstitution(nextDestinationNode, nextSourceNode!);
-          nextDestinationNode = nextDestinationNode.nextSibling!;
-          nextSourceNode = nextSourceNode!.nextSibling;
+          treatAsSubstitution(nextDestinationNode!, nextNewContentNode!);
+          nextDestinationNode = nextDestinationNode!.nextSibling;
+          nextNewContentNode = nextNewContentNode!.nextSibling;
           break;
         case Operation.Delete:
-          const nodeToRemove = nextDestinationNode;
-          nextDestinationNode = nodeToRemove.nextSibling!;
+          const nodeToRemove = nextDestinationNode!;
+          nextDestinationNode = nodeToRemove.nextSibling;
           destinationParent.removeChild(nodeToRemove);
           break;
         case Operation.Insert:
-          const nodeToInsert = nextSourceNode!;
-          nextSourceNode = nodeToInsert.nextSibling;
+          const nodeToInsert = nextNewContentNode!;
+          nextNewContentNode = nodeToInsert.nextSibling;
           destinationParent.insertBefore(nodeToInsert, nextDestinationNode);
           break;
         default:
@@ -53,12 +65,13 @@ export function synchronizeDomContent(destination: CommentBoundedRange, source: 
 
     // Handle any common trailing items
     // These can only exist if there were some edits, otherwise everything would be in the set of common leading items
-    while (nextDestinationNode !== destination.endExclusive) {
-      treatAsMatch(nextDestinationNode, nextSourceNode!);
-      nextDestinationNode = nextDestinationNode.nextSibling!;
-      nextSourceNode = nextSourceNode!.nextSibling;
+    const endAtNodeExclOrNull = destination instanceof Element ? null : destination.endExclusive;
+    while (nextDestinationNode !== endAtNodeExclOrNull) {
+      treatAsMatch(nextDestinationNode!, nextNewContentNode!);
+      nextDestinationNode = nextDestinationNode!.nextSibling;
+      nextNewContentNode = nextNewContentNode!.nextSibling;
     }
-    if (nextSourceNode) {
+    if (nextNewContentNode) {
       // Should never be possible, as it would imply a bug in the edit script calculation, or possibly an unsupported
       // scenario like a DOM mutation observer modifying the destination nodes while we are working on them
       throw new Error('Updating the DOM failed because the sets of trailing nodes had inconsistent lengths.');
@@ -73,7 +86,7 @@ function treatAsMatch(destination: Node, source: Node) {
       break;
     case Node.ELEMENT_NODE:
       synchronizeAttributes(destination as Element, source as Element);
-      // TODO: Recurse into descendants
+      synchronizeDomContent(destination as Element, source as Element);
       break;
     default:
       throw new Error(`Not implemented: matching nodes of type ${destination.nodeType}`);
