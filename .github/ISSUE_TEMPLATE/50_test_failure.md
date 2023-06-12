@@ -46,7 +46,7 @@ Provide the stack trace associated with the test failure, if applicable.
 
 <details>
 <!--
-Provide the (helix) logs associated with the test failure, if applicable.
+If this is a Helix test failure, include the text of the .log artifact from the failing test.
 -->
 
 ```text
