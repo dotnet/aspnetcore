@@ -100,8 +100,9 @@ public class Http3RequestTests : LoggedTest
             var response1 = await client.SendAsync(request1, CancellationToken.None);
             response1.EnsureSuccessStatusCode();
 
+            // Dispose the client to end the connection.
             client.Dispose();
-
+            // Wait for measurement to be available.
             await tcs.Task.DefaultTimeout();
 
             // Assert
