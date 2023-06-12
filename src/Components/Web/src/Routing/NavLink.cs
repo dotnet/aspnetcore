@@ -188,8 +188,8 @@ public class NavLink : ComponentBase, IDisposable
                        // Example: "/abc/" is treated as a prefix of "/abc/def" but not "/abcdef"
                        // Example: "/abc?" is treated as a prefix of "/abc?def" but not "/abcdef"
                        prefixLength == 0
-                       || (!char.IsLetterOrDigit(prefix[prefixLength - 1]) && IsAllowedSeparator(prefix[prefixLength-1]))
-                       || !char.IsLetterOrDigit(value[prefixLength])
+                       || (!char.IsLetterOrDigit(prefix[prefixLength - 1]) && IsAllowedSeparator(prefix[prefixLength - 1]))
+                       || (!char.IsLetterOrDigit(value[prefixLength]) && IsAllowedSeparator(value[prefixLength]))
                    );
         }
         else
