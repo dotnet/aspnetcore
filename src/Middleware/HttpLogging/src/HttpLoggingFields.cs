@@ -136,6 +136,12 @@ public enum HttpLoggingFields : long
     ResponseBody = 0x800,
 
     /// <summary>
+    /// Log how long it took to process the request and return a response in total milliseconds.
+    /// </summary>
+    // TODO: This does not include the time taken to write the response body.
+    Duration = 0x1000,
+
+    /// <summary>
     /// Flag for logging a collection of HTTP Request properties,
     /// including <see cref="RequestPath"/>, <see cref="RequestProtocol"/>,
     /// <see cref="RequestMethod"/>, and <see cref="RequestScheme"/>.
@@ -160,7 +166,7 @@ public enum HttpLoggingFields : long
     /// Flag for logging HTTP Response properties and headers.
     /// Includes <see cref="ResponseStatusCode"/> and <see cref="ResponseHeaders"/>
     /// </summary>
-    ResponsePropertiesAndHeaders = ResponseStatusCode | ResponseHeaders,
+    ResponsePropertiesAndHeaders = ResponseStatusCode | ResponseHeaders | Duration,
 
     /// <summary>
     /// Flag for logging the entire HTTP Request.
@@ -180,7 +186,7 @@ public enum HttpLoggingFields : long
     /// Logging the response body has performance implications, as it requires buffering
     /// the entire response body up to <see cref="HttpLoggingOptions.ResponseBodyLogLimit"/>.
     /// </summary>
-    Response = ResponseStatusCode | ResponseHeaders | ResponseBody,
+    Response = ResponseStatusCode | ResponseHeaders | ResponseBody | Duration,
 
     /// <summary>
     /// Flag for logging both the HTTP Request and Response.

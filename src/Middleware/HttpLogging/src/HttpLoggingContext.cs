@@ -31,6 +31,8 @@ public sealed class HttpLoggingContext(HttpContext httpContext)
     /// </summary>
     public int ResponseBodyLogLimit { get; set; }
 
+    internal long StartTimestamp { get; set; }
+
     /// <summary>
     /// The parameters to log.
     /// </summary>
