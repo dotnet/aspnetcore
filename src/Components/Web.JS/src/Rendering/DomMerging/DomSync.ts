@@ -106,6 +106,10 @@ function domNodeComparer(a: Node, b: Node): UpdateCost {
       // For elements, we're only doing a shallow comparison and don't know if attributes/descendants are different.
       // We never 'update' one element type into another. We regard the update cost for same-type elements as zero because
       // then the 'find common prefix/suffix' optimization can include elements in those prefixes/suffixes.
+      // TODO: If we want to support some way to force matching/nonmatching based on @key, we can add logic here
+      //       to return UpdateCost.Infinite if either has a key but they don't match. This will prevent unwanted retention.
+      //       For the converse (forcing retention, even if that means reordering), we could post-process the list of
+      //       inserts/deletes to find matches based on key to treat those pairs as 'move' operations.
       return (a as Element).tagName === (b as Element).tagName ? UpdateCost.None : UpdateCost.Infinite;
     default:
       // For anything else we know nothing, so the risk-averse choice is to say we can't retain or update the old value
