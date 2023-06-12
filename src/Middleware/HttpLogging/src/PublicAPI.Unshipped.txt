@@ -24,10 +24,6 @@ Microsoft.AspNetCore.HttpLogging.HttpLoggingContext.RequestBodyLogLimit.set -> v
 Microsoft.AspNetCore.HttpLogging.HttpLoggingContext.ResponseBodyLogLimit.get -> int
 Microsoft.AspNetCore.HttpLogging.HttpLoggingContext.ResponseBodyLogLimit.set -> void
 Microsoft.AspNetCore.HttpLogging.HttpLoggingContext.TryOverride(Microsoft.AspNetCore.HttpLogging.HttpLoggingFields field) -> bool
-Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.RequestLoggingSelector.get -> System.Action<Microsoft.AspNetCore.HttpLogging.HttpLoggingContext!>?
-Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.RequestLoggingSelector.set -> void
-Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.ResponseLoggingSelector.get -> System.Action<Microsoft.AspNetCore.HttpLogging.HttpLoggingContext!>?
-Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.ResponseLoggingSelector.set -> void
 Microsoft.AspNetCore.HttpLogging.IHttpLoggingInterceptor
 Microsoft.AspNetCore.HttpLogging.IHttpLoggingInterceptor.OnRequest(Microsoft.AspNetCore.HttpLogging.HttpLoggingContext! logContext) -> void
 Microsoft.AspNetCore.HttpLogging.IHttpLoggingInterceptor.OnResponse(Microsoft.AspNetCore.HttpLogging.HttpLoggingContext! logContext) -> void
