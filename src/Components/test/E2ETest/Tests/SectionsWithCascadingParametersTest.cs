@@ -39,6 +39,17 @@ public class SectionsWithCascadingParametersTest : ServerTestBase<ToggleExecutio
     }
 
     [Fact]
+    public void ChangeCascadingValueForSectionContent_CascadingValueForSectionOutletIsDeterminedByMatchingSectionContent()
+    {
+        Browser.FindElement(By.Id("render-first-section-content")).Click();
+        Browser.FindElement(By.Id("render-section-outlet")).Click();
+
+        Browser.FindElement(By.Id("change-cascading-value")).Click();
+
+        Browser.Equal("First Section with additional text for second section", () => Browser.Exists(By.TagName("p")).Text);
+    }
+
+    [Fact]
     public void RenderTwoSectionContentsWithSameId_CascadingParameterForSectionOutletIsDeterminedByLastRenderedSectionContent()
     {
         Browser.FindElement(By.Id("render-second-section-content")).Click();

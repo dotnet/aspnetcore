@@ -13,6 +13,8 @@
 <button id="dispose-second-section-content" @onclick="() => SecondSectionContentIsRendered = false">Dispose seecond section content</button>
 <br />
 <button id="change-second-section-content-id" @onclick="() => SecondSectionContentId = anotherId">Change second section content id</button>
+<br />
+<button id="change-cascading-value" @onclick="() => AdditionalTextForFirstSection = AdditionalTextForSecondSection">Change cascading parameter</button>
 
 @if (SectionOutletIsRendered)
 {
