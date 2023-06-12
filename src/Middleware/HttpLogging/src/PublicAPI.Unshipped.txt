@@ -24,6 +24,11 @@ Microsoft.AspNetCore.HttpLogging.HttpLoggingContext.RequestBodyLogLimit.set -> v
 Microsoft.AspNetCore.HttpLogging.HttpLoggingContext.ResponseBodyLogLimit.get -> int
 Microsoft.AspNetCore.HttpLogging.HttpLoggingContext.ResponseBodyLogLimit.set -> void
 Microsoft.AspNetCore.HttpLogging.HttpLoggingContext.TryOverride(Microsoft.AspNetCore.HttpLogging.HttpLoggingFields field) -> bool
+*REMOVED*Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.Response = Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.ResponsePropertiesAndHeaders | Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.ResponseBody -> Microsoft.AspNetCore.HttpLogging.HttpLoggingFields
+*REMOVED*Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.ResponsePropertiesAndHeaders = Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.ResponseStatusCode | Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.ResponseHeaders -> Microsoft.AspNetCore.HttpLogging.HttpLoggingFields
+Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.Duration = 4096 -> Microsoft.AspNetCore.HttpLogging.HttpLoggingFields
+Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.Response = Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.ResponseBody | Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.ResponsePropertiesAndHeaders -> Microsoft.AspNetCore.HttpLogging.HttpLoggingFields
+Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.ResponsePropertiesAndHeaders = Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.ResponseStatusCode | Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.ResponseHeaders | Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.Duration -> Microsoft.AspNetCore.HttpLogging.HttpLoggingFields
 Microsoft.AspNetCore.HttpLogging.IHttpLoggingInterceptor
 Microsoft.AspNetCore.HttpLogging.IHttpLoggingInterceptor.OnRequest(Microsoft.AspNetCore.HttpLogging.HttpLoggingContext! logContext) -> void
 Microsoft.AspNetCore.HttpLogging.IHttpLoggingInterceptor.OnResponse(Microsoft.AspNetCore.HttpLogging.HttpLoggingContext! logContext) -> void

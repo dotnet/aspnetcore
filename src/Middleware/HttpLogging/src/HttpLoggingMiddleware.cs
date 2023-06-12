@@ -72,6 +72,7 @@ internal sealed class HttpLoggingMiddleware
             LoggingFields = loggingFields,
             RequestBodyLogLimit = options.RequestBodyLogLimit,
             ResponseBodyLogLimit = options.ResponseBodyLogLimit,
+            StartTimestamp = TimeProvider.System.GetTimestamp(),
         };
 
         if (loggingAttribute?.IsRequestBodyLogLimitSet is true)
@@ -255,6 +256,12 @@ internal sealed class HttpLoggingMiddleware
         if (loggingFields.HasFlag(HttpLoggingFields.ResponseStatusCode))
         {
             logContext.Add(nameof(response.StatusCode), response.StatusCode);
+        }
+
+        if (loggingFields.HasFlag(HttpLoggingFields.Duration))
+        {
+            var duration = (long)TimeProvider.System.GetElapsedTime(logContext.StartTimestamp).TotalMilliseconds;
+            logContext.Add(nameof(HttpLoggingFields.Duration), duration);
         }
 
         if (loggingFields.HasFlag(HttpLoggingFields.ResponseHeaders))
