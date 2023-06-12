@@ -192,7 +192,7 @@ internal sealed class HttpLoggingMiddleware
 
             await _next(context);
 
-            // If the middleware pipeline didn't read until 0 was returned from readasync,
+            // If the middleware pipeline didn't read until 0 was returned from ReadAsync,
             // make sure we log the request body.
             requestBufferingStream?.LogRequestBody();
 
