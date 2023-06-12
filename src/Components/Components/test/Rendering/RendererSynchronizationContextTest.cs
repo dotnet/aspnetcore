@@ -486,7 +486,7 @@ public class RendererSynchronizationContextTest
 
         // Assert
         Assert.Equal(TaskStatus.Canceled, task.Status);
-        await Assert.ThrowsAsync<TaskCanceledException>(async () => await task);
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await task);
     }
 
     [Fact]
@@ -574,7 +574,7 @@ public class RendererSynchronizationContextTest
 
         // Assert
         Assert.Equal(TaskStatus.Canceled, task.Status);
-        await Assert.ThrowsAsync<TaskCanceledException>(async () => await task);
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await task);
     }
 
     [Fact]
@@ -668,7 +668,7 @@ public class RendererSynchronizationContextTest
 
         // Assert
         Assert.Equal(TaskStatus.Canceled, task.Status);
-        await Assert.ThrowsAsync<TaskCanceledException>(async () => await task);
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await task);
     }
 
     [Fact]
@@ -756,7 +756,7 @@ public class RendererSynchronizationContextTest
 
         // Assert
         Assert.Equal(TaskStatus.Canceled, task.Status);
-        await Assert.ThrowsAsync<TaskCanceledException>(async () => await task);
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await task);
     }
 
     [Fact]
