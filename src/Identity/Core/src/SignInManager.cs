@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
@@ -391,7 +392,14 @@ namespace Microsoft.AspNetCore.Identity
                 // Only reset the lockout when not in quirks mode if either TFA is not enabled or the client is remembered for TFA.
                 if (alwaysLockout || !await IsTfaEnabled(user) || await IsTwoFactorClientRememberedAsync(user))
                 {
-                    await ResetLockout(user);
+                    var resetLockoutResult = await ResetLockoutWithResult(user);
+                    if (!resetLockoutResult.Succeeded)
+                    {
+                        // ResetLockout got an unsuccessful result that could be caused by concurrency failures indicating an
+                        // attacker could be trying to bypass the MaxFailedAccessAttempts limit. Return the same failure we do
+                        // when failing to increment the lockout to avoid giving an attacker extra guesses at the password.
+                        return SignInResult.Failed;
+                    }
                 }
 
                 return SignInResult.Success;
@@ -401,7 +409,13 @@ namespace Microsoft.AspNetCore.Identity
             if (UserManager.SupportsUserLockout && lockoutOnFailure)
             {
                 // If lockout is requested, increment access failed count which might lock out the user
-                await UserManager.AccessFailedAsync(user);
+                var incrementLockoutResult = await UserManager.AccessFailedAsync(user) ?? IdentityResult.Success;
+                if (!incrementLockoutResult.Succeeded)
+                {
+                    // Return the same failure we do when resetting the lockout fails after a correct password.
+                    return SignInResult.Failed;
+                }
+
                 if (await UserManager.IsLockedOutAsync(user))
                 {
                     return await LockedOut(user);
@@ -470,18 +484,23 @@ namespace Microsoft.AspNetCore.Identity
             var result = await UserManager.RedeemTwoFactorRecoveryCodeAsync(user, recoveryCode);
             if (result.Succeeded)
             {
-                await DoTwoFactorSignInAsync(user, twoFactorInfo, isPersistent: false, rememberClient: false);
-                return SignInResult.Success;
+                return await DoTwoFactorSignInAsync(user, twoFactorInfo, isPersistent: false, rememberClient: false);
             }
 
             // We don't protect against brute force attacks since codes are expected to be random.
             return SignInResult.Failed;
         }
 
-        private async Task DoTwoFactorSignInAsync(TUser user, TwoFactorAuthenticationInfo twoFactorInfo, bool isPersistent, bool rememberClient)
+        private async Task<SignInResult> DoTwoFactorSignInAsync(TUser user, TwoFactorAuthenticationInfo twoFactorInfo, bool isPersistent, bool rememberClient)
         {
-            // When token is verified correctly, clear the access failed count used for lockout
-            await ResetLockout(user);
+            var resetLockoutResult = await ResetLockoutWithResult(user);
+            if (!resetLockoutResult.Succeeded)
+            {
+                // ResetLockout got an unsuccessful result that could be caused by concurrency failures indicating an
+                // attacker could be trying to bypass the MaxFailedAccessAttempts limit. Return the same failure we do
+                // when failing to increment the lockout to avoid giving an attacker extra guesses at the two factor code.
+                return SignInResult.Failed;
+            }
 
             var claims = new List<Claim>();
             claims.Add(new Claim("amr", "mfa"));
@@ -499,6 +518,7 @@ namespace Microsoft.AspNetCore.Identity
                 await RememberTwoFactorClientAsync(user);
             }
             await SignInWithClaimsAsync(user, isPersistent, claims);
+            return SignInResult.Success;
         }
 
         /// <summary>
@@ -531,11 +551,16 @@ namespace Microsoft.AspNetCore.Identity
 
             if (await UserManager.VerifyTwoFactorTokenAsync(user, Options.Tokens.AuthenticatorTokenProvider, code))
             {
-                await DoTwoFactorSignInAsync(user, twoFactorInfo, isPersistent, rememberClient);
-                return SignInResult.Success;
+                return await DoTwoFactorSignInAsync(user, twoFactorInfo, isPersistent, rememberClient);
             }
             // If the token is incorrect, record the failure which also may cause the user to be locked out
-            await UserManager.AccessFailedAsync(user);
+            var incrementLockoutResult = await UserManager.AccessFailedAsync(user) ?? IdentityResult.Success;
+            if (!incrementLockoutResult.Succeeded)
+            {
+                // Return the same failure we do when resetting the lockout fails after a correct two factor code.
+                // This is currently redundant, but it's here in case the code gets copied elsewhere.
+                return SignInResult.Failed;
+            }
             return SignInResult.Failed;
         }
 
@@ -569,11 +594,16 @@ namespace Microsoft.AspNetCore.Identity
             }
             if (await UserManager.VerifyTwoFactorTokenAsync(user, provider, code))
             {
-                await DoTwoFactorSignInAsync(user, twoFactorInfo, isPersistent, rememberClient);
-                return SignInResult.Success;
+                return await DoTwoFactorSignInAsync(user, twoFactorInfo, isPersistent, rememberClient);
             }
             // If the token is incorrect, record the failure which also may cause the user to be locked out
-            await UserManager.AccessFailedAsync(user);
+            var incrementLockoutResult = await UserManager.AccessFailedAsync(user) ?? IdentityResult.Success;
+            if (!incrementLockoutResult.Succeeded)
+            {
+                // Return the same failure we do when resetting the lockout fails after a correct two factor code.
+                // This is currently redundant, but it's here in case the code gets copied elsewhere.
+                return SignInResult.Failed;
+            }
             return SignInResult.Failed;
         }
 
@@ -864,13 +894,77 @@ namespace Microsoft.AspNetCore.Identity
         /// </summary>
         /// <param name="user">The user</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/> of the operation.</returns>
-        protected virtual Task ResetLockout(TUser user)
+        protected virtual async Task ResetLockout(TUser user)
         {
             if (UserManager.SupportsUserLockout)
             {
-                return UserManager.ResetAccessFailedCountAsync(user);
+                // The IdentityResult should not be null according to the annotations, but our own tests return null and I'm trying to limit breakages.
+                var result = await UserManager.ResetAccessFailedCountAsync(user) ?? IdentityResult.Success;
+
+                if (!result.Succeeded)
+                {
+                    throw new IdentityResultException(result);
+                }
             }
-            return Task.CompletedTask;
+        }
+
+        private async Task<IdentityResult> ResetLockoutWithResult(TUser user)
+        {
+            // Avoid relying on throwing an exception if we're not in a derived class.
+            if (GetType() == typeof(SignInManager<TUser>))
+            {
+                if (!UserManager.SupportsUserLockout)
+                {
+                    return IdentityResult.Success;
+                }
+
+                return await UserManager.ResetAccessFailedCountAsync(user) ?? IdentityResult.Success;
+            }
+
+            try
+            {
+                var resetLockoutTask = ResetLockout(user);
+
+                if (resetLockoutTask is Task<IdentityResult> resultTask)
+                {
+                    return await resultTask ?? IdentityResult.Success;
+                }
+
+                await resetLockoutTask;
+                return IdentityResult.Success;
+            }
+            catch (IdentityResultException ex)
+            {
+                return ex.IdentityResult;
+            }
+        }
+
+        private sealed class IdentityResultException : Exception
+        {
+            internal IdentityResultException(IdentityResult result) : base()
+            {
+                IdentityResult = result;
+            }
+
+            internal IdentityResult IdentityResult { get; set; }
+
+            public override string Message
+            {
+                get
+                {
+                    var sb = new StringBuilder("ResetLockout failed.");
+
+                    foreach (var error in IdentityResult.Errors)
+                    {
+                        sb.AppendLine();
+                        sb.Append(error.Code);
+                        sb.Append(": ");
+                        sb.Append(error.Description);
+                    }
+
+                    return sb.ToString();
+                }
+            }
         }
 
         internal class TwoFactorAuthenticationInfo

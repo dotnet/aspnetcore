@@ -1025,5 +1025,235 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.NotNull(externalProperties);
             Assert.Equal("fizzbuzz", customValue);
         }
+
+        public static object[][] SignInManagerTypeNames => new object[][]
+        {
+            new[] { nameof(SignInManager<PocoUser>) },
+            new[] { nameof(NoOverridesSignInManager<PocoUser>) },
+            new[] { nameof(OverrideAndAwaitBaseResetSignInManager<PocoUser>) },
+            new[] { nameof(OverrideAndPassThroughUserManagerResetSignInManager<PocoUser>) },
+        };
+
+        [Theory]
+        [MemberData(nameof(SignInManagerTypeNames))]
+        public async Task CheckPasswordSignInFailsWhenResetLockoutFails(string signInManagerTypeName)
+        {
+            // Setup
+            var user = new PocoUser { UserName = "Foo" };
+            var manager = SetupUserManager(user);
+            manager.Setup(m => m.SupportsUserLockout).Returns(true).Verifiable();
+            manager.Setup(m => m.IsLockedOutAsync(user)).ReturnsAsync(false).Verifiable();
+            manager.Setup(m => m.CheckPasswordAsync(user, "[PLACEHOLDER]-1a")).ReturnsAsync(true).Verifiable();
+            manager.Setup(m => m.ResetAccessFailedCountAsync(user)).ReturnsAsync(IdentityResult.Failed()).Verifiable();
+
+            var context = new DefaultHttpContext();
+            var helper = SetupSignInManagerType(manager.Object, context, signInManagerTypeName);
+
+            // Act
+            var result = await helper.CheckPasswordSignInAsync(user, "[PLACEHOLDER]-1a", false);
+
+            // Assert
+            Assert.Same(SignInResult.Failed, result);
+            manager.Verify();
+        }
+
+        [Theory]
+        [MemberData(nameof(SignInManagerTypeNames))]
+        public async Task PasswordSignInWorksWhenResetLockoutReturnsNullIdentityResult(string signInManagerTypeName)
+        {
+            // Setup
+            var user = new PocoUser { UserName = "Foo" };
+            var manager = SetupUserManager(user);
+            manager.Setup(m => m.SupportsUserLockout).Returns(true).Verifiable();
+            manager.Setup(m => m.IsLockedOutAsync(user)).ReturnsAsync(false).Verifiable();
+            manager.Setup(m => m.CheckPasswordAsync(user, "[PLACEHOLDER]-1a")).ReturnsAsync(true).Verifiable();
+            manager.Setup(m => m.ResetAccessFailedCountAsync(user)).ReturnsAsync((IdentityResult)null).Verifiable();
+
+            var context = new DefaultHttpContext();
+            var auth = MockAuth(context);
+            SetupSignIn(context, auth);
+            var helper = SetupSignInManagerType(manager.Object, context, signInManagerTypeName);
+
+            // Act
+            var result = await helper.PasswordSignInAsync(user.UserName, "[PLACEHOLDER]-1a", false, false);
+
+            // Assert
+            Assert.True(result.Succeeded);
+            manager.Verify();
+            auth.Verify();
+        }
+
+        [Fact]
+        public async Task TwoFactorSignFailsWhenResetLockoutFails()
+        {
+            // Setup
+            var user = new PocoUser { UserName = "Foo" };
+            var manager = SetupUserManager(user);
+            var provider = "twofactorprovider";
+            var code = "123456";
+            manager.Setup(m => m.SupportsUserLockout).Returns(true).Verifiable();
+            manager.Setup(m => m.IsLockedOutAsync(user)).ReturnsAsync(false).Verifiable();
+            manager.Setup(m => m.VerifyTwoFactorTokenAsync(user, provider, code)).ReturnsAsync(true).Verifiable();
+
+            manager.Setup(m => m.ResetAccessFailedCountAsync(user)).ReturnsAsync(IdentityResult.Failed()).Verifiable();
+
+            var context = new DefaultHttpContext();
+            var auth = MockAuth(context);
+            var helper = SetupSignInManager(manager.Object, context);
+            var id = helper.StoreTwoFactorInfo(user.Id, null);
+            auth.Setup(a => a.AuthenticateAsync(context, IdentityConstants.TwoFactorUserIdScheme))
+                .ReturnsAsync(AuthenticateResult.Success(new AuthenticationTicket(id, null, IdentityConstants.TwoFactorUserIdScheme))).Verifiable();
+
+            // Act
+            var result = await helper.TwoFactorSignInAsync(provider, code, false, false);
+
+            // Assert
+            Assert.Same(SignInResult.Failed, result);
+            manager.Verify();
+            auth.Verify();
+        }
+
+        public static object[][] ExpectedLockedOutSignInResultsGivenAccessFailedResults => new object[][]
+        {
+            new object[] { IdentityResult.Success, SignInResult.LockedOut },
+            new object[] { null, SignInResult.LockedOut },
+            new object[] { IdentityResult.Failed(), SignInResult.Failed },
+        };
+
+        [Theory]
+        [MemberData(nameof(ExpectedLockedOutSignInResultsGivenAccessFailedResults))]
+        public async Task CheckPasswordSignInLockedOutResultIsDependentOnTheAccessFailedAsyncResult(IdentityResult accessFailedResult, SignInResult expectedSignInResult)
+        {
+            // Setup
+            var isLockedOutCallCount = 0;
+            var user = new PocoUser { UserName = "Foo" };
+            var manager = SetupUserManager(user);
+            manager.Setup(m => m.SupportsUserLockout).Returns(true).Verifiable();
+            // Return false initially to allow the password to be checked Only return true the second time after the bogus password is checked.
+            manager.Setup(m => m.IsLockedOutAsync(user)).ReturnsAsync(() => isLockedOutCallCount++ > 0).Verifiable();
+            manager.Setup(m => m.CheckPasswordAsync(user, "[PLACEHOLDER]-bogus1")).ReturnsAsync(false).Verifiable();
+            manager.Setup(m => m.AccessFailedAsync(user)).ReturnsAsync(accessFailedResult).Verifiable();
+
+            var context = new DefaultHttpContext();
+            // Since the PasswordSignInAsync calls the UserManager directly rather than a virtual SignInManager method like ResetLockout, we don't need to test derived SignInManagers.
+            var helper = SetupSignInManager(manager.Object, context);
+
+            // Act
+            var result = await helper.CheckPasswordSignInAsync(user, "[PLACEHOLDER]-bogus1", lockoutOnFailure: true);
+
+            // Assert
+            Assert.Same(expectedSignInResult, result);
+            manager.Verify();
+        }
+
+        public static object[][] AccessFailedResults => new object[][]
+        {
+            new object[] { IdentityResult.Success },
+            new object[] { null },
+            new object[] { IdentityResult.Failed() },
+        };
+
+        [Theory]
+        [MemberData(nameof(AccessFailedResults))]
+        public async Task TwoFactorSignInLockedOutResultIsAlwaysGenericFailureRegardlessOfTheAccessFailedAsyncResult(IdentityResult accessFailedResult)
+        {
+            // Setup
+            var isLockedOutCallCount = 0;
+            var user = new PocoUser { UserName = "Foo" };
+            var manager = SetupUserManager(user);
+            var provider = "twofactorprovider";
+            var code = "123456";
+            manager.Setup(m => m.SupportsUserLockout).Returns(true).Verifiable();
+            // Return false initially to allow the 2fa code to be checked. Only return true if ever in the future it is called again after failure.
+            manager.Setup(m => m.IsLockedOutAsync(user)).ReturnsAsync(() => isLockedOutCallCount++ > 0).Verifiable();
+            manager.Setup(m => m.VerifyTwoFactorTokenAsync(user, provider, code)).ReturnsAsync(false).Verifiable();
+
+            manager.Setup(m => m.AccessFailedAsync(user)).ReturnsAsync(accessFailedResult).Verifiable();
+
+            var context = new DefaultHttpContext();
+            var auth = MockAuth(context);
+            var helper = SetupSignInManager(manager.Object, context);
+            var id = helper.StoreTwoFactorInfo(user.Id, null);
+            auth.Setup(a => a.AuthenticateAsync(context, IdentityConstants.TwoFactorUserIdScheme))
+                .ReturnsAsync(AuthenticateResult.Success(new AuthenticationTicket(id, null, IdentityConstants.TwoFactorUserIdScheme))).Verifiable();
+
+            // Act
+            var result = await helper.TwoFactorSignInAsync(provider, code, false, false);
+
+            // Assert
+            // Unlike password sign in, 2fa always returns SignInResult.Failed rather than LockedOut.
+            Assert.Same(SignInResult.Failed, result);
+            manager.Verify();
+            auth.Verify();
+        }
+
+        private static SignInManager<PocoUser> SetupSignInManagerType(UserManager<PocoUser> manager, HttpContext context, string typeName)
+        {
+            var contextAccessor = new Mock<IHttpContextAccessor>();
+            contextAccessor.Setup(a => a.HttpContext).Returns(context);
+            var roleManager = MockHelpers.MockRoleManager<PocoRole>();
+            var options = Options.Create(new IdentityOptions());
+            var claimsFactory = new UserClaimsPrincipalFactory<PocoUser, PocoRole>(manager, roleManager.Object, options);
+
+            return typeName switch
+            {
+                nameof(SignInManager<PocoUser>) => new SignInManager<PocoUser>(manager, contextAccessor.Object, claimsFactory, options, NullLogger<SignInManager<PocoUser>>.Instance, Mock.Of<IAuthenticationSchemeProvider>(), new DefaultUserConfirmation<PocoUser>()),
+                nameof(NoOverridesSignInManager<PocoUser>) => new NoOverridesSignInManager<PocoUser>(manager, contextAccessor.Object, claimsFactory, options),
+                nameof(OverrideAndAwaitBaseResetSignInManager<PocoUser>) => new OverrideAndAwaitBaseResetSignInManager<PocoUser>(manager, contextAccessor.Object, claimsFactory, options),
+                nameof(OverrideAndPassThroughUserManagerResetSignInManager<PocoUser>) => new OverrideAndPassThroughUserManagerResetSignInManager<PocoUser>(manager, contextAccessor.Object, claimsFactory, options),
+                _ => throw new NotImplementedException(),
+            };
+        }
+
+        private class NoOverridesSignInManager<TUser> : SignInManager<TUser> where TUser : class
+        {
+            public NoOverridesSignInManager(
+                UserManager<TUser> userManager,
+                IHttpContextAccessor contextAccessor,
+                IUserClaimsPrincipalFactory<TUser> claimsFactory,
+                IOptions<IdentityOptions> optionsAccessor)
+                : base(userManager, contextAccessor, claimsFactory, optionsAccessor, NullLogger<SignInManager<TUser>>.Instance, Mock.Of<IAuthenticationSchemeProvider>(), new DefaultUserConfirmation<TUser>())
+            {
+            }
+        }
+
+        private class OverrideAndAwaitBaseResetSignInManager<TUser> : SignInManager<TUser> where TUser : class
+        {
+            public OverrideAndAwaitBaseResetSignInManager(
+                UserManager<TUser> userManager,
+                IHttpContextAccessor contextAccessor,
+                IUserClaimsPrincipalFactory<TUser> claimsFactory,
+                IOptions<IdentityOptions> optionsAccessor)
+                : base(userManager, contextAccessor, claimsFactory, optionsAccessor, NullLogger<SignInManager<TUser>>.Instance, Mock.Of<IAuthenticationSchemeProvider>(), new DefaultUserConfirmation<TUser>())
+            {
+            }
+
+            protected override async Task ResetLockout(TUser user)
+            {
+                await base.ResetLockout(user);
+            }
+        }
+
+        private class OverrideAndPassThroughUserManagerResetSignInManager<TUser> : SignInManager<TUser> where TUser : class
+        {
+            public OverrideAndPassThroughUserManagerResetSignInManager(
+                UserManager<TUser> userManager,
+                IHttpContextAccessor contextAccessor,
+                IUserClaimsPrincipalFactory<TUser> claimsFactory,
+                IOptions<IdentityOptions> optionsAccessor)
+                : base(userManager, contextAccessor, claimsFactory, optionsAccessor, NullLogger<SignInManager<TUser>>.Instance, Mock.Of<IAuthenticationSchemeProvider>(), new DefaultUserConfirmation<TUser>())
+            {
+            }
+
+            protected override Task ResetLockout(TUser user)
+            {
+                if (UserManager.SupportsUserLockout)
+                {
+                    return UserManager.ResetAccessFailedCountAsync(user);
+                }
+
+                return Task.CompletedTask;
+            }
+        }
     }
 }
