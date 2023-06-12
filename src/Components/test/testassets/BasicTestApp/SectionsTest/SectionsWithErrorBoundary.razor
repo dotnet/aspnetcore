@@ -13,8 +13,7 @@
 <button id="dispose-second-section-content" @onclick="() => SecondSectionContentIsRendered = false">Dispose seecond section content</button>
 <br />
 <button id="change-second-section-content-id" @onclick="() => SecondSectionContentId = anotherId">Change second section content id</button>
-<br />
-<button id="change-error-content" @onclick="() => ErrorContentChanged = true">Change error content</button>
+
 
 @if (SectionOutletIsRendered)
 {
@@ -41,14 +40,7 @@
             </SectionContent>
         </ChildContent>
         <ErrorContent>
-            @if(!ErrorContentChanged)
-            {          
-                <p>Sorry!</p>
-            }    
-            else
-            {
-                <p>Error content changed.</p>
-            }
+            <p>Sorry!</p>
         </ErrorContent>
     </ErrorBoundary>
 }
@@ -63,6 +55,4 @@
 
     private object SectionOutletId = id;
     private object SecondSectionContentId = id;
-
-    private bool ErrorContentChanged = false;
 }

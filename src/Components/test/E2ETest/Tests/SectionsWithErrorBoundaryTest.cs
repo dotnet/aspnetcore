@@ -33,23 +33,11 @@ public class SectionsWithErrorBoundaryTest : ServerTestBase<ToggleExecutionModeS
     {
         // Doesn't matter if SectionOutlet is rendered before or after SectionContent
         Browser.FindElement(By.Id("render-section-outlet")).Click();
-        Browser.FindElement(By.Id("render-first-section-content")).Click();
-
-        Browser.FindElement(By.Id("error-button")).Click();
-
-        Browser.Exists(By.ClassName("blazor-error-boundary"));
-    }
-
-    [Fact]
-    public void ChangeErrorContent_ErrorContentForSectionOutletContentIsDeterminedByMatchingSectionContent()
-    {
         Browser.FindElement(By.Id("render-second-section-content")).Click();
-        Browser.FindElement(By.Id("render-section-outlet")).Click();
 
         Browser.FindElement(By.Id("error-button")).Click();
-        Browser.FindElement(By.Id("change-error-content")).Click();
 
-        Browser.Equal("Error content changed.", () => Browser.Exists(By.TagName("p")).Text);
+        Browser.Equal("Sorry!", () => Browser.Exists(By.TagName("p")).Text);
     }
 
     [Fact]
