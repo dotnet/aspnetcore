@@ -32,7 +32,6 @@ public static class ComponentsWebViewServiceCollectionExtensions
         services.TryAddScoped<IErrorBoundaryLogger, WebViewErrorBoundaryLogger>();
         services.TryAddScoped<FormDataProvider, DefaultFormDataProvider>();
         services.TryAddScoped<IFormValueSupplier, WebViewFormValueSupplier>();
-        services.TryAddScoped<CascadingModelBindingProvider, CascadingFormModelBindingProvider>();
         services.TryAddScoped<CascadingModelBindingProvider, CascadingQueryModelBindingProvider>();
 
         return services;

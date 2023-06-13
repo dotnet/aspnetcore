@@ -78,12 +78,16 @@ Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddComponentParamete
 Microsoft.AspNetCore.Components.StreamRenderingAttribute
 Microsoft.AspNetCore.Components.StreamRenderingAttribute.Enabled.get -> bool
 Microsoft.AspNetCore.Components.StreamRenderingAttribute.StreamRenderingAttribute(bool enabled) -> void
+*REMOVED*Microsoft.AspNetCore.Components.CascadingParameterAttribute.Name.get -> string?
+*REMOVED*Microsoft.AspNetCore.Components.CascadingParameterAttribute.Name.set -> void
 override Microsoft.AspNetCore.Components.CascadingParameterAttribute.Name.get -> string?
 override Microsoft.AspNetCore.Components.CascadingParameterAttribute.Name.set -> void
 override Microsoft.AspNetCore.Components.EventCallback.GetHashCode() -> int
 override Microsoft.AspNetCore.Components.EventCallback.Equals(object? obj) -> bool
 override Microsoft.AspNetCore.Components.EventCallback<TValue>.GetHashCode() -> int
 override Microsoft.AspNetCore.Components.EventCallback<TValue>.Equals(object? obj) -> bool
+*REMOVED*Microsoft.AspNetCore.Components.SupplyParameterFromQueryAttribute.Name.get -> string?
+*REMOVED*Microsoft.AspNetCore.Components.SupplyParameterFromQueryAttribute.Name.set -> void
 override Microsoft.AspNetCore.Components.SupplyParameterFromQueryAttribute.Name.get -> string?
 override Microsoft.AspNetCore.Components.SupplyParameterFromQueryAttribute.Name.set -> void
 virtual Microsoft.AspNetCore.Components.Binding.CascadingModelBindingProvider.OnBindingContextUpdated(Microsoft.AspNetCore.Components.ModelBindingContext? bindingContext) -> void
