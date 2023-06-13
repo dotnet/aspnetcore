@@ -47,20 +47,13 @@ internal abstract class BufferingStream : Stream, IBufferWriter<byte>
         set => _innerStream.WriteTimeout = value;
     }
 
-    public string GetString(Encoding? encoding)
+    public string GetString(Encoding encoding)
     {
         try
         {
             if (_head == null || _tail == null)
             {
                 // nothing written
-                return "";
-            }
-
-            if (encoding == null)
-            {
-                // This method is used only for the response body
-                _logger.UnrecognizedMediaType("response");
                 return "";
             }
 
