@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Authentication;
 using Microsoft.AspNetCore.Http;
@@ -109,8 +108,8 @@ internal static unsafe class HttpApiTypes
         internal uint ErrorCode;
     }
 
-    internal const int HTTP_REQUEST_PROPERTY_SNI_HOST_MAX_LENGTH = 255;
-    internal const int SniPropertySizeInBytes = (sizeof(ushort) * (HTTP_REQUEST_PROPERTY_SNI_HOST_MAX_LENGTH + 1)) + sizeof(ulong);
+    private const int HTTP_REQUEST_PROPERTY_SNI_HOST_MAX_LENGTH = 255;
+    internal const int SniPropertySizeInBytes = (sizeof(ushort) * (HTTP_REQUEST_PROPERTY_SNI_HOST_MAX_LENGTH + 1)) + sizeof(uint);
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode, Size = SniPropertySizeInBytes)]
     internal struct HTTP_REQUEST_PROPERTY_SNI

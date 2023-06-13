@@ -327,7 +327,7 @@ internal sealed partial class Request
 
     internal WindowsPrincipal User { get; }
 
-    public string? SniHostName { get; private set; }
+    public string SniHostName { get; private set; }
 
     public SslProtocols Protocol { get; private set; }
 

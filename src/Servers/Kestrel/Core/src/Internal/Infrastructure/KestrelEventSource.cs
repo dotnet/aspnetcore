@@ -194,7 +194,7 @@ internal sealed class KestrelEventSource : EventSource
             // TODO: Write this without a string allocation using WriteEventData
             var applicationProtocol = feature == null ? string.Empty : Encoding.UTF8.GetString(feature.ApplicationProtocol.Span);
             var sslProtocols = feature?.Protocol.ToString() ?? string.Empty;
-            var hostName = feature?.HostName ?? string.Empty;
+            var hostName = feature?.HostName;
             TlsHandshakeStop(connectionContext.ConnectionId, sslProtocols, applicationProtocol, hostName);
         }
     }
