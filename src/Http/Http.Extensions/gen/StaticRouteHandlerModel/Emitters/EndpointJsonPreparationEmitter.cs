@@ -7,13 +7,13 @@ internal static class EndpointJsonPreparationEmitter
 {
     internal static void EmitJsonPreparation(this Endpoint endpoint, CodeWriter codeWriter)
     {
-        codeWriter.WriteLine("var serializerOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value.SerializerOptions ?? new JsonOptions().SerializerOptions;");
-        codeWriter.WriteLine($"var objectJsonTypeInfo = (JsonTypeInfo<object>)serializerOptions.GetTypeInfo(typeof(object));");
+        codeWriter.WriteLine("var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? new JsonOptions();");
+        codeWriter.WriteLine($"var objectJsonTypeInfo = (JsonTypeInfo<object>)jsonOptions.SerializerOptions.GetTypeInfo(typeof(object));");
 
         if (endpoint.Response?.IsSerializableJsonResponse(out var responseType) == true)
         {
             var typeName = responseType.ToDisplayString(EmitterConstants.DisplayFormatWithoutNullability);
-            codeWriter.WriteLine($"var responseJsonTypeInfo =  (JsonTypeInfo<{typeName}>)serializerOptions.GetTypeInfo(typeof({typeName}));");
+            codeWriter.WriteLine($"var responseJsonTypeInfo =  (JsonTypeInfo<{typeName}>)jsonOptions.SerializerOptions.GetTypeInfo(typeof({typeName}));");
         }
 
         foreach (var parameter in endpoint.Parameters)
@@ -35,7 +35,7 @@ internal static class EndpointJsonPreparationEmitter
                 return;
             }
             var typeName = parameter.Type.ToDisplayString(EmitterConstants.DisplayFormat);
-            codeWriter.WriteLine($"var {parameter.SymbolName}_JsonTypeInfo =  (JsonTypeInfo<{typeName}>)serializerOptions.GetTypeInfo(typeof({parameter.Type.ToDisplayString(EmitterConstants.DisplayFormatWithoutNullability)}));");
+            codeWriter.WriteLine($"var {parameter.SymbolName}_JsonTypeInfo =  (JsonTypeInfo<{typeName}>)jsonOptions.SerializerOptions.GetTypeInfo(typeof({parameter.Type.ToDisplayString(EmitterConstants.DisplayFormatWithoutNullability)}));");
         }
 
     }
@@ -47,6 +47,6 @@ internal static class EndpointJsonPreparationEmitter
         {
             return "httpContext.Response.WriteAsJsonAsync(result, responseJsonTypeInfo);";
         }
-        return "GeneratedRouteBuilderExtensionsCore.WriteJsonResponseAsync(result, httpContext, responseJsonTypeInfo);";
+        return "GeneratedRouteBuilderExtensionsCore.WriteJsonResponseAsync(httpContext.Response, result, responseJsonTypeInfo);";
     }
 }
