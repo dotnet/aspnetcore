@@ -11,7 +11,7 @@ internal static class EndpointResponseEmitter
     {
         if (endpointResponse.IsSerializableJsonResponse(out var responseType))
         {
-            var typeName = responseType.ToDisplayString(EmitterConstants.DisplayFormat);
+            var typeName = responseType.ToDisplayString(EmitterConstants.DisplayFormatWithoutNullability);
 
             codeWriter.WriteLine("var serializerOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value.SerializerOptions ?? new JsonOptions().SerializerOptions;");
             codeWriter.WriteLine($"var jsonTypeInfo =  (JsonTypeInfo<{typeName}>)serializerOptions.GetTypeInfo(typeof({typeName}));");
@@ -73,7 +73,7 @@ internal static class EndpointResponseEmitter
         }
         else
         {
-            codeWriter.WriteLine($"options.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: typeof({responseType.ToDisplayString(EmitterConstants.DisplayFormat)}), statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.JsonContentType));");
+            codeWriter.WriteLine($"options.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: typeof({responseType.ToDisplayString(EmitterConstants.DisplayFormatWithoutNullability)}), statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.JsonContentType));");
         }
     }
 
@@ -87,6 +87,23 @@ internal static class EndpointResponseEmitter
         if (response.IsEndpointMetadataProvider)
         {
             codeWriter.WriteLine($"PopulateMetadataForEndpoint<{responseType.ToDisplayString(EmitterConstants.DisplayFormat)}>(methodInfo, options.EndpointBuilder);");
+        }
+    }
+
+    internal static void EmitHttpResponseContentType(this EndpointResponse endpointResponse, CodeWriter codeWriter)
+    {
+        if (!endpointResponse.HasNoResponse
+            && endpointResponse.ResponseType is { } responseType
+            && (responseType.SpecialType == SpecialType.System_Object || responseType.SpecialType == SpecialType.System_String))
+        {
+            codeWriter.WriteLine("if (result is string)");
+            codeWriter.StartBlock();
+            codeWriter.WriteLine($@"httpContext.Response.ContentType ??= ""text/plain; charset=utf-8"";");
+            codeWriter.EndBlock();
+            codeWriter.WriteLine("else");
+            codeWriter.StartBlock();
+            codeWriter.WriteLine($@"httpContext.Response.ContentType ??= ""application/json; charset=utf-8"";");
+            codeWriter.EndBlock();
         }
     }
 }

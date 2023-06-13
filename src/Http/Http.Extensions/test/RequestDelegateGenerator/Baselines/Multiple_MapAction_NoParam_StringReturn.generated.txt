@@ -121,8 +121,15 @@ namespace Microsoft.AspNetCore.Http.Generated
                         httpContext.Response.StatusCode = 400;
                         return Task.CompletedTask;
                     }
-                    httpContext.Response.ContentType ??= "text/plain; charset=utf-8";
                     var result = handler();
+                    if (result is string)
+                    {
+                        httpContext.Response.ContentType ??= "text/plain; charset=utf-8";
+                    }
+                    else
+                    {
+                        httpContext.Response.ContentType ??= "application/json; charset=utf-8";
+                    }
                     return httpContext.Response.WriteAsync(result);
                 }
 
@@ -195,8 +202,15 @@ namespace Microsoft.AspNetCore.Http.Generated
                         httpContext.Response.StatusCode = 400;
                         return Task.CompletedTask;
                     }
-                    httpContext.Response.ContentType ??= "text/plain; charset=utf-8";
                     var result = handler();
+                    if (result is string)
+                    {
+                        httpContext.Response.ContentType ??= "text/plain; charset=utf-8";
+                    }
+                    else
+                    {
+                        httpContext.Response.ContentType ??= "application/json; charset=utf-8";
+                    }
                     return httpContext.Response.WriteAsync(result);
                 }
 
@@ -270,8 +284,15 @@ namespace Microsoft.AspNetCore.Http.Generated
                         httpContext.Response.StatusCode = 400;
                         return;
                     }
-                    httpContext.Response.ContentType ??= "text/plain; charset=utf-8";
                     var result = await handler();
+                    if (result is string)
+                    {
+                        httpContext.Response.ContentType ??= "text/plain; charset=utf-8";
+                    }
+                    else
+                    {
+                        httpContext.Response.ContentType ??= "application/json; charset=utf-8";
+                    }
                     await httpContext.Response.WriteAsync(result);
                 }
 
@@ -345,8 +366,15 @@ namespace Microsoft.AspNetCore.Http.Generated
                         httpContext.Response.StatusCode = 400;
                         return;
                     }
-                    httpContext.Response.ContentType ??= "text/plain; charset=utf-8";
                     var result = await handler();
+                    if (result is string)
+                    {
+                        httpContext.Response.ContentType ??= "text/plain; charset=utf-8";
+                    }
+                    else
+                    {
+                        httpContext.Response.ContentType ??= "application/json; charset=utf-8";
+                    }
                     await httpContext.Response.WriteAsync(result);
                 }
 

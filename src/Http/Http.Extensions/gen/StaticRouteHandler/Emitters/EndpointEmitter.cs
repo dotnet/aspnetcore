@@ -85,10 +85,6 @@ internal static class EndpointEmitter
         {
             return;
         }
-        if (!endpoint.Response.HasNoResponse && endpoint.Response is { ContentType: { } contentType })
-        {
-            codeWriter.WriteLine($@"httpContext.Response.ContentType ??= ""{contentType}"";");
-        }
         if (!endpoint.Response.HasNoResponse)
         {
             codeWriter.Write("var result = ");
@@ -98,6 +94,9 @@ internal static class EndpointEmitter
             codeWriter.Write("await ");
         }
         codeWriter.WriteLine($"handler({endpoint.EmitArgumentList()});");
+
+        endpoint.Response.EmitHttpResponseContentType(codeWriter);
+
         if (!endpoint.Response.HasNoResponse)
         {
             codeWriter.WriteLine(endpoint.Response.EmitResponseWritingCall(endpoint.IsAwaitable));
