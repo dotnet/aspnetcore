@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Extension methods to configure an <see cref="IServiceCollection"/> for WebAssembly components.
 /// </summary>
-public static class WebAssemblyRazorComponentsBuilderExtensions
+public static class RazorComponentsBuilderExtensions
 {
     /// <summary>
     /// Adds services to support rendering interactive WebAssembly components in a razor components
