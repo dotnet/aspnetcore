@@ -9,14 +9,14 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal;
 
 internal readonly struct MetricsContext
 {
-    public MetricsContext(bool connectionDurationEnabled, bool currentNegotiatedConnectionsCounterEnabled)
+    public MetricsContext(bool connectionDurationEnabled, bool currentConnectionsCounterEnabled)
     {
         ConnectionDurationEnabled = connectionDurationEnabled;
-        CurrentNegotiatedConnectionsCounterEnabled = currentNegotiatedConnectionsCounterEnabled;
+        CurrentConnectionsCounterEnabled = currentConnectionsCounterEnabled;
     }
 
     public bool ConnectionDurationEnabled { get; }
-    public bool CurrentNegotiatedConnectionsCounterEnabled { get; }
+    public bool CurrentConnectionsCounterEnabled { get; }
 }
 
 internal sealed class HttpConnectionsMetrics : IDisposable
@@ -25,7 +25,7 @@ internal sealed class HttpConnectionsMetrics : IDisposable
 
     private readonly Meter _meter;
     private readonly Histogram<double> _connectionDuration;
-    private readonly UpDownCounter<long> _currentNegotiatedConnectionsCounter;
+    private readonly UpDownCounter<long> _currentConnectionsCounter;
 
     public HttpConnectionsMetrics(IMeterFactory meterFactory)
     {
@@ -36,9 +36,9 @@ internal sealed class HttpConnectionsMetrics : IDisposable
             unit: "s",
             description: "The duration of connections on the server.");
 
-        _currentNegotiatedConnectionsCounter = _meter.CreateUpDownCounter<long>(
-            "signalr-http-transport-current-negotiated-connections",
-            description: "Number of negotiated connections that are currently active on the server.");
+        _currentConnectionsCounter = _meter.CreateUpDownCounter<long>(
+            "signalr-http-transport-current-connections",
+            description: "Number of connections that are currently active on the server.");
     }
 
     public void ConnectionStop(in MetricsContext metricsContext, HttpTransportType transportType, HttpConnectionStopStatus status, long startTimestamp, long currentTimestamp)
@@ -57,21 +57,21 @@ internal sealed class HttpConnectionsMetrics : IDisposable
         Debug.Assert(transportType != HttpTransportType.None);
 
         // Tags must match transport end.
-        if (metricsContext.CurrentNegotiatedConnectionsCounterEnabled)
+        if (metricsContext.CurrentConnectionsCounterEnabled)
         {
-            _currentNegotiatedConnectionsCounter.Add(1, new KeyValuePair<string, object?>("transport", transportType.ToString()));
+            _currentConnectionsCounter.Add(1, new KeyValuePair<string, object?>("transport", transportType.ToString()));
         }
     }
 
     public void TransportStop(in MetricsContext metricsContext, HttpTransportType transportType)
     {
-        if (metricsContext.CurrentNegotiatedConnectionsCounterEnabled)
+        if (metricsContext.CurrentConnectionsCounterEnabled)
         {
             // Tags must match transport start.
             // If the transport type is none then the transport was never started for this connection.
             if (transportType != HttpTransportType.None)
             {
-                _currentNegotiatedConnectionsCounter.Add(-1, new KeyValuePair<string, object?>("transport", transportType.ToString()));
+                _currentConnectionsCounter.Add(-1, new KeyValuePair<string, object?>("transport", transportType.ToString()));
             }
         }
     }
@@ -83,6 +83,6 @@ internal sealed class HttpConnectionsMetrics : IDisposable
 
     public MetricsContext CreateContext()
     {
-        return new MetricsContext(_connectionDuration.Enabled, _currentNegotiatedConnectionsCounter.Enabled);
+        return new MetricsContext(_connectionDuration.Enabled, _currentConnectionsCounter.Enabled);
     }
 }

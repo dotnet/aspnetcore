@@ -1091,7 +1091,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         {
             var testMeterFactory = new TestMeterFactory();
             using var connectionDuration = new InstrumentRecorder<double>(testMeterFactory, HttpConnectionsMetrics.MeterName, "signalr-http-transport-connection-duration");
-            using var currentNegotiatedConnections = new InstrumentRecorder<long>(testMeterFactory, HttpConnectionsMetrics.MeterName, "signalr-http-transport-current-negotiated-connections");
+            using var currentConnections = new InstrumentRecorder<long>(testMeterFactory, HttpConnectionsMetrics.MeterName, "signalr-http-transport-current-connections");
 
             var metrics = new HttpConnectionsMetrics(testMeterFactory);
             var manager = CreateConnectionManager(LoggerFactory, metrics);
@@ -1119,7 +1119,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             Assert.False(exists);
 
             Assert.Collection(connectionDuration.GetMeasurements(), m => AssertDuration(m, HttpConnectionStopStatus.NormalClosure, HttpTransportType.LongPolling));
-            Assert.Collection(currentNegotiatedConnections.GetMeasurements(), m => AssertTransport(m, 1, HttpTransportType.LongPolling), m => AssertTransport(m, -1, HttpTransportType.LongPolling));
+            Assert.Collection(currentConnections.GetMeasurements(), m => AssertTransport(m, 1, HttpTransportType.LongPolling), m => AssertTransport(m, -1, HttpTransportType.LongPolling));
         }
 
         static void AssertTransport(Measurement<long> measurement, long expected, HttpTransportType transportType)
