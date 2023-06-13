@@ -16,6 +16,7 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
     <Reference Include="Microsoft.Extensions.Options" />
+    <Reference Include="Microsoft.Extensions.ObjectPool" />
 
     <Compile Include="$(RepoRoot)src\Shared\TaskToApm.cs" Link="Internal\TaskToApm.cs" />
     <Compile Include="$(SharedSourceRoot)Buffers\**\*.cs" LinkBase="Internal\" />

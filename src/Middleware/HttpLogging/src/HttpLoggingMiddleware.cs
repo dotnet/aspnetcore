@@ -5,6 +5,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.HttpLogging;
@@ -16,12 +17,13 @@ internal sealed class HttpLoggingMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger _logger;
+    private readonly ObjectPool<HttpLoggingContext> _contextPool;
     private readonly IHttpLoggingInterceptor[] _interceptors;
     private readonly IOptionsMonitor<HttpLoggingOptions> _options;
     private const string Redacted = "[Redacted]";
 
     public HttpLoggingMiddleware(RequestDelegate next, IOptionsMonitor<HttpLoggingOptions> options, ILogger<HttpLoggingMiddleware> logger,
-        IEnumerable<IHttpLoggingInterceptor> interceptors)
+        IEnumerable<IHttpLoggingInterceptor> interceptors, ObjectPool<HttpLoggingContext> contextPool)
     {
         ArgumentNullException.ThrowIfNull(next);
         ArgumentNullException.ThrowIfNull(options);
@@ -31,6 +33,7 @@ internal sealed class HttpLoggingMiddleware
         _next = next;
         _options = options;
         _logger = logger;
+        _contextPool = contextPool;
         _interceptors = interceptors.ToArray();
     }
 
@@ -66,14 +69,12 @@ internal sealed class HttpLoggingMiddleware
         RequestBufferingStream? requestBufferingStream = null;
         Stream? originalBody = null;
 
-        // TODO: Cache this
-        var logContext = new HttpLoggingContext(context)
-        {
-            LoggingFields = loggingFields,
-            RequestBodyLogLimit = options.RequestBodyLogLimit,
-            ResponseBodyLogLimit = options.ResponseBodyLogLimit,
-            StartTimestamp = TimeProvider.System.GetTimestamp(),
-        };
+        var logContext = _contextPool.Get();
+        logContext.HttpContext = context;
+        logContext.LoggingFields = loggingFields;
+        logContext.RequestBodyLogLimit = options.RequestBodyLogLimit;
+        logContext.ResponseBodyLogLimit = options.ResponseBodyLogLimit;
+        logContext.StartTimestamp = TimeProvider.System.GetTimestamp();
 
         if (loggingAttribute?.IsRequestBodyLogLimitSet is true)
         {
@@ -225,6 +226,8 @@ internal sealed class HttpLoggingMiddleware
             {
                 context.Features.Set(originalUpgradeFeature);
             }
+
+            _contextPool.Return(logContext);
         }
     }
 
