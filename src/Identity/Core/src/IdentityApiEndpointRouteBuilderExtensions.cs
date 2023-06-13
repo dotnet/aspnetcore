@@ -27,6 +27,8 @@ public static class IdentityApiEndpointRouteBuilderExtensions
     /// Call <see cref="EndpointRouteBuilderExtensions.MapGroup(IEndpointRouteBuilder, string)"/> to add a prefix to all the endpoints.
     /// </param>
     /// <returns>An <see cref="IEndpointConventionBuilder"/> to further customize the added endpoints.</returns>
+    [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("AOT", "IL3050", Justification = "This implementation invokes uses compile-time code gen to construct the RequestDelegate.")]
+    [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "This implementation invokes uses compile-time code gen to construct the RequestDelegate.")]
     public static IEndpointConventionBuilder MapIdentityApi<TUser>(this IEndpointRouteBuilder endpoints) where TUser : class, new()
     {
         ArgumentNullException.ThrowIfNull(endpoints);

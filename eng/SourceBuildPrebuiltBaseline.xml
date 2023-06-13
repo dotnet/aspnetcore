@@ -12,7 +12,7 @@
     <!-- These are what the analyzers are built against. They are overridden in full source build.
          It may be possible to generate SBRPs -->
     <UsagePattern IdentityGlob="Microsoft.CodeAnalysis.Analyzers/*2.9.4*" />
-    <UsagePattern IdentityGlob="Microsoft.CodeAnalysis.AnalyzerUtilities/*3.3.0*" />
+    <UsagePattern IdentityGlob="Microsoft.CodeAnalysis.AnalyzerUtilities/*3.3.5*" />
     <UsagePattern IdentityGlob="Microsoft.CodeAnalysis.Common/*3.3.1*" />
     <UsagePattern IdentityGlob="Microsoft.CodeAnalysis.CSharp/*3.3.1*" />
     <UsagePattern IdentityGlob="Microsoft.CodeAnalysis.CSharp.Workspaces/*3.3.1*" />
