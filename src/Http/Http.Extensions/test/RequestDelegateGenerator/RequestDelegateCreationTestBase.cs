@@ -31,6 +31,7 @@ public abstract class RequestDelegateCreationTestBase : LoggedTest
 
     protected abstract bool IsGeneratorEnabled { get; }
 
+    private static readonly CSharpParseOptions _parseOptions = new CSharpParseOptions(LanguageVersion.Preview).WithFeatures(new[] { new KeyValuePair<string, string>("InterceptorsPreview", "") });
     private static readonly Project _baseProject = CreateProject();
 
     internal async Task<(GeneratorRunResult?, Compilation)> RunGeneratorAsync(string sources, params string[] updatedSources)
@@ -54,12 +55,12 @@ public abstract class RequestDelegateCreationTestBase : LoggedTest
                 generator
             },
             driverOptions: new GeneratorDriverOptions(IncrementalGeneratorOutputKind.None, trackIncrementalGeneratorSteps: true),
-            parseOptions: new CSharpParseOptions(LanguageVersion.Preview));
+            parseOptions: _parseOptions);
         driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var updatedCompilation,
             out var _);
         foreach (var updatedSource in updatedSources)
         {
-            var syntaxTree = CSharpSyntaxTree.ParseText(GetMapActionString(updatedSource), path: $"TestMapActions.cs", options: new CSharpParseOptions(LanguageVersion.Preview));
+            var syntaxTree = CSharpSyntaxTree.ParseText(GetMapActionString(updatedSource), path: $"TestMapActions.cs", options: _parseOptions);
             compilation = compilation
                 .ReplaceSyntaxTree(compilation.SyntaxTrees.First(), syntaxTree);
             driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out updatedCompilation,
@@ -133,7 +134,7 @@ public abstract class RequestDelegateCreationTestBase : LoggedTest
             var sourceText = SourceText.From(buffer, buffer.Length, encoding, canBeEmbedded: true);
 
             var syntaxRootNode = (CSharpSyntaxNode)syntaxTree.GetRoot();
-            var newSyntaxTree = CSharpSyntaxTree.Create(syntaxRootNode, options: new CSharpParseOptions(LanguageVersion.Preview), encoding: encoding, path: syntaxTree.FilePath);
+            var newSyntaxTree = CSharpSyntaxTree.Create(syntaxRootNode, options: _parseOptions, encoding: encoding, path: syntaxTree.FilePath);
 
             compilation = compilation.ReplaceSyntaxTree(syntaxTree, newSyntaxTree);
 
@@ -300,7 +301,7 @@ public static class TestMapActions
             .AddProject(projectName, projectName, LanguageNames.CSharp)
             .WithCompilationOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
                 .WithNullableContextOptions(NullableContextOptions.Enable))
-            .WithParseOptions(new CSharpParseOptions(LanguageVersion.Preview));
+            .WithParseOptions(_parseOptions);
 
         // Add in required metadata references
         var resolver = new AppLocalResolver();
