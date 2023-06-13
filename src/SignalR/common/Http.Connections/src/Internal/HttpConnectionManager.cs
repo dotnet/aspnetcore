@@ -19,8 +19,8 @@ internal sealed partial class HttpConnectionManager
     // TODO: Consider making this configurable? At least for testing?
     private static readonly TimeSpan _heartbeatTickRate = TimeSpan.FromSeconds(1);
 
-    private readonly ConcurrentDictionary<string, (HttpConnectionContext Connection, long StartTimestamp)> _connections =
-        new ConcurrentDictionary<string, (HttpConnectionContext Connection, long StartTimestamp)>(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<string, HttpConnectionContext> _connections =
+        new ConcurrentDictionary<string, HttpConnectionContext>(StringComparer.Ordinal);
     private readonly PeriodicTimer _nextHeartbeat;
     private readonly ILogger<HttpConnectionManager> _logger;
     private readonly ILogger<HttpConnectionContext> _connectionLogger;
@@ -48,14 +48,7 @@ internal sealed partial class HttpConnectionManager
 
     internal bool TryGetConnection(string id, [NotNullWhen(true)] out HttpConnectionContext? connection)
     {
-        connection = null;
-
-        if (_connections.TryGetValue(id, out var pair))
-        {
-            connection = pair.Connection;
-            return true;
-        }
-        return false;
+        return _connections.TryGetValue(id, out connection);
     }
 
     internal HttpConnectionContext CreateConnection()
@@ -82,31 +75,32 @@ internal sealed partial class HttpConnectionManager
 
         var metricsContext = _metrics.CreateContext();
 
-        var startTimestamp = HttpConnectionsEventSource.Log.IsEnabled() || metricsContext.ConnectionDurationEnabled
-            ? Stopwatch.GetTimestamp()
-            : default;
-
         Log.CreatedNewConnection(_logger, id);
-        HttpConnectionsEventSource.Log.ConnectionStart(id);
 
         var pair = CreateConnectionPair(options.TransportPipeOptions, options.AppPipeOptions);
         var connection = new HttpConnectionContext(id, connectionToken, _connectionLogger, metricsContext, pair.Application, pair.Transport, options, useAck);
 
-        _connections.TryAdd(connectionToken, (connection, startTimestamp));
+        _connections.TryAdd(connectionToken, connection);
 
         return connection;
     }
 
     public void RemoveConnection(string id, HttpTransportType transportType, HttpConnectionStopStatus status)
     {
-        if (_connections.TryRemove(id, out var pair))
+        // Remove the connection completely
+        if (_connections.TryRemove(id, out var connection))
         {
-            // Remove the connection completely
-            var currentTimestamp = (pair.StartTimestamp > 0) ? Stopwatch.GetTimestamp() : default;
+            // A connection is considered started when the transport is negotated.
+            // You can't stop something that hasn't started so only log connection stop events if there is a transport.
+            if (connection.TransportType != HttpTransportType.None)
+            {
+                var currentTimestamp = (connection.StartTimestamp > 0) ? Stopwatch.GetTimestamp() : default;
 
-            HttpConnectionsEventSource.Log.ConnectionStop(id, pair.StartTimestamp, currentTimestamp);
-            _metrics.TransportStop(pair.Connection.MetricsContext, transportType);
-            _metrics.ConnectionStop(pair.Connection.MetricsContext, transportType, status, pair.StartTimestamp, currentTimestamp);
+                HttpConnectionsEventSource.Log.ConnectionStop(id, connection.StartTimestamp, currentTimestamp);
+                _metrics.TransportStop(connection.MetricsContext, transportType);
+                _metrics.ConnectionStop(connection.MetricsContext, transportType, status, connection.StartTimestamp, currentTimestamp);
+            }
+
             Log.RemovedConnection(_logger, id);
         }
     }
@@ -152,7 +146,7 @@ internal sealed partial class HttpConnectionManager
         // Scan the registered connections looking for ones that have timed out
         foreach (var c in _connections)
         {
-            var connection = c.Value.Connection;
+            var connection = c.Value;
             // Capture the connection state
             var lastSeenTick = connection.LastSeenTicksIfInactive;
 
@@ -200,7 +194,7 @@ internal sealed partial class HttpConnectionManager
         foreach (var c in _connections)
         {
             // We're shutting down so don't wait for closing the application
-            tasks.Add(DisposeAndRemoveAsync(c.Value.Connection, closeGracefully: false, HttpConnectionStopStatus.AppShutdown));
+            tasks.Add(DisposeAndRemoveAsync(c.Value, closeGracefully: false, HttpConnectionStopStatus.AppShutdown));
         }
 
         Task.WaitAll(tasks.ToArray(), TimeSpan.FromSeconds(5));
