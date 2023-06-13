@@ -202,6 +202,11 @@ internal sealed class HttpsConnectionMiddleware
 
         _logger.HttpsConnectionEstablished(context.ConnectionId, sslStream.SslProtocol);
 
+        if (context.Features.Get<IConnectionMetricsTagsFeature>() is { } metricsTags)
+        {
+            metricsTags.Tags.Add(new KeyValuePair<string, object?>("tls-protocol", sslStream.SslProtocol.ToString()));
+        }
+
         var originalTransport = context.Transport;
 
         try

@@ -100,7 +100,7 @@ internal sealed class KestrelConnection<T> : KestrelConnection, IThreadPoolWorkI
 
     private sealed class ConnectionMetricsTagsFeature : IConnectionMetricsTagsFeature
     {
-        public ICollection<KeyValuePair<string, object?>> Tags => TagsList;
+        ICollection<KeyValuePair<string, object?>> IConnectionMetricsTagsFeature.Tags => TagsList;
 
         public List<KeyValuePair<string, object?>> TagsList { get; } = new List<KeyValuePair<string, object?>>();
     }

@@ -81,7 +81,7 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
 
         Assert.Collection(connectionDuration.GetMeasurements(), m =>
         {
-            AssertDuration(m, "127.0.0.1:0");
+            AssertDuration(m, "127.0.0.1:0", "HTTP/1.1");
             Assert.Equal("value!", (string)m.Tags.ToArray().Single(t => t.Key == "custom").Value);
         });
         Assert.Collection(currentConnections.GetMeasurements(), m => AssertCount(m, 1, "127.0.0.1:0"), m => AssertCount(m, -1, "127.0.0.1:0"));
@@ -213,7 +213,7 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
 
         Assert.Collection(connectionDuration.GetMeasurements(), m =>
         {
-            AssertDuration(m, "127.0.0.1:0");
+            AssertDuration(m, "127.0.0.1:0", "HTTP/1.1");
             Assert.Equal("value!", (string)m.Tags.ToArray().Single(t => t.Key == "custom").Value);
             Assert.Empty(m.Tags.ToArray().Where(t => t.Key == "test"));
         });
@@ -274,7 +274,7 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
 
         Assert.Collection(connectionDuration.GetMeasurements(), m =>
         {
-            AssertDuration(m, "127.0.0.1:0");
+            AssertDuration(m, "127.0.0.1:0", httpProtocol: null);
             Assert.Equal("System.InvalidOperationException", (string)m.Tags.ToArray().Single(t => t.Key == "exception-name").Value);
         });
         Assert.Collection(currentConnections.GetMeasurements(), m => AssertCount(m, 1, "127.0.0.1:0"), m => AssertCount(m, -1, "127.0.0.1:0"));
@@ -305,7 +305,7 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
                 "");
         }
 
-        Assert.Collection(connectionDuration.GetMeasurements(), m => AssertDuration(m, "127.0.0.1:0"));
+        Assert.Collection(connectionDuration.GetMeasurements(), m => AssertDuration(m, "127.0.0.1:0", "HTTP/1.1"));
         Assert.Collection(currentConnections.GetMeasurements(), m => AssertCount(m, 1, "127.0.0.1:0"), m => AssertCount(m, -1, "127.0.0.1:0"));
         Assert.Collection(currentUpgradedRequests.GetMeasurements(), m => Assert.Equal(1, m.Value), m => Assert.Equal(-1, m.Value));
 
@@ -393,7 +393,7 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
         Assert.NotNull(connectionId);
         Assert.Equal(2, requestsReceived);
 
-        Assert.Collection(connectionDuration.GetMeasurements(), m => AssertDuration(m, "127.0.0.1:0"));
+        Assert.Collection(connectionDuration.GetMeasurements(), m => AssertDuration(m, "127.0.0.1:0", "HTTP/2"));
         Assert.Collection(currentConnections.GetMeasurements(), m => AssertCount(m, 1, "127.0.0.1:0"), m => AssertCount(m, -1, "127.0.0.1:0"));
         Assert.Collection(queuedConnections.GetMeasurements(), m => AssertCount(m, 1, "127.0.0.1:0"), m => AssertCount(m, -1, "127.0.0.1:0"));
 
@@ -430,10 +430,18 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    private static void AssertDuration(Measurement<double> measurement, string localEndpoint)
+    private static void AssertDuration(Measurement<double> measurement, string localEndpoint, string httpProtocol)
     {
         Assert.True(measurement.Value > 0);
         Assert.Equal(localEndpoint, (string)measurement.Tags.ToArray().Single(t => t.Key == "endpoint").Value);
+        if (httpProtocol is not null)
+        {
+            Assert.Equal(httpProtocol, (string)measurement.Tags.ToArray().Single(t => t.Key == "http-protocol").Value);
+        }
+        else
+        {
+            Assert.DoesNotContain(measurement.Tags.ToArray(), t => t.Key == "http-protocol");
+        }
     }
 
     private static void AssertCount(Measurement<long> measurement, long expectedValue, string localEndpoint)

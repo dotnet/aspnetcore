@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
+using HttpProtocol = Microsoft.AspNetCore.Http.HttpProtocol;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 
@@ -59,6 +60,7 @@ internal sealed class HttpConnection : ITimeoutHandler
                     // _http1Connection must be initialized before adding the connection to the connection manager
                     requestProcessor = _http1Connection = new Http1Connection<TContext>((HttpConnectionContext)_context);
                     _protocolSelectionState = ProtocolSelectionState.Selected;
+                    AddMetricsHttpProtocolTag(HttpProtocol.Http11);
                     break;
                 case HttpProtocols.Http2:
                     // _http2Connection must be initialized before yielding control to the transport thread,
@@ -66,10 +68,12 @@ internal sealed class HttpConnection : ITimeoutHandler
                     // _http2Connection is about to be initialized.
                     requestProcessor = new Http2Connection((HttpConnectionContext)_context);
                     _protocolSelectionState = ProtocolSelectionState.Selected;
+                    AddMetricsHttpProtocolTag(HttpProtocol.Http2);
                     break;
                 case HttpProtocols.Http3:
                     requestProcessor = new Http3Connection((HttpMultiplexedConnectionContext)_context);
                     _protocolSelectionState = ProtocolSelectionState.Selected;
+                    AddMetricsHttpProtocolTag(HttpProtocol.Http3);
                     break;
                 case HttpProtocols.None:
                     // An error was already logged in SelectProtocol(), but we should close the connection.
@@ -109,6 +113,14 @@ internal sealed class HttpConnection : ITimeoutHandler
         catch (Exception ex)
         {
             Log.LogCritical(0, ex, $"Unexpected exception in {nameof(HttpConnection)}.{nameof(ProcessRequestsAsync)}.");
+        }
+    }
+
+    private void AddMetricsHttpProtocolTag(string httpProtocol)
+    {
+        if (_context.ConnectionContext.Features.Get<IConnectionMetricsTagsFeature>() is { } metricsTags)
+        {
+            metricsTags.Tags.Add(new KeyValuePair<string, object?>("http-protocol", httpProtocol));
         }
     }
 
