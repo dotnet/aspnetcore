@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.CodeAnalysis;
 namespace Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel.Emitters;
 
 internal static class EndpointJsonPreparationEmitter
@@ -8,12 +9,12 @@ internal static class EndpointJsonPreparationEmitter
     internal static void EmitJsonPreparation(this Endpoint endpoint, CodeWriter codeWriter)
     {
         codeWriter.WriteLine("var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? new JsonOptions();");
-        codeWriter.WriteLine($"var objectJsonTypeInfo = (JsonTypeInfo<object>)jsonOptions.SerializerOptions.GetTypeInfo(typeof(object));");
+        codeWriter.WriteLine($"var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonOptions.SerializerOptions.GetTypeInfo(typeof(object));");
 
         if (endpoint.Response?.IsSerializableJsonResponse(out var responseType) == true)
         {
             var typeName = responseType.ToDisplayString(EmitterConstants.DisplayFormatWithoutNullability);
-            codeWriter.WriteLine($"var responseJsonTypeInfo =  (JsonTypeInfo<{typeName}>)jsonOptions.SerializerOptions.GetTypeInfo(typeof({typeName}));");
+            codeWriter.WriteLine($"var responseJsonTypeInfo =  (JsonTypeInfo<{responseType.ToDisplayString(NullableFlowState.MaybeNull, EmitterConstants.DisplayFormat)}>)jsonOptions.SerializerOptions.GetTypeInfo(typeof({typeName}));");
         }
 
         foreach (var parameter in endpoint.Parameters)
