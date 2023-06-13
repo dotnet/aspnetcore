@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+import { synchronizeDomContent } from "./DomMerging/DomSync";
+
 export function attachStreamingRenderingListener() {
   customElements.define('blazor-ssr', BlazorStreamingUpdate);
 }
@@ -35,17 +37,7 @@ class BlazorStreamingUpdate extends HTMLElement {
 function insertStreamingContentIntoDocument(componentIdAsString: string, docFrag: DocumentFragment): void {
   const markers = findStreamingMarkers(componentIdAsString);
   if (markers) {
-    const { startMarker, endMarker } = markers;
-
-    // Using Range for this is a bit weird, but this logic will go away anyway once we implement https://github.com/dotnet/aspnetcore/issues/47258
-    const existingContent = new Range();
-    existingContent.setStart(startMarker, startMarker.textContent!.length);
-    existingContent.setEnd(endMarker, 0);
-    existingContent.deleteContents();
-
-    while (docFrag.childNodes[0]) {
-      endMarker.parentNode!.insertBefore(docFrag.childNodes[0], endMarker);
-    }
+    synchronizeDomContent({ startExclusive: markers.startMarker, endExclusive: markers.endMarker }, docFrag);
   }
 }
 
