@@ -14,7 +14,8 @@ Microsoft.AspNetCore.HttpLogging.HttpLoggingContext.Add(string! key, object? val
 Microsoft.AspNetCore.HttpLogging.HttpLoggingContext.Disable(Microsoft.AspNetCore.HttpLogging.HttpLoggingFields fields) -> void
 Microsoft.AspNetCore.HttpLogging.HttpLoggingContext.Enable(Microsoft.AspNetCore.HttpLogging.HttpLoggingFields fields) -> void
 Microsoft.AspNetCore.HttpLogging.HttpLoggingContext.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!
-Microsoft.AspNetCore.HttpLogging.HttpLoggingContext.HttpLoggingContext(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> void
+Microsoft.AspNetCore.HttpLogging.HttpLoggingContext.HttpContext.set -> void
+Microsoft.AspNetCore.HttpLogging.HttpLoggingContext.HttpLoggingContext() -> void
 Microsoft.AspNetCore.HttpLogging.HttpLoggingContext.IsAnyEnabled(Microsoft.AspNetCore.HttpLogging.HttpLoggingFields fields) -> bool
 Microsoft.AspNetCore.HttpLogging.HttpLoggingContext.LoggingFields.get -> Microsoft.AspNetCore.HttpLogging.HttpLoggingFields
 Microsoft.AspNetCore.HttpLogging.HttpLoggingContext.LoggingFields.set -> void

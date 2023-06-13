@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.HttpLogging;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -21,6 +22,7 @@ public static class HttpLoggingServicesExtensions
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configureOptions);
 
+        services.TryAddSingleton(ObjectPool.ObjectPool.Create<HttpLoggingContext>());
         services.Configure(configureOptions);
         return services;
     }

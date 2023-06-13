@@ -2,19 +2,26 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.ObjectPool;
 
 namespace Microsoft.AspNetCore.HttpLogging;
 
 /// <summary>
 /// The context used for logging customization callbacks.
 /// </summary>
-/// <param name="httpContext">The request context.</param>
-public sealed class HttpLoggingContext(HttpContext httpContext)
+public sealed class HttpLoggingContext : IResettable
 {
+    private HttpContext? _httpContext;
+
     /// <summary>
     /// The request context.
     /// </summary>
-    public HttpContext HttpContext { get; internal set; } = httpContext;
+    // We'd make this a required constructor parameter but ObjectPool requires a parameterless constructor.
+    public HttpContext HttpContext
+    {
+        get => _httpContext ?? throw new InvalidOperationException("HttpContext was not initialized");
+        set => _httpContext = value ?? throw new ArgumentNullException(nameof(value));
+    }
 
     /// <summary>
     /// What parts of the request and response to log.
@@ -89,5 +96,16 @@ public sealed class HttpLoggingContext(HttpContext httpContext)
         }
 
         return false;
+    }
+
+    bool IResettable.TryReset()
+    {
+        _httpContext = null;
+        LoggingFields = HttpLoggingFields.None;
+        RequestBodyLogLimit = 0;
+        ResponseBodyLogLimit = 0;
+        StartTimestamp = 0;
+        Parameters.Clear();
+        return true;
     }
 }
