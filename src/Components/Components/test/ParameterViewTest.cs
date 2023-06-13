@@ -604,7 +604,7 @@ public partial class ParameterViewTest
             _value = value;
         }
 
-        public bool CurrentValueIsFixed => false;
+        public bool IsFixed => false;
 
         public bool CanSupplyValue(in CascadingParameterInfo parameterInfo)
             => throw new NotImplementedException();
@@ -612,7 +612,7 @@ public partial class ParameterViewTest
         public object GetCurrentValue(in CascadingParameterInfo parameterInfo)
             => _value;
 
-        public void Subscribe(ComponentState subscriber)
+        public void Subscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
             => throw new NotImplementedException();
 
         public void Unsubscribe(ComponentState subscriber)

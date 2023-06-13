@@ -496,15 +496,15 @@ public class CascadingParameterTest
     }
 
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
-    class CustomCascadingParameter1Attribute : Attribute, ICascadingParameterAttribute
+    class CustomCascadingParameter1Attribute : CascadingParameterAttributeBase
     {
-        public string Name { get; set; }
+        public override string Name { get; set; }
     }
 
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
-    class CustomCascadingParameter2Attribute : Attribute, ICascadingParameterAttribute
+    class CustomCascadingParameter2Attribute : CascadingParameterAttributeBase
     {
-        public string Name { get; set; }
+        public override string Name { get; set; }
     }
 
     class CustomCascadingValueProducer<TAttribute> : AutoRenderComponent, ICascadingValueSupplier
@@ -513,7 +513,7 @@ public class CascadingParameterTest
 
         [Parameter] public RenderFragment ChildContent { get; set; }
 
-        bool ICascadingValueSupplier.CurrentValueIsFixed => true;
+        bool ICascadingValueSupplier.IsFixed => true;
 
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
@@ -537,7 +537,7 @@ public class CascadingParameterTest
             return Value;
         }
 
-        void ICascadingValueSupplier.Subscribe(ComponentState subscriber)
+        void ICascadingValueSupplier.Subscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
         {
             throw new NotImplementedException();
         }

@@ -263,5 +263,7 @@ public sealed class WebAssemblyHostBuilder
         });
         Services.AddSingleton<FormDataProvider, DefaultFormDataProvider>();
         Services.AddSingleton<IFormValueSupplier, WebAssemblyFormValueSupplier>();
+        Services.AddSingleton<CascadingModelBindingProvider, CascadingFormModelBindingProvider>();
+        Services.AddSingleton<CascadingModelBindingProvider, CascadingQueryModelBindingProvider>();
     }
 }

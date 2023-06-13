@@ -95,18 +95,13 @@ public class RouteView : IComponent
 
         void RenderPageCore(RenderTreeBuilder builder)
         {
-            builder.OpenComponent<CascadingQueryValueProvider>(0);
-            builder.AddComponentParameter(1, nameof(CascadingQueryValueProvider.ChildContent), (RenderFragment)(builder =>
+            builder.OpenComponent(0, RouteData.PageType);
+
+            foreach (var kvp in RouteData.RouteValues)
             {
-                builder.OpenComponent(0, RouteData.PageType);
+                builder.AddComponentParameter(1, kvp.Key, kvp.Value);
+            }
 
-                foreach (var kvp in RouteData.RouteValues)
-                {
-                    builder.AddComponentParameter(1, kvp.Key, kvp.Value);
-                }
-
-                builder.CloseComponent();
-            }));
             builder.CloseComponent();
         }
     }

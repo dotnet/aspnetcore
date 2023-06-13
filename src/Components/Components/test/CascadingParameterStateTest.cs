@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Binding;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Test.Helpers;
@@ -362,15 +361,14 @@ public class CascadingParameterStateTest
     public void FindCascadingParameters_HandlesSupplyParameterFromFormValues()
     {
         // Arrange
+        var provider = new TestCascadingFormModelBindingProvider
+        {
+            FormName = "",
+            CurrentValue = "some value",
+        };
         var cascadingModelBinder = new CascadingModelBinder
         {
-            FormValueSupplier = new TestFormValueSupplier()
-            {
-                FormName = "",
-                ValueType = typeof(string),
-                BindResult = true,
-                BoundValue = "some value"
-            },
+            ModelBindingProviders = new[] { provider },
             Navigation = Mock.Of<NavigationManager>(),
             Name = ""
         };
@@ -393,17 +391,16 @@ public class CascadingParameterStateTest
     public void FindCascadingParameters_HandlesSupplyParameterFromFormValues_WithName()
     {
         // Arrange
+        var provider = new TestCascadingFormModelBindingProvider
+        {
+            FormName = "some-name",
+            CurrentValue = "some value",
+        };
         var cascadingModelBinder = new CascadingModelBinder
         {
-            FormValueSupplier = new TestFormValueSupplier()
-            {
-                FormName = "some-name",
-                ValueType = typeof(string),
-                BindResult = true,
-                BoundValue = "some value"
-            },
+            ModelBindingProviders = new[] { provider },
             Navigation = new TestNavigationManager(),
-            Name = ""
+            Name = "some-name"
         };
 
         cascadingModelBinder.UpdateBindingInformation("https://localhost/");
@@ -519,32 +516,25 @@ public class CascadingParameterStateTest
     class CascadingValueTypeDerivedClass : CascadingValueTypeBaseClass, ICascadingValueTypeDerivedClassInterface { }
     interface ICascadingValueTypeDerivedClassInterface { }
 
-    private class TestFormValueSupplier : IFormValueSupplier
+    private class TestCascadingFormModelBindingProvider : CascadingModelBindingProvider
     {
-        public string FormName { get; set; }
+        public required string FormName { get; init; }
 
-        public Type ValueType { get; set; }
+        public required string CurrentValue { get; init; }
 
-        public object BoundValue { get; set; }
+        protected internal override bool AreValuesFixed => true;
 
-        public bool BindResult { get; set; }
+        protected internal override bool CanSupplyValue(ModelBindingContext bindingContext, in CascadingParameterInfo parameterInfo)
+            => string.Equals(bindingContext.Name, FormName, StringComparison.Ordinal);
 
-        public bool CanBind(string formName, Type valueType)
-        {
-            return string.Equals(formName, FormName, StringComparison.Ordinal) &&
-                valueType == ValueType;
-        }
+        protected internal override object GetCurrentValue(ModelBindingContext bindingContext, in CascadingParameterInfo parameterInfo)
+            => CurrentValue;
 
-        public bool CanConvertSingleValue(Type type)
-        {
-            return type == ValueType;
-        }
+        protected internal override bool SupportsCascadingParameterAttributeType(Type attributeType)
+            => attributeType == typeof(SupplyParameterFromFormAttribute);
 
-        public bool TryBind(string formName, Type valueType, [NotNullWhen(true)] out object boundValue)
-        {
-            boundValue = BoundValue;
-            return BindResult;
-        }
+        protected internal override bool SupportsParameterType(Type parameterType)
+            => parameterType == typeof(string);
     }
 
     class TestNavigationManager : NavigationManager
@@ -557,11 +547,11 @@ public class CascadingParameterStateTest
 }
 
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
-public sealed class SupplyParameterFromFormAttribute : Attribute, IFormValueCascadingParameterAttribute
+public sealed class SupplyParameterFromFormAttribute : CascadingParameterAttributeBase
 {
     /// <summary>
     /// Gets or sets the name for the parameter. The name is used to match
     /// the form data and decide whether or not the value needs to be bound.
     /// </summary>
-    public string Name { get; set; }
+    public override string Name { get; set; }
 }

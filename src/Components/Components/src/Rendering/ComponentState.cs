@@ -194,9 +194,9 @@ public class ComponentState : IAsyncDisposable
         for (var i = 0; i < numCascadingParameters; i++)
         {
             var valueSupplier = _cascadingParameters[i].ValueSupplier;
-            if (!valueSupplier.CurrentValueIsFixed)
+            if (!valueSupplier.IsFixed)
             {
-                valueSupplier.Subscribe(this);
+                valueSupplier.Subscribe(this, _cascadingParameters[i].ParameterInfo);
                 hasSubscription = true;
             }
         }
@@ -210,7 +210,7 @@ public class ComponentState : IAsyncDisposable
         for (var i = 0; i < numCascadingParameters; i++)
         {
             var supplier = _cascadingParameters[i].ValueSupplier;
-            if (!supplier.CurrentValueIsFixed)
+            if (!supplier.IsFixed)
             {
                 supplier.Unsubscribe(this);
             }

@@ -170,7 +170,7 @@ internal static class ComponentProperties
         if (propertyInfo != null)
         {
             if (!propertyInfo.IsDefined(typeof(ParameterAttribute)) &&
-                !propertyInfo.GetCustomAttributes().OfType<ICascadingParameterAttribute>().Any())
+                !propertyInfo.GetCustomAttributes().OfType<CascadingParameterAttributeBase>().Any())
             {
                 throw new InvalidOperationException(
                     $"Object of type '{targetType.FullName}' has a property matching the name '{parameterName}', " +
@@ -261,7 +261,7 @@ internal static class ComponentProperties
             foreach (var propertyInfo in GetCandidateBindableProperties(targetType))
             {
                 ParameterAttribute? parameterAttribute = null;
-                ICascadingParameterAttribute? cascadingParameterAttribute = null;
+                CascadingParameterAttributeBase? cascadingParameterAttribute = null;
 
                 var attributes = propertyInfo.GetCustomAttributes();
                 foreach (var attribute in attributes)
@@ -271,7 +271,7 @@ internal static class ComponentProperties
                         case ParameterAttribute parameter:
                             parameterAttribute = parameter;
                             break;
-                        case ICascadingParameterAttribute cascadingParameter:
+                        case CascadingParameterAttributeBase cascadingParameter:
                             cascadingParameterAttribute = cascadingParameter;
                             break;
                         default:

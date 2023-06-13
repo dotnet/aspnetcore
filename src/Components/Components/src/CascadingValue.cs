@@ -41,8 +41,6 @@ public class CascadingValue<TValue> : ICascadingValueSupplier, IComponent
     /// </summary>
     [Parameter] public bool IsFixed { get; set; }
 
-    bool ICascadingValueSupplier.CurrentValueIsFixed => IsFixed;
-
     /// <inheritdoc />
     public void Attach(RenderHandle renderHandle)
     {
@@ -147,22 +145,16 @@ public class CascadingValue<TValue> : ICascadingValueSupplier, IComponent
         return Value;
     }
 
-    void ICascadingValueSupplier.Subscribe(ComponentState subscriber)
+    void ICascadingValueSupplier.Subscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
     {
-#if DEBUG
         if (IsFixed)
         {
             // Should not be possible. User code cannot trigger this.
             // Checking only to catch possible future framework bugs.
             throw new InvalidOperationException($"Cannot subscribe to a {typeof(CascadingValue<>).Name} when {nameof(IsFixed)} is true.");
         }
-#endif
 
-        if (_subscribers == null)
-        {
-            _subscribers = new HashSet<ComponentState>();
-        }
-
+        _subscribers ??= new HashSet<ComponentState>();
         _subscribers.Add(subscriber);
     }
 

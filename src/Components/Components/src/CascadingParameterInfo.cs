@@ -3,9 +3,30 @@
 
 namespace Microsoft.AspNetCore.Components;
 
-internal readonly struct CascadingParameterInfo(ICascadingParameterAttribute attribute, string propertyName, Type propertyType)
+/// <summary>
+/// Contains information about a cascading parameter.
+/// </summary>
+public readonly struct CascadingParameterInfo
 {
-    public ICascadingParameterAttribute Attribute { get; } = attribute;
-    public string PropertyName { get; } = propertyName;
-    public Type PropertyType { get; } = propertyType;
+    /// <summary>
+    /// Gets the property's <see cref="CascadingParameterAttributeBase"/> attribute.
+    /// </summary>
+    public CascadingParameterAttributeBase Attribute { get; }
+
+    /// <summary>
+    /// Gets the name of the parameter's property.
+    /// </summary>
+    public string PropertyName { get; }
+
+    /// <summary>
+    /// Gets the type of the parameter's property.
+    /// </summary>
+    public Type PropertyType { get; }
+
+    internal CascadingParameterInfo(CascadingParameterAttributeBase attribute, string propertyName, Type propertyType)
+    {
+        Attribute = attribute;
+        PropertyName = propertyName;
+        PropertyType = propertyType;
+    }
 }

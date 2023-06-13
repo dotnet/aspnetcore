@@ -92,7 +92,7 @@ internal readonly struct CascadingParameterState
         foreach (var prop in candidateProps)
         {
             var cascadingParameterAttribute = prop.GetCustomAttributes()
-                .OfType<ICascadingParameterAttribute>().SingleOrDefault();
+                .OfType<CascadingParameterAttributeBase>().SingleOrDefault();
             if (cascadingParameterAttribute != null)
             {
                 result ??= new List<CascadingParameterInfo>();
