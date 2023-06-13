@@ -34,7 +34,6 @@ public class AuthorizeRouteViewTest
         serviceCollection.AddSingleton<IAuthorizationPolicyProvider, TestAuthorizationPolicyProvider>();
         serviceCollection.AddSingleton<IAuthorizationService>(_testAuthorizationService);
         serviceCollection.AddSingleton<NavigationManager, TestNavigationManager>();
-        serviceCollection.AddSingleton<IFormValueSupplier, TestFormValueSupplier>();
 
         var services = serviceCollection.BuildServiceProvider();
         _renderer = new TestRenderer(services);

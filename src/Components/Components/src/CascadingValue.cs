@@ -133,11 +133,11 @@ public class CascadingValue<TValue> : ICascadingValueSupplier, IComponent
             return false;
         }
 
-        // We only consider explicitly specified names, not the property name.
-        var parameterSpecifiedName = cascadingParameterAttribute.Name;
+        // We only consider explicitly requested names, not the property name.
+        var requestedName = cascadingParameterAttribute.Name;
 
-        return (parameterSpecifiedName == null && Name == null) || // Match on type alone
-            string.Equals(parameterSpecifiedName, Name, StringComparison.OrdinalIgnoreCase); // Also match on name
+        return (requestedName == null && Name == null) // Match on type alone
+            || string.Equals(requestedName, Name, StringComparison.OrdinalIgnoreCase); // Also match on name
     }
 
     object? ICascadingValueSupplier.GetCurrentValue(in CascadingParameterInfo parameterInfo)

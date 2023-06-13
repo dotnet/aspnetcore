@@ -7,9 +7,6 @@ namespace Microsoft.AspNetCore.Components;
 
 internal interface ICascadingValueSupplier
 {
-    // This interface exists only so that CascadingParameterState has a way
-    // to work with all CascadingValue<T> types regardless of T.
-
     bool IsFixed { get; }
 
     bool CanSupplyValue(in CascadingParameterInfo parameterInfo);
