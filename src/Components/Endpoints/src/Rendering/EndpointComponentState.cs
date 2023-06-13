@@ -19,22 +19,8 @@ internal sealed class EndpointComponentState : ComponentState
     public EndpointComponentState(Renderer renderer, int componentId, IComponent component, ComponentState? parentComponentState)
         : base(renderer, componentId, component, parentComponentState)
     {
-        SetStreamingRendering();
-    }
-
-    public bool StreamRendering { get; private set; }
-
-    protected override void LogicalParentComponentStateChanged(ComponentState? logicalParentComponent)
-    {
-        base.LogicalParentComponentStateChanged(logicalParentComponent);
-
-        SetStreamingRendering();
-    }
-
-    private void SetStreamingRendering()
-    {
-        var streamRenderingAttribute = _streamRenderingAttributeByComponentType.GetOrAdd(Component.GetType(),
-                    type => type.GetCustomAttribute<StreamRenderingAttribute>());
+        var streamRenderingAttribute = _streamRenderingAttributeByComponentType.GetOrAdd(component.GetType(),
+            type => type.GetCustomAttribute<StreamRenderingAttribute>());
 
         if (streamRenderingAttribute is not null)
         {
@@ -42,10 +28,12 @@ internal sealed class EndpointComponentState : ComponentState
         }
         else
         {
-            var logicalParentEndpointComponentState = (EndpointComponentState?)LogicalParentComponentState;
-            StreamRendering = logicalParentEndpointComponentState?.StreamRendering ?? false;
+            var parentEndpointComponentState = (EndpointComponentState?)LogicalParentComponentState;
+            StreamRendering = parentEndpointComponentState?.StreamRendering ?? false;
         }
     }
+
+    public bool StreamRendering { get; }
 
     /// <summary>
     /// MetadataUpdateHandler event. This is invoked by the hot reload host via reflection.

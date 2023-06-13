@@ -126,6 +126,9 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     protected ComponentState GetComponentState(int componentId)
         => GetRequiredComponentState(componentId);
 
+    internal ComponentState GetComponentState(IComponent component)
+        => _componentStateByComponent.GetValueOrDefault(component);
+
     private async void RenderRootComponentsOnHotReload()
     {
         // Before re-rendering the root component, also clear any well-known caches in the framework
@@ -351,16 +354,6 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     /// <returns>A <see cref="ComponentState"/> for the new component.</returns>
     protected virtual ComponentState CreateComponentState(int componentId, IComponent component, ComponentState? parentComponentState)
         => new ComponentState(this, componentId, component, parentComponentState);
-
-    internal void LogicalParentComponentChanged(int componentId, IComponent? logicalParentComponent)
-    {
-        var component = _componentStateById[componentId];
-
-        var logicalParentComponentState = logicalParentComponent != null ?
-            _componentStateByComponent[logicalParentComponent] : component.ParentComponentState;
-
-        component.LogicalParentComponentStateChanged(logicalParentComponentState);
-    }
 
     /// <summary>
     /// Updates the visible UI.

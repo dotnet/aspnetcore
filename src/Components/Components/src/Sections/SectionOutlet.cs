@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Components.Rendering;
+
 namespace Microsoft.AspNetCore.Components.Sections;
 
 /// <summary>
@@ -9,11 +11,10 @@ namespace Microsoft.AspNetCore.Components.Sections;
 public sealed class SectionOutlet : IComponent, IDisposable
 {
     private static readonly RenderFragment _emptyRenderFragment = _ => { };
-
     private object? _subscribedIdentifier;
     private RenderHandle _renderHandle;
     private SectionRegistry _registry = default!;
-    private RenderFragment? _content;
+    private SectionContent? _currentContentProvider;
 
     /// <summary>
     /// Gets or sets the <see cref="string"/> ID that determines which <see cref="SectionContent"/> instances will provide
@@ -26,6 +27,8 @@ public sealed class SectionOutlet : IComponent, IDisposable
     /// content to this instance.
     /// </summary>
     [Parameter] public object? SectionId { get; set; }
+
+    internal IComponent? CurrentLogicalParent => _currentContentProvider;
 
     void IComponent.Attach(RenderHandle renderHandle)
     {
@@ -72,14 +75,9 @@ public sealed class SectionOutlet : IComponent, IDisposable
         return Task.CompletedTask;
     }
 
-    internal void LogicalParentComponentChanged(IComponent? logicalParentComponent)
+    internal void ContentUpdated(SectionContent? provider)
     {
-        _renderHandle.LogicalParentComponentChanged(logicalParentComponent);
-    }
-
-    internal void ContentChanged(RenderFragment? content)
-    {
-        _content = content;
+        _currentContentProvider = provider;
         RenderContent();
     }
 
@@ -93,7 +91,17 @@ public sealed class SectionOutlet : IComponent, IDisposable
             return;
         }
 
-        _renderHandle.Render(_content ?? _emptyRenderFragment);
+        _renderHandle.Render(BuildRenderTree);
+    }
+
+    private void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        var fragment = _currentContentProvider?.ChildContent ?? _emptyRenderFragment;
+
+        builder.OpenComponent<SectionOutletContentRenderer>(0);
+        builder.SetKey(fragment);
+        builder.AddComponentParameter(1, SectionOutletContentRenderer.ContentParameterName, fragment);
+        builder.CloseComponent();
     }
 
     /// <inheritdoc/>
@@ -102,6 +110,35 @@ public sealed class SectionOutlet : IComponent, IDisposable
         if (_subscribedIdentifier is not null)
         {
             _registry.Unsubscribe(_subscribedIdentifier);
+        }
+    }
+
+    // This component simply renders the RenderFragment it is given
+    // The reason for rendering SectionOutlet output via this component is so that
+    // [1] We can use @key to guarantee that we only preserve descendant component
+    //     instances when they come from the same SectionContent, not unrelated ones
+    // [2] We know that whenever the SectionContent is changed to another one, there
+    //     will be a new ComponentState established to represent this intermediate
+    //     component, and it will already have the correct LogicalParentComponentState
+    //     so anything computed from this (e.g., whether or not streaming rendering is
+    //     enabled) will be freshly re-evaluated, without that information having to
+    //     change in place on an existing ComponentState.
+    private class SectionOutletContentRenderer : IComponent
+    {
+        public const string ContentParameterName = "content";
+
+        private RenderHandle _renderHandle;
+
+        public void Attach(RenderHandle renderHandle)
+        {
+            _renderHandle = renderHandle;
+        }
+
+        public Task SetParametersAsync(ParameterView parameters)
+        {
+            var fragment = parameters.GetValueOrDefault<RenderFragment>(ContentParameterName)!;
+            _renderHandle.Render(fragment);
+            return Task.CompletedTask;
         }
     }
 }

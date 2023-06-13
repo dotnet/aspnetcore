@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Sections;
 
 namespace Microsoft.AspNetCore.Components.Rendering;
 
@@ -33,7 +34,9 @@ public class ComponentState : IAsyncDisposable
     {
         ComponentId = componentId;
         ParentComponentState = parentComponentState;
-        LogicalParentComponentState = parentComponentState;
+        LogicalParentComponentState = parentComponentState?.Component is SectionOutlet sectionOutlet
+            ? (GetSectionOutletLogicalParent(renderer, sectionOutlet) ?? parentComponentState)
+            : parentComponentState;
         Component = component ?? throw new ArgumentNullException(nameof(component));
         _renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
         _cascadingParameters = CascadingParameterState.FindCascadingParameters(this);
@@ -45,6 +48,18 @@ public class ComponentState : IAsyncDisposable
             _hasCascadingParameters = true;
             _hasAnyCascadingParameterSubscriptions = AddCascadingParameterSubscriptions();
         }
+    }
+
+    private static ComponentState? GetSectionOutletLogicalParent(Renderer renderer, SectionOutlet sectionOutlet)
+    {
+        // This will return null if the SectionOutlet is not currently rendering any content
+        if (sectionOutlet.CurrentLogicalParent is { } logicalParent
+            && renderer.GetComponentState(logicalParent) is { } logicalParentComponentState)
+        {
+            return logicalParentComponentState;
+        }
+
+        return null;
     }
 
     /// <summary>
@@ -65,17 +80,9 @@ public class ComponentState : IAsyncDisposable
     /// <summary>
     /// Gets the <see cref="ComponentState"/> of the logical parent component, or null if this is a root component.
     /// </summary>
-    public ComponentState? LogicalParentComponentState { get; private set; }
+    public ComponentState? LogicalParentComponentState { get; }
 
     internal RenderTreeBuilder CurrentRenderTree { get; set; }
-
-    /// <summary>
-    /// Changes the <see cref="ComponentState"/> of the logical parent component.
-    /// </summary>
-    protected internal virtual void LogicalParentComponentStateChanged(ComponentState? logicalParentComponent)
-    {
-        LogicalParentComponentState = logicalParentComponent;
-    }
 
     internal void RenderIntoBatch(RenderBatchBuilder batchBuilder, RenderFragment renderFragment, out Exception? renderFragmentException)
     {

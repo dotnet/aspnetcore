@@ -77,16 +77,6 @@ public readonly struct RenderHandle
         return Dispatcher.InvokeAsync(() => renderer!.HandleComponentException(exception, componentId));
     }
 
-    internal void LogicalParentComponentChanged(IComponent? logicalParentComponent)
-    {
-        if (_renderer == null)
-        {
-            ThrowNotInitialized();
-        }
-
-        _renderer.LogicalParentComponentChanged(_componentId, logicalParentComponent);
-    }
-
     [DoesNotReturn]
     private static void ThrowNotInitialized()
     {

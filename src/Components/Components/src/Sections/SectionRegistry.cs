@@ -47,9 +47,7 @@ internal sealed class SectionRegistry
             // We just removed the most recently added provider, meaning we need to change
             // the current content to that of second most recently added provider.
             var contentProvider = GetCurrentProviderContentOrDefault(providers);
-
-            NotifyLogicalParentComponentForSubscriber(identifier, contentProvider);
-            NotifyContentChangedForSubscriber(identifier, contentProvider?.ChildContent);    
+            NotifyContentChangedForSubscriber(identifier, contentProvider);
         }
     }
 
@@ -62,9 +60,7 @@ internal sealed class SectionRegistry
 
         // Notify the new subscriber with any existing content.
         var provider = GetCurrentProviderContentOrDefault(identifier);
-
-        subscriber.LogicalParentComponentChanged(provider);
-        subscriber.ContentChanged(provider?.ChildContent);
+        subscriber.ContentUpdated(provider);
 
         _subscribersByIdentifier.Add(identifier, subscriber);
     }
@@ -88,8 +84,7 @@ internal sealed class SectionRegistry
         // most recently added provider changes.
         if (providers.Count != 0 && providers[^1] == provider)
         {
-            NotifyLogicalParentComponentForSubscriber(identifier, provider);
-            NotifyContentChangedForSubscriber(identifier, provider.ChildContent);
+            NotifyContentChangedForSubscriber(identifier, provider);
         }
     }
 
@@ -103,19 +98,11 @@ internal sealed class SectionRegistry
             ? GetCurrentProviderContentOrDefault(existingList)
             : null;
 
-    private void NotifyLogicalParentComponentForSubscriber(object identifier, IComponent? logicalParentComponent)
+    private void NotifyContentChangedForSubscriber(object identifier, SectionContent? provider)
     {
         if (_subscribersByIdentifier.TryGetValue(identifier, out var subscriber))
         {
-            subscriber.LogicalParentComponentChanged(logicalParentComponent);
-        }
-    }
-
-    private void NotifyContentChangedForSubscriber(object identifier, RenderFragment? content)
-    {
-        if (_subscribersByIdentifier.TryGetValue(identifier, out var subscriber))
-        {
-            subscriber.ContentChanged(content);
+            subscriber.ContentUpdated(provider);
         }
     }
 }
