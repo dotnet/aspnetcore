@@ -90,7 +90,7 @@ internal sealed partial class HttpConnectionManager
         // Remove the connection completely
         if (_connections.TryRemove(id, out var connection))
         {
-            // A connection is considered started when the transport is negotated.
+            // A connection is considered started when the transport is negotiated.
             // You can't stop something that hasn't started so only log connection stop events if there is a transport.
             if (connection.TransportType != HttpTransportType.None)
             {
