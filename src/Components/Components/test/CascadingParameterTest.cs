@@ -542,7 +542,7 @@ public class CascadingParameterTest
             throw new NotImplementedException();
         }
 
-        void ICascadingValueSupplier.Unsubscribe(ComponentState subscriber)
+        void ICascadingValueSupplier.Unsubscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
         {
             throw new NotImplementedException();
         }

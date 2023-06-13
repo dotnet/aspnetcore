@@ -615,7 +615,7 @@ public partial class ParameterViewTest
         public void Subscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
             => throw new NotImplementedException();
 
-        public void Unsubscribe(ComponentState subscriber)
+        public void Unsubscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
             => throw new NotImplementedException();
     }
 }

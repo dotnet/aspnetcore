@@ -212,7 +212,7 @@ public class ComponentState : IAsyncDisposable
             var supplier = _cascadingParameters[i].ValueSupplier;
             if (!supplier.IsFixed)
             {
-                supplier.Unsubscribe(this);
+                supplier.Unsubscribe(this, _cascadingParameters[i].ParameterInfo);
             }
         }
     }

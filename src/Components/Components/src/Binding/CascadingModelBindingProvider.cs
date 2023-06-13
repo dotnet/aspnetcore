@@ -46,14 +46,6 @@ public abstract class CascadingModelBindingProvider
     protected internal abstract object? GetCurrentValue(ModelBindingContext? bindingContext, in CascadingParameterInfo parameterInfo);
 
     /// <summary>
-    /// Invoked when the current <see cref="ModelBindingContext"/> gets updated.
-    /// </summary>
-    /// <param name="bindingContext">The updated <see cref="ModelBindingContext"/>.</param>
-    protected internal virtual void OnBindingContextUpdated(ModelBindingContext? bindingContext)
-    {
-    }
-
-    /// <summary>
     /// Subscribes to changes in supplied values, if they can change.
     /// </summary>
     /// <remarks>

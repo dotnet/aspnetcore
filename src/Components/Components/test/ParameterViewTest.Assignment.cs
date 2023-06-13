@@ -709,7 +709,7 @@ public partial class ParameterViewTest
             throw new NotImplementedException();
         }
 
-        public void Unsubscribe(ComponentState subscriber)
+        public void Unsubscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
         {
             throw new NotImplementedException();
         }

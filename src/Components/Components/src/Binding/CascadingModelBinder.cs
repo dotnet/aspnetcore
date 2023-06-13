@@ -135,11 +135,6 @@ public sealed class CascadingModelBinder : IComponent, ICascadingValueSupplier, 
             _bindingContext = new ModelBindingContext(name, bindingId, CanBind);
         }
 
-        foreach (var provider in ModelBindingProviders)
-        {
-            provider?.OnBindingContextUpdated(_bindingContext);
-        }
-
         string GenerateBindingContextId(string name)
         {
             var bindingId = Navigation.ToBaseRelativePath(Navigation.GetUriWithQueryParameter("handler", name));
@@ -157,13 +152,8 @@ public sealed class CascadingModelBinder : IComponent, ICascadingValueSupplier, 
 
     void ICascadingValueSupplier.Subscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
     {
-        if (!TryGetProvider(in parameterInfo, out var provider))
-        {
-            // This should never happen because this method only gets called after CanSupplyValue returns true.
-            // But we want to know if this ever does happen somehow.
-            throw new InvalidOperationException(
-                $"Cannot subscribe to changes in values that '{nameof(CascadingModelBinder)}' cannot supply.");
-        }
+        // We expect there to always be a provider at this point, because CanSupplyValue must have returned true.
+        var provider = GetProviderOrThrow(parameterInfo);
 
         if (!provider.AreValuesFixed)
         {
@@ -171,14 +161,14 @@ public sealed class CascadingModelBinder : IComponent, ICascadingValueSupplier, 
         }
     }
 
-    void ICascadingValueSupplier.Unsubscribe(ComponentState subscriber)
+    void ICascadingValueSupplier.Unsubscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
     {
-        foreach (var provider in ModelBindingProviders)
+        // We expect there to always be a provider at this point, because CanSupplyValue must have returned true.
+        var provider = GetProviderOrThrow(parameterInfo);
+
+        if (!provider.AreValuesFixed)
         {
-            if (!provider.AreValuesFixed)
-            {
-                provider.Unsubscribe(subscriber);
-            }
+            provider.Unsubscribe(subscriber);
         }
     }
 
@@ -186,6 +176,16 @@ public sealed class CascadingModelBinder : IComponent, ICascadingValueSupplier, 
         => TryGetProvider(in parameterInfo, out var provider)
             ? provider.GetCurrentValue(_bindingContext, parameterInfo)
             : null;
+
+    private CascadingModelBindingProvider GetProviderOrThrow(in CascadingParameterInfo parameterInfo)
+    {
+        if (!TryGetProvider(parameterInfo, out var provider))
+        {
+            throw new InvalidOperationException($"No model binding provider could be found for parameter '{parameterInfo.PropertyName}'.");
+        }
+
+        return provider;
+    }
 
     private bool TryGetProvider(in CascadingParameterInfo parameterInfo, [NotNullWhen(true)] out CascadingModelBindingProvider? result)
     {

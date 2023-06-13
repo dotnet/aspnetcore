@@ -158,7 +158,7 @@ public class CascadingValue<TValue> : ICascadingValueSupplier, IComponent
         _subscribers.Add(subscriber);
     }
 
-    void ICascadingValueSupplier.Unsubscribe(ComponentState subscriber)
+    void ICascadingValueSupplier.Unsubscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
     {
         _subscribers?.Remove(subscriber);
     }

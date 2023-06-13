@@ -9,12 +9,13 @@ namespace Microsoft.AspNetCore.Components.Binding;
 /// <summary>
 /// Enables component parameters to be supplied from the query string with <see cref="SupplyParameterFromQueryAttribute"/>.
 /// </summary>
-public sealed class CascadingQueryModelBindingProvider : CascadingModelBindingProvider
+public sealed class CascadingQueryModelBindingProvider : CascadingModelBindingProvider, IDisposable
 {
     private readonly QueryParameterValueSupplier _queryParameterValueSupplier = new();
     private readonly NavigationManager _navigationManager;
 
     private HashSet<ComponentState>? _subscribers;
+    private bool _haveQueryParametersChanged = true;
 
     /// <inheritdoc/>
     protected internal override bool AreValuesFixed => false;
@@ -25,6 +26,7 @@ public sealed class CascadingQueryModelBindingProvider : CascadingModelBindingPr
     public CascadingQueryModelBindingProvider(NavigationManager navigationManager)
     {
         _navigationManager = navigationManager;
+        _navigationManager.LocationChanged += OnLocationChanged;
     }
 
     /// <inheritdoc/>
@@ -43,26 +45,47 @@ public sealed class CascadingQueryModelBindingProvider : CascadingModelBindingPr
     /// <inheritdoc/>
     protected internal override object? GetCurrentValue(ModelBindingContext? bindingContext, in CascadingParameterInfo parameterInfo)
     {
+        if (_haveQueryParametersChanged)
+        {
+            _haveQueryParametersChanged = false;
+            UpdateQueryParameters();
+        }
+
         var queryParameterName = parameterInfo.Attribute.Name ?? parameterInfo.PropertyName;
         return _queryParameterValueSupplier.GetQueryParameterValue(parameterInfo.PropertyType, queryParameterName);
     }
 
     /// <inheritdoc/>
-    protected internal override void OnBindingContextUpdated(ModelBindingContext? bindingContext)
+    protected internal override void Subscribe(ComponentState subscriber)
+    {
+        _subscribers ??= new();
+        _subscribers.Add(subscriber);
+    }
+
+    /// <inheritdoc/>
+    protected internal override void Unsubscribe(ComponentState subscriber)
+    {
+        _subscribers?.Remove(subscriber);
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
+    {
+        _haveQueryParametersChanged = true;
+
+        if (_subscribers is not null)
+        {
+            foreach (var subscriber in _subscribers)
+            {
+                subscriber.NotifyCascadingValueChanged(ParameterViewLifetime.Unbound);
+            }
+        }
+    }
+
+    private void UpdateQueryParameters()
     {
         var query = GetQueryString(_navigationManager.Uri);
 
         _queryParameterValueSupplier.ReadParametersFromQuery(query);
-
-        if (_subscribers is null)
-        {
-            return;
-        }
-
-        foreach (var subscriber in _subscribers)
-        {
-            subscriber.NotifyCascadingValueChanged(ParameterViewLifetime.Unbound);
-        }
 
         static ReadOnlyMemory<char> GetQueryString(string url)
         {
@@ -78,16 +101,8 @@ public sealed class CascadingQueryModelBindingProvider : CascadingModelBindingPr
         }
     }
 
-    /// <inheritdoc/>
-    protected internal override void Subscribe(ComponentState subscriber)
+    void IDisposable.Dispose()
     {
-        _subscribers ??= new();
-        _subscribers.Add(subscriber);
-    }
-
-    /// <inheritdoc/>
-    protected internal override void Unsubscribe(ComponentState subscriber)
-    {
-        _subscribers?.Remove(subscriber);
+        _navigationManager.LocationChanged -= OnLocationChanged;
     }
 }
