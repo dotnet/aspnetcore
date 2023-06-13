@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Text;
 using Microsoft.AspNetCore.Http.Features;
@@ -110,13 +111,20 @@ internal sealed class ResponseBufferingStream : BufferingStream, IHttpResponseBo
             HttpLoggingMiddleware.LogResponseHeaders(_logContext, _options._internalResponseHeaders, _interceptors, _logger);
 
             // The callback in LogResponseHeaders could disable body logging or adjust limits.
-            if (_logContext.LoggingFields.HasFlag(HttpLoggingFields.ResponseBody) && _logContext.ResponseBodyLogLimit > 0
-                && MediaTypeHelpers.TryGetEncodingForMediaType(_logContext.HttpContext.Response.ContentType,
-                _options.MediaTypeOptions.MediaTypeStates, out _encoding))
+            if (_logContext.LoggingFields.HasFlag(HttpLoggingFields.ResponseBody) && _logContext.ResponseBodyLogLimit > 0)
             {
-                _logBody = true;
-                _limit = _logContext.ResponseBodyLogLimit;
+                if (MediaTypeHelpers.TryGetEncodingForMediaType(_logContext.HttpContext.Response.ContentType,
+                    _options.MediaTypeOptions.MediaTypeStates, out _encoding))
+                {
+                    _logBody = true;
+                    _limit = _logContext.ResponseBodyLogLimit;
+                }
+                else
+                {
+                    _logger.UnrecognizedMediaType("response");
+                }
             }
+
             HeadersWritten = true;
         }
     }
@@ -159,7 +167,7 @@ internal sealed class ResponseBufferingStream : BufferingStream, IHttpResponseBo
     {
         if (_logBody)
         {
-            var requestBody = GetString(_encoding);
+            var requestBody = GetString(_encoding!);
             _logger.ResponseBody(requestBody);
         }
     }
