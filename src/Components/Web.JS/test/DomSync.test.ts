@@ -257,6 +257,43 @@ describe('DomSync', () => {
     expect(newNodes[2]).toBe(origRoot2);
     expect(newNodes[2].childNodes[0]).toBe(anotherChildWillRetain);
   });
+
+  test('should update input element value when not modified by user', () => {
+    // Arrange
+    const destination = makeExistingContent(
+      `<input value='original'>`);
+    const newContent = makeNewContent(
+      `<input value='changed'>`);
+    const destinationNode = toNodeArray(destination)[0] as HTMLInputElement;
+
+    // Act
+    synchronizeDomContent(destination, newContent);
+
+    // Assert
+    expect(destinationNode.value).toEqual('changed');
+    expect(destinationNode.getAttribute('value')).toEqual('changed');
+  });
+
+  test('should not update input element value when modified by user', () => {
+    // Arrange
+    const destination = makeExistingContent(
+      `<input value='original'>`);
+    const newContent = makeNewContent(
+      `<input value='changed'>`);
+    const destinationNode = toNodeArray(destination)[0] as HTMLInputElement;
+    destinationNode.value = 'edited by user';
+
+    // Act
+    synchronizeDomContent(destination, newContent);
+
+    // Assert
+    // While we do write a new attribute value, we do *not* overwrite the 'value'
+    // property, so any user-performed edits will not be overwritten. This happens automatically
+    // without any explicit implementation logic, but since it's the behavior we want, this test
+    // is here to detect if we ever regress this behavior.
+    expect(destinationNode.value).toEqual('edited by user');
+    expect(destinationNode.getAttribute('value')).toEqual('changed');
+  });
 });
 
 function makeExistingContent(html: string): CommentBoundedRange {
