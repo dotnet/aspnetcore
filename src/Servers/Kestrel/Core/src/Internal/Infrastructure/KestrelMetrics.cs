@@ -30,37 +30,37 @@ internal sealed class KestrelMetrics
         _meter = meterFactory.Create(MeterName);
 
         _currentConnectionsCounter = _meter.CreateUpDownCounter<long>(
-           "current-connections",
+           "kestrel-current-connections",
             description: "Number of connections that are currently active on the server.");
 
         _connectionDuration = _meter.CreateHistogram<double>(
-            "connection-duration",
+            "kestrel-connection-duration",
             unit: "s",
             description: "The duration of connections on the server.");
 
         _rejectedConnectionsCounter = _meter.CreateCounter<long>(
-           "rejected-connections",
+           "kestrel-rejected-connections",
             description: "Number of connections rejected by the server. Connections are rejected when the currently active count exceeds the value configured with MaxConcurrentConnections.");
 
         _queuedConnectionsCounter = _meter.CreateUpDownCounter<long>(
-           "queued-connections",
+           "kestrel-queued-connections",
             description: "Number of connections that are currently queued and are waiting to start.");
 
         _queuedRequestsCounter = _meter.CreateUpDownCounter<long>(
-           "queued-requests",
+           "kestrel-queued-requests",
             description: "Number of HTTP requests on multiplexed connections (HTTP/2 and HTTP/3) that are currently queued and are waiting to start.");
 
         _currentUpgradedRequestsCounter = _meter.CreateUpDownCounter<long>(
-           "current-upgraded-connections",
+           "kestrel-current-upgraded-connections",
             description: "Number of HTTP connections that are currently upgraded (WebSockets). The number only tracks HTTP/1.1 connections.");
 
         _tlsHandshakeDuration = _meter.CreateHistogram<double>(
-            "tls-handshake-duration",
+            "kestrel-tls-handshake-duration",
             unit: "s",
             description: "The duration of TLS handshakes on the server.");
 
         _currentTlsHandshakesCounter = _meter.CreateUpDownCounter<long>(
-           "current-tls-handshakes",
+           "kestrel-current-tls-handshakes",
             description: "Number of TLS handshakes that are currently in progress on the server.");
     }
 

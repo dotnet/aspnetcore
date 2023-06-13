@@ -24,25 +24,25 @@ internal sealed class RateLimitingMetrics : IDisposable
         _meter = meterFactory.Create(MeterName);
 
         _currentLeasedRequestsCounter = _meter.CreateUpDownCounter<long>(
-            "current-leased-requests",
+            "rate-limiting-current-leased-requests",
             description: "Number of HTTP requests that are currently active on the server that hold a rate limiting lease.");
 
         _leasedRequestDurationCounter = _meter.CreateHistogram<double>(
-            "leased-request-duration",
+            "rate-limiting-leased-request-duration",
             unit: "s",
             description: "The duration of rate limiting leases held by HTTP requests on the server.");
 
         _currentQueuedRequestsCounter = _meter.CreateUpDownCounter<long>(
-            "current-queued-requests",
+            "rate-limiting-current-queued-requests",
             description: "Number of HTTP requests that are currently queued, waiting to acquire a rate limiting lease.");
 
         _queuedRequestDurationCounter = _meter.CreateHistogram<double>(
-            "queued-request-duration",
+            "rate-limiting-queued-request-duration",
             unit: "s",
             description: "The duration of HTTP requests in a queue, waiting to acquire a rate limiting lease.");
 
         _leaseFailedRequestsCounter = _meter.CreateCounter<long>(
-            "lease-failed-requests",
+            "rate-limiting-lease-failed-requests",
             description: "Number of HTTP requests that failed to acquire a rate limiting lease. Requests could be rejected by global or endpoint rate limiting policies. Or the request could be canceled while waiting for the lease.");
     }
 

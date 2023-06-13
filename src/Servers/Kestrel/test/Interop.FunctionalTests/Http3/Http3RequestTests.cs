@@ -82,8 +82,8 @@ public class Http3RequestTests : LoggedTest
             var meterFactory = host.Services.GetRequiredService<IMeterFactory>();
 
             var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            using var connectionDuration = new InstrumentRecorder<double>(meterFactory, "Microsoft.AspNetCore.Server.Kestrel", "connection-duration");
-            using var measurementReporter = new MeasurementReporter<double>(meterFactory, "Microsoft.AspNetCore.Server.Kestrel", "connection-duration");
+            using var connectionDuration = new InstrumentRecorder<double>(meterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel-connection-duration");
+            using var measurementReporter = new MeasurementReporter<double>(meterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel-connection-duration");
             measurementReporter.Register(m =>
             {
                 tcs.SetResult();

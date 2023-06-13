@@ -88,7 +88,6 @@ internal sealed partial class HttpConnectionManager
 
         Log.CreatedNewConnection(_logger, id);
         HttpConnectionsEventSource.Log.ConnectionStart(id);
-        _metrics.ConnectionStart(metricsContext);
 
         var pair = CreateConnectionPair(options.TransportPipeOptions, options.AppPipeOptions);
         var connection = new HttpConnectionContext(id, connectionToken, _connectionLogger, metricsContext, pair.Application, pair.Transport, options, useAck);
