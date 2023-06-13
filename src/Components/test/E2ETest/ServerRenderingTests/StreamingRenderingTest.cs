@@ -65,4 +65,28 @@ public class StreamingRenderingTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.FindElement(By.Id("end-response-link")).Click();
         Browser.Equal("Finished", () => getStatusText().Text);
     }
+
+    [Fact]
+    public void RetainsDomNodesDuringStreamingRenderingUpdates()
+    {
+        Navigate($"{ServerPathBase}/streaming");
+
+        // Initial "waiting" state
+        var originalH1Elem = Browser.Exists(By.TagName("h1"));
+        var originalStatusElem = Browser.Exists(By.Id("status"));
+        Assert.Equal("Streaming Rendering", originalH1Elem.Text);
+        Assert.Equal("Waiting for more...", originalStatusElem.Text);
+
+        // Add an item; see the old elements were retained
+        Browser.FindElement(By.Id("add-item-link")).Click();
+        var originalLi = Browser.Exists(By.TagName("li"));
+        Assert.Equal(originalH1Elem.Location, Browser.Exists(By.TagName("h1")).Location);
+        Assert.Equal(originalStatusElem.Location, Browser.Exists(By.Id("status")).Location);
+
+        // Make a further change; see elements (including dynamically added ones) are still retained
+        // even if their text was updated
+        Browser.FindElement(By.Id("end-response-link")).Click();
+        Browser.Equal("Finished", () => originalStatusElem.Text);
+        Assert.Equal(originalLi.Location, Browser.Exists(By.TagName("li")).Location);
+    }
 }
