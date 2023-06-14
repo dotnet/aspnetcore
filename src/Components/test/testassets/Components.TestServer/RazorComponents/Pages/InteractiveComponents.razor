@@ -8,12 +8,6 @@
     <hr />
 }
 
-@if (WebAssemblyIncrementAmount.HasValue)
-{
-    <WebAssemblyInteractiveCounter IncrementAmount="@WebAssemblyIncrementAmount.Value" />
-    <hr />
-}
-
 @if (ServerSharedIncrementAmount.HasValue)
 {
     <TestContentPackage.ServerInteractiveCounter IncrementAmount="@ServerSharedIncrementAmount.Value" />
@@ -29,9 +23,6 @@
 @code {
     [Parameter, SupplyParameterFromQuery(Name = "server")]
     public int? ServerIncrementAmount { get; set; }
-
-    [Parameter, SupplyParameterFromQuery(Name = "wasm")]
-    public int? WebAssemblyIncrementAmount { get; set; }
 
     [Parameter, SupplyParameterFromQuery(Name = "server-shared")]
     public int? ServerSharedIncrementAmount { get; set; }
