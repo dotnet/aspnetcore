@@ -425,59 +425,6 @@ public class HttpConnectionManagerTests : VerifiableLoggedTest
         }
     }
 
-    [Fact]
-    public void Metrics()
-    {
-        using (StartVerifiableLog())
-        {
-            var testMeterFactory = new TestMeterFactory();
-            using var connectionDuration = new InstrumentRecorder<double>(testMeterFactory, HttpConnectionsMetrics.MeterName, "signalr-http-transport-connection-duration");
-
-            var connectionManager = CreateConnectionManager(LoggerFactory, metrics: new HttpConnectionsMetrics(testMeterFactory));
-            var connection = connectionManager.CreateConnection();
-
-            Assert.NotNull(connection.ConnectionId);
-
-            Assert.Empty(connectionDuration.GetMeasurements());
-
-            connection.TransportType = HttpTransportType.WebSockets;
-
-            connectionManager.RemoveConnection(connection.ConnectionId, connection.TransportType, HttpConnectionStopStatus.NormalClosure);
-
-            Assert.Collection(connectionDuration.GetMeasurements(), m => AssertDuration(m, HttpConnectionStopStatus.NormalClosure, HttpTransportType.WebSockets));
-        }
-    }
-
-    [Fact]
-    public void Metrics_ListenStartAfterConnection_Empty()
-    {
-        using (StartVerifiableLog())
-        {
-            var testMeterFactory = new TestMeterFactory();
-            var connectionManager = CreateConnectionManager(LoggerFactory, metrics: new HttpConnectionsMetrics(testMeterFactory));
-            var connection = connectionManager.CreateConnection();
-
-            using var connectionDuration = new InstrumentRecorder<double>(testMeterFactory, HttpConnectionsMetrics.MeterName, "http-server-connection-duration");
-            using var currentConnections = new InstrumentRecorder<long>(testMeterFactory, HttpConnectionsMetrics.MeterName, "http-server-current-connections");
-
-            Assert.NotNull(connection.ConnectionId);
-
-            connection.TransportType = HttpTransportType.WebSockets;
-
-            connectionManager.RemoveConnection(connection.ConnectionId, connection.TransportType, HttpConnectionStopStatus.NormalClosure);
-
-            Assert.Empty(currentConnections.GetMeasurements());
-            Assert.Empty(connectionDuration.GetMeasurements());
-        }
-    }
-
-    private static void AssertDuration(Measurement<double> measurement, HttpConnectionStopStatus status, HttpTransportType transportType)
-    {
-        Assert.True(measurement.Value > 0);
-        Assert.Equal(status.ToString(), (string)measurement.Tags.ToArray().Single(t => t.Key == "status").Value);
-        Assert.Equal(transportType.ToString(), (string)measurement.Tags.ToArray().Single(t => t.Key == "transport").Value);
-    }
-
     private static HttpConnectionManager CreateConnectionManager(ILoggerFactory loggerFactory, IHostApplicationLifetime lifetime = null, HttpConnectionsMetrics metrics = null)
     {
         lifetime ??= new EmptyApplicationLifetime();

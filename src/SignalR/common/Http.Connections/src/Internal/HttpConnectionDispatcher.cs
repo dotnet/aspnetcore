@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using System.Diagnostics;
 using System.Security.Claims;
 using System.Security.Principal;
 using Microsoft.AspNetCore.Authentication;
@@ -552,7 +553,14 @@ internal sealed partial class HttpConnectionDispatcher
 
         if (connection.TransportType == HttpTransportType.None)
         {
+            if (HttpConnectionsEventSource.Log.IsEnabled() || connection.MetricsContext.ConnectionDurationEnabled)
+            {
+                connection.StartTimestamp = Stopwatch.GetTimestamp();
+            }
+
             connection.TransportType = transportType;
+
+            HttpConnectionsEventSource.Log.ConnectionStart(connection.ConnectionId);
             _metrics.ConnectionTransportStart(connection.MetricsContext, transportType);
         }
         else if (connection.TransportType != transportType)
