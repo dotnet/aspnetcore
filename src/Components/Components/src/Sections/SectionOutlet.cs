@@ -123,7 +123,7 @@ public sealed class SectionOutlet : IComponent, IDisposable
     //     so anything computed from this (e.g., whether or not streaming rendering is
     //     enabled) will be freshly re-evaluated, without that information having to
     //     change in place on an existing ComponentState.
-    private class SectionOutletContentRenderer : IComponent
+    internal sealed class SectionOutletContentRenderer : IComponent
     {
         public const string ContentParameterName = "content";
 

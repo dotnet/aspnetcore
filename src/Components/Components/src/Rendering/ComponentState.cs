@@ -34,10 +34,10 @@ public class ComponentState : IAsyncDisposable
     {
         ComponentId = componentId;
         ParentComponentState = parentComponentState;
-        LogicalParentComponentState = parentComponentState?.Component is SectionOutlet sectionOutlet
-            ? (GetSectionOutletLogicalParent(renderer, sectionOutlet) ?? parentComponentState)
-            : parentComponentState;
         Component = component ?? throw new ArgumentNullException(nameof(component));
+        LogicalParentComponentState = component is SectionOutlet.SectionOutletContentRenderer
+            ? (GetSectionOutletLogicalParent(renderer, (SectionOutlet)parentComponentState!.Component) ?? parentComponentState)
+            : parentComponentState;
         _renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
         _cascadingParameters = CascadingParameterState.FindCascadingParameters(this);
         CurrentRenderTree = new RenderTreeBuilder();
