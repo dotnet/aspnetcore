@@ -888,7 +888,7 @@ public sealed class JsonHubProtocol : IHubProtocol
     {
         if (sequenceId is null)
         {
-            throw new InvalidDataException("Missing 'sequenceId' in Ack message.");
+            throw new InvalidDataException("Missing required property 'sequenceId'.");
         }
 
         return new AckMessage(sequenceId.Value);
@@ -898,7 +898,7 @@ public sealed class JsonHubProtocol : IHubProtocol
     {
         if (sequenceId is null)
         {
-            throw new InvalidDataException("Missing 'sequenceId' in Sequence message.");
+            throw new InvalidDataException("Missing required property 'sequenceId'.");
         }
 
         return new SequenceMessage(sequenceId.Value);
