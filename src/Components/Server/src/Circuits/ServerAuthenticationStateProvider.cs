@@ -15,7 +15,7 @@ public class ServerAuthenticationStateProvider : AuthenticationStateProvider, IH
     /// <inheritdoc />
     public override Task<AuthenticationState> GetAuthenticationStateAsync()
         => _authenticationStateTask
-        ?? throw new InvalidOperationException($"{nameof(GetAuthenticationStateAsync)} was called before {nameof(SetAuthenticationState)}. You cannot call nameof(GetAuthenticationStateAsync)} outside a blazor context.");
+        ?? throw new InvalidOperationException($"{nameof(GetAuthenticationStateAsync)} was called before {nameof(SetAuthenticationState)}. You cannot call nameof(GetAuthenticationStateAsync)} outside a Blazor context.");
 
     /// <inheritdoc />
     public void SetAuthenticationState(Task<AuthenticationState> authenticationStateTask)
