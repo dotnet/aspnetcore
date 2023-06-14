@@ -15,7 +15,8 @@ public sealed class CascadingQueryModelBindingProvider : CascadingModelBindingPr
     private readonly NavigationManager _navigationManager;
 
     private HashSet<ComponentState>? _subscribers;
-    private bool _haveQueryParametersChanged = true;
+    private bool _isSubscribedToLocationChanges;
+    private bool _queryParametersMightHaveChanged = true;
 
     /// <inheritdoc/>
     protected internal override bool AreValuesFixed => false;
@@ -26,7 +27,6 @@ public sealed class CascadingQueryModelBindingProvider : CascadingModelBindingPr
     public CascadingQueryModelBindingProvider(NavigationManager navigationManager)
     {
         _navigationManager = navigationManager;
-        _navigationManager.LocationChanged += OnLocationChanged;
     }
 
     /// <inheritdoc/>
@@ -45,9 +45,9 @@ public sealed class CascadingQueryModelBindingProvider : CascadingModelBindingPr
     /// <inheritdoc/>
     protected internal override object? GetCurrentValue(ModelBindingContext? bindingContext, in CascadingParameterInfo parameterInfo)
     {
-        if (_haveQueryParametersChanged)
+        if (_queryParametersMightHaveChanged)
         {
-            _haveQueryParametersChanged = false;
+            _queryParametersMightHaveChanged = false;
             UpdateQueryParameters();
         }
 
@@ -58,6 +58,8 @@ public sealed class CascadingQueryModelBindingProvider : CascadingModelBindingPr
     /// <inheritdoc/>
     protected internal override void Subscribe(ComponentState subscriber)
     {
+        SubscribeToLocationChanges();
+
         _subscribers ??= new();
         _subscribers.Add(subscriber);
     }
@@ -65,19 +67,11 @@ public sealed class CascadingQueryModelBindingProvider : CascadingModelBindingPr
     /// <inheritdoc/>
     protected internal override void Unsubscribe(ComponentState subscriber)
     {
-        _subscribers?.Remove(subscriber);
-    }
+        _subscribers!.Remove(subscriber);
 
-    private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
-    {
-        _haveQueryParametersChanged = true;
-
-        if (_subscribers is not null)
+        if (_subscribers.Count == 0)
         {
-            foreach (var subscriber in _subscribers)
-            {
-                subscriber.NotifyCascadingValueChanged(ParameterViewLifetime.Unbound);
-            }
+            UnsubscribeFromLocationChanges();
         }
     }
 
@@ -101,8 +95,44 @@ public sealed class CascadingQueryModelBindingProvider : CascadingModelBindingPr
         }
     }
 
+    private void SubscribeToLocationChanges()
+    {
+        if (_isSubscribedToLocationChanges)
+        {
+            return;
+        }
+
+        _isSubscribedToLocationChanges = true;
+        _queryParametersMightHaveChanged = true;
+        _navigationManager.LocationChanged += OnLocationChanged;
+    }
+
+    private void UnsubscribeFromLocationChanges()
+    {
+        if (!_isSubscribedToLocationChanges)
+        {
+            return;
+        }
+
+        _isSubscribedToLocationChanges = false;
+        _navigationManager.LocationChanged -= OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
+    {
+        _queryParametersMightHaveChanged = true;
+
+        if (_subscribers is not null)
+        {
+            foreach (var subscriber in _subscribers)
+            {
+                subscriber.NotifyCascadingValueChanged(ParameterViewLifetime.Unbound);
+            }
+        }
+    }
+
     void IDisposable.Dispose()
     {
-        _navigationManager.LocationChanged -= OnLocationChanged;
+        UnsubscribeFromLocationChanges();
     }
 }
