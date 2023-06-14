@@ -197,7 +197,7 @@ public class NavLink : ComponentBase, IDisposable
         }
     }
 
-    private static bool IsUnreservedCharacter(char c) 
+    private static bool IsUnreservedCharacter(char c)
     {
         // Checks whether it is an unreserved character according to 
         // https://datatracker.ietf.org/doc/html/rfc3986#section-2.3
