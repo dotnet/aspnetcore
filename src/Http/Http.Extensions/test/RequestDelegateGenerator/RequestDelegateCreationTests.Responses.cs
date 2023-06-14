@@ -332,7 +332,11 @@ static async IAsyncEnumerable<JsonTodo> GetTodosAsync()
         {
             if (useJsonContext)
             {
-                serviceCollection.ConfigureHttpJsonOptions(o => o.SerializerOptions.TypeInfoResolver = SharedTestJsonContext.Default);
+                serviceCollection.ConfigureHttpJsonOptions(o =>
+                {
+                    o.SerializerOptions.TypeInfoResolverChain.Insert(0, SharedTestJsonContext.Default);
+                    o.SerializerOptions.TypeInfoResolver = SharedTestJsonContext.Default;
+                });
             }
         });
         var endpoint = GetEndpointFromCompilation(compilation, serviceProvider: serviceProvider);
@@ -343,6 +347,39 @@ static async IAsyncEnumerable<JsonTodo> GetTodosAsync()
 
         var expectedBody = """[{"id":1,"name":"One","isComplete":true},{"$type":"JsonTodoChild","child":"TwoChild","id":2,"name":"Two","isComplete":false}]""";
         await VerifyResponseBodyAsync(httpContext, expectedBody);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task RequestDelegateWritesAsJsonResponseBody_UnspeakableType_InFilter(bool useJsonContext)
+    {
+        var source = """
+app.MapGet("/todos", () => "not going to be returned")
+.AddEndpointFilterFactory((routeHandlerContext, next) => async (context) =>
+{
+    var result = await next(context);
+    return new Todo { Name = "Write even more tests!" };
+});
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var serviceProvider = CreateServiceProvider(serviceCollection =>
+        {
+            if (useJsonContext)
+            {
+                serviceCollection.ConfigureHttpJsonOptions(o => o.SerializerOptions.TypeInfoResolver = SharedTestJsonContext.Default);
+            }
+        });
+        var endpoint = GetEndpointFromCompilation(compilation, serviceProvider: serviceProvider);
+
+        var httpContext = CreateHttpContext(serviceProvider);
+
+        await endpoint.RequestDelegate(httpContext);
+
+        await VerifyResponseJsonBodyAsync<Todo>(httpContext, (todo) =>
+        {
+            Assert.Equal("Write even more tests!", todo.Name);
+        });
     }
 
     [Fact]
