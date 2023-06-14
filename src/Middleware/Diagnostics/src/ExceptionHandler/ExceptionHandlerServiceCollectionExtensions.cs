@@ -42,12 +42,11 @@ public static class ExceptionHandlerServiceCollectionExtensions
     }
 
     /// <summary>
-    /// 
+    /// Adds services and options for the exception handler middleware.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="services"></param>
-    /// <returns></returns>
-
+    /// <typeparam name="T">The type of the exception handler implementation.</typeparam>
+    /// <param name="services">The <see cref="IServiceCollection"/> for adding services.</param>
+    /// <returns>The modified <see cref="IServiceCollection"/>.</returns>
     public static IServiceCollection AddExceptionHandler<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(this IServiceCollection services) where T : class, IExceptionHandler
     {
         return services.AddSingleton<IExceptionHandler, T>();
