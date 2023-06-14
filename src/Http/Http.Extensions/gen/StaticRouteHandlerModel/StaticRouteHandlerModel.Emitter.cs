@@ -14,19 +14,29 @@ internal static class StaticRouteHandlerModelEmitter
 {
     public static string EmitHandlerDelegateType(this Endpoint endpoint, bool considerOptionality = false)
     {
+        // Emits a delegate type to use when casting the input that captures
+        // default parameter values.
+        //
+        // void (int arg0, Todo arg1) => throw null!
+        // IResult (int arg0, Todo arg1) => throw null!
         if (endpoint.Parameters.Length == 0)
         {
-            return endpoint.Response == null || (endpoint.Response.HasNoResponse && !endpoint.Response.IsAwaitable) ? "System.Action" : $"System.Func<{endpoint.Response.WrappedResponseType}>";
+            return endpoint.Response == null || (endpoint.Response.HasNoResponse && !endpoint.Response.IsAwaitable) ? "void ()" : $"{endpoint.Response.WrappedResponseType} ()";
         }
-        var parameterTypeList = string.Join(", ", endpoint.Parameters.Select(p => considerOptionality
-            ? p.Type.ToDisplayString(p.IsOptional ? NullableFlowState.MaybeNull : NullableFlowState.NotNull, EmitterConstants.DisplayFormat)
-            : p.Type.ToDisplayString(EmitterConstants.DisplayFormat)));
+        var parameterTypeList = string.Join(", ", endpoint.Parameters.Select((p, i) => $"{getType(p, considerOptionality)} arg{i}{(p.HasDefaultValue ? $"= {p.DefaultValue}" : string.Empty)}"));
 
         if (endpoint.Response == null || (endpoint.Response.HasNoResponse && !endpoint.Response.IsAwaitable))
         {
-            return $"System.Action<{parameterTypeList}>";
+            return $"void ({parameterTypeList})";
         }
-        return $"System.Func<{parameterTypeList}, {endpoint.Response.WrappedResponseType}>";
+        return $"{endpoint.Response.WrappedResponseType} ({parameterTypeList})";
+
+        static string getType(EndpointParameter p, bool considerOptionality)
+        {
+            return considerOptionality
+                ? p.Type.ToDisplayString(p.IsOptional ? NullableFlowState.MaybeNull : NullableFlowState.NotNull, EmitterConstants.DisplayFormat)
+                : p.Type.ToDisplayString(EmitterConstants.DisplayFormat);
+        }
     }
 
     public static string EmitSourceKey(this Endpoint endpoint)

@@ -8,7 +8,6 @@ using System.Text;
 using Microsoft.AspNetCore.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Operations;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel.Emitters;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel;
 using Microsoft.CodeAnalysis.CSharp;
@@ -26,10 +25,7 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
             {
                 var operation = context.SemanticModel.GetOperation(context.Node, token);
                 var wellKnownTypes = WellKnownTypes.GetOrCreate(context.SemanticModel.Compilation);
-                if (operation is IInvocationOperation invocationOperation &&
-                    invocationOperation.TryGetRouteHandlerArgument(out var routeHandlerParameter) &&
-                    routeHandlerParameter is { Parameter.Type: {} delegateType } &&
-                    SymbolEqualityComparer.Default.Equals(delegateType, wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_Delegate)))
+                if (operation.IsValidOperation(wellKnownTypes, out var invocationOperation))
                 {
                     return new Endpoint(invocationOperation, wellKnownTypes, context.SemanticModel);
                 }
@@ -55,117 +51,104 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
             .Where(endpoint => endpoint.Diagnostics.Count == 0)
             .WithTrackingName(GeneratorSteps.EndpointsWithoutDiagnosicsStep);
 
-        var thunks = endpoints.Select((endpoint, _) =>
-        {
-            using var stringWriter = new StringWriter(CultureInfo.InvariantCulture);
-            using var codeWriter = new CodeWriter(stringWriter, baseIndent: 3);
-            codeWriter.InitializeIndent();
-            codeWriter.WriteLine($"[{endpoint.EmitSourceKey()}] = (");
-            codeWriter.Indent++;
-            codeWriter.WriteLine("(methodInfo, options) =>");
-            codeWriter.StartBlock();
-            codeWriter.WriteLine(@"Debug.Assert(options != null, ""RequestDelegateFactoryOptions not found."");");
-            codeWriter.WriteLine(@"Debug.Assert(options.EndpointBuilder != null, ""EndpointBuilder not found."");");
-            codeWriter.WriteLine($"options.EndpointBuilder.Metadata.Add(new SourceKey{endpoint.EmitSourceKey()});");
-            endpoint.EmitEndpointMetadataPopulation(codeWriter);
-            codeWriter.WriteLine("return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };");
-            codeWriter.EndBlockWithComma();
-            codeWriter.WriteLine("(del, options, inferredMetadataResult) =>");
-            codeWriter.StartBlock();
-            codeWriter.WriteLine(@"Debug.Assert(options != null, ""RequestDelegateFactoryOptions not found."");");
-            codeWriter.WriteLine(@"Debug.Assert(options.EndpointBuilder != null, ""EndpointBuilder not found."");");
-            codeWriter.WriteLine(@"Debug.Assert(options.EndpointBuilder.ApplicationServices != null, ""ApplicationServices not found."");");
-            codeWriter.WriteLine(@"Debug.Assert(options.EndpointBuilder.FilterFactories != null, ""FilterFactories not found."");");
-            codeWriter.WriteLine($"var handler = ({endpoint.EmitHandlerDelegateType(considerOptionality: true)})del;");
-            codeWriter.WriteLine("EndpointFilterDelegate? filteredInvocation = null;");
-            codeWriter.WriteLine("var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;");
-            endpoint.EmitLoggingPreamble(codeWriter);
-            endpoint.EmitJsonPreparation(codeWriter);
-            endpoint.EmitRouteOrQueryResolver(codeWriter);
-            endpoint.EmitJsonBodyOrServiceResolver(codeWriter);
-            if (endpoint.NeedsParameterArray)
+        var interceptorDefinitions = endpoints
+            .GroupWith((endpoint) => endpoint.Location, EndpointDelegateComparer.Instance)
+            .Select((endpointWithLocations, _) =>
             {
-                codeWriter.WriteLine("var parameters = del.Method.GetParameters();");
-            }
-            codeWriter.WriteLineNoTabs(string.Empty);
-            codeWriter.WriteLine("if (options.EndpointBuilder.FilterFactories.Count > 0)");
-            codeWriter.StartBlock();
-            codeWriter.WriteLine(endpoint.Response?.IsAwaitable == true
-                ? "filteredInvocation = GeneratedRouteBuilderExtensionsCore.BuildFilterDelegate(async ic =>"
-                : "filteredInvocation = GeneratedRouteBuilderExtensionsCore.BuildFilterDelegate(ic =>");
-            codeWriter.StartBlock();
-            codeWriter.WriteLine("if (ic.HttpContext.Response.StatusCode == 400)");
-            codeWriter.StartBlock();
-            codeWriter.WriteLine(endpoint.Response?.IsAwaitable == true
-                ? "return (object?)Results.Empty;"
-                : "return ValueTask.FromResult<object?>(Results.Empty);");
-            codeWriter.EndBlock();
-            endpoint.EmitFilteredInvocation(codeWriter);
-            codeWriter.EndBlockWithComma();
-            codeWriter.WriteLine("options.EndpointBuilder,");
-            codeWriter.WriteLine("handler.Method);");
-            codeWriter.EndBlock();
-            codeWriter.WriteLineNoTabs(string.Empty);
-            endpoint.EmitRequestHandler(codeWriter);
-            codeWriter.WriteLineNoTabs(string.Empty);
-            endpoint.EmitFilteredRequestHandler(codeWriter);
-            codeWriter.WriteLineNoTabs(string.Empty);
-            codeWriter.WriteLine("RequestDelegate targetDelegate = filteredInvocation is null ? RequestHandler : RequestHandlerFiltered;");
-            codeWriter.WriteLine("var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;");
-            codeWriter.WriteLine("return new RequestDelegateResult(targetDelegate, metadata);");
-            codeWriter.Indent--;
-            codeWriter.Write("}),");
-            return stringWriter.ToString();
-        });
-
-        var stronglyTypedEndpointDefinitions = endpoints
-            .Collect()
-            .Select((endpoints, _) =>
-            {
-                var dedupedByDelegate = endpoints.Distinct<Endpoint>(EndpointDelegateComparer.Instance);
+                var endpoint = endpointWithLocations.Source;
                 using var stringWriter = new StringWriter(CultureInfo.InvariantCulture);
                 using var codeWriter = new CodeWriter(stringWriter, baseIndent: 2);
-                foreach (var endpoint in dedupedByDelegate)
+                foreach (var location in endpointWithLocations.Elements)
                 {
-                    codeWriter.WriteLine($"internal static global::Microsoft.AspNetCore.Builder.RouteHandlerBuilder {endpoint.HttpMethod}(");
-                    codeWriter.Indent++;
-                    codeWriter.WriteLine("this global::Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints,");
-                    // MapFallback overloads that only take a delegate do not need a pattern argument
-                    if (endpoint.HttpMethod != "MapFallback" || endpoint.Operation.Arguments.Length != 2)
-                    {
-                        codeWriter.WriteLine(@"[global::System.Diagnostics.CodeAnalysis.StringSyntax(""Route"")] string pattern,");
-                    }
-                    // MapMethods overloads define an additional `httpMethods` parameter
-                    if (endpoint.HttpMethod == "MapMethods")
-                    {
-                        codeWriter.WriteLine("global::System.Collections.Generic.IEnumerable<string> httpMethods,");
-                    }
-                    codeWriter.WriteLine($"global::{endpoint.EmitHandlerDelegateType()} handler,");
-                    codeWriter.WriteLine(@"[global::System.Runtime.CompilerServices.CallerFilePath] string filePath = """",");
-                    codeWriter.WriteLine("[global::System.Runtime.CompilerServices.CallerLineNumber]int lineNumber = 0)");
-                    codeWriter.Indent--;
-                    codeWriter.StartBlock();
-                    codeWriter.WriteLine("return global::Microsoft.AspNetCore.Http.Generated.GeneratedRouteBuilderExtensionsCore.MapCore(");
-                    codeWriter.Indent++;
-                    codeWriter.WriteLine("endpoints,");
-                    // For `MapFallback` overloads that only take a delegate, provide the assumed default
-                    // Otherwise, pass the pattern provided from the MapX invocation
-                    if (endpoint.HttpMethod != "MapFallback" && endpoint.Operation.Arguments.Length != 2)
-                    {
-                        codeWriter.WriteLine("pattern,");
-                    }
-                    else
-                    {
-                        codeWriter.WriteLine($"{SymbolDisplay.FormatLiteral("{*path:nonfile}", true)},");
-                    }
-                    codeWriter.WriteLine("handler,");
-                    codeWriter.WriteLine($"{endpoint.EmitVerb()},");
-                    codeWriter.WriteLine("filePath,");
-                    codeWriter.WriteLine("lineNumber);");
-                    codeWriter.Indent--;
-                    codeWriter.EndBlock();
+                    codeWriter.WriteLine($$"""[InterceptsLocation(@"{{location.File}}", {{location.LineNumber}}, {{location.CharacterNumber}})]""");
                 }
-
+                codeWriter.WriteLine($"internal static RouteHandlerBuilder {endpoint.HttpMethod}_{endpoint.Location.LineNumber}{endpoint.Location.CharacterNumber}(");
+                codeWriter.Indent++;
+                codeWriter.WriteLine("this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints,");
+                // MapFallback overloads that only take a delegate do not need a pattern argument
+                if (endpoint.HttpMethod != "MapFallback" || endpoint.Operation.Arguments.Length != 2)
+                {
+                    codeWriter.WriteLine(@"[System.Diagnostics.CodeAnalysis.StringSyntax(""Route"")] string pattern,");
+                }
+                // MapMethods overloads define an additional `httpMethods` parameter
+                if (endpoint.HttpMethod == "MapMethods")
+                {
+                    codeWriter.WriteLine("System.Collections.Generic.IEnumerable<string> httpMethods,");
+                }
+                codeWriter.WriteLine("System.Delegate handler)");
+                codeWriter.Indent--;
+                codeWriter.StartBlock();
+                codeWriter.WriteLine("MetadataPopulator populateMetadata = (methodInfo, options) =>");
+                codeWriter.StartBlock();
+                codeWriter.WriteLine(@"Debug.Assert(options != null, ""RequestDelegateFactoryOptions not found."");");
+                codeWriter.WriteLine(@"Debug.Assert(options.EndpointBuilder != null, ""EndpointBuilder not found."");");
+                codeWriter.WriteLine($"options.EndpointBuilder.Metadata.Add(new {RequestDelegateGeneratorSources.GeneratedCodeConstructor});");
+                endpoint.EmitEndpointMetadataPopulation(codeWriter);
+                codeWriter.WriteLine("return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };");
+                codeWriter.EndBlockWithSemicolon();
+                codeWriter.WriteLine("RequestDelegateFactoryFunc createRequestDelegate = (del, options, inferredMetadataResult) =>");
+                codeWriter.StartBlock();
+                codeWriter.WriteLine(@"Debug.Assert(options != null, ""RequestDelegateFactoryOptions not found."");");
+                codeWriter.WriteLine(@"Debug.Assert(options.EndpointBuilder != null, ""EndpointBuilder not found."");");
+                codeWriter.WriteLine(@"Debug.Assert(options.EndpointBuilder.ApplicationServices != null, ""ApplicationServices not found."");");
+                codeWriter.WriteLine(@"Debug.Assert(options.EndpointBuilder.FilterFactories != null, ""FilterFactories not found."");");
+                codeWriter.WriteLine($"var handler = Cast(del, {endpoint.EmitHandlerDelegateType(considerOptionality: true)} => throw null!);");
+                codeWriter.WriteLine("EndpointFilterDelegate? filteredInvocation = null;");
+                codeWriter.WriteLine("var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;");
+                endpoint.EmitLoggingPreamble(codeWriter);
+                endpoint.EmitJsonPreparation(codeWriter);
+                endpoint.EmitRouteOrQueryResolver(codeWriter);
+                endpoint.EmitJsonBodyOrServiceResolver(codeWriter);
+                if (endpoint.NeedsParameterArray)
+                {
+                    codeWriter.WriteLine("var parameters = del.Method.GetParameters();");
+                }
+                codeWriter.WriteLineNoTabs(string.Empty);
+                codeWriter.WriteLine("if (options.EndpointBuilder.FilterFactories.Count > 0)");
+                codeWriter.StartBlock();
+                codeWriter.WriteLine(endpoint.Response?.IsAwaitable == true
+                    ? "filteredInvocation = GeneratedRouteBuilderExtensionsCore.BuildFilterDelegate(async ic =>"
+                    : "filteredInvocation = GeneratedRouteBuilderExtensionsCore.BuildFilterDelegate(ic =>");
+                codeWriter.StartBlock();
+                codeWriter.WriteLine("if (ic.HttpContext.Response.StatusCode == 400)");
+                codeWriter.StartBlock();
+                codeWriter.WriteLine(endpoint.Response?.IsAwaitable == true
+                    ? "return (object?)Results.Empty;"
+                    : "return ValueTask.FromResult<object?>(Results.Empty);");
+                codeWriter.EndBlock();
+                endpoint.EmitFilteredInvocation(codeWriter);
+                codeWriter.EndBlockWithComma();
+                codeWriter.WriteLine("options.EndpointBuilder,");
+                codeWriter.WriteLine("handler.Method);");
+                codeWriter.EndBlock();
+                codeWriter.WriteLineNoTabs(string.Empty);
+                endpoint.EmitRequestHandler(codeWriter);
+                codeWriter.WriteLineNoTabs(string.Empty);
+                endpoint.EmitFilteredRequestHandler(codeWriter);
+                codeWriter.WriteLineNoTabs(string.Empty);
+                codeWriter.WriteLine("RequestDelegate targetDelegate = filteredInvocation is null ? RequestHandler : RequestHandlerFiltered;");
+                codeWriter.WriteLine("var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;");
+                codeWriter.WriteLine("return new RequestDelegateResult(targetDelegate, metadata);");
+                codeWriter.EndBlockWithSemicolon();
+                codeWriter.WriteLine("return global::Microsoft.AspNetCore.Http.Generated.GeneratedRouteBuilderExtensionsCore.MapCore(");
+                codeWriter.Indent++;
+                codeWriter.WriteLine("endpoints,");
+                // For `MapFallback` overloads that only take a delegate, provide the assumed default
+                // Otherwise, pass the pattern provided from the MapX invocation
+                if (endpoint.HttpMethod != "MapFallback" && endpoint.Operation.Arguments.Length != 2)
+                {
+                    codeWriter.WriteLine("pattern,");
+                }
+                else
+                {
+                    codeWriter.WriteLine($"{SymbolDisplay.FormatLiteral("{*path:nonfile}", true)},");
+                }
+                codeWriter.WriteLine("handler,");
+                codeWriter.WriteLine($"{endpoint.EmitVerb()},");
+                codeWriter.WriteLine("populateMetadata,");
+                codeWriter.WriteLine("createRequestDelegate);");
+                codeWriter.Indent--;
+                codeWriter.EndBlock();
                 return stringWriter.ToString();
             });
 
@@ -270,27 +253,22 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                 return stringWriter.ToString();
             });
 
-        var thunksAndEndpoints = thunks.Collect().Combine(stronglyTypedEndpointDefinitions).Combine(endpointHelpers).Combine(helperTypes);
+        var endpointsAndHelpers = interceptorDefinitions.Collect().Combine(endpointHelpers).Combine(helperTypes);
 
-        context.RegisterSourceOutput(thunksAndEndpoints, (context, sources) =>
+        context.RegisterSourceOutput(endpointsAndHelpers, (context, sources) =>
         {
-            var (((thunks, endpointsCode), helperMethods), helperTypes) = sources;
-
-            if (thunks.IsDefaultOrEmpty || string.IsNullOrEmpty(endpointsCode))
+            var ((endpointsCode, helperMethods), helperTypes) = sources;
+            if (endpointsCode.IsDefaultOrEmpty)
             {
                 return;
             }
-
-            var thunksCode = new StringBuilder();
-            foreach (var thunk in thunks)
+            var endpoints = new StringBuilder();
+            foreach (var endpoint in endpointsCode)
             {
-                thunksCode.AppendLine(thunk);
+                endpoints.AppendLine(endpoint);
             }
-
             var code = RequestDelegateGeneratorSources.GetGeneratedRouteBuilderExtensionsSource(
-                genericThunks: string.Empty,
-                thunks: thunksCode.ToString(),
-                endpoints: endpointsCode,
+                endpoints: endpoints.ToString(),
                 helperMethods: helperMethods ?? string.Empty,
                 helperTypes: helperTypes ?? string.Empty);
 

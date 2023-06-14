@@ -18,7 +18,8 @@ internal static class RequestDelegateGeneratorSources
 #nullable enable
 """;
 
-    public static string GeneratedCodeAttribute => $@"[System.CodeDom.Compiler.GeneratedCodeAttribute(""{typeof(RequestDelegateGeneratorSources).Assembly.FullName}"", ""{typeof(RequestDelegateGeneratorSources).Assembly.GetName().Version}"")]";
+    public static string GeneratedCodeConstructor => $@"System.CodeDom.Compiler.GeneratedCodeAttribute(""{typeof(RequestDelegateGeneratorSources).Assembly.FullName}"", ""{typeof(RequestDelegateGeneratorSources).Assembly.GetName().Version}"")";
+    public static string GeneratedCodeAttribute => $"[{GeneratedCodeConstructor}]";
 
     public static string ContentTypeConstantsType => $$"""
     {{GeneratedCodeAttribute}}
@@ -485,25 +486,19 @@ internal static class RequestDelegateGeneratorSources
     }
 """;
 
-    public static string GetGeneratedRouteBuilderExtensionsSource(string genericThunks, string thunks, string endpoints, string helperMethods, string helperTypes) => $$"""
+    public static string GetGeneratedRouteBuilderExtensionsSource(string endpoints, string helperMethods, string helperTypes) => $$"""
 {{SourceHeader}}
 
-namespace Microsoft.AspNetCore.Builder
+namespace System.Runtime.CompilerServices
 {
     {{GeneratedCodeAttribute}}
-    internal sealed class SourceKey
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
+    file sealed class InterceptsLocationAttribute : Attribute
     {
-        public string Path { get; init; }
-        public int Line { get; init; }
-
-        public SourceKey(string path, int line)
+        public InterceptsLocationAttribute(string filePath, int line, int column)
         {
-            Path = path;
-            Line = line;
         }
     }
-
-{{GetEndpoints(endpoints)}}
 }
 
 namespace Microsoft.AspNetCore.Http.Generated
@@ -517,6 +512,7 @@ namespace Microsoft.AspNetCore.Http.Generated
     using System.Globalization;
     using System.Linq;
     using System.Reflection;
+    using System.Runtime.CompilerServices;
     using System.Text.Json;
     using System.Text.Json.Serialization.Metadata;
     using System.Threading.Tasks;
@@ -539,8 +535,29 @@ namespace Microsoft.AspNetCore.Http.Generated
     {{GeneratedCodeAttribute}}
     file static class GeneratedRouteBuilderExtensionsCore
     {
-{{GetGenericThunks(genericThunks)}}
-{{GetThunks(thunks)}}
+        private static readonly string[] GetVerb = new[] { Microsoft.AspNetCore.Http.HttpMethods.Get };
+        private static readonly string[] PostVerb = new[] { Microsoft.AspNetCore.Http.HttpMethods.Post };
+        private static readonly string[] PutVerb = new[]  { Microsoft.AspNetCore.Http.HttpMethods.Put };
+        private static readonly string[] DeleteVerb = new[] { Microsoft.AspNetCore.Http.HttpMethods.Delete };
+        private static readonly string[] PatchVerb = new[] { Microsoft.AspNetCore.Http.HttpMethods.Patch };
+
+        {{endpoints}}
+
+        internal static RouteHandlerBuilder MapCore(
+            this IEndpointRouteBuilder routes,
+            string pattern,
+            Delegate handler,
+            IEnumerable<string>? httpMethods,
+            MetadataPopulator populateMetadata,
+            RequestDelegateFactoryFunc createRequestDelegate)
+        {
+            return RouteHandlerServices.Map(routes, pattern, handler, httpMethods, populateMetadata, createRequestDelegate);
+        }
+
+        private static T Cast<T>(Delegate d, T _) where T : Delegate
+        {
+            return (T)d;
+        }
 
         private static EndpointFilterDelegate BuildFilterDelegate(EndpointFilterDelegate filteredInvocation, EndpointBuilder builder, MethodInfo mi)
         {
@@ -603,63 +620,4 @@ namespace Microsoft.AspNetCore.Http.Generated
 {{LogOrThrowExceptionHelperClass}}
 }
 """;
-    private static string GetGenericThunks(string genericThunks) => genericThunks != string.Empty ? $$"""
-        private static class GenericThunks<T>
-        {
-            public static readonly Dictionary<(string, int), (MetadataPopulator, RequestDelegateFactoryFunc)> map = new()
-            {
-                {{genericThunks}}
-            };
-        }
-
-        internal static RouteHandlerBuilder MapCore<T>(
-            this IEndpointRouteBuilder routes,
-            string pattern,
-            Delegate handler,
-            IEnumerable<string> httpMethods,
-            string filePath,
-            int lineNumber)
-        {
-            var (populateMetadata, createRequestDelegate) = GenericThunks<T>.map[(filePath, lineNumber)];
-            return RouteHandlerServices.Map(routes, pattern, handler, httpMethods, populateMetadata, createRequestDelegate);
-        }
-""" : string.Empty;
-
-    private static string GetThunks(string thunks) => thunks != string.Empty ? $$"""
-        private static readonly Dictionary<(string, int), (MetadataPopulator, RequestDelegateFactoryFunc)> map = new()
-        {
-{{thunks}}
-        };
-
-        internal static RouteHandlerBuilder MapCore(
-            this IEndpointRouteBuilder routes,
-            string pattern,
-            Delegate handler,
-            IEnumerable<string>? httpMethods,
-            string filePath,
-            int lineNumber)
-        {
-            var (populateMetadata, createRequestDelegate) = map[(filePath, lineNumber)];
-            return RouteHandlerServices.Map(routes, pattern, handler, httpMethods, populateMetadata, createRequestDelegate);
-        }
-""" : string.Empty;
-
-    private static string GetEndpoints(string endpoints) => endpoints != string.Empty ? $$"""
-    // This class needs to be internal so that the compiled application
-    // has access to the strongly-typed endpoint definitions that are
-    // generated by the compiler so that they will be favored by
-    // overload resolution and opt the runtime in to the code generated
-    // implementation produced here.
-    {{GeneratedCodeAttribute}}
-    internal static class GenerateRouteBuilderEndpoints
-    {
-        private static readonly string[] GetVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Get };
-        private static readonly string[] PostVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Post };
-        private static readonly string[] PutVerb = new[]  { global::Microsoft.AspNetCore.Http.HttpMethods.Put };
-        private static readonly string[] DeleteVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Delete };
-        private static readonly string[] PatchVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Patch };
-
-        {{endpoints}}
-    }
-""" : string.Empty;
 }

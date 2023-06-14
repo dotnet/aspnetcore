@@ -30,6 +30,7 @@
     <Compile Include="$(SharedSourceRoot)RoslynUtils\SyntaxTreeExtensions.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)RoslynUtils\ParsabilityHelper.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)RoslynUtils\CodeWriter.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)RoslynUtils\IncrementalValuesProviderExtensions.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)Diagnostics\AnalyzerDebug.cs" LinkBase="Shared" />
   </ItemGroup>
 
