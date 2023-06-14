@@ -165,6 +165,7 @@ internal sealed partial class Request
 
         User = RequestContext.GetUser();
 
+        SniHostName = string.Empty;
         if (IsHttps)
         {
             GetTlsHandshakeResults();
@@ -323,7 +324,7 @@ internal sealed partial class Request
 
     internal WindowsPrincipal User { get; }
 
-    public string? SniHostName { get; private set; }
+    public string SniHostName { get; private set; }
 
     public SslProtocols Protocol { get; private set; }
 

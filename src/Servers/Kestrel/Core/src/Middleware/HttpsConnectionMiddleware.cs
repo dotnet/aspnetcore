@@ -318,7 +318,7 @@ internal sealed class HttpsConnectionMiddleware
         {
             selector = (sender, name) =>
             {
-                feature.HostName = name;
+                feature.HostName = name ?? string.Empty;
                 var cert = _serverCertificateSelector(context, name);
                 if (cert != null)
                 {
