@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http;
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
 /// <summary>
-/// Options to configure interactive WebAssembly components in a razor components application.
+/// Options to configure interactive WebAssembly components.
 /// </summary>
 public sealed class WebAssemblyComponentsEndpointOptions
 {
