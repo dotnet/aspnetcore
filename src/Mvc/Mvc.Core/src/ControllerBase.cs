@@ -564,8 +564,6 @@ public abstract class ControllerBase
         };
     }
 
-
-
     /// <summary>
     /// Redirects (<see cref="StatusCodes.Status303SeeOther"/>) to an action with the same name as current one.
     /// The 'controller' and 'action' names are retrieved from the ambient values of the current request.
@@ -682,10 +680,6 @@ public abstract class ControllerBase
             UrlHelper = Url,
         };
     }
-
-
-
-
 
     /// <summary>
     /// Redirects (<see cref="StatusCodes.Status307TemporaryRedirect"/>) to the specified action with
