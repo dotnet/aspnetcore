@@ -737,6 +737,11 @@ public static partial class RequestDelegateFactory
                 }
                 return BindParameterFromFormCollection(parameter, factoryContext);
             }
+            // Continue to use the simple binding support that exists in RDF/RDG for currently
+            // supported scenarios to maintain compatible semantics between versions of RDG. 
+            // For complex types, leverage the shared form binding infrastructure. For example,
+            // shared form binding does not currently only supports types that implement IParsable
+            // while RDF's binding implementation supports all TryParse implementations.
             var useSimpleBinding = parameter.ParameterType == typeof(string) ||
                 parameter.ParameterType == typeof(StringValues) ||
                 parameter.ParameterType == typeof(StringValues?) ||
