@@ -238,7 +238,7 @@ internal sealed partial class HttpConnectionDispatcher
                     // Wait for the transport to run
                     // Ignore exceptions, it has been logged if there is one and the application has finished
                     // So there is no one to give the exception to
-                    await connection.TransportTask!.NoThrow();
+                    await ((Task)connection.TransportTask!).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
 
                     // If the status code is a 204 it means the connection is done
                     if (context.Response.StatusCode == StatusCodes.Status204NoContent)
