@@ -5,6 +5,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -15,6 +16,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer;
 public class JwtBearerOptions : AuthenticationSchemeOptions
 {
     private readonly JwtSecurityTokenHandler _defaultHandler = new JwtSecurityTokenHandler();
+    private readonly JsonWebTokenHandler _defaultTokenHandler = new JsonWebTokenHandler();
 
     /// <summary>
     /// Initializes a new instance of <see cref="JwtBearerOptions"/>.
@@ -22,6 +24,7 @@ public class JwtBearerOptions : AuthenticationSchemeOptions
     public JwtBearerOptions()
     {
         SecurityTokenValidators = new List<ISecurityTokenValidator> { _defaultHandler };
+        TokenHandlers = new List<TokenHandler> { _defaultTokenHandler };
     }
 
     /// <summary>
@@ -106,6 +109,11 @@ public class JwtBearerOptions : AuthenticationSchemeOptions
     public IList<ISecurityTokenValidator> SecurityTokenValidators { get; private set; }
 
     /// <summary>
+    /// Gets the ordered list of <see cref="TokenHandler"/> used to validate access tokens.
+    /// </summary>
+    public IList<TokenHandler> TokenHandlers { get; private set; }
+
+    /// <summary>
     /// Gets or sets the parameters used to validate identity tokens.
     /// </summary>
     /// <remarks>Contains the types and definitions required for validating a token.</remarks>
@@ -152,4 +160,13 @@ public class JwtBearerOptions : AuthenticationSchemeOptions
     /// Defaults to <see cref="ConfigurationManager{OpenIdConnectConfiguration}.DefaultRefreshInterval" />.
     /// </value>
     public TimeSpan RefreshInterval { get; set; } = ConfigurationManager<OpenIdConnectConfiguration>.DefaultRefreshInterval;
+
+    /// <summary>
+    /// Gets of sets the <see cref="UseTokenHandlers"/> property to control if <see cref="TokenHandlers"/> or <see cref="SecurityTokenValidators"/> will be used to validate the inbound token.
+    /// The advantage of using the TokenHandlers is:
+    /// <para>There is an Async model.</para>
+    /// <para>The default token handler is a <see cref="JsonWebTokenHandler"/> which is 30 % faster when validating.</para>
+    /// <para>There is an ability to make use of a Last-Known-Good model for metadata that protects applications when metadata is published with errors.</para>
+    /// </summary>
+    public bool UseTokenHandlers { get; set; }
 }

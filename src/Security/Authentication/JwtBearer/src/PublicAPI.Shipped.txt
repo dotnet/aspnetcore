@@ -72,8 +72,11 @@ Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions.RequireHttpsMetad
 Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions.SaveToken.get -> bool
 Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions.SaveToken.set -> void
 Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions.SecurityTokenValidators.get -> System.Collections.Generic.IList<Microsoft.IdentityModel.Tokens.ISecurityTokenValidator!>!
+Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions.TokenHandlers.get -> System.Collections.Generic.IList<Microsoft.IdentityModel.Tokens.TokenHandler!>!
 Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions.TokenValidationParameters.get -> Microsoft.IdentityModel.Tokens.TokenValidationParameters!
 Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions.TokenValidationParameters.set -> void
+Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions.UseTokenHandlers.get -> bool
+Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions.UseTokenHandlers.set -> void
 Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerPostConfigureOptions
 Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerPostConfigureOptions.JwtBearerPostConfigureOptions() -> void
 Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerPostConfigureOptions.PostConfigure(string? name, Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions! options) -> void
