@@ -11,7 +11,8 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 public sealed class WebAssemblyComponentsEndpointOptions
 {
     /// <summary>
-    /// Gets or sets <see cref="PathString"/> that indicates the prefix for Blazor WebAssembly framework files.
+    /// Gets or sets the <see cref="PathString"/> that indicates the prefix for Blazor WebAssembly assets.
+    /// This path must correspond to a referenced Blazor WebAssembly application project.
     /// </summary>
-    public PathString FrameworkFilesPathPrefix { get; set; }
+    public PathString PathPrefix { get; set; }
 }

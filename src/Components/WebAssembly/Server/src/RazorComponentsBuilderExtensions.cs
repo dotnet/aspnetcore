@@ -18,8 +18,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 public static class RazorComponentsBuilderExtensions
 {
     /// <summary>
-    /// Adds services to support rendering interactive WebAssembly components in a razor components
-    /// application.
+    /// Adds services to support rendering interactive WebAssembly components.
     /// </summary>
     /// <param name="builder">The <see cref="IRazorComponentsBuilder"/>.</param>
     /// <param name="configure">A callback to configure <see cref="WebAssemblyComponentsEndpointOptions"/>.</param>
@@ -52,7 +51,7 @@ public static class RazorComponentsBuilderExtensions
         public override IEnumerable<RouteEndpointBuilder> GetEndpointBuilders(IComponentRenderMode renderMode, IApplicationBuilder applicationBuilder)
         {
             var endpointRouteBuilder = new EndpointRouteBuilder(_services, applicationBuilder);
-            var pathPrefix = _options.FrameworkFilesPathPrefix;
+            var pathPrefix = _options.PathPrefix;
 
             applicationBuilder.UseBlazorFrameworkFiles(pathPrefix);
             var app = applicationBuilder.Build();

@@ -26,7 +26,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             .AddServerComponents()
             .AddWebAssemblyComponents(options =>
             {
-                options.FrameworkFilesPathPrefix = "/WasmMinimal";
+                options.PathPrefix = "/WasmMinimal";
             });
         services.AddHttpContextAccessor();
         services.AddSingleton<AsyncOperationService>();
