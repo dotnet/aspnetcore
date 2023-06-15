@@ -42,7 +42,8 @@ public static class ExceptionHandlerServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Adds services and options for the exception handler middleware.
+    /// Adds an `IExceptionHandler` implementation to services. `IExceptionHandler` implementations are used by the exception handler middleware to handle unexpected request exceptions.
+    /// Multiple handlers can be added and they're called by the middleware in the order they're added.
     /// </summary>
     /// <typeparam name="T">The type of the exception handler implementation.</typeparam>
     /// <param name="services">The <see cref="IServiceCollection"/> for adding services.</param>
