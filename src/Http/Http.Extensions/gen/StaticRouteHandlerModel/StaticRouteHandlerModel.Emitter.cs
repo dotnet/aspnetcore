@@ -228,10 +228,10 @@ internal static class StaticRouteHandlerModelEmitter
                     ProcessParameter(innerParameter, codeWriter);
                 }
             }
-            else
-            {
-                ProcessParameter(parameter, codeWriter);
-            }
+
+            // Even if a parameter is decorated with the AsParameters attribute, we still need
+            // to fetch metadata on the parameter itself (as well as the properties).
+            ProcessParameter(parameter, codeWriter);
         }
 
         static void ProcessParameter(EndpointParameter parameter, CodeWriter codeWriter)

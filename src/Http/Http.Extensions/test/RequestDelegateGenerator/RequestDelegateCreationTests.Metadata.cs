@@ -520,4 +520,23 @@ app.MapPost("/test/pattern", [Attribute1, Attribute2] (AddsCustomParameterMetada
             // Entry-specific metadata added after a call to InferMetadata
             m => Assert.True(m is CustomEndpointMetadata { Source: MetadataSource.Caller }));
     }
+
+    [Fact]
+    public async Task Create_CombinesPropertiesAsParameterMetadata_AndTopLevelParameter()
+    {
+        // Arrange
+        var (_, compilation) = await RunGeneratorAsync("""
+app.MapPost("/test/pattern", ([AsParameters] AddsCustomParameterMetadata param1) => new CountsDefaultEndpointMetadataPoco())
+   .WithMetadata(new CustomEndpointMetadata { Source = MetadataSource.Caller });
+""");
+
+        // Act
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        // Assert
+        Assert.Contains(endpoint.Metadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Parameter });
+        Assert.Contains(endpoint.Metadata, m => m is ParameterNameMetadata { Name: "param1" });
+        Assert.Contains(endpoint.Metadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Property });
+        Assert.Contains(endpoint.Metadata, m => m is ParameterNameMetadata { Name: nameof(AddsCustomParameterMetadata.Data) });
+    }
 }
