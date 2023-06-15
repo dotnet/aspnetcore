@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
@@ -18,6 +20,8 @@ namespace Microsoft.AspNetCore.Builder;
 /// <summary>
 /// The web application used to configure the HTTP pipeline, and routes.
 /// </summary>
+[DebuggerDisplay("{DebuggerToString(),nq}")]
+[DebuggerTypeProxy(typeof(WebApplicationDebugView))]
 public sealed class WebApplication : IHost, IApplicationBuilder, IEndpointRouteBuilder, IAsyncDisposable
 {
     internal const string GlobalEndpointRouteBuilderKey = "__GlobalEndpointRouteBuilder";
@@ -236,5 +240,40 @@ public sealed class WebApplication : IHost, IApplicationBuilder, IEndpointRouteB
 
         addresses.Clear();
         addresses.Add(url);
+    }
+
+    private string DebuggerToString()
+    {
+        return $@"ApplicationName = ""{Environment.ApplicationName}"", IsRunning = {(IsRunning ? "true" : "false")}";
+    }
+
+    // Web app is running if the app has been started and hasn't been stopped.
+    private bool IsRunning => Lifetime.ApplicationStarted.IsCancellationRequested && !Lifetime.ApplicationStopped.IsCancellationRequested;
+
+    internal sealed class WebApplicationDebugView(WebApplication webApplication)
+    {
+        private readonly WebApplication _webApplication = webApplication;
+
+        public IServiceProvider Services => _webApplication.Services;
+        public IConfiguration Configuration => _webApplication.Configuration;
+        public IWebHostEnvironment Environment => _webApplication.Environment;
+        public IHostApplicationLifetime Lifetime => _webApplication.Lifetime;
+        public ILogger Logger => _webApplication.Logger;
+        public string Urls => string.Join(", ", _webApplication.Urls);
+        public IList<Endpoint> Endpoints => _webApplication.DataSources.SelectMany(ds => ds.Endpoints).ToList();
+        public bool IsRunning => _webApplication.IsRunning;
+        public IList<string>? Middleware
+        {
+            get
+            {
+                if (_webApplication.Properties.TryGetValue("__MiddlewareDescriptions", out var value) &&
+                    value is IList<string> descriptions)
+                {
+                    return descriptions;
+                }
+
+                throw new NotSupportedException("Unable to get configured middleware.");
+            }
+        }
     }
 }

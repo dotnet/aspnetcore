@@ -2526,6 +2526,108 @@ public class WebApplicationTests
         Assert.Equal("RegexRoute", chosenRoute);
     }
 
+    [Fact]
+    public void UseMiddleware_DebugView_HasMiddleware()
+    {
+        var builder = WebApplication.CreateBuilder();
+
+        var app = builder.Build();
+
+        app.UseMiddleware<MiddlewareWithInterface>();
+        app.UseAuthentication();
+        app.Use(next =>
+        {
+            return next;
+        });
+
+        var debugView = new WebApplication.WebApplicationDebugView(app);
+
+        // Contains three strings:
+        // 1. Middleware that implements IMiddleware from app.UseMiddleware<T>()
+        // 2. AuthenticationMiddleware type from app.UseAuthentication()
+        // 3. Generated delegate name from app.Use(...)
+        Assert.Collection(debugView.Middleware,
+            m => Assert.Equal(typeof(MiddlewareWithInterface).FullName, m),
+            m => Assert.Equal("Microsoft.AspNetCore.Authentication.AuthenticationMiddleware", m),
+            m =>
+            {
+                Assert.Contains(nameof(UseMiddleware_DebugView_HasMiddleware), m);
+                Assert.DoesNotContain(nameof(RequestDelegate), m);
+            });
+    }
+
+    [Fact]
+    public void UseMiddleware_HasEndpointsAndAuth_Run_DebugView_HasAutomaticMiddleware()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.Services.AddAuthenticationCore();
+        builder.Services.AddAuthorization();
+
+        var app = builder.Build();
+
+        app.UseMiddleware<MiddlewareWithInterface>();
+        app.MapGet("/hello", () => "hello world");
+
+        // Starting the app automatically adds middleware as needed.
+        _ = app.RunAsync();
+
+        var debugView = new WebApplication.WebApplicationDebugView(app);
+
+        Assert.Collection(debugView.Middleware,
+            m => Assert.Equal("Microsoft.AspNetCore.HostFiltering.HostFilteringMiddleware", m),
+            m => Assert.Equal("Microsoft.AspNetCore.Routing.EndpointRoutingMiddleware", m),
+            m => Assert.Equal("Microsoft.AspNetCore.Authentication.AuthenticationMiddleware", m),
+            m => Assert.Equal("Microsoft.AspNetCore.Authorization.AuthorizationMiddleware", m),
+            m => Assert.Equal(typeof(MiddlewareWithInterface).FullName, m),
+            m => Assert.Equal("Microsoft.AspNetCore.Routing.EndpointMiddleware", m));
+    }
+
+    [Fact]
+    public void NoMiddleware_Run_DebugView_HasAutomaticMiddleware()
+    {
+        var builder = WebApplication.CreateBuilder();
+
+        var app = builder.Build();
+
+        // Starting the app automatically adds middleware as needed.
+        _ = app.RunAsync();
+
+        var debugView = new WebApplication.WebApplicationDebugView(app);
+
+        Assert.Collection(debugView.Middleware,
+            m => Assert.Equal("Microsoft.AspNetCore.HostFiltering.HostFilteringMiddleware", m));
+    }
+
+    [Fact]
+    public void NestedMiddleware_DebugView_OnlyContainsTopLevelMiddleware()
+    {
+        var builder = WebApplication.CreateBuilder();
+
+        var app = builder.Build();
+
+        app.MapWhen(c => true, nested =>
+        {
+            nested.UseStatusCodePages();
+        });
+        app.UseWhen(c => false, nested =>
+        {
+            nested.UseDeveloperExceptionPage();
+        });
+        app.UseExceptionHandler();
+
+        var debugView = new WebApplication.WebApplicationDebugView(app);
+
+        Assert.Equal(3, debugView.Middleware.Count);
+    }
+
+    private class MiddlewareWithInterface : IMiddleware
+    {
+        public Task InvokeAsync(HttpContext context, RequestDelegate next)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     private class UberHandler : AuthenticationHandler<AuthenticationSchemeOptions>
     {
         public UberHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger, UrlEncoder encoder) : base(options, logger, encoder) { }
