@@ -7,8 +7,7 @@ namespace Microsoft.AspNetCore.Diagnostics;
 
 /// <summary>
 /// Represents an interface for handling exceptions in ASP.NET Core applications.
-/// Implementations of this interface can provide custom exception handling logic for
-/// different scenarios in the application.
+/// `IExceptionHandler` implementations are used by the exception handler middleware.
 /// </summary>
 public interface IExceptionHandler
 {
