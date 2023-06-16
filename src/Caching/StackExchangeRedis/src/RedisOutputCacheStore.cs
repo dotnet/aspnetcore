@@ -266,7 +266,7 @@ internal class RedisOutputCacheStore : IOutputCacheStore, IOutputCacheBufferWrit
             // mean that in theory tag-related error may go undetected, but: this is an acceptable trade-off
             const CommandFlags TagCommandFlags = CommandFlags.FireAndForget;
 
-            for (int i = 0; i < len; i++) // can't use span in async method, so: eat a little overhead here
+            for (var i = 0; i < len; i++) // can't use span in async method, so: eat a little overhead here
             {
                 var tag = tags.Span[i];
                 if (_use62Features)
