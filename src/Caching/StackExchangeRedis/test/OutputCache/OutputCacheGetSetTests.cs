@@ -19,6 +19,10 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis;
 
 public class OutputCacheGetSetTests : IClassFixture<RedisConnectionFixture>
 {
+    private const string SkipReason = "TODO: Disabled due to CI failure. " +
+    "These tests require Redis server to be started on the machine. Make sure to change the value of" +
+    "\"RedisTestConfig.RedisPort\" accordingly.";
+
     private readonly IOutputCacheStore _cache;
     private readonly RedisConnectionFixture _fixture;
     private readonly ITestOutputHelper Log;
@@ -48,7 +52,7 @@ public class OutputCacheGetSetTests : IClassFixture<RedisConnectionFixture>
         return _cache;
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task GetMissingKeyReturnsNull()
     {
         var cache = await Cache().ConfigureAwait(false);
@@ -56,7 +60,7 @@ public class OutputCacheGetSetTests : IClassFixture<RedisConnectionFixture>
         Assert.Null(result);
     }
 
-    [Theory]
+    [Theory(Skip = SkipReason)]
     [InlineData(true, false)]
     [InlineData(true, true)]
     [InlineData(false, false)]
@@ -117,7 +121,7 @@ public class OutputCacheGetSetTests : IClassFixture<RedisConnectionFixture>
         }
     }
 
-    [Theory]
+    [Theory(Skip = SkipReason)]
     [InlineData(true)]
     [InlineData(false)]
     public async Task CanFetchStoredValue(bool useReadOnlySequence)
@@ -146,7 +150,7 @@ public class OutputCacheGetSetTests : IClassFixture<RedisConnectionFixture>
         Assert.True(((ReadOnlySpan<byte>)storedValue).SequenceEqual(fetchedValue), "payload should match");
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task GetMissingKeyReturnsFalse_BufferWriter() // "true" result checked in MultiSegmentWriteWorksAsExpected_BufferWriter
     {
         var cache = Assert.IsAssignableFrom<IOutputCacheBufferWriterStore>(await Cache().ConfigureAwait(false));
@@ -157,7 +161,7 @@ public class OutputCacheGetSetTests : IClassFixture<RedisConnectionFixture>
         Assert.Equal(0, bufferWriter.WrittenCount);
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task MasterTagScoreShouldOnlyIncrease()
     {
         // store some data
@@ -184,7 +188,7 @@ public class OutputCacheGetSetTests : IClassFixture<RedisConnectionFixture>
         Assert.True(newScore > originalScore, "should increase");
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task CanEvictByTag()
     {
         // store some data
@@ -261,7 +265,7 @@ public class OutputCacheGetSetTests : IClassFixture<RedisConnectionFixture>
         Assert.Null(await cache.GetAsync(fooBar, CancellationToken.None));
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task MultiSegmentWriteWorksAsExpected_Array()
     {
         // store some data
@@ -286,7 +290,7 @@ public class OutputCacheGetSetTests : IClassFixture<RedisConnectionFixture>
         Assert.True(linear.Span.SequenceEqual(fetched), "payload match");
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task MultiSegmentWriteWorksAsExpected_BufferWriter()
     {
         // store some data
@@ -312,7 +316,7 @@ public class OutputCacheGetSetTests : IClassFixture<RedisConnectionFixture>
         Assert.True(linear.Span.SequenceEqual(bufferWriter.WrittenSpan), "payload match");
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task GarbageCollectionDoesNotRunWhenGCKeyHeld()
     {
         var cache = await Cache().ConfigureAwait(false);
@@ -328,7 +332,7 @@ public class OutputCacheGetSetTests : IClassFixture<RedisConnectionFixture>
         }
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task GarbageCollectionCleansUpTagData()
     {
         // importantly, we're not interested in the lifetime of the *values* - redis deals with that
