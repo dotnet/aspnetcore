@@ -44,8 +44,6 @@ async function performEnhancedPageLoad(internalDestinationHref: string) {
   currentEnhancedNavigationAbortController?.abort();
 
   // TODO: Deal with streaming SSR. The returned result may be left hanging for a while.
-  // TODO: If the URL has a hash, scroll to it after updating the DOM (unless this just
-  //       works anyway)
   currentEnhancedNavigationAbortController = new AbortController();
   const abortSignal = currentEnhancedNavigationAbortController.signal;
   let response: Response;
@@ -65,7 +63,20 @@ async function performEnhancedPageLoad(internalDestinationHref: string) {
   if (response.headers.get('content-type')?.startsWith('text/html')) {
     const parsedHtml = new DOMParser().parseFromString(responseText, 'text/html');
     synchronizeDomContent(document, parsedHtml);
+
+    // Also if there's a hash in the URL, recreate the behavior of scrolling to the corresponding element by ID
+    const hashPosition = internalDestinationHref.indexOf('#');
+    if (hashPosition >= 0) {
+      const hash = internalDestinationHref.substring(hashPosition + 1);
+      const targetElem = document.getElementById(hash);
+      targetElem?.scrollIntoView();
+    }
   } else {
-    document.documentElement.innerHTML = responseText || `Error: ${response.status} ${responseText}`;
+    // The response isn't HTML so don't try to parse it that way. If they gave any response text use that,
+    // and only generate our own error message if it's definitely an error with no text.
+    const isSuccessStatus = response.status >= 200 && response.status < 300;
+    document.documentElement.innerHTML = (responseText || isSuccessStatus)
+      ? responseText
+      : `Error: ${response.status} ${responseText}`;
   }
 }
