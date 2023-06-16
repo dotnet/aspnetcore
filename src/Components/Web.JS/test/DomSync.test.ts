@@ -407,6 +407,30 @@ describe('DomSync', () => {
     expect(inputRange.min).toBe('950');
     expect(inputRange.max).toBe('1050');
   });
+
+  test('should treat doctype nodes as unchanged', () => {
+    // Can't update a doctype after the document is created, nor is there a use case for doing so
+    // We just have to skip them, as it would be an error to try removing or inserting them
+
+    // Arrange
+    const destination = new DOMParser().parseFromString(
+      `<!DOCTYPE html>` +
+      `<html><body>Hello</body></html>`, 'text/html');
+    const newContent = new DOMParser().parseFromString(
+      `<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">` +
+      `<html><body>Goodbye</body></html>`, 'text/html');
+    const origDocTypeNode = destination.firstChild!;
+    expect(origDocTypeNode.nodeType).toBe(Node.DOCUMENT_TYPE_NODE);
+    expect(destination.body.textContent).toBe('Hello');
+
+    // Act
+    synchronizeDomContent(destination, newContent);
+
+    // Assert
+    const newDocTypeNode = destination.firstChild;
+    expect(newDocTypeNode).toBe(origDocTypeNode);
+    expect(destination.body.textContent).toBe('Goodbye');
+  });
 });
 
 function makeExistingContent(html: string): CommentBoundedRange {
