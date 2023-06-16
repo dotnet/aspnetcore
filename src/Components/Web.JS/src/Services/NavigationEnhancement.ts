@@ -1,4 +1,3 @@
-import { AbortError } from '@microsoft/signalr';
 import { synchronizeDomContent } from '../Rendering/DomMerging/DomSync';
 import { handleClickForNavigationInterception } from './NavigationUtils';
 
@@ -122,7 +121,7 @@ async function getResponsePartsWithFraming(responsePromise: Promise<Response>, a
         }
       }));
   } catch (ex) {
-    if ((ex as AbortError)?.name === 'AbortError' && abortSignal.aborted) {
+    if ((ex as Error).name === 'AbortError' && abortSignal.aborted) {
       // Not an error. This happens if a different navigation started before this one completed.
       return;
     } else {
