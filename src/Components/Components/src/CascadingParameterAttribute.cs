@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Components;
 /// supplies values with a compatible type and name.
 /// </summary>
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
-public sealed class CascadingParameterAttribute : Attribute
+public sealed class CascadingParameterAttribute : CascadingParameterAttributeBase
 {
     /// <summary>
     /// If specified, the parameter value will be supplied by the closest
@@ -20,5 +20,5 @@ public sealed class CascadingParameterAttribute : Attribute
     /// <see cref="CascadingValue{T}"/>  that supplies a value with a compatible
     /// type.
     /// </summary>
-    public string? Name { get; set; }
+    public override string? Name { get; set; }
 }

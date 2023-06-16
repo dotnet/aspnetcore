@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Components;
 /// <summary>
 /// A component that provides a cascading value to all descendant components.
 /// </summary>
-public class CascadingValue<TValue> : ICascadingValueComponent, IComponent
+public class CascadingValue<TValue> : ICascadingValueSupplier, IComponent
 {
     private RenderHandle _renderHandle;
     private HashSet<ComponentState>? _subscribers; // Lazily instantiated
@@ -40,10 +40,6 @@ public class CascadingValue<TValue> : ICascadingValueComponent, IComponent
     /// <see cref="Value"/> during the component's lifetime.
     /// </summary>
     [Parameter] public bool IsFixed { get; set; }
-
-    object? ICascadingValueComponent.CurrentValue => Value;
-
-    bool ICascadingValueComponent.CurrentValueIsFixed => IsFixed;
 
     /// <inheritdoc />
     public void Attach(RenderHandle renderHandle)
@@ -130,37 +126,39 @@ public class CascadingValue<TValue> : ICascadingValueComponent, IComponent
         return Task.CompletedTask;
     }
 
-    bool ICascadingValueComponent.CanSupplyValue(Type requestedType, string? requestedName)
+    bool ICascadingValueSupplier.CanSupplyValue(in CascadingParameterInfo parameterInfo)
     {
-        if (!requestedType.IsAssignableFrom(typeof(TValue)))
+        if (parameterInfo.Attribute is not CascadingParameterAttribute cascadingParameterAttribute || !parameterInfo.PropertyType.IsAssignableFrom(typeof(TValue)))
         {
             return false;
         }
+
+        // We only consider explicitly requested names, not the property name.
+        var requestedName = cascadingParameterAttribute.Name;
 
         return (requestedName == null && Name == null) // Match on type alone
             || string.Equals(requestedName, Name, StringComparison.OrdinalIgnoreCase); // Also match on name
     }
 
-    void ICascadingValueComponent.Subscribe(ComponentState subscriber)
+    object? ICascadingValueSupplier.GetCurrentValue(in CascadingParameterInfo parameterInfo)
     {
-#if DEBUG
+        return Value;
+    }
+
+    void ICascadingValueSupplier.Subscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
+    {
         if (IsFixed)
         {
             // Should not be possible. User code cannot trigger this.
             // Checking only to catch possible future framework bugs.
             throw new InvalidOperationException($"Cannot subscribe to a {typeof(CascadingValue<>).Name} when {nameof(IsFixed)} is true.");
         }
-#endif
 
-        if (_subscribers == null)
-        {
-            _subscribers = new HashSet<ComponentState>();
-        }
-
+        _subscribers ??= new HashSet<ComponentState>();
         _subscribers.Add(subscriber);
     }
 
-    void ICascadingValueComponent.Unsubscribe(ComponentState subscriber)
+    void ICascadingValueSupplier.Unsubscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
     {
         _subscribers?.Remove(subscriber);
     }
