@@ -24,7 +24,9 @@ internal class RedisOutputCacheStore : IOutputCacheStore, IOutputCacheBufferWrit
 {
     private readonly RedisCacheOptions _options;
     private readonly ILogger _logger;
-    private readonly RedisKey _valueKeyPrefix, _tagKeyPrefix, _tagMasterKey;
+    private readonly RedisKey _valueKeyPrefix;
+    private readonly RedisKey _tagKeyPrefix;
+    private readonly RedisKey _tagMasterKey;
     private readonly RedisKey[] _tagMasterKeyArray; // for use with Lua if needed (to avoid array allocs)
     private readonly SemaphoreSlim _connectionLock = new SemaphoreSlim(initialCount: 1, maxCount: 1);
 
