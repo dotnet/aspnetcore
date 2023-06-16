@@ -5,6 +5,7 @@ using System;
 using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.StackExchangeRedis;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -49,7 +50,7 @@ public static class StackExchangeRedisCacheServiceCollectionExtensions
         services.AddOptions();
 
         services.Configure(setupAction);
-        services.Add(ServiceDescriptor.Singleton<AspNetCore.OutputCaching.IOutputCacheStore, RedisOutputCacheStoreImpl>());
+        services.TryAddSingleton<AspNetCore.OutputCaching.IOutputCacheStore, RedisOutputCacheStoreImpl>();
 
         return services;
     }
