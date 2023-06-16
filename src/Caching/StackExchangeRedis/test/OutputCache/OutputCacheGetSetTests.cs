@@ -41,16 +41,18 @@ public class OutputCacheGetSetTests : IClassFixture<RedisConnectionFixture>
         Log = log;
     }
 
+#if DEBUG
     private async ValueTask<IOutputCacheStore> Cache()
     {
-#if DEBUG
         if (_cache is RedisOutputCacheStore real)
         {
             Log.WriteLine(await real.GetConfigurationInfoAsync().ConfigureAwait(false));
         }
-#endif
         return _cache;
     }
+#else
+    private ValueTask<IOutputCacheStore> Cache() => new(_cache); // avoid CS1998 - no "await"
+#endif
 
     [Fact(Skip = SkipReason)]
     public async Task GetMissingKeyReturnsNull()
