@@ -7,6 +7,7 @@ using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.WsFederation;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.IdentityModel.Tokens.Saml;
 using Microsoft.IdentityModel.Tokens.Saml2;
@@ -24,6 +25,14 @@ public class WsFederationOptions : RemoteAuthenticationOptions
             new SamlSecurityTokenHandler(),
             new JwtSecurityTokenHandler()
         };
+
+    private ICollection<TokenHandler> _tokenHandlers = new Collection<TokenHandler>()
+        {
+            new Saml2SecurityTokenHandler(),
+            new SamlSecurityTokenHandler(),
+            new JsonWebTokenHandler()
+        };
+
     private TokenValidationParameters _tokenValidationParameters = new TokenValidationParameters();
 
     /// <summary>
@@ -109,6 +118,21 @@ public class WsFederationOptions : RemoteAuthenticationOptions
     }
 
     /// <summary>
+    /// Gets or sets the collection of <see cref="ISecurityTokenValidator"/> used to read and validate the <see cref="SecurityToken"/>s.
+    /// </summary>
+    public ICollection<TokenHandler> TokenHandlers
+    {
+        get
+        {
+            return _tokenHandlers;
+        }
+        set
+        {
+            _tokenHandlers = value ?? throw new ArgumentNullException(nameof(TokenHandlers));
+        }
+    }
+
+    /// <summary>
     /// Gets or sets the type used to secure data handled by the middleware.
     /// </summary>
     public ISecureDataFormat<AuthenticationProperties> StateDataFormat { get; set; } = default!;
@@ -181,4 +205,13 @@ public class WsFederationOptions : RemoteAuthenticationOptions
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public new bool SaveTokens { get; set; }
+
+    /// <summary>
+    /// Gets of sets the <see cref="UseTokenHandlers"/> property to control if <see cref="TokenHandlers"/> or <see cref="SecurityTokenHandlers"/> will be used to validate the inbound token.
+    /// The advantage of using the TokenHandlers is:
+    /// <para>There is an Async model.</para>
+    /// <para>The default token handler is a <see cref="JsonWebTokenHandler"/> which is 30 % faster when validating.</para>
+    /// <para>There is an ability to make use of a Last-Known-Good model for metadata that protects applications when metadata is published with errors.</para>
+    /// </summary>
+    public bool UseTokenHandlers { get; set; }
 }

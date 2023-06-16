@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Linq;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
@@ -176,6 +177,7 @@ public class WsFederationHandler : RemoteAuthenticationHandler<WsFederationOptio
             return HandleRequestResults.NoMessage;
         }
 
+        List<Exception>? validationFailures = null;
         try
         {
             // Retrieve our cached redirect uri
@@ -241,42 +243,86 @@ public class WsFederationHandler : RemoteAuthenticationHandler<WsFederationOptio
             wsFederationMessage = securityTokenReceivedContext.ProtocolMessage;
             properties = messageReceivedContext.Properties!;
 
-            if (_configuration == null)
-            {
-                _configuration = await Options.ConfigurationManager.GetConfigurationAsync(Context.RequestAborted);
-            }
-
-            // Copy and augment to avoid cross request race conditions for updated configurations.
-            var tvp = Options.TokenValidationParameters.Clone();
-            var issuers = new[] { _configuration.Issuer };
-            tvp.ValidIssuers = (tvp.ValidIssuers == null ? issuers : tvp.ValidIssuers.Concat(issuers));
-            tvp.IssuerSigningKeys = (tvp.IssuerSigningKeys == null ? _configuration.SigningKeys : tvp.IssuerSigningKeys.Concat(_configuration.SigningKeys));
-
+            var tvp = await SetupTokenValidationParameters();
             ClaimsPrincipal? principal = null;
-            SecurityToken? parsedToken = null;
-            foreach (var validator in Options.SecurityTokenHandlers)
+            SecurityToken? validatedToken = null;
+            if (Options.UseTokenHandlers)
             {
-                if (validator.CanReadToken(token))
+                foreach (var tokenHandler in Options.TokenHandlers)
                 {
-                    principal = validator.ValidateToken(token, tvp, out parsedToken);
-                    break;
+                    try
+                    {
+                        var tokenValidationResult = await tokenHandler.ValidateTokenAsync(token, tvp);
+                        if (tokenValidationResult.IsValid)
+                        {
+                            principal = new ClaimsPrincipal(tokenValidationResult.ClaimsIdentity);
+                            validatedToken = tokenValidationResult.SecurityToken;
+                            break;
+                        }
+                        else
+                        {
+                            validationFailures ??= new List<Exception>(1);
+                            Exception exception = tokenValidationResult.Exception ?? new SecurityTokenValidationException($"The TokenHandler: '{tokenHandler}', was unable to validate the Token.");
+                            validationFailures.Add(exception);
+                            RequestRefresh(exception);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        validationFailures ??= new List<Exception>(1);
+                        validationFailures.Add(new SecurityTokenValidationException($"TokenHandler: '{tokenHandler}', threw an exception (see inner exception).", ex));
+                        RequestRefresh(ex);
+                    }
+                }
+            }
+            else
+            {
+
+                foreach (var validator in Options.SecurityTokenHandlers)
+                {
+                    if (validator.CanReadToken(token))
+                    {
+                        try
+                        {
+                            principal = validator.ValidateToken(token, tvp, out validatedToken);
+                        }
+                        catch (Exception ex)
+                        {
+                            validationFailures ??= new List<Exception>(1);
+                            validationFailures.Add(ex);
+                            continue;
+                        }
+                        break;
+                    }
                 }
             }
 
             if (principal == null)
             {
-                throw new SecurityTokenException(Resources.Exception_NoTokenValidatorFound);
+                // TODO - need new string for TokenHandler
+                if (validationFailures == null || validationFailures.Count == 0)
+                {
+                    throw new SecurityTokenException(Resources.Exception_NoTokenValidatorFound);
+                }
+                else if (validationFailures.Count == 1)
+                {
+                    throw new SecurityTokenException(Resources.Exception_NoTokenValidatorFound, validationFailures[0]);
+                }
+                else
+                {
+                    throw new SecurityTokenException(Resources.Exception_NoTokenValidatorFound, new AggregateException(validationFailures));
+                }
             }
 
-            if (Options.UseTokenLifetime && parsedToken != null)
+            if (Options.UseTokenLifetime && validatedToken != null)
             {
                 // Override any session persistence to match the token lifetime.
-                var issued = parsedToken.ValidFrom;
+                var issued = validatedToken.ValidFrom;
                 if (issued != DateTime.MinValue)
                 {
                     properties.IssuedUtc = issued.ToUniversalTime();
                 }
-                var expires = parsedToken.ValidTo;
+                var expires = validatedToken.ValidTo;
                 if (expires != DateTime.MinValue)
                 {
                     properties.ExpiresUtc = expires.ToUniversalTime();
@@ -287,7 +333,7 @@ public class WsFederationHandler : RemoteAuthenticationHandler<WsFederationOptio
             var securityTokenValidatedContext = new SecurityTokenValidatedContext(Context, Scheme, Options, principal, properties)
             {
                 ProtocolMessage = wsFederationMessage,
-                SecurityToken = parsedToken,
+                SecurityToken = validatedToken,
             };
 
             await Events.SecurityTokenValidated(securityTokenValidatedContext);
@@ -306,17 +352,13 @@ public class WsFederationHandler : RemoteAuthenticationHandler<WsFederationOptio
         {
             Logger.ExceptionProcessingMessage(exception);
 
-            // Refresh the configuration for exceptions that may be caused by key rollovers. The user can also request a refresh in the notification.
-            if (Options.RefreshOnIssuerKeyNotFound && exception is SecurityTokenSignatureKeyNotFoundException)
-            {
-                Options.ConfigurationManager.RequestRefresh();
-            }
-
+            RequestRefresh(exception);
             var authenticationFailedContext = new AuthenticationFailedContext(Context, Scheme, Options)
             {
                 ProtocolMessage = wsFederationMessage,
                 Exception = exception
             };
+
             await Events.AuthenticationFailed(authenticationFailedContext);
             if (authenticationFailedContext.Result != null)
             {
@@ -325,6 +367,44 @@ public class WsFederationHandler : RemoteAuthenticationHandler<WsFederationOptio
 
             return HandleRequestResult.Fail(exception, properties);
         }
+    }
+
+    // TODO - this method could be shared across OIDC, WsFed, JwtBearer to ensure consistency
+    private async Task<TokenValidationParameters> SetupTokenValidationParameters()
+    {
+        // Clone to avoid cross request race conditions for updated configurations.
+        var tokenValidationParameters = Options.TokenValidationParameters.Clone();
+
+        if (Options.ConfigurationManager is BaseConfigurationManager baseConfigurationManager)
+        {
+            // TODO - we need to add a parameter to TokenValidationParameters for the CancellationToken.
+            tokenValidationParameters.ConfigurationManager = baseConfigurationManager;
+        }
+        else
+        {
+            if (Options.ConfigurationManager != null)
+            {
+                // GetConfigurationAsync has a time interval that must pass before new http request will be issued.
+                _configuration = await Options.ConfigurationManager.GetConfigurationAsync(Context.RequestAborted);
+
+                var issuers = new[] { _configuration.Issuer };
+                tokenValidationParameters.ValidIssuers = (tokenValidationParameters.ValidIssuers == null ? issuers : tokenValidationParameters.ValidIssuers.Concat(issuers));
+                tokenValidationParameters.IssuerSigningKeys = (tokenValidationParameters.IssuerSigningKeys == null ? _configuration.SigningKeys : tokenValidationParameters.IssuerSigningKeys.Concat(_configuration.SigningKeys));
+            }
+        }
+
+        return tokenValidationParameters;
+    }
+
+    private void RequestRefresh(Exception exception)
+    {
+        // Refresh the configuration for exceptions that may be caused by key rollovers. The user can also request a refresh in the notification.
+        // Refreshing on SecurityTokenSignatureKeyNotFound may be redundant if Last-Known-Good is enabled, it won't do much harm, most likely will be a nop.
+        if (Options.RefreshOnIssuerKeyNotFound && exception is SecurityTokenSignatureKeyNotFoundException)
+        {
+            Options.ConfigurationManager.RequestRefresh();
+        }
+
     }
 
     /// <summary>
