@@ -15,6 +15,7 @@ import { shouldAutoStart } from './BootCommon';
 import { Blazor } from './GlobalExports';
 import { WebStartOptions } from './Platform/WebStartOptions';
 import { attachStreamingRenderingListener } from './Rendering/StreamingRendering';
+import { attachProgressivelyEnhancedNavigationListener } from './Services/NavigationEnhancement';
 import { WebAssemblyComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
 import { ServerComponentDescriptor, discoverComponents } from './Services/ComponentDescriptorDiscovery';
 
@@ -28,6 +29,7 @@ async function boot(options?: Partial<WebStartOptions>): Promise<void> {
   await activateInteractiveComponents(options);
 
   attachStreamingRenderingListener(options?.ssr);
+  attachProgressivelyEnhancedNavigationListener();
 }
 
 async function activateInteractiveComponents(options?: Partial<WebStartOptions>) {

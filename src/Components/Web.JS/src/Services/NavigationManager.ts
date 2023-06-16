@@ -76,7 +76,6 @@ export function attachToEventDelegator(eventDelegator: EventDelegator): void {
     }
 
     handleClickForNavigationInterception(event, absoluteInternalHref => {
-      event.preventDefault();
       performInternalNavigation(absoluteInternalHref, /* interceptedLink */ true, /* replace */ false);
     });
   });

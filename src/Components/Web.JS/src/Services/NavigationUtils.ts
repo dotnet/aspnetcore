@@ -24,6 +24,7 @@ export function handleClickForNavigationInterception(event: MouseEvent, callback
     const absoluteHref = toAbsoluteUri(anchorHref);
 
     if (isWithinBaseUriSpace(absoluteHref)) {
+      event.preventDefault();
       callbackIfIntercepted(absoluteHref);
     }
   }
