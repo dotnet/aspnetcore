@@ -385,17 +385,17 @@
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha>f3952775e6d00a5b6f43b0615a8a766e095185eb</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Frameworks" Version="6.2.2">
+    <Dependency Name="NuGet.Frameworks" Version="6.2.4">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>027ca8b8ef4b4dc94995f87b9c441d2bcf742c1d</Sha>
+      <Sha>8fef55f5a55a3b4f2c96cd1a9b5ddc51d4b927f8</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Packaging" Version="6.2.2">
+    <Dependency Name="NuGet.Packaging" Version="6.2.4">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>027ca8b8ef4b4dc94995f87b9c441d2bcf742c1d</Sha>
+      <Sha>8fef55f5a55a3b4f2c96cd1a9b5ddc51d4b927f8</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Versioning" Version="6.2.2">
+    <Dependency Name="NuGet.Versioning" Version="6.2.4">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>027ca8b8ef4b4dc94995f87b9c441d2bcf742c1d</Sha>
+      <Sha>8fef55f5a55a3b4f2c96cd1a9b5ddc51d4b927f8</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>

@@ -150,9 +150,9 @@
     <MicrosoftCodeAnalysisCSharpWorkspacesVersion>4.4.0-4.22520.2</MicrosoftCodeAnalysisCSharpWorkspacesVersion>
     <!-- Packages from NuGet/Nuget.client -->
     <!-- If you update these versions, make sure to also update https://github.com/dotnet/aspnetcore/blob/main/eng/SourceBuildPrebuiltBaseline.xml -->
-    <NuGetPackagingVersion>6.2.2</NuGetPackagingVersion>
-    <NuGetVersioningVersion>6.2.2</NuGetVersioningVersion>
-    <NuGetFrameworksVersion>6.2.2</NuGetFrameworksVersion>
+    <NuGetPackagingVersion>6.2.4</NuGetPackagingVersion>
+    <NuGetVersioningVersion>6.2.4</NuGetVersioningVersion>
+    <NuGetFrameworksVersion>6.2.4</NuGetFrameworksVersion>
     <!-- Packages from dotnet/arcade -->
     <MicrosoftDotNetBuildTasksInstallersVersion>8.0.0-beta.23312.4</MicrosoftDotNetBuildTasksInstallersVersion>
     <MicrosoftDotNetBuildTasksTemplatingVersion>8.0.0-beta.23312.4</MicrosoftDotNetBuildTasksTemplatingVersion>
