@@ -72,12 +72,15 @@ async function performEnhancedPageLoad(internalDestinationHref: string) {
       }
     });
 
-  // Finally, if there's a hash in the URL, recreate the behavior of scrolling to the corresponding element by ID
-  const hashPosition = internalDestinationHref.indexOf('#');
-  if (hashPosition >= 0) {
-    const hash = internalDestinationHref.substring(hashPosition + 1);
-    const targetElem = document.getElementById(hash);
-    targetElem?.scrollIntoView();
+  if (!abortSignal.aborted) {
+    // The whole response including any streaming SSR is now finished, and it was not aborted (no other navigation
+    // has since started). So finally, recreate the native "scroll to hash" behavior.
+    const hashPosition = internalDestinationHref.indexOf('#');
+    if (hashPosition >= 0) {
+      const hash = internalDestinationHref.substring(hashPosition + 1);
+      const targetElem = document.getElementById(hash);
+      targetElem?.scrollIntoView();
+    }
   }
 }
 
