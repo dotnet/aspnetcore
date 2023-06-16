@@ -584,7 +584,7 @@ public abstract class ControllerBase
     /// public IActionResult Product(int id, Product product)
     /// {
     ///     UpdateProduct(product);
-    ///     return RedirectToActionOthet();
+    ///     return RedirectToActionOther();
     /// }
     /// </code>
     /// </example>
