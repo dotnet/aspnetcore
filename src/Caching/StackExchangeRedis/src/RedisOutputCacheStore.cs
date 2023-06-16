@@ -83,7 +83,7 @@ internal class RedisOutputCacheStore : IOutputCacheStore, IOutputCacheBufferWrit
         _tagMasterKey = (RedisKey)Encoding.UTF8.GetBytes(_options.InstanceName + "__MSOCT");
         _tagMasterKeyArray = new[] { _tagMasterKey };
 
-        _ = Task.Run(RunGarbageCollectionLoopAsync);
+        _ = Task.Factory.StartNew(RunGarbageCollectionLoopAsync, default, TaskCreationOptions.LongRunning, TaskScheduler.Current);
     }
 
     private async Task RunGarbageCollectionLoopAsync()
