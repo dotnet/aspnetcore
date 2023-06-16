@@ -4,12 +4,15 @@
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
 
 internal sealed class TypedDictionaryConverterFactory<TDictionaryType, TKey, TValue> : IFormDataConverterFactory
     where TKey : IParsable<TKey>
 {
+    [RequiresDynamicCode(FormBindingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormBindingHelpers.RequiresUnreferencedCodeMessage)]
     public bool CanConvert(Type type, FormDataMapperOptions options)
     {
         // Resolve the value type converter
@@ -70,6 +73,8 @@ internal sealed class TypedDictionaryConverterFactory<TDictionaryType, TKey, TVa
         return false;
     }
 
+    [RequiresDynamicCode(FormBindingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormBindingHelpers.RequiresUnreferencedCodeMessage)]
     public FormDataConverter CreateConverter(Type type, FormDataMapperOptions options)
     {
         // Resolve the value type converter
