@@ -22,7 +22,7 @@ else
         </tr>
         <tr>
             <td>Name</td>
-            <td>@user.DisplayName</td>
+            <td>@user?.DisplayName</td>
         </tr>
     </table>
 }
@@ -34,7 +34,7 @@ else
     {
         try
         {
-            user = await GraphServiceClient.Me.Request().GetAsync();
+            user = await GraphServiceClient.Me.GetAsync();
         }
         catch (Exception ex)
         {
