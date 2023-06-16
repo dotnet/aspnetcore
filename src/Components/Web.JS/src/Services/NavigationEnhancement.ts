@@ -46,37 +46,45 @@ async function performEnhancedPageLoad(internalDestinationHref: string) {
   // TODO: Deal with streaming SSR. The returned result may be left hanging for a while.
   currentEnhancedNavigationAbortController = new AbortController();
   const abortSignal = currentEnhancedNavigationAbortController.signal;
+  const responsePromise = fetch(internalDestinationHref, { signal: abortSignal });
+  await getResponsePartsWithFraming(responsePromise, abortSignal,
+    (response, responseText) => {
+      if (response.headers.get('content-type')?.startsWith('text/html')) {
+        const parsedHtml = new DOMParser().parseFromString(responseText, 'text/html');
+        synchronizeDomContent(document, parsedHtml);
+      } else {
+        // The response isn't HTML so don't try to parse it that way. If they gave any response text use that,
+        // and only generate our own error message if it's definitely an error with no text.
+        const isSuccessStatus = response.status >= 200 && response.status < 300;
+        document.documentElement.innerHTML = (responseText || isSuccessStatus)
+          ? responseText
+          : `Error: ${response.status} ${responseText}`;
+      }
+    });
+
+  // Finally, if there's a hash in the URL, recreate the behavior of scrolling to the corresponding element by ID
+  const hashPosition = internalDestinationHref.indexOf('#');
+  if (hashPosition >= 0) {
+    const hash = internalDestinationHref.substring(hashPosition + 1);
+    const targetElem = document.getElementById(hash);
+    targetElem?.scrollIntoView();
+  }
+}
+
+async function getResponsePartsWithFraming(responsePromise: Promise<Response>, abortSignal: AbortSignal, onAllNonStreamingContentReceived: (response: Response, nonStreamingResponseText: string) => void) {
   let response: Response;
   let responseText: string;
   try {
-    response = await fetch(internalDestinationHref, { signal: abortSignal });
+    response = await responsePromise;
     responseText = await response.text();
   } catch (ex) {
     if ((ex as AbortError)?.name === 'AbortError' && abortSignal.aborted) {
-      // Not an error
+      // Not an error; we're just finished
       return;
     } else {
       throw ex;
     }
   }
 
-  if (response.headers.get('content-type')?.startsWith('text/html')) {
-    const parsedHtml = new DOMParser().parseFromString(responseText, 'text/html');
-    synchronizeDomContent(document, parsedHtml);
-
-    // Also if there's a hash in the URL, recreate the behavior of scrolling to the corresponding element by ID
-    const hashPosition = internalDestinationHref.indexOf('#');
-    if (hashPosition >= 0) {
-      const hash = internalDestinationHref.substring(hashPosition + 1);
-      const targetElem = document.getElementById(hash);
-      targetElem?.scrollIntoView();
-    }
-  } else {
-    // The response isn't HTML so don't try to parse it that way. If they gave any response text use that,
-    // and only generate our own error message if it's definitely an error with no text.
-    const isSuccessStatus = response.status >= 200 && response.status < 300;
-    document.documentElement.innerHTML = (responseText || isSuccessStatus)
-      ? responseText
-      : `Error: ${response.status} ${responseText}`;
-  }
+  onAllNonStreamingContentReceived(response, responseText);
 }
