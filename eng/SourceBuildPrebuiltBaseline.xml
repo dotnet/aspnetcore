@@ -6,11 +6,11 @@
     <UsagePattern IdentityGlob="Microsoft.SourceBuild.Intermediate.*/*" />
 
     <!-- These are used in-build for repo-tasks and should come from previously source built -->
-    <UsagePattern IdentityGlob="NuGet.Common/*6.2.2*" />
-    <UsagePattern IdentityGlob="NuGet.Configuration/*6.2.2*" />
-    <UsagePattern IdentityGlob="NuGet.Frameworks/*6.2.2*" />
-    <UsagePattern IdentityGlob="NuGet.Packaging/*6.2.2*" />
-    <UsagePattern IdentityGlob="NuGet.Versioning/*6.2.2*" />
+    <UsagePattern IdentityGlob="NuGet.Common/*6.2.4*" />
+    <UsagePattern IdentityGlob="NuGet.Configuration/*6.2.4*" />
+    <UsagePattern IdentityGlob="NuGet.Frameworks/*6.2.4*" />
+    <UsagePattern IdentityGlob="NuGet.Packaging/*6.2.4*" />
+    <UsagePattern IdentityGlob="NuGet.Versioning/*6.2.4*" />
 
     <!-- These are what the analyzers are built against. They are overridden in full source build.
          It may be possible to generate SBRPs -->
