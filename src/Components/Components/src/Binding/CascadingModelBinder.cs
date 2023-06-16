@@ -143,7 +143,17 @@ public sealed class CascadingModelBinder : IComponent, ICascadingValueSupplier, 
         }
 
         bool CanBind(Type type)
-            => ModelBindingProviders.Any(provider => provider.SupportsParameterType(type));
+        {
+            foreach (var provider in ModelBindingProviders)
+            {
+                if (provider.SupportsParameterType(type))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
     }
 
     bool ICascadingValueSupplier.CanSupplyValue(in CascadingParameterInfo parameterInfo)

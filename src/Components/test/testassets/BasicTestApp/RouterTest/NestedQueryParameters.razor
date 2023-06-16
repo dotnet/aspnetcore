@@ -6,7 +6,7 @@
 
 @code
 {
-    [Parameter, SupplyParameterFromQuery] public int IntValue { get ; set; }
+    [SupplyParameterFromQuery] public int IntValue { get ; set; }
 
-    [Parameter, SupplyParameterFromQuery(Name = "l")] public long[] LongValues { get ; set; }
+    [SupplyParameterFromQuery(Name = "l")] public long[] LongValues { get ; set; }
 }
