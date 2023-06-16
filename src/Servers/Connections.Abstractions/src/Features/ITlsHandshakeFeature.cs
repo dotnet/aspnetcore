@@ -29,7 +29,7 @@ public interface ITlsHandshakeFeature
     /// Gets the host name from the "server_name" (SNI) extension of the client hello if present.
     /// See <see href="https://www.rfc-editor.org/rfc/rfc6066#section-3">RFC 6066</see>.
     /// </summary>
-    string? HostName => null;
+    string HostName => string.Empty;
 #endif
 
     /// <summary>

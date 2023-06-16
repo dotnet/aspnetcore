@@ -112,6 +112,12 @@ When your pull request has had all feedback addressed, it has been signed off by
 
 We commit pull requests as a single Squash commit unless there are special circumstances. This creates a simpler history than a Merge or Rebase commit. "Special circumstances" are rare, and typically mean that there are a series of cleanly separated changes that will be too hard to understand if squashed together, or for some reason we want to preserve the ability to bisect them.
 
+## Additional Resources
+
+Here are videos (partially outdated) where members of the ASP.NET Core team provide guidance, advice and samples on how to contribute to this project.
+* For ASP.NET Core - https://www.youtube.com/watch?v=hVdwb41FPvU
+* For Blazor - https://www.youtube.com/watch?v=gRg0xxK8L6w
+
 ## Code of conduct
 
 See [CODE-OF-CONDUCT.md](./CODE-OF-CONDUCT.md)

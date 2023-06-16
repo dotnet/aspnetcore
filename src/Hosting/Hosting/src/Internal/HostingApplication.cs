@@ -160,7 +160,7 @@ internal sealed class HostingApplication : IHttpApplication<HostingApplication.C
             StartTimestamp = 0;
             HasDiagnosticListener = false;
             EventLogOrMetricsEnabled = false;
-            MetricsTagsFeature?.Tags.Clear();
+            MetricsTagsFeature?.TagsList.Clear();
         }
     }
 }

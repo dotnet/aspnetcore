@@ -1,0 +1,9 @@
+﻿@attribute [RenderModeServer]
+
+<strong>Server counter from RCL</strong>
+<Counter IncrementAmount="IncrementAmount" IdSuffix="server-shared" />
+
+@code {
+    [Parameter]
+    public int IncrementAmount { get; set; } = 1;
+}

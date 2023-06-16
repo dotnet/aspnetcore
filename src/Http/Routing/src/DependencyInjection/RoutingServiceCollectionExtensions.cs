@@ -108,6 +108,7 @@ public static class RoutingServiceCollectionExtensions
         //
         services.TryAddSingleton<TemplateBinderFactory, DefaultTemplateBinderFactory>();
         services.TryAddSingleton<RoutePatternTransformer, DefaultRoutePatternTransformer>();
+        services.TryAddSingleton<RoutingMetrics>();
 
         // Set RouteHandlerOptions.ThrowOnBadRequest in development
         services.TryAddEnumerable(ServiceDescriptor.Transient<IConfigureOptions<RouteHandlerOptions>, ConfigureRouteHandlerOptions>());

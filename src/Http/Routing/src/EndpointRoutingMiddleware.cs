@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.ShortCircuit;
 using Microsoft.Extensions.Logging;
@@ -22,6 +23,7 @@ internal sealed partial class EndpointRoutingMiddleware
     private readonly ILogger _logger;
     private readonly EndpointDataSource _endpointDataSource;
     private readonly DiagnosticListener _diagnosticListener;
+    private readonly RoutingMetrics _metrics;
     private readonly RequestDelegate _next;
     private readonly RouteOptions _routeOptions;
     private Task<Matcher>? _initializationTask;
@@ -33,6 +35,7 @@ internal sealed partial class EndpointRoutingMiddleware
         EndpointDataSource rootCompositeEndpointDataSource,
         DiagnosticListener diagnosticListener,
         IOptions<RouteOptions> routeOptions,
+        RoutingMetrics metrics,
         RequestDelegate next)
     {
         ArgumentNullException.ThrowIfNull(endpointRouteBuilder);
@@ -40,6 +43,7 @@ internal sealed partial class EndpointRoutingMiddleware
         _matcherFactory = matcherFactory ?? throw new ArgumentNullException(nameof(matcherFactory));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _diagnosticListener = diagnosticListener ?? throw new ArgumentNullException(nameof(diagnosticListener));
+        _metrics = metrics;
         _next = next ?? throw new ArgumentNullException(nameof(next));
         _routeOptions = routeOptions.Value;
 
@@ -98,6 +102,7 @@ internal sealed partial class EndpointRoutingMiddleware
         if (endpoint == null)
         {
             Log.MatchFailure(_logger);
+            _metrics.MatchFailure();
         }
         else
         {
@@ -107,12 +112,21 @@ internal sealed partial class EndpointRoutingMiddleware
                 Write(_diagnosticListener, httpContext);
             }
 
-            Log.MatchSuccess(_logger, endpoint);
-
-            if (_logger.IsEnabled(LogLevel.Debug)
-                && endpoint.Metadata.GetMetadata<FallbackMetadata>() is not null)
+            if (_logger.IsEnabled(LogLevel.Debug) || _metrics.MatchSuccessCounterEnabled)
             {
-                Log.FallbackMatch(_logger, endpoint);
+                var isFallback = endpoint.Metadata.GetMetadata<FallbackMetadata>() is not null;
+
+                Log.MatchSuccess(_logger, endpoint);
+
+                if (isFallback)
+                {
+                    Log.FallbackMatch(_logger, endpoint);
+                }
+
+                // It shouldn't be possible for a route to be matched via the route matcher and not have a route.
+                // Just in case, add a special (missing) value as the route tag to metrics.
+                var route = endpoint.Metadata.GetMetadata<IRouteDiagnosticsMetadata>()?.Route ?? "(missing)";
+                _metrics.MatchSuccess(route, isFallback);
             }
 
             var shortCircuitMetadata = endpoint.Metadata.GetMetadata<ShortCircuitMetadata>();
@@ -290,7 +304,7 @@ internal sealed partial class EndpointRoutingMiddleware
         [LoggerMessage(6, LogLevel.Information, "The endpoint '{EndpointName}' is being short circuited without running additional middleware or producing a response.", EventName = "ShortCircuitedEndpoint")]
         public static partial void ShortCircuitedEndpoint(ILogger logger, Endpoint endpointName);
 
-        [LoggerMessage(7, LogLevel.Debug, "Matched endpoint '{EndpointName}' is a fallback endpoint.", EventName = "FallbackMatch", SkipEnabledCheck = true)]
+        [LoggerMessage(7, LogLevel.Debug, "Matched endpoint '{EndpointName}' is a fallback endpoint.", EventName = "FallbackMatch")]
         public static partial void FallbackMatch(ILogger logger, Endpoint endpointName);
     }
 }

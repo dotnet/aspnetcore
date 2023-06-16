@@ -39,6 +39,8 @@ internal sealed partial class ResponseBody : Stream
 
     internal bool ThrowWriteExceptions => RequestContext.Server.Options.ThrowWriteExceptions;
 
+    internal bool EnableKernelResponseBuffering => RequestContext.Server.Options.EnableKernelResponseBuffering;
+
     internal bool IsDisposed => _disposed;
 
     public override bool CanSeek
@@ -495,6 +497,13 @@ internal sealed partial class ResponseBody : Stream
             && (_leftToWrite != writeCount || _requestContext.Response.TrailersExpected))
         {
             flags |= HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA;
+        }
+        if (EnableKernelResponseBuffering)
+        {
+            // "When this flag is set, it should also be used consistently in calls to the HttpSendResponseEntityBody function."
+            // so: make sure we add it in *all* scenarios where it applies - our "close" could be at the end of a bunch
+            // of buffered chunks
+            flags |= HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_BUFFER_DATA;
         }
 
         // Update _leftToWrite now so we can queue up additional async writes.

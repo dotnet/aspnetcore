@@ -63,7 +63,7 @@ internal sealed class WebHostOptions
 
     public string? ContentRootPath { get; }
 
-    public TimeSpan ShutdownTimeout { get; } = TimeSpan.FromSeconds(5);
+    public TimeSpan ShutdownTimeout { get; } = TimeSpan.FromSeconds(30);
 
     public string? ServerUrls { get; }
 

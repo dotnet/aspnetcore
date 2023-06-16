@@ -624,6 +624,20 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         AssertHighlightedLinks("Default (matches all)", "Default with base-relative URL (matches all)");
     }
 
+    [Theory]
+    [InlineData("/Other-With-Hyphens", "Other with hyphens")]
+    [InlineData("/Other.With.Dots", "Other with dots")]
+    [InlineData("/Other_With_Underscores", "Other with underscores")]
+    [InlineData("/Other~With~Tildes", "Other with tildes")]
+    public void RoutePrefixDoesNotMatchWithNonSeparatorCharacters(string url, string linkText)
+    {
+        SetUrlViaPushState(url);
+
+        var app = Browser.MountTestComponent<TestRouter>();
+        Assert.Equal("This is another page.", app.FindElement(By.Id("test-info")).Text);
+        AssertHighlightedLinks(linkText); // The 'Other' link text should not be highlighted.
+    }
+
     [Fact]
     public void UsingNavigationManagerWithoutRouterWorks()
     {

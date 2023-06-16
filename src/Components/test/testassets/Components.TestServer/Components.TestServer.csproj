@@ -27,6 +27,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BasicTestApp\BasicTestApp.csproj" />
+    <ProjectReference Include="..\Components.WasmMinimal\Components.WasmMinimal.csproj" />
   </ItemGroup>
 
   <ItemGroup>

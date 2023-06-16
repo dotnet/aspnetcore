@@ -11,7 +11,6 @@ internal sealed class EmitterContext
     public bool HasRouteOrQuery { get; set; }
     public bool HasBindAsync { get; set; }
     public bool HasParsable { get; set; }
-    public bool HasJsonResponse { get; set; }
     public bool RequiresPropertyAsParameterInfo { get; set; }
     public bool RequiresLoggingHelper { get; set; }
     public bool HasEndpointMetadataProvider { get; set; }

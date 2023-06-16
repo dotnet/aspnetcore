@@ -3,9 +3,7 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Builder;
 
@@ -16,6 +14,7 @@ public partial class ApplicationBuilder : IApplicationBuilder
 {
     private const string ServerFeaturesKey = "server.Features";
     private const string ApplicationServicesKey = "application.Services";
+    private const string RequestUnhandledKey = "__RequestUnhandled";
 
     private readonly List<Func<RequestDelegate, RequestDelegate>> _components = new();
 
@@ -119,9 +118,6 @@ public partial class ApplicationBuilder : IApplicationBuilder
     /// <returns>The <see cref="RequestDelegate"/>.</returns>
     public RequestDelegate Build()
     {
-        var loggerFactory = ApplicationServices?.GetService<ILoggerFactory>();
-        var logger = loggerFactory?.CreateLogger<ApplicationBuilder>();
-
         RequestDelegate app = context =>
         {
             // If we reach the end of the pipeline, but we have an endpoint, then something unexpected has happened.
@@ -145,16 +141,8 @@ public partial class ApplicationBuilder : IApplicationBuilder
                 context.Response.StatusCode = StatusCodes.Status404NotFound;
             }
 
-            if (logger != null && logger.IsEnabled(LogLevel.Information))
-            {
-                Log.RequestPipelineEnd(logger,
-                    context.Request.Method,
-                    context.Request.Scheme,
-                    context.Request.Host.Value,
-                    context.Request.PathBase.Value,
-                    context.Request.Path.Value,
-                    context.Response.StatusCode);
-            }
+            // Communicates to higher layers that the request wasn't handled by the app pipeline.
+            context.Items[RequestUnhandledKey] = true;
 
             return Task.CompletedTask;
         };
@@ -165,13 +153,5 @@ public partial class ApplicationBuilder : IApplicationBuilder
         }
 
         return app;
-    }
-
-    private static partial class Log
-    {
-        [LoggerMessage(1, LogLevel.Information,
-            "Request reached the end of the middleware pipeline without being handled by application code. Request path: {Method} {Scheme}://{Host}{PathBase}{Path}, Response status code: {StatusCode}",
-            SkipEnabledCheck = true)]
-        public static partial void RequestPipelineEnd(ILogger logger, string method, string scheme, string host, string? pathBase, string? path, int statusCode);
     }
 }

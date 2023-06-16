@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
+using System.Security.Authentication;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting.Server;
@@ -40,6 +41,12 @@ internal sealed class HttpMultiplexedConnectionMiddleware<TContext> where TConte
             memoryPoolFeature?.MemoryPool ?? System.Buffers.MemoryPool<byte>.Shared,
             localEndPoint,
             connectionContext.RemoteEndPoint as IPEndPoint);
+
+        if (connectionContext.Features.Get<IConnectionMetricsTagsFeature>() is { } metricsTags)
+        {
+            // HTTP/3 is always TLS 1.3. If multiple versions are support in the future then this value will need to be detected.
+            metricsTags.Tags.Add(new KeyValuePair<string, object?>("tls-protocol", SslProtocols.Tls13.ToString()));
+        }
 
         var connection = new HttpConnection(httpConnectionContext);
 
