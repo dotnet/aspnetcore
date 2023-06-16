@@ -1,3 +1,4 @@
+import { AbortError } from '@microsoft/signalr';
 import { synchronizeDomContent } from '../Rendering/DomMerging/DomSync';
 import { handleClickForNavigationInterception } from './NavigationUtils';
 
@@ -20,6 +21,8 @@ interactive navigation needs to take precedence. The approach is:
   to JS about that. But if the scenario becomes important, we could add some disableNavigationInterception and resume PE nav.
 */
 
+let currentEnhancedNavigationAbortController: AbortController | null;
+
 export function attachProgressivelyEnhancedNavigationListener() {
   document.body.addEventListener('click', onBodyClicked);
   window.addEventListener('popstate', onPopState);
@@ -37,14 +40,29 @@ function onPopState(state: PopStateEvent) {
 }
 
 async function performEnhancedPageLoad(internalDestinationHref: string) {
-  // While this function is async, any exceptions will be treated as unhandled, because
-  // the caller is not in an async context and disregards the returned Promise
+  // First, stop any preceding enhanced page load
+  currentEnhancedNavigationAbortController?.abort();
+
   // TODO: Ensure that if we get back an HTTP failure result, we still display the
   //       returned content. If there isn't any, display the status code.
-  // TODO: If a second navigation occurs while the first is in flight, discard the first.
   // TODO: Deal with streaming SSR. The returned result may be left hanging for a while.
-  const response = await fetch(internalDestinationHref);
-  const responseHtml = await response.text();
+  // TODO: If the URL has a hash, scroll to it after updating the DOM (unless this just
+  //       works anyway)
+  currentEnhancedNavigationAbortController = new AbortController();
+  const abortSignal = currentEnhancedNavigationAbortController.signal;
+  let responseHtml: string;
+  try {
+    const response = await fetch(internalDestinationHref, { signal: abortSignal });
+    responseHtml = await response.text();
+  } catch (ex) {
+    if ((ex as AbortError)?.name === 'AbortError' && abortSignal.aborted) {
+      // Not an error
+      return;
+    } else {
+      throw ex;
+    }
+  }
+
   const parsedHtml = new DOMParser().parseFromString(responseHtml, 'text/html');
   synchronizeDomContent(document, parsedHtml);
 }
