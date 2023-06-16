@@ -43,22 +43,32 @@ async function performEnhancedPageLoad(internalDestinationHref: string) {
   // First, stop any preceding enhanced page load
   currentEnhancedNavigationAbortController?.abort();
 
-  // TODO: Deal with streaming SSR. The returned result may be left hanging for a while.
+  // Now request the new page via fetch, and a special header that tells the server we want it to inject
+  // framing boundaries to distinguish the initial document and each subsequent streaming SSR update.
   currentEnhancedNavigationAbortController = new AbortController();
   const abortSignal = currentEnhancedNavigationAbortController.signal;
-  const responsePromise = fetch(internalDestinationHref, { signal: abortSignal });
+  const responsePromise = fetch(internalDestinationHref, {
+    signal: abortSignal,
+    headers: { 'blazor-enhanced-nav': 'on' },
+  });
   await getResponsePartsWithFraming(responsePromise, abortSignal,
-    (response, responseText) => {
+    (response, initialContent) => {
       if (response.headers.get('content-type')?.startsWith('text/html')) {
-        const parsedHtml = new DOMParser().parseFromString(responseText, 'text/html');
+        const parsedHtml = new DOMParser().parseFromString(initialContent, 'text/html');
         synchronizeDomContent(document, parsedHtml);
       } else {
         // The response isn't HTML so don't try to parse it that way. If they gave any response text use that,
         // and only generate our own error message if it's definitely an error with no text.
         const isSuccessStatus = response.status >= 200 && response.status < 300;
-        document.documentElement.innerHTML = (responseText || isSuccessStatus)
-          ? responseText
-          : `Error: ${response.status} ${responseText}`;
+        document.documentElement.innerHTML = (initialContent || isSuccessStatus)
+          ? initialContent
+          : `Error: ${response.status} ${initialContent}`;
+      }
+    },
+    (streamingElementMarkup) => {
+      const fragment = document.createRange().createContextualFragment(streamingElementMarkup);
+      while (fragment.firstChild) {
+        document.body.appendChild(fragment.firstChild);
       }
     });
 
@@ -71,20 +81,71 @@ async function performEnhancedPageLoad(internalDestinationHref: string) {
   }
 }
 
-async function getResponsePartsWithFraming(responsePromise: Promise<Response>, abortSignal: AbortSignal, onAllNonStreamingContentReceived: (response: Response, nonStreamingResponseText: string) => void) {
+async function getResponsePartsWithFraming(responsePromise: Promise<Response>, abortSignal: AbortSignal, onInitialDocument: (response: Response, initialDocumentText: string) => void, onStreamingElement: (streamingElementMarkup) => void) {
   let response: Response;
-  let responseText: string;
+
   try {
     response = await responsePromise;
-    responseText = await response.text();
+    if (!response.body) { // Not sure how this can happen, but the TypeScript annotations suggest it can
+      onInitialDocument(response, '');
+      return;
+    }
+
+    const frameBoundary = response.headers.get('ssr-framing');
+    if (!frameBoundary) {
+      // Shouldn't happen, but perhaps some proxy stripped the headers. In that case we just won't respect streaming and will
+      // wait for the whole response.
+      const allResponseText = await response.text();
+      onInitialDocument(response, allResponseText);
+      return;
+    }
+
+    // This is going to be a framed response, so split it into chunks based on our framing boundaries
+    let isFirstFramedChunk = true;
+    await response.body
+      .pipeThrough(new TextDecoderStream())
+      .pipeThrough(splitStream(`<!--${frameBoundary}-->`))
+      .pipeTo(new WritableStream({
+        write(chunk) {
+          // Inside here, we know the chunks correspond precisely to frames within our message framing mechanism.
+          // The first one is always the initial document that we will merge into the existing DOM. All subsequent ones
+          // are blocks of <blazor-ssr>...</blazor-ssr> markup whose insertion would trigger a streaming SSR DOM update.
+          if (isFirstFramedChunk) {
+            isFirstFramedChunk = false;
+            onInitialDocument(response, chunk);
+          } else {
+            onStreamingElement(chunk);
+          }
+        }
+      }));
   } catch (ex) {
     if ((ex as AbortError)?.name === 'AbortError' && abortSignal.aborted) {
-      // Not an error; we're just finished
+      // Not an error. This happens if a different navigation started before this one completed.
       return;
     } else {
       throw ex;
     }
   }
+}
 
-  onAllNonStreamingContentReceived(response, responseText);
+function splitStream(frameBoundaryMarker: string) {
+  let buffer = '';
+
+  return new TransformStream({
+    transform(chunk, controller) {
+      buffer += chunk;
+
+      // Only call 'split' if we can see at least one marker, and only look for it within the new content (allowing for it to split over chunks)
+      if (buffer.indexOf(frameBoundaryMarker, buffer.length - chunk.length - frameBoundaryMarker.length) >= 0) {
+        const frames = buffer.split(frameBoundaryMarker);
+        frames.slice(0, -1).forEach(part => controller.enqueue(part));
+        buffer = frames[frames.length - 1];
+      }
+    },
+    flush(controller) {
+      if (buffer) {
+        controller.enqueue(buffer);
+      }
+    }
+  });
 }

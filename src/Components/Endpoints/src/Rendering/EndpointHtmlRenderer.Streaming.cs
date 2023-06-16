@@ -13,8 +13,25 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal partial class EndpointHtmlRenderer
 {
+    private static readonly string _progressivelyEnhancedNavRequestHeaderName = "blazor-enhanced-nav";
+    private static readonly string _streamingRenderingFramingHeaderName = "ssr-framing";
     private TextWriter? _streamingUpdatesWriter;
     private HashSet<int>? _visitedComponentIdsInCurrentStreamingBatch;
+    private string? _ssrFramingCommentMarkup;
+
+    public void InitializeStreamingRenderingFraming(HttpContext httpContext)
+    {
+        if (httpContext.Request.Headers.ContainsKey(_progressivelyEnhancedNavRequestHeaderName))
+        {
+            var id = Guid.NewGuid().ToString();
+            httpContext.Response.Headers.Add(_streamingRenderingFramingHeaderName, id);
+            _ssrFramingCommentMarkup = $"<!--{id}-->";
+        }
+        else
+        {
+            _ssrFramingCommentMarkup = string.Empty;
+        }
+    }
 
     public async Task SendStreamingUpdatesAsync(HttpContext httpContext, Task untilTaskCompleted, TextWriter writer)
     {
@@ -26,10 +43,16 @@ internal partial class EndpointHtmlRenderer
             throw new InvalidOperationException($"{nameof(SendStreamingUpdatesAsync)} can only be called once.");
         }
 
+        if (_ssrFramingCommentMarkup is null)
+        {
+            throw new InvalidOperationException("Cannot begin streaming rendering because no framing header was set.");
+        }
+
         _streamingUpdatesWriter = writer;
 
         try
         {
+            await writer.WriteAsync(_ssrFramingCommentMarkup);
             await writer.FlushAsync(); // Make sure the initial HTML was sent
             await untilTaskCompleted;
         }
@@ -115,6 +138,7 @@ internal partial class EndpointHtmlRenderer
             }
 
             writer.Write("</blazor-ssr>");
+            writer.Write(_ssrFramingCommentMarkup);
         }
     }
 

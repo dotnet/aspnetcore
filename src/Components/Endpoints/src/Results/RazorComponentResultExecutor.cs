@@ -51,6 +51,8 @@ public class RazorComponentResultExecutor
         var endpointHtmlRenderer = httpContext.RequestServices.GetRequiredService<EndpointHtmlRenderer>();
         return endpointHtmlRenderer.Dispatcher.InvokeAsync(async () =>
         {
+            endpointHtmlRenderer.InitializeStreamingRenderingFraming(httpContext);
+
             // We could pool these dictionary instances if we wanted, and possibly even the ParameterView
             // backing buffers could come from a pool like they do during rendering.
             var hostParameters = ParameterView.FromDictionary(new Dictionary<string, object?>
