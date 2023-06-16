@@ -43,17 +43,16 @@ async function performEnhancedPageLoad(internalDestinationHref: string) {
   // First, stop any preceding enhanced page load
   currentEnhancedNavigationAbortController?.abort();
 
-  // TODO: Ensure that if we get back an HTTP failure result, we still display the
-  //       returned content. If there isn't any, display the status code.
   // TODO: Deal with streaming SSR. The returned result may be left hanging for a while.
   // TODO: If the URL has a hash, scroll to it after updating the DOM (unless this just
   //       works anyway)
   currentEnhancedNavigationAbortController = new AbortController();
   const abortSignal = currentEnhancedNavigationAbortController.signal;
-  let responseHtml: string;
+  let response: Response;
+  let responseText: string;
   try {
-    const response = await fetch(internalDestinationHref, { signal: abortSignal });
-    responseHtml = await response.text();
+    response = await fetch(internalDestinationHref, { signal: abortSignal });
+    responseText = await response.text();
   } catch (ex) {
     if ((ex as AbortError)?.name === 'AbortError' && abortSignal.aborted) {
       // Not an error
@@ -63,6 +62,10 @@ async function performEnhancedPageLoad(internalDestinationHref: string) {
     }
   }
 
-  const parsedHtml = new DOMParser().parseFromString(responseHtml, 'text/html');
-  synchronizeDomContent(document, parsedHtml);
+  if (response.headers.get('content-type')?.startsWith('text/html')) {
+    const parsedHtml = new DOMParser().parseFromString(responseText, 'text/html');
+    synchronizeDomContent(document, parsedHtml);
+  } else {
+    document.documentElement.innerHTML = responseText || `Error: ${response.status} ${responseText}`;
+  }
 }
