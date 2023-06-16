@@ -176,4 +176,3 @@ class SiblingSubsetNodeList implements ItemList<Node> {
     this.length = this.endIndexExcl - this.startIndex;
   }
 }
-

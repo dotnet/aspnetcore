@@ -9,7 +9,7 @@ export function synchronizeAttributes(destination: Element, source: Element) {
 
   // Optimize for the common case where all attributes are unchanged and are even still in the same order
   const destAttrsLength = destAttrs.length;
-  if (destAttrsLength === destAttrs.length) {
+  if (destAttrsLength === sourceAttrs.length) {
     let hasDifference = false;
     for (let i = 0; i < destAttrsLength; i++) {
       const sourceAttr = sourceAttrs.item(i)!;
