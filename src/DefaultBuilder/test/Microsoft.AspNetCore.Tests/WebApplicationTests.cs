@@ -1729,6 +1729,7 @@ public class WebApplicationTests
     public async Task EndpointDataSourceOnlyAddsOnce(CreateBuilderFunc createBuilder)
     {
         var builder = createBuilder();
+        builder.WebHost.UseTestServer();
         await using var app = builder.Build();
 
         app.UseRouting();
@@ -1883,6 +1884,7 @@ public class WebApplicationTests
     public async Task PropertiesPreservedFromInnerApplication(CreateBuilderFunc createBuilder)
     {
         var builder = createBuilder();
+        builder.WebHost.UseTestServer();
         builder.Services.AddSingleton<IStartupFilter, PropertyFilter>();
         await using var app = builder.Build();
 
@@ -2557,13 +2559,14 @@ public class WebApplicationTests
     }
 
     [Fact]
-    public void UseMiddleware_HasEndpointsAndAuth_Run_DebugView_HasAutomaticMiddleware()
+    public async Task UseMiddleware_HasEndpointsAndAuth_Run_DebugView_HasAutomaticMiddleware()
     {
         var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
         builder.Services.AddAuthenticationCore();
         builder.Services.AddAuthorization();
 
-        var app = builder.Build();
+        await using var app = builder.Build();
 
         app.UseMiddleware<MiddlewareWithInterface>();
         app.MapGet("/hello", () => "hello world");
@@ -2583,11 +2586,12 @@ public class WebApplicationTests
     }
 
     [Fact]
-    public void NoMiddleware_Run_DebugView_HasAutomaticMiddleware()
+    public async Task NoMiddleware_Run_DebugView_HasAutomaticMiddleware()
     {
         var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
 
-        var app = builder.Build();
+        await using var app = builder.Build();
 
         // Starting the app automatically adds middleware as needed.
         _ = app.RunAsync();
