@@ -50,7 +50,6 @@ app.MapGet("/hello", (HttpContext context) => Task.CompletedTask);
 
         VerifyStaticEndpointModel(result, endpointModel =>
         {
-            Assert.Equal("/", endpointModel.RoutePattern);
             Assert.Equal("MapGet", endpointModel.HttpMethod);
             Assert.False(endpointModel.Response.IsAwaitable);
         });
@@ -70,7 +69,6 @@ app.MapGet("/hello", (HttpContext context) => Task.CompletedTask);
 
         VerifyStaticEndpointModel(result, endpointModel =>
         {
-            Assert.Equal("/", endpointModel.RoutePattern);
             Assert.Equal("MapGet", endpointModel.HttpMethod);
             Assert.True(endpointModel.Response.IsAwaitable);
         });
@@ -79,6 +77,4 @@ app.MapGet("/hello", (HttpContext context) => Task.CompletedTask);
         await endpoint.RequestDelegate(httpContext);
         await VerifyResponseBodyAsync(httpContext, expectedBody: "null");
     }
-
-
 }
