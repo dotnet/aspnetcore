@@ -13,21 +13,21 @@ namespace Microsoft.AspNetCore.Components;
 
 internal readonly struct CascadingParameterState
 {
-    private static readonly ConcurrentDictionary<Type, ReflectedCascadingParameterInfo[]> _cachedInfos = new();
+    private static readonly ConcurrentDictionary<Type, CascadingParameterInfo[]> _cachedInfos = new();
 
-    public string LocalValueName { get; }
-    public ICascadingValueComponent ValueSupplier { get; }
+    public CascadingParameterInfo ParameterInfo { get; }
+    public ICascadingValueSupplier ValueSupplier { get; }
 
-    public CascadingParameterState(string localValueName, ICascadingValueComponent valueSupplier)
+    public CascadingParameterState(in CascadingParameterInfo parameterInfo, ICascadingValueSupplier valueSupplier)
     {
-        LocalValueName = localValueName;
+        ParameterInfo = parameterInfo;
         ValueSupplier = valueSupplier;
     }
 
     public static IReadOnlyList<CascadingParameterState> FindCascadingParameters(ComponentState componentState)
     {
         var componentType = componentState.Component.GetType();
-        var infos = GetReflectedCascadingParameterInfos(componentType);
+        var infos = GetCascadingParameterInfos(componentType);
 
         // For components known not to have any cascading parameters, bail out early
         if (infos.Length == 0)
@@ -48,23 +48,21 @@ internal readonly struct CascadingParameterState
             {
                 // Although not all parameters might be matched, we know the maximum number
                 resultStates ??= new List<CascadingParameterState>(infos.Length - infoIndex);
-
-                resultStates.Add(new CascadingParameterState(info.ConsumerValueName, supplier));
+                resultStates.Add(new CascadingParameterState(info, supplier));
             }
         }
 
         return resultStates ?? (IReadOnlyList<CascadingParameterState>)Array.Empty<CascadingParameterState>();
     }
 
-    private static ICascadingValueComponent? GetMatchingCascadingValueSupplier(in ReflectedCascadingParameterInfo info, ComponentState componentState)
+    private static ICascadingValueSupplier? GetMatchingCascadingValueSupplier(in CascadingParameterInfo info, ComponentState componentState)
     {
         var candidate = componentState;
         do
         {
-            if (candidate.Component is ICascadingValueComponent candidateSupplier
-                && candidateSupplier.CanSupplyValue(info.ValueType, info.SupplierValueName))
+            if (candidate.Component is ICascadingValueSupplier valueSupplier && valueSupplier.CanSupplyValue(info))
             {
-                return candidateSupplier;
+                return valueSupplier;
             }
 
             candidate = candidate.ParentComponentState;
@@ -74,64 +72,37 @@ internal readonly struct CascadingParameterState
         return null;
     }
 
-    private static ReflectedCascadingParameterInfo[] GetReflectedCascadingParameterInfos(
+    private static CascadingParameterInfo[] GetCascadingParameterInfos(
         [DynamicallyAccessedMembers(Component)] Type componentType)
     {
         if (!_cachedInfos.TryGetValue(componentType, out var infos))
         {
-            infos = CreateReflectedCascadingParameterInfos(componentType);
+            infos = CreateCascadingParameterInfos(componentType);
             _cachedInfos[componentType] = infos;
         }
 
         return infos;
     }
 
-    private static ReflectedCascadingParameterInfo[] CreateReflectedCascadingParameterInfos(
+    private static CascadingParameterInfo[] CreateCascadingParameterInfos(
         [DynamicallyAccessedMembers(Component)] Type componentType)
     {
-        List<ReflectedCascadingParameterInfo>? result = null;
+        List<CascadingParameterInfo>? result = null;
         var candidateProps = ComponentProperties.GetCandidateBindableProperties(componentType);
         foreach (var prop in candidateProps)
         {
-            var attribute = prop.GetCustomAttribute<CascadingParameterAttribute>();
-            if (attribute != null)
+            var cascadingParameterAttribute = prop.GetCustomAttributes()
+                .OfType<CascadingParameterAttributeBase>().SingleOrDefault();
+            if (cascadingParameterAttribute != null)
             {
-                result ??= new List<ReflectedCascadingParameterInfo>();
-
-                result.Add(new ReflectedCascadingParameterInfo(
+                result ??= new List<CascadingParameterInfo>();
+                result.Add(new CascadingParameterInfo(
+                    cascadingParameterAttribute,
                     prop.Name,
-                    prop.PropertyType,
-                    attribute.Name));
-            }
-
-            var hostParameterAttribute = prop.GetCustomAttributes()
-                .OfType<IHostEnvironmentCascadingParameter>().SingleOrDefault();
-            if (hostParameterAttribute != null)
-            {
-                result ??= new List<ReflectedCascadingParameterInfo>();
-
-                result.Add(new ReflectedCascadingParameterInfo(
-                    prop.Name,
-                    prop.PropertyType,
-                    hostParameterAttribute.Name));
+                    prop.PropertyType));
             }
         }
 
-        return result?.ToArray() ?? Array.Empty<ReflectedCascadingParameterInfo>();
-    }
-
-    readonly struct ReflectedCascadingParameterInfo
-    {
-        public string ConsumerValueName { get; }
-        public string? SupplierValueName { get; }
-        public Type ValueType { get; }
-
-        public ReflectedCascadingParameterInfo(
-            string consumerValueName, Type valueType, string? supplierValueName)
-        {
-            ConsumerValueName = consumerValueName;
-            SupplierValueName = supplierValueName;
-            ValueType = valueType;
-        }
+        return result?.ToArray() ?? Array.Empty<CascadingParameterInfo>();
     }
 }

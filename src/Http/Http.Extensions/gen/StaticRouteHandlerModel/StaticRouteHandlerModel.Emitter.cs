@@ -131,7 +131,7 @@ internal static class StaticRouteHandlerModelEmitter
         }
         else if (endpointResponse.ResponseType?.SpecialType == SpecialType.System_Object)
         {
-            return $"{returnOrAwait} GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);";
+            return $"{returnOrAwait} GeneratedRouteBuilderExtensionsCore.ExecuteReturnAsync(result, httpContext, objectJsonTypeInfo);";
         }
         else if (!endpointResponse.HasNoResponse)
         {
@@ -147,13 +147,6 @@ internal static class StaticRouteHandlerModelEmitter
         }
     }
 
-    /*
-     * TODO: Emit invocation to the `filteredInvocation` pipeline by constructing
-     * the `EndpointFilterInvocationContext` using the bound arguments for the handler.
-     * In the source generator context, the generic overloads for `EndpointFilterInvocationContext`
-     * can be used to reduce the boxing that happens at runtime when constructing
-     * the context object.
-     */
     public static void EmitFilteredRequestHandler(this Endpoint endpoint, CodeWriter codeWriter)
     {
         var argumentList = endpoint.Parameters.Length == 0 ? string.Empty : $", {endpoint.EmitArgumentList()}";
@@ -178,7 +171,10 @@ internal static class StaticRouteHandlerModelEmitter
         codeWriter.WriteLine("httpContext.Response.StatusCode = 400;");
         codeWriter.EndBlock(); // End if-statement block
         codeWriter.WriteLine($"var result = await filteredInvocation({invocationCreator}{invocationGenericArgs}(httpContext{argumentList}));");
-        codeWriter.WriteLine("await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);");
+        codeWriter.WriteLine("if (result is not null)");
+        codeWriter.StartBlock();
+        codeWriter.WriteLine("await GeneratedRouteBuilderExtensionsCore.ExecuteReturnAsync(result, httpContext, objectJsonTypeInfo);");
+        codeWriter.EndBlock();
         codeWriter.EndBlock(); // End handler method block
     }
 
@@ -232,10 +228,10 @@ internal static class StaticRouteHandlerModelEmitter
                     ProcessParameter(innerParameter, codeWriter);
                 }
             }
-            else
-            {
-                ProcessParameter(parameter, codeWriter);
-            }
+
+            // Even if a parameter is decorated with the AsParameters attribute, we still need
+            // to fetch metadata on the parameter itself (as well as the properties).
+            ProcessParameter(parameter, codeWriter);
         }
 
         static void ProcessParameter(EndpointParameter parameter, CodeWriter codeWriter)

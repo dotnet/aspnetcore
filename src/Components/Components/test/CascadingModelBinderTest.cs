@@ -20,6 +20,7 @@ public class CascadingModelBinderTest
         _navigationManager = new TestNavigationManager();
         serviceCollection.AddSingleton<NavigationManager>(_navigationManager);
         serviceCollection.AddSingleton<IFormValueSupplier, TestFormValueSupplier>();
+        serviceCollection.AddSingleton<CascadingModelBindingProvider, CascadingQueryModelBindingProvider>();
         var services = serviceCollection.BuildServiceProvider();
         _renderer = new TestRenderer(services);
     }

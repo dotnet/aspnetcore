@@ -6,7 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.AspNetCore.Components.Binding;
 
 /// <summary>
-/// Binds form data valuesto a model.
+/// Binds form data values to a model.
 /// </summary>
 public interface IFormValueSupplier
 {

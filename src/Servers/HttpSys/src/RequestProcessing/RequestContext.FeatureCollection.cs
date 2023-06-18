@@ -587,7 +587,7 @@ internal partial class RequestContext :
 
     int ITlsHandshakeFeature.KeyExchangeStrength => Request.KeyExchangeStrength;
 
-    string? ITlsHandshakeFeature.HostName => Request.SniHostName;
+    string ITlsHandshakeFeature.HostName => Request.SniHostName;
 
     IHeaderDictionary IHttpResponseTrailersFeature.Trailers
     {

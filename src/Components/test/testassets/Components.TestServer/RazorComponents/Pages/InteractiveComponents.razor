@@ -1,0 +1,32 @@
+﻿@page "/interactive"
+
+<h1>Interactive components</h1>
+
+@if (ServerIncrementAmount.HasValue)
+{
+    <ServerInteractiveCounter IncrementAmount="@ServerIncrementAmount.Value" />
+    <hr />
+}
+
+@if (ServerSharedIncrementAmount.HasValue)
+{
+    <TestContentPackage.ServerInteractiveCounter IncrementAmount="@ServerSharedIncrementAmount.Value" />
+    <hr />
+}
+
+@if (SharedWebAssemblyIncrementAmount.HasValue)
+{
+    <TestContentPackage.WebAssemblyInteractiveCounter IncrementAmount="@SharedWebAssemblyIncrementAmount.Value" />
+    <hr />
+}
+
+@code {
+    [Parameter, SupplyParameterFromQuery(Name = "server")]
+    public int? ServerIncrementAmount { get; set; }
+
+    [Parameter, SupplyParameterFromQuery(Name = "server-shared")]
+    public int? ServerSharedIncrementAmount { get; set; }
+
+    [Parameter, SupplyParameterFromQuery(Name = "wasm-shared")]
+    public int? SharedWebAssemblyIncrementAmount { get; set; }
+}

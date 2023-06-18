@@ -26,6 +26,11 @@
     <Compile Include="$(SharedSourceRoot)Json\JsonSerializerExtensions.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)RouteHandlers\ExecuteHandlerHelper.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)Debugger\DebuggerHelpers.cs" LinkBase="Shared" />
+    <Compile Include="$(RepoRoot)src\Components\Endpoints\src\Binding\**\*.cs" LinkBase="SharedFormBinding" />
+    <Compile Include="$(RepoRoot)src\Shared\ClosedGenericMatcher\ClosedGenericMatcher.cs" LinkBase="SharedFormBinding" />
+    <!-- Exclude Blazor-specific form binding suppliers. -->
+    <Compile Remove="$(RepoRoot)src\Components\Endpoints\src\Binding\DefaultFormValuesSupplier.cs" LinkBase="SharedFormBinding" />
+    <Compile Remove="$(RepoRoot)src\Components\Endpoints\src\Binding\HttpContextFormDataProvider.cs" LinkBase="SharedFormBinding" />
   </ItemGroup>
 
   <ItemGroup>

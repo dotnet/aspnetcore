@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using System.Diagnostics;
 using System.Security.Claims;
 using System.Security.Principal;
 using Microsoft.AspNetCore.Authentication;
@@ -237,7 +238,7 @@ internal sealed partial class HttpConnectionDispatcher
                     // Wait for the transport to run
                     // Ignore exceptions, it has been logged if there is one and the application has finished
                     // So there is no one to give the exception to
-                    await connection.TransportTask!.NoThrow();
+                    await ((Task)connection.TransportTask!).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
 
                     // If the status code is a 204 it means the connection is done
                     if (context.Response.StatusCode == StatusCodes.Status204NoContent)
@@ -552,8 +553,15 @@ internal sealed partial class HttpConnectionDispatcher
 
         if (connection.TransportType == HttpTransportType.None)
         {
+            if (HttpConnectionsEventSource.Log.IsEnabled() || connection.MetricsContext.ConnectionDurationEnabled)
+            {
+                connection.StartTimestamp = Stopwatch.GetTimestamp();
+            }
+
             connection.TransportType = transportType;
-            _metrics.TransportStart(connection.MetricsContext, transportType);
+
+            HttpConnectionsEventSource.Log.ConnectionStart(connection.ConnectionId);
+            _metrics.ConnectionTransportStart(connection.MetricsContext, transportType);
         }
         else if (connection.TransportType != transportType)
         {

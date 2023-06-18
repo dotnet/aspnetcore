@@ -202,6 +202,11 @@ internal sealed class HttpsConnectionMiddleware
 
         _logger.HttpsConnectionEstablished(context.ConnectionId, sslStream.SslProtocol);
 
+        if (context.Features.Get<IConnectionMetricsTagsFeature>() is { } metricsTags)
+        {
+            metricsTags.Tags.Add(new KeyValuePair<string, object?>("tls-protocol", sslStream.SslProtocol.ToString()));
+        }
+
         var originalTransport = context.Transport;
 
         try
@@ -313,7 +318,7 @@ internal sealed class HttpsConnectionMiddleware
         {
             selector = (sender, name) =>
             {
-                feature.HostName = name;
+                feature.HostName = name ?? string.Empty;
                 var cert = _serverCertificateSelector(context, name);
                 if (cert != null)
                 {

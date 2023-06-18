@@ -22,6 +22,7 @@ public class RouteViewTest
         _navigationManager = new RouteViewTestNavigationManager();
         serviceCollection.AddSingleton<NavigationManager>(_navigationManager);
         serviceCollection.AddSingleton<IFormValueSupplier, TestFormValueSupplier>();
+        serviceCollection.AddSingleton<CascadingModelBindingProvider, CascadingQueryModelBindingProvider>();
         var services = serviceCollection.BuildServiceProvider();
         _renderer = new TestRenderer(services);
 

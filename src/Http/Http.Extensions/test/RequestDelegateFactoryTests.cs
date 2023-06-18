@@ -2502,29 +2502,6 @@ public partial class RequestDelegateFactoryTests : LoggedTest
     }
 
     [Fact]
-    public void Create_CombinesPropertiesAsParameterMetadata_AndTopLevelParameter()
-    {
-        // Arrange
-        var @delegate = ([AsParameters] AddsCustomParameterMetadata param1) => new CountsDefaultEndpointMetadataResult();
-        var options = new RequestDelegateFactoryOptions
-        {
-            EndpointBuilder = CreateEndpointBuilder(new List<object>
-            {
-                new CustomEndpointMetadata { Source = MetadataSource.Caller }
-            }),
-        };
-
-        // Act
-        var result = RequestDelegateFactory.Create(@delegate, options);
-
-        // Assert
-        Assert.Contains(result.EndpointMetadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Parameter });
-        Assert.Contains(result.EndpointMetadata, m => m is ParameterNameMetadata { Name: "param1" });
-        Assert.Contains(result.EndpointMetadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Property });
-        Assert.Contains(result.EndpointMetadata, m => m is ParameterNameMetadata { Name: nameof(AddsCustomParameterMetadata.Data) });
-    }
-
-    [Fact]
     public void Create_CombinesAllMetadata_InCorrectOrder()
     {
         // Arrange

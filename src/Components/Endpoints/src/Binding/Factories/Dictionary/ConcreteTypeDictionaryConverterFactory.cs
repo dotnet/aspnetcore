@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
 
 internal sealed class ConcreteTypeDictionaryConverterFactory<TDictionary, TKey, TValue> : IFormDataConverterFactory
@@ -8,8 +10,12 @@ internal sealed class ConcreteTypeDictionaryConverterFactory<TDictionary, TKey, 
 {
     public static readonly ConcreteTypeDictionaryConverterFactory<TDictionary, TKey, TValue> Instance = new();
 
+    [UnconditionalSuppressMessage("Trimming", "IL2046", Justification = "This derived implementation doesn't require unreferenced code like other implementations of the interface.")]
+    [UnconditionalSuppressMessage("AOT", "IL3051", Justification = "This derived implementation doesn't use dynamic code like other implementations of the interface.")]
     public bool CanConvert(Type type, FormDataMapperOptions options) => true;
 
+    [RequiresDynamicCode(FormBindingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormBindingHelpers.RequiresUnreferencedCodeMessage)]
     public FormDataConverter CreateConverter(Type type, FormDataMapperOptions options)
     {
         // Resolve the element type converter

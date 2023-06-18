@@ -52,10 +52,10 @@ public class HostingApplicationDiagnosticsTests
         var hostingApplication1 = CreateApplication(out var features1, eventSource: hostingEventSource, meterFactory: testMeterFactory1);
         var hostingApplication2 = CreateApplication(out var features2, eventSource: hostingEventSource, meterFactory: testMeterFactory2);
 
-        using var currentRequestsRecorder1 = new InstrumentRecorder<long>(testMeterFactory1, HostingMetrics.MeterName, "current-requests");
-        using var currentRequestsRecorder2 = new InstrumentRecorder<long>(testMeterFactory2, HostingMetrics.MeterName, "current-requests");
-        using var requestDurationRecorder1 = new InstrumentRecorder<double>(testMeterFactory1, HostingMetrics.MeterName, "request-duration");
-        using var requestDurationRecorder2 = new InstrumentRecorder<double>(testMeterFactory2, HostingMetrics.MeterName, "request-duration");
+        using var currentRequestsRecorder1 = new InstrumentRecorder<long>(testMeterFactory1, HostingMetrics.MeterName, "http-server-current-requests");
+        using var currentRequestsRecorder2 = new InstrumentRecorder<long>(testMeterFactory2, HostingMetrics.MeterName, "http-server-current-requests");
+        using var requestDurationRecorder1 = new InstrumentRecorder<double>(testMeterFactory1, HostingMetrics.MeterName, "http-server-request-duration");
+        using var requestDurationRecorder2 = new InstrumentRecorder<double>(testMeterFactory2, HostingMetrics.MeterName, "http-server-request-duration");
 
         // Act/Assert 1
         var context1 = hostingApplication1.CreateContext(features1);

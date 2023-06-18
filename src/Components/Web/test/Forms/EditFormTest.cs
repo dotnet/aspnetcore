@@ -20,6 +20,8 @@ public class EditFormTest
         var services = new ServiceCollection();
         services.AddSingleton<NavigationManager, TestNavigationManager>();
         services.AddSingleton<IFormValueSupplier, TestFormValueSupplier>();
+        services.AddSingleton<CascadingModelBindingProvider, CascadingFormModelBindingProvider>();
+        services.AddSingleton<CascadingModelBindingProvider, CascadingQueryModelBindingProvider>();
         _testRenderer = new(services.BuildServiceProvider());
     }
 
