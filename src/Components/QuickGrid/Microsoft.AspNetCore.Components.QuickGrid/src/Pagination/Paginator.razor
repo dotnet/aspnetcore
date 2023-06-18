@@ -1,5 +1,6 @@
 ﻿@using Microsoft.AspNetCore.Components.Web
 @namespace Microsoft.AspNetCore.Components.QuickGrid
+@inject IStringLocalizer<QuickGrid> Localizer
 
 <div class="paginator">
     @if (State.TotalItemCount.HasValue)
@@ -11,18 +12,18 @@
             }
             else
             {
-                <text><strong>@State.TotalItemCount</strong> items</text>
+                <text><strong>@State.TotalItemCount</strong> @Localizer["items"]</text>
             }
         </div>
         <nav role="navigation">
-            <button class="go-first" type="button" @onclick="GoFirstAsync" disabled="@(!CanGoBack)" title="Go to first page" aria-title="Go to first page"></button>
-            <button class="go-previous" type="button" @onclick="GoPreviousAsync" disabled="@(!CanGoBack)" title="Go to previous page" aria-title="Go to previous page"></button>
+            <button class="go-first" type="button" @onclick="GoFirstAsync" disabled="@(!CanGoBack)" title=@Localizer["Go to first page"] aria-title=@Localizer["Go to first page"]></button>
+            <button class="go-previous" type="button" @onclick="GoPreviousAsync" disabled="@(!CanGoBack)" title=@Localizer["Go to previous page"] aria-title=@Localizer["Go to previous page"]></button>
             <div class="pagination-text">
-                Page <strong>@(State.CurrentPageIndex + 1)</strong>
-                of <strong>@(State.LastPageIndex + 1)</strong>
+                @Localizer["Page"] <strong>@(State.CurrentPageIndex + 1)</strong>
+                @Localizer["of"] <strong>@(State.LastPageIndex + 1)</strong>
             </div>
-            <button class="go-next" type="button" @onclick="GoNextAsync" disabled="@(!CanGoForwards)" title="Go to next page" aria-title="Go to next page"></button>
-            <button class="go-last" type="button" @onclick="GoLastAsync" disabled="@(!CanGoForwards)" title="Go to last page" aria-title="Go to last page"></button>
+            <button class="go-next" type="button" @onclick="GoNextAsync" disabled="@(!CanGoForwards)" title=@Localizer["Go to next page"] aria-title=@Localizer["Go to next page"]></button>
+            <button class="go-last" type="button" @onclick="GoLastAsync" disabled="@(!CanGoForwards)" title=@Localizer["Go to last page"] aria-title=@Localizer["Go to last page"]></button>
         </nav>
     }
 </div>
