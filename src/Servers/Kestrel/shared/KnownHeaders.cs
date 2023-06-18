@@ -40,14 +40,26 @@ public class KnownHeaders
         .Select(h => h.Name)
         .ToArray();
 
-    // These headers are excluded from generated IHeadersDictionary implementaiton.
+    // These headers are excluded from generated IHeadersDictionary implementation.
     public static readonly string[] NonPublicHeaderNames = new[]
     {
         HeaderNames.DNT,
         InternalHeaderNames.AltUsed
     };
 
-    public record InternalHeader(string Identifier, string Name, bool IsPseudoHeader = false);
+    public class InternalHeader
+    {
+        public string Identifier { get; }
+        public string Name { get; }
+        public bool IsPseudoHeader { get; }
+
+        public InternalHeader(string identifier, string name, bool isPseudoHeader = false)
+        {
+            Identifier = identifier;
+            Name = name;
+            IsPseudoHeader = isPseudoHeader;
+        }
+    }
 
     public static readonly InternalHeader[] FormattedInternalHeaderNames = new[]
     {
