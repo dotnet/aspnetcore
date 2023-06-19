@@ -8,6 +8,7 @@ using TestServer;
 using Xunit.Abstractions;
 using Components.TestServer.RazorComponents;
 using OpenQA.Selenium;
+using System.Globalization;
 
 namespace Microsoft.AspNetCore.Components.E2ETests.ServerRenderingTests;
 
@@ -58,5 +59,23 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Navigate(ServerPathBase);
         Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Non-HTML page")).Click();
         Browser.Equal("Hello, this is plain text", () => Browser.Exists(By.TagName("body")).Text);
+    }
+
+    [Fact]
+    public void ScrollsToHashWithContentAddedAsynchronously()
+    {
+        Navigate(ServerPathBase);
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Scroll to hash")).Click();
+        Assert.Equal(0, BrowserScrollY);
+
+        var asyncContentHeader = Browser.Exists(By.Id("some-content"));
+        Browser.Equal("Some content", () => asyncContentHeader.Text);
+        Browser.True(() => BrowserScrollY > 500);
+    }
+
+    private long BrowserScrollY
+    {
+        get => Convert.ToInt64(((IJavaScriptExecutor)Browser).ExecuteScript("return window.scrollY"), CultureInfo.CurrentCulture);
+        set => ((IJavaScriptExecutor)Browser).ExecuteScript($"window.scrollTo(0, {value})");
     }
 }
