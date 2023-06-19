@@ -29,10 +29,17 @@ different bundles that only contain minimal content.
 */
 
 let currentEnhancedNavigationAbortController: AbortController | null;
+let onDocumentUpdatedCallback: Function = () => {};
 
-export function attachProgressivelyEnhancedNavigationListener() {
+export function attachProgressivelyEnhancedNavigationListener(onDocumentUpdated: Function) {
+  onDocumentUpdatedCallback = onDocumentUpdated;
   document.body.addEventListener('click', onBodyClicked);
   window.addEventListener('popstate', onPopState);
+}
+
+export function detachProgressivelyEnhancedNavigationListener() {
+  document.body.removeEventListener('click', onBodyClicked);
+  window.removeEventListener('popstate', onPopState);
 }
 
 function onBodyClicked(event: MouseEvent) {
@@ -88,6 +95,13 @@ async function performEnhancedPageLoad(internalDestinationHref: string) {
     });
 
   if (!abortSignal.aborted) {
+    // TEMPORARY until https://github.com/dotnet/aspnetcore/issues/48763 is implemented
+    // We should really be doing this on the `onInitialDocument` callback *and* inside the <blazor-ssr> custom element logic
+    // so we can add interactive components immediately on each update. Until #48763 is implemented, the stopgap implementation
+    // is just to do it when the enhanced nav process completes entirely, and then if we do add any interactive components, we
+    // disable enhanced nav completely.
+    onDocumentUpdatedCallback();
+
     // The whole response including any streaming SSR is now finished, and it was not aborted (no other navigation
     // has since started). So finally, recreate the native "scroll to hash" behavior.
     const hashPosition = internalDestinationHref.indexOf('#');
