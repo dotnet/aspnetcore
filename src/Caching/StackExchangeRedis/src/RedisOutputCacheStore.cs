@@ -124,7 +124,7 @@ internal class RedisOutputCacheStore : IOutputCacheStore, IOutputCacheBufferStor
         }
     }
 
-    internal async ValueTask<long> ExecuteGarbageCollectionAsync(long keepValuesGreaterThan, CancellationToken cancellationToken = default)
+    internal async ValueTask<long?> ExecuteGarbageCollectionAsync(long keepValuesGreaterThan, CancellationToken cancellationToken = default)
     {
         var cache = await ConnectAsync(CancellationToken.None).ConfigureAwait(false);
 
@@ -133,7 +133,7 @@ internal class RedisOutputCacheStore : IOutputCacheStore, IOutputCacheBufferStor
         // value is purely placeholder; it is the existence that matters
         if (!await cache.StringSetAsync(gcKey, DateTime.UtcNow.ToString(CultureInfo.InvariantCulture), gcLifetime, when: When.NotExists).ConfigureAwait(false))
         {
-            return -1; // signal competition
+            return null; // competition from another node; not even "nothing"
         }
         try
         {
