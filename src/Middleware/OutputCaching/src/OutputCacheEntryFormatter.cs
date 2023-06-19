@@ -84,7 +84,16 @@ internal static class OutputCacheEntryFormatter
             segment = bufferStream.ToArray();
         }
 
-        await store.SetAsync(key, new ReadOnlySequence<byte>(segment.Array!, segment.Offset, segment.Count), value.Tags, duration, cancellationToken);
+        var payload = new ReadOnlySequence<byte>(segment.Array!, segment.Offset, segment.Count);
+        if (store is IOutputCacheBufferStore bufferStore)
+        {
+            await bufferStore.SetAsync(key, payload, value.Tags, duration, cancellationToken);
+        }
+        else
+        {
+            // legacy API/in-proc: create an isolated right-sized byte[] for the payload
+            await store.SetAsync(key, payload.ToArray(), value.Tags, duration, cancellationToken);
+        }
     }
 
     // Format:

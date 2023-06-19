@@ -23,7 +23,7 @@ public class OutputCacheGetSetTests : IClassFixture<RedisConnectionFixture>
     "These tests require Redis server to be started on the machine. Make sure to change the value of" +
     "\"RedisTestConfig.RedisPort\" accordingly.";
 
-    private readonly IOutputCacheStore _cache;
+    private readonly IOutputCacheBufferStore _cache;
     private readonly RedisConnectionFixture _fixture;
     private readonly ITestOutputHelper Log;
 
@@ -42,7 +42,7 @@ public class OutputCacheGetSetTests : IClassFixture<RedisConnectionFixture>
     }
 
 #if DEBUG
-    private async ValueTask<IOutputCacheStore> Cache()
+    private async ValueTask<IOutputCacheBufferStore> Cache()
     {
         if (_cache is RedisOutputCacheStore real)
         {
@@ -155,11 +155,11 @@ public class OutputCacheGetSetTests : IClassFixture<RedisConnectionFixture>
     [Fact(Skip = SkipReason)]
     public async Task GetMissingKeyReturnsFalse_BufferWriter() // "true" result checked in MultiSegmentWriteWorksAsExpected_BufferWriter
     {
-        var cache = Assert.IsAssignableFrom<IOutputCacheBufferWriterStore>(await Cache().ConfigureAwait(false));
+        var cache = Assert.IsAssignableFrom<IOutputCacheBufferStore>(await Cache().ConfigureAwait(false));
         var key = Guid.NewGuid().ToString();
 
         var bufferWriter = new ArrayBufferWriter<byte>();
-        Assert.False(await cache.GetAsync(key, bufferWriter, CancellationToken.None));
+        Assert.False(await cache.TryGetAsync(key, bufferWriter, CancellationToken.None));
         Assert.Equal(0, bufferWriter.WrittenCount);
     }
 
@@ -307,12 +307,12 @@ public class OutputCacheGetSetTests : IClassFixture<RedisConnectionFixture>
         Assert.False(payload.IsSingleSegment, "multi-segment");
         Assert.Equal(1290, payload.Length); // partial from first and last
 
-        var cache = Assert.IsAssignableFrom<IOutputCacheBufferWriterStore>(await Cache().ConfigureAwait(false));
+        var cache = Assert.IsAssignableFrom<IOutputCacheBufferStore>(await Cache().ConfigureAwait(false));
         var key = Guid.NewGuid().ToString();
         await cache.SetAsync(key, payload, default, TimeSpan.FromSeconds(30), CancellationToken.None);
 
         var bufferWriter = new ArrayBufferWriter<byte>();
-        Assert.True(await cache.GetAsync(key, bufferWriter, CancellationToken.None));
+        Assert.True(await cache.TryGetAsync(key, bufferWriter, CancellationToken.None));
         Assert.Equal(1290, bufferWriter.WrittenCount);
         ReadOnlyMemory<byte> linear = payload.ToArray();
         Assert.True(linear.Span.SequenceEqual(bufferWriter.WrittenSpan), "payload match");

@@ -20,7 +20,7 @@ using StackExchange.Redis;
 
 namespace Microsoft.Extensions.Caching.StackExchangeRedis;
 
-internal class RedisOutputCacheStore : IOutputCacheStore, IOutputCacheBufferWriterStore, IDisposable
+internal class RedisOutputCacheStore : IOutputCacheStore, IOutputCacheBufferStore, IDisposable
 {
     private readonly RedisCacheOptions _options;
     private readonly ILogger _logger;
@@ -199,7 +199,7 @@ internal class RedisOutputCacheStore : IOutputCacheStore, IOutputCacheBufferWrit
         }
     }
 
-    async ValueTask<bool> IOutputCacheBufferWriterStore.GetAsync(string key, IBufferWriter<byte> destination, CancellationToken cancellationToken)
+    async ValueTask<bool> IOutputCacheBufferStore.TryGetAsync(string key, IBufferWriter<byte> destination, CancellationToken cancellationToken)
     {
         ArgumentNullThrowHelper.ThrowIfNull(key);
         ArgumentNullThrowHelper.ThrowIfNull(destination);
@@ -230,10 +230,10 @@ internal class RedisOutputCacheStore : IOutputCacheStore, IOutputCacheBufferWrit
     ValueTask IOutputCacheStore.SetAsync(string key, byte[] value, string[]? tags, TimeSpan validFor, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(value);
-        return ((IOutputCacheStore)this).SetAsync(key, new ReadOnlySequence<byte>(value), tags.AsMemory(), validFor, cancellationToken);
+        return ((IOutputCacheBufferStore)this).SetAsync(key, new ReadOnlySequence<byte>(value), tags.AsMemory(), validFor, cancellationToken);
     }
 
-    async ValueTask IOutputCacheStore.SetAsync(string key, ReadOnlySequence<byte> value, ReadOnlyMemory<string> tags, TimeSpan validFor, CancellationToken cancellationToken)
+    async ValueTask IOutputCacheBufferStore.SetAsync(string key, ReadOnlySequence<byte> value, ReadOnlyMemory<string> tags, TimeSpan validFor, CancellationToken cancellationToken)
     {
         var cache = await ConnectAsync(cancellationToken).ConfigureAwait(false);
         Debug.Assert(cache is not null);
