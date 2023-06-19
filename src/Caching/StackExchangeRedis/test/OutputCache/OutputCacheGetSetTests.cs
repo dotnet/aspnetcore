@@ -51,7 +51,7 @@ public class OutputCacheGetSetTests : IClassFixture<RedisConnectionFixture>
         return _cache;
     }
 #else
-    private ValueTask<IOutputCacheStore> Cache() => new(_cache); // avoid CS1998 - no "await"
+    private ValueTask<IOutputCacheBufferStore> Cache() => new(_cache); // avoid CS1998 - no "await"
 #endif
 
     [Fact(Skip = SkipReason)]
