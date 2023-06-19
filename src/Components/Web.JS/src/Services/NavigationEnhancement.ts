@@ -1,25 +1,31 @@
 import { synchronizeDomContent } from '../Rendering/DomMerging/DomSync';
-import { isNavigationInterceptionEnabled } from './NavigationManager';
-import { handleClickForNavigationInterception } from './NavigationUtils';
+import { handleClickForNavigationInterception, hasInteractiveRouter } from './NavigationUtils';
 
 /*
-We want this to work independently from all the existing logic for NavigationManager and EventDelegator, since
-this feature should be available in minimal .js bundles that don't include support for any interactive mode.
-So, this file should not import those modules. Likewise, we don't want NavigationManager.ts to import this module,
-since then it would have to bundle all the DOM-diffing logic in blazor.server|webassembly|webview.js.
+In effect, we have two separate client-side navigation mechanisms:
 
-However, when NavigationManager/EventDelegator are being used, we do have to defer to them since SPA-style
-interactive navigation needs to take precedence. The approach is:
-- When blazor.web.js starts up, it will enable progressively-enhanced (PE) nav
-- If an interactive <Router/> is added, it will call enableNavigationInterception and that will disable PE nav's event listener.
-- When NavigationManager.ts sees a navigation occur, it goes through a complex flow (respecting @preventDefault,
-  triggering OnLocationChanging, evaluating the URL against the .NET route table, etc). Normally this will conclude
-  by picking a component page and rendering it without notifying the PE nav logic at all.
-  - But if no component page is matched, it then explicitly calls back into the PE nav logic to fall back on the logic
-  that would have happened if there was no interactive <Router/>. As such, PE nav isn't *really* disabled; it just only
-  runs as a fallback if <Router/> nav doesn't match the URL.
-  - If an interactive <Router/> is removed, we don't currently handle that. No notification goes back from .NET
-  to JS about that. But if the scenario becomes important, we could add some disableNavigationInterception and resume PE nav.
+[1] Interactive client-side routing. This is the traditional Blazor Server/WebAssembly navigation mechanism for SPAs.
+    It is enabled whenever you have a <Router/> rendering as interactive. This intercepts all navigation within the
+    base href URI space and tries to display a corresponding [Route] component or the NotFoundContent.
+[2] Progressively-enhanced navigation. This is a new mechanism in .NET 8 and is only relevant for multi-page apps.
+    It is enabled when you load blazor.web.js and don't have an interactive <Router/>. This intercepts navigation within
+    the base href URI space and tries to load it via a `fetch` request and DOM syncing.
+
+Only one of these can be enabled at a time, otherwise both would be trying to intercept click/popstate and act on them.
+In fact even if we made the event handlers able to coexist, the two together would still not produce useful behaviors because
+[1] implies you have a <Router/>, and that will try to supply UI content for all pages or NotFoundContent if the URL doesn't
+match a [Route] component, so there would be nothing left for [2] to handle.
+
+So, whenever [1] is enabled, we automatically disable [2].
+
+However, a single site can use both [1] and [2] on different URLs.
+ - You can navigate from [1] to [2] by setting up the interactive <Router/> not to know about any [Route] components in your MPA,
+   and so it will fall back on a full-page load to get from the SPA URLs to the MPA URLs.
+ - You can navigate from [2] to [1] in that it just works by default. A <Router/> can be added dynamically and will then take
+   over and disable [2].
+
+Note that we don't reference NavigationManager.ts from NavigationEnhancement.ts or vice-versa. This is to ensure we could produce
+different bundles that only contain minimal content.
 */
 
 let currentEnhancedNavigationAbortController: AbortController | null;
@@ -30,7 +36,7 @@ export function attachProgressivelyEnhancedNavigationListener() {
 }
 
 function onBodyClicked(event: MouseEvent) {
-  if (isNavigationInterceptionEnabled()) {
+  if (hasInteractiveRouter()) {
     return;
   }
 
@@ -41,7 +47,7 @@ function onBodyClicked(event: MouseEvent) {
 }
 
 function onPopState(state: PopStateEvent) {
-  if (isNavigationInterceptionEnabled()) {
+  if (hasInteractiveRouter()) {
     return;
   }
 

@@ -1,3 +1,5 @@
+let hasInteractiveRouterValue = false;
+
 /**
  * Checks if a click event corresponds to an <a> tag referencing a URL within the base href, and that interception
  * isn't bypassed (e.g., by a 'download' attribute or the user holding a meta key while clicking).
@@ -89,4 +91,12 @@ function findClosestAnchorAncestorLegacy(element: Element | null, tagName: strin
   : element.tagName === tagName
   ? element
   : findClosestAnchorAncestorLegacy(element.parentElement, tagName);
+}
+
+export function hasInteractiveRouter(): boolean {
+  return hasInteractiveRouterValue;
+}
+
+export function setHasInteractiveRouter() {
+  hasInteractiveRouterValue = true;
 }

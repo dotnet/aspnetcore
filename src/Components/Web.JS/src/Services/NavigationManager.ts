@@ -4,9 +4,8 @@
 import '@microsoft/dotnet-js-interop';
 import { resetScrollAfterNextBatch } from '../Rendering/Renderer';
 import { EventDelegator } from '../Rendering/Events/EventDelegator';
-import { handleClickForNavigationInterception, isWithinBaseUriSpace, toAbsoluteUri } from './NavigationUtils';
+import { handleClickForNavigationInterception, hasInteractiveRouter, isWithinBaseUriSpace, setHasInteractiveRouter, toAbsoluteUri } from './NavigationUtils';
 
-let hasEnabledNavigationInterception = false;
 let hasRegisteredNavigationEventListeners = false;
 let hasLocationChangingEventListeners = false;
 let currentHistoryIndex = 0;
@@ -22,7 +21,7 @@ let resolveCurrentNavigation: ((shouldContinueNavigation: boolean) => void) | nu
 // These are the functions we're making available for invocation from .NET
 export const internalFunctions = {
   listenForNavigationEvents,
-  enableNavigationInterception,
+  enableNavigationInterception: setHasInteractiveRouter,
   setHasLocationChangingListeners,
   endLocationChanging,
   navigateTo: navigateToFromDotNet,
@@ -47,14 +46,6 @@ function listenForNavigationEvents(
   currentHistoryIndex = history.state?._index ?? 0;
 }
 
-function enableNavigationInterception(): void {
-  hasEnabledNavigationInterception = true;
-}
-
-export function isNavigationInterceptionEnabled(): boolean {
-  return hasEnabledNavigationInterception;
-}
-
 function setHasLocationChangingListeners(hasListeners: boolean) {
   hasLocationChangingEventListeners = hasListeners;
 }
@@ -75,7 +66,7 @@ export function attachToEventDelegator(eventDelegator: EventDelegator): void {
   // running its simulated bubbling process so that we can respect any preventDefault requests.
   // So instead of registering our own native event, register using the EventDelegator.
   eventDelegator.notifyAfterClick(event => {
-    if (!hasEnabledNavigationInterception) {
+    if (!hasInteractiveRouter()) {
       return;
     }
 
