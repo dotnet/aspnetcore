@@ -50,7 +50,8 @@ public static class StackExchangeRedisCacheServiceCollectionExtensions
         services.AddOptions();
 
         services.Configure(setupAction);
-        services.TryAddSingleton<AspNetCore.OutputCaching.IOutputCacheStore, RedisOutputCacheStoreImpl>();
+        // replace here (Add vs TryAdd) is intentional and part of test conditions
+        services.AddSingleton<AspNetCore.OutputCaching.IOutputCacheStore, RedisOutputCacheStoreImpl>();
 
         return services;
     }
