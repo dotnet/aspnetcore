@@ -1,10 +1,12 @@
 import { synchronizeDomContent } from '../Rendering/DomMerging/DomSync';
+import { isNavigationInterceptionEnabled } from './NavigationManager';
 import { handleClickForNavigationInterception } from './NavigationUtils';
 
 /*
 We want this to work independently from all the existing logic for NavigationManager and EventDelegator, since
 this feature should be available in minimal .js bundles that don't include support for any interactive mode.
-So, this file should not import those modules.
+So, this file should not import those modules. Likewise, we don't want NavigationManager.ts to import this module,
+since then it would have to bundle all the DOM-diffing logic in blazor.server|webassembly|webview.js.
 
 However, when NavigationManager/EventDelegator are being used, we do have to defer to them since SPA-style
 interactive navigation needs to take precedence. The approach is:
@@ -28,6 +30,10 @@ export function attachProgressivelyEnhancedNavigationListener() {
 }
 
 function onBodyClicked(event: MouseEvent) {
+  if (isNavigationInterceptionEnabled()) {
+    return;
+  }
+
   handleClickForNavigationInterception(event, absoluteInternalHref => {
     history.pushState(null, /* ignored title */ '', absoluteInternalHref);
     performEnhancedPageLoad(absoluteInternalHref);
@@ -35,6 +41,10 @@ function onBodyClicked(event: MouseEvent) {
 }
 
 function onPopState(state: PopStateEvent) {
+  if (isNavigationInterceptionEnabled()) {
+    return;
+  }
+
   performEnhancedPageLoad(location.href);
 }
 

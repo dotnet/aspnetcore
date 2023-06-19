@@ -51,6 +51,10 @@ function enableNavigationInterception(): void {
   hasEnabledNavigationInterception = true;
 }
 
+export function isNavigationInterceptionEnabled(): boolean {
+  return hasEnabledNavigationInterception;
+}
+
 function setHasLocationChangingListeners(hasListeners: boolean) {
   hasLocationChangingEventListeners = hasListeners;
 }
