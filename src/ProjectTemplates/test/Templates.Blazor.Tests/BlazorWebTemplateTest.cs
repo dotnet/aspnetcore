@@ -96,17 +96,17 @@ public class BlazorWebTemplateTest : LoggedTest
         }
     }
 
-    public static IEnumerable<object[]> ArgsData()
+    public static TheoryData<string[]> ArgsData() => new TheoryData<string[]>
     {
-        yield return new object[] { new string[0] };
-        yield return new object[] { new[] { ArgConstants.UseProgramMain } };
-        yield return new object[] { new[] { ArgConstants.NoHttps } };
-        yield return new object[] { new[] { ArgConstants.UseProgramMain, ArgConstants.NoHttps } };
-        yield return new object[] { new[] { ArgConstants.UseServer } };
-        yield return new object[] { new[] { ArgConstants.UseServer, ArgConstants.UseProgramMain } };
-        yield return new object[] { new[] { ArgConstants.UseServer, ArgConstants.NoHttps } };
-        yield return new object[] { new[] { ArgConstants.UseServer, ArgConstants.UseProgramMain, ArgConstants.NoHttps } };
-    }
+        new string[0],
+        new[] { ArgConstants.UseProgramMain },
+        new[] { ArgConstants.NoHttps },
+        new[] { ArgConstants.UseProgramMain, ArgConstants.NoHttps },
+        new[] { ArgConstants.UseServer },
+        new[] { ArgConstants.UseServer, ArgConstants.UseProgramMain },
+        new[] { ArgConstants.UseServer, ArgConstants.NoHttps },
+        new[] { ArgConstants.UseServer, ArgConstants.UseProgramMain, ArgConstants.NoHttps }
+    };
 
     private string ReadFile(string basePath, string path)
     {
