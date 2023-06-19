@@ -29,6 +29,7 @@ internal class RedisOutputCacheStore : IOutputCacheStore, IOutputCacheBufferStor
     private readonly RedisKey _tagMasterKey;
     private readonly RedisKey[] _tagMasterKeyArray; // for use with Lua if needed (to avoid array allocs)
     private readonly SemaphoreSlim _connectionLock = new SemaphoreSlim(initialCount: 1, maxCount: 1);
+    private readonly CancellationTokenSource _disposalCancellation = new();
 
     private bool _disposed;
     private volatile IDatabase? _cache;
@@ -102,8 +103,12 @@ internal class RedisOutputCacheStore : IOutputCacheStore, IOutputCacheBufferStor
                 {
                     if (GarbageCollectionEnabled)
                     {
-                        await ExecuteGarbageCollectionAsync(GetExpirationTimestamp(TimeSpan.Zero)).ConfigureAwait(false);
+                        await ExecuteGarbageCollectionAsync(GetExpirationTimestamp(TimeSpan.Zero), _disposalCancellation.Token).ConfigureAwait(false);
                     }
+                }
+                catch (OperationCanceledException) when (_disposed)
+                {
+                    // fine, service exiting
                 }
                 catch (Exception ex)
                 {
@@ -359,8 +364,8 @@ internal class RedisOutputCacheStore : IOutputCacheStore, IOutputCacheBufferStor
         {
             return;
         }
-
         _disposed = true;
+        _disposalCancellation.Cancel();
         ReleaseConnection(Interlocked.Exchange(ref _cache, null));
     }
 
