@@ -646,7 +646,21 @@ internal static class ServiceDescriptorHelpers
     }
 }
 
-internal record RouteParameter(
-    List<FieldDescriptor> DescriptorsPath,
-    HttpRouteVariable RouteVariable,
-    string JsonPath);
+internal sealed class RouteParameter
+{
+    public List<FieldDescriptor> DescriptorsPath { get; }
+
+    public HttpRouteVariable RouteVariable { get; }
+
+    public string JsonPath { get; }
+
+    public RouteParameter(
+        List<FieldDescriptor> descriptorsPath,
+        HttpRouteVariable routeVariable,
+        string jsonPath)
+    {
+        DescriptorsPath = descriptorsPath;
+        RouteVariable = routeVariable;
+        JsonPath = jsonPath;
+    }
+}
