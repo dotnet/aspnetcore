@@ -83,9 +83,9 @@ async function performEnhancedPageLoad(internalDestinationHref: string) {
         // For any non-success response that has no content at all, make up our own error UI
         document.documentElement.innerHTML = `Error: ${response.status} ${response.statusText}`;
       } else {
-        // For any other response, it's success but not HTML. It might be plain text, or an image,
-        // or something else. Since we can't know what to do with it, fall back on a full reload,
-        // even though that means we have to request the content a second time.
+        // For any other response, it's not HTML and we don't know what to do. It might be plain text,
+        // or an image, or something else. So fall back on a full reload, even though that means we
+        // have to request the content a second time.
         // The ? trick here is the same workaround as described in #10839, and without it, the user
         // would not be able to use the back button afterwards.
         history.replaceState(null, '', internalDestinationHref + '?');
