@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.WebSockets;
 /// Used in ASP.NET Core to wrap a WebSocket with its associated HttpContext so that when the WebSocket is aborted
 /// the underlying HttpContext is aborted. All other methods are delegated to the underlying WebSocket.
 /// </summary>
-internal class ServerWebSocket : WebSocket
+internal sealed class ServerWebSocket : WebSocket
 {
     private readonly WebSocket _wrappedSocket;
     private readonly HttpContext _context;
