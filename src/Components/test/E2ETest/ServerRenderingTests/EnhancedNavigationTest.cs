@@ -35,4 +35,28 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         // destination, and it's done so without a page load, and it preserved the element
         Browser.Equal("Streaming Rendering", () => h1Elem.Text);
     }
+
+    [Fact]
+    public void CanNavigateToAnHtmlPageWithAnErrorStatus()
+    {
+        Navigate(ServerPathBase);
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Error page with 404 content")).Click();
+        Browser.Equal("404", () => Browser.Exists(By.TagName("h1")).Text);
+    }
+
+    [Fact]
+    public void DisplaysStatusCodeIfResponseIsErrorWithNoContent()
+    {
+        Navigate(ServerPathBase);
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Error page with no content")).Click();
+        Browser.Equal("Error: 404", () => Browser.Exists(By.TagName("body")).Text);
+    }
+
+    [Fact]
+    public void CanNavigateToNonHtmlResponse()
+    {
+        Navigate(ServerPathBase);
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Non-HTML page")).Click();
+        Browser.Equal("Hello, this is plain text", () => Browser.Exists(By.TagName("body")).Text);
+    }
 }

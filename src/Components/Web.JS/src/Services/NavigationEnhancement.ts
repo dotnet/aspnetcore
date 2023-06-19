@@ -76,15 +76,20 @@ async function performEnhancedPageLoad(internalDestinationHref: string) {
   await getResponsePartsWithFraming(responsePromise, abortSignal,
     (response, initialContent) => {
       if (response.headers.get('content-type')?.startsWith('text/html')) {
+        // For HTML responses, regardless of the status code, display it
         const parsedHtml = new DOMParser().parseFromString(initialContent, 'text/html');
         synchronizeDomContent(document, parsedHtml);
+      } else if ((response.status < 200 || response.status >= 300) && !initialContent) {
+        // For any non-success response that has no content at all, make up our own error UI
+        document.documentElement.innerHTML = `Error: ${response.status} ${initialContent}`;
       } else {
-        // The response isn't HTML so don't try to parse it that way. If they gave any response text use that,
-        // and only generate our own error message if it's definitely an error with no text.
-        const isSuccessStatus = response.status >= 200 && response.status < 300;
-        document.documentElement.innerHTML = (initialContent || isSuccessStatus)
-          ? initialContent
-          : `Error: ${response.status} ${initialContent}`;
+        // For any other response, it's success but not HTML. It might be plain text, or an image,
+        // or something else. Since we can't know what to do with it, fall back on a full reload,
+        // even though that means we have to request the content a second time.
+        // The ? trick here is the same workaround as described in #10839, and without it, the user
+        // would not be able to use the back button afterwards.
+        history.replaceState(null, '', internalDestinationHref + '?');
+        location.replace(internalDestinationHref);
       }
     },
     (streamingElementMarkup) => {
