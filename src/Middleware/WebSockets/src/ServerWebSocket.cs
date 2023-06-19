@@ -57,6 +57,21 @@ internal class ServerWebSocket : WebSocket
         return _wrappedSocket.ReceiveAsync(buffer, cancellationToken);
     }
 
+    public override ValueTask<ValueWebSocketReceiveResult> ReceiveAsync(Memory<byte> buffer, CancellationToken cancellationToken)
+    {
+        return _wrappedSocket.ReceiveAsync(buffer, cancellationToken);
+    }
+
+    public override ValueTask SendAsync(ReadOnlyMemory<byte> buffer, WebSocketMessageType messageType, bool endOfMessage, CancellationToken cancellationToken)
+    {
+        return _wrappedSocket.SendAsync(buffer, messageType, endOfMessage, cancellationToken);
+    }
+
+    public override ValueTask SendAsync(ReadOnlyMemory<byte> buffer, WebSocketMessageType messageType, WebSocketMessageFlags messageFlags, CancellationToken cancellationToken)
+    {
+        return _wrappedSocket.SendAsync(buffer, messageType, messageFlags, cancellationToken);
+    }
+
     public override Task SendAsync(ArraySegment<byte> buffer, WebSocketMessageType messageType, bool endOfMessage, CancellationToken cancellationToken)
     {
         return _wrappedSocket.SendAsync(buffer, messageType, endOfMessage, cancellationToken);
