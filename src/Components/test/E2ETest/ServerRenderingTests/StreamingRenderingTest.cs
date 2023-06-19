@@ -34,13 +34,28 @@ public class StreamingRenderingTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Assert.DoesNotContain("<blazor-ssr", Browser.PageSource);
     }
 
-    [Fact]
-    public void CanPerformStreamingRendering()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void CanPerformStreamingRendering(bool duringEnhancedNavigation)
     {
-        Navigate($"{ServerPathBase}/streaming");
+        IWebElement originalH1Elem;
+
+        if (duringEnhancedNavigation)
+        {
+            Navigate(ServerPathBase);
+            originalH1Elem = Browser.Exists(By.TagName("h1"));
+            Browser.Equal("Hello", () => originalH1Elem.Text);
+            Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Streaming")).Click();
+        }
+        else
+        {
+            Navigate($"{ServerPathBase}/streaming");
+            originalH1Elem = Browser.Exists(By.TagName("h1"));
+        }
 
         // Initial "waiting" state
-        Browser.Equal("Streaming Rendering", () => Browser.Exists(By.TagName("h1")).Text);
+        Browser.Equal("Streaming Rendering", () => originalH1Elem.Text);
         var getStatusText = () => Browser.Exists(By.Id("status"));
         var getDisplayedItems = () => Browser.FindElements(By.TagName("li"));
         Assert.Equal("Waiting for more...", getStatusText().Text);
@@ -66,13 +81,27 @@ public class StreamingRenderingTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.Equal("Finished", () => getStatusText().Text);
     }
 
-    [Fact]
-    public void RetainsDomNodesDuringStreamingRenderingUpdates()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void RetainsDomNodesDuringStreamingRenderingUpdates(bool duringEnhancedNavigation)
     {
-        Navigate($"{ServerPathBase}/streaming");
+        IWebElement originalH1Elem;
+
+        if (duringEnhancedNavigation)
+        {
+            Navigate(ServerPathBase);
+            originalH1Elem = Browser.Exists(By.TagName("h1"));
+            Browser.Equal("Hello", () => originalH1Elem.Text);
+            Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Streaming")).Click();
+        }
+        else
+        {
+            Navigate($"{ServerPathBase}/streaming");
+            originalH1Elem = Browser.Exists(By.TagName("h1"));
+        }
 
         // Initial "waiting" state
-        var originalH1Elem = Browser.Exists(By.TagName("h1"));
         var originalStatusElem = Browser.Exists(By.Id("status"));
         Assert.Equal("Streaming Rendering", originalH1Elem.Text);
         Assert.Equal("Waiting for more...", originalStatusElem.Text);
