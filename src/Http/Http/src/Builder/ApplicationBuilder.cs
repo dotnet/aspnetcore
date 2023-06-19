@@ -47,7 +47,7 @@ public partial class ApplicationBuilder : IApplicationBuilder
         SetProperty(ServerFeaturesKey, server);
 
         // IDebugger service can optionally be added by tests to simulate the debugger being attached.
-        _debugger = (IDebugger?)serviceProvider.GetService(typeof(IDebugger)) ?? DebuggerWrapper.Instance;
+        _debugger = (IDebugger?)serviceProvider?.GetService(typeof(IDebugger)) ?? DebuggerWrapper.Instance;
 
         if (_debugger.IsAttached)
         {
