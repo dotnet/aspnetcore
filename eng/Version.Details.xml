@@ -359,31 +359,31 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>2c62994efb2495dcaef2312de3ab25ea4792b23a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="8.0.0-beta.23312.4">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="8.0.0-beta.23316.6">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>f3952775e6d00a5b6f43b0615a8a766e095185eb</Sha>
+      <Sha>e2334b2be36919347923d0ec872a46acddb1e385</Sha>
       <SourceBuild RepoName="arcade" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.SourceLink.GitHub" Version="8.0.0-beta.23309.3" CoherentParentDependency="Microsoft.DotNet.Arcade.Sdk">
+    <Dependency Name="Microsoft.SourceLink.GitHub" Version="8.0.0-beta.23314.2" CoherentParentDependency="Microsoft.DotNet.Arcade.Sdk">
       <Uri>https://github.com/dotnet/sourcelink</Uri>
-      <Sha>23bda65700e70b6697390dcc4e0f87e2dfbce63a</Sha>
+      <Sha>4d2c8bf58e8cb7900ec2d9077c155572e2d3cd88</Sha>
       <SourceBuild RepoName="sourcelink" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="8.0.0-beta.23312.4">
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="8.0.0-beta.23316.6">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>f3952775e6d00a5b6f43b0615a8a766e095185eb</Sha>
+      <Sha>e2334b2be36919347923d0ec872a46acddb1e385</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Build.Tasks.Templating" Version="8.0.0-beta.23312.4">
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Templating" Version="8.0.0-beta.23316.6">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>f3952775e6d00a5b6f43b0615a8a766e095185eb</Sha>
+      <Sha>e2334b2be36919347923d0ec872a46acddb1e385</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="8.0.0-beta.23312.4">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="8.0.0-beta.23316.6">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>f3952775e6d00a5b6f43b0615a8a766e095185eb</Sha>
+      <Sha>e2334b2be36919347923d0ec872a46acddb1e385</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.RemoteExecutor" Version="8.0.0-beta.23312.4">
+    <Dependency Name="Microsoft.DotNet.RemoteExecutor" Version="8.0.0-beta.23316.6">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>f3952775e6d00a5b6f43b0615a8a766e095185eb</Sha>
+      <Sha>e2334b2be36919347923d0ec872a46acddb1e385</Sha>
     </Dependency>
     <Dependency Name="NuGet.Frameworks" Version="6.2.4">
       <Uri>https://github.com/nuget/nuget.client</Uri>
