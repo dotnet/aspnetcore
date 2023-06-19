@@ -50,7 +50,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
     {
         Navigate(ServerPathBase);
         Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Error page with no content")).Click();
-        Browser.Equal("Error: 404", () => Browser.Exists(By.TagName("body")).Text);
+        Browser.Equal("Error: 404 Not Found", () => Browser.Exists(By.TagName("body")).Text);
     }
 
     [Fact]

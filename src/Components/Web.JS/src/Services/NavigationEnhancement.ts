@@ -81,7 +81,7 @@ async function performEnhancedPageLoad(internalDestinationHref: string) {
         synchronizeDomContent(document, parsedHtml);
       } else if ((response.status < 200 || response.status >= 300) && !initialContent) {
         // For any non-success response that has no content at all, make up our own error UI
-        document.documentElement.innerHTML = `Error: ${response.status} ${initialContent}`;
+        document.documentElement.innerHTML = `Error: ${response.status} ${response.statusText}`;
       } else {
         // For any other response, it's success but not HTML. It might be plain text, or an image,
         // or something else. Since we can't know what to do with it, fall back on a full reload,
