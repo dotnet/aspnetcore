@@ -315,7 +315,6 @@ internal class RedisOutputCacheStore : IOutputCacheStore, IOutputCacheBufferStor
         var cache = _cache;
         if (cache is not null)
         {
-            Debug.Assert(_cache is not null);
             return new(cache);
         }
         return ConnectSlowAsync(token);
