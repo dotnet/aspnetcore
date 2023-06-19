@@ -21,7 +21,8 @@ public partial class ApplicationBuilder : IApplicationBuilder
     private const string RequestUnhandledKey = "__RequestUnhandled";
 
     private readonly List<Func<RequestDelegate, RequestDelegate>> _components = new();
-    private readonly List<string> _descriptions = new();
+    private readonly List<string>? _descriptions;
+    private readonly IDebugger _debugger;
 
     /// <summary>
     /// Initializes a new instance of <see cref="ApplicationBuilder"/>.
@@ -45,14 +46,25 @@ public partial class ApplicationBuilder : IApplicationBuilder
 
         SetProperty(ServerFeaturesKey, server);
 
-        // Add component descriptions collection to properties so debugging tools can display
-        // a list of configured middleware for an application.
-        SetProperty(MiddlewareDescriptionsKey, _descriptions);
+        _debugger = (IDebugger?)serviceProvider.GetService(typeof(IDebugger)) ?? DebuggerWrapper.Instance;
+
+        if (_debugger.IsAttached)
+        {
+            _descriptions = new();
+            // Add component descriptions collection to properties so debugging tools can display
+            // a list of configured middleware for an application.
+            SetProperty(MiddlewareDescriptionsKey, _descriptions);
+        }
     }
 
     private ApplicationBuilder(ApplicationBuilder builder)
     {
         Properties = new CopyOnWriteDictionary<string, object?>(builder.Properties, StringComparer.Ordinal);
+        _debugger = builder._debugger;
+        if (_debugger.IsAttached)
+        {
+            _descriptions = new();
+        }
     }
 
     /// <summary>
@@ -107,7 +119,7 @@ public partial class ApplicationBuilder : IApplicationBuilder
     public IApplicationBuilder Use(Func<RequestDelegate, RequestDelegate> middleware)
     {
         _components.Add(middleware);
-        _descriptions.Add(CreateMiddlewareDescription(middleware));
+        _descriptions?.Add(CreateMiddlewareDescription(middleware));
 
         return this;
     }

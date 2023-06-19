@@ -424,6 +424,8 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
         //
         // This method updates the middleware descriptions to include automatically added middleware.
         // The app's middleware list is inserted into the new pipeline to create the best representation possible of the middleware pipeline.
+        //
+        // If the debugger isn't attached then there won't be middleware description collections in the properties and this does nothing.
 
         Debug.Assert(_builtApplication is not null);
 

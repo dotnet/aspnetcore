@@ -2528,10 +2528,18 @@ public class WebApplicationTests
         Assert.Equal("RegexRoute", chosenRoute);
     }
 
+    private sealed class TestDebugger : IDebugger
+    {
+        private bool _isAttached;
+        public TestDebugger(bool isAttached) => _isAttached = isAttached;
+        public bool IsAttached => _isAttached;
+    }
+
     [Fact]
     public void UseMiddleware_DebugView_HasMiddleware()
     {
         var builder = WebApplication.CreateBuilder();
+        builder.Services.AddSingleton<IDebugger>(new TestDebugger(true));
 
         var app = builder.Build();
 
@@ -2559,12 +2567,33 @@ public class WebApplicationTests
     }
 
     [Fact]
+    public void NoDebugger_DebugView_NoMiddleware()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.Services.AddSingleton<IDebugger>(new TestDebugger(false));
+
+        var app = builder.Build();
+
+        app.UseMiddleware<MiddlewareWithInterface>();
+        app.UseAuthentication();
+        app.Use(next =>
+        {
+            return next;
+        });
+
+        var debugView = new WebApplication.WebApplicationDebugView(app);
+
+        Assert.Throws<NotSupportedException>(() => debugView.Middleware);
+    }
+
+    [Fact]
     public async Task UseMiddleware_HasEndpointsAndAuth_Run_DebugView_HasAutomaticMiddleware()
     {
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseTestServer();
         builder.Services.AddAuthenticationCore();
         builder.Services.AddAuthorization();
+        builder.Services.AddSingleton<IDebugger>(new TestDebugger(true));
 
         await using var app = builder.Build();
 
@@ -2590,6 +2619,7 @@ public class WebApplicationTests
     {
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseTestServer();
+        builder.Services.AddSingleton<IDebugger>(new TestDebugger(true));
 
         await using var app = builder.Build();
 
@@ -2606,6 +2636,7 @@ public class WebApplicationTests
     public void NestedMiddleware_DebugView_OnlyContainsTopLevelMiddleware()
     {
         var builder = WebApplication.CreateBuilder();
+        builder.Services.AddSingleton<IDebugger>(new TestDebugger(true));
 
         var app = builder.Build();
 
