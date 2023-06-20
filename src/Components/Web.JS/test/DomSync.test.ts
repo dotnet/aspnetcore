@@ -259,6 +259,14 @@ describe('DomSync', () => {
   });
 
   test('should update input element value when not modified by user', () => {
+    // Until an input-like element is edited (or equivalently, until something
+    // is written to its 'value' property), that element's 'value' property
+    // return the same as the element's 'value' attribute. The property and
+    // attribute stay in sync automatically.
+    //
+    // This test aims to show that, in this situation prior to user edits,
+    // we update both the property and attribute to match the new content.
+
     // Arrange
     const destination = makeExistingContent(
       `<input value='original'>`);
@@ -274,7 +282,19 @@ describe('DomSync', () => {
     expect(destinationNode.getAttribute('value')).toEqual('changed');
   });
 
-  test('should not update input element value when modified by user', () => {
+  test('should update input element value when modified by user and changed in new content', () => {
+    // After an input-like element is edited (or equivalently, after something
+    // is written to its 'value' property), that element's 'value' property
+    // no longer stays in sync with the element's 'value' attribute. The property
+    // and attribute become independent, and the property is what actually
+    // reflects the UI state.
+    //
+    // This test aims to show that, in this situation after user edits, we still
+    // update both the property and attribute to match the new content. This
+    // means we are discarding the user's edit, which is desirable because the
+    // whole idea of DomSync is to ensure the UI state matches the new content
+    // and create an equivalent result to reloading the whole page.
+
     // Arrange
     const destination = makeExistingContent(
       `<input value='original'>`);
@@ -287,12 +307,53 @@ describe('DomSync', () => {
     synchronizeDomContent(destination, newContent);
 
     // Assert
-    // While we do write a new attribute value, we do *not* overwrite the 'value'
-    // property, so any user-performed edits will not be overwritten. This happens automatically
-    // without any explicit implementation logic, but since it's the behavior we want, this test
-    // is here to detect if we ever regress this behavior.
-    expect(destinationNode.value).toEqual('edited by user');
+    expect(destinationNode.value).toEqual('changed');
     expect(destinationNode.getAttribute('value')).toEqual('changed');
+  });
+
+  test('should update input element value when modified by user but unchanged in new content', () => {
+    // Equivalent to the test above, except the old and new content is identical
+    // (so by looking at the attributes alone it seems nothing has to be updated)
+    // and we are showing that it still reverts the user's edit
+
+    // Arrange
+    const destination = makeExistingContent(
+      `<input value='original'>`);
+    const newContent = makeNewContent(
+      `<input value='original'>`);
+    const destinationNode = toNodeArray(destination)[0] as HTMLInputElement;
+    destinationNode.value = 'edited by user';
+
+    // Act
+    synchronizeDomContent(destination, newContent);
+
+    // Assert
+    expect(destinationNode.value).toEqual('original');
+    expect(destinationNode.getAttribute('value')).toEqual('original');
+  });
+
+  test('should be able to add select with nonempty option value', () => {
+    // This test is to show that the deferred value assignment works. That is, even though
+    // when we insert the <select> its value does not correspond to any of the <option> children,
+    // it still gets the right value when we subsequently insert the <option> child.
+
+    // Arrange
+    const destination = makeExistingContent(
+      ``);
+    const newContent = makeNewContent(
+      `<select value='second'>`
+      + `<option value='first'></option>`
+      + `<option value='second'></option>`
+      + `<option value='third'></option>` +
+      `</select>`);
+
+    // Act
+    synchronizeDomContent(destination, newContent);
+
+    // Assert
+    const selectElem = destination.startExclusive.nextSibling;
+    expect(selectElem).toBeInstanceOf(HTMLSelectElement);
+    expect((selectElem as HTMLSelectElement).value).toBe('second');
   });
 });
 
