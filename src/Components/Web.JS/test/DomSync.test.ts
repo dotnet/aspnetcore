@@ -382,6 +382,31 @@ describe('DomSync', () => {
     expect(selectElem).toBeInstanceOf(HTMLSelectElement);
     expect((selectElem as HTMLSelectElement).value).toBe('new3');
   });
+
+  test('should be able to update an input range to a value outside the min/max of the old content', () => {
+    // This shows that the deferred value handling works. We can't actually assign the attributes/properties
+    // in the given order, because it would cause the value to exceed the max (as we have not yet updated the
+    // max). However it works anyway because of the deferred value assignment mechanism.
+
+    // Arrange
+    const destination = makeExistingContent(
+      `<input type='range' min='100' max='200' value='150'>`);
+    const newContent = makeNewContent(
+      `<input type='range' value='1000' min='950' max='1050'>`);
+    const inputRange = destination.startExclusive.nextSibling as HTMLInputElement;
+    expect(inputRange.value).toBe('150');
+    expect(inputRange.min).toBe('100');
+    expect(inputRange.max).toBe('200');
+    inputRange.value = '175';
+
+    // Act
+    synchronizeDomContent(destination, newContent);
+
+    // Assert
+    expect(inputRange.value).toBe('1000');
+    expect(inputRange.min).toBe('950');
+    expect(inputRange.max).toBe('1050');
+  });
 });
 
 function makeExistingContent(html: string): CommentBoundedRange {
