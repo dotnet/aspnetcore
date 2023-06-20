@@ -16,7 +16,6 @@ public class AuthenticationProperties
     internal const string IsPersistentKey = ".persistent";
     internal const string RedirectUriKey = ".redirect";
     internal const string RefreshKey = ".refresh";
-    internal const string RefreshTokenKey = ".refreshToken";
     internal const string UtcDateTimeFormat = "r";
 
     /// <summary>
@@ -115,15 +114,6 @@ public class AuthenticationProperties
     {
         get => GetBool(RefreshKey);
         set => SetBool(RefreshKey, value);
-    }
-
-    /// <summary>
-    /// If set, the token must be valid for sign in to continue.
-    /// </summary>
-    public string? RefreshToken
-    {
-        get => GetParameter<string?>(RefreshTokenKey);
-        set => SetParameter<string?>(RefreshTokenKey, value);
     }
 
     /// <summary>

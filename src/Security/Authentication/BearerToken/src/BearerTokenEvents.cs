@@ -14,19 +14,8 @@ public class BearerTokenEvents
     public Func<MessageReceivedContext, Task> OnMessageReceived { get; set; } = context => Task.CompletedTask;
 
     /// <summary>
-    /// Invoked when signing in.
-    /// </summary>
-    public Func<SigningInContext, Task> OnSigningIn { get; set; } = context => Task.CompletedTask;
-
-    /// <summary>
     /// Invoked when a protocol message is first received.
     /// </summary>
     /// <param name="context">The <see cref="MessageReceivedContext"/>.</param>
     public virtual Task MessageReceivedAsync(MessageReceivedContext context) => OnMessageReceived(context);
-
-    /// <summary>
-    /// Invoked when signing in.
-    /// </summary>
-    /// <param name="context">The <see cref="SigningInContext"/>.</param>
-    public virtual Task SigningInAsync(SigningInContext context) => OnSigningIn(context);
 }

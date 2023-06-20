@@ -4,7 +4,6 @@
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Authentication.BearerToken.DTO;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -12,23 +11,13 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Authentication.BearerToken;
 
-internal sealed class BearerTokenHandler(
-    IOptionsMonitor<BearerTokenOptions> optionsMonitor,
-    ILoggerFactory loggerFactory,
-    UrlEncoder urlEncoder,
-    IDataProtectionProvider dataProtectionProvider)
+internal sealed class BearerTokenHandler(IOptionsMonitor<BearerTokenOptions> optionsMonitor, ILoggerFactory loggerFactory, UrlEncoder urlEncoder)
     : SignInAuthenticationHandler<BearerTokenOptions>(optionsMonitor, loggerFactory, urlEncoder)
 {
-    private const string BearerTokenPurpose = "BearerToken";
-    private const string RefreshTokenPurpose = "RefreshToken";
-
     private static readonly long OneSecondTicks = TimeSpan.FromSeconds(1).Ticks;
 
     private static readonly AuthenticateResult FailedUnprotectingToken = AuthenticateResult.Fail("Unprotected token failed");
     private static readonly AuthenticateResult TokenExpired = AuthenticateResult.Fail("Token expired");
-
-    private ISecureDataFormat<AuthenticationTicket> TokenProtector
-        => Options.TokenProtector ?? new TicketDataFormat(dataProtectionProvider.CreateProtector("Microsoft.AspNetCore.Authentication.BearerToken", Scheme.Name));
 
     private new BearerTokenEvents Events => (BearerTokenEvents)base.Events!;
 
@@ -51,7 +40,7 @@ internal sealed class BearerTokenHandler(
             return AuthenticateResult.NoResult();
         }
 
-        var ticket = TokenProtector.Unprotect(token, BearerTokenPurpose);
+        var ticket = Options.BearerTokenProtector.Unprotect(token);
 
         if (ticket?.Properties?.ExpiresUtc is not { } expiresUtc)
         {
@@ -78,48 +67,17 @@ internal sealed class BearerTokenHandler(
 
         properties ??= new();
         properties.ExpiresUtc ??= utcNow + Options.BearerTokenExpiration;
-        var isRefresh = properties.RefreshToken is not null;
-
-        if (isRefresh)
-        {
-            var refreshTicket = TokenProtector.Unprotect(properties.RefreshToken, RefreshTokenPurpose);
-
-            if (refreshTicket?.Properties?.ExpiresUtc is not { } expiresUtc || TimeProvider.GetUtcNow() >= expiresUtc)
-            {
-                await ChallengeAsync(properties);
-                return;
-            }
-
-            user = refreshTicket.Principal;
-        }
-
-        var signingInContext = new SigningInContext(Context, Scheme, Options, user, properties);
-
-        await Events.SigningInAsync(signingInContext);
-
-        if (signingInContext.Principal?.Identity?.Name is null)
-        {
-            await ChallengeAsync(properties);
-            return;
-        }
 
         var response = new AccessTokenResponse
         {
-            AccessToken = signingInContext.AccessToken ?? TokenProtector.Protect(CreateAccessTicket(signingInContext), BearerTokenPurpose),
-            ExpiresInSeconds = CalculateExpiresInSeconds(utcNow, signingInContext.Properties.ExpiresUtc),
-            RefreshToken = signingInContext.RefreshToken ?? TokenProtector.Protect(CreateRefreshTicket(user, utcNow), RefreshTokenPurpose),
+            AccessToken = Options.BearerTokenProtector.Protect(CreateBearerTicket(user, properties)),
+            ExpiresInSeconds = CalculateExpiresInSeconds(utcNow, properties.ExpiresUtc),
+            RefreshToken = Options.RefreshTokenProtector.Protect(CreateRefreshTicket(user, utcNow)),
         };
 
-        await Context.Response.WriteAsJsonAsync(response, BearerTokenJsonSerializerContext.Default.AccessTokenResponse);
+        Logger.AuthenticationSchemeSignedIn(Scheme.Name);
 
-        if (isRefresh)
-        {
-            Logger.AuthenticationSchemeSignedInWithRefreshToken(Scheme.Name);
-        }
-        else
-        {
-            Logger.AuthenticationSchemeSignedIn(Scheme.Name);
-        }
+        await Context.Response.WriteAsJsonAsync(response, BearerTokenJsonSerializerContext.Default.AccessTokenResponse);
     }
 
     // No-op to avoid interfering with any mass sign-out logic.
@@ -152,8 +110,8 @@ internal sealed class BearerTokenHandler(
         });
     }
 
-    private static AuthenticationTicket CreateAccessTicket(SigningInContext context)
-        => new(context.Principal!, context.Properties, context.Scheme.Name);
+    private AuthenticationTicket CreateBearerTicket(ClaimsPrincipal user, AuthenticationProperties properties)
+        => new(user, properties, $"{Scheme.Name}:AccessToken");
 
     private AuthenticationTicket CreateRefreshTicket(ClaimsPrincipal user, DateTimeOffset utcNow)
     {
@@ -162,6 +120,6 @@ internal sealed class BearerTokenHandler(
             ExpiresUtc = utcNow + Options.RefreshTokenExpiration
         };
 
-        return new AuthenticationTicket(user, refreshProperties, $"{Scheme.Name}:{RefreshTokenPurpose}");
+        return new AuthenticationTicket(user, refreshProperties, $"{Scheme.Name}:RefreshToken");
     }
 }

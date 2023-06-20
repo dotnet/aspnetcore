@@ -33,32 +33,6 @@ public static class IdentityAuthenticationBuilderExtensions
         ArgumentNullException.ThrowIfNull(builder);
         ArgumentNullException.ThrowIfNull(configureOptions);
 
-        return builder.AddBearerToken(IdentityConstants.BearerScheme, bearerOptions =>
-        {
-            bearerOptions.Events.OnSigningIn = HandleSigningIn<TUser>;
-            configureOptions(bearerOptions);
-        });
-    }
-
-    private static async Task HandleSigningIn<TUser>(SigningInContext signInContext)
-        where TUser : class, new()
-    {
-        // Only validate the security stamp and refresh the user from the store during /refresh
-        // not during the initial /login when the Principal is already newly created from the store.
-        if (signInContext.Properties.RefreshToken is null)
-        {
-            return;
-        }
-
-        var signInManager = signInContext.HttpContext.RequestServices.GetRequiredService<SignInManager<TUser>>();
-
-        // Reject the /refresh attempt if the security stamp validation fails which will result in a 401 challenge.
-        if (await signInManager.ValidateSecurityStampAsync(signInContext.Principal) is not TUser user)
-        {
-            signInContext.Principal = null;
-            return;
-        }
-
-        signInContext.Principal = await signInManager.CreateUserPrincipalAsync(user);
+        return builder.AddBearerToken(IdentityConstants.BearerScheme, configureOptions);
     }
 }

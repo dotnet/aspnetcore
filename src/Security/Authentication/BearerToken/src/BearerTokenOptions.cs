@@ -10,6 +10,9 @@ namespace Microsoft.AspNetCore.Authentication.BearerToken;
 /// </summary>
 public sealed class BearerTokenOptions : AuthenticationSchemeOptions
 {
+    private ISecureDataFormat<AuthenticationTicket>? _bearerTokenProtector;
+    private ISecureDataFormat<AuthenticationTicket>? _refreshTokenProtector;
+
     /// <summary>
     /// Constructs the options used to authenticate using opaque bearer tokens.
     /// </summary>
@@ -38,11 +41,26 @@ public sealed class BearerTokenOptions : AuthenticationSchemeOptions
     public TimeSpan RefreshTokenExpiration { get; set; } = TimeSpan.FromDays(14);
 
     /// <summary>
-    /// If set, the <see cref="TokenProtector"/> is used to protect and unprotect the identity and other properties which are stored in the
-    /// bearer token and refresh token. If not provided, one will be created using <see cref="TicketDataFormat"/> and the <see cref="IDataProtectionProvider"/>
+    /// If set, the <see cref="BearerTokenProtector"/> is used to protect and unprotect the identity and other properties which are stored in the
+    /// bearer token. If not provided, one will be created using <see cref="TicketDataFormat"/> and the <see cref="IDataProtectionProvider"/>
     /// from the application <see cref="IServiceProvider"/>.
     /// </summary>
-    public ISecureDataFormat<AuthenticationTicket>? TokenProtector { get; set; }
+    public ISecureDataFormat<AuthenticationTicket> BearerTokenProtector
+    {
+        get => _bearerTokenProtector ?? throw new InvalidOperationException($"{nameof(BearerTokenProtector)} was not set.");
+        set => _bearerTokenProtector = value;
+    }
+
+    /// <summary>
+    /// If set, the <see cref="RefreshTokenProtector"/> is used to protect and unprotect the identity and other properties which are stored in the
+    /// refresh token. If not provided, one will be created using <see cref="TicketDataFormat"/> and the <see cref="IDataProtectionProvider"/>
+    /// from the application <see cref="IServiceProvider"/>.
+    /// </summary>
+    public ISecureDataFormat<AuthenticationTicket> RefreshTokenProtector
+    {
+        get => _refreshTokenProtector ?? throw new InvalidOperationException($"{nameof(RefreshTokenProtector)} was not set.");
+        set => _refreshTokenProtector = value;
+    }
 
     /// <summary>
     /// The object provided by the application to process events raised by the bearer token authentication handler.

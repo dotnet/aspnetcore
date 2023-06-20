@@ -5,9 +5,6 @@ namespace Microsoft.Extensions.Logging;
 
 internal static partial class LoggingExtensions
 {
-    [LoggerMessage(10, LogLevel.Information, "AuthenticationScheme: {AuthenticationScheme} signed in.", EventName = "AuthenticationSchemeSignedIn")]
+    [LoggerMessage(1, LogLevel.Information, "AuthenticationScheme: {AuthenticationScheme} signed in.", EventName = "AuthenticationSchemeSignedIn")]
     public static partial void AuthenticationSchemeSignedIn(this ILogger logger, string authenticationScheme);
-
-    [LoggerMessage(11, LogLevel.Information, "AuthenticationScheme: {AuthenticationScheme} signed in with refresh token.", EventName = "AuthenticationSchemeSignedInWithRefreshToken")]
-    public static partial void AuthenticationSchemeSignedInWithRefreshToken(this ILogger logger, string authenticationScheme);
 }

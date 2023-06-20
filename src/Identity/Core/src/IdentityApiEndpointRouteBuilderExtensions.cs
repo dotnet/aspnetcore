@@ -2,8 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Authentication.BearerToken.DTO;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -12,6 +11,7 @@ using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.DTO;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Routing;
 
@@ -39,9 +39,9 @@ public static class IdentityApiEndpointRouteBuilderExtensions
         // NOTE: We cannot inject UserManager<TUser> directly because the TUser generic parameter is currently unsupported by RDG.
         // https://github.com/dotnet/aspnetcore/issues/47338
         routeGroup.MapPost("/register", async Task<Results<Ok, ValidationProblem>>
-            ([FromBody] RegisterRequest registration, [FromServices] IServiceProvider services) =>
+            ([FromBody] RegisterRequest registration, [FromServices] IServiceProvider sp) =>
         {
-            var userManager = services.GetRequiredService<UserManager<TUser>>();
+            var userManager = sp.GetRequiredService<UserManager<TUser>>();
 
             var user = new TUser();
             await userManager.SetUserNameAsync(user, registration.Username);
@@ -56,9 +56,9 @@ public static class IdentityApiEndpointRouteBuilderExtensions
         });
 
         routeGroup.MapPost("/login", async Task<Results<UnauthorizedHttpResult, Ok<AccessTokenResponse>, SignInHttpResult>>
-            ([FromBody] LoginRequest login, [FromQuery] bool? cookieMode, [FromServices] IServiceProvider services) =>
+            ([FromBody] LoginRequest login, [FromQuery] bool? cookieMode, [FromServices] IServiceProvider sp) =>
         {
-            var userManager = services.GetRequiredService<UserManager<TUser>>();
+            var userManager = sp.GetRequiredService<UserManager<TUser>>();
             var user = await userManager.FindByNameAsync(login.Username);
 
             if (user is null || !await userManager.CheckPasswordAsync(user, login.Password))
@@ -66,7 +66,7 @@ public static class IdentityApiEndpointRouteBuilderExtensions
                 return TypedResults.Unauthorized();
             }
 
-            var claimsFactory = services.GetRequiredService<IUserClaimsPrincipalFactory<TUser>>();
+            var claimsFactory = sp.GetRequiredService<IUserClaimsPrincipalFactory<TUser>>();
             var claimsPrincipal = await claimsFactory.CreateAsync(user);
 
             var useCookies = cookieMode ?? false;
@@ -75,18 +75,25 @@ public static class IdentityApiEndpointRouteBuilderExtensions
             return TypedResults.SignIn(claimsPrincipal, authenticationScheme: scheme);
         });
 
-        routeGroup.MapPost("/refresh", Results<UnauthorizedHttpResult, Ok<AccessTokenResponse>, SignInHttpResult>
-            ([FromBody] RefreshRequest refreshRequest) =>
+        routeGroup.MapPost("/refresh", async Task<Results<UnauthorizedHttpResult, Ok<AccessTokenResponse>, SignInHttpResult, ChallengeHttpResult>>
+            ([FromBody] RefreshRequest refreshRequest, [FromServices] IOptionsMonitor<BearerTokenOptions> optionsMonitor, [FromServices] TimeProvider timeProvider, [FromServices] IServiceProvider sp) =>
         {
-            // This is the minimal principal that IsAuthenticated. The BearerTokenHander will recreate the full principal
-            // from the refresh token if it is able. The sign in will fail without an identity name.
-            var refreshPrincipal =  new ClaimsPrincipal(new ClaimsIdentity(IdentityConstants.BearerScheme));
-            var properties = new AuthenticationProperties
-            {
-                RefreshToken = refreshRequest.RefreshToken
-            };
+            var signInManager = sp.GetRequiredService<SignInManager<TUser>>();
+            var identityBearerOptions = optionsMonitor.Get(IdentityConstants.BearerScheme);
+            var refreshTokenProtector = identityBearerOptions.RefreshTokenProtector ?? throw new ArgumentException($"{nameof(identityBearerOptions.RefreshTokenProtector)} is null", nameof(optionsMonitor));
+            var refreshTicket = refreshTokenProtector.Unprotect(refreshRequest.RefreshToken);
 
-            return TypedResults.SignIn(refreshPrincipal, properties, IdentityConstants.BearerScheme);
+            // Reject the /refresh attempt with a 401 if the token expired or the security stamp validation fails
+            if (refreshTicket?.Properties?.ExpiresUtc is not { } expiresUtc ||
+                timeProvider.GetUtcNow() >= expiresUtc ||
+                await signInManager.ValidateSecurityStampAsync(refreshTicket.Principal) is not TUser user)
+
+            {
+                return TypedResults.Challenge();
+            }
+
+            var newPrincipal = await signInManager.CreateUserPrincipalAsync(user);
+            return TypedResults.SignIn(newPrincipal, authenticationScheme: IdentityConstants.BearerScheme);
         });
 
         return new IdentityEndpointsConventionBuilder(routeGroup);

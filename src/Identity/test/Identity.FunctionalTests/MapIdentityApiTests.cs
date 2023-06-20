@@ -10,22 +10,19 @@ using System.Security.Claims;
 using System.Text.Json;
 using Identity.DefaultUI.WebSite;
 using Identity.DefaultUI.WebSite.Data;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity.Test;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Identity.FunctionalTests;
 
-public class MapIdentityTests : LoggedTest
+public class MapIdentityApiTests : LoggedTest
 {
     private string Username { get; } = $"{Guid.NewGuid()}@example.com";
     private string Password { get; } = $"[PLACEHOLDER]-1a";
@@ -236,11 +233,11 @@ public class MapIdentityTests : LoggedTest
 
         await using var app = await CreateAppAsync(services =>
         {
+            services.AddSingleton<TimeProvider>(clock);
             services.AddIdentityCore<ApplicationUser>().AddApiEndpoints().AddEntityFrameworkStores<ApplicationDbContext>();
             services.AddAuthentication(IdentityConstants.BearerScheme).AddIdentityBearerToken<ApplicationUser>(options =>
             {
                 options.RefreshTokenExpiration = expireTimeSpan;
-                options.TimeProvider = clock;
             });
         });
 
