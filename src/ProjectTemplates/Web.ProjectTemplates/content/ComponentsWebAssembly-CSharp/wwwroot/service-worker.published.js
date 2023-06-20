@@ -24,12 +24,6 @@ async function onInstall(event) {
         .filter(asset => offlineAssetsInclude.some(pattern => pattern.test(asset.url)))
         .filter(asset => !offlineAssetsExclude.some(pattern => pattern.test(asset.url)))
         .map(asset => new Request(asset.url, { integrity: asset.hash, cache: 'no-cache' }));
-//#if(IndividualLocalAuth && Hosted)
-
-    // Also cache authentication configuration
-    assetsRequests.push(new Request('_configuration/ComponentsWebAssembly-CSharp.Client'));
-
-//#endif
     await caches.open(cacheName).then(cache => cache.addAll(assetsRequests));
 }
 
@@ -49,15 +43,8 @@ async function onFetch(event) {
         // For all navigation requests, try to serve index.html from cache,
         // unless that request is for an offline resource.
         // If you need some URLs to be server-rendered, edit the following check to exclude those URLs
-//#if(IndividualLocalAuth && Hosted)
-        const shouldServeIndexHtml = event.request.mode === 'navigate'
-            && !event.request.url.includes('/connect/')
-            && !event.request.url.includes('/Identity/')
-            && !manifestUrlList.some(url => url === event.request.url);
-//#else
         const shouldServeIndexHtml = event.request.mode === 'navigate'
             && !manifestUrlList.some(url => url === event.request.url);
-//#endif
 
         const request = shouldServeIndexHtml ? 'index.html' : event.request;
         const cache = await caches.open(cacheName);

@@ -5,8 +5,6 @@
   "symbols/Framework/description": "Platforma docelowa dla tego projektu.",
   "symbols/Framework/choices/net8.0/description": "Docelowa platforma net8.0",
   "symbols/skipRestore/description": "Jeśli ta opcja jest określona, pomija automatyczne przywracanie projektu podczas tworzenia.",
-  "symbols/Hosted/displayName": "ASP.NET Core _Hosted",
-  "symbols/Hosted/description": "Jeśli zostanie określony, zawiera hosta platformy ASP.NET Core dla aplikacji Zestaw WebAssembly platformy Blazor.",
   "symbols/auth/choices/None/description": "Bez uwierzytelniania",
   "symbols/auth/choices/Individual/description": "Uwierzytelnianie indywidualne",
   "symbols/auth/choices/IndividualB2C/description": "Indywidualne uwierzytelnianie za pomocą usługi Azure AD B2C",
@@ -38,9 +36,7 @@
   "symbols/CalledApiScopes/description": "Zakresy do żądania wywołania interfejsu API z aplikacji internetowej. Ta opcja ma zastosowanie tylko wtedy, gdy określono uwierzytelnianie --auth SingleOrg, --auth MultiOrg lub --auth IndividualB2C bez hosta platformy ASP.NET Core.",
   "symbols/UseProgramMain/displayName": "Nie używaj ins_trukcji najwyższego poziomu",
   "symbols/UseProgramMain/description": "Określa, czy wygenerować jawną klasę Program i metodę Main zamiast instrukcji najwyższego poziomu.",
-  "postActions/restore/description": "Przywróć pakiety NuGet wymagane przez ten projekt.",
-  "postActions/restore/manualInstructions/default/text": "Uruchom polecenie \"dotnet restore\"",
-  "postActions/restoreClient/description": "Przywróć pakiety NuGet wymagane przez ten projekt.",
-  "postActions/restoreClient/manualInstructions/default/text": "Uruchom polecenie „dotnet restore”",
+  "postActions/restore/description": "Restore NuGet packages required by this project.",
+  "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'",
   "postActions/open-file/description": "Otwiera plik Readme.txt w edytorze"
 }

@@ -5,8 +5,6 @@
   "symbols/Framework/description": "Projenin hedef çerçevesi.",
   "symbols/Framework/choices/net8.0/description": "Hedef net8.0",
   "symbols/skipRestore/description": "Belirtilirse, oluşturma sırasında projenin otomatik geri yüklenmesini atlar.",
-  "symbols/Hosted/displayName": "ASP.NET Core tarafından _Barındırılan",
-  "symbols/Hosted/description": "Belirtilmişse Blazor WebAssembly uygulaması için ASP.NET Core konağı içerir.",
   "symbols/auth/choices/None/description": "Kimlik doğrulaması yok",
   "symbols/auth/choices/Individual/description": "Bireysel kimlik doğrulaması",
   "symbols/auth/choices/IndividualB2C/description": "Azure AD B2C ile bireysel kimlik doğrulaması",
@@ -38,9 +36,7 @@
   "symbols/CalledApiScopes/description": "Web uygulamasından API çağırma istek kapsamları. Bu seçenek yalnızca --auth SingleOrg, --auth MultiOrg veya --auth IndividualB2C without ve ASP.NET Core konağı belirtilirse geçerlidir.",
   "symbols/UseProgramMain/displayName": "_Üst düzey deyimler kullanmayın",
   "symbols/UseProgramMain/description": "Üst düzey deyimler yerine açık bir Program sınıfı ve Ana yöntem oluşturup oluşturulmayacağını belirtir.",
-  "postActions/restore/description": "Bu projenin gerektirdiği NuGet paketlerini geri yükleyin.",
-  "postActions/restore/manualInstructions/default/text": "'dotnet restore' çalıştır",
-  "postActions/restoreClient/description": "Bu projenin gerektirdiği NuGet paketlerini geri yükleyin.",
-  "postActions/restoreClient/manualInstructions/default/text": "'dotnet restore' çalıştır",
+  "postActions/restore/description": "Restore NuGet packages required by this project.",
+  "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'",
   "postActions/open-file/description": "Benioku.txt dosyasını düzenleyicide açar"
 }

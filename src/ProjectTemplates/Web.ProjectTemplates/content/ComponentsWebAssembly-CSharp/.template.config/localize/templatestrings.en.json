@@ -6,8 +6,6 @@
   "symbols/Framework/choices/net8.0/description": "Target net8.0",
   "_symbols/Framework/choices/net8.0/description.comment": "{Locked='net8.0'}",
   "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create.",
-  "symbols/Hosted/displayName": "ASP.NET Core _Hosted",
-  "symbols/Hosted/description": "If specified, includes an ASP.NET Core host for the Blazor WebAssembly app.",
   "symbols/auth/choices/None/description": "No authentication",
   "symbols/auth/choices/Individual/description": "Individual authentication",
   "symbols/auth/choices/IndividualB2C/description": "Individual authentication with Azure AD B2C",
@@ -42,7 +40,5 @@
   "symbols/UseProgramMain/description": "Whether to generate an explicit Program class and Main method instead of top-level statements.",
   "postActions/restore/description": "Restore NuGet packages required by this project.",
   "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'",
-  "postActions/restoreClient/description": "Restore NuGet packages required by this project.",
-  "postActions/restoreClient/manualInstructions/default/text": "Run 'dotnet restore'",
   "postActions/open-file/description": "Opens Readme.txt in the editor"
 }

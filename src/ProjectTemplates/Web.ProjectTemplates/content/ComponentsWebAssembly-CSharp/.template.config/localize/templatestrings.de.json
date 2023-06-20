@@ -5,8 +5,6 @@
   "symbols/Framework/description": "Das Zielframework für das Projekt.",
   "symbols/Framework/choices/net8.0/description": "Ziel net8.0",
   "symbols/skipRestore/description": "Wenn angegeben, wird die automatische Wiederherstellung des Projekts beim Erstellen übersprungen.",
-  "symbols/Hosted/displayName": "ASP.NET Core _gehostet",
-  "symbols/Hosted/description": "Enthält, falls angegeben, einen ASP.NET Core Host für die Blazor WebAssembly App.",
   "symbols/auth/choices/None/description": "Keine Authentifizierung",
   "symbols/auth/choices/Individual/description": "Individuelle Authentifizierung",
   "symbols/auth/choices/IndividualB2C/description": "Individuelle Authentifizierung mit Azure AD B2C",
@@ -38,9 +36,7 @@
   "symbols/CalledApiScopes/description": "Anzufordernde Bereiche zum Aufrufen der API von der Web-App. Diese Option gilt nur, wenn --auth SingleOrg, --auth MultiOrg oder --auth IndividualB2C ohne und ASP.NET Core-Host angegeben ist.",
   "symbols/UseProgramMain/displayName": "Keine Anweisungen_der obersten Ebene verwenden",
   "symbols/UseProgramMain/description": "Gibt an, ob anstelle von Anweisungen der obersten Ebene eine explizite Programmklasse und eine Main-Methode generiert werden soll.",
-  "postActions/restore/description": "„NuGet-Pakete“ wiederherstellen, die für dieses Projekt erforderlich sind.",
-  "postActions/restore/manualInstructions/default/text": "„dotnet restore“ ausführen",
-  "postActions/restoreClient/description": "„NuGet-Pakete“ wiederherstellen, die für dieses Projekt erforderlich sind.",
-  "postActions/restoreClient/manualInstructions/default/text": "Führen Sie 'dotnet restore' aus",
+  "postActions/restore/description": "Restore NuGet packages required by this project.",
+  "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'",
   "postActions/open-file/description": "Öffnet Readme.txt im Editor"
 }
