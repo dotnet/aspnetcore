@@ -5,8 +5,6 @@
   "symbols/Framework/description": "Das Zielframework für das Projekt.",
   "symbols/Framework/choices/net8.0/description": "Ziel net8.0",
   "symbols/skipRestore/description": "Wenn angegeben, wird die automatische Wiederherstellung des Projekts beim Erstellen übersprungen.",
-  "symbols/Hosted/displayName": "ASP.NET Core _gehostet",
-  "symbols/Hosted/description": "Enthält, falls angegeben, einen ASP.NET Core Host für die Blazor WebAssembly App.",
   "symbols/ExcludeLaunchSettings/description": "Ob launchSettings.json aus der generierten Vorlage ausgeschlossen werden soll.",
   "symbols/kestrelHttpPort/description": "Portnummer, die für den HTTP Endpunkt in launchSettings.json verwendet werden soll.",
   "symbols/kestrelHttpsPort/description": "Portnummer, die für den HTTPS Endpunkt in launchSettings.json verwendet werden soll. Diese Option ist nur anwendbar, wenn der Parameter no-https nicht verwendet wird.",
@@ -16,8 +14,6 @@
   "symbols/PWA/description": "Wenn angegeben, wird eine Progressive Web Application (PWA) erstellt, die die Installation und Offlineverwendung unterstützt.",
   "symbols/HasHttpProfile/description": "Immer HTTP Profil haben.",
   "symbols/NoHttps/description": "Ob HTTPS deaktiviert werden soll.",
-  "postActions/restore/description": "„NuGet-Pakete“ wiederherstellen, die für dieses Projekt erforderlich sind.",
-  "postActions/restore/manualInstructions/default/text": "„dotnet restore“ ausführen",
   "postActions/restoreClient/description": "„NuGet-Pakete“ wiederherstellen, die für dieses Projekt erforderlich sind.",
   "postActions/restoreClient/manualInstructions/default/text": "Führen Sie 'dotnet restore' aus"
 }
