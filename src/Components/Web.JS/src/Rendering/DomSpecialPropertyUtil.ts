@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 // Updating the attributes/properties on DOM elements involves a whole range of special cases, because
 // depending on the element type, there are special rules for needing to update other properties or
 // to only perform the changes in a specific order.
