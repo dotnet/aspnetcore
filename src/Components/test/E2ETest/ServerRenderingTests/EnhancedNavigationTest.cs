@@ -22,6 +22,11 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
     {
     }
 
+    // One of the tests here makes use of the streaming rendering page, which uses global state
+    // so we can't run at the same time as other such tests
+    public override Task InitializeAsync()
+        => InitializeAsync(BrowserFixture.StreamingContext);
+
     [Fact]
     public void CanNavigateToAnotherPageWhilePreservingCommonDOMElements()
     {
@@ -35,6 +40,9 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         // Important: we're checking the *same* <h1> element as earlier, showing that we got to the
         // destination, and it's done so without a page load, and it preserved the element
         Browser.Equal("Streaming Rendering", () => h1Elem.Text);
+
+        // We have to make the response finish otherwise the test will fail when it tries to dispose the server
+        Browser.FindElement(By.Id("end-response-link")).Click();
     }
 
     [Fact]
