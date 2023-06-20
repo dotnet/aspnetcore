@@ -258,9 +258,9 @@ internal class RemoteAuthenticationServiceJavaScriptLoggingOptions
 internal readonly struct InternalAccessTokenResult
 {
     [JsonConverter(typeof(JsonStringEnumConverter<AccessTokenResultStatus>))]
-    public AccessTokenResultStatus Status { get; }
+    public AccessTokenResultStatus Status { get; init; }
 
-    public AccessToken Token { get; }
+    public AccessToken Token { get; init; }
 
     public InternalAccessTokenResult(AccessTokenResultStatus status, AccessToken token)
     {
