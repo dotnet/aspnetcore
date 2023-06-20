@@ -3,9 +3,11 @@
 @inject NavigationManager Nav
 <h1>Please wait...</h1>
 @code {
+    [Parameter, SupplyParameterFromQuery] public string Destination { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
         await Task.Delay(2000);
-        Nav.NavigateTo("scroll-to-hash");
+        Nav.NavigateTo(Destination ?? "scroll-to-hash#some-content");
     }
 }

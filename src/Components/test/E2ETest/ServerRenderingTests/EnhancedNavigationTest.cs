@@ -90,6 +90,10 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.Equal("Hello", () => h1Elem.Text);
 
         // Click a link and show we redirected, preserving elements, and updating the URL
+        // Note that in this specific case we can't preserve the hash part of the URL, as it
+        // gets lost when the browser follows a 'fetch' redirection. If we decide it's important
+        // to support this later, we'd have to change the server not to do a real redirection
+        // here and instead use the same protocol it uses for external redirections.
         Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Redirect")).Click();
         Browser.Equal("Scroll to hash", () => h1Elem.Text);
         Assert.EndsWith("/subdir/scroll-to-hash", Browser.Url);
@@ -108,15 +112,36 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         var h1Elem = Browser.Exists(By.TagName("h1"));
         Browser.Equal("Hello", () => h1Elem.Text);
 
-        // Click a link and show we redirected, preserving elements, and updating the URL
+        // Click a link and show we redirected, preserving elements, scrolling to hash, and updating the URL
         Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Redirect while streaming")).Click();
         Browser.Equal("Scroll to hash", () => h1Elem.Text);
-        Assert.EndsWith("/subdir/scroll-to-hash", Browser.Url);
+        Browser.True(() => BrowserScrollY > 500);
+        Assert.EndsWith("/subdir/scroll-to-hash#some-content", Browser.Url);
 
         // See that 'back' takes you to the place from before the redirection
         Browser.Navigate().Back();
         Browser.Equal("Hello", () => h1Elem.Text);
         Assert.EndsWith("/subdir", Browser.Url);
+    }
+
+    [Fact]
+    public void CanFollowSynchronousExternalRedirection()
+    {
+        Navigate(ServerPathBase);
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Redirect external")).Click();
+        Browser.Contains("microsoft.com", () => Browser.Url);
+    }
+
+    [Fact]
+    public void CanFollowAsynchronousExternalRedirectionWhileStreaming()
+    {
+        Navigate(ServerPathBase);
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Redirect external while streaming")).Click();
+        Browser.Contains("microsoft.com", () => Browser.Url);
     }
 
     private long BrowserScrollY

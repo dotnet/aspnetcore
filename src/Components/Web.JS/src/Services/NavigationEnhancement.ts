@@ -76,8 +76,9 @@ export async function performEnhancedPageLoad(internalDestinationHref: string) {
   await getResponsePartsWithFraming(responsePromise, abortSignal,
     (response, initialContent) => {
       if (response.redirected) {
-        // Update the current URL to match the redirected destination, just like for normal navigation redirections
+        // We already followed a redirection, so update the current URL to match the redirected destination, just like for normal navigation redirections
         history.replaceState(null, '', response.url);
+        internalDestinationHref = response.url;
       }
 
       if (response.headers.get('content-type')?.startsWith('text/html')) {
@@ -128,6 +129,13 @@ async function getResponsePartsWithFraming(responsePromise: Promise<Response>, a
 
   try {
     response = await responsePromise;
+
+    const externalRedirectionUrl = response.headers.get('blazor-enhanced-nav-redirect-location');
+    if (externalRedirectionUrl) {
+      location.replace(externalRedirectionUrl);
+      return;
+    }
+
     if (!response.body) { // Not sure how this can happen, but the TypeScript annotations suggest it can
       onInitialDocument(response, '');
       return;
