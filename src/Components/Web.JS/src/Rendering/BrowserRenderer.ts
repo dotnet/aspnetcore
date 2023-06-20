@@ -330,7 +330,7 @@ export class BrowserRenderer {
         this.applyInternalAttribute(element, name.substring(internalAttributeNamePrefix.length), valueOrNullToRemove);
       } else {
         // If not, treat it as a regular DOM attribute
-        if (valueOrNullToRemove) {
+        if (valueOrNullToRemove !== null) {
           element.setAttribute(name, valueOrNullToRemove);
         } else {
           element.removeAttribute(name);
