@@ -359,7 +359,7 @@ public class OutputCacheGetSetTests : IClassFixture<RedisConnectionFixture>
         await _fixture.Database.StringSetAsync("TestPrefix__MSOCTGC", "dummy", TimeSpan.FromMinutes(1));
         try
         {
-            Assert.Equal(-1, await impl.ExecuteGarbageCollectionAsync(42));
+            Assert.Null(await impl.ExecuteGarbageCollectionAsync(42));
         }
         finally
         {
