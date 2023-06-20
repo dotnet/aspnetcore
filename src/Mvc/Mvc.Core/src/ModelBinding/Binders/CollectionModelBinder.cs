@@ -412,6 +412,7 @@ public partial class CollectionModelBinder<TElement> : ICollectionModelBinder
     internal sealed class CollectionResult
     {
         public IEnumerable<TElement?> Model { get; }
+        
         public IValidationStrategy? ValidationStrategy { get; init; }
 
         public CollectionResult(IEnumerable<TElement?> model)

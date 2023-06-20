@@ -50,7 +50,9 @@ public class KnownHeaders
     public class InternalHeader
     {
         public string Identifier { get; }
+
         public string Name { get; }
+        
         public bool IsPseudoHeader { get; }
 
         public InternalHeader(string identifier, string name, bool isPseudoHeader = false)

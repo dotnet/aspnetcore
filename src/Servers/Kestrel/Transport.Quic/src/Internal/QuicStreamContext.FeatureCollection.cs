@@ -18,6 +18,7 @@ internal sealed partial class QuicStreamContext :
     private readonly struct OnCloseRegistration
     {
         public Action<object?> Callback { get; }
+        
         public object? State { get; }
 
         public OnCloseRegistration(Action<object?> callback, object? state)

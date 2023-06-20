@@ -79,6 +79,7 @@ internal sealed class WebViewRenderer : WebRenderer
     private sealed class UnacknowledgedRenderBatch
     {
         public long BatchId { get; init; }
+        
         public TaskCompletionSource CompletionSource { get; init; }
     }
 }

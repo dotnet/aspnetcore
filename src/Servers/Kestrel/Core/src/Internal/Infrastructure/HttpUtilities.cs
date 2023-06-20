@@ -601,6 +601,7 @@ internal static partial class HttpUtilities
 internal sealed class AltSvcHeader
 {
     public string Value { get; }
+    
     public byte[] RawBytes { get; }
 
     public AltSvcHeader(string value, byte[] rawBytes)
