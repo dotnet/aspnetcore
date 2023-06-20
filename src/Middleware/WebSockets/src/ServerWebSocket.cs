@@ -34,6 +34,7 @@ internal sealed class ServerWebSocket : WebSocket
 
     public override void Abort()
     {
+        _wrappedSocket.Abort();
         _context.Abort();
     }
 
