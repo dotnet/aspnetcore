@@ -65,12 +65,12 @@ public class KnownHeaders
 
     public static readonly InternalHeader[] FormattedInternalHeaderNames = new[]
     {
-        new InternalHeader("Authority", InternalHeaderNames.Authority, IsPseudoHeader: true),
-        new InternalHeader("Method", InternalHeaderNames.Method, IsPseudoHeader: true),
-        new InternalHeader("Path", InternalHeaderNames.Path, IsPseudoHeader: true),
-        new InternalHeader("Scheme", InternalHeaderNames.Scheme, IsPseudoHeader: true),
-        new InternalHeader("Status", InternalHeaderNames.Status, IsPseudoHeader: true),
-        new InternalHeader("Protocol", InternalHeaderNames.Protocol, IsPseudoHeader: true),
+        new InternalHeader("Authority", InternalHeaderNames.Authority, isPseudoHeader: true),
+        new InternalHeader("Method", InternalHeaderNames.Method, isPseudoHeader: true),
+        new InternalHeader("Path", InternalHeaderNames.Path, isPseudoHeader: true),
+        new InternalHeader("Scheme", InternalHeaderNames.Scheme, isPseudoHeader: true),
+        new InternalHeader("Status", InternalHeaderNames.Status, isPseudoHeader: true),
+        new InternalHeader("Protocol", InternalHeaderNames.Protocol, isPseudoHeader: true),
         new InternalHeader("AltUsed", InternalHeaderNames.AltUsed)
     };
 
