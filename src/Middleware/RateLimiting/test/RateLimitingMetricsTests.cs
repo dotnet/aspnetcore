@@ -93,7 +93,7 @@ public class RateLimitingMetricsTests
         await syncPoint.WaitForSyncPoint().DefaultTimeout();
 
         Assert.Collection(currentLeaseRequestsRecorder.GetMeasurements(),
-            m => AssertCounter(m, 1, null, null, null));
+            m => AssertCounter(m, 1, null));
         Assert.Empty(leaseRequestDurationRecorder.GetMeasurements());
 
         syncPoint.Continue();
@@ -104,10 +104,10 @@ public class RateLimitingMetricsTests
         Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
 
         Assert.Collection(currentLeaseRequestsRecorder.GetMeasurements(),
-            m => AssertCounter(m, 1, null, null, null),
-            m => AssertCounter(m, -1, null, null, null));
+            m => AssertCounter(m, 1, null),
+            m => AssertCounter(m, -1, null));
         Assert.Collection(leaseRequestDurationRecorder.GetMeasurements(),
-            m => AssertDuration(m, null, null, null));
+            m => AssertDuration(m, null));
         Assert.Empty(currentRequestsQueuedRecorder.GetMeasurements());
         Assert.Empty(queuedRequestDurationRecorder.GetMeasurements());
         Assert.Empty(leaseFailedRequestsRecorder.GetMeasurements());
@@ -156,7 +156,7 @@ public class RateLimitingMetricsTests
 
         Assert.Empty(currentLeaseRequestsRecorder.GetMeasurements());
         Assert.Collection(leaseRequestDurationRecorder.GetMeasurements(),
-            m => AssertDuration(m, null, null, null));
+            m => AssertDuration(m, null));
     }
 
     [Fact]
@@ -214,7 +214,7 @@ public class RateLimitingMetricsTests
 
         // Assert second request is queued.
         Assert.Collection(currentRequestsQueuedRecorder.GetMeasurements(),
-            m => AssertCounter(m, 1, "GET", "/", "concurrencyPolicy"));
+            m => AssertCounter(m, 1, "concurrencyPolicy"));
         Assert.Empty(queuedRequestDurationRecorder.GetMeasurements());
 
         // Allow both requests to finish.
@@ -224,10 +224,10 @@ public class RateLimitingMetricsTests
         await middlewareTask2.DefaultTimeout();
 
         Assert.Collection(currentRequestsQueuedRecorder.GetMeasurements(),
-            m => AssertCounter(m, 1, "GET", "/", "concurrencyPolicy"),
-            m => AssertCounter(m, -1, "GET", "/", "concurrencyPolicy"));
+            m => AssertCounter(m, 1, "concurrencyPolicy"),
+            m => AssertCounter(m, -1, "concurrencyPolicy"));
         Assert.Collection(queuedRequestDurationRecorder.GetMeasurements(),
-            m => AssertDuration(m, "GET", "/", "concurrencyPolicy"));
+            m => AssertDuration(m, "concurrencyPolicy"));
     }
 
     [Fact]
@@ -296,22 +296,18 @@ public class RateLimitingMetricsTests
 
         Assert.Empty(currentRequestsQueuedRecorder.GetMeasurements());
         Assert.Collection(queuedRequestDurationRecorder.GetMeasurements(),
-            m => AssertDuration(m, "GET", "/", "concurrencyPolicy"));
+            m => AssertDuration(m, "concurrencyPolicy"));
     }
 
-    private static void AssertCounter(Measurement<long> measurement, long value, string method, string route, string policy)
+    private static void AssertCounter(Measurement<long> measurement, long value, string policy)
     {
         Assert.Equal(value, measurement.Value);
-        AssertTag(measurement.Tags, "method", method);
-        AssertTag(measurement.Tags, "route", route);
         AssertTag(measurement.Tags, "policy", policy);
     }
 
-    private static void AssertDuration(Measurement<double> measurement, string method, string route, string policy)
+    private static void AssertDuration(Measurement<double> measurement, string policy)
     {
         Assert.True(measurement.Value > 0);
-        AssertTag(measurement.Tags, "method", method);
-        AssertTag(measurement.Tags, "route", route);
         AssertTag(measurement.Tags, "policy", policy);
     }
 
