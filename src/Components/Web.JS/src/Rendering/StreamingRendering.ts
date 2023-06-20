@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { SsrStartOptions } from "../Platform/SsrStartOptions";
+import { performEnhancedPageLoad } from "../Services/NavigationEnhancement";
+import { isWithinBaseUriSpace } from "../Services/NavigationUtils";
 import { synchronizeDomContent } from "./DomMerging/DomSync";
 
 let enableDomPreservation = true;
@@ -34,6 +36,28 @@ class BlazorStreamingUpdate extends HTMLElement {
           const componentId = node.getAttribute('blazor-component-id');
           if (componentId) {
             insertStreamingContentIntoDocument(componentId, node.content);
+          } else {
+            switch (node.getAttribute('type')) {
+              case 'redirection':
+                // We use 'replace' here because it's closest to the non-progressively-enhanced behavior, and will make the most sense
+                // if the async delay was very short, as the user would not perceive having been on the intermediate page.
+                const destinationUrl = node.content.textContent!;
+                if (isWithinBaseUriSpace(destinationUrl)) {
+                  history.replaceState(null, '', destinationUrl);
+                  performEnhancedPageLoad(destinationUrl);
+                } else {
+                  location.replace(destinationUrl);
+                }
+                break;
+              case 'error':
+                // This is kind of brutal but matches what happens without progressive enhancement
+                document.documentElement.textContent = node.content.textContent;
+                const docStyle = document.documentElement.style;
+                docStyle.fontFamily = 'consolas, monospace';
+                docStyle.whiteSpace = 'pre-wrap';
+                docStyle.padding = '1rem';
+                break;
+            }
           }
         }
       });

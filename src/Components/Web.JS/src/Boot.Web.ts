@@ -15,31 +15,49 @@ import { shouldAutoStart } from './BootCommon';
 import { Blazor } from './GlobalExports';
 import { WebStartOptions } from './Platform/WebStartOptions';
 import { attachStreamingRenderingListener } from './Rendering/StreamingRendering';
+import { attachProgressivelyEnhancedNavigationListener, detachProgressivelyEnhancedNavigationListener } from './Services/NavigationEnhancement';
 import { WebAssemblyComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
 import { ServerComponentDescriptor, discoverComponents } from './Services/ComponentDescriptorDiscovery';
 
 let started = false;
+let webStartOptions: Partial<WebStartOptions> | undefined;
 
 async function boot(options?: Partial<WebStartOptions>): Promise<void> {
   if (started) {
     throw new Error('Blazor has already started.');
   }
   started = true;
-  await activateInteractiveComponents(options);
+  webStartOptions = options;
 
   attachStreamingRenderingListener(options?.ssr);
+
+  if (!options?.ssr?.disableDomPreservation) {
+    attachProgressivelyEnhancedNavigationListener(activateInteractiveComponents);
+  }
+
+  await activateInteractiveComponents();
 }
 
-async function activateInteractiveComponents(options?: Partial<WebStartOptions>) {
+async function activateInteractiveComponents() {
   const serverComponents = discoverComponents(document, 'server') as ServerComponentDescriptor[];
   const webAssemblyComponents = discoverComponents(document, 'webassembly') as WebAssemblyComponentDescriptor[];
 
   if (serverComponents.length) {
-    await startCircuit(options?.circuit, serverComponents);
+    // TEMPORARY until https://github.com/dotnet/aspnetcore/issues/48763 is implemented
+    // As soon we we see you have interactive components, we'll stop doing enhanced nav even if you don't have an interactive router
+    // This is because, otherwise, we would need a way to add new interactive root components to an existing circuit and that's #48763
+    detachProgressivelyEnhancedNavigationListener();
+
+    await startCircuit(webStartOptions?.circuit, serverComponents);
   }
 
   if (webAssemblyComponents.length) {
-    await startWebAssembly(options?.webAssembly, webAssemblyComponents);
+    // TEMPORARY until https://github.com/dotnet/aspnetcore/issues/48763 is implemented
+    // As soon we we see you have interactive components, we'll stop doing enhanced nav even if you don't have an interactive router
+    // This is because, otherwise, we would need a way to add new interactive root components to an existing WebAssembly runtime and that's #48763
+    detachProgressivelyEnhancedNavigationListener();
+
+    await startWebAssembly(webStartOptions?.webAssembly, webAssemblyComponents);
   }
 }
 

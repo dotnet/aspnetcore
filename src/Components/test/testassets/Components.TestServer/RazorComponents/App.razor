@@ -10,7 +10,7 @@
 <body>
     <Router AppAssembly="@typeof(App).Assembly">
         <Found Context="routeData">
-            <RouteView RouteData="@routeData" />
+            <RouteView RouteData="@routeData" DefaultLayout="typeof(Shared.MainLayout)" />
             <FocusOnNavigate RouteData="@routeData" Selector="h1" />
         </Found>
         <NotFound>
