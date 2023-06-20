@@ -118,4 +118,22 @@ public class StreamingRenderingTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.Equal("Finished", () => originalStatusElem.Text);
         Assert.Equal(originalLi.Location, Browser.Exists(By.TagName("li")).Location);
     }
+
+    [Fact]
+    public async Task DisplaysErrorThatOccursWhileStreaming()
+    {
+        Navigate(ServerPathBase);
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Error while streaming")).Click();
+        await Task.Delay(3000); // Doesn't matter if this duration is too short or too long. It's just so the assertions don't start unnecessarily early.
+
+        // Note that the tests always run with detailed errors off, so we only see this generic message
+        Browser.Contains("There was an unhandled exception on the current request.", () => Browser.Exists(By.TagName("html")).Text);
+
+        // See that 'back' still works
+        Browser.Navigate().Back();
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+        Assert.EndsWith("/subdir", Browser.Url);
+    }
 }

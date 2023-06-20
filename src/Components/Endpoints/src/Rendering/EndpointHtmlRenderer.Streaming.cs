@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.InteropServices;
+using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -63,9 +64,7 @@ internal partial class EndpointHtmlRenderer
         catch (Exception ex)
         {
             HandleExceptionAfterResponseStarted(_httpContext, writer, ex);
-
-            // The rest of the pipeline can treat this as a regular unhandled exception
-            // TODO: Is this really right? I think we'll terminate the response in an invalid way.
+            await writer.FlushAsync(); // Important otherwise the client won't receive the error message, as we're about to fail the pipeline
             throw;
         }
     }
@@ -167,16 +166,16 @@ internal partial class EndpointHtmlRenderer
             ? exception.ToString()
             : "There was an unhandled exception on the current request. For more details turn on detailed exceptions by setting 'DetailedErrors: true' in 'appSettings.Development.json'";
 
-        writer.Write("<template blazor-type=\"exception\">");
-        writer.Write(message);
-        writer.Write("</template>");
+        writer.Write("<blazor-ssr><template type=\"error\">");
+        writer.Write(HtmlEncoder.Default.Encode(message));
+        writer.Write("</template></blazor-ssr>");
     }
 
     private static void HandleNavigationAfterResponseStarted(TextWriter writer, string destinationUrl)
     {
-        writer.Write("<template blazor-type=\"redirection\">");
-        writer.Write(destinationUrl);
-        writer.Write("</template>");
+        writer.Write("<blazor-ssr><template type=\"redirection\">");
+        writer.Write(HtmlEncoder.Default.Encode(destinationUrl));
+        writer.Write("</template></blazor-ssr>");
     }
 
     protected override void WriteComponentHtml(int componentId, TextWriter output)

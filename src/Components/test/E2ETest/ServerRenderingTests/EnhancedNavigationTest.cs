@@ -81,6 +81,44 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.True(() => BrowserScrollY > 500);
     }
 
+    [Fact]
+    public void CanFollowSynchronousRedirection()
+    {
+        Navigate(ServerPathBase);
+
+        var h1Elem = Browser.Exists(By.TagName("h1"));
+        Browser.Equal("Hello", () => h1Elem.Text);
+
+        // Click a link and show we redirected, preserving elements, and updating the URL
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Redirect")).Click();
+        Browser.Equal("Scroll to hash", () => h1Elem.Text);
+        Assert.EndsWith("/subdir/scroll-to-hash", Browser.Url);
+
+        // See that 'back' takes you to the place from before the redirection
+        Browser.Navigate().Back();
+        Browser.Equal("Hello", () => h1Elem.Text);
+        Assert.EndsWith("/subdir", Browser.Url);
+    }
+
+    [Fact]
+    public void CanFollowAsynchronousRedirectionWhileStreaming()
+    {
+        Navigate(ServerPathBase);
+
+        var h1Elem = Browser.Exists(By.TagName("h1"));
+        Browser.Equal("Hello", () => h1Elem.Text);
+
+        // Click a link and show we redirected, preserving elements, and updating the URL
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Redirect while streaming")).Click();
+        Browser.Equal("Scroll to hash", () => h1Elem.Text);
+        Assert.EndsWith("/subdir/scroll-to-hash", Browser.Url);
+
+        // See that 'back' takes you to the place from before the redirection
+        Browser.Navigate().Back();
+        Browser.Equal("Hello", () => h1Elem.Text);
+        Assert.EndsWith("/subdir", Browser.Url);
+    }
+
     private long BrowserScrollY
     {
         get => Convert.ToInt64(((IJavaScriptExecutor)Browser).ExecuteScript("return window.scrollY"), CultureInfo.CurrentCulture);

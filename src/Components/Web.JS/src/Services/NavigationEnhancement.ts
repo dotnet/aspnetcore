@@ -61,7 +61,7 @@ function onPopState(state: PopStateEvent) {
   performEnhancedPageLoad(location.href);
 }
 
-async function performEnhancedPageLoad(internalDestinationHref: string) {
+export async function performEnhancedPageLoad(internalDestinationHref: string) {
   // First, stop any preceding enhanced page load
   currentEnhancedNavigationAbortController?.abort();
 
@@ -75,6 +75,11 @@ async function performEnhancedPageLoad(internalDestinationHref: string) {
   });
   await getResponsePartsWithFraming(responsePromise, abortSignal,
     (response, initialContent) => {
+      if (response.redirected) {
+        // Update the current URL to match the redirected destination, just like for normal navigation redirections
+        history.replaceState(null, '', response.url);
+      }
+
       if (response.headers.get('content-type')?.startsWith('text/html')) {
         // For HTML responses, regardless of the status code, display it
         const parsedHtml = new DOMParser().parseFromString(initialContent, 'text/html');

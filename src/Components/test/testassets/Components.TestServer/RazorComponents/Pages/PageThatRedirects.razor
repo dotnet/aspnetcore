@@ -1,0 +1,8 @@
+﻿@page "/do-redirection"
+@inject NavigationManager Nav
+@code {
+    protected override void OnInitialized()
+    {
+        Nav.NavigateTo("scroll-to-hash");
+    }
+}
