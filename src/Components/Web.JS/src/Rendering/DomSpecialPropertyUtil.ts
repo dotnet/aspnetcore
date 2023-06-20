@@ -5,24 +5,16 @@
 // This module provides helpers for doing that, and is shared by the interactive renderer (BrowserRenderer)
 // and the SSR DOM merging logic.
 
-const internalAttributeNamePrefix = '__internal_';
 const deferredValuePropname = '_blazorDeferredValue';
 
-type ApplyInternalAttributeCallback = (element: Element, internalAttributeName: string, value: string | null) => void;
-
-export function setAttributeOrProperty(element: Element, name: string, value: string | null, applyInternalAttribute: ApplyInternalAttributeCallback | null) {
-  // First see if we have special handling for this attribute
-  if (!tryApplySpecialProperty(element, name, value, applyInternalAttribute)) {
-    // If not, treat it as a regular string-valued attribute
-    element.setAttribute(name, value!);
-  }
-}
-
-export function removeAttributeOrProperty(element: Element, name: string, applyInternalAttribute: ApplyInternalAttributeCallback | null) {
-  // First try to remove any special property we use for this attribute
-  if (!tryApplySpecialProperty(element, name, null, applyInternalAttribute)) {
-    // If that's not applicable, it's a regular DOM attribute so remove that
-    element.removeAttribute(name);
+export function tryApplySpecialProperty(element: Element, name: string, value: string | null) {
+  switch (name) {
+    case 'value':
+      return tryApplyValueProperty(element, value);
+    case 'checked':
+      return tryApplyCheckedProperty(element, value);
+    default:
+      return false;
   }
 }
 
@@ -46,28 +38,6 @@ export function applyAnyDeferredValue(element: Element) {
   } else if (deferredValuePropname in element) {
     // Situation 2
     setDeferredElementValue(element, element[deferredValuePropname]);
-  }
-}
-
-function tryApplySpecialProperty(element: Element, name: string, value: string | null, applyInternalAttribute: ApplyInternalAttributeCallback | null) {
-  switch (name) {
-    case 'value':
-      return tryApplyValueProperty(element, value);
-    case 'checked':
-      return tryApplyCheckedProperty(element, value);
-    default: {
-      if (name.startsWith(internalAttributeNamePrefix)) {
-        if (applyInternalAttribute) {
-          applyInternalAttribute(element, name.substring(internalAttributeNamePrefix.length), value);
-          return true;
-        } else {
-          // This should never happen because we only generate the internal attributes during interactive rendering,
-          // and interactive rendering always does supply the applyInternalAttribute callback.
-          throw new Error(`Found internal attribute ${name} but no applyInternalAttribute callback was supplied.`);
-        }
-      }
-      return false;
-    }
   }
 }
 

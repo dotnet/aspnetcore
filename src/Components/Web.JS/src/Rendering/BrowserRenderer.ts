@@ -6,10 +6,11 @@ import { EventDelegator } from './Events/EventDelegator';
 import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, getLogicalChildrenArray, getLogicalSiblingEnd, permuteLogicalChildren, getClosestDomElement, emptyLogicalElement } from './LogicalElements';
 import { applyCaptureIdToElement } from './ElementReferenceCapture';
 import { attachToEventDelegator as attachNavigationManagerToEventDelegator } from '../Services/NavigationManager';
-import { applyAnyDeferredValue, removeAttributeOrProperty, setAttributeOrProperty } from './DomAttributeUtil';
+import { applyAnyDeferredValue, tryApplySpecialProperty } from './DomSpecialPropertyUtil';
 const sharedTemplateElemForParsing = document.createElement('template');
 const sharedSvgElemForParsing = document.createElementNS('http://www.w3.org/2000/svg', 'g');
 const elementsToClearOnRootComponentRender: { [componentId: number]: LogicalElement } = {};
+const internalAttributeNamePrefix = '__internal_';
 const eventPreventDefaultAttributeNamePrefix = 'preventDefault_';
 const eventStopPropagationAttributeNamePrefix = 'stopPropagation_';
 
@@ -137,7 +138,7 @@ export class BrowserRenderer {
           const element = getLogicalChild(parent, childIndexAtCurrentDepth + siblingIndex);
           if (element instanceof Element) {
             const attributeName = editReader.removedAttributeName(edit)!;
-            removeAttributeOrProperty(element, attributeName, this.applyInternalAttribute);
+            this.setOrRemoveAttributeOrProperty(element, attributeName, null);
           } else {
             throw new Error('Cannot remove attribute from non-element child');
           }
@@ -304,7 +305,7 @@ export class BrowserRenderer {
     }
 
     const value = frameReader.attributeValue(attributeFrame);
-    setAttributeOrProperty(toDomElement, attributeName, value, this.applyInternalAttribute);
+    this.setOrRemoveAttributeOrProperty(toDomElement, attributeName, value);
   }
 
   private insertFrameRange(batch: RenderBatch, componentId: number, parent: LogicalElement, childIndex: number, frames: ArrayValues<RenderTreeFrame>, startIndex: number, endIndexExcl: number): number {
@@ -319,6 +320,23 @@ export class BrowserRenderer {
     }
 
     return (childIndex - origChildIndex); // Total number of children inserted
+  }
+
+  private setOrRemoveAttributeOrProperty(element: Element, name: string, valueOrNullToRemove: string | null) {
+    // First see if we have special handling for this attribute
+    if (!tryApplySpecialProperty(element, name, valueOrNullToRemove)) {
+      // If not, maybe it's one of our internal attributes
+      if (name.startsWith(internalAttributeNamePrefix)) {
+        this.applyInternalAttribute(element, name.substring(internalAttributeNamePrefix.length), valueOrNullToRemove);
+      } else {
+        // If not, treat it as a regular DOM attribute
+        if (valueOrNullToRemove) {
+          element.setAttribute(name, valueOrNullToRemove);
+        } else {
+          element.removeAttribute(name);
+        }
+      }
+    }
   }
 
   private applyInternalAttribute(element: Element, internalAttributeName: string, value: string | null) {
