@@ -42,7 +42,7 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
         }
     }
 
-    public string? HostName { get; set; }
+    public string HostName { get; set; } = string.Empty;
 
     public ReadOnlyMemory<byte> ApplicationProtocol => _sslStream.NegotiatedApplicationProtocol.Protocol;
 

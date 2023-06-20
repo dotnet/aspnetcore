@@ -1,5 +1,16 @@
 #nullable enable
+abstract Microsoft.AspNetCore.Components.Binding.CascadingModelBindingProvider.AreValuesFixed.get -> bool
+abstract Microsoft.AspNetCore.Components.Binding.CascadingModelBindingProvider.CanSupplyValue(Microsoft.AspNetCore.Components.ModelBindingContext? bindingContext, in Microsoft.AspNetCore.Components.CascadingParameterInfo parameterInfo) -> bool
+abstract Microsoft.AspNetCore.Components.Binding.CascadingModelBindingProvider.GetCurrentValue(Microsoft.AspNetCore.Components.ModelBindingContext? bindingContext, in Microsoft.AspNetCore.Components.CascadingParameterInfo parameterInfo) -> object?
+abstract Microsoft.AspNetCore.Components.Binding.CascadingModelBindingProvider.SupportsCascadingParameterAttributeType(System.Type! attributeType) -> bool
+abstract Microsoft.AspNetCore.Components.Binding.CascadingModelBindingProvider.SupportsParameterType(System.Type! parameterType) -> bool
+abstract Microsoft.AspNetCore.Components.CascadingParameterAttributeBase.Name.get -> string?
+abstract Microsoft.AspNetCore.Components.CascadingParameterAttributeBase.Name.set -> void
 abstract Microsoft.AspNetCore.Components.RenderModeAttribute.Mode.get -> Microsoft.AspNetCore.Components.IComponentRenderMode!
+Microsoft.AspNetCore.Components.Binding.CascadingModelBindingProvider
+Microsoft.AspNetCore.Components.Binding.CascadingModelBindingProvider.CascadingModelBindingProvider() -> void
+Microsoft.AspNetCore.Components.Binding.CascadingQueryModelBindingProvider
+Microsoft.AspNetCore.Components.Binding.CascadingQueryModelBindingProvider.CascadingQueryModelBindingProvider(Microsoft.AspNetCore.Components.NavigationManager! navigationManager) -> void
 Microsoft.AspNetCore.Components.Binding.IFormValueSupplier
 Microsoft.AspNetCore.Components.Binding.IFormValueSupplier.CanBind(string! formName, System.Type! valueType) -> bool
 Microsoft.AspNetCore.Components.Binding.IFormValueSupplier.CanConvertSingleValue(System.Type! type) -> bool
@@ -12,6 +23,13 @@ Microsoft.AspNetCore.Components.CascadingModelBinder.IsFixed.get -> bool
 Microsoft.AspNetCore.Components.CascadingModelBinder.IsFixed.set -> void
 Microsoft.AspNetCore.Components.CascadingModelBinder.Name.get -> string!
 Microsoft.AspNetCore.Components.CascadingModelBinder.Name.set -> void
+Microsoft.AspNetCore.Components.CascadingParameterAttributeBase
+Microsoft.AspNetCore.Components.CascadingParameterAttributeBase.CascadingParameterAttributeBase() -> void
+Microsoft.AspNetCore.Components.CascadingParameterInfo
+Microsoft.AspNetCore.Components.CascadingParameterInfo.Attribute.get -> Microsoft.AspNetCore.Components.CascadingParameterAttributeBase!
+Microsoft.AspNetCore.Components.CascadingParameterInfo.CascadingParameterInfo() -> void
+Microsoft.AspNetCore.Components.CascadingParameterInfo.PropertyName.get -> string!
+Microsoft.AspNetCore.Components.CascadingParameterInfo.PropertyType.get -> System.Type!
 Microsoft.AspNetCore.Components.ComponentBase.DispatchExceptionAsync(System.Exception! exception) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.IComponentRenderMode
 Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.PersistStateAsync(Microsoft.AspNetCore.Components.IPersistentComponentStateStore! store, Microsoft.AspNetCore.Components.Dispatcher! dispatcher) -> System.Threading.Tasks.Task!
@@ -60,10 +78,20 @@ Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddComponentParamete
 Microsoft.AspNetCore.Components.StreamRenderingAttribute
 Microsoft.AspNetCore.Components.StreamRenderingAttribute.Enabled.get -> bool
 Microsoft.AspNetCore.Components.StreamRenderingAttribute.StreamRenderingAttribute(bool enabled) -> void
+*REMOVED*Microsoft.AspNetCore.Components.CascadingParameterAttribute.Name.get -> string?
+*REMOVED*Microsoft.AspNetCore.Components.CascadingParameterAttribute.Name.set -> void
+override Microsoft.AspNetCore.Components.CascadingParameterAttribute.Name.get -> string?
+override Microsoft.AspNetCore.Components.CascadingParameterAttribute.Name.set -> void
 override Microsoft.AspNetCore.Components.EventCallback.GetHashCode() -> int
 override Microsoft.AspNetCore.Components.EventCallback.Equals(object? obj) -> bool
 override Microsoft.AspNetCore.Components.EventCallback<TValue>.GetHashCode() -> int
 override Microsoft.AspNetCore.Components.EventCallback<TValue>.Equals(object? obj) -> bool
+*REMOVED*Microsoft.AspNetCore.Components.SupplyParameterFromQueryAttribute.Name.get -> string?
+*REMOVED*Microsoft.AspNetCore.Components.SupplyParameterFromQueryAttribute.Name.set -> void
+override Microsoft.AspNetCore.Components.SupplyParameterFromQueryAttribute.Name.get -> string?
+override Microsoft.AspNetCore.Components.SupplyParameterFromQueryAttribute.Name.set -> void
+virtual Microsoft.AspNetCore.Components.Binding.CascadingModelBindingProvider.Subscribe(Microsoft.AspNetCore.Components.Rendering.ComponentState! subscriber) -> void
+virtual Microsoft.AspNetCore.Components.Binding.CascadingModelBindingProvider.Unsubscribe(Microsoft.AspNetCore.Components.Rendering.ComponentState! subscriber) -> void
 virtual Microsoft.AspNetCore.Components.Rendering.ComponentState.DisposeAsync() -> System.Threading.Tasks.ValueTask
 virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.AddPendingTask(Microsoft.AspNetCore.Components.Rendering.ComponentState? componentState, System.Threading.Tasks.Task! task) -> void
 virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.CreateComponentState(int componentId, Microsoft.AspNetCore.Components.IComponent! component, Microsoft.AspNetCore.Components.Rendering.ComponentState? parentComponentState) -> Microsoft.AspNetCore.Components.Rendering.ComponentState!

@@ -4,18 +4,25 @@
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
 
 internal abstract class TypedCollectionConverterFactory : IFormDataConverterFactory
 {
+    [RequiresDynamicCode(FormBindingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormBindingHelpers.RequiresUnreferencedCodeMessage)]
     public abstract bool CanConvert(Type type, FormDataMapperOptions options);
 
+    [RequiresDynamicCode(FormBindingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormBindingHelpers.RequiresUnreferencedCodeMessage)]
     public abstract FormDataConverter CreateConverter(Type type, FormDataMapperOptions options);
 }
 
 internal sealed class TypedCollectionConverterFactory<TCollection, TElement> : TypedCollectionConverterFactory
 {
+    [RequiresDynamicCode(FormBindingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormBindingHelpers.RequiresUnreferencedCodeMessage)]
     public override bool CanConvert(Type _, FormDataMapperOptions options)
     {
         // Resolve the element type converter
@@ -101,6 +108,8 @@ internal sealed class TypedCollectionConverterFactory<TCollection, TElement> : T
     //   the Queue directly as the buffer (queues don't implement ICollection<T>, so the adapter uses Push instead),
     //   or for ImmutableXXX<T> we either use ImmuttableXXX.CreateBuilder<T> to create a builder we use as a buffer,
     //   or collect the collection into an array buffer and call CreateRange to build the final collection.
+    [RequiresDynamicCode(FormBindingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormBindingHelpers.RequiresUnreferencedCodeMessage)]
     public override FormDataConverter CreateConverter(Type _, FormDataMapperOptions options)
     {
         // Resolve the element type converter

@@ -1,4 +1,6 @@
 #nullable enable
+Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions.EnableKernelResponseBuffering.get -> bool
+Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions.EnableKernelResponseBuffering.set -> void
 Microsoft.AspNetCore.Server.HttpSys.HttpSysRequestTimingType
 Microsoft.AspNetCore.Server.HttpSys.HttpSysRequestTimingType.ConnectionStart = 0 -> Microsoft.AspNetCore.Server.HttpSys.HttpSysRequestTimingType
 Microsoft.AspNetCore.Server.HttpSys.HttpSysRequestTimingType.DataStart = 1 -> Microsoft.AspNetCore.Server.HttpSys.HttpSysRequestTimingType

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using Microsoft.Extensions.Internal;
 
@@ -8,12 +9,16 @@ namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
 
 internal sealed class ComplexTypeExpressionConverterFactory<T> : ComplexTypeExpressionConverterFactory
 {
+    [RequiresDynamicCode(FormBindingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormBindingHelpers.RequiresUnreferencedCodeMessage)]
     internal override CompiledComplexTypeConverter<T> CreateConverter(Type type, FormDataMapperOptions options)
     {
         var body = CreateConverterBody(type, options);
         return new CompiledComplexTypeConverter<T>(body);
     }
 
+    [RequiresDynamicCode(FormBindingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormBindingHelpers.RequiresUnreferencedCodeMessage)]
     private CompiledComplexTypeConverter<T>.ConverterDelegate CreateConverterBody(Type type, FormDataMapperOptions options)
     {
         var properties = PropertyHelper.GetVisibleProperties(type);

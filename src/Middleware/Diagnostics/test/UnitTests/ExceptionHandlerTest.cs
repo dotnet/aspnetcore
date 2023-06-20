@@ -918,8 +918,8 @@ public class ExceptionHandlerTest
         var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         var meterFactory = new TestMeterFactory();
-        using var instrumentRecorder = new InstrumentRecorder<double>(meterFactory, "Microsoft.AspNetCore.Hosting", "request-duration");
-        using var measurementReporter = new MeasurementReporter<double>(meterFactory, "Microsoft.AspNetCore.Hosting", "request-duration");
+        using var instrumentRecorder = new InstrumentRecorder<double>(meterFactory, "Microsoft.AspNetCore.Hosting", "http-server-request-duration");
+        using var measurementReporter = new MeasurementReporter<double>(meterFactory, "Microsoft.AspNetCore.Hosting", "http-server-request-duration");
         measurementReporter.Register(m =>
         {
             tcs.SetResult();

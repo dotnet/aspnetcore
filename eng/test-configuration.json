@@ -4,6 +4,7 @@
   "localRerunCount" : 3,
   "retryOnRules": [
     {"testName": {"contains": "FlakyTestToEnsureRetryWorks" }},
+    {"testName": {"contains": "ConfigureEndpointDevelopmentCertificateGetsLoadedWhenPresent" }},
     {"testName": {"contains": "MaxRequestBufferSizeTests.LargeUpload" }},
     {"testName": {"contains": "Http3RequestTests"}},
     {"testName": {"contains": "Http3TlsTests"}},
@@ -18,6 +19,8 @@
     {"testName": {"contains": "POST_ServerAbortAfterWrite_ClientReceivesAbort"}},
     {"testName": {"contains": "ServerReset_BeforeRequestBody_ClientBodyThrows"}},
     {"testName": {"contains": "InjectedStartup_DefaultApplicationNameIsEntryAssembly"}},
+    {"testName": {"contains": "HEADERS_Received_SecondRequest_ConnectProtocolReset"}},
+    {"testName": {"contains": "ClientUsingOldCallWithNewProtocol"}},
     {"testAssembly": {"contains": "IIS"}},
     {"testAssembly": {"contains": "Template"}},
     {"failureMessage": {"contains":"(Site is started but no worker process found)"}},

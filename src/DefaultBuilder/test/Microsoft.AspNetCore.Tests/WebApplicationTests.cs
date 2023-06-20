@@ -2368,6 +2368,29 @@ public class WebApplicationTests
         Assert.True(app.Properties.ContainsKey("__AuthorizationMiddlewareSet"));
     }
 
+    [Theory]
+    [MemberData(nameof(CreateBuilderFuncs))]
+    public void ImplementsIHostApplicationBuilderCorrectly(CreateBuilderFunc createBuilder)
+    {
+        var builder = createBuilder();
+        var iHostApplicationBuilder = (IHostApplicationBuilder)builder;
+
+        builder.Host.Properties["MyProp"] = 1;
+        Assert.Equal(1, iHostApplicationBuilder.Properties["MyProp"]);
+
+        Assert.Same(builder.Host.Properties, iHostApplicationBuilder.Properties);
+        Assert.Same(builder.Configuration, iHostApplicationBuilder.Configuration);
+        Assert.Same(builder.Logging, iHostApplicationBuilder.Logging);
+        Assert.Same(builder.Services, iHostApplicationBuilder.Services);
+        Assert.True(iHostApplicationBuilder.Environment.IsProduction());
+        Assert.NotNull(iHostApplicationBuilder.Environment.ContentRootFileProvider);
+
+        iHostApplicationBuilder.ConfigureContainer(new MyServiceProviderFactory());
+
+        var app = builder.Build();
+        Assert.IsType<MyServiceProvider>(app.Services);
+    }
+
     [Fact]
     public async Task UsingCreateBuilderResultsInRegexConstraintBeingPresent()
     {
@@ -2828,5 +2851,26 @@ public class WebApplicationTests
                 });
             };
         }
+    }
+
+    private class MyServiceProviderFactory : IServiceProviderFactory<MyServiceProvider>
+    {
+        public MyServiceProvider CreateBuilder(IServiceCollection services) => new MyServiceProvider(services);
+
+        public IServiceProvider CreateServiceProvider(MyServiceProvider containerBuilder)
+        {
+            containerBuilder.Build();
+            return containerBuilder;
+        }
+    }
+
+    private class MyServiceProvider : IServiceProvider
+    {
+        private IServiceProvider _inner;
+        private IServiceCollection _services;
+
+        public MyServiceProvider(IServiceCollection services) => _services = services;
+        public void Build() => _inner = _services.BuildServiceProvider();
+        public object GetService(Type serviceType) => _inner.GetService(serviceType);
     }
 }

@@ -1090,9 +1090,8 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         using (StartVerifiableLog())
         {
             var testMeterFactory = new TestMeterFactory();
-            using var connectionDuration = new InstrumentRecorder<double>(testMeterFactory, HttpConnectionsMetrics.MeterName, "connection-duration");
-            using var currentConnections = new InstrumentRecorder<long>(testMeterFactory, HttpConnectionsMetrics.MeterName, "current-connections");
-            using var currentTransports = new InstrumentRecorder<long>(testMeterFactory, HttpConnectionsMetrics.MeterName, "current-transports");
+            using var connectionDuration = new InstrumentRecorder<double>(testMeterFactory, HttpConnectionsMetrics.MeterName, "signalr-http-transport-connection-duration");
+            using var currentConnections = new InstrumentRecorder<long>(testMeterFactory, HttpConnectionsMetrics.MeterName, "signalr-http-transport-current-connections");
 
             var metrics = new HttpConnectionsMetrics(testMeterFactory);
             var manager = CreateConnectionManager(LoggerFactory, metrics);
@@ -1119,23 +1118,61 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var exists = manager.TryGetConnection(connection.ConnectionId, out _);
             Assert.False(exists);
 
-            Assert.Collection(currentConnections.GetMeasurements(), m => Assert.Equal(1, m.Value), m => Assert.Equal(-1, m.Value));
             Assert.Collection(connectionDuration.GetMeasurements(), m => AssertDuration(m, HttpConnectionStopStatus.NormalClosure, HttpTransportType.LongPolling));
-            Assert.Collection(currentTransports.GetMeasurements(), m => AssertTransport(m, 1, HttpTransportType.LongPolling), m => AssertTransport(m, -1, HttpTransportType.LongPolling));
+            Assert.Collection(currentConnections.GetMeasurements(), m => AssertTransport(m, 1, HttpTransportType.LongPolling), m => AssertTransport(m, -1, HttpTransportType.LongPolling));
         }
+    }
 
-        static void AssertTransport(Measurement<long> measurement, long expected, HttpTransportType transportType)
+    [Fact]
+    public async Task Metrics_ListenStartAfterConnection_Empty()
+    {
+        using (StartVerifiableLog())
         {
-            Assert.Equal(expected, measurement.Value);
-            Assert.Equal(transportType.ToString(), (string)measurement.Tags.ToArray().Single(t => t.Key == "transport").Value);
-        }
+            var testMeterFactory = new TestMeterFactory();
+            var metrics = new HttpConnectionsMetrics(testMeterFactory);
+            var manager = CreateConnectionManager(LoggerFactory, metrics);
+            var connection = manager.CreateConnection();
 
-        static void AssertDuration(Measurement<double> measurement, HttpConnectionStopStatus status, HttpTransportType transportType)
-        {
-            Assert.True(measurement.Value > 0);
-            Assert.Equal(status.ToString(), (string)measurement.Tags.ToArray().Single(t => t.Key == "status").Value);
-            Assert.Equal(transportType.ToString(), (string)measurement.Tags.ToArray().Single(t => t.Key == "transport").Value);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory, metrics);
+
+            var services = new ServiceCollection();
+            services.AddSingleton<ImmediatelyCompleteConnectionHandler>();
+            var context = MakeRequest("/foo", connection, services);
+
+            var builder = new ConnectionBuilder(services.BuildServiceProvider());
+            builder.UseConnectionHandler<ImmediatelyCompleteConnectionHandler>();
+            var app = builder.Build();
+            // First poll will 200
+            await dispatcher.ExecuteAsync(context, new HttpConnectionDispatcherOptions(), app);
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+
+            using var connectionDuration = new InstrumentRecorder<double>(testMeterFactory, HttpConnectionsMetrics.MeterName, "signalr-http-transport-connection-duration");
+            using var currentConnections = new InstrumentRecorder<long>(testMeterFactory, HttpConnectionsMetrics.MeterName, "signalr-http-transport-current-connections");
+
+            await dispatcher.ExecuteAsync(context, new HttpConnectionDispatcherOptions(), app);
+
+            Assert.Equal(StatusCodes.Status204NoContent, context.Response.StatusCode);
+            AssertResponseHasCacheHeaders(context.Response);
+
+            var exists = manager.TryGetConnection(connection.ConnectionId, out _);
+            Assert.False(exists);
+
+            Assert.Empty(currentConnections.GetMeasurements());
+            Assert.Empty(connectionDuration.GetMeasurements());
         }
+    }
+
+    private static void AssertTransport(Measurement<long> measurement, long expected, HttpTransportType transportType)
+    {
+        Assert.Equal(expected, measurement.Value);
+        Assert.Equal(transportType.ToString(), (string)measurement.Tags.ToArray().Single(t => t.Key == "transport").Value);
+    }
+
+    private static void AssertDuration(Measurement<double> measurement, HttpConnectionStopStatus status, HttpTransportType transportType)
+    {
+        Assert.True(measurement.Value > 0);
+        Assert.Equal(status.ToString(), (string)measurement.Tags.ToArray().Single(t => t.Key == "status").Value);
+        Assert.Equal(transportType.ToString(), (string)measurement.Tags.ToArray().Single(t => t.Key == "transport").Value);
     }
 
     [Fact]

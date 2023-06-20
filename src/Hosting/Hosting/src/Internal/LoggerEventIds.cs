@@ -20,4 +20,5 @@ internal static class LoggerEventIds
     public const int HostingStartupAssemblyLoaded = 13;
     public const int ServerListeningOnAddresses = 14;
     public const int PortsOverridenByUrls = 15;
+    public const int RequestUnhandled = 16;
 }

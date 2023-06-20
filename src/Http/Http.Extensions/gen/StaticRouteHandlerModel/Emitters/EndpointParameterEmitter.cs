@@ -190,7 +190,7 @@ internal static class EndpointParameterEmitter
         // Invoke TryResolveBody method to parse JSON and set
         // status codes on exceptions.
         var shortParameterTypeName = endpointParameter.Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat);
-        var assigningCode = $"await GeneratedRouteBuilderExtensionsCore.TryResolveBodyAsync<{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)}>(httpContext, logOrThrowExceptionHelper, {(endpointParameter.IsOptional ? "true" : "false")}, {SymbolDisplay.FormatLiteral(shortParameterTypeName, true)}, {SymbolDisplay.FormatLiteral(endpointParameter.SymbolName, true)})";
+        var assigningCode = $"await GeneratedRouteBuilderExtensionsCore.TryResolveBodyAsync<{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)}>(httpContext, logOrThrowExceptionHelper, {(endpointParameter.IsOptional ? "true" : "false")}, {SymbolDisplay.FormatLiteral(shortParameterTypeName, true)}, {SymbolDisplay.FormatLiteral(endpointParameter.SymbolName, true)}, {endpointParameter.SymbolName}_JsonTypeInfo)";
         var resolveBodyResult = $"{endpointParameter.SymbolName}_resolveBodyResult";
         codeWriter.WriteLine($"var {resolveBodyResult} = {assigningCode};");
         codeWriter.WriteLine($"var {endpointParameter.EmitHandlerArgument()} = {resolveBodyResult}.Item2;");
@@ -244,7 +244,7 @@ internal static class EndpointParameterEmitter
         // because the handler argument is emitted before the containing if block (which makes it awkward to
         // simply reuse that emission code) - opted for duplication (with tweaks) over complexity.
         var shortParameterTypeName = endpointParameter.Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat);
-        var assigningCode = $"await GeneratedRouteBuilderExtensionsCore.TryResolveBodyAsync<{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)}>(httpContext, logOrThrowExceptionHelper, {(endpointParameter.IsOptional ? "true" : "false")}, {SymbolDisplay.FormatLiteral(shortParameterTypeName, true)}, {SymbolDisplay.FormatLiteral(endpointParameter.SymbolName, true)})";
+        var assigningCode = $"await GeneratedRouteBuilderExtensionsCore.TryResolveBodyAsync<{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)}>(httpContext, logOrThrowExceptionHelper, {(endpointParameter.IsOptional ? "true" : "false")}, {SymbolDisplay.FormatLiteral(shortParameterTypeName, true)}, {SymbolDisplay.FormatLiteral(endpointParameter.SymbolName, true)}, {endpointParameter.SymbolName}_JsonTypeInfo)";
         var resolveBodyResult = $"{endpointParameter.SymbolName}_resolveBodyResult";
         codeWriter.WriteLine($"var {resolveBodyResult} = {assigningCode};");
         codeWriter.WriteLine($"{endpointParameter.EmitHandlerArgument()} = {resolveBodyResult}.Item2!;");

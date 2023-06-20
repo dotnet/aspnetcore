@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
@@ -9,6 +10,8 @@ internal class CollectionConverterFactory : IFormDataConverterFactory
 {
     public static readonly CollectionConverterFactory Instance = new();
 
+    [RequiresDynamicCode(FormBindingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormBindingHelpers.RequiresUnreferencedCodeMessage)]
     public bool CanConvert(Type type, FormDataMapperOptions options)
     {
         var enumerable = ClosedGenericMatcher.ExtractGenericInterface(type, typeof(IEnumerable<>));
@@ -28,6 +31,8 @@ internal class CollectionConverterFactory : IFormDataConverterFactory
         return factory.CanConvert(type, options);
     }
 
+    [RequiresDynamicCode(FormBindingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormBindingHelpers.RequiresUnreferencedCodeMessage)]
     public FormDataConverter CreateConverter(Type type, FormDataMapperOptions options)
     {
         ArgumentNullException.ThrowIfNull(type);

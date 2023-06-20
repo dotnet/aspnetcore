@@ -68,6 +68,11 @@ steps:
       runtimeOsArgs='/p:RuntimeOS=${{ parameters.platform.runtimeOS }}'
     fi
 
+    baseOsArgs=
+    if [ '${{ parameters.platform.baseOS }}' != '' ]; then
+      baseOsArgs='/p:BaseOS=${{ parameters.platform.baseOS }}'
+    fi
+
     publishArgs=
     if [ '${{ parameters.platform.skipPublishValidation }}' != 'true' ]; then
       publishArgs='--publish'
@@ -86,6 +91,7 @@ steps:
       $internalRestoreArgs \
       $targetRidArgs \
       $runtimeOsArgs \
+      $baseOsArgs \
       /p:SourceBuildNonPortable=${{ parameters.platform.nonPortable }} \
       /p:ArcadeBuildFromSource=true \
       /p:AssetManifestFileName=$assetManifestFileName

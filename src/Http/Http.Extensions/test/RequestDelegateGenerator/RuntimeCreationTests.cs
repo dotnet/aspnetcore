@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
-public class RuntimeCreationTests : RequestDelegateCreationTests
+public partial class RuntimeCreationTests : RequestDelegateCreationTests
 {
     protected override bool IsGeneratorEnabled { get; } = false;
 
