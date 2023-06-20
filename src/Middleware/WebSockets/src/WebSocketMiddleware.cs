@@ -194,13 +194,15 @@ namespace Microsoft.AspNetCore.WebSockets
 
                 Stream opaqueTransport = await _upgradeFeature.UpgradeAsync(); // Sets status code to 101
 
-                return WebSocket.CreateFromStream(opaqueTransport, new WebSocketCreationOptions()
+                var wrappedSocket = WebSocket.CreateFromStream(opaqueTransport, new WebSocketCreationOptions()
                 {
                     IsServer = true,
                     KeepAliveInterval = keepAliveInterval,
                     SubProtocol = subProtocol,
                     DangerousDeflateOptions = deflateOptions
                 });
+
+                return new ServerWebSocket(wrappedSocket, _context);
             }
 
             public static bool CheckSupportedWebSocketRequest(string method, IHeaderDictionary requestHeaders)
