@@ -13,8 +13,8 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal partial class EndpointHtmlRenderer
 {
-    private static readonly string _progressivelyEnhancedNavRequestHeaderName = "blazor-enhanced-nav";
-    private static readonly string _streamingRenderingFramingHeaderName = "ssr-framing";
+    private const string _progressivelyEnhancedNavRequestHeaderName = "blazor-enhanced-nav";
+    private const string _streamingRenderingFramingHeaderName = "ssr-framing";
     private TextWriter? _streamingUpdatesWriter;
     private HashSet<int>? _visitedComponentIdsInCurrentStreamingBatch;
     private string? _ssrFramingCommentMarkup;
