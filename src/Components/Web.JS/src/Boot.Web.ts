@@ -30,7 +30,11 @@ async function boot(options?: Partial<WebStartOptions>): Promise<void> {
   webStartOptions = options;
 
   attachStreamingRenderingListener(options?.ssr);
-  attachProgressivelyEnhancedNavigationListener(activateInteractiveComponents);
+
+  if (!options?.ssr?.disableDomPreservation) {
+    attachProgressivelyEnhancedNavigationListener(activateInteractiveComponents);
+  }
+
   await activateInteractiveComponents();
 }
 
