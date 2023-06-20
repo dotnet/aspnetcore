@@ -8,6 +8,7 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO.Pipelines;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
@@ -204,7 +205,7 @@ internal class RedisOutputCacheStore : IOutputCacheStore, IOutputCacheBufferStor
         }
     }
 
-    async ValueTask<bool> IOutputCacheBufferStore.TryGetAsync(string key, IBufferWriter<byte> destination, CancellationToken cancellationToken)
+    async ValueTask<bool> IOutputCacheBufferStore.TryGetAsync(string key, PipeWriter destination, CancellationToken cancellationToken)
     {
         ArgumentNullThrowHelper.ThrowIfNull(key);
         ArgumentNullThrowHelper.ThrowIfNull(destination);
@@ -222,6 +223,7 @@ internal class RedisOutputCacheStore : IOutputCacheStore, IOutputCacheBufferStor
             }
 
             destination.Write(result.Span);
+            await destination.FlushAsync(cancellationToken).ConfigureAwait(false);
             return true;
         }
         catch (Exception ex)

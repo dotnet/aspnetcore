@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using System.IO.Pipelines;
 
 namespace Microsoft.AspNetCore.OutputCaching;
 
@@ -50,7 +51,7 @@ public interface IOutputCacheBufferStore : IOutputCacheStore
     /// <param name="destination">The location to which the value should be written.</param>
     /// <param name="cancellationToken">Indicates that the operation should be cancelled.</param>
     /// <returns><c>True</c> if the response cache entry if it exists; otherwise <c>False</c>.</returns>
-    ValueTask<bool> TryGetAsync(string key, IBufferWriter<byte> destination, CancellationToken cancellationToken);
+    ValueTask<bool> TryGetAsync(string key, PipeWriter destination, CancellationToken cancellationToken);
 
     /// <summary>
     /// Stores the given response in the response cache.

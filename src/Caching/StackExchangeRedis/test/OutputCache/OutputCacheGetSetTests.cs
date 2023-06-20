@@ -5,12 +5,13 @@
 
 using System;
 using System.Buffers;
+using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.OutputCaching;
-using Microsoft.Diagnostics.Runtime.Interop;
+using Pipelines.Sockets.Unofficial.Buffers;
 using StackExchange.Redis;
 using Xunit;
 using Xunit.Abstractions;
@@ -158,9 +159,13 @@ public class OutputCacheGetSetTests : IClassFixture<RedisConnectionFixture>
         var cache = Assert.IsAssignableFrom<IOutputCacheBufferStore>(await Cache().ConfigureAwait(false));
         var key = Guid.NewGuid().ToString();
 
-        var bufferWriter = new ArrayBufferWriter<byte>();
-        Assert.False(await cache.TryGetAsync(key, bufferWriter, CancellationToken.None));
-        Assert.Equal(0, bufferWriter.WrittenCount);
+        var pipe = new Pipe();
+        Assert.False(await cache.TryGetAsync(key, pipe.Writer, CancellationToken.None));
+        pipe.Writer.Complete();
+        var read = await pipe.Reader.ReadAsync();
+        Assert.True(read.IsCompleted);
+        Assert.True(read.Buffer.IsEmpty);
+        pipe.Reader.AdvanceTo(read.Buffer.End);
     }
 
     [Fact(Skip = SkipReason)]
@@ -311,11 +316,39 @@ public class OutputCacheGetSetTests : IClassFixture<RedisConnectionFixture>
         var key = Guid.NewGuid().ToString();
         await cache.SetAsync(key, payload, default, TimeSpan.FromSeconds(30), CancellationToken.None);
 
-        var bufferWriter = new ArrayBufferWriter<byte>();
-        Assert.True(await cache.TryGetAsync(key, bufferWriter, CancellationToken.None));
-        Assert.Equal(1290, bufferWriter.WrittenCount);
-        ReadOnlyMemory<byte> linear = payload.ToArray();
-        Assert.True(linear.Span.SequenceEqual(bufferWriter.WrittenSpan), "payload match");
+        var pipe = new Pipe();
+        Assert.True(await cache.TryGetAsync(key, pipe.Writer, CancellationToken.None));
+        pipe.Writer.Complete();
+        var read = await pipe.Reader.ReadAsync();
+        Assert.True(read.IsCompleted);
+        Assert.Equal(1290, read.Buffer.Length);
+
+        using (Linearize(payload, out var linearPayload))
+        using (Linearize(read.Buffer, out var linearRead))
+        {
+            Assert.True(linearPayload.Span.SequenceEqual(linearRead.Span), "payload match");
+        }
+        pipe.Reader.AdvanceTo(read.Buffer.End);
+
+        static IMemoryOwner<byte> Linearize(ReadOnlySequence<byte> payload, out ReadOnlyMemory<byte> linear)
+        {
+            if (payload.IsEmpty)
+            {
+                linear = default;
+                return null;
+            }
+            if (payload.IsSingleSegment)
+            {
+                linear = payload.First;
+                return null;
+            }
+            var len = checked((int)payload.Length);
+            var lease = MemoryPool<byte>.Shared.Rent(len);
+            var memory = lease.Memory.Slice(0, len);
+            payload.CopyTo(memory.Span);
+            linear = memory;
+            return lease;
+        }
     }
 
     [Fact(Skip = SkipReason)]
