@@ -1,3 +1,5 @@
+import { readSpecialPropertyOrAttributeValue, tryApplySpecialProperty } from '../DomSpecialPropertyUtil';
+
 export function synchronizeAttributes(destination: Element, source: Element) {
   const destAttrs = destination.attributes;
   const sourceAttrs = source.attributes;
@@ -9,7 +11,7 @@ export function synchronizeAttributes(destination: Element, source: Element) {
     for (let i = 0; i < destAttrsLength; i++) {
       const sourceAttr = sourceAttrs.item(i)!;
       const destAttr = destAttrs.item(i)!;
-      if (sourceAttr.name !== destAttr.name || sourceAttr.value !== destAttr.value) {
+      if (sourceAttr.name !== destAttr.name || readSpecialPropertyOrAttributeValue(sourceAttr) !== readSpecialPropertyOrAttributeValue(destAttr)) {
         hasDifference = true;
         break;
       }
@@ -28,31 +30,47 @@ export function synchronizeAttributes(destination: Element, source: Element) {
 
   for (const sourceAttr of source.attributes as any as Attr[]) {
     const existingDestAttr = sourceAttr.namespaceURI
-    ? destination.getAttributeNodeNS(sourceAttr.namespaceURI, sourceAttr.localName)
-    : destination.getAttributeNode(sourceAttr.name);
+      ? destination.getAttributeNodeNS(sourceAttr.namespaceURI, sourceAttr.localName)
+      : destination.getAttributeNode(sourceAttr.name);
     if (existingDestAttr) {
-      if (existingDestAttr.value !== sourceAttr.value) {
+      if (readSpecialPropertyOrAttributeValue(existingDestAttr) !== readSpecialPropertyOrAttributeValue(sourceAttr)) {
         // Update
-        existingDestAttr.value = sourceAttr.value;
+        applyAttributeOrProperty(destination, sourceAttr);
       }
 
       remainingDestAttrs.delete(existingDestAttr.name);
     } else {
       // Insert
-      if (sourceAttr.namespaceURI) {
-        destination.setAttributeNS(sourceAttr.namespaceURI, sourceAttr.name, sourceAttr.value);
-      } else {
-        destination.setAttribute(sourceAttr.name, sourceAttr.value);
-      }
+      applyAttributeOrProperty(destination, sourceAttr);
     }
   }
 
   for (const attrToDelete of remainingDestAttrs.values()) {
     // Delete
-    if (attrToDelete.namespaceURI) {
-      destination.removeAttributeNS(attrToDelete.namespaceURI, attrToDelete.localName);
-    } else {
-      destination.removeAttribute(attrToDelete.name);
-    }
+    removeAttributeOrProperty(destination, attrToDelete);
+  }
+}
+
+function applyAttributeOrProperty(element: Element, attr: Attr) {
+  // If we need to assign a special property on the element, do so
+  tryApplySpecialProperty(element, attr.name, attr.value)
+
+  // Either way, also update the attribute
+  if (attr.namespaceURI) {
+    element.setAttributeNS(attr.namespaceURI, attr.name, attr.value);
+  } else {
+    element.setAttribute(attr.name, attr.value);
+  }
+}
+
+function removeAttributeOrProperty(element: Element, attr: Attr) {
+  // If we need to null out a special property on the element, do so
+  tryApplySpecialProperty(element, attr.name, null);
+
+  // Either way, also remove the attribute
+  if (attr.namespaceURI) {
+    element.removeAttributeNS(attr.namespaceURI, attr.localName);
+  } else {
+    element.removeAttribute(attr.name);
   }
 }

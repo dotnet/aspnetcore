@@ -1,3 +1,4 @@
+import { applyAnyDeferredValue } from '../DomSpecialPropertyUtil';
 import { synchronizeAttributes } from './AttributeSync';
 import { UpdateCost, ItemList, Operation, computeEditScript } from './EditScript';
 
@@ -86,6 +87,10 @@ function treatAsMatch(destination: Node, source: Node) {
     case Node.COMMENT_NODE:
       break;
     case Node.ELEMENT_NODE:
+      // Note that for DomSync, we don't actually have to call applyAnyDeferredValue because
+      // there aren't currently any cases where deferred values would be used. Even with <select>
+      // it won't be relevant because in plain HTML we don't use the 'value' attribute on <select>;
+      // instead we use the 'selected' attribute on <option>.
       synchronizeAttributes(destination as Element, source as Element);
       synchronizeDomContent(destination as Element, source as Element);
       break;

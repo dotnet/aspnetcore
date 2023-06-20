@@ -258,11 +258,11 @@ describe('DomSync', () => {
     expect(newNodes[2].childNodes[0]).toBe(anotherChildWillRetain);
   });
 
-  test('should update input element value when not modified by user', () => {
-    // Until an input-like element is edited (or equivalently, until something
-    // is written to its 'value' property), that element's 'value' property
-    // return the same as the element's 'value' attribute. The property and
-    // attribute stay in sync automatically.
+  test('should update input element value property when not modified by user', () => {
+    // For input-like elements, what we mostly care about is the value *property*,
+    // not the attribute. When this property hasn't explicitly been written, it takes
+    // its value from the value attribute. However we do still also want to update
+    // the attribute to make the DOM as consistent as possible.
     //
     // This test aims to show that, in this situation prior to user edits,
     // we update both the property and attribute to match the new content.
@@ -333,17 +333,16 @@ describe('DomSync', () => {
   });
 
   test('should be able to add select with nonempty option value', () => {
-    // This test is to show that the deferred value assignment works. That is, even though
-    // when we insert the <select> its value does not correspond to any of the <option> children,
-    // it still gets the right value when we subsequently insert the <option> child.
+    // Shows that when inserting a completely new <select>, the correct initial
+    // value is set and that none of the deferred value assignment logic breaks this.
 
     // Arrange
     const destination = makeExistingContent(
       ``);
     const newContent = makeNewContent(
-      `<select value='second'>`
+      `<select>`
       + `<option value='first'></option>`
-      + `<option value='second'></option>`
+      + `<option value='second' selected></option>`
       + `<option value='third'></option>` +
       `</select>`);
 
@@ -354,6 +353,34 @@ describe('DomSync', () => {
     const selectElem = destination.startExclusive.nextSibling;
     expect(selectElem).toBeInstanceOf(HTMLSelectElement);
     expect((selectElem as HTMLSelectElement).value).toBe('second');
+  });
+
+  test('should be able to update select to a newly-added option value', () => {
+    // Shows that the introduction of an <option> with 'selected' is sufficient
+    // to make the <select>'s 'value' property update, and that none of the
+    // deferred value assignment logic breaks this.
+
+    // Arrange
+    const destination = makeExistingContent(
+      `<select>`
+      + `<option value='original1' selected></option>`
+      + `<option value='original2'></option>` +
+      `</select>`);
+    const newContent = makeNewContent(
+      `<select>`
+      + `<option value='new1'></option>`
+      + `<option value='new2'></option>`
+      + `<option value='new3' selected></option>` +
+      `</select>`);
+    const selectElem = destination.startExclusive.nextSibling as HTMLSelectElement;
+    selectElem.value = 'original2';
+
+    // Act
+    synchronizeDomContent(destination, newContent);
+
+    // Assert
+    expect(selectElem).toBeInstanceOf(HTMLSelectElement);
+    expect((selectElem as HTMLSelectElement).value).toBe('new3');
   });
 });
 
