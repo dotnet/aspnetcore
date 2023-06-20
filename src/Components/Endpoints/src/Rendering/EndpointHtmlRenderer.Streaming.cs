@@ -63,8 +63,12 @@ internal partial class EndpointHtmlRenderer
         }
         catch (Exception ex)
         {
+            // Theoretically it might be possible to let the error middleware run, capture the output,
+            // then emit it in a special format so the JS code can display the error page. However
+            // for now we're not going to support that and will simply emit a message.
             HandleExceptionAfterResponseStarted(_httpContext, writer, ex);
             await writer.FlushAsync(); // Important otherwise the client won't receive the error message, as we're about to fail the pipeline
+            await _httpContext.Response.CompleteAsync();
             throw;
         }
     }
