@@ -54,7 +54,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
                     .AddServerRenderMode()
                     .AddWebAssemblyRenderMode();
 
-                StreamingRendering.MapEndpoints(endpoints);
+                NotEnabledStreamingRenderingComponent.MapEndpoints(endpoints);
                 StreamingRenderingForm.MapEndpoints(endpoints);
             });
         });
