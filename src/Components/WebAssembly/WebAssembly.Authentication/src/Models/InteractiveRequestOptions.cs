@@ -129,7 +129,11 @@ public sealed class InteractiveRequestOptions
             [JsonInclude]
             public Dictionary<string, object>? AdditionalRequestParameters { get; init; }
 
-            public OptionsRecord(string returnUrl, IEnumerable<string> scopes, InteractionType interaction, Dictionary<string, object>? additionalRequestParameters)
+            public OptionsRecord(
+                string returnUrl,
+                IEnumerable<string> scopes,
+                InteractionType interaction,
+                Dictionary<string, object>? additionalRequestParameters)
             {
                 ReturnUrl = returnUrl;
                 Scopes = scopes;
