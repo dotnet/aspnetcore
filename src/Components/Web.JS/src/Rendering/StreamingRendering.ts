@@ -1,7 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-export function attachStreamingRenderingListener() {
+import { SsrStartOptions } from "../Platform/SsrStartOptions";
+import { synchronizeDomContent } from "./DomMerging/DomSync";
+
+let enableDomPreservation = true;
+
+export function attachStreamingRenderingListener(options: SsrStartOptions | undefined) {
+  if (options?.disableDomPreservation) {
+    enableDomPreservation = false;
+  }
+
   customElements.define('blazor-ssr', BlazorStreamingUpdate);
 }
 
@@ -35,16 +44,19 @@ class BlazorStreamingUpdate extends HTMLElement {
 function insertStreamingContentIntoDocument(componentIdAsString: string, docFrag: DocumentFragment): void {
   const markers = findStreamingMarkers(componentIdAsString);
   if (markers) {
-    const { startMarker, endMarker } = markers;
+    if (enableDomPreservation) {
+      synchronizeDomContent({ startExclusive: markers.startMarker, endExclusive: markers.endMarker }, docFrag);
+    } else {
+      // In this mode we completely delete the old content before inserting the new content
+      const { startMarker, endMarker } = markers;
+      const existingContent = new Range();
+      existingContent.setStart(startMarker, startMarker.textContent!.length);
+      existingContent.setEnd(endMarker, 0);
+      existingContent.deleteContents();
 
-    // Using Range for this is a bit weird, but this logic will go away anyway once we implement https://github.com/dotnet/aspnetcore/issues/47258
-    const existingContent = new Range();
-    existingContent.setStart(startMarker, startMarker.textContent!.length);
-    existingContent.setEnd(endMarker, 0);
-    existingContent.deleteContents();
-
-    while (docFrag.childNodes[0]) {
-      endMarker.parentNode!.insertBefore(docFrag.childNodes[0], endMarker);
+      while (docFrag.childNodes[0]) {
+        endMarker.parentNode!.insertBefore(docFrag.childNodes[0], endMarker);
+      }
     }
   }
 }

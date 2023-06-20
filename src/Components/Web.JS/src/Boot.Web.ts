@@ -27,7 +27,7 @@ async function boot(options?: Partial<WebStartOptions>): Promise<void> {
   started = true;
   await activateInteractiveComponents(options);
 
-  attachStreamingRenderingListener();
+  attachStreamingRenderingListener(options?.ssr);
 }
 
 async function activateInteractiveComponents(options?: Partial<WebStartOptions>) {
