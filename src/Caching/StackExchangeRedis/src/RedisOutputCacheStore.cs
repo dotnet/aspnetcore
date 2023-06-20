@@ -222,6 +222,8 @@ internal class RedisOutputCacheStore : IOutputCacheStore, IOutputCacheBufferStor
                 return false;
             }
 
+            // future implementation will pass PipeWriter all the way down through redis,
+            // to allow end-to-end back-pressure; new SE.Redis API required
             destination.Write(result.Span);
             await destination.FlushAsync(cancellationToken).ConfigureAwait(false);
             return true;
