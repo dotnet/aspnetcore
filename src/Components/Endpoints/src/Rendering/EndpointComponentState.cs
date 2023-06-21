@@ -28,7 +28,7 @@ internal sealed class EndpointComponentState : ComponentState
         }
         else
         {
-            var parentEndpointComponentState = (EndpointComponentState?)parentComponentState;
+            var parentEndpointComponentState = (EndpointComponentState?)LogicalParentComponentState;
             StreamRendering = parentEndpointComponentState?.StreamRendering ?? false;
         }
     }

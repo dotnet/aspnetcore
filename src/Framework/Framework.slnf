@@ -10,6 +10,7 @@
       "src\\Components\\Forms\\src\\Microsoft.AspNetCore.Components.Forms.csproj",
       "src\\Components\\Server\\src\\Microsoft.AspNetCore.Components.Server.csproj",
       "src\\Components\\Web\\src\\Microsoft.AspNetCore.Components.Web.csproj",
+      "src\\Components\\WebAssembly\\Server\\src\\Microsoft.AspNetCore.Components.WebAssembly.Server.csproj",
       "src\\Configuration.KeyPerFile\\src\\Microsoft.Extensions.Configuration.KeyPerFile.csproj",
       "src\\DataProtection\\Abstractions\\src\\Microsoft.AspNetCore.DataProtection.Abstractions.csproj",
       "src\\DataProtection\\Cryptography.Internal\\src\\Microsoft.AspNetCore.Cryptography.Internal.csproj",

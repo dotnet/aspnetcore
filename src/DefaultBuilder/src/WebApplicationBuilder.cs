@@ -6,6 +6,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -16,7 +17,7 @@ namespace Microsoft.AspNetCore.Builder;
 /// <summary>
 /// A builder for web applications and services.
 /// </summary>
-public sealed class WebApplicationBuilder
+public sealed class WebApplicationBuilder : IHostApplicationBuilder
 {
     private const string EndpointRouteBuilderKey = "__EndpointRouteBuilder";
     private const string AuthenticationMiddlewareSetKey = "__AuthenticationMiddlewareSet";
@@ -300,6 +301,12 @@ public sealed class WebApplicationBuilder
     /// </summary>
     public ConfigureHostBuilder Host { get; }
 
+    IDictionary<object, object> IHostApplicationBuilder.Properties => ((IHostApplicationBuilder)_hostApplicationBuilder).Properties;
+
+    IConfigurationManager IHostApplicationBuilder.Configuration => Configuration;
+
+    IHostEnvironment IHostApplicationBuilder.Environment => Environment;
+
     /// <summary>
     /// Builds the <see cref="WebApplication"/>.
     /// </summary>
@@ -380,17 +387,16 @@ public sealed class WebApplicationBuilder
         }
 
         // Wire the source pipeline to run in the destination pipeline
-        app.Use(next =>
-        {
-            _builtApplication.Run(next);
-            return _builtApplication.BuildRequestDelegate();
-        });
+        var wireSourcePipeline = new WireSourcePipeline(_builtApplication);
+        app.Use(wireSourcePipeline.CreateMiddleware);
 
         if (_builtApplication.DataSources.Count > 0)
         {
             // We don't know if user code called UseEndpoints(), so we will call it just in case, UseEndpoints() will ignore duplicate DataSources
             app.UseEndpoints(_ => { });
         }
+
+        MergeMiddlewareDescriptions(app);
 
         // Copy the properties to the destination app builder
         foreach (var item in _builtApplication.Properties)
@@ -405,6 +411,50 @@ public sealed class WebApplicationBuilder
         if (priorRouteBuilder is not null)
         {
             app.Properties[EndpointRouteBuilderKey] = priorRouteBuilder;
+        }
+    }
+
+    void IHostApplicationBuilder.ConfigureContainer<TContainerBuilder>(IServiceProviderFactory<TContainerBuilder> factory, Action<TContainerBuilder>? configure) =>
+        _hostApplicationBuilder.ConfigureContainer(factory, configure);
+
+    private void MergeMiddlewareDescriptions(IApplicationBuilder app)
+    {
+        // A user's app builds up a list of middleware. Then when the WebApplication is started, middleware is automatically added
+        // if it is required. For example, the app has mapped endpoints but hasn't configured UseRouting/UseEndpoints.
+        //
+        // This method updates the middleware descriptions to include automatically added middleware.
+        // The app's middleware list is inserted into the new pipeline to create the best representation possible of the middleware pipeline.
+        //
+        // If the debugger isn't attached then there won't be middleware description collections in the properties and this does nothing.
+
+        Debug.Assert(_builtApplication is not null);
+
+        const string MiddlewareDescriptionsKey = "__MiddlewareDescriptions";
+        if (_builtApplication.Properties.TryGetValue(MiddlewareDescriptionsKey, out var sourceValue) &&
+            app.Properties.TryGetValue(MiddlewareDescriptionsKey, out var destinationValue) &&
+            sourceValue is List<string> sourceDescriptions &&
+            destinationValue is List<string> destinationDescriptions)
+        {
+            var wireUpIndex = destinationDescriptions.IndexOf(typeof(WireSourcePipeline).FullName!);
+            if (wireUpIndex != -1)
+            {
+                destinationDescriptions.RemoveAt(wireUpIndex);
+                destinationDescriptions.InsertRange(wireUpIndex, sourceDescriptions);
+
+                _builtApplication.Properties[MiddlewareDescriptionsKey] = destinationDescriptions;
+            }
+        }
+    }
+
+    // This type exists so the place where the source pipeline is wired into the destination pipeline can be identified.
+    private sealed class WireSourcePipeline(IApplicationBuilder builtApplication)
+    {
+        private readonly IApplicationBuilder _builtApplication = builtApplication;
+
+        public RequestDelegate CreateMiddleware(RequestDelegate next)
+        {
+            _builtApplication.Run(next);
+            return _builtApplication.Build();
         }
     }
 }

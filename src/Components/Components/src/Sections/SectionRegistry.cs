@@ -5,10 +5,10 @@ namespace Microsoft.AspNetCore.Components.Sections;
 
 internal sealed class SectionRegistry
 {
-    private readonly Dictionary<object, ISectionContentSubscriber> _subscribersByIdentifier = new();
-    private readonly Dictionary<object, List<ISectionContentProvider>> _providersByIdentifier = new();
+    private readonly Dictionary<object, SectionOutlet> _subscribersByIdentifier = new();
+    private readonly Dictionary<object, List<SectionContent>> _providersByIdentifier = new();
 
-    public void AddProvider(object identifier, ISectionContentProvider provider, bool isDefaultProvider)
+    public void AddProvider(object identifier, SectionContent provider, bool isDefaultProvider)
     {
         if (!_providersByIdentifier.TryGetValue(identifier, out var providers))
         {
@@ -26,7 +26,7 @@ internal sealed class SectionRegistry
         }
     }
 
-    public void RemoveProvider(object identifier, ISectionContentProvider provider)
+    public void RemoveProvider(object identifier, SectionContent provider)
     {
         if (!_providersByIdentifier.TryGetValue(identifier, out var providers))
         {
@@ -46,12 +46,12 @@ internal sealed class SectionRegistry
         {
             // We just removed the most recently added provider, meaning we need to change
             // the current content to that of second most recently added provider.
-            var content = GetCurrentProviderContentOrDefault(providers);
-            NotifyContentChangedForSubscriber(identifier, content);
+            var contentProvider = GetCurrentProviderContentOrDefault(providers);
+            NotifyContentChangedForSubscriber(identifier, contentProvider);
         }
     }
 
-    public void Subscribe(object identifier, ISectionContentSubscriber subscriber)
+    public void Subscribe(object identifier, SectionOutlet subscriber)
     {
         if (_subscribersByIdentifier.ContainsKey(identifier))
         {
@@ -59,8 +59,8 @@ internal sealed class SectionRegistry
         }
 
         // Notify the new subscriber with any existing content.
-        var content = GetCurrentProviderContentOrDefault(identifier);
-        subscriber.ContentChanged(content);
+        var provider = GetCurrentProviderContentOrDefault(identifier);
+        subscriber.ContentUpdated(provider);
 
         _subscribersByIdentifier.Add(identifier, subscriber);
     }
@@ -73,7 +73,7 @@ internal sealed class SectionRegistry
         }
     }
 
-    public void NotifyContentChanged(object identifier, ISectionContentProvider provider)
+    public void NotifyContentProviderChanged(object identifier, SectionContent provider)
     {
         if (!_providersByIdentifier.TryGetValue(identifier, out var providers))
         {
@@ -84,25 +84,25 @@ internal sealed class SectionRegistry
         // most recently added provider changes.
         if (providers.Count != 0 && providers[^1] == provider)
         {
-            NotifyContentChangedForSubscriber(identifier, provider.Content);
+            NotifyContentChangedForSubscriber(identifier, provider);
         }
     }
 
-    private static RenderFragment? GetCurrentProviderContentOrDefault(List<ISectionContentProvider> providers)
+    private static SectionContent? GetCurrentProviderContentOrDefault(List<SectionContent> providers)
         => providers.Count != 0
-            ? providers[^1].Content
+            ? providers[^1]
             : null;
 
-    private RenderFragment? GetCurrentProviderContentOrDefault(object identifier)
+    private SectionContent? GetCurrentProviderContentOrDefault(object identifier)
         => _providersByIdentifier.TryGetValue(identifier, out var existingList)
             ? GetCurrentProviderContentOrDefault(existingList)
             : null;
 
-    private void NotifyContentChangedForSubscriber(object identifier, RenderFragment? content)
+    private void NotifyContentChangedForSubscriber(object identifier, SectionContent? provider)
     {
         if (_subscribersByIdentifier.TryGetValue(identifier, out var subscriber))
         {
-            subscriber.ContentChanged(content);
+            subscriber.ContentUpdated(provider);
         }
     }
 }

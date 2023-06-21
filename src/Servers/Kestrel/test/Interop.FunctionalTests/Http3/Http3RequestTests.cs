@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using System.Globalization;
 using System.Net;
 using System.Net.Http;
@@ -18,6 +19,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -67,6 +69,55 @@ public class Http3RequestTests : LoggedTest
     }
 
     private static readonly byte[] TestData = Encoding.UTF8.GetBytes("Hello world");
+
+    [ConditionalFact]
+    [MsQuicSupported]
+    public async Task GET_Metrics_HttpProtocolAndTlsSet()
+    {
+        // Arrange
+        var builder = CreateHostBuilder(context => Task.CompletedTask);
+
+        using (var host = builder.Build())
+        {
+            var meterFactory = host.Services.GetRequiredService<IMeterFactory>();
+
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            using var connectionDuration = new InstrumentRecorder<double>(meterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel-connection-duration");
+            using var measurementReporter = new MeasurementReporter<double>(meterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel-connection-duration");
+            measurementReporter.Register(m =>
+            {
+                tcs.SetResult();
+            });
+
+            await host.StartAsync();
+            var client = HttpHelpers.CreateClient();
+
+            // Act
+            var request1 = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
+            request1.Version = HttpVersion.Version30;
+            request1.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+            var response1 = await client.SendAsync(request1, CancellationToken.None);
+            response1.EnsureSuccessStatusCode();
+
+            // Dispose the client to end the connection.
+            client.Dispose();
+            // Wait for measurement to be available.
+            await tcs.Task.DefaultTimeout();
+
+            // Assert
+            Assert.Collection(connectionDuration.GetMeasurements(),
+                m =>
+                {
+                    Assert.True(m.Value > 0);
+                    Assert.Equal("Tls13", m.Tags.ToArray().Single(t => t.Key == "tls-protocol").Value);
+                    Assert.Equal("HTTP/3", m.Tags.ToArray().Single(t => t.Key == "http-protocol").Value);
+                    Assert.Equal($"127.0.0.1:{host.GetPort()}", m.Tags.ToArray().Single(t => t.Key == "endpoint").Value);
+                });
+
+            await host.StopAsync();
+        }
+    }
 
     // Verify HTTP/2 and HTTP/3 match behavior
     [ConditionalTheory]

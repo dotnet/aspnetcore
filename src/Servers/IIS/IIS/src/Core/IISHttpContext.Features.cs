@@ -30,6 +30,8 @@ internal partial class IISHttpContext
     private static readonly Type IHttpResetFeature = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpResetFeature);
     private static readonly Type IConnectionLifetimeNotificationFeature = typeof(global::Microsoft.AspNetCore.Connections.Features.IConnectionLifetimeNotificationFeature);
     private static readonly Type IHttpActivityFeature = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpActivityFeature);
+    private static readonly Type IHttpSysRequestInfoFeature = typeof(global::Microsoft.AspNetCore.Server.HttpSys.IHttpSysRequestInfoFeature);
+    private static readonly Type IHttpSysRequestTimingFeature = typeof(global::Microsoft.AspNetCore.Server.HttpSys.IHttpSysRequestTimingFeature);
 
     private object? _currentIHttpRequestFeature;
     private object? _currentIHttpRequestBodyDetectionFeature;
@@ -55,6 +57,8 @@ internal partial class IISHttpContext
     private object? _currentIHttpResetFeature;
     private object? _currentIConnectionLifetimeNotificationFeature;
     private object? _currentIHttpActivityFeature;
+    private object? _currentIHttpSysRequestInfoFeature;
+    private object? _currentIHttpSysRequestTimingFeature;
 
     private void Initialize()
     {
@@ -74,6 +78,8 @@ internal partial class IISHttpContext
         _currentIHttpResponseTrailersFeature = GetResponseTrailersFeature();
         _currentIHttpResetFeature = GetResetFeature();
         _currentIConnectionLifetimeNotificationFeature = this;
+        _currentIHttpSysRequestInfoFeature = this;
+        _currentIHttpSysRequestTimingFeature = this;
 
         _currentIHttpActivityFeature = null;
     }
@@ -179,6 +185,14 @@ internal partial class IISHttpContext
         if (key == IHttpActivityFeature)
         {
             return _currentIHttpActivityFeature;
+        }
+        if (key == IHttpSysRequestInfoFeature)
+        {
+            return _currentIHttpSysRequestInfoFeature;
+        }
+        if (key == IHttpSysRequestTimingFeature)
+        {
+            return _currentIHttpSysRequestTimingFeature;
         }
 
         return ExtraFeatureGet(key);
@@ -309,6 +323,16 @@ internal partial class IISHttpContext
         if (key == IConnectionLifetimeNotificationFeature)
         {
             _currentIConnectionLifetimeNotificationFeature = feature;
+            return;
+        }
+        if (key == IHttpSysRequestInfoFeature)
+        {
+            _currentIHttpSysRequestInfoFeature = feature;
+            return;
+        }
+        if (key == IHttpSysRequestTimingFeature)
+        {
+            _currentIHttpSysRequestTimingFeature = feature;
             return;
         }
         ExtraFeatureSet(key, feature);

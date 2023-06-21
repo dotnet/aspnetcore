@@ -55,6 +55,45 @@ public partial class DefaultProblemDetailsWriterTest
     }
 
     [Fact]
+    public async Task WriteAsync_Works_WhenReplacingProblemDetailsUsingSetter()
+    {
+        // Arrange
+        var writer = GetWriter();
+        var stream = new MemoryStream();
+        var context = CreateContext(stream);
+        var originalProblemDetails = new ProblemDetails();
+
+        var expectedProblem = new ProblemDetails()
+        {
+            Detail = "Custom Bad Request",
+            Instance = "Custom Bad Request",
+            Status = StatusCodes.Status400BadRequest,
+            Type = "https://tools.ietf.org/html/rfc9110#section-15.5.1-custom",
+            Title = "Custom Bad Request",
+        };
+        var problemDetailsContext = new ProblemDetailsContext()
+        {
+            HttpContext = context,
+            ProblemDetails = originalProblemDetails
+        };
+
+        problemDetailsContext.ProblemDetails = expectedProblem;
+
+        //Act
+        await writer.WriteAsync(problemDetailsContext);
+
+        //Assert
+        stream.Position = 0;
+        var problemDetails = await JsonSerializer.DeserializeAsync<ProblemDetails>(stream, SerializerOptions);
+        Assert.NotNull(problemDetails);
+        Assert.Equal(expectedProblem.Status, problemDetails.Status);
+        Assert.Equal(expectedProblem.Type, problemDetails.Type);
+        Assert.Equal(expectedProblem.Title, problemDetails.Title);
+        Assert.Equal(expectedProblem.Detail, problemDetails.Detail);
+        Assert.Equal(expectedProblem.Instance, problemDetails.Instance);
+    }
+
+    [Fact]
     public async Task WriteAsync_Works_WithJsonContext()
     {
         // Arrange

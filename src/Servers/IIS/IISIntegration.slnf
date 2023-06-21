@@ -22,6 +22,7 @@
       "src\\Middleware\\ResponseCompression\\src\\Microsoft.AspNetCore.ResponseCompression.csproj",
       "src\\ObjectPool\\src\\Microsoft.Extensions.ObjectPool.csproj",
       "src\\Servers\\Connections.Abstractions\\src\\Microsoft.AspNetCore.Connections.Abstractions.csproj",
+      "src\\Servers\\HttpSys\\src\\Microsoft.AspNetCore.Server.HttpSys.csproj",
       "src\\Servers\\IIS\\AspNetCoreModuleV2\\AspNetCore\\AspNetCore.vcxproj",
       "src\\Servers\\IIS\\AspNetCoreModuleV2\\CommonLibTests\\CommonLibTests.vcxproj",
       "src\\Servers\\IIS\\AspNetCoreModuleV2\\CommonLib\\CommonLib.vcxproj",

@@ -114,6 +114,8 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
 
     public HttpTransportType TransportType { get; set; }
 
+    internal long StartTimestamp { get; set; }
+
     public SemaphoreSlim WriteLock { get; } = new SemaphoreSlim(1, 1);
 
     // Used for testing only

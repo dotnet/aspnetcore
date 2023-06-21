@@ -16,19 +16,24 @@ internal sealed class HostingMetrics : IDisposable
     private readonly Meter _meter;
     private readonly UpDownCounter<long> _currentRequestsCounter;
     private readonly Histogram<double> _requestDuration;
+    private readonly Counter<long> _unhandledRequestsCounter;
 
     public HostingMetrics(IMeterFactory meterFactory)
     {
         _meter = meterFactory.Create(MeterName);
 
         _currentRequestsCounter = _meter.CreateUpDownCounter<long>(
-            "current-requests",
+            "http-server-current-requests",
             description: "Number of HTTP requests that are currently active on the server.");
 
         _requestDuration = _meter.CreateHistogram<double>(
-            "request-duration",
+            "http-server-request-duration",
             unit: "s",
             description: "The duration of HTTP requests on the server.");
+
+        _unhandledRequestsCounter = _meter.CreateCounter<long>(
+            "http-server-unhandled-requests",
+            description: "Number of HTTP requests that reached the end of the middleware pipeline without being handled by application code.");
     }
 
     // Note: Calling code checks whether counter is enabled.
@@ -80,12 +85,17 @@ internal sealed class HostingMetrics : IDisposable
         }
     }
 
+    public void UnhandledRequest()
+    {
+        _unhandledRequestsCounter.Add(1);
+    }
+
     public void Dispose()
     {
         _meter.Dispose();
     }
 
-    public bool IsEnabled() => _currentRequestsCounter.Enabled || _requestDuration.Enabled;
+    public bool IsEnabled() => _currentRequestsCounter.Enabled || _requestDuration.Enabled || _unhandledRequestsCounter.Enabled;
 
     private static void InitializeRequestTags(ref TagList tags, bool isHttps, string scheme, string method, HostString host)
     {

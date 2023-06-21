@@ -42,8 +42,7 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
         }
     }
 
-    // Used for event source, not part of any of the feature interfaces.
-    public string? HostName { get; set; }
+    public string HostName { get; set; } = string.Empty;
 
     public ReadOnlyMemory<byte> ApplicationProtocol => _sslStream.NegotiatedApplicationProtocol.Protocol;
 

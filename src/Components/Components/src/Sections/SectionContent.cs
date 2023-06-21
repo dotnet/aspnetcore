@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Components.Sections;
 /// <summary>
 /// Provides content to <see cref="SectionOutlet"/> components with matching <see cref="SectionId"/>s.
 /// </summary>
-public sealed class SectionContent : ISectionContentProvider, IComponent, IDisposable
+public sealed class SectionContent : IComponent, IDisposable
 {
     private object? _registeredIdentifier;
     private bool? _registeredIsDefaultContent;
@@ -34,8 +34,6 @@ public sealed class SectionContent : ISectionContentProvider, IComponent, IDispo
     /// Gets or sets the content to be rendered in corresponding <see cref="SectionOutlet"/> instances.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
-
-    RenderFragment? ISectionContentProvider.Content => ChildContent;
 
     void IComponent.Attach(RenderHandle renderHandle)
     {
@@ -79,7 +77,7 @@ public sealed class SectionContent : ISectionContentProvider, IComponent, IDispo
             _registeredIsDefaultContent = IsDefaultContent;
         }
 
-        _registry.NotifyContentChanged(identifier, this);
+        _registry.NotifyContentProviderChanged(identifier, this);
 
         return Task.CompletedTask;
     }

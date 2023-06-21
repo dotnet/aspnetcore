@@ -239,6 +239,30 @@ public class DataProtectionProviderTests
         });
     }
 
+    [Fact]
+    public void System_UsesCertificate()
+    {
+        var filePath = Path.Combine(GetTestFilesPath(), "TestCert2.pfx");
+        var certificate = new X509Certificate2(filePath, "password");
+
+        AssetStoreDoesNotContain(certificate);
+
+        WithUniqueTempDirectory(directory =>
+        {
+            // Step 1: directory should be completely empty
+            directory.Create();
+            Assert.Empty(directory.GetFiles());
+
+            // Step 2: instantiate the system and round-trip a payload
+            var protector = DataProtectionProvider.Create("Test", certificate).CreateProtector("purpose");
+            Assert.Equal("payload",
+                protector.Unprotect(protector.Protect("payload")));
+
+            // Step 3: validate that there's no key in the directory
+            Assert.Empty(directory.GetFiles());
+        });
+    }
+
     private static void AssetStoreDoesNotContain(X509Certificate2 certificate)
     {
         using (var store = new X509Store(StoreName.My, StoreLocation.CurrentUser))

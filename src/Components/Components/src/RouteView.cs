@@ -3,10 +3,11 @@
 
 #nullable disable warnings
 
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.AspNetCore.Components.Routing;
 
 namespace Microsoft.AspNetCore.Components;
 
@@ -17,6 +18,15 @@ namespace Microsoft.AspNetCore.Components;
 public class RouteView : IComponent
 {
     private RenderHandle _renderHandle;
+    private static readonly ConcurrentDictionary<Type, Type?> _layoutAttributeCache = new();
+
+    static RouteView()
+    {
+        if (HotReloadManager.Default.MetadataUpdateSupported)
+        {
+            HotReloadManager.Default.OnDeltaApplied += _layoutAttributeCache.Clear;
+        }
+    }
 
     [Inject]
     private NavigationManager NavigationManager { get; set; }
@@ -65,7 +75,8 @@ public class RouteView : IComponent
     [UnconditionalSuppressMessage("Trimming", "IL2118", Justification = "Layout components are preserved because the LayoutAttribute constructor parameter is correctly annotated.")]
     protected virtual void Render(RenderTreeBuilder builder)
     {
-        var pageLayoutType = RouteData.PageType.GetCustomAttribute<LayoutAttribute>()?.LayoutType
+        var pageLayoutType = _layoutAttributeCache
+            .GetOrAdd(RouteData.PageType, static type => type.GetCustomAttribute<LayoutAttribute>()?.LayoutType)
             ?? DefaultLayout;
 
         builder.OpenComponent<LayoutView>(0);
@@ -89,23 +100,6 @@ public class RouteView : IComponent
             foreach (var kvp in RouteData.RouteValues)
             {
                 builder.AddComponentParameter(1, kvp.Key, kvp.Value);
-            }
-
-            var queryParameterSupplier = QueryParameterValueSupplier.ForType(RouteData.PageType);
-            if (queryParameterSupplier is not null)
-            {
-                // Since this component does accept some parameters from query, we must supply values for all of them,
-                // even if the querystring in the URI is empty. So don't skip the following logic.
-                var relativeUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
-                var url = NavigationManager.Uri;
-                ReadOnlyMemory<char> query = default;
-                var queryStartPos = url.IndexOf('?');
-                if (queryStartPos >= 0)
-                {
-                    var queryEndPos = url.IndexOf('#', queryStartPos);
-                    query = url.AsMemory(queryStartPos..(queryEndPos < 0 ? url.Length : queryEndPos));
-                }
-                queryParameterSupplier.RenderParametersFromQueryString(builder, query);
             }
 
             builder.CloseComponent();

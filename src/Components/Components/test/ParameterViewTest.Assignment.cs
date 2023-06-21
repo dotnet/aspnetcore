@@ -181,7 +181,7 @@ public partial class ParameterViewTest
         Assert.Equal(default, target.IntProp);
         Assert.Equal(
             $"Object of type '{typeof(HasPropertyWithoutParameterAttribute).FullName}' has a property matching the name '{nameof(HasPropertyWithoutParameterAttribute.IntProp)}', " +
-            $"but it does not have [{nameof(ParameterAttribute)}] or [{nameof(CascadingParameterAttribute)}] applied.",
+            $"but it does not have [{nameof(ParameterAttribute)}], [{nameof(CascadingParameterAttribute)}] or [{nameof(SupplyParameterFromFormAttribute)}] applied.",
             ex.Message);
     }
 
@@ -646,11 +646,10 @@ public partial class ParameterViewTest
 
     class ParameterViewBuilder : IEnumerable
     {
-        private readonly List<(string Name, object Value, bool Cascading)> _keyValuePairs
-            = new List<(string, object, bool)>();
+        private readonly List<(string Name, object Value, bool Cascading)> _parameters = new();
 
         public void Add(string name, object value, bool cascading = false)
-            => _keyValuePairs.Add((name, value, cascading));
+            => _parameters.Add((name, value, cascading));
 
         public IEnumerator GetEnumerator()
             => throw new NotImplementedException();
@@ -660,11 +659,11 @@ public partial class ParameterViewTest
             var builder = new RenderTreeBuilder();
 
             builder.OpenComponent<FakeComponent>(0);
-            foreach (var kvp in _keyValuePairs)
+            foreach (var (name, value, cascading) in _parameters)
             {
-                if (!kvp.Cascading)
+                if (!cascading)
                 {
-                    builder.AddComponentParameter(1, kvp.Name, kvp.Value);
+                    builder.AddComponentParameter(1, name, value);
                 }
             }
             builder.CloseComponent();
@@ -672,11 +671,11 @@ public partial class ParameterViewTest
             var view = new ParameterView(ParameterViewLifetime.Unbound, builder.GetFrames().Array, ownerIndex: 0);
 
             var cascadingParameters = new List<CascadingParameterState>();
-            foreach (var kvp in _keyValuePairs)
+            foreach (var (name, value, cascading) in _parameters)
             {
-                if (kvp.Cascading)
+                if (cascading)
                 {
-                    cascadingParameters.Add(new CascadingParameterState(kvp.Name, new TestCascadingValueProvider(kvp.Value)));
+                    cascadingParameters.Add(new CascadingParameterState(new(null, name, value.GetType()), new TestCascadingValueProvider(value)));
                 }
             }
 
@@ -684,28 +683,33 @@ public partial class ParameterViewTest
         }
     }
 
-    private class TestCascadingValueProvider : ICascadingValueComponent
+    private class TestCascadingValueProvider : ICascadingValueSupplier
     {
+        private readonly object _value;
+
         public TestCascadingValueProvider(object value)
         {
-            CurrentValue = value;
+            _value = value;
         }
 
-        public object CurrentValue { get; }
+        public bool IsFixed => throw new NotImplementedException();
 
-        public bool CurrentValueIsFixed => throw new NotImplementedException();
-
-        public bool CanSupplyValue(Type valueType, string valueName)
+        public bool CanSupplyValue(in CascadingParameterInfo parameterInfo)
         {
             throw new NotImplementedException();
         }
 
-        public void Subscribe(ComponentState subscriber)
+        public object GetCurrentValue(in CascadingParameterInfo parameterInfo)
+        {
+            return _value;
+        }
+
+        public void Subscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
         {
             throw new NotImplementedException();
         }
 
-        public void Unsubscribe(ComponentState subscriber)
+        public void Unsubscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
         {
             throw new NotImplementedException();
         }

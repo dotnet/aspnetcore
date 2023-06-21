@@ -1,16 +1,19 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.Metrics;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Security.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Headers;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -19,6 +22,61 @@ namespace Interop.FunctionalTests.Http2;
 [Collection(nameof(NoParallelCollection))]
 public class Http2RequestTests : LoggedTest
 {
+    [Fact]
+    public async Task GET_Metrics_HttpProtocolAndTlsSet()
+    {
+        // Arrange
+        var protocolTcs = new TaskCompletionSource<SslProtocols>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var builder = CreateHostBuilder(c =>
+        {
+            protocolTcs.SetResult(c.Features.Get<ISslStreamFeature>().SslStream.SslProtocol);
+            return Task.CompletedTask;
+        }, protocol: HttpProtocols.Http2, plaintext: false);
+
+        using (var host = builder.Build())
+        {
+            var meterFactory = host.Services.GetRequiredService<IMeterFactory>();
+
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            using var connectionDuration = new InstrumentRecorder<double>(meterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel-connection-duration");
+            using var measurementReporter = new MeasurementReporter<double>(meterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel-connection-duration");
+            measurementReporter.Register(m =>
+            {
+                tcs.SetResult();
+            });
+
+            await host.StartAsync();
+            var client = HttpHelpers.CreateClient();
+
+            // Act
+            var request1 = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
+            request1.Version = HttpVersion.Version20;
+            request1.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+            var response1 = await client.SendAsync(request1, CancellationToken.None);
+            response1.EnsureSuccessStatusCode();
+
+            var protocol = await protocolTcs.Task.DefaultTimeout();
+
+            // Dispose the client to end the connection.
+            client.Dispose();
+            // Wait for measurement to be available.
+            await tcs.Task.DefaultTimeout();
+
+            // Assert
+            Assert.Collection(connectionDuration.GetMeasurements(),
+                m =>
+                {
+                    Assert.True(m.Value > 0);
+                    Assert.Equal(protocol.ToString(), m.Tags.ToArray().Single(t => t.Key == "tls-protocol").Value);
+                    Assert.Equal("HTTP/2", m.Tags.ToArray().Single(t => t.Key == "http-protocol").Value);
+                    Assert.Equal($"127.0.0.1:{host.GetPort()}", m.Tags.ToArray().Single(t => t.Key == "endpoint").Value);
+                });
+
+            await host.StopAsync();
+        }
+    }
+
     [Fact]
     public async Task GET_NoTLS_Http11RequestToHttp2Endpoint_400Result()
     {

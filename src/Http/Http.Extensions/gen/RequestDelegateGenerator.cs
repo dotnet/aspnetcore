@@ -78,14 +78,11 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
             codeWriter.WriteLine(@"Debug.Assert(options.EndpointBuilder.FilterFactories != null, ""FilterFactories not found."");");
             codeWriter.WriteLine($"var handler = ({endpoint.EmitHandlerDelegateType(considerOptionality: true)})del;");
             codeWriter.WriteLine("EndpointFilterDelegate? filteredInvocation = null;");
-            if (endpoint.EmitterContext.RequiresLoggingHelper || endpoint.EmitterContext.HasJsonBodyOrService || endpoint.Response?.IsSerializableJsonResponse(out var _) is true)
-            {
-                codeWriter.WriteLine("var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;");
-            }
+            codeWriter.WriteLine("var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;");
             endpoint.EmitLoggingPreamble(codeWriter);
+            endpoint.EmitJsonPreparation(codeWriter);
             endpoint.EmitRouteOrQueryResolver(codeWriter);
             endpoint.EmitJsonBodyOrServiceResolver(codeWriter);
-            endpoint.Response?.EmitJsonPreparation(codeWriter);
             if (endpoint.NeedsParameterArray)
             {
                 codeWriter.WriteLine("var parameters = del.Method.GetParameters();");
@@ -99,7 +96,9 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
             codeWriter.StartBlock();
             codeWriter.WriteLine("if (ic.HttpContext.Response.StatusCode == 400)");
             codeWriter.StartBlock();
-            codeWriter.WriteLine("return ValueTask.FromResult<object?>(Results.Empty);");
+            codeWriter.WriteLine(endpoint.Response?.IsAwaitable == true
+                ? "return (object?)Results.Empty;"
+                : "return ValueTask.FromResult<object?>(Results.Empty);");
             codeWriter.EndBlock();
             endpoint.EmitFilteredInvocation(codeWriter);
             codeWriter.EndBlockWithComma();
@@ -181,7 +180,6 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                 var hasRouteOrQuery = endpoints.Any(endpoint => endpoint.EmitterContext.HasRouteOrQuery);
                 var hasBindAsync = endpoints.Any(endpoint => endpoint.EmitterContext.HasBindAsync);
                 var hasParsable = endpoints.Any(endpoint => endpoint.EmitterContext.HasParsable);
-                var hasJsonResponse = endpoints.Any(endpoint => endpoint.EmitterContext.HasJsonResponse);
                 var hasEndpointMetadataProvider = endpoints.Any(endpoint => endpoint.EmitterContext.HasEndpointMetadataProvider);
                 var hasEndpointParameterMetadataProvider = endpoints.Any(endpoint => endpoint.EmitterContext.HasEndpointParameterMetadataProvider);
                 var hasIResult = endpoints.Any(endpoint => endpoint.Response?.IsIResult == true);
@@ -192,11 +190,6 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                 if (hasRouteOrQuery)
                 {
                     codeWriter.WriteLine(RequestDelegateGeneratorSources.ResolveFromRouteOrQueryMethod);
-                }
-
-                if (hasJsonResponse)
-                {
-                    codeWriter.WriteLine(RequestDelegateGeneratorSources.WriteToResponseAsyncMethod);
                 }
 
                 if (hasJsonBody || hasJsonBodyOrService || hasJsonBodyOrQuery)

@@ -170,6 +170,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                     EndpointFilterDelegate? filteredInvocation = null;
                     var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
                     var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
+                    var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? new JsonOptions();
+                    var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonOptions.SerializerOptions.GetTypeInfo(typeof(object));
 
                     if (options.EndpointBuilder.FilterFactories.Count > 0)
                     {
@@ -198,7 +200,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         }
                         var Value_raw = (string?)httpContext.Request.RouteValues["Value"];
                         var Value_temp = (string?)Value_raw;
-                        int Value_parsed_temp = default;
+                        global::System.Int32 Value_parsed_temp = default;
                         if (GeneratedRouteBuilderExtensionsCore.TryParseExplicit<int>(Value_temp!, CultureInfo.InvariantCulture, out var Value_temp_parsed_non_nullable))
                         {
                             Value_parsed_temp = Value_temp_parsed_non_nullable;
@@ -236,7 +238,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         }
                         var Value_raw = (string?)httpContext.Request.RouteValues["Value"];
                         var Value_temp = (string?)Value_raw;
-                        int Value_parsed_temp = default;
+                        global::System.Int32 Value_parsed_temp = default;
                         if (GeneratedRouteBuilderExtensionsCore.TryParseExplicit<int>(Value_temp!, CultureInfo.InvariantCulture, out var Value_temp_parsed_non_nullable))
                         {
                             Value_parsed_temp = Value_temp_parsed_non_nullable;
@@ -258,7 +260,10 @@ namespace Microsoft.AspNetCore.Http.Generated
                             httpContext.Response.StatusCode = 400;
                         }
                         var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::Microsoft.AspNetCore.Http.Generators.Tests.ParameterListWitDefaultValue>(httpContext, args_local));
-                        await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
+                        if (result is not null)
+                        {
+                            await GeneratedRouteBuilderExtensionsCore.ExecuteReturnAsync(result, httpContext, objectJsonTypeInfo);
+                        }
                     }
 
                     RequestDelegate targetDelegate = filteredInvocation is null ? RequestHandler : RequestHandlerFiltered;
@@ -283,6 +288,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                     EndpointFilterDelegate? filteredInvocation = null;
                     var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
                     var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
+                    var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? new JsonOptions();
+                    var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonOptions.SerializerOptions.GetTypeInfo(typeof(object));
                     var Value_RouteOrQueryResolver = GeneratedRouteBuilderExtensionsCore.ResolveFromRouteOrQuery("Value", options.RouteParameterNames);
 
                     if (options.EndpointBuilder.FilterFactories.Count > 0)
@@ -364,7 +371,10 @@ namespace Microsoft.AspNetCore.Http.Generated
                             httpContext.Response.StatusCode = 400;
                         }
                         var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::Microsoft.AspNetCore.Http.Generators.Tests.ParameterListRecordStruct>(httpContext, args_local));
-                        await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
+                        if (result is not null)
+                        {
+                            await GeneratedRouteBuilderExtensionsCore.ExecuteReturnAsync(result, httpContext, objectJsonTypeInfo);
+                        }
                     }
 
                     RequestDelegate targetDelegate = filteredInvocation is null ? RequestHandler : RequestHandlerFiltered;
@@ -389,6 +399,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                     EndpointFilterDelegate? filteredInvocation = null;
                     var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
                     var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
+                    var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? new JsonOptions();
+                    var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonOptions.SerializerOptions.GetTypeInfo(typeof(object));
 
                     if (options.EndpointBuilder.FilterFactories.Count > 0)
                     {
@@ -441,7 +453,10 @@ namespace Microsoft.AspNetCore.Http.Generated
                             httpContext.Response.StatusCode = 400;
                         }
                         var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithHttpContext>(httpContext, args_local));
-                        await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
+                        if (result is not null)
+                        {
+                            await GeneratedRouteBuilderExtensionsCore.ExecuteReturnAsync(result, httpContext, objectJsonTypeInfo);
+                        }
                     }
 
                     RequestDelegate targetDelegate = filteredInvocation is null ? RequestHandler : RequestHandlerFiltered;
@@ -468,8 +483,11 @@ namespace Microsoft.AspNetCore.Http.Generated
                     EndpointFilterDelegate? filteredInvocation = null;
                     var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
                     var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
+                    var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? new JsonOptions();
+                    var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonOptions.SerializerOptions.GetTypeInfo(typeof(object));
+                    var Todo_JsonTypeInfo =  (JsonTypeInfo<global::Microsoft.AspNetCore.Http.Generators.Tests.TodoStruct>)jsonOptions.SerializerOptions.GetTypeInfo(typeof(global::Microsoft.AspNetCore.Http.Generators.Tests.TodoStruct));
                     var serviceProviderIsService = serviceProvider?.GetService<IServiceProviderIsService>();
-                    var Todo_JsonBodyOrServiceResolver = ResolveJsonBodyOrService<global::Microsoft.AspNetCore.Http.Generators.Tests.TodoStruct>(logOrThrowExceptionHelper, "TodoStruct", "Todo", serviceProviderIsService);
+                    var Todo_JsonBodyOrServiceResolver = ResolveJsonBodyOrService<global::Microsoft.AspNetCore.Http.Generators.Tests.TodoStruct>(logOrThrowExceptionHelper, "TodoStruct", "Todo", Todo_JsonTypeInfo, serviceProviderIsService);
 
                     if (options.EndpointBuilder.FilterFactories.Count > 0)
                     {
@@ -505,8 +523,15 @@ namespace Microsoft.AspNetCore.Http.Generated
                             httpContext.Response.StatusCode = 400;
                             return;
                         }
-                        httpContext.Response.ContentType ??= "text/plain";
                         var result = handler(args_local);
+                        if (result is string)
+                        {
+                            httpContext.Response.ContentType ??= "text/plain; charset=utf-8";
+                        }
+                        else
+                        {
+                            httpContext.Response.ContentType ??= "application/json; charset=utf-8";
+                        }
                         await httpContext.Response.WriteAsync(result);
                     }
 
@@ -530,7 +555,10 @@ namespace Microsoft.AspNetCore.Http.Generated
                             httpContext.Response.StatusCode = 400;
                         }
                         var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithImplicitFromBody>(httpContext, args_local));
-                        await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
+                        if (result is not null)
+                        {
+                            await GeneratedRouteBuilderExtensionsCore.ExecuteReturnAsync(result, httpContext, objectJsonTypeInfo);
+                        }
                     }
 
                     RequestDelegate targetDelegate = filteredInvocation is null ? RequestHandler : RequestHandlerFiltered;
@@ -560,8 +588,11 @@ namespace Microsoft.AspNetCore.Http.Generated
                     EndpointFilterDelegate? filteredInvocation = null;
                     var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
                     var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
+                    var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? new JsonOptions();
+                    var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonOptions.SerializerOptions.GetTypeInfo(typeof(object));
+                    var Value_JsonTypeInfo =  (JsonTypeInfo<global::Microsoft.AspNetCore.Http.Generators.Tests.AddsCustomParameterMetadataAsProperty>)jsonOptions.SerializerOptions.GetTypeInfo(typeof(global::Microsoft.AspNetCore.Http.Generators.Tests.AddsCustomParameterMetadataAsProperty));
                     var serviceProviderIsService = serviceProvider?.GetService<IServiceProviderIsService>();
-                    var Value_JsonBodyOrServiceResolver = ResolveJsonBodyOrService<global::Microsoft.AspNetCore.Http.Generators.Tests.AddsCustomParameterMetadataAsProperty>(logOrThrowExceptionHelper, "AddsCustomParameterMetadataAsProperty", "Value", serviceProviderIsService);
+                    var Value_JsonBodyOrServiceResolver = ResolveJsonBodyOrService<global::Microsoft.AspNetCore.Http.Generators.Tests.AddsCustomParameterMetadataAsProperty>(logOrThrowExceptionHelper, "AddsCustomParameterMetadataAsProperty", "Value", Value_JsonTypeInfo, serviceProviderIsService);
 
                     if (options.EndpointBuilder.FilterFactories.Count > 0)
                     {
@@ -621,7 +652,10 @@ namespace Microsoft.AspNetCore.Http.Generated
                             httpContext.Response.StatusCode = 400;
                         }
                         var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithMetadataType>(httpContext, args_local));
-                        await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);
+                        if (result is not null)
+                        {
+                            await GeneratedRouteBuilderExtensionsCore.ExecuteReturnAsync(result, httpContext, objectJsonTypeInfo);
+                        }
                     }
 
                     RequestDelegate targetDelegate = filteredInvocation is null ? RequestHandler : RequestHandlerFiltered;
@@ -660,10 +694,7 @@ namespace Microsoft.AspNetCore.Http.Generated
             return filteredInvocation;
         }
 
-        [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode",
-            Justification = "The 'JsonSerializer.IsReflectionEnabledByDefault' feature switch, which is set to false by default for trimmed ASP.NET apps, ensures the JsonSerializer doesn't use Reflection.")]
-        [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode", Justification = "See above.")]
-        private static Task ExecuteObjectResult(object? obj, HttpContext httpContext)
+        private static Task ExecuteReturnAsync(object? obj, HttpContext httpContext, JsonTypeInfo<object?> jsonTypeInfo)
         {
             if (obj is IResult r)
             {
@@ -675,9 +706,30 @@ namespace Microsoft.AspNetCore.Http.Generated
             }
             else
             {
-                return httpContext.Response.WriteAsJsonAsync(obj);
+                return WriteJsonResponseAsync(httpContext.Response, obj, jsonTypeInfo);
             }
         }
+
+        [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode",
+            Justification = "The 'JsonSerializer.IsReflectionEnabledByDefault' feature switch, which is set to false by default for trimmed ASP.NET apps, ensures the JsonSerializer doesn't use Reflection.")]
+        [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode", Justification = "See above.")]
+        private static Task WriteJsonResponseAsync<T>(HttpResponse response, T? value, JsonTypeInfo<T?> jsonTypeInfo)
+        {
+            var runtimeType = value?.GetType();
+
+            if (jsonTypeInfo.ShouldUseWith(runtimeType))
+            {
+                return HttpResponseJsonExtensions.WriteAsJsonAsync(response, value, jsonTypeInfo, default);
+            }
+
+            return response.WriteAsJsonAsync<object?>(value, jsonTypeInfo.Options);
+        }
+
+        private static bool HasKnownPolymorphism(this JsonTypeInfo jsonTypeInfo)
+            => jsonTypeInfo.Type.IsSealed || jsonTypeInfo.Type.IsValueType || jsonTypeInfo.PolymorphismOptions is not null;
+
+        private static bool ShouldUseWith(this JsonTypeInfo jsonTypeInfo, [NotNullWhen(false)] Type? runtimeType)
+            => runtimeType is null || jsonTypeInfo.Type == runtimeType || jsonTypeInfo.HasKnownPolymorphism();
 
         private static Func<HttpContext, StringValues> ResolveFromRouteOrQuery(string parameterName, IEnumerable<string>? routeParameterNames)
         {
@@ -685,9 +737,11 @@ namespace Microsoft.AspNetCore.Http.Generated
                 ? (httpContext) => new StringValues((string?)httpContext.Request.RouteValues[parameterName])
                 : (httpContext) => httpContext.Request.Query[parameterName];
         }
-        private static async ValueTask<(bool, T?)> TryResolveBodyAsync<T>(HttpContext httpContext, LogOrThrowExceptionHelper logOrThrowExceptionHelper, bool allowEmpty, string parameterTypeName, string parameterName, bool isInferred = false)
+        private static async ValueTask<(bool, T?)> TryResolveBodyAsync<T>(HttpContext httpContext, LogOrThrowExceptionHelper logOrThrowExceptionHelper, bool allowEmpty, string parameterTypeName, string parameterName, JsonTypeInfo<T> jsonTypeInfo, bool isInferred = false)
         {
             var feature = httpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpRequestBodyDetectionFeature>();
+            T? bodyValue = default;
+            var bodyValueSet = false;
 
             if (feature?.CanHaveBody == true)
             {
@@ -699,21 +753,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                 }
                 try
                 {
-                    var bodyValue = await httpContext.Request.ReadFromJsonAsync<T>();
-                    if (!allowEmpty && bodyValue == null)
-                    {
-                        if (!isInferred)
-                        {
-                            logOrThrowExceptionHelper.RequiredParameterNotProvided(parameterTypeName, parameterName, "body");
-                        }
-                        else
-                        {
-                            logOrThrowExceptionHelper.ImplicitBodyNotProvided(parameterName);
-                        }
-                        httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
-                        return (false, bodyValue);
-                    }
-                    return (true, bodyValue);
+                    bodyValue = await httpContext.Request.ReadFromJsonAsync(jsonTypeInfo);
+                    bodyValueSet = bodyValue != null;
                 }
                 catch (BadHttpRequestException badHttpRequestException)
                 {
@@ -734,14 +775,24 @@ namespace Microsoft.AspNetCore.Http.Generated
                     return (false, default);
                 }
             }
-            else if (!allowEmpty)
+
+            if (!allowEmpty && !bodyValueSet)
             {
+                if (!isInferred)
+                {
+                    logOrThrowExceptionHelper.RequiredParameterNotProvided(parameterTypeName, parameterName, "body");
+                }
+                else
+                {
+                    logOrThrowExceptionHelper.ImplicitBodyNotProvided(parameterName);
+                }
                 httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                return (false, bodyValue);
             }
 
-            return (allowEmpty, default);
+            return (true, bodyValue);
         }
-        private static Func<HttpContext, bool, ValueTask<(bool, T?)>> ResolveJsonBodyOrService<T>(LogOrThrowExceptionHelper logOrThrowExceptionHelper, string parameterTypeName, string parameterName, IServiceProviderIsService? serviceProviderIsService = null)
+        private static Func<HttpContext, bool, ValueTask<(bool, T?)>> ResolveJsonBodyOrService<T>(LogOrThrowExceptionHelper logOrThrowExceptionHelper, string parameterTypeName, string parameterName, JsonTypeInfo<T> jsonTypeInfo, IServiceProviderIsService? serviceProviderIsService = null)
         {
             if (serviceProviderIsService is not null)
             {
@@ -750,7 +801,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     return static (httpContext, isOptional) => new ValueTask<(bool, T?)>((true, httpContext.RequestServices.GetService<T>()));
                 }
             }
-            return (httpContext, isOptional) => TryResolveBodyAsync<T>(httpContext, logOrThrowExceptionHelper, isOptional, parameterTypeName, parameterName, isInferred: true);
+            return (httpContext, isOptional) => TryResolveBodyAsync<T>(httpContext, logOrThrowExceptionHelper, isOptional, parameterTypeName, parameterName, jsonTypeInfo, isInferred: true);
         }
         private static bool TryParseExplicit<T>(string? s, IFormatProvider? provider, [MaybeNullWhen(returnValue: false)] out T result) where T: IParsable<T>
             => T.TryParse(s, provider, out result);

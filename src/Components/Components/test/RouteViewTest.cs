@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Components.Binding;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,6 +21,8 @@ public class RouteViewTest
         var serviceCollection = new ServiceCollection();
         _navigationManager = new RouteViewTestNavigationManager();
         serviceCollection.AddSingleton<NavigationManager>(_navigationManager);
+        serviceCollection.AddSingleton<IFormValueSupplier, TestFormValueSupplier>();
+        serviceCollection.AddSingleton<CascadingModelBindingProvider, CascadingQueryModelBindingProvider>();
         var services = serviceCollection.BuildServiceProvider();
         _renderer = new TestRenderer(services);
 
@@ -235,6 +239,25 @@ public class RouteViewTest
             builder.AddContent(0, "OtherLayout starts here");
             builder.AddContent(1, Body);
             builder.AddContent(2, "OtherLayout ends here");
+        }
+    }
+
+    private class TestFormValueSupplier : IFormValueSupplier
+    {
+        public bool CanBind(string formName, Type valueType)
+        {
+            return false;
+        }
+
+        public bool CanConvertSingleValue(Type type)
+        {
+            return false;
+        }
+
+        public bool TryBind(string formName, Type valueType, [NotNullWhen(true)] out object boundValue)
+        {
+            boundValue = null;
+            return false;
         }
     }
 }

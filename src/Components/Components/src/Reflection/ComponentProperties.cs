@@ -3,6 +3,7 @@
 
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Reflection;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
@@ -168,11 +169,13 @@ internal static class ComponentProperties
         var propertyInfo = targetType.GetProperty(parameterName, BindablePropertyFlags);
         if (propertyInfo != null)
         {
-            if (!propertyInfo.IsDefined(typeof(ParameterAttribute)) && !propertyInfo.IsDefined(typeof(CascadingParameterAttribute)))
+            if (!propertyInfo.IsDefined(typeof(ParameterAttribute)) &&
+                !propertyInfo.GetCustomAttributes().OfType<CascadingParameterAttributeBase>().Any())
             {
                 throw new InvalidOperationException(
                     $"Object of type '{targetType.FullName}' has a property matching the name '{parameterName}', " +
-                    $"but it does not have [{nameof(ParameterAttribute)}] or [{nameof(CascadingParameterAttribute)}] applied.");
+                    $"but it does not have [{nameof(ParameterAttribute)}], [{nameof(CascadingParameterAttribute)}] or " +
+                    $"[SupplyParameterFromFormAttribute] applied.");
             }
             else
             {
@@ -257,8 +260,25 @@ internal static class ComponentProperties
 
             foreach (var propertyInfo in GetCandidateBindableProperties(targetType))
             {
-                var parameterAttribute = propertyInfo.GetCustomAttribute<ParameterAttribute>();
-                var cascadingParameterAttribute = propertyInfo.GetCustomAttribute<CascadingParameterAttribute>();
+                ParameterAttribute? parameterAttribute = null;
+                CascadingParameterAttributeBase? cascadingParameterAttribute = null;
+
+                var attributes = propertyInfo.GetCustomAttributes();
+                foreach (var attribute in attributes)
+                {
+                    switch (attribute)
+                    {
+                        case ParameterAttribute parameter:
+                            parameterAttribute = parameter;
+                            break;
+                        case CascadingParameterAttributeBase cascadingParameter:
+                            cascadingParameterAttribute = cascadingParameter;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
                 var isParameter = parameterAttribute != null || cascadingParameterAttribute != null;
                 if (!isParameter)
                 {

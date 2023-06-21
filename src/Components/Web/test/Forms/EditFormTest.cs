@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Components.Binding;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
@@ -17,6 +19,9 @@ public class EditFormTest
     {
         var services = new ServiceCollection();
         services.AddSingleton<NavigationManager, TestNavigationManager>();
+        services.AddSingleton<IFormValueSupplier, TestFormValueSupplier>();
+        services.AddSingleton<CascadingModelBindingProvider, CascadingFormModelBindingProvider>();
+        services.AddSingleton<CascadingModelBindingProvider, CascadingQueryModelBindingProvider>();
         _testRenderer = new(services.BuildServiceProvider());
     }
 
@@ -118,7 +123,7 @@ public class EditFormTest
         {
             Model = model,
             FormName = "my-form",
-            BindingContext = new ModelBindingContext("", "")
+            BindingContext = new ModelBindingContext("", "", t => true)
         };
 
         // Act
@@ -139,7 +144,7 @@ public class EditFormTest
         {
             Model = model,
             FormName = "my-form",
-            BindingContext = new ModelBindingContext("parent-context", "path?handler=parent-context")
+            BindingContext = new ModelBindingContext("parent-context", "path?handler=parent-context", t => true )
         };
 
         // Act
@@ -164,7 +169,7 @@ public class EditFormTest
                 ["name"] = "my-explicit-name",
                 ["action"] = "/somewhere/else",
             },
-            BindingContext = new ModelBindingContext("parent-context", "path?handler=parent-context")
+            BindingContext = new ModelBindingContext("parent-context", "path?handler=parent-context", t => true)
         };
 
         // Act
@@ -184,7 +189,7 @@ public class EditFormTest
         var rootComponent = new TestEditFormHostComponent
         {
             Model = model,
-            BindingContext = new ModelBindingContext("", ""),
+            BindingContext = new ModelBindingContext("", "", t => true),
             SubmitHandler = ctx => { }
         };
 
@@ -247,7 +252,7 @@ public class EditFormTest
         var rootComponent = new TestEditFormHostComponent
         {
             Model = model,
-            BindingContext = new ModelBindingContext("", "")
+            BindingContext = new ModelBindingContext("", "", t => true)
         };
 
         // Act
@@ -287,7 +292,7 @@ public class EditFormTest
         {
             Model = model,
             FormName = "my-form",
-            BindingContext = new ModelBindingContext("", "")
+            BindingContext = new ModelBindingContext("", "", t => true)
         };
 
         // Act
@@ -307,7 +312,7 @@ public class EditFormTest
         {
             Model = model,
             FormName = "my-form",
-            BindingContext = new ModelBindingContext("parent-context", "path?handler=parent-context")
+            BindingContext = new ModelBindingContext("parent-context", "path?handler=parent-context", t => true)
         };
 
         // Act
@@ -438,6 +443,25 @@ public class EditFormTest
         public TestNavigationManager()
         {
             Initialize("https://localhost:85/subdir/", "https://localhost:85/subdir/path?query=value#hash");
+        }
+    }
+
+    private class TestFormValueSupplier : IFormValueSupplier
+    {
+        public bool CanBind(string formName, Type valueType)
+        {
+            return false;
+        }
+
+        public bool CanConvertSingleValue(Type type)
+        {
+            return false;
+        }
+
+        public bool TryBind(string formName, Type valueType, [NotNullWhen(true)] out object boundValue)
+        {
+            boundValue = null;
+            return false;
         }
     }
 }

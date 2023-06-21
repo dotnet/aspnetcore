@@ -7,6 +7,8 @@
 <p>StringValue: <strong id="value-StringValue">@StringValue</strong></p>
 <p>LongValues: <strong id="value-LongValues">@LongValues.Length values (@string.Join(", ", LongValues.Select(x => x.ToString()).ToArray()))</strong></p>
 
+<NestedQueryParameters />
+
 <p>Instance ID: <strong id="instance-id">@instanceId</strong></p>
 
 <p>
@@ -23,15 +25,15 @@
 
     [Parameter] public string OptionalLastName { get ; set; }
 
-    [Parameter, SupplyParameterFromQuery] public int IntValue { get ; set; }
+    [SupplyParameterFromQuery] public int IntValue { get ; set; }
 
-    [Parameter, SupplyParameterFromQuery] public DateTime? NullableDateTimeValue { get ; set; }
+    [SupplyParameterFromQuery] public DateTime? NullableDateTimeValue { get ; set; }
 
-    [Parameter, SupplyParameterFromQuery] public DateOnly? NullableDateOnlyValue { get ; set; }
+    [SupplyParameterFromQuery] public DateOnly? NullableDateOnlyValue { get ; set; }
 
-    [Parameter, SupplyParameterFromQuery] public TimeOnly? NullableTimeOnlyValue { get ; set; }
+    [SupplyParameterFromQuery] public TimeOnly? NullableTimeOnlyValue { get ; set; }
 
-    [Parameter, SupplyParameterFromQuery] public string StringValue { get ; set; }
+    [SupplyParameterFromQuery] public string StringValue { get ; set; }
 
-    [Parameter, SupplyParameterFromQuery(Name = "l")] public long[] LongValues { get ; set; }
+    [SupplyParameterFromQuery(Name = "l")] public long[] LongValues { get ; set; }
 }

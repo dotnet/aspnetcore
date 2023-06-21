@@ -76,10 +76,6 @@ internal static class StaticRouteHandlerModelEmitter
         {
             return;
         }
-        if (!endpoint.Response.HasNoResponse && endpoint.Response is { ContentType: { } contentType })
-        {
-            codeWriter.WriteLine($@"httpContext.Response.ContentType ??= ""{contentType}"";");
-        }
         if (!endpoint.Response.HasNoResponse)
         {
             codeWriter.Write("var result = ");
@@ -89,6 +85,9 @@ internal static class StaticRouteHandlerModelEmitter
             codeWriter.Write("await ");
         }
         codeWriter.WriteLine($"handler({endpoint.EmitArgumentList()});");
+
+        endpoint.Response.EmitHttpResponseContentType(codeWriter);
+
         if (!endpoint.Response.HasNoResponse)
         {
             codeWriter.WriteLine(endpoint.Response.EmitResponseWritingCall(endpoint.IsAwaitable));
@@ -97,7 +96,25 @@ internal static class StaticRouteHandlerModelEmitter
         {
             codeWriter.WriteLine("return Task.CompletedTask;");
         }
+
         codeWriter.EndBlock(); // End handler method block
+    }
+
+    private static void EmitHttpResponseContentType(this EndpointResponse endpointResponse, CodeWriter codeWriter)
+    {
+        if (!endpointResponse.HasNoResponse
+            && endpointResponse.ResponseType is { } responseType
+            && (responseType.SpecialType == SpecialType.System_Object || responseType.SpecialType == SpecialType.System_String))
+        {
+            codeWriter.WriteLine("if (result is string)");
+            codeWriter.StartBlock();
+            codeWriter.WriteLine($@"httpContext.Response.ContentType ??= ""text/plain; charset=utf-8"";");
+            codeWriter.EndBlock();
+            codeWriter.WriteLine("else");
+            codeWriter.StartBlock();
+            codeWriter.WriteLine($@"httpContext.Response.ContentType ??= ""application/json; charset=utf-8"";");
+            codeWriter.EndBlock();
+        }
     }
 
     private static string EmitResponseWritingCall(this EndpointResponse endpointResponse, bool isAwaitable)
@@ -114,7 +131,7 @@ internal static class StaticRouteHandlerModelEmitter
         }
         else if (endpointResponse.ResponseType?.SpecialType == SpecialType.System_Object)
         {
-            return $"{returnOrAwait} GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);";
+            return $"{returnOrAwait} GeneratedRouteBuilderExtensionsCore.ExecuteReturnAsync(result, httpContext, objectJsonTypeInfo);";
         }
         else if (!endpointResponse.HasNoResponse)
         {
@@ -130,13 +147,6 @@ internal static class StaticRouteHandlerModelEmitter
         }
     }
 
-    /*
-     * TODO: Emit invocation to the `filteredInvocation` pipeline by constructing
-     * the `EndpointFilterInvocationContext` using the bound arguments for the handler.
-     * In the source generator context, the generic overloads for `EndpointFilterInvocationContext`
-     * can be used to reduce the boxing that happens at runtime when constructing
-     * the context object.
-     */
     public static void EmitFilteredRequestHandler(this Endpoint endpoint, CodeWriter codeWriter)
     {
         var argumentList = endpoint.Parameters.Length == 0 ? string.Empty : $", {endpoint.EmitArgumentList()}";
@@ -161,7 +171,10 @@ internal static class StaticRouteHandlerModelEmitter
         codeWriter.WriteLine("httpContext.Response.StatusCode = 400;");
         codeWriter.EndBlock(); // End if-statement block
         codeWriter.WriteLine($"var result = await filteredInvocation({invocationCreator}{invocationGenericArgs}(httpContext{argumentList}));");
-        codeWriter.WriteLine("await GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);");
+        codeWriter.WriteLine("if (result is not null)");
+        codeWriter.StartBlock();
+        codeWriter.WriteLine("await GeneratedRouteBuilderExtensionsCore.ExecuteReturnAsync(result, httpContext, objectJsonTypeInfo);");
+        codeWriter.EndBlock();
         codeWriter.EndBlock(); // End handler method block
     }
 
@@ -183,7 +196,7 @@ internal static class StaticRouteHandlerModelEmitter
         }
         else
         {
-            codeWriter.WriteLine($"options.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: typeof({responseType.ToDisplayString(EmitterConstants.DisplayFormat)}), statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.JsonContentType));");
+            codeWriter.WriteLine($"options.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: typeof({responseType.ToDisplayString(EmitterConstants.DisplayFormatWithoutNullability)}), statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.JsonContentType));");
         }
     }
 
@@ -215,10 +228,10 @@ internal static class StaticRouteHandlerModelEmitter
                     ProcessParameter(innerParameter, codeWriter);
                 }
             }
-            else
-            {
-                ProcessParameter(parameter, codeWriter);
-            }
+
+            // Even if a parameter is decorated with the AsParameters attribute, we still need
+            // to fetch metadata on the parameter itself (as well as the properties).
+            ProcessParameter(parameter, codeWriter);
         }
 
         static void ProcessParameter(EndpointParameter parameter, CodeWriter codeWriter)
@@ -338,7 +351,9 @@ internal static class StaticRouteHandlerModelEmitter
             codeWriter.WriteLine(endpoint.Response?.IsAwaitable == true
                 ? $"await handler({endpoint.EmitFilteredArgumentList()});"
                 : $"handler({endpoint.EmitFilteredArgumentList()});");
-            codeWriter.WriteLine("return ValueTask.FromResult<object?>(Results.Empty);");
+            codeWriter.WriteLine(endpoint.Response?.IsAwaitable == true
+                ? "return (object?)Results.Empty;"
+                : "return ValueTask.FromResult<object?>(Results.Empty);");
         }
         else if (endpoint.Response?.IsAwaitable == true)
         {

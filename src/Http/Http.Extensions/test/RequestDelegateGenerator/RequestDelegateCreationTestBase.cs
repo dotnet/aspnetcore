@@ -8,9 +8,9 @@ using System.Runtime.CompilerServices;
 using System.Runtime.Loader;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Testing;
@@ -21,14 +21,13 @@ using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.DependencyModel.Resolution;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
 public abstract class RequestDelegateCreationTestBase : LoggedTest
 {
     // Change this to true and run tests in development to regenerate baseline files.
-    public bool RegenerateBaselines ;
+    public bool RegenerateBaselines = false;
 
     protected abstract bool IsGeneratorEnabled { get; }
 
@@ -218,12 +217,39 @@ public abstract class RequestDelegateCreationTestBase : LoggedTest
         return httpContext;
     }
 
-    internal static async Task VerifyResponseBodyAsync(HttpContext httpContext, string expectedBody, int expectedStatusCode = 200)
+    internal static async Task<string> GetResponseBodyAsync(HttpContext httpContext)
     {
         var httpResponse = httpContext.Response;
         httpResponse.Body.Seek(0, SeekOrigin.Begin);
         var streamReader = new StreamReader(httpResponse.Body);
-        var body = await streamReader.ReadToEndAsync();
+        return await streamReader.ReadToEndAsync();
+    }
+
+    internal static async Task VerifyResponseJsonBodyAsync<T>(HttpContext httpContext, Action<T> check, int expectedStatusCode = 200)
+    {
+        var body = await GetResponseBodyAsync(httpContext);
+        var deserializedObject = JsonSerializer.Deserialize<T>(body, new JsonSerializerOptions()
+        {
+            PropertyNameCaseInsensitive = true
+        });
+
+        Assert.Equal(expectedStatusCode, httpContext.Response.StatusCode);
+        check(deserializedObject);
+    }
+
+    internal static async Task VerifyResponseJsonNodeAsync(HttpContext httpContext, Action<JsonNode> check, int expectedStatusCode = 200, string expectedContentType = "application/json; charset=utf-8")
+    {
+        var body = await GetResponseBodyAsync(httpContext);
+        var node = JsonNode.Parse(body);
+
+        Assert.Equal(expectedContentType, httpContext.Response.ContentType);
+        Assert.Equal(expectedStatusCode, httpContext.Response.StatusCode);
+        check(node);
+    }
+
+    internal static async Task VerifyResponseBodyAsync(HttpContext httpContext, string expectedBody, int expectedStatusCode = 200)
+    {
+        var body = await GetResponseBodyAsync(httpContext);
         Assert.Equal(expectedStatusCode, httpContext.Response.StatusCode);
         Assert.Equal(expectedBody, body);
     }

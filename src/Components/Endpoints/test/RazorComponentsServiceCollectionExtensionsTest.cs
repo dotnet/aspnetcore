@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Components.Binding;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Options;
@@ -83,6 +84,11 @@ public class RazorComponentsServiceCollectionExtensionsTest
         {
             return new Dictionary<Type, Type[]>()
             {
+                [typeof(CascadingModelBindingProvider)] = new[]
+                {
+                    typeof(CascadingFormModelBindingProvider),
+                    typeof(CascadingQueryModelBindingProvider),
+                }
             };
         }
     }

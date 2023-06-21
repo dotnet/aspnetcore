@@ -16,6 +16,7 @@ public class RuntimeArchitectures
                 Architecture.Arm64 => RuntimeArchitecture.arm64,
                 Architecture.X64 => RuntimeArchitecture.x64,
                 Architecture.X86 => RuntimeArchitecture.x86,
+                Architecture.Ppc64le => RuntimeArchitecture.ppc64le,
                 _ => throw new NotImplementedException($"Unknown RuntimeInformation.OSArchitecture: {RuntimeInformation.OSArchitecture.ToString()}"),
             };
         }
