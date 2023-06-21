@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Abstractions;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
@@ -2255,6 +2256,87 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var availableTransports = (JArray)negotiateResponse["availableTransports"];
 
             Assert.Empty(availableTransports);
+        }
+    }
+
+    [Fact]
+    public async Task NegotiateDoesNotReturnUseAckWhenNotEnabledOnServer()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+            var context = new DefaultHttpContext();
+            context.Features.Set<IHttpResponseFeature>(new ResponseFeature());
+            var services = new ServiceCollection();
+            services.AddSingleton<TestConnectionHandler>();
+            services.AddOptions();
+            var ms = new MemoryStream();
+            context.Request.Path = "/foo";
+            context.Request.Method = "POST";
+            context.Response.Body = ms;
+            context.Request.QueryString = new QueryString("?negotiateVersion=1&UseAck=true");
+            await dispatcher.ExecuteNegotiateAsync(context, new HttpConnectionDispatcherOptions { AllowAcks = false });
+
+            var negotiateResponse = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(ms.ToArray()));
+            Assert.False(negotiateResponse.TryGetValue("useAck", out _));
+
+            Assert.True(manager.TryGetConnection(negotiateResponse["connectionToken"].ToString(), out var connection));
+            Assert.Null(connection.Features.Get<IReconnectFeature>());
+        }
+    }
+
+    [Fact]
+    public async Task NegotiateDoesNotReturnUseAckWhenEnabledOnServerButNotRequestedByClient()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+            var context = new DefaultHttpContext();
+            context.Features.Set<IHttpResponseFeature>(new ResponseFeature());
+            var services = new ServiceCollection();
+            services.AddSingleton<TestConnectionHandler>();
+            services.AddOptions();
+            var ms = new MemoryStream();
+            context.Request.Path = "/foo";
+            context.Request.Method = "POST";
+            context.Response.Body = ms;
+            context.Request.QueryString = new QueryString("?negotiateVersion=1");
+            await dispatcher.ExecuteNegotiateAsync(context, new HttpConnectionDispatcherOptions { AllowAcks = true });
+
+            var negotiateResponse = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(ms.ToArray()));
+            Assert.False(negotiateResponse.TryGetValue("useAck", out _));
+
+            Assert.True(manager.TryGetConnection(negotiateResponse["connectionToken"].ToString(), out var connection));
+            Assert.Null(connection.Features.Get<IReconnectFeature>());
+        }
+    }
+
+    [Fact]
+    public async Task NegotiateReturnsUseAckWhenEnabledOnServerAndRequestedByClient()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+            var context = new DefaultHttpContext();
+            context.Features.Set<IHttpResponseFeature>(new ResponseFeature());
+            var services = new ServiceCollection();
+            services.AddSingleton<TestConnectionHandler>();
+            services.AddOptions();
+            var ms = new MemoryStream();
+            context.Request.Path = "/foo";
+            context.Request.Method = "POST";
+            context.Response.Body = ms;
+            context.Request.QueryString = new QueryString("?negotiateVersion=1&UseAck=true");
+            await dispatcher.ExecuteNegotiateAsync(context, new HttpConnectionDispatcherOptions { AllowAcks = true });
+
+            var negotiateResponse = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(ms.ToArray()));
+            Assert.True((bool)negotiateResponse["useAck"]);
+
+            Assert.True(manager.TryGetConnection(negotiateResponse["connectionToken"].ToString(), out var connection));
+            Assert.NotNull(connection.Features.Get<IReconnectFeature>());
         }
     }
 

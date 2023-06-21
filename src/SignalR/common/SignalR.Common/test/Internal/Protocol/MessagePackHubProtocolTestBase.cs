@@ -196,6 +196,18 @@ public abstract class MessagePackHubProtocolTestBase
                 name: "CloseMessage_HasErrorAndAllowReconnect",
                 message: new CloseMessage("Error!", allowReconnect: true),
                 binary: "kwemRXJyb3Ihww=="),
+
+            // Ack Message
+            new ProtocolTestData(
+                name: "AckMessage",
+                message: new AckMessage(42),
+                binary: "kggq"),
+
+            // Sequence Message
+            new ProtocolTestData(
+                name: "SequenceMessage",
+                message: new SequenceMessage(146),
+                binary: "kgnMkg=="),
         }.ToDictionary(t => t.Name);
 
     [Theory]
@@ -323,6 +335,14 @@ public abstract class MessagePackHubProtocolTestBase
             // CancelInvocationMessage
             new InvalidMessageData("CancelInvocationMissingId", new byte[] { 0x92, 5, 0x80 }, "Reading 'invocationId' as String failed."),
             new InvalidMessageData("CancelInvocationEmptyStringId", new byte[] { 0x93, 5, 0x80, 0xa0 }, "Null or empty invocation ID for CancelInvocation message."),
+
+            // AckMessage
+            new InvalidMessageData("AckSequenceIdMissing", new byte[] { 0x91, 8 }, "Reading 'sequenceId' as Int64 failed."),
+            new InvalidMessageData("AckSequenceIdNull", new byte[] { 0x91, 8, 0xc0 }, "Reading 'sequenceId' as Int64 failed."),
+
+            // SequenceMessage
+            new InvalidMessageData("SequenceMessageSequenceIdMissing", new byte[] { 0x91, 9 }, "Reading 'sequenceId' as Int64 failed."),
+            new InvalidMessageData("SequenceMessageSequenceIdNull", new byte[] { 0x91, 9, 0xc0 }, "Reading 'sequenceId' as Int64 failed."),
         }.ToDictionary(t => t.Name);
 
     public static IEnumerable<object[]> BaseInvalidPayloadNames => BaseInvalidPayloads.Keys.Select(name => new object[] { name });

@@ -40,6 +40,6 @@ public class FormWithoutBindingContextTest : ServerTestBase<BasicTestAppServerSi
         Assert.Null(actionValue);
 
         Browser.Click(By.Id("send"));
-        Browser.Exists(By.Id("main-frame-error"));
+        Browser.Contains("Internal Server Error", () => Browser.FindElement(By.TagName("html")).Text);
     }
 }

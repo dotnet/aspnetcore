@@ -12,11 +12,11 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETests.ServerRenderingTests.FormHandlingTests;
 
-public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<FormWithDefaultContextApp>>>
+public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>>>
 {
     public FormWithParentBindingContextTest(
         BrowserFixture browserFixture,
-        BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<FormWithDefaultContextApp>> serverFixture,
+        BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>> serverFixture,
         ITestOutputHelper output)
         : base(browserFixture, serverFixture, output)
     {
@@ -25,20 +25,25 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     public override Task InitializeAsync()
         => InitializeAsync(BrowserFixture.StreamingContext);
 
-    [Fact]
-    public void CanDispatchToTheDefaultForm()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void CanDispatchToTheDefaultForm(bool suppressEnhancedNavigation)
     {
         var dispatchToForm = new DispatchToForm(this)
         {
             Url = "forms/default-form",
             FormCssSelector = "form",
             ExpectedActionValue = null,
+            SuppressEnhancedNavigation = suppressEnhancedNavigation,
         };
         DispatchToFormCore(dispatchToForm);
     }
 
-    [Fact]
-    public void CanDispatchToTheDefaultFormWithBody()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void CanDispatchToTheDefaultFormWithBody(bool suppressEnhancedNavigation)
     {
         var dispatchToForm = new DispatchToForm(this)
         {
@@ -46,12 +51,15 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
             FormCssSelector = "form",
             InputFieldValue = "stranger",
             ExpectedActionValue = null,
+            SuppressEnhancedNavigation = suppressEnhancedNavigation,
         };
         DispatchToFormCore(dispatchToForm);
     }
 
-    [Fact]
-    public void CanBindParameterToTheDefaultForm()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void CanBindParameterToTheDefaultForm(bool suppressEnhancedNavigation)
     {
         var dispatchToForm = new DispatchToForm(this)
         {
@@ -61,12 +69,15 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
             InputFieldId = "value",
             InputFieldCssSelector = "input[name=value]",
             InputFieldValue = "stranger",
+            SuppressEnhancedNavigation = suppressEnhancedNavigation,
         };
         DispatchToFormCore(dispatchToForm);
     }
 
-    [Fact]
-    public void CanReadFormValuesDuringOnInitialized()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void CanReadFormValuesDuringOnInitialized(bool suppressEnhancedNavigation)
     {
         var dispatchToForm = new DispatchToForm(this)
         {
@@ -74,24 +85,30 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
             FormCssSelector = "form",
             InputFieldValue = "stranger",
             ExpectedActionValue = null,
+            SuppressEnhancedNavigation = suppressEnhancedNavigation,
         };
         DispatchToFormCore(dispatchToForm);
     }
 
-    [Fact]
-    public void CanDispatchToNamedForm()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void CanDispatchToNamedForm(bool suppressEnhancedNavigation)
     {
         var dispatchToForm = new DispatchToForm(this)
         {
             Url = "forms/named-form",
             FormCssSelector = "form[name=named-form-handler]",
             ExpectedActionValue = "forms/named-form?handler=named-form-handler",
+            SuppressEnhancedNavigation = suppressEnhancedNavigation,
         };
         DispatchToFormCore(dispatchToForm);
     }
 
-    [Fact]
-    public void CanBindFormValueFromNamedFormWithBody()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void CanBindFormValueFromNamedFormWithBody(bool suppressEnhancedNavigation)
     {
         var dispatchToForm = new DispatchToForm(this)
         {
@@ -101,24 +118,30 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
             InputFieldId = "value",
             InputFieldCssSelector = "input[name=value]",
             InputFieldValue = "stranger",
+            SuppressEnhancedNavigation = suppressEnhancedNavigation,
         };
         DispatchToFormCore(dispatchToForm);
     }
 
-    [Fact]
-    public void CanDispatchToNamedFormInNestedContext()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void CanDispatchToNamedFormInNestedContext(bool suppressEnhancedNavigation)
     {
         var dispatchToForm = new DispatchToForm(this)
         {
             Url = "forms/nested-named-form",
             FormCssSelector = "form[name=\"parent-context.named-form-handler\"]",
             ExpectedActionValue = "forms/nested-named-form?handler=parent-context.named-form-handler",
+            SuppressEnhancedNavigation = suppressEnhancedNavigation,
         };
         DispatchToFormCore(dispatchToForm);
     }
 
-    [Fact]
-    public void CanBindFormValueFromNestedNamedFormWithBody()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void CanBindFormValueFromNestedNamedFormWithBody(bool suppressEnhancedNavigation)
     {
         var dispatchToForm = new DispatchToForm(this)
         {
@@ -128,18 +151,22 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
             InputFieldId = "value",
             InputFieldCssSelector = "input[name=value]",
             InputFieldValue = "stranger",
+            SuppressEnhancedNavigation = suppressEnhancedNavigation,
         };
         DispatchToFormCore(dispatchToForm);
     }
 
-    [Fact]
-    public void CanDispatchToFormDefinedInNonPageComponent()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void CanDispatchToFormDefinedInNonPageComponent(bool suppressEnhancedNavigation)
     {
         var dispatchToForm = new DispatchToForm(this)
         {
             Url = "forms/form-defined-inside-component",
             FormCssSelector = "form",
             ExpectedActionValue = null,
+            SuppressEnhancedNavigation = suppressEnhancedNavigation,
         };
         DispatchToFormCore(dispatchToForm);
     }
@@ -157,8 +184,10 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         DispatchToFormCore(dispatchToForm);
     }
 
-    [Fact]
-    public void DispatchingToAmbiguousFormFails()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void DispatchingToAmbiguousFormFails(bool suppressEnhancedNavigation)
     {
         var dispatchToForm = new DispatchToForm(this)
         {
@@ -167,8 +196,8 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
             ExpectedActionValue = null,
             DispatchEvent = true,
             SubmitButtonId = "send-second",
-            // This is an error ID on the page chrome shows from a 500.
-            SubmitPassId = "main-frame-error"
+            ShouldCauseInternalServerError = true,
+            SuppressEnhancedNavigation = suppressEnhancedNavigation,
         };
         DispatchToFormCore(dispatchToForm);
     }
@@ -194,7 +223,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
             FormCssSelector = "form",
             ExpectedActionValue = null,
             SubmitButtonId = "test-send",
-            SubmitPassId = "main-frame-error"
+            ShouldCauseInternalServerError = true,
         };
         DispatchToFormCore(dispatchToForm);
     }
@@ -207,7 +236,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
             Url = "forms/switching-components-does-not-bind",
             FormCssSelector = "form",
             ExpectedActionValue = null,
-            SubmitPassId = "main-frame-error"
+            ShouldCauseInternalServerError = true,
         };
         DispatchToFormCore(dispatchToForm);
     }
@@ -279,6 +308,13 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
 
     private void DispatchToFormCore(DispatchToForm dispatch)
     {
+        if (dispatch.SuppressEnhancedNavigation)
+        {
+            GoTo("");
+            Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+            ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('suppress-enhanced-navigation', 'true')");
+        }
+
         GoTo(dispatch.Url);
 
         Browser.Exists(By.Id(dispatch.Ready));
@@ -304,10 +340,33 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
 
         Browser.Click(By.Id(dispatch.SubmitButtonId));
 
-        var text = Browser.Exists(By.Id(dispatch.SubmitPassId)).Text;
-        if (dispatch.InputFieldValue != null)
+        if (dispatch.ShouldCauseInternalServerError)
         {
-            Assert.Equal($"Hello {dispatch.InputFieldValue}!", text);
+            if (dispatch.SuppressEnhancedNavigation)
+            {
+                // Chrome's built-in error UI for a 500 response when there's no response content
+                Browser.Exists(By.Id("main-frame-error"));
+            }
+            else
+            {
+                // The UI generated by enhanced nav when there's no response content
+                Browser.Contains("Error: 500", () => Browser.Exists(By.TagName("html")).Text);
+            }
+        }
+        else
+        {
+            var text = Browser.Exists(By.Id(dispatch.SubmitPassId)).Text;
+            if (dispatch.InputFieldValue != null)
+            {
+                Assert.Equal($"Hello {dispatch.InputFieldValue}!", text);
+            }
+
+            if (!dispatch.SuppressEnhancedNavigation)
+            {
+                // Verify the same form element is still in the page
+                // We wouldn't be allowed to read the attribute if the element is stale
+                Assert.Equal(dispatch.ExpectedTarget, form.GetAttribute("action"));
+            }
         }
     }
 
@@ -333,6 +392,8 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         public string SubmitButtonId { get; internal set; } = "send";
         public string InputFieldId { get; internal set; } = "firstName";
         public string InputFieldCssSelector { get; internal set; } = null;
+        public bool ShouldCauseInternalServerError { get; internal set; }
+        public bool SuppressEnhancedNavigation { get; internal set; }
     }
 
     private void GoTo(string relativePath)

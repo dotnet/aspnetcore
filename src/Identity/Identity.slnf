@@ -84,6 +84,7 @@
       "src\\Security\\Authentication\\JwtBearer\\src\\Microsoft.AspNetCore.Authentication.JwtBearer.csproj",
       "src\\Security\\Authentication\\OAuth\\src\\Microsoft.AspNetCore.Authentication.OAuth.csproj",
       "src\\Security\\Authentication\\Twitter\\src\\Microsoft.AspNetCore.Authentication.Twitter.csproj",
+      "src\\Security\\Authentication\\test\\Microsoft.AspNetCore.Authentication.Test.csproj",
       "src\\Security\\Authorization\\Core\\src\\Microsoft.AspNetCore.Authorization.csproj",
       "src\\Security\\Authorization\\Policy\\src\\Microsoft.AspNetCore.Authorization.Policy.csproj",
       "src\\Security\\CookiePolicy\\src\\Microsoft.AspNetCore.CookiePolicy.csproj",

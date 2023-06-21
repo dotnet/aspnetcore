@@ -6,7 +6,7 @@ import { WebAssemblyResourceLoader } from '../WebAssemblyResourceLoader';
 const navigatorUA = navigator as MonoNavigatorUserAgent;
 const brands = navigatorUA.userAgentData && navigatorUA.userAgentData.brands;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const currentBrowserIsChromeOrEdge = brands
+const currentBrowserIsChromeOrEdge = brands && brands.length > 0
   ? brands.some(b => b.brand === 'Google Chrome' || b.brand === 'Microsoft Edge' || b.brand === 'Chromium')
   : (window as any).chrome;
 const platform = navigatorUA.userAgentData?.platform ?? navigator.platform;

@@ -1,9 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Components.Sections;
+namespace Microsoft.AspNetCore.Identity.DTO;
 
-internal interface ISectionContentProvider
+internal sealed class RefreshRequest
 {
-    RenderFragment? Content { get; }
+    public required string RefreshToken { get; init; }
 }

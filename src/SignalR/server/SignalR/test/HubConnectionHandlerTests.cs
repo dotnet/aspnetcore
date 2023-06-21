@@ -4923,6 +4923,33 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
         }
     }
 
+    [Fact]
+    public async Task UnsolicitedSequenceAndAckMessagesDoNothing()
+    {
+        var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(provider =>
+        {
+            provider.AddSignalR(options =>
+            {
+                options.EnableDetailedErrors = true;
+            });
+        });
+        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+        using (var client = new TestClient())
+        {
+
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+
+            await client.SendHubMessageAsync(new SequenceMessage(10)).DefaultTimeout();
+            await client.SendHubMessageAsync(new AckMessage(234)).DefaultTimeout();
+
+            // Server ignores the above messages, otherwise it would have closed the connection because the values in SequenceMessage and AckMessage aren't valid in this state
+            var completionMessage = await client.InvokeAsync(nameof(MethodHub.Echo), new object[] { "test" });
+
+            Assert.Equal("test", completionMessage.Result);
+        }
+    }
+
     private class CustomHubActivator<THub> : IHubActivator<THub> where THub : Hub
     {
         public int ReleaseCount;

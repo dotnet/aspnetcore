@@ -86,7 +86,7 @@ public class Startup
 
         app.UseEndpoints(endpoints =>
         {
-            endpoints.MapHub<TestHub>("/default");
+            endpoints.MapHub<TestHub>("/default", o => o.AllowAcks = true);
             endpoints.MapHub<DynamicTestHub>("/dynamic");
             endpoints.MapHub<TestHubT>("/hubT");
             endpoints.MapHub<HubWithAuthorization>("/authorizedhub");
