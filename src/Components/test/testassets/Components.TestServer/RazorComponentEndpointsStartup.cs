@@ -65,10 +65,10 @@ public class RazorComponentEndpointsStartup<TRootComponent>
     private static void MapEnhancedNavigationEndpoints(IEndpointRouteBuilder endpoints)
     {
         // Used when testing that enhanced nav can show non-HTML responses (which it does by doing a full navigation)
-        endpoints.Map("/non-html-response", () => "Hello, this is plain text");
+        endpoints.Map("/nav/non-html-response", () => "Hello, this is plain text");
 
         // Used when testing that enhanced nav displays content even if the response is an error status code
-        endpoints.Map("/give-404-with-content", async (HttpResponse response) =>
+        endpoints.Map("/nav/give-404-with-content", async (HttpResponse response) =>
         {
             response.StatusCode = 404;
             response.ContentType = "text/html";
