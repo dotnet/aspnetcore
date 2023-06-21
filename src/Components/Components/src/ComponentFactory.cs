@@ -120,7 +120,17 @@ internal sealed class ComponentFactory
     }
 
     // Tracks information about a specific component type that ComponentFactory uses
-    private record class ComponentTypeInfoCacheEntry(
-        IComponentRenderMode? ComponentTypeRenderMode,
-        Action<IServiceProvider, IComponent> PerformPropertyInjection);
+    private sealed class ComponentTypeInfoCacheEntry
+    {
+        public IComponentRenderMode? ComponentTypeRenderMode { get; }
+        public Action<IServiceProvider, IComponent> PerformPropertyInjection { get; }
+
+        public ComponentTypeInfoCacheEntry(
+            IComponentRenderMode? componentTypeRenderMode,
+            Action<IServiceProvider, IComponent> performPropertyInjection)
+        {
+            ComponentTypeRenderMode = componentTypeRenderMode;
+            PerformPropertyInjection = performPropertyInjection;
+        }
+    }
 }
