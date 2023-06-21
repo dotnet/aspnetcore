@@ -129,9 +129,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                     var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
                     var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? new JsonOptions();
                     var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonOptions.SerializerOptions.GetTypeInfo(typeof(object));
-                    var x_JsonTypeInfo =  (JsonTypeInfo<global::Microsoft.AspNetCore.Http.Generators.Tests.CustomMetadataEmitter>)jsonOptions.SerializerOptions.GetTypeInfo(typeof(global::Microsoft.AspNetCore.Http.Generators.Tests.CustomMetadataEmitter));
                     var serviceProviderIsService = serviceProvider?.GetService<IServiceProviderIsService>();
-                    var x_JsonBodyOrServiceResolver = ResolveJsonBodyOrService<global::Microsoft.AspNetCore.Http.Generators.Tests.CustomMetadataEmitter>(logOrThrowExceptionHelper, "CustomMetadataEmitter", "x", x_JsonTypeInfo, serviceProviderIsService);
+                    var x_JsonBodyOrServiceResolver = ResolveJsonBodyOrService<global::Microsoft.AspNetCore.Http.Generators.Tests.CustomMetadataEmitter>(logOrThrowExceptionHelper, "CustomMetadataEmitter", "x", jsonOptions, serviceProviderIsService);
 
                     if (options.EndpointBuilder.FilterFactories.Count > 0)
                     {
@@ -317,7 +316,7 @@ namespace Microsoft.AspNetCore.Http.Generated
 
             return (true, bodyValue);
         }
-        private static Func<HttpContext, bool, ValueTask<(bool, T?)>> ResolveJsonBodyOrService<T>(LogOrThrowExceptionHelper logOrThrowExceptionHelper, string parameterTypeName, string parameterName, JsonTypeInfo<T> jsonTypeInfo, IServiceProviderIsService? serviceProviderIsService = null)
+        private static Func<HttpContext, bool, ValueTask<(bool, T?)>> ResolveJsonBodyOrService<T>(LogOrThrowExceptionHelper logOrThrowExceptionHelper, string parameterTypeName, string parameterName, JsonOptions jsonOptions, IServiceProviderIsService? serviceProviderIsService = null)
         {
             if (serviceProviderIsService is not null)
             {
@@ -326,6 +325,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     return static (httpContext, isOptional) => new ValueTask<(bool, T?)>((true, httpContext.RequestServices.GetService<T>()));
                 }
             }
+            var jsonTypeInfo = (JsonTypeInfo<T>)jsonOptions.SerializerOptions.GetTypeInfo(typeof(T));
             return (httpContext, isOptional) => TryResolveBodyAsync<T>(httpContext, logOrThrowExceptionHelper, isOptional, parameterTypeName, parameterName, jsonTypeInfo, isInferred: true);
         }
         private static void PopulateMetadataForEndpoint<T>(MethodInfo method, EndpointBuilder builder)

@@ -198,4 +198,25 @@ app.MapPost("/", TestAction);
         Assert.StartsWith("Implicit body inferred for parameter", ex.Message);
         Assert.EndsWith("but no body was provided. Did you mean to use a Service instead?", ex.Message);
     }
+
+    [Fact]
+    public async Task SupportsResolvingImplicitServiceWithJsonSupportOn()
+    {
+        var source = """
+app.MapPost("/", (TestService svc) => svc.TestServiceMethod());
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var serviceProvider = CreateServiceProvider((serviceCollection) =>
+        {
+            serviceCollection.ConfigureHttpJsonOptions(o => o.SerializerOptions.TypeInfoResolver = SharedTestJsonContext.Default);
+            serviceCollection.AddSingleton(new TestService());
+        });
+        var endpoint = GetEndpointFromCompilation(compilation, serviceProvider: serviceProvider);
+
+        var httpContext = CreateHttpContext(serviceProvider);
+
+        await endpoint.RequestDelegate(httpContext);
+
+        await VerifyResponseBodyAsync(httpContext, "Produced from service!");
+    }
 }
