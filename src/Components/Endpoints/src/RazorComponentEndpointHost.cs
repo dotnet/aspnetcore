@@ -19,7 +19,6 @@ internal class RazorComponentEndpointHost : IComponent
 {
     private RenderHandle _renderHandle;
 
-    [Parameter] public IComponentRenderMode? RenderMode { get; set; }
     [Parameter] public Type ComponentType { get; set; } = default!;
     [Parameter] public IReadOnlyDictionary<string, object?>? ComponentParameters { get; set; }
 
@@ -45,16 +44,6 @@ internal class RazorComponentEndpointHost : IComponent
 
     private void RenderPageWithParameters(RenderTreeBuilder builder)
     {
-        // TODO: Once we support rendering Server/WebAssembly components into the page, implementation will
-        // go here. We need to switch into the rendermode given by RazorComponentResult.RenderMode for this
-        // child component. That will cause the developer-supplied parameters to be serialized into a marker
-        // but not attempt to serialize the RenderFragment that causes this to be hosted in its layout.
-        if (RenderMode is not null)
-        {
-            // Tracked by #46353 and #46354
-            throw new NotSupportedException($"Currently, Razor Component endpoints don't support setting a render mode.");
-        }
-
         builder.OpenComponent(0, ComponentType);
 
         if (ComponentParameters is not null)
