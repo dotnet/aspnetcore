@@ -1,4 +1,12 @@
 {
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "http://localhost:54192/",
+      "sslPort": 44397
+    }
+  },
   "profiles": {
     "GlobalizationWasmApp": {
       "commandName": "Project",
@@ -14,14 +22,6 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
-    }
-  },
-  "iisSettings": {
-    "windowsAuthentication": false,
-    "anonymousAuthentication": true,
-    "iisExpress": {
-      "applicationUrl": "http://localhost:50516/",
-      "sslPort": 44370
     }
   }
 }
