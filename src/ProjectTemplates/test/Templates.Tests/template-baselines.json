@@ -1769,43 +1769,6 @@
         "wwwroot/sample-data/weather.json"
       ]
     },
-    "Hosted": {
-      "Template": "blazorwasm",
-      "Arguments": "new blazorwasm --hosted",
-      "Files": [
-        "Client/_Imports.razor",
-        "Client/App.razor",
-        "Client/Program.cs",
-        "Client/Pages/Counter.razor",
-        "Client/Pages/FetchData.razor",
-        "Client/Pages/Index.razor",
-        "Client/Properties/launchSettings.json",
-        "Client/Shared/MainLayout.razor",
-        "Client/Shared/MainLayout.razor.css",
-        "Client/Shared/NavMenu.razor",
-        "Client/Shared/NavMenu.razor.css",
-        "Client/wwwroot/css/app.css",
-        "Client/wwwroot/favicon.png",
-        "Client/wwwroot/icon-192.png",
-        "Client/wwwroot/index.html",
-        "Client/wwwroot/css/bootstrap/bootstrap.min.css",
-        "Client/wwwroot/css/bootstrap/bootstrap.min.css.map",
-        "Client/wwwroot/css/bootstrap-icons/bootstrap-icons.css",
-        "Client/wwwroot/css/bootstrap-icons/bootstrap-icons.json",
-        "Client/wwwroot/css/bootstrap-icons/bootstrap-icons.min.css",
-        "Client/wwwroot/css/bootstrap-icons/bootstrap-icons.scss",
-        "Client/wwwroot/css/bootstrap-icons/fonts/bootstrap-icons.woff",
-        "Client/wwwroot/css/bootstrap-icons/fonts/bootstrap-icons.woff2",
-        "Server/Controllers/WeatherForecastController.cs",
-        "Server/Pages/Error.cshtml",
-        "Server/Pages/Error.cshtml.cs",
-        "Server/Properties/launchSettings.json",
-        "Server/appsettings.Development.json",
-        "Server/appsettings.json",
-        "Server/Program.cs",
-        "Shared/WeatherForecast.cs"
-      ]
-    },
     "PWA": {
       "Template": "blazorwasm",
       "Arguments": "new blazorwasm --pwa",
@@ -1838,47 +1801,6 @@
         "wwwroot/css/bootstrap-icons/fonts/bootstrap-icons.woff",
         "wwwroot/css/bootstrap-icons/fonts/bootstrap-icons.woff2",
         "wwwroot/sample-data/weather.json"
-      ]
-    },
-    "PWAHosted": {
-      "Template": "blazorwasm",
-      "Arguments": "new blazorwasm --pwa --hosted",
-      "Files": [
-        "Client/_Imports.razor",
-        "Client/App.razor",
-        "Client/Program.cs",
-        "Client/Pages/Counter.razor",
-        "Client/Pages/FetchData.razor",
-        "Client/Pages/Index.razor",
-        "Client/Properties/launchSettings.json",
-        "Client/Shared/MainLayout.razor",
-        "Client/Shared/MainLayout.razor.css",
-        "Client/Shared/NavMenu.razor",
-        "Client/Shared/NavMenu.razor.css",
-        "Client/wwwroot/css/app.css",
-        "Client/wwwroot/favicon.png",
-        "Client/wwwroot/icon-192.png",
-        "Client/wwwroot/icon-512.png",
-        "Client/wwwroot/index.html",
-        "Client/wwwroot/manifest.webmanifest",
-        "Client/wwwroot/service-worker.js",
-        "Client/wwwroot/service-worker.published.js",
-        "Client/wwwroot/css/bootstrap/bootstrap.min.css",
-        "Client/wwwroot/css/bootstrap/bootstrap.min.css.map",
-        "Client/wwwroot/css/bootstrap-icons/bootstrap-icons.css",
-        "Client/wwwroot/css/bootstrap-icons/bootstrap-icons.json",
-        "Client/wwwroot/css/bootstrap-icons/bootstrap-icons.min.css",
-        "Client/wwwroot/css/bootstrap-icons/bootstrap-icons.scss",
-        "Client/wwwroot/css/bootstrap-icons/fonts/bootstrap-icons.woff",
-        "Client/wwwroot/css/bootstrap-icons/fonts/bootstrap-icons.woff2",
-        "Server/Controllers/WeatherForecastController.cs",
-        "Server/Pages/Error.cshtml",
-        "Server/Pages/Error.cshtml.cs",
-        "Server/Properties/launchSettings.json",
-        "Server/appsettings.Development.json",
-        "Server/appsettings.json",
-        "Server/Program.cs",
-        "Shared/WeatherForecast.cs"
       ]
     },
     "ExcludeLaunchSettings": {
@@ -1926,25 +1848,6 @@
         "Program.cs"
       ]
     },
-    "Hosted": {
-      "Template": "blazorwasm-empty",
-      "Arguments": "new blazorwasm-empty --hosted",
-      "Files": [
-        "Client/_Imports.razor",
-        "Client/App.razor",
-        "Client/MainLayout.razor",
-        "Client/Program.cs",
-        "Client/Pages/Index.razor",
-        "Client/Properties/launchSettings.json",
-        "Client/wwwroot/index.html",
-        "Client/wwwroot/css/app.css",
-        "Server/Properties/launchSettings.json",
-        "Server/appsettings.Development.json",
-        "Server/appsettings.json",
-        "Server/Program.cs",
-        "Shared/SharedClass.cs"
-      ]
-    },
     "PWA": {
       "Template": "blazorwasm-empty",
       "Arguments": "new blazorwasm-empty --pwa",
@@ -1977,29 +1880,6 @@
         "Program.cs"
       ]
     },
-    "PWAHosted": {
-      "Template": "blazorwasm-empty",
-      "Arguments": "new blazorwasm-empty --pwa --hosted",
-      "Files": [
-        "Client/_Imports.razor",
-        "Client/App.razor",
-        "Client/MainLayout.razor",
-        "Client/Program.cs",
-        "Client/Pages/Index.razor",
-        "Client/Properties/launchSettings.json",
-        "Client/wwwroot/icon-512.png",
-        "Client/wwwroot/index.html",
-        "Client/wwwroot/manifest.webmanifest",
-        "Client/wwwroot/service-worker.js",
-        "Client/wwwroot/service-worker.published.js",
-        "Client/wwwroot/css/app.css",
-        "Server/Properties/launchSettings.json",
-        "Server/appsettings.Development.json",
-        "Server/appsettings.json",
-        "Server/Program.cs",
-        "Shared/SharedClass.cs"
-      ]
-    },
     "ExcludeLaunchSettings": {
       "Template": "blazorwasm-empty",
       "Arguments": "new blazorwasm-empty --exclude-launch-settings",
@@ -2011,23 +1891,6 @@
         "App.razor",
         "MainLayout.razor",
         "Program.cs"
-      ]
-    },
-    "ExcludeLaunchSettingsHosted": {
-      "Template": "blazorwasm-empty",
-      "Arguments": "new blazorwasm-empty --hosted --exclude-launch-settings",
-      "Files": [
-        "Client/_Imports.razor",
-        "Client/App.razor",
-        "Client/MainLayout.razor",
-        "Client/Program.cs",
-        "Client/Pages/Index.razor",
-        "Client/wwwroot/index.html",
-        "Client/wwwroot/css/app.css",
-        "Server/appsettings.Development.json",
-        "Server/appsettings.json",
-        "Server/Program.cs",
-        "Shared/SharedClass.cs"
       ]
     }
   }

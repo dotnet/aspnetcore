@@ -1,14 +1,4 @@
 ﻿@page "/fetchdata"
-@*#if  (!NoAuth && Hosted)
-@using Microsoft.AspNetCore.Authorization
-@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
-#endif*@
-@*#if  (Hosted)
-@using ComponentsWebAssembly_CSharp.Shared
-#endif*@
-@*#if  (!NoAuth && Hosted)
-@attribute [Authorize]
-#endif*@
 @inject HttpClient Http
 
 <PageTitle>Weather forecast</PageTitle>
@@ -51,24 +41,8 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        @*#if (Hosted)
-            @*#if (!NoAuth)
-        try
-        {
-            forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("WeatherForecast");
-        }
-        catch (AccessTokenNotAvailableException exception)
-        {
-            exception.Redirect();
-        }
-            #else
-        forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("WeatherForecast");
-            #endif*@
-        #else
         forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("sample-data/weather.json");
-        #endif*@
     }
-    @*#if (!Hosted)
 
     public class WeatherForecast
     {
@@ -80,5 +54,4 @@ else
 
         public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
     }
-    #endif*@
 }
