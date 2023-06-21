@@ -1,4 +1,5 @@
 ﻿@attribute [RenderModeServer]
+@attribute [StreamRendering(true)]
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,7 +12,6 @@
         This is not a page component. It's rendered using a custom endpoint, so it doesn't
         have any layout by default and is the root.
     </p>
-
     <TestContentPackage.Counter IncrementAmount="IncrementAmount" IdSuffix="server" />
 
     <script src="_framework/blazor.web.js" suppress-error="BL9992"></script>
@@ -21,4 +21,9 @@
 @code {
     [Parameter]
     public int IncrementAmount { get; set; } = 1;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(3000);
+    }
 }

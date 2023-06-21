@@ -238,13 +238,11 @@ export function permuteLogicalChildren(parent: LogicalElement, permutationList: 
   });
 }
 
-export function getClosestDomElement(logicalElement: LogicalElement): Element | (LogicalElement & DocumentFragment) {
-  if (logicalElement instanceof Element || logicalElement instanceof DocumentFragment) {
-    return logicalElement;
-  } else if (logicalElement instanceof Comment) {
+export function getClosestDomElement(logicalElement: LogicalElement): Element | DocumentFragment | Document {
+  if (logicalElement instanceof Comment) {
     return logicalElement.parentNode! as Element;
   } else {
-    throw new Error('Not a valid logical element');
+    return logicalElement as any;
   }
 }
 
@@ -269,9 +267,7 @@ function getLogicalNextSibling(element: LogicalElement): LogicalElement | null {
 function appendDomNode(child: Node, parent: LogicalElement) {
   // This function only puts 'child' into the DOM in the right place relative to 'parent'
   // It does not update the logical children array of anything
-  if (parent instanceof Element || parent instanceof DocumentFragment) {
-    parent.appendChild(child);
-  } else if (parent instanceof Comment) {
+  if (parent instanceof Comment) {
     const parentLogicalNextSibling = getLogicalNextSibling(parent) as any as Node;
     if (parentLogicalNextSibling) {
       // Since the parent has a logical next-sibling, its appended child goes right before that
@@ -281,6 +277,8 @@ function appendDomNode(child: Node, parent: LogicalElement) {
       // a logical ancestor that does have a next-sibling or is a physical element.
       appendDomNode(child, getLogicalParent(parent)!);
     }
+  } else if (parent instanceof Node) {
+    parent.appendChild(child);
   } else {
     // Should never happen
     throw new Error(`Cannot append node because the parent is not a valid logical element. Parent: ${parent}`);

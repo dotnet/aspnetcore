@@ -277,9 +277,16 @@ export class BrowserRenderer {
   }
 
   private insertText(batch: RenderBatch, parent: LogicalElement, childIndex: number, textFrame: RenderTreeFrame) {
-    const textContent = batch.frameReader.textContent(textFrame)!;
-    const newTextNode = document.createTextNode(textContent);
-    insertLogicalChild(newTextNode, parent, childIndex);
+    if (getClosestDomElement(parent) instanceof Document) {
+      // It's illegal to insert a text node directly into Document, and it wouldn't be displayed anyway,
+      // so just substitute a marker node to keep the indexes consistent. This happens for interactive root
+      // components that typically have whitespace around <html>...</html>
+      insertLogicalChild(document.createComment(''), parent, childIndex);
+    } else {
+      const textContent = batch.frameReader.textContent(textFrame)!;
+      const newTextNode = document.createTextNode(textContent);
+      insertLogicalChild(newTextNode, parent, childIndex);
+    }
   }
 
   private insertMarkup(batch: RenderBatch, parent: LogicalElement, childIndex: number, markupFrame: RenderTreeFrame) {
@@ -288,8 +295,15 @@ export class BrowserRenderer {
     const markupContent = batch.frameReader.markupContent(markupFrame);
     const parsedMarkup = parseMarkup(markupContent, isSvgElement(parent));
     let logicalSiblingIndex = 0;
-    while (parsedMarkup.firstChild) {
-      insertLogicalChild(parsedMarkup.firstChild, markupContainer, logicalSiblingIndex++);
+    let thisChild: ChildNode | null;
+    while (thisChild = parsedMarkup.firstChild) {
+      if (thisChild.nodeType === Node.TEXT_NODE && getClosestDomElement(parent) instanceof Document) {
+        // See comment above about text nodes in Document
+        insertLogicalChild(document.createComment(''), markupContainer, logicalSiblingIndex++);
+        thisChild.remove();
+      } else {
+        insertLogicalChild(thisChild, markupContainer, logicalSiblingIndex++);
+      }
     }
   }
 
