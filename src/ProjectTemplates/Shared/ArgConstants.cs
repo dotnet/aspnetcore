@@ -26,4 +26,5 @@ internal static class ArgConstants
     public const string UseLocalDb = "-uld";
     public const string NoHttps = "--no-https";
     public const string PublishNativeAot = "--aot";
+    public const string UseServer = "--use-server";
 }

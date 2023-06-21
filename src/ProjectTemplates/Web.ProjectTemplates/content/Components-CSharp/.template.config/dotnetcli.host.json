@@ -10,8 +10,7 @@
       "isHidden": true
     },
     "UseServer": {
-      "longName": "use-server",
-      "isHidden": true
+      "longName": "use-server"
     },
     "UseWebAssembly": {
       "longName": "use-wasm",
