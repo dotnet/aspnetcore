@@ -33,16 +33,18 @@ let onDocumentUpdatedCallback: Function = () => {};
 
 export function attachProgressivelyEnhancedNavigationListener(onDocumentUpdated: Function) {
   onDocumentUpdatedCallback = onDocumentUpdated;
-  document.body.addEventListener('click', onBodyClicked);
+  document.addEventListener('click', onDocumentClick);
+  document.addEventListener('submit', onDocumentSubmit);
   window.addEventListener('popstate', onPopState);
 }
 
 export function detachProgressivelyEnhancedNavigationListener() {
-  document.body.removeEventListener('click', onBodyClicked);
+  document.removeEventListener('click', onDocumentClick);
+  document.removeEventListener('submit', onDocumentSubmit);
   window.removeEventListener('popstate', onPopState);
 }
 
-function onBodyClicked(event: MouseEvent) {
+function onDocumentClick(event: MouseEvent) {
   if (hasInteractiveRouter()) {
     return;
   }
@@ -61,7 +63,41 @@ function onPopState(state: PopStateEvent) {
   performEnhancedPageLoad(location.href);
 }
 
-export async function performEnhancedPageLoad(internalDestinationHref: string) {
+function onDocumentSubmit(event: SubmitEvent) {
+  if (hasInteractiveRouter() || event.defaultPrevented) {
+    return;
+  }
+
+  // We need to be careful not to interfere with existing interactive forms. As it happens, EventDelegator always
+  // uses a capturing event handler for 'submit', so it will necessarily run before this handler, and so we won't
+  // even get here if there's an interactive submit (because it will have set defaultPrevented which we check above).
+  // However if we ever change that, we would need to change this code to integrate properly with EventDelegator
+  // to make sure this handler only ever runs after interactive handlers.
+  const formElem = event.target;
+  if (formElem instanceof HTMLFormElement) {
+    event.preventDefault();
+
+    const url = new URL(formElem.action);
+    const fetchOptions: RequestInit = { method: formElem.method };
+    const formData = new FormData(formElem);
+
+    // Replicate the normal behavior of appending the submitter name/value to the form data
+    const submitter = event.submitter as HTMLButtonElement;
+    if (submitter && submitter.name) {
+      formData.append(submitter.name, submitter.value);
+    }
+
+    if (fetchOptions.method === 'get') { // method is always returned as lowercase
+      url.search = new URLSearchParams(formData as any).toString();
+    } else {
+      fetchOptions.body = formData;
+    }
+
+    performEnhancedPageLoad(url.toString(), fetchOptions);
+  }
+}
+
+export async function performEnhancedPageLoad(internalDestinationHref: string, fetchOptions?: RequestInit) {
   // First, stop any preceding enhanced page load
   currentEnhancedNavigationAbortController?.abort();
 
@@ -69,10 +105,10 @@ export async function performEnhancedPageLoad(internalDestinationHref: string) {
   // framing boundaries to distinguish the initial document and each subsequent streaming SSR update.
   currentEnhancedNavigationAbortController = new AbortController();
   const abortSignal = currentEnhancedNavigationAbortController.signal;
-  const responsePromise = fetch(internalDestinationHref, {
+  const responsePromise = fetch(internalDestinationHref, Object.assign({
     signal: abortSignal,
     headers: { 'blazor-enhanced-nav': 'on' },
-  });
+  }, fetchOptions));
   await getResponsePartsWithFraming(responsePromise, abortSignal,
     (response, initialContent) => {
       if (response.redirected) {
