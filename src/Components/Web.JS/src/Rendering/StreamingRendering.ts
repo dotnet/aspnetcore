@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { SsrStartOptions } from "../Platform/SsrStartOptions";
-import { performEnhancedPageLoad } from "../Services/NavigationEnhancement";
+import { performEnhancedPageLoad, replaceDocumentWithPlainText } from "../Services/NavigationEnhancement";
 import { isWithinBaseUriSpace } from "../Services/NavigationUtils";
 import { synchronizeDomContent } from "./DomMerging/DomSync";
 
@@ -51,11 +51,7 @@ class BlazorStreamingUpdate extends HTMLElement {
                 break;
               case 'error':
                 // This is kind of brutal but matches what happens without progressive enhancement
-                document.documentElement.textContent = node.content.textContent;
-                const docStyle = document.documentElement.style;
-                docStyle.fontFamily = 'consolas, monospace';
-                docStyle.whiteSpace = 'pre-wrap';
-                docStyle.padding = '1rem';
+                replaceDocumentWithPlainText(node.content.textContent || 'Error');
                 break;
             }
           }

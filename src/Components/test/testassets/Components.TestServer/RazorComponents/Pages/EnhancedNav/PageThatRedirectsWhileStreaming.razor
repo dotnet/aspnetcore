@@ -1,4 +1,4 @@
-﻿@page "/do-redirection-while-streaming"
+﻿@page "/nav/do-redirection-while-streaming"
 @attribute [StreamRendering(true)]
 @inject NavigationManager Nav
 <h1>Please wait...</h1>
@@ -8,6 +8,6 @@
     protected override async Task OnInitializedAsync()
     {
         await Task.Delay(2000);
-        Nav.NavigateTo(Destination ?? "scroll-to-hash#some-content");
+        Nav.NavigateTo(Destination ?? "nav/scroll-to-hash#some-content");
     }
 }

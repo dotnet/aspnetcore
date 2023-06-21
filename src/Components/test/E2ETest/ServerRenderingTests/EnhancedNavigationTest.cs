@@ -30,7 +30,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
     [Fact]
     public void CanNavigateToAnotherPageWhilePreservingCommonDOMElements()
     {
-        Navigate(ServerPathBase);
+        Navigate($"{ServerPathBase}/nav");
 
         var h1Elem = Browser.Exists(By.TagName("h1"));
         Browser.Equal("Hello", () => h1Elem.Text);
@@ -48,7 +48,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
     [Fact]
     public void CanNavigateToAnHtmlPageWithAnErrorStatus()
     {
-        Navigate(ServerPathBase);
+        Navigate($"{ServerPathBase}/nav");
         Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Error page with 404 content")).Click();
         Browser.Equal("404", () => Browser.Exists(By.TagName("h1")).Text);
     }
@@ -56,23 +56,23 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
     [Fact]
     public void DisplaysStatusCodeIfResponseIsErrorWithNoContent()
     {
-        Navigate(ServerPathBase);
+        Navigate($"{ServerPathBase}/nav");
         Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Error page with no content")).Click();
-        Browser.Equal("Error: 404 Not Found", () => Browser.Exists(By.TagName("body")).Text);
+        Browser.Equal("Error: 404 Not Found", () => Browser.Exists(By.TagName("html")).Text);
     }
 
     [Fact]
     public void CanNavigateToNonHtmlResponse()
     {
-        Navigate(ServerPathBase);
+        Navigate($"{ServerPathBase}/nav");
         Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Non-HTML page")).Click();
-        Browser.Equal("Hello, this is plain text", () => Browser.Exists(By.TagName("body")).Text);
+        Browser.Equal("Hello, this is plain text", () => Browser.Exists(By.TagName("html")).Text);
     }
 
     [Fact]
     public void ScrollsToHashWithContentAddedAsynchronously()
     {
-        Navigate(ServerPathBase);
+        Navigate($"{ServerPathBase}/nav");
         Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Scroll to hash")).Click();
         Assert.Equal(0, BrowserScrollY);
 
@@ -84,7 +84,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
     [Fact]
     public void CanFollowSynchronousRedirection()
     {
-        Navigate(ServerPathBase);
+        Navigate($"{ServerPathBase}/nav");
 
         var h1Elem = Browser.Exists(By.TagName("h1"));
         Browser.Equal("Hello", () => h1Elem.Text);
@@ -96,18 +96,18 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         // here and instead use the same protocol it uses for external redirections.
         Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Redirect")).Click();
         Browser.Equal("Scroll to hash", () => h1Elem.Text);
-        Assert.EndsWith("/subdir/scroll-to-hash", Browser.Url);
+        Assert.EndsWith("/subdir/nav/scroll-to-hash", Browser.Url);
 
         // See that 'back' takes you to the place from before the redirection
         Browser.Navigate().Back();
         Browser.Equal("Hello", () => h1Elem.Text);
-        Assert.EndsWith("/subdir", Browser.Url);
+        Assert.EndsWith("/subdir/nav", Browser.Url);
     }
 
     [Fact]
     public void CanFollowAsynchronousRedirectionWhileStreaming()
     {
-        Navigate(ServerPathBase);
+        Navigate($"{ServerPathBase}/nav");
 
         var h1Elem = Browser.Exists(By.TagName("h1"));
         Browser.Equal("Hello", () => h1Elem.Text);
@@ -116,18 +116,18 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Redirect while streaming")).Click();
         Browser.Equal("Scroll to hash", () => h1Elem.Text);
         Browser.True(() => BrowserScrollY > 500);
-        Assert.EndsWith("/subdir/scroll-to-hash#some-content", Browser.Url);
+        Assert.EndsWith("/subdir/nav/scroll-to-hash#some-content", Browser.Url);
 
         // See that 'back' takes you to the place from before the redirection
         Browser.Navigate().Back();
         Browser.Equal("Hello", () => h1Elem.Text);
-        Assert.EndsWith("/subdir", Browser.Url);
+        Assert.EndsWith("/subdir/nav", Browser.Url);
     }
 
     [Fact]
     public void CanFollowSynchronousExternalRedirection()
     {
-        Navigate(ServerPathBase);
+        Navigate($"{ServerPathBase}/nav");
         Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
 
         Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Redirect external")).Click();
@@ -137,7 +137,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
     [Fact]
     public void CanFollowAsynchronousExternalRedirectionWhileStreaming()
     {
-        Navigate(ServerPathBase);
+        Navigate($"{ServerPathBase}/nav");
         Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
 
         Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Redirect external while streaming")).Click();

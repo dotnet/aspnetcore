@@ -33,16 +33,18 @@ let onDocumentUpdatedCallback: Function = () => {};
 
 export function attachProgressivelyEnhancedNavigationListener(onDocumentUpdated: Function) {
   onDocumentUpdatedCallback = onDocumentUpdated;
-  document.body.addEventListener('click', onBodyClicked);
+  document.addEventListener('click', onDocumentClick);
+  document.addEventListener('submit', onDocumentSubmit);
   window.addEventListener('popstate', onPopState);
 }
 
 export function detachProgressivelyEnhancedNavigationListener() {
-  document.body.removeEventListener('click', onBodyClicked);
+  document.removeEventListener('click', onDocumentClick);
+  document.removeEventListener('submit', onDocumentSubmit);
   window.removeEventListener('popstate', onPopState);
 }
 
-function onBodyClicked(event: MouseEvent) {
+function onDocumentClick(event: MouseEvent) {
   if (hasInteractiveRouter()) {
     return;
   }
@@ -61,7 +63,41 @@ function onPopState(state: PopStateEvent) {
   performEnhancedPageLoad(location.href);
 }
 
-export async function performEnhancedPageLoad(internalDestinationHref: string) {
+function onDocumentSubmit(event: SubmitEvent) {
+  if (hasInteractiveRouter() || event.defaultPrevented) {
+    return;
+  }
+
+  // We need to be careful not to interfere with existing interactive forms. As it happens, EventDelegator always
+  // uses a capturing event handler for 'submit', so it will necessarily run before this handler, and so we won't
+  // even get here if there's an interactive submit (because it will have set defaultPrevented which we check above).
+  // However if we ever change that, we would need to change this code to integrate properly with EventDelegator
+  // to make sure this handler only ever runs after interactive handlers.
+  const formElem = event.target;
+  if (formElem instanceof HTMLFormElement) {
+    event.preventDefault();
+
+    const url = new URL(formElem.action);
+    const fetchOptions: RequestInit = { method: formElem.method };
+    const formData = new FormData(formElem);
+
+    // Replicate the normal behavior of appending the submitter name/value to the form data
+    const submitter = event.submitter as HTMLButtonElement;
+    if (submitter && submitter.name) {
+      formData.append(submitter.name, submitter.value);
+    }
+
+    if (fetchOptions.method === 'get') { // method is always returned as lowercase
+      url.search = new URLSearchParams(formData as any).toString();
+    } else {
+      fetchOptions.body = formData;
+    }
+
+    performEnhancedPageLoad(url.toString(), fetchOptions);
+  }
+}
+
+export async function performEnhancedPageLoad(internalDestinationHref: string, fetchOptions?: RequestInit) {
   // First, stop any preceding enhanced page load
   currentEnhancedNavigationAbortController?.abort();
 
@@ -69,10 +105,10 @@ export async function performEnhancedPageLoad(internalDestinationHref: string) {
   // framing boundaries to distinguish the initial document and each subsequent streaming SSR update.
   currentEnhancedNavigationAbortController = new AbortController();
   const abortSignal = currentEnhancedNavigationAbortController.signal;
-  const responsePromise = fetch(internalDestinationHref, {
+  const responsePromise = fetch(internalDestinationHref, Object.assign({
     signal: abortSignal,
     headers: { 'blazor-enhanced-nav': 'on' },
-  });
+  }, fetchOptions));
   await getResponsePartsWithFraming(responsePromise, abortSignal,
     (response, initialContent) => {
       if (response.redirected) {
@@ -81,21 +117,32 @@ export async function performEnhancedPageLoad(internalDestinationHref: string) {
         internalDestinationHref = response.url;
       }
 
-      if (response.headers.get('content-type')?.startsWith('text/html')) {
+      const responseContentType = response.headers.get('content-type');
+      if (responseContentType?.startsWith('text/html')) {
         // For HTML responses, regardless of the status code, display it
         const parsedHtml = new DOMParser().parseFromString(initialContent, 'text/html');
         synchronizeDomContent(document, parsedHtml);
+      } else if (responseContentType?.startsWith('text/')) {
+        // For any other text-based content, we'll just display it, because that's what
+        // would happen if this was a non-enhanced request.
+        replaceDocumentWithPlainText(initialContent);
       } else if ((response.status < 200 || response.status >= 300) && !initialContent) {
         // For any non-success response that has no content at all, make up our own error UI
-        document.documentElement.innerHTML = `Error: ${response.status} ${response.statusText}`;
+        replaceDocumentWithPlainText(`Error: ${response.status} ${response.statusText}`);
       } else {
         // For any other response, it's not HTML and we don't know what to do. It might be plain text,
-        // or an image, or something else. So fall back on a full reload, even though that means we
-        // have to request the content a second time.
-        // The ? trick here is the same workaround as described in #10839, and without it, the user
-        // would not be able to use the back button afterwards.
-        history.replaceState(null, '', internalDestinationHref + '?');
-        location.replace(internalDestinationHref);
+        // or an image, or something else.
+        if (!fetchOptions?.method || fetchOptions.method === 'get') {
+          // If it's a get request, we'll trust that it's idempotent and cheap enough to request
+          // a second time, so we can fall back on a full reload.
+          // The ? trick here is the same workaround as described in #10839, and without it, the user
+          // would not be able to use the back button afterwards.
+          history.replaceState(null, '', internalDestinationHref + '?');
+          location.replace(internalDestinationHref);
+        } else {
+          // For non-get requests, we can't safely re-request, so just treat it as an error
+          replaceDocumentWithPlainText(`Error: ${fetchOptions.method} request to ${internalDestinationHref} returned non-HTML content of type ${responseContentType || 'unspecified'}.`);
+        }
       }
     },
     (streamingElementMarkup) => {
@@ -176,6 +223,14 @@ async function getResponsePartsWithFraming(responsePromise: Promise<Response>, a
       throw ex;
     }
   }
+}
+
+export function replaceDocumentWithPlainText(text: string) {
+  document.documentElement.textContent = text;
+  const docStyle = document.documentElement.style;
+  docStyle.fontFamily = 'consolas, monospace';
+  docStyle.whiteSpace = 'pre-wrap';
+  docStyle.padding = '1rem';
 }
 
 function splitStream(frameBoundaryMarker: string) {

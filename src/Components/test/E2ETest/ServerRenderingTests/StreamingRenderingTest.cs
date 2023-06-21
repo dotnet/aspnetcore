@@ -43,7 +43,7 @@ public class StreamingRenderingTest : ServerTestBase<BasicTestAppServerSiteFixtu
 
         if (duringEnhancedNavigation)
         {
-            Navigate(ServerPathBase);
+            Navigate($"{ServerPathBase}/nav");
             originalH1Elem = Browser.Exists(By.TagName("h1"));
             Browser.Equal("Hello", () => originalH1Elem.Text);
             Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Streaming")).Click();
@@ -90,7 +90,7 @@ public class StreamingRenderingTest : ServerTestBase<BasicTestAppServerSiteFixtu
 
         if (duringEnhancedNavigation)
         {
-            Navigate(ServerPathBase);
+            Navigate($"{ServerPathBase}/nav");
             originalH1Elem = Browser.Exists(By.TagName("h1"));
             Browser.Equal("Hello", () => originalH1Elem.Text);
             Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Streaming")).Click();
@@ -122,7 +122,7 @@ public class StreamingRenderingTest : ServerTestBase<BasicTestAppServerSiteFixtu
     [Fact]
     public async Task DisplaysErrorThatOccursWhileStreaming()
     {
-        Navigate(ServerPathBase);
+        Navigate($"{ServerPathBase}/nav");
         Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
 
         Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Error while streaming")).Click();
@@ -134,6 +134,6 @@ public class StreamingRenderingTest : ServerTestBase<BasicTestAppServerSiteFixtu
         // See that 'back' still works
         Browser.Navigate().Back();
         Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
-        Assert.EndsWith("/subdir", Browser.Url);
+        Assert.EndsWith("/subdir/nav", Browser.Url);
     }
 }
