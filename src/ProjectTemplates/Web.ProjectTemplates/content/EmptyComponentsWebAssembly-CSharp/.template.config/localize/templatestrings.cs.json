@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "Aplikace Blazor WebAssembly je prázdná.",
   "description": "Prázdná šablona projektu pro vytvoření aplikace Blazor, která běží na WebAssembly a je volitelně hostovaná aplikací ASP.NET Core. Tato šablona neobsahuje žádný obsah.",
@@ -14,6 +14,6 @@
   "symbols/PWA/description": "Pokud je tato možnost zadaná, vytvoří progresivní webovou aplikaci (PWA), která podporuje instalaci a offline použití.",
   "symbols/HasHttpProfile/description": "Vždy mějte profil protokolu HTTP.",
   "symbols/NoHttps/description": "Určuje, jestli se má vypnout protokol HTTPS.",
-  "postActions/restoreClient/description": "Obnoví balíčky NuGet vyžadované tímto projektem.",
-  "postActions/restoreClient/manualInstructions/default/text": "Spustit „dotnet restore“"
+  "postActions/restore/description": "Obnoví balíčky NuGet vyžadované tímto projektem.",
+  "postActions/restore/manualInstructions/default/text": "Spustit „dotnet restore“"
 }

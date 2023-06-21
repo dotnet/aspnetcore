@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "Aplikace Blazor WebAssembly",
   "description": "Šablona projektu pro vytvoření aplikace Blazor, která běží ve WebAssembly a dá se volitelně hostovat v aplikaci ASP.NET. Tato šablona se dá použít pro webové aplikace s propracovanými dynamickými uživatelskými rozhraními (UI).",
@@ -36,7 +36,7 @@
   "symbols/CalledApiScopes/description": "Obory, které se mají požádat žádat o volání rozhraní API z webové aplikace. Tato možnost platí jenom v případě, že je zadáno --auth SingleOrg, --auth MultiOrg nebo --auth IndividualB2C a také je zadán hostitel ASP.NET Core.",
   "symbols/UseProgramMain/displayName": "Nepoužívat _příkazy nejvyšší úrovně",
   "symbols/UseProgramMain/description": "Určuje, jestli se má místo příkazů nejvyšší úrovně generovat explicitní třída Program a metoda Main.",
-  "postActions/restore/description": "Restore NuGet packages required by this project.",
-  "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'",
+  "postActions/restore/description": "Obnoví balíčky NuGet vyžadované tímto projektem.",
+  "postActions/restore/manualInstructions/default/text": "Spustit dotnet restore",
   "postActions/open-file/description": "Otevře soubor Readme.txt v editoru."
 }

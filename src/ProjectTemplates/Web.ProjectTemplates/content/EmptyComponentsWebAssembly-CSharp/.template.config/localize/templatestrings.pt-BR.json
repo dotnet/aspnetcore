@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "Aplicativo Blazor WebAssembly Vazio",
   "description": "Um modelo de projeto vazio para criar um aplicativo Blazor executado no WebAssembly e opcionalmente hospedado por um aplicativo ASP.NET Core. Este modelo não tem nenhum conteúdo nele.",
@@ -14,6 +14,6 @@
   "symbols/PWA/description": "Se especificado, produz um Progressive Web Application (PWA) com suporte para instalação e uso offline.",
   "symbols/HasHttpProfile/description": "Sempre ter perfil HTTP.",
   "symbols/NoHttps/description": "Se o HTTPS deve ser desativado.",
-  "postActions/restoreClient/description": "Restaure os pacotes NuGet exigidos por este projeto.",
-  "postActions/restoreClient/manualInstructions/default/text": "Executa 'dotnet restore'"
+  "postActions/restore/description": "Restaure os pacotes NuGet exigidos por este projeto.",
+  "postActions/restore/manualInstructions/default/text": "Executa 'dotnet restore'"
 }

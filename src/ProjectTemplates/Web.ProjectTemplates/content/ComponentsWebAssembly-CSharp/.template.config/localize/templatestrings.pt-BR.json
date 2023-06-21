@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "Aplicativo Blazor WebAssembly",
   "description": "Um modelo de projeto para criar um aplicativo Blazor que é executado no WebAssembly e, opcionalmente, é hospedado por um aplicativo ASP.NET Core. Esse modelo pode ser usado para aplicativos Web com IUs (interfaces do usuário) completas e dinâmicas.",
@@ -36,7 +36,7 @@
   "symbols/CalledApiScopes/description": "Escopos a serem solicitados para chamar a API do aplicativo Web. Essa opção só se aplica se --auth SingleOrg, --auth MultiOrg ou --auth IndividualB2C sem um host ASP.NET Core for especificado.",
   "symbols/UseProgramMain/displayName": "Não use ins_truções de nível superior",
   "symbols/UseProgramMain/description": "Se deve gerar uma classe de Programa explícita e um método principal em vez de instruções de nível superior.",
-  "postActions/restore/description": "Restore NuGet packages required by this project.",
-  "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'",
+  "postActions/restore/description": "Restaure os pacotes NuGet exigidos por este projeto.",
+  "postActions/restore/manualInstructions/default/text": "Executar 'dotnet restore'",
   "postActions/open-file/description": "Abre Readme.txt no editor"
 }

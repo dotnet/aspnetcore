@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "Blazor WebAssembly 앱",
   "description": "WebAssembly에서 실행되고 ASP.NET Core 앱에서 선택적으로 호스트되는 Blazor 앱을 만들기 위한 프로젝트 템플릿입니다. 이 템플릿은 다양한 동적 UI(사용자 인터페이스)를 포함하는 웹앱에 사용할 수 있습니다.",
@@ -36,7 +36,7 @@
   "symbols/CalledApiScopes/description": "웹앱에서 API 호출을 요청할 범위입니다. 이 옵션은 --auth SingleOrg, --auth MultiOrg 또는 --auth IndividualB2C without and ASP.NET Core 호스트가 지정된 경우에만 적용됩니다.",
   "symbols/UseProgramMain/displayName": "최상위 문 사용 안 함(_T)",
   "symbols/UseProgramMain/description": "최상위 문 대신 명시적 Program 클래스 및 Main 메서드를 생성할지 여부입니다.",
-  "postActions/restore/description": "Restore NuGet packages required by this project.",
-  "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'",
+  "postActions/restore/description": "이 프로젝트에 필요한 NuGet 패키지를 복원합니다.",
+  "postActions/restore/manualInstructions/default/text": "'dotnet restore' 실행",
   "postActions/open-file/description": "편집기에서 Readme.txt를 엽니다."
 }
