@@ -131,7 +131,7 @@
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>f39e05a73c5b5394caf493ee1205af9b64024a47</Sha>
+      <Sha>5b20af47d99620150c53eaf5db8636fdf730b126</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Logging.Configuration" Version="7.0.0">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
@@ -200,7 +200,7 @@
     </Dependency>
     <Dependency Name="System.DirectoryServices.Protocols" Version="7.0.1">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>f39e05a73c5b5394caf493ee1205af9b64024a47</Sha>
+      <Sha>5b20af47d99620150c53eaf5db8636fdf730b126</Sha>
     </Dependency>
     <Dependency Name="System.IO.Pipelines" Version="7.0.0">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
@@ -216,7 +216,7 @@
     </Dependency>
     <Dependency Name="System.Reflection.Metadata" Version="7.0.2">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>f39e05a73c5b5394caf493ee1205af9b64024a47</Sha>
+      <Sha>5b20af47d99620150c53eaf5db8636fdf730b126</Sha>
     </Dependency>
     <Dependency Name="System.Resources.Extensions" Version="7.0.0">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
@@ -224,7 +224,7 @@
     </Dependency>
     <Dependency Name="System.Security.Cryptography.Pkcs" Version="7.0.2">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>8f4c2eb362230b4a9872395cbebf9676be8e3ee2</Sha>
+      <Sha>5b20af47d99620150c53eaf5db8636fdf730b126</Sha>
     </Dependency>
     <Dependency Name="System.Security.Cryptography.Xml" Version="7.0.1">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
@@ -236,7 +236,7 @@
     </Dependency>
     <Dependency Name="System.ServiceProcess.ServiceController" Version="7.0.1">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>f39e05a73c5b5394caf493ee1205af9b64024a47</Sha>
+      <Sha>5b20af47d99620150c53eaf5db8636fdf730b126</Sha>
     </Dependency>
     <Dependency Name="System.Text.Encodings.Web" Version="7.0.0">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
@@ -244,7 +244,7 @@
     </Dependency>
     <Dependency Name="System.Text.Json" Version="7.0.3">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>f39e05a73c5b5394caf493ee1205af9b64024a47</Sha>
+      <Sha>5b20af47d99620150c53eaf5db8636fdf730b126</Sha>
     </Dependency>
     <Dependency Name="System.Threading.AccessControl" Version="7.0.1">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
