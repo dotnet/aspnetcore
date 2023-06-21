@@ -167,8 +167,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
             ExpectedActionValue = null,
             DispatchEvent = true,
             SubmitButtonId = "send-second",
-            // This is an error ID on the page chrome shows from a 500.
-            SubmitPassId = "main-frame-error"
+            ShouldCauseInternalServerError = true,
         };
         DispatchToFormCore(dispatchToForm);
     }
@@ -194,7 +193,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
             FormCssSelector = "form",
             ExpectedActionValue = null,
             SubmitButtonId = "test-send",
-            SubmitPassId = "main-frame-error"
+            ShouldCauseInternalServerError = true,
         };
         DispatchToFormCore(dispatchToForm);
     }
@@ -207,7 +206,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
             Url = "forms/switching-components-does-not-bind",
             FormCssSelector = "form",
             ExpectedActionValue = null,
-            SubmitPassId = "main-frame-error"
+            ShouldCauseInternalServerError = true,
         };
         DispatchToFormCore(dispatchToForm);
     }
@@ -304,10 +303,33 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
 
         Browser.Click(By.Id(dispatch.SubmitButtonId));
 
-        var text = Browser.Exists(By.Id(dispatch.SubmitPassId)).Text;
-        if (dispatch.InputFieldValue != null)
+        if (dispatch.ShouldCauseInternalServerError)
         {
-            Assert.Equal($"Hello {dispatch.InputFieldValue}!", text);
+            Browser.True(() =>
+            {
+                // Chrome's built-in error UI for a 500 response
+                // This is for non-enhanced nav mode
+                if (Browser.FindElements(By.Id("main-frame-error")).Any())
+                {
+                    return true;
+                }
+
+                // This is for enhanced nav mode
+                if (Browser.FindElements(By.TagName("html")).SingleOrDefault() is { } html)
+                {
+                    return html.Text.Contains("Error: 500");
+                }
+
+                return false;
+            });
+        }
+        else
+        {
+            var text = Browser.Exists(By.Id(dispatch.SubmitPassId)).Text;
+            if (dispatch.InputFieldValue != null)
+            {
+                Assert.Equal($"Hello {dispatch.InputFieldValue}!", text);
+            }
         }
     }
 
@@ -333,6 +355,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         public string SubmitButtonId { get; internal set; } = "send";
         public string InputFieldId { get; internal set; } = "firstName";
         public string InputFieldCssSelector { get; internal set; } = null;
+        public bool ShouldCauseInternalServerError { get; internal set; }
     }
 
     private void GoTo(string relativePath)

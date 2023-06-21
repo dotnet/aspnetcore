@@ -117,21 +117,32 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, f
         internalDestinationHref = response.url;
       }
 
-      if (response.headers.get('content-type')?.startsWith('text/html')) {
+      const responseContentType = response.headers.get('content-type');
+      if (responseContentType?.startsWith('text/html')) {
         // For HTML responses, regardless of the status code, display it
         const parsedHtml = new DOMParser().parseFromString(initialContent, 'text/html');
         synchronizeDomContent(document, parsedHtml);
+      } else if (responseContentType?.startsWith('text/')) {
+        // For any other text-based content, we'll just display it, because that's what
+        // would happen if this was a non-enhanced request.
+        replaceDocumentWithPlainText(initialContent);
       } else if ((response.status < 200 || response.status >= 300) && !initialContent) {
         // For any non-success response that has no content at all, make up our own error UI
         document.documentElement.innerHTML = `Error: ${response.status} ${response.statusText}`;
       } else {
         // For any other response, it's not HTML and we don't know what to do. It might be plain text,
-        // or an image, or something else. So fall back on a full reload, even though that means we
-        // have to request the content a second time.
-        // The ? trick here is the same workaround as described in #10839, and without it, the user
-        // would not be able to use the back button afterwards.
-        history.replaceState(null, '', internalDestinationHref + '?');
-        location.replace(internalDestinationHref);
+        // or an image, or something else.
+        if (!fetchOptions?.method || fetchOptions.method === 'get') {
+          // If it's a get request, we'll trust that it's idempotent and cheap enough to request
+          // a second time, so we can fall back on a full reload.
+          // The ? trick here is the same workaround as described in #10839, and without it, the user
+          // would not be able to use the back button afterwards.
+          history.replaceState(null, '', internalDestinationHref + '?');
+          location.replace(internalDestinationHref);
+        } else {
+          // For non-get requests, we can't safely re-request, so just treat it as an error
+          document.documentElement.innerHTML = `Error: ${fetchOptions.method} request to ${internalDestinationHref} returned non-HTML content of type ${responseContentType || 'unspecified'}.`;
+        }
       }
     },
     (streamingElementMarkup) => {
@@ -212,6 +223,14 @@ async function getResponsePartsWithFraming(responsePromise: Promise<Response>, a
       throw ex;
     }
   }
+}
+
+export function replaceDocumentWithPlainText(text: string) {
+  document.documentElement.textContent = text;
+  const docStyle = document.documentElement.style;
+  docStyle.fontFamily = 'consolas, monospace';
+  docStyle.whiteSpace = 'pre-wrap';
+  docStyle.padding = '1rem';
 }
 
 function splitStream(frameBoundaryMarker: string) {
