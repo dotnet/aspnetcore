@@ -262,6 +262,55 @@ public partial class ParameterViewTest
     }
 
     [Fact]
+    public void IncomingNonCascadingValueMatchesParameterThatIsBothCascadingAndNonCascading_Works()
+    {
+        // Arrange
+        var target = new HasPropertyWithParameterAndCascadingParameterAttributes();
+        var builder = new ParameterViewBuilder();
+        builder.Add(nameof(HasPropertyWithParameterAndCascadingParameterAttributes.Parameter), "Hello", cascading: false);
+        var parameters = builder.Build();
+
+        // Act
+        parameters.SetParameterProperties(target);
+
+        // Assert
+        Assert.Equal("Hello", target.Parameter);
+    }
+
+    [Fact]
+    public void IncomingCascadingValueMatchesParameterThatIsBothCascadingAndNonCascading_Works()
+    {
+        // Arrange
+        var target = new HasPropertyWithParameterAndCascadingParameterAttributes();
+        var builder = new ParameterViewBuilder();
+        builder.Add(nameof(HasPropertyWithParameterAndCascadingParameterAttributes.Parameter), "Hello", cascading: true);
+        var parameters = builder.Build();
+
+        // Act
+        parameters.SetParameterProperties(target);
+
+        // Assert
+        Assert.Equal("Hello", target.Parameter);
+    }
+
+    [Fact]
+    public void ParameterThatIsBothCascadingAndNonCascading_PrefersNonCascadingValue()
+    {
+        // Arrange
+        var target = new HasPropertyWithParameterAndCascadingParameterAttributes();
+        var builder = new ParameterViewBuilder();
+        builder.Add(nameof(HasPropertyWithParameterAndCascadingParameterAttributes.Parameter), "Non-cascading", cascading: false);
+        builder.Add(nameof(HasPropertyWithParameterAndCascadingParameterAttributes.Parameter), "Cascading", cascading: true);
+        var parameters = builder.Build();
+
+        // Act
+        parameters.SetParameterProperties(target);
+
+        // Assert
+        Assert.Equal("Non-cascading", target.Parameter);
+    }
+
+    [Fact]
     public void SettingCaptureUnmatchedValuesParameterExplicitlyWorks()
     {
         // Arrange
@@ -642,6 +691,11 @@ public partial class ParameterViewTest
         [CascadingParameter] private string Cascading { get; set; }
 
         public string GetCascadingValue() => Cascading;
+    }
+
+    class HasPropertyWithParameterAndCascadingParameterAttributes
+    {
+        [Parameter, CascadingParameter] public string Parameter { get; set; }
     }
 
     class ParameterViewBuilder : IEnumerable
