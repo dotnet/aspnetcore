@@ -131,7 +131,7 @@
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Logging.Abstractions" Version="6.0.4">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>61d7c70aaf511967552702f22c27a41649c5ffe8</Sha>
+      <Sha>c76ac565499f3e7c657126d46c00b67a0d74832c</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Logging.Configuration" Version="6.0.0">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -191,7 +191,7 @@
     </Dependency>
     <Dependency Name="System.DirectoryServices.Protocols" Version="6.0.2">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>61d7c70aaf511967552702f22c27a41649c5ffe8</Sha>
+      <Sha>c76ac565499f3e7c657126d46c00b67a0d74832c</Sha>
     </Dependency>
     <Dependency Name="System.IO.Pipelines" Version="6.0.3">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
@@ -219,7 +219,7 @@
     </Dependency>
     <Dependency Name="System.Security.Cryptography.Pkcs" Version="6.0.3">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>e2176dfe59cc071eb14362fb0c9cfea329d7b72e</Sha>
+      <Sha>c76ac565499f3e7c657126d46c00b67a0d74832c</Sha>
     </Dependency>
     <Dependency Name="System.Security.Cryptography.Xml" Version="6.0.1">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
@@ -227,7 +227,7 @@
     </Dependency>
     <Dependency Name="System.ServiceProcess.ServiceController" Version="6.0.1">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>61d7c70aaf511967552702f22c27a41649c5ffe8</Sha>
+      <Sha>c76ac565499f3e7c657126d46c00b67a0d74832c</Sha>
     </Dependency>
     <Dependency Name="System.Text.Encodings.Web" Version="6.0.0">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -235,7 +235,7 @@
     </Dependency>
     <Dependency Name="System.Text.Json" Version="6.0.8">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>61d7c70aaf511967552702f22c27a41649c5ffe8</Sha>
+      <Sha>c76ac565499f3e7c657126d46c00b67a0d74832c</Sha>
     </Dependency>
     <Dependency Name="System.Threading.Channels" Version="6.0.0">
       <Uri>https://github.com/dotnet/runtime</Uri>
