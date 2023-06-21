@@ -14,6 +14,6 @@
   "symbols/PWA/description": "Si se especifica, produce una aplicación web progresiva (PWA) compatible con la instalación y el uso sin conexión.",
   "symbols/HasHttpProfile/description": "Siempre tiene un perfil HTTP.",
   "symbols/NoHttps/description": "Si se va a desactivar HTTPS.",
-  "postActions/restoreClient/description": "Restaure los paquetes NuGet necesarios para este proyecto.",
-  "postActions/restoreClient/manualInstructions/default/text": "Ejecutar \"dotnet restore\""
+  "postActions/restore/description": "Restore NuGet packages required by this project.",
+  "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'"
 }

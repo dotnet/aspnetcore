@@ -14,6 +14,6 @@
   "symbols/PWA/description": "指定した場合、インストールとオフラインでの使用をサポートするプログレッシブ Web アプリケーション (PWA) が生成されます。",
   "symbols/HasHttpProfile/description": "HTTP プロファイルが常にあります。",
   "symbols/NoHttps/description": "HTTPS をオフにするかどうか。",
-  "postActions/restoreClient/description": "このプロジェクトに必要な NuGet パッケージを復元します。",
-  "postActions/restoreClient/manualInstructions/default/text": "'dotnet restore' を実行する"
+  "postActions/restore/description": "Restore NuGet packages required by this project.",
+  "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'"
 }

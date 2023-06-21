@@ -14,6 +14,6 @@
   "symbols/PWA/description": "若指定，會產生漸進式 Web 應用程式 (PWA) 支援安裝與離線使用。",
   "symbols/HasHttpProfile/description": "永遠有 HTTP 設定檔。",
   "symbols/NoHttps/description": "是否要關閉 HTTPS。",
-  "postActions/restoreClient/description": "還原此專案所需的 NuGet 套件。",
-  "postActions/restoreClient/manualInstructions/default/text": "執行 'dotnet restore'"
+  "postActions/restore/description": "Restore NuGet packages required by this project.",
+  "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'"
 }
