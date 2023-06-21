@@ -41,6 +41,10 @@
       <Uri>https://github.com/dotnet/efcore</Uri>
       <Sha>b0b202671f7879070423e95776edc014885335ad</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.Extensions.Telemetry.Testing" Version="8.0.0-preview.6.23320.3">
+      <Uri>https://github.com/dotnet/extensions</Uri>
+      <Sha>a0e9c8794e3e0ba27033a9f54a545385228d0876</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.Extensions.Caching.Abstractions" Version="8.0.0-preview.6.23318.9">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>815953a12c822847095a843d69c610a9f895ae3f</Sha>
