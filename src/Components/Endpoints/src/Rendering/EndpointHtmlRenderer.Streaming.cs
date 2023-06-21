@@ -218,5 +218,16 @@ internal partial class EndpointHtmlRenderer
         }
     }
 
-    private readonly record struct ComponentIdAndDepth(int ComponentId, int Depth);
+    private readonly struct ComponentIdAndDepth
+    {
+        public int ComponentId { get; }
+
+        public int Depth { get; }
+
+        public ComponentIdAndDepth(int componentId, int depth)
+        {
+            ComponentId = componentId;
+            Depth = depth;
+        }
+    }
 }
