@@ -128,7 +128,7 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, f
         replaceDocumentWithPlainText(initialContent);
       } else if ((response.status < 200 || response.status >= 300) && !initialContent) {
         // For any non-success response that has no content at all, make up our own error UI
-        document.documentElement.innerHTML = `Error: ${response.status} ${response.statusText}`;
+        replaceDocumentWithPlainText(`Error: ${response.status} ${response.statusText}`);
       } else {
         // For any other response, it's not HTML and we don't know what to do. It might be plain text,
         // or an image, or something else.
@@ -141,7 +141,7 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, f
           location.replace(internalDestinationHref);
         } else {
           // For non-get requests, we can't safely re-request, so just treat it as an error
-          document.documentElement.innerHTML = `Error: ${fetchOptions.method} request to ${internalDestinationHref} returned non-HTML content of type ${responseContentType || 'unspecified'}.`;
+          replaceDocumentWithPlainText(`Error: ${fetchOptions.method} request to ${internalDestinationHref} returned non-HTML content of type ${responseContentType || 'unspecified'}.`);
         }
       }
     },
