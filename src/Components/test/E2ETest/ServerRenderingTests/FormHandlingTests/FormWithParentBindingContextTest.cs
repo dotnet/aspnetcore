@@ -317,6 +317,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
 
         GoTo(dispatch.Url);
 
+        Browser.Exists(By.Id(dispatch.Ready));
         var form = Browser.Exists(By.CssSelector(dispatch.FormCssSelector));
         var formTarget = form.GetAttribute("action");
         var actionValue = form.GetDomAttribute("action");
