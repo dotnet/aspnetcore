@@ -58,7 +58,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
     {
         Navigate($"{ServerPathBase}/nav");
         Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Error page with no content")).Click();
-        Browser.Equal("Error: 404 Not Found", () => Browser.Exists(By.TagName("body")).Text);
+        Browser.Equal("Error: 404 Not Found", () => Browser.Exists(By.TagName("html")).Text);
     }
 
     [Fact]
@@ -66,7 +66,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
     {
         Navigate($"{ServerPathBase}/nav");
         Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Non-HTML page")).Click();
-        Browser.Equal("Hello, this is plain text", () => Browser.Exists(By.TagName("body")).Text);
+        Browser.Equal("Hello, this is plain text", () => Browser.Exists(By.TagName("html")).Text);
     }
 
     [Fact]
