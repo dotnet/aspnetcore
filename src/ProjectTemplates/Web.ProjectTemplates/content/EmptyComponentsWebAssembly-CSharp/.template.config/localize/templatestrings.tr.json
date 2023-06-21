@@ -14,6 +14,6 @@
   "symbols/PWA/description": "Belirtilmişse, yükleme ve çevrimdışı kullanımı destekleyen bir Aşamalı Web Uygulaması (PWA) oluşturur.",
   "symbols/HasHttpProfile/description": "Her zaman HTTP profili vardır.",
   "symbols/NoHttps/description": "HTTPS'nin kapatılıp kapatılmayacağı.",
-  "postActions/restore/description": "Restore NuGet packages required by this project.",
-  "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'"
+  "postActions/restoreClient/description": "Bu projenin gerektirdiği NuGet paketlerini geri yükleyin.",
+  "postActions/restoreClient/manualInstructions/default/text": "'dotnet restore' çalıştır"
 }
