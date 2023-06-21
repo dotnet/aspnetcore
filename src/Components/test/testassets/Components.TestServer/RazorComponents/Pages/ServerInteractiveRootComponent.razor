@@ -1,0 +1,24 @@
+﻿@attribute [RenderModeServer]
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <base href="/subdir/" />
+</head>
+<body>
+    <h1>Interactive root component</h1>
+    <p>
+        This is not a page component. It's rendered using a custom endpoint, so it doesn't
+        have any layout by default and is the root.
+    </p>
+
+    <TestContentPackage.Counter IncrementAmount="IncrementAmount" IdSuffix="server" />
+
+    <script src="_framework/blazor.web.js" suppress-error="BL9992"></script>
+</body>
+</html>
+
+@code {
+    [Parameter]
+    public int IncrementAmount { get; set; } = 1;
+}

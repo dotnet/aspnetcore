@@ -35,6 +35,11 @@ async function boot(options?: Partial<WebStartOptions>): Promise<void> {
     attachProgressivelyEnhancedNavigationListener(activateInteractiveComponents);
   }
 
+  // TODO: It's not enough only to activate interactive components after documentReady. We should also
+  // try activating them each time there's an SSR update, and even at the point when the initial HTML
+  // is loaded but we're still waiting for the first streaming SSR update.
+  // This is covered by #48763 and #48764
+  await waitForDocumentReady();
   await activateInteractiveComponents();
 }
 
@@ -58,6 +63,16 @@ async function activateInteractiveComponents() {
     detachProgressivelyEnhancedNavigationListener();
 
     await startWebAssembly(webStartOptions?.webAssembly, webAssemblyComponents);
+  }
+}
+
+async function waitForDocumentReady() {
+  // The other two possible states are 'interactive' and 'complete', and in both cases we're ready to proceed
+  if (document.readyState === 'loading') {
+    let resolver: Function;
+    const result = new Promise(resolve => { resolver = resolve });
+    document.addEventListener('DOMContentLoaded', () => resolver());
+    return result;
   }
 }
 

@@ -7,6 +7,7 @@ using Components.TestServer.RazorComponents.Pages;
 using Components.TestServer.RazorComponents.Pages.Forms;
 using Components.TestServer.Services;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Endpoints;
 
 namespace TestServer;
 
@@ -58,6 +59,9 @@ public class RazorComponentEndpointsStartup<TRootComponent>
                 StreamingRenderingForm.MapEndpoints(endpoints);
 
                 MapEnhancedNavigationEndpoints(endpoints);
+
+                endpoints.Map("/interactive-at-root", () =>
+                    new RazorComponentResult<ServerInteractiveRootComponent>(new { IncrementAmount = 10 }));
             });
         });
     }
