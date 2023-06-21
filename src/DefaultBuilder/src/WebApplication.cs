@@ -260,7 +260,7 @@ public sealed class WebApplication : IHost, IApplicationBuilder, IEndpointRouteB
         public IHostApplicationLifetime Lifetime => _webApplication.Lifetime;
         public ILogger Logger => _webApplication.Logger;
         public string Urls => string.Join(", ", _webApplication.Urls);
-        public IList<Endpoint> Endpoints => _webApplication.DataSources.SelectMany(ds => ds.Endpoints).ToList();
+        public IReadOnlyList<Endpoint> Endpoints => _webApplication.Services.GetRequiredService<EndpointDataSource>().Endpoints;
         public bool IsRunning => _webApplication.IsRunning;
         public IList<string>? Middleware
         {
