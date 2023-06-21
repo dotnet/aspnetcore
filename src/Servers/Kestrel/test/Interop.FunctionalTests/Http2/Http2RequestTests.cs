@@ -16,6 +16,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Telemetry.Testing.Metering;
 
 namespace Interop.FunctionalTests.Http2;
 
@@ -37,13 +38,7 @@ public class Http2RequestTests : LoggedTest
         {
             var meterFactory = host.Services.GetRequiredService<IMeterFactory>();
 
-            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            using var connectionDuration = new InstrumentRecorder<double>(meterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel-connection-duration");
-            using var measurementReporter = new MeasurementReporter<double>(meterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel-connection-duration");
-            measurementReporter.Register(m =>
-            {
-                tcs.SetResult();
-            });
+            using var connectionDuration = new MetricCollector<double>(meterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel-connection-duration");
 
             await host.StartAsync();
             var client = HttpHelpers.CreateClient();
@@ -61,16 +56,16 @@ public class Http2RequestTests : LoggedTest
             // Dispose the client to end the connection.
             client.Dispose();
             // Wait for measurement to be available.
-            await tcs.Task.DefaultTimeout();
+            await connectionDuration.WaitForMeasurementsAsync(numMeasurements: 1).DefaultTimeout();
 
             // Assert
-            Assert.Collection(connectionDuration.GetMeasurements(),
+            Assert.Collection(connectionDuration.GetMeasurementSnapshot(),
                 m =>
                 {
                     Assert.True(m.Value > 0);
-                    Assert.Equal(protocol.ToString(), m.Tags.ToArray().Single(t => t.Key == "tls-protocol").Value);
-                    Assert.Equal("HTTP/2", m.Tags.ToArray().Single(t => t.Key == "http-protocol").Value);
-                    Assert.Equal($"127.0.0.1:{host.GetPort()}", m.Tags.ToArray().Single(t => t.Key == "endpoint").Value);
+                    Assert.Equal(protocol.ToString(), m.Tags["tls-protocol"]);
+                    Assert.Equal("HTTP/2", m.Tags["http-protocol"]);
+                    Assert.Equal($"127.0.0.1:{host.GetPort()}", m.Tags["endpoint"]);
                 });
 
             await host.StopAsync();
