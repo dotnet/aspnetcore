@@ -246,6 +246,7 @@ internal static class EndpointParameterEmitter
         var shortParameterTypeName = endpointParameter.Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat);
         var assigningCode = $"await GeneratedRouteBuilderExtensionsCore.TryResolveBodyAsync<{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)}>(httpContext, logOrThrowExceptionHelper, {(endpointParameter.IsOptional ? "true" : "false")}, {SymbolDisplay.FormatLiteral(shortParameterTypeName, true)}, {SymbolDisplay.FormatLiteral(endpointParameter.SymbolName, true)}, {endpointParameter.SymbolName}_JsonTypeInfo)";
         var resolveBodyResult = $"{endpointParameter.SymbolName}_resolveBodyResult";
+        codeWriter.WriteLine($"var {endpointParameter.SymbolName}_JsonTypeInfo = (JsonTypeInfo<{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)}>)jsonOptions.SerializerOptions.GetTypeInfo(typeof({endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormatWithoutNullability)}));");
         codeWriter.WriteLine($"var {resolveBodyResult} = {assigningCode};");
         codeWriter.WriteLine($"{endpointParameter.EmitHandlerArgument()} = {resolveBodyResult}.Item2!;");
 

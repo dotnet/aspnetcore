@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { CompletionMessage, InvocationMessage, MessageType, NullLogger, StreamItemMessage } from "@microsoft/signalr";
+import { CloseMessage, CompletionMessage, InvocationMessage, MessageType, NullLogger, StreamItemMessage } from "@microsoft/signalr";
 import { MessagePackHubProtocol } from "../src/MessagePackHubProtocol";
 
 describe("MessagePackHubProtocol", () => {
@@ -272,5 +272,16 @@ describe("MessagePackHubProtocol", () => {
             target: "myMethod",
             type: 1,
         });
+    });
+
+    it("can write/read Close message", () => {
+        const closeMessage = {
+            type: MessageType.Close,
+        } as CloseMessage;
+
+        const protocol = new MessagePackHubProtocol();
+        const parsedMessages = protocol.parseMessages(protocol.writeMessage(closeMessage), NullLogger.instance);
+        expect(parsedMessages.length).toEqual(1);
+        expect(parsedMessages[0].type).toEqual(MessageType.Close);
     });
 });

@@ -34,6 +34,7 @@ internal class RazorComponentEndpointInvoker
     private async Task RenderComponentCore()
     {
         _context.Response.ContentType = RazorComponentResultExecutor.DefaultContentType;
+        _renderer.InitializeStreamingRenderingFraming(_context);
 
         if (!await TryValidateRequestAsync(out var isPost, out var handler))
         {
