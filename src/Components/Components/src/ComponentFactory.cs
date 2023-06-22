@@ -45,12 +45,12 @@ internal sealed class ComponentFactory
         return cacheEntry;
     }
 
-    public IComponent InstantiateComponent(IServiceProvider serviceProvider, [DynamicallyAccessedMembers(Component)] Type componentType, int? parentComponentId)
+    public IComponent InstantiateComponent(IServiceProvider serviceProvider, [DynamicallyAccessedMembers(Component)] Type componentType, IComponentRenderMode? callerSpecifiedRenderMode, int? parentComponentId)
     {
         var componentTypeInfo = GetComponentTypeInfo(componentType);
-        var component = componentTypeInfo.ComponentTypeRenderMode is null
+        var component = componentTypeInfo.ComponentTypeRenderMode is null && callerSpecifiedRenderMode is null
             ? _componentActivator.CreateInstance(componentType)
-            : _renderer.ResolveComponentForRenderMode(componentType, parentComponentId, _componentActivator, componentTypeInfo.ComponentTypeRenderMode);
+            : _renderer.ResolveComponentForRenderMode(componentType, parentComponentId, _componentActivator, componentTypeInfo.ComponentTypeRenderMode, callerSpecifiedRenderMode);
 
         if (component is null)
         {

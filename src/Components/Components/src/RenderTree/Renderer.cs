@@ -164,7 +164,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     /// <param name="componentType">The type of the component to instantiate.</param>
     /// <returns>The component instance.</returns>
     protected IComponent InstantiateComponent([DynamicallyAccessedMembers(Component)] Type componentType)
-        => _componentFactory.InstantiateComponent(_serviceProvider, componentType, null);
+        => _componentFactory.InstantiateComponent(_serviceProvider, componentType, null, null);
 
     /// <summary>
     /// Associates the <see cref="IComponent"/> with the <see cref="Renderer"/>, assigning
@@ -487,7 +487,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             throw new ArgumentException($"The frame already has a non-null component instance", nameof(frame));
         }
 
-        var newComponent = _componentFactory.InstantiateComponent(_serviceProvider, frame.ComponentTypeField, parentComponentId);
+        var newComponent = _componentFactory.InstantiateComponent(_serviceProvider, frame.ComponentTypeField, null, parentComponentId);
         var newComponentState = AttachAndInitComponent(newComponent, parentComponentId);
         frame.ComponentStateField = newComponentState;
         frame.ComponentIdField = newComponentState.ComponentId;
@@ -1146,23 +1146,26 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
 
     /// <summary>
     /// Determines how to handle an <see cref="IComponentRenderMode"/> when obtaining a component instance.
-    /// This is only called for components that have specified a render mode. Subclasses may override this
-    /// method to return a component of a different type, or throw, depending on whether the renderer
+    /// This is only called when a render mode is specified either at the call site or on the component type.
+    /// 
+    /// Subclasses may override this method to return a component of a different type, or throw, depending on whether the renderer
     /// supports the render mode and how it implements that support.
     /// </summary>
     /// <param name="componentType">The type of component that was requested.</param>
     /// <param name="parentComponentId">The parent component ID, or null if it is a root component.</param>
     /// <param name="componentActivator">An <see cref="IComponentActivator"/> that should be used when instantiating component objects.</param>
     /// <param name="componentTypeRenderMode">The <see cref="IComponentRenderMode"/> declared on <paramref name="componentType"/>.</param>
+    /// <param name="callerSpecifiedRenderMode">The <see cref="IComponentRenderMode"/> specified at the call site (for example, by the parent component), if any.</param>
     /// <returns>An <see cref="IComponent"/> instance.</returns>
     protected internal virtual IComponent ResolveComponentForRenderMode(
         [DynamicallyAccessedMembers(Component)] Type componentType,
         int? parentComponentId,
         IComponentActivator componentActivator,
-        IComponentRenderMode componentTypeRenderMode)
+        IComponentRenderMode? componentTypeRenderMode,
+        IComponentRenderMode? callerSpecifiedRenderMode)
     {
         // Nothing is supported by default. Subclasses must override this to opt into supporting specific render modes.
-        throw new NotSupportedException($"Cannot supply a component of type '{componentType}' because the current platform does not support the render mode '{componentTypeRenderMode}'.");
+        throw new NotSupportedException($"Cannot supply a component of type '{componentType}' because the current platform does not support the render mode '{componentTypeRenderMode ?? callerSpecifiedRenderMode}'.");
     }
 
     /// <summary>

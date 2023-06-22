@@ -1,11 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components;
 
@@ -19,7 +17,7 @@ public class ComponentFactoryTest
         var factory = new ComponentFactory(new DefaultComponentActivator(), new TestRenderer());
 
         // Act
-        var instance = factory.InstantiateComponent(GetServiceProvider(), componentType, null);
+        var instance = factory.InstantiateComponent(GetServiceProvider(), componentType, null, null);
 
         // Assert
         Assert.NotNull(instance);
@@ -34,7 +32,7 @@ public class ComponentFactoryTest
         var factory = new ComponentFactory(new DefaultComponentActivator(), new TestRenderer());
 
         // Assert
-        var ex = Assert.Throws<ArgumentException>(() => factory.InstantiateComponent(GetServiceProvider(), componentType, null));
+        var ex = Assert.Throws<ArgumentException>(() => factory.InstantiateComponent(GetServiceProvider(), componentType, null, null));
         Assert.StartsWith($"The type {componentType.FullName} does not implement {nameof(IComponent)}.", ex.Message);
     }
 
@@ -46,7 +44,7 @@ public class ComponentFactoryTest
         var factory = new ComponentFactory(new CustomComponentActivator<ComponentWithInjectProperties>(), new TestRenderer());
 
         // Act
-        var instance = factory.InstantiateComponent(GetServiceProvider(), componentType, null);
+        var instance = factory.InstantiateComponent(GetServiceProvider(), componentType, null, null);
 
         // Assert
         Assert.NotNull(instance);
@@ -67,7 +65,7 @@ public class ComponentFactoryTest
         var factory = new ComponentFactory(new NullResultComponentActivator(), new TestRenderer());
 
         // Act
-        var ex = Assert.Throws<InvalidOperationException>(() => factory.InstantiateComponent(GetServiceProvider(), componentType, null));
+        var ex = Assert.Throws<InvalidOperationException>(() => factory.InstantiateComponent(GetServiceProvider(), componentType, null, null));
         Assert.Equal($"The component activator returned a null value for a component of type {componentType.FullName}.", ex.Message);
     }
 
@@ -79,7 +77,7 @@ public class ComponentFactoryTest
         var factory = new ComponentFactory(new CustomComponentActivator<DerivedComponent>(), new TestRenderer());
 
         // Act
-        var instance = factory.InstantiateComponent(GetServiceProvider(), componentType, null);
+        var instance = factory.InstantiateComponent(GetServiceProvider(), componentType, null, null);
 
         // Assert
         Assert.NotNull(instance);
@@ -102,7 +100,7 @@ public class ComponentFactoryTest
         var factory = new ComponentFactory(new DefaultComponentActivator(), new TestRenderer());
 
         // Act
-        var instance = factory.InstantiateComponent(GetServiceProvider(), componentType, null);
+        var instance = factory.InstantiateComponent(GetServiceProvider(), componentType, null, null);
 
         // Assert
         Assert.NotNull(instance);
@@ -122,7 +120,7 @@ public class ComponentFactoryTest
         var factory = new ComponentFactory(new DefaultComponentActivator(), renderer);
 
         // Act
-        var instance = factory.InstantiateComponent(GetServiceProvider(), componentType, null);
+        var instance = factory.InstantiateComponent(GetServiceProvider(), componentType, null, null);
 
         // Assert
         Assert.IsType<ComponentWithInjectProperties>(instance);
@@ -140,7 +138,7 @@ public class ComponentFactoryTest
         var factory = new ComponentFactory(componentActivator, renderer);
 
         // Act
-        var instance = (ComponentWithInjectProperties)factory.InstantiateComponent(GetServiceProvider(), componentType, 1234);
+        var instance = (ComponentWithInjectProperties)factory.InstantiateComponent(GetServiceProvider(), componentType, null, 1234);
 
         // Assert
         Assert.True(renderer.ResolverWasCalled);
@@ -150,6 +148,35 @@ public class ComponentFactoryTest
         Assert.Equal(1234, renderer.SuppliedParentComponentId);
         Assert.Same(componentActivator, renderer.SuppliedActivator);
         Assert.IsType<TestRenderMode>(renderer.SuppliedComponentTypeRenderMode);
+    }
+
+    [Fact]
+    public void InstantiateComponent_WithRenderModeOnCallSite_UsesRenderModeResolver()
+    {
+        // Arrange
+        // Notice that the requested component type is not the same as the resolved component type. This
+        // is intentional and shows that component factories are allowed to substitute other component types.
+        var resolvedComponent = new ComponentWithInjectProperties();
+        var componentType = typeof(ComponentWithNonInjectableProperties);
+        var callSiteRenderMode = new TestRenderMode();
+        var renderer = new RendererWithResolveComponentForRenderMode(resolvedComponent);
+        var componentActivator = new DefaultComponentActivator();
+        var factory = new ComponentFactory(componentActivator, renderer);
+
+        // Act
+        var instance = (ComponentWithInjectProperties)factory.InstantiateComponent(GetServiceProvider(), componentType, callSiteRenderMode, 1234);
+
+        // Assert
+        Assert.Same(resolvedComponent, instance);
+        Assert.NotNull(instance.Property1);
+        Assert.Equal(componentType, renderer.RequestedComponentType);
+        Assert.Same(componentActivator, renderer.SuppliedActivator);
+        Assert.Same(callSiteRenderMode, renderer.SuppliedCallSiteRenderMode);
+        Assert.Null(renderer.SuppliedComponentTypeRenderMode);
+        Assert.Equal(componentType, renderer.RequestedComponentType);
+        Assert.Equal(1234, renderer.SuppliedParentComponentId);
+        Assert.Same(componentActivator, renderer.SuppliedActivator);
+        Assert.Null(renderer.SuppliedComponentTypeRenderMode);
     }
 
     private static IServiceProvider GetServiceProvider()
@@ -280,6 +307,7 @@ public class ComponentFactoryTest
         public int? SuppliedParentComponentId { get; private set; }
         public IComponentActivator SuppliedActivator { get; private set; }
         public IComponentRenderMode SuppliedComponentTypeRenderMode { get; private set; }
+        public IComponentRenderMode SuppliedCallSiteRenderMode { get; private set; }
 
         public override Dispatcher Dispatcher => throw new NotImplementedException();
 
@@ -293,13 +321,14 @@ public class ComponentFactoryTest
             throw new NotImplementedException();
         }
 
-        protected internal override IComponent ResolveComponentForRenderMode(Type componentType, int? parentComponentId, IComponentActivator componentActivator, IComponentRenderMode componentTypeRenderMode)
+        protected internal override IComponent ResolveComponentForRenderMode(Type componentType, int? parentComponentId, IComponentActivator componentActivator, IComponentRenderMode componentTypeRenderMode, IComponentRenderMode callerSuppliedRenderMode)
         {
             ResolverWasCalled = true;
             RequestedComponentType = componentType;
             SuppliedParentComponentId = parentComponentId;
             SuppliedActivator = componentActivator;
             SuppliedComponentTypeRenderMode = componentTypeRenderMode;
+            SuppliedCallSiteRenderMode = callerSuppliedRenderMode;
             return _componentToReturn;
         }
     }

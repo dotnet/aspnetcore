@@ -5284,8 +5284,14 @@ public class RendererTest
 
     private class RendererWithRenderModeResolver : TestRenderer
     {
-        protected internal override IComponent ResolveComponentForRenderMode(Type componentType, int? parentComponentId, IComponentActivator componentActivator, IComponentRenderMode componentTypeRenderMode)
+        protected internal override IComponent ResolveComponentForRenderMode(Type componentType, int? parentComponentId, IComponentActivator componentActivator, IComponentRenderMode componentTypeRenderMode, IComponentRenderMode callerSuppliedRenderMode)
         {
+            // The tests just don't use this, so explicitly assert we don't receive such a value
+            if (callerSuppliedRenderMode is not null)
+            {
+                throw new NotSupportedException($"{nameof(RendererWithRenderModeResolver)} should not have received callsite rendermode {callerSuppliedRenderMode}");
+            }
+
             return componentTypeRenderMode switch
             {
                 SubstituteComponentRenderMode => componentActivator.CreateInstance(typeof(MessageComponent)),
