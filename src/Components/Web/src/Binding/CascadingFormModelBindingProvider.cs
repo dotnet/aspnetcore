@@ -42,7 +42,7 @@ public sealed class CascadingFormModelBindingProvider : CascadingModelBindingPro
     {
         var (formName, valueType) = GetFormNameAndValueType(bindingContext, parameterInfo);
 
-        if (!_formValueSupplier.TryBind(formName!, valueType, out var boundValue, bindingContext.AddError))
+        if (!_formValueSupplier.TryBind(formName!, valueType, out var boundValue, bindingContext!.AddError))
         {
             return null;
         }

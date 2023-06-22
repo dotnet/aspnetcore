@@ -46,7 +46,7 @@ internal sealed class DefaultFormValuesSupplier : IFormValueSupplier
         string formName,
         Type valueType,
         [NotNullWhen(true)] out object? boundValue,
-        Action<string, FormattableString, string> onError)
+        Action<string, FormattableString, string?> onError)
     {
         // This will func to a proper binder
         if (!CanBind(formName, valueType))
