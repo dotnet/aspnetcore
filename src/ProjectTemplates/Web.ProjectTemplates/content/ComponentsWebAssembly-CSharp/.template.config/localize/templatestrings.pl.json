@@ -1,12 +1,10 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "Aplikacja zestawu WebAssembly platformy Blazor",
   "description": "Szablon projektu służący do tworzenia aplikacji platformy Blazor, która działa w formacie WebAssembly i jest opcjonalnie hostowana przez aplikację platformy ASP.NET Core. Tego szablonu można używać dla aplikacji internetowych z rozbudowanymi dynamicznymi interfejsami użytkownika.",
   "symbols/Framework/description": "Platforma docelowa dla tego projektu.",
   "symbols/Framework/choices/net8.0/description": "Docelowa platforma net8.0",
   "symbols/skipRestore/description": "Jeśli ta opcja jest określona, pomija automatyczne przywracanie projektu podczas tworzenia.",
-  "symbols/Hosted/displayName": "ASP.NET Core _Hosted",
-  "symbols/Hosted/description": "Jeśli zostanie określony, zawiera hosta platformy ASP.NET Core dla aplikacji Zestaw WebAssembly platformy Blazor.",
   "symbols/auth/choices/None/description": "Bez uwierzytelniania",
   "symbols/auth/choices/Individual/description": "Uwierzytelnianie indywidualne",
   "symbols/auth/choices/IndividualB2C/description": "Indywidualne uwierzytelnianie za pomocą usługi Azure AD B2C",
@@ -40,7 +38,5 @@
   "symbols/UseProgramMain/description": "Określa, czy wygenerować jawną klasę Program i metodę Main zamiast instrukcji najwyższego poziomu.",
   "postActions/restore/description": "Przywróć pakiety NuGet wymagane przez ten projekt.",
   "postActions/restore/manualInstructions/default/text": "Uruchom polecenie \"dotnet restore\"",
-  "postActions/restoreClient/description": "Przywróć pakiety NuGet wymagane przez ten projekt.",
-  "postActions/restoreClient/manualInstructions/default/text": "Uruchom polecenie „dotnet restore”",
   "postActions/open-file/description": "Otwiera plik Readme.txt w edytorze"
 }

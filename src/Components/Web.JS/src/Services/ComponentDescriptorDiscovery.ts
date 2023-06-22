@@ -140,6 +140,7 @@ function getComponentComment(commentNodeIterator: ComponentCommentIterator, type
     const json = definition && definition.groups && definition.groups['descriptor'];
 
     if (json) {
+      assertNotDirectlyOnDocument(candidateStart);
       try {
         const componentComment = parseCommentPayload(json);
         switch (type) {
@@ -165,6 +166,12 @@ function parseCommentPayload(json: string): ComponentComment {
   }
 
   return payload;
+}
+
+function assertNotDirectlyOnDocument(marker: Node) {
+  if (marker.parentNode instanceof Document) {
+    throw new Error('Root components cannot be marked as interactive. The <html> element must be rendered statically so that scripts are not evaluated multiple times.');
+  }
 }
 
 function createServerComponentComment(payload: ServerComponentComment, start: Node, iterator: ComponentCommentIterator): ServerComponentComment | undefined {

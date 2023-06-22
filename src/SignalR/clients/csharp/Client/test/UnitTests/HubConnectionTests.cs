@@ -193,7 +193,7 @@ public partial class HubConnectionTests : VerifiableLoggedTest
             await hubConnection.StopAsync().DefaultTimeout();
 
             // Assert that InvokeAsync didn't send a message
-            Assert.Null(await connection.ReadSentTextMessageAsync().DefaultTimeout());
+            Assert.Equal("{\"type\":7}", await connection.ReadSentTextMessageAsync().DefaultTimeout());
         }
     }
 
@@ -212,7 +212,7 @@ public partial class HubConnectionTests : VerifiableLoggedTest
             await hubConnection.StopAsync().DefaultTimeout();
 
             // Assert that SendAsync didn't send a message
-            Assert.Null(await connection.ReadSentTextMessageAsync().DefaultTimeout());
+            Assert.Equal("{\"type\":7}", await connection.ReadSentTextMessageAsync().DefaultTimeout());
         }
     }
 
@@ -254,7 +254,7 @@ public partial class HubConnectionTests : VerifiableLoggedTest
             await hubConnection.StopAsync().DefaultTimeout();
 
             // Assert that StreamAsChannelAsync didn't send a message
-            Assert.Null(await connection.ReadSentTextMessageAsync().DefaultTimeout());
+            Assert.Equal("{\"type\":7}", await connection.ReadSentTextMessageAsync().DefaultTimeout());
         }
     }
 
@@ -273,7 +273,7 @@ public partial class HubConnectionTests : VerifiableLoggedTest
             await hubConnection.StopAsync().DefaultTimeout();
 
             // Assert that StreamAsync didn't send a message
-            Assert.Null(await connection.ReadSentTextMessageAsync().DefaultTimeout());
+            Assert.Equal("{\"type\":7}", await connection.ReadSentTextMessageAsync().DefaultTimeout());
         }
     }
 

@@ -24,7 +24,7 @@ In the SignalR protocol, the following types of messages can be sent:
 | ------------------    | -------------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | `HandshakeRequest`    | Client         | Sent by the client to agree on the message format.                                                                            |
 | `HandshakeResponse`   | Server         | Sent by the server as an acknowledgment of the previous `HandshakeRequest` message. Contains an error if the handshake failed. |
-| `Close`               | Callee, Caller | Sent by the server when a connection is closed. Contains an error if the connection was closed because of an error.            |
+| `Close`               | Callee, Caller | Sent by the server when a connection is closed. Contains an error if the connection was closed because of an error. Sent by the client when it's closing the connection, unlikely to contain an error. |
 | `Invocation`          | Caller         | Indicates a request to invoke a particular method (the Target) with provided Arguments on the remote endpoint.                 |
 | `StreamInvocation`    | Caller         | Indicates a request to invoke a streaming method (the Target) with provided Arguments on the remote endpoint.                  |
 | `StreamItem`          | Callee, Caller | Indicates individual items of streamed response data from a previous `StreamInvocation` message or streamed uploads from an invocation with streamIds.                               |

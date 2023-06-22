@@ -1,12 +1,10 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "App WebAssembly Blazor",
   "description": "Modello di progetto per la creazione di un'app Blazor eseguita in WebAssembly e ospitata facoltativamente da un'app ASP.NET Core. Questo modello può essere usato per app Web con interfacce utente dinamiche.",
   "symbols/Framework/description": "Il framework di destinazione per il progetto.",
   "symbols/Framework/choices/net8.0/description": "Destinazione net8.0",
   "symbols/skipRestore/description": "Se specificato, ignora il ripristino automatico del progetto durante la creazione.",
-  "symbols/Hosted/displayName": "ASP.NET Core _Hosted",
-  "symbols/Hosted/description": "Se specificato, include un host ASP.NET Core per l'app Blazor WebAssembly.",
   "symbols/auth/choices/None/description": "Nessuna autenticazione",
   "symbols/auth/choices/Individual/description": "Autenticazione singola",
   "symbols/auth/choices/IndividualB2C/description": "Autenticazione singola con Azure AD B2C",
@@ -40,7 +38,5 @@
   "symbols/UseProgramMain/description": "Indica se generare una classe Program esplicita e un metodo Main anziché istruzioni di primo livello.",
   "postActions/restore/description": "Ripristina i pacchetti NuGet richiesti da questo progetto.",
   "postActions/restore/manualInstructions/default/text": "Esegui 'dotnet restore'",
-  "postActions/restoreClient/description": "Ripristina i pacchetti NuGet richiesti da questo progetto.",
-  "postActions/restoreClient/manualInstructions/default/text": "Esegui 'dotnet restore'",
   "postActions/open-file/description": "Apre Readme.txt nell'editor"
 }

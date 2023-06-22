@@ -668,7 +668,9 @@ public partial class HubConnectionTests
                 await hubConnection.DisposeAsync().DefaultTimeout();
                 await connection.DisposeAsync().DefaultTimeout();
 
-                Assert.Equal(0, (await connection.ReadAllSentMessagesAsync(ignorePings: false).DefaultTimeout()).Count);
+                var messages = await connection.ReadAllSentMessagesAsync(ignorePings: false).DefaultTimeout();
+                var message = Assert.Single(messages);
+                Assert.Equal("{\"type\":7}", message);
             }
             finally
             {

@@ -62,6 +62,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.Extensions.Options.DataAnnotations" />
     <LatestPackageReference Include="Microsoft.Extensions.Options" />
     <LatestPackageReference Include="Microsoft.Extensions.Primitives" />
+    <LatestPackageReference Include="Microsoft.Extensions.Telemetry.Testing" />
     <LatestPackageReference Include="Microsoft.Win32.Registry" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing.XUnit" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing.XUnit" />

@@ -1,12 +1,10 @@
-﻿{
+{
   "author": "Майкрософт",
   "name": "Приложение WebAssembly Blazor",
   "description": "Шаблон проекта для создания приложения Blazor, которое запускается в WebAssembly и может размещаться в приложении ASP.NET Core. Этот шаблон можно использовать для веб-приложений с расширенными динамическими пользовательскими интерфейсами (UI).",
   "symbols/Framework/description": "Целевая платформа для проекта.",
   "symbols/Framework/choices/net8.0/description": "Целевая net8.0",
   "symbols/skipRestore/description": "Если установлено, автоматическое восстановление проекта при создании пропускается.",
-  "symbols/Hosted/displayName": "_Размещение на ASP.NET Core",
-  "symbols/Hosted/description": "Если указывается, включает узел ASP.NET Core для приложения Blazor WebAssembly.",
   "symbols/auth/choices/None/description": "Без проверки подлинности",
   "symbols/auth/choices/Individual/description": "Индивидуальная проверка подлинности",
   "symbols/auth/choices/IndividualB2C/description": "Индивидуальная проверка подлинности в Azure AD B2C",
@@ -40,7 +38,5 @@
   "symbols/UseProgramMain/description": "Следует ли создавать явный класс Program и метод Main вместо операторов верхнего уровня.",
   "postActions/restore/description": "Восстановление пакетов NuGet, необходимых для этого проекта.",
   "postActions/restore/manualInstructions/default/text": "Выполнить команду \"dotnet restore\"",
-  "postActions/restoreClient/description": "Восстановление пакетов NuGet, необходимых для этого проекта.",
-  "postActions/restoreClient/manualInstructions/default/text": "Выполнить команду \"dotnet restore\"",
   "postActions/open-file/description": "Открывает Readme.txt в редакторе"
 }
