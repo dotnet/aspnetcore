@@ -14,7 +14,7 @@ Microsoft.AspNetCore.Components.Binding.CascadingQueryModelBindingProvider.Casca
 Microsoft.AspNetCore.Components.Binding.IFormValueSupplier
 Microsoft.AspNetCore.Components.Binding.IFormValueSupplier.CanBind(string! formName, System.Type! valueType) -> bool
 Microsoft.AspNetCore.Components.Binding.IFormValueSupplier.CanConvertSingleValue(System.Type! type) -> bool
-Microsoft.AspNetCore.Components.Binding.IFormValueSupplier.TryBind(string! formName, System.Type! valueType, out object? boundValue) -> bool
+Microsoft.AspNetCore.Components.Binding.IFormValueSupplier.TryBind(string! formName, System.Type! valueType, out object? boundValue, System.Action<string!, System.FormattableString!, string?>! onError) -> bool
 Microsoft.AspNetCore.Components.CascadingModelBinder
 Microsoft.AspNetCore.Components.CascadingModelBinder.CascadingModelBinder() -> void
 Microsoft.AspNetCore.Components.CascadingModelBinder.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.ModelBindingContext!>!
@@ -35,6 +35,8 @@ Microsoft.AspNetCore.Components.IComponentRenderMode
 Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.PersistStateAsync(Microsoft.AspNetCore.Components.IPersistentComponentStateStore! store, Microsoft.AspNetCore.Components.Dispatcher! dispatcher) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.ModelBindingContext
 Microsoft.AspNetCore.Components.ModelBindingContext.BindingContextId.get -> string!
+Microsoft.AspNetCore.Components.ModelBindingContext.GetAttemptedValue(string! key) -> string?
+Microsoft.AspNetCore.Components.ModelBindingContext.GetErrors(string! key) -> System.Collections.Generic.IReadOnlyList<System.FormattableString!>!
 Microsoft.AspNetCore.Components.ModelBindingContext.Name.get -> string!
 Microsoft.AspNetCore.Components.ParameterView.ToDictionary() -> System.Collections.Generic.IReadOnlyDictionary<string!, object?>!
 *REMOVED*Microsoft.AspNetCore.Components.ParameterView.ToDictionary() -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>!

@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Components;
 public sealed class ModelBindingContext
 {
     private readonly Predicate<Type> _canBind;
-    private Dictionary<string, BindingError> _errors;
+    private Dictionary<string, BindingError>? _errors;
 
     internal ModelBindingContext(string name, string bindingContextId, Predicate<Type> canBind)
     {
