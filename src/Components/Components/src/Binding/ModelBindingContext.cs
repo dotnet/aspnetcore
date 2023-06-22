@@ -10,6 +10,7 @@ public sealed class ModelBindingContext
 {
     private readonly Predicate<Type> _canBind;
     private Dictionary<string, BindingError>? _errors;
+    private Dictionary<string, Dictionary<string, BindingError>>? _errorsByFormName;
 
     internal ModelBindingContext(string name, string bindingContextId, Predicate<Type> canBind)
     {
@@ -48,6 +49,19 @@ public sealed class ModelBindingContext
     public IReadOnlyList<FormattableString> GetErrors(string key) =>
         _errors?.TryGetValue(key, out var bindingError) == true ? bindingError.ErrorMessages : Array.Empty<FormattableString>();
 
+    public IEnumerable<KeyValuePair<string, IReadOnlyList<FormattableString>>> GetAllErrors()
+    {
+        if (_errors == null)
+        {
+            yield break;
+        }
+
+        foreach (var (key, value) in _errors)
+        {
+            yield return new KeyValuePair<string, IReadOnlyList<FormattableString>>(key, value.ErrorMessages);
+        }
+    }
+
     /// <summary>
     /// Retrieves the attempted value that failed to bind for a given model key.
     /// </summary>
@@ -62,15 +76,41 @@ public sealed class ModelBindingContext
     internal void AddError(string key, FormattableString error, string? attemptedValue)
     {
         _errors ??= new Dictionary<string, BindingError>();
-        if (!_errors.TryGetValue(key, out var bindingError))
+        AddErrorCore(_errors, key, error, attemptedValue);
+    }
+
+    private static void AddErrorCore(Dictionary<string, BindingError> errors, string key, FormattableString error, string? attemptedValue)
+    {
+        if (!errors.TryGetValue(key, out var bindingError))
         {
             bindingError = new BindingError(new List<FormattableString>() { error }, attemptedValue);
-            _errors.Add(key, bindingError);
+            errors.Add(key, bindingError);
         }
         else
         {
             bindingError.ErrorMessages.Add(error);
         }
+    }
+
+    internal void AddError(string formName, string key, FormattableString error, string? attemptedValue)
+    {
+        _errorsByFormName ??= new Dictionary<string, Dictionary<string, BindingError>>();
+        if (!_errorsByFormName.TryGetValue(formName, out var formErrors))
+        {
+            formErrors = new Dictionary<string, BindingError>();
+            _errorsByFormName.Add(formName, formErrors);
+        }
+        AddErrorCore(formErrors, key, error, attemptedValue);
+    }
+
+    internal void SetErrors(string formName, ModelBindingContext childContext)
+    {
+        if (_errorsByFormName == null || !_errorsByFormName.TryGetValue(formName, out var formErrors))
+        {
+            return;
+        }
+
+        childContext._errors = formErrors;
     }
 
     internal bool CanConvert(Type type) => _canBind(type);
