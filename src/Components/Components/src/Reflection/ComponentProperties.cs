@@ -66,7 +66,7 @@ internal static class ComponentProperties
                 else if (parameter.Cascading && writer.AcceptsDirectParameters && writer.AcceptsCascadingParameters)
                 {
                     // It's possible that the writer accepts both cascading and direct parameters. In that case,
-                    // we want to prefer the direct parameter if it exists. TODO: Explanation.
+                    // we want to prefer the direct parameter, if it exists.
                     if (parameters.HasDirectParameter(parameterName))
                     {
                         continue;
