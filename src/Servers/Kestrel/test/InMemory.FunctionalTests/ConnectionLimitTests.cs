@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport
 using Microsoft.AspNetCore.Server.Kestrel.Tests;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Diagnostics.Metrics;
+using Microsoft.Extensions.Telemetry.Testing.Metering;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
@@ -102,7 +103,7 @@ public class ConnectionLimitTests : LoggedTest
     public async Task RejectsConnectionsWhenLimitReached()
     {
         var testMeterFactory = new TestMeterFactory();
-        using var rejectedConnections = new InstrumentRecorder<long>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel-rejected-connections");
+        using var rejectedConnections = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel-rejected-connections");
 
         const int max = 10;
         var requestTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -141,14 +142,14 @@ public class ConnectionLimitTests : LoggedTest
                     }
 
                     var actions = Enumerable.Repeat(AssertCounter, i + 1).ToArray();
-                    Assert.Collection(rejectedConnections.GetMeasurements(), actions);
+                    Assert.Collection(rejectedConnections.GetMeasurementSnapshot(), actions);
                 }
 
                 requestTcs.TrySetResult();
             }
         }
 
-        static void AssertCounter(Measurement<long> measurement) => Assert.Equal(1, measurement.Value);
+        static void AssertCounter(CollectedMeasurement<long> measurement) => Assert.Equal(1, measurement.Value);
     }
 
     [Fact]

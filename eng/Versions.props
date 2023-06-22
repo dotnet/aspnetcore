@@ -134,6 +134,8 @@
     <SystemDiagnosticsPerformanceCounterVersion>8.0.0-preview.6.23323.4</SystemDiagnosticsPerformanceCounterVersion>
     <SystemIOHashingVersion>8.0.0-preview.6.23323.4</SystemIOHashingVersion>
     <SystemRuntimeCachingVersion>8.0.0-preview.6.23323.4</SystemRuntimeCachingVersion>
+    <!-- Packages from dotnet/extensions -->
+    <MicrosoftExtensionsTelemetryTestingVersion>8.0.0-preview.6.23320.3</MicrosoftExtensionsTelemetryTestingVersion>
     <!-- Packages from dotnet/efcore -->
     <dotnetefVersion>8.0.0-preview.6.23321.3</dotnetefVersion>
     <MicrosoftEntityFrameworkCoreInMemoryVersion>8.0.0-preview.6.23321.3</MicrosoftEntityFrameworkCoreInMemoryVersion>

@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using System.Diagnostics.Metrics;
 using System.Diagnostics.Tracing;
 using System.Reflection;
 using Microsoft.AspNetCore.Http;
@@ -12,6 +11,7 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
+using Microsoft.Extensions.Telemetry.Testing.Metering;
 using Moq;
 
 namespace Microsoft.AspNetCore.Hosting.Tests;
@@ -52,10 +52,10 @@ public class HostingApplicationDiagnosticsTests
         var hostingApplication1 = CreateApplication(out var features1, eventSource: hostingEventSource, meterFactory: testMeterFactory1);
         var hostingApplication2 = CreateApplication(out var features2, eventSource: hostingEventSource, meterFactory: testMeterFactory2);
 
-        using var currentRequestsRecorder1 = new InstrumentRecorder<long>(testMeterFactory1, HostingMetrics.MeterName, "http-server-current-requests");
-        using var currentRequestsRecorder2 = new InstrumentRecorder<long>(testMeterFactory2, HostingMetrics.MeterName, "http-server-current-requests");
-        using var requestDurationRecorder1 = new InstrumentRecorder<double>(testMeterFactory1, HostingMetrics.MeterName, "http-server-request-duration");
-        using var requestDurationRecorder2 = new InstrumentRecorder<double>(testMeterFactory2, HostingMetrics.MeterName, "http-server-request-duration");
+        using var currentRequestsRecorder1 = new MetricCollector<long>(testMeterFactory1, HostingMetrics.MeterName, "http-server-current-requests");
+        using var currentRequestsRecorder2 = new MetricCollector<long>(testMeterFactory2, HostingMetrics.MeterName, "http-server-current-requests");
+        using var requestDurationRecorder1 = new MetricCollector<double>(testMeterFactory1, HostingMetrics.MeterName, "http-server-request-duration");
+        using var requestDurationRecorder2 = new MetricCollector<double>(testMeterFactory2, HostingMetrics.MeterName, "http-server-request-duration");
 
         // Act/Assert 1
         var context1 = hostingApplication1.CreateContext(features1);
@@ -74,15 +74,15 @@ public class HostingApplicationDiagnosticsTests
         Assert.Equal(0, await currentRequestValues.FirstOrDefault(v => v == 0));
         Assert.Equal(0, await failedRequestValues.FirstOrDefault(v => v == 0));
 
-        Assert.Collection(currentRequestsRecorder1.GetMeasurements(),
+        Assert.Collection(currentRequestsRecorder1.GetMeasurementSnapshot(),
             m => Assert.Equal(1, m.Value),
             m => Assert.Equal(-1, m.Value));
-        Assert.Collection(currentRequestsRecorder2.GetMeasurements(),
+        Assert.Collection(currentRequestsRecorder2.GetMeasurementSnapshot(),
             m => Assert.Equal(1, m.Value),
             m => Assert.Equal(-1, m.Value));
-        Assert.Collection(requestDurationRecorder1.GetMeasurements(),
+        Assert.Collection(requestDurationRecorder1.GetMeasurementSnapshot(),
             m => Assert.True(m.Value > 0));
-        Assert.Collection(requestDurationRecorder2.GetMeasurements(),
+        Assert.Collection(requestDurationRecorder2.GetMeasurementSnapshot(),
             m => Assert.True(m.Value > 0));
 
         // Act/Assert 2
@@ -105,20 +105,20 @@ public class HostingApplicationDiagnosticsTests
         Assert.Equal(0, await currentRequestValues.FirstOrDefault(v => v == 0));
         Assert.Equal(2, await failedRequestValues.FirstOrDefault(v => v == 2));
 
-        Assert.Collection(currentRequestsRecorder1.GetMeasurements(),
+        Assert.Collection(currentRequestsRecorder1.GetMeasurementSnapshot(),
             m => Assert.Equal(1, m.Value),
             m => Assert.Equal(-1, m.Value),
             m => Assert.Equal(1, m.Value),
             m => Assert.Equal(-1, m.Value));
-        Assert.Collection(currentRequestsRecorder2.GetMeasurements(),
+        Assert.Collection(currentRequestsRecorder2.GetMeasurementSnapshot(),
             m => Assert.Equal(1, m.Value),
             m => Assert.Equal(-1, m.Value),
             m => Assert.Equal(1, m.Value),
             m => Assert.Equal(-1, m.Value));
-        Assert.Collection(requestDurationRecorder1.GetMeasurements(),
+        Assert.Collection(requestDurationRecorder1.GetMeasurementSnapshot(),
             m => Assert.True(m.Value > 0),
             m => Assert.True(m.Value > 0));
-        Assert.Collection(requestDurationRecorder2.GetMeasurements(),
+        Assert.Collection(requestDurationRecorder2.GetMeasurementSnapshot(),
             m => Assert.True(m.Value > 0),
             m => Assert.True(m.Value > 0));
     }
