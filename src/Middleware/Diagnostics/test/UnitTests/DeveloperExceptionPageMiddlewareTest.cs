@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Telemetry.Testing.Metering;
 
 namespace Microsoft.AspNetCore.Diagnostics;
 
@@ -538,16 +539,9 @@ public class DeveloperExceptionPageMiddlewareTest : LoggedTest
     public async Task UnhandledError_ExceptionNameTagAdded()
     {
         // Arrange
-        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-
         var meterFactory = new TestMeterFactory();
-        using var requestDurationRecorder = new InstrumentRecorder<double>(meterFactory, "Microsoft.AspNetCore.Hosting", "http-server-request-duration");
-        using var requestExceptionRecorder = new InstrumentRecorder<long>(meterFactory, DiagnosticsMetrics.MeterName, "diagnostics-handler-exception");
-        using var measurementReporter = new MeasurementReporter<double>(meterFactory, "Microsoft.AspNetCore.Hosting", "http-server-request-duration");
-        measurementReporter.Register(m =>
-        {
-            tcs.SetResult();
-        });
+        using var requestDurationCollector = new MetricCollector<double>(meterFactory, "Microsoft.AspNetCore.Hosting", "http-server-request-duration");
+        using var requestExceptionCollector = new MetricCollector<long>(meterFactory, DiagnosticsMetrics.MeterName, "diagnostics-handler-exception");
 
         using var host = new HostBuilder()
             .ConfigureServices(s =>
@@ -577,33 +571,33 @@ public class DeveloperExceptionPageMiddlewareTest : LoggedTest
         var response = await server.CreateClient().GetAsync("/path");
         Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
 
-        await tcs.Task.DefaultTimeout();
+        await requestDurationCollector.WaitForMeasurementsAsync(numMeasurements: 1).DefaultTimeout();
 
         // Assert
         Assert.Collection(
-            requestDurationRecorder.GetMeasurements(),
+            requestDurationCollector.GetMeasurementSnapshot(),
             m =>
             {
                 Assert.True(m.Value > 0);
                 Assert.Equal(500, (int)m.Tags.ToArray().Single(t => t.Key == "status-code").Value);
                 Assert.Equal("System.Exception", (string)m.Tags.ToArray().Single(t => t.Key == "exception-name").Value);
             });
-        Assert.Collection(requestExceptionRecorder.GetMeasurements(),
+        Assert.Collection(requestExceptionCollector.GetMeasurementSnapshot(),
             m => AssertRequestException(m, "System.Exception", "Unhandled"));
     }
 
-    private static void AssertRequestException(Measurement<long> measurement, string exceptionName, string result, string handler = null)
+    private static void AssertRequestException(CollectedMeasurement<long> measurement, string exceptionName, string result, string handler = null)
     {
         Assert.Equal(1, measurement.Value);
-        Assert.Equal(exceptionName, (string)measurement.Tags.ToArray().Single(t => t.Key == "exception-name").Value);
-        Assert.Equal(result, measurement.Tags.ToArray().Single(t => t.Key == "result").Value.ToString());
+        Assert.Equal(exceptionName, (string)measurement.Tags["exception-name"]);
+        Assert.Equal(result, measurement.Tags["result"].ToString());
         if (handler == null)
         {
-            Assert.DoesNotContain(measurement.Tags.ToArray(), t => t.Key == "handler");
+            Assert.False(measurement.Tags.ContainsKey("handler"));
         }
         else
         {
-            Assert.Equal(handler, (string)measurement.Tags.ToArray().Single(t => t.Key == "handler").Value);
+            Assert.Equal(handler, (string)measurement.Tags["handler"]);
         }
     }
 
