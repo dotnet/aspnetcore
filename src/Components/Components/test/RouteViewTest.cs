@@ -22,6 +22,7 @@ public class RouteViewTest
         _navigationManager = new RouteViewTestNavigationManager();
         serviceCollection.AddSingleton<NavigationManager>(_navigationManager);
         serviceCollection.AddSingleton<IFormValueSupplier, TestFormValueSupplier>();
+        serviceCollection.AddSingleton<CascadingModelBindingProvider, CascadingQueryModelBindingProvider>();
         var services = serviceCollection.BuildServiceProvider();
         _renderer = new TestRenderer(services);
 
@@ -244,6 +245,11 @@ public class RouteViewTest
     private class TestFormValueSupplier : IFormValueSupplier
     {
         public bool CanBind(string formName, Type valueType)
+        {
+            return false;
+        }
+
+        public bool CanConvertSingleValue(Type type)
         {
             return false;
         }

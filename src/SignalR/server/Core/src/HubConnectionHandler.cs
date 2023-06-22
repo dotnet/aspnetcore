@@ -192,6 +192,20 @@ public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
 
     private async Task HubOnDisconnectedAsync(HubConnectionContext connection, Exception? exception)
     {
+        var disconnectException = exception;
+        if (connection.CloseMessage is not null)
+        {
+            // If client sent a CloseMessage we don't care about any internal exceptions that may have occurred.
+            // The CloseMessage indicates a graceful closure on the part of the client.
+            disconnectException = null;
+            exception = null;
+            if (connection.CloseMessage.Error is not null)
+            {
+                // A bit odd for the client to send an error along with a graceful close, but just in case we should surface it in OnDisconnectedAsync
+                disconnectException = new HubException(connection.CloseMessage.Error);
+            }
+        }
+
         // send close message before aborting the connection
         await SendCloseAsync(connection, exception, connection.AllowReconnect);
 
@@ -206,7 +220,7 @@ public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
 
         try
         {
-            await _dispatcher.OnDisconnectedAsync(connection, exception);
+            await _dispatcher.OnDisconnectedAsync(connection, disconnectException);
         }
         catch (Exception ex)
         {

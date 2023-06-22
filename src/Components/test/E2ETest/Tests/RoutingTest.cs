@@ -624,6 +624,20 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         AssertHighlightedLinks("Default (matches all)", "Default with base-relative URL (matches all)");
     }
 
+    [Theory]
+    [InlineData("/Other-With-Hyphens", "Other with hyphens")]
+    [InlineData("/Other.With.Dots", "Other with dots")]
+    [InlineData("/Other_With_Underscores", "Other with underscores")]
+    [InlineData("/Other~With~Tildes", "Other with tildes")]
+    public void RoutePrefixDoesNotMatchWithNonSeparatorCharacters(string url, string linkText)
+    {
+        SetUrlViaPushState(url);
+
+        var app = Browser.MountTestComponent<TestRouter>();
+        Assert.Equal("This is another page.", app.FindElement(By.Id("test-info")).Text);
+        AssertHighlightedLinks(linkText); // The 'Other' link text should not be highlighted.
+    }
+
     [Fact]
     public void UsingNavigationManagerWithoutRouterWorks()
     {
@@ -1437,11 +1451,13 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         var app = Browser.MountTestComponent<TestRouter>();
         Assert.Equal("Hello Abc .", app.FindElement(By.Id("test-info")).Text);
         Assert.Equal("0", app.FindElement(By.Id("value-QueryInt")).Text);
+        Assert.Equal("0", app.FindElement(By.Id("value-nested-QueryInt")).Text);
         Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableDateTimeValue")).Text);
         Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableDateOnlyValue")).Text);
         Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableTimeOnlyValue")).Text);
         Assert.Equal(string.Empty, app.FindElement(By.Id("value-StringValue")).Text);
         Assert.Equal("0 values ()", app.FindElement(By.Id("value-LongValues")).Text);
+        Assert.Equal("0 values ()", app.FindElement(By.Id("value-nested-LongValues")).Text);
 
         AssertHighlightedLinks("With query parameters (none)");
     }
@@ -1454,11 +1470,13 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         var app = Browser.MountTestComponent<TestRouter>();
         Assert.Equal("Hello Abc .", app.FindElement(By.Id("test-info")).Text);
         Assert.Equal("0", app.FindElement(By.Id("value-QueryInt")).Text);
+        Assert.Equal("0", app.FindElement(By.Id("value-nested-QueryInt")).Text);
         Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableDateTimeValue")).Text);
         Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableDateOnlyValue")).Text);
         Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableTimeOnlyValue")).Text);
         Assert.Equal("Hello there", app.FindElement(By.Id("value-StringValue")).Text);
         Assert.Equal("0 values ()", app.FindElement(By.Id("value-LongValues")).Text);
+        Assert.Equal("0 values ()", app.FindElement(By.Id("value-nested-LongValues")).Text);
 
         AssertHighlightedLinks("With query parameters (none)", "With query parameters (passing string value)");
     }
@@ -1474,11 +1492,13 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         var app = Browser.MountTestComponent<TestRouter>();
         Assert.Equal("Hello Abc .", app.FindElement(By.Id("test-info")).Text);
         Assert.Equal("0", app.FindElement(By.Id("value-QueryInt")).Text);
+        Assert.Equal("0", app.FindElement(By.Id("value-nested-QueryInt")).Text);
         Assert.Equal(dateTime.ToString("hh:mm:ss on yyyy-MM-dd", CultureInfo.InvariantCulture), app.FindElement(By.Id("value-NullableDateTimeValue")).Text);
         Assert.Equal(dateOnly.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), app.FindElement(By.Id("value-NullableDateOnlyValue")).Text);
         Assert.Equal(timeOnly.ToString("hh:mm:ss", CultureInfo.InvariantCulture), app.FindElement(By.Id("value-NullableTimeOnlyValue")).Text);
         Assert.Equal(string.Empty, app.FindElement(By.Id("value-StringValue")).Text);
         Assert.Equal("0 values ()", app.FindElement(By.Id("value-LongValues")).Text);
+        Assert.Equal("0 values ()", app.FindElement(By.Id("value-nested-LongValues")).Text);
 
         AssertHighlightedLinks("With query parameters (none)", "With query parameters (passing Date Time values)");
     }
@@ -1493,11 +1513,13 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
 
         Assert.Equal("Hello Abc .", app.FindElement(By.Id("test-info")).Text);
         Assert.Equal("0", app.FindElement(By.Id("value-QueryInt")).Text);
+        Assert.Equal("0", app.FindElement(By.Id("value-nested-QueryInt")).Text);
         Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableDateTimeValue")).Text);
         Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableDateOnlyValue")).Text);
         Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableTimeOnlyValue")).Text);
         Assert.Equal(string.Empty, app.FindElement(By.Id("value-StringValue")).Text);
         Assert.Equal("0 values ()", app.FindElement(By.Id("value-LongValues")).Text);
+        Assert.Equal("0 values ()", app.FindElement(By.Id("value-nested-LongValues")).Text);
 
         AssertHighlightedLinks("With query parameters (none)");
     }
@@ -1513,11 +1535,13 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
 
         Browser.Equal("Hello Abc .", () => app.FindElement(By.Id("test-info")).Text);
         Assert.Equal("0", app.FindElement(By.Id("value-QueryInt")).Text);
+        Assert.Equal("0", app.FindElement(By.Id("value-nested-QueryInt")).Text);
         Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableDateTimeValue")).Text);
         Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableDateOnlyValue")).Text);
         Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableTimeOnlyValue")).Text);
         Assert.Equal("Hello there", app.FindElement(By.Id("value-StringValue")).Text);
         Assert.Equal("0 values ()", app.FindElement(By.Id("value-LongValues")).Text);
+        Assert.Equal("0 values ()", app.FindElement(By.Id("value-nested-LongValues")).Text);
         var instanceId = app.FindElement(By.Id("instance-id")).Text;
         Assert.True(!string.IsNullOrWhiteSpace(instanceId));
 
@@ -1526,22 +1550,26 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         // We can also navigate to a different query while retaining the same component instance
         app.FindElement(By.LinkText("With IntValue and LongValues")).Click();
         Browser.Equal("123", () => app.FindElement(By.Id("value-QueryInt")).Text);
+        Browser.Equal("123", () => app.FindElement(By.Id("value-nested-QueryInt")).Text);
         Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableDateTimeValue")).Text);
         Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableDateOnlyValue")).Text);
         Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableTimeOnlyValue")).Text);
         Assert.Equal(string.Empty, app.FindElement(By.Id("value-StringValue")).Text);
         Assert.Equal("3 values (50, 100, -20)", app.FindElement(By.Id("value-LongValues")).Text);
+        Assert.Equal("3 values (50, 100, -20)", app.FindElement(By.Id("value-nested-LongValues")).Text);
         Assert.Equal(instanceId, app.FindElement(By.Id("instance-id")).Text);
         AssertHighlightedLinks("With query parameters (none)");
 
         // We can also click back to go the preceding query while retaining the same component instance
         Browser.Navigate().Back();
         Browser.Equal("0", () => app.FindElement(By.Id("value-QueryInt")).Text);
+        Browser.Equal("0", () => app.FindElement(By.Id("value-nested-QueryInt")).Text);
         Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableDateTimeValue")).Text);
         Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableDateOnlyValue")).Text);
         Assert.Equal(string.Empty, app.FindElement(By.Id("value-NullableTimeOnlyValue")).Text);
         Assert.Equal("Hello there", app.FindElement(By.Id("value-StringValue")).Text);
         Assert.Equal("0 values ()", app.FindElement(By.Id("value-LongValues")).Text);
+        Assert.Equal("0 values ()", app.FindElement(By.Id("value-nested-LongValues")).Text);
         Assert.Equal(instanceId, app.FindElement(By.Id("instance-id")).Text);
         AssertHighlightedLinks("With query parameters (none)", "With query parameters (passing string value)");
     }

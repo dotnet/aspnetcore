@@ -1,12 +1,10 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "Blazor WebAssembly Uygulaması",
   "description": "WebAssembly üzerinde çalışan ve isteğe bağlı olarak bir ASP.NET Core uygulamasında barındırılan Blazor uygulaması oluşturmaya yönelik proje şablonu. Bu şablon, zengin dinamik kullanıcı arabirimlerine (UI) sahip web uygulamaları için kullanılabilir.",
   "symbols/Framework/description": "Projenin hedef çerçevesi.",
   "symbols/Framework/choices/net8.0/description": "Hedef net8.0",
   "symbols/skipRestore/description": "Belirtilirse, oluşturma sırasında projenin otomatik geri yüklenmesini atlar.",
-  "symbols/Hosted/displayName": "ASP.NET Core tarafından _Barındırılan",
-  "symbols/Hosted/description": "Belirtilmişse Blazor WebAssembly uygulaması için ASP.NET Core konağı içerir.",
   "symbols/auth/choices/None/description": "Kimlik doğrulaması yok",
   "symbols/auth/choices/Individual/description": "Bireysel kimlik doğrulaması",
   "symbols/auth/choices/IndividualB2C/description": "Azure AD B2C ile bireysel kimlik doğrulaması",
@@ -40,7 +38,5 @@
   "symbols/UseProgramMain/description": "Üst düzey deyimler yerine açık bir Program sınıfı ve Ana yöntem oluşturup oluşturulmayacağını belirtir.",
   "postActions/restore/description": "Bu projenin gerektirdiği NuGet paketlerini geri yükleyin.",
   "postActions/restore/manualInstructions/default/text": "'dotnet restore' çalıştır",
-  "postActions/restoreClient/description": "Bu projenin gerektirdiği NuGet paketlerini geri yükleyin.",
-  "postActions/restoreClient/manualInstructions/default/text": "'dotnet restore' çalıştır",
   "postActions/open-file/description": "Benioku.txt dosyasını düzenleyicide açar"
 }

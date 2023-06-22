@@ -224,7 +224,7 @@ public class RazorComponentResultExecutorTest
 
         // Assert
         Assert.Equal(
-            $"<!--bl:X-->Some output\n<!--/bl:X--><template blazor-type=\"redirection\">https://test/somewhere/else</template>",
+            $"<!--bl:X-->Some output\n<!--/bl:X--><blazor-ssr><template type=\"redirection\">https://test/somewhere/else</template></blazor-ssr>",
             MaskComponentIds(GetStringContent(responseBody)));
     }
 
@@ -269,8 +269,8 @@ public class RazorComponentResultExecutorTest
         httpContext.Response.Body = responseBody;
 
         var expectedResponseExceptionInfo = isDevelopmentEnvironment
-            ? "System.InvalidTimeZoneException: Test message"
-            : "There was an unhandled exception on the current request. For more details turn on detailed exceptions by setting 'DetailedErrors: true' in 'appSettings.Development.json'";
+            ? "System.InvalidTimeZoneException: Test message with &lt;b&gt;markup&lt;/b&gt;"
+            : "There was an unhandled exception on the current request. For more details turn on detailed exceptions by setting &#x27;DetailedErrors: true&#x27; in &#x27;appSettings.Development.json&#x27;";
 
         // Act
         var ex = await Assert.ThrowsAsync<InvalidTimeZoneException>(() => RazorComponentResultExecutor.RenderComponentToResponse(
@@ -278,9 +278,9 @@ public class RazorComponentResultExecutorTest
             null, preventStreamingRendering: false));
 
         // Assert
-        Assert.Contains("Test message", ex.Message);
+        Assert.Contains("Test message with <b>markup</b>", ex.Message);
         Assert.Contains(
-            $"<!--bl:X-->Some output\n<!--/bl:X--><template blazor-type=\"exception\">{expectedResponseExceptionInfo}",
+            $"<!--bl:X-->Some output\n<!--/bl:X--><blazor-ssr><template type=\"error\">{expectedResponseExceptionInfo}",
             MaskComponentIds(GetStringContent(responseBody)));
     }
 

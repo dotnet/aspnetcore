@@ -1007,3 +1007,10 @@ public class TodoJsonConverter : JsonConverter<ITodo>
         throw new NotImplementedException();
     }
 }
+
+#nullable enable
+public class TodoChild : Todo
+{
+    public string? Child { get; set; }
+}
+#nullable restore

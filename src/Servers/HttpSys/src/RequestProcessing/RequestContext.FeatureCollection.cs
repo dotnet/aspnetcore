@@ -587,9 +587,7 @@ internal partial class RequestContext :
 
     int ITlsHandshakeFeature.KeyExchangeStrength => Request.KeyExchangeStrength;
 
-    IReadOnlyDictionary<int, ReadOnlyMemory<byte>> IHttpSysRequestInfoFeature.RequestInfo => Request.RequestInfo;
-
-    ReadOnlySpan<long> IHttpSysRequestTimingFeature.Timestamps => Request.RequestTimestamps;
+    string ITlsHandshakeFeature.HostName => Request.SniHostName;
 
     IHeaderDictionary IHttpResponseTrailersFeature.Trailers
     {
@@ -600,32 +598,6 @@ internal partial class RequestContext :
     public bool CanDelegate => Request.CanDelegate;
 
     CancellationToken IConnectionLifetimeNotificationFeature.ConnectionClosedRequested { get; set; }
-
-    bool IHttpSysRequestTimingFeature.TryGetTimestamp(HttpSysRequestTimingType timestampType, out long timestamp)
-    {
-        int index = (int)timestampType;
-        if (index < Request.RequestTimestamps.Length && Request.RequestTimestamps[index] > 0)
-        {
-            timestamp = Request.RequestTimestamps[index];
-            return true;
-        }
-
-        timestamp = default;
-        return false;
-    }
-
-    bool IHttpSysRequestTimingFeature.TryGetElapsedTime(HttpSysRequestTimingType startingTimestampType, HttpSysRequestTimingType endingTimestampType, out TimeSpan elapsed)
-    {
-        var timingFeature = (IHttpSysRequestTimingFeature)this;
-        if (timingFeature.TryGetTimestamp(startingTimestampType, out long startTimestamp) && timingFeature.TryGetTimestamp(endingTimestampType, out long endTimestamp))
-        {
-            elapsed = Stopwatch.GetElapsedTime(startTimestamp, endTimestamp);
-            return true;
-        }
-
-        elapsed = default;
-        return false;
-    }
 
     internal async Task OnResponseStart()
     {

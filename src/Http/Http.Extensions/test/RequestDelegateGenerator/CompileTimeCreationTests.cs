@@ -25,25 +25,6 @@ app.MapGet("/hello", (HttpContext context) => Task.CompletedTask);
         await VerifyResponseBodyAsync(httpContext, "");
     }
 
-    // Todo: Move this to a shared test that checks metadata once that is supported
-    // in the source generator.
-    [Theory]
-    [InlineData(@"app.MapGet(""/"", () => Console.WriteLine(""Returns void""));", null)]
-    [InlineData(@"app.MapGet(""/"", () => TypedResults.Ok(""Alright!""));", null)]
-    [InlineData(@"app.MapGet(""/"", () => Results.NotFound(""Oops!""));", null)]
-    [InlineData(@"app.MapGet(""/"", () => Task.FromResult(new Todo() { Name = ""Test Item""}));", "application/json")]
-    [InlineData(@"app.MapGet(""/"", () => ""Hello world!"");", "text/plain")]
-    public async Task MapAction_ProducesCorrectContentType(string source, string expectedContentType)
-    {
-        var (result, compilation) = await RunGeneratorAsync(source);
-
-        VerifyStaticEndpointModel(result, endpointModel =>
-        {
-            Assert.Equal("MapGet", endpointModel.HttpMethod);
-            Assert.Equal(expectedContentType, endpointModel.Response.ContentType);
-        });
-    }
-
     [Fact]
     public async Task MapAction_ExplicitRouteParamWithInvalidName_SimpleReturn()
     {

@@ -96,15 +96,10 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
         var keyEncryptor = keyManagementOptions.Value.XmlEncryptor;
         if (keyRepository == null)
         {
-            if (keyEncryptor != null)
+            var keyRepositoryEncryptorPair = GetFallbackKeyRepositoryEncryptorPair();
+            keyRepository = keyRepositoryEncryptorPair.Key;
+            if (keyEncryptor == null)
             {
-                throw new InvalidOperationException(
-                    Resources.FormatXmlKeyManager_IXmlRepositoryNotFound(nameof(IXmlRepository), nameof(IXmlEncryptor)));
-            }
-            else
-            {
-                var keyRepositoryEncryptorPair = GetFallbackKeyRepositoryEncryptorPair();
-                keyRepository = keyRepositoryEncryptorPair.Key;
                 keyEncryptor = keyRepositoryEncryptorPair.Value;
             }
         }

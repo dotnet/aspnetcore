@@ -1,5 +1,3 @@
-@import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
-
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
@@ -58,7 +56,7 @@ app {
         font-size: 1.1rem;
     }
 
-    .sidebar .oi {
+    .sidebar .bi {
         width: 2rem;
         font-size: 1.1rem;
         vertical-align: text-top;

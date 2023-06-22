@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Security.Authentication.ExtendedProtection;
 using System.Security.Principal;
 using Microsoft.AspNetCore.Http;
@@ -222,6 +223,34 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
         {
             // RequestQueueHandle may have been closed
         }
+    }
+
+    internal unsafe HttpApiTypes.HTTP_REQUEST_PROPERTY_SNI GetClientSni()
+    {
+        if (HttpApi.HttpGetRequestProperty != null)
+        {
+            var buffer = new byte[HttpApiTypes.SniPropertySizeInBytes];
+            fixed (byte* pBuffer = buffer)
+            {
+                var statusCode = HttpApi.HttpGetRequestProperty(
+                    Server.RequestQueue.Handle,
+                    RequestId,
+                    HttpApiTypes.HTTP_REQUEST_PROPERTY.HttpRequestPropertySni,
+                    qualifier: null,
+                    qualifierSize: 0,
+                    (void*)pBuffer,
+                    (uint)buffer.Length,
+                    bytesReturned: null,
+                    IntPtr.Zero);
+
+                if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
+                {
+                    return Marshal.PtrToStructure<HttpApiTypes.HTTP_REQUEST_PROPERTY_SNI>((IntPtr)pBuffer);
+                }
+            }
+        }
+
+        return default;
     }
 
     // You must still call ForceCancelRequest after this.

@@ -384,6 +384,59 @@ public class CascadingParameterTest
         Assert.Equal($"The {nameof(ParameterView)} instance can no longer be read because it has expired. {nameof(ParameterView)} can only be read synchronously and must not be stored for later use.", ex.Message);
     }
 
+    [Fact]
+    public void CanSupplyCascadingValuesForSpecificCascadingParameterAttributeType()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        var component = new TestComponent(builder =>
+        {
+            builder.OpenComponent<CustomCascadingValueProducer<CustomCascadingParameter1Attribute>>(0);
+            builder.AddComponentParameter(1, "Value", "Hello 1");
+            builder.AddComponentParameter(2, "ChildContent", new RenderFragment(builder =>
+            {
+                builder.OpenComponent<CustomCascadingValueProducer<CustomCascadingParameter2Attribute>>(0);
+                builder.AddComponentParameter(1, "Value", "Hello 2");
+                builder.AddComponentParameter(2, "ChildContent", new RenderFragment(builder =>
+                {
+                    builder.OpenComponent<CustomCascadingValueConsumer1>(0);
+                    builder.CloseComponent();
+                    builder.OpenComponent<CustomCascadingValueConsumer2>(1);
+                    builder.CloseComponent();
+                }));
+                builder.CloseComponent();
+            }));
+            builder.CloseComponent();
+        });
+
+        // Act/Assert
+        var componentId = renderer.AssignRootComponentId(component);
+        component.TriggerRender();
+        var batch = renderer.Batches.Single();
+        var nestedComponent1 = FindComponent<CustomCascadingValueConsumer1>(batch, out var nestedComponentId1);
+        var nestedComponent2 = FindComponent<CustomCascadingValueConsumer2>(batch, out var nestedComponentId2);
+        var nestedComponentDiff1 = batch.DiffsByComponentId[nestedComponentId1].Single();
+        var nestedComponentDiff2 = batch.DiffsByComponentId[nestedComponentId2].Single();
+
+        // The nested components were rendered with the correct parameters
+        Assert.Collection(nestedComponentDiff1.Edits,
+            edit =>
+            {
+                Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
+                AssertFrame.Text(
+                    batch.ReferenceFrames[edit.ReferenceFrameIndex],
+                    "Value 1 is 'Hello 1'.");
+            });
+        Assert.Collection(nestedComponentDiff2.Edits,
+            edit =>
+            {
+                Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
+                AssertFrame.Text(
+                    batch.ReferenceFrames[edit.ReferenceFrameIndex],
+                    "Value 2 is 'Hello 2'.");
+            });
+    }
+
     private static T FindComponent<T>(CapturedBatch batch, out int componentId)
     {
         var componentFrame = batch.ReferenceFrames.Single(
@@ -440,5 +493,80 @@ public class CascadingParameterTest
     class SecondCascadingParameterConsumerComponent<T1, T2> : CascadingParameterConsumerComponent<T1>
     {
         [CascadingParameter] T2 SecondCascadingParameter { get; set; }
+    }
+
+    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
+    class CustomCascadingParameter1Attribute : CascadingParameterAttributeBase
+    {
+        public override string Name { get; set; }
+    }
+
+    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
+    class CustomCascadingParameter2Attribute : CascadingParameterAttributeBase
+    {
+        public override string Name { get; set; }
+    }
+
+    class CustomCascadingValueProducer<TAttribute> : AutoRenderComponent, ICascadingValueSupplier
+    {
+        [Parameter] public object Value { get; set; }
+
+        [Parameter] public RenderFragment ChildContent { get; set; }
+
+        bool ICascadingValueSupplier.IsFixed => true;
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.AddContent(0, ChildContent);
+        }
+
+        bool ICascadingValueSupplier.CanSupplyValue(in CascadingParameterInfo parameterInfo)
+        {
+            if (parameterInfo.Attribute is not TAttribute ||
+                parameterInfo.PropertyType != typeof(object) ||
+                parameterInfo.PropertyName != nameof(Value))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        object ICascadingValueSupplier.GetCurrentValue(in CascadingParameterInfo cascadingParameterState)
+        {
+            return Value;
+        }
+
+        void ICascadingValueSupplier.Subscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
+        {
+            throw new NotImplementedException();
+        }
+
+        void ICascadingValueSupplier.Unsubscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    class CustomCascadingValueConsumer1 : AutoRenderComponent
+    {
+        [CustomCascadingParameter1(Name = nameof(Value))]
+        public object Value { get; set; }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.AddContent(0, $"Value 1 is '{Value}'.");
+        }
+    }
+
+    class CustomCascadingValueConsumer2 : AutoRenderComponent
+    {
+        [CustomCascadingParameter2(Name = nameof(Value))]
+        public object Value { get; set; }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.AddContent(0, $"Value 2 is '{Value}'.");
+        }
     }
 }

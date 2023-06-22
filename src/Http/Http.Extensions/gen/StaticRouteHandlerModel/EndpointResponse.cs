@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Linq;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel.Emitters;
@@ -34,7 +33,7 @@ internal class EndpointResponse
         HasNoResponse = method.ReturnsVoid || awaitableIsVoid;
         IsIResult = GetIsIResult();
         IsSerializable = GetIsSerializable();
-        ContentType = GetContentType(method);
+        ContentType = GetContentType();
         IsAnonymousType = method.ReturnType.IsAnonymousType;
         IsEndpointMetadataProvider = ImplementsIEndpointMetadataProvider(ResponseType, wellKnownTypes);
     }
@@ -84,18 +83,19 @@ internal class EndpointResponse
             SymbolEqualityComparer.Default.Equals(ResponseType, resultType);
     }
 
-    private string? GetContentType(IMethodSymbol method)
+    private string? GetContentType()
     {
         // `void` returning methods do not have a Content-Type.
         // We don't have a strategy for resolving a Content-Type
         // from an IResult. Typically, this would be done via an
         // IEndpointMetadataProvider so we don't need to set a
         // Content-Type here.
-        if (method.ReturnsVoid || IsIResult)
+        if (IsIResult || HasNoResponse)
         {
             return null;
         }
-        return method.ReturnType.SpecialType is SpecialType.System_String ? "text/plain" : "application/json";
+
+        return ResponseType!.SpecialType is SpecialType.System_String ? "text/plain; charset=utf-8" : "application/json";
     }
 
     public override bool Equals(object obj)

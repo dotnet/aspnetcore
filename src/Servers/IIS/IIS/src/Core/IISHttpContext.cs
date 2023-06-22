@@ -763,6 +763,8 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
             localAbortCts?.Dispose();
 
             disposedValue = true;
+
+            AsyncIO?.Dispose();
         }
     }
 

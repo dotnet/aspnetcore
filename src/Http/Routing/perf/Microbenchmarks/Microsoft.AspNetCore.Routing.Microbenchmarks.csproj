@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -31,6 +31,7 @@
     <Compile Include="..\..\test\UnitTests\Matching\TreeRouterMatcherBuilder.cs">
       <Link>Matching\TreeRouterMatcherBuilder.cs</Link>
     </Compile>
+    <Compile Include="$(SharedSourceRoot)Metrics\TestMeterFactory.cs" LinkBase="shared" />
     <Compile Include="..\..\test\UnitTests\TestObjects\TestServiceProvider.cs" Link="Matching\TestServiceProvider.cs" />
   </ItemGroup>
 
@@ -39,6 +40,7 @@
     <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.AspNetCore.Routing" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
+    <Reference Include="Microsoft.Extensions.Diagnostics" />
     <Reference Include="Microsoft.Extensions.Logging" />
 
     <Compile Include="$(SharedSourceRoot)BenchmarkRunner\*.cs" />

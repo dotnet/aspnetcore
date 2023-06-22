@@ -35,6 +35,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Tests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.Tests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Hosting.Tests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.MicroBenchmarks" />

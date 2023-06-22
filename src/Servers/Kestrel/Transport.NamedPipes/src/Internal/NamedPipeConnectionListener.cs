@@ -27,7 +27,7 @@ internal sealed class NamedPipeConnectionListener : IConnectionListener
     private readonly MemoryPool<byte> _memoryPool;
     private readonly PipeOptions _inputOptions;
     private readonly PipeOptions _outputOptions;
-    private readonly Mutex _mutex;
+    private readonly NamedPipeServerStreamPoolPolicy _poolPolicy;
     private Task? _completeListeningTask;
     private int _disposed;
 
@@ -35,17 +35,16 @@ internal sealed class NamedPipeConnectionListener : IConnectionListener
         NamedPipeEndPoint endpoint,
         NamedPipeTransportOptions options,
         ILoggerFactory loggerFactory,
-        ObjectPoolProvider objectPoolProvider,
-        Mutex mutex)
+        ObjectPoolProvider objectPoolProvider)
     {
         _log = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes");
         _endpoint = endpoint;
         _options = options;
-        _mutex = mutex;
         _memoryPool = options.MemoryPoolFactory();
         _listeningToken = _listeningTokenSource.Token;
         // Have to create the pool here (instead of DI) because the pool is specific to an endpoint.
-        _namedPipeServerStreamPool = objectPoolProvider.Create(new NamedPipeServerStreamPoolPolicy(endpoint, options));
+        _poolPolicy = new NamedPipeServerStreamPoolPolicy(endpoint, options);
+        _namedPipeServerStreamPool = objectPoolProvider.Create(_poolPolicy);
 
         // The OS maintains a backlog of clients that are waiting to connect, so the app queue only stores a single connection.
         // We want to have a queue plus a background task that populates the queue, rather than creating NamedPipeServerStream
@@ -77,6 +76,7 @@ internal sealed class NamedPipeConnectionListener : IConnectionListener
         {
             // Start first stream inline to catch creation errors.
             var initialStream = _namedPipeServerStreamPool.Get();
+            _poolPolicy.SetFirstPipeStarted();
 
             listeningTasks[i] = Task.Run(() => StartAsync(initialStream));
         }
@@ -170,7 +170,6 @@ internal sealed class NamedPipeConnectionListener : IConnectionListener
         }
 
         _listeningTokenSource.Dispose();
-        _mutex.Dispose();
         if (_completeListeningTask != null)
         {
             await _completeListeningTask;
@@ -185,6 +184,7 @@ internal sealed class NamedPipeConnectionListener : IConnectionListener
     {
         private readonly NamedPipeEndPoint _endpoint;
         private readonly NamedPipeTransportOptions _options;
+        private bool _hasFirstPipeStarted;
 
         public NamedPipeServerStreamPoolPolicy(NamedPipeEndPoint endpoint, NamedPipeTransportOptions options)
         {
@@ -196,6 +196,14 @@ internal sealed class NamedPipeConnectionListener : IConnectionListener
         {
             NamedPipeServerStream stream;
             var pipeOptions = NamedPipeOptions.Asynchronous | NamedPipeOptions.WriteThrough;
+            if (!_hasFirstPipeStarted)
+            {
+                // The first server stream created should validate that no one else is listening with a given name.
+                // Only the first server stream should make this test. The listener will almost always create multiple streams
+                // to listen on multiple threads and to handle parallel requests. The pool policy must be updated that the
+                // setting isn't needed after the first stream.
+                pipeOptions |= NamedPipeOptions.FirstPipeInstance;
+            }
             if (_options.CurrentUserOnly)
             {
                 pipeOptions |= NamedPipeOptions.CurrentUserOnly;
@@ -228,5 +236,10 @@ internal sealed class NamedPipeConnectionListener : IConnectionListener
         }
 
         public bool Return(NamedPipeServerStream obj) => !obj.IsConnected;
+
+        public void SetFirstPipeStarted()
+        {
+            _hasFirstPipeStarted = true;
+        }
     }
 }

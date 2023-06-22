@@ -170,8 +170,7 @@ internal static class ComponentProperties
         if (propertyInfo != null)
         {
             if (!propertyInfo.IsDefined(typeof(ParameterAttribute)) &&
-                !propertyInfo.IsDefined(typeof(CascadingParameterAttribute)) &&
-                !propertyInfo.GetCustomAttributes().OfType<IHostEnvironmentCascadingParameter>().Any())
+                !propertyInfo.GetCustomAttributes().OfType<CascadingParameterAttributeBase>().Any())
             {
                 throw new InvalidOperationException(
                     $"Object of type '{targetType.FullName}' has a property matching the name '{parameterName}', " +
@@ -262,8 +261,7 @@ internal static class ComponentProperties
             foreach (var propertyInfo in GetCandidateBindableProperties(targetType))
             {
                 ParameterAttribute? parameterAttribute = null;
-                CascadingParameterAttribute? cascadingParameterAttribute = null;
-                IHostEnvironmentCascadingParameter? hostEnvironmentCascadingParameter = null;
+                CascadingParameterAttributeBase? cascadingParameterAttribute = null;
 
                 var attributes = propertyInfo.GetCustomAttributes();
                 foreach (var attribute in attributes)
@@ -273,18 +271,15 @@ internal static class ComponentProperties
                         case ParameterAttribute parameter:
                             parameterAttribute = parameter;
                             break;
-                        case CascadingParameterAttribute cascadingParameter:
+                        case CascadingParameterAttributeBase cascadingParameter:
                             cascadingParameterAttribute = cascadingParameter;
-                            break;
-                        case IHostEnvironmentCascadingParameter hostEnvironmentAttribute:
-                            hostEnvironmentCascadingParameter = hostEnvironmentAttribute;
                             break;
                         default:
                             break;
                     }
                 }
 
-                var isParameter = parameterAttribute != null || cascadingParameterAttribute != null || hostEnvironmentCascadingParameter != null;
+                var isParameter = parameterAttribute != null || cascadingParameterAttribute != null;
                 if (!isParameter)
                 {
                     continue;
@@ -299,7 +294,7 @@ internal static class ComponentProperties
 
                 var propertySetter = new PropertySetter(targetType, propertyInfo)
                 {
-                    Cascading = cascadingParameterAttribute != null || hostEnvironmentCascadingParameter != null,
+                    Cascading = cascadingParameterAttribute != null,
                 };
 
                 if (_underlyingWriters.ContainsKey(propertyName))

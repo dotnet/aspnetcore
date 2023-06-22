@@ -79,7 +79,10 @@ internal static unsafe partial class HttpApi
 
     [LibraryImport(HTTPAPI, SetLastError = true)]
     internal static unsafe partial uint HttpDelegateRequestEx(SafeHandle pReqQueueHandle, SafeHandle pDelegateQueueHandle, ulong requestId,
-        ulong delegateUrlGroupId, ulong propertyInfoSetSize, HTTP_DELEGATE_REQUEST_PROPERTY_INFO* pRequestPropertyBuffer);
+        ulong delegateUrlGroupId, uint propertyInfoSetSize, HTTP_DELEGATE_REQUEST_PROPERTY_INFO* pRequestPropertyBuffer);
+
+    internal delegate uint HttpGetRequestPropertyInvoker(SafeHandle requestQueueHandle, ulong requestId, HTTP_REQUEST_PROPERTY propertyId,
+        void* qualifier, uint qualifierSize, void* output, uint outputSize, uint* bytesReturned, IntPtr overlapped);
 
     internal delegate uint HttpSetRequestPropertyInvoker(SafeHandle requestQueueHandle, ulong requestId, HTTP_REQUEST_PROPERTY propertyId, void* input, uint inputSize, IntPtr overlapped);
 
@@ -119,6 +122,7 @@ internal static unsafe partial class HttpApi
     }
 
     internal static SafeLibraryHandle? HttpApiModule { get; private set; }
+    internal static HttpGetRequestPropertyInvoker? HttpGetRequestProperty { get; private set; }
     internal static HttpSetRequestPropertyInvoker? HttpSetRequestProperty { get; private set; }
     [MemberNotNullWhen(true, nameof(HttpSetRequestProperty))]
     internal static bool SupportsTrailers { get; private set; }
@@ -143,6 +147,7 @@ internal static unsafe partial class HttpApi
         if (supported)
         {
             HttpApiModule = SafeLibraryHandle.Open(HTTPAPI);
+            HttpGetRequestProperty = HttpApiModule.GetProcAddress<HttpGetRequestPropertyInvoker>("HttpQueryRequestProperty", throwIfNotFound: false);
             HttpSetRequestProperty = HttpApiModule.GetProcAddress<HttpSetRequestPropertyInvoker>("HttpSetRequestProperty", throwIfNotFound: false);
             SupportsReset = HttpSetRequestProperty != null;
             SupportsTrailers = IsFeatureSupported(HTTP_FEATURE_ID.HttpFeatureResponseTrailers);

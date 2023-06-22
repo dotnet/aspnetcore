@@ -4,6 +4,8 @@
 package com.microsoft.signalr;
 
 public final class CloseMessage extends HubMessage {
+    private final int type = HubMessageType.CLOSE.value;
+
     private final String error;
     private final boolean allowReconnect;
 
