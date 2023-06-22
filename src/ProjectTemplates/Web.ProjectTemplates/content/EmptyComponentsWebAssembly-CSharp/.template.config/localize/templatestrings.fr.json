@@ -1,4 +1,4 @@
-{
+﻿{
   "author": "Microsoft",
   "name": "Application Blazor WebAssembly vide",
   "description": "Modèle de projet vide pour la création d’une application Blazor qui s’exécute sur WebAssembly et qui est éventuellement hébergée par une application ASP.NET Core. Ce modèle ne contient aucun contenu.",
