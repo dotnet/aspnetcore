@@ -10,7 +10,6 @@ using System.Net.Security;
 using System.Runtime.InteropServices;
 using System.Security.Authentication;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Security.Principal;
 using System.Text;
 using Microsoft.AspNetCore.Builder;
