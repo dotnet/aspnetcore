@@ -191,41 +191,18 @@ async function importDotnetJs(startOptions: Partial<WebAssemblyStartOptions>): P
     throw new Error('This browser does not support WebAssembly.');
   }
 
-  const bootConfig = await loadBootConfigAsync(startOptions.loadBootResource, startOptions.environment);
-
-  // The dotnet.*.js file has a version or hash in its name as a form of cache-busting. This is needed
-  // because it's the only part of the loading process that can't use cache:'no-cache' (because it's
-  // not a 'fetch') and isn't controllable by the developer (so they can't put in their own cache-busting
-  // querystring). So, to find out the exact URL we have to search the boot manifest.
-  const dotnetJsResourceName = Object
-    .keys(bootConfig.resources.runtime)
-    .filter(n => n.startsWith('dotnet.') && n.endsWith('.js'))[0];
-  const dotnetJsContentHash = bootConfig.resources.runtime[dotnetJsResourceName];
-  let src = `_framework/${dotnetJsResourceName}`;
+  let src = '_framework/dotnet.js';
 
   // Allow overriding the URI from which the dotnet.*.js file is loaded
   if (startOptions.loadBootResource) {
     const resourceType: WebAssemblyBootResourceType = 'dotnetjs';
-    const customSrc = startOptions.loadBootResource(resourceType, dotnetJsResourceName, src, dotnetJsContentHash);
+    const customSrc = startOptions.loadBootResource(resourceType, 'dotnet.js', src, '');
     if (typeof (customSrc) === 'string') {
       src = customSrc;
     } else if (customSrc) {
       // Since we must load this via a import, it's only valid to supply a URI (and not a Request, say)
       throw new Error(`For a ${resourceType} resource, custom loaders must supply a URI string.`);
     }
-  }
-
-  // For consistency with WebAssemblyResourceLoader, we only enforce SRI if caching is allowed
-  if (bootConfig.cacheBootResources) {
-    const scriptElem = document.createElement('link');
-    scriptElem.rel = 'modulepreload';
-    scriptElem.href = src;
-    scriptElem.crossOrigin = 'anonymous';
-    // it will make dynamic import fail if the hash doesn't match
-    // It's currently only validated by chromium browsers
-    // Firefox doesn't break on it, but doesn't validate it either
-    scriptElem.integrity = dotnetJsContentHash;
-    document.head.appendChild(scriptElem);
   }
 
   const absoluteSrc = (new URL(src, document.baseURI)).toString();
