@@ -475,24 +475,53 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             : EventArgsTypeCache.GetEventArgsType(methodInfo);
     }
 
-    internal ComponentState InstantiateChildComponentOnFrame(ref RenderTreeFrame frame, int parentComponentId)
+    internal ComponentState InstantiateChildComponentOnFrame(RenderTreeFrame[] frames, int frameIndex, int parentComponentId)
     {
+        ref var frame = ref frames[frameIndex];
         if (frame.FrameTypeField != RenderTreeFrameType.Component)
         {
-            throw new ArgumentException($"The frame's {nameof(RenderTreeFrame.FrameType)} property must equal {RenderTreeFrameType.Component}", nameof(frame));
+            throw new ArgumentException($"The frame's {nameof(RenderTreeFrame.FrameType)} property must equal {RenderTreeFrameType.Component}", nameof(frameIndex));
         }
 
         if (frame.ComponentStateField != null)
         {
-            throw new ArgumentException($"The frame already has a non-null component instance", nameof(frame));
+            throw new ArgumentException($"The frame already has a non-null component instance", nameof(frameIndex));
         }
 
-        var newComponent = _componentFactory.InstantiateComponent(_serviceProvider, frame.ComponentTypeField, null, parentComponentId);
+        var callerSpecifiedRenderMode = frame.ComponentFrameFlags.HasFlag(ComponentFrameFlags.HasCallerSpecifiedRenderMode)
+            ? FindCallerSpecifiedRenderMode(frames, frameIndex)
+            : null;
+
+        var newComponent = _componentFactory.InstantiateComponent(_serviceProvider, frame.ComponentTypeField, callerSpecifiedRenderMode, parentComponentId);
         var newComponentState = AttachAndInitComponent(newComponent, parentComponentId);
         frame.ComponentStateField = newComponentState;
         frame.ComponentIdField = newComponentState.ComponentId;
 
         return newComponentState;
+    }
+
+    private static IComponentRenderMode? FindCallerSpecifiedRenderMode(RenderTreeFrame[] frames, int componentFrameIndex)
+    {
+        // ComponentRenderMode frames are immediate children of Component frames. So, they have to appear after any parameter
+        // attributes (since attributes must always immediately follow Component frames), but before anything that would
+        // represent a different child node, such as text/element or another component. It's OK to do this linear scan
+        // because we consider it uncommon to specify a rendermode, and none of this happens if you don't.
+        var endIndex = componentFrameIndex + frames[componentFrameIndex].ComponentSubtreeLengthField;
+        for (var index = componentFrameIndex + 1; index <= endIndex; index++)
+        {
+            ref var frame = ref frames[index];
+            switch (frame.FrameType)
+            {
+                case RenderTreeFrameType.Attribute:
+                    continue;
+                case RenderTreeFrameType.ComponentRenderMode:
+                    return frame.ComponentRenderMode;
+                default:
+                    break;
+            }
+        }
+
+        return null;
     }
 
     internal void AddToPendingTasksWithErrorHandling(Task task, ComponentState? owningComponentState)

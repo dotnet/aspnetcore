@@ -3639,7 +3639,7 @@ public class RendererTest
         // Act
         renderer.AssignRootComponentId(component);
         await component.ExternalExceptionDispatch(exception);
-        
+
         // Assert
         Assert.Same(exception, Assert.Single(renderer.HandledExceptions).GetBaseException());
     }
@@ -5233,6 +5233,24 @@ public class RendererTest
     }
 
     [Fact]
+    public void ThrowsForUnknownRenderMode_AtCallSite()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        var component = new TestComponent(builder =>
+        {
+            builder.OpenComponent<TestComponent>(0);
+            builder.AddComponentRenderMode(1, new ComponentWithUnknownRenderMode.UnknownRenderMode());
+            builder.CloseComponent();
+        });
+
+        // Act
+        var componentId = renderer.AssignRootComponentId(component);
+        var ex = Assert.Throws<NotSupportedException>(component.TriggerRender);
+        Assert.Contains($"Cannot supply a component of type '{typeof(TestComponent)}' because the current platform does not support the render mode '{typeof(ComponentWithUnknownRenderMode.UnknownRenderMode)}'.", ex.Message);
+    }
+
+    [Fact]
     public void RenderModeResolverCanSupplyComponent_WithComponentTypeRenderMode()
     {
         // Arrange
@@ -5242,6 +5260,31 @@ public class RendererTest
         {
             builder.OpenComponent<ComponentWithRenderMode>(0);
             builder.AddComponentParameter(1, nameof(MessageComponent.Message), "Some message");
+            builder.CloseComponent();
+        });
+
+        // Act
+        var componentId = renderer.AssignRootComponentId(component);
+        component.TriggerRender();
+
+        // Assert
+        var batch = renderer.Batches.Single();
+        var componentFrames = batch.GetComponentFrames<MessageComponent>();
+        var resolvedComponent = (MessageComponent)componentFrames.Single().Component;
+        Assert.Equal("Some message", resolvedComponent.Message);
+    }
+
+    [Fact]
+    public void RenderModeResolverCanSupplyComponent_CallSiteRenderMode()
+    {
+        // Arrange
+        var renderer = new RendererWithRenderModeResolver();
+
+        var component = new TestComponent(builder =>
+        {
+            builder.OpenComponent<TestComponent>(0);
+            builder.AddComponentParameter(1, nameof(MessageComponent.Message), "Some message");
+            builder.AddComponentRenderMode(2, new SubstituteComponentRenderMode());
             builder.CloseComponent();
         });
 
