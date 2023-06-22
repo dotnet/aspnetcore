@@ -1,9 +1,10 @@
-﻿@page "/forms/default-form-bound-primitive-parameter"
+﻿@page "/forms/named-form-bound-primitive-parameter"
+
 @using Microsoft.AspNetCore.Components.Forms
 
-<h2>Default form with bound parameter</h2>
+<h2>Named form with bound parameter</h2>
 
-<EditForm Model="Parameter" method="POST" OnValidSubmit="() => _submitted = true">
+<EditForm FormHandlerName="named-form-handler" Model="Parameter" method="POST" OnValidSubmit="() => _submitted = true">
     <input type="text" name="value" value="@(_attemptedValue ?? Parameter.ToString())" />
     <input id="send" type="submit" value="Send" />
 </EditForm>
@@ -13,15 +14,16 @@
     var errors = Context.GetErrors("value");
     if (errors.Count == 0)
     {
-        <p id="pass">Your number is @Parameter!</p>        
-    }else
+        <p id="pass">Your number is @Parameter!</p>
+    }
+    else
     {
         <p>There were errors:</p>
         <ul id="errors">
-        @foreach (var error in errors)
-        {
-            <li>@error</li>
-        }
+            @foreach (var error in errors)
+            {
+                <li>@error</li>
+            }
         </ul>
     }
 }
@@ -30,7 +32,7 @@
     string _attemptedValue = null;
     IReadOnlyList<FormattableString> _errors;
 
-    [SupplyParameterFromForm] public int Parameter { get; set; } = 0;
+    [SupplyParameterFromForm(Name = "named-form-handler")] public int Parameter { get; set; } = 0;
 
     [CascadingParameter] public ModelBindingContext Context { get; set; }
 
