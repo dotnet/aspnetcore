@@ -44,12 +44,40 @@ internal class SSRRenderModeBoundary : IComponent
         // call stack because the underlying buffer may get reused. This is enforced through a runtime check.
         _latestParameters = parameters.ToDictionary();
 
+        ValidateParameters(_latestParameters);
+
         if (_prerender)
         {
             _renderHandle.Render(Prerender);
         }
 
         return Task.CompletedTask;
+    }
+
+    private void ValidateParameters(IReadOnlyDictionary<string, object?> latestParameters)
+    {
+        foreach (var (name, value) in latestParameters)
+        {
+            // There are many other things we can't serialize too, but give special errors for Delegate because
+            // it may be a common mistake to try passing ChildContent when crossing rendermode boundaries.
+            if (value is Delegate)
+            {
+                var valueType = value.GetType();
+                if (valueType.IsGenericType && valueType.GetGenericTypeDefinition() == typeof(RenderFragment<>))
+                {
+                    throw new InvalidOperationException($"Cannot pass RenderFragment<T> parameter '{name}' to component '{_componentType.Name}' with rendermode '{_renderMode.GetType().Name}'. Templated content can't be passed across a rendermode boundary, because it is arbitrary code and cannot be serialized.");
+                }
+                else
+                {
+                    // TODO: Ideally we *should* support RenderFragment (the non-generic version) by prerendering it
+                    // However it's very nontrivial since it means we have to execute it within the current renderer
+                    // somehow without actually emitting its result directly, wait for quiescence, and then prerender
+                    // the output into a separate buffer so we can serialize it in a special way.
+                    // A prototype implementation is at https://github.com/dotnet/aspnetcore/commit/ed330ff5b143974d9060828a760ad486b1d386ac
+                    throw new InvalidOperationException($"Cannot pass the parameter '{name}' to component '{_componentType.Name}' with rendermode '{_renderMode.GetType().Name}'. This is because the parameter is of the delegate type '{value.GetType()}', which is arbitrary code and cannot be serialized.");
+                }
+            }
+        }
     }
 
     private void Prerender(RenderTreeBuilder builder)
