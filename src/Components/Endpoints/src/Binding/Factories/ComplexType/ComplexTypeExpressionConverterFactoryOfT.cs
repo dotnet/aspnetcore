@@ -59,7 +59,6 @@ internal sealed class ComplexTypeExpressionConverterFactory<T> : ComplexTypeExpr
             propertyLocals.Add(propertyVar);
 
             // Resolve and assign converter
-
             // Create the block to try and map the property and update variables.
             // returnParam &= { PushPrefix(property.Name); var res = TryRead(...); PopPrefix(...); return res; }
             // var propertyConverter = options.ResolveConverter<TProperty>());
@@ -72,33 +71,41 @@ internal sealed class ComplexTypeExpressionConverterFactory<T> : ComplexTypeExpr
                     Array.Empty<Expression>()));
             body.Add(propertyConverter);
 
-            // reader.PushPrefix("Property");
-            body.Add(Expression.Call(
-                readerParam,
-                nameof(FormDataReader.PushPrefix),
-                Array.Empty<Type>(),
-                Expression.Constant(property.Name)));
-
-            // succeeded &= propertyConverter.TryRead(ref reader, typeof(string), options, out propertyVar, out foundProperty);
-            var callTryRead = Expression.AndAssign(
-                succeeded,
-                Expression.Call(
-                    propertyConverterVar,
-                    nameof(FormDataConverter<T>.TryRead),
-                    Type.EmptyTypes,
+            // try
+            // {
+            //     reader.PushPrefix("Property");
+            //     succeeded &= propertyConverter.TryRead(ref reader, typeof(string), options, out propertyVar, out foundProperty);
+            // }
+            // finally
+            // {
+            //     reader.PopPrefix("Property");
+            // }
+            body.Add(Expression.TryFinally(
+                body: Expression.Block(
+                    // reader.PushPrefix("Property");
+                    Expression.Call(
+                        readerParam,
+                        nameof(FormDataReader.PushPrefix),
+                        Array.Empty<Type>(),
+                        Expression.Constant(property.Name)),
+                    // succeeded &= propertyConverter.TryRead(ref reader, typeof(string), options, out propertyVar, out foundProperty);
+                    Expression.AndAssign(
+                        succeeded,
+                        Expression.Call(
+                            propertyConverterVar,
+                            nameof(FormDataConverter<T>.TryRead),
+                            Type.EmptyTypes,
+                            readerParam,
+                            Expression.Constant(property.PropertyType),
+                            optionsParam,
+                            propertyVar,
+                            propertyFoundValue))),
+                // reader.PopPrefix("Property");
+                @finally: Expression.Call(
                     readerParam,
-                    typeParam,
-                    optionsParam,
-                    propertyVar,
-                    propertyFoundValue));
-            body.Add(callTryRead);
-
-            // reader.PopPrefix("Property");
-            body.Add(Expression.Call(
-                readerParam,
-                nameof(FormDataReader.PopPrefix),
-                Array.Empty<Type>(),
-                Expression.Constant(property.Name)));
+                    nameof(FormDataReader.PopPrefix),
+                    Array.Empty<Type>(),
+                    Expression.Constant(property.Name))));
 
             body.Add(Expression.OrAssign(localFoundValueVar, propertyFoundValue));
         }

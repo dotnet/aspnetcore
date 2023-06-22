@@ -7,7 +7,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
 
-internal struct FormDataReader
+internal class FormDataReader
 {
     private readonly IReadOnlyDictionary<string, StringValues> _formCollection;
     private string _prefix;
@@ -32,6 +32,20 @@ internal struct FormDataReader
         _prefix = "";
     }
 
+    public Action<string, FormattableString, string?>? ErrorHandler { get; set; }
+
+    public void AddMappingError(FormattableString errorMessage, string? attemptedValue)
+    {
+        ArgumentNullException.ThrowIfNull(errorMessage);
+
+        if (ErrorHandler == null)
+        {
+            throw new FormDataMappingException(new FormDataMappingError(_prefix, errorMessage, attemptedValue));
+        }
+
+        ErrorHandler.Invoke(_prefix, errorMessage, attemptedValue);
+    }
+
     internal void PopPrefix(ReadOnlySpan<char> _)
     {
         // For right now, we don't need to do anything with the prefix
@@ -49,7 +63,7 @@ internal struct FormDataReader
         _prefix = prefix.ToString();
     }
 
-    internal readonly bool TryGetValue([NotNullWhen(true)] out string? value)
+    internal bool TryGetValue([NotNullWhen(true)] out string? value)
     {
         if (_formCollection.TryGetValue(_prefix, out var rawValue) && rawValue.Count == 1)
         {
