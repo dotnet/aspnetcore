@@ -391,7 +391,6 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
         return RequestHeaders.ContentLength.GetValueOrDefault() > 0;
     }
 
-
     private void GetTlsHandshakeResults()
     {
         var handshake = this.GetTlsHandshake();
