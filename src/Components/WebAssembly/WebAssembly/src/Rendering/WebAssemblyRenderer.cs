@@ -130,11 +130,11 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
         }
     }
 
-    protected override IComponent ResolveComponentForRenderMode([DynamicallyAccessedMembers(Component)] Type componentType, int? parentComponentId, IComponentActivator componentActivator, IComponentRenderMode componentTypeRenderMode)
-        => componentTypeRenderMode switch
+    protected override IComponent ResolveComponentForRenderMode([DynamicallyAccessedMembers(Component)] Type componentType, int? parentComponentId, IComponentActivator componentActivator, IComponentRenderMode renderMode)
+        => renderMode switch
         {
             WebAssemblyRenderMode or AutoRenderMode => componentActivator.CreateInstance(componentType),
-            _ => throw new NotSupportedException($"Cannot create a component of type '{componentType}' because its render mode '{componentTypeRenderMode}' is not supported by WebAssembly rendering."),
+            _ => throw new NotSupportedException($"Cannot create a component of type '{componentType}' because its render mode '{renderMode}' is not supported by WebAssembly rendering."),
         };
 
     private static partial class Log
