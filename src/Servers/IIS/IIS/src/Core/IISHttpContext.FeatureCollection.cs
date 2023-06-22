@@ -4,7 +4,9 @@
 using System.Collections;
 using System.Diagnostics;
 using System.IO.Pipelines;
+using System.Net.Security;
 using System.Runtime.InteropServices;
+using System.Security.Authentication;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Connections.Features;
@@ -28,6 +30,7 @@ internal partial class IISHttpContext : IFeatureCollection,
                                         IHttpAuthenticationFeature,
                                         IServerVariablesFeature,
                                         ITlsConnectionFeature,
+                                        ITlsHandshakeFeature,
                                         IHttpBodyControlFeature,
                                         IHttpMaxRequestBodySizeFeature,
                                         IHttpResponseTrailersFeature,
@@ -405,6 +408,24 @@ internal partial class IISHttpContext : IFeatureCollection,
             _certificate = value;
         }
     }
+
+    SslProtocols ITlsHandshakeFeature.Protocol => Protocol;
+
+    TlsCipherSuite? ITlsHandshakeFeature.NegotiatedCipherSuite => NegotiatedCipherSuite;
+
+    string ITlsHandshakeFeature.HostName => SniHostName;
+
+    CipherAlgorithmType ITlsHandshakeFeature.CipherAlgorithm => CipherAlgorithm;
+
+    int ITlsHandshakeFeature.CipherStrength => CipherStrength;
+
+    HashAlgorithmType ITlsHandshakeFeature.HashAlgorithm => HashAlgorithm;
+
+    int ITlsHandshakeFeature.HashStrength => HashStrength;
+
+    ExchangeAlgorithmType ITlsHandshakeFeature.KeyExchangeAlgorithm => KeyExchangeAlgorithm;
+
+    int ITlsHandshakeFeature.KeyExchangeStrength => KeyExchangeStrength;
 
     IEnumerator<KeyValuePair<Type, object>> IEnumerable<KeyValuePair<Type, object>>.GetEnumerator() => FastEnumerable().GetEnumerator();
 
