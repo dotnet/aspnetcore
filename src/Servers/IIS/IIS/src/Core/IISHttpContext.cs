@@ -426,7 +426,6 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
         }
     }
 
-
     private async Task InitializeResponse(bool flushHeaders)
     {
         await FireOnStarting();
