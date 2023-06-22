@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
+
 namespace Microsoft.AspNetCore.Components.Binding;
 
 /// <summary>
@@ -40,9 +42,16 @@ public sealed class CascadingFormModelBindingProvider : CascadingModelBindingPro
     /// <inhertidoc/>
     protected internal override object? GetCurrentValue(ModelBindingContext? bindingContext, in CascadingParameterInfo parameterInfo)
     {
+        Debug.Assert(bindingContext != null);
         var (formName, valueType) = GetFormNameAndValueType(bindingContext, parameterInfo);
 
-        if (!_formValueSupplier.TryBind(formName!, valueType, out var boundValue, bindingContext!.AddError))
+        var parameterName = parameterInfo.Attribute.Name;
+
+        Action<string, FormattableString, string?> errorHandler = string.IsNullOrEmpty(parameterName) ?
+            bindingContext.AddError :
+            (name, message, value) => bindingContext.AddError(parameterName, name, message, value);
+
+        if (!_formValueSupplier.TryBind(formName!, valueType, out var boundValue, errorHandler))
         {
             return null;
         }

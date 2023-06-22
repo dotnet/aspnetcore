@@ -133,6 +133,7 @@ public sealed class CascadingModelBinder : IComponent, ICascadingValueSupplier, 
             }
 
             _bindingContext = new ModelBindingContext(name, bindingId, CanBind);
+            ParentContext?.SetErrors(name, _bindingContext);
         }
 
         string GenerateBindingContextId(string name)
