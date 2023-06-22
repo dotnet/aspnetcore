@@ -147,11 +147,31 @@ internal partial class EndpointHtmlRenderer
                 "Navigation commands can not be issued during server-side prerendering after the response from the server has started. Applications must buffer the" +
                 "response and avoid using features like FlushAsync() before all components on the page have been rendered to prevent failed navigation commands.");
         }
+        else if (IsPossibleExternalDestination(httpContext.Request, navigationException.Location) && httpContext.Request.Headers.ContainsKey("blazor-enhanced-nav"))
+        {
+            // It's unsafe to do a 301/302/etc to an external destination when this was requested via fetch, because
+            // assuming it doesn't expose CORS headers, we won't be allowed to follow the redirection nor will
+            // we even find out what the destination URL would have been. But since it's our own JS code making this
+            // fetch request, we can have a custom protocol for describing the URL we wanted to redirect to.
+            httpContext.Response.Headers.Add("blazor-enhanced-nav-redirect-location", navigationException.Location);
+            return new ValueTask<PrerenderedComponentHtmlContent>(PrerenderedComponentHtmlContent.Empty);
+        }
         else
         {
             httpContext.Response.Redirect(navigationException.Location);
             return new ValueTask<PrerenderedComponentHtmlContent>(PrerenderedComponentHtmlContent.Empty);
         }
+    }
+
+    private static bool IsPossibleExternalDestination(HttpRequest request, string destinationUrl)
+    {
+        if (!Uri.TryCreate(destinationUrl, UriKind.Absolute, out var absoluteUri))
+        {
+            return false;
+        }
+
+        return absoluteUri.Scheme != request.Scheme
+            || absoluteUri.Authority != request.Host.Value;
     }
 
     internal static ServerComponentInvocationSequence GetOrCreateInvocationId(HttpContext httpContext)

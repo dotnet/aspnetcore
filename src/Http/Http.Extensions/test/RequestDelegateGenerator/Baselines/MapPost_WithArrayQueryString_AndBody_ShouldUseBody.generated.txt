@@ -126,7 +126,6 @@ namespace Microsoft.AspNetCore.Http.Generated
                     var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
                     var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? new JsonOptions();
                     var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonOptions.SerializerOptions.GetTypeInfo(typeof(object));
-                    var p_JsonTypeInfo =  (JsonTypeInfo<global::System.String[]>)jsonOptions.SerializerOptions.GetTypeInfo(typeof(global::System.String[]));
 
                     if (options.EndpointBuilder.FilterFactories.Count > 0)
                     {
@@ -154,6 +153,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         }
                         else
                         {
+                            var p_JsonTypeInfo = (JsonTypeInfo<global::System.String[]>)jsonOptions.SerializerOptions.GetTypeInfo(typeof(global::System.String[]));
                             var p_resolveBodyResult = await GeneratedRouteBuilderExtensionsCore.TryResolveBodyAsync<global::System.String[]>(httpContext, logOrThrowExceptionHelper, false, "string[]", "p", p_JsonTypeInfo);
                             p_local = p_resolveBodyResult.Item2!;
                             if (!p_resolveBodyResult.Item1)
@@ -191,6 +191,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         }
                         else
                         {
+                            var p_JsonTypeInfo = (JsonTypeInfo<global::System.String[]>)jsonOptions.SerializerOptions.GetTypeInfo(typeof(global::System.String[]));
                             var p_resolveBodyResult = await GeneratedRouteBuilderExtensionsCore.TryResolveBodyAsync<global::System.String[]>(httpContext, logOrThrowExceptionHelper, false, "string[]", "p", p_JsonTypeInfo);
                             p_local = p_resolveBodyResult.Item2!;
                             if (!p_resolveBodyResult.Item1)

@@ -14,6 +14,7 @@ using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Telemetry.Testing.Metering;
 using Moq;
 
 namespace Microsoft.AspNetCore.RateLimiting;
@@ -34,11 +35,11 @@ public class RateLimitingMetricsTests
 
         var context = new DefaultHttpContext();
 
-        using var leaseRequestDurationRecorder = new InstrumentRecorder<double>(meterFactory, RateLimitingMetrics.MeterName, "rate-limiting-leased-request-duration");
-        using var currentLeaseRequestsRecorder = new InstrumentRecorder<long>(meterFactory, RateLimitingMetrics.MeterName, "rate-limiting-current-leased-requests");
-        using var currentRequestsQueuedRecorder = new InstrumentRecorder<long>(meterFactory, RateLimitingMetrics.MeterName, "rate-limiting-current-queued-requests");
-        using var queuedRequestDurationRecorder = new InstrumentRecorder<double>(meterFactory, RateLimitingMetrics.MeterName, "rate-limiting-queued-request-duration");
-        using var leaseFailedRequestsRecorder = new InstrumentRecorder<long>(meterFactory, RateLimitingMetrics.MeterName, "rate-limiting-lease-failed-requests");
+        using var leaseRequestDurationCollector = new MetricCollector<double>(meterFactory, RateLimitingMetrics.MeterName, "rate-limiting-leased-request-duration");
+        using var currentLeaseRequestsCollector = new MetricCollector<long>(meterFactory, RateLimitingMetrics.MeterName, "rate-limiting-current-leased-requests");
+        using var currentRequestsQueuedCollector = new MetricCollector<long>(meterFactory, RateLimitingMetrics.MeterName, "rate-limiting-current-queued-requests");
+        using var queuedRequestDurationCollector = new MetricCollector<double>(meterFactory, RateLimitingMetrics.MeterName, "rate-limiting-queued-request-duration");
+        using var leaseFailedRequestsCollector = new MetricCollector<long>(meterFactory, RateLimitingMetrics.MeterName, "rate-limiting-lease-failed-requests");
 
         // Act
         await middleware.Invoke(context).DefaultTimeout();
@@ -46,11 +47,11 @@ public class RateLimitingMetricsTests
         // Assert
         Assert.Equal(StatusCodes.Status503ServiceUnavailable, context.Response.StatusCode);
 
-        Assert.Empty(currentLeaseRequestsRecorder.GetMeasurements());
-        Assert.Empty(leaseRequestDurationRecorder.GetMeasurements());
-        Assert.Empty(currentRequestsQueuedRecorder.GetMeasurements());
-        Assert.Empty(queuedRequestDurationRecorder.GetMeasurements());
-        Assert.Collection(leaseFailedRequestsRecorder.GetMeasurements(),
+        Assert.Empty(currentLeaseRequestsCollector.GetMeasurementSnapshot());
+        Assert.Empty(leaseRequestDurationCollector.GetMeasurementSnapshot());
+        Assert.Empty(currentRequestsQueuedCollector.GetMeasurementSnapshot());
+        Assert.Empty(queuedRequestDurationCollector.GetMeasurementSnapshot());
+        Assert.Collection(leaseFailedRequestsCollector.GetMeasurementSnapshot(),
             m =>
             {
                 Assert.Equal(1, m.Value);
@@ -81,20 +82,20 @@ public class RateLimitingMetricsTests
         var context = new DefaultHttpContext();
         context.Request.Method = "GET";
 
-        using var leaseRequestDurationRecorder = new InstrumentRecorder<double>(meterFactory, RateLimitingMetrics.MeterName, "rate-limiting-leased-request-duration");
-        using var currentLeaseRequestsRecorder = new InstrumentRecorder<long>(meterFactory, RateLimitingMetrics.MeterName, "rate-limiting-current-leased-requests");
-        using var currentRequestsQueuedRecorder = new InstrumentRecorder<long>(meterFactory, RateLimitingMetrics.MeterName, "rate-limiting-current-queued-requests");
-        using var queuedRequestDurationRecorder = new InstrumentRecorder<double>(meterFactory, RateLimitingMetrics.MeterName, "rate-limiting-queued-request-duration");
-        using var leaseFailedRequestsRecorder = new InstrumentRecorder<long>(meterFactory, RateLimitingMetrics.MeterName, "rate-limiting-lease-failed-requests");
+        using var leaseRequestDurationCollector = new MetricCollector<double>(meterFactory, RateLimitingMetrics.MeterName, "rate-limiting-leased-request-duration");
+        using var currentLeaseRequestsCollector = new MetricCollector<long>(meterFactory, RateLimitingMetrics.MeterName, "rate-limiting-current-leased-requests");
+        using var currentRequestsQueuedCollector = new MetricCollector<long>(meterFactory, RateLimitingMetrics.MeterName, "rate-limiting-current-queued-requests");
+        using var queuedRequestDurationCollector = new MetricCollector<double>(meterFactory, RateLimitingMetrics.MeterName, "rate-limiting-queued-request-duration");
+        using var leaseFailedRequestsCollector = new MetricCollector<long>(meterFactory, RateLimitingMetrics.MeterName, "rate-limiting-lease-failed-requests");
 
         // Act
         var middlewareTask = middleware.Invoke(context);
 
         await syncPoint.WaitForSyncPoint().DefaultTimeout();
 
-        Assert.Collection(currentLeaseRequestsRecorder.GetMeasurements(),
+        Assert.Collection(currentLeaseRequestsCollector.GetMeasurementSnapshot(),
             m => AssertCounter(m, 1, null));
-        Assert.Empty(leaseRequestDurationRecorder.GetMeasurements());
+        Assert.Empty(leaseRequestDurationCollector.GetMeasurementSnapshot());
 
         syncPoint.Continue();
 
@@ -103,14 +104,14 @@ public class RateLimitingMetricsTests
         // Assert
         Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
 
-        Assert.Collection(currentLeaseRequestsRecorder.GetMeasurements(),
+        Assert.Collection(currentLeaseRequestsCollector.GetMeasurementSnapshot(),
             m => AssertCounter(m, 1, null),
             m => AssertCounter(m, -1, null));
-        Assert.Collection(leaseRequestDurationRecorder.GetMeasurements(),
+        Assert.Collection(leaseRequestDurationCollector.GetMeasurementSnapshot(),
             m => AssertDuration(m, null));
-        Assert.Empty(currentRequestsQueuedRecorder.GetMeasurements());
-        Assert.Empty(queuedRequestDurationRecorder.GetMeasurements());
-        Assert.Empty(leaseFailedRequestsRecorder.GetMeasurements());
+        Assert.Empty(currentRequestsQueuedCollector.GetMeasurementSnapshot());
+        Assert.Empty(queuedRequestDurationCollector.GetMeasurementSnapshot());
+        Assert.Empty(leaseFailedRequestsCollector.GetMeasurementSnapshot());
     }
 
     [Fact]
@@ -141,11 +142,11 @@ public class RateLimitingMetricsTests
 
         await syncPoint.WaitForSyncPoint().DefaultTimeout();
 
-        using var leaseRequestDurationRecorder = new InstrumentRecorder<double>(meterFactory, RateLimitingMetrics.MeterName, "rate-limiting-leased-request-duration");
-        using var currentLeaseRequestsRecorder = new InstrumentRecorder<long>(meterFactory, RateLimitingMetrics.MeterName, "rate-limiting-current-leased-requests");
-        using var currentRequestsQueuedRecorder = new InstrumentRecorder<long>(meterFactory, RateLimitingMetrics.MeterName, "rate-limiting-current-queued-requests");
-        using var queuedRequestDurationRecorder = new InstrumentRecorder<double>(meterFactory, RateLimitingMetrics.MeterName, "rate-limiting-queued-request-duration");
-        using var leaseFailedRequestsRecorder = new InstrumentRecorder<long>(meterFactory, RateLimitingMetrics.MeterName, "rate-limiting-lease-failed-requests");
+        using var leaseRequestDurationCollector = new MetricCollector<double>(meterFactory, RateLimitingMetrics.MeterName, "rate-limiting-leased-request-duration");
+        using var currentLeaseRequestsCollector = new MetricCollector<long>(meterFactory, RateLimitingMetrics.MeterName, "rate-limiting-current-leased-requests");
+        using var currentRequestsQueuedCollector = new MetricCollector<long>(meterFactory, RateLimitingMetrics.MeterName, "rate-limiting-current-queued-requests");
+        using var queuedRequestDurationCollector = new MetricCollector<double>(meterFactory, RateLimitingMetrics.MeterName, "rate-limiting-queued-request-duration");
+        using var leaseFailedRequestsCollector = new MetricCollector<long>(meterFactory, RateLimitingMetrics.MeterName, "rate-limiting-lease-failed-requests");
 
         syncPoint.Continue();
 
@@ -154,8 +155,8 @@ public class RateLimitingMetricsTests
         // Assert
         Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
 
-        Assert.Empty(currentLeaseRequestsRecorder.GetMeasurements());
-        Assert.Collection(leaseRequestDurationRecorder.GetMeasurements(),
+        Assert.Empty(currentLeaseRequestsCollector.GetMeasurementSnapshot());
+        Assert.Collection(leaseRequestDurationCollector.GetMeasurementSnapshot(),
             m => AssertDuration(m, null));
     }
 
@@ -192,11 +193,11 @@ public class RateLimitingMetricsTests
         routeEndpointBuilder.Metadata.Add(new EnableRateLimitingAttribute("concurrencyPolicy"));
         var endpoint = routeEndpointBuilder.Build();
 
-        using var leaseRequestDurationRecorder = new InstrumentRecorder<double>(meterFactory, RateLimitingMetrics.MeterName, "rate-limiting-leased-request-duration");
-        using var currentLeaseRequestsRecorder = new InstrumentRecorder<long>(meterFactory, RateLimitingMetrics.MeterName, "rate-limiting-current-leased-requests");
-        using var currentRequestsQueuedRecorder = new InstrumentRecorder<long>(meterFactory, RateLimitingMetrics.MeterName, "rate-limiting-current-queued-requests");
-        using var queuedRequestDurationRecorder = new InstrumentRecorder<double>(meterFactory, RateLimitingMetrics.MeterName, "rate-limiting-queued-request-duration");
-        using var leaseFailedRequestsRecorder = new InstrumentRecorder<long>(meterFactory, RateLimitingMetrics.MeterName, "rate-limiting-lease-failed-requests");
+        using var leaseRequestDurationCollector = new MetricCollector<double>(meterFactory, RateLimitingMetrics.MeterName, "rate-limiting-leased-request-duration");
+        using var currentLeaseRequestsCollector = new MetricCollector<long>(meterFactory, RateLimitingMetrics.MeterName, "rate-limiting-current-leased-requests");
+        using var currentRequestsQueuedCollector = new MetricCollector<long>(meterFactory, RateLimitingMetrics.MeterName, "rate-limiting-current-queued-requests");
+        using var queuedRequestDurationCollector = new MetricCollector<double>(meterFactory, RateLimitingMetrics.MeterName, "rate-limiting-queued-request-duration");
+        using var leaseFailedRequestsCollector = new MetricCollector<long>(meterFactory, RateLimitingMetrics.MeterName, "rate-limiting-lease-failed-requests");
 
         // Act
         var context1 = new DefaultHttpContext();
@@ -213,9 +214,9 @@ public class RateLimitingMetricsTests
         var middlewareTask2 = middleware.Invoke(context1);
 
         // Assert second request is queued.
-        Assert.Collection(currentRequestsQueuedRecorder.GetMeasurements(),
+        Assert.Collection(currentRequestsQueuedCollector.GetMeasurementSnapshot(),
             m => AssertCounter(m, 1, "concurrencyPolicy"));
-        Assert.Empty(queuedRequestDurationRecorder.GetMeasurements());
+        Assert.Empty(queuedRequestDurationCollector.GetMeasurementSnapshot());
 
         // Allow both requests to finish.
         syncPoint.Continue();
@@ -223,10 +224,10 @@ public class RateLimitingMetricsTests
         await middlewareTask1.DefaultTimeout();
         await middlewareTask2.DefaultTimeout();
 
-        Assert.Collection(currentRequestsQueuedRecorder.GetMeasurements(),
+        Assert.Collection(currentRequestsQueuedCollector.GetMeasurementSnapshot(),
             m => AssertCounter(m, 1, "concurrencyPolicy"),
             m => AssertCounter(m, -1, "concurrencyPolicy"));
-        Assert.Collection(queuedRequestDurationRecorder.GetMeasurements(),
+        Assert.Collection(queuedRequestDurationCollector.GetMeasurementSnapshot(),
             m => AssertDuration(m, "concurrencyPolicy"));
     }
 
@@ -279,14 +280,14 @@ public class RateLimitingMetricsTests
 
         // Start listening while the second request is queued.
 
-        using var leaseRequestDurationRecorder = new InstrumentRecorder<double>(meterFactory, RateLimitingMetrics.MeterName, "rate-limiting-leased-request-duration");
-        using var currentLeaseRequestsRecorder = new InstrumentRecorder<long>(meterFactory, RateLimitingMetrics.MeterName, "rate-limiting-current-leased-requests");
-        using var currentRequestsQueuedRecorder = new InstrumentRecorder<long>(meterFactory, RateLimitingMetrics.MeterName, "rate-limiting-current-queued-requests");
-        using var queuedRequestDurationRecorder = new InstrumentRecorder<double>(meterFactory, RateLimitingMetrics.MeterName, "rate-limiting-queued-request-duration");
-        using var leaseFailedRequestsRecorder = new InstrumentRecorder<long>(meterFactory, RateLimitingMetrics.MeterName, "rate-limiting-lease-failed-requests");
+        using var leaseRequestDurationCollector = new MetricCollector<double>(meterFactory, RateLimitingMetrics.MeterName, "rate-limiting-leased-request-duration");
+        using var currentLeaseRequestsCollector = new MetricCollector<long>(meterFactory, RateLimitingMetrics.MeterName, "rate-limiting-current-leased-requests");
+        using var currentRequestsQueuedCollector = new MetricCollector<long>(meterFactory, RateLimitingMetrics.MeterName, "rate-limiting-current-queued-requests");
+        using var queuedRequestDurationCollector = new MetricCollector<double>(meterFactory, RateLimitingMetrics.MeterName, "rate-limiting-queued-request-duration");
+        using var leaseFailedRequestsCollector = new MetricCollector<long>(meterFactory, RateLimitingMetrics.MeterName, "rate-limiting-lease-failed-requests");
 
-        Assert.Empty(currentRequestsQueuedRecorder.GetMeasurements());
-        Assert.Empty(queuedRequestDurationRecorder.GetMeasurements());
+        Assert.Empty(currentRequestsQueuedCollector.GetMeasurementSnapshot());
+        Assert.Empty(queuedRequestDurationCollector.GetMeasurementSnapshot());
 
         // Allow both requests to finish.
         syncPoint.Continue();
@@ -294,24 +295,24 @@ public class RateLimitingMetricsTests
         await middlewareTask1.DefaultTimeout();
         await middlewareTask2.DefaultTimeout();
 
-        Assert.Empty(currentRequestsQueuedRecorder.GetMeasurements());
-        Assert.Collection(queuedRequestDurationRecorder.GetMeasurements(),
+        Assert.Empty(currentRequestsQueuedCollector.GetMeasurementSnapshot());
+        Assert.Collection(queuedRequestDurationCollector.GetMeasurementSnapshot(),
             m => AssertDuration(m, "concurrencyPolicy"));
     }
 
-    private static void AssertCounter(Measurement<long> measurement, long value, string policy)
+    private static void AssertCounter(CollectedMeasurement<long> measurement, long value, string policy)
     {
         Assert.Equal(value, measurement.Value);
         AssertTag(measurement.Tags, "policy", policy);
     }
 
-    private static void AssertDuration(Measurement<double> measurement, string policy)
+    private static void AssertDuration(CollectedMeasurement<double> measurement, string policy)
     {
         Assert.True(measurement.Value > 0);
         AssertTag(measurement.Tags, "policy", policy);
     }
 
-    private static void AssertTag<T>(ReadOnlySpan<KeyValuePair<string, object>> tags, string tagName, T expected)
+    private static void AssertTag<T>(IReadOnlyDictionary<string, object> tags, string tagName, T expected)
     {
         if (expected == null)
         {

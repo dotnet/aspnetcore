@@ -54,9 +54,25 @@ public class RazorComponentEndpointsStartup<TRootComponent>
                     .AddServerRenderMode()
                     .AddWebAssemblyRenderMode();
 
-                StreamingRendering.MapEndpoints(endpoints);
+                NotEnabledStreamingRenderingComponent.MapEndpoints(endpoints);
                 StreamingRenderingForm.MapEndpoints(endpoints);
+
+                MapEnhancedNavigationEndpoints(endpoints);
             });
+        });
+    }
+
+    private static void MapEnhancedNavigationEndpoints(IEndpointRouteBuilder endpoints)
+    {
+        // Used when testing that enhanced nav can show non-HTML responses (which it does by doing a full navigation)
+        endpoints.Map("/nav/non-html-response", () => "Hello, this is plain text");
+
+        // Used when testing that enhanced nav displays content even if the response is an error status code
+        endpoints.Map("/nav/give-404-with-content", async (HttpResponse response) =>
+        {
+            response.StatusCode = 404;
+            response.ContentType = "text/html";
+            await response.WriteAsync("<h1>404</h1><p>Sorry, there's nothing here! This is a custom server-generated 404 message.</p>");
         });
     }
 }

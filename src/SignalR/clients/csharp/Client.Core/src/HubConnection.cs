@@ -489,6 +489,8 @@ public partial class HubConnection : IAsyncDisposable
         {
             Log.ErrorStartingConnection(_logger, ex);
 
+            startingConnectionState.Cleanup();
+
             // Can't have any invocations to cancel, we're in the lock.
             await CloseAsync(startingConnectionState.Connection).ConfigureAwait(false);
             throw;
@@ -543,6 +545,8 @@ public partial class HubConnection : IAsyncDisposable
 
         ConnectionState? connectionState;
 
+        var connectionStateStopTask = Task.CompletedTask;
+
         try
         {
             if (disposing && _disposed)
@@ -559,6 +563,19 @@ public partial class HubConnection : IAsyncDisposable
             if (connectionState != null)
             {
                 connectionState.Stopping = true;
+                // Try to send CloseMessage
+                var writeTask = SendHubMessage(connectionState, CloseMessage.Empty);
+                if (writeTask.IsFaulted || writeTask.IsCanceled || !writeTask.IsCompleted)
+                {
+                    // Ignore exception from write, this is a best effort attempt to let the server know the client closed gracefully.
+                    // We are already closing the connection via an explicit StopAsync call from the user so don't care about any potential
+                    // errors that might happen.
+                    _ = writeTask.ContinueWith(
+                        static t => _ = t.Exception,
+                        CancellationToken.None,
+                        TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.OnlyOnFaulted,
+                        TaskScheduler.Default);
+                }
             }
             else
             {
@@ -579,17 +596,20 @@ public partial class HubConnection : IAsyncDisposable
                     (_serviceProvider as IDisposable)?.Dispose();
                 }
             }
+
+            if (connectionState != null)
+            {
+                // Start Stop inside the lock so a closure from the transport side at the same time as this doesn't cause an ODE
+                // But don't await the call in the lock as that could deadlock with HandleConnectionClose in the ReceiveLoop
+                connectionStateStopTask = connectionState.StopAsync();
+            }
         }
         finally
         {
             _state.ReleaseConnectionLock();
         }
 
-        // Now stop the connection we captured
-        if (connectionState != null)
-        {
-            await connectionState.StopAsync().ConfigureAwait(false);
-        }
+        await connectionStateStopTask.ConfigureAwait(false);
     }
 
     /// <summary>
@@ -1459,6 +1479,7 @@ public partial class HubConnection : IAsyncDisposable
 
             // Cancel any outstanding invocations within the connection lock
             connectionState.CancelOutstandingInvocations(connectionState.CloseException);
+            connectionState.Cleanup();
 
             if (connectionState.Stopping || _reconnectPolicy == null)
             {
@@ -1965,9 +1986,9 @@ public partial class HubConnection : IAsyncDisposable
 
         private async Task StopAsyncCore()
         {
-            Log.Stopping(_logger);
+            _hubConnection._state.AssertInConnectionLock();
 
-            _messageBuffer?.Dispose();
+            Log.Stopping(_logger);
 
             // Complete our write pipe, which should cause everything to shut down
             Log.TerminatingReceiveLoop(_logger);
@@ -1981,6 +2002,11 @@ public partial class HubConnection : IAsyncDisposable
 
             _hubConnection._logScope.ConnectionId = null;
             _stopTcs!.TrySetResult(null);
+        }
+
+        public void Cleanup()
+        {
+            _messageBuffer?.Dispose();
         }
 
         public async Task TimerLoop(TimerAwaitable timer)

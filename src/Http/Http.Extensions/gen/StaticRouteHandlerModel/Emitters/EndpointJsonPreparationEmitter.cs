@@ -31,7 +31,7 @@ internal static class EndpointJsonPreparationEmitter
 
         static void ProcessParameter(EndpointParameter parameter, CodeWriter codeWriter)
         {
-            if (parameter.Source != EndpointParameterSource.JsonBody && parameter.Source != EndpointParameterSource.JsonBodyOrService && parameter.Source != EndpointParameterSource.JsonBodyOrQuery)
+            if (parameter.Source != EndpointParameterSource.JsonBody)
             {
                 return;
             }

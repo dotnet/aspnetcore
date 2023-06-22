@@ -9,7 +9,7 @@
     <AspNetCoreMajorVersion>8</AspNetCoreMajorVersion>
     <AspNetCoreMinorVersion>0</AspNetCoreMinorVersion>
     <AspNetCorePatchVersion>0</AspNetCorePatchVersion>
-    <PreReleaseVersionIteration>6</PreReleaseVersionIteration>
+    <PreReleaseVersionIteration>7</PreReleaseVersionIteration>
     <ValidateBaseline>true</ValidateBaseline>
     <!--
         When StabilizePackageVersion is set to 'true', this branch will produce stable outputs for 'Shipping' packages
@@ -134,6 +134,8 @@
     <SystemDiagnosticsPerformanceCounterVersion>8.0.0-preview.6.23321.1</SystemDiagnosticsPerformanceCounterVersion>
     <SystemIOHashingVersion>8.0.0-preview.6.23321.1</SystemIOHashingVersion>
     <SystemRuntimeCachingVersion>8.0.0-preview.6.23321.1</SystemRuntimeCachingVersion>
+    <!-- Packages from dotnet/extensions -->
+    <MicrosoftExtensionsTelemetryTestingVersion>8.0.0-preview.6.23320.3</MicrosoftExtensionsTelemetryTestingVersion>
     <!-- Packages from dotnet/efcore -->
     <dotnetefVersion>8.0.0-preview.7.23321.4</dotnetefVersion>
     <MicrosoftEntityFrameworkCoreInMemoryVersion>8.0.0-preview.7.23321.4</MicrosoftEntityFrameworkCoreInMemoryVersion>
