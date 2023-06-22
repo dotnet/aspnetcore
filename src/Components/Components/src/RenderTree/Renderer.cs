@@ -1154,18 +1154,16 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     /// <param name="componentType">The type of component that was requested.</param>
     /// <param name="parentComponentId">The parent component ID, or null if it is a root component.</param>
     /// <param name="componentActivator">An <see cref="IComponentActivator"/> that should be used when instantiating component objects.</param>
-    /// <param name="componentTypeRenderMode">The <see cref="IComponentRenderMode"/> declared on <paramref name="componentType"/>.</param>
-    /// <param name="callerSpecifiedRenderMode">The <see cref="IComponentRenderMode"/> specified at the call site (for example, by the parent component), if any.</param>
+    /// <param name="renderMode">The <see cref="IComponentRenderMode"/> declared on <paramref name="componentType"/> or at the call site (for example, by the parent component).</param>
     /// <returns>An <see cref="IComponent"/> instance.</returns>
     protected internal virtual IComponent ResolveComponentForRenderMode(
         [DynamicallyAccessedMembers(Component)] Type componentType,
         int? parentComponentId,
         IComponentActivator componentActivator,
-        IComponentRenderMode? componentTypeRenderMode,
-        IComponentRenderMode? callerSpecifiedRenderMode)
+        IComponentRenderMode renderMode)
     {
         // Nothing is supported by default. Subclasses must override this to opt into supporting specific render modes.
-        throw new NotSupportedException($"Cannot supply a component of type '{componentType}' because the current platform does not support the render mode '{componentTypeRenderMode ?? callerSpecifiedRenderMode}'.");
+        throw new NotSupportedException($"Cannot supply a component of type '{componentType}' because the current platform does not support the render mode '{renderMode}'.");
     }
 
     /// <summary>

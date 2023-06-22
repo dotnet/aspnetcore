@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Reflection;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.Extensions.DependencyInjection;
@@ -147,7 +148,7 @@ public class ComponentFactoryTest
         Assert.Equal(componentType, renderer.RequestedComponentType);
         Assert.Equal(1234, renderer.SuppliedParentComponentId);
         Assert.Same(componentActivator, renderer.SuppliedActivator);
-        Assert.IsType<TestRenderMode>(renderer.SuppliedComponentTypeRenderMode);
+        Assert.IsType<TestRenderMode>(renderer.SuppliedRenderMode);
     }
 
     [Fact]
@@ -171,12 +172,28 @@ public class ComponentFactoryTest
         Assert.NotNull(instance.Property1);
         Assert.Equal(componentType, renderer.RequestedComponentType);
         Assert.Same(componentActivator, renderer.SuppliedActivator);
-        Assert.Same(callSiteRenderMode, renderer.SuppliedCallSiteRenderMode);
-        Assert.Null(renderer.SuppliedComponentTypeRenderMode);
-        Assert.Equal(componentType, renderer.RequestedComponentType);
+        Assert.Same(callSiteRenderMode, renderer.SuppliedRenderMode);
         Assert.Equal(1234, renderer.SuppliedParentComponentId);
-        Assert.Same(componentActivator, renderer.SuppliedActivator);
-        Assert.Null(renderer.SuppliedComponentTypeRenderMode);
+    }
+
+    [Fact]
+    public void InstantiateComponent_WithRenderModeOnComponentAndCallSite_Throws()
+    {
+        // Arrange
+        var resolvedComponent = new ComponentWithInjectProperties();
+        var componentType = typeof(ComponentWithRenderMode);
+        var renderer = new RendererWithResolveComponentForRenderMode(resolvedComponent);
+        var componentActivator = new DefaultComponentActivator();
+        var factory = new ComponentFactory(componentActivator, renderer);
+
+        // Even though the two rendermodes are literally the same object, we don't allow specifying any nonnull
+        // rendermode at the callsite if there's a nonnull fixed rendermode
+        var callsiteRenderMode = componentType.GetCustomAttribute<RenderModeAttribute>().Mode;
+
+        // Act/Assert
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+            factory.InstantiateComponent(GetServiceProvider(), componentType, callsiteRenderMode, 1234));
+        Assert.Equal($"The component type '{componentType}' has a fixed rendermode of '{typeof(TestRenderMode)}', so it is not valid to specify any rendermode when using this component.", ex.Message);
     }
 
     private static IServiceProvider GetServiceProvider()
@@ -306,8 +323,7 @@ public class ComponentFactoryTest
         public Type RequestedComponentType { get; private set; }
         public int? SuppliedParentComponentId { get; private set; }
         public IComponentActivator SuppliedActivator { get; private set; }
-        public IComponentRenderMode SuppliedComponentTypeRenderMode { get; private set; }
-        public IComponentRenderMode SuppliedCallSiteRenderMode { get; private set; }
+        public IComponentRenderMode SuppliedRenderMode { get; private set; }
 
         public override Dispatcher Dispatcher => throw new NotImplementedException();
 
@@ -321,14 +337,13 @@ public class ComponentFactoryTest
             throw new NotImplementedException();
         }
 
-        protected internal override IComponent ResolveComponentForRenderMode(Type componentType, int? parentComponentId, IComponentActivator componentActivator, IComponentRenderMode componentTypeRenderMode, IComponentRenderMode callerSuppliedRenderMode)
+        protected internal override IComponent ResolveComponentForRenderMode(Type componentType, int? parentComponentId, IComponentActivator componentActivator, IComponentRenderMode renderMode)
         {
             ResolverWasCalled = true;
             RequestedComponentType = componentType;
             SuppliedParentComponentId = parentComponentId;
             SuppliedActivator = componentActivator;
-            SuppliedComponentTypeRenderMode = componentTypeRenderMode;
-            SuppliedCallSiteRenderMode = callerSuppliedRenderMode;
+            SuppliedRenderMode = renderMode;
             return _componentToReturn;
         }
     }
