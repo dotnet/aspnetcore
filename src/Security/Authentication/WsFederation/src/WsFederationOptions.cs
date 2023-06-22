@@ -30,7 +30,7 @@ public class WsFederationOptions : RemoteAuthenticationOptions
         {
             new Saml2SecurityTokenHandler(),
             new SamlSecurityTokenHandler(),
-            new JsonWebTokenHandler()
+            new JsonWebTokenHandler(){ MapInboundClaims = true }
         };
 
     private TokenValidationParameters _tokenValidationParameters = new TokenValidationParameters();

@@ -17,6 +17,7 @@ public class JwtBearerOptions : AuthenticationSchemeOptions
 {
     private readonly JwtSecurityTokenHandler _defaultHandler = new JwtSecurityTokenHandler();
     private readonly JsonWebTokenHandler _defaultTokenHandler = new JsonWebTokenHandler();
+    private bool _mapInboundClaims = JwtSecurityTokenHandler.DefaultMapInboundClaims;
 
     /// <summary>
     /// Initializes a new instance of <see cref="JwtBearerOptions"/>.
@@ -135,15 +136,20 @@ public class JwtBearerOptions : AuthenticationSchemeOptions
     public bool IncludeErrorDetails { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets the <see cref="MapInboundClaims"/> property on the default instance of <see cref="JwtSecurityTokenHandler"/> in SecurityTokenValidators, which is used when determining
-    /// whether or not to map claim types that are extracted when validating a <see cref="JwtSecurityToken"/>.
+    /// Gets or sets the <see cref="MapInboundClaims"/> property on the default instance of <see cref="JwtSecurityTokenHandler"/> in SecurityTokenValidators, or <see cref="JsonWebTokenHandler"/>which is used when determining
+    /// whether or not to map claim types that are extracted when validating a <see cref="JwtSecurityToken"/> or <see cref="JsonWebToken"/>.
     /// <para>If this is set to true, the Claim Type is set to the JSON claim 'name' after translating using this mapping. Otherwise, no mapping occurs.</para>
     /// <para>The default value is true.</para>
     /// </summary>
     public bool MapInboundClaims
     {
-        get => _defaultHandler.MapInboundClaims;
-        set => _defaultHandler.MapInboundClaims = value;
+        get => _mapInboundClaims;
+        set
+        {
+            _mapInboundClaims = value;
+            _defaultHandler.MapInboundClaims = value;
+            _defaultTokenHandler.MapInboundClaims = value;
+        }
     }
 
     /// <summary>
