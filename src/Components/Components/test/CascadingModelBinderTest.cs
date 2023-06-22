@@ -344,7 +344,7 @@ public class CascadingModelBinderTest
             return false;
         }
 
-        public bool TryBind(string formName, Type valueType, [NotNullWhen(true)] out object boundValue)
+        public bool TryBind(string formName, Type valueType, [NotNullWhen(true)] out object boundValue, Action<string, FormattableString, string> onError)
         {
             boundValue = null;
             return false;

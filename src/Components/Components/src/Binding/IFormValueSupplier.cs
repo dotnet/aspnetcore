@@ -32,6 +32,7 @@ public interface IFormValueSupplier
     /// <param name="formName">The form name to bind data from.</param>
     /// <param name="valueType">The <see cref="Type"/> for the value to bind.</param>
     /// <param name="boundValue">The bound value if succeeded.</param>
+    /// <param name="onError">The callback to invoke if an error occurs during the binding process.</param>
     /// <returns><c>true</c> if the form was bound successfully; otherwise, <c>false</c>.</returns>
-    bool TryBind(string formName, Type valueType, [NotNullWhen(true)] out object? boundValue);
+    bool TryBind(string formName, Type valueType, [NotNullWhen(true)] out object? boundValue, Action<string, FormattableString, string?> onError);
 }
