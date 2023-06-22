@@ -248,7 +248,51 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         return result.EndsWith('/') ? result : result += "/";
     }
 
-    private record struct NamedEvent(ulong EventHandlerId, int ComponentId, string EventNameId);
+    private readonly struct NamedEvent : IEquatable<NamedEvent>
+    {
+        public ulong EventHandlerId { get; }
+
+        public int ComponentId { get; }
+
+        public string EventNameId { get; }
+
+        public NamedEvent(ulong eventHandlerId, int componentId, string eventNameId)
+        {
+            EventHandlerId = eventHandlerId;
+            ComponentId = componentId;
+            EventNameId = eventNameId;
+        }
+
+        public static bool operator ==(NamedEvent left, NamedEvent right)
+        {
+            return left.EventHandlerId == right.EventHandlerId
+                && left.ComponentId == right.ComponentId
+                && left.EventNameId == right.EventNameId;
+        }
+
+        public static bool operator !=(NamedEvent left, NamedEvent right)
+        {
+            return !(left == right);
+        }
+
+        public bool Equals(NamedEvent other)
+        {
+            return this == other;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(EventHandlerId, ComponentId, EventNameId);
+        }
+
+        public override bool Equals(object? obj)
+        {
+            return obj is NamedEvent namedEvent
+                && namedEvent.EventHandlerId == EventHandlerId
+                && namedEvent.ComponentId == ComponentId
+                && namedEvent.EventNameId == EventNameId;
+        }
+    }
 
     private sealed class FormCollectionReadOnlyDictionary : IReadOnlyDictionary<string, StringValues>
     {
