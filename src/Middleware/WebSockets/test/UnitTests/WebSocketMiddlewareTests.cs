@@ -505,9 +505,13 @@ namespace Microsoft.AspNetCore.WebSockets.Test
         {
             WebSocket serverSocket = null;
 
+            // Events that we want to sequence execution across client and server.
             var socketWasAccepted = new ManualResetEventSlim();
             var socketWasAborted = new ManualResetEventSlim();
             var firstReceiveOccured = new ManualResetEventSlim();
+            var secondReceiveInitiated = new ManualResetEventSlim();
+
+            Exception receiveException = null;
 
             await using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
             {
@@ -517,24 +521,36 @@ namespace Microsoft.AspNetCore.WebSockets.Test
 
                 var serverBuffer = new byte[1024];
 
-                var finishedWithConnectionAborted = false;
-
                 try
                 {
                     while (serverSocket.State is WebSocketState.Open or WebSocketState.CloseSent)
                     {
-                        var response = await serverSocket.ReceiveAsync(serverBuffer, default);
-                        firstReceiveOccured.Set();
+                        if (firstReceiveOccured.IsSet)
+                        {
+                            var pendingResponse = serverSocket.ReceiveAsync(serverBuffer, default);
+                            secondReceiveInitiated.Set();
+                            var response = await pendingResponse;
+                        }
+                        else
+                        {
+                            var response = await serverSocket.ReceiveAsync(serverBuffer, default);
+                            firstReceiveOccured.Set();
+                        }
                     }
                 }
-                catch (ConnectionAbortedException)
+                catch (ConnectionAbortedException ex)
                 {
                     socketWasAborted.Set();
-                    finishedWithConnectionAborted = true;
+                    receiveException = ex;
+                }
+                catch (Exception ex)
+                {
+                    // Capture this exception so a test failure can give us more information.
+                    receiveException = ex;
                 }
                 finally
                 {
-                    Assert.True(finishedWithConnectionAborted);
+                    Assert.IsType<ConnectionAbortedException>(receiveException);
                 }
             }))
             {
@@ -551,6 +567,9 @@ namespace Microsoft.AspNetCore.WebSockets.Test
 
                     var firstReceiveOccuredDidNotTimeout = firstReceiveOccured.Wait(10000);
                     Assert.True(firstReceiveOccuredDidNotTimeout, "First receive did not occur within the allotted time.");
+
+                    var secondReceiveInitiatedDidNotTimeout = secondReceiveInitiated.Wait(10000);
+                    Assert.True(secondReceiveInitiatedDidNotTimeout, "Second receive was not initiated within the allotted time.");
 
                     serverSocket.Abort();
 
