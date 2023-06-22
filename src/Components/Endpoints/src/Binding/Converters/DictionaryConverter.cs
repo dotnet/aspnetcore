@@ -3,6 +3,8 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Runtime.CompilerServices;
+
 namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
 
 internal abstract class DictionaryConverter<TDictionary> : FormDataConverter<TDictionary>
@@ -60,19 +62,24 @@ internal sealed class DictionaryConverter<TDictionary, TDictionaryPolicy, TBuffe
             if (!TKey.TryParse(key[1..^1], CultureInfo.InvariantCulture, out var keyValue))
             {
                 succeded = false;
-                // Will report an error about unparsable key here.
+                context.AddMappingError(
+                    FormattableStringFactory.Create(FormDataResources.DictionaryUnparsableKey, key[1..^1], typeof(TKey).FullName),
+                    null);
 
-                // Continue trying to bind the rest of the dictionary.
                 continue;
             }
 
-            TDictionaryPolicy.Add(ref buffer, keyValue!, currentValue);
             keyCount++;
-            if (keyCount == maxCollectionSize)
+            if (keyCount > maxCollectionSize)
             {
+                context.AddMappingError(
+                     FormattableStringFactory.Create(FormDataResources.MaxCollectionSizeReached, "dictionary", maxCollectionSize),
+                     null);
                 succeded = false;
                 break;
             }
+
+            TDictionaryPolicy.Add(ref buffer, keyValue!, currentValue);
         }
 
         result = TDictionaryPolicy.ToResult(buffer);
