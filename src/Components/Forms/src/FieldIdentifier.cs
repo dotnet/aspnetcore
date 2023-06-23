@@ -170,17 +170,24 @@ public readonly struct FieldIdentifier : IEquatable<FieldIdentifier>
                 break;
             case MethodCallExpression methodCallExpression when ExpressionFormatter.IsSingleArgumentIndexer(accessorBody):
                 fieldName = ExpressionFormatter.FormatIndexArgument(methodCallExpression.Arguments[0]);
-                var methodCallObjectLambda = Expression.Lambda(methodCallExpression.Object);
-                var methodCallObjectLambdaCompiled = (Func<object?>)methodCallObjectLambda.Compile();
-                var methodCallObject = methodCallObjectLambdaCompiled();
-                if (methodCallObject is null)
-                {
-                    throw new ArgumentException("The provided expression must evaluate to a non-null value.");
-                }
-                model = methodCallObject;
+                model = GetModelFromIndexer(methodCallExpression);
                 break;
             default:
                 throw new ArgumentException($"The provided expression contains a {accessorBody.GetType().Name} which is not supported. {nameof(FieldIdentifier)} only supports simple member accessors (fields, properties) of an object.");
         }
+    }
+
+    private static object GetModelFromIndexer(MethodCallExpression methodCallExpression)
+    {
+        object model;
+        var methodCallObjectLambda = Expression.Lambda(methodCallExpression.Object!);
+        var methodCallObjectLambdaCompiled = (Func<object?>)methodCallObjectLambda.Compile();
+        var result = methodCallObjectLambdaCompiled();
+        if (result is null)
+        {
+            throw new ArgumentException("The provided expression must evaluate to a non-null value.");
+        }
+        model = result;
+        return model;
     }
 }
