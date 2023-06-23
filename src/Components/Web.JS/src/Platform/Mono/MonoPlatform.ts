@@ -5,9 +5,8 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable no-prototype-builtins */
 import { DotNet } from '@microsoft/dotnet-js-interop';
-import { attachDebuggerHotkey, hasDebuggingEnabled } from './MonoDebugger';
+import { attachDebuggerHotkey } from './MonoDebugger';
 import { showErrorNotification } from '../../BootErrors';
-import { WebAssemblyResourceLoader, LoadingResource } from '../WebAssemblyResourceLoader';
 import { Platform, System_Array, Pointer, System_Object, System_String, HeapLock, PlatformApi } from '../Platform';
 import { WebAssemblyBootResourceType, WebAssemblyStartOptions } from '../WebAssemblyStartOptions';
 import { Blazor } from '../../GlobalExports';
@@ -235,8 +234,6 @@ async function createRuntimeInstance(options: Partial<WebAssemblyStartOptions>):
   attachDebuggerHotkey(resourceLoader);
 
   Blazor._internal.dotNetCriticalError = printErr;
-  Blazor._internal.loadLazyAssembly = (assemblyNameToLoad) => loadLazyAssembly(MONO_INTERNAL.resourceLoader, assemblyNameToLoad);
-  Blazor._internal.loadSatelliteAssemblies = (culturesToLoad, loader) => loadSatelliteAssemblies(resourceLoader, culturesToLoad, loader);
   setModuleImports('blazor-internal', {
     Blazor: { _internal: Blazor._internal },
   });
@@ -266,55 +263,6 @@ const printErr = line => {
   console.error(line || '(null)');
   showErrorNotification();
 };
-
-async function loadSatelliteAssemblies(resourceLoader: WebAssemblyResourceLoader, culturesToLoad: string[], loader: (wrapper: { dll: Uint8Array }) => void): Promise<void> {
-  const satelliteResources = resourceLoader.bootConfig.resources.satelliteResources;
-  if (!satelliteResources) {
-    return;
-  }
-  await Promise.all(culturesToLoad!
-    .filter(culture => satelliteResources.hasOwnProperty(culture))
-    .map(culture => resourceLoader.loadResources(satelliteResources[culture], fileName => `_framework/${fileName}`, 'assembly'))
-    .reduce((previous, next) => previous.concat(next), new Array<LoadingResource>())
-    .map(async resource => {
-      const response = await resource.response;
-      const bytes = await response.arrayBuffer();
-      const wrapper = { dll: new Uint8Array(bytes) };
-      loader(wrapper);
-    }));
-}
-
-async function loadLazyAssembly(resourceLoader: WebAssemblyResourceLoader, assemblyNameToLoad: string): Promise<{ dll: Uint8Array, pdb: Uint8Array | null }> {
-  const resources = resourceLoader.bootConfig.resources;
-  const lazyAssemblies = resources.lazyAssembly;
-  if (!lazyAssemblies) {
-    throw new Error("No assemblies have been marked as lazy-loadable. Use the 'BlazorWebAssemblyLazyLoad' item group in your project file to enable lazy loading an assembly.");
-  }
-
-  const assemblyMarkedAsLazy = lazyAssemblies.hasOwnProperty(assemblyNameToLoad);
-  if (!assemblyMarkedAsLazy) {
-    throw new Error(`${assemblyNameToLoad} must be marked with 'BlazorWebAssemblyLazyLoad' item group in your project file to allow lazy-loading.`);
-  }
-  const dllNameToLoad = assemblyNameToLoad;
-  const pdbNameToLoad = changeExtension(assemblyNameToLoad, '.pdb');
-  const shouldLoadPdb = hasDebuggingEnabled() && resources.pdb && lazyAssemblies.hasOwnProperty(pdbNameToLoad);
-
-  const dllBytesPromise = resourceLoader.loadResource(dllNameToLoad, `_framework/${dllNameToLoad}`, lazyAssemblies[dllNameToLoad], 'assembly').response.then(response => response.arrayBuffer());
-  if (shouldLoadPdb) {
-    const pdbBytesPromise = await resourceLoader.loadResource(pdbNameToLoad, `_framework/${pdbNameToLoad}`, lazyAssemblies[pdbNameToLoad], 'pdb').response.then(response => response.arrayBuffer());
-    const [dllBytes, pdbBytes] = await Promise.all([dllBytesPromise, pdbBytesPromise]);
-    return {
-      dll: new Uint8Array(dllBytes),
-      pdb: new Uint8Array(pdbBytes),
-    };
-  } else {
-    const dllBytes = await dllBytesPromise;
-    return {
-      dll: new Uint8Array(dllBytes),
-      pdb: null,
-    };
-  }
-}
 
 function getArrayDataPointer<T>(array: System_Array<T>): number {
   return <number><any>array + 12; // First byte from here is length, then following bytes are entries
@@ -356,15 +304,6 @@ function attachInteropInvoker(): void {
       ) as string;
     },
   });
-}
-
-function changeExtension(filename: string, newExtensionWithLeadingDot: string) {
-  const lastDotIndex = filename.lastIndexOf('.');
-  if (lastDotIndex < 0) {
-    throw new Error(`No extension to replace in '${filename}'`);
-  }
-
-  return filename.substr(0, lastDotIndex) + newExtensionWithLeadingDot;
 }
 
 function assertHeapIsNotLocked() {
