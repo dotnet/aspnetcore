@@ -138,7 +138,7 @@ internal sealed class ComplexTypeExpressionConverterFactory<T> : ComplexTypeExpr
 
             // if(!succeeded && context.AttachInstanceToErrorsHandler != null)
             // {
-            //     context.AttachInstanceToErrors(result);
+            //     context.AttachInstanceToErrors((object)result);
             // }
             yield return Expression.IfThen(
                 Expression.And(
@@ -150,7 +150,7 @@ internal sealed class ComplexTypeExpressionConverterFactory<T> : ComplexTypeExpr
                         context,
                         nameof(FormDataReader.AttachInstanceToErrors),
                         Array.Empty<Type>(),
-                        resultParam));
+                        Expression.Convert(resultParam, typeof(object))));
 
             for (var i = 0; i < props.Length; i++)
             {

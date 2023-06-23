@@ -45,8 +45,8 @@ Microsoft.AspNetCore.Components.IComponentRenderMode
 Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.PersistStateAsync(Microsoft.AspNetCore.Components.IPersistentComponentStateStore! store, Microsoft.AspNetCore.Components.Dispatcher! dispatcher) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.ModelBindingContext
 Microsoft.AspNetCore.Components.ModelBindingContext.BindingContextId.get -> string!
-Microsoft.AspNetCore.Components.ModelBindingContext.GetAllErrors() -> System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, System.Collections.Generic.IReadOnlyList<System.FormattableString!>!>>!
-Microsoft.AspNetCore.Components.ModelBindingContext.GetAllErrors(string! formName) -> System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, System.Collections.Generic.IReadOnlyList<System.FormattableString!>!>>!
+Microsoft.AspNetCore.Components.ModelBindingContext.GetAllErrors() -> System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<(object!, string!), System.Collections.Generic.IReadOnlyList<System.FormattableString!>!>>!
+Microsoft.AspNetCore.Components.ModelBindingContext.GetAllErrors(string! formName) -> System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<(object!, string!), System.Collections.Generic.IReadOnlyList<System.FormattableString!>!>>!
 Microsoft.AspNetCore.Components.ModelBindingContext.GetAttemptedValue(string! formName, string! key) -> string?
 Microsoft.AspNetCore.Components.ModelBindingContext.GetAttemptedValue(string! key) -> string?
 Microsoft.AspNetCore.Components.ModelBindingContext.GetErrors(string! formName, string! key) -> System.Collections.Generic.IReadOnlyList<System.FormattableString!>!

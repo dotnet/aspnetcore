@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Linq;
-
 namespace Microsoft.AspNetCore.Components;
 
 /// <summary>
@@ -65,12 +63,17 @@ public sealed class ModelBindingContext
     /// <returns>The list of errors associated with the model if any.</returns>
     public IEnumerable<KeyValuePair<(object, string), IReadOnlyList<FormattableString>>> GetAllErrors()
     {
-        if (_errors == null)
+        return GetAllErrorsCore(_errors);
+    }
+
+    private static IEnumerable<KeyValuePair<(object, string), IReadOnlyList<FormattableString>>> GetAllErrorsCore(Dictionary<string, BindingError>? errors)
+    {
+        if (errors == null)
         {
             yield break;
         }
 
-        foreach (var (key, value) in _errors)
+        foreach (var (key, value) in errors)
         {
             var errorKey = key;
             var lastDotIndex = key.LastIndexOf('.');
@@ -87,11 +90,11 @@ public sealed class ModelBindingContext
     /// </summary>
     /// <param name="formName">Form name for a form under this context.</param>
     /// <returns>The list of errors associated with the model if any.</returns>
-    public IEnumerable<KeyValuePair<string, IReadOnlyList<FormattableString>>> GetAllErrors(string formName)
+    public IEnumerable<KeyValuePair<(object, string), IReadOnlyList<FormattableString>>> GetAllErrors(string formName)
     {
         return _errorsByFormName?.TryGetValue(formName, out var formErrors) == true ?
-            formErrors.Select(kvp => new KeyValuePair<string, IReadOnlyList<FormattableString>>(kvp.Key, kvp.Value.ErrorMessages)) :
-            Array.Empty<KeyValuePair<string, IReadOnlyList<FormattableString>>>();
+            GetAllErrorsCore(formErrors) :
+            Array.Empty<KeyValuePair<(object, string), IReadOnlyList<FormattableString>>>();
     }
 
     /// <summary>
