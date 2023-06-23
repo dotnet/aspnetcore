@@ -102,7 +102,7 @@ internal static class ExpressionFormatter
         return result;
     }
 
-    private static bool IsSingleArgumentIndexer(Expression expression)
+    internal static bool IsSingleArgumentIndexer(Expression expression)
     {
         if (expression is not MethodCallExpression methodExpression || methodExpression.Arguments.Count != 1)
         {
@@ -174,6 +174,22 @@ internal static class ExpressionFormatter
                 break;
             default:
                 throw new InvalidOperationException($"Unable to evaluate index expressions of type '{indexExpression.GetType().Name}'.");
+        }
+    }
+
+    internal static string FormatIndexArgument(
+        Expression indexExpression)
+    {
+        var builder = new ReverseStringBuilder(stackalloc char[StackAllocBufferSize]);
+        try
+        {
+            FormatIndexArgument(indexExpression, ref builder);
+            var result = builder.ToString();
+            return result;
+        }
+        finally
+        {
+            builder.Dispose();
         }
     }
 
