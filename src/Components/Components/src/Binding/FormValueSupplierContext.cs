@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.AspNetCore.Components.Binding;
@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Components.Binding;
 /// <summary>
 /// Context for binding a form value.
 /// </summary>
-public struct FormValueSupplierContext
+public class FormValueSupplierContext
 {
     private bool _resultSet;
 
