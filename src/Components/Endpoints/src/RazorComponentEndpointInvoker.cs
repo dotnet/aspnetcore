@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -13,6 +14,7 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal class RazorComponentEndpointInvoker
 {
+    private static readonly FormOptions DefaultFormOptions = new();
     private readonly HttpContext _context;
     private readonly EndpointHtmlRenderer _renderer;
     private readonly Type _rootComponentType;
@@ -43,11 +45,14 @@ internal class RazorComponentEndpointInvoker
             return;
         }
 
+        var formOptions = _context.GetEndpoint()!.Metadata.GetMetadata<FormOptions>() ?? DefaultFormOptions;
+
         await EndpointHtmlRenderer.InitializeStandardComponentServicesAsync(
             _context,
             componentType: _componentType,
             handler: handler,
-            form: handler != null && _context.Request.HasFormContentType ? await _context.Request.ReadFormAsync() : null);
+            form: handler != null && _context.Request.HasFormContentType ? await _context.Request.ReadFormAsync(formOptions) : null,
+            formOptions: formOptions);
 
         await using var writer = CreateResponseWriter(_context.Response.Body);
 

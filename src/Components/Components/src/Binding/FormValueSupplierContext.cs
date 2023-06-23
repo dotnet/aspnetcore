@@ -16,12 +16,10 @@ public class FormValueSupplierContext
     /// <param name="formName">The name of the form to bind data from.</param>
     /// <param name="valueType">The <see cref="Type"/> of the value to bind.</param>
     /// <param name="parameterName">The name of the parameter to bind data to.</param>
-    /// <param name="onError">The callback to invoke when an error occurs.</param>
     public FormValueSupplierContext(
         string formName,
         Type valueType,
-        string parameterName,
-        Action<string, FormattableString, string?>? onError = null)
+        string parameterName)
     {
         ArgumentNullException.ThrowIfNull(formName, nameof(formName));
         ArgumentNullException.ThrowIfNull(valueType, nameof(valueType));
@@ -29,7 +27,6 @@ public class FormValueSupplierContext
         FormName = formName;
         ParameterName = parameterName;
         ValueType = valueType;
-        OnError = onError;
     }
 
     /// <summary>
@@ -51,6 +48,15 @@ public class FormValueSupplierContext
     /// Gets the callback to invoke when an error occurs.
     /// </summary>
     public Action<string, FormattableString, string?>? OnError { get; set; }
+
+    /// <summary>
+    /// Maps a set of errors to a concrete containing instance.
+    /// </summary>
+    /// <remarks>
+    /// For example, maps errors for a given property in a class to the class instance.
+    /// This is required so that validation can work without the need of the full identifier.
+    /// </remarks>
+    public Action<string, object>? MapErrorToContainer { get; set; }
 
     /// <summary>
     /// Gets the result of the binding operation.

@@ -8,6 +8,7 @@ using System.Globalization;
 using Microsoft.AspNetCore.Components.Binding;
 using Microsoft.AspNetCore.Components.Endpoints.Binding;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
@@ -49,8 +50,7 @@ internal sealed class DefaultFormValuesSupplier : IFormValueSupplier
 
         var deserializer = _cache.GetOrAdd(context.ValueType, CreateDeserializer);
         Debug.Assert(deserializer != null);
-
-        deserializer.Deserialize(context, _options, _formData.Entries);
+        deserializer.Deserialize(context, _options, _formData.Entries, _formData.FormOptions);
     }
 
     private FormValueSupplier CreateDeserializer(Type type) =>
@@ -59,12 +59,20 @@ internal sealed class DefaultFormValuesSupplier : IFormValueSupplier
 
     internal abstract class FormValueSupplier
     {
-        public abstract void Deserialize(FormValueSupplierContext context, FormDataMapperOptions options, IReadOnlyDictionary<string, StringValues> form);
+        public abstract void Deserialize(
+            FormValueSupplierContext context,
+            FormDataMapperOptions options,
+            IReadOnlyDictionary<string, StringValues> form,
+            FormOptions formOptions);
     }
 
     internal class FormValueSupplier<T> : FormValueSupplier
     {
-        public override void Deserialize(FormValueSupplierContext context, FormDataMapperOptions options, IReadOnlyDictionary<string, StringValues> form)
+        public override void Deserialize(
+            FormValueSupplierContext context,
+            FormDataMapperOptions options,
+            IReadOnlyDictionary<string, StringValues> form,
+            FormOptions formOptions)
         {
             if (form.Count == 0)
             {
@@ -74,24 +82,20 @@ internal sealed class DefaultFormValuesSupplier : IFormValueSupplier
             char[]? buffer = null;
             try
             {
-                var maxKeyLenght = -1;
                 var dictionary = new Dictionary<FormKey, StringValues>();
                 foreach (var (key, value) in form)
                 {
-                    if (key.Length > maxKeyLenght)
-                    {
-                        maxKeyLenght = key.Length;
-                    }
                     dictionary.Add(new FormKey(key.AsMemory()), value);
                 }
-                buffer = ArrayPool<char>.Shared.Rent(maxKeyLenght);
+                buffer = ArrayPool<char>.Shared.Rent(formOptions.KeyLengthLimit);
 
                 // Form values are parsed according to the culture of the request, which is set to the current culture by the localization middleware.
                 // Some form input types use the invariant culture when sending the data to the server. For those cases, we'll
                 // provide a way to override the culture to use to parse that value.
-                var reader = new FormDataReader(dictionary, CultureInfo.CurrentCulture, buffer.AsMemory(0, maxKeyLenght))
+                var reader = new FormDataReader(dictionary, CultureInfo.CurrentCulture, buffer.AsMemory(0, formOptions.KeyLengthLimit))
                 {
-                    ErrorHandler = context.OnError
+                    ErrorHandler = context.OnError,
+                    AttachInstanceToErrorsHandler = context.MapErrorToContainer
                 };
                 reader.PushPrefix(context.ParameterName);
                 var result = FormDataMapper.Map<T>(reader, options);

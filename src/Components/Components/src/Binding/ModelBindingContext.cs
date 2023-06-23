@@ -11,6 +11,7 @@ namespace Microsoft.AspNetCore.Components;
 public sealed class ModelBindingContext
 {
     private Dictionary<string, BindingError>? _errors;
+    private List<KeyValuePair<string, BindingError>>? _pendingErrors;
     private Dictionary<string, Dictionary<string, BindingError>>? _errorsByFormName;
 
     internal ModelBindingContext(string name, string bindingContextId)
@@ -62,7 +63,7 @@ public sealed class ModelBindingContext
     /// Retrieves all the errors for the model.
     /// </summary>
     /// <returns>The list of errors associated with the model if any.</returns>
-    public IEnumerable<KeyValuePair<string, IReadOnlyList<FormattableString>>> GetAllErrors()
+    public IEnumerable<KeyValuePair<(object, string), IReadOnlyList<FormattableString>>> GetAllErrors()
     {
         if (_errors == null)
         {
@@ -71,7 +72,13 @@ public sealed class ModelBindingContext
 
         foreach (var (key, value) in _errors)
         {
-            yield return new KeyValuePair<string, IReadOnlyList<FormattableString>>(key, value.ErrorMessages);
+            var errorKey = key;
+            var lastDotIndex = key.LastIndexOf('.');
+            if (lastDotIndex >= 0)
+            {
+                errorKey = key[(lastDotIndex + 1)..];
+            }
+            yield return new KeyValuePair<(object, string), IReadOnlyList<FormattableString>>((value.Parent, errorKey), value.ErrorMessages);
         }
     }
 
@@ -111,15 +118,17 @@ public sealed class ModelBindingContext
     internal void AddError(string key, FormattableString error, string? attemptedValue)
     {
         _errors ??= new Dictionary<string, BindingError>();
-        AddErrorCore(_errors, key, error, attemptedValue);
+        AddErrorCore(_errors, key, error, attemptedValue, ref _pendingErrors);
     }
 
-    private static void AddErrorCore(Dictionary<string, BindingError> errors, string key, FormattableString error, string? attemptedValue)
+    private static void AddErrorCore(Dictionary<string, BindingError> errors, string key, FormattableString error, string? attemptedValue, ref List<KeyValuePair<string, BindingError>>? pendingErrors)
     {
         if (!errors.TryGetValue(key, out var bindingError))
         {
             bindingError = new BindingError(new List<FormattableString>() { error }, attemptedValue);
             errors.Add(key, bindingError);
+            pendingErrors ??= new();
+            pendingErrors.Add(new KeyValuePair<string, BindingError>(key, bindingError));
         }
         else
         {
@@ -135,7 +144,28 @@ public sealed class ModelBindingContext
             formErrors = new Dictionary<string, BindingError>();
             _errorsByFormName.Add(formName, formErrors);
         }
-        AddErrorCore(formErrors, key, error, attemptedValue);
+        AddErrorCore(formErrors, key, error, attemptedValue, ref _pendingErrors);
+    }
+
+    internal void AttachParentValue(string key, object value)
+    {
+        if (_pendingErrors == null || _pendingErrors.Count == 0)
+        {
+            throw new InvalidOperationException("AttachParentValue can only be called when there are pending errors.");
+        }
+
+        for (var i = 0; i < _pendingErrors.Count; i++)
+        {
+            var (errorKey, error) = _pendingErrors[i];
+            if (!errorKey.StartsWith(key, StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException($"'{errorKey}' does must start with '{key}'");
+            }
+
+            error.Parent = value;
+        }
+
+        _pendingErrors.Clear();
     }
 
     internal void SetErrors(string formName, ModelBindingContext childContext)
@@ -148,5 +178,10 @@ public sealed class ModelBindingContext
         childContext._errors = formErrors;
     }
 
-    private record struct BindingError(List<FormattableString> ErrorMessages, string? AttemptedValue);
+    private class BindingError(List<FormattableString> errorMessages, string? attemptedValue)
+    {
+        public object Parent { get; set; } = null!;
+        public List<FormattableString> ErrorMessages { get; } = errorMessages;
+        public string? AttemptedValue { get; } = attemptedValue;
+    }
 }

@@ -115,10 +115,8 @@ public readonly struct FieldIdentifier : IEquatable<FieldIdentifier>
     /// <inheritdoc />
     public bool Equals(FieldIdentifier otherIdentifier)
     {
-        return
-            ReferenceEquals(otherIdentifier.Model, Model) &&
-            string.Equals(otherIdentifier.FieldName, FieldName, StringComparison.Ordinal) &&
-            string.Equals(otherIdentifier.FieldPath, FieldPath, StringComparison.Ordinal);
+        return ReferenceEquals(otherIdentifier.Model, Model) &&
+            string.Equals(otherIdentifier.FieldName, FieldName, StringComparison.Ordinal);
     }
 
     private static void ParseAccessor<T>(Expression<Func<T>> accessor, out object model, out string fieldName)

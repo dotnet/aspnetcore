@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -70,7 +71,8 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         HttpContext httpContext,
         Type? componentType = null,
         string? handler = null,
-        IFormCollection? form = null)
+        IFormCollection? form = null,
+        FormOptions? formOptions = null)
     {
         var navigationManager = (IHostEnvironmentNavigationManager)httpContext.RequestServices.GetRequiredService<NavigationManager>();
         navigationManager?.Initialize(GetContextBaseUri(httpContext.Request), GetFullUri(httpContext.Request));
@@ -86,6 +88,10 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         if (handler != null && form != null && formData != null)
         {
             formData.SetFormData(handler, new FormCollectionReadOnlyDictionary(form));
+            if (formOptions != null && formData is HttpContextFormDataProvider contextFormData)
+            {
+                contextFormData.SetFormOptions(formOptions);
+            }
         }
 
         // It's important that this is initialized since a component might try to restore state during prerendering
