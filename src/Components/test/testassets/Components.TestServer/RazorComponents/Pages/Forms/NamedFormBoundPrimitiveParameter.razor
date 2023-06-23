@@ -5,13 +5,13 @@
 <h2>Named form with bound parameter</h2>
 
 <EditForm FormHandlerName="named-form-handler" Model="Parameter" method="POST" OnValidSubmit="() => _submitted = true">
-    <input type="text" name="value" value="@(_attemptedValue ?? Parameter.ToString())" />
+    <input type="text" name="Parameter" value="@(_attemptedValue ?? Parameter.ToString())" />
     <input id="send" type="submit" value="Send" />
 </EditForm>
 
 @if (_submitted)
 {
-    var errors = Context.GetErrors("value");
+    var errors = Context.GetErrors("named-form-handler", "Parameter");
     if (errors.Count == 0)
     {
         <p id="pass">Your number is @Parameter!</p>
@@ -38,10 +38,10 @@
 
     protected override void OnInitialized()
     {
-        _errors = Context.GetErrors("value");
+        _errors = Context.GetErrors("named-form-handler", "Parameter");
         if (_errors.Count > 0)
         {
-            _attemptedValue = Context.GetAttemptedValue("value");
+            _attemptedValue = Context.GetAttemptedValue("named-form-handler", "Parameter");
         }
     }
 }

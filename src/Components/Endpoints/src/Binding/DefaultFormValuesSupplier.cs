@@ -89,7 +89,7 @@ internal sealed class DefaultFormValuesSupplier : IFormValueSupplier
                 // Form values are parsed according to the culture of the request, which is set to the current culture by the localization middleware.
                 // Some form input types use the invariant culture when sending the data to the server. For those cases, we'll
                 // provide a way to override the culture to use to parse that value.
-                var reader = new FormDataReader(dictionary, CultureInfo.CurrentCulture, buffer)
+                var reader = new FormDataReader(dictionary, CultureInfo.CurrentCulture, buffer.AsMemory(0, maxKeyLenght))
                 {
                     ErrorHandler = context.OnError
                 };

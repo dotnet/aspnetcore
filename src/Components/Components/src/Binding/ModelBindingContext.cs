@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Linq;
+
 namespace Microsoft.AspNetCore.Components;
 
 /// <summary>
@@ -47,6 +49,16 @@ public sealed class ModelBindingContext
         _errors?.TryGetValue(key, out var bindingError) == true ? bindingError.ErrorMessages : Array.Empty<FormattableString>();
 
     /// <summary>
+    /// Retrieves the list of errors for a given model key.
+    /// </summary>
+    /// <param name="key">The key used to identify the specific part of the model.</param>
+    /// <param name="formName">Form name for a form under this context.</param>
+    /// <returns>The list of errors associated with that part of the model if any.</returns>
+    public IReadOnlyList<FormattableString> GetErrors(string formName, string key) =>
+        _errorsByFormName?.TryGetValue(formName, out var formErrors) == true &&
+        formErrors.TryGetValue(key, out var bindingError) == true ? bindingError.ErrorMessages : Array.Empty<FormattableString>();
+
+    /// <summary>
     /// Retrieves all the errors for the model.
     /// </summary>
     /// <returns>The list of errors associated with the model if any.</returns>
@@ -64,12 +76,34 @@ public sealed class ModelBindingContext
     }
 
     /// <summary>
+    /// Retrieves all the errors for the model.
+    /// </summary>
+    /// <param name="formName">Form name for a form under this context.</param>
+    /// <returns>The list of errors associated with the model if any.</returns>
+    public IEnumerable<KeyValuePair<string, IReadOnlyList<FormattableString>>> GetAllErrors(string formName)
+    {
+        return _errorsByFormName?.TryGetValue(formName, out var formErrors) == true ?
+            formErrors.Select(kvp => new KeyValuePair<string, IReadOnlyList<FormattableString>>(kvp.Key, kvp.Value.ErrorMessages)) :
+            Array.Empty<KeyValuePair<string, IReadOnlyList<FormattableString>>>();
+    }
+
+    /// <summary>
     /// Retrieves the attempted value that failed to bind for a given model key.
     /// </summary>
     /// <param name="key">The key used to identify the specific part of the model.</param>
     /// <returns>The attempted value associated with that part of the model if any.</returns>
     public string? GetAttemptedValue(string key) =>
         _errors?.TryGetValue(key, out var bindingError) == true ? bindingError.AttemptedValue : null;
+
+    /// <summary>
+    /// Retrieves the attempted value that failed to bind for a given model key.
+    /// </summary>
+    /// <param name="formName">Form name for a form under this context.</param>
+    /// <param name="key">The key used to identify the specific part of the model.</param>
+    /// <returns>The attempted value associated with that part of the model if any.</returns>
+    public string? GetAttemptedValue(string formName, string key) =>
+        _errorsByFormName?.TryGetValue(formName, out var formErrors) == true &&
+            formErrors.TryGetValue(key, out var bindingError) ? bindingError.AttemptedValue : null;
 
     internal static string Combine(ModelBindingContext? parentContext, string name) =>
         string.IsNullOrEmpty(parentContext?.Name) ? name : $"{parentContext.Name}.{name}";

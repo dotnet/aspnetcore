@@ -67,8 +67,8 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
             Url = "forms/default-form-bound-parameter",
             FormCssSelector = "form",
             ExpectedActionValue = null,
-            InputFieldId = "value",
-            InputFieldCssSelector = "input[name=value]",
+            InputFieldId = "Parameter",
+            InputFieldCssSelector = "input[name=Parameter]",
             InputFieldValue = "stranger",
             SuppressEnhancedNavigation = suppressEnhancedNavigation,
         };
@@ -85,8 +85,8 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
             Url = "forms/default-form-bound-primitive-parameter",
             FormCssSelector = "form",
             ExpectedActionValue = null,
-            InputFieldId = "value",
-            InputFieldCssSelector = "input[name=value]",
+            InputFieldId = "Parameter",
+            InputFieldCssSelector = "input[name=Parameter]",
             InputFieldValue = "abc",
             SuppressEnhancedNavigation = suppressEnhancedNavigation,
             ShouldCauseBindingErrors = true,
@@ -98,7 +98,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
                     {
                         Assert.Equal("Could not convert value 'abc' to 'System.Int32'.", error.Text);
                     });
-                Assert.Equal("abc", Browser.FindElement(By.CssSelector("input[name=value]")).GetAttribute("value"));
+                Assert.Equal("abc", Browser.FindElement(By.CssSelector("input[name=Parameter]")).GetAttribute("value"));
             }
         };
         DispatchToFormCore(dispatchToForm);
@@ -114,8 +114,8 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
             Url = "forms/named-form-bound-primitive-parameter",
             FormCssSelector = "form[name=named-form-handler]",
             ExpectedActionValue = "forms/named-form-bound-primitive-parameter?handler=named-form-handler",
-            InputFieldId = "value",
-            InputFieldCssSelector = "input[name=value]",
+            InputFieldId = "Parameter",
+            InputFieldCssSelector = "input[name=Parameter]",
             InputFieldValue = "abc",
             SuppressEnhancedNavigation = suppressEnhancedNavigation,
             ShouldCauseBindingErrors = true,
@@ -127,7 +127,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
                     {
                         Assert.Equal("Could not convert value 'abc' to 'System.Int32'.", error.Text);
                     });
-                Assert.Equal("abc", Browser.FindElement(By.CssSelector("input[name=value]")).GetAttribute("value"));
+                Assert.Equal("abc", Browser.FindElement(By.CssSelector("input[name=Parameter]")).GetAttribute("value"));
             }
         };
         DispatchToFormCore(dispatchToForm);
@@ -174,8 +174,8 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
             Url = "forms/named-form-bound-parameter",
             FormCssSelector = "form[name=named-form-handler]",
             ExpectedActionValue = "forms/named-form-bound-parameter?handler=named-form-handler",
-            InputFieldId = "value",
-            InputFieldCssSelector = "input[name=value]",
+            InputFieldId = "Parameter",
+            InputFieldCssSelector = "input[name=Parameter]",
             InputFieldValue = "stranger",
             SuppressEnhancedNavigation = suppressEnhancedNavigation,
         };
@@ -207,8 +207,8 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
             Url = "forms/nested-named-form-bound-parameter",
             FormCssSelector = """form[name="parent-context.named-form-handler"]""",
             ExpectedActionValue = "forms/nested-named-form-bound-parameter?handler=parent-context.named-form-handler",
-            InputFieldId = "value",
-            InputFieldCssSelector = "input[name=value]",
+            InputFieldId = "Parameter",
+            InputFieldCssSelector = "input[name=Parameter]",
             InputFieldValue = "stranger",
             SuppressEnhancedNavigation = suppressEnhancedNavigation,
         };
