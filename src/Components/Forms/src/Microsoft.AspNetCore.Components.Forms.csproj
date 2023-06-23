@@ -13,4 +13,8 @@
     <Reference Include="Microsoft.AspNetCore.Components" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Forms.Tests" />
+  </ItemGroup>
+
 </Project>

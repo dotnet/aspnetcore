@@ -11,10 +11,19 @@ Microsoft.AspNetCore.Components.Binding.CascadingModelBindingProvider
 Microsoft.AspNetCore.Components.Binding.CascadingModelBindingProvider.CascadingModelBindingProvider() -> void
 Microsoft.AspNetCore.Components.Binding.CascadingQueryModelBindingProvider
 Microsoft.AspNetCore.Components.Binding.CascadingQueryModelBindingProvider.CascadingQueryModelBindingProvider(Microsoft.AspNetCore.Components.NavigationManager! navigationManager) -> void
+Microsoft.AspNetCore.Components.Binding.FormValueSupplierContext
+Microsoft.AspNetCore.Components.Binding.FormValueSupplierContext.FormName.get -> string!
+Microsoft.AspNetCore.Components.Binding.FormValueSupplierContext.FormValueSupplierContext() -> void
+Microsoft.AspNetCore.Components.Binding.FormValueSupplierContext.FormValueSupplierContext(string! formName, System.Type! valueType, string! parameterName, System.Action<string!, System.FormattableString!, string?>? onError = null) -> void
+Microsoft.AspNetCore.Components.Binding.FormValueSupplierContext.OnError.get -> System.Action<string!, System.FormattableString!, string?>?
+Microsoft.AspNetCore.Components.Binding.FormValueSupplierContext.OnError.set -> void
+Microsoft.AspNetCore.Components.Binding.FormValueSupplierContext.ParameterName.get -> string!
+Microsoft.AspNetCore.Components.Binding.FormValueSupplierContext.Result.get -> object?
+Microsoft.AspNetCore.Components.Binding.FormValueSupplierContext.SetResult(object? result) -> void
+Microsoft.AspNetCore.Components.Binding.FormValueSupplierContext.ValueType.get -> System.Type!
 Microsoft.AspNetCore.Components.Binding.IFormValueSupplier
-Microsoft.AspNetCore.Components.Binding.IFormValueSupplier.CanBind(string! formName, System.Type! valueType) -> bool
-Microsoft.AspNetCore.Components.Binding.IFormValueSupplier.CanConvertSingleValue(System.Type! type) -> bool
-Microsoft.AspNetCore.Components.Binding.IFormValueSupplier.TryBind(string! formName, System.Type! valueType, out object? boundValue, System.Action<string!, System.FormattableString!, string?>! onError) -> bool
+Microsoft.AspNetCore.Components.Binding.IFormValueSupplier.Bind(Microsoft.AspNetCore.Components.Binding.FormValueSupplierContext context) -> void
+Microsoft.AspNetCore.Components.Binding.IFormValueSupplier.CanBind(System.Type! valueType, string? formName = null) -> bool
 Microsoft.AspNetCore.Components.CascadingModelBinder
 Microsoft.AspNetCore.Components.CascadingModelBinder.CascadingModelBinder() -> void
 Microsoft.AspNetCore.Components.CascadingModelBinder.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.ModelBindingContext!>!
