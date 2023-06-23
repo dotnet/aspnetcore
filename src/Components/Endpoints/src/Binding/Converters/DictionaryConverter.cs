@@ -37,7 +37,8 @@ internal sealed class DictionaryConverter<TDictionary, TDictionaryPolicy, TBuffe
         bool currentElementSuccess;
         bool succeded = true;
 
-        found = context.GetKeys().GetEnumerator().MoveNext();
+        var keys = context.GetKeys();
+        found = keys.HasValues();
         if (!found)
         {
             result = default!;
@@ -53,7 +54,7 @@ internal sealed class DictionaryConverter<TDictionary, TDictionaryPolicy, TBuffe
         var keyCount = 0;
         var maxCollectionSize = options.MaxCollectionSize;
 
-        foreach (var key in context.GetKeys())
+        foreach (var key in keys)
         {
             context.PushPrefix(key.Span);
             currentElementSuccess = _valueConverter.TryRead(ref context, typeof(TValue), options, out currentValue!, out foundCurrentValue);

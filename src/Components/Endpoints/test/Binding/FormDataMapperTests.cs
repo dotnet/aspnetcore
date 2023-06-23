@@ -275,7 +275,7 @@ public class FormDataMapperTests
         var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
         var options = new FormDataMapperOptions
         {
-            MaxCollectionSize = 110
+            MaxCollectionSize = 140
         };
 
         var converter = new CollectionConverter<
