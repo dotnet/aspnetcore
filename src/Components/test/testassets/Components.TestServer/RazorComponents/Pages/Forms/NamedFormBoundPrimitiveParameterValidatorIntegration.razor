@@ -20,7 +20,6 @@
 }
 @code {
     bool _submitted = false;
-    IReadOnlyList<FormattableString> _errors;
 
     [SupplyParameterFromForm(Name = "named-form-handler")] public DataModel Model { get; set; }
 

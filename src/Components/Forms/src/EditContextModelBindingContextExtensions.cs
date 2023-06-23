@@ -14,6 +14,13 @@ namespace Microsoft.AspNetCore.Components.Forms;
 public static class EditContextBindingExtensions
 {
     private static readonly object _key = new();
+
+    /// <summary>
+    /// Enables <see cref="ModelBindingContext"/> errors to be added to the <see cref="EditContext"/>.
+    /// </summary>
+    /// <param name="context">The <see cref="EditContext"/>.</param>
+    /// <param name="bindingContext">The <see cref="ModelBindingContext"/>.</param>
+    /// <returns></returns>
     public static IDisposable EnableBindingContextExtensions(this EditContext context, ModelBindingContext bindingContext)
     {
         ArgumentNullException.ThrowIfNull(context, nameof(context));
@@ -24,6 +31,12 @@ public static class EditContextBindingExtensions
         return new BindingContextEventSubscriptions(context, bindingContext);
     }
 
+    /// <summary>
+    /// Gets the attempted value for the specified field name.
+    /// </summary>
+    /// <param name="context">The <see cref="EditContext"/>.</param>
+    /// <param name="fieldName">The field name.</param>
+    /// <returns></returns>
     public static string? GetAttemptedValue(this EditContext context, string fieldName)
     {
         ArgumentNullException.ThrowIfNull(context, nameof(context));
