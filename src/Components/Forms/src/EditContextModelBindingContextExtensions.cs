@@ -1,9 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Concurrent;
 using System.Globalization;
-using System.Reflection;
 using System.Reflection.Metadata;
 
 [assembly: MetadataUpdateHandler(typeof(Microsoft.AspNetCore.Components.Forms.EditContextDataAnnotationsExtensions))]
@@ -15,18 +13,32 @@ namespace Microsoft.AspNetCore.Components.Forms;
 /// </summary>
 public static class EditContextBindingExtensions
 {
+    private static readonly object _key = new();
     public static IDisposable EnableBindingContextExtensions(this EditContext context, ModelBindingContext bindingContext)
     {
         ArgumentNullException.ThrowIfNull(context, nameof(context));
         ArgumentNullException.ThrowIfNull(bindingContext, nameof(bindingContext));
 
+        context.Properties[_key] = bindingContext;
+
         return new BindingContextEventSubscriptions(context, bindingContext);
+    }
+
+    public static string? GetAttemptedValue(this EditContext context, string fieldName)
+    {
+        ArgumentNullException.ThrowIfNull(context, nameof(context));
+        ArgumentNullException.ThrowIfNull(fieldName, nameof(fieldName));
+
+        if (context.Properties.TryGetValue(_key, out var result) && result is ModelBindingContext bindingContext)
+        {
+            return bindingContext.GetAttemptedValue(fieldName);
+        }
+
+        return null;
     }
 
     private sealed class BindingContextEventSubscriptions : IDisposable
     {
-        private static readonly ConcurrentDictionary<(Type ModelType, string FieldName), PropertyInfo?> _propertyInfoCache = new();
-
         private readonly EditContext _editContext;
         private readonly ModelBindingContext _bindingContext;
         private readonly ValidationMessageStore _messages;
