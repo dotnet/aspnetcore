@@ -28,6 +28,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
     ILogger<Router> _logger;
 
     private Type? _updateScrollPositionForHashLastHandlerType;
+    private string _updateScrollPositionForHashLastQueryString = "";
     private bool _updateScrollPositionForHash;
 
     private CancellationTokenSource _onNavigateCts;
@@ -231,10 +232,14 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
                 context.Parameters ?? _emptyParametersDictionary);
             _renderHandle.Render(Found(routeData));
 
-            // If you navigate to a different page, then after the next render we'll update the scroll position
-            if (context.Handler != _updateScrollPositionForHashLastHandlerType)
+            // If you navigate to a different page or same page with different query, then after the next render we'll update the scroll position
+            var query = new Uri(_locationAbsolute).Query;
+            
+            if (context.Handler != _updateScrollPositionForHashLastHandlerType ||
+                query != _updateScrollPositionForHashLastQueryString)
             {
                 _updateScrollPositionForHashLastHandlerType = context.Handler;
+                _updateScrollPositionForHashLastQueryString = query;
                 _updateScrollPositionForHash = true;
             }
         }
