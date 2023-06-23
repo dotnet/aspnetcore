@@ -112,7 +112,7 @@ internal sealed class ComplexTypeExpressionConverterFactory<T> : ComplexTypeExpr
 
         body.Add(Expression.IfThen(
             localFoundValueVar,
-            Expression.Block(CreateInstanceAndAssignProperties(type, resultParam, properties, propertyLocals))));
+            Expression.Block(CreateInstanceAndAssignProperties(type, resultParam, properties, propertyLocals, succeeded, readerParam))));
 
         // foundValue && !failures;
 
@@ -127,12 +127,30 @@ internal sealed class ComplexTypeExpressionConverterFactory<T> : ComplexTypeExpr
             Type model,
             ParameterExpression resultParam,
             PropertyHelper[] props,
-            List<ParameterExpression> variables)
+            List<ParameterExpression> variables,
+            ParameterExpression succeeded,
+            ParameterExpression context)
         {
             if (!model.IsValueType)
             {
                 yield return Expression.Assign(resultParam, Expression.New(model));
             }
+
+            // if(!succeeded && context.AttachInstanceToErrorsHandler != null)
+            // {
+            //     context.AttachInstanceToErrors(result);
+            // }
+            yield return Expression.IfThen(
+                Expression.And(
+                    Expression.Not(succeeded),
+                    Expression.NotEqual(
+                        Expression.Property(context, nameof(FormDataReader.AttachInstanceToErrorsHandler)),
+                        Expression.Constant(null, typeof(Action<string, object>)))),
+                    Expression.Call(
+                        context,
+                        nameof(FormDataReader.AttachInstanceToErrors),
+                        Array.Empty<Type>(),
+                        resultParam));
 
             for (var i = 0; i < props.Length; i++)
             {

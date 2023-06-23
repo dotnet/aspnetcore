@@ -125,6 +125,10 @@ internal class CollectionConverter<TCollection, TCollectionPolicy, TBuffer, TEle
         if (!foundCurrentElement)
         {
             result = TCollectionPolicy.ToResult(buffer);
+            if (!succeded)
+            {
+                context.AttachInstanceToErrors(result!);
+            }
             return succeded;
         }
 
@@ -168,10 +172,16 @@ internal class CollectionConverter<TCollection, TCollectionPolicy, TBuffer, TEle
             context.AddMappingError(
                 FormattableStringFactory.Create(FormDataResources.MaxCollectionSizeReached, "collection", maxCollectionSize),
                 null);
+
+            context.AttachInstanceToErrors(result!);
             return false;
         }
         else
         {
+            if (!succeded)
+            {
+                context.AttachInstanceToErrors(result!);
+            }
             return succeded;
         }
     }

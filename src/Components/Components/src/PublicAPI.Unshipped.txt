@@ -13,7 +13,9 @@ Microsoft.AspNetCore.Components.Binding.CascadingQueryModelBindingProvider
 Microsoft.AspNetCore.Components.Binding.CascadingQueryModelBindingProvider.CascadingQueryModelBindingProvider(Microsoft.AspNetCore.Components.NavigationManager! navigationManager) -> void
 Microsoft.AspNetCore.Components.Binding.FormValueSupplierContext
 Microsoft.AspNetCore.Components.Binding.FormValueSupplierContext.FormName.get -> string!
-Microsoft.AspNetCore.Components.Binding.FormValueSupplierContext.FormValueSupplierContext(string! formName, System.Type! valueType, string! parameterName, System.Action<string!, System.FormattableString!, string?>? onError = null) -> void
+Microsoft.AspNetCore.Components.Binding.FormValueSupplierContext.FormValueSupplierContext(string! formName, System.Type! valueType, string! parameterName) -> void
+Microsoft.AspNetCore.Components.Binding.FormValueSupplierContext.MapErrorToContainer.get -> System.Action<string!, object!>?
+Microsoft.AspNetCore.Components.Binding.FormValueSupplierContext.MapErrorToContainer.set -> void
 Microsoft.AspNetCore.Components.Binding.FormValueSupplierContext.OnError.get -> System.Action<string!, System.FormattableString!, string?>?
 Microsoft.AspNetCore.Components.Binding.FormValueSupplierContext.OnError.set -> void
 Microsoft.AspNetCore.Components.Binding.FormValueSupplierContext.ParameterName.get -> string!

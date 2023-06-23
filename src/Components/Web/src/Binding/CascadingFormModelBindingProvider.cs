@@ -51,7 +51,11 @@ public sealed class CascadingFormModelBindingProvider : CascadingModelBindingPro
             bindingContext.AddError :
             (name, message, value) => bindingContext.AddError(parameterName, name, message, value);
 
-        var context = new FormValueSupplierContext(formName!, valueType, parameterInfo.PropertyName, errorHandler);
+        var context = new FormValueSupplierContext(formName!, valueType, parameterInfo.PropertyName)
+        {
+            OnError = errorHandler,
+            MapErrorToContainer = bindingContext.AttachParentValue
+        };
 
         _formValueSupplier.Bind(context);
 

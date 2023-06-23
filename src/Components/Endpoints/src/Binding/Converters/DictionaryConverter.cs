@@ -58,6 +58,7 @@ internal sealed class DictionaryConverter<TDictionary, TDictionaryPolicy, TBuffe
         {
             context.PushPrefix(key.Span);
             currentElementSuccess = _valueConverter.TryRead(ref context, typeof(TValue), options, out currentValue!, out foundCurrentValue);
+            succeded &= currentElementSuccess;
             context.PopPrefix(key.Span);
 
             if (!TKey.TryParse(key[1..^1].Span, CultureInfo.InvariantCulture, out var keyValue))
@@ -84,6 +85,10 @@ internal sealed class DictionaryConverter<TDictionary, TDictionaryPolicy, TBuffe
         }
 
         result = TDictionaryPolicy.ToResult(buffer);
+        if (!succeded)
+        {
+            context.AttachInstanceToErrors(result!);
+        }
         return succeded;
     }
 }

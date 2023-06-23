@@ -67,22 +67,10 @@ public static class EditContextBindingExtensions
 
         private void OnValidationRequested(object? sender, ValidationRequestedEventArgs e)
         {
-            foreach (var (key, errors) in _bindingContext.GetAllErrors())
+            foreach (var ((owner, key), errors) in _bindingContext.GetAllErrors())
             {
                 FieldIdentifier fieldIdentifier;
-                var lastDotIndex = key.LastIndexOf('.');
-                if (lastDotIndex >= 0)
-                {
-                    fieldIdentifier = new FieldIdentifier(_editContext.Model, key.Substring(lastDotIndex + 1), key);
-                }
-                else if(key != "")
-                {
-                    fieldIdentifier = new FieldIdentifier(_editContext.Model, key, key);
-                }
-                else
-                {
-                    fieldIdentifier = new FieldIdentifier(_editContext.Model, fieldName: string.Empty);
-                }
+                fieldIdentifier = new FieldIdentifier(owner ?? _editContext.Model, key);
 
                 foreach (var error in errors)
                 {

@@ -33,6 +33,8 @@ internal struct FormDataReader
 
     public Action<string, FormattableString, string?>? ErrorHandler { get; set; }
 
+    public Action<string, object>? AttachInstanceToErrorsHandler { get; set; }
+
     public void AddMappingError(FormattableString errorMessage, string? attemptedValue)
     {
         ArgumentNullException.ThrowIfNull(errorMessage);
@@ -43,6 +45,16 @@ internal struct FormDataReader
         }
 
         ErrorHandler.Invoke(_currentPrefixBuffer.ToString(), errorMessage, attemptedValue);
+    }
+
+    public void AttachInstanceToErrors(object value)
+    {
+        if (AttachInstanceToErrorsHandler == null)
+        {
+            return;
+        }
+
+        AttachInstanceToErrorsHandler(_currentPrefixBuffer.ToString(), value);
     }
 
     internal FormKeyCollection GetKeys()
@@ -143,7 +155,7 @@ internal struct FormDataReader
         separator.CopyTo(_prefixBuffer.Span[_currentPrefixBuffer.Length..]);
 
         var startingPoint = _currentPrefixBuffer.Length + separator.Length;
-        _currentPrefixBuffer = _prefixBuffer[..(_currentPrefixBuffer.Length + separator.Length + key.Length)];
+        _currentPrefixBuffer = _prefixBuffer.Slice(0, startingPoint + key.Length);
         key.CopyTo(_prefixBuffer[startingPoint..].Span);
     }
 
