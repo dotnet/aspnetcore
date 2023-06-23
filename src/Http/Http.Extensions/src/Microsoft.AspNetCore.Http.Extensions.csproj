@@ -48,11 +48,4 @@
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.Extensions.Tests" />
   </ItemGroup>
 
-  <!-- <Target Name="DeduplicateCompiledResources" BeforeTargets="CoreCompile">
-    <ItemGroup>
-      <_DuplicateResource Include="@(Compile)" Condition="'%(Compile.FileName)' == 'FormDataResources'"/>
-      <Compile Remove="@(_DuplicateResource)" />
-      <Compile Include="@(_DuplicateResource->Distinct())" />
-    </ItemGroup>
-  </Target> -->
 </Project>
