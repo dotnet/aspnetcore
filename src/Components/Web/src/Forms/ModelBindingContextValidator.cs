@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Components.Forms;
 /// <summary>
 /// Exposes validation messages for a given <see cref="ModelBindingContext"/>.
 /// </summary>
-public class ModelBindingContextValidator : ComponentBase, IDisposable
+internal class ModelBindingContextValidator : ComponentBase, IDisposable
 {
     private IDisposable? _subscriptions;
     private EditContext? _originalEditContext;

@@ -36,14 +36,7 @@ public readonly struct FieldIdentifier : IEquatable<FieldIdentifier>
         ArgumentNullException.ThrowIfNull(accessor);
 
         ParseAccessor(accessor, out var model, out var fieldName);
-        if (createFieldPath)
-        {
-            return new FieldIdentifier(model, fieldName, ExpressionFormatter.FormatLambda(accessor));
-        }
-        else
-        {
-            return new FieldIdentifier(model, fieldName);
-        }
+        return new FieldIdentifier(model, fieldName);
     }
 
     /// <summary>

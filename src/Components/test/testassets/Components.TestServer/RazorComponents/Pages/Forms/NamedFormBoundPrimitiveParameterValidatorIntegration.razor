@@ -5,7 +5,6 @@
 <h2>Named form with bound parameter</h2>
 
 <EditForm FormHandlerName="named-form-handler" Model="Model" method="POST" OnValidSubmit="() => _submitted = true">
-    <ModelBindingContextValidator />
     <ValidationSummary />
 
     <CustomNumberInput @bind-Value="Model.Parameter" />
