@@ -219,7 +219,6 @@ public class FormDataMapperTests
         // Arrange
         var data = new Dictionary<string, StringValues>() { ["[0]"] = "10" };
         var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
-        reader.PushPrefix("value");
         var options = new FormDataMapperOptions();
 
         // Act
@@ -243,7 +242,6 @@ public class FormDataMapperTests
                 (i + 10).ToString(CultureInfo.InvariantCulture))));
 
         var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
-        reader.PushPrefix("value");
         var options = new FormDataMapperOptions
         {
             MaxCollectionSize = 110
@@ -275,7 +273,6 @@ public class FormDataMapperTests
                 (i + 10).ToString(CultureInfo.InvariantCulture))));
 
         var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
-        reader.PushPrefix("value");
         var options = new FormDataMapperOptions
         {
             MaxCollectionSize = 110
@@ -1016,7 +1013,6 @@ public class FormDataMapperTests
             ["[9]"] = "19",
         };
         var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
-        reader.PushPrefix("value");
         var options = new FormDataMapperOptions();
 
         // Act

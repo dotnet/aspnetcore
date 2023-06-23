@@ -171,7 +171,7 @@ internal struct FormDataReader
 
         public FormKeyCollection(HashSet<FormKey> values) => _values = values;
 
-        public Enumerator GetEnumerator() => new Enumerator(_values.GetEnumerator());
+        public Enumerator GetEnumerator() => new(_values?.GetEnumerator());
 
         IEnumerator<ReadOnlyMemory<char>> IEnumerable<ReadOnlyMemory<char>>.GetEnumerator() => GetEnumerator();
 
@@ -179,20 +179,23 @@ internal struct FormDataReader
 
         internal struct Enumerator : IEnumerator<ReadOnlyMemory<char>>
         {
-            private HashSet<FormKey>.Enumerator _enumerator;
+            private HashSet<FormKey>.Enumerator? _enumerator;
 
-            public Enumerator(HashSet<FormKey>.Enumerator enumerator)
+            public Enumerator(HashSet<FormKey>.Enumerator? enumerator)
             {
                 _enumerator = enumerator;
             }
 
-            public ReadOnlyMemory<char> Current => _enumerator.Current.Value;
+            public ReadOnlyMemory<char> Current => _enumerator?.Current.Value ?? ReadOnlyMemory<char>.Empty;
 
-            object IEnumerator.Current => _enumerator.Current;
+            object IEnumerator.Current => _enumerator?.Current.Value ?? ReadOnlyMemory<char>.Empty;
 
-            void IDisposable.Dispose() => _enumerator.Dispose();
+            void IDisposable.Dispose() => _enumerator?.Dispose();
 
-            public bool MoveNext() => _enumerator.MoveNext();
+            public bool MoveNext()
+            {
+                return _enumerator?.MoveNext() == true;
+            }
 
             void IEnumerator.Reset() { }
         }

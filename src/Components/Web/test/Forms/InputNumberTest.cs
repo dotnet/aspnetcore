@@ -5,21 +5,23 @@ namespace Microsoft.AspNetCore.Components.Forms;
 
 public class InputNumberTest
 {
-    [Fact]
-    public async Task ValidationErrorUsesDisplayAttributeName()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ValidationErrorUsesDisplayAttributeName(bool createFieldPath)
     {
         // Arrange
         var model = new TestModel();
         var rootComponent = new TestInputHostComponent<int, TestInputNumberComponent>
         {
-            EditContext = new EditContext(model),
+            EditContext = new EditContext(model) { ShouldUseFieldIdentifiers = createFieldPath },
             ValueExpression = () => model.SomeNumber,
             AdditionalAttributes = new Dictionary<string, object>
                 {
                     { "DisplayName", "Some number" }
                 }
         };
-        var fieldIdentifier = FieldIdentifier.Create(() => model.SomeNumber);
+        var fieldIdentifier = FieldIdentifier.Create(() => model.SomeNumber, createFieldPath);
         var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
 
         // Act

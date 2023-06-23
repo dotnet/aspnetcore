@@ -5,21 +5,23 @@ namespace Microsoft.AspNetCore.Components.Forms;
 
 public class InputDateTest
 {
-    [Fact]
-    public async Task ValidationErrorUsesDisplayAttributeName()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ValidationErrorUsesDisplayAttributeName(bool createFieldPath)
     {
         // Arrange
         var model = new TestModel();
         var rootComponent = new TestInputHostComponent<DateTime, TestInputDateComponent>
         {
-            EditContext = new EditContext(model),
+            EditContext = new EditContext(model) { ShouldUseFieldIdentifiers = createFieldPath },
             ValueExpression = () => model.DateProperty,
             AdditionalAttributes = new Dictionary<string, object>
                 {
                     { "DisplayName", "Date property" }
                 }
         };
-        var fieldIdentifier = FieldIdentifier.Create(() => model.DateProperty);
+        var fieldIdentifier = FieldIdentifier.Create(() => model.DateProperty, createFieldPath);
         var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
 
         // Act
