@@ -1591,6 +1591,22 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     }
 
     [Fact]
+    public void AnchorWithHrefToSameUrlWithQueryAndHash_ScrollsToElementOnTheSamePage()
+    {
+        SetUrlViaPushState("/");
+        var app = Browser.MountTestComponent<TestRouter>();
+        app.FindElement(By.LinkText("Long page with hash")).Click();
+
+        app.FindElement(By.Id("anchor-test1-with-query")).Click();
+
+        var currentWindowScrollY = BrowserScrollY;
+        var test1VerticalLocation = app.FindElement(By.Id("test1")).Location.Y;
+        var currentRelativeUrl = _serverFixture.RootUri.MakeRelativeUri(new Uri(Browser.Url)).ToString();
+        Assert.Equal("subdir/LongPageWithHash?color=green&number=123#test1", currentRelativeUrl);
+        Assert.Equal(test1VerticalLocation, currentWindowScrollY);
+    }
+
+    [Fact]
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/47967")]
     public void AnchorWithHrefContainingHashAnotherPage_NavigatesToPageAndScrollsToElement()
     {
