@@ -1609,7 +1609,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
 
     [Fact]
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/47967")]
-    public void NavigationManagerNavigateToSameUrlWithHash_ScrollsToElementOnTheSamePage()
+    public void NavigationManagerNavigateToAnotherUrlWithHash_NavigatesToPageAndScrollsToElement()
     {
         SetUrlViaPushState("/");
         var app = Browser.MountTestComponent<TestRouter>();
@@ -1625,7 +1625,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     }
 
     [Fact]
-    public void NavigationManagerNavigateToAnotherUrlWithHash_NavigatesToPageAndScrollsToElement()
+    public void NavigationManagerNavigateToSameUrlWithHash_ScrollsToElementOnTheSamePage()
     {
         SetUrlViaPushState("/");
         var app = Browser.MountTestComponent<TestRouter>();
