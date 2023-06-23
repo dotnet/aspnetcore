@@ -127,11 +127,6 @@ public class EditForm : ComponentBase
         {
             _editContext = new EditContext(Model!);
         }
-
-        if (_editContext != null && BindingContext != null)
-        {
-            _editContext.SetConvertibleValues(BindingContext);
-        }
     }
 
     /// <inheritdoc />

@@ -23,7 +23,7 @@ public class FormDataMapperTests
     {
         // Arrange
         var collection = new Dictionary<string, StringValues>() { ["value"] = new StringValues(value) };
-        var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
         reader.PushPrefix("value");
         var options = new FormDataMapperOptions();
 
@@ -34,6 +34,16 @@ public class FormDataMapperTests
         Assert.Equal(expected, result);
     }
 
+    private FormDataReader CreateFormDataReader(Dictionary<string, StringValues> collection, CultureInfo invariantCulture)
+    {
+        var dictionary = new Dictionary<FormKey, StringValues>(collection.Count);
+        foreach (var kvp in collection)
+        {
+            dictionary.Add(new FormKey(kvp.Key.AsMemory()), kvp.Value);
+        }
+        return new FormDataReader(dictionary, CultureInfo.InvariantCulture, new char[2048]);
+    }
+
     [Theory]
     [MemberData(nameof(PrimitiveTypesData))]
 #pragma warning disable xUnit1026 // Theory methods should use all of their parameters
@@ -42,7 +52,7 @@ public class FormDataMapperTests
     {
         // Arrange
         var collection = new Dictionary<string, StringValues>() { };
-        var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
         reader.PushPrefix("value");
         var errors = new List<FormDataMappingError>();
         reader.ErrorHandler = (key, message, attemptedValue) =>
@@ -64,7 +74,7 @@ public class FormDataMapperTests
     {
         // Arrange
         var collection = new Dictionary<string, StringValues>() { ["value"] = new StringValues("abc") };
-        var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
         reader.PushPrefix("value");
         var options = new FormDataMapperOptions();
 
@@ -81,7 +91,7 @@ public class FormDataMapperTests
     {
         // Arrange
         var collection = new Dictionary<string, StringValues>() { ["value"] = new StringValues("abc") };
-        var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
         var errors = new List<FormDataMappingError>();
         reader.ErrorHandler = (key, message, attemptedValue) =>
         {
@@ -107,7 +117,7 @@ public class FormDataMapperTests
     {
         // Arrange
         var collection = new Dictionary<string, StringValues>() { ["value"] = new StringValues(value) };
-        var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
         reader.PushPrefix("value");
         var options = new FormDataMapperOptions();
 
@@ -124,7 +134,7 @@ public class FormDataMapperTests
     {
         // Arrange
         var collection = new Dictionary<string, StringValues>() { };
-        var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
         reader.PushPrefix("value");
         var options = new FormDataMapperOptions();
 
@@ -141,7 +151,7 @@ public class FormDataMapperTests
         // Arrange
         var expected = new Point { X = 1, Y = 1 };
         var collection = new Dictionary<string, StringValues>() { ["value"] = new StringValues("(1,1)") };
-        var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
         reader.PushPrefix("value");
         var options = new FormDataMapperOptions();
 
@@ -159,7 +169,7 @@ public class FormDataMapperTests
         // Arrange
         var expected = new ValuePoint { X = 1, Y = 1 };
         var collection = new Dictionary<string, StringValues>() { ["value"] = new StringValues("(1,1)") };
-        var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
         reader.PushPrefix("value");
         var options = new FormDataMapperOptions();
 
@@ -175,7 +185,7 @@ public class FormDataMapperTests
     {
         // Arrange
         var collection = new Dictionary<string, StringValues>() { };
-        var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
         reader.PushPrefix("value");
         var options = new FormDataMapperOptions();
 
@@ -192,7 +202,7 @@ public class FormDataMapperTests
     {
         // Arrange
         var data = new Dictionary<string, StringValues>() { };
-        var reader = new FormDataReader(data, CultureInfo.InvariantCulture);
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
         reader.PushPrefix("value");
         var options = new FormDataMapperOptions();
 
@@ -208,7 +218,7 @@ public class FormDataMapperTests
     {
         // Arrange
         var data = new Dictionary<string, StringValues>() { ["[0]"] = "10" };
-        var reader = new FormDataReader(data, CultureInfo.InvariantCulture);
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
         reader.PushPrefix("value");
         var options = new FormDataMapperOptions();
 
@@ -232,7 +242,7 @@ public class FormDataMapperTests
                 $"[{i.ToString(CultureInfo.InvariantCulture)}]",
                 (i + 10).ToString(CultureInfo.InvariantCulture))));
 
-        var reader = new FormDataReader(data, CultureInfo.InvariantCulture);
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
         reader.PushPrefix("value");
         var options = new FormDataMapperOptions
         {
@@ -264,7 +274,7 @@ public class FormDataMapperTests
                 $"[{i.ToString(CultureInfo.InvariantCulture)}]",
                 (i + 10).ToString(CultureInfo.InvariantCulture))));
 
-        var reader = new FormDataReader(data, CultureInfo.InvariantCulture);
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
         reader.PushPrefix("value");
         var options = new FormDataMapperOptions
         {
@@ -312,7 +322,7 @@ public class FormDataMapperTests
                 $"[{i.ToString(CultureInfo.InvariantCulture)}]",
                 (i + 10).ToString(CultureInfo.InvariantCulture))));
 
-        var reader = new FormDataReader(data, CultureInfo.InvariantCulture);
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
         var errors = new List<FormDataMappingError>();
         reader.ErrorHandler = (key, message, attemptedValue) =>
         {
@@ -361,7 +371,7 @@ public class FormDataMapperTests
             ["[9]"] = "19",
         };
 
-        var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
         var errors = new List<FormDataMappingError>();
         reader.ErrorHandler = (key, message, attemptedValue) =>
         {
@@ -682,7 +692,7 @@ public class FormDataMapperTests
             ["[8]"] = "18",
             ["[9]"] = "19",
         };
-        var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
         var options = new FormDataMapperOptions();
 
         // Act
@@ -736,7 +746,7 @@ public class FormDataMapperTests
             ["[8]"] = "18",
             ["[9]"] = "19",
         };
-        var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
         var options = new FormDataMapperOptions();
 
         // Act
@@ -766,7 +776,7 @@ public class FormDataMapperTests
             ["[8]"] = "18",
             ["[9]"] = "19",
         };
-        var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
         var options = new FormDataMapperOptions();
 
         // Act
@@ -783,7 +793,7 @@ public class FormDataMapperTests
     {
         // Arrange
         var collection = new Dictionary<string, StringValues>() { };
-        var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
         var options = new FormDataMapperOptions();
 
         // Act
@@ -809,7 +819,7 @@ public class FormDataMapperTests
                 $"[{i.ToString(CultureInfo.InvariantCulture)}]",
                 (i + 10).ToString(CultureInfo.InvariantCulture))));
 
-        var reader = new FormDataReader(data, CultureInfo.InvariantCulture);
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
         var errors = new List<FormDataMappingError>();
         reader.ErrorHandler = (key, message, attemptedValue) =>
         {
@@ -870,7 +880,7 @@ public class FormDataMapperTests
             ["[9]"] = "19",
         };
 
-        var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
         var errors = new List<FormDataMappingError>();
         reader.ErrorHandler = (key, message, attemptedValue) =>
         {
@@ -929,7 +939,7 @@ public class FormDataMapperTests
             ["[9]"] = "19",
         };
 
-        var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
         var errors = new List<FormDataMappingError>();
         reader.ErrorHandler = (key, message, attemptedValue) =>
         {
@@ -977,7 +987,7 @@ public class FormDataMapperTests
             ["[8]"] = "18",
             ["[9]"] = "19",
         };
-        var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
         var options = new FormDataMapperOptions();
 
         // Act
@@ -1005,7 +1015,7 @@ public class FormDataMapperTests
             ["[8]"] = "18",
             ["[9]"] = "19",
         };
-        var reader = new FormDataReader(collection, CultureInfo.InvariantCulture);
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
         reader.PushPrefix("value");
         var options = new FormDataMapperOptions();
 
@@ -1036,7 +1046,7 @@ public class FormDataMapperTests
             ["Street"] = "1 Microsoft Way",
             ["ZipCode"] = "98052",
         };
-        var reader = new FormDataReader(data, CultureInfo.InvariantCulture);
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
         var options = new FormDataMapperOptions();
 
         // Act
@@ -1062,7 +1072,7 @@ public class FormDataMapperTests
             ["IsPreferred"] = "true",
         };
 
-        var reader = new FormDataReader(data, CultureInfo.InvariantCulture);
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
         var options = new FormDataMapperOptions();
 
         // Act
@@ -1089,7 +1099,7 @@ public class FormDataMapperTests
             ["IsPreferred"] = "true",
         };
 
-        var reader = new FormDataReader(data, CultureInfo.InvariantCulture);
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
         var errors = new List<FormDataMappingError>();
         reader.ErrorHandler = (key, message, exception) =>
         {
@@ -1131,7 +1141,7 @@ public class FormDataMapperTests
             ["MonthlyFrequency"] = "0.8",
         };
 
-        var reader = new FormDataReader(data, CultureInfo.InvariantCulture);
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
         var options = new FormDataMapperOptions();
 
         // Act

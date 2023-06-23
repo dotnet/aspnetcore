@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
 
 internal sealed class ImmutableDictionaryBufferAdapter<TKey, TValue>
     : IDictionaryBufferAdapter<ImmutableDictionary<TKey, TValue>, ImmutableDictionary<TKey, TValue>.Builder, TKey, TValue>
-    where TKey : IParsable<TKey>
+    where TKey : ISpanParsable<TKey>
 {
     public static ImmutableDictionary<TKey, TValue>.Builder Add(ref ImmutableDictionary<TKey, TValue>.Builder buffer, TKey key, TValue value)
     {

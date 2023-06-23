@@ -5,7 +5,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
-using Microsoft.AspNetCore.Components.Binding;
 
 namespace Microsoft.AspNetCore.Components.Forms;
 
@@ -202,19 +201,7 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
                 return Convert.ToString(nameAttributeValue, CultureInfo.InvariantCulture) ?? string.Empty;
             }
 
-            if (EditContext?.ShouldUseFieldIdentifiers ?? false)
-            {
-                if (_formattedValueExpression is null && ValueExpression is not null)
-                {
-                    _formattedValueExpression = ExpressionFormatter.FormatLambda(
-                        ValueExpression,
-                        EditContext.GetConvertibleValues());
-                }
-
-                return _formattedValueExpression ?? string.Empty;
-            }
-
-            return string.Empty;
+            return _formattedValueExpression = FieldIdentifier.FieldPath ?? "";
         }
     }
 
@@ -234,13 +221,14 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
                     $"parameter. Normally this is provided automatically when using 'bind-Value'.");
             }
 
-            FieldIdentifier = FieldIdentifier.Create(ValueExpression);
-
             if (CascadedEditContext != null)
             {
                 EditContext = CascadedEditContext;
                 EditContext.OnValidationStateChanged += _validationStateChangedHandler;
             }
+
+            var shouldUsePath = EditContext != null && EditContext.ShouldUseFieldIdentifiers;
+            FieldIdentifier = FieldIdentifier.Create(ValueExpression, shouldUsePath);
 
             _nullableUnderlyingType = Nullable.GetUnderlyingType(typeof(TValue));
             _hasInitializedParameters = true;
@@ -279,7 +267,7 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
         var hasAriaInvalidAttribute = AdditionalAttributes != null && AdditionalAttributes.ContainsKey("aria-invalid");
         if (EditContext.GetValidationMessages(FieldIdentifier).Any())
         {
-            var attemptedValue = EditContext.GetAttemptedValue(FieldIdentifier.FieldName);
+            var attemptedValue = EditContext.GetAttemptedValue(FieldIdentifier.FieldPath ?? FieldIdentifier.FieldName);
             if (attemptedValue != null)
             {
                 _parsingFailed = true;
