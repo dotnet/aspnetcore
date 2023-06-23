@@ -11,9 +11,9 @@ public class ModelBindingContextValidator : ComponentBase, IDisposable
     private IDisposable? _subscriptions;
     private EditContext? _originalEditContext;
 
-    [CascadingParameter] public EditContext? CurrentEditContext { get; set; }
+    [CascadingParameter] internal EditContext? CurrentEditContext { get; set; }
 
-    [CascadingParameter] public ModelBindingContext BindingContext { get; set; }
+    [CascadingParameter] internal ModelBindingContext? BindingContext { get; set; }
 
     /// <inheritdoc />
     protected override void OnInitialized()

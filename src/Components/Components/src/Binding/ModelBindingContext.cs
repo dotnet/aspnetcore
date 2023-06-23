@@ -49,6 +49,10 @@ public sealed class ModelBindingContext
     public IReadOnlyList<FormattableString> GetErrors(string key) =>
         _errors?.TryGetValue(key, out var bindingError) == true ? bindingError.ErrorMessages : Array.Empty<FormattableString>();
 
+    /// <summary>
+    /// Retrieves all the errors for the model.
+    /// </summary>
+    /// <returns>The list of errors associated with the model if any.</returns>
     public IEnumerable<KeyValuePair<string, IReadOnlyList<FormattableString>>> GetAllErrors()
     {
         if (_errors == null)
