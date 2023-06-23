@@ -2187,7 +2187,7 @@ public class RenderTreeBuilderTest
         // Act
         builder.OpenComponent<TestComponent>(0);
         builder.AddComponentParameter(1, "param", 123);
-        builder.AddComponentParameter(2, "rendermode", renderMode);
+        builder.AddComponentParameter(2, "@rendermode", renderMode);
         builder.AddComponentParameter(3, "anotherparam", 456);
         builder.CloseComponent();
 

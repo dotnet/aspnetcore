@@ -551,7 +551,7 @@ public sealed class RenderTreeBuilder : IDisposable
     /// </summary>
     public void AddComponentParameter(int sequence, string name, IComponentRenderMode renderMode)
     {
-        if (string.Equals(name, "rendermode", StringComparison.Ordinal))
+        if (string.Equals(name, "@rendermode", StringComparison.Ordinal))
         {
             // When the Razor compiler is updated, <SomeComponent @rendermode="@RenderMode.WebAssembly" />  would compile directly as a call
             // to AddComponentRenderMode(RenderMode.WebAssembly), which must appear after all attributes. Until then we'll intercept regular
