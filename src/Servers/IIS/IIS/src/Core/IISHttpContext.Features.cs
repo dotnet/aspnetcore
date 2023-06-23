@@ -77,7 +77,7 @@ internal partial class IISHttpContext
         _currentIServerVariablesFeature = this;
         _currentIHttpMaxRequestBodySizeFeature = this;
         _currentITlsConnectionFeature = this;
-        _currentITlsHandshakeFeature = this;
+        _currentITlsHandshakeFeature = GetTlsHandshakeFeature();
         _currentIHttpResponseTrailersFeature = GetResponseTrailersFeature();
         _currentIHttpResetFeature = GetResetFeature();
         _currentIConnectionLifetimeNotificationFeature = this;

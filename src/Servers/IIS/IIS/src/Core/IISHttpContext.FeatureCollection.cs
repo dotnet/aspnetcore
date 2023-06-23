@@ -467,6 +467,11 @@ internal partial class IISHttpContext : IFeatureCollection,
         return AdvancedHttp2FeaturesSupported() ? this : null;
     }
 
+    internal ITlsHandshakeFeature? GetTlsHandshakeFeature()
+    {
+        return IsHttps ? this : null;
+    }
+
     IHeaderDictionary IHttpResponseTrailersFeature.Trailers
     {
         get => ResponseTrailers ??= HttpResponseTrailers;

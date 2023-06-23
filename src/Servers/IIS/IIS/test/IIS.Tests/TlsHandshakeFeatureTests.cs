@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 public class TlsHandshakeFeatureTests : StrictTestServerTests
 {
     [ConditionalFact]
-    public async Task SetsTlsHandshakeFeature()
+    public async Task SetsTlsHandshakeFeatureForHttps()
     {
         ITlsHandshakeFeature tlsHandshakeFeature = null;
         using (var testServer = await TestServer.CreateHttps(ctx =>
@@ -55,5 +55,21 @@ public class TlsHandshakeFeatureTests : StrictTestServerTests
             var hostName = tlsHandshakeFeature.HostName;
             Assert.Equal("localhost", hostName);
         }
+    }
+
+    [ConditionalFact]
+    public async Task DoesNotSetTlsHandshakeFeatureForHttp()
+    {
+        ITlsHandshakeFeature tlsHandshakeFeature = null;
+        using (var testServer = await TestServer.Create(ctx =>
+        {
+            tlsHandshakeFeature = ctx.Features.Get<ITlsHandshakeFeature>();
+            return Task.CompletedTask;
+        }, LoggerFactory))
+        {
+            await testServer.HttpClient.GetStringAsync("/");
+        }
+
+        Assert.Null(tlsHandshakeFeature);
     }
 }
