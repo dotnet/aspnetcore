@@ -174,10 +174,24 @@ public class EditForm : ComponentBase
             builder.OpenComponent<CascadingValue<EditContext>>(5);
             builder.AddComponentParameter(6, "IsFixed", true);
             builder.AddComponentParameter(7, "Value", _editContext);
+            if (bindingContext != null && !OperatingSystem.IsBrowser())
+            {
+                builder.AddComponentParameter(8, "ChildContent", RenderWithBindingValidator());
+            }
             builder.AddComponentParameter(8, "ChildContent", ChildContent?.Invoke(_editContext));
             builder.CloseComponent();
             builder.CloseElement();
         }
+    }
+
+    private RenderFragment? RenderWithBindingValidator()
+    {
+        return builder =>
+        {
+            builder.OpenComponent<ModelBindingContextValidator>(1);
+            builder.CloseComponent();
+            builder.AddContent(2, ChildContent!, EditContext);
+        };
     }
 
     private async Task HandleSubmitAsync()

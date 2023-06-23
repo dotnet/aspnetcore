@@ -2,16 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
-using System.Reflection.Metadata;
-
-[assembly: MetadataUpdateHandler(typeof(Microsoft.AspNetCore.Components.Forms.EditContextDataAnnotationsExtensions))]
 
 namespace Microsoft.AspNetCore.Components.Forms;
 
 /// <summary>
 /// Extension methods to add <see cref="ModelBindingContext"/> errors to an <see cref="EditContext"/>.
 /// </summary>
-public static class EditContextBindingExtensions
+internal static class EditContextBindingExtensions
 {
     private static readonly object _key = new();
 
@@ -54,19 +51,27 @@ public static class EditContextBindingExtensions
     {
         private readonly EditContext _editContext;
         private readonly ModelBindingContext _bindingContext;
-        private readonly ValidationMessageStore _messages;
+        private ValidationMessageStore? _messages;
 
         public BindingContextEventSubscriptions(EditContext editContext, ModelBindingContext serviceProvider)
         {
             _editContext = editContext;
             _bindingContext = serviceProvider;
-            _messages = new ValidationMessageStore(_editContext);
 
             _editContext.OnValidationRequested += OnValidationRequested;
         }
 
         private void OnValidationRequested(object? sender, ValidationRequestedEventArgs e)
         {
+            if (_messages != null)
+            {
+                // We already added the messages from the binding context,
+                // we don't have to do anything.
+                return;
+            }
+
+            _messages = new ValidationMessageStore(_editContext);
+            var adddedMessages = false;
             foreach (var ((owner, key), errors) in _bindingContext.GetAllErrors())
             {
                 FieldIdentifier fieldIdentifier;
@@ -74,17 +79,22 @@ public static class EditContextBindingExtensions
 
                 foreach (var error in errors)
                 {
+                    adddedMessages = true;
                     // TODO: We need to support localizing the error message.
-                    _messages.Add(fieldIdentifier, error.ToString(CultureInfo.InvariantCulture));
+                    _messages.Add(fieldIdentifier, error.ToString(CultureInfo.CurrentCulture));
                 }
             }
 
-            _editContext.NotifyValidationStateChanged();
+            if (adddedMessages)
+            {
+                // There were binding errors, notify.
+                _editContext.NotifyValidationStateChanged();
+            }
         }
 
         public void Dispose()
         {
-            _messages.Clear();
+            _messages?.Clear();
             _editContext.OnValidationRequested -= OnValidationRequested;
             _editContext.NotifyValidationStateChanged();
         }

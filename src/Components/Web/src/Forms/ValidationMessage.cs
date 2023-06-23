@@ -54,7 +54,7 @@ public class ValidationMessage<TValue> : ComponentBase, IDisposable
         else if (For != _previousFieldAccessor)
         {
             
-            _fieldIdentifier = FieldIdentifier.Create(For, createFieldPath: CurrentEditContext.ShouldUseFieldIdentifiers);
+            _fieldIdentifier = FieldIdentifier.Create(For);
             _previousFieldAccessor = For;
         }
 

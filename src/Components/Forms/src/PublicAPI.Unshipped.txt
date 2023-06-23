@@ -1,13 +1,3 @@
 #nullable enable
 Microsoft.AspNetCore.Components.Forms.EditContext.ShouldUseFieldIdentifiers.get -> bool
 Microsoft.AspNetCore.Components.Forms.EditContext.ShouldUseFieldIdentifiers.set -> void
-Microsoft.AspNetCore.Components.Forms.EditContextBindingExtensions
-Microsoft.AspNetCore.Components.Forms.FieldIdentifier.FieldIdentifier(object! model, string! fieldName, string! fieldPath) -> void
-Microsoft.AspNetCore.Components.Forms.FieldIdentifier.FieldPath.get -> string?
-Microsoft.AspNetCore.Components.Forms.ModelBindingContextValidator
-Microsoft.AspNetCore.Components.Forms.ModelBindingContextValidator.ModelBindingContextValidator() -> void
-override Microsoft.AspNetCore.Components.Forms.ModelBindingContextValidator.OnInitialized() -> void
-override Microsoft.AspNetCore.Components.Forms.ModelBindingContextValidator.OnParametersSet() -> void
-static Microsoft.AspNetCore.Components.Forms.EditContextBindingExtensions.EnableBindingContextExtensions(this Microsoft.AspNetCore.Components.Forms.EditContext! context, Microsoft.AspNetCore.Components.ModelBindingContext! bindingContext) -> System.IDisposable!
-static Microsoft.AspNetCore.Components.Forms.EditContextBindingExtensions.GetAttemptedValue(this Microsoft.AspNetCore.Components.Forms.EditContext! context, string! fieldName) -> string?
-static Microsoft.AspNetCore.Components.Forms.FieldIdentifier.Create<TField>(System.Linq.Expressions.Expression<System.Func<TField>!>! accessor, bool createFieldPath) -> Microsoft.AspNetCore.Components.Forms.FieldIdentifier

@@ -72,16 +72,14 @@ public class InputBaseTest
         Assert.Same(rootComponent.EditContext, inputComponent.EditContext);
     }
 
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task ExposesFieldIdentifierToSubclass(bool createFieldPath)
+    [Fact]
+    public async Task ExposesFieldIdentifierToSubclass()
     {
         // Arrange
         var model = new TestModel();
         var rootComponent = new TestInputHostComponent<string, TestInputComponent<string>>
         {
-            EditContext = new EditContext(model) { ShouldUseFieldIdentifiers = createFieldPath },
+            EditContext = new EditContext(model),
             Value = "some value",
             ValueExpression = () => model.StringProperty
         };
@@ -90,7 +88,7 @@ public class InputBaseTest
         var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
 
         // Assert
-        Assert.Equal(FieldIdentifier.Create(() => model.StringProperty, createFieldPath), inputComponent.FieldIdentifier);
+        Assert.Equal(FieldIdentifier.Create(() => model.StringProperty), inputComponent.FieldIdentifier);
     }
 
     [Fact]
@@ -198,19 +196,17 @@ public class InputBaseTest
         Assert.True(rootComponent.EditContext.IsModified(() => model.StringProperty));
     }
 
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task SuppliesFieldClassCorrespondingToFieldState(bool createFieldPath)
+    [Fact]
+    public async Task SuppliesFieldClassCorrespondingToFieldState()
     {
         // Arrange
         var model = new TestModel();
         var rootComponent = new TestInputHostComponent<string, TestInputComponent<string>>
         {
-            EditContext = new EditContext(model) { ShouldUseFieldIdentifiers = createFieldPath },
+            EditContext = new EditContext(model),
             ValueExpression = () => model.StringProperty
         };
-        var fieldIdentifier = FieldIdentifier.Create(() => model.StringProperty, createFieldPath);
+        var fieldIdentifier = FieldIdentifier.Create(() => model.StringProperty);
 
         // Act/Assert: Initially, it's valid and unmodified
         var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
@@ -234,10 +230,8 @@ public class InputBaseTest
         Assert.Equal("valid", inputComponent.CssClass);
     }
 
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task CssClassCombinesClassWithFieldClass(bool createFieldPath)
+    [Fact]
+    public async Task CssClassCombinesClassWithFieldClass()
     {
         // Arrange
         var model = new TestModel();
@@ -247,10 +241,10 @@ public class InputBaseTest
                 {
                     { "class", "my-class other-class" },
                 },
-            EditContext = new EditContext(model) { ShouldUseFieldIdentifiers = createFieldPath },
+            EditContext = new EditContext(model),
             ValueExpression = () => model.StringProperty
         };
-        var fieldIdentifier = FieldIdentifier.Create(() => model.StringProperty, createFieldPath);
+        var fieldIdentifier = FieldIdentifier.Create(() => model.StringProperty);
 
         // Act/Assert
         var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
@@ -278,21 +272,19 @@ public class InputBaseTest
         Assert.Equal("1915/03/02", inputComponent.CurrentValueAsString);
     }
 
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task ParsesCurrentValueAsStringWhenChanged_Valid(bool createFieldPath)
+    [Fact]
+    public async Task ParsesCurrentValueAsStringWhenChanged_Valid()
     {
         // Arrange
         var model = new TestModel();
         var valueChangedArgs = new List<DateTime>();
         var rootComponent = new TestInputHostComponent<DateTime, TestDateInputComponent>
         {
-            EditContext = new EditContext(model) { ShouldUseFieldIdentifiers = createFieldPath },
+            EditContext = new EditContext(model),
             ValueChanged = valueChangedArgs.Add,
             ValueExpression = () => model.DateProperty
         };
-        var fieldIdentifier = FieldIdentifier.Create(() => model.DateProperty, createFieldPath);
+        var fieldIdentifier = FieldIdentifier.Create(() => model.DateProperty);
         var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
         var numValidationStateChanges = 0;
         rootComponent.EditContext.OnValidationStateChanged += (sender, eventArgs) => { numValidationStateChanges++; };
@@ -310,21 +302,19 @@ public class InputBaseTest
         Assert.Equal(0, numValidationStateChanges);
     }
 
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task ParsesCurrentValueAsStringWhenChanged_Invalid(bool createFieldPath)
+    [Fact]
+    public async Task ParsesCurrentValueAsStringWhenChanged_Invalid()
     {
         // Arrange
         var model = new TestModel();
         var valueChangedArgs = new List<DateTime>();
         var rootComponent = new TestInputHostComponent<DateTime, TestDateInputComponent>
         {
-            EditContext = new EditContext(model) { ShouldUseFieldIdentifiers = createFieldPath },
+            EditContext = new EditContext(model),
             ValueChanged = valueChangedArgs.Add,
             ValueExpression = () => model.DateProperty
         };
-        var fieldIdentifier = FieldIdentifier.Create(() => model.DateProperty, createFieldPath);
+        var fieldIdentifier = FieldIdentifier.Create(() => model.DateProperty);
         var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
         var numValidationStateChanges = 0;
         rootComponent.EditContext.OnValidationStateChanged += (sender, eventArgs) => { numValidationStateChanges++; };
@@ -347,19 +337,17 @@ public class InputBaseTest
         Assert.Equal(2, numValidationStateChanges);
     }
 
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task RespondsToValidationStateChangeNotifications(bool createFieldPath)
+    [Fact]
+    public async Task RespondsToValidationStateChangeNotifications()
     {
         // Arrange
         var model = new TestModel();
         var rootComponent = new TestInputHostComponent<string, TestInputComponent<string>>
         {
-            EditContext = new EditContext(model) { ShouldUseFieldIdentifiers = createFieldPath },
+            EditContext = new EditContext(model),
             ValueExpression = () => model.StringProperty
         };
-        var fieldIdentifier = FieldIdentifier.Create(() => model.StringProperty, createFieldPath);
+        var fieldIdentifier = FieldIdentifier.Create(() => model.StringProperty);
         var renderer = new TestRenderer();
         var rootComponentId = renderer.AssignRootComponentId(rootComponent);
         await renderer.RenderRootComponentAsync(rootComponentId);
@@ -411,14 +399,12 @@ public class InputBaseTest
         Assert.Empty(renderer.Batches.Skip(1));
     }
 
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task AriaAttributeIsRenderedWhenTheValidationStateIsInvalidOnFirstRender(bool createFieldPath)
+    [Fact]
+    public async Task AriaAttributeIsRenderedWhenTheValidationStateIsInvalidOnFirstRender()
     {
         // Arrange// Arrange
         var model = new TestModel();
-        var invalidContext = new EditContext(model) { ShouldUseFieldIdentifiers = createFieldPath };
+        var invalidContext = new EditContext(model);
 
         var rootComponent = new TestInputHostComponent<string, TestInputComponent<string>>
         {
@@ -426,7 +412,7 @@ public class InputBaseTest
             ValueExpression = () => model.StringProperty
         };
 
-        var fieldIdentifier = FieldIdentifier.Create(() => model.StringProperty, createFieldPath);
+        var fieldIdentifier = FieldIdentifier.Create(() => model.StringProperty);
         var messageStore = new ValidationMessageStore(invalidContext);
         messageStore.Add(fieldIdentifier, "Test error message");
 
@@ -446,14 +432,12 @@ public class InputBaseTest
         Assert.Equal("true", component.AdditionalAttributes["aria-invalid"]);
     }
 
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task UserSpecifiedAriaValueIsNotChangedIfInvalid(bool createFieldPath)
+    [Fact]
+    public async Task UserSpecifiedAriaValueIsNotChangedIfInvalid()
     {
         // Arrange// Arrange
         var model = new TestModel();
-        var invalidContext = new EditContext(model) { ShouldUseFieldIdentifiers = createFieldPath };
+        var invalidContext = new EditContext(model);
 
         var rootComponent = new TestInputHostComponent<string, TestInputComponent<string>>
         {
@@ -463,7 +447,7 @@ public class InputBaseTest
         rootComponent.AdditionalAttributes = new Dictionary<string, object>();
         rootComponent.AdditionalAttributes["aria-invalid"] = "userSpecifiedValue";
 
-        var fieldIdentifier = FieldIdentifier.Create(() => model.StringProperty, createFieldPath);
+        var fieldIdentifier = FieldIdentifier.Create(() => model.StringProperty);
         var messageStore = new ValidationMessageStore(invalidContext);
         messageStore.Add(fieldIdentifier, "Test error message");
 
@@ -482,19 +466,17 @@ public class InputBaseTest
         Assert.Equal("userSpecifiedValue", component.AdditionalAttributes["aria-invalid"]);
     }
 
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task AriaAttributeRemovedWhenStateChangesToValidFromInvalid(bool createFieldPath)
+    [Fact]
+    public async Task AriaAttributeRemovedWhenStateChangesToValidFromInvalid()
     {
         // Arrange
         var model = new TestModel();
         var rootComponent = new TestInputHostComponent<string, TestInputComponent<string>>
         {
-            EditContext = new EditContext(model) { ShouldUseFieldIdentifiers = createFieldPath },
+            EditContext = new EditContext(model),
             ValueExpression = () => model.StringProperty
         };
-        var fieldIdentifier = FieldIdentifier.Create(() => model.StringProperty, createFieldPath);
+        var fieldIdentifier = FieldIdentifier.Create(() => model.StringProperty);
         var renderer = new TestRenderer();
         var messageStore = new ValidationMessageStore(rootComponent.EditContext);
         messageStore.Add(fieldIdentifier, "Artificial error message");
