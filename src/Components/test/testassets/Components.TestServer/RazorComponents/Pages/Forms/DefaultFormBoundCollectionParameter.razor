@@ -39,9 +39,9 @@
     {
         var index = i;
         <h1>Id: @Model[index].Id</h1>
-        <p id="name">Name: @Model[index].Name</p>
-        <p id="email">Email: @Model[index].Email</p>
-        <p id="preferred">Preferred: @Model[index].IsPreferred</p>
+        <p id="name[@index]">Name: @Model[index].Name</p>
+        <p id="email[@index]">Email: @Model[index].Email</p>
+        <p id="preferred[@index]">Preferred: @Model[index].IsPreferred</p>
     }
 }
 

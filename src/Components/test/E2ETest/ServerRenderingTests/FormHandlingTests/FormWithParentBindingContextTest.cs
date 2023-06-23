@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.ObjectModel;
 using System.Net.Http;
 using Components.TestServer.RazorComponents;
@@ -89,7 +90,6 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
             InputFieldCssSelector = "input[name=Parameter]",
             InputFieldValue = "abc",
             SuppressEnhancedNavigation = suppressEnhancedNavigation,
-            ShouldCauseBindingErrors = true,
             AssertErrors = errors =>
             {
                 Assert.Collection(
@@ -107,6 +107,144 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
+    public void CanBindComplexTypeToDefaultForm(bool suppressEnhancedNavigation)
+    {
+        var url = "forms/default-form-bound-complextype-parameter";
+        var expectedTarget = GetExpectedTarget(this, null, url);
+
+        if (suppressEnhancedNavigation)
+        {
+            GoTo("");
+            Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+            ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('suppress-enhanced-navigation', 'true')");
+        }
+
+        GoTo(url);
+
+        Browser.Exists(By.Id("ready"));
+        var form = Browser.Exists(By.CssSelector("form"));
+        var formTarget = form.GetAttribute("action");
+        var actionValue = form.GetDomAttribute("action");
+        Assert.Equal(expectedTarget, formTarget);
+        Assert.Null(actionValue);
+
+        var name = Browser.Exists(By.CssSelector("""input[name="Model.Name"]"""));
+        name.SendKeys("John");
+        var email = Browser.Exists(By.CssSelector("""input[name="Model.Email"]"""));
+        email.SendKeys("john@example.com");
+        Browser.Click(By.CssSelector("""input[name="Model.IsPreferred"]"""));
+        Browser.Click(By.Id("send"));
+
+        Browser.Exists(By.Id("name")).Text.Contains("John");
+        Browser.Exists(By.Id("email")).Text.Contains("john@example.com");
+        Browser.Exists(By.Id("preferred")).Text.Contains("True");
+
+        if (!suppressEnhancedNavigation)
+        {
+            // Verify the same form element is still in the page
+            // We wouldn't be allowed to read the attribute if the element is stale
+            Assert.Equal(expectedTarget, form.GetAttribute("action"));
+        }
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void CanBindDictionaryToDefaultForm(bool suppressEnhancedNavigation)
+    {
+        var url = "forms/default-form-bound-dictionary-parameter";
+        var expectedTarget = GetExpectedTarget(this, null, url);
+
+        if (suppressEnhancedNavigation)
+        {
+            GoTo("");
+            Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+            ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('suppress-enhanced-navigation', 'true')");
+        }
+
+        GoTo(url);
+
+        Browser.Exists(By.Id("ready"));
+        var form = Browser.Exists(By.CssSelector("form"));
+        var formTarget = form.GetAttribute("action");
+        var actionValue = form.GetDomAttribute("action");
+        Assert.Equal(expectedTarget, formTarget);
+        Assert.Null(actionValue);
+
+        var name = Browser.Exists(By.CssSelector("""input[name="Model[Name]"]"""));
+        name.SendKeys("John");
+        var email = Browser.Exists(By.CssSelector("""input[name="Model[Email]"]"""));
+        email.SendKeys("john@example.com");
+        Browser.Click(By.CssSelector("""input[name="Model[IsPreferred]"]"""));
+        Browser.Click(By.Id("send"));
+
+        Browser.Exists(By.Id("name")).Text.Contains("John");
+        Browser.Exists(By.Id("email")).Text.Contains("john@example.com");
+        Browser.Exists(By.Id("preferred")).Text.Contains("True");
+
+        if (!suppressEnhancedNavigation)
+        {
+            // Verify the same form element is still in the page
+            // We wouldn't be allowed to read the attribute if the element is stale
+            Assert.Equal(expectedTarget, form.GetAttribute("action"));
+        }
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void CanBindCollectionsToDefaultForm(bool suppressEnhancedNavigation)
+    {
+        var url = "forms/default-form-bound-collection-parameter";
+        var expectedTarget = GetExpectedTarget(this, null, url);
+
+        if (suppressEnhancedNavigation)
+        {
+            GoTo("");
+            Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+            ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('suppress-enhanced-navigation', 'true')");
+        }
+
+        GoTo(url);
+
+        Browser.Exists(By.Id("ready"));
+        var form = Browser.Exists(By.CssSelector("form"));
+        var formTarget = form.GetAttribute("action");
+        var actionValue = form.GetDomAttribute("action");
+        Assert.Equal(expectedTarget, formTarget);
+        Assert.Null(actionValue);
+
+        for (var i = 0; i < 2; i++)
+        {
+            var name = Browser.Exists(By.CssSelector($"""input[name="Model[{i}].Name"]"""));
+            name.Clear();
+            name.SendKeys($"John{i + 4}");
+            var email = Browser.Exists(By.CssSelector($"""input[name="Model[{i}].Email"]"""));
+            email.Clear();
+            email.SendKeys($"john{i + 4}@example.com");
+            Browser.Click(By.CssSelector($"""input[name="Model[{i}].IsPreferred"]"""));
+        }
+
+        Browser.Click(By.Id("send"));
+
+        for (var i = 0; i < 2; i++)
+        {
+            Browser.Exists(By.Id($"name[{i}]")).Text.Contains($"John{i + 4}");
+            Browser.Exists(By.Id($"email[{i}]")).Text.Contains($"john{i + 4}@example.com");
+            Browser.Exists(By.Id($"preferred[{i}]")).Text.Contains(i % 2 == 0 ? "True" : "False");
+        }
+
+        if (!suppressEnhancedNavigation)
+        {
+            // Verify the same form element is still in the page
+            // We wouldn't be allowed to read the attribute if the element is stale
+            Assert.Equal(expectedTarget, form.GetAttribute("action"));
+        }
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
     public void CanHandleBindingErrorsBindParameterToNamedForm(bool suppressEnhancedNavigation)
     {
         var dispatchToForm = new DispatchToForm(this)
@@ -118,7 +256,6 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
             InputFieldCssSelector = "input[name=Parameter]",
             InputFieldValue = "abc",
             SuppressEnhancedNavigation = suppressEnhancedNavigation,
-            ShouldCauseBindingErrors = true,
             AssertErrors = errors =>
             {
                 Assert.Collection(
@@ -458,10 +595,13 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         public string InputFieldId { get; internal set; } = "firstName";
         public string InputFieldCssSelector { get; internal set; } = null;
         public bool ShouldCauseInternalServerError { get; internal set; }
-        public bool ShouldCauseBindingErrors { get; internal set; }
+        public bool ShouldCauseBindingErrors => AssertErrors != null;
         public bool SuppressEnhancedNavigation { get; internal set; }
         public Action<ReadOnlyCollection<IWebElement>> AssertErrors { get; internal set; }
     }
+
+    private string GetExpectedTarget(FormWithParentBindingContextTest test, string expectedActionValue, string url)
+        => $"{new Uri(test._serverFixture.RootUri, test.ServerPathBase)}/{expectedActionValue ?? url}";
 
     private void GoTo(string relativePath)
     {
