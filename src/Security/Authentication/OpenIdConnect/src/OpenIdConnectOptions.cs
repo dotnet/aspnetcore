@@ -4,6 +4,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authentication.OAuth.Claims;
 using Microsoft.AspNetCore.Http;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
@@ -17,6 +18,7 @@ public class OpenIdConnectOptions : RemoteAuthenticationOptions
 {
     private CookieBuilder _nonceCookieBuilder;
     private readonly JwtSecurityTokenHandler _defaultHandler = new JwtSecurityTokenHandler();
+    private readonly JsonWebTokenHandler _defaultTokenHandler = new JsonWebTokenHandler();
 
     /// <summary>
     /// Initializes a new <see cref="OpenIdConnectOptions"/>
@@ -38,6 +40,10 @@ public class OpenIdConnectOptions : RemoteAuthenticationOptions
         SignedOutCallbackPath = new PathString("/signout-callback-oidc");
         RemoteSignOutPath = new PathString("/signout-oidc");
         SecurityTokenValidator = _defaultHandler;
+        TokenHandler = _defaultTokenHandler;
+
+        // reconcile the difference between default values.
+        _defaultTokenHandler.MapInboundClaims = _defaultHandler.MapInboundClaims;
 
         Events = new OpenIdConnectEvents();
         Scope.Add("openid");
@@ -256,6 +262,14 @@ public class OpenIdConnectOptions : RemoteAuthenticationOptions
     public ISecurityTokenValidator SecurityTokenValidator { get; set; }
 
     /// <summary>
+    /// Gets or sets the <see cref="TokenHandler"/> used to validate identity tokens.
+    /// <para>
+    /// This will be used instead of <see cref="SecurityTokenValidator"/> if <see cref="UseTokenHandler"/> is <see langword="true"/>
+    /// </para>
+    /// </summary>
+    public TokenHandler TokenHandler { get; set; }
+
+    /// <summary>
     /// Gets or sets the parameters used to validate identity tokens.
     /// </summary>
     /// <remarks>Contains the types and definitions required for validating a token.</remarks>
@@ -363,4 +377,21 @@ public class OpenIdConnectOptions : RemoteAuthenticationOptions
         get => _defaultHandler.MapInboundClaims;
         set => _defaultHandler.MapInboundClaims = value;
     }
+
+    /// <summary>
+    /// Gets or sets the <see cref="MapInboundClaims"/> property on the default instance of <see cref="JsonWebTokenHandler"/> in TokenHandler, which is used when determining
+    /// whether or not to map claim types that are extracted when validating a <see cref="JwtSecurityToken"/>.
+    /// <para>If this is set to true, the Claim Type is set to the JSON claim 'name' after translating using this mapping. Otherwise, no mapping occurs.</para>
+    /// <para>The default value is true.</para>
+    /// </summary>
+    public bool MapInboundClaimsTokenHandler
+    {
+        get => _defaultTokenHandler.MapInboundClaims;
+        set => _defaultTokenHandler.MapInboundClaims = value;
+    }
+
+    /// <summary>
+    /// Gets or sets whether to use the <see cref="TokenHandler"/> or the <see cref="SecurityTokenValidator"/> for validating identity tokens.
+    /// </summary>
+    public bool UseTokenHandler { get; set; } = true;
 }

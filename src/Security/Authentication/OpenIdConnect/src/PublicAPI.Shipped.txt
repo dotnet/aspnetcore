@@ -210,3 +210,9 @@ virtual Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectHandler.H
 virtual Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectHandler.HandleSignOutCallbackAsync() -> System.Threading.Tasks.Task<bool>!
 virtual Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectHandler.RedeemAuthorizationCodeAsync(Microsoft.IdentityModel.Protocols.OpenIdConnect.OpenIdConnectMessage! tokenEndpointRequest) -> System.Threading.Tasks.Task<Microsoft.IdentityModel.Protocols.OpenIdConnect.OpenIdConnectMessage!>!
 virtual Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectHandler.SignOutAsync(Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions.MapInboundClaimsTokenHandler.get -> bool
+Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions.MapInboundClaimsTokenHandler.set -> void
+Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions.TokenHandler.get -> Microsoft.IdentityModel.Tokens.TokenHandler!
+Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions.TokenHandler.set -> void
+Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions.UseTokenHandler.get -> bool
+Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions.UseTokenHandler.set -> void
