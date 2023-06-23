@@ -117,12 +117,7 @@ public class EditForm : ComponentBase
 
         // Update _editContext if we don't have one yet, or if they are supplying a
         // potentially new EditContext, or if they are supplying a different Model
-        if (Model != null &&
-            // We need to check whether the model is a value type and in that case use
-            // the Equals method to compare the values. Otherwise we would get false
-            // given that the value types are boxed, which results in additional unnecessary
-            // renders.
-            (Model is ValueType && !Model.Equals(_editContext?.Model)) || (Model != _editContext?.Model))
+        if (Model != null && Model != _editContext?.Model)
         {
             _editContext = new EditContext(Model!);
         }

@@ -76,11 +76,13 @@ public class EditFormTest
         Assert.Same(model, returnedEditContext.Model);
     }
 
-    [Fact]
-    public async Task ReturnsEditContextWhenEditContextParameterUsed()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ReturnsEditContextWhenEditContextParameterUsed(bool createFieldPath)
     {
         // Arrange
-        var editContext = new EditContext(new TestModel());
+        var editContext = new EditContext(new TestModel()) { ShouldUseFieldIdentifiers = createFieldPath };
         var rootComponent = new TestEditFormHostComponent
         {
             EditContext = editContext

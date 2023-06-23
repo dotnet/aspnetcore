@@ -163,21 +163,23 @@ public class InputSelectTest
         Assert.Equal(42, inputSelectComponent.CurrentValue);
     }
 
-    [Fact]
-    public async Task ValidationErrorUsesDisplayAttributeName()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ValidationErrorUsesDisplayAttributeName(bool createFieldPath)
     {
         // Arrange
         var model = new TestModel();
         var rootComponent = new TestInputHostComponent<int, TestInputSelect<int>>
         {
-            EditContext = new EditContext(model),
+            EditContext = new EditContext(model) { ShouldUseFieldIdentifiers = createFieldPath },
             ValueExpression = () => model.NotNullableInt,
             AdditionalAttributes = new Dictionary<string, object>
                 {
                     { "DisplayName", "Some number" }
                 }
         };
-        var fieldIdentifier = FieldIdentifier.Create(() => model.NotNullableInt);
+        var fieldIdentifier = FieldIdentifier.Create(() => model.NotNullableInt, createFieldPath);
         var inputSelectComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
 
         // Act
