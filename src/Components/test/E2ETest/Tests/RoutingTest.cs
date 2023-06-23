@@ -1640,6 +1640,22 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Assert.Equal(test1VerticalLocation, currentWindowScrollY);
     }
 
+    [Fact]
+    public void NavigationManagerNavigateToSameUrlWithQueryAndHash_ScrollsToElementOnTheSamePage()
+    {
+        SetUrlViaPushState("/");
+        var app = Browser.MountTestComponent<TestRouter>();
+        app.FindElement(By.LinkText("Long page with hash")).Click();
+
+        app.FindElement(By.Id("navigate-test1-with-query")).Click();
+
+        var currentWindowScrollY = BrowserScrollY;
+        var test1VerticalLocation = app.FindElement(By.Id("test1")).Location.Y;
+        var currentRelativeUrl = _serverFixture.RootUri.MakeRelativeUri(new Uri(Browser.Url)).ToString();
+        Assert.Equal("subdir/LongPageWithHash?color=green&number=123#test1", currentRelativeUrl);
+        Assert.Equal(test1VerticalLocation, currentWindowScrollY);
+    }
+
     private long BrowserScrollY
     {
         get => Convert.ToInt64(((IJavaScriptExecutor)Browser).ExecuteScript("return window.scrollY"), CultureInfo.CurrentCulture);
