@@ -35,7 +35,7 @@ app.MapGet(""/"", () => ""Hello World!"");
     }
 
     [Fact]
-    public async Task DoesNotWarnWhenEnpointRegistrationIsTopLevel_InMain()
+    public async Task DoesNotWarnWhenEndpointRegistrationIsTopLevel_InMain()
     {
         //arrange
         var source = @"
@@ -67,7 +67,7 @@ using Microsoft.AspNetCore.Builder;
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
 app.UseRouting();
-app./*MM*/UseEndpoints(e => { });
+app.UseEndpoints(e => { });
 ");
         //act
         var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
@@ -89,7 +89,7 @@ public static class Program
         var builder = WebApplication.CreateBuilder(args);
         var app = builder.Build();
         app.UseRouting();
-        app./*MM*/UseEndpoints(e => { });
+        app.UseEndpoints(e => { });
     }
 }
 ");
