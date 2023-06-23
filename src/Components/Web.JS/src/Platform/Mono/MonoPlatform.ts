@@ -150,41 +150,6 @@ export const monoPlatform: Platform = {
   },
 };
 
-type LoadBootResourceCallback = (type: WebAssemblyBootResourceType, name: string, defaultUri: string, integrity: string) => string | Promise<Response> | null | undefined;
-
-async function loadBootConfigAsync(loadBootResource?: LoadBootResourceCallback, environment?: string): Promise<BootJsonData> {
-  const loaderResponse = loadBootResource !== undefined ?
-    loadBootResource('manifest', 'blazor.boot.json', '_framework/blazor.boot.json', '') :
-    defaultLoadBlazorBootJson('_framework/blazor.boot.json');
-
-  let bootConfigResponse: Response;
-
-  if (!loaderResponse) {
-    bootConfigResponse = await defaultLoadBlazorBootJson('_framework/blazor.boot.json');
-  } else if (typeof loaderResponse === 'string') {
-    bootConfigResponse = await defaultLoadBlazorBootJson(loaderResponse);
-  } else {
-    bootConfigResponse = await loaderResponse;
-  }
-
-  // While we can expect an ASP.NET Core hosted application to include the environment, other
-  // hosts may not. Assume 'Production' in the absence of any specified value.
-  applicationEnvironment = environment || bootConfigResponse.headers.get('Blazor-Environment') || 'Production';
-  const bootConfig: BootJsonData = await bootConfigResponse.json();
-  bootConfig.modifiableAssemblies = bootConfigResponse.headers.get('DOTNET-MODIFIABLE-ASSEMBLIES');
-  bootConfig.aspnetCoreBrowserTools = bootConfigResponse.headers.get('ASPNETCORE-BROWSER-TOOLS');
-
-  return bootConfig;
-
-  function defaultLoadBlazorBootJson(url: string): Promise<Response> {
-    return fetch(url, {
-      method: 'GET',
-      credentials: 'include',
-      cache: 'no-cache',
-    });
-  }
-}
-
 async function importDotnetJs(startOptions: Partial<WebAssemblyStartOptions>): Promise<ModuleAPI> {
   const browserSupportsNativeWebAssembly = typeof WebAssembly !== 'undefined' && WebAssembly.validate;
   if (!browserSupportsNativeWebAssembly) {
