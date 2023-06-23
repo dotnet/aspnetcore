@@ -69,9 +69,20 @@ public static class EditContextBindingExtensions
         {
             foreach (var (key, errors) in _bindingContext.GetAllErrors())
             {
-                var fieldIdentifier = key == "" ?
-                    new FieldIdentifier(_editContext.Model, fieldName: string.Empty)
-                    : _editContext.Field(key);
+                FieldIdentifier fieldIdentifier;
+                var lastDotIndex = key.LastIndexOf('.');
+                if (lastDotIndex >= 0)
+                {
+                    fieldIdentifier = new FieldIdentifier(_editContext.Model, key.Substring(lastDotIndex + 1), key);
+                }
+                else if(key != "")
+                {
+                    fieldIdentifier = new FieldIdentifier(_editContext.Model, key, key);
+                }
+                else
+                {
+                    fieldIdentifier = new FieldIdentifier(_editContext.Model, fieldName: string.Empty);
+                }
 
                 foreach (var error in errors)
                 {

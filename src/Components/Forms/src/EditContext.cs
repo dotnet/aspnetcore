@@ -176,7 +176,7 @@ public sealed class EditContext
     /// <param name="accessor">Identifies the field whose current validation messages should be returned.</param>
     /// <returns>The current validation messages for the specified field.</returns>
     public IEnumerable<string> GetValidationMessages(Expression<Func<object>> accessor)
-        => GetValidationMessages(FieldIdentifier.Create(accessor));
+        => GetValidationMessages(FieldIdentifier.Create(accessor, ShouldUseFieldIdentifiers));
 
     /// <summary>
     /// Determines whether the specified fields in this <see cref="EditContext"/> has been modified.
@@ -193,7 +193,7 @@ public sealed class EditContext
     /// <param name="accessor">Identifies the field whose current validation messages should be returned.</param>
     /// <returns>True if the field has been modified; otherwise false.</returns>
     public bool IsModified(Expression<Func<object>> accessor)
-        => IsModified(FieldIdentifier.Create(accessor));
+        => IsModified(FieldIdentifier.Create(accessor, ShouldUseFieldIdentifiers));
 
     /// <summary>
     /// Validates this <see cref="EditContext"/>.

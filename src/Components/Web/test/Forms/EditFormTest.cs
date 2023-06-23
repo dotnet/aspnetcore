@@ -123,7 +123,7 @@ public class EditFormTest
         {
             Model = model,
             FormName = "my-form",
-            BindingContext = new ModelBindingContext("", "", t => true)
+            BindingContext = new ModelBindingContext("", "")
         };
 
         // Act
@@ -144,7 +144,7 @@ public class EditFormTest
         {
             Model = model,
             FormName = "my-form",
-            BindingContext = new ModelBindingContext("parent-context", "path?handler=parent-context", t => true )
+            BindingContext = new ModelBindingContext("parent-context", "path?handler=parent-context")
         };
 
         // Act
@@ -165,11 +165,12 @@ public class EditFormTest
         {
             Model = model,
             FormName = "my-form",
-            AdditionalFormAttributes = new Dictionary<string, object>() {
+            AdditionalFormAttributes = new Dictionary<string, object>()
+            {
                 ["name"] = "my-explicit-name",
                 ["action"] = "/somewhere/else",
             },
-            BindingContext = new ModelBindingContext("parent-context", "path?handler=parent-context", t => true)
+            BindingContext = new ModelBindingContext("parent-context", "path?handler=parent-context")
         };
 
         // Act
@@ -189,7 +190,7 @@ public class EditFormTest
         var rootComponent = new TestEditFormHostComponent
         {
             Model = model,
-            BindingContext = new ModelBindingContext("", "", t => true),
+            BindingContext = new ModelBindingContext("", ""),
             SubmitHandler = ctx => { }
         };
 
@@ -252,7 +253,7 @@ public class EditFormTest
         var rootComponent = new TestEditFormHostComponent
         {
             Model = model,
-            BindingContext = new ModelBindingContext("", "", t => true)
+            BindingContext = new ModelBindingContext("", "")
         };
 
         // Act
@@ -292,7 +293,7 @@ public class EditFormTest
         {
             Model = model,
             FormName = "my-form",
-            BindingContext = new ModelBindingContext("", "", t => true)
+            BindingContext = new ModelBindingContext("", "")
         };
 
         // Act
@@ -312,7 +313,7 @@ public class EditFormTest
         {
             Model = model,
             FormName = "my-form",
-            BindingContext = new ModelBindingContext("parent-context", "path?handler=parent-context", t => true)
+            BindingContext = new ModelBindingContext("parent-context", "path?handler=parent-context")
         };
 
         // Act
@@ -448,20 +449,7 @@ public class EditFormTest
 
     private class TestFormValueSupplier : IFormValueSupplier
     {
-        public bool CanBind(string formName, Type valueType)
-        {
-            return false;
-        }
-
-        public bool CanConvertSingleValue(Type type)
-        {
-            return false;
-        }
-
-        public bool TryBind(string formName, Type valueType, [NotNullWhen(true)] out object boundValue, Action<string, FormattableString, string> onError)
-        {
-            boundValue = null;
-            return false;
-        }
+        public bool CanBind(Type valueType, string formName = null) => false;
+        public void Bind(FormValueSupplierContext context) { }
     }
 }

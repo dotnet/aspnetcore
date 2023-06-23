@@ -8,15 +8,13 @@ namespace Microsoft.AspNetCore.Components;
 /// </summary>
 public sealed class ModelBindingContext
 {
-    private readonly Predicate<Type> _canBind;
     private Dictionary<string, BindingError>? _errors;
     private Dictionary<string, Dictionary<string, BindingError>>? _errorsByFormName;
 
-    internal ModelBindingContext(string name, string bindingContextId, Predicate<Type> canBind)
+    internal ModelBindingContext(string name, string bindingContextId)
     {
         ArgumentNullException.ThrowIfNull(name);
         ArgumentNullException.ThrowIfNull(bindingContextId);
-        ArgumentNullException.ThrowIfNull(canBind);
         // We are initializing the root context, that can be a "named" root context, or the default context.
         // A named root context only provides a name, and that acts as the BindingId
         // A "default" root context does not provide a name, and instead it provides an explicit Binding ID.
@@ -28,7 +26,6 @@ public sealed class ModelBindingContext
 
         Name = name;
         BindingContextId = bindingContextId ?? name;
-        _canBind = canBind;
     }
 
     /// <summary>
@@ -116,8 +113,6 @@ public sealed class ModelBindingContext
 
         childContext._errors = formErrors;
     }
-
-    internal bool CanConvert(Type type) => _canBind(type);
 
     private record struct BindingError(List<FormattableString> ErrorMessages, string? AttemptedValue);
 }

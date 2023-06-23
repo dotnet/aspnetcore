@@ -36,7 +36,7 @@ public sealed class ValidationMessageStore
     /// <param name="accessor">Identifies the field for which to add the message.</param>
     /// <param name="message">The validation message.</param>
     public void Add(Expression<Func<object>> accessor, string message)
-        => Add(FieldIdentifier.Create(accessor), message);
+        => Add(FieldIdentifier.Create(accessor, _editContext.ShouldUseFieldIdentifiers), message);
 
     /// <summary>
     /// Adds the messages from the specified collection for the specified field.
@@ -52,7 +52,7 @@ public sealed class ValidationMessageStore
     /// <param name="accessor">Identifies the field for which to add the messages.</param>
     /// <param name="messages">The validation messages to be added.</param>
     public void Add(Expression<Func<object>> accessor, IEnumerable<string> messages)
-        => Add(FieldIdentifier.Create(accessor), messages);
+        => Add(FieldIdentifier.Create(accessor, _editContext.ShouldUseFieldIdentifiers), messages);
 
     /// <summary>
     /// Gets the validation messages within this <see cref="ValidationMessageStore"/> for the specified field.
@@ -72,7 +72,7 @@ public sealed class ValidationMessageStore
     /// <param name="accessor">The identifier for the field.</param>
     /// <returns>The validation messages for the specified field within this <see cref="ValidationMessageStore"/>.</returns>
     public IEnumerable<string> this[Expression<Func<object>> accessor]
-        => this[FieldIdentifier.Create(accessor)];
+        => this[FieldIdentifier.Create(accessor, _editContext.ShouldUseFieldIdentifiers)];
 
     /// <summary>
     /// Removes all messages within this <see cref="ValidationMessageStore"/>.
@@ -92,7 +92,7 @@ public sealed class ValidationMessageStore
     /// </summary>
     /// <param name="accessor">Identifies the field for which to remove the messages.</param>
     public void Clear(Expression<Func<object>> accessor)
-        => Clear(FieldIdentifier.Create(accessor));
+        => Clear(FieldIdentifier.Create(accessor, _editContext.ShouldUseFieldIdentifiers));
 
     /// <summary>
     /// Removes all messages within this <see cref="ValidationMessageStore"/> for the specified field.

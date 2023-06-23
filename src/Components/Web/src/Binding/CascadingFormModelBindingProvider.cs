@@ -30,13 +30,13 @@ public sealed class CascadingFormModelBindingProvider : CascadingModelBindingPro
 
     /// <inhertidoc/>
     protected internal override bool SupportsParameterType(Type type)
-        => _formValueSupplier.CanConvertSingleValue(type);
+        => _formValueSupplier.CanBind(type, null);
 
     /// <inhertidoc/>
     protected internal override bool CanSupplyValue(ModelBindingContext? bindingContext, in CascadingParameterInfo parameterInfo)
     {
         var (formName, valueType) = GetFormNameAndValueType(bindingContext, parameterInfo);
-        return _formValueSupplier.CanBind(formName!, valueType);
+        return _formValueSupplier.CanBind(valueType, formName);
     }
 
     /// <inhertidoc/>
@@ -51,12 +51,11 @@ public sealed class CascadingFormModelBindingProvider : CascadingModelBindingPro
             bindingContext.AddError :
             (name, message, value) => bindingContext.AddError(parameterName, name, message, value);
 
-        if (!_formValueSupplier.TryBind(formName!, valueType, out var boundValue, errorHandler))
-        {
-            return null;
-        }
+        var context = new FormValueSupplierContext(formName!, valueType, parameterInfo.PropertyName, errorHandler);
 
-        return boundValue;
+        _formValueSupplier.Bind(context);
+
+        return context.Result;
     }
 
     private static (string FormName, Type ValueType) GetFormNameAndValueType(ModelBindingContext? bindingContext, in CascadingParameterInfo parameterInfo)

@@ -9,7 +9,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
 
 internal sealed class TypedDictionaryConverterFactory<TDictionaryType, TKey, TValue> : IFormDataConverterFactory
-    where TKey : IParsable<TKey>
+    where TKey : ISpanParsable<TKey>
 {
     [RequiresDynamicCode(FormBindingHelpers.RequiresDynamicCodeMessage)]
     [RequiresUnreferencedCode(FormBindingHelpers.RequiresUnreferencedCodeMessage)]

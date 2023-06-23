@@ -12,7 +12,7 @@ internal abstract class DictionaryConverter<TDictionary> : FormDataConverter<TDi
 }
 
 internal sealed class DictionaryConverter<TDictionary, TDictionaryPolicy, TBuffer, TKey, TValue> : DictionaryConverter<TDictionary>
-    where TKey : IParsable<TKey>
+    where TKey : ISpanParsable<TKey>
     where TDictionaryPolicy : IDictionaryBufferAdapter<TDictionary, TBuffer, TKey, TValue>
 {
     private readonly FormDataConverter<TValue> _valueConverter;
@@ -55,11 +55,11 @@ internal sealed class DictionaryConverter<TDictionary, TDictionaryPolicy, TBuffe
 
         foreach (var key in context.GetKeys())
         {
-            context.PushPrefix(key);
+            context.PushPrefix(key.Span);
             currentElementSuccess = _valueConverter.TryRead(ref context, typeof(TValue), options, out currentValue!, out foundCurrentValue);
-            context.PopPrefix(key);
+            context.PopPrefix(key.Span);
 
-            if (!TKey.TryParse(key[1..^1], CultureInfo.InvariantCulture, out var keyValue))
+            if (!TKey.TryParse(key[1..^1].Span, CultureInfo.InvariantCulture, out var keyValue))
             {
                 succeded = false;
                 context.AddMappingError(
