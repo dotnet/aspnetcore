@@ -19,6 +19,7 @@ using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Telemetry.Testing.Metering;
 using Moq;
 
 namespace Microsoft.AspNetCore.Diagnostics;
@@ -210,7 +211,7 @@ public class ExceptionHandlerMiddlewareTest
         var middleware = CreateMiddleware(_ => Task.CompletedTask, optionsAccessor, exceptionHandlers, meterFactory);
         var meter = meterFactory.Meters.Single();
 
-        using var diagnosticsRequestExceptionRecorder = new InstrumentRecorder<long>(meterFactory, DiagnosticsMetrics.MeterName, "diagnostics-handler-exception");
+        using var diagnosticsRequestExceptionCollector = new MetricCollector<long>(meterFactory, DiagnosticsMetrics.MeterName, "diagnostics-handler-exception");
 
         // Act
         await middleware.Invoke(httpContext);
@@ -219,7 +220,7 @@ public class ExceptionHandlerMiddlewareTest
         Assert.Equal(DiagnosticsMetrics.MeterName, meter.Name);
         Assert.Null(meter.Version);
 
-        Assert.Empty(diagnosticsRequestExceptionRecorder.GetMeasurements());
+        Assert.Empty(diagnosticsRequestExceptionCollector.GetMeasurementSnapshot());
     }
 
     [Fact]
@@ -233,13 +234,13 @@ public class ExceptionHandlerMiddlewareTest
         var middleware = CreateMiddleware(_ => throw new InvalidOperationException(), optionsAccessor, exceptionHandlers, meterFactory);
         var meter = meterFactory.Meters.Single();
 
-        using var diagnosticsRequestExceptionRecorder = new InstrumentRecorder<long>(meterFactory, DiagnosticsMetrics.MeterName, "diagnostics-handler-exception");
+        using var diagnosticsRequestExceptionCollector = new MetricCollector<long>(meterFactory, DiagnosticsMetrics.MeterName, "diagnostics-handler-exception");
 
         // Act
         await middleware.Invoke(httpContext);
 
         // Assert
-        Assert.Collection(diagnosticsRequestExceptionRecorder.GetMeasurements(),
+        Assert.Collection(diagnosticsRequestExceptionCollector.GetMeasurementSnapshot(),
             m => AssertRequestException(m, "System.InvalidOperationException", "Handled", typeof(TestExceptionHandler).FullName));
     }
 
@@ -255,13 +256,13 @@ public class ExceptionHandlerMiddlewareTest
         var middleware = CreateMiddleware(_ => throw new InvalidOperationException(), optionsAccessor, exceptionHandlers, meterFactory);
         var meter = meterFactory.Meters.Single();
 
-        using var diagnosticsRequestExceptionRecorder = new InstrumentRecorder<long>(meterFactory, DiagnosticsMetrics.MeterName, "diagnostics-handler-exception");
+        using var diagnosticsRequestExceptionCollector = new MetricCollector<long>(meterFactory, DiagnosticsMetrics.MeterName, "diagnostics-handler-exception");
 
         // Act
         await Assert.ThrowsAsync<InvalidOperationException>(() => middleware.Invoke(httpContext));
 
         // Assert
-        Assert.Collection(diagnosticsRequestExceptionRecorder.GetMeasurements(),
+        Assert.Collection(diagnosticsRequestExceptionCollector.GetMeasurementSnapshot(),
             m => AssertRequestException(m, "System.InvalidOperationException", "Skipped"));
     }
 
@@ -280,13 +281,13 @@ public class ExceptionHandlerMiddlewareTest
         var middleware = CreateMiddleware(_ => throw new InvalidOperationException(), optionsAccessor, meterFactory: meterFactory);
         var meter = meterFactory.Meters.Single();
 
-        using var diagnosticsRequestExceptionRecorder = new InstrumentRecorder<long>(meterFactory, DiagnosticsMetrics.MeterName, "diagnostics-handler-exception");
+        using var diagnosticsRequestExceptionCollector = new MetricCollector<long>(meterFactory, DiagnosticsMetrics.MeterName, "diagnostics-handler-exception");
 
         // Act
         await middleware.Invoke(httpContext);
 
         // Assert
-        Assert.Collection(diagnosticsRequestExceptionRecorder.GetMeasurements(),
+        Assert.Collection(diagnosticsRequestExceptionCollector.GetMeasurementSnapshot(),
             m => AssertRequestException(m, "System.InvalidOperationException", "Handled", null));
     }
 
@@ -304,28 +305,28 @@ public class ExceptionHandlerMiddlewareTest
         var middleware = CreateMiddleware(_ => throw new InvalidOperationException(), optionsAccessor, meterFactory: meterFactory);
         var meter = meterFactory.Meters.Single();
 
-        using var diagnosticsRequestExceptionRecorder = new InstrumentRecorder<long>(meterFactory, DiagnosticsMetrics.MeterName, "diagnostics-handler-exception");
+        using var diagnosticsRequestExceptionCollector = new MetricCollector<long>(meterFactory, DiagnosticsMetrics.MeterName, "diagnostics-handler-exception");
 
         // Act
         await Assert.ThrowsAsync<InvalidOperationException>(() => middleware.Invoke(httpContext));
 
         // Assert
-        Assert.Collection(diagnosticsRequestExceptionRecorder.GetMeasurements(),
+        Assert.Collection(diagnosticsRequestExceptionCollector.GetMeasurementSnapshot(),
             m => AssertRequestException(m, "System.InvalidOperationException", "Unhandled"));
     }
 
-    private static void AssertRequestException(Measurement<long> measurement, string exceptionName, string result, string handler = null)
+    private static void AssertRequestException(CollectedMeasurement<long> measurement, string exceptionName, string result, string handler = null)
     {
         Assert.Equal(1, measurement.Value);
-        Assert.Equal(exceptionName, (string)measurement.Tags.ToArray().Single(t => t.Key == "exception-name").Value);
-        Assert.Equal(result, measurement.Tags.ToArray().Single(t => t.Key == "result").Value.ToString());
+        Assert.Equal(exceptionName, (string)measurement.Tags["exception-name"]);
+        Assert.Equal(result, measurement.Tags["result"].ToString());
         if (handler == null)
         {
-            Assert.DoesNotContain(measurement.Tags.ToArray(), t => t.Key == "handler");
+            Assert.False(measurement.Tags.ContainsKey("handler"));
         }
         else
         {
-            Assert.Equal(handler, (string)measurement.Tags.ToArray().Single(t => t.Key == "handler").Value);
+            Assert.Equal(handler, (string)measurement.Tags["handler"]);
         }
     }
 

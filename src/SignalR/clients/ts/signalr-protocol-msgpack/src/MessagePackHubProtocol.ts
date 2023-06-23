@@ -112,6 +112,8 @@ export class MessagePackHubProtocol implements IHubProtocol {
                 return BinaryMessageFormat.write(SERIALIZED_PING_MESSAGE);
             case MessageType.CancelInvocation:
                 return this._writeCancelInvocation(message as CancelInvocationMessage);
+            case MessageType.Close:
+                return this._writeClose();
             default:
                 throw new Error("Invalid message type.");
         }
@@ -305,6 +307,12 @@ export class MessagePackHubProtocol implements IHubProtocol {
 
     private _writeCancelInvocation(cancelInvocationMessage: CancelInvocationMessage): ArrayBuffer {
         const payload = this._encoder.encode([MessageType.CancelInvocation, cancelInvocationMessage.headers || {}, cancelInvocationMessage.invocationId]);
+
+        return BinaryMessageFormat.write(payload.slice());
+    }
+
+    private _writeClose(): ArrayBuffer {
+        const payload = this._encoder.encode([MessageType.Close, null]);
 
         return BinaryMessageFormat.write(payload.slice());
     }

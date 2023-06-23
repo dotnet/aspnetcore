@@ -66,10 +66,9 @@ public class Startup
 
         services.AddSingleton<IAuthorizationHandler, TestAuthHandler>();
 
-        // Since tests run in parallel, it's possible multiple servers will startup and read files being written by another test
-        // Use a unique directory per server to avoid this collision
-        services.AddDataProtection()
-            .PersistKeysToFileSystem(Directory.CreateDirectory(Path.GetRandomFileName()));
+        // Since tests run in parallel, it's possible multiple servers will startup,
+        // we use an ephemeral key provider to avoid filesystem contention issues
+        services.AddSingleton<IDataProtectionProvider, EphemeralDataProtectionProvider>();
     }
 
     public void Configure(IApplicationBuilder app)

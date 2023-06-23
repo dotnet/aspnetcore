@@ -41,6 +41,8 @@ public class NewtonsoftJsonHubProtocolTests : JsonHubProtocolTestsBase
     [InlineData("42", "Unexpected JSON Token Type 'Integer'. Expected a JSON Object.")]
     [InlineData("{\"type\":\"foo\"}", "Expected 'type' to be of type Integer.")]
     [InlineData("{\"type\":3,\"invocationId\":\"42\",\"result\":true", "Unexpected end when reading JSON.")]
+    [InlineData("{\"type\":8,\"sequenceId\":true}", "Expected 'sequenceId' to be of type Integer.")]
+    [InlineData("{\"type\":9,\"sequenceId\":\"value\"}", "Expected 'sequenceId' to be of type Integer.")]
     public void CustomInvalidMessages(string input, string expectedMessage)
     {
         input = Frame(input);

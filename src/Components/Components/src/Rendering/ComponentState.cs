@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Sections;
 
 namespace Microsoft.AspNetCore.Components.Rendering;
 
@@ -34,6 +35,9 @@ public class ComponentState : IAsyncDisposable
         ComponentId = componentId;
         ParentComponentState = parentComponentState;
         Component = component ?? throw new ArgumentNullException(nameof(component));
+        LogicalParentComponentState = component is SectionOutlet.SectionOutletContentRenderer
+            ? (GetSectionOutletLogicalParent(renderer, (SectionOutlet)parentComponentState!.Component) ?? parentComponentState)
+            : parentComponentState;
         _renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
         _cascadingParameters = CascadingParameterState.FindCascadingParameters(this);
         CurrentRenderTree = new RenderTreeBuilder();
@@ -44,6 +48,18 @@ public class ComponentState : IAsyncDisposable
             _hasCascadingParameters = true;
             _hasAnyCascadingParameterSubscriptions = AddCascadingParameterSubscriptions();
         }
+    }
+
+    private static ComponentState? GetSectionOutletLogicalParent(Renderer renderer, SectionOutlet sectionOutlet)
+    {
+        // This will return null if the SectionOutlet is not currently rendering any content
+        if (sectionOutlet.CurrentLogicalParent is { } logicalParent
+            && renderer.GetComponentState(logicalParent) is { } logicalParentComponentState)
+        {
+            return logicalParentComponentState;
+        }
+
+        return null;
     }
 
     /// <summary>
@@ -60,6 +76,11 @@ public class ComponentState : IAsyncDisposable
     /// Gets the <see cref="ComponentState"/> of the parent component, or null if this is a root component.
     /// </summary>
     public ComponentState? ParentComponentState { get; }
+
+    /// <summary>
+    /// Gets the <see cref="ComponentState"/> of the logical parent component, or null if this is a root component.
+    /// </summary>
+    public ComponentState? LogicalParentComponentState { get; }
 
     internal RenderTreeBuilder CurrentRenderTree { get; set; }
 

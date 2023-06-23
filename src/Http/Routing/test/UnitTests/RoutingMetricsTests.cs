@@ -13,6 +13,7 @@ using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Telemetry.Testing.Metering;
 using Moq;
 
 namespace Microsoft.AspNetCore.Routing;
@@ -34,8 +35,8 @@ public class RoutingMetricsTests
         var httpContext = new DefaultHttpContext();
         var meter = meterFactory.Meters.Single();
 
-        using var routingMatchSuccessRecorder = new InstrumentRecorder<long>(meterFactory, RoutingMetrics.MeterName, "routing-match-success");
-        using var routingMatchFailureRecorder = new InstrumentRecorder<long>(meterFactory, RoutingMetrics.MeterName, "routing-match-failure");
+        using var routingMatchSuccessCollector = new MetricCollector<long>(meterFactory, RoutingMetrics.MeterName, "routing-match-success");
+        using var routingMatchFailureCollector = new MetricCollector<long>(meterFactory, RoutingMetrics.MeterName, "routing-match-failure");
 
         // Act
         await middleware.Invoke(httpContext);
@@ -44,9 +45,9 @@ public class RoutingMetricsTests
         Assert.Equal(RoutingMetrics.MeterName, meter.Name);
         Assert.Null(meter.Version);
 
-        Assert.Collection(routingMatchSuccessRecorder.GetMeasurements(),
+        Assert.Collection(routingMatchSuccessCollector.GetMeasurementSnapshot(),
             m => AssertSuccess(m, "/{hi}", fallback: false));
-        Assert.Empty(routingMatchFailureRecorder.GetMeasurements());
+        Assert.Empty(routingMatchFailureCollector.GetMeasurementSnapshot());
     }
 
     [Theory]
@@ -70,8 +71,8 @@ public class RoutingMetricsTests
         var httpContext = new DefaultHttpContext();
         var meter = meterFactory.Meters.Single();
 
-        using var routingMatchSuccessRecorder = new InstrumentRecorder<long>(meterFactory, RoutingMetrics.MeterName, "routing-match-success");
-        using var routingMatchFailureRecorder = new InstrumentRecorder<long>(meterFactory, RoutingMetrics.MeterName, "routing-match-failure");
+        using var routingMatchSuccessCollector = new MetricCollector<long>(meterFactory, RoutingMetrics.MeterName, "routing-match-success");
+        using var routingMatchFailureCollector = new MetricCollector<long>(meterFactory, RoutingMetrics.MeterName, "routing-match-failure");
 
         // Act
         await middleware.Invoke(httpContext);
@@ -80,9 +81,9 @@ public class RoutingMetricsTests
         Assert.Equal(RoutingMetrics.MeterName, meter.Name);
         Assert.Null(meter.Version);
 
-        Assert.Collection(routingMatchSuccessRecorder.GetMeasurements(),
+        Assert.Collection(routingMatchSuccessCollector.GetMeasurementSnapshot(),
             m => AssertSuccess(m, "/{hi}", fallback: hasFallbackMetadata));
-        Assert.Empty(routingMatchFailureRecorder.GetMeasurements());
+        Assert.Empty(routingMatchFailureCollector.GetMeasurementSnapshot());
     }
 
     [Fact]
@@ -99,8 +100,8 @@ public class RoutingMetricsTests
         var httpContext = new DefaultHttpContext();
         var meter = meterFactory.Meters.Single();
 
-        using var routingMatchSuccessRecorder = new InstrumentRecorder<long>(meterFactory, RoutingMetrics.MeterName, "routing-match-success");
-        using var routingMatchFailureRecorder = new InstrumentRecorder<long>(meterFactory, RoutingMetrics.MeterName, "routing-match-failure");
+        using var routingMatchSuccessCollector = new MetricCollector<long>(meterFactory, RoutingMetrics.MeterName, "routing-match-success");
+        using var routingMatchFailureCollector = new MetricCollector<long>(meterFactory, RoutingMetrics.MeterName, "routing-match-failure");
 
         // Act
         await middleware.Invoke(httpContext);
@@ -109,9 +110,9 @@ public class RoutingMetricsTests
         Assert.Equal(RoutingMetrics.MeterName, meter.Name);
         Assert.Null(meter.Version);
 
-        Assert.Collection(routingMatchSuccessRecorder.GetMeasurements(),
+        Assert.Collection(routingMatchSuccessCollector.GetMeasurementSnapshot(),
             m => AssertSuccess(m, "(missing)", fallback: false));
-        Assert.Empty(routingMatchFailureRecorder.GetMeasurements());
+        Assert.Empty(routingMatchFailureCollector.GetMeasurementSnapshot());
     }
 
     [Fact]
@@ -125,8 +126,8 @@ public class RoutingMetricsTests
         var httpContext = new DefaultHttpContext();
         var meter = meterFactory.Meters.Single();
 
-        using var routingMatchSuccessRecorder = new InstrumentRecorder<long>(meterFactory, RoutingMetrics.MeterName, "routing-match-success");
-        using var routingMatchFailureRecorder = new InstrumentRecorder<long>(meterFactory, RoutingMetrics.MeterName, "routing-match-failure");
+        using var routingMatchSuccessCollector = new MetricCollector<long>(meterFactory, RoutingMetrics.MeterName, "routing-match-success");
+        using var routingMatchFailureCollector = new MetricCollector<long>(meterFactory, RoutingMetrics.MeterName, "routing-match-failure");
 
         // Act
         await middleware.Invoke(httpContext);
@@ -135,16 +136,16 @@ public class RoutingMetricsTests
         Assert.Equal(RoutingMetrics.MeterName, meter.Name);
         Assert.Null(meter.Version);
 
-        Assert.Empty(routingMatchSuccessRecorder.GetMeasurements());
-        Assert.Collection(routingMatchFailureRecorder.GetMeasurements(),
+        Assert.Empty(routingMatchSuccessCollector.GetMeasurementSnapshot());
+        Assert.Collection(routingMatchFailureCollector.GetMeasurementSnapshot(),
             m => Assert.Equal(1, m.Value));
     }
 
-    private void AssertSuccess(Measurement<long> measurement, string route, bool fallback)
+    private void AssertSuccess(CollectedMeasurement<long> measurement, string route, bool fallback)
     {
         Assert.Equal(1, measurement.Value);
-        Assert.Equal(route, (string)measurement.Tags.ToArray().Single(t => t.Key == "route").Value);
-        Assert.Equal(fallback, (bool)measurement.Tags.ToArray().Single(t => t.Key == "fallback").Value);
+        Assert.Equal(route, (string)measurement.Tags["route"]);
+        Assert.Equal(fallback, (bool)measurement.Tags["fallback"]);
     }
 
     private EndpointRoutingMiddleware CreateMiddleware(
