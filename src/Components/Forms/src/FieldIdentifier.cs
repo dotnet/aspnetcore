@@ -28,20 +28,6 @@ public readonly struct FieldIdentifier : IEquatable<FieldIdentifier>
     /// <summary>
     /// Initializes a new instance of the <see cref="FieldIdentifier"/> structure.
     /// </summary>
-    /// <param name="accessor">An expression that identifies an object member.</param>
-    /// <param name="createFieldPath">Whether to create an identifier that uniquely identifies the field.</param>
-    /// <typeparam name="TField">The field <see cref="Type"/>.</typeparam>
-    public static FieldIdentifier Create<TField>(Expression<Func<TField>> accessor, bool createFieldPath)
-    {
-        ArgumentNullException.ThrowIfNull(accessor);
-
-        ParseAccessor(accessor, out var model, out var fieldName);
-        return new FieldIdentifier(model, fieldName);
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="FieldIdentifier"/> structure.
-    /// </summary>
     /// <param name="model">The object that owns the field.</param>
     /// <param name="fieldName">The name of the editable field.</param>
     public FieldIdentifier(object model, string fieldName)
@@ -61,18 +47,6 @@ public readonly struct FieldIdentifier : IEquatable<FieldIdentifier>
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="FieldIdentifier"/> structure.
-    /// </summary>
-    /// <param name="model">The object that owns the field.</param>
-    /// <param name="fieldName">The name of the editable field.</param>
-    /// <param name="fieldPath">The full path to the editable field.</param>
-    public FieldIdentifier(object model, string fieldName, string fieldPath) : this(model, fieldName)
-    {
-        ArgumentNullException.ThrowIfNull(fieldPath);
-        FieldPath = fieldPath;
-    }
-
-    /// <summary>
     /// Gets the object that owns the editable field.
     /// </summary>
     public object Model { get; }
@@ -81,11 +55,6 @@ public readonly struct FieldIdentifier : IEquatable<FieldIdentifier>
     /// Gets the name of the editable field.
     /// </summary>
     public string FieldName { get; }
-
-    /// <summary>
-    /// Gets the full path to the editable field.
-    /// </summary>
-    public string? FieldPath { get; }
 
     /// <inheritdoc />
     public override int GetHashCode()
