@@ -11,8 +11,9 @@ public sealed class ModelBindingContext
     private Dictionary<string, BindingError>? _errors;
     private List<KeyValuePair<string, BindingError>>? _pendingErrors;
     private Dictionary<string, Dictionary<string, BindingError>>? _errorsByFormName;
+    private static readonly char[] Separators = new char[] { '.', '[' };
 
-    internal ModelBindingContext(string name, string bindingContextId)
+internal ModelBindingContext(string name, string bindingContextId)
     {
         ArgumentNullException.ThrowIfNull(name);
         ArgumentNullException.ThrowIfNull(bindingContextId);
@@ -76,10 +77,19 @@ public sealed class ModelBindingContext
         foreach (var (key, value) in errors)
         {
             var errorKey = key;
-            var lastDotIndex = key.LastIndexOf('.');
-            if (lastDotIndex >= 0)
+            var lastSeparatorIndex = key.LastIndexOfAny(Separators);
+            if (lastSeparatorIndex >= 0)
             {
-                errorKey = key[(lastDotIndex + 1)..];
+                if (key[lastSeparatorIndex] == '[')
+                {
+                    var closingBracket = key.IndexOf(']', lastSeparatorIndex);
+                    // content within brackets
+                    errorKey = key[(lastSeparatorIndex + 1)..closingBracket];
+                }
+                else
+                {
+                    errorKey = key[(lastSeparatorIndex + 1)..];
+                }
             }
             yield return new KeyValuePair<(object, string), IReadOnlyList<FormattableString>>((value.Parent, errorKey), value.ErrorMessages);
         }
@@ -152,9 +162,9 @@ public sealed class ModelBindingContext
 
     internal void AttachParentValue(string key, object value)
     {
-        if (_pendingErrors == null || _pendingErrors.Count == 0)
+        if (_pendingErrors == null)
         {
-            throw new InvalidOperationException("AttachParentValue can only be called when there are pending errors.");
+            return;
         }
 
         for (var i = 0; i < _pendingErrors.Count; i++)

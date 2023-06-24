@@ -178,7 +178,10 @@ public class EditForm : ComponentBase
             {
                 builder.AddComponentParameter(8, "ChildContent", RenderWithBindingValidator());
             }
-            builder.AddComponentParameter(8, "ChildContent", ChildContent?.Invoke(_editContext));
+            else
+            {
+                builder.AddComponentParameter(8, "ChildContent", ChildContent?.Invoke(_editContext));
+            }
             builder.CloseComponent();
             builder.CloseElement();
         }
