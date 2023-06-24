@@ -2855,6 +2855,42 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
     }
 
     [Fact]
+    public async Task OnDisconnectedAsyncReceivesExceptionOnPingTimeout()
+    {
+        using (StartVerifiableLog())
+        {
+            var timeout = TimeSpan.FromMilliseconds(100);
+            var timeProvider = new MockTimeProvider();
+            var state = new ConnectionLifetimeState();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+            {
+                services.Configure<HubOptions>(options =>
+                    options.ClientTimeoutInterval = timeout);
+
+                services.AddSingleton(state);
+            }, LoggerFactory);
+
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ConnectionLifetimeHub>>();
+            connectionHandler.TimeProvider = timeProvider;
+
+            using (var client = new TestClient(new NewtonsoftJsonHubProtocol()))
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                await client.SendHubMessageAsync(PingMessage.Instance);
+
+                timeProvider.Advance(timeout + TimeSpan.FromMilliseconds(1));
+                client.TickHeartbeat();
+
+                await connectionHandlerTask.DefaultTimeout();
+
+                var ex = Assert.IsType<OperationCanceledException>(state.DisconnectedException);
+                Assert.Equal("Client hasn't sent a message/ping within the configured ClientTimeoutInterval.", ex.Message);
+            }
+        }
+    }
+
+    [Fact]
     public async Task ReceivingMessagesPreventsConnectionTimeoutFromOccuring()
     {
         using (StartVerifiableLog())
@@ -4920,6 +4956,85 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
             Assert.Single(message.Arguments);
             Assert.Equal(1L, message.Arguments[0]);
             Assert.Equal("Test", message.Target);
+        }
+    }
+
+    [Fact]
+    public async Task ConnectionClosesWhenClientSendsCloseMessage()
+    {
+        using (StartVerifiableLog())
+        {
+            var state = new ConnectionLifetimeState();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(s => s.AddSingleton(state), LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ConnectionLifetimeHub>>();
+
+            using var client = new TestClient();
+
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+            await client.SendHubMessageAsync(new CloseMessage(error: null));
+
+            var message = Assert.IsType<CloseMessage>(await client.ReadAsync().DefaultTimeout());
+            Assert.Null(message.Error);
+
+            await connectionHandlerTask.DefaultTimeout();
+
+            Assert.Null(state.DisconnectedException);
+       }
+    }
+
+    [Fact]
+    public async Task ConnectionClosesWhenClientSendsCloseMessageWithError()
+    {
+        using (StartVerifiableLog())
+        {
+            var state = new ConnectionLifetimeState();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(s => s.AddSingleton(state), LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ConnectionLifetimeHub>>();
+
+            using var client = new TestClient();
+
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+            var errorMessage = "custom client error";
+            await client.SendHubMessageAsync(new CloseMessage(error: errorMessage));
+
+            var message = Assert.IsType<CloseMessage>(await client.ReadAsync().DefaultTimeout());
+            // Verify no error sent to client
+            Assert.Null(message.Error);
+
+            await connectionHandlerTask.DefaultTimeout();
+
+            // Verify OnDisconnectedAsync was called with the error sent by the client
+            var ex = Assert.IsType<HubException>(state.DisconnectedException);
+            Assert.Equal(errorMessage, ex.Message);
+        }
+    }
+
+    [Fact]
+    public async Task UnsolicitedSequenceAndAckMessagesDoNothing()
+    {
+        var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(provider =>
+        {
+            provider.AddSignalR(options =>
+            {
+                options.EnableDetailedErrors = true;
+            });
+        });
+        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+        using (var client = new TestClient())
+        {
+
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+
+            await client.SendHubMessageAsync(new SequenceMessage(10)).DefaultTimeout();
+            await client.SendHubMessageAsync(new AckMessage(234)).DefaultTimeout();
+
+            // Server ignores the above messages, otherwise it would have closed the connection because the values in SequenceMessage and AckMessage aren't valid in this state
+            var completionMessage = await client.InvokeAsync(nameof(MethodHub.Echo), new object[] { "test" });
+
+            Assert.Equal("test", completionMessage.Result);
         }
     }
 

@@ -6,7 +6,7 @@
   "symbolInfo": [
     {
       "id": "UseServer",
-      "isVisible": false,
+      "isVisible": true,
       "persistenceScope": "templateGroup"
     },
     {

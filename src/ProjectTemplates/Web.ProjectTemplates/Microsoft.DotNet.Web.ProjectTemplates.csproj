@@ -54,8 +54,6 @@
     <GeneratedContent Include="EmptyWeb-CSharp.csproj.in" OutputPath="content/EmptyWeb-CSharp/Company.WebApplication1.csproj" />
     <GeneratedContent Include="EmptyWeb-FSharp.fsproj.in" OutputPath="content/EmptyWeb-FSharp/Company.WebApplication1.fsproj" />
     <GeneratedContent Include="GrpcService-CSharp.csproj.in" OutputPath="content/GrpcService-CSharp/GrpcService-CSharp.csproj" />
-    <GeneratedContent Include="BlazorServerWeb-CSharp.csproj.in" OutputPath="content/BlazorServerWeb-CSharp/BlazorServerWeb-CSharp.csproj" />
-    <GeneratedContent Include="EmptyBlazorServerWeb-CSharp.csproj.in" OutputPath="content/EmptyBlazorServerWeb-CSharp/EmptyBlazorServerWeb-CSharp.csproj" />
     <GeneratedContent Include="RazorPagesWeb-CSharp.csproj.in" OutputPath="content/RazorPagesWeb-CSharp/Company.WebApplication1.csproj" />
     <GeneratedContent Include="RazorClassLibrary-CSharp.csproj.in" OutputPath="content/RazorClassLibrary-CSharp/Company.RazorClassLibrary1.csproj" />
     <GeneratedContent Include="StarterWeb-CSharp.csproj.in" OutputPath="content/StarterWeb-CSharp/Company.WebApplication1.csproj" />
@@ -66,12 +64,8 @@
     <GeneratedContent Include="Worker-CSharp.csproj.in" OutputPath="content/Worker-CSharp/Company.Application1.csproj" />
     <GeneratedContent Include="Worker-FSharp.fsproj.in" OutputPath="content/Worker-FSharp/Company.Application1.fsproj" />
     <GeneratedContent Include="Components-CSharp.csproj.in" OutputPath="content/Components-CSharp/Components-CSharp.csproj" />
-    <GeneratedContent Include="ComponentsWebAssembly-CSharp.Client.csproj.in" OutputPath="content/ComponentsWebAssembly-CSharp/Client/ComponentsWebAssembly-CSharp.Client.csproj" />
-    <GeneratedContent Include="ComponentsWebAssembly-CSharp.Shared.csproj.in" OutputPath="content/ComponentsWebAssembly-CSharp/Shared/ComponentsWebAssembly-CSharp.Shared.csproj" />
-    <GeneratedContent Include="ComponentsWebAssembly-CSharp.Server.csproj.in" OutputPath="content/ComponentsWebAssembly-CSharp/Server/ComponentsWebAssembly-CSharp.Server.csproj" />
-    <GeneratedContent Include="EmptyComponentsWebAssembly-CSharp.Client.csproj.in" OutputPath="content/EmptyComponentsWebAssembly-CSharp/Client/EmptyComponentsWebAssembly-CSharp.Client.csproj" />
-    <GeneratedContent Include="EmptyComponentsWebAssembly-CSharp.Shared.csproj.in" OutputPath="content/EmptyComponentsWebAssembly-CSharp/Shared/EmptyComponentsWebAssembly-CSharp.Shared.csproj" />
-    <GeneratedContent Include="EmptyComponentsWebAssembly-CSharp.Server.csproj.in" OutputPath="content/EmptyComponentsWebAssembly-CSharp/Server/EmptyComponentsWebAssembly-CSharp.Server.csproj" />
+    <GeneratedContent Include="ComponentsWebAssembly-CSharp.csproj.in" OutputPath="content/ComponentsWebAssembly-CSharp/ComponentsWebAssembly-CSharp.csproj" />
+    <GeneratedContent Include="EmptyComponentsWebAssembly-CSharp.csproj.in" OutputPath="content/EmptyComponentsWebAssembly-CSharp/EmptyComponentsWebAssembly-CSharp.csproj" />
   </ItemGroup>
 
 </Project>

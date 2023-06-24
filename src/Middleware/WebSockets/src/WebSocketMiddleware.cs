@@ -208,13 +208,15 @@ public partial class WebSocketMiddleware
             // Disable request timeout, if there is one, after the websocket has been accepted
             _context.Features.Get<IHttpRequestTimeoutFeature>()?.DisableTimeout();
 
-            return WebSocket.CreateFromStream(opaqueTransport, new WebSocketCreationOptions()
+            var wrappedSocket = WebSocket.CreateFromStream(opaqueTransport, new WebSocketCreationOptions()
             {
                 IsServer = true,
                 KeepAliveInterval = keepAliveInterval,
                 SubProtocol = subProtocol,
                 DangerousDeflateOptions = deflateOptions
             });
+
+            return new ServerWebSocket(wrappedSocket, _context);
         }
 
         public static bool CheckSupportedWebSocketRequest(string method, IHeaderDictionary requestHeaders)

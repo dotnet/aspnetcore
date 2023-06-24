@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.OutputCaching.Serialization;
@@ -78,7 +79,21 @@ internal static class OutputCacheEntryFormatter
 
         Serialize(bufferStream, formatterEntry);
 
-        await store.SetAsync(key, bufferStream.ToArray(), value.Tags ?? Array.Empty<string>(), duration, cancellationToken);
+        if (!bufferStream.TryGetBuffer(out var segment))
+        {
+            segment = bufferStream.ToArray();
+        }
+
+        var payload = new ReadOnlySequence<byte>(segment.Array!, segment.Offset, segment.Count);
+        if (store is IOutputCacheBufferStore bufferStore)
+        {
+            await bufferStore.SetAsync(key, payload, value.Tags, duration, cancellationToken);
+        }
+        else
+        {
+            // legacy API/in-proc: create an isolated right-sized byte[] for the payload
+            await store.SetAsync(key, payload.ToArray(), value.Tags, duration, cancellationToken);
+        }
     }
 
     // Format:

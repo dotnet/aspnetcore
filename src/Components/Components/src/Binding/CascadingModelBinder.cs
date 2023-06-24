@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Reflection.Metadata;
 using Microsoft.AspNetCore.Components.Binding;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -11,12 +13,13 @@ namespace Microsoft.AspNetCore.Components;
 /// <summary>
 /// Defines the binding context for data bound from external sources.
 /// </summary>
-public sealed class CascadingModelBinder : IComponent, ICascadingValueComponent, IDisposable
+public sealed class CascadingModelBinder : IComponent, ICascadingValueSupplier, IDisposable
 {
+    private readonly Dictionary<Type, CascadingModelBindingProvider?> _providersByCascadingParameterAttributeType = new();
+
     private RenderHandle _handle;
     private ModelBindingContext? _bindingContext;
     private bool _hasPendingQueuedRender;
-    private BindingInfo? _bindingInfo;
 
     /// <summary>
     /// The binding context name.
@@ -40,7 +43,9 @@ public sealed class CascadingModelBinder : IComponent, ICascadingValueComponent,
 
     [Inject] internal NavigationManager Navigation { get; set; } = null!;
 
-    [Inject] internal IFormValueSupplier FormValueSupplier { get; set; } = null!;
+    [Inject] internal IEnumerable<CascadingModelBindingProvider> ModelBindingProviders { get; set; } = Enumerable.Empty<CascadingModelBindingProvider>();
+
+    internal ModelBindingContext? BindingContext => _bindingContext;
 
     void IComponent.Attach(RenderHandle renderHandle)
     {
@@ -110,24 +115,25 @@ public sealed class CascadingModelBinder : IComponent, ICascadingValueComponent,
         // BindingContextId = <<base-relative-uri>>((<<existing-query>>&)|?)handler=my-handler
         var name = ModelBindingContext.Combine(ParentContext, Name);
         var bindingId = string.IsNullOrEmpty(name) ? "" : GenerateBindingContextId(name);
+        var bindingContextDidChange =
+            _bindingContext is null ||
+            !string.Equals(_bindingContext.Name, name, StringComparison.Ordinal) ||
+            !string.Equals(_bindingContext.BindingContextId, bindingId, StringComparison.Ordinal);
 
-        var bindingContext = _bindingContext != null &&
-            string.Equals(_bindingContext.Name, name, StringComparison.Ordinal) &&
-            string.Equals(_bindingContext.BindingContextId, bindingId, StringComparison.Ordinal) ?
-            _bindingContext : new ModelBindingContext(name, bindingId, FormValueSupplier.CanConvertSingleValue);
-
-        // It doesn't matter that we don't check IsFixed, since the CascadingValue we are setting up will throw if the app changes.
-        if (IsFixed && _bindingContext != null && _bindingContext != bindingContext)
+        if (bindingContextDidChange)
         {
-            // Throw an exception if either the Name or the BindingContextId changed. Once a CascadingModelBinder has been initialized
-            // as fixed, it can't change it's name nor its BindingContextId. This can happen in several situations:
-            // * Component ParentContext hierarchy changes.
-            //   * Technically, the component won't be retained in this case and will be destroyed instead.
-            // * A parent changes Name.
-            throw new InvalidOperationException($"'{nameof(CascadingModelBinder)}' 'Name' can't change after initialized.");
-        }
+            if (IsFixed && _bindingContext is not null)
+            {
+                // Throw an exception if either the Name or the BindingContextId changed. Once a CascadingModelBinder has been initialized
+                // as fixed, it can't change it's name nor its BindingContextId. This can happen in several situations:
+                // * Component ParentContext hierarchy changes.
+                //   * Technically, the component won't be retained in this case and will be destroyed instead.
+                // * A parent changes Name.
+                throw new InvalidOperationException($"'{nameof(CascadingModelBinder)}' 'Name' can't change after initialized.");
+            }
 
-        _bindingContext = bindingContext;
+            _bindingContext = new ModelBindingContext(name, bindingId, CanBind);
+        }
 
         string GenerateBindingContextId(string name)
         {
@@ -135,60 +141,92 @@ public sealed class CascadingModelBinder : IComponent, ICascadingValueComponent,
             var hashIndex = bindingId.IndexOf('#');
             return hashIndex == -1 ? bindingId : new string(bindingId.AsSpan(0, hashIndex));
         }
+
+        bool CanBind(Type type)
+        {
+            foreach (var provider in ModelBindingProviders)
+            {
+                if (provider.SupportsParameterType(type))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+    }
+
+    bool ICascadingValueSupplier.CanSupplyValue(in CascadingParameterInfo parameterInfo)
+        => TryGetProvider(in parameterInfo, out var provider)
+        && provider.CanSupplyValue(_bindingContext, parameterInfo);
+
+    void ICascadingValueSupplier.Subscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
+    {
+        // We expect there to always be a provider at this point, because CanSupplyValue must have returned true.
+        var provider = GetProviderOrThrow(parameterInfo);
+
+        if (!provider.AreValuesFixed)
+        {
+            provider.Subscribe(subscriber);
+        }
+    }
+
+    void ICascadingValueSupplier.Unsubscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
+    {
+        // We expect there to always be a provider at this point, because CanSupplyValue must have returned true.
+        var provider = GetProviderOrThrow(parameterInfo);
+
+        if (!provider.AreValuesFixed)
+        {
+            provider.Unsubscribe(subscriber);
+        }
+    }
+
+    object? ICascadingValueSupplier.GetCurrentValue(in CascadingParameterInfo parameterInfo)
+        => TryGetProvider(in parameterInfo, out var provider)
+            ? provider.GetCurrentValue(_bindingContext, parameterInfo)
+            : null;
+
+    private CascadingModelBindingProvider GetProviderOrThrow(in CascadingParameterInfo parameterInfo)
+    {
+        if (!TryGetProvider(parameterInfo, out var provider))
+        {
+            throw new InvalidOperationException($"No model binding provider could be found for parameter '{parameterInfo.PropertyName}'.");
+        }
+
+        return provider;
+    }
+
+    private bool TryGetProvider(in CascadingParameterInfo parameterInfo, [NotNullWhen(true)] out CascadingModelBindingProvider? result)
+    {
+        var attributeType = parameterInfo.Attribute.GetType();
+
+        if (_providersByCascadingParameterAttributeType.TryGetValue(attributeType, out result))
+        {
+            return result is not null;
+        }
+
+        // We deliberately cache 'null' results to avoid searching for the same attribute type multiple times.
+        result = FindProviderForAttributeType(attributeType);
+        _providersByCascadingParameterAttributeType[attributeType] = result;
+        return result is not null;
+
+        CascadingModelBindingProvider? FindProviderForAttributeType(Type attributeType)
+        {
+            foreach (var provider in ModelBindingProviders)
+            {
+                if (provider.SupportsCascadingParameterAttributeType(attributeType))
+                {
+                    return provider;
+                }
+            }
+
+            return null;
+        }
     }
 
     void IDisposable.Dispose()
     {
         Navigation.LocationChanged -= HandleLocationChanged;
     }
-
-    bool ICascadingValueComponent.CanSupplyValue(Type valueType, string? valueName)
-    {
-        var formName = string.IsNullOrEmpty(valueName) ?
-            (_bindingContext?.Name) :
-            ModelBindingContext.Combine(_bindingContext, valueName);
-
-        if (_bindingInfo != null &&
-            string.Equals(_bindingInfo.FormName, formName, StringComparison.Ordinal) &&
-            _bindingInfo.ValueType.Equals(valueType))
-        {
-            // We already bound the value, but some component might have been destroyed and
-            // re-created. If the type and name of the value that we bound are the same,
-            // we can provide the value that we bound.
-            return true;
-        }
-
-        // Can't supply the value if this context is for a form with a different name.
-        if (FormValueSupplier.CanBind(formName!, valueType))
-        {
-            var bindingSucceeded = FormValueSupplier.TryBind(formName!, valueType, out var boundValue);
-            _bindingInfo = new BindingInfo(formName, valueType, bindingSucceeded, boundValue);
-            if (!bindingSucceeded)
-            {
-                // Report errors
-            }
-
-            return true;
-        }
-
-        return false;
-    }
-
-    void ICascadingValueComponent.Subscribe(ComponentState subscriber)
-    {
-        throw new InvalidOperationException("Form values are always fixed.");
-    }
-
-    void ICascadingValueComponent.Unsubscribe(ComponentState subscriber)
-    {
-        throw new InvalidOperationException("Form values are always fixed.");
-    }
-
-    object? ICascadingValueComponent.CurrentValue => _bindingInfo == null ?
-        throw new InvalidOperationException("Tried to access form value before it was bound.") :
-        _bindingInfo.BoundValue;
-
-    bool ICascadingValueComponent.CurrentValueIsFixed => true;
-
-    private record BindingInfo(string? FormName, Type ValueType, bool BindingResult, object? BoundValue);
 }

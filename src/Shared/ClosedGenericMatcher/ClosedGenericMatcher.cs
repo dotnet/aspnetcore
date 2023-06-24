@@ -4,6 +4,7 @@
 #nullable enable
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.AspNetCore.Shared;
 
@@ -30,7 +31,7 @@ internal static class ClosedGenericMatcher
     /// <c>typeof(KeyValuePair{,})</c>, and <paramref name="queryType"/> is
     /// <c>typeof(KeyValuePair{string, object})</c>.
     /// </remarks>
-    public static Type? ExtractGenericInterface(Type queryType, Type interfaceType)
+    public static Type? ExtractGenericInterface([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)]  Type queryType, Type interfaceType)
     {
 #if !NET8_0_OR_GREATER
         ArgumentNullThrowHelper.ThrowIfNull(queryType);
@@ -62,7 +63,7 @@ internal static class ClosedGenericMatcher
             candidate.GetGenericTypeDefinition() == interfaceType;
     }
 
-    private static Type? GetGenericInstantiation(Type queryType, Type interfaceType)
+    private static Type? GetGenericInstantiation([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] Type queryType, Type interfaceType)
     {
         Type? bestMatch = null;
         var interfaces = queryType.GetInterfaces();
