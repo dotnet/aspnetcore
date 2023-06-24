@@ -276,7 +276,7 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
         var hasAriaInvalidAttribute = AdditionalAttributes != null && AdditionalAttributes.ContainsKey("aria-invalid");
         if (EditContext.GetValidationMessages(FieldIdentifier).Any())
         {
-            var attemptedValue = EditContext.GetAttemptedValue(FieldIdentifier.FieldPath ?? FieldIdentifier.FieldName);
+            var attemptedValue = EditContext.GetAttemptedValue(NameAttributeValue);
             if (attemptedValue != null)
             {
                 _parsingFailed = true;
