@@ -79,6 +79,70 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
+    public void CanBindMultipleParametersToTheDefaultForm(bool suppressEnhancedNavigation)
+    {
+        var dispatchToForm = new DispatchToForm(this)
+        {
+            Url = "forms/default-form-bound-multiple-primitive-parameters",
+            FormCssSelector = "form",
+            ExpectedActionValue = null,
+            UpdateFormAction = () =>
+            {
+                Browser.Exists(By.CssSelector("input[name=Parameter]")).Clear();
+                Browser.Exists(By.CssSelector("input[name=Parameter]")).SendKeys("10");
+
+                Browser.Exists(By.CssSelector("input[name=OtherParameter]")).Clear();
+                Browser.Exists(By.CssSelector("input[name=OtherParameter]")).SendKeys("true");
+            },
+            SuppressEnhancedNavigation = suppressEnhancedNavigation,
+        };
+        DispatchToFormCore(dispatchToForm);
+
+        Browser.Exists(By.Id("ParameterValue")).Text.Contains("10");
+        Browser.Exists(By.Id("OtherParameterValue")).Text.Contains("True");
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void CanDisplayErrorsFromMultipleParametersToTheDefaultForm(bool suppressEnhancedNavigation)
+    {
+        var dispatchToForm = new DispatchToForm(this)
+        {
+            Url = "forms/default-form-bound-multiple-primitive-parameters",
+            FormCssSelector = "form",
+            ExpectedActionValue = null,
+            UpdateFormAction = () =>
+            {
+                Browser.Exists(By.CssSelector("input[name=Parameter]")).Clear();
+                Browser.Exists(By.CssSelector("input[name=Parameter]")).SendKeys("abcd");
+
+                Browser.Exists(By.CssSelector("input[name=OtherParameter]")).Clear();
+                Browser.Exists(By.CssSelector("input[name=OtherParameter]")).SendKeys("invalid");
+            },
+            AssertErrors = errors =>
+            {
+                Assert.Collection(
+                    errors,
+                    error =>
+                    {
+                        Assert.Equal("Could not convert value 'abcd' to 'System.Int32'.", error.Text);
+                    },
+                    error =>
+                    {
+                        Assert.Equal("Could not convert value 'invalid' to 'System.Boolean'.", error.Text);
+                    });
+                Assert.Equal("abcd", Browser.FindElement(By.CssSelector("input[name=Parameter]")).GetAttribute("value"));
+                Assert.Equal("invalid", Browser.FindElement(By.CssSelector("input[name=OtherParameter]")).GetAttribute("value"));
+            },
+            SuppressEnhancedNavigation = suppressEnhancedNavigation,
+        };
+        DispatchToFormCore(dispatchToForm);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
     public void CanHandleBindingErrorsBindParameterToTheDefaultForm(bool suppressEnhancedNavigation)
     {
         var dispatchToForm = new DispatchToForm(this)
@@ -150,6 +214,52 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
+    public void CanDisplayBindingErrorsComplexTypeToDefaultForm(bool suppressEnhancedNavigation)
+    {
+        var url = "forms/default-form-bound-complextype-parameter";
+        var expectedTarget = GetExpectedTarget(this, null, url);
+
+        if (suppressEnhancedNavigation)
+        {
+            GoTo("");
+            Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+            ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('suppress-enhanced-navigation', 'true')");
+        }
+
+        GoTo(url);
+
+        Browser.Exists(By.Id("ready"));
+        var form = Browser.Exists(By.CssSelector("form"));
+        var formTarget = form.GetAttribute("action");
+        var actionValue = form.GetDomAttribute("action");
+        Assert.Equal(expectedTarget, formTarget);
+        Assert.Null(actionValue);
+
+        var name = Browser.Exists(By.CssSelector("""input[name="Model.Name"]"""));
+        name.SendKeys("John");
+        var email = Browser.Exists(By.CssSelector("""input[name="Model.Email"]"""));
+        email.SendKeys("john@example.com");
+        Browser.Click(By.CssSelector("""input[name="Model.IsPreferred"]"""));
+        // Set value attribute to 'invalid' to trigger validation error
+        var isPreferred = Browser.Exists(By.CssSelector("""input[name="Model.IsPreferred"]"""));
+        ((IJavaScriptExecutor)Browser).ExecuteScript("arguments[0].setAttribute('value', 'invalid')", isPreferred);
+
+        Browser.Click(By.Id("send"));
+
+        Browser.Exists(By.CssSelector("li.validation-message")).Text.Contains("Could not convert value 'invalid' to 'System.Boolean'.");
+        Browser.Exists(By.CssSelector("div.validation-message")).Text.Contains("Could not convert value 'invalid' to 'System.Boolean'.");
+
+        if (!suppressEnhancedNavigation)
+        {
+            // Verify the same form element is still in the page
+            // We wouldn't be allowed to read the attribute if the element is stale
+            Assert.Equal(expectedTarget, form.GetAttribute("action"));
+        }
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
     public void CanBindDictionaryToDefaultForm(bool suppressEnhancedNavigation)
     {
         var url = "forms/default-form-bound-dictionary-parameter";
@@ -181,6 +291,53 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         Browser.Exists(By.Id("name")).Text.Contains("John");
         Browser.Exists(By.Id("email")).Text.Contains("john@example.com");
         Browser.Exists(By.Id("preferred")).Text.Contains("True");
+
+        if (!suppressEnhancedNavigation)
+        {
+            // Verify the same form element is still in the page
+            // We wouldn't be allowed to read the attribute if the element is stale
+            Assert.Equal(expectedTarget, form.GetAttribute("action"));
+        }
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void CanDisplayBindingErrorsDictionaryToDefaultForm(bool suppressEnhancedNavigation)
+    {
+        var url = "forms/default-form-bound-dictionary-parameter-errors";
+        var expectedTarget = GetExpectedTarget(this, null, url);
+
+        if (suppressEnhancedNavigation)
+        {
+            GoTo("");
+            Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+            ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('suppress-enhanced-navigation', 'true')");
+        }
+
+        GoTo(url);
+
+        Browser.Exists(By.Id("ready"));
+        var form = Browser.Exists(By.CssSelector("form"));
+        var formTarget = form.GetAttribute("action");
+        var actionValue = form.GetDomAttribute("action");
+        Assert.Equal(expectedTarget, formTarget);
+        Assert.Null(actionValue);
+
+        var name = Browser.Exists(By.CssSelector("""input[name="Model[Name]"]"""));
+        ((IJavaScriptExecutor)Browser).ExecuteScript("arguments[0].setAttribute('value', 'name')", name);
+        var email = Browser.Exists(By.CssSelector("""input[name="Model[Email]"]"""));
+        ((IJavaScriptExecutor)Browser).ExecuteScript("arguments[0].setAttribute('value', 'email')", email);
+        var preferred = Browser.Exists(By.CssSelector("""input[name="Model[IsPreferred]"]"""));
+        ((IJavaScriptExecutor)Browser).ExecuteScript("arguments[0].setAttribute('value', 'preferred')", preferred);
+
+        Browser.Click(By.Id("send"));
+
+        Browser.Exists(By.CssSelector("[data-name='Name']"));
+        Browser.Exists(By.CssSelector("[data-email='Email']"));
+        Browser.Exists(By.CssSelector("[data-preferred='IsPreferred']"));
+
+        Browser.Equal(3, () => Browser.FindElements(By.CssSelector("li.validation-message")).Count());
 
         if (!suppressEnhancedNavigation)
         {
@@ -233,6 +390,63 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
             Browser.Exists(By.Id($"email[{i}]")).Text.Contains($"john{i + 4}@example.com");
             Browser.Exists(By.Id($"preferred[{i}]")).Text.Contains(i % 2 == 0 ? "True" : "False");
         }
+
+        if (!suppressEnhancedNavigation)
+        {
+            // Verify the same form element is still in the page
+            // We wouldn't be allowed to read the attribute if the element is stale
+            Assert.Equal(expectedTarget, form.GetAttribute("action"));
+        }
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void CanDisplayBindingErrorsCollectionsToDefaultForm(bool suppressEnhancedNavigation)
+    {
+        var url = "forms/default-form-bound-collection-parameter";
+        var expectedTarget = GetExpectedTarget(this, null, url);
+
+        if (suppressEnhancedNavigation)
+        {
+            GoTo("");
+            Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+            ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('suppress-enhanced-navigation', 'true')");
+        }
+
+        GoTo(url);
+
+        Browser.Exists(By.Id("ready"));
+        var form = Browser.Exists(By.CssSelector("form"));
+        var formTarget = form.GetAttribute("action");
+        var actionValue = form.GetDomAttribute("action");
+        Assert.Equal(expectedTarget, formTarget);
+        Assert.Null(actionValue);
+
+        for (var i = 0; i < 2; i++)
+        {
+            var name = Browser.Exists(By.CssSelector($"""input[name="Model[{i}].Name"]"""));
+            name.Clear();
+            name.SendKeys($"John{i + 4}");
+            var email = Browser.Exists(By.CssSelector($"""input[name="Model[{i}].Email"]"""));
+            email.Clear();
+            email.SendKeys($"john{i + 4}@example.com");
+            var preferredCriteria = By.CssSelector($"""input[name="Model[{i}].IsPreferred"]""");
+            var preferred = Browser.FindElement(preferredCriteria);
+            if (!preferred.Selected)
+            {
+                Browser.Click(preferredCriteria);
+            }
+            // Set the value for preferred ti 'invalid' to trigger a binding error
+            ((IJavaScriptExecutor)Browser).ExecuteScript($"arguments[0].setAttribute('value', 'invalid{i}')", preferred);
+        }
+
+        Browser.Click(By.Id("send"));
+
+        Browser.Exists(By.CssSelector("[data-index='0']")).Text.Contains("The value 'invalid0' is not valid for IsPreferred.");
+        Browser.Exists(By.CssSelector("[data-index='1']")).Text.Contains("The value 'invalid1' is not valid for IsPreferred.");
+
+        Browser.Equal(2, () => Browser.FindElements(By.CssSelector("li.validation-message")).Count());
 
         if (!suppressEnhancedNavigation)
         {
@@ -525,7 +739,11 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
             return;
         }
 
-        if (dispatch.InputFieldValue != null)
+        if (dispatch.UpdateFormAction != null)
+        {
+            dispatch.UpdateFormAction();
+        }
+        else if (dispatch.InputFieldValue != null)
         {
             var criteria = dispatch.InputFieldCssSelector != null ?
                 By.CssSelector(dispatch.InputFieldCssSelector) :
@@ -557,10 +775,13 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         }
         else
         {
-            var text = Browser.Exists(By.Id(dispatch.SubmitPassId)).Text;
-            if (dispatch.InputFieldValue != null)
+            if (dispatch.UpdateFormAction == null)
             {
-                Assert.Equal($"Hello {dispatch.InputFieldValue}!", text);
+                var text = Browser.Exists(By.Id(dispatch.SubmitPassId)).Text;
+                if (dispatch.InputFieldValue != null)
+                {
+                    Assert.Equal($"Hello {dispatch.InputFieldValue}!", text);
+                }
             }
 
             if (!dispatch.SuppressEnhancedNavigation)
@@ -597,6 +818,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         public bool ShouldCauseInternalServerError { get; internal set; }
         public bool ShouldCauseBindingErrors => AssertErrors != null;
         public bool SuppressEnhancedNavigation { get; internal set; }
+        public Action UpdateFormAction { get; internal set; }
         public Action<ReadOnlyCollection<IWebElement>> AssertErrors { get; internal set; }
     }
 
