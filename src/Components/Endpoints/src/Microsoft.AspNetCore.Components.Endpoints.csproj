@@ -20,6 +20,7 @@
   <UsingTask AssemblyFile="$(_FileProviderTaskAssembly)" TaskName="Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.GenerateEmbeddedResourcesManifest" />
 
   <ItemGroup>
+    <EmbeddedResource Update="Binding\FormDataResources.resx" ExcludeFromManifest="true" />
     <EmbeddedResource Update="Resources.resx" ExcludeFromManifest="true" />
   </ItemGroup>
 
@@ -47,6 +48,7 @@
     <Reference Include="Microsoft.AspNetCore.Components.Web" />
     <Reference Include="Microsoft.AspNetCore.DataProtection.Extensions" />
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.AspNetCore.Html.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Routing" />

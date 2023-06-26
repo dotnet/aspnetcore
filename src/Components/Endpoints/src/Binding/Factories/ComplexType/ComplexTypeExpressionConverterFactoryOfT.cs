@@ -59,7 +59,6 @@ internal sealed class ComplexTypeExpressionConverterFactory<T> : ComplexTypeExpr
             propertyLocals.Add(propertyVar);
 
             // Resolve and assign converter
-
             // Create the block to try and map the property and update variables.
             // returnParam &= { PushPrefix(property.Name); var res = TryRead(...); PopPrefix(...); return res; }
             // var propertyConverter = options.ResolveConverter<TProperty>());
@@ -72,40 +71,48 @@ internal sealed class ComplexTypeExpressionConverterFactory<T> : ComplexTypeExpr
                     Array.Empty<Expression>()));
             body.Add(propertyConverter);
 
-            // reader.PushPrefix("Property");
-            body.Add(Expression.Call(
-                readerParam,
-                nameof(FormDataReader.PushPrefix),
-                Array.Empty<Type>(),
-                Expression.Constant(property.Name)));
-
-            // succeeded &= propertyConverter.TryRead(ref reader, typeof(string), options, out propertyVar, out foundProperty);
-            var callTryRead = Expression.AndAssign(
-                succeeded,
-                Expression.Call(
-                    propertyConverterVar,
-                    nameof(FormDataConverter<T>.TryRead),
-                    Type.EmptyTypes,
+            // try
+            // {
+            //     reader.PushPrefix("Property");
+            //     succeeded &= propertyConverter.TryRead(ref reader, typeof(string), options, out propertyVar, out foundProperty);
+            // }
+            // finally
+            // {
+            //     reader.PopPrefix("Property");
+            // }
+            body.Add(Expression.TryFinally(
+                body: Expression.Block(
+                    // reader.PushPrefix("Property");
+                    Expression.Call(
+                        readerParam,
+                        nameof(FormDataReader.PushPrefix),
+                        Array.Empty<Type>(),
+                        Expression.Constant(property.Name)),
+                    // succeeded &= propertyConverter.TryRead(ref reader, typeof(string), options, out propertyVar, out foundProperty);
+                    Expression.AndAssign(
+                        succeeded,
+                        Expression.Call(
+                            propertyConverterVar,
+                            nameof(FormDataConverter<T>.TryRead),
+                            Type.EmptyTypes,
+                            readerParam,
+                            Expression.Constant(property.PropertyType),
+                            optionsParam,
+                            propertyVar,
+                            propertyFoundValue))),
+                // reader.PopPrefix("Property");
+                @finally: Expression.Call(
                     readerParam,
-                    typeParam,
-                    optionsParam,
-                    propertyVar,
-                    propertyFoundValue));
-            body.Add(callTryRead);
-
-            // reader.PopPrefix("Property");
-            body.Add(Expression.Call(
-                readerParam,
-                nameof(FormDataReader.PopPrefix),
-                Array.Empty<Type>(),
-                Expression.Constant(property.Name)));
+                    nameof(FormDataReader.PopPrefix),
+                    Array.Empty<Type>(),
+                    Expression.Constant(property.Name))));
 
             body.Add(Expression.OrAssign(localFoundValueVar, propertyFoundValue));
         }
 
         body.Add(Expression.IfThen(
             localFoundValueVar,
-            Expression.Block(CreateInstanceAndAssignProperties(type, resultParam, properties, propertyLocals))));
+            Expression.Block(CreateInstanceAndAssignProperties(type, resultParam, properties, propertyLocals, succeeded, readerParam))));
 
         // foundValue && !failures;
 
@@ -120,12 +127,30 @@ internal sealed class ComplexTypeExpressionConverterFactory<T> : ComplexTypeExpr
             Type model,
             ParameterExpression resultParam,
             PropertyHelper[] props,
-            List<ParameterExpression> variables)
+            List<ParameterExpression> variables,
+            ParameterExpression succeeded,
+            ParameterExpression context)
         {
             if (!model.IsValueType)
             {
                 yield return Expression.Assign(resultParam, Expression.New(model));
             }
+
+            // if(!succeeded && context.AttachInstanceToErrorsHandler != null)
+            // {
+            //     context.AttachInstanceToErrors((object)result);
+            // }
+            yield return Expression.IfThen(
+                Expression.And(
+                    Expression.Not(succeeded),
+                    Expression.NotEqual(
+                        Expression.Property(context, nameof(FormDataReader.AttachInstanceToErrorsHandler)),
+                        Expression.Constant(null, typeof(Action<string, object>)))),
+                    Expression.Call(
+                        context,
+                        nameof(FormDataReader.AttachInstanceToErrors),
+                        Array.Empty<Type>(),
+                        Expression.Convert(resultParam, typeof(object))));
 
             for (var i = 0; i < props.Length; i++)
             {

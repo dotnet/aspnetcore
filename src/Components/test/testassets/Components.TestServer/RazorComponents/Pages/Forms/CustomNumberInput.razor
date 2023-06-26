@@ -1,0 +1,11 @@
+﻿@using System.Diagnostics.CodeAnalysis;
+@inherits Microsoft.AspNetCore.Components.Forms.InputBase<int>
+
+<input name="@NameAttributeValue" @attributes="AdditionalAttributes" type="text" class="@CssClass" @bind="CurrentValueAsString" />
+
+@code {
+    protected override bool TryParseValueFromString(string value, [MaybeNullWhen(false)] out int result, [NotNullWhen(false)] out string validationErrorMessage)
+    {
+        throw new NotImplementedException();
+    }
+}
