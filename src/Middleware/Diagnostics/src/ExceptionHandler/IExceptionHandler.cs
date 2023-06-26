@@ -20,7 +20,7 @@ public interface IExceptionHandler
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>
     /// A task that represents the asynchronous read operation. The value of its <see cref="P:System.Threading.Tasks.ValueTask`1.Result" />
-    /// property contains a flag indicating the handling operation.
+    /// property contains the result of the handling operation.
     /// <see langword="true"/> if the exception was handled successfully; otherwise <see langword="false"/>.
     /// </returns>
     ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken);
