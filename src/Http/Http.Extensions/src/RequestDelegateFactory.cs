@@ -1997,15 +1997,20 @@ public static partial class RequestDelegateFactory
             FormDataMapperMapMethod.MakeGenericMethod(parameter.ParameterType),
             formReader,
             Expression.Constant(FormDataMapperOptions));
-        // ArrayPool<char>.Shared.Return(form_buffer);
-        var returnBufferExpr = Expression.Call(ArrayPoolSharedReturnMethod, formBuffer);
+        // ArrayPool<char>.Shared.Return(form_buffer, false);
+        var returnBufferExpr = Expression.Call(
+            Expression.Property(null, typeof(ArrayPool<char>).GetProperty(nameof(ArrayPool<char>.Shared))!),
+            ArrayPoolSharedReturnMethod,
+            formBuffer,
+            Expression.Constant(false));
 
         return Expression.Block(
-            new[] { formArgument, formReader, formDict, formBuffer },
+            new[] { formArgument, formReader, formDict, formBuffer, formMaxKeyLength },
             processFormExpr,
             initializeReaderExpr,
             Expression.Assign(formArgument, invokeMapMethodExpr),
-            returnBufferExpr
+            returnBufferExpr,
+            formArgument
         );
     }
 
