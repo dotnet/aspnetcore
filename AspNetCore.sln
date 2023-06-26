@@ -1336,6 +1336,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HostedInAspNet.Server", "sr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StandaloneApp", "src\Components\WebAssembly\testassets\StandaloneApp\StandaloneApp.csproj", "{A40350FE-4334-4007-B1C3-6BEB1B070309}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ThreadingApp", "src\Components\WebAssembly\testassets\ThreadingApp\ThreadingApp.csproj", "{A40350FE-4334-4007-B1C3-6BEB1B070308}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wasm.Authentication.Client", "src\Components\WebAssembly\testassets\Wasm.Authentication.Client\Wasm.Authentication.Client.csproj", "{C26965A9-EAC6-4E5A-B8C1-D161260EFE4F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wasm.Authentication.Server", "src\Components\WebAssembly\testassets\Wasm.Authentication.Server\Wasm.Authentication.Server.csproj", "{FE5290C7-45DA-46F8-BD74-698E7A161DD6}"

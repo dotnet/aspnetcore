@@ -33,6 +33,7 @@
       "src\\Components\\WebAssembly\\testassets\\HostedInAspNet.Client\\HostedInAspNet.Client.csproj",
       "src\\Components\\WebAssembly\\testassets\\HostedInAspNet.Server\\HostedInAspNet.Server.csproj",
       "src\\Components\\WebAssembly\\testassets\\StandaloneApp\\StandaloneApp.csproj",
+      "src\\Components\\WebAssembly\\testassets\\ThreadingApp\\ThreadingApp.csproj",
       "src\\Components\\WebAssembly\\testassets\\Wasm.Authentication.Client\\Wasm.Authentication.Client.csproj",
       "src\\Components\\WebAssembly\\testassets\\Wasm.Authentication.Server\\Wasm.Authentication.Server.csproj",
       "src\\Components\\WebAssembly\\testassets\\Wasm.Authentication.Shared\\Wasm.Authentication.Shared.csproj",
