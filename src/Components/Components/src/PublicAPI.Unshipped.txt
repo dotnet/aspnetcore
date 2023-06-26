@@ -25,6 +25,12 @@ Microsoft.AspNetCore.Components.Binding.FormValueSupplierContext.ValueType.get -
 Microsoft.AspNetCore.Components.Binding.IFormValueSupplier
 Microsoft.AspNetCore.Components.Binding.IFormValueSupplier.Bind(Microsoft.AspNetCore.Components.Binding.FormValueSupplierContext! context) -> void
 Microsoft.AspNetCore.Components.Binding.IFormValueSupplier.CanBind(System.Type! valueType, string? formName = null) -> bool
+Microsoft.AspNetCore.Components.BindingError
+Microsoft.AspNetCore.Components.BindingError.AttemptedValue.get -> string?
+Microsoft.AspNetCore.Components.BindingError.Container.get -> object!
+Microsoft.AspNetCore.Components.BindingError.ErrorMessages.get -> System.Collections.Generic.IReadOnlyList<System.FormattableString!>!
+Microsoft.AspNetCore.Components.BindingError.Name.get -> string!
+Microsoft.AspNetCore.Components.BindingError.Path.get -> string!
 Microsoft.AspNetCore.Components.CascadingModelBinder
 Microsoft.AspNetCore.Components.CascadingModelBinder.CascadingModelBinder() -> void
 Microsoft.AspNetCore.Components.CascadingModelBinder.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.ModelBindingContext!>!
@@ -45,12 +51,12 @@ Microsoft.AspNetCore.Components.IComponentRenderMode
 Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.PersistStateAsync(Microsoft.AspNetCore.Components.IPersistentComponentStateStore! store, Microsoft.AspNetCore.Components.Dispatcher! dispatcher) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.ModelBindingContext
 Microsoft.AspNetCore.Components.ModelBindingContext.BindingContextId.get -> string!
-Microsoft.AspNetCore.Components.ModelBindingContext.GetAllErrors() -> System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<(object!, string!), System.Collections.Generic.IReadOnlyList<System.FormattableString!>!>>!
-Microsoft.AspNetCore.Components.ModelBindingContext.GetAllErrors(string! formName) -> System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<(object!, string!), System.Collections.Generic.IReadOnlyList<System.FormattableString!>!>>!
+Microsoft.AspNetCore.Components.ModelBindingContext.GetAllErrors() -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Components.BindingError!>!
+Microsoft.AspNetCore.Components.ModelBindingContext.GetAllErrors(string! formName) -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Components.BindingError!>!
 Microsoft.AspNetCore.Components.ModelBindingContext.GetAttemptedValue(string! formName, string! key) -> string?
 Microsoft.AspNetCore.Components.ModelBindingContext.GetAttemptedValue(string! key) -> string?
-Microsoft.AspNetCore.Components.ModelBindingContext.GetErrors(string! formName, string! key) -> System.Collections.Generic.IReadOnlyList<System.FormattableString!>!
-Microsoft.AspNetCore.Components.ModelBindingContext.GetErrors(string! key) -> System.Collections.Generic.IReadOnlyList<System.FormattableString!>!
+Microsoft.AspNetCore.Components.ModelBindingContext.GetErrors(string! formName, string! key) -> Microsoft.AspNetCore.Components.BindingError?
+Microsoft.AspNetCore.Components.ModelBindingContext.GetErrors(string! key) -> Microsoft.AspNetCore.Components.BindingError?
 Microsoft.AspNetCore.Components.ModelBindingContext.Name.get -> string!
 Microsoft.AspNetCore.Components.ParameterView.ToDictionary() -> System.Collections.Generic.IReadOnlyDictionary<string!, object?>!
 *REMOVED*Microsoft.AspNetCore.Components.ParameterView.ToDictionary() -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>!

@@ -11,14 +11,14 @@
 @if (_submitted)
 {
     var errors = Context.GetErrors("Parameter");
-    if (errors.Count == 0)
+    if (errors.ErrorMessages.Count == 0)
     {
         <p id="pass">Your number is @Parameter!</p>        
     }else
     {
         <p>There were errors:</p>
         <ul id="errors">
-        @foreach (var error in errors)
+        @foreach (var error in errors.ErrorMessages)
         {
             <li>@error</li>
         }
@@ -36,7 +36,7 @@
 
     protected override void OnInitialized()
     {
-        _errors = Context.GetErrors("Parameter");
+        _errors = Context.GetErrors("Parameter").ErrorMessages;
         if (_errors.Count > 0)
         {
             _attemptedValue = Context.GetAttemptedValue("Parameter");

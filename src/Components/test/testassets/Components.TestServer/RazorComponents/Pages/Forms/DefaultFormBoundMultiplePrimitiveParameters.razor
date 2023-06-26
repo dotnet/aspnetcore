@@ -32,7 +32,7 @@
     string _attemptedParameterValue = null;
     string _attemptedOtherValue = null;
 
-    IReadOnlyList<FormattableString> _errors;
+    IList<FormattableString> _errors;
 
     [SupplyParameterFromForm] public int Parameter { get; set; } = 0;
     [SupplyParameterFromForm] public bool OtherParameter { get; set; } = false;
@@ -41,7 +41,7 @@
 
     protected override void OnInitialized()
     {
-        _errors = Context.GetErrors(nameof(Parameter)).Concat(Context.GetErrors(nameof(OtherParameter))).ToList();
+        _errors = Context.GetErrors(nameof(Parameter)).ErrorMessages.Concat(Context.GetErrors(nameof(OtherParameter)).ErrorMessages).ToList();
         if (_errors.Count > 0)
         {
             _attemptedParameterValue = Context.GetAttemptedValue(nameof(Parameter));

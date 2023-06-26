@@ -15,7 +15,7 @@ public sealed class ExpressionFormatterTest : IDisposable
         var result = ExpressionFormatter.FormatLambda(() => person.Parent.Name);
 
         // Assert
-        Assert.Equal("person.Parent.Name", result);
+        Assert.Equal("person.Container.Name", result);
     }
 
     [Fact]
@@ -28,7 +28,7 @@ public sealed class ExpressionFormatterTest : IDisposable
         var result = ExpressionFormatter.FormatLambda(() => person.Parent.Children[3].Name);
 
         // Assert
-        Assert.Equal("person.Parent.Children[3].Name", result);
+        Assert.Equal("person.Container.Children[3].Name", result);
     }
 
     [Fact]
@@ -45,9 +45,9 @@ public sealed class ExpressionFormatterTest : IDisposable
         }
 
         // Assert
-        Assert.Equal("person.Parent.Children[3].Name", result[0]);
-        Assert.Equal("person.Parent.Children[3].Name", result[1]);
-        Assert.Equal("person.Parent.Children[3].Name", result[2]);
+        Assert.Equal("person.Container.Children[3].Name", result[0]);
+        Assert.Equal("person.Container.Children[3].Name", result[1]);
+        Assert.Equal("person.Container.Children[3].Name", result[2]);
     }
 
     [Fact]
@@ -61,7 +61,7 @@ public sealed class ExpressionFormatterTest : IDisposable
         var result = ExpressionFormatter.FormatLambda(() => person.Parent.Children[i].Name);
 
         // Assert
-        Assert.Equal("person.Parent.Children[42].Name", result);
+        Assert.Equal("person.Container.Children[42].Name", result);
     }
 
     [Fact]
@@ -79,9 +79,9 @@ public sealed class ExpressionFormatterTest : IDisposable
         }
 
         // Assert
-        Assert.Equal("person.Parent.Children[0].Name", result[0]);
-        Assert.Equal("person.Parent.Children[1].Name", result[1]);
-        Assert.Equal("person.Parent.Children[2].Name", result[2]);
+        Assert.Equal("person.Container.Children[0].Name", result[0]);
+        Assert.Equal("person.Container.Children[1].Name", result[1]);
+        Assert.Equal("person.Container.Children[2].Name", result[2]);
     }
 
     [Fact]
@@ -95,13 +95,13 @@ public sealed class ExpressionFormatterTest : IDisposable
         var result2 = ComputeResult();
 
         // Assert
-        Assert.Equal("person.Parent.Children[0].Name", result1[0]);
-        Assert.Equal("person.Parent.Children[1].Name", result1[1]);
-        Assert.Equal("person.Parent.Children[2].Name", result1[2]);
+        Assert.Equal("person.Container.Children[0].Name", result1[0]);
+        Assert.Equal("person.Container.Children[1].Name", result1[1]);
+        Assert.Equal("person.Container.Children[2].Name", result1[2]);
 
-        Assert.Equal("person.Parent.Children[0].Name", result2[0]);
-        Assert.Equal("person.Parent.Children[1].Name", result2[1]);
-        Assert.Equal("person.Parent.Children[2].Name", result2[2]);
+        Assert.Equal("person.Container.Children[0].Name", result2[0]);
+        Assert.Equal("person.Container.Children[1].Name", result2[1]);
+        Assert.Equal("person.Container.Children[2].Name", result2[2]);
 
         string[] ComputeResult()
         {
@@ -131,9 +131,9 @@ public sealed class ExpressionFormatterTest : IDisposable
         }
 
         // Assert
-        Assert.Equal("person.Parent.Parent.Children[0].Parent.Children[0].Children[0].Name", result[0]);
-        Assert.Equal("person.Parent.Parent.Children[1].Parent.Children[1].Children[1].Name", result[1]);
-        Assert.Equal("person.Parent.Parent.Children[2].Parent.Children[2].Children[2].Name", result[2]);
+        Assert.Equal("person.Container.Container.Children[0].Container.Children[0].Children[0].Name", result[0]);
+        Assert.Equal("person.Container.Container.Children[1].Container.Children[1].Children[1].Name", result[1]);
+        Assert.Equal("person.Container.Container.Children[2].Container.Children[2].Children[2].Name", result[2]);
     }
 
     [Fact]
@@ -151,9 +151,9 @@ public sealed class ExpressionFormatterTest : IDisposable
         }
 
         // Assert
-        Assert.Equal("person.Parent.Nicknames[0]", result[0]);
-        Assert.Equal("person.Parent.Nicknames[1]", result[1]);
-        Assert.Equal("person.Parent.Nicknames[2]", result[2]);
+        Assert.Equal("person.Container.Nicknames[0]", result[0]);
+        Assert.Equal("person.Container.Nicknames[1]", result[1]);
+        Assert.Equal("person.Container.Nicknames[2]", result[2]);
     }
 
     public void Dispose()
