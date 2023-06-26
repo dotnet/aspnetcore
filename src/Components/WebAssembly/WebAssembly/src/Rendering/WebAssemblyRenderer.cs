@@ -31,7 +31,7 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
         // if SynchronizationContext.Current is null on main thread, we are in single-threaded flavor of the dotnet wasm runtime
         _dispatcher = SynchronizationContext.Current==null
                         ? NullDispatcher.Instance
-                        : WebAssemblyDispatcher.Instance
+                        : WebAssemblyDispatcher.Instance;
 
         ElementReferenceContext = DefaultWebAssemblyJSRuntime.Instance.ElementReferenceContext;
     }
