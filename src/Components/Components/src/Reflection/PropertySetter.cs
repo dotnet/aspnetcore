@@ -36,7 +36,9 @@ internal sealed class PropertySetter
             callPropertySetterClosedGenericMethod.CreateDelegate(typeof(Action<object, object>), propertySetterAsAction);
     }
 
-    public bool Cascading { get; init; }
+    public bool AcceptsDirectParameters { get; init; }
+
+    public bool AcceptsCascadingParameters { get; init; }
 
     public void SetValue(object target, object value) => _setterDelegate(target, value);
 
