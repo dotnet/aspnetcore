@@ -50,7 +50,7 @@ internal sealed class DefaultFormValuesSupplier : IFormValueSupplier
 
         var deserializer = _cache.GetOrAdd(context.ValueType, CreateDeserializer);
         Debug.Assert(deserializer != null);
-        deserializer.Deserialize(context, _options, _formData.Entries, _formData.FormOptions);
+        deserializer.Deserialize(context, _options, _formData.Entries);
     }
 
     private FormValueSupplier CreateDeserializer(Type type) =>
@@ -62,8 +62,7 @@ internal sealed class DefaultFormValuesSupplier : IFormValueSupplier
         public abstract void Deserialize(
             FormValueSupplierContext context,
             FormDataMapperOptions options,
-            IReadOnlyDictionary<string, StringValues> form,
-            FormOptions formOptions);
+            IReadOnlyDictionary<string, StringValues> form);
     }
 
     internal class FormValueSupplier<T> : FormValueSupplier
@@ -71,8 +70,7 @@ internal sealed class DefaultFormValuesSupplier : IFormValueSupplier
         public override void Deserialize(
             FormValueSupplierContext context,
             FormDataMapperOptions options,
-            IReadOnlyDictionary<string, StringValues> form,
-            FormOptions formOptions)
+            IReadOnlyDictionary<string, StringValues> form)
         {
             if (form.Count == 0)
             {
@@ -87,12 +85,12 @@ internal sealed class DefaultFormValuesSupplier : IFormValueSupplier
                 {
                     dictionary.Add(new FormKey(key.AsMemory()), value);
                 }
-                buffer = ArrayPool<char>.Shared.Rent(formOptions.KeyLengthLimit);
+                buffer = ArrayPool<char>.Shared.Rent(options.MaxKeyBufferSize);
 
                 // Form values are parsed according to the culture of the request, which is set to the current culture by the localization middleware.
                 // Some form input types use the invariant culture when sending the data to the server. For those cases, we'll
                 // provide a way to override the culture to use to parse that value.
-                var reader = new FormDataReader(dictionary, CultureInfo.CurrentCulture, buffer.AsMemory(0, formOptions.KeyLengthLimit))
+                var reader = new FormDataReader(dictionary, CultureInfo.CurrentCulture, buffer.AsMemory(options.MaxKeyBufferSize))
                 {
                     ErrorHandler = context.OnError,
                     AttachInstanceToErrorsHandler = context.MapErrorToContainer

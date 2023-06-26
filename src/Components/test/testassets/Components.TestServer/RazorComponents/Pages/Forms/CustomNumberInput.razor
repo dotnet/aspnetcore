@@ -6,15 +6,6 @@
 @code {
     protected override bool TryParseValueFromString(string value, [MaybeNullWhen(false)] out int result, [NotNullWhen(false)] out string validationErrorMessage)
     {
-        if(int.TryParse(value, out result))
-        {
-            validationErrorMessage = null;
-            return true;
-        }else
-        {
-            // This is not used, since the error comes from the binding process.
-            validationErrorMessage = "Not used.";
-            return false;
-        }
+        throw new NotImplementedException();
     }
 }

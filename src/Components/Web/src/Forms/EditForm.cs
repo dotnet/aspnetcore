@@ -12,6 +12,7 @@ namespace Microsoft.AspNetCore.Components.Forms;
 public class EditForm : ComponentBase
 {
     private readonly Func<Task> _handleSubmitDelegate; // Cache to avoid per-render allocations
+    private readonly RenderFragment _renderWithBindingValidator;
 
     private EditContext? _editContext;
     private bool _hasSetEditContextExplicitly;
@@ -22,6 +23,7 @@ public class EditForm : ComponentBase
     public EditForm()
     {
         _handleSubmitDelegate = HandleSubmitAsync;
+        _renderWithBindingValidator = RenderWithBindingValidator;
     }
 
     /// <summary>
@@ -176,7 +178,7 @@ public class EditForm : ComponentBase
             builder.AddComponentParameter(7, "Value", _editContext);
             if (bindingContext != null && !OperatingSystem.IsBrowser())
             {
-                builder.AddComponentParameter(8, "ChildContent", RenderWithBindingValidator());
+                builder.AddComponentParameter(8, "ChildContent", _renderWithBindingValidator);
             }
             else
             {
@@ -187,14 +189,11 @@ public class EditForm : ComponentBase
         }
     }
 
-    private RenderFragment? RenderWithBindingValidator()
+    private void RenderWithBindingValidator(RenderTreeBuilder builder)
     {
-        return builder =>
-        {
-            builder.OpenComponent<ModelBindingContextValidator>(1);
-            builder.CloseComponent();
-            builder.AddContent(2, ChildContent!, EditContext);
-        };
+        builder.OpenComponent<ModelBindingContextValidator>(1);
+        builder.CloseComponent();
+        builder.AddContent(2, ChildContent!, EditContext);
     }
 
     private async Task HandleSubmitAsync()
