@@ -33,7 +33,7 @@ public class BlazorWasmTestAppFixture<TProgram> : WebHostServerFixture
     {
         if (TestTrimmedApps || TestMultithreadingApps)
         {
-            var staticFilePath = Path.Combine(AppContext.BaseDirectory, TestTrimmedApps ? "trimmed" : TestMultithreadingApps ? "threading" : ".", typeof(TProgram).Assembly.GetName().Name);
+            var staticFilePath = Path.Combine(AppContext.BaseDirectory, TestMultithreadingApps ? "threading" : TestTrimmedApps ? "trimmed" : ".", typeof(TProgram).Assembly.GetName().Name);
             if (!Directory.Exists(staticFilePath))
             {
                 throw new DirectoryNotFoundException($"Test is configured to use trimmed outputs, but trimmed outputs were not found in {staticFilePath}.");
