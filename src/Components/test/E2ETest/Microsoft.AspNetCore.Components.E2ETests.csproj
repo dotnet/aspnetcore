@@ -68,7 +68,7 @@
     <ProjectReference
       Include="..\..\WebAssembly\testassets\ThreadingApp\ThreadingApp.csproj"
       Targets="Build;Publish"
-      Properties="BuildProjectReferences=false;TestMultithreadingApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)threading\ThreadingApp\;" />
+      Properties="BuildProjectReferences=false;TestTrimmedApps=false;TestMultithreadingApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)threading\ThreadingApp\;" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TestMultithreadingApps)' != 'true'">
