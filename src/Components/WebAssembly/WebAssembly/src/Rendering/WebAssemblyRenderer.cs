@@ -22,16 +22,21 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering;
 internal sealed partial class WebAssemblyRenderer : WebRenderer
 {
     private readonly ILogger _logger;
+    private readonly Dispatcher _dispatcher;
 
     public WebAssemblyRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, JSComponentInterop jsComponentInterop)
         : base(serviceProvider, loggerFactory, DefaultWebAssemblyJSRuntime.Instance.ReadJsonSerializerOptions(), jsComponentInterop)
     {
         _logger = loggerFactory.CreateLogger<WebAssemblyRenderer>();
+        // if SynchronizationContext.Current is null on main thread, we are in single-threaded flavor of the dotnet wasm runtime
+        _dispatcher = SynchronizationContext.Current==null
+                        ? NullDispatcher.Instance
+                        : WebAssemblyDispatcher.Instance
 
         ElementReferenceContext = DefaultWebAssemblyJSRuntime.Instance.ElementReferenceContext;
     }
 
-    public override Dispatcher Dispatcher => NullDispatcher.Instance;
+    public override Dispatcher Dispatcher => _dispatcher;
 
     public Task AddComponentAsync([DynamicallyAccessedMembers(Component)] Type componentType, ParameterView parameters, string domElementSelector)
     {
