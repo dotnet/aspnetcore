@@ -118,12 +118,12 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="DictionaryUnparsableKey" xml:space="preserve">
-    <value>Could not convert key '{0}' to '{1}'.</value>
+    <value>The value '{0}' is not a valid key for '{1}'.</value>
   </data>
   <data name="MaxCollectionSizeReached" xml:space="preserve">
     <value>The number of elements in the {0} exceeded the maximum number of '{1}' elements allowed.</value>
   </data>
   <data name="ParsableMappingError" xml:space="preserve">
-    <value>Could not convert value '{0}' to '{1}'.</value>
+    <value>The value '{0}' is not valid for '{1}'.</value>
   </data>
 </root>

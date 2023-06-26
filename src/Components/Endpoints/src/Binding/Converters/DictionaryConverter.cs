@@ -64,8 +64,9 @@ internal sealed class DictionaryConverter<TDictionary, TDictionaryPolicy, TBuffe
             if (!TKey.TryParse(key[1..^1].Span, CultureInfo.InvariantCulture, out var keyValue))
             {
                 succeded = false;
+                var currentPrefix = context.GetPrefix();
                 context.AddMappingError(
-                    FormattableStringFactory.Create(FormDataResources.DictionaryUnparsableKey, key[1..^1], typeof(TKey).FullName),
+                    FormattableStringFactory.Create(FormDataResources.DictionaryUnparsableKey, key[1..^1], currentPrefix),
                     null);
 
                 continue;

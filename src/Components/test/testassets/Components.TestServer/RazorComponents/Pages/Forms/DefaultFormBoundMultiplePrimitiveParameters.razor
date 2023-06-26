@@ -3,11 +3,11 @@
 
 <h2>Default form with bound parameter</h2>
 
-<EditForm Model="Parameter" method="POST" OnValidSubmit="() => _submitted = true">
+<ActionForm OnSubmit="() => _submitted = true">
     <input type="text" name="Parameter" value="@(_attemptedParameterValue ?? Parameter.ToString())" />
     <input type="text" name="OtherParameter" value="@(_attemptedOtherValue ?? OtherParameter.ToString())" />
     <input id="send" type="submit" value="Send" />
-</EditForm>
+</ActionForm>
 
 @if (_submitted)
 {
@@ -41,7 +41,9 @@
 
     protected override void OnInitialized()
     {
-        _errors = Context.GetErrors(nameof(Parameter)).ErrorMessages.Concat(Context.GetErrors(nameof(OtherParameter)).ErrorMessages).ToList();
+        _errors = (Context.GetErrors(nameof(Parameter))?.ErrorMessages ?? Array.Empty<FormattableString>())
+            .Concat(Context.GetErrors(nameof(OtherParameter))?.ErrorMessages ?? Array.Empty<FormattableString>()).ToList();
+
         if (_errors.Count > 0)
         {
             _attemptedParameterValue = Context.GetAttemptedValue(nameof(Parameter));

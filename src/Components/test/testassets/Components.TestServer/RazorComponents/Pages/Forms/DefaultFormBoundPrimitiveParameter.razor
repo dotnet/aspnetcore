@@ -3,15 +3,15 @@
 
 <h2>Default form with bound parameter</h2>
 
-<EditForm Model="Parameter" method="POST" OnValidSubmit="() => _submitted = true">
+<ActionForm OnSubmit="() => _submitted = true">
     <input type="text" name="Parameter" value="@(_attemptedValue ?? Parameter.ToString())" />
     <input id="send" type="submit" value="Send" />
-</EditForm>
+</ActionForm>
 
 @if (_submitted)
 {
     var errors = Context.GetErrors("Parameter");
-    if (errors.ErrorMessages.Count == 0)
+    if (errors == null)
     {
         <p id="pass">Your number is @Parameter!</p>        
     }else
@@ -36,10 +36,10 @@
 
     protected override void OnInitialized()
     {
-        _errors = Context.GetErrors("Parameter").ErrorMessages;
-        if (_errors.Count > 0)
+        _errors = Context.GetErrors(nameof(Parameter))?.ErrorMessages;
+        if (_errors != null)
         {
-            _attemptedValue = Context.GetAttemptedValue("Parameter");
+            _attemptedValue = Context.GetAttemptedValue(nameof(Parameter));
         }
     }
 }
