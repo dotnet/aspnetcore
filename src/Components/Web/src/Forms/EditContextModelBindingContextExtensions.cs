@@ -52,6 +52,7 @@ internal static class EditContextBindingExtensions
         private readonly EditContext _editContext;
         private readonly ModelBindingContext _bindingContext;
         private ValidationMessageStore? _messages;
+        private bool _hasmessages;
 
         public BindingContextEventSubscriptions(EditContext editContext, ModelBindingContext serviceProvider)
         {
@@ -85,6 +86,7 @@ internal static class EditContextBindingExtensions
                     adddedMessages = true;
                     // TODO: We need to support localizing the error message.
                     _messages.Add(fieldIdentifier, errorMessage.ToString(CultureInfo.CurrentCulture));
+                    _hasmessages = true;
                 }
             }
 
@@ -99,7 +101,10 @@ internal static class EditContextBindingExtensions
         {
             _messages?.Clear();
             _editContext.OnValidationRequested -= OnValidationRequested;
-            _editContext.NotifyValidationStateChanged();
+            if (_hasmessages)
+            {
+                _editContext.NotifyValidationStateChanged();
+            }
         }
     }
 }
