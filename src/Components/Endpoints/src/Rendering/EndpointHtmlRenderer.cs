@@ -88,10 +88,6 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         if (handler != null && form != null && formData != null)
         {
             formData.SetFormData(handler, new FormCollectionReadOnlyDictionary(form));
-            if (formOptions != null && formData is HttpContextFormDataProvider contextFormData)
-            {
-                contextFormData.SetFormOptions(formOptions);
-            }
         }
 
         // It's important that this is initialized since a component might try to restore state during prerendering

@@ -3,6 +3,8 @@
 
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.WebUtilities;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
 
@@ -30,6 +32,8 @@ internal sealed class FormDataMapperOptions
     // Binding to collection using hashes, where the payload can be crafted to force the worst case on insertion
     // which is O(n).
     internal int MaxCollectionSize = 100;
+
+    internal int MaxKeyBufferSize = FormReader.DefaultKeyLengthLimit;
 
     internal bool HasConverter(Type valueType) => _converters.ContainsKey(valueType);
 

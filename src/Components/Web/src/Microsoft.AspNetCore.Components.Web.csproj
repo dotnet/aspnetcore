@@ -13,7 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(ComponentsSharedSourceRoot)src\ExpressionFormatting\**\*" LinkBase="Forms\ExpressionFommatting" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\ExpressionFormatting\**\*.cs" LinkBase="Forms\ExpressionFommatting" />
   </ItemGroup>
 
   <ItemGroup>
