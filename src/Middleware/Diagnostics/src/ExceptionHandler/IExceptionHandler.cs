@@ -19,9 +19,9 @@ public interface IExceptionHandler
     /// <param name="exception">The unhandled exception.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>
-    /// A <see cref="ValueTask{TResult}"/> representing the asynchronous handling operation indicating 
-    /// <see langword="true"/> if the exception was
-    /// handled successfully; otherwise <see langword="false"/>.
+    /// A task that represents the asynchronous read operation. The value of its <see cref="P:System.Threading.Tasks.ValueTask`1.Result" />
+    /// property contains a flag indicating the handling operation.
+    /// <see langword="true"/> if the exception was handled successfully; otherwise <see langword="false"/>.
     /// </returns>
     ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken);
 }
