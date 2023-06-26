@@ -6,7 +6,9 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Net;
+using System.Net.Security;
 using System.Runtime.InteropServices;
+using System.Security.Authentication;
 using System.Security.Claims;
 using System.Security.Principal;
 using System.Text;
@@ -88,6 +90,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
 
     private int PauseWriterThreshold => _options.MaxRequestBodyBufferSize;
     private int ResumeWriterTheshold => PauseWriterThreshold / 2;
+    private bool IsHttps => SslStatus != SslStatus.Insecure;
 
     public Version HttpVersion { get; set; } = default!;
     public string Scheme { get; set; } = default!;
@@ -110,6 +113,16 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
     public Stream RequestBody { get; set; } = default!;
     public Stream ResponseBody { get; set; } = default!;
     public PipeWriter? ResponsePipeWrapper { get; set; }
+
+    public SslProtocols Protocol { get; private set; }
+    public TlsCipherSuite? NegotiatedCipherSuite { get; private set; }
+    public string SniHostName { get; private set; } = default!;
+    public CipherAlgorithmType CipherAlgorithm { get; private set; }
+    public int CipherStrength { get; private set; }
+    public HashAlgorithmType HashAlgorithm { get; private set; }
+    public int HashStrength { get; private set; }
+    public ExchangeAlgorithmType KeyExchangeAlgorithm { get; private set; }
+    public int KeyExchangeStrength { get; private set; }
 
     protected IAsyncIOEngine? AsyncIO { get; set; }
 
@@ -139,7 +152,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
             RawTarget = GetRawUrl() ?? string.Empty;
             // TODO version is slow.
             HttpVersion = GetVersion();
-            Scheme = SslStatus != SslStatus.Insecure ? Constants.HttpsScheme : Constants.HttpScheme;
+            Scheme = IsHttps ? Constants.HttpsScheme : Constants.HttpScheme;
             KnownMethod = VerbId;
             StatusCode = 200;
 
@@ -252,6 +265,12 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
             ResponseHeaders = HttpResponseHeaders;
             // Request headers can be modified by the app, read these first.
             RequestCanHaveBody = CheckRequestCanHaveBody();
+
+            SniHostName = string.Empty;
+            if (IsHttps)
+            {
+                GetTlsHandshakeResults();
+            }
 
             if (_options.ForwardWindowsAuthentication)
             {
@@ -369,6 +388,40 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
         }
 
         return RequestHeaders.ContentLength.GetValueOrDefault() > 0;
+    }
+
+    private void GetTlsHandshakeResults()
+    {
+        var handshake = this.GetTlsHandshake();
+        Protocol = handshake.Protocol;
+        CipherAlgorithm = handshake.CipherType;
+        CipherStrength = (int)handshake.CipherStrength;
+        HashAlgorithm = handshake.HashType;
+        HashStrength = (int)handshake.HashStrength;
+        KeyExchangeAlgorithm = handshake.KeyExchangeType;
+        KeyExchangeStrength = (int)handshake.KeyExchangeStrength;
+
+        var sni = GetClientSni();
+        SniHostName = sni.Hostname;
+    }
+
+    private unsafe HttpApiTypes.HTTP_REQUEST_PROPERTY_SNI GetClientSni()
+    {
+        var buffer = new byte[HttpApiTypes.SniPropertySizeInBytes];
+        fixed (byte* pBuffer = buffer)
+        {
+            var statusCode = NativeMethods.HttpQueryRequestProperty(
+                RequestId,
+                HttpApiTypes.HTTP_REQUEST_PROPERTY.HttpRequestPropertySni,
+                qualifier: null,
+                qualifierSize: 0,
+                (void*)pBuffer,
+                (uint)buffer.Length,
+                bytesReturned: null,
+                IntPtr.Zero);
+
+            return statusCode == NativeMethods.HR_OK ? Marshal.PtrToStructure<HttpApiTypes.HTTP_REQUEST_PROPERTY_SNI>((IntPtr)pBuffer) : default;
+        }
     }
 
     private async Task InitializeResponse(bool flushHeaders)

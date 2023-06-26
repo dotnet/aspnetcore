@@ -10,6 +10,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using Microsoft.AspNetCore.Server.HttpSys;
@@ -340,12 +341,52 @@ internal unsafe class NativeRequestContext : IDisposable
             if (info != null
                 && info->InfoType == HttpApiTypes.HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeSslProtocol)
             {
-                var authInfo = (HttpApiTypes.HTTP_SSL_PROTOCOL_INFO*)info->pInfo;
-                return *authInfo;
+                var authInfo = *((HttpApiTypes.HTTP_SSL_PROTOCOL_INFO*)info->pInfo);
+                SetSslProtocol(&authInfo);
+                return authInfo;
             }
         }
 
         return default;
+    }
+
+    private static void SetSslProtocol(HttpApiTypes.HTTP_SSL_PROTOCOL_INFO* protocolInfo)
+    {
+        var protocol = protocolInfo->Protocol;
+        // The OS considers client and server TLS as different enum values. SslProtocols choose to combine those for some reason.
+        // We need to fill in the client bits so the enum shows the expected protocol.
+        // https://learn.microsoft.com/windows/desktop/api/schannel/ns-schannel-_secpkgcontext_connectioninfo
+        // Compare to https://referencesource.microsoft.com/#System/net/System/Net/SecureProtocols/_SslState.cs,8905d1bf17729de3
+#pragma warning disable CS0618 // Type or member is obsolete
+        if ((protocol & SslProtocols.Ssl2) != 0)
+        {
+            protocol |= SslProtocols.Ssl2;
+        }
+        if ((protocol & SslProtocols.Ssl3) != 0)
+        {
+            protocol |= SslProtocols.Ssl3;
+        }
+#pragma warning restore CS0618 // Type or Prmember is obsolete
+#pragma warning disable SYSLIB0039 // TLS 1.0 and 1.1 are obsolete
+        if ((protocol & SslProtocols.Tls) != 0)
+        {
+            protocol |= SslProtocols.Tls;
+        }
+        if ((protocol & SslProtocols.Tls11) != 0)
+        {
+            protocol |= SslProtocols.Tls11;
+        }
+#pragma warning restore SYSLIB0039
+        if ((protocol & SslProtocols.Tls12) != 0)
+        {
+            protocol |= SslProtocols.Tls12;
+        }
+        if ((protocol & SslProtocols.Tls13) != 0)
+        {
+            protocol |= SslProtocols.Tls13;
+        }
+
+        protocolInfo->Protocol = protocol;
     }
 
     private static string GetAuthTypeFromRequest(HttpApiTypes.HTTP_REQUEST_AUTH_TYPE input)

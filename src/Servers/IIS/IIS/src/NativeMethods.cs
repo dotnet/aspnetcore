@@ -91,6 +91,17 @@ internal static partial class NativeMethods
     private static partial int http_get_application_properties(out IISConfigurationData iiConfigData);
 
     [LibraryImport(AspNetCoreModuleDll)]
+    private static unsafe partial int http_query_request_property(
+        ulong requestId,
+        HttpApiTypes.HTTP_REQUEST_PROPERTY propertyId,
+        void* qualifier,
+        uint qualifierSize,
+        void* output,
+        uint outputSize,
+        uint* bytesReturned,
+        IntPtr overlapped);
+
+    [LibraryImport(AspNetCoreModuleDll)]
     private static partial int http_get_server_variable(
         NativeSafeHandle pInProcessHandler,
         [MarshalAs(UnmanagedType.LPStr)] string variableName,
@@ -229,6 +240,11 @@ internal static partial class NativeMethods
     {
         Validate(http_get_application_properties(out IISConfigurationData iisConfigurationData));
         return iisConfigurationData;
+    }
+
+    public static unsafe int HttpQueryRequestProperty(ulong requestId, HttpApiTypes.HTTP_REQUEST_PROPERTY propertyId, void* qualifier, uint qualifierSize, void* output, uint outputSize, uint* bytesReturned, IntPtr overlapped)
+    {
+        return http_query_request_property(requestId, propertyId, qualifier, qualifierSize, output, outputSize, bytesReturned, overlapped);
     }
 
     public static bool HttpTryGetServerVariable(NativeSafeHandle pInProcessHandler, string variableName, out string value)
