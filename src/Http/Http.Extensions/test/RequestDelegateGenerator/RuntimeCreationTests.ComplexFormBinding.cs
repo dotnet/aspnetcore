@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net.Http;
+using Microsoft.AspNetCore.Components.Endpoints.Binding;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Primitives;
 
@@ -137,6 +138,33 @@ app.MapPost("/", ([FromForm] Dictionary<string, bool> elements) => Results.Ok(el
             Assert.False(elements["bar"]);
             Assert.True(elements["baz"]);
         });
+    }
+
+    [Fact]
+    public async Task SupportsBindingInvalidDictionaryFromForm_Multipart()
+    {
+        var source = """
+app.MapPost("/", ([FromForm] Dictionary<string, bool> elements) => Results.Ok(elements));
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+        var httpContext = CreateHttpContext();
+
+        var content = new MultipartFormDataContent("some-boundary");
+        content.Add(new StringContent("not-a-bool"), "[foo]");
+        content.Add(new StringContent("1"), "[bar]");
+        content.Add(new StringContent("2"), "[baz]");
+
+        var stream = new MemoryStream();
+        await content.CopyToAsync(stream);
+
+        stream.Seek(0, SeekOrigin.Begin);
+
+        httpContext.Request.Body = stream;
+        httpContext.Request.Headers["Content-Type"] = "multipart/form-data;boundary=some-boundary";
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        await Assert.ThrowsAsync<FormDataMappingException>(async () => await endpoint.RequestDelegate(httpContext));
     }
 
     [Fact]
