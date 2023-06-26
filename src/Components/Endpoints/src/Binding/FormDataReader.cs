@@ -174,6 +174,26 @@ internal struct FormDataReader
         return foundSingleValue;
     }
 
+    internal string GetPrefix() => _currentPrefixBuffer.ToString();
+
+    internal string GetLastPrefixSegment()
+    {
+        var index = _currentPrefixBuffer.Span.LastIndexOfAny(".[");
+        if (index == -1)
+        {
+            return _currentPrefixBuffer.ToString();
+        }
+        if (_currentPrefixBuffer.Span[index] == '.')
+        {
+            return _currentPrefixBuffer.Span[(index + 1)..].ToString();
+        }
+        else
+        {
+            // Return the value without the closing bracket ]
+            return _currentPrefixBuffer.Span[(index + 1)..^1].ToString();
+        }
+    }
+
     internal readonly struct FormKeyCollection : IEnumerable<ReadOnlyMemory<char>>
     {
         private readonly HashSet<FormKey> _values;

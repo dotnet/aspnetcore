@@ -82,7 +82,7 @@ public class FormDataMapperTests
         var exception = Assert.Throws<FormDataMappingException>(() => FormDataMapper.Map<int>(reader, options));
         Assert.NotNull(exception?.Error);
         Assert.Equal("value", exception.Error.Key);
-        Assert.Equal("Could not convert value 'abc' to 'System.Int32'.", exception.Error.Message.ToString(reader.Culture));
+        Assert.Equal("The value 'abc' is not valid for 'value'.", exception.Error.Message.ToString(reader.Culture));
         Assert.Equal("abc", exception.Error.Value);
     }
 
@@ -107,7 +107,7 @@ public class FormDataMapperTests
         var error = Assert.Single(errors);
         Assert.NotNull(error);
         Assert.Equal("value", error.Key);
-        Assert.Equal("Could not convert value 'abc' to 'System.Int32'.", error.Message.ToString(reader.Culture));
+        Assert.Equal("The value 'abc' is not valid for 'value'.", error.Message.ToString(reader.Culture));
         Assert.Equal("abc", error.Value);
     }
 
@@ -387,13 +387,13 @@ public class FormDataMapperTests
             e =>
             {
                 Assert.Equal("[0]", e.Key);
-                Assert.Equal("Could not convert value 'abc' to 'System.Int32'.", e.Message.ToString(reader.Culture));
+                Assert.Equal("The value 'abc' is not valid for '0'.", e.Message.ToString(reader.Culture));
                 Assert.Equal("abc", e.Value);
             },
             e =>
             {
                 Assert.Equal("[4]", e.Key);
-                Assert.Equal("Could not convert value 'def' to 'System.Int32'.", e.Message.ToString(reader.Culture));
+                Assert.Equal("The value 'def' is not valid for '4'.", e.Message.ToString(reader.Culture));
                 Assert.Equal("def", e.Value);
             });
     }
@@ -896,13 +896,13 @@ public class FormDataMapperTests
             e =>
             {
                 Assert.Equal("[0]", e.Key);
-                Assert.Equal("Could not convert value 'abc' to 'System.Int32'.", e.Message.ToString(reader.Culture));
+                Assert.Equal("The value 'abc' is not valid for '0'.", e.Message.ToString(reader.Culture));
                 Assert.Equal("abc", e.Value);
             },
             e =>
             {
                 Assert.Equal("[4]", e.Key);
-                Assert.Equal("Could not convert value 'def' to 'System.Int32'.", e.Message.ToString(reader.Culture));
+                Assert.Equal("The value 'def' is not valid for '4'.", e.Message.ToString(reader.Culture));
                 Assert.Equal("def", e.Value);
             });
     }
@@ -955,13 +955,13 @@ public class FormDataMapperTests
             e =>
             {
                 Assert.Equal("", e.Key);
-                Assert.Equal("Could not convert key 'abc' to 'System.Int32'.", e.Message.ToString(reader.Culture));
+                Assert.Equal("The value 'abc' is not a valid key for ''.", e.Message.ToString(reader.Culture));
                 Assert.Null(e.Value);
             },
             e =>
             {
                 Assert.Equal("", e.Key);
-                Assert.Equal("Could not convert key 'def' to 'System.Int32'.", e.Message.ToString(reader.Culture));
+                Assert.Equal("The value 'def' is not a valid key for ''.", e.Message.ToString(reader.Culture));
                 Assert.Null(e.Value);
             });
     }
@@ -1115,7 +1115,7 @@ public class FormDataMapperTests
 
         var error = Assert.Single(errors);
         Assert.Equal("Age", error.Key);
-        var expectedMessage = "Could not convert value 'abc' to 'System.Int32'.";
+        var expectedMessage = "The value 'abc' is not valid for 'Age'.";
         var actualMessage = error.Message.ToString(reader.Culture);
         Assert.Equal(expectedMessage, actualMessage);
         Assert.Equal("abc", error.Value);

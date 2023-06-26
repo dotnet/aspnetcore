@@ -8,7 +8,6 @@ using System.Globalization;
 using Microsoft.AspNetCore.Components.Binding;
 using Microsoft.AspNetCore.Components.Endpoints.Binding;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
@@ -87,10 +86,10 @@ internal sealed class DefaultFormValuesSupplier : IFormValueSupplier
                 }
                 buffer = ArrayPool<char>.Shared.Rent(options.MaxKeyBufferSize);
 
-                // Form values are parsed according to the culture of the request, which is set to the current culture by the localization middleware.
-                // Some form input types use the invariant culture when sending the data to the server. For those cases, we'll
-                // provide a way to override the culture to use to parse that value.
-                var reader = new FormDataReader(dictionary, CultureInfo.CurrentCulture, buffer.AsMemory(options.MaxKeyBufferSize))
+                var reader = new FormDataReader(
+                    dictionary,
+                    options.UseCurrentCulture ? CultureInfo.CurrentCulture : CultureInfo.InvariantCulture,
+                    buffer.AsMemory(0, options.MaxKeyBufferSize))
                 {
                     ErrorHandler = context.OnError,
                     AttachInstanceToErrorsHandler = context.MapErrorToContainer

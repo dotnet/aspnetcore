@@ -126,11 +126,11 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
                     errors,
                     error =>
                     {
-                        Assert.Equal("Could not convert value 'abcd' to 'System.Int32'.", error.Text);
+                        Assert.Equal("The value 'abcd' is not valid for 'Parameter'.", error.Text);
                     },
                     error =>
                     {
-                        Assert.Equal("Could not convert value 'invalid' to 'System.Boolean'.", error.Text);
+                        Assert.Equal("The value 'invalid' is not valid for 'OtherParameter'.", error.Text);
                     });
                 Assert.Equal("abcd", Browser.FindElement(By.CssSelector("input[name=Parameter]")).GetAttribute("value"));
                 Assert.Equal("invalid", Browser.FindElement(By.CssSelector("input[name=OtherParameter]")).GetAttribute("value"));
@@ -160,7 +160,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
                     errors,
                     error =>
                     {
-                        Assert.Equal("Could not convert value 'abc' to 'System.Int32'.", error.Text);
+                        Assert.Equal("The value 'abc' is not valid for 'Parameter'.", error.Text);
                     });
                 Assert.Equal("abc", Browser.FindElement(By.CssSelector("input[name=Parameter]")).GetAttribute("value"));
             }
@@ -246,8 +246,8 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
 
         Browser.Click(By.Id("send"));
 
-        Browser.Exists(By.CssSelector("li.validation-message")).Text.Contains("Could not convert value 'invalid' to 'System.Boolean'.");
-        Browser.Exists(By.CssSelector("div.validation-message")).Text.Contains("Could not convert value 'invalid' to 'System.Boolean'.");
+        Browser.Exists(By.CssSelector("li.validation-message")).Text.Contains("The value 'invalid' is not valid for 'value'.");
+        Browser.Exists(By.CssSelector("div.validation-message")).Text.Contains("The value 'invalid' is not valid for 'value'.");
 
         if (!suppressEnhancedNavigation)
         {
@@ -443,8 +443,8 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
 
         Browser.Click(By.Id("send"));
 
-        Browser.Exists(By.CssSelector("[data-index='0']")).Text.Contains("The value 'invalid0' is not valid for IsPreferred.");
-        Browser.Exists(By.CssSelector("[data-index='1']")).Text.Contains("The value 'invalid1' is not valid for IsPreferred.");
+        Browser.Exists(By.CssSelector("[data-index='0']")).Text.Contains("The value 'invalid0' is not valid for 'IsPreferred'.");
+        Browser.Exists(By.CssSelector("[data-index='1']")).Text.Contains("The value 'invalid1' is not valid for 'IsPreferred'.");
 
         Browser.Equal(2, () => Browser.FindElements(By.CssSelector("li.validation-message")).Count());
 
@@ -476,7 +476,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
                     errors,
                     error =>
                     {
-                        Assert.Equal("Could not convert value 'abc' to 'System.Int32'.", error.Text);
+                        Assert.Equal("The value 'abc' is not valid for 'Parameter'.", error.Text);
                     });
                 Assert.Equal("abc", Browser.FindElement(By.CssSelector("input[name=Parameter]")).GetAttribute("value"));
             }

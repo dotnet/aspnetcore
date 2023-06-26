@@ -22,7 +22,8 @@ internal sealed class ParsableConverter<T> : FormDataConverter<T>, ISingleValueC
         }
         else
         {
-            reader.AddMappingError(FormattableStringFactory.Create(FormDataResources.ParsableMappingError, value, type.FullName), value);
+            var segment = reader.GetLastPrefixSegment();
+            reader.AddMappingError(FormattableStringFactory.Create(FormDataResources.ParsableMappingError, value, segment), value);
             result = default;
             return false;
         }
