@@ -65,8 +65,9 @@ internal static class ComponentProperties
                 }
                 else if (parameter.Cascading && writer.AcceptsDirectParameters && writer.AcceptsCascadingParameters)
                 {
-                    // It's possible that the writer accepts both cascading and direct parameters. In that case,
-                    // we want to prefer the direct parameter, if it exists.
+                    // Today, the only case where this is possible is when a property is annotated with both
+                    // ParameterAttribute and SupplyParameterFromQueryAttribute. If that happens, we want to
+                    // prefer the directly supplied value over the cascading value.
                     if (parameters.HasDirectParameter(parameterName))
                     {
                         continue;
@@ -205,8 +206,8 @@ internal static class ComponentProperties
     private static void ThrowForSettingCascadingParameterWithNonCascadingValue(Type targetType, string parameterName)
     {
         throw new InvalidOperationException(
-            $"Object of type '{targetType.FullName}' has a property matching the name '{parameterName}', " +
-            $"but it does not have [{nameof(ParameterAttribute)}] applied.");
+            $"The property '{parameterName}' on component type '{targetType.FullName}' cannot be set " +
+            $"explicitly because it only accepts cascading values.");
     }
 
     [DoesNotReturn]
@@ -288,7 +289,10 @@ internal static class ComponentProperties
                     }
                 }
 
-                var acceptsDirectParameters = parameterAttribute is not null;
+                // A property cannot accept direct parameters if it's annotated with a cascading value attribute, unless it's a
+                // SupplyParameterFromQueryAttribute. This is to retain backwards compatibility with previous versions of the
+                // SupplyParameterFromQuery feature that did not utilize cascading values, and thus did not have this limitation.
+                var acceptsDirectParameters = parameterAttribute is not null && cascadingParameterAttribute is null or SupplyParameterFromQueryAttribute;
                 var acceptsCascadingParameters = cascadingParameterAttribute is not null;
                 if (!acceptsDirectParameters && !acceptsCascadingParameters)
                 {
