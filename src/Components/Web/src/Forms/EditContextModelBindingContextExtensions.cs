@@ -72,16 +72,19 @@ internal static class EditContextBindingExtensions
 
             _messages = new ValidationMessageStore(_editContext);
             var adddedMessages = false;
-            foreach (var ((owner, key), errors) in _bindingContext.GetAllErrors())
+            foreach (var error in _bindingContext.GetAllErrors())
             {
+                var owner = error.Container;
+                var key = error.Name;
+                var errors = error.ErrorMessages;
                 FieldIdentifier fieldIdentifier;
                 fieldIdentifier = new FieldIdentifier(owner ?? _editContext.Model, key);
 
-                foreach (var error in errors)
+                foreach (var errorMessage in errors)
                 {
                     adddedMessages = true;
                     // TODO: We need to support localizing the error message.
-                    _messages.Add(fieldIdentifier, error.ToString(CultureInfo.CurrentCulture));
+                    _messages.Add(fieldIdentifier, errorMessage.ToString(CultureInfo.CurrentCulture));
                 }
             }
 

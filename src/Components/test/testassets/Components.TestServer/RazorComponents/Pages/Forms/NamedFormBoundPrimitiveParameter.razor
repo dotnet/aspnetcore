@@ -11,7 +11,7 @@
 
 @if (_submitted)
 {
-    var errors = Context.GetErrors("named-form-handler", "Parameter");
+    var errors = Context.GetErrors("named-form-handler", "Parameter").ErrorMessages;
     if (errors.Count == 0)
     {
         <p id="pass">Your number is @Parameter!</p>
@@ -38,7 +38,7 @@
 
     protected override void OnInitialized()
     {
-        _errors = Context.GetErrors("named-form-handler", "Parameter");
+        _errors = Context.GetErrors("named-form-handler", "Parameter").ErrorMessages;
         if (_errors.Count > 0)
         {
             _attemptedValue = Context.GetAttemptedValue("named-form-handler", "Parameter");

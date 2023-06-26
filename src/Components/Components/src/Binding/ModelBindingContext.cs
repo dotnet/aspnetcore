@@ -11,9 +11,8 @@ public sealed class ModelBindingContext
     private Dictionary<string, BindingError>? _errors;
     private List<KeyValuePair<string, BindingError>>? _pendingErrors;
     private Dictionary<string, Dictionary<string, BindingError>>? _errorsByFormName;
-    private static readonly char[] Separators = new char[] { '.', '[' };
 
-internal ModelBindingContext(string name, string bindingContextId)
+    internal ModelBindingContext(string name, string bindingContextId)
     {
         ArgumentNullException.ThrowIfNull(name);
         ArgumentNullException.ThrowIfNull(bindingContextId);
@@ -45,8 +44,8 @@ internal ModelBindingContext(string name, string bindingContextId)
     /// </summary>
     /// <param name="key">The key used to identify the specific part of the model.</param>
     /// <returns>The list of errors associated with that part of the model if any.</returns>
-    public IReadOnlyList<FormattableString> GetErrors(string key) =>
-        _errors?.TryGetValue(key, out var bindingError) == true ? bindingError.ErrorMessages : Array.Empty<FormattableString>();
+    public BindingError? GetErrors(string key) =>
+        _errors?.TryGetValue(key, out var bindingError) == true ? bindingError : null;
 
     /// <summary>
     /// Retrieves the list of errors for a given model key.
@@ -54,45 +53,27 @@ internal ModelBindingContext(string name, string bindingContextId)
     /// <param name="key">The key used to identify the specific part of the model.</param>
     /// <param name="formName">Form name for a form under this context.</param>
     /// <returns>The list of errors associated with that part of the model if any.</returns>
-    public IReadOnlyList<FormattableString> GetErrors(string formName, string key) =>
+    public BindingError? GetErrors(string formName, string key) =>
         _errorsByFormName?.TryGetValue(formName, out var formErrors) == true &&
-        formErrors.TryGetValue(key, out var bindingError) == true ? bindingError.ErrorMessages : Array.Empty<FormattableString>();
+        formErrors.TryGetValue(key, out var bindingError) == true ? bindingError : null;
 
     /// <summary>
     /// Retrieves all the errors for the model.
     /// </summary>
     /// <returns>The list of errors associated with the model if any.</returns>
-    public IEnumerable<KeyValuePair<(object, string), IReadOnlyList<FormattableString>>> GetAllErrors()
+    public IEnumerable<BindingError> GetAllErrors()
     {
         return GetAllErrorsCore(_errors);
     }
 
-    private static IEnumerable<KeyValuePair<(object, string), IReadOnlyList<FormattableString>>> GetAllErrorsCore(Dictionary<string, BindingError>? errors)
+    private static IEnumerable<BindingError> GetAllErrorsCore(Dictionary<string, BindingError>? errors)
     {
         if (errors == null)
         {
-            yield break;
+            return Array.Empty<BindingError>();
         }
 
-        foreach (var (key, value) in errors)
-        {
-            var errorKey = key;
-            var lastSeparatorIndex = key.LastIndexOfAny(Separators);
-            if (lastSeparatorIndex >= 0)
-            {
-                if (key[lastSeparatorIndex] == '[')
-                {
-                    var closingBracket = key.IndexOf(']', lastSeparatorIndex);
-                    // content within brackets
-                    errorKey = key[(lastSeparatorIndex + 1)..closingBracket];
-                }
-                else
-                {
-                    errorKey = key[(lastSeparatorIndex + 1)..];
-                }
-            }
-            yield return new KeyValuePair<(object, string), IReadOnlyList<FormattableString>>((value.Parent, errorKey), value.ErrorMessages);
-        }
+        return errors.Values;
     }
 
     /// <summary>
@@ -100,11 +81,11 @@ internal ModelBindingContext(string name, string bindingContextId)
     /// </summary>
     /// <param name="formName">Form name for a form under this context.</param>
     /// <returns>The list of errors associated with the model if any.</returns>
-    public IEnumerable<KeyValuePair<(object, string), IReadOnlyList<FormattableString>>> GetAllErrors(string formName)
+    public IEnumerable<BindingError> GetAllErrors(string formName)
     {
         return _errorsByFormName?.TryGetValue(formName, out var formErrors) == true ?
             GetAllErrorsCore(formErrors) :
-            Array.Empty<KeyValuePair<(object, string), IReadOnlyList<FormattableString>>>();
+            Array.Empty<BindingError>();
     }
 
     /// <summary>
@@ -138,14 +119,14 @@ internal ModelBindingContext(string name, string bindingContextId)
     {
         if (!errors.TryGetValue(key, out var bindingError))
         {
-            bindingError = new BindingError(new List<FormattableString>() { error }, attemptedValue);
+            bindingError = new BindingError(key, new List<FormattableString>() { error }, attemptedValue);
             errors.Add(key, bindingError);
             pendingErrors ??= new();
             pendingErrors.Add(new KeyValuePair<string, BindingError>(key, bindingError));
         }
         else
         {
-            bindingError.ErrorMessages.Add(error);
+            bindingError.AddError(error);
         }
     }
 
@@ -175,7 +156,7 @@ internal ModelBindingContext(string name, string bindingContextId)
                 throw new InvalidOperationException($"'{errorKey}' does must start with '{key}'");
             }
 
-            error.Parent = value;
+            error.Container = value;
         }
 
         _pendingErrors.Clear();
@@ -189,12 +170,5 @@ internal ModelBindingContext(string name, string bindingContextId)
         }
 
         childContext._errors = formErrors;
-    }
-
-    private class BindingError(List<FormattableString> errorMessages, string? attemptedValue)
-    {
-        public object Parent { get; set; } = null!;
-        public List<FormattableString> ErrorMessages { get; } = errorMessages;
-        public string? AttemptedValue { get; } = attemptedValue;
     }
 }

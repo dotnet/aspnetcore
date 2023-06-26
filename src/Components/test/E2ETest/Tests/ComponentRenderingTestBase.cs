@@ -149,7 +149,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
     public void CanRenderChildComponents()
     {
         var appElement = Browser.MountTestComponent<ParentChildComponent>();
-        Assert.Equal("Parent component",
+        Assert.Equal("Container component",
             appElement.FindElement(By.CssSelector("fieldset > legend")).Text);
 
         var styledElement = appElement.FindElement(By.CssSelector("fieldset > h1"));
