@@ -1,0 +1,37 @@
+﻿@page "/counter"
+@using System.Runtime.InteropServices
+
+<h1>Counter</h1>
+
+<p>Current count: @currentCount</p>
+
+<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+
+@code {
+    int currentCount = 0;
+
+    void IncrementCount()
+    {
+        currentCount++;
+    }
+
+    protected override Task OnInitializedAsync()
+    {
+        if(!RuntimeInformation.IsOSPlatform(OSPlatform.Create("Browser"))){
+            return Task.CompletedTask;
+        }
+        new Timer(async (state) =>
+        {
+            // send me to the thread pool
+            await Task.Delay(10).ConfigureAwait(false);
+
+            await InvokeAsync(() =>
+            {
+                // we are back on main thread
+                IncrementCount();
+                StateHasChanged(); // render!
+            });
+        }, null, 0, 100);
+        return Task.CompletedTask;
+    }
+}

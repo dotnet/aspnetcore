@@ -35,6 +35,8 @@
 
     <TestTrimmedApps Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</TestTrimmedApps>
     <TestTrimmedApps Condition="'$(Configuration)' == 'Release'">true</TestTrimmedApps>
+    <TestMultithreadingApps Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</TestMultithreadingApps>
+    <TestMultithreadingApps Condition="'$(Configuration)' == 'Release'">true</TestMultithreadingApps>
   </PropertyGroup>
 
   <ItemGroup>
@@ -60,6 +62,13 @@
     <ProjectReference Include="..\testassets\BasicTestApp\BasicTestApp.csproj" />
     <ProjectReference Include="..\testassets\GlobalizationWasmApp\GlobalizationWasmApp.csproj" />
     <ProjectReference Include="..\..\WebAssembly\testassets\Wasm.Prerendered.Server\Wasm.Prerendered.Server.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TestMultithreadingApps)' == 'true'">
+    <ProjectReference
+      Include="..\..\WebAssembly\testassets\ThreadingApp\ThreadingApp.csproj"
+      Targets="Build;Publish"
+      Properties="BuildProjectReferences=false;TestMultithreadingApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)threading\ThreadingApp\;" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TestTrimmedApps)' == 'true'">
@@ -109,6 +118,10 @@
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>Microsoft.AspNetCore.E2ETesting.TestTrimmedApps</_Parameter1>
       <_Parameter2>$(TestTrimmedApps)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>Microsoft.AspNetCore.E2ETesting.TestMultithreadingApps</_Parameter1>
+      <_Parameter2>$(TestMultithreadingApps)</_Parameter2>
     </AssemblyAttribute>
   </ItemGroup>
 
