@@ -11,7 +11,6 @@ internal sealed class WebAssemblyDispatcher : Dispatcher
     private WebAssemblyDispatcher()
     {
         // capture the JSSynchronizationContext from the main thread.
-        // if SynchronizationContext.Current is null on main thread, we are in single-threaded flavor of the dotnet wasm runtime
         _context = SynchronizationContext.Current;
     }
 

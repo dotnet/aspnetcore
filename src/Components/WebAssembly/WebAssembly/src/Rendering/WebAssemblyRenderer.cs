@@ -28,8 +28,8 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
         : base(serviceProvider, loggerFactory, DefaultWebAssemblyJSRuntime.Instance.ReadJsonSerializerOptions(), jsComponentInterop)
     {
         _logger = loggerFactory.CreateLogger<WebAssemblyRenderer>();
-        // if SynchronizationContext.Current is null on main thread, we are in single-threaded flavor of the dotnet wasm runtime
-        _dispatcher = SynchronizationContext.Current==null
+        // if SynchronizationContext.Current is not JSSynchronizationContext on main thread, we are in single-threaded flavor of the dotnet wasm runtime or on the server side.
+        _dispatcher = SynchronizationContext.Current == null || SynchronizationContext.Current.GetType().FullName != "System.Runtime.InteropServices.JavaScript.JSSynchronizationContext"
                         ? NullDispatcher.Instance
                         : WebAssemblyDispatcher.Instance;
 
