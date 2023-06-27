@@ -2006,10 +2006,12 @@ public static partial class RequestDelegateFactory
 
         return Expression.Block(
             new[] { formArgument, formReader, formDict, formBuffer, formMaxKeyLength },
-            processFormExpr,
-            initializeReaderExpr,
-            Expression.Assign(formArgument, invokeMapMethodExpr),
-            returnBufferExpr,
+            Expression.TryFinally(
+                Expression.Block(
+                    processFormExpr,
+                    initializeReaderExpr,
+                    Expression.Assign(formArgument, invokeMapMethodExpr)),
+                returnBufferExpr),
             formArgument
         );
     }
