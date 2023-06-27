@@ -15,23 +15,65 @@
         currentCount++;
     }
 
-    protected override Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync()
     {
-        if(!RuntimeInformation.IsOSPlatform(OSPlatform.Create("Browser"))){
-            return Task.CompletedTask;
+        if(!RuntimeInformation.IsOSPlatform(OSPlatform.Create("Browser")))
+        {
+            return;
         }
+
+        if (Thread.CurrentThread.ManagedThreadId != 1)
+        {
+            throw new Exception("We should be on main thread!");
+        }
+
+        Exception? exc = null;
+        try
+        {
+            // send me to the thread pool
+            await Task.Delay(10).ConfigureAwait(false);
+            StateHasChanged(); // render should throw
+        }
+        catch(Exception ex)
+        {
+            exc=ex;
+            Console.WriteLine(ex.Message);
+        }
+        if (exc == null || exc.Message != "The current thread is not associated with the Dispatcher. Use InvokeAsync() to switch execution to the Dispatcher when triggering rendering or component state.")
+        {
+            throw new Exception("We should have thrown here!");
+        }
+
+        // test that we could create new thread
+        var tcs = new TaskCompletionSource<int>();
+        var t = new Thread(() => {
+            tcs.SetResult(Thread.CurrentThread.ManagedThreadId);
+        });
+        t.Start();
+        var newThreadId = await tcs.Task;
+        if (newThreadId == 1){
+            throw new Exception("We should be on new thread in the callback!");
+        }
+
         new Timer(async (state) =>
         {
             // send me to the thread pool
             await Task.Delay(10).ConfigureAwait(false);
+            if (Thread.CurrentThread.ManagedThreadId == 1)
+            {
+                throw new Exception("We should be on thread pool thread!");
+            }
 
             await InvokeAsync(() =>
             {
+                if (Thread.CurrentThread.ManagedThreadId != 1)
+                {
+                    throw new Exception("We should be on main thread again!");
+                }
                 // we are back on main thread
                 IncrementCount();
                 StateHasChanged(); // render!
             });
         }, null, 0, 100);
-        return Task.CompletedTask;
     }
 }
