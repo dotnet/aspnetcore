@@ -37,7 +37,7 @@ public class WebAssemblyConfigurationTest : ServerTestBase<BlazorWasmTestAppFixt
         // Verify values from the default 'appsettings.json' are read.
         Browser.Equal("Default key1-value", () => _appElement.FindElement(By.Id("key1")).Text);
 
-        if (_serverFixture.TestTrimmedApps)
+        if (_serverFixture.TestTrimmedOrMultithreadingApps)
         {
             // Verify values overriden by an environment specific 'appsettings.$(Environment).json are read
             Assert.Equal("Prod key2-value", _appElement.FindElement(By.Id("key2")).Text);
