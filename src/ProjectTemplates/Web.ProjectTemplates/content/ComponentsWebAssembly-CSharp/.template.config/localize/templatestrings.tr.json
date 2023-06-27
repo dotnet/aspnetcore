@@ -1,4 +1,4 @@
-{
+﻿{
   "author": "Microsoft",
   "name": "Blazor WebAssembly Uygulaması",
   "description": "WebAssembly üzerinde çalışan ve isteğe bağlı olarak bir ASP.NET Core uygulamasında barındırılan Blazor uygulaması oluşturmaya yönelik proje şablonu. Bu şablon, zengin dinamik kullanıcı arabirimlerine (UI) sahip web uygulamaları için kullanılabilir.",
