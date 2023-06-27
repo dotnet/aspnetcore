@@ -45,61 +45,10 @@ public class EmptyBlazorWasmTemplateTest : BlazorTemplateTest
     }
 
     [Fact]
-    public Task EmptyBlazorWasmHostedTemplateCanCreateBuildPublish()
-        => CreateBuildPublishAsync(args: new[] { ArgConstants.Hosted }, serverProject: true);
-
-    [Fact]
-    public Task EmptyBlazorWasmHostedTemplateNoHttpsCanCreateBuildPublish()
-        => CreateBuildPublishAsync(args: new[] { ArgConstants.Hosted, ArgConstants.NoHttps }, serverProject: true);
-
-    [Fact]
     public Task EmptyBlazorWasmStandalonePwaTemplateCanCreateBuildPublish()
         => CreateBuildPublishAsync(args: new[] { ArgConstants.Pwa });
 
     [Fact]
     public Task EmptyBlazorWasmStandalonePwaTemplateNoHttpsCanCreateBuildPublish()
         => CreateBuildPublishAsync(args: new[] { ArgConstants.Pwa, ArgConstants.NoHttps });
-
-    [Fact]
-    public async Task EmptyBlazorWasmHostedPwaTemplateCanCreateBuildPublish()
-    {
-        var project = await CreateBuildPublishAsync(args: new[] { ArgConstants.Hosted, ArgConstants.Pwa }, serverProject: true);
-
-        var serverProject = GetSubProject(project, "Server", $"{project.ProjectName}.Server");
-
-        ValidatePublishedServiceWorker(serverProject);
-    }
-
-    [Fact]
-    public async Task EmptyBlazorWasmHostedPwaTemplateNoHttpsCanCreateBuildPublish()
-    {
-        var project = await CreateBuildPublishAsync(args: new[] { ArgConstants.Hosted, ArgConstants.Pwa, ArgConstants.NoHttps }, serverProject: true);
-
-        var serverProject = GetSubProject(project, "Server", $"{project.ProjectName}.Server");
-
-        ValidatePublishedServiceWorker(serverProject);
-    }
-
-    private void ValidatePublishedServiceWorker(Project project)
-    {
-        var publishDir = Path.Combine(project.TemplatePublishDir, "wwwroot");
-
-        // When publishing the PWA template, we generate an assets manifest
-        // and move service-worker.published.js to overwrite service-worker.js
-        Assert.False(File.Exists(Path.Combine(publishDir, "service-worker.published.js")), "service-worker.published.js should not be published");
-        Assert.True(File.Exists(Path.Combine(publishDir, "service-worker.js")), "service-worker.js should be published");
-        Assert.True(File.Exists(Path.Combine(publishDir, "service-worker-assets.js")), "service-worker-assets.js should be published");
-
-        // We automatically append the SWAM version as a comment in the published service worker file
-        var serviceWorkerAssetsManifestContents = ReadFile(publishDir, "service-worker-assets.js");
-        var serviceWorkerContents = ReadFile(publishDir, "service-worker.js");
-
-        // Parse the "version": "..." value from the SWAM, and check it's in the service worker
-        var serviceWorkerAssetsManifestVersionMatch = new Regex(@"^\s*\""version\"":\s*(\""[^\""]+\"")", RegexOptions.Multiline)
-            .Match(serviceWorkerAssetsManifestContents);
-        Assert.True(serviceWorkerAssetsManifestVersionMatch.Success);
-        var serviceWorkerAssetsManifestVersionJson = serviceWorkerAssetsManifestVersionMatch.Groups[1].Captures[0].Value;
-        var serviceWorkerAssetsManifestVersion = JsonSerializer.Deserialize<string>(serviceWorkerAssetsManifestVersionJson);
-        Assert.True(serviceWorkerContents.Contains($"/* Manifest version: {serviceWorkerAssetsManifestVersion} */", StringComparison.Ordinal));
-    }
 }

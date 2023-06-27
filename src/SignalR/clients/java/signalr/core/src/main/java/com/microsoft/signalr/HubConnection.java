@@ -431,6 +431,9 @@ public class HubConnection implements AutoCloseable {
                 connectionState.stopError = errorMessage;
                 logger.error("HubConnection disconnected with an error: {}.", errorMessage);
             } else {
+                if (this.state.getHubConnectionState() == HubConnectionState.CONNECTED) {
+                    sendHubMessageWithLock(new CloseMessage());
+                }
                 logger.debug("Stopping HubConnection.");
             }
 

@@ -336,7 +336,7 @@ internal sealed partial class HttpConnectionDispatcher
         }
 
         var useAck = false;
-        if (context.Request.Query.TryGetValue("UseAck", out var useAckValue))
+        if (options.AllowAcks == true && context.Request.Query.TryGetValue("UseAck", out var useAckValue))
         {
             var useAckStringValue = useAckValue.ToString();
             bool.TryParse(useAckStringValue, out useAck);

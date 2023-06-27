@@ -34,13 +34,28 @@ public class StreamingRenderingTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Assert.DoesNotContain("<blazor-ssr", Browser.PageSource);
     }
 
-    [Fact]
-    public void CanPerformStreamingRendering()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void CanPerformStreamingRendering(bool duringEnhancedNavigation)
     {
-        Navigate($"{ServerPathBase}/streaming");
+        IWebElement originalH1Elem;
+
+        if (duringEnhancedNavigation)
+        {
+            Navigate($"{ServerPathBase}/nav");
+            originalH1Elem = Browser.Exists(By.TagName("h1"));
+            Browser.Equal("Hello", () => originalH1Elem.Text);
+            Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Streaming")).Click();
+        }
+        else
+        {
+            Navigate($"{ServerPathBase}/streaming");
+            originalH1Elem = Browser.Exists(By.TagName("h1"));
+        }
 
         // Initial "waiting" state
-        Browser.Equal("Streaming Rendering", () => Browser.Exists(By.TagName("h1")).Text);
+        Browser.Equal("Streaming Rendering", () => originalH1Elem.Text);
         var getStatusText = () => Browser.Exists(By.Id("status"));
         var getDisplayedItems = () => Browser.FindElements(By.TagName("li"));
         Assert.Equal("Waiting for more...", getStatusText().Text);
@@ -64,5 +79,61 @@ public class StreamingRenderingTest : ServerTestBase<BasicTestAppServerSiteFixtu
         // Can finish the response
         Browser.FindElement(By.Id("end-response-link")).Click();
         Browser.Equal("Finished", () => getStatusText().Text);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void RetainsDomNodesDuringStreamingRenderingUpdates(bool duringEnhancedNavigation)
+    {
+        IWebElement originalH1Elem;
+
+        if (duringEnhancedNavigation)
+        {
+            Navigate($"{ServerPathBase}/nav");
+            originalH1Elem = Browser.Exists(By.TagName("h1"));
+            Browser.Equal("Hello", () => originalH1Elem.Text);
+            Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Streaming")).Click();
+        }
+        else
+        {
+            Navigate($"{ServerPathBase}/streaming");
+            originalH1Elem = Browser.Exists(By.TagName("h1"));
+        }
+
+        // Initial "waiting" state
+        var originalStatusElem = Browser.Exists(By.Id("status"));
+        Assert.Equal("Streaming Rendering", originalH1Elem.Text);
+        Assert.Equal("Waiting for more...", originalStatusElem.Text);
+
+        // Add an item; see the old elements were retained
+        Browser.FindElement(By.Id("add-item-link")).Click();
+        var originalLi = Browser.Exists(By.TagName("li"));
+        Assert.Equal(originalH1Elem.Location, Browser.Exists(By.TagName("h1")).Location);
+        Assert.Equal(originalStatusElem.Location, Browser.Exists(By.Id("status")).Location);
+
+        // Make a further change; see elements (including dynamically added ones) are still retained
+        // even if their text was updated
+        Browser.FindElement(By.Id("end-response-link")).Click();
+        Browser.Equal("Finished", () => originalStatusElem.Text);
+        Assert.Equal(originalLi.Location, Browser.Exists(By.TagName("li")).Location);
+    }
+
+    [Fact]
+    public async Task DisplaysErrorThatOccursWhileStreaming()
+    {
+        Navigate($"{ServerPathBase}/nav");
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Error while streaming")).Click();
+        await Task.Delay(3000); // Doesn't matter if this duration is too short or too long. It's just so the assertions don't start unnecessarily early.
+
+        // Note that the tests always run with detailed errors off, so we only see this generic message
+        Browser.Contains("There was an unhandled exception on the current request.", () => Browser.Exists(By.TagName("html")).Text);
+
+        // See that 'back' still works
+        Browser.Navigate().Back();
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+        Assert.EndsWith("/subdir/nav", Browser.Url);
     }
 }

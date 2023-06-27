@@ -13,4 +13,12 @@
     <Reference Include="Microsoft.AspNetCore.Components" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="$(ComponentsSharedSourceRoot)src\ExpressionFormatting\**\*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Forms.Tests" />
+  </ItemGroup>
+
 </Project>

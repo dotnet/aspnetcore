@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
 
@@ -59,9 +60,15 @@ internal class CollectionConverter<TCollection, TCollectionPolicy, TBuffer, TEle
         bool succeded;
         // Even though we have indexes, we special case 0 an 1 and use literals directly. We leave them in the indexes
         // collection because it makes other indexes align.
-        context.PushPrefix("[0]");
-        succeded = _elementConverter.TryRead(ref context, typeof(TElement), options, out currentElement!, out found);
-        context.PopPrefix("[0]");
+        try
+        {
+            context.PushPrefix("[0]");
+            succeded = _elementConverter.TryRead(ref context, typeof(TElement), options, out currentElement!, out found);
+        }
+        finally
+        {
+            context.PopPrefix("[0]");
+        }
         if (!found)
         {
             result = default;
@@ -75,10 +82,19 @@ internal class CollectionConverter<TCollection, TCollectionPolicy, TBuffer, TEle
         buffer = TCollectionPolicy.Add(ref buffer, currentElement!);
 
         // Read element 1 and set conditions to enter the loop
-        context.PushPrefix("[1]");
-        currentElementSuccess = _elementConverter.TryRead(ref context, typeof(TElement), options, out currentElement!, out foundCurrentElement);
-        succeded = succeded && currentElementSuccess;
-        context.PopPrefix("[1]");
+        try
+        {
+            context.PushPrefix("[1]");
+            currentElementSuccess = _elementConverter.TryRead(ref context, typeof(TElement), options, out currentElement!, out foundCurrentElement);
+            succeded = succeded && currentElementSuccess;
+        }
+        finally
+        {
+            context.PopPrefix("[1]");
+        }
+
+        var maxCollectionSize = options.MaxCollectionSize;
+
         // We need to iterate while we keep finding values, even if some of them have errors. This is because we don't want data to be lost just
         // because we are not able to parse it. For example, if [5] = "asdf", we don't want to loose the values for [6], [7], etc. that can be
         // valid.
@@ -86,27 +102,35 @@ internal class CollectionConverter<TCollection, TCollectionPolicy, TBuffer, TEle
         // Similarly, over 100 elements, we'll start doing more work to compute the index prefix. We chose 100 because that's the default
         // max collection size that we will support.
         var index = 2;
-        for (; index < 100 && foundCurrentElement; index++)
+        var lastElementWithComputedIndex = 100 < maxCollectionSize ? 100 : maxCollectionSize;
+        for (; index < lastElementWithComputedIndex && foundCurrentElement; index++)
         {
             // Add the current element
             buffer = TCollectionPolicy.Add(ref buffer, currentElement!);
 
             // Get the precomputed prefix and try and bind the element.
             var prefix = Indexes[index];
-            context.PushPrefix(prefix);
-            currentElementSuccess = _elementConverter.TryRead(ref context, typeof(TElement), options, out currentElement!, out foundCurrentElement);
-            succeded = succeded && currentElementSuccess;
-            context.PopPrefix(prefix);
+            try
+            {
+                context.PushPrefix(prefix);
+                currentElementSuccess = _elementConverter.TryRead(ref context, typeof(TElement), options, out currentElement!, out foundCurrentElement);
+                succeded = succeded && currentElementSuccess;
+            }
+            finally
+            {
+                context.PopPrefix(prefix);
+            }
         }
 
         if (!foundCurrentElement)
         {
             result = TCollectionPolicy.ToResult(buffer);
+            if (!succeded)
+            {
+                context.AttachInstanceToErrors(result!);
+            }
             return succeded;
         }
-
-        // We have a "large" collection. Loop until we stop finding elements or reach the max collection size.
-        var maxCollectionSize = options.MaxCollectionSize;
 
         // We need to compute the prefix for the index, since it's not precomputed.
         // The biggest UInt32 representation is 4294967295, which is 10 characters, so 16 chars is more than enough to
@@ -115,7 +139,8 @@ internal class CollectionConverter<TCollection, TCollectionPolicy, TBuffer, TEle
         computedPrefix[0] = '[';
 
         // index is 100 here.
-        for (; index < maxCollectionSize && foundCurrentElement; index++)
+        // We want to go 1 element over of max collection size, so we can report an error if we find it.
+        for (; index <= maxCollectionSize && foundCurrentElement; index++)
         {
             // Add the current element
             buffer = TCollectionPolicy.Add(ref buffer, currentElement!);
@@ -127,27 +152,37 @@ internal class CollectionConverter<TCollection, TCollectionPolicy, TBuffer, TEle
                 break;
             }
 
-            computedPrefix[charsWritten + 1] = ']';
-            context.PushPrefix(computedPrefix[..(charsWritten + 2)]);
-            currentElementSuccess = _elementConverter.TryRead(ref context, typeof(TElement), options, out currentElement!, out foundCurrentElement);
-            succeded = succeded && currentElementSuccess;
-            context.PopPrefix(computedPrefix[..(charsWritten + 2)]);
+            try
+            {
+                computedPrefix[charsWritten + 1] = ']';
+                context.PushPrefix(computedPrefix[..(charsWritten + 2)]);
+                currentElementSuccess = _elementConverter.TryRead(ref context, typeof(TElement), options, out currentElement!, out foundCurrentElement);
+                succeded = succeded && currentElementSuccess;
+            }
+            finally
+            {
+                context.PopPrefix(computedPrefix[..(charsWritten + 2)]);
+            }
         }
 
-        if (!foundCurrentElement)
+        result = TCollectionPolicy.ToResult(buffer);
+        if (index > maxCollectionSize && foundCurrentElement)
         {
-            result = TCollectionPolicy.ToResult(buffer);
-            return succeded;
+            // Signal failure because we have stopped binding.
+            context.AddMappingError(
+                FormattableStringFactory.Create(FormDataResources.MaxCollectionSizeReached, "collection", maxCollectionSize),
+                null);
+
+            context.AttachInstanceToErrors(result!);
+            return false;
         }
         else
         {
-            // We reached the max collection size.
-            buffer = TCollectionPolicy.Add(ref buffer, currentElement!);
-            result = TCollectionPolicy.ToResult(buffer);
-
-            // Signal failure because we have stopped binding.
-            // We will include an error in the list of reported errors.
-            return false;
+            if (!succeded)
+            {
+                context.AttachInstanceToErrors(result!);
+            }
+            return succeded;
         }
     }
 }

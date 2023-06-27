@@ -132,7 +132,8 @@ public sealed class CascadingModelBinder : IComponent, ICascadingValueSupplier, 
                 throw new InvalidOperationException($"'{nameof(CascadingModelBinder)}' 'Name' can't change after initialized.");
             }
 
-            _bindingContext = new ModelBindingContext(name, bindingId, CanBind);
+            _bindingContext = new ModelBindingContext(name, bindingId);
+            ParentContext?.SetErrors(name, _bindingContext);
         }
 
         string GenerateBindingContextId(string name)
@@ -140,19 +141,6 @@ public sealed class CascadingModelBinder : IComponent, ICascadingValueSupplier, 
             var bindingId = Navigation.ToBaseRelativePath(Navigation.GetUriWithQueryParameter("handler", name));
             var hashIndex = bindingId.IndexOf('#');
             return hashIndex == -1 ? bindingId : new string(bindingId.AsSpan(0, hashIndex));
-        }
-
-        bool CanBind(Type type)
-        {
-            foreach (var provider in ModelBindingProviders)
-            {
-                if (provider.SupportsParameterType(type))
-                {
-                    return true;
-                }
-            }
-
-            return false;
         }
     }
 

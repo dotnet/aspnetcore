@@ -96,6 +96,7 @@ internal sealed class ServerAddressesCollection : ICollection<string>
         return GetEnumerator();
     }
 
+    [DebuggerDisplay("Count = {Count}")]
     private sealed class PublicServerAddressesCollection : ICollection<string>
     {
         private readonly ServerAddressesCollection _addressesCollection;

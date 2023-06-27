@@ -244,20 +244,7 @@ public class RouteViewTest
 
     private class TestFormValueSupplier : IFormValueSupplier
     {
-        public bool CanBind(string formName, Type valueType)
-        {
-            return false;
-        }
-
-        public bool CanConvertSingleValue(Type type)
-        {
-            return false;
-        }
-
-        public bool TryBind(string formName, Type valueType, [NotNullWhen(true)] out object boundValue)
-        {
-            boundValue = null;
-            return false;
-        }
+        public bool CanBind(Type valueType, string formName = null) => false;
+        public void Bind(FormValueSupplierContext context) { }
     }
 }

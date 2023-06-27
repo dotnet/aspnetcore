@@ -76,11 +76,13 @@ public class EditFormTest
         Assert.Same(model, returnedEditContext.Model);
     }
 
-    [Fact]
-    public async Task ReturnsEditContextWhenEditContextParameterUsed()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ReturnsEditContextWhenEditContextParameterUsed(bool createFieldPath)
     {
         // Arrange
-        var editContext = new EditContext(new TestModel());
+        var editContext = new EditContext(new TestModel()) { ShouldUseFieldIdentifiers = createFieldPath };
         var rootComponent = new TestEditFormHostComponent
         {
             EditContext = editContext
@@ -123,7 +125,7 @@ public class EditFormTest
         {
             Model = model,
             FormName = "my-form",
-            BindingContext = new ModelBindingContext("", "", t => true)
+            BindingContext = new ModelBindingContext("", "")
         };
 
         // Act
@@ -144,7 +146,7 @@ public class EditFormTest
         {
             Model = model,
             FormName = "my-form",
-            BindingContext = new ModelBindingContext("parent-context", "path?handler=parent-context", t => true )
+            BindingContext = new ModelBindingContext("parent-context", "path?handler=parent-context")
         };
 
         // Act
@@ -165,11 +167,12 @@ public class EditFormTest
         {
             Model = model,
             FormName = "my-form",
-            AdditionalFormAttributes = new Dictionary<string, object>() {
+            AdditionalFormAttributes = new Dictionary<string, object>()
+            {
                 ["name"] = "my-explicit-name",
                 ["action"] = "/somewhere/else",
             },
-            BindingContext = new ModelBindingContext("parent-context", "path?handler=parent-context", t => true)
+            BindingContext = new ModelBindingContext("parent-context", "path?handler=parent-context")
         };
 
         // Act
@@ -189,7 +192,7 @@ public class EditFormTest
         var rootComponent = new TestEditFormHostComponent
         {
             Model = model,
-            BindingContext = new ModelBindingContext("", "", t => true),
+            BindingContext = new ModelBindingContext("", ""),
             SubmitHandler = ctx => { }
         };
 
@@ -252,7 +255,7 @@ public class EditFormTest
         var rootComponent = new TestEditFormHostComponent
         {
             Model = model,
-            BindingContext = new ModelBindingContext("", "", t => true)
+            BindingContext = new ModelBindingContext("", "")
         };
 
         // Act
@@ -292,7 +295,7 @@ public class EditFormTest
         {
             Model = model,
             FormName = "my-form",
-            BindingContext = new ModelBindingContext("", "", t => true)
+            BindingContext = new ModelBindingContext("", "")
         };
 
         // Act
@@ -312,7 +315,7 @@ public class EditFormTest
         {
             Model = model,
             FormName = "my-form",
-            BindingContext = new ModelBindingContext("parent-context", "path?handler=parent-context", t => true)
+            BindingContext = new ModelBindingContext("parent-context", "path?handler=parent-context")
         };
 
         // Act
@@ -448,20 +451,7 @@ public class EditFormTest
 
     private class TestFormValueSupplier : IFormValueSupplier
     {
-        public bool CanBind(string formName, Type valueType)
-        {
-            return false;
-        }
-
-        public bool CanConvertSingleValue(Type type)
-        {
-            return false;
-        }
-
-        public bool TryBind(string formName, Type valueType, [NotNullWhen(true)] out object boundValue)
-        {
-            boundValue = null;
-            return false;
-        }
+        public bool CanBind(Type valueType, string formName = null) => false;
+        public void Bind(FormValueSupplierContext context) { }
     }
 }

@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
+
 namespace Microsoft.AspNetCore.Components.Binding;
 
 /// <summary>
@@ -28,27 +30,36 @@ public sealed class CascadingFormModelBindingProvider : CascadingModelBindingPro
 
     /// <inhertidoc/>
     protected internal override bool SupportsParameterType(Type type)
-        => _formValueSupplier.CanConvertSingleValue(type);
+        => _formValueSupplier.CanBind(type, null);
 
     /// <inhertidoc/>
     protected internal override bool CanSupplyValue(ModelBindingContext? bindingContext, in CascadingParameterInfo parameterInfo)
     {
         var (formName, valueType) = GetFormNameAndValueType(bindingContext, parameterInfo);
-        return _formValueSupplier.CanBind(formName!, valueType);
+        return _formValueSupplier.CanBind(valueType, formName);
     }
 
     /// <inhertidoc/>
     protected internal override object? GetCurrentValue(ModelBindingContext? bindingContext, in CascadingParameterInfo parameterInfo)
     {
+        Debug.Assert(bindingContext != null);
         var (formName, valueType) = GetFormNameAndValueType(bindingContext, parameterInfo);
 
-        if (!_formValueSupplier.TryBind(formName!, valueType, out var boundValue))
-        {
-            // TODO: Report errors
-            return null;
-        }
+        var parameterName = parameterInfo.Attribute.Name;
 
-        return boundValue;
+        Action<string, FormattableString, string?> errorHandler = string.IsNullOrEmpty(parameterName) ?
+            bindingContext.AddError :
+            (name, message, value) => bindingContext.AddError(parameterName, name, message, value);
+
+        var context = new FormValueSupplierContext(formName!, valueType, parameterInfo.PropertyName)
+        {
+            OnError = errorHandler,
+            MapErrorToContainer = bindingContext.AttachParentValue
+        };
+
+        _formValueSupplier.Bind(context);
+
+        return context.Result;
     }
 
     private static (string FormName, Type ValueType) GetFormNameAndValueType(ModelBindingContext? bindingContext, in CascadingParameterInfo parameterInfo)

@@ -30,7 +30,7 @@ public sealed class OutputCacheAttribute : Attribute
     }
 
     /// <summary>
-    /// Gets or sets the value which determines whether the reponse should be cached or not.
+    /// Gets or sets the value which determines whether the response should be cached or not.
     /// When set to <see langword="true"/>, the response won't be cached.
     /// </summary>
     public bool NoStore

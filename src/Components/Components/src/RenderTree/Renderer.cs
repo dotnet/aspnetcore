@@ -126,6 +126,9 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     protected ComponentState GetComponentState(int componentId)
         => GetRequiredComponentState(componentId);
 
+    internal ComponentState GetComponentState(IComponent component)
+        => _componentStateByComponent.GetValueOrDefault(component);
+
     private async void RenderRootComponentsOnHotReload()
     {
         // Before re-rendering the root component, also clear any well-known caches in the framework
@@ -1038,7 +1041,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
                 return; // Handled successfully
             }
 
-            candidate = candidate.ParentComponentState;
+            candidate = candidate.LogicalParentComponentState;
         }
 
         // It's unhandled, so treat as fatal

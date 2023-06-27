@@ -2,10 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Security.Claims;
+using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -110,6 +115,47 @@ public static class IdentityServiceCollectionExtensions
     }
 
     /// <summary>
+    /// Adds a set of common identity services to the application to support <see cref="IdentityApiEndpointRouteBuilderExtensions.MapIdentityApi{TUser}(IEndpointRouteBuilder)"/>
+    /// and configures authentication to support identity bearer tokens and cookies.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/>.</param>
+    /// <returns>The <see cref="IdentityBuilder"/>.</returns>
+    public static IdentityBuilder AddIdentityApiEndpoints<TUser>(this IServiceCollection services)
+        where TUser : class, new()
+        => services.AddIdentityApiEndpoints<TUser>(_ => { });
+
+    /// <summary>
+    /// Adds a set of common identity services to the application to support <see cref="IdentityApiEndpointRouteBuilderExtensions.MapIdentityApi{TUser}(IEndpointRouteBuilder)"/>
+    /// and configures authentication to support identity bearer tokens and cookies.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/>.</param>
+    /// <param name="configure">Configures the <see cref="IdentityOptions"/>.</param>
+    /// <returns>The <see cref="IdentityBuilder"/>.</returns>
+    public static IdentityBuilder AddIdentityApiEndpoints<TUser>(this IServiceCollection services, Action<IdentityOptions> configure)
+        where TUser : class, new()
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(configure);
+
+        services
+            .AddAuthentication(IdentityConstants.BearerAndApplicationScheme)
+            .AddScheme<AuthenticationSchemeOptions, CompositeIdentityHandler>(IdentityConstants.BearerAndApplicationScheme, null, compositeOptions =>
+            {
+                compositeOptions.ForwardDefault = IdentityConstants.BearerScheme;
+                compositeOptions.ForwardAuthenticate = IdentityConstants.BearerAndApplicationScheme;
+            })
+            .AddIdentityBearerToken<TUser>()
+            .AddIdentityCookies();
+
+        return services.AddIdentityCore<TUser>(o =>
+            {
+                o.Stores.MaxLengthForKeys = 128;
+                configure(o);
+            })
+            .AddApiEndpoints();
+    }
+
+    /// <summary>
     /// Configures the application cookie.
     /// </summary>
     /// <param name="services">The services available in the application.</param>
@@ -139,6 +185,34 @@ public static class IdentityServiceCollectionExtensions
         public void PostConfigure(string? name, SecurityStampValidatorOptions options)
         {
             options.TimeProvider ??= TimeProvider;
+        }
+    }
+
+    private sealed class CompositeIdentityHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger, UrlEncoder encoder)
+        : SignInAuthenticationHandler<AuthenticationSchemeOptions>(options, logger, encoder)
+    {
+        protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
+        {
+            var bearerResult = await Context.AuthenticateAsync(IdentityConstants.BearerScheme);
+
+            // Only try to authenticate with the application cookie if there is no bearer token.
+            if (!bearerResult.None)
+            {
+                return bearerResult;
+            }
+
+            // Cookie auth will return AuthenticateResult.NoResult() like bearer auth just did if there is no cookie.
+            return await Context.AuthenticateAsync(IdentityConstants.ApplicationScheme);
+        }
+
+        protected override Task HandleSignInAsync(ClaimsPrincipal user, AuthenticationProperties? properties)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override Task HandleSignOutAsync(AuthenticationProperties? properties)
+        {
+            throw new NotImplementedException();
         }
     }
 }

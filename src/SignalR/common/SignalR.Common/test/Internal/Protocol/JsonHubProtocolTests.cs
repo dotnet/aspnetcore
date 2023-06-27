@@ -42,6 +42,8 @@ public class JsonHubProtocolTests : JsonHubProtocolTestsBase
     [InlineData("42", "Unexpected JSON Token Type 'Number'. Expected a JSON Object.")]
     [InlineData("{\"type\":\"foo\"}", "Expected 'type' to be of type Number.")]
     [InlineData("{\"type\":3,\"invocationId\":\"42\",\"result\":true", "Error reading JSON.")]
+    [InlineData("{\"type\":8,\"sequenceId\":true}", "Expected 'sequenceId' to be of type Number.")]
+    [InlineData("{\"type\":9,\"sequenceId\":\"value\"}", "Expected 'sequenceId' to be of type Number.")]
     public void CustomInvalidMessages(string input, string expectedMessage)
     {
         input = Frame(input);

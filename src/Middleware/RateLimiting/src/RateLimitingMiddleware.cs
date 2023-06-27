@@ -4,7 +4,6 @@
 using System.Diagnostics;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -78,15 +77,10 @@ internal sealed partial class RateLimitingMiddleware
             return _next(context);
         }
 
-        // Only include route and method if we have an endpoint with a route.
-        // A request always has a HTTP request, but it isn't useful unless combined with a route.
-        var route = endpoint?.Metadata.GetMetadata<IRouteDiagnosticsMetadata>()?.Route;
-        var method = route is not null ? context.Request.Method : null;
-
-        return InvokeInternal(context, enableRateLimitingAttribute, method, route);
+        return InvokeInternal(context, enableRateLimitingAttribute);
     }
 
-    private async Task InvokeInternal(HttpContext context, EnableRateLimitingAttribute? enableRateLimitingAttribute, string? method, string? route)
+    private async Task InvokeInternal(HttpContext context, EnableRateLimitingAttribute? enableRateLimitingAttribute)
     {
         var policyName = enableRateLimitingAttribute?.PolicyName;
 
@@ -94,7 +88,7 @@ internal sealed partial class RateLimitingMiddleware
         // This ensures that the state is consistent for the entire request.
         // For example, if a meter listener starts after a request is queued, when the request exits the queue
         // the requests queued counter won't go into a negative value.
-        var metricsContext = _metrics.CreateContext(policyName, method, route);
+        var metricsContext = _metrics.CreateContext(policyName);
 
         using var leaseContext = await TryAcquireAsync(context, metricsContext);
 
