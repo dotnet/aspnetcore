@@ -60,7 +60,7 @@
     <ProjectReference Include="..\testassets\BasicTestApp\BasicTestApp.csproj" />
     <ProjectReference Include="..\testassets\GlobalizationWasmApp\GlobalizationWasmApp.csproj" />
     <ProjectReference Include="..\..\WebAssembly\testassets\Wasm.Prerendered.Server\Wasm.Prerendered.Server.csproj" />
-    <ProjectReference Include="..\..\WebAssembly\testassets\ThreadingApp\ThreadingApp.csproj" Targets="Restore" />
+    <ProjectReference Include="..\..\WebAssembly\testassets\ThreadingApp\ThreadingApp.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TestTrimmedOrMultithreadingApps)' == 'true'">
