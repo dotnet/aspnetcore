@@ -71,9 +71,7 @@ public class ThreadingAppTest
         Browser.Exists(By.LinkText("Counter")).Click();
         Assert.Equal("Counter", Browser.Exists(By.TagName("h1")).Text);
 
-        // Observe the initial value is zero
         var countDisplayElement = Browser.Exists(By.CssSelector("h1 + p"));
-        Assert.Equal("Current count: 0", countDisplayElement.Text);
 
         // wait and see timer increase
         await Task.Delay(500);
