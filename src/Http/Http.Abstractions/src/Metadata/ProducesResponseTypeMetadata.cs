@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Http;
 /// <summary>
 /// Specifies the type of the value and status code returned by the action.
 /// </summary>
-internal sealed class ProducesResponseTypeMetadata : IProducesResponseTypeMetadata
+public sealed class ProducesResponseTypeMetadata : IProducesResponseTypeMetadata
 {
     private readonly IEnumerable<string> _contentTypes;
 
@@ -78,6 +78,9 @@ internal sealed class ProducesResponseTypeMetadata : IProducesResponseTypeMetada
     /// </summary>
     public int StatusCode { get; set; }
 
+    /// <summary>
+    /// Gets or sets the content types associated with the response.
+    /// </summary>
     public IEnumerable<string> ContentTypes => _contentTypes;
 
     internal static ProducesResponseTypeMetadata CreateUnvalidated(Type? type, int statusCode, IEnumerable<string> contentTypes) => new(type, statusCode, contentTypes);

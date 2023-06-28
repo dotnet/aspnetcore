@@ -646,7 +646,7 @@ public class OpenApiOperationGeneratorTests
         var operation = GetOpenApiOperation(() => "",
             additionalMetadata: new[]
             {
-                new AcceptsMetadata(typeof(string), true, new string[] { "application/json", "application/xml"})
+                new AcceptsMetadata(new string[] { "application/json", "application/xml"}, typeof(string), true)
             });
 
         var requestBody = operation.RequestBody;
@@ -672,7 +672,7 @@ public class OpenApiOperationGeneratorTests
         var operation = GetOpenApiOperation((InferredJsonClass inferredJsonClass) => "",
                 additionalMetadata: new[]
                 {
-                    new AcceptsMetadata(typeof(InferredJsonClass), true, new string[] { "application/json"})
+                    new AcceptsMetadata(new string[] { "application/json" }, typeof(InferredJsonClass), true)
                 });
 
         // Assert
