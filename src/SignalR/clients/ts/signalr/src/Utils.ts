@@ -53,7 +53,7 @@ export class Platform {
     // Node apps shouldn't have a window object, but WebWorkers don't either
     // so we need to check for both WebWorker and window
     public static get isNode(): boolean {
-        return !this.isBrowser && !this.isWebWorker && !this.isReactNative;
+        return typeof process !== "undefined" && process.release && process.release.name === "node";
     }
 }
 
