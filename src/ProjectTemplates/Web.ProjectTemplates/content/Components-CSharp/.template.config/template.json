@@ -222,7 +222,7 @@
       "datatype": "bool",
       "defaultValue": "false",
       "displayName": "_Use interactive WebAssembly components",
-      "description": "If specified, configures the project to render components interactively on the browser using WebAssembly."
+      "description": "If specified, configures the project to render components interactively in the browser using WebAssembly."
     },
     "UseServer": {
       "type": "parameter",
