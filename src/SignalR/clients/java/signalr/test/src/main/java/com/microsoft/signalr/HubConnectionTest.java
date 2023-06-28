@@ -4025,7 +4025,6 @@ class HubConnectionTest {
     }
 
     // https://github.com/dotnet/aspnetcore/issues/49043
-    @Disabled
     @Test
     public void sendsCloseMessageOnStop() throws InterruptedException {
         MockTransport mockTransport = new MockTransport(true, true);
