@@ -683,7 +683,8 @@ internal static class StringUtilities
             new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true).GetByteCount(value);
             return !value.Contains('\0');
         }
-        catch (DecoderFallbackException)
+        catch (ArgumentOutOfRangeException) // 'value' too large to compute a UTF-8 byte count
+        catch (EncoderFallbackException) // 'value' cannot be converted losslessly to UTF-8
         {
             return false;
         }
