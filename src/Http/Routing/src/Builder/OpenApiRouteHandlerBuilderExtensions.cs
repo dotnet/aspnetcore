@@ -228,7 +228,7 @@ public static class OpenApiRouteHandlerBuilderExtensions
         params string[] additionalContentTypes)
     {
         var contentTypes = GetAllContentTypes(contentType, additionalContentTypes);
-        return builder.WithMetadata(new AcceptsMetadata(requestType, isOptional, contentTypes));
+        return builder.WithMetadata(new AcceptsMetadata(contentTypes, requestType, isOptional));
     }
 
     /// <summary>

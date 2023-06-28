@@ -3,30 +3,17 @@
 
 #nullable enable
 
-using System;
-using System.Collections.Generic;
-
 namespace Microsoft.AspNetCore.Http.Metadata;
 
 /// <summary>
 /// Metadata that specifies the supported request content types.
 /// </summary>
-internal sealed class AcceptsMetadata : IAcceptsMetadata
+public sealed class AcceptsMetadata : IAcceptsMetadata
 {
-    /// <summary>
-    /// Creates a new instance of <see cref="AcceptsMetadata"/>.
-    /// </summary>
-    public AcceptsMetadata(string[] contentTypes)
-    {
-        ArgumentNullException.ThrowIfNull(contentTypes);
-
-        ContentTypes = contentTypes;
-    }
-
     /// <summary>
     /// Creates a new instance of <see cref="AcceptsMetadata"/> with a type.
     /// </summary>
-    public AcceptsMetadata(Type? type, bool isOptional, string[] contentTypes)
+    public AcceptsMetadata(string[] contentTypes, Type? type = null, bool isOptional = false)
     {
         ArgumentNullException.ThrowIfNull(type);
         ArgumentNullException.ThrowIfNull(contentTypes);

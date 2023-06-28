@@ -6,6 +6,11 @@ Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult
 Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Http.HttpValidationProblemDetails.Errors.set -> void
 Microsoft.AspNetCore.Http.IProblemDetailsService.TryWriteAsync(Microsoft.AspNetCore.Http.ProblemDetailsContext! context) -> System.Threading.Tasks.ValueTask<bool>
+Microsoft.AspNetCore.Http.Metadata.AcceptsMetadata
+Microsoft.AspNetCore.Http.Metadata.AcceptsMetadata.AcceptsMetadata(string![]! contentTypes, System.Type? type = null, bool isOptional = false) -> void
+Microsoft.AspNetCore.Http.Metadata.AcceptsMetadata.ContentTypes.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Microsoft.AspNetCore.Http.Metadata.AcceptsMetadata.IsOptional.get -> bool
+Microsoft.AspNetCore.Http.Metadata.AcceptsMetadata.RequestType.get -> System.Type?
 Microsoft.AspNetCore.Http.Metadata.IRouteDiagnosticsMetadata
 Microsoft.AspNetCore.Http.Metadata.IRouteDiagnosticsMetadata.Route.get -> string!
 Microsoft.AspNetCore.Http.ProblemDetailsContext.Exception.get -> System.Exception?
