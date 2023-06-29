@@ -1,9 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Binding;
+using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
@@ -22,6 +21,11 @@ public class EditFormTest
         services.AddSingleton<IFormValueSupplier, TestFormValueSupplier>();
         services.AddSingleton<CascadingModelBindingProvider, CascadingFormModelBindingProvider>();
         services.AddSingleton<CascadingModelBindingProvider, CascadingQueryModelBindingProvider>();
+        services.AddAntiforgery();
+        services.AddLogging();
+        services.AddSingleton<ComponentStatePersistenceManager>();
+        services.AddSingleton(services => services.GetRequiredService<ComponentStatePersistenceManager>().State);
+        services.AddSingleton<AntiforgeryStateProvider, AntiforgeryStateProvider>();
         _testRenderer = new(services.BuildServiceProvider());
     }
 
@@ -169,6 +173,7 @@ public class EditFormTest
             FormName = "my-form",
             AdditionalFormAttributes = new Dictionary<string, object>()
             {
+                ["method"] = "dialog",
                 ["name"] = "my-explicit-name",
                 ["action"] = "/somewhere/else",
             },
@@ -180,8 +185,9 @@ public class EditFormTest
         var attributes = GetFormElementAttributeFrames().ToArray();
 
         // Assert
-        AssertFrame.Attribute(attributes[0], "name", "my-explicit-name");
-        AssertFrame.Attribute(attributes[1], "action", "/somewhere/else");
+        AssertFrame.Attribute(attributes[0], "method", "dialog");
+        AssertFrame.Attribute(attributes[1], "name", "my-explicit-name");
+        AssertFrame.Attribute(attributes[2], "action", "/somewhere/else");
     }
 
     [Fact]
@@ -201,8 +207,9 @@ public class EditFormTest
         var attributes = GetFormElementAttributeFrames();
 
         // Assert
-        var frame = Assert.Single(attributes);
-        AssertFrame.Attribute(frame, "onsubmit");
+        Assert.Collection(attributes,
+            frame => AssertFrame.Attribute(frame, "method"),
+            frame => AssertFrame.Attribute(frame, "onsubmit"));
     }
 
     [Fact]

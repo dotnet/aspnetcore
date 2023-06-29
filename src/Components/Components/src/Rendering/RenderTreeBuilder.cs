@@ -175,6 +175,11 @@ public sealed class RenderTreeBuilder : IDisposable
             throw new InvalidOperationException($"Valueless attributes may only be added immediately after frames of type {RenderTreeFrameType.Element}");
         }
 
+        if (TrackNamedEventHandlers && string.Equals(name, "@onsubmit:name", StringComparison.Ordinal))
+        {
+            _entries.AppendAttribute(sequence, name, "");
+        }
+
         _entries.AppendAttribute(sequence, name, BoxedTrue);
     }
 
@@ -873,6 +878,18 @@ public sealed class RenderTreeBuilder : IDisposable
                     // This attribute has been overridden. For now, blank out its name to *mark* it. We'll do a pass
                     // later to wipe it out.
                     frame = default;
+                    // We are wiping out this frame, which means that if we are tracking named events, we have to adjust the
+                    // indexes of the named event handlers that come after this frame.
+                    if (_seenEventHandlerNames != null && _seenEventHandlerNames.Count > 0)
+                    {
+                        foreach (var (name, eventIndex) in _seenEventHandlerNames)
+                        {
+                            if (eventIndex >= i)
+                            {
+                                _seenEventHandlerNames[name] = eventIndex - 1;
+                            }
+                        }
+                    }
                 }
                 else
                 {
@@ -935,6 +952,62 @@ public sealed class RenderTreeBuilder : IDisposable
 
     internal Dictionary<string, int>? GetNamedEvents()
     {
+        if (TrackNamedEventHandlers)
+        {
+            var i = _entries.Count - 1;
+            while (i >= 0)
+            {
+                ref var frame = ref _entries.Buffer[i];
+                if (frame.FrameType != RenderTreeFrameType.Attribute)
+                {
+                    i--;
+                    continue;
+                }
+                var j = i;
+                var submitHandlerIndex = -1;
+                var submitHanderNameIndex = -1;
+                while (j > 0)
+                {
+                    // we are inside a list of attribute frames.
+                    // Walk backwards to find pairs of onsubmit and @onsubmit:name
+                    // and stop the first time we find an element or component frame.
+                    ref var attributeFrame = ref _entries.Buffer[j];
+                    if (attributeFrame.FrameType == RenderTreeFrameType.Component)
+                    {
+                        // If we were processing a component, ignore the values
+                        // as this feature is only for HTML elements.
+                        submitHanderNameIndex = -1;
+                        submitHandlerIndex = -1;
+                        break;
+                    }
+                    else if (attributeFrame.FrameType == RenderTreeFrameType.Element)
+                    {
+                        // We are at the end of the elements sequence
+                        break;
+                    }
+                    if (string.Equals(attributeFrame.AttributeName, "onsubmit", StringComparison.Ordinal))
+                    {
+                        submitHandlerIndex = j;
+                    }
+                    else if (string.Equals(attributeFrame.AttributeName, "@onsubmit:name", StringComparison.Ordinal))
+                    {
+                        submitHanderNameIndex = j;
+                    }
+
+                    if (submitHandlerIndex != -1 && submitHanderNameIndex != -1)
+                    {
+                        // We found a pair, add it to the dictionary in case it was missing.
+                        _seenEventHandlerNames ??= new Dictionary<string, int>(SimplifiedStringHashComparer.Instance);
+                        var eventHandlerName = _entries.Buffer[submitHanderNameIndex].AttributeValue;
+                        _seenEventHandlerNames[(eventHandlerName as string)!] = submitHandlerIndex;
+                        submitHanderNameIndex = -1;
+                        submitHandlerIndex = -1;
+                    }
+                    j--;
+                }
+                i = j;
+            }
+        }
         return _seenEventHandlerNames;
     }
 }
