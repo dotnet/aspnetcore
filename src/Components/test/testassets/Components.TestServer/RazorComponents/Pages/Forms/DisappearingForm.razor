@@ -10,7 +10,8 @@
 }
 
 @* Just here so that the test can dispatch the event. *@
-<form method="post" id="test-form">
+<form method="post" enctype="application/x-www-form-urlencoded" id="test-form">
+    <Microsoft.AspNetCore.Components.Forms.AntiforgeryToken />
     <input id="test-send" type="submit" value="test-send" />
 </form>
 

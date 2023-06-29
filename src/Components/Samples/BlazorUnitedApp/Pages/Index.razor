@@ -1,11 +1,11 @@
 ﻿@page "/"
-
 <PageTitle>Index</PageTitle>
 
-<h1>@Parameter</h1>
+<h1>@Value?.Parameter</h1>
 
-<EditForm method="POST" Model="Parameter">
-    <InputText @bind-Value="Parameter" />
+<EditForm method="POST" Model="Value?.Parameter">
+    <InputText @bind-Value="Value!.Parameter" />
+    <AntiforgeryToken />
     <input type="submit" value="Send" />
 </EditForm>
 
@@ -15,11 +15,15 @@
 }
 
 @code{
-    [SupplyParameterFromForm] string Parameter { get; set; } = "Hello, world!";
+    [SupplyParameterFromForm] Data? Value { get; set; }
+
+    protected override void OnInitialized() => Value ??= new();
 
     bool _submitted = false;
-    public void Submit()
+    public void Submit() => _submitted = true;
+
+    public class Data
     {
-        _submitted = true;
+        public string Parameter { get; set; } = "";
     }
 }

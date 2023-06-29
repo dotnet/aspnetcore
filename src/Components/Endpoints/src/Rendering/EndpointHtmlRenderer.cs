@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Endpoints.DependencyInjection;
+using Microsoft.AspNetCore.Components.Endpoints.Forms;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure;
 using Microsoft.AspNetCore.Components.Infrastructure;
@@ -86,6 +87,12 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         if (handler != null && form != null && formData != null)
         {
             formData.SetFormData(handler, new FormCollectionReadOnlyDictionary(form));
+        }
+
+        var antiforgery = httpContext.RequestServices.GetRequiredService<AntiforgeryStateProvider>();
+        if (antiforgery is EndpointAntiforgeryStateProvider endpointAntiforgery)
+        {
+            endpointAntiforgery.SetRequestContext(httpContext);
         }
 
         // It's important that this is initialized since a component might try to restore state during prerendering
