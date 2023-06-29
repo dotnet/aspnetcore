@@ -123,4 +123,23 @@ public static class RoutingEndpointConventionBuilderExtensions
         builder.WithMetadata(new EndpointGroupNameAttribute(endpointGroupName));
         return builder;
     }
+
+    /// <summary>
+    /// Sets the <see cref="RouteEndpointBuilder.Order"/> to the provided <paramref name="order"/> for all
+    /// builders created by <paramref name="builder"/>.
+    /// </summary>
+    /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>
+    /// <param name="order">The order assigned to the endpoint.</param>
+    /// <returns>The <see cref="IEndpointConventionBuilder"/>.</returns>
+    public static TBuilder WithOrder<TBuilder>(this TBuilder builder, int order) where TBuilder : IEndpointConventionBuilder
+    {
+        builder.Add(builder =>
+        {
+            if (builder is RouteEndpointBuilder routeEndpointBuilder)
+            {
+                routeEndpointBuilder.Order = order;
+            }
+        });
+        return builder;
+    }
 }
