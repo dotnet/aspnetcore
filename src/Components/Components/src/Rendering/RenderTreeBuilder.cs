@@ -28,6 +28,7 @@ public sealed class RenderTreeBuilder : IDisposable
     private bool _hasSeenAddMultipleAttributes;
     private Dictionary<string, int>? _seenAttributeNames;
     private Dictionary<string, int>? _seenEventHandlerNames;
+    private IComponentRenderMode? _pendingComponentCallSiteRenderMode; // TODO: Remove when Razor compiler supports call-site @rendermode
 
     // Configure the render tree builder to capture the event handler names.
     internal bool TrackNamedEventHandlers { get; set; }
@@ -546,6 +547,28 @@ public sealed class RenderTreeBuilder : IDisposable
     }
 
     /// <summary>
+    /// Temporary API until Razor compiler is updated. This will be removed before .NET 8 ships.
+    /// </summary>
+    public void AddComponentParameter(int sequence, string name, IComponentRenderMode renderMode)
+    {
+        if (string.Equals(name, "@rendermode", StringComparison.Ordinal))
+        {
+            // When the Razor compiler is updated, <SomeComponent @rendermode="@RenderMode.WebAssembly" />  would compile directly as a call
+            // to AddComponentRenderMode(RenderMode.WebAssembly), which must appear after all attributes. Until then we'll intercept regular
+            // parameters with this name and IComponentRenderMode values. Unfortunately we can't guarantee that the parameter will appear after
+            // all other parameters (e.g., ChildContent would always go later), so use this inefficient trick to defer adding it.
+            // It won't be needed once the Razor compiler supports @rendermode.
+            _pendingComponentCallSiteRenderMode = renderMode;
+        }
+        else
+        {
+            // For other parameter names, the developer is doing something custom so just pass the parameter as normal
+            // This special case will also not be relevant once we have @rendermode
+            AddComponentParameter(sequence, name, (object)renderMode);
+        }
+    }
+
+    /// <summary>
     /// Appends a frame representing a component parameter.
     /// </summary>
     /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
@@ -612,6 +635,12 @@ public sealed class RenderTreeBuilder : IDisposable
     /// </summary>
     public void CloseComponent()
     {
+        if (_pendingComponentCallSiteRenderMode is not null)
+        {
+            AddComponentRenderMode(0, _pendingComponentCallSiteRenderMode);
+            _pendingComponentCallSiteRenderMode = null;
+        }
+
         var indexOfEntryBeingClosed = _openElementIndices.Pop();
 
         // We might be closing a component with only attributes. Run the attribute cleanup pass
@@ -661,6 +690,41 @@ public sealed class RenderTreeBuilder : IDisposable
 
         _entries.AppendComponentReferenceCapture(sequence, componentReferenceCaptureAction, parentFrameIndexValue);
         _lastNonAttributeFrameType = RenderTreeFrameType.ComponentReferenceCapture;
+    }
+
+    /// <summary>
+    /// Adds a frame indicating the render mode on the enclosing component frame.
+    /// </summary>
+    /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
+    /// <param name="renderMode">The <see cref="IComponentRenderMode"/>.</param>
+    public void AddComponentRenderMode(int sequence, IComponentRenderMode renderMode)
+    {
+        ArgumentNullException.ThrowIfNull(renderMode);
+
+        // Note that a ComponentRenderMode frame is technically a child of the Component frame to which it applies,
+        // hence the terminology of "adding" it rather than "setting" it. For performance reasons, the diffing system
+        // will only look for ComponentRenderMode frames:
+        // [a] when the HasCallerSpecifiedRenderMode flag is set on the Component frame
+        // [b] up until the first child that is *not* a ComponentRenderMode frame or any other header frame type
+        //     that we may define in the future
+
+        var parentFrameIndex = GetCurrentParentFrameIndex();
+        if (!parentFrameIndex.HasValue)
+        {
+            throw new InvalidOperationException("There is no enclosing component frame.");
+        }
+
+        var parentFrameIndexValue = parentFrameIndex.Value;
+        ref var parentFrame = ref _entries.Buffer[parentFrameIndexValue];
+        if (parentFrame.FrameTypeField != RenderTreeFrameType.Component)
+        {
+            throw new InvalidOperationException($"The enclosing frame is not of the required type '{nameof(RenderTreeFrameType.Component)}'.");
+        }
+
+        parentFrame.ComponentFrameFlagsField |= ComponentFrameFlags.HasCallerSpecifiedRenderMode;
+
+        _entries.AppendComponentRenderMode(sequence, renderMode);
+        _lastNonAttributeFrameType = RenderTreeFrameType.ComponentRenderMode;
     }
 
     /// <summary>
