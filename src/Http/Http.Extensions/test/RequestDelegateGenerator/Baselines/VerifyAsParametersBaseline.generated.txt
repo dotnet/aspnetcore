@@ -469,8 +469,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                     Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
                     Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                     options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 47));
-                    options.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(contentTypes: GeneratedMetadataConstants.JsonContentType));
-                    options.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
+                    options.EndpointBuilder.Metadata.Add(new AcceptsMetadata(contentTypes: GeneratedMetadataConstants.JsonContentType));
+                    options.EndpointBuilder.Metadata.Add(new ProducesResponseTypeMetadata(statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
                     return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
@@ -570,7 +570,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
                     Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                     options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 48));
-                    options.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(contentTypes: GeneratedMetadataConstants.JsonContentType));
+                    options.EndpointBuilder.Metadata.Add(new AcceptsMetadata(contentTypes: GeneratedMetadataConstants.JsonContentType));
                     var parameterInfos = methodInfo.GetParameters();
                     var Value_ParameterInfo = new PropertyAsParameterInfo(false, typeof(Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithMetadataType)!.GetProperty("Value")!, typeof(Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithMetadataType).GetConstructor(new[] { typeof(Microsoft.AspNetCore.Http.HttpContext), typeof(Microsoft.AspNetCore.Http.Generators.Tests.AddsCustomParameterMetadataAsProperty) })?.GetParameters()[1]);
                     PopulateMetadataForParameter<global::Microsoft.AspNetCore.Http.Generators.Tests.AddsCustomParameterMetadataAsProperty>(Value_ParameterInfo, options.EndpointBuilder);
@@ -815,49 +815,6 @@ namespace Microsoft.AspNetCore.Http.Generated
             T.PopulateMetadata(parameter, builder);
         }
 
-    }
-
-    %GENERATEDCODEATTRIBUTE%
-    file sealed class GeneratedAcceptsMetadata : IAcceptsMetadata
-    {
-        public GeneratedAcceptsMetadata(string[] contentTypes)
-        {
-            ArgumentNullException.ThrowIfNull(contentTypes);
-
-            ContentTypes = contentTypes;
-        }
-
-        public GeneratedAcceptsMetadata(Type? type, bool isOptional, string[] contentTypes)
-        {
-            ArgumentNullException.ThrowIfNull(type);
-            ArgumentNullException.ThrowIfNull(contentTypes);
-
-            RequestType = type;
-            ContentTypes = contentTypes;
-            IsOptional = isOptional;
-        }
-
-        public IReadOnlyList<string> ContentTypes { get; }
-
-        public Type? RequestType { get; }
-
-        public bool IsOptional { get; }
-    }
-    %GENERATEDCODEATTRIBUTE%
-    file sealed class GeneratedProducesResponseTypeMetadata : IProducesResponseTypeMetadata
-    {
-        public GeneratedProducesResponseTypeMetadata(Type? type, int statusCode, string[] contentTypes)
-        {
-            Type = type;
-            StatusCode = statusCode;
-            ContentTypes = contentTypes;
-        }
-
-        public Type? Type { get; }
-
-        public int StatusCode { get; }
-
-        public IEnumerable<string> ContentTypes { get; }
     }
 
     %GENERATEDCODEATTRIBUTE%

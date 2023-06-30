@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     {
                         if (!serviceProviderIsService.IsService(type))
                         {
-                            options.EndpointBuilder.Metadata.Add(new GeneratedAcceptsMetadata(type: type, isOptional: isOptional, contentTypes: GeneratedMetadataConstants.JsonContentType));
+                            options.EndpointBuilder.Metadata.Add(new AcceptsMetadata(type: type, isOptional: isOptional, contentTypes: GeneratedMetadataConstants.JsonContentType));
                             break;
                         }
                     }
@@ -341,32 +341,6 @@ namespace Microsoft.AspNetCore.Http.Generated
 
     }
 
-    %GENERATEDCODEATTRIBUTE%
-    file sealed class GeneratedAcceptsMetadata : IAcceptsMetadata
-    {
-        public GeneratedAcceptsMetadata(string[] contentTypes)
-        {
-            ArgumentNullException.ThrowIfNull(contentTypes);
-
-            ContentTypes = contentTypes;
-        }
-
-        public GeneratedAcceptsMetadata(Type? type, bool isOptional, string[] contentTypes)
-        {
-            ArgumentNullException.ThrowIfNull(type);
-            ArgumentNullException.ThrowIfNull(contentTypes);
-
-            RequestType = type;
-            ContentTypes = contentTypes;
-            IsOptional = isOptional;
-        }
-
-        public IReadOnlyList<string> ContentTypes { get; }
-
-        public Type? RequestType { get; }
-
-        public bool IsOptional { get; }
-    }
     %GENERATEDCODEATTRIBUTE%
     file static class GeneratedMetadataConstants
     {

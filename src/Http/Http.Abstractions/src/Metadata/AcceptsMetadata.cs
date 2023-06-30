@@ -15,7 +15,6 @@ public sealed class AcceptsMetadata : IAcceptsMetadata
     /// </summary>
     public AcceptsMetadata(string[] contentTypes, Type? type = null, bool isOptional = false)
     {
-        ArgumentNullException.ThrowIfNull(type);
         ArgumentNullException.ThrowIfNull(contentTypes);
 
         RequestType = type;
