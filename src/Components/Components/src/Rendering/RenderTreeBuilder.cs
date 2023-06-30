@@ -972,19 +972,11 @@ public sealed class RenderTreeBuilder : IDisposable
                     // Walk backwards to find pairs of onsubmit and @onsubmit:name
                     // and stop the first time we find an element or component frame.
                     ref var attributeFrame = ref _entries.Buffer[j];
-                    if (attributeFrame.FrameType == RenderTreeFrameType.Component)
+                    if (attributeFrame.FrameType != RenderTreeFrameType.Attribute)
                     {
-                        // If we were processing a component, ignore the values
-                        // as this feature is only for HTML elements.
-                        submitHanderNameIndex = -1;
-                        submitHandlerIndex = -1;
                         break;
                     }
-                    else if (attributeFrame.FrameType == RenderTreeFrameType.Element)
-                    {
-                        // We are at the end of the elements sequence
-                        break;
-                    }
+
                     if (string.Equals(attributeFrame.AttributeName, "onsubmit", StringComparison.Ordinal))
                     {
                         submitHandlerIndex = j;
