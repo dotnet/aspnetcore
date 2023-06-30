@@ -2676,6 +2676,30 @@ public class WebApplicationTests
             ep => Assert.Equal("/hello", ep.Metadata.GetRequiredMetadata<IRouteDiagnosticsMetadata>().Route));
     }
 
+    [Fact]
+    public async Task DebugView_Endpoints_UseEndpoints_AvailableBeforeAndAfterStart()
+    {
+        var builder = WebApplication.CreateBuilder();
+
+        await using var app = builder.Build();
+        app.UseRouting();
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapGet("/hello", () => "hello world");
+        });
+
+        var debugView = new WebApplication.WebApplicationDebugView(app);
+
+        Assert.Collection(debugView.Endpoints,
+            ep => Assert.Equal("/hello", ep.Metadata.GetRequiredMetadata<IRouteDiagnosticsMetadata>().Route));
+
+        // Starting the app registers endpoint data sources with routing.
+        _ = app.RunAsync();
+
+        Assert.Collection(debugView.Endpoints,
+            ep => Assert.Equal("/hello", ep.Metadata.GetRequiredMetadata<IRouteDiagnosticsMetadata>().Route));
+    }
+
     private class MiddlewareWithInterface : IMiddleware
     {
         public Task InvokeAsync(HttpContext context, RequestDelegate next)
