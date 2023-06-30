@@ -58,9 +58,9 @@ export const monoPlatform: Platform = {
     return createRuntimeInstance(options);
   },
 
-  callEntryPoint: async function callEntryPoint(assemblyName: string): Promise<any> {
+  callEntryPoint: async function callEntryPoint(): Promise<any> {
     try {
-      await runtime.runMain(assemblyName, []);
+      await runtime.runMain(runtime.getConfig().mainAssemblyName!, []);
     } catch (error) {
       console.error(error);
       showErrorNotification();
@@ -228,8 +228,6 @@ async function createRuntimeInstance(options: Partial<WebAssemblyStartOptions>):
   BINDING = binding;
   MONO = mono;
   MONO_INTERNAL = mono_internal;
-  const resourceLoader = MONO_INTERNAL.resourceLoader;
-  platformApi.resourceLoader = resourceLoader;
 
   attachDebuggerHotkey(getConfig());
 
