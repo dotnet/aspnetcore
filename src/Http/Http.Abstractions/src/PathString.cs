@@ -94,13 +94,8 @@ public readonly struct PathString : IEquatable<PathString>
         var count = i;
         var requiresEscaping = false;
 
-        while (true)
+        while ((uint)i < (uint)value.Length)
         {
-            if ((uint)i >= (uint)value.Length)
-            {
-                break;
-            }
-
             var isPercentEncodedChar = false;
             if (s_validPathChars.Contains(value[i]) || (isPercentEncodedChar = Uri.IsHexEncoding(value, i)))
             {
