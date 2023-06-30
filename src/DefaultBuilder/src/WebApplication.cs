@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
@@ -259,7 +260,29 @@ public sealed class WebApplication : IHost, IApplicationBuilder, IEndpointRouteB
         public IHostApplicationLifetime Lifetime => _webApplication.Lifetime;
         public ILogger Logger => _webApplication.Logger;
         public string Urls => string.Join(", ", _webApplication.Urls);
-        public IReadOnlyList<Endpoint> Endpoints => _webApplication.Services.GetRequiredService<EndpointDataSource>().Endpoints;
+        public IReadOnlyList<Endpoint> Endpoints
+        {
+            get
+            {
+                var dataSource = _webApplication.Services.GetRequiredService<EndpointDataSource>();
+                if (dataSource is CompositeEndpointDataSource compositeEndpointDataSource)
+                {
+                    // The web app's data sources aren't registered until the routing middleware is.
+                    // That often happens when the app is run. If the data sources are registered then use
+                    // the central endpoint data source.
+                    if (compositeEndpointDataSource.DataSources.Intersect(_webApplication.DataSources).Count() == _webApplication.DataSources.Count)
+                    {
+                        return dataSource.Endpoints;
+                    }
+                    else
+                    {
+                        return new CompositeEndpointDataSource(_webApplication.DataSources).Endpoints;
+                    }
+                }
+
+                return dataSource.Endpoints;
+            }
+        }
         public bool IsRunning => _webApplication.IsRunning;
         public IList<string>? Middleware
         {

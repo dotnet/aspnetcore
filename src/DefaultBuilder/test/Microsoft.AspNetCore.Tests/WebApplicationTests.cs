@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.AspNetCore.TestHost;
@@ -2536,7 +2537,7 @@ public class WebApplicationTests
     }
 
     [Fact]
-    public void UseMiddleware_DebugView_HasMiddleware()
+    public void DebugView_UseMiddleware_HasMiddleware()
     {
         var builder = WebApplication.CreateBuilder();
         builder.Services.AddSingleton<IDebugger>(new TestDebugger(true));
@@ -2561,13 +2562,13 @@ public class WebApplicationTests
             m => Assert.Equal("Microsoft.AspNetCore.Authentication.AuthenticationMiddleware", m),
             m =>
             {
-                Assert.Contains(nameof(UseMiddleware_DebugView_HasMiddleware), m);
+                Assert.Contains(nameof(DebugView_UseMiddleware_HasMiddleware), m);
                 Assert.DoesNotContain(nameof(RequestDelegate), m);
             });
     }
 
     [Fact]
-    public void NoDebugger_DebugView_NoMiddleware()
+    public void DebugView_NoDebugger_NoMiddleware()
     {
         var builder = WebApplication.CreateBuilder();
         builder.Services.AddSingleton<IDebugger>(new TestDebugger(false));
@@ -2587,7 +2588,7 @@ public class WebApplicationTests
     }
 
     [Fact]
-    public async Task UseMiddleware_HasEndpointsAndAuth_Run_DebugView_HasAutomaticMiddleware()
+    public async Task DebugView_UseMiddleware_HasEndpointsAndAuth_Run_HasAutomaticMiddleware()
     {
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseTestServer();
@@ -2615,7 +2616,7 @@ public class WebApplicationTests
     }
 
     [Fact]
-    public async Task NoMiddleware_Run_DebugView_HasAutomaticMiddleware()
+    public async Task DebugView_NoMiddleware_Run_HasAutomaticMiddleware()
     {
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseTestServer();
@@ -2633,7 +2634,7 @@ public class WebApplicationTests
     }
 
     [Fact]
-    public void NestedMiddleware_DebugView_OnlyContainsTopLevelMiddleware()
+    public void DebugView_NestedMiddleware_OnlyContainsTopLevelMiddleware()
     {
         var builder = WebApplication.CreateBuilder();
         builder.Services.AddSingleton<IDebugger>(new TestDebugger(true));
@@ -2653,6 +2654,26 @@ public class WebApplicationTests
         var debugView = new WebApplication.WebApplicationDebugView(app);
 
         Assert.Equal(3, debugView.Middleware.Count);
+    }
+
+    [Fact]
+    public async Task DebugView_Endpoints_AvailableBeforeAndAfterStart()
+    {
+        var builder = WebApplication.CreateBuilder();
+
+        await using var app = builder.Build();
+        app.MapGet("/hello", () => "hello world");
+
+        var debugView = new WebApplication.WebApplicationDebugView(app);
+
+        Assert.Collection(debugView.Endpoints,
+            ep => Assert.Equal("/hello", ep.Metadata.GetRequiredMetadata<IRouteDiagnosticsMetadata>().Route));
+
+        // Starting the app registers endpoint data sources with routing.
+        _ = app.RunAsync();
+
+        Assert.Collection(debugView.Endpoints,
+            ep => Assert.Equal("/hello", ep.Metadata.GetRequiredMetadata<IRouteDiagnosticsMetadata>().Route));
     }
 
     private class MiddlewareWithInterface : IMiddleware
