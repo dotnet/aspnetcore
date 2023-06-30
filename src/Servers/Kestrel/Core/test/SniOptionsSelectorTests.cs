@@ -856,8 +856,6 @@ public class SniOptionsSelectorTests
             ServerCertificateSelectionCallback = (sender, serverName) => null,
             // Defaults to null
             CertificateChainPolicy = new X509ChainPolicy(),
-            // Defaults to true
-            AllowTlsResume = false,
         };
 
         var clonedOptions = SniOptionsSelector.CloneSslOptions(options);
@@ -902,9 +900,6 @@ public class SniOptionsSelectorTests
 
         Assert.Same(options.CertificateChainPolicy, clonedOptions.CertificateChainPolicy);
         Assert.True(propertyNames.Remove(nameof(options.CertificateChainPolicy)));
-
-        Assert.Equal(options.AllowTlsResume, clonedOptions.AllowTlsResume);
-        Assert.True(propertyNames.Remove(nameof(options.AllowTlsResume)));
 
         // Ensure we've checked every property. When new properties get added, we'll have to update this test along with the CloneSslOptions implementation.
         Assert.Empty(propertyNames);
