@@ -712,6 +712,21 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         DispatchToFormCore(dispatchToForm);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void FormAntiforgeryCheckDisabledOnPage(bool suppressEnhancedNavigation)
+    {
+        var dispatchToForm = new DispatchToForm(this)
+        {
+            Url = "forms/disable-antiforgery-check",
+            FormCssSelector = "form",
+            ExpectedActionValue = null,
+            SuppressEnhancedNavigation = suppressEnhancedNavigation,
+        };
+        DispatchToFormCore(dispatchToForm);
+    }
+
     [Fact]
     public void FormCanAddAntiforgeryAfterTheResponseHasStarted()
     {

@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Antiforgery.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
@@ -38,8 +39,12 @@ internal class RazorComponentEndpointInvoker
         _context.Response.ContentType = RazorComponentResultExecutor.DefaultContentType;
         _renderer.InitializeStreamingRenderingFraming(_context);
 
+        // Metadata controls whether we require antiforgery protection for this endpoint or we should skip it.
+        // The default for razor component endpoints is to require the metadata, but it can be overriden by
+        // the developer.
+        var antiforgeryMetadata = _context.GetEndpoint()!.Metadata.GetMetadata<IAntiforgeryMetadata>();
         var antiforgery = _context.RequestServices.GetRequiredService<IAntiforgery>();
-        var (valid, isPost, handler) = await ValidateRequestAsync(antiforgery);
+        var (valid, isPost, handler) = await ValidateRequestAsync(antiforgeryMetadata?.Required == true ? antiforgery : null);
         if (!valid)
         {
             // If the request is not valid we've already set the response to a 400 or similar
@@ -51,7 +56,7 @@ internal class RazorComponentEndpointInvoker
         {
             // Generate the antiforgery tokens before we start streaming the response, as it needs
             // to set the cookie header.
-            antiforgery.GetAndStoreTokens(_context);
+            antiforgery!.GetAndStoreTokens(_context);
             return Task.CompletedTask;
         });
 
@@ -101,12 +106,12 @@ internal class RazorComponentEndpointInvoker
         await writer.FlushAsync();
     }
 
-    private async Task<RequestValidationState> ValidateRequestAsync(IAntiforgery antiforgery)
+    private async Task<RequestValidationState> ValidateRequestAsync(IAntiforgery? antiforgery)
     {
         var isPost = HttpMethods.IsPost(_context.Request.Method);
         if (isPost)
         {
-            var valid = await antiforgery.IsRequestValidAsync(_context);
+            var valid = antiforgery == null || await antiforgery.IsRequestValidAsync(_context);
             if (!valid)
             {
                 _context.Response.StatusCode = StatusCodes.Status400BadRequest;
