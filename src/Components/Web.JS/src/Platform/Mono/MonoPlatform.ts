@@ -223,7 +223,7 @@ async function createRuntimeInstance(options: Partial<WebAssemblyStartOptions>):
   anyDotnet.withStartupOptions(options).withModuleConfig(moduleConfig);
 
   runtime = await dotnet.create();
-  const { MONO: mono, BINDING: binding, Module: module, setModuleImports, INTERNAL: mono_internal } = runtime;
+  const { MONO: mono, BINDING: binding, Module: module, setModuleImports, INTERNAL: mono_internal, getConfig } = runtime;
   Module = module;
   BINDING = binding;
   MONO = mono;
@@ -231,7 +231,7 @@ async function createRuntimeInstance(options: Partial<WebAssemblyStartOptions>):
   const resourceLoader = MONO_INTERNAL.resourceLoader;
   platformApi.resourceLoader = resourceLoader;
 
-  attachDebuggerHotkey(resourceLoader);
+  attachDebuggerHotkey(getConfig());
 
   Blazor._internal.dotNetCriticalError = printErr;
   setModuleImports('blazor-internal', {
