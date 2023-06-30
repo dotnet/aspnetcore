@@ -68,9 +68,7 @@ public class ApiTemplateTest : LoggedTest
 
         await project.RunDotNetNewAsync("api", args: args, language: languageOverride);
 
-        var expectedLaunchProfileNames = nativeAot
-            ? new[] { "http" }
-            : new[] { "http", "IIS Express" };
+        var expectedLaunchProfileNames = new[] { "http" };
         await project.VerifyLaunchSettings(expectedLaunchProfileNames);
 
         if (nativeAot)

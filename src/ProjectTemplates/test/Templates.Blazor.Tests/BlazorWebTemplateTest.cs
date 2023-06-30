@@ -65,7 +65,7 @@ public class BlazorWebTemplateTest : LoggedTest
             },
             new Page
             {
-                Url = BlazorTemplatePages.FetchData,
+                Url = BlazorTemplatePages.Weather,
             }
         };
 
@@ -120,7 +120,7 @@ public class BlazorWebTemplateTest : LoggedTest
     private class BlazorTemplatePages
     {
         internal static readonly string Index = "";
-        internal static readonly string FetchData = "showdata";
+        internal static readonly string Weather = "weather";
         internal static readonly string Counter = "counter";
     }   
 }

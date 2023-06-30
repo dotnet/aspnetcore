@@ -1,10 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Collections.Concurrent;
-using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics;
 using System.Globalization;
-using System.Reflection;
 using Microsoft.AspNetCore.Components.Binding;
 using Microsoft.AspNetCore.Components.Endpoints.Binding;
 using Microsoft.AspNetCore.Components.Forms;
@@ -14,69 +14,97 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal sealed class DefaultFormValuesSupplier : IFormValueSupplier
 {
-    private static readonly MethodInfo _method = typeof(DefaultFormValuesSupplier)
-            .GetMethod(
-                nameof(DeserializeCore),
-                BindingFlags.NonPublic | BindingFlags.Static) ??
-            throw new InvalidOperationException($"Unable to find method '{nameof(DeserializeCore)}'.");
-
     private readonly HttpContextFormDataProvider _formData;
     private readonly FormDataMapperOptions _options = new();
-    private static readonly ConcurrentDictionary<Type, Func<IReadOnlyDictionary<string, StringValues>, FormDataMapperOptions, string, object>> _cache =
-        new();
+    private static readonly ConcurrentDictionary<Type, FormValueSupplier> _cache = new();
 
     public DefaultFormValuesSupplier(FormDataProvider formData)
     {
         _formData = (HttpContextFormDataProvider)formData;
     }
 
-    public bool CanBind(string formName, Type valueType)
+    public bool CanBind(Type valueType, string? formName = null)
     {
-        return _formData.IsFormDataAvailable &&
-            string.Equals(formName, _formData.Name, StringComparison.Ordinal) &&
-            _options.ResolveConverter(valueType) != null;
+        if (formName == null)
+        {
+            return _options.ResolveConverter(valueType) != null;
+        }
+        else
+        {
+            var result = _formData.IsFormDataAvailable &&
+                string.Equals(formName, _formData.Name, StringComparison.Ordinal) &&
+                _options.ResolveConverter(valueType) != null;
+
+            return result;
+        }
     }
 
-    public bool TryBind(string formName, Type valueType, [NotNullWhen(true)] out object? boundValue)
+    public void Bind(FormValueSupplierContext context)
     {
         // This will func to a proper binder
-        if (!CanBind(formName, valueType))
+        if (!CanBind(context.ValueType, context.FormName))
         {
-            boundValue = null;
-            return false;
+            context.SetResult(null);
         }
 
-        var deserializer = _cache.GetOrAdd(valueType, CreateDeserializer);
+        var deserializer = _cache.GetOrAdd(context.ValueType, CreateDeserializer);
+        Debug.Assert(deserializer != null);
+        deserializer.Deserialize(context, _options, _formData.Entries);
+    }
 
-        var result = deserializer(_formData.Entries, _options, "value");
-        if (result != default)
+    private FormValueSupplier CreateDeserializer(Type type) =>
+        (FormValueSupplier)Activator.CreateInstance(typeof(FormValueSupplier<>)
+        .MakeGenericType(type))!;
+
+    internal abstract class FormValueSupplier
+    {
+        public abstract void Deserialize(
+            FormValueSupplierContext context,
+            FormDataMapperOptions options,
+            IReadOnlyDictionary<string, StringValues> form);
+    }
+
+    internal class FormValueSupplier<T> : FormValueSupplier
+    {
+        public override void Deserialize(
+            FormValueSupplierContext context,
+            FormDataMapperOptions options,
+            IReadOnlyDictionary<string, StringValues> form)
         {
-            // This is not correct, but works for primtive values.
-            // Will change the interface when we add support for complex types.
-            boundValue = result;
-            return true;
+            if (form.Count == 0)
+            {
+                return;
+            }
+
+            char[]? buffer = null;
+            try
+            {
+                var dictionary = new Dictionary<FormKey, StringValues>();
+                foreach (var (key, value) in form)
+                {
+                    dictionary.Add(new FormKey(key.AsMemory()), value);
+                }
+                buffer = ArrayPool<char>.Shared.Rent(options.MaxKeyBufferSize);
+
+                var reader = new FormDataReader(
+                    dictionary,
+                    options.UseCurrentCulture ? CultureInfo.CurrentCulture : CultureInfo.InvariantCulture,
+                    buffer.AsMemory(0, options.MaxKeyBufferSize))
+                {
+                    ErrorHandler = context.OnError,
+                    AttachInstanceToErrorsHandler = context.MapErrorToContainer
+                };
+                reader.PushPrefix(context.ParameterName);
+                var result = FormDataMapper.Map<T>(reader, options);
+                context.SetResult(result);
+            }
+            finally
+            {
+                if (buffer != null)
+                {
+                    ArrayPool<char>.Shared.Return(buffer);
+                }
+            }
         }
-
-        boundValue = valueType.IsValueType ? Activator.CreateInstance(valueType) : null;
-        return false;
-    }
-
-    private Func<IReadOnlyDictionary<string, StringValues>, FormDataMapperOptions, string, object> CreateDeserializer(Type type) =>
-        _method.MakeGenericMethod(type)
-        .CreateDelegate<Func<IReadOnlyDictionary<string, StringValues>, FormDataMapperOptions, string, object>>();
-
-    private static object? DeserializeCore<T>(IReadOnlyDictionary<string, StringValues> form, FormDataMapperOptions options, string value)
-    {
-        // Form values are parsed according to the culture of the request, which is set to the current culture by the localization middleware.
-        // Some form input types use the invariant culture when sending the data to the server. For those cases, we'll
-        // provide a way to override the culture to use to parse that value.
-        var reader = new FormDataReader(form, CultureInfo.CurrentCulture);
-        reader.PushPrefix(value);
-        return FormDataMapper.Map<T>(reader, options);
-    }
-
-    public bool CanConvertSingleValue(Type type)
-    {
-        return _options.IsSingleValueConverter(type);
     }
 }

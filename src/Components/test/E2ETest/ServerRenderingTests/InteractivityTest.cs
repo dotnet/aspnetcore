@@ -83,4 +83,116 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Browser.Equal("3", () => Browser.FindElement(By.Id("count-server-shared")).Text);
         Browser.Equal("5", () => Browser.FindElement(By.Id("count-wasm-shared")).Text);
     }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void CanUseCallSiteRenderMode_Server(bool prerender)
+    {
+        Navigate(InteractiveCallsiteUrl(prerender, serverIncrement: 3));
+        Browser.Equal("Call-site interactive components", () => Browser.FindElement(By.TagName("h1")).Text);
+
+        if (prerender)
+        {
+            Browser.Equal("0", () => Browser.FindElement(By.Id("count-server")).Text);
+            Browser.Equal("False", () => Browser.FindElement(By.Id("is-interactive-server")).Text);
+        }
+        else
+        {
+            Browser.DoesNotExist(By.Id("count-server"));
+        }
+
+        Browser.Exists(By.Id("call-blazor-start")).Click();
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-server")).Text);
+
+        var countServerElem = Browser.FindElement(By.Id("count-server"));
+        Browser.Equal("0", () => countServerElem.Text);
+
+        Browser.Click(By.Id("increment-server"));
+        Browser.Equal("3", () => countServerElem.Text);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void CanUseCallSiteRenderMode_WebAssembly(bool prerender)
+    {
+        Navigate(InteractiveCallsiteUrl(prerender, webAssemblyIncrement: 4));
+        Browser.Equal("Call-site interactive components", () => Browser.FindElement(By.TagName("h1")).Text);
+
+        if (prerender)
+        {
+            Browser.Equal("0", () => Browser.FindElement(By.Id("count-wasm")).Text);
+            Browser.Equal("False", () => Browser.FindElement(By.Id("is-interactive-wasm")).Text);
+        }
+        else
+        {
+            Browser.DoesNotExist(By.Id("count-wasm"));
+        }
+
+        Browser.Exists(By.Id("call-blazor-start")).Click();
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-wasm")).Text);
+
+        var countWasmElem = Browser.FindElement(By.Id("count-wasm"));
+        Browser.Equal("0", () => countWasmElem.Text);
+
+        Browser.Click(By.Id("increment-wasm"));
+        Browser.Equal("4", () => countWasmElem.Text);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void CanUseCallSiteRenderMode_ServerAndWebAssembly(bool prerender)
+    {
+        Navigate(InteractiveCallsiteUrl(prerender, serverIncrement: 10, webAssemblyIncrement: 11));
+        Browser.Equal("Call-site interactive components", () => Browser.FindElement(By.TagName("h1")).Text);
+
+        if (prerender)
+        {
+            Browser.Equal("0", () => Browser.FindElement(By.Id("count-server")).Text);
+            Browser.Equal("False", () => Browser.FindElement(By.Id("is-interactive-server")).Text);
+            Browser.Equal("0", () => Browser.FindElement(By.Id("count-wasm")).Text);
+            Browser.Equal("False", () => Browser.FindElement(By.Id("is-interactive-wasm")).Text);
+        }
+        else
+        {
+            Browser.DoesNotExist(By.Id("count-server"));
+            Browser.DoesNotExist(By.Id("count-wasm"));
+        }
+
+        Browser.Exists(By.Id("call-blazor-start")).Click();
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-server")).Text);
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-wasm")).Text);
+
+        var countServerElem = Browser.FindElement(By.Id("count-server"));
+        var countWasmElem = Browser.FindElement(By.Id("count-wasm"));
+        Browser.Equal("0", () => countServerElem.Text);
+        Browser.Equal("0", () => countWasmElem.Text);
+
+        Browser.Click(By.Id("increment-server"));
+        Browser.Equal("10", () => countServerElem.Text);
+        Browser.Equal("0", () => countWasmElem.Text);
+
+        Browser.Click(By.Id("increment-wasm"));
+        Browser.Equal("11", () => countWasmElem.Text);
+        Browser.Equal("10", () => countServerElem.Text);
+    }
+
+    private string InteractiveCallsiteUrl(bool prerender, int? serverIncrement = default, int? webAssemblyIncrement = default)
+    {
+        var result = $"{ServerPathBase}/interactive-callsite?suppress-autostart&prerender={prerender}";
+
+        if (serverIncrement.HasValue)
+        {
+            result += $"&server={serverIncrement}";
+        }
+
+        if (webAssemblyIncrement.HasValue)
+        {
+            result += $"&wasm={webAssemblyIncrement}";
+        }
+
+        return result;
+    }
 }

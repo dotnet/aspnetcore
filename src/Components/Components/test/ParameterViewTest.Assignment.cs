@@ -237,8 +237,8 @@ public partial class ParameterViewTest
 
         // Assert
         Assert.Equal(
-            $"Object of type '{typeof(HasCascadingParameter).FullName}' has a property matching the name '{nameof(HasCascadingParameter.Cascading)}', " +
-            $"but it does not have [{nameof(ParameterAttribute)}] applied.",
+            $"The property '{nameof(HasCascadingParameter.Cascading)}' on component type '{typeof(HasCascadingParameter).FullName}' " +
+            $"cannot be set explicitly because it only accepts cascading values.",
             ex.Message);
     }
 
@@ -259,6 +259,59 @@ public partial class ParameterViewTest
             $"The property '{nameof(HasInstanceProperties.IntProp)}' on component type '{typeof(HasInstanceProperties).FullName}' " +
             $"cannot be set using a cascading value.",
             ex.Message);
+    }
+
+    [Fact]
+    public void IncomingNonCascadingValueMatchesParameterThatIsBothCascadingAndNonCascading_Throws()
+    {
+        // Arrange
+        var target = new HasPropertyWithParameterAndCascadingParameterAttributes();
+        var builder = new ParameterViewBuilder();
+        builder.Add(nameof(HasPropertyWithParameterAndCascadingParameterAttributes.Parameter), "Hello", cascading: false);
+        var parameters = builder.Build();
+
+        // Act
+        var ex = Assert.Throws<InvalidOperationException>(() => parameters.SetParameterProperties(target));
+
+        // Assert
+        Assert.Equal(
+            $"The property '{nameof(HasPropertyWithParameterAndCascadingParameterAttributes.Parameter)}' on component type " +
+            $"'{typeof(HasPropertyWithParameterAndCascadingParameterAttributes).FullName}' cannot be set explicitly because it " +
+            $"only accepts cascading values.",
+            ex.Message);
+    }
+
+    [Fact]
+    public void IncomingCascadingValueMatchesParameterThatIsBothCascadingAndNonCascading_Works()
+    {
+        // Arrange
+        var target = new HasPropertyWithParameterAndCascadingParameterAttributes();
+        var builder = new ParameterViewBuilder();
+        builder.Add(nameof(HasPropertyWithParameterAndCascadingParameterAttributes.Parameter), "Hello", cascading: true);
+        var parameters = builder.Build();
+
+        // Act
+        parameters.SetParameterProperties(target);
+
+        // Assert
+        Assert.Equal("Hello", target.Parameter);
+    }
+
+    [Fact]
+    public void ParameterThatCanBeSuppliedFromQueryOrNonCascadingValue_PrefersNonCascadingValue()
+    {
+        // Arrange
+        var target = new HasPropertyWithParameterAndSupplyParameterFromQueryAttributes();
+        var builder = new ParameterViewBuilder();
+        builder.Add(nameof(HasPropertyWithParameterAndSupplyParameterFromQueryAttributes.Parameter), "Non-cascading", cascading: false);
+        builder.Add(nameof(HasPropertyWithParameterAndSupplyParameterFromQueryAttributes.Parameter), "Cascading", cascading: true);
+        var parameters = builder.Build();
+
+        // Act
+        parameters.SetParameterProperties(target);
+
+        // Assert
+        Assert.Equal("Non-cascading", target.Parameter);
     }
 
     [Fact]
@@ -642,6 +695,16 @@ public partial class ParameterViewTest
         [CascadingParameter] private string Cascading { get; set; }
 
         public string GetCascadingValue() => Cascading;
+    }
+
+    class HasPropertyWithParameterAndCascadingParameterAttributes
+    {
+        [Parameter, CascadingParameter] public string Parameter { get; set; }
+    }
+
+    class HasPropertyWithParameterAndSupplyParameterFromQueryAttributes
+    {
+        [Parameter, SupplyParameterFromQuery] public string Parameter { get; set; }
     }
 
     class ParameterViewBuilder : IEnumerable

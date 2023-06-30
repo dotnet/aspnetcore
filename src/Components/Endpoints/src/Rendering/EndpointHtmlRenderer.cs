@@ -164,6 +164,8 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
             throw new InvalidOperationException($"No named event handler was captured for '{_formHandler}'.");
         }
 
+        // We no longer need to track the form handler, as we already captured the event.
+        _formHandler = null;
         return DispatchEventAsync(_capturedNamedEvent.EventHandlerId, null, EventArgs.Empty, quiesce: true);
     }
 

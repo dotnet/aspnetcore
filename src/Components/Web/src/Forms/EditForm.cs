@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using Microsoft.AspNetCore.Components.Binding;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components.Forms;
@@ -13,6 +12,7 @@ namespace Microsoft.AspNetCore.Components.Forms;
 public class EditForm : ComponentBase
 {
     private readonly Func<Task> _handleSubmitDelegate; // Cache to avoid per-render allocations
+    private readonly RenderFragment _renderWithBindingValidator;
 
     private EditContext? _editContext;
     private bool _hasSetEditContextExplicitly;
@@ -23,6 +23,7 @@ public class EditForm : ComponentBase
     public EditForm()
     {
         _handleSubmitDelegate = HandleSubmitAsync;
+        _renderWithBindingValidator = RenderWithBindingValidator;
     }
 
     /// <summary>
@@ -122,11 +123,6 @@ public class EditForm : ComponentBase
         {
             _editContext = new EditContext(Model!);
         }
-
-        if (_editContext != null && BindingContext != null)
-        {
-            _editContext.SetConvertibleValues(BindingContext);
-        }
     }
 
     /// <inheritdoc />
@@ -180,10 +176,24 @@ public class EditForm : ComponentBase
             builder.OpenComponent<CascadingValue<EditContext>>(5);
             builder.AddComponentParameter(6, "IsFixed", true);
             builder.AddComponentParameter(7, "Value", _editContext);
-            builder.AddComponentParameter(8, "ChildContent", ChildContent?.Invoke(_editContext));
+            if (bindingContext != null && !OperatingSystem.IsBrowser())
+            {
+                builder.AddComponentParameter(8, "ChildContent", _renderWithBindingValidator);
+            }
+            else
+            {
+                builder.AddComponentParameter(8, "ChildContent", ChildContent?.Invoke(_editContext));
+            }
             builder.CloseComponent();
             builder.CloseElement();
         }
+    }
+
+    private void RenderWithBindingValidator(RenderTreeBuilder builder)
+    {
+        builder.OpenComponent<ModelBindingContextValidator>(1);
+        builder.CloseComponent();
+        builder.AddContent(2, ChildContent!, EditContext);
     }
 
     private async Task HandleSubmitAsync()
