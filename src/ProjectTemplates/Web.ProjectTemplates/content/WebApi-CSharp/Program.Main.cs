@@ -133,7 +133,7 @@ public class Program
         {
             httpContext.VerifyUserHasAnyAcceptedScope(scopeRequiredByApi);
 
-            var user = await graphServiceClient.Me.Request().GetAsync();
+            var user = await graphServiceClient.Me.GetAsync();
 
             var forecast =  Enumerable.Range(1, 5).Select(index =>
                 new WeatherForecast
