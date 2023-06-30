@@ -81,10 +81,14 @@ public static class OpenApiRouteHandlerBuilderExtensions
 
         if (contentType is null)
         {
-            return builder.WithMetadata(new ProducesResponseTypeMetadata(responseType ?? typeof(void), statusCode));
+            return builder.WithMetadata(new ProducesResponseTypeMetadata(statusCode, responseType ?? typeof(void)));
         }
 
-        return builder.WithMetadata(new ProducesResponseTypeMetadata(responseType ?? typeof(void), statusCode, contentType, additionalContentTypes));
+        var contentTypes = new string[additionalContentTypes.Length + 1];
+        contentTypes[0] = contentType;
+        additionalContentTypes.CopyTo(contentTypes, 1);
+
+        return builder.WithMetadata(new ProducesResponseTypeMetadata(statusCode, responseType ?? typeof(void), contentTypes));
     }
 
     /// <summary>

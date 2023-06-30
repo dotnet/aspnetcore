@@ -12,91 +12,31 @@ namespace Microsoft.AspNetCore.Http;
 /// </summary>
 public sealed class ProducesResponseTypeMetadata : IProducesResponseTypeMetadata
 {
-    private readonly IEnumerable<string> _contentTypes;
-
     /// <summary>
     /// Initializes an instance of <see cref="ProducesResponseTypeMetadata"/>.
     /// </summary>
     /// <param name="statusCode">The HTTP response status code.</param>
-    public ProducesResponseTypeMetadata(int statusCode)
-        : this(typeof(void), statusCode, Enumerable.Empty<string>())
-    {
-    }
-
-    // Only for internal use where validation is unnecessary.
-    /// <summary>
-    /// Initializes an instance of <see cref="ProducesResponseTypeMetadata"/>.
-    /// </summary>
     /// <param name="type">The <see cref="Type"/> of object that is going to be written in the response.</param>
-    /// <param name="statusCode">The HTTP response status code.</param>
-    public ProducesResponseTypeMetadata(Type type, int statusCode)
+    /// <param name="contentTypes">Content types supported by the response.</param>
+    public ProducesResponseTypeMetadata(int statusCode, Type? type = null, string[]? contentTypes = null)
     {
-        Type = type ?? throw new ArgumentNullException(nameof(type));
-        StatusCode = statusCode;
-        _contentTypes = Enumerable.Empty<string>();
-    }
+        this.StatusCode = statusCode;
+        this.Type = type;
 
-    /// <summary>
-    /// Initializes an instance of <see cref="ProducesResponseTypeMetadata"/>.
-    /// </summary>
-    /// <param name="type">The <see cref="Type"/> of object that is going to be written in the response.</param>
-    /// <param name="statusCode">The HTTP response status code.</param>
-    /// <param name="contentType">The content type associated with the response.</param>
-    /// <param name="additionalContentTypes">Additional content types supported by the response.</param>
-    public ProducesResponseTypeMetadata(Type type, int statusCode, string contentType, params string[] additionalContentTypes)
-    {
-        ArgumentNullException.ThrowIfNull(contentType);
-
-        Type = type ?? throw new ArgumentNullException(nameof(type));
-        StatusCode = statusCode;
-
-        MediaTypeHeaderValue.Parse(contentType);
-        for (var i = 0; i < additionalContentTypes.Length; i++)
+        if (contentTypes is null || contentTypes.Length == 0)
         {
-            MediaTypeHeaderValue.Parse(additionalContentTypes[i]);
+            this.ContentTypes = Enumerable.Empty<string>();
         }
-
-        _contentTypes = GetContentTypes(contentType, additionalContentTypes);
-    }
-
-    // Only for internal use where validation is unnecessary.
-    private ProducesResponseTypeMetadata(Type? type, int statusCode, IEnumerable<string> contentTypes)
-    {
-
-        Type = type;
-        StatusCode = statusCode;
-        _contentTypes = contentTypes;
-    }
-
-    /// <summary>
-    /// Gets or sets the type of the value returned by an action.
-    /// </summary>
-    public Type? Type { get; set; }
-
-    /// <summary>
-    /// Gets or sets the HTTP status code of the response.
-    /// </summary>
-    public int StatusCode { get; set; }
-
-    /// <summary>
-    /// Gets or sets the content types associated with the response.
-    /// </summary>
-    public IEnumerable<string> ContentTypes => _contentTypes;
-
-    internal static ProducesResponseTypeMetadata CreateUnvalidated(Type? type, int statusCode, IEnumerable<string> contentTypes) => new(type, statusCode, contentTypes);
-
-    private static List<string> GetContentTypes(string contentType, string[] additionalContentTypes)
-    {
-        var contentTypes = new List<string>(additionalContentTypes.Length + 1);
-        ValidateContentType(contentType);
-        contentTypes.Add(contentType);
-        foreach (var type in additionalContentTypes)
+        else
         {
-            ValidateContentType(type);
-            contentTypes.Add(type);
-        }
+            for (var i = 0; i < contentTypes.Length; i++)
+            {
+                MediaTypeHeaderValue.Parse(contentTypes[i]);
+                ValidateContentType(contentTypes[i]);
+            }
 
-        return contentTypes;
+            this.ContentTypes = contentTypes;
+        }
 
         static void ValidateContentType(string type)
         {
@@ -106,4 +46,29 @@ public sealed class ProducesResponseTypeMetadata : IProducesResponseTypeMetadata
             }
         }
     }
+
+    // Only for internal use where validation is unnecessary.
+    private ProducesResponseTypeMetadata(int statusCode, Type? type, IEnumerable<string> contentTypes)
+    {
+        Type = type;
+        StatusCode = statusCode;
+        ContentTypes = contentTypes;
+    }
+
+    /// <summary>
+    /// Gets or sets the type of the value returned by an action.
+    /// </summary>
+    public Type? Type { get; private set; }
+
+    /// <summary>
+    /// Gets or sets the HTTP status code of the response.
+    /// </summary>
+    public int StatusCode { get; private set; }
+
+    /// <summary>
+    /// Gets or sets the content types associated with the response.
+    /// </summary>
+    public IEnumerable<string> ContentTypes { get; private set; }
+
+    internal static ProducesResponseTypeMetadata CreateUnvalidated(Type? type, int statusCode, IEnumerable<string> contentTypes) => new(statusCode, type, contentTypes);
 }
