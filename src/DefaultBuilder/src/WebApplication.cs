@@ -267,15 +267,16 @@ public sealed class WebApplication : IHost, IApplicationBuilder, IEndpointRouteB
                 var dataSource = _webApplication.Services.GetRequiredService<EndpointDataSource>();
                 if (dataSource is CompositeEndpointDataSource compositeEndpointDataSource)
                 {
-                    // The web app's data sources aren't registered until the routing middleware is.
-                    // That often happens when the app is run. If the data sources are registered then use
-                    // the central endpoint data source.
+                    // The web app's data sources aren't registered until the routing middleware is. That often happens when the app is run.
+                    // We want endpoints to be available in the debug view before the app starts. Test if all the web app's the data sources are registered.
                     if (compositeEndpointDataSource.DataSources.Intersect(_webApplication.DataSources).Count() == _webApplication.DataSources.Count)
                     {
+                        // Data sources are centrally registered.
                         return dataSource.Endpoints;
                     }
                     else
                     {
+                        // Fallback to just the web app's data sources to support debugging before the web app starts.
                         return new CompositeEndpointDataSource(_webApplication.DataSources).Endpoints;
                     }
                 }
