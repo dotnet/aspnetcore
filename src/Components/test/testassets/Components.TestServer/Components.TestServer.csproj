@@ -6,6 +6,7 @@
     <!-- Project supports more than one language -->
     <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
     <Nullable>annotations</Nullable>
+    <RazorLangVersion>latest</RazorLangVersion>
   </PropertyGroup>
 
   <ItemGroup>

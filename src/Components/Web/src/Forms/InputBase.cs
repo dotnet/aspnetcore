@@ -5,7 +5,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
-using Microsoft.AspNetCore.Components.Binding;
 
 namespace Microsoft.AspNetCore.Components.Forms;
 
@@ -206,9 +205,7 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
             {
                 if (_formattedValueExpression is null && ValueExpression is not null)
                 {
-                    _formattedValueExpression = ExpressionFormatter.FormatLambda(
-                        ValueExpression,
-                        EditContext.GetConvertibleValues());
+                    _formattedValueExpression = ExpressionFormatter.FormatLambda(ValueExpression);
                 }
 
                 return _formattedValueExpression ?? string.Empty;
@@ -279,6 +276,12 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
         var hasAriaInvalidAttribute = AdditionalAttributes != null && AdditionalAttributes.ContainsKey("aria-invalid");
         if (EditContext.GetValidationMessages(FieldIdentifier).Any())
         {
+            var attemptedValue = EditContext.GetAttemptedValue(NameAttributeValue);
+            if (attemptedValue != null)
+            {
+                _parsingFailed = true;
+                _incomingValueBeforeParsing = attemptedValue;
+            }
             if (hasAriaInvalidAttribute)
             {
                 // Do not overwrite the attribute value

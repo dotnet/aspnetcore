@@ -187,7 +187,7 @@ internal sealed class HostingMetrics : IDisposable
         KeyValuePair.Create<int, object>(508, 508),
         KeyValuePair.Create<int, object>(510, 510),
         KeyValuePair.Create<int, object>(511, 511)
-    }, optimizeForReading: true);
+    });
 
     private static object GetBoxedStatusCode(int statusCode)
     {

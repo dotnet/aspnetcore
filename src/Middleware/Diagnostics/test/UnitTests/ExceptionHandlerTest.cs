@@ -953,7 +953,7 @@ public class ExceptionHandlerTest
         var response = await server.CreateClient().GetAsync("/path");
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
 
-        await instrumentCollector.WaitForMeasurementsAsync(numMeasurements: 1).DefaultTimeout();
+        await instrumentCollector.WaitForMeasurementsAsync(minCount: 1).DefaultTimeout();
 
         // Assert
         Assert.Collection(

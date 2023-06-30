@@ -3,6 +3,8 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Runtime.CompilerServices;
+
 namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
 
 internal abstract class DictionaryConverter<TDictionary> : FormDataConverter<TDictionary>
@@ -10,7 +12,7 @@ internal abstract class DictionaryConverter<TDictionary> : FormDataConverter<TDi
 }
 
 internal sealed class DictionaryConverter<TDictionary, TDictionaryPolicy, TBuffer, TKey, TValue> : DictionaryConverter<TDictionary>
-    where TKey : IParsable<TKey>
+    where TKey : ISpanParsable<TKey>
     where TDictionaryPolicy : IDictionaryBufferAdapter<TDictionary, TBuffer, TKey, TValue>
 {
     private readonly FormDataConverter<TValue> _valueConverter;
@@ -35,7 +37,8 @@ internal sealed class DictionaryConverter<TDictionary, TDictionaryPolicy, TBuffe
         bool currentElementSuccess;
         bool succeded = true;
 
-        found = context.GetKeys().GetEnumerator().MoveNext();
+        var keys = context.GetKeys();
+        found = keys.HasValues();
         if (!found)
         {
             result = default!;
@@ -51,31 +54,42 @@ internal sealed class DictionaryConverter<TDictionary, TDictionaryPolicy, TBuffe
         var keyCount = 0;
         var maxCollectionSize = options.MaxCollectionSize;
 
-        foreach (var key in context.GetKeys())
+        foreach (var key in keys)
         {
-            context.PushPrefix(key);
+            context.PushPrefix(key.Span);
             currentElementSuccess = _valueConverter.TryRead(ref context, typeof(TValue), options, out currentValue!, out foundCurrentValue);
-            context.PopPrefix(key);
+            succeded &= currentElementSuccess;
+            context.PopPrefix(key.Span);
 
-            if (!TKey.TryParse(key[1..^1], CultureInfo.InvariantCulture, out var keyValue))
+            if (!TKey.TryParse(key[1..^1].Span, CultureInfo.InvariantCulture, out var keyValue))
             {
                 succeded = false;
-                // Will report an error about unparsable key here.
+                var currentPrefix = context.GetPrefix();
+                context.AddMappingError(
+                    FormattableStringFactory.Create(FormDataResources.DictionaryUnparsableKey, key[1..^1], currentPrefix),
+                    null);
 
-                // Continue trying to bind the rest of the dictionary.
                 continue;
             }
 
-            TDictionaryPolicy.Add(ref buffer, keyValue!, currentValue);
             keyCount++;
-            if (keyCount == maxCollectionSize)
+            if (keyCount > maxCollectionSize)
             {
+                context.AddMappingError(
+                     FormattableStringFactory.Create(FormDataResources.MaxCollectionSizeReached, "dictionary", maxCollectionSize),
+                     null);
                 succeded = false;
                 break;
             }
+
+            TDictionaryPolicy.Add(ref buffer, keyValue!, currentValue);
         }
 
         result = TDictionaryPolicy.ToResult(buffer);
+        if (!succeded)
+        {
+            context.AttachInstanceToErrors(result!);
+        }
         return succeded;
     }
 }

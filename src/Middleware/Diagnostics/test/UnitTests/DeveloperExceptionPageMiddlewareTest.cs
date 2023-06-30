@@ -571,7 +571,7 @@ public class DeveloperExceptionPageMiddlewareTest : LoggedTest
         var response = await server.CreateClient().GetAsync("/path");
         Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
 
-        await requestDurationCollector.WaitForMeasurementsAsync(numMeasurements: 1).DefaultTimeout();
+        await requestDurationCollector.WaitForMeasurementsAsync(minCount: 1).DefaultTimeout();
 
         // Assert
         Assert.Collection(

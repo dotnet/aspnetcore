@@ -27,7 +27,7 @@ public class RouteViewTest
         _renderer = new TestRenderer(services);
 
         var componentFactory = new ComponentFactory(new DefaultComponentActivator(), _renderer);
-        _routeViewComponent = (RouteView)componentFactory.InstantiateComponent(services, typeof(RouteView), null);
+        _routeViewComponent = (RouteView)componentFactory.InstantiateComponent(services, typeof(RouteView), null, null);
 
         _routeViewComponentId = _renderer.AssignRootComponentId(_routeViewComponent);
     }
@@ -244,20 +244,7 @@ public class RouteViewTest
 
     private class TestFormValueSupplier : IFormValueSupplier
     {
-        public bool CanBind(string formName, Type valueType)
-        {
-            return false;
-        }
-
-        public bool CanConvertSingleValue(Type type)
-        {
-            return false;
-        }
-
-        public bool TryBind(string formName, Type valueType, [NotNullWhen(true)] out object boundValue)
-        {
-            boundValue = null;
-            return false;
-        }
+        public bool CanBind(Type valueType, string formName = null) => false;
+        public void Bind(FormValueSupplierContext context) { }
     }
 }

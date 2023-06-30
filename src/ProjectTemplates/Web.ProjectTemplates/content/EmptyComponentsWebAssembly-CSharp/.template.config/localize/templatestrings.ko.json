@@ -1,4 +1,4 @@
-{
+﻿{
   "author": "Microsoft",
   "name": "Blazor WebAssembly 앱이 비어 있습니다.",
   "description": "WebAssembly에서 실행되고 선택적으로 ASP.NET Core 앱에서 호스팅되는 Blazor 앱을 만들기 위한 빈 프로젝트 템플릿입니다. 이 템플릿에는 내용이 없습니다.",
