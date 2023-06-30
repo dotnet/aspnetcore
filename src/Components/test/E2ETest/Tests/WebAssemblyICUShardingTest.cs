@@ -6,6 +6,7 @@ using GlobalizationWasmApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
 using Xunit.Abstractions;
 
@@ -42,6 +43,7 @@ public class WebAssemblyICUShardingTest : ServerTestBase<ToggleExecutionModeServ
     }
 
     [Theory]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/49127")]
     [InlineData("ko", "ko", "2020. 9. 2. 오전 12:00:00", "안녕하세요")] // ko exists in the CJK data set.
     [InlineData("ko-KR", "ko-KR", "2020. 9. 2. 오전 12:00:00", "안녕하세요")]// ko-KR exists in the CJK data set.
     [InlineData("ko-KO", "ko-KO", "2020. 9. 2. 00:00:00", "안녕하세요")] // ko-KO is custom culture and doesn't exist in the CJK data set.
@@ -66,6 +68,7 @@ public class WebAssemblyICUShardingTest : ServerTestBase<ToggleExecutionModeServ
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/49127")]
     public void LoadingApp_RussianLanguage_Works()
     {
         // Arrange
@@ -84,6 +87,7 @@ public class WebAssemblyICUShardingTest : ServerTestBase<ToggleExecutionModeServ
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/49127")]
     public void LoadingApp_KannadaLanguage_Works()
     {
         // Arrange
