@@ -137,6 +137,7 @@ internal sealed class ComponentFactory
     private sealed class ComponentTypeInfoCacheEntry
     {
         public IComponentRenderMode? ComponentTypeRenderMode { get; }
+
         public Action<IServiceProvider, IComponent> PerformPropertyInjection { get; }
 
         public ComponentTypeInfoCacheEntry(
@@ -145,6 +146,14 @@ internal sealed class ComponentFactory
         {
             ComponentTypeRenderMode = componentTypeRenderMode;
             PerformPropertyInjection = performPropertyInjection;
+        }
+
+        public void Deconstruct(
+            out IComponentRenderMode? componentTypeRenderMode, 
+            out Action<IServiceProvider, IComponent> performPropertyInjection)
+        {
+            componentTypeRenderMode = ComponentTypeRenderMode;
+            performPropertyInjection = PerformPropertyInjection;
         }
     }
 }
