@@ -125,6 +125,10 @@ internal sealed class QuicConnectionListener : IMultiplexedConnectionListener, I
         {
             _listener = await QuicListener.ListenAsync(_quicListenerOptions);
         }
+        catch (QuicException e) when (e.QuicError == QuicError.AlpnInUse)
+        {
+            throw new AddressInUseException(e.Message, e);
+        }
         catch (SocketException e) when (e.SocketErrorCode == SocketError.AddressAlreadyInUse)
         {
             throw new AddressInUseException(e.Message, e);
