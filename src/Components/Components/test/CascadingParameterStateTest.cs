@@ -468,7 +468,7 @@ public class CascadingParameterStateTest
 
     class FormParametersComponentWithName : TestComponentBase
     {
-        [SupplyParameterFromForm(Name = "some-name")] public string FormParameter { get; set; }
+        [SupplyParameterFromForm(Handler = "some-name")] public string FormParameter { get; set; }
     }
 
     class ComponentWithNoCascadingParams : TestComponentBase
@@ -554,4 +554,10 @@ public sealed class SupplyParameterFromFormAttribute : CascadingParameterAttribu
     /// the form data and decide whether or not the value needs to be bound.
     /// </summary>
     public override string Name { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name for the handler. The name is used to match
+    /// the form data and decide whether or not the value needs to be bound.
+    /// </summary>
+    public string Handler { get; set; }
 }

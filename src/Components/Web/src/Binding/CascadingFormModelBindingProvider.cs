@@ -45,13 +45,13 @@ public sealed class CascadingFormModelBindingProvider : CascadingModelBindingPro
         Debug.Assert(bindingContext != null);
         var (formName, valueType) = GetFormNameAndValueType(bindingContext, parameterInfo);
 
-        var parameterName = parameterInfo.Attribute.Name;
-
-        Action<string, FormattableString, string?> errorHandler = string.IsNullOrEmpty(parameterName) ?
+        var parameterName = parameterInfo.Attribute.Name ?? parameterInfo.PropertyName;
+        var handler = ((SupplyParameterFromFormAttribute)parameterInfo.Attribute).Handler;
+        Action<string, FormattableString, string?> errorHandler = string.IsNullOrEmpty(handler) ?
             bindingContext.AddError :
-            (name, message, value) => bindingContext.AddError(parameterName, name, message, value);
+            (name, message, value) => bindingContext.AddError(formName, parameterName, message, value);
 
-        var context = new FormValueSupplierContext(formName!, valueType, parameterInfo.PropertyName)
+        var context = new FormValueSupplierContext(formName!, valueType, parameterName)
         {
             OnError = errorHandler,
             MapErrorToContainer = bindingContext.AttachParentValue
@@ -65,7 +65,7 @@ public sealed class CascadingFormModelBindingProvider : CascadingModelBindingPro
     private static (string FormName, Type ValueType) GetFormNameAndValueType(ModelBindingContext? bindingContext, in CascadingParameterInfo parameterInfo)
     {
         var valueType = parameterInfo.PropertyType;
-        var valueName = parameterInfo.Attribute.Name;
+        var valueName = ((SupplyParameterFromFormAttribute)parameterInfo.Attribute).Handler;
         var formName = string.IsNullOrEmpty(valueName) ?
             (bindingContext?.Name) :
             ModelBindingContext.Combine(bindingContext, valueName);

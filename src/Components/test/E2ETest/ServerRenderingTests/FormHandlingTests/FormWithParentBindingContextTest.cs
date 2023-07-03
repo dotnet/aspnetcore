@@ -157,6 +157,32 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
+    public void CanChangeFormParameterNames(bool suppressEnhancedNavigation)
+    {
+        var dispatchToForm = new DispatchToForm(this)
+        {
+            Url = "forms/default-form-bound-multiple-primitive-parameters-changed-names",
+            FormCssSelector = "form",
+            ExpectedActionValue = null,
+            UpdateFormAction = () =>
+            {
+                Browser.Exists(By.CssSelector("input[name=UpdatedParameter]")).Clear();
+                Browser.Exists(By.CssSelector("input[name=UpdatedParameter]")).SendKeys("10");
+
+                Browser.Exists(By.CssSelector("input[name=UpdatedOtherParameter]")).Clear();
+                Browser.Exists(By.CssSelector("input[name=UpdatedOtherParameter]")).SendKeys("true");
+            },
+            SuppressEnhancedNavigation = suppressEnhancedNavigation,
+        };
+        DispatchToFormCore(dispatchToForm);
+
+        Browser.Exists(By.Id("ParameterValue")).Text.Contains("10");
+        Browser.Exists(By.Id("OtherParameterValue")).Text.Contains("True");
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
     public void CanDisplayErrorsFromMultipleParametersToTheDefaultForm(bool suppressEnhancedNavigation)
     {
         var dispatchToForm = new DispatchToForm(this)
