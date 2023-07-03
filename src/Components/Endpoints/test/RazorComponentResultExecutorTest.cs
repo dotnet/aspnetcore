@@ -417,7 +417,7 @@ public class RazorComponentResultExecutorTest
             .AddSingleton<FormDataProvider, HttpContextFormDataProvider>()
             .AddSingleton<ComponentStatePersistenceManager>()
             .AddSingleton<PersistentComponentState>(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State)
-            .AddSingleton<AntiforgeryStateProvider, EndpointAntiforgeryStateProvider>()
+            .AddSingleton<DefaultAntiforgeryStateProvider, EndpointAntiforgeryStateProvider>()
             .AddLogging();
 
         var result = new DefaultHttpContext { RequestServices = serviceCollection.BuildServiceProvider() };

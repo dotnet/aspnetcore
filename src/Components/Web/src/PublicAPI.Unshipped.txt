@@ -1,5 +1,6 @@
 #nullable enable
 *REMOVED*override Microsoft.AspNetCore.Components.Forms.InputFile.OnInitialized() -> void
+abstract Microsoft.AspNetCore.Components.Forms.AntiforgeryStateProvider.GetAntiforgeryToken() -> Microsoft.AspNetCore.Components.Forms.AntiforgeryRequestToken?
 abstract Microsoft.AspNetCore.Components.Forms.FormDataProvider.Entries.get -> System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.Extensions.Primitives.StringValues>!
 abstract Microsoft.AspNetCore.Components.Forms.FormDataProvider.Name.get -> string?
 Microsoft.AspNetCore.Components.Binding.CascadingFormModelBindingProvider
@@ -9,8 +10,7 @@ Microsoft.AspNetCore.Components.Forms.AntiforgeryRequestToken.AntiforgeryRequest
 Microsoft.AspNetCore.Components.Forms.AntiforgeryRequestToken.FormFieldName.get -> string!
 Microsoft.AspNetCore.Components.Forms.AntiforgeryRequestToken.Value.get -> string!
 Microsoft.AspNetCore.Components.Forms.AntiforgeryStateProvider
-Microsoft.AspNetCore.Components.Forms.AntiforgeryStateProvider.AntiforgeryStateProvider(Microsoft.AspNetCore.Components.PersistentComponentState! state) -> void
-Microsoft.AspNetCore.Components.Forms.AntiforgeryStateProvider.Dispose() -> void
+Microsoft.AspNetCore.Components.Forms.AntiforgeryStateProvider.AntiforgeryStateProvider() -> void
 Microsoft.AspNetCore.Components.Forms.AntiforgeryToken
 Microsoft.AspNetCore.Components.Forms.AntiforgeryToken.AntiforgeryToken() -> void
 Microsoft.AspNetCore.Components.Forms.FormDataProvider
@@ -82,5 +82,4 @@ override Microsoft.AspNetCore.Components.Web.RenderModeWebAssemblyAttribute.Mode
 static Microsoft.AspNetCore.Components.Web.RenderMode.Auto.get -> Microsoft.AspNetCore.Components.Web.AutoRenderMode!
 static Microsoft.AspNetCore.Components.Web.RenderMode.Server.get -> Microsoft.AspNetCore.Components.Web.ServerRenderMode!
 static Microsoft.AspNetCore.Components.Web.RenderMode.WebAssembly.get -> Microsoft.AspNetCore.Components.Web.WebAssemblyRenderMode!
-virtual Microsoft.AspNetCore.Components.Forms.AntiforgeryStateProvider.GetAntiforgeryToken() -> Microsoft.AspNetCore.Components.Forms.AntiforgeryRequestToken?
 virtual Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.WriteComponentHtml(int componentId, System.IO.TextWriter! output) -> void
