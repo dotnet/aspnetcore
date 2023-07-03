@@ -19,12 +19,7 @@ public class AntiforgeryToken : IComponent
     void IComponent.Attach(RenderHandle renderHandle)
     {
         _handle = renderHandle;
-        UpdateToken(Antiforgery.GetAntiforgeryToken());
-    }
-
-    private void UpdateToken(AntiforgeryRequestToken? token)
-    {
-        _requestToken = token;
+        _requestToken = Antiforgery.GetAntiforgeryToken();
     }
 
     Task IComponent.SetParametersAsync(ParameterView parameters)

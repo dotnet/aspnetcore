@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.ObjectModel;
 using System.Net.Http;
 using Components.TestServer.RazorComponents;
@@ -11,7 +10,6 @@ using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
 using TestServer;
 using Xunit.Abstractions;
-using static System.Net.WebRequestMethods;
 
 namespace Microsoft.AspNetCore.Components.E2ETests.ServerRenderingTests.FormHandlingTests;
 
