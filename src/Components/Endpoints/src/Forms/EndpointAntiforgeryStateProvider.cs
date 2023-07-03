@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Forms;
 
-internal class EndpointAntiforgeryStateProvider(IAntiforgery antiforgery, PersistentComponentState state) : AntiforgeryStateProvider(state)
+internal class EndpointAntiforgeryStateProvider(IAntiforgery antiforgery, PersistentComponentState state) : DefaultAntiforgeryStateProvider(state)
 {
     private HttpContext? _context;
 

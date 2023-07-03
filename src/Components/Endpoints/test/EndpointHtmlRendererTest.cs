@@ -1301,7 +1301,7 @@ public class EndpointHtmlRendererTest
         services.AddAntiforgery();
         services.AddSingleton<ComponentStatePersistenceManager>();
         services.AddSingleton<PersistentComponentState>(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
-        services.AddSingleton<AntiforgeryStateProvider, EndpointAntiforgeryStateProvider>();
+        services.AddSingleton<DefaultAntiforgeryStateProvider, EndpointAntiforgeryStateProvider>();
 
         return services;
     }
