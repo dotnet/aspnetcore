@@ -29,6 +29,8 @@ Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.
 Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.StaticHtmlRenderer(System.IServiceProvider! serviceProvider, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
 Microsoft.AspNetCore.Components.RenderTree.WebRenderer.WaitUntilAttachedAsync() -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute
+Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute.Handler.get -> string?
+Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute.Handler.set -> void
 Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute.SupplyParameterFromFormAttribute() -> void
 Microsoft.AspNetCore.Components.Web.AutoRenderMode
 Microsoft.AspNetCore.Components.Web.AutoRenderMode.AutoRenderMode() -> void

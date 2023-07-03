@@ -31,7 +31,7 @@
     string _attemptedValue = null;
     IReadOnlyList<FormattableString> _errors;
 
-    [SupplyParameterFromForm(Name = "bind-guid")] public Guid Id { get; set; } = Guid.NewGuid();
+    [SupplyParameterFromForm(Handler = "bind-guid")] public Guid Id { get; set; } = Guid.NewGuid();
 
     [CascadingParameter] public ModelBindingContext Context { get; set; }
 
