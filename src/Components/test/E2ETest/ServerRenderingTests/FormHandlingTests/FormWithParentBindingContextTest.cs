@@ -78,6 +78,59 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
+    public void MultipleParametersMultipleFormsDoNotConflict(bool suppressEnhancedNavigation)
+    {
+        var dispatchToForm = new DispatchToForm(this)
+        {
+            Url = "forms/multiple-forms-bound-parameter-no-conflicts",
+            FormCssSelector = "form[name=bind-integer]",
+            ExpectedActionValue = "forms/multiple-forms-bound-parameter-no-conflicts?handler=bind-integer",
+            InputFieldId = "Id",
+            InputFieldCssSelector = "form[name=bind-integer] input[name=Id]",
+            InputFieldValue = "abc",
+            AssertErrors = errors =>
+            {
+                var error = Assert.Single(errors);
+                Assert.Equal("The value 'abc' is not valid for 'Id'.", error.Text);
+                Assert.Equal("abc", Browser.FindElement(By.CssSelector("form[name=bind-integer] input[name=Id]")).GetAttribute("value"));
+            },
+            SuppressEnhancedNavigation = suppressEnhancedNavigation,
+        };
+
+        DispatchToFormCore(dispatchToForm);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void MultipleParametersMultipleFormsBindsToCorrectForm(bool suppressEnhancedNavigation)
+    {
+        var guid = "02385a44-9ea2-4af8-9d82-7a278f71a50c";
+        var dispatchToForm = new DispatchToForm(this)
+        {
+            Url = "forms/multiple-forms-bound-parameter-no-conflicts",
+            FormCssSelector = "form[name=bind-guid]",
+            ExpectedActionValue = "forms/multiple-forms-bound-parameter-no-conflicts?handler=bind-guid",
+            SubmitButtonId = "send-guid",
+            UpdateFormAction = () =>
+            {
+                var criteria = By.CssSelector("form[name=bind-guid] input[name=Id]");
+
+                Browser.Exists(criteria).Clear();
+                Browser.Exists(criteria).SendKeys(guid);
+            },
+            SuppressEnhancedNavigation = suppressEnhancedNavigation,
+        };
+
+        DispatchToFormCore(dispatchToForm);
+        Browser.Contains(guid, () => Browser.Exists(By.Id("pass-guid")).Text);
+        Browser.DoesNotExist(By.Id("errors"));
+        Browser.DoesNotExist(By.Id("pass"));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
     public void CanBindMultipleParametersToTheDefaultForm(bool suppressEnhancedNavigation)
     {
         var dispatchToForm = new DispatchToForm(this)
