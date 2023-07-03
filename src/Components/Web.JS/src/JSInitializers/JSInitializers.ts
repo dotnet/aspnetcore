@@ -6,10 +6,14 @@ import { rendererAttached } from '../Rendering/WebRendererInteropMethods';
 
 type BeforeBlazorStartedCallback = (...args: unknown[]) => Promise<void>;
 export type AfterBlazorStartedCallback = (blazor: typeof Blazor) => Promise<void>;
-type BlazorInitializer = { beforeStart: BeforeBlazorStartedCallback, afterStarted: AfterBlazorStartedCallback };
+export type BlazorInitializer = { beforeStart: BeforeBlazorStartedCallback, afterStarted: AfterBlazorStartedCallback };
 
 export class JSInitializer {
   private afterStartedCallbacks: AfterBlazorStartedCallback[] = [];
+
+  addAfterStartedCallback(afterStartedCallback: AfterBlazorStartedCallback): void {
+    this.afterStartedCallbacks.push(afterStartedCallback);
+  }
 
   async importInitializersAsync(initializerFiles: string[], initializerArguments: unknown[]): Promise<void> {
     await Promise.all(initializerFiles.map(f => importAndInvokeInitializer(this, f)));

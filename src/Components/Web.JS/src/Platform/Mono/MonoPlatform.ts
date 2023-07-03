@@ -12,7 +12,7 @@ import { WebAssemblyBootResourceType, WebAssemblyStartOptions } from '../WebAsse
 import { Blazor } from '../../GlobalExports';
 import { DotnetModuleConfig, EmscriptenModule, MonoConfig, ModuleAPI, BootJsonData, ICUDataMode, RuntimeAPI } from 'dotnet';
 import { BINDINGType, MONOType } from 'dotnet/dotnet-legacy';
-import { fetchAndInvokeInitializers } from '../../JSInitializers/JSInitializers.WebAssembly';
+import { invokeOnBeforeStart } from '../../JSInitializers/JSInitializers.WebAssembly';
 
 // initially undefined and only fully initialized after createEmscriptenModuleInstance()
 export let BINDING: BINDINGType = undefined as any;
@@ -26,8 +26,6 @@ const uint64HighOrderShift = Math.pow(2, 32);
 const maxSafeNumberHighPart = Math.pow(2, 21) - 1; // The high-order int32 from Number.MAX_SAFE_INTEGER
 
 let currentHeapLock: MonoHeapLock | null = null;
-
-let applicationEnvironment = 'Production';
 
 // Memory access helpers
 // The implementations are exactly equivalent to what the global getValue(addr, type) function does,
@@ -177,10 +175,10 @@ function prepareRuntimeConfig(options: Partial<WebAssemblyStartOptions>, platfor
   const config: MonoConfig = {
     maxParallelDownloads: 1000000, // disable throttling parallel downloads
     enableDownloadRetry: false, // disable retry downloads
-    applicationEnvironment: applicationEnvironment,
+    applicationEnvironment: options.environment,
   };
 
-  const onConfigLoaded = async (bootConfig: BootJsonData & MonoConfig): Promise<void> => {
+  const onConfigLoaded = async (bootConfig: MonoConfig & BootJsonData): Promise<void> => {
     if (!bootConfig.environmentVariables) {
       bootConfig.environmentVariables = {};
     }
@@ -191,7 +189,7 @@ function prepareRuntimeConfig(options: Partial<WebAssemblyStartOptions>, platfor
 
     Blazor._internal.getApplicationEnvironment = () => bootConfig.applicationEnvironment!;
 
-    platformApi.jsInitializer = await fetchAndInvokeInitializers(bootConfig, options);
+    platformApi.jsInitializer = await invokeOnBeforeStart(bootConfig, bootConfig, options);
   };
 
   const moduleConfig = (window['Module'] || {}) as typeof Module;
