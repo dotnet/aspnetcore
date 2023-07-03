@@ -76,23 +76,22 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         var navigationManager = (IHostEnvironmentNavigationManager)httpContext.RequestServices.GetRequiredService<NavigationManager>();
         navigationManager?.Initialize(GetContextBaseUri(httpContext.Request), GetFullUri(httpContext.Request));
 
-        var authenticationStateProvider = httpContext.RequestServices.GetService<AuthenticationStateProvider>() as IHostEnvironmentAuthenticationStateProvider;
-        if (authenticationStateProvider != null)
+        if (httpContext.RequestServices.GetService<AuthenticationStateProvider>() is IHostEnvironmentAuthenticationStateProvider authenticationStateProvider)
         {
             var authenticationState = new AuthenticationState(httpContext.User);
             authenticationStateProvider.SetAuthenticationState(Task.FromResult(authenticationState));
         }
 
-        var formData = httpContext.RequestServices.GetRequiredService<FormDataProvider>() as IHostEnvironmentFormDataProvider;
-        if (handler != null && form != null && formData != null)
+        if (handler != null &&
+            form != null &&
+            httpContext.RequestServices.GetRequiredService<FormDataProvider>() is IHostEnvironmentFormDataProvider formData)
         {
             formData.SetFormData(handler, new FormCollectionReadOnlyDictionary(form));
         }
 
-        var antiforgery = httpContext.RequestServices.GetRequiredService<AntiforgeryStateProvider>();
-        if (antiforgery is EndpointAntiforgeryStateProvider endpointAntiforgery)
+        if (httpContext.RequestServices.GetService<AntiforgeryStateProvider>() is EndpointAntiforgeryStateProvider antiforgery)
         {
-            endpointAntiforgery.SetRequestContext(httpContext);
+            antiforgery.SetRequestContext(httpContext);
         }
 
         // It's important that this is initialized since a component might try to restore state during prerendering
