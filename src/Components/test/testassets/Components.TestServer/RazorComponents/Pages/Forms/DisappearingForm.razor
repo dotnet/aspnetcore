@@ -1,5 +1,6 @@
 ﻿@page "/forms/disappears-before-dispatching"
 @using Components.TestServer.RazorComponents
+@using Microsoft.AspNetCore.Components.Forms
 
 <h2>Form disappears before dispatching</h2>
 
@@ -11,7 +12,7 @@
 
 @* Just here so that the test can dispatch the event. *@
 <form method="post" enctype="application/x-www-form-urlencoded" id="test-form">
-    <Microsoft.AspNetCore.Components.Forms.AntiforgeryToken />
+    <AntiforgeryToken />
     <input id="test-send" type="submit" value="test-send" />
 </form>
 

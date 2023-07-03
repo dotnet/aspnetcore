@@ -3,9 +3,8 @@
 
 <h1>@Value?.Parameter</h1>
 
-<EditForm method="POST" Model="Value?.Parameter">
+<EditForm Model="Value?.Parameter">
     <InputText @bind-Value="Value!.Parameter" />
-    <AntiforgeryToken />
     <input type="submit" value="Send" />
 </EditForm>
 
