@@ -231,7 +231,14 @@ public sealed class RenderTreeBuilder : IDisposable
         AssertCanAddAttribute();
         if (value != null || _lastNonAttributeFrameType == RenderTreeFrameType.Component)
         {
-            _entries.AppendAttribute(sequence, name, value);
+            if (TrackNamedEventHandlers && value != null && string.Equals(name, "@onsubmit:name", StringComparison.Ordinal))
+            {
+                SetEventHandlerName(value);
+            }
+            else
+            {
+                _entries.AppendAttribute(sequence, name, value);
+            }
         }
         else
         {
@@ -376,6 +383,11 @@ public sealed class RenderTreeBuilder : IDisposable
             {
                 if (boolValue)
                 {
+                    if (TrackNamedEventHandlers && string.Equals(name, "@onsubmit:name", StringComparison.Ordinal))
+                    {
+                        _entries.AppendAttribute(sequence, name, value);
+                    }
+
                     _entries.AppendAttribute(sequence, name, BoxedTrue);
                 }
                 else
@@ -401,8 +413,17 @@ public sealed class RenderTreeBuilder : IDisposable
             }
             else
             {
-                // The value is either a string, or should be treated as a string.
-                _entries.AppendAttribute(sequence, name, value.ToString());
+                var valueAsString = value.ToString();
+                if (TrackNamedEventHandlers && valueAsString != null && string.Equals(name, "@onsubmit:name", StringComparison.Ordinal))
+                {
+                    SetEventHandlerName(valueAsString);
+                }
+                else
+                {
+                    // The value is either a string, or should be treated as a string.
+                    _entries.AppendAttribute(sequence, name, valueAsString);
+                }
+
             }
         }
         else if (_lastNonAttributeFrameType == RenderTreeFrameType.Component)
@@ -952,54 +973,6 @@ public sealed class RenderTreeBuilder : IDisposable
 
     internal Dictionary<string, int>? GetNamedEvents()
     {
-        if (TrackNamedEventHandlers)
-        {
-            var i = _entries.Count - 1;
-            while (i >= 0)
-            {
-                ref var frame = ref _entries.Buffer[i];
-                if (frame.FrameType != RenderTreeFrameType.Attribute)
-                {
-                    i--;
-                    continue;
-                }
-                var j = i;
-                var submitHandlerIndex = -1;
-                var submitHanderNameIndex = -1;
-                while (j > 0)
-                {
-                    // we are inside a list of attribute frames.
-                    // Walk backwards to find pairs of onsubmit and @onsubmit:name
-                    // and stop the first time we find an element or component frame.
-                    ref var attributeFrame = ref _entries.Buffer[j];
-                    if (attributeFrame.FrameType != RenderTreeFrameType.Attribute)
-                    {
-                        break;
-                    }
-
-                    if (string.Equals(attributeFrame.AttributeName, "onsubmit", StringComparison.Ordinal))
-                    {
-                        submitHandlerIndex = j;
-                    }
-                    else if (string.Equals(attributeFrame.AttributeName, "@onsubmit:name", StringComparison.Ordinal))
-                    {
-                        submitHanderNameIndex = j;
-                    }
-
-                    if (submitHandlerIndex != -1 && submitHanderNameIndex != -1)
-                    {
-                        // We found a pair, add it to the dictionary in case it was missing.
-                        _seenEventHandlerNames ??= new Dictionary<string, int>(SimplifiedStringHashComparer.Instance);
-                        var eventHandlerName = _entries.Buffer[submitHanderNameIndex].AttributeValue;
-                        _seenEventHandlerNames[(eventHandlerName as string)!] = submitHandlerIndex;
-                        submitHanderNameIndex = -1;
-                        submitHandlerIndex = -1;
-                    }
-                    j--;
-                }
-                i = j;
-            }
-        }
         return _seenEventHandlerNames;
     }
 }
