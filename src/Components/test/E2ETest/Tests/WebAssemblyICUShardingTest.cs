@@ -41,7 +41,7 @@ public class WebAssemblyICUShardingTest : ServerTestBase<ToggleExecutionModeServ
         Assert.Equal("Bonjour!", localizedDisplay.Text);
     }
 
-    [Theory]
+    [Theory(Skip = "https://github.com/dotnet/aspnetcore/issues/49191")]
     [InlineData("ko", "ko", "2020. 9. 2. 오전 12:00:00", "안녕하세요")] // ko exists in the CJK data set.
     [InlineData("ko-KR", "ko-KR", "2020. 9. 2. 오전 12:00:00", "안녕하세요")]// ko-KR exists in the CJK data set.
     [InlineData("ko-KO", "ko-KO", "2020. 9. 2. 00:00:00", "안녕하세요")] // ko-KO is custom culture and doesn't exist in the CJK data set.
@@ -50,7 +50,7 @@ public class WebAssemblyICUShardingTest : ServerTestBase<ToggleExecutionModeServ
     {
         // Arrange
         // This verifies the CJK icu data set.
-        var culture = new CultureInfo(code); 
+        var culture = new CultureInfo(code);
         Assert.Equal(culture.ToString(), code);
         Initialize(culture);
 
@@ -65,7 +65,7 @@ public class WebAssemblyICUShardingTest : ServerTestBase<ToggleExecutionModeServ
         Assert.Equal(expectedText, localizedDisplay.Text);
     }
 
-    [Fact]
+    [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/49191")]
     public void LoadingApp_RussianLanguage_Works()
     {
         // Arrange
