@@ -3,7 +3,7 @@
 //!
 //! This is generated file, see src/mono/wasm/runtime/rollup.config.js
 
-//! This is not considered public API with backward compatibility guarantees. 
+//! This is not considered public API with backward compatibility guarantees.
 
 interface DotnetHostBuilder {
     withConfig(config: MonoConfig): DotnetHostBuilder;
@@ -140,6 +140,10 @@ type MonoConfig = {
      * application environment
      */
     applicationEnvironment?: string;
+    /**
+     * exports from registered javascript library modules
+     */
+    libraryInitializers?: any[];
 };
 interface ResourceRequest {
     name: string;
@@ -182,8 +186,8 @@ interface AssetEntry extends ResourceRequest {
 }
 type AssetBehaviours = "resource" | "assembly" | "pdb" | "heap" | "icu" | "vfs" | "dotnetwasm" | "js-module-threads";
 type GlobalizationMode = "icu" | // load ICU globalization data from any runtime assets with behavior "icu".
-"invariant" | //  operate in invariant globalization mode.
-"auto";
+    "invariant" | //  operate in invariant globalization mode.
+    "auto";
 type DotnetModuleConfig = {
     disableDotnet6Compatibility?: boolean;
     config?: MonoConfig;
