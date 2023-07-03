@@ -24,8 +24,26 @@
             <Placeholder>
                 <div id="async-placeholder" style="height: @(context.Size)px; background-color: orange;">Loading item @context.Index...</div>
             </Placeholder>
+            <EmptyContent>
+                <p id="no-data-async">No data to show</p>
+            </EmptyContent>
         </Virtualize>
     </div>
+</p>
+
+<p>
+    Empty Content:<br />
+<div id="empty-container" style="background-color: #eee; height: 100px; overflow-y: auto">
+    <Virtualize Items="@emptyCollection" ItemSize="itemSize">
+        <ItemContent>
+            <div @key="context" style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">
+                Item @context</div>
+        </ItemContent>
+        <EmptyContent>
+            <p id="no-data-sync">No data to show</p>
+        </EmptyContent>
+    </Virtualize>
+</div>
 </p>
 
 <p>
@@ -47,6 +65,7 @@
 @code {
     float itemSize = 100;
     ICollection<int> fixedItems = Enumerable.Range(0, 1000).ToList();
+    ICollection<int> emptyCollection = Array.Empty<int>();
 
     int asyncTotalItemCount = 200;
     int asyncCancellationCount = 0;
