@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components.Forms;
 /// </summary>
 public class AntiforgeryStateProvider : IDisposable
 {
-    private const string PersistenceKey = nameof(AntiforgeryRequestToken);
+    private const string PersistenceKey = $"__internal__{nameof(AntiforgeryRequestToken)}";
     private readonly PersistingComponentStateSubscription _subscription;
     private readonly AntiforgeryRequestToken? _currentToken;
 
