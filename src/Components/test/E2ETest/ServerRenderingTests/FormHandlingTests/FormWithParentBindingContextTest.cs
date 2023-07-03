@@ -749,7 +749,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
 
     [Theory]
     [InlineData(true)]
-    [InlineData(false, Skip = "https://github.com/dotnet/aspnetcore/issues/49115")]
+    [InlineData(false)]
     public void FormNoAntiforgeryReturnBadRequest(bool suppressEnhancedNavigation)
     {
         var dispatchToForm = new DispatchToForm(this)
