@@ -189,11 +189,6 @@ function prepareRuntimeConfig(options: Partial<WebAssemblyStartOptions>, platfor
       bootConfig.environmentVariables['__BLAZOR_SHARDED_ICU'] = '1';
     }
 
-    if (bootConfig.aspnetCoreBrowserTools) {
-      // See https://github.com/dotnet/aspnetcore/issues/37357#issuecomment-941237000
-      bootConfig.environmentVariables['__ASPNETCORE_BROWSER_TOOLS'] = bootConfig.aspnetCoreBrowserTools;
-    }
-
     Blazor._internal.getApplicationEnvironment = () => bootConfig.applicationEnvironment!;
 
     platformApi.jsInitializer = await fetchAndInvokeInitializers(bootConfig, options);
