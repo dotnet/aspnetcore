@@ -294,11 +294,6 @@
     <GrpcAuthVersion>2.52.0</GrpcAuthVersion>
     <GrpcNetClientVersion>2.52.0</GrpcNetClientVersion>
     <GrpcToolsVersion>2.52.0</GrpcToolsVersion>
-    <DuendeIdentityServerAspNetIdentityVersion>6.0.4</DuendeIdentityServerAspNetIdentityVersion>
-    <DuendeIdentityServerEntityFrameworkVersion>6.0.4</DuendeIdentityServerEntityFrameworkVersion>
-    <DuendeIdentityServerVersion>6.0.4</DuendeIdentityServerVersion>
-    <DuendeIdentityServerStorageVersion>6.0.4</DuendeIdentityServerStorageVersion>
-    <DuendeIdentityServerEntityFrameworkStorageVersion>6.0.4</DuendeIdentityServerEntityFrameworkStorageVersion>
     <MessagePackVersion>2.5.108</MessagePackVersion>
     <MicrosoftIdentityWebVersion>2.12.2</MicrosoftIdentityWebVersion>
     <MicrosoftIdentityWebGraphServiceClientVersion>2.12.2</MicrosoftIdentityWebGraphServiceClientVersion>
