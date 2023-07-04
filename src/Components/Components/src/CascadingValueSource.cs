@@ -15,8 +15,7 @@ public class CascadingValueSource<TValue> : ICascadingValueSupplier
     // By *not* making this sealed, people who want to deal with value disposal can subclass this,
     // add IDisposable, and then do what they want during shutdown
 
-    private ConcurrentDictionary<Dispatcher, List<ComponentState>>? _subscribers; // Lazily instantiated
-
+    private readonly ConcurrentDictionary<Dispatcher, List<ComponentState>>? _subscribers;
     private readonly bool _isFixed;
     private readonly string? _name;
 
@@ -34,6 +33,11 @@ public class CascadingValueSource<TValue> : ICascadingValueSupplier
     {
         CurrentValue = value;
         _isFixed = isFixed;
+
+        if (!_isFixed)
+        {
+            _subscribers = new();
+        }
     }
 
     /// <summary>
@@ -58,7 +62,7 @@ public class CascadingValueSource<TValue> : ICascadingValueSupplier
             throw new InvalidOperationException($"Cannot notify about changes because the {GetType()} is configured as fixed.");
         }
 
-        if (_subscribers is not null)
+        if (_subscribers?.Count > 0)
         {
             var tasks = new List<Task>();
 
@@ -116,8 +120,8 @@ public class CascadingValueSource<TValue> : ICascadingValueSupplier
         Dispatcher dispatcher = subscriber.Renderer.Dispatcher;
         dispatcher.AssertAccess();
 
-        _subscribers ??= new();
-        _subscribers.GetOrAdd(dispatcher, _ => new()).Add(subscriber); // The .Add is threadsafe because we are in the sync context for this dispatcher
+        // The .Add is threadsafe because we are in the sync context for this dispatcher
+        _subscribers?.GetOrAdd(dispatcher, _ => new()).Add(subscriber);
     }
 
     void ICascadingValueSupplier.Unsubscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)

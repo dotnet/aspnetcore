@@ -606,6 +606,12 @@ public class CascadingParameterTest
                 AssertFrame.Text(thirdBatch.ReferenceFrames[0], "CascadingParameter=Whole new object; RegularParameter=Goodbye");
             });
         Assert.Equal(3, component.NumRenders);
+
+        // Disposing the subscriber does not cause any error
+        // We can't really observe any more than this because disposing is what causes unsubscription, and once you're
+        // disposed you're not getting notifications anyway, so the most we can say is there was no error
+        await renderer.Dispatcher.InvokeAsync(() => renderer.RemoveRootComponent(componentId));
+        await cascadingValueSource.NotifyChangedAsync(new MyParamType("Nobody is listening, but this shouldn't be an error"));
     }
 
     private static T FindComponent<T>(CapturedBatch batch, out int componentId)
