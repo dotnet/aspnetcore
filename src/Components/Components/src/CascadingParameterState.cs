@@ -70,7 +70,7 @@ internal readonly struct CascadingParameterState
         } while (candidate != null);
 
         // We got to the root and found no match, so now look at the providers registered in DI
-        foreach (var valueSupplier in componentState.Renderer.ServiceProviderCascadingValueSuppliers.Value)
+        foreach (var valueSupplier in componentState.Renderer.ServiceProviderCascadingValueSuppliers)
         {
             if (valueSupplier.CanSupplyValue(info))
             {

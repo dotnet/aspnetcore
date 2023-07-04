@@ -89,18 +89,12 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         _logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Components.RenderTree.Renderer");
         _componentFactory = new ComponentFactory(componentActivator, this);
 
-        ServiceProviderCascadingValueSuppliers = new Lazy<ICascadingValueSupplier[]>(() =>
-        {
-            if (serviceProvider.GetService<ICascadingValueSupplier>() is null)
-            {
-                return Array.Empty<ICascadingValueSupplier>();
-            }
-
-            return serviceProvider.GetServices<ICascadingValueSupplier>().ToArray();
-        });
+        ServiceProviderCascadingValueSuppliers = serviceProvider.GetService<ICascadingValueSupplier>() is null
+            ? Array.Empty<ICascadingValueSupplier>()
+            : serviceProvider.GetServices<ICascadingValueSupplier>().ToArray();
     }
 
-    internal Lazy<ICascadingValueSupplier[]> ServiceProviderCascadingValueSuppliers { get; }
+    internal ICascadingValueSupplier[] ServiceProviderCascadingValueSuppliers { get; }
 
     internal HotReloadManager HotReloadManager { get; set; } = HotReloadManager.Default;
 
