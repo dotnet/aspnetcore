@@ -152,6 +152,10 @@ type MonoConfig = {
      * A definition of assets to load along with the runtime.
      */
     resources: ResourceGroups;
+    /**
+     * config extensions declared in MSBuild items @(WasmBootConfigExtension)
+     */
+    extensions?: { [name: string]: any };
 };
 interface ResourceRequest {
     name: string;
