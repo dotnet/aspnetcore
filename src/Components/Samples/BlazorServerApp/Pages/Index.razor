@@ -5,13 +5,3 @@
 <h1>Hello, world!</h1>
 
 Welcome to your new app.
-
-<p>
-    <strong>
-        Thing: @(Thing?.Value.ToString() ?? "NULL")
-    </strong>
-</p>
-
-@code {
-    [CascadingParameter] public MyCascadedThing? Thing { get; set; }
-}

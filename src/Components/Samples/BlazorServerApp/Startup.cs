@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using BlazorServerApp.Data;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Server;
 
 namespace BlazorServerApp;
 
@@ -22,22 +20,6 @@ public class Startup
     {
         services.AddRazorPages();
         services.AddServerSideBlazor();
-        //services.AddCascadingValue(sp => new MyCascadedThing { Value = 123 });
-
-        services.AddCascadingValue(sp => {
-            var thing = new MyCascadedThing { Value = 456 };
-            var source = new CascadingValueSource<MyCascadedThing>(thing, isFixed: false);
-
-            Task.Run(async () =>
-            {
-                await Task.Delay(3000);
-                thing.Value = 789;
-                await source.NotifyChangedAsync(new MyCascadedThing { Value = 1000 });
-            });
-
-            return source;
-        });
-
         services.AddSingleton<WeatherForecastService>();
     }
 
@@ -66,9 +48,4 @@ public class Startup
             endpoints.MapFallbackToPage("/_Host");
         });
     }
-}
-
-public class MyCascadedThing
-{
-    public int Value { get; set; }
 }
