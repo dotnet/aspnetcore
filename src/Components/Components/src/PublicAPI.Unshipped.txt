@@ -46,7 +46,6 @@ Microsoft.AspNetCore.Components.CascadingParameterInfo.Attribute.get -> Microsof
 Microsoft.AspNetCore.Components.CascadingParameterInfo.CascadingParameterInfo() -> void
 Microsoft.AspNetCore.Components.CascadingParameterInfo.PropertyName.get -> string!
 Microsoft.AspNetCore.Components.CascadingParameterInfo.PropertyType.get -> System.Type!
-Microsoft.AspNetCore.Components.CascadingValueServiceCollectionExtensions
 Microsoft.AspNetCore.Components.CascadingValueSource<TValue>
 Microsoft.AspNetCore.Components.CascadingValueSource<TValue>.CascadingValueSource(string! name, TValue value, bool isFixed) -> void
 Microsoft.AspNetCore.Components.CascadingValueSource<TValue>.CascadingValueSource(TValue value, bool isFixed) -> void
@@ -121,9 +120,6 @@ override Microsoft.AspNetCore.Components.EventCallback<TValue>.Equals(object? ob
 *REMOVED*Microsoft.AspNetCore.Components.SupplyParameterFromQueryAttribute.Name.set -> void
 override Microsoft.AspNetCore.Components.SupplyParameterFromQueryAttribute.Name.get -> string?
 override Microsoft.AspNetCore.Components.SupplyParameterFromQueryAttribute.Name.set -> void
-static Microsoft.AspNetCore.Components.CascadingValueServiceCollectionExtensions.AddCascadingValue<TValue>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, string! name, System.Func<System.IServiceProvider!, TValue>! valueFactory) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
-static Microsoft.AspNetCore.Components.CascadingValueServiceCollectionExtensions.AddCascadingValue<TValue>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Func<System.IServiceProvider!, Microsoft.AspNetCore.Components.CascadingValueSource<TValue>!>! sourceFactory) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
-static Microsoft.AspNetCore.Components.CascadingValueServiceCollectionExtensions.AddCascadingValue<TValue>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Func<System.IServiceProvider!, TValue>! valueFactory) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.Extensions.DependencyInjection.CascadingValueServiceCollectionExtensions.AddCascadingValue<TValue>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! serviceCollection, string! name, System.Func<System.IServiceProvider!, TValue>! valueFactory) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.Extensions.DependencyInjection.CascadingValueServiceCollectionExtensions.AddCascadingValue<TValue>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! serviceCollection, System.Func<System.IServiceProvider!, Microsoft.AspNetCore.Components.CascadingValueSource<TValue>!>! sourceFactory) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.Extensions.DependencyInjection.CascadingValueServiceCollectionExtensions.AddCascadingValue<TValue>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! serviceCollection, System.Func<System.IServiceProvider!, TValue>! valueFactory) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
