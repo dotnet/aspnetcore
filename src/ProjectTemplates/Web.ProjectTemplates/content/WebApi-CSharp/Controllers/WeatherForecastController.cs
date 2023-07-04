@@ -90,7 +90,7 @@ public class WeatherForecastController : ControllerBase
 #endif
     public async Task<IEnumerable<WeatherForecast>> Get()
     {
-        var user = await _graphServiceClient.Me.Request().GetAsync();
+        var user = await _graphServiceClient.Me.GetAsync();
 
         return Enumerable.Range(1, 5).Select(index => new WeatherForecast
         {
