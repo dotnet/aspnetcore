@@ -10,7 +10,7 @@ import { showErrorNotification } from '../../BootErrors';
 import { Platform, System_Array, Pointer, System_Object, System_String, HeapLock, PlatformApi } from '../Platform';
 import { WebAssemblyBootResourceType, WebAssemblyStartOptions } from '../WebAssemblyStartOptions';
 import { Blazor } from '../../GlobalExports';
-import { DotnetModuleConfig, EmscriptenModule, MonoConfig, ModuleAPI, BootJsonData, ICUDataMode, RuntimeAPI } from 'dotnet';
+import { DotnetModuleConfig, EmscriptenModule, MonoConfig, ModuleAPI, BootJsonData, ICUDataMode, RuntimeAPI, GlobalizationMode } from 'dotnet';
 import { BINDINGType, MONOType } from 'dotnet/dotnet-legacy';
 import { invokeOnBeforeStart } from '../../JSInitializers/JSInitializers.WebAssembly';
 
@@ -178,18 +178,18 @@ function prepareRuntimeConfig(options: Partial<WebAssemblyStartOptions>, platfor
     applicationEnvironment: options.environment,
   };
 
-  const onConfigLoaded = async (bootConfig: MonoConfig & BootJsonData): Promise<void> => {
-    if (!bootConfig.environmentVariables) {
-      bootConfig.environmentVariables = {};
+  const onConfigLoaded = async (loadedConfig: MonoConfig): Promise<void> => {
+    if (!loadedConfig.environmentVariables) {
+      loadedConfig.environmentVariables = {};
     }
 
-    if (bootConfig.icuDataMode === ICUDataMode.Sharded) {
-      bootConfig.environmentVariables['__BLAZOR_SHARDED_ICU'] = '1';
+    if (loadedConfig.globalizationMode === GlobalizationMode.Sharded) {
+      loadedConfig.environmentVariables['__BLAZOR_SHARDED_ICU'] = '1';
     }
 
-    Blazor._internal.getApplicationEnvironment = () => bootConfig.applicationEnvironment!;
+    Blazor._internal.getApplicationEnvironment = () => loadedConfig.applicationEnvironment!;
 
-    platformApi.jsInitializer = await invokeOnBeforeStart(bootConfig, bootConfig, options);
+    platformApi.jsInitializer = await invokeOnBeforeStart(loadedConfig, options);
   };
 
   const moduleConfig = (window['Module'] || {}) as typeof Module;

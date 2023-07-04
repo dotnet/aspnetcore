@@ -141,9 +141,17 @@ type MonoConfig = {
      */
     applicationEnvironment?: string;
     /**
-     * exports from registered javascript library modules
+     * exports from library es6 modules
+     *
+     * nuget packages can contain wwwroot/*.lib.module.js which are treated as es6 modules
+     * runtime calls 'onRuntimeReady' and pass in runtime API
+     * blazor calls 'beforeStart' and 'afterStarted'
      */
     libraryInitializers?: any[];
+    /**
+     * A definition of assets to load along with the runtime.
+     */
+    resources: ResourceGroups;
 };
 interface ResourceRequest {
     name: string;
@@ -185,9 +193,13 @@ interface AssetEntry extends ResourceRequest {
     pendingDownload?: LoadingResource;
 }
 type AssetBehaviours = "resource" | "assembly" | "pdb" | "heap" | "icu" | "vfs" | "dotnetwasm" | "js-module-threads";
-type GlobalizationMode = "icu" | // load ICU globalization data from any runtime assets with behavior "icu".
-    "invariant" | //  operate in invariant globalization mode.
-    "auto";
+export const enum GlobalizationMode {
+    Sharded = "sharded", // load sharded ICU data
+    All = "all", // load all ICU data
+    Invariant = "invariant", //  operate in invariant globalization mode.
+    Custom = "custom", // use user defined icu file
+    Hybrid = "hybrid" // operate in hybrid globalization mode with small ICU files, using native platform functions
+}
 type DotnetModuleConfig = {
     disableDotnet6Compatibility?: boolean;
     config?: MonoConfig;

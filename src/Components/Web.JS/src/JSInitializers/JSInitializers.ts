@@ -16,6 +16,8 @@ export class JSInitializer {
   }
 
   async importInitializersAsync(initializerFiles: string[], initializerArguments: unknown[]): Promise<void> {
+    // This code is not called on WASM, because library intializers are imported by runtime.
+
     await Promise.all(initializerFiles.map(f => importAndInvokeInitializer(this, f)));
 
     function adjustPath(path: string): string {
