@@ -81,6 +81,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
                 }
                 else
                 {
+                    // Expires when browser is closed, so tests won't interfere with each other
                     context.Response.Cookies.Append(cookieKey, username);
                 }
             }
