@@ -26,7 +26,7 @@ public static class CascadingAuthenticationStateServiceCollectionExtensions
         });
     }
 
-    private class AuthenticationStateCascadingValueSource : CascadingValueSource<Task<AuthenticationState>>, IDisposable
+    private sealed class AuthenticationStateCascadingValueSource : CascadingValueSource<Task<AuthenticationState>>, IDisposable
     {
         // This is intended to produce identical behavior to having a <CascadingAuthenticationStateProvider>
         // wrapped around the root component.
