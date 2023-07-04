@@ -6,8 +6,17 @@ using Microsoft.AspNetCore.Components.Authorization;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
+/// <summary>
+/// Extension methods for configuring cascading authentication state on a service collection.
+/// </summary>
 public static class CascadingAuthenticationStateServiceCollectionExtensions
 {
+    /// <summary>
+    /// Adds cascading authentication state to the <paramref name="serviceCollection"/>. This is equivalent to
+    /// having a <see cref="CascadingAuthenticationState"/> component at the root of your component hierarchy.
+    /// </summary>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/>.</param>
+    /// <returns>The <see cref="IServiceCollection"/>.</returns>
     public static IServiceCollection AddCascadingAuthenticationState(this IServiceCollection serviceCollection)
     {
         return serviceCollection.AddCascadingValue<Task<AuthenticationState>>(services =>

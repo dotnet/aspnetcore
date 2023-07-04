@@ -110,6 +110,7 @@ Microsoft.AspNetCore.Components.StreamRenderingAttribute.Enabled.get -> bool
 Microsoft.AspNetCore.Components.StreamRenderingAttribute.StreamRenderingAttribute(bool enabled) -> void
 *REMOVED*Microsoft.AspNetCore.Components.CascadingParameterAttribute.Name.get -> string?
 *REMOVED*Microsoft.AspNetCore.Components.CascadingParameterAttribute.Name.set -> void
+Microsoft.Extensions.DependencyInjection.CascadingValueServiceCollectionExtensions
 override Microsoft.AspNetCore.Components.CascadingParameterAttribute.Name.get -> string?
 override Microsoft.AspNetCore.Components.CascadingParameterAttribute.Name.set -> void
 override Microsoft.AspNetCore.Components.EventCallback.GetHashCode() -> int
@@ -123,6 +124,9 @@ override Microsoft.AspNetCore.Components.SupplyParameterFromQueryAttribute.Name.
 static Microsoft.AspNetCore.Components.CascadingValueServiceCollectionExtensions.AddCascadingValue<TValue>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, string! name, System.Func<System.IServiceProvider!, TValue>! valueFactory) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.AspNetCore.Components.CascadingValueServiceCollectionExtensions.AddCascadingValue<TValue>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Func<System.IServiceProvider!, Microsoft.AspNetCore.Components.CascadingValueSource<TValue>!>! sourceFactory) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.AspNetCore.Components.CascadingValueServiceCollectionExtensions.AddCascadingValue<TValue>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Func<System.IServiceProvider!, TValue>! valueFactory) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.DependencyInjection.CascadingValueServiceCollectionExtensions.AddCascadingValue<TValue>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! serviceCollection, string! name, System.Func<System.IServiceProvider!, TValue>! valueFactory) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.DependencyInjection.CascadingValueServiceCollectionExtensions.AddCascadingValue<TValue>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! serviceCollection, System.Func<System.IServiceProvider!, Microsoft.AspNetCore.Components.CascadingValueSource<TValue>!>! sourceFactory) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.DependencyInjection.CascadingValueServiceCollectionExtensions.AddCascadingValue<TValue>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! serviceCollection, System.Func<System.IServiceProvider!, TValue>! valueFactory) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 virtual Microsoft.AspNetCore.Components.Binding.CascadingModelBindingProvider.Subscribe(Microsoft.AspNetCore.Components.Rendering.ComponentState! subscriber) -> void
 virtual Microsoft.AspNetCore.Components.Binding.CascadingModelBindingProvider.Unsubscribe(Microsoft.AspNetCore.Components.Rendering.ComponentState! subscriber) -> void
 virtual Microsoft.AspNetCore.Components.Rendering.ComponentState.DisposeAsync() -> System.Threading.Tasks.ValueTask

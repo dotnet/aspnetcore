@@ -7,33 +7,29 @@ using Microsoft.AspNetCore.Components.Rendering;
 namespace Microsoft.AspNetCore.Components;
 
 /// <summary>
-/// 
+/// Supplies a cascading value that can be received by components using
+/// <see cref="CascadingParameterAttribute"/>.
 /// </summary>
 public class CascadingValueSource<TValue> : ICascadingValueSupplier
 {
     // By *not* making this sealed, people who want to deal with value disposal can subclass this,
     // add IDisposable, and then do what they want during shutdown
 
-    // TODO: Another approach to consider is simply imposing the rule that a given CascadingValueSource
-    //       is affinitized to the first Dispatcher it sees, and throws if you try to subscribe to it from
-    //       a ComponentState with a different Dispatcher. But is it possible to have multiple renderers
-    //       within a single DI scope? Even if it isn't how typical Blazor apps are set up, it's best not
-    //       to impose extra rules that could affect other hosting models.
     private ConcurrentDictionary<Dispatcher, List<ComponentState>>? _subscribers; // Lazily instantiated
 
     private readonly bool _isFixed;
     private readonly string? _name;
 
     /// <summary>
-    /// 
+    /// Gets the current value.
     /// </summary>
     protected TValue CurrentValue { get; private set; }
 
     /// <summary>
-    /// 
+    /// Constructs an instance of <see cref="CascadingValueSource{TValue}"/>.
     /// </summary>
-    /// <param name="value"></param>
-    /// <param name="isFixed"></param>
+    /// <param name="value">The initial value.</param>
+    /// <param name="isFixed">A flag to indicate whether the value is fixed. If false, all receipients will subscribe for update notifications, which you can issue by calling <see cref="NotifyChangedAsync()"/>. These subscriptions come at a performance cost, so if the value will not change, set <paramref name="isFixed"/> to true.</param>
     public CascadingValueSource(TValue value, bool isFixed)
     {
         CurrentValue = value;
@@ -41,19 +37,20 @@ public class CascadingValueSource<TValue> : ICascadingValueSupplier
     }
 
     /// <summary>
-    /// 
+    /// Constructs an instance of <see cref="CascadingValueSource{TValue}"/>.
     /// </summary>
-    /// <param name="value"></param>
-    /// <param name="name"></param>
-    /// <param name="isFixed"></param>
+    /// <param name="name">A name for the cascading value. If set, <see cref="CascadingParameterAttribute"/> can be configured to match based on this name.</param>
+    /// <param name="value">The initial value.</param>
+    /// <param name="isFixed">A flag to indicate whether the value is fixed. If false, all receipients will subscribe for update notifications, which you can issue by calling <see cref="NotifyChangedAsync()"/>. These subscriptions come at a performance cost, so if the value will not change, set <paramref name="isFixed"/> to true.</param>
     public CascadingValueSource(string name, TValue value, bool isFixed) : this(value, isFixed)
     {
         _name = name;
     }
 
     /// <summary>
-    /// 
+    /// Notifies subscribers that the value has changed (for example, if it has been mutated).
     /// </summary>
+    /// <returns>A <see cref="Task"/> that completes when the notifications have been issued.</returns>
     public Task NotifyChangedAsync()
     {
         if (_isFixed)
@@ -85,9 +82,11 @@ public class CascadingValueSource<TValue> : ICascadingValueSupplier
     }
 
     /// <summary>
-    /// 
+    /// Notifies subscribers that the value has changed, supplying a new value.
+    /// This changes the value of <see cref="CurrentValue"/>.
     /// </summary>
     /// <param name="newValue"></param>
+    /// <returns>A <see cref="Task"/> that completes when the notifications have been issued.</returns>
     public Task NotifyChangedAsync(TValue newValue)
     {
         CurrentValue = newValue;
