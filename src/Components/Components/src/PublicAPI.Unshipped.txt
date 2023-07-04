@@ -51,8 +51,8 @@ Microsoft.AspNetCore.Components.CascadingValueSource<TValue>
 Microsoft.AspNetCore.Components.CascadingValueSource<TValue>.CascadingValueSource(string! name, TValue value, bool isFixed) -> void
 Microsoft.AspNetCore.Components.CascadingValueSource<TValue>.CascadingValueSource(TValue value, bool isFixed) -> void
 Microsoft.AspNetCore.Components.CascadingValueSource<TValue>.CurrentValue.get -> TValue
-Microsoft.AspNetCore.Components.CascadingValueSource<TValue>.NotifyChanged() -> void
-Microsoft.AspNetCore.Components.CascadingValueSource<TValue>.NotifyChanged(TValue newValue) -> void
+Microsoft.AspNetCore.Components.CascadingValueSource<TValue>.NotifyChangedAsync() -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.CascadingValueSource<TValue>.NotifyChangedAsync(TValue newValue) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.ComponentBase.DispatchExceptionAsync(System.Exception! exception) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.IComponentRenderMode
 Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.PersistStateAsync(Microsoft.AspNetCore.Components.IPersistentComponentStateStore! store, Microsoft.AspNetCore.Components.Dispatcher! dispatcher) -> System.Threading.Tasks.Task!

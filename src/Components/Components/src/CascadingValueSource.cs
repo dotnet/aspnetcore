@@ -54,7 +54,7 @@ public class CascadingValueSource<TValue> : ICascadingValueSupplier
     /// <summary>
     /// 
     /// </summary>
-    public void NotifyChanged()
+    public Task NotifyChangedAsync()
     {
         if (_isFixed)
         {
@@ -63,16 +63,24 @@ public class CascadingValueSource<TValue> : ICascadingValueSupplier
 
         if (_subscribers is not null)
         {
+            var tasks = new List<Task>();
+
             foreach (var (dispatcher, subscribers) in _subscribers)
             {
-                _ = dispatcher.InvokeAsync(() =>
+                tasks.Add(dispatcher.InvokeAsync(() =>
                 {
                     foreach (var subscriber in subscribers)
                     {
                         subscriber.NotifyCascadingValueChanged(ParameterViewLifetime.Unbound);
                     }
-                });
+                }));
             }
+
+            return Task.WhenAll(tasks);
+        }
+        else
+        {
+            return Task.CompletedTask;
         }
     }
 
@@ -80,10 +88,10 @@ public class CascadingValueSource<TValue> : ICascadingValueSupplier
     /// 
     /// </summary>
     /// <param name="newValue"></param>
-    public void NotifyChanged(TValue newValue)
+    public Task NotifyChangedAsync(TValue newValue)
     {
         CurrentValue = newValue;
-        NotifyChanged();
+        return NotifyChangedAsync();
     }
 
     bool ICascadingValueSupplier.IsFixed => _isFixed;

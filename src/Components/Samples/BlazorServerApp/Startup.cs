@@ -32,7 +32,7 @@ public class Startup
             {
                 await Task.Delay(3000);
                 thing.Value = 789;
-                source.NotifyChanged(new MyCascadedThing { Value = 1000 });
+                await source.NotifyChangedAsync(new MyCascadedThing { Value = 1000 });
             });
 
             return source;

@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Components.Test;
 
@@ -437,6 +438,176 @@ public class CascadingParameterTest
             });
     }
 
+    [Fact]
+    public void CanSupplyCascadingValueFromServiceProvider()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        services.AddCascadingValue(_ => new MyParamType("Hello"));
+        var renderer = new TestRenderer(services.BuildServiceProvider());
+        var component = new CascadingParameterConsumerComponent<MyParamType> { RegularParameter = "Goodbye" };
+
+        // Act/Assert
+        var componentId = renderer.AssignRootComponentId(component);
+        renderer.RenderRootComponent(componentId);
+        var batch = renderer.Batches.Single();
+        var diff = batch.DiffsByComponentId[componentId].Single();
+
+        // The component was rendered with the correct parameters
+        Assert.Collection(diff.Edits,
+            edit =>
+            {
+                Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
+                AssertFrame.Text(
+                    batch.ReferenceFrames[edit.ReferenceFrameIndex],
+                    "CascadingParameter=Hello; RegularParameter=Goodbye");
+            });
+        Assert.Equal(1, component.NumRenders);
+    }
+
+    [Fact]
+    public void CanSupplyCascadingValueFromServiceProviderUsingName()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        services.AddCascadingValue("Ignored", _ => new MyParamType("Should be ignored"));
+        services.AddCascadingValue("My cascading parameter name", _ => new MyParamType("Should be used"));
+        services.AddCascadingValue("Also ignored", _ => new MyParamType("Should also be ignored"));
+        var renderer = new TestRenderer(services.BuildServiceProvider());
+        var component = new ConsumeNamedCascadingValueComponent();
+
+        // Act/Assert
+        var componentId = renderer.AssignRootComponentId(component);
+        renderer.RenderRootComponent(componentId);
+        var batch = renderer.Batches.Single();
+        var diff = batch.DiffsByComponentId[componentId].Single();
+
+        // The component was rendered with the correct parameters
+        Assert.Collection(diff.Edits,
+            edit =>
+            {
+                Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
+                AssertFrame.Text(
+                    batch.ReferenceFrames[edit.ReferenceFrameIndex],
+                    "The value is 'Should be used'");
+            });
+    }
+
+    [Fact]
+    public void PrefersComponentHierarchyCascadingValuesOverServiceProviderValues()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        services.AddCascadingValue(_ => new MyParamType("Hello from services (this should be overridden)"));
+        var renderer = new TestRenderer(services.BuildServiceProvider());
+        var component = new TestComponent(builder =>
+        {
+            builder.OpenComponent<CascadingValue<MyParamType>>(0);
+            builder.AddComponentParameter(1, "Value", new MyParamType("Hello from component hierarchy"));
+            builder.AddComponentParameter(2, "ChildContent", new RenderFragment(childBuilder =>
+            {
+                childBuilder.OpenComponent<CascadingParameterConsumerComponent<MyParamType>>(0);
+                childBuilder.AddComponentParameter(1, "RegularParameter", "Goodbye");
+                childBuilder.CloseComponent();
+            }));
+            builder.CloseComponent();
+        });
+
+        // Act/Assert
+        var componentId = renderer.AssignRootComponentId(component);
+        renderer.RenderRootComponent(componentId);
+        var batch = renderer.Batches.Single();
+        var nestedComponent = FindComponent<CascadingParameterConsumerComponent<MyParamType>>(batch, out var nestedComponentId);
+        var nestedComponentDiff = batch.DiffsByComponentId[nestedComponentId].Single();
+
+        // The nested component was rendered with the correct parameters
+        Assert.Collection(nestedComponentDiff.Edits,
+            edit =>
+            {
+                Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
+                AssertFrame.Text(
+                    batch.ReferenceFrames[edit.ReferenceFrameIndex],
+                    "CascadingParameter=Hello from component hierarchy; RegularParameter=Goodbye");
+            });
+        Assert.Equal(1, nestedComponent.NumRenders);
+    }
+
+    [Fact]
+    public void ThrowsIfAttemptingToSubscribeToCascadingValueSourceOutsideSyncContext()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var cascadingValueSource = new CascadingValueSource<MyParamType>(new MyParamType("Initial value"), isFixed: false);
+        services.AddCascadingValue(_ => cascadingValueSource);
+        var renderer = new TestRenderer(services.BuildServiceProvider());
+        var component = new CascadingParameterConsumerComponent<MyParamType>();
+
+        // Act/Assert: Throws because this is where it tries to attach to the CascadingValueSource
+        var ex = Assert.Throws<InvalidOperationException>(() => renderer.AssignRootComponentId(component));
+        Assert.Contains("The current thread is not associated with the Dispatcher", ex.Message);
+    }
+
+    [Fact]
+    public async Task CanTriggerUpdatesOnCascadingValuesFromServiceProvider()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var myParamValue = new MyParamType("Initial value");
+        var cascadingValueSource = new CascadingValueSource<MyParamType>(myParamValue, isFixed: false);
+        services.AddCascadingValue(_ => cascadingValueSource);
+        var renderer = new TestRenderer(services.BuildServiceProvider());
+        var component = new CascadingParameterConsumerComponent<MyParamType> { RegularParameter = "Goodbye" };
+
+        // Act/Assert 1: Initial render
+        var componentId = await renderer.Dispatcher.InvokeAsync(() => renderer.AssignRootComponentId(component));
+        renderer.RenderRootComponent(componentId);
+        var firstBatch = renderer.Batches.Single();
+        var diff = firstBatch.DiffsByComponentId[componentId].Single();
+        Assert.Collection(diff.Edits,
+            edit =>
+            {
+                Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
+                AssertFrame.Text(
+                    firstBatch.ReferenceFrames[edit.ReferenceFrameIndex],
+                    "CascadingParameter=Initial value; RegularParameter=Goodbye");
+            });
+        Assert.Equal(1, component.NumRenders);
+
+        // Act/Assert 2: Notify about a mutation
+        myParamValue.ChangeValue("Mutated value");
+        await cascadingValueSource.NotifyChangedAsync();
+
+        Assert.Equal(2, renderer.Batches.Count);
+        var secondBatch = renderer.Batches[1];
+        var diff2 = secondBatch.DiffsByComponentId[componentId].Single();
+
+        // The nested component was rendered with the correct parameters
+        Assert.Collection(diff2.Edits,
+            edit =>
+            {
+                Assert.Equal(RenderTreeEditType.UpdateText, edit.Type);
+                Assert.Equal(0, edit.ReferenceFrameIndex); // This is the only change
+                AssertFrame.Text(secondBatch.ReferenceFrames[0], "CascadingParameter=Mutated value; RegularParameter=Goodbye");
+            });
+        Assert.Equal(2, component.NumRenders);
+
+        // Act/Assert 3: Notify about a completely different object
+        await cascadingValueSource.NotifyChangedAsync(new MyParamType("Whole new object"));
+        Assert.Equal(3, renderer.Batches.Count);
+        var thirdBatch = renderer.Batches[2];
+        var diff3 = thirdBatch.DiffsByComponentId[componentId].Single();
+
+        // The nested component was rendered with the correct parameters
+        Assert.Collection(diff3.Edits,
+            edit =>
+            {
+                Assert.Equal(RenderTreeEditType.UpdateText, edit.Type);
+                Assert.Equal(0, edit.ReferenceFrameIndex); // This is the only change
+                AssertFrame.Text(thirdBatch.ReferenceFrames[0], "CascadingParameter=Whole new object; RegularParameter=Goodbye");
+            });
+        Assert.Equal(3, component.NumRenders);
+    }
+
     private static T FindComponent<T>(CapturedBatch batch, out int componentId)
     {
         var componentFrame = batch.ReferenceFrames.Single(
@@ -567,6 +738,27 @@ public class CascadingParameterTest
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
             builder.AddContent(0, $"Value 2 is '{Value}'.");
+        }
+    }
+
+    class ConsumeNamedCascadingValueComponent : AutoRenderComponent
+    {
+        [CascadingParameter(Name = "My cascading parameter name")]
+        public object Value { get; set; }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.AddContent(0, $"The value is '{Value}'");
+        }
+    }
+
+    class MyParamType(string StringValue)
+    {
+        public override string ToString() => StringValue;
+
+        public void ChangeValue(string newValue)
+        {
+            StringValue = newValue;
         }
     }
 }
