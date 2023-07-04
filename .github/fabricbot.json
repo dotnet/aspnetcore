@@ -3236,7 +3236,7 @@
           {
             "name": "addMilestone",
             "parameters": {
-              "milestoneName": "6.0.19"
+              "milestoneName": "6.0.21"
             }
           }
         ]
@@ -3280,7 +3280,7 @@
           {
             "name": "addMilestone",
             "parameters": {
-              "milestoneName": "7.0.8"
+              "milestoneName": "7.0.10"
             }
           }
         ]
