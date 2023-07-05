@@ -6,8 +6,8 @@ The below table lists all the `area-`labels used in the `aspnetcore` repository 
 |--- | ---| --- |
 | area-blazor | mkArtakMSFT | Blazor server and Blazor WASM related |
 | area-commandlinetools |  mkArtakMSFT | dev certs, dotnet watch,  |
-| area-dataprotection | Pilchie | |
-| area-grpc | shirhatti | |
+| area-dataprotection | | |
+| area-grpc | | |
 | area-healthchecks | mkArtakMSFT | |
 | area-identity | blowdart | |
 | area-infrastructure | wtgodbe | |
@@ -16,3 +16,7 @@ The below table lists all the `area-`labels used in the `aspnetcore` repository 
 | area-security | blowdart | |
 | area-runtime | BrennanConroy | |
 | area-signalr | BrennanConroy | |
+
+## Repos
+
+This list is for this **dotnet/aspnetcore** repo. The **dotnet/runtime** repo has [its own list](https://github.com/dotnet/runtime/blob/main/docs/area-owners.md).
