@@ -5,6 +5,7 @@ using System;
 using System.Net;
 using System.Net.Quic;
 using System.Net.Security;
+using System.Net.Sockets;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -275,6 +276,21 @@ public class QuicConnectionListenerTests : TestApplicationErrorLoggerLoggedTest
 
         // Act & Assert
         var port = ((IPEndPoint)connectionListener.EndPoint).Port;
+
+        await Assert.ThrowsAsync<AddressInUseException>(() => QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory, port: port));
+    }
+
+    [ConditionalFact]
+    [MsQuicSupported]
+    public async Task BindAsync_ListenersSharePortWithPlainUdpSocket_ThrowAddressInUse()
+    {
+        // Arrange
+        var endpoint = new IPEndPoint(IPAddress.Loopback, 0);
+        using var socket = new Socket(endpoint.AddressFamily, SocketType.Dgram, ProtocolType.Udp);
+        socket.Bind(endpoint);
+
+        // Act & Assert
+        var port = ((IPEndPoint)socket.LocalEndPoint).Port;
 
         await Assert.ThrowsAsync<AddressInUseException>(() => QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory, port: port));
     }
