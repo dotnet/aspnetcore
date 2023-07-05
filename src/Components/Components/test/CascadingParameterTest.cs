@@ -443,14 +443,27 @@ public class CascadingParameterTest
     {
         // Arrange
         var services = new ServiceCollection();
-        services.AddCascadingValue(_ => new MyParamType("Hello"));
+        var constructionCount = 0;
+        services.AddCascadingValue(_ =>
+        {
+            constructionCount++;
+            return new MyParamType("Hello");
+        });
         var renderer = new TestRenderer(services.BuildServiceProvider());
-        var component = new CascadingParameterConsumerComponent<MyParamType> { RegularParameter = "Goodbye" };
 
-        // Act/Assert
+        // Assert: The value is constructed lazily, so we won't have been asked for it yet, even if some
+        // related components were rendered
+        var unrelatedComponentId = renderer.AssignRootComponentId(new TestComponent(_ => { }));
+        renderer.RenderRootComponent(unrelatedComponentId);
+        Assert.Equal(0, constructionCount);
+
+        // Act/Assert: Render a component that consumes the value
+        var component = new CascadingParameterConsumerComponent<MyParamType> { RegularParameter = "Goodbye" };
         var componentId = renderer.AssignRootComponentId(component);
+        Assert.Equal(0, constructionCount);
         renderer.RenderRootComponent(componentId);
-        var batch = renderer.Batches.Single();
+        Assert.Equal(1, constructionCount);
+        var batch = renderer.Batches.Skip(1).Single();
         var diff = batch.DiffsByComponentId[componentId].Single();
 
         // The component was rendered with the correct parameters
@@ -463,6 +476,13 @@ public class CascadingParameterTest
                     "CascadingParameter=Hello; RegularParameter=Goodbye");
             });
         Assert.Equal(1, component.NumRenders);
+
+        // Act/Assert: Even if another component consumes the value, we don't call the factory again
+        var anotherConsumer = new CascadingParameterConsumerComponent<MyParamType> { RegularParameter = "Goodbye" };
+        var anotherConsumerComponentId = renderer.AssignRootComponentId(anotherConsumer);
+        renderer.RenderRootComponent(anotherConsumerComponentId);
+        Assert.Equal(1, constructionCount);
+        Assert.Same(component.GetCascadingParameterValue(), anotherConsumer.GetCascadingParameterValue());
     }
 
     [Fact]
@@ -614,6 +634,27 @@ public class CascadingParameterTest
         await cascadingValueSource.NotifyChangedAsync(new MyParamType("Nobody is listening, but this shouldn't be an error"));
     }
 
+    [Fact]
+    public async Task AfterSupplyingValueThroughNotifyChanged_InitialValueFactoryIsNotUsed()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var cascadingValueSource = new CascadingValueSource<MyParamType>(
+            () => throw new InvalidOperationException("This should not be used because NotifyChanged is called with a value first"), isFixed: false);
+        services.AddCascadingValue(_ => cascadingValueSource);
+        var renderer = new TestRenderer(services.BuildServiceProvider());
+        var component = new CascadingParameterConsumerComponent<MyParamType> { RegularParameter = "Goodbye" };
+
+        // Act: Supply an update before the value is first consumed
+        var updatedValue = new MyParamType("Updated value");
+        await cascadingValueSource.NotifyChangedAsync(updatedValue);
+
+        // Assert: We see the supplied value, and the factory isn't used (it would have thrown)
+        var componentId = await renderer.Dispatcher.InvokeAsync(() => renderer.AssignRootComponentId(component));
+        renderer.RenderRootComponent(componentId);
+        Assert.Same(updatedValue, component.GetCascadingParameterValue());
+    }
+
     private static T FindComponent<T>(CapturedBatch batch, out int componentId)
     {
         var componentFrame = batch.ReferenceFrames.Single(
@@ -645,6 +686,8 @@ public class CascadingParameterTest
 
         [CascadingParameter] T CascadingParameter { get; set; }
         [Parameter] public string RegularParameter { get; set; }
+
+        public T GetCascadingParameterValue() => CascadingParameter;
 
         public override async Task SetParametersAsync(ParameterView parameters)
         {

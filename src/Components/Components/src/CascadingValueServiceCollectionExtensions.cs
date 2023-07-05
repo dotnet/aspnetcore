@@ -20,7 +20,7 @@ public static class CascadingValueServiceCollectionExtensions
     /// <returns>The <see cref="IServiceCollection"/>.</returns>
     public static IServiceCollection AddCascadingValue<TValue>(
         this IServiceCollection serviceCollection, Func<IServiceProvider, TValue> valueFactory)
-        => serviceCollection.AddScoped<ICascadingValueSupplier>(sp => new CascadingValueSource<TValue>(valueFactory(sp), isFixed: true));
+        => serviceCollection.AddScoped<ICascadingValueSupplier>(sp => new CascadingValueSource<TValue>(() => valueFactory(sp), isFixed: true));
 
     /// <summary>
     /// Adds a cascading value to the <paramref name="serviceCollection"/>. This is equivalent to having
@@ -33,7 +33,7 @@ public static class CascadingValueServiceCollectionExtensions
     /// <returns>The <see cref="IServiceCollection"/>.</returns>
     public static IServiceCollection AddCascadingValue<TValue>(
         this IServiceCollection serviceCollection, string name, Func<IServiceProvider, TValue> valueFactory)
-        => serviceCollection.AddScoped<ICascadingValueSupplier>(sp => new CascadingValueSource<TValue>(name, valueFactory(sp), isFixed: true));
+        => serviceCollection.AddScoped<ICascadingValueSupplier>(sp => new CascadingValueSource<TValue>(name, () => valueFactory(sp), isFixed: true));
 
     /// <summary>
     /// Adds a cascading value to the <paramref name="serviceCollection"/>. This is equivalent to having

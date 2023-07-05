@@ -19,25 +19,18 @@ public class CascadingValueSource<TValue> : ICascadingValueSupplier
     private readonly bool _isFixed;
     private readonly string? _name;
 
-    /// <summary>
-    /// Gets the current value.
-    /// </summary>
-    protected TValue CurrentValue { get; private set; }
+    // You can either provide an initial value to the constructor, or a func to provide one lazily
+    private TValue? _currentValue;
+    private Func<TValue>? _initialValueFactory;
 
     /// <summary>
     /// Constructs an instance of <see cref="CascadingValueSource{TValue}"/>.
     /// </summary>
     /// <param name="value">The initial value.</param>
     /// <param name="isFixed">A flag to indicate whether the value is fixed. If false, all receipients will subscribe for update notifications, which you can issue by calling <see cref="NotifyChangedAsync()"/>. These subscriptions come at a performance cost, so if the value will not change, set <paramref name="isFixed"/> to true.</param>
-    public CascadingValueSource(TValue value, bool isFixed)
+    public CascadingValueSource(TValue value, bool isFixed) : this(isFixed)
     {
-        CurrentValue = value;
-        _isFixed = isFixed;
-
-        if (!_isFixed)
-        {
-            _subscribers = new();
-        }
+        _currentValue = value;
     }
 
     /// <summary>
@@ -48,7 +41,40 @@ public class CascadingValueSource<TValue> : ICascadingValueSupplier
     /// <param name="isFixed">A flag to indicate whether the value is fixed. If false, all receipients will subscribe for update notifications, which you can issue by calling <see cref="NotifyChangedAsync()"/>. These subscriptions come at a performance cost, so if the value will not change, set <paramref name="isFixed"/> to true.</param>
     public CascadingValueSource(string name, TValue value, bool isFixed) : this(value, isFixed)
     {
+        ArgumentNullException.ThrowIfNull(name);
         _name = name;
+    }
+
+    /// <summary>
+    /// Constructs an instance of <see cref="CascadingValueSource{TValue}"/>.
+    /// </summary>
+    /// <param name="valueFactory">A callback that produces the initial value when first required.</param>
+    /// <param name="isFixed">A flag to indicate whether the value is fixed. If false, all receipients will subscribe for update notifications, which you can issue by calling <see cref="NotifyChangedAsync()"/>. These subscriptions come at a performance cost, so if the value will not change, set <paramref name="isFixed"/> to true.</param>
+    public CascadingValueSource(Func<TValue> valueFactory, bool isFixed) : this(isFixed)
+    {
+        _initialValueFactory = valueFactory;
+    }
+
+    /// <summary>
+    /// Constructs an instance of <see cref="CascadingValueSource{TValue}"/>.
+    /// </summary>
+    /// <param name="name">A name for the cascading value. If set, <see cref="CascadingParameterAttribute"/> can be configured to match based on this name.</param>
+    /// <param name="valueFactory">A callback that produces the initial value when first required.</param>
+    /// <param name="isFixed">A flag to indicate whether the value is fixed. If false, all receipients will subscribe for update notifications, which you can issue by calling <see cref="NotifyChangedAsync()"/>. These subscriptions come at a performance cost, so if the value will not change, set <paramref name="isFixed"/> to true.</param>
+    public CascadingValueSource(string name, Func<TValue> valueFactory, bool isFixed) : this(valueFactory, isFixed)
+    {
+        ArgumentNullException.ThrowIfNull(name);
+        _name = name;
+    }
+
+    private CascadingValueSource(bool isFixed)
+    {
+        _isFixed = isFixed;
+
+        if (!_isFixed)
+        {
+            _subscribers = new();
+        }
     }
 
     /// <summary>
@@ -87,13 +113,14 @@ public class CascadingValueSource<TValue> : ICascadingValueSupplier
 
     /// <summary>
     /// Notifies subscribers that the value has changed, supplying a new value.
-    /// This changes the value of <see cref="CurrentValue"/>.
     /// </summary>
     /// <param name="newValue"></param>
     /// <returns>A <see cref="Task"/> that completes when the notifications have been issued.</returns>
     public Task NotifyChangedAsync(TValue newValue)
     {
-        CurrentValue = newValue;
+        _currentValue = newValue;
+        _initialValueFactory = null; // This definitely won't be used now
+
         return NotifyChangedAsync();
     }
 
@@ -113,7 +140,15 @@ public class CascadingValueSource<TValue> : ICascadingValueSupplier
     }
 
     object? ICascadingValueSupplier.GetCurrentValue(in CascadingParameterInfo parameterInfo)
-        => CurrentValue;
+    {
+        if (_initialValueFactory is not null)
+        {
+            _currentValue = _initialValueFactory();
+            _initialValueFactory = null;
+        }
+
+        return _currentValue;
+    }
 
     void ICascadingValueSupplier.Subscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
     {
