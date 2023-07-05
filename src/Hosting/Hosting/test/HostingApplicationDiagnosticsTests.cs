@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using System.Diagnostics.Tracing;
 using System.Reflection;
 using Microsoft.AspNetCore.Http;
@@ -702,7 +703,7 @@ public class HostingApplicationDiagnosticsTests
         var endLog = testSink.Writes.Single(w => w.EventId == LoggerEventIds.RequestFinished);
 
         Assert.Equal("Request starting 1.1 POST http://localhost/hello - text/plain 1024", startLog.Message);
-        Assert.Equal("Request reached the end of the middleware pipeline without being handled by application code. Request path: POST http://localhost/hello, Response status code: 404", unhandedLog.Message);        
+        Assert.Equal("Request reached the end of the middleware pipeline without being handled by application code. Request path: POST http://localhost/hello, Response status code: 404", unhandedLog.Message);
         Assert.StartsWith("Request finished 1.1 POST http://localhost/hello - 404", endLog.Message);
     }
 
