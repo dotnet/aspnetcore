@@ -43,6 +43,7 @@
     <Compile Include="$(SharedSourceRoot)Components\ComponentParameter.cs" Link="Prerendering/ComponentParameter.cs" />
     <Compile Include="$(SharedSourceRoot)Components\PrerenderComponentApplicationStore.cs" />
     <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\DefaultAntiforgeryStateProvider.cs" LinkBase="Forms" />
   </ItemGroup>
 
   <ItemGroup>

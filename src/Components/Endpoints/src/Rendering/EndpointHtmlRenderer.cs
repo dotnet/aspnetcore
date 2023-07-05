@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Endpoints.DependencyInjection;
+using Microsoft.AspNetCore.Components.Endpoints.Forms;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure;
 using Microsoft.AspNetCore.Components.Infrastructure;
@@ -75,17 +76,22 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         var navigationManager = (IHostEnvironmentNavigationManager)httpContext.RequestServices.GetRequiredService<NavigationManager>();
         navigationManager?.Initialize(GetContextBaseUri(httpContext.Request), GetFullUri(httpContext.Request));
 
-        var authenticationStateProvider = httpContext.RequestServices.GetService<AuthenticationStateProvider>() as IHostEnvironmentAuthenticationStateProvider;
-        if (authenticationStateProvider != null)
+        if (httpContext.RequestServices.GetService<AuthenticationStateProvider>() is IHostEnvironmentAuthenticationStateProvider authenticationStateProvider)
         {
             var authenticationState = new AuthenticationState(httpContext.User);
             authenticationStateProvider.SetAuthenticationState(Task.FromResult(authenticationState));
         }
 
-        var formData = httpContext.RequestServices.GetRequiredService<FormDataProvider>() as IHostEnvironmentFormDataProvider;
-        if (handler != null && form != null && formData != null)
+        if (handler != null &&
+            form != null &&
+            httpContext.RequestServices.GetRequiredService<FormDataProvider>() is IHostEnvironmentFormDataProvider formData)
         {
             formData.SetFormData(handler, new FormCollectionReadOnlyDictionary(form));
+        }
+
+        if (httpContext.RequestServices.GetService<AntiforgeryStateProvider>() is EndpointAntiforgeryStateProvider antiforgery)
+        {
+            antiforgery.SetRequestContext(httpContext);
         }
 
         // It's important that this is initialized since a component might try to restore state during prerendering
