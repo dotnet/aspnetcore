@@ -37,13 +37,8 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
         {
             _hasPendingQueuedRender = false;
             _hasNeverRendered = false;
-            RenderCore(builder);
+            BuildRenderTree(builder);
         };
-    }
-
-    private protected virtual void RenderCore(RenderTreeBuilder builder)
-    {
-        BuildRenderTree(builder);
     }
 
     /// <summary>

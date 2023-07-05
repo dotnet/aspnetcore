@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components.Forms;
 /// A component used for editing a value of type <typeparamref name="T"/>.
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public abstract class Editor<T> : ComponentBase
+public abstract class Editor<T> : ComponentBase, ICascadingValueSupplier
 {
     private HtmlFieldPrefix? _value;
 
@@ -30,6 +30,8 @@ public abstract class Editor<T> : ComponentBase
     [Parameter] public EventCallback<T> ValueChanged { get; set; } = default!;
 
     [CascadingParameter] private HtmlFieldPrefix FieldPrefix { get; set; } = default!;
+
+    bool ICascadingValueSupplier.IsFixed => true;
 
     /// <summary>
     /// Returns the name for the specified <paramref name="expression"/> in the current context.
@@ -51,12 +53,21 @@ public abstract class Editor<T> : ComponentBase
         _value = FieldPrefix != null ? FieldPrefix.Combine(ValueExpression) : new HtmlFieldPrefix(ValueExpression);
     }
 
-    private protected override void RenderCore(RenderTreeBuilder builder)
+    bool ICascadingValueSupplier.CanSupplyValue(in CascadingParameterInfo parameterInfo) =>
+        parameterInfo.PropertyType == typeof(HtmlFieldPrefix);
+
+    object? ICascadingValueSupplier.GetCurrentValue(in CascadingParameterInfo parameterInfo)
     {
-        builder.OpenComponent<CascadingValue<HtmlFieldPrefix>>(0);
-        builder.AddAttribute(1, "Value", _value);
-        builder.AddAttribute(2, "IsFixed", true);
-        builder.AddAttribute(3, "ChildContent", (RenderFragment)BuildRenderTree);
-        builder.CloseComponent();
+        return ((ICascadingValueSupplier)this).CanSupplyValue(parameterInfo) ? _value : null;
+    }
+
+    void ICascadingValueSupplier.Subscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
+    {
+        throw new InvalidOperationException($"Cannot subscribe to a {typeof(HtmlFieldPrefix).Name}.");
+    }
+
+    void ICascadingValueSupplier.Unsubscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
+    {
+        throw new InvalidOperationException($"Cannot subscribe to a {typeof(HtmlFieldPrefix).Name}.");
     }
 }
