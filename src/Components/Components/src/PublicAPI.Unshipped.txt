@@ -46,6 +46,13 @@ Microsoft.AspNetCore.Components.CascadingParameterInfo.Attribute.get -> Microsof
 Microsoft.AspNetCore.Components.CascadingParameterInfo.CascadingParameterInfo() -> void
 Microsoft.AspNetCore.Components.CascadingParameterInfo.PropertyName.get -> string!
 Microsoft.AspNetCore.Components.CascadingParameterInfo.PropertyType.get -> System.Type!
+Microsoft.AspNetCore.Components.CascadingValueSource<TValue>
+Microsoft.AspNetCore.Components.CascadingValueSource<TValue>.CascadingValueSource(string! name, System.Func<TValue>! valueFactory, bool isFixed) -> void
+Microsoft.AspNetCore.Components.CascadingValueSource<TValue>.CascadingValueSource(string! name, TValue value, bool isFixed) -> void
+Microsoft.AspNetCore.Components.CascadingValueSource<TValue>.CascadingValueSource(System.Func<TValue>! valueFactory, bool isFixed) -> void
+Microsoft.AspNetCore.Components.CascadingValueSource<TValue>.CascadingValueSource(TValue value, bool isFixed) -> void
+Microsoft.AspNetCore.Components.CascadingValueSource<TValue>.NotifyChangedAsync() -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.CascadingValueSource<TValue>.NotifyChangedAsync(TValue newValue) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.ComponentBase.DispatchExceptionAsync(System.Exception! exception) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.IComponentRenderMode
 Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.PersistStateAsync(Microsoft.AspNetCore.Components.IPersistentComponentStateStore! store, Microsoft.AspNetCore.Components.Dispatcher! dispatcher) -> System.Threading.Tasks.Task!
@@ -109,6 +116,7 @@ Microsoft.AspNetCore.Components.StreamRenderingAttribute.Enabled.get -> bool
 Microsoft.AspNetCore.Components.StreamRenderingAttribute.StreamRenderingAttribute(bool enabled) -> void
 *REMOVED*Microsoft.AspNetCore.Components.CascadingParameterAttribute.Name.get -> string?
 *REMOVED*Microsoft.AspNetCore.Components.CascadingParameterAttribute.Name.set -> void
+Microsoft.Extensions.DependencyInjection.CascadingValueServiceCollectionExtensions
 override Microsoft.AspNetCore.Components.CascadingParameterAttribute.Name.get -> string?
 override Microsoft.AspNetCore.Components.CascadingParameterAttribute.Name.set -> void
 override Microsoft.AspNetCore.Components.EventCallback.GetHashCode() -> int
@@ -119,6 +127,9 @@ override Microsoft.AspNetCore.Components.EventCallback<TValue>.Equals(object? ob
 *REMOVED*Microsoft.AspNetCore.Components.SupplyParameterFromQueryAttribute.Name.set -> void
 override Microsoft.AspNetCore.Components.SupplyParameterFromQueryAttribute.Name.get -> string?
 override Microsoft.AspNetCore.Components.SupplyParameterFromQueryAttribute.Name.set -> void
+static Microsoft.Extensions.DependencyInjection.CascadingValueServiceCollectionExtensions.AddCascadingValue<TValue>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! serviceCollection, string! name, System.Func<System.IServiceProvider!, TValue>! valueFactory) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.DependencyInjection.CascadingValueServiceCollectionExtensions.AddCascadingValue<TValue>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! serviceCollection, System.Func<System.IServiceProvider!, Microsoft.AspNetCore.Components.CascadingValueSource<TValue>!>! sourceFactory) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.DependencyInjection.CascadingValueServiceCollectionExtensions.AddCascadingValue<TValue>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! serviceCollection, System.Func<System.IServiceProvider!, TValue>! valueFactory) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 virtual Microsoft.AspNetCore.Components.Binding.CascadingModelBindingProvider.Subscribe(Microsoft.AspNetCore.Components.Rendering.ComponentState! subscriber) -> void
 virtual Microsoft.AspNetCore.Components.Binding.CascadingModelBindingProvider.Unsubscribe(Microsoft.AspNetCore.Components.Rendering.ComponentState! subscriber) -> void
 virtual Microsoft.AspNetCore.Components.Rendering.ComponentState.DisposeAsync() -> System.Threading.Tasks.ValueTask

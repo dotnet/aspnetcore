@@ -57,6 +57,7 @@ internal readonly struct CascadingParameterState
 
     private static ICascadingValueSupplier? GetMatchingCascadingValueSupplier(in CascadingParameterInfo info, ComponentState componentState)
     {
+        // First scan up through the component hierarchy
         var candidate = componentState;
         do
         {
@@ -67,6 +68,15 @@ internal readonly struct CascadingParameterState
 
             candidate = candidate.LogicalParentComponentState;
         } while (candidate != null);
+
+        // We got to the root and found no match, so now look at the providers registered in DI
+        foreach (var valueSupplier in componentState.Renderer.ServiceProviderCascadingValueSuppliers)
+        {
+            if (valueSupplier.CanSupplyValue(info))
+            {
+                return valueSupplier;
+            }
+        }
 
         // No match
         return null;
