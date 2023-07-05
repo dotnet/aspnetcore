@@ -54,6 +54,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             app.UseStaticFiles();
             app.UseRouting();
             UseFakeAuthState(app);
+            app.UseAntiforgery();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapRazorComponents<TRootComponent>()
