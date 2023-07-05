@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq.Expressions;
@@ -7,17 +7,12 @@ namespace Microsoft.AspNetCore.Components.Forms;
 
 internal class HtmlFieldPrefix(LambdaExpression initial)
 {
-    private readonly LambdaExpression[] _rest;
+    private readonly LambdaExpression[] _rest = Array.Empty<LambdaExpression>();
 
     internal HtmlFieldPrefix(LambdaExpression expression, params LambdaExpression[] rest)
         : this(expression)
     {
         _rest = rest;
-    }
-
-    public string GetPrefix()
-    {
-        return "prefix";
     }
 
     public HtmlFieldPrefix Combine(LambdaExpression other)
@@ -37,9 +32,9 @@ internal class HtmlFieldPrefix(LambdaExpression initial)
 
     public string GetFieldName(LambdaExpression expression)
     {
-        string prefix = ExpressionFormatter.FormatLambda(initial);
+        var prefix = ExpressionFormatter.FormatLambda(initial);
         var restLength = _rest?.Length ?? 0;
-        for (int i = 0; i < restLength; i++)
+        for (var i = 0; i < restLength; i++)
         {
             prefix = ExpressionFormatter.FormatLambda(_rest![i], prefix);
         }

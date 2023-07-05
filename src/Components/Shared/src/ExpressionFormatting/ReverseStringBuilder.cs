@@ -33,6 +33,8 @@ internal ref struct ReverseStringBuilder
         _nextEndIndex = _currentBuffer.Length;
     }
 
+    public bool Empty => _nextEndIndex == _currentBuffer.Length;
+
     public void InsertFront(scoped ReadOnlySpan<char> span)
     {
         var startIndex = _nextEndIndex - span.Length;

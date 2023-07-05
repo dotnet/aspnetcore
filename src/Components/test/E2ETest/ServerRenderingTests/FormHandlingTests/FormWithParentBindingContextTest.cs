@@ -292,6 +292,130 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
+    public void CanBreakFormIntoMultipleComponents(bool suppressEnhancedNavigation)
+    {
+        var url = "forms/default-form-bound-complextype-multiple-components";
+        var expectedTarget = GetExpectedTarget(this, null, url);
+
+        if (suppressEnhancedNavigation)
+        {
+            GoTo("");
+            Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+            ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('suppress-enhanced-navigation', 'true')");
+        }
+
+        GoTo(url);
+
+        Browser.Exists(By.Id("ready"));
+        var form = Browser.Exists(By.CssSelector("form"));
+        var formTarget = form.GetAttribute("action");
+        var actionValue = form.GetDomAttribute("action");
+        Assert.Equal(expectedTarget, formTarget);
+        Assert.Null(actionValue);
+
+        var name = Browser.Exists(By.CssSelector("""input[name="Model.Name"]"""));
+        name.SendKeys("John");
+        var email = Browser.Exists(By.CssSelector("""input[name="Model.Email"]"""));
+        email.SendKeys("john@example.com");
+        Browser.Click(By.CssSelector("""input[name="Model.IsPreferred"]"""));
+
+        var billingAddressStreet = Browser.Exists(By.CssSelector("""input[name="Model.BillingAddress.Street"]"""));
+        billingAddressStreet.SendKeys("One Microsoft Way");
+        var billingAddressCity = Browser.Exists(By.CssSelector("""input[name="Model.BillingAddress.City"]"""));
+        billingAddressCity.SendKeys("Redmond");
+        var billingAddressAreaCode = Browser.Exists(By.CssSelector("""input[name="Model.BillingAddress.AreaCode"]"""));
+        billingAddressAreaCode.Clear();
+        billingAddressAreaCode.SendKeys("98052");
+        var shippingAddressStreet = Browser.Exists(By.CssSelector("""input[name="Model.ShippingAddress.Street"]"""));
+        shippingAddressStreet.SendKeys("Two Microsoft Way");
+        var shippingAddressCity = Browser.Exists(By.CssSelector("""input[name="Model.ShippingAddress.City"]"""));
+        shippingAddressCity.SendKeys("Bellevue");
+        var shippingAddressAreaCode = Browser.Exists(By.CssSelector("""input[name="Model.ShippingAddress.AreaCode"]"""));
+        shippingAddressAreaCode.Clear();
+        shippingAddressAreaCode.SendKeys("98053");
+
+        Browser.Click(By.Id("send"));
+
+        Browser.Exists(By.Id("name")).Text.Contains("John");
+        Browser.Exists(By.Id("email")).Text.Contains("john@example.com");
+        Browser.Exists(By.Id("preferred")).Text.Contains("True");
+        Browser.Exists(By.Id("billing-address-street")).Text.Contains("One Microsoft Way");
+        Browser.Exists(By.Id("billing-address-city")).Text.Contains("Redmond");
+        Browser.Exists(By.Id("billing-address-area-code")).Text.Contains("98052");
+        Browser.Exists(By.Id("shipping-address-street")).Text.Contains("Two Microsoft Way");
+        Browser.Exists(By.Id("shipping-address-city")).Text.Contains("Bellevue");
+        Browser.Exists(By.Id("shipping-address-area-code")).Text.Contains("98053");
+
+        if (!suppressEnhancedNavigation)
+        {
+            // Verify the same form element is still in the page
+            // We wouldn't be allowed to read the attribute if the element is stale
+            Assert.Equal(expectedTarget, form.GetAttribute("action"));
+        }
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void CanBreakFormIntoMultipleComponentsDisplaysErrorsCorrectly(bool suppressEnhancedNavigation)
+    {
+        var url = "forms/default-form-bound-complextype-multiple-components";
+        var expectedTarget = GetExpectedTarget(this, null, url);
+
+        if (suppressEnhancedNavigation)
+        {
+            GoTo("");
+            Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+            ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('suppress-enhanced-navigation', 'true')");
+        }
+
+        GoTo(url);
+
+        Browser.Exists(By.Id("ready"));
+        var form = Browser.Exists(By.CssSelector("form"));
+        var formTarget = form.GetAttribute("action");
+        var actionValue = form.GetDomAttribute("action");
+        Assert.Equal(expectedTarget, formTarget);
+        Assert.Null(actionValue);
+
+        var name = Browser.Exists(By.CssSelector("""input[name="Model.Name"]"""));
+        name.SendKeys("John");
+        var email = Browser.Exists(By.CssSelector("""input[name="Model.Email"]"""));
+        email.SendKeys("john@example.com");
+        Browser.Click(By.CssSelector("""input[name="Model.IsPreferred"]"""));
+
+        var billingAddressStreet = Browser.Exists(By.CssSelector("""input[name="Model.BillingAddress.Street"]"""));
+        billingAddressStreet.SendKeys("One Microsoft Way");
+        var billingAddressCity = Browser.Exists(By.CssSelector("""input[name="Model.BillingAddress.City"]"""));
+        billingAddressCity.SendKeys("Redmond");
+        var billingAddressAreaCode = Browser.Exists(By.CssSelector("""input[name="Model.BillingAddress.AreaCode"]"""));
+        billingAddressAreaCode.Clear();
+        billingAddressAreaCode.SendKeys("98052");
+        var shippingAddressStreet = Browser.Exists(By.CssSelector("""input[name="Model.ShippingAddress.Street"]"""));
+        shippingAddressStreet.SendKeys("Two Microsoft Way");
+        var shippingAddressCity = Browser.Exists(By.CssSelector("""input[name="Model.ShippingAddress.City"]"""));
+        shippingAddressCity.SendKeys("Bellevue");
+        var shippingAddressAreaCode = Browser.Exists(By.CssSelector("""input[name="Model.ShippingAddress.AreaCode"]"""));
+        shippingAddressAreaCode.Clear();
+        shippingAddressAreaCode.SendKeys("abcde");
+
+        Browser.Click(By.Id("send"));
+
+        // Assert 'abcde' error
+        Browser.Exists(By.CssSelector("""ul.validation-errors > li.validation-message""")).Text.Contains("The value 'abcde' is not valid for 'AreaCode'.");
+        Browser.Exists(By.CssSelector("""div > div.validation-message""")).Text.Contains("The value 'abcde' is not valid for 'AreaCode'.");
+
+        if (!suppressEnhancedNavigation)
+        {
+            // Verify the same form element is still in the page
+            // We wouldn't be allowed to read the attribute if the element is stale
+            Assert.Equal(expectedTarget, form.GetAttribute("action"));
+        }
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
     public void CanDisplayBindingErrorsComplexTypeToDefaultForm(bool suppressEnhancedNavigation)
     {
         var url = "forms/default-form-bound-complextype-parameter";

@@ -13,6 +13,15 @@ Microsoft.AspNetCore.Components.Forms.AntiforgeryStateProvider
 Microsoft.AspNetCore.Components.Forms.AntiforgeryStateProvider.AntiforgeryStateProvider() -> void
 Microsoft.AspNetCore.Components.Forms.AntiforgeryToken
 Microsoft.AspNetCore.Components.Forms.AntiforgeryToken.AntiforgeryToken() -> void
+Microsoft.AspNetCore.Components.Forms.Editor<T>
+Microsoft.AspNetCore.Components.Forms.Editor<T>.Editor() -> void
+Microsoft.AspNetCore.Components.Forms.Editor<T>.NameFor(System.Linq.Expressions.LambdaExpression! expression) -> string!
+Microsoft.AspNetCore.Components.Forms.Editor<T>.Value.get -> T
+Microsoft.AspNetCore.Components.Forms.Editor<T>.Value.set -> void
+Microsoft.AspNetCore.Components.Forms.Editor<T>.ValueChanged.get -> Microsoft.AspNetCore.Components.EventCallback<T>
+Microsoft.AspNetCore.Components.Forms.Editor<T>.ValueChanged.set -> void
+Microsoft.AspNetCore.Components.Forms.Editor<T>.ValueExpression.get -> System.Linq.Expressions.Expression<System.Func<T>!>!
+Microsoft.AspNetCore.Components.Forms.Editor<T>.ValueExpression.set -> void
 Microsoft.AspNetCore.Components.Forms.FormDataProvider
 Microsoft.AspNetCore.Components.Forms.FormDataProvider.FormDataProvider() -> void
 Microsoft.AspNetCore.Components.Forms.FormDataProvider.IsFormDataAvailable.get -> bool
@@ -73,6 +82,7 @@ Microsoft.AspNetCore.Components.Web.WebAssemblyRenderMode
 Microsoft.AspNetCore.Components.Web.WebAssemblyRenderMode.Prerender.get -> bool
 Microsoft.AspNetCore.Components.Web.WebAssemblyRenderMode.WebAssemblyRenderMode() -> void
 Microsoft.AspNetCore.Components.Web.WebAssemblyRenderMode.WebAssemblyRenderMode(bool prerender) -> void
+override Microsoft.AspNetCore.Components.Forms.Editor<T>.OnParametersSet() -> void
 override Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.Dispatcher.get -> Microsoft.AspNetCore.Components.Dispatcher!
 override Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.HandleException(System.Exception! exception) -> void
 override Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.UpdateDisplayAsync(in Microsoft.AspNetCore.Components.RenderTree.RenderBatch renderBatch) -> System.Threading.Tasks.Task!

@@ -28,11 +28,12 @@ internal static class ExpressionFormatter
         return FormatLambda(expression, prefix: null);
     }
 
-    public static string FormatLambda(LambdaExpression expression, string prefix = null)
+    public static string FormatLambda(LambdaExpression expression, string? prefix = null)
     {
         var builder = new ReverseStringBuilder(stackalloc char[StackAllocBufferSize]);
         var node = expression.Body;
         var wasLastExpressionMemberAccess = false;
+        var wasLastExpressionIndexer = false;
 
         while (node is not null)
         {
@@ -61,6 +62,7 @@ internal static class ExpressionFormatter
                         wasLastExpressionMemberAccess = false;
                         builder.InsertFront(".");
                     }
+                    wasLastExpressionIndexer = true;
 
                     builder.InsertFront("]");
                     FormatIndexArgument(methodCallExpression.Arguments[0], ref builder);
@@ -85,6 +87,7 @@ internal static class ExpressionFormatter
                     builder.InsertFront("]");
                     FormatIndexArgument(binaryExpression.Right, ref builder);
                     builder.InsertFront("[");
+                    wasLastExpressionIndexer = true;
                     break;
 
                 case ExpressionType.MemberAccess:
@@ -100,6 +103,7 @@ internal static class ExpressionFormatter
                         builder.InsertFront(".");
                     }
                     wasLastExpressionMemberAccess = true;
+                    wasLastExpressionIndexer = false;
 
                     var name = memberExpression.Member.Name;
                     builder.InsertFront(name);
@@ -115,7 +119,10 @@ internal static class ExpressionFormatter
 
         if (prefix != null)
         {
-            builder.InsertFront(".");
+            if (!builder.Empty && !wasLastExpressionIndexer)
+            {
+                builder.InsertFront(".");
+            }
             builder.InsertFront(prefix);
         }
 
