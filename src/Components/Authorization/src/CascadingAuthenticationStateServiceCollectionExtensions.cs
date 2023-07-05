@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Security.Claims;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 
@@ -34,11 +35,14 @@ public static class CascadingAuthenticationStateServiceCollectionExtensions
         private readonly AuthenticationStateProvider _authenticationStateProvider;
 
         public AuthenticationStateCascadingValueSource(AuthenticationStateProvider authenticationStateProvider)
-            : base(authenticationStateProvider.GetAuthenticationStateAsync(), isFixed: false)
+            : base(CreateDefaultAuthenticationState(), isFixed: false)
         {
             _authenticationStateProvider = authenticationStateProvider;
             _authenticationStateProvider.AuthenticationStateChanged += HandleAuthenticationStateChanged;
         }
+
+        private static Task<AuthenticationState> CreateDefaultAuthenticationState()
+            => Task.FromResult(new AuthenticationState(new ClaimsPrincipal()));
 
         private void HandleAuthenticationStateChanged(Task<AuthenticationState> newAuthStateTask)
         {
