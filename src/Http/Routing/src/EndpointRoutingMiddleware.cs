@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Http;
@@ -161,6 +162,16 @@ internal sealed partial class EndpointRoutingMiddleware
             {
                 ThrowCannotShortCircuitACorsRouteException(endpoint);
             }
+
+            if (endpoint.Metadata.GetMetadata<IAntiforgeryMetadata>() is { RequiresValidation: true } &&
+                httpContext.Request.Method is string method &&
+                !(HttpMethods.IsGet(method) ||
+                    HttpMethods.IsHead(method) ||
+                    HttpMethods.IsTrace(method) ||
+                    HttpMethods.IsOptions(method)))
+            {
+                ThrowCannotShortCircuitAnAntiforgeryRouteException(endpoint);
+            }
         }
 
         if (shortCircuitMetadata.StatusCode.HasValue)
@@ -275,6 +286,12 @@ internal sealed partial class EndpointRoutingMiddleware
     private static void ThrowCannotShortCircuitACorsRouteException(Endpoint endpoint)
     {
         throw new InvalidOperationException($"Endpoint {endpoint.DisplayName} contains CORS metadata, " +
+            "but this endpoint is marked with short circuit and it will execute on Routing Middleware.");
+    }
+
+    private static void ThrowCannotShortCircuitAnAntiforgeryRouteException(Endpoint endpoint)
+    {
+        throw new InvalidOperationException($"Endpoint {endpoint.DisplayName} contains anti-forgery metadata, " +
             "but this endpoint is marked with short circuit and it will execute on Routing Middleware.");
     }
 

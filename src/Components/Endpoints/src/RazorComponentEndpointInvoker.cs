@@ -6,11 +6,11 @@ using System.Diagnostics;
 using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Antiforgery;
-using Microsoft.AspNetCore.Antiforgery.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -44,7 +44,7 @@ internal class RazorComponentEndpointInvoker
         // the developer.
         var antiforgeryMetadata = _context.GetEndpoint()!.Metadata.GetMetadata<IAntiforgeryMetadata>();
         var antiforgery = _context.RequestServices.GetRequiredService<IAntiforgery>();
-        var (valid, isPost, handler) = await ValidateRequestAsync(antiforgeryMetadata?.Required == true ? antiforgery : null);
+        var (valid, isPost, handler) = await ValidateRequestAsync(antiforgeryMetadata?.RequiresValidation == true ? antiforgery : null);
         if (!valid)
         {
             // If the request is not valid we've already set the response to a 400 or similar
@@ -124,7 +124,11 @@ internal class RazorComponentEndpointInvoker
         var isPost = HttpMethods.IsPost(_context.Request.Method);
         if (isPost)
         {
-            var valid = antiforgery == null || await antiforgery.IsRequestValidAsync(_context);
+            // Respect the token validation done by the middleware _if_ it has been set, otherwise
+            // run the validation here.
+            var valid = _context.Features.Get<IAntiforgeryValidationFeature>() is {} antiForgeryValidationFeature
+                ? antiForgeryValidationFeature.IsValid
+                : antiforgery == null || await antiforgery.IsRequestValidAsync(_context);
             if (!valid)
             {
                 _context.Response.StatusCode = StatusCodes.Status400BadRequest;
@@ -145,8 +149,17 @@ internal class RazorComponentEndpointInvoker
     private string? GetFormHandler(out bool isBadRequest)
     {
         isBadRequest = false;
+        var hasValue = false;
+        StringValues value = StringValues.Empty;
+        try
+        {
+            hasValue = _context.Request.Form.TryGetValue("_handler", out value);
+        }
+        // We may be trying to read a Form that's been poisoned because
+        // the anti-forgery token was not valid.
+        catch (InvalidOperationException) { }
 
-        if (_context.Request.Form.TryGetValue("_handler", out var value))
+        if (hasValue)
         {
             if (value.Count != 1)
             {

@@ -35,6 +35,7 @@
     <Compile Include="$(SharedSourceRoot)HttpRuleParser.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)HttpParseResult.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)Debugger\DebuggerHelpers.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)AntiforgeryMetadata.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>

@@ -36,6 +36,7 @@ namespace Microsoft.AspNetCore.Http.Generated
     using System.Text.Json.Serialization.Metadata;
     using System.Threading.Tasks;
     using System.IO;
+    using Microsoft.AspNetCore.Antiforgery;
     using Microsoft.AspNetCore.Routing;
     using Microsoft.AspNetCore.Routing.Patterns;
     using Microsoft.AspNetCore.Builder;

@@ -2,9 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net.Http;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
@@ -31,6 +31,8 @@ app.MapPost("/", ([FromForm] Todo todo) => Results.Ok(todo));
         httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
 
         await endpoint.RequestDelegate(httpContext);
+
+        Assert.NotNull(endpoint.Metadata.OfType<IAntiforgeryMetadata>().SingleOrDefault());
 
         await VerifyResponseJsonBodyAsync<Todo>(httpContext, (todo) =>
         {
@@ -66,6 +68,8 @@ app.MapPost("/", ([FromForm] Todo todo) => Results.Ok(todo));
 
         await endpoint.RequestDelegate(httpContext);
 
+        Assert.NotNull(endpoint.Metadata.OfType<IAntiforgeryMetadata>().SingleOrDefault());
+
         await VerifyResponseJsonBodyAsync<Todo>(httpContext, (todo) =>
         {
             Assert.Equal(1, todo.Id);
@@ -95,6 +99,8 @@ app.MapPost("/", ([FromForm] Dictionary<string, bool> elements) => Results.Ok(el
         httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
 
         await endpoint.RequestDelegate(httpContext);
+
+        Assert.NotNull(endpoint.Metadata.OfType<IAntiforgeryMetadata>().SingleOrDefault());
 
         await VerifyResponseJsonBodyAsync<Dictionary<string, bool>>(httpContext, (elements) =>
         {
@@ -130,6 +136,8 @@ app.MapPost("/", ([FromForm] Dictionary<string, bool> elements) => Results.Ok(el
         httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
 
         await endpoint.RequestDelegate(httpContext);
+
+        Assert.NotNull(endpoint.Metadata.OfType<IAntiforgeryMetadata>().SingleOrDefault());
 
         await VerifyResponseJsonBodyAsync<Dictionary<string, bool>>(httpContext, (elements) =>
         {
@@ -189,6 +197,8 @@ app.MapPost("/", ([FromForm] List<int> elements) => Results.Ok(elements));
 
         await endpoint.RequestDelegate(httpContext);
 
+        Assert.NotNull(endpoint.Metadata.OfType<IAntiforgeryMetadata>().SingleOrDefault());
+
         await VerifyResponseJsonBodyAsync<List<int>>(httpContext, (elements) =>
         {
             Assert.Equal(3, elements.Count);
@@ -223,6 +233,8 @@ app.MapPost("/", ([FromForm] List<int> elements) => Results.Ok(elements));
         httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
 
         await endpoint.RequestDelegate(httpContext);
+
+        Assert.NotNull(endpoint.Metadata.OfType<IAntiforgeryMetadata>().SingleOrDefault());
 
         await VerifyResponseJsonBodyAsync<List<int>>(httpContext, (elements) =>
         {
