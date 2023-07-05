@@ -177,7 +177,7 @@ public sealed class RenderTreeBuilder : IDisposable
 
         if (TrackNamedEventHandlers && string.Equals(name, "@onsubmit:name", StringComparison.Ordinal))
         {
-            _entries.AppendAttribute(sequence, name, "");
+            SetEventHandlerName("");
         }
 
         _entries.AppendAttribute(sequence, name, BoxedTrue);
@@ -385,10 +385,12 @@ public sealed class RenderTreeBuilder : IDisposable
                 {
                     if (TrackNamedEventHandlers && string.Equals(name, "@onsubmit:name", StringComparison.Ordinal))
                     {
-                        _entries.AppendAttribute(sequence, name, value);
+                        SetEventHandlerName("");
                     }
-
-                    _entries.AppendAttribute(sequence, name, BoxedTrue);
+                    else
+                    {
+                        _entries.AppendAttribute(sequence, name, BoxedTrue);
+                    }
                 }
                 else
                 {
