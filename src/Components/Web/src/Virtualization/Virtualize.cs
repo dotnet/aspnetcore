@@ -49,7 +49,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     private RenderFragment? _emptyContent;
 
-    private int _loading;
+    private bool _loading;
 
     [Inject]
     private IJSRuntime JSRuntime { get; set; } = default!;
@@ -225,7 +225,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
         _lastRenderedItemCount = 0;
 
-        if (_loading == 0 && _itemCount == 0 && _emptyContent != null)
+        if (!_loading && _itemCount == 0 && _emptyContent != null)
         {
             builder.AddContent(4, _emptyContent);
         }
@@ -370,22 +370,14 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         {
             _refreshCts = new CancellationTokenSource();
             cancellationToken = _refreshCts.Token;
+            _loading = true;
         }
 
         var request = new ItemsProviderRequest(_itemsBefore, _visibleItemCapacity, cancellationToken);
 
         try
         {
-            ItemsProviderResult<TItem> result;
-            _loading++;
-            try
-            {
-                result = await _itemsProvider(request);
-            }
-            finally
-            {
-                _loading--;
-            }
+            var result = await _itemsProvider(request);
 
             // Only apply result if the task was not canceled.
             if (!cancellationToken.IsCancellationRequested)
@@ -393,6 +385,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                 _itemCount = result.TotalItemCount;
                 _loadedItems = result.Items;
                 _loadedItemsStartIndex = request.StartIndex;
+                _loading = false;
 
                 if (renderOnSuccess)
                 {
