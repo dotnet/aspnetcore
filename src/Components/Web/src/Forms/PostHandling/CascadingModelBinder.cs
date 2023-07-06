@@ -32,8 +32,6 @@ public sealed class CascadingModelBinder : ICascadingValueSupplier, IComponent
 
     [Inject] internal IFormValueSupplier FormValueSupplier { get; set; } = null!;
 
-    bool ICascadingValueSupplier.IsFixed => throw new NotImplementedException();
-
     void IComponent.Attach(RenderHandle renderHandle)
     {
         _handle = renderHandle;
@@ -71,11 +69,14 @@ public sealed class CascadingModelBinder : ICascadingValueSupplier, IComponent
         });
     }
 
+    bool ICascadingValueSupplier.IsFixed
+        => ((ICascadingValueSupplier)_cascadingValueSupplier!).IsFixed;
+
     bool ICascadingValueSupplier.CanSupplyValue(in CascadingParameterInfo parameterInfo)
-        => ((ICascadingValueSupplier)_cascadingValueSupplier).CanSupplyValue(parameterInfo);
+        => ((ICascadingValueSupplier)_cascadingValueSupplier!).CanSupplyValue(parameterInfo);
 
     object? ICascadingValueSupplier.GetCurrentValue(in CascadingParameterInfo parameterInfo)
-        => ((ICascadingValueSupplier)_cascadingValueSupplier).GetCurrentValue(in parameterInfo);
+        => ((ICascadingValueSupplier)_cascadingValueSupplier!).GetCurrentValue(in parameterInfo);
 
     void ICascadingValueSupplier.Subscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
         => throw new NotSupportedException();
