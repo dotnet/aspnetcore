@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components.Discovery;
 using Microsoft.AspNetCore.Http;
@@ -29,6 +30,9 @@ internal class RazorComponentEndpointFactory
             null,
             RoutePatternFactory.Parse(pageDefinition.Route),
             order: 0);
+
+        // Require antiforgery by default, let the page override it.
+        builder.Metadata.Add(new RequireAntiforgeryTokenAttribute());
 
         // All attributes defined for the type are included as metadata.
         foreach (var attribute in pageDefinition.Metadata)

@@ -126,13 +126,13 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, f
       }
 
       const responseContentType = response.headers.get('content-type');
-      if (responseContentType?.startsWith('text/html')) {
+      if (responseContentType?.startsWith('text/html') && initialContent) {
         // For HTML responses, regardless of the status code, display it
         const parsedHtml = new DOMParser().parseFromString(initialContent, 'text/html');
         navigationEnhancementCallbacks.beforeDocumentUpdated();
         synchronizeDomContent(document, parsedHtml);
         navigationEnhancementCallbacks.afterDocumentUpdated();
-      } else if (responseContentType?.startsWith('text/')) {
+      } else if (responseContentType?.startsWith('text/') && initialContent) {
         // For any other text-based content, we'll just display it, because that's what
         // would happen if this was a non-enhanced request.
         navigationEnhancementCallbacks.beforeDocumentUpdated();
@@ -257,9 +257,7 @@ function splitStream(frameBoundaryMarker: string) {
       }
     },
     flush(controller) {
-      if (buffer) {
-        controller.enqueue(buffer);
-      }
+      controller.enqueue(buffer);
     }
   });
 }
