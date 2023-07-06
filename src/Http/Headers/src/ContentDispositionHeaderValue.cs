@@ -183,11 +183,11 @@ public class ContentDispositionHeaderValue
             }
             else if (sizeParameter != null)
             {
-                sizeParameter.Value = value.GetValueOrDefault().ToString(CultureInfo.InvariantCulture);
+                sizeParameter.Value = value.Value.ToString(CultureInfo.InvariantCulture);
             }
             else
             {
-                var sizeString = value.GetValueOrDefault().ToString(CultureInfo.InvariantCulture);
+                var sizeString = value.Value.ToString(CultureInfo.InvariantCulture);
                 Parameters.Add(new NameValueHeaderValue(SizeString, sizeString));
             }
         }
@@ -384,7 +384,7 @@ public class ContentDispositionHeaderValue
         else
         {
             // Must always be quoted
-            var dateString = HeaderUtilities.FormatDate(date.GetValueOrDefault(), quoted: true);
+            var dateString = HeaderUtilities.FormatDate(date.Value, quoted: true);
             if (dateParameter != null)
             {
                 dateParameter.Value = dateString;

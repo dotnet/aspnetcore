@@ -30,15 +30,15 @@ public class RangeItemHeaderValue
         {
             throw new ArgumentException("Invalid header range.");
         }
-        if (from.HasValue && (from.GetValueOrDefault() < 0))
+        if (from.HasValue && (from.Value < 0))
         {
             throw new ArgumentOutOfRangeException(nameof(from));
         }
-        if (to.HasValue && (to.GetValueOrDefault() < 0))
+        if (to.HasValue && (to.Value < 0))
         {
             throw new ArgumentOutOfRangeException(nameof(to));
         }
-        if (from.HasValue && to.HasValue && (from.GetValueOrDefault() > to.GetValueOrDefault()))
+        if (from.HasValue && to.HasValue && (from.Value > to.Value))
         {
             throw new ArgumentOutOfRangeException(nameof(from));
         }
@@ -68,14 +68,15 @@ public class RangeItemHeaderValue
     {
         if (!_from.HasValue)
         {
-            return "-" + _to.GetValueOrDefault().ToString(NumberFormatInfo.InvariantInfo);
+            // The ctor prevents both _from and _to from being null.
+            return "-" + _to!.Value.ToString(NumberFormatInfo.InvariantInfo);
         }
         else if (!_to.HasValue)
         {
-            return _from.GetValueOrDefault().ToString(NumberFormatInfo.InvariantInfo) + "-";
+            return _from.Value.ToString(NumberFormatInfo.InvariantInfo) + "-";
         }
-        return _from.GetValueOrDefault().ToString(NumberFormatInfo.InvariantInfo) + "-" +
-            _to.GetValueOrDefault().ToString(NumberFormatInfo.InvariantInfo);
+        return _from.Value.ToString(NumberFormatInfo.InvariantInfo) + "-" +
+            _to.Value.ToString(NumberFormatInfo.InvariantInfo);
     }
 
     /// <inheritdoc />
@@ -89,13 +90,14 @@ public class RangeItemHeaderValue
     {
         if (!_from.HasValue)
         {
-            return _to.GetValueOrDefault().GetHashCode();
+            // The ctor prevents both _from and _to from being null.
+            return _to!.Value.GetHashCode();
         }
         else if (!_to.HasValue)
         {
-            return _from.GetValueOrDefault().GetHashCode();
+            return _from.Value.GetHashCode();
         }
-        return _from.GetValueOrDefault().GetHashCode() ^ _to.GetValueOrDefault().GetHashCode();
+        return _from.Value.GetHashCode() ^ _to.Value.GetHashCode();
     }
 
     // Returns the length of a range list. E.g. "1-2, 3-4, 5-6" adds 3 ranges to 'rangeCollection'. Note that empty
