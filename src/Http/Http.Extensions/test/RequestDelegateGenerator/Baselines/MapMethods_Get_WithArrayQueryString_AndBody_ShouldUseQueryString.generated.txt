@@ -62,10 +62,10 @@ namespace Microsoft.AspNetCore.Http.Generated
 
         [InterceptsLocation(@"TestMapActions.cs", 25, 13)]
         internal static RouteHandlerBuilder MapMethods_2513(
-            this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints,
-            [System.Diagnostics.CodeAnalysis.StringSyntax("Route")] string pattern,
-            System.Collections.Generic.IEnumerable<string> httpMethods,
-            System.Delegate handler)
+            this IEndpointRouteBuilder endpoints,
+            [StringSyntax("Route")] string pattern,
+            IEnumerable<string> httpMethods,
+            Delegate handler)
         {
             MetadataPopulator populateMetadata = (methodInfo, options) =>
             {
@@ -189,7 +189,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
                 return new RequestDelegateResult(targetDelegate, metadata);
             };
-            return global::Microsoft.AspNetCore.Http.Generated.GeneratedRouteBuilderExtensionsCore.MapCore(
+            return MapCore(
                 endpoints,
                 pattern,
                 handler,

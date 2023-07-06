@@ -62,9 +62,9 @@ namespace Microsoft.AspNetCore.Http.Generated
 
         [InterceptsLocation(@"TestMapActions.cs", 25, 13)]
         internal static RouteHandlerBuilder MapGet_2513(
-            this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints,
-            [System.Diagnostics.CodeAnalysis.StringSyntax("Route")] string pattern,
-            System.Delegate handler)
+            this IEndpointRouteBuilder endpoints,
+            [StringSyntax("Route")] string pattern,
+            Delegate handler)
         {
             MetadataPopulator populateMetadata = (methodInfo, options) =>
             {
@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
                 return new RequestDelegateResult(targetDelegate, metadata);
             };
-            return global::Microsoft.AspNetCore.Http.Generated.GeneratedRouteBuilderExtensionsCore.MapCore(
+            return MapCore(
                 endpoints,
                 pattern,
                 handler,
@@ -151,11 +151,11 @@ namespace Microsoft.AspNetCore.Http.Generated
                 createRequestDelegate);
         }
 
-[InterceptsLocation(@"TestMapActions.cs", 26, 5)]
+        [InterceptsLocation(@"TestMapActions.cs", 26, 5)]
         internal static RouteHandlerBuilder MapGet_265(
-            this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints,
-            [System.Diagnostics.CodeAnalysis.StringSyntax("Route")] string pattern,
-            System.Delegate handler)
+            this IEndpointRouteBuilder endpoints,
+            [StringSyntax("Route")] string pattern,
+            Delegate handler)
         {
             MetadataPopulator populateMetadata = (methodInfo, options) =>
             {
@@ -233,7 +233,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
                 return new RequestDelegateResult(targetDelegate, metadata);
             };
-            return global::Microsoft.AspNetCore.Http.Generated.GeneratedRouteBuilderExtensionsCore.MapCore(
+            return MapCore(
                 endpoints,
                 pattern,
                 handler,
@@ -242,11 +242,11 @@ namespace Microsoft.AspNetCore.Http.Generated
                 createRequestDelegate);
         }
 
-[InterceptsLocation(@"TestMapActions.cs", 27, 5)]
+        [InterceptsLocation(@"TestMapActions.cs", 27, 5)]
         internal static RouteHandlerBuilder MapGet_275(
-            this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints,
-            [System.Diagnostics.CodeAnalysis.StringSyntax("Route")] string pattern,
-            System.Delegate handler)
+            this IEndpointRouteBuilder endpoints,
+            [StringSyntax("Route")] string pattern,
+            Delegate handler)
         {
             MetadataPopulator populateMetadata = (methodInfo, options) =>
             {
@@ -326,7 +326,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
                 return new RequestDelegateResult(targetDelegate, metadata);
             };
-            return global::Microsoft.AspNetCore.Http.Generated.GeneratedRouteBuilderExtensionsCore.MapCore(
+            return MapCore(
                 endpoints,
                 pattern,
                 handler,
