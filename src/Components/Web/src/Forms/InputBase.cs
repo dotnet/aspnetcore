@@ -26,6 +26,8 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
 
     [CascadingParameter] private EditContext? CascadedEditContext { get; set; }
 
+    [CascadingParameter] private HtmlFieldPrefix FieldPrefix { get; set; } = default!;
+
     /// <summary>
     /// Gets or sets a collection of additional attributes that will be applied to the created element.
     /// </summary>
@@ -205,7 +207,8 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
             {
                 if (_formattedValueExpression is null && ValueExpression is not null)
                 {
-                    _formattedValueExpression = ExpressionFormatter.FormatLambda(ValueExpression);
+                    _formattedValueExpression = FieldPrefix != null ? FieldPrefix.GetFieldName(ValueExpression) :
+                        ExpressionFormatter.FormatLambda(ValueExpression);
                 }
 
                 return _formattedValueExpression ?? string.Empty;
