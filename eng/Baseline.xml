@@ -8,7 +8,6 @@ Update this list when preparing for a new patch.
   <Package Id="AspNetCoreRuntime.6.0.x64" Version="6.0.0" />
   <Package Id="AspNetCoreRuntime.6.0.x86" Version="6.0.0" />
   <Package Id="dotnet-sql-cache" Version="6.0.0" />
-  <Package Id="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" Version="6.0.0" />
   <Package Id="Microsoft.AspNetCore.App.Ref" Version="6.0.0" />
   <Package Id="Microsoft.AspNetCore.App.Runtime.linux-arm" Version="6.0.0" />
   <Package Id="Microsoft.AspNetCore.App.Runtime.linux-arm64" Version="6.0.0" />

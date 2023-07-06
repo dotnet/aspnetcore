@@ -16,22 +16,6 @@
   <PropertyGroup Condition=" '$(PackageId)' == 'dotnet-sql-cache' ">
     <BaselinePackageVersion>6.0.0</BaselinePackageVersion>
   </PropertyGroup>
-  <!-- Package: Microsoft.AspNetCore.ApiAuthorization.IdentityServer-->
-  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.ApiAuthorization.IdentityServer' ">
-    <BaselinePackageVersion>6.0.0</BaselinePackageVersion>
-  </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.ApiAuthorization.IdentityServer' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net6.0') ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="[6.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="[6.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="[6.0.0, )" />
-    <BaselinePackageReference Include="Duende.IdentityServer" Version="[5.2.0, )" />
-    <BaselinePackageReference Include="Duende.IdentityServer.AspNetIdentity" Version="[5.2.0, )" />
-    <BaselinePackageReference Include="Duende.IdentityServer.EntityFramework" Version="[5.2.0, )" />
-    <BaselinePackageReference Include="Duende.IdentityServer.EntityFramework.Storage" Version="[5.2.0, )" />
-    <BaselinePackageReference Include="Duende.IdentityServer.Storage" Version="[5.2.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Http" Version="[6.0.0, )" />
-    <BaselinePackageReference Include="Newtonsoft.Json" Version="[13.0.1, )" />
-  </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.App.Ref-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.App.Ref' ">
     <BaselinePackageVersion>6.0.0</BaselinePackageVersion>

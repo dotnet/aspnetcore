@@ -248,7 +248,7 @@ try {
             foreach ($file in $changedFilesFromTarget) {
                 # Check for changes in Shipped in all branches
                 if ($file -like '*PublicAPI.Shipped.txt') {
-                    if (!$file.Contains('DevServer/src/PublicAPI.Shipped.txt')) {
+                    if (!$file.Contains('DevServer/src/PublicAPI.Shipped.txt') -and !$file.Contains('ApiAuthorization.IdentityServer/src/PublicAPI.Shipped.txt')) {
                         $changedAPIBaselines.Add($file)
                     }
                 }
