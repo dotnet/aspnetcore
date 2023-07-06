@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Reflection;
@@ -12,6 +13,7 @@ using System.Threading.Tasks;
 using StackExchange.Redis;
 using StackExchange.Redis.Maintenance;
 using StackExchange.Redis.Profiling;
+using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Tests;
 
@@ -244,6 +246,8 @@ public class TestRedisServer
 
     public long Publish(RedisChannel channel, RedisValue message, CommandFlags flags = CommandFlags.None)
     {
+        AssertRedisChannel(channel);
+
         if (_subscriptions.TryGetValue(channel, out var handlers))
         {
             lock (handlers)
@@ -260,6 +264,8 @@ public class TestRedisServer
 
     public void Subscribe(ChannelMessageQueue messageQueue, int subscriberId, CommandFlags flags = CommandFlags.None)
     {
+        AssertRedisChannel(messageQueue.Channel);
+
         Action<RedisChannel, RedisValue> handler = (channel, value) =>
         {
             // Workaround for https://github.com/StackExchange/StackExchange.Redis/issues/969
@@ -280,6 +286,8 @@ public class TestRedisServer
 
     public void Unsubscribe(RedisChannel channel, int subscriberId, CommandFlags flags = CommandFlags.None)
     {
+        AssertRedisChannel(channel);
+
         if (_subscriptions.TryGetValue(channel, out var list))
         {
             lock (list)
@@ -287,6 +295,11 @@ public class TestRedisServer
                 list.RemoveAll((item) => item.Item1 == subscriberId);
             }
         }
+    }
+
+    internal static void AssertRedisChannel(RedisChannel channel)
+    {
+        Assert.False(channel.IsPattern);
     }
 }
 
@@ -333,11 +346,15 @@ public class TestSubscriber : ISubscriber
 
     public long Publish(RedisChannel channel, RedisValue message, CommandFlags flags = CommandFlags.None)
     {
+        TestRedisServer.AssertRedisChannel(channel);
+
         return _server.Publish(channel, message, flags);
     }
 
     public async Task<long> PublishAsync(RedisChannel channel, RedisValue message, CommandFlags flags = CommandFlags.None)
     {
+        TestRedisServer.AssertRedisChannel(channel);
+
         await Task.Yield();
         return Publish(channel, message, flags);
     }
@@ -349,6 +366,8 @@ public class TestSubscriber : ISubscriber
 
     public Task SubscribeAsync(RedisChannel channel, Action<RedisChannel, RedisValue> handler, CommandFlags flags = CommandFlags.None)
     {
+        TestRedisServer.AssertRedisChannel(channel);
+
         Subscribe(channel, handler, flags);
         return Task.CompletedTask;
     }
@@ -365,6 +384,8 @@ public class TestSubscriber : ISubscriber
 
     public void Unsubscribe(RedisChannel channel, Action<RedisChannel, RedisValue> handler = null, CommandFlags flags = CommandFlags.None)
     {
+        TestRedisServer.AssertRedisChannel(channel);
+
         _server.Unsubscribe(channel, _id, flags);
     }
 
@@ -380,6 +401,8 @@ public class TestSubscriber : ISubscriber
 
     public Task UnsubscribeAsync(RedisChannel channel, Action<RedisChannel, RedisValue> handler = null, CommandFlags flags = CommandFlags.None)
     {
+        TestRedisServer.AssertRedisChannel(channel);
+
         Unsubscribe(channel, handler, flags);
         return Task.CompletedTask;
     }
@@ -401,6 +424,8 @@ public class TestSubscriber : ISubscriber
 
     public ChannelMessageQueue Subscribe(RedisChannel channel, CommandFlags flags = CommandFlags.None)
     {
+        TestRedisServer.AssertRedisChannel(channel);
+
         // Workaround for https://github.com/StackExchange/StackExchange.Redis/issues/969
         var redisSubscriberType = typeof(RedisChannel).Assembly.GetType("StackExchange.Redis.RedisSubscriber");
         var ctor = typeof(ChannelMessageQueue).GetConstructor(BindingFlags.Instance | BindingFlags.NonPublic,
@@ -414,6 +439,8 @@ public class TestSubscriber : ISubscriber
 
     public Task<ChannelMessageQueue> SubscribeAsync(RedisChannel channel, CommandFlags flags = CommandFlags.None)
     {
+        TestRedisServer.AssertRedisChannel(channel);
+
         var t = Subscribe(channel, flags);
         return Task.FromResult(t);
     }
