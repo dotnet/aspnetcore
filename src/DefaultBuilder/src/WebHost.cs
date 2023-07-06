@@ -236,9 +236,17 @@ public static class WebHost
             .UseIISIntegration();
     }
 
-    internal static void ConfigureWebDefaultsCore(IWebHostBuilder builder)
+    internal static void ConfigureWebDefaultsSlim(IWebHostBuilder builder)
     {
         ConfigureWebDefaultsWorker(builder.UseKestrelCore().ConfigureKestrel(ConfigureKestrel), configureRouting: null);
+    }
+
+    internal static void ConfigureWebDefaultsEmpty(IWebHostBuilder builder)
+    {
+        // Note this doesn't configure any server - Kestrel or otherwise.
+        // It is "empty" and up to the caller to configure a server.
+
+        ConfigureWebDefaultsWorker(builder, configureRouting: null);
     }
 
     private static void ConfigureKestrel(WebHostBuilderContext builderContext, KestrelServerOptions options)
