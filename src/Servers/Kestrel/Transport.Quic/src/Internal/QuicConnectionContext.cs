@@ -131,7 +131,7 @@ internal partial class QuicConnectionContext : TransportMultiplexedConnection
         {
             // Shutdown initiated by peer, abortive.
             _error = ex.ApplicationErrorCode;
-            QuicLog.ConnectionAborted(_log, this, ex.ApplicationErrorCode ?? 0, ex);
+            QuicLog.ConnectionAborted(_log, this, ex.ApplicationErrorCode.GetValueOrDefault(), ex);
 
             ThreadPool.UnsafeQueueUserWorkItem(state =>
             {

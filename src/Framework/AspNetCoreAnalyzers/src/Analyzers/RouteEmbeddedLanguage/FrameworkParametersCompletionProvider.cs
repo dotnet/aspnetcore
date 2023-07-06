@@ -263,7 +263,7 @@ public sealed class FrameworkParametersCompletionProvider : CompletionProvider
 
             if (change.NewPosition != null)
             {
-                properties.Add(NewPositionKey, change.NewPosition.Value.ToString(CultureInfo.InvariantCulture));
+                properties.Add(NewPositionKey, change.NewPosition.ToString());
             }
 
             // Keep everything sorted in the order we just produced the items in.

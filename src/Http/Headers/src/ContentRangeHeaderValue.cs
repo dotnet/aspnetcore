@@ -159,12 +159,12 @@ public class ContentRangeHeaderValue
 
         if (HasRange)
         {
-            result = result ^ From.Value.GetHashCode() ^ To.Value.GetHashCode();
+            result = result ^ From.GetHashCode() ^ To.GetHashCode();
         }
 
         if (HasLength)
         {
-            result = result ^ Length.Value.GetHashCode();
+            result = result ^ Length.GetHashCode();
         }
 
         return result;
@@ -179,9 +179,9 @@ public class ContentRangeHeaderValue
 
         if (HasRange)
         {
-            sb.Append(From.Value.ToString(NumberFormatInfo.InvariantInfo));
+            sb.Append(From.GetValueOrDefault().ToString(NumberFormatInfo.InvariantInfo));
             sb.Append('-');
-            sb.Append(To.Value.ToString(NumberFormatInfo.InvariantInfo));
+            sb.Append(To.GetValueOrDefault().ToString(NumberFormatInfo.InvariantInfo));
         }
         else
         {
@@ -191,7 +191,7 @@ public class ContentRangeHeaderValue
         sb.Append('/');
         if (HasLength)
         {
-            sb.Append(Length.Value.ToString(NumberFormatInfo.InvariantInfo));
+            sb.Append(Length.GetValueOrDefault().ToString(NumberFormatInfo.InvariantInfo));
         }
         else
         {

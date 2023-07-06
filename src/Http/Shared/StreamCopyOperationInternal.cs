@@ -38,13 +38,13 @@ internal static class StreamCopyOperationInternal
         {
             Debug.Assert(source != null);
             Debug.Assert(destination != null);
-            Debug.Assert(!bytesRemaining.HasValue || bytesRemaining.Value >= 0);
+            Debug.Assert(!bytesRemaining.HasValue || bytesRemaining.GetValueOrDefault() >= 0);
             Debug.Assert(buffer != null);
 
             while (true)
             {
                 // The natural end of the range.
-                if (bytesRemaining.HasValue && bytesRemaining.Value <= 0)
+                if (bytesRemaining.HasValue && bytesRemaining.GetValueOrDefault() <= 0)
                 {
                     return;
                 }
@@ -54,7 +54,7 @@ internal static class StreamCopyOperationInternal
                 var readLength = buffer.Length;
                 if (bytesRemaining.HasValue)
                 {
-                    readLength = (int)Math.Min(bytesRemaining.Value, (long)readLength);
+                    readLength = (int)Math.Min(bytesRemaining.GetValueOrDefault(), (long)readLength);
                 }
                 var read = await source.ReadAsync(buffer.AsMemory(0, readLength), cancel);
 

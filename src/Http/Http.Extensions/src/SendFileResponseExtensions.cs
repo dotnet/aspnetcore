@@ -129,7 +129,7 @@ public static class SendFileResponseExtensions
             throw new ArgumentOutOfRangeException(nameof(offset), offset, string.Empty);
         }
         if (count.HasValue &&
-            (count.Value < 0 || count.Value > fileLength - offset))
+            (count.GetValueOrDefault() < 0 || count.GetValueOrDefault() > fileLength - offset))
         {
             throw new ArgumentOutOfRangeException(nameof(count), count, string.Empty);
         }

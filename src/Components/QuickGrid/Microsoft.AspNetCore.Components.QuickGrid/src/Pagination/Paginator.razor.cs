@@ -34,7 +34,7 @@ public partial class Paginator : IDisposable
     private Task GoFirstAsync() => GoToPageAsync(0);
     private Task GoPreviousAsync() => GoToPageAsync(State.CurrentPageIndex - 1);
     private Task GoNextAsync() => GoToPageAsync(State.CurrentPageIndex + 1);
-    private Task GoLastAsync() => GoToPageAsync(State.LastPageIndex ?? 0);
+    private Task GoLastAsync() => GoToPageAsync(State.LastPageIndex.GetValueOrDefault(0));
 
     private bool CanGoBack => State.CurrentPageIndex > 0;
     private bool CanGoForwards => State.CurrentPageIndex < State.LastPageIndex;
