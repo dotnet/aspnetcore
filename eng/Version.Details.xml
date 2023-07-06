@@ -353,6 +353,10 @@
       <Uri>https://github.com/dotnet/roslyn</Uri>
       <Sha>1aa759af23d2a29043ea44fcef5bd6823dafa5d0</Sha>
     </Dependency>
+    <Dependency Name="System.Composition" Version="7.0.0">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>d099f075e45d2aa6007a22b71b45a08758559f80</Sha>
+    </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
     <!-- Listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
