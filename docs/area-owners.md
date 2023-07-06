@@ -1,8 +1,8 @@
 # Area Owners
 
-The below table lists all the `area-`labels used in the `aspnetcore` repository and their owners.
+The below table lists all the `area-`labels used in the **dotnet/aspnetcore** repository and their owners.
 
-This list is for this **dotnet/aspnetcore** repo. The **dotnet/runtime** repo has [its own list](https://github.com/dotnet/runtime/blob/main/docs/area-owners.md).
+The **dotnet/runtime** repo has [its own list](https://github.com/dotnet/runtime/blob/main/docs/area-owners.md).
 
 | **area**                                                                                                                          | **owners**                                             | **lead**                                           |                         |
 |-------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------|------------------------------------------------|-------------------------|
