@@ -15,11 +15,16 @@ import { shouldAutoStart } from './BootCommon';
 import { Blazor } from './GlobalExports';
 import { WebStartOptions } from './Platform/WebStartOptions';
 import { attachStreamingRenderingListener } from './Rendering/StreamingRendering';
-import { attachProgressivelyEnhancedNavigationListener, detachProgressivelyEnhancedNavigationListener } from './Services/NavigationEnhancement';
+import { NavigationEnhancementCallbacks, attachProgressivelyEnhancedNavigationListener } from './Services/NavigationEnhancement';
 import { WebAssemblyComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
 import { ServerComponentDescriptor, discoverComponents } from './Services/ComponentDescriptorDiscovery';
+import { LogicalElement, moveLogicalRootToDocumentFragment } from './Rendering/LogicalElements';
+import { disposeComponentAsync } from './Rendering/WebRendererInteropMethods';
+import { RootComponentInfo, rootComponentInfoPropname } from './Rendering/Renderer';
 
 let started = false;
+let circuitStarted = false;
+let webAssemblyStarted = false;
 let webStartOptions: Partial<WebStartOptions> | undefined;
 
 async function boot(options?: Partial<WebStartOptions>): Promise<void> {
@@ -29,13 +34,36 @@ async function boot(options?: Partial<WebStartOptions>): Promise<void> {
   started = true;
   webStartOptions = options;
 
-  attachStreamingRenderingListener(options?.ssr);
+  const navigationEnhancementCallbacks: NavigationEnhancementCallbacks = {
+    beforeDocumentUpdated,
+    afterDocumentUpdated: activateInteractiveComponents,
+  };
+
+  attachStreamingRenderingListener(options?.ssr, navigationEnhancementCallbacks);
 
   if (!options?.ssr?.disableDomPreservation) {
-    attachProgressivelyEnhancedNavigationListener(activateInteractiveComponents);
+    attachProgressivelyEnhancedNavigationListener(navigationEnhancementCallbacks);
   }
 
   await activateInteractiveComponents();
+}
+
+function beforeDocumentUpdated(isNodeExcludedFromUpdate?: (node: Node) => boolean) {
+  const iterator = document.createNodeIterator(document, NodeFilter.SHOW_COMMENT);
+  while (iterator.nextNode()) {
+    const node = iterator.referenceNode;
+    const rootComponentInfo = node[rootComponentInfoPropname] as RootComponentInfo;
+    if (!rootComponentInfo || isNodeExcludedFromUpdate?.(node)) {
+      continue;
+    }
+
+    // Synchronously move the DOM owned by this component to a document fragment so
+    // that the document can be updated without touching renderer-managed DOM.
+    // We then initiate an asynchronous disposal of the component, which will eventually
+    // clean up its remaining browser-side state.
+    moveLogicalRootToDocumentFragment(node as unknown as LogicalElement);
+    disposeComponentAsync(rootComponentInfo.browserRendererId, rootComponentInfo.componentId);
+  }
 }
 
 async function activateInteractiveComponents() {
@@ -43,21 +71,17 @@ async function activateInteractiveComponents() {
   const webAssemblyComponents = discoverComponents(document, 'webassembly') as WebAssemblyComponentDescriptor[];
 
   if (serverComponents.length) {
-    // TEMPORARY until https://github.com/dotnet/aspnetcore/issues/48763 is implemented
-    // As soon we we see you have interactive components, we'll stop doing enhanced nav even if you don't have an interactive router
-    // This is because, otherwise, we would need a way to add new interactive root components to an existing circuit and that's #48763
-    detachProgressivelyEnhancedNavigationListener();
-
-    await startCircuit(webStartOptions?.circuit, serverComponents);
+    if (!circuitStarted) {
+      circuitStarted = true;
+      await startCircuit(webStartOptions?.circuit, serverComponents);
+    }
   }
 
   if (webAssemblyComponents.length) {
-    // TEMPORARY until https://github.com/dotnet/aspnetcore/issues/48763 is implemented
-    // As soon we we see you have interactive components, we'll stop doing enhanced nav even if you don't have an interactive router
-    // This is because, otherwise, we would need a way to add new interactive root components to an existing WebAssembly runtime and that's #48763
-    detachProgressivelyEnhancedNavigationListener();
-
-    await startWebAssembly(webStartOptions?.webAssembly, webAssemblyComponents);
+    if (!webAssemblyStarted) {
+      webAssemblyStarted = true;
+      await startWebAssembly(webStartOptions?.webAssembly, webAssemblyComponents);
+    }
   }
 }
 

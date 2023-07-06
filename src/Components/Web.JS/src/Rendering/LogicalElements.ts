@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+import { createSymbolOrFallback } from './SymbolUtil';
+
 /*
   A LogicalElement plays the same role as an Element instance from the point of view of the
   API consumer. Inserting and removing logical elements updates the browser DOM just the same.
@@ -87,6 +89,14 @@ export function emptyLogicalElement(element: LogicalElement): void {
   while (childrenArray.length) {
     removeLogicalChild(element, 0);
   }
+}
+
+export function moveLogicalRootToDocumentFragment(element: LogicalElement): void {
+  const lastNode = findLastDomNodeInRange(element) as Node;
+  const range = new Range();
+  range.setStart(element as unknown as Node, 0);
+  range.setEnd(lastNode, lastNode.childNodes.length);
+  range.extractContents();
 }
 
 export function createAndInsertLogicalContainer(parent: LogicalElement, childIndex: number): LogicalElement {
@@ -306,10 +316,6 @@ function findLastDomNodeInRange(element: LogicalElement) {
       ? logicalParent.lastChild
       : findLastDomNodeInRange(logicalParent);
   }
-}
-
-function createSymbolOrFallback(fallback: string): symbol | string {
-  return typeof Symbol === 'function' ? Symbol() : fallback;
 }
 
 // Nominal type to represent a logical element without needing to allocate any object for instances

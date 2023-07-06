@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 import { synchronizeDomContent } from '../Rendering/DomMerging/DomSync';
 import { handleClickForNavigationInterception, hasInteractiveRouter } from './NavigationUtils';
 
@@ -29,10 +32,15 @@ different bundles that only contain minimal content.
 */
 
 let currentEnhancedNavigationAbortController: AbortController | null;
-let onDocumentUpdatedCallback: Function = () => {};
+let navigationEnhancementCallbacks: NavigationEnhancementCallbacks;
 
-export function attachProgressivelyEnhancedNavigationListener(onDocumentUpdated: Function) {
-  onDocumentUpdatedCallback = onDocumentUpdated;
+export interface NavigationEnhancementCallbacks {
+  beforeDocumentUpdated: (isNodeExcludedFromUpdate?: ((node: Node) => boolean)) => void;
+  afterDocumentUpdated: () => void;
+}
+
+export function attachProgressivelyEnhancedNavigationListener(callbacks: NavigationEnhancementCallbacks) {
+  navigationEnhancementCallbacks = callbacks;
   document.addEventListener('click', onDocumentClick);
   document.addEventListener('submit', onDocumentSubmit);
   window.addEventListener('popstate', onPopState);
@@ -121,14 +129,20 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, f
       if (responseContentType?.startsWith('text/html')) {
         // For HTML responses, regardless of the status code, display it
         const parsedHtml = new DOMParser().parseFromString(initialContent, 'text/html');
+        navigationEnhancementCallbacks.beforeDocumentUpdated();
         synchronizeDomContent(document, parsedHtml);
+        navigationEnhancementCallbacks.afterDocumentUpdated();
       } else if (responseContentType?.startsWith('text/')) {
         // For any other text-based content, we'll just display it, because that's what
         // would happen if this was a non-enhanced request.
+        navigationEnhancementCallbacks.beforeDocumentUpdated();
         replaceDocumentWithPlainText(initialContent);
+        navigationEnhancementCallbacks.afterDocumentUpdated();
       } else if ((response.status < 200 || response.status >= 300) && !initialContent) {
         // For any non-success response that has no content at all, make up our own error UI
+        navigationEnhancementCallbacks.beforeDocumentUpdated();
         replaceDocumentWithPlainText(`Error: ${response.status} ${response.statusText}`);
+        navigationEnhancementCallbacks.afterDocumentUpdated();
       } else {
         // For any other response, it's not HTML and we don't know what to do. It might be plain text,
         // or an image, or something else.
@@ -141,7 +155,9 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, f
           location.replace(internalDestinationHref);
         } else {
           // For non-get requests, we can't safely re-request, so just treat it as an error
+          navigationEnhancementCallbacks.beforeDocumentUpdated();
           replaceDocumentWithPlainText(`Error: ${fetchOptions.method} request to ${internalDestinationHref} returned non-HTML content of type ${responseContentType || 'unspecified'}.`);
+          navigationEnhancementCallbacks.afterDocumentUpdated();
         }
       }
     },
@@ -153,13 +169,6 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, f
     });
 
   if (!abortSignal.aborted) {
-    // TEMPORARY until https://github.com/dotnet/aspnetcore/issues/48763 is implemented
-    // We should really be doing this on the `onInitialDocument` callback *and* inside the <blazor-ssr> custom element logic
-    // so we can add interactive components immediately on each update. Until #48763 is implemented, the stopgap implementation
-    // is just to do it when the enhanced nav process completes entirely, and then if we do add any interactive components, we
-    // disable enhanced nav completely.
-    onDocumentUpdatedCallback();
-
     // The whole response including any streaming SSR is now finished, and it was not aborted (no other navigation
     // has since started). So finally, recreate the native "scroll to hash" behavior.
     const hashPosition = internalDestinationHref.indexOf('#');

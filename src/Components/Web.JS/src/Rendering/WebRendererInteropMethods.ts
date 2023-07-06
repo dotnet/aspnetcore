@@ -30,6 +30,11 @@ export function attachWebRendererInterop(
   return rendererId;
 }
 
+export function disposeComponentAsync(browserRendererId: number, componentId: number): Promise<void> {
+  const interopMethods = getInteropMethods(browserRendererId);
+  return interopMethods.invokeMethodAsync('RemoveRootComponent', componentId);
+}
+
 export function dispatchEvent(browserRendererId: number, eventDescriptor: EventDescriptor, eventArgs: any): void {
   return dispatchEventMiddleware(browserRendererId, eventDescriptor.eventHandlerId, () => {
     const interopMethods = getInteropMethods(browserRendererId);

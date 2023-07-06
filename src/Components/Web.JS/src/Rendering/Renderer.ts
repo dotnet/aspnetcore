@@ -7,6 +7,14 @@ import { RenderBatch } from './RenderBatch/RenderBatch';
 import { BrowserRenderer } from './BrowserRenderer';
 import { toLogicalElement, LogicalElement } from './LogicalElements';
 import { getAndRemovePendingRootComponentContainer } from './JSRootComponents';
+import { createSymbolOrFallback } from './SymbolUtil';
+
+export const rootComponentInfoPropname = createSymbolOrFallback('_blazorRootComponentInfo');
+
+export interface RootComponentInfo {
+  browserRendererId: number;
+  componentId: number;
+}
 
 interface BrowserRendererRegistry {
   [browserRendererId: number]: BrowserRenderer;
@@ -20,6 +28,9 @@ export function attachRootComponentToLogicalElement(browserRendererId: number, l
     browserRenderer = new BrowserRenderer(browserRendererId);
     browserRenderers[browserRendererId] = browserRenderer;
   }
+
+  const rootComponentInfo: RootComponentInfo = { browserRendererId, componentId };
+  logicalElement[rootComponentInfoPropname] = rootComponentInfo;
 
   browserRenderer.attachRootComponentToLogicalElement(componentId, logicalElement, appendContent);
 }
