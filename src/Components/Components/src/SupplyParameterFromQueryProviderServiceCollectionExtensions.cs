@@ -4,13 +4,14 @@
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace Microsoft.AspNetCore.Components.Binding;
+namespace Microsoft.AspNetCore.Components;
 
 /// <summary>
 /// Enables component parameters to be supplied from the query string with <see cref="SupplyParameterFromQueryAttribute"/>.
 /// </summary>
-public static class SupplyValueFromQueryProviderExtensions
+public static class SupplyParameterFromQueryProviderServiceCollectionExtensions
 {
     /// <summary>
     /// Enables component parameters to be supplied from the query string with <see cref="SupplyParameterFromQueryAttribute"/>.
@@ -19,7 +20,8 @@ public static class SupplyValueFromQueryProviderExtensions
     /// <returns>The <see cref="IServiceCollection"/>.</returns>
     public static IServiceCollection AddSupplyValueFromQueryProvider(this IServiceCollection services)
     {
-        return services.AddScoped<ICascadingValueSupplier, SupplyValueFromQueryProvider>();
+        services.TryAddEnumerable(ServiceDescriptor.Scoped<ICascadingValueSupplier, SupplyValueFromQueryProvider>());
+        return services;
     }
 
     private sealed class SupplyValueFromQueryProvider : ICascadingValueSupplier, IDisposable
