@@ -20,7 +20,6 @@ public class EditFormTest
         services.AddSingleton<NavigationManager, TestNavigationManager>();
         services.AddSingleton<IFormValueSupplier, TestFormValueSupplier>();
         services.AddSingleton<CascadingModelBindingProvider, CascadingFormModelBindingProvider>();
-        services.AddSingleton<CascadingModelBindingProvider, CascadingQueryModelBindingProvider>();
         services.AddAntiforgery();
         services.AddLogging();
         services.AddSingleton<ComponentStatePersistenceManager>();

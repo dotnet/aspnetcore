@@ -13,12 +13,9 @@ namespace Microsoft.AspNetCore.Components;
 /// <summary>
 /// Defines the binding context for data bound from external sources.
 /// </summary>
-public sealed class CascadingModelBinder : IComponent, ICascadingValueSupplier, IDisposable
+public sealed class CascadingModelBinder : SupplyParameterFromFormValueProvider, IComponent, IDisposable
 {
-    private readonly Dictionary<Type, CascadingModelBindingProvider?> _providersByCascadingParameterAttributeType = new();
-
     private RenderHandle _handle;
-    private ModelBindingContext? _bindingContext;
     private bool _hasPendingQueuedRender;
 
     /// <summary>
@@ -42,8 +39,6 @@ public sealed class CascadingModelBinder : IComponent, ICascadingValueSupplier, 
     [CascadingParameter] ModelBindingContext? ParentContext { get; set; }
 
     [Inject] internal NavigationManager Navigation { get; set; } = null!;
-
-    [Inject] internal IEnumerable<CascadingModelBindingProvider> ModelBindingProviders { get; set; } = Enumerable.Empty<CascadingModelBindingProvider>();
 
     internal ModelBindingContext? BindingContext => _bindingContext;
 
@@ -144,6 +139,24 @@ public sealed class CascadingModelBinder : IComponent, ICascadingValueSupplier, 
         }
     }
 
+    void IDisposable.Dispose()
+    {
+        Navigation.LocationChanged -= HandleLocationChanged;
+    }
+}
+
+// TODO: Make this internal by changing CascadingModelBinder so it doesn't inherit from it, but instead
+// implements ICascadingValueSupplier by forwarding all calls to an instance of this
+public class SupplyParameterFromFormValueProvider : ICascadingValueSupplier
+{
+    private readonly Dictionary<Type, CascadingModelBindingProvider?> _providersByCascadingParameterAttributeType = new();
+
+    [Inject] internal IEnumerable<CascadingModelBindingProvider> ModelBindingProviders { get; set; } = Enumerable.Empty<CascadingModelBindingProvider>();
+
+    public bool IsFixed => true;
+
+    protected ModelBindingContext? _bindingContext;
+
     bool ICascadingValueSupplier.CanSupplyValue(in CascadingParameterInfo parameterInfo)
         => TryGetProvider(in parameterInfo, out var provider)
         && provider.CanSupplyValue(_bindingContext, parameterInfo);
@@ -211,10 +224,5 @@ public sealed class CascadingModelBinder : IComponent, ICascadingValueSupplier, 
 
             return null;
         }
-    }
-
-    void IDisposable.Dispose()
-    {
-        Navigation.LocationChanged -= HandleLocationChanged;
     }
 }
