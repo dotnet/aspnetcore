@@ -9,8 +9,6 @@ abstract Microsoft.AspNetCore.Components.CascadingParameterAttributeBase.Name.se
 abstract Microsoft.AspNetCore.Components.RenderModeAttribute.Mode.get -> Microsoft.AspNetCore.Components.IComponentRenderMode!
 Microsoft.AspNetCore.Components.Binding.CascadingModelBindingProvider
 Microsoft.AspNetCore.Components.Binding.CascadingModelBindingProvider.CascadingModelBindingProvider() -> void
-Microsoft.AspNetCore.Components.Binding.CascadingQueryModelBindingProvider
-Microsoft.AspNetCore.Components.Binding.CascadingQueryModelBindingProvider.CascadingQueryModelBindingProvider(Microsoft.AspNetCore.Components.NavigationManager! navigationManager) -> void
 Microsoft.AspNetCore.Components.Binding.FormValueSupplierContext
 Microsoft.AspNetCore.Components.Binding.FormValueSupplierContext.FormName.get -> string!
 Microsoft.AspNetCore.Components.Binding.FormValueSupplierContext.FormValueSupplierContext(string! formName, System.Type! valueType, string! parameterName) -> void
@@ -25,6 +23,7 @@ Microsoft.AspNetCore.Components.Binding.FormValueSupplierContext.ValueType.get -
 Microsoft.AspNetCore.Components.Binding.IFormValueSupplier
 Microsoft.AspNetCore.Components.Binding.IFormValueSupplier.Bind(Microsoft.AspNetCore.Components.Binding.FormValueSupplierContext! context) -> void
 Microsoft.AspNetCore.Components.Binding.IFormValueSupplier.CanBind(System.Type! valueType, string? formName = null) -> bool
+Microsoft.AspNetCore.Components.Binding.SupplyValueFromQueryProviderExtensions
 Microsoft.AspNetCore.Components.BindingError
 Microsoft.AspNetCore.Components.BindingError.AttemptedValue.get -> string?
 Microsoft.AspNetCore.Components.BindingError.Container.get -> object!
@@ -127,6 +126,7 @@ override Microsoft.AspNetCore.Components.EventCallback<TValue>.Equals(object? ob
 *REMOVED*Microsoft.AspNetCore.Components.SupplyParameterFromQueryAttribute.Name.set -> void
 override Microsoft.AspNetCore.Components.SupplyParameterFromQueryAttribute.Name.get -> string?
 override Microsoft.AspNetCore.Components.SupplyParameterFromQueryAttribute.Name.set -> void
+static Microsoft.AspNetCore.Components.Binding.SupplyValueFromQueryProviderExtensions.AddSupplyValueFromQueryProvider(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.Extensions.DependencyInjection.CascadingValueServiceCollectionExtensions.AddCascadingValue<TValue>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! serviceCollection, string! name, System.Func<System.IServiceProvider!, TValue>! valueFactory) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.Extensions.DependencyInjection.CascadingValueServiceCollectionExtensions.AddCascadingValue<TValue>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! serviceCollection, System.Func<System.IServiceProvider!, Microsoft.AspNetCore.Components.CascadingValueSource<TValue>!>! sourceFactory) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.Extensions.DependencyInjection.CascadingValueServiceCollectionExtensions.AddCascadingValue<TValue>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! serviceCollection, System.Func<System.IServiceProvider!, TValue>! valueFactory) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

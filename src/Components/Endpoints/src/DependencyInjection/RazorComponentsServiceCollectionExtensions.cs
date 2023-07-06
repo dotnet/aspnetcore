@@ -58,11 +58,12 @@ public static class RazorComponentsServiceCollectionExtensions
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<RazorComponentsEndpointsOptions>, RazorComponentsEndpointsDetailedErrorsConfiguration>());
         services.TryAddScoped<EndpointRoutingStateProvider>();
         services.TryAddScoped<IRoutingStateProvider>(sp => sp.GetRequiredService<EndpointRoutingStateProvider>());
+        services.AddSupplyValueFromQueryProvider();
 
         // Form handling
         services.TryAddScoped<FormDataProvider, HttpContextFormDataProvider>();
         services.TryAddScoped<IFormValueSupplier, DefaultFormValuesSupplier>();
-        services.TryAddEnumerable(ServiceDescriptor.Scoped<CascadingModelBindingProvider, CascadingQueryModelBindingProvider>());
+        //services.TryAddEnumerable(ServiceDescriptor.Scoped<CascadingModelBindingProvider, CascadingQueryModelBindingProvider>());
         services.TryAddEnumerable(ServiceDescriptor.Scoped<CascadingModelBindingProvider, CascadingFormModelBindingProvider>());
         services.TryAddScoped<AntiforgeryStateProvider, EndpointAntiforgeryStateProvider>();
         return new DefaultRazorComponentsBuilder(services);
