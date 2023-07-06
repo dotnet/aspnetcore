@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Components;
 /// <summary>
 /// Defines the binding context for data bound from external sources.
 /// </summary>
-public sealed class CascadingModelBinder : SupplyParameterFromFormValueProvider, IComponent, IDisposable
+public sealed class CascadingModelBinder : SupplyParameterFromFormValueProvider, IComponent
 {
     private RenderHandle _handle;
     private bool _hasPendingQueuedRender;
@@ -40,19 +40,17 @@ public sealed class CascadingModelBinder : SupplyParameterFromFormValueProvider,
 
     Task IComponent.SetParametersAsync(ParameterView parameters)
     {
-        if (BindingContext == null)
-        {
-            // First render
-            Navigation.LocationChanged += HandleLocationChanged;
-        }
-
         parameters.SetParameterProperties(this);
         if (ParentContext != null && string.IsNullOrEmpty(Name))
         {
             throw new InvalidOperationException($"Nested binding contexts must define a Name. (Parent context) = '{ParentContext.Name}'.");
         }
 
-        UpdateBindingInformation();
+        if (BindingContext is null)
+        {
+            UpdateBindingInformation(Navigation, ParentContext, Name);
+        }
+
         Render();
 
         return Task.CompletedTask;
@@ -70,24 +68,6 @@ public sealed class CascadingModelBinder : SupplyParameterFromFormValueProvider,
             _hasPendingQueuedRender = false;
             builder.AddContent(0, ChildContent, BindingContext!);
         });
-    }
-
-    public void UpdateBindingInformation()
-    {
-        UpdateBindingInformation(Navigation, ParentContext, Name);
-    }
-
-    // TODO: Don't think we have to do this really
-    private void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
-    {
-        var url = e.Location;
-        UpdateBindingInformation();
-        Render();
-    }
-
-    void IDisposable.Dispose()
-    {
-        Navigation.LocationChanged -= HandleLocationChanged;
     }
 }
 
@@ -144,26 +124,8 @@ public class SupplyParameterFromFormValueProvider : ICascadingValueSupplier
         // BindingContextId = <<base-relative-uri>>((<<existing-query>>&)|?)handler=my-handler
         var name = ModelBindingContext.Combine(parentContext, thisName);
         var bindingId = string.IsNullOrEmpty(name) ? "" : GenerateBindingContextId(name);
-        var bindingContextDidChange =
-            _bindingContext is null ||
-            !string.Equals(_bindingContext.Name, name, StringComparison.Ordinal) ||
-            !string.Equals(_bindingContext.BindingContextId, bindingId, StringComparison.Ordinal);
-
-        if (bindingContextDidChange)
-        {
-            if (IsFixed && _bindingContext is not null)
-            {
-                // Throw an exception if either the Name or the BindingContextId changed. Once a CascadingModelBinder has been initialized
-                // as fixed, it can't change it's name nor its BindingContextId. This can happen in several situations:
-                // * Component ParentContext hierarchy changes.
-                //   * Technically, the component won't be retained in this case and will be destroyed instead.
-                // * A parent changes Name.
-                throw new InvalidOperationException($"'{nameof(CascadingModelBinder)}' 'Name' can't change after initialized.");
-            }
-
-            _bindingContext = new ModelBindingContext(name, bindingId);
-            parentContext?.SetErrors(name, _bindingContext);
-        }
+        _bindingContext = new ModelBindingContext(name, bindingId);
+        parentContext?.SetErrors(name, _bindingContext);
 
         string GenerateBindingContextId(string name)
         {
