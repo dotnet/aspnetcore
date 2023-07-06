@@ -4,10 +4,13 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
+using System.Reflection;
 using System.Threading.Tasks;
 using StackExchange.Redis;
+using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
 {
@@ -215,6 +218,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public long Publish(RedisChannel channel, RedisValue message, CommandFlags flags = CommandFlags.None)
         {
+            AssertRedisChannel(channel);
+
             if (_subscriptions.TryGetValue(channel, out var handlers))
             {
                 foreach (var handler in handlers)
@@ -228,6 +233,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public void Subscribe(RedisChannel channel, Action<RedisChannel, RedisValue> handler, CommandFlags flags = CommandFlags.None)
         {
+            AssertRedisChannel(channel);
+
             _subscriptions.AddOrUpdate(channel, _ => new List<Action<RedisChannel, RedisValue>> { handler }, (_, list) =>
             {
                 list.Add(handler);
@@ -237,10 +244,19 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public void Unsubscribe(RedisChannel channel, Action<RedisChannel, RedisValue> handler = null, CommandFlags flags = CommandFlags.None)
         {
+            AssertRedisChannel(channel);
+
             if (_subscriptions.TryGetValue(channel, out var list))
             {
                 list.Remove(handler);
             }
+        }
+
+        internal static void AssertRedisChannel(RedisChannel channel)
+        {
+            var patternField = typeof(RedisChannel).GetField("IsPatternBased", BindingFlags.NonPublic | BindingFlags.Instance);
+            Assert.NotNull(patternField);
+            Assert.False((bool)patternField.GetValue(channel));
         }
     }
 
@@ -281,22 +297,30 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public long Publish(RedisChannel channel, RedisValue message, CommandFlags flags = CommandFlags.None)
         {
+            TestRedisServer.AssertRedisChannel(channel);
+
             return _server.Publish(channel, message, flags);
         }
 
         public async Task<long> PublishAsync(RedisChannel channel, RedisValue message, CommandFlags flags = CommandFlags.None)
         {
+            TestRedisServer.AssertRedisChannel(channel);
+
             await Task.Yield();
             return Publish(channel, message, flags);
         }
 
         public void Subscribe(RedisChannel channel, Action<RedisChannel, RedisValue> handler, CommandFlags flags = CommandFlags.None)
         {
+            TestRedisServer.AssertRedisChannel(channel);
+
             _server.Subscribe(channel, handler, flags);
         }
 
         public Task SubscribeAsync(RedisChannel channel, Action<RedisChannel, RedisValue> handler, CommandFlags flags = CommandFlags.None)
         {
+            TestRedisServer.AssertRedisChannel(channel);
+
             Subscribe(channel, handler, flags);
             return Task.CompletedTask;
         }
@@ -313,6 +337,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public void Unsubscribe(RedisChannel channel, Action<RedisChannel, RedisValue> handler = null, CommandFlags flags = CommandFlags.None)
         {
+            TestRedisServer.AssertRedisChannel(channel);
+
             _server.Unsubscribe(channel, handler, flags);
         }
 
@@ -328,6 +354,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public Task UnsubscribeAsync(RedisChannel channel, Action<RedisChannel, RedisValue> handler = null, CommandFlags flags = CommandFlags.None)
         {
+            TestRedisServer.AssertRedisChannel(channel);
+
             Unsubscribe(channel, handler, flags);
             return Task.CompletedTask;
         }

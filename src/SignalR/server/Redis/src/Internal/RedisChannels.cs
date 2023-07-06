@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Runtime.CompilerServices;
+using StackExchange.Redis;
 
 namespace Microsoft.AspNetCore.SignalR.Redis.Internal
 {
@@ -71,5 +72,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Internal
         {
             return _prefix + ":internal:ack:" + serverName;
         }
+
+        public static RedisChannel GetChannel(string channelName) => new RedisChannel(channelName, RedisChannel.PatternMode.Literal);
     }
 }

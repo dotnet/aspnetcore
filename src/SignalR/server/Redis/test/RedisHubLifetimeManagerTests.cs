@@ -599,6 +599,26 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
             }
         }
 
+        // Smoke test that Debug.Asserts in TestSubscriber aren't hit
+        [Fact]
+        public async Task PatternGroupAndUser()
+        {
+            var server = new TestRedisServer();
+            using (var client = new TestClient())
+            {
+                var manager = CreateLifetimeManager(server);
+
+                var connection = HubConnectionContextUtils.Create(client.Connection);
+                connection.UserIdentifier = "*";
+
+                await manager.OnConnectedAsync(connection).OrTimeout();
+
+                var groupName = "*";
+
+                await manager.AddToGroupAsync(connection.ConnectionId, groupName).OrTimeout();
+            }
+        }
+
         public class TestObject
         {
             public string TestProperty { get; set; }
