@@ -13,6 +13,9 @@ public sealed class AcceptsMetadata : IAcceptsMetadata
     /// <summary>
     /// Creates a new instance of <see cref="AcceptsMetadata"/> with a type.
     /// </summary>
+    /// <param name="contentTypes">Content types that are accepted by endpoint.</param>
+    /// <param name="type">The type being read from the request.</param>
+    /// <param name="isOptional">Whether the request body is optional.</param>
     public AcceptsMetadata(string[] contentTypes, Type? type = null, bool isOptional = false)
     {
         ArgumentNullException.ThrowIfNull(contentTypes);
