@@ -26,7 +26,7 @@ public class SupplyParameterFromFormTest
             Name = ""
         };
 
-        cascadingModelBinder.UpdateBindingInformation("https://localhost/");
+        cascadingModelBinder.UpdateBindingInformation();
 
         var states = CreateAncestry(
             cascadingModelBinder,
@@ -56,7 +56,7 @@ public class SupplyParameterFromFormTest
             Name = "some-name"
         };
 
-        cascadingModelBinder.UpdateBindingInformation("https://localhost/");
+        cascadingModelBinder.UpdateBindingInformation();
 
         var states = CreateAncestry(
             cascadingModelBinder,

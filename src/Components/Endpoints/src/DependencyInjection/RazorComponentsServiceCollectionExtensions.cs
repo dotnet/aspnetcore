@@ -63,7 +63,7 @@ public static class RazorComponentsServiceCollectionExtensions
         // Form handling
         services.TryAddScoped<FormDataProvider, HttpContextFormDataProvider>();
         services.TryAddScoped<IFormValueSupplier, DefaultFormValuesSupplier>();
-        //services.TryAddEnumerable(ServiceDescriptor.Scoped<CascadingModelBindingProvider, CascadingQueryModelBindingProvider>());
+        services.AddSupplyValueFromFormProvider();
         services.TryAddEnumerable(ServiceDescriptor.Scoped<CascadingModelBindingProvider, CascadingFormModelBindingProvider>());
         services.TryAddScoped<AntiforgeryStateProvider, EndpointAntiforgeryStateProvider>();
         return new DefaultRazorComponentsBuilder(services);

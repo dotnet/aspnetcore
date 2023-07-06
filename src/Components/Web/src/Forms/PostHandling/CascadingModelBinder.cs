@@ -7,6 +7,7 @@ using System.Reflection.Metadata;
 using Microsoft.AspNetCore.Components.Binding;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Routing;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Components;
 
@@ -24,14 +25,6 @@ public sealed class CascadingModelBinder : SupplyParameterFromFormValueProvider,
     [Parameter] public string Name { get; set; } = "";
 
     /// <summary>
-    /// If true, indicates that <see cref="ModelBindingContext.BindingContextId"/> will not change.
-    /// This is a performance optimization that allows the framework to skip setting up
-    /// change notifications. Set this flag only if you will not change
-    /// <see cref="Name"/> of this context or its parents' context during the component's lifetime.
-    /// </summary>
-    [Parameter] public bool IsFixed { get; set; }
-
-    /// <summary>
     /// Specifies the content to be rendered inside this <see cref="CascadingModelBinder"/>.
     /// </summary>
     [Parameter] public RenderFragment<ModelBindingContext> ChildContent { get; set; } = default!;
@@ -40,8 +33,6 @@ public sealed class CascadingModelBinder : SupplyParameterFromFormValueProvider,
 
     [Inject] internal NavigationManager Navigation { get; set; } = null!;
 
-    internal ModelBindingContext? BindingContext => _bindingContext;
-
     void IComponent.Attach(RenderHandle renderHandle)
     {
         _handle = renderHandle;
@@ -49,7 +40,7 @@ public sealed class CascadingModelBinder : SupplyParameterFromFormValueProvider,
 
     Task IComponent.SetParametersAsync(ParameterView parameters)
     {
-        if (_bindingContext == null)
+        if (BindingContext == null)
         {
             // First render
             Navigation.LocationChanged += HandleLocationChanged;
@@ -61,7 +52,7 @@ public sealed class CascadingModelBinder : SupplyParameterFromFormValueProvider,
             throw new InvalidOperationException($"Nested binding contexts must define a Name. (Parent context) = '{ParentContext.Name}'.");
         }
 
-        UpdateBindingInformation(Navigation.Uri);
+        UpdateBindingInformation();
         Render();
 
         return Task.CompletedTask;
@@ -77,22 +68,65 @@ public sealed class CascadingModelBinder : SupplyParameterFromFormValueProvider,
         _handle.Render(builder =>
         {
             _hasPendingQueuedRender = false;
-            builder.OpenComponent<CascadingValue<ModelBindingContext>>(0);
-            builder.AddComponentParameter(1, nameof(CascadingValue<ModelBindingContext>.IsFixed), IsFixed);
-            builder.AddComponentParameter(2, nameof(CascadingValue<ModelBindingContext>.Value), _bindingContext);
-            builder.AddComponentParameter(3, nameof(CascadingValue<ModelBindingContext>.ChildContent), ChildContent?.Invoke(_bindingContext!));
-            builder.CloseComponent();
+            builder.AddContent(0, ChildContent, BindingContext!);
         });
     }
 
+    public void UpdateBindingInformation()
+    {
+        UpdateBindingInformation(Navigation, ParentContext, Name);
+    }
+
+    // TODO: Don't think we have to do this really
     private void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
     {
         var url = e.Location;
-        UpdateBindingInformation(url);
+        UpdateBindingInformation();
         Render();
     }
 
-    internal void UpdateBindingInformation(string url)
+    void IDisposable.Dispose()
+    {
+        Navigation.LocationChanged -= HandleLocationChanged;
+    }
+}
+
+public static class SupplyParameterFromFormServiceCollectionExtensions
+{
+    public static IServiceCollection AddSupplyValueFromFormProvider(this IServiceCollection serviceCollection)
+    {
+        return serviceCollection.AddScoped<ICascadingValueSupplier, SupplyParameterFromFormValueProvider>(services =>
+        {
+            var result = new SupplyParameterFromFormValueProvider();
+
+            if (services.GetService<CascadingModelBindingProvider>() is not null)
+            {
+                result.ModelBindingProviders = services.GetServices<CascadingModelBindingProvider>();
+            }
+
+            result.UpdateBindingInformation(
+                services.GetRequiredService<NavigationManager>(), null, "");
+
+            return result;
+        });
+    }
+}
+
+// TODO: Make this internal by changing CascadingModelBinder so it doesn't inherit from it, but instead
+// implements ICascadingValueSupplier by forwarding all calls to an instance of this
+public class SupplyParameterFromFormValueProvider : ICascadingValueSupplier
+{
+    private readonly Dictionary<Type, CascadingModelBindingProvider?> _providersByCascadingParameterAttributeType = new();
+
+    [Inject] internal IEnumerable<CascadingModelBindingProvider> ModelBindingProviders { get; set; } = Enumerable.Empty<CascadingModelBindingProvider>();
+
+    public bool IsFixed => true;
+
+    private ModelBindingContext? _bindingContext;
+
+    protected internal ModelBindingContext? BindingContext => _bindingContext;
+
+    public void UpdateBindingInformation(NavigationManager navigation, ModelBindingContext? parentContext, string thisName)
     {
         // BindingContextId: action parameter used to define the handler
         // Name: form name and context used to bind
@@ -108,7 +142,7 @@ public sealed class CascadingModelBinder : SupplyParameterFromFormValueProvider,
         // 3) Parent has a name "parent-name"
         // Name = "parent-name.my-handler";
         // BindingContextId = <<base-relative-uri>>((<<existing-query>>&)|?)handler=my-handler
-        var name = ModelBindingContext.Combine(ParentContext, Name);
+        var name = ModelBindingContext.Combine(parentContext, thisName);
         var bindingId = string.IsNullOrEmpty(name) ? "" : GenerateBindingContextId(name);
         var bindingContextDidChange =
             _bindingContext is null ||
@@ -128,65 +162,48 @@ public sealed class CascadingModelBinder : SupplyParameterFromFormValueProvider,
             }
 
             _bindingContext = new ModelBindingContext(name, bindingId);
-            ParentContext?.SetErrors(name, _bindingContext);
+            parentContext?.SetErrors(name, _bindingContext);
         }
 
         string GenerateBindingContextId(string name)
         {
-            var bindingId = Navigation.ToBaseRelativePath(Navigation.GetUriWithQueryParameter("handler", name));
+            var bindingId = navigation.ToBaseRelativePath(navigation.GetUriWithQueryParameter("handler", name));
             var hashIndex = bindingId.IndexOf('#');
             return hashIndex == -1 ? bindingId : new string(bindingId.AsSpan(0, hashIndex));
         }
     }
 
-    void IDisposable.Dispose()
-    {
-        Navigation.LocationChanged -= HandleLocationChanged;
-    }
-}
-
-// TODO: Make this internal by changing CascadingModelBinder so it doesn't inherit from it, but instead
-// implements ICascadingValueSupplier by forwarding all calls to an instance of this
-public class SupplyParameterFromFormValueProvider : ICascadingValueSupplier
-{
-    private readonly Dictionary<Type, CascadingModelBindingProvider?> _providersByCascadingParameterAttributeType = new();
-
-    [Inject] internal IEnumerable<CascadingModelBindingProvider> ModelBindingProviders { get; set; } = Enumerable.Empty<CascadingModelBindingProvider>();
-
-    public bool IsFixed => true;
-
-    protected ModelBindingContext? _bindingContext;
-
     bool ICascadingValueSupplier.CanSupplyValue(in CascadingParameterInfo parameterInfo)
-        => TryGetProvider(in parameterInfo, out var provider)
-        && provider.CanSupplyValue(_bindingContext, parameterInfo);
+    {
+        // We supply a ModelBindingContext
+        if (parameterInfo.Attribute is CascadingParameterAttribute && parameterInfo.PropertyType == typeof(ModelBindingContext))
+        {
+            return true;
+        }
+
+        // We also supply values for [SupplyValueFromForm]
+        return TryGetProvider(in parameterInfo, out var provider) && provider.CanSupplyValue(_bindingContext, parameterInfo);
+    }
 
     void ICascadingValueSupplier.Subscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
-    {
-        // We expect there to always be a provider at this point, because CanSupplyValue must have returned true.
-        var provider = GetProviderOrThrow(parameterInfo);
-
-        if (!provider.AreValuesFixed)
-        {
-            provider.Subscribe(subscriber);
-        }
-    }
+        => throw new NotSupportedException();
 
     void ICascadingValueSupplier.Unsubscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
-    {
-        // We expect there to always be a provider at this point, because CanSupplyValue must have returned true.
-        var provider = GetProviderOrThrow(parameterInfo);
-
-        if (!provider.AreValuesFixed)
-        {
-            provider.Unsubscribe(subscriber);
-        }
-    }
+        => throw new NotSupportedException();
 
     object? ICascadingValueSupplier.GetCurrentValue(in CascadingParameterInfo parameterInfo)
-        => TryGetProvider(in parameterInfo, out var provider)
+    {
+        // We supply a ModelBindingContext
+        if (parameterInfo.Attribute is CascadingParameterAttribute && parameterInfo.PropertyType == typeof(ModelBindingContext))
+        {
+            return _bindingContext;
+        }
+
+        // We also supply values for [SupplyValueFromForm]
+        return TryGetProvider(in parameterInfo, out var provider)
             ? provider.GetCurrentValue(_bindingContext, parameterInfo)
             : null;
+    }
 
     private CascadingModelBindingProvider GetProviderOrThrow(in CascadingParameterInfo parameterInfo)
     {
