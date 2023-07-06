@@ -3,14 +3,16 @@
 
 using System.Reflection.Metadata;
 using Microsoft.AspNetCore.Components.Binding;
+using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components;
 
 /// <summary>
 /// Defines the binding context for data bound from external sources.
 /// </summary>
-public sealed class CascadingModelBinder : SupplyParameterFromFormValueProvider, IComponent
+public sealed class CascadingModelBinder : ICascadingValueSupplier, IComponent
 {
+    private SupplyParameterFromFormValueProvider? _cascadingValueSupplier;
     private RenderHandle _handle;
     private bool _hasPendingQueuedRender;
 
@@ -30,6 +32,8 @@ public sealed class CascadingModelBinder : SupplyParameterFromFormValueProvider,
 
     [Inject] internal IFormValueSupplier FormValueSupplier { get; set; } = null!;
 
+    bool ICascadingValueSupplier.IsFixed => throw new NotImplementedException();
+
     void IComponent.Attach(RenderHandle renderHandle)
     {
         _handle = renderHandle;
@@ -43,9 +47,9 @@ public sealed class CascadingModelBinder : SupplyParameterFromFormValueProvider,
             throw new InvalidOperationException($"Nested binding contexts must define a Name. (Parent context) = '{ParentContext.Name}'.");
         }
 
-        if (BindingContext is null)
+        if (_cascadingValueSupplier is null)
         {
-            UpdateBindingInformation(FormValueSupplier, Navigation, ParentContext, Name);
+            _cascadingValueSupplier = new SupplyParameterFromFormValueProvider(FormValueSupplier, Navigation, ParentContext, Name);
         }
 
         Render();
@@ -63,7 +67,19 @@ public sealed class CascadingModelBinder : SupplyParameterFromFormValueProvider,
         _handle.Render(builder =>
         {
             _hasPendingQueuedRender = false;
-            builder.AddContent(0, ChildContent, BindingContext!);
+            builder.AddContent(0, ChildContent, _cascadingValueSupplier.BindingContext!);
         });
     }
+
+    bool ICascadingValueSupplier.CanSupplyValue(in CascadingParameterInfo parameterInfo)
+        => ((ICascadingValueSupplier)_cascadingValueSupplier).CanSupplyValue(parameterInfo);
+
+    object? ICascadingValueSupplier.GetCurrentValue(in CascadingParameterInfo parameterInfo)
+        => ((ICascadingValueSupplier)_cascadingValueSupplier).GetCurrentValue(in parameterInfo);
+
+    void ICascadingValueSupplier.Subscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
+        => throw new NotSupportedException();
+
+    void ICascadingValueSupplier.Unsubscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
+        => throw new NotSupportedException();
 }

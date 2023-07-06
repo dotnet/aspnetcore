@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Components.Binding;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.AspNetCore.Components;
 
@@ -10,14 +11,14 @@ public static class SupplyParameterFromFormServiceCollectionExtensions
 {
     public static IServiceCollection AddSupplyValueFromFormProvider(this IServiceCollection serviceCollection)
     {
-        return serviceCollection.AddScoped<ICascadingValueSupplier, SupplyParameterFromFormValueProvider>(services =>
+        serviceCollection.TryAddEnumerable(ServiceDescriptor.Scoped<ICascadingValueSupplier, SupplyParameterFromFormValueProvider>(services =>
         {
-            var result = new SupplyParameterFromFormValueProvider();
-            result.UpdateBindingInformation(
+            return new SupplyParameterFromFormValueProvider(
                 services.GetRequiredService<IFormValueSupplier>(),
                 services.GetRequiredService<NavigationManager>(),
                 null, "");
-            return result;
-        });
+        }));
+
+        return serviceCollection;
     }
 }
