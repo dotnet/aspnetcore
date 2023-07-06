@@ -211,7 +211,7 @@
     <value>Route handler has multiple parameters with the [FromBody] attribute or a parameter with an [AsParameters] attribute where the parameter type contains multiple members with [FromBody] attributes. Only one parameter can have a [FromBody] attribute.</value>
   </data>
   <data name="Analyzer_MultipleFromBody_Title" xml:space="preserve">
-    <value>Route handler has multiple parameters with the [FromBody] attribute.</value>
+    <value>Route handler has multiple parameters with the [FromBody] attribute</value>
   </data>
   <data name="Analyzer_DoNotUseModelBindingAttributesOnRouteHandlerParameters_Title" xml:space="preserve">
     <value>Do not use model binding attributes with route handlers</value>
@@ -289,10 +289,10 @@
     <value>Complex types referenced by route parameters must be parsable</value>
   </data>
   <data name="Analyzer_RouteParameterComplexTypeIsNotParsable_Message" xml:space="preserve">
-    <value>Parameter '{0}' of type {1} should define a bool TryParse(string, IFormatProvider, out {1}) method, or implement IParsable&lt;{1}&gt;.</value>
+    <value>Parameter '{0}' of type {1} should define a bool TryParse(string, IFormatProvider, out {1}) method, or implement IParsable&lt;{1}&gt;</value>
   </data>
   <data name="Analyzer_BindAsyncSignatureMustReturnValueTaskOfT_Title" xml:space="preserve">
-    <value>When implementing BindAsync(...) method, the return type must be ValueTask&lt;T&gt;.</value>
+    <value>When implementing BindAsync(...) method, the return type must be ValueTask&lt;T&gt;</value>
   </data>
   <data name="Analyzer_BindAsyncSignatureMustReturnValueTaskOfT_Message" xml:space="preserve">
     <value>Parameter '{0}' of type {1} has a BindAsync(...) method, but the return type is not ValueTask&lt;{1}&gt;. Consider implementing IBindableFromHttpContext&lt;{1}&gt; to enforce implementation.</value>
@@ -310,7 +310,7 @@
     <value>Route '{0}' conflicts with another action route. An HTTP request that matches multiple routes results in an ambiguous match error. Fix the conflict by changing the route's pattern, HTTP method, or route constraints.</value>
   </data>
   <data name="Analyzer_UseAddAuthorizationBuilder_Message" xml:space="preserve">
-    <value>Use AddAuthorizationBuilder to register authorization services and construct policies.</value>
+    <value>Use AddAuthorizationBuilder to register authorization services and construct policies</value>
   </data>
   <data name="Analyzer_UseAddAuthorizationBuilder_Title" xml:space="preserve">
     <value>Use AddAuthorizationBuilder</value>
