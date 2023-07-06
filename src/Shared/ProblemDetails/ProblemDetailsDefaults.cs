@@ -126,7 +126,7 @@ internal static class ProblemDetailsDefaults
             }
         }
 
-        var status = problemDetails.Status.GetValueOrDefault();
+        var status = problemDetails.Status.Value;
         if (Defaults.TryGetValue(status, out var defaults))
         {
             problemDetails.Title ??= defaults.Title;
