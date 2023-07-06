@@ -145,9 +145,9 @@ internal sealed class MultipartReaderStream : Stream
         if (_observedLength < _position)
         {
             _observedLength = _position;
-            if (LengthLimit.HasValue && _observedLength > LengthLimit.GetValueOrDefault())
+            if (LengthLimit.HasValue && _observedLength > LengthLimit.Value)
             {
-                throw new InvalidDataException($"Multipart body length limit {LengthLimit.GetValueOrDefault()} exceeded.");
+                throw new InvalidDataException($"Multipart body length limit {LengthLimit.Value} exceeded.");
             }
         }
         return read;

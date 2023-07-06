@@ -186,7 +186,7 @@ public static class NegotiateProtocol
                         }
                         else if (reader.ValueTextEquals(NegotiateVersionPropertyNameBytes.EncodedUtf8Bytes))
                         {
-                            version = reader.ReadAsInt32(NegotiateVersionPropertyName).GetValueOrDefault();
+                            version = reader.ReadAsInt32(NegotiateVersionPropertyName) ?? 0;
                         }
                         else if (reader.ValueTextEquals(AvailableTransportsPropertyNameBytes.EncodedUtf8Bytes))
                         {

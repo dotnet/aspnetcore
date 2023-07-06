@@ -274,7 +274,7 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
         {
             // Abort from peer.
             _error = ex.ApplicationErrorCode;
-            QuicLog.StreamAbortedRead(_log, this, ex.ApplicationErrorCode.GetValueOrDefault());
+            QuicLog.StreamAbortedRead(_log, this, ex.ApplicationErrorCode ?? 0);
 
             // This could be ignored if _shutdownReason is already set.
             error = new ConnectionResetException(ex.Message, ex);
@@ -435,7 +435,7 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
         {
             // Abort from peer.
             _error = ex.ApplicationErrorCode;
-            QuicLog.StreamAbortedWrite(_log, this, ex.ApplicationErrorCode.GetValueOrDefault());
+            QuicLog.StreamAbortedWrite(_log, this, ex.ApplicationErrorCode ?? 0);
 
             // This could be ignored if _shutdownReason is already set.
             shutdownReason = new ConnectionResetException(ex.Message, ex);

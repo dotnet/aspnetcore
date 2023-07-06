@@ -64,9 +64,9 @@ public static class StreamHelperExtensions
             {
                 // Not all streams support cancellation directly.
                 cancellationToken.ThrowIfCancellationRequested();
-                if (limit.HasValue && limit.GetValueOrDefault() - total < read)
+                if (limit.HasValue && limit.Value - total < read)
                 {
-                    throw new InvalidDataException($"The stream exceeded the data limit {limit.GetValueOrDefault()}.");
+                    throw new InvalidDataException($"The stream exceeded the data limit {limit.Value}.");
                 }
                 total += read;
                 read = await stream.ReadAsync(buffer.AsMemory(), cancellationToken);
