@@ -1,12 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
+using System.Diagnostics;
 using System.Reflection.Metadata;
 using Microsoft.AspNetCore.Components.Binding;
 using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Components;
@@ -33,6 +31,8 @@ public sealed class CascadingModelBinder : SupplyParameterFromFormValueProvider,
 
     [Inject] internal NavigationManager Navigation { get; set; } = null!;
 
+    [Inject] internal IFormValueSupplier FormValueSupplier { get; set; } = null!;
+
     void IComponent.Attach(RenderHandle renderHandle)
     {
         _handle = renderHandle;
@@ -48,7 +48,7 @@ public sealed class CascadingModelBinder : SupplyParameterFromFormValueProvider,
 
         if (BindingContext is null)
         {
-            UpdateBindingInformation(Navigation, ParentContext, Name);
+            UpdateBindingInformation(FormValueSupplier, Navigation, ParentContext, Name);
         }
 
         Render();
@@ -78,15 +78,10 @@ public static class SupplyParameterFromFormServiceCollectionExtensions
         return serviceCollection.AddScoped<ICascadingValueSupplier, SupplyParameterFromFormValueProvider>(services =>
         {
             var result = new SupplyParameterFromFormValueProvider();
-
-            if (services.GetService<CascadingModelBindingProvider>() is not null)
-            {
-                result.ModelBindingProviders = services.GetServices<CascadingModelBindingProvider>();
-            }
-
             result.UpdateBindingInformation(
-                services.GetRequiredService<NavigationManager>(), null, "");
-
+                services.GetRequiredService<IFormValueSupplier>(),
+                services.GetRequiredService<NavigationManager>(),
+                null, "");
             return result;
         });
     }
@@ -96,18 +91,17 @@ public static class SupplyParameterFromFormServiceCollectionExtensions
 // implements ICascadingValueSupplier by forwarding all calls to an instance of this
 public class SupplyParameterFromFormValueProvider : ICascadingValueSupplier
 {
-    private readonly Dictionary<Type, CascadingModelBindingProvider?> _providersByCascadingParameterAttributeType = new();
-
-    [Inject] internal IEnumerable<CascadingModelBindingProvider> ModelBindingProviders { get; set; } = Enumerable.Empty<CascadingModelBindingProvider>();
-
     public bool IsFixed => true;
 
     private ModelBindingContext? _bindingContext;
+    private IFormValueSupplier _formValueSupplier;
 
     protected internal ModelBindingContext? BindingContext => _bindingContext;
 
-    public void UpdateBindingInformation(NavigationManager navigation, ModelBindingContext? parentContext, string thisName)
+    public void UpdateBindingInformation(IFormValueSupplier formValueSupplier, NavigationManager navigation, ModelBindingContext? parentContext, string thisName)
     {
+        _formValueSupplier = formValueSupplier;
+
         // BindingContextId: action parameter used to define the handler
         // Name: form name and context used to bind
         // Cases:
@@ -144,7 +138,13 @@ public class SupplyParameterFromFormValueProvider : ICascadingValueSupplier
         }
 
         // We also supply values for [SupplyValueFromForm]
-        return TryGetProvider(in parameterInfo, out var provider) && provider.CanSupplyValue(_bindingContext, parameterInfo);
+        if (parameterInfo.Attribute is SupplyParameterFromFormAttribute)
+        {
+            var (formName, valueType) = GetFormNameAndValueType(_bindingContext, parameterInfo);
+            return _formValueSupplier.CanBind(valueType, formName);
+        }
+
+        return false;
     }
 
     void ICascadingValueSupplier.Subscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
@@ -162,46 +162,44 @@ public class SupplyParameterFromFormValueProvider : ICascadingValueSupplier
         }
 
         // We also supply values for [SupplyValueFromForm]
-        return TryGetProvider(in parameterInfo, out var provider)
-            ? provider.GetCurrentValue(_bindingContext, parameterInfo)
-            : null;
+        if (parameterInfo.Attribute is SupplyParameterFromFormAttribute)
+        {
+            return GetFormPostValue(_bindingContext, parameterInfo);
+        }
+
+        throw new InvalidOperationException($"Received an unexpected attribute type {parameterInfo.Attribute.GetType()}");
     }
 
-    private CascadingModelBindingProvider GetProviderOrThrow(in CascadingParameterInfo parameterInfo)
+    internal object? GetFormPostValue(ModelBindingContext? bindingContext, in CascadingParameterInfo parameterInfo)
     {
-        if (!TryGetProvider(parameterInfo, out var provider))
-        {
-            throw new InvalidOperationException($"No model binding provider could be found for parameter '{parameterInfo.PropertyName}'.");
-        }
+        Debug.Assert(bindingContext != null);
+        var (formName, valueType) = GetFormNameAndValueType(bindingContext, parameterInfo);
 
-        return provider;
+        var parameterName = parameterInfo.Attribute.Name ?? parameterInfo.PropertyName;
+        var handler = ((SupplyParameterFromFormAttribute)parameterInfo.Attribute).Handler;
+        Action<string, FormattableString, string?> errorHandler = string.IsNullOrEmpty(handler) ?
+            bindingContext.AddError :
+            (name, message, value) => bindingContext.AddError(formName, parameterName, message, value);
+
+        var context = new FormValueSupplierContext(formName!, valueType, parameterName)
+        {
+            OnError = errorHandler,
+            MapErrorToContainer = bindingContext.AttachParentValue
+        };
+
+        _formValueSupplier.Bind(context);
+
+        return context.Result;
     }
 
-    private bool TryGetProvider(in CascadingParameterInfo parameterInfo, [NotNullWhen(true)] out CascadingModelBindingProvider? result)
+    private static (string FormName, Type ValueType) GetFormNameAndValueType(ModelBindingContext? bindingContext, in CascadingParameterInfo parameterInfo)
     {
-        var attributeType = parameterInfo.Attribute.GetType();
+        var valueType = parameterInfo.PropertyType;
+        var valueName = ((SupplyParameterFromFormAttribute)parameterInfo.Attribute).Handler;
+        var formName = string.IsNullOrEmpty(valueName) ?
+            (bindingContext?.Name) :
+            ModelBindingContext.Combine(bindingContext, valueName);
 
-        if (_providersByCascadingParameterAttributeType.TryGetValue(attributeType, out result))
-        {
-            return result is not null;
-        }
-
-        // We deliberately cache 'null' results to avoid searching for the same attribute type multiple times.
-        result = FindProviderForAttributeType(attributeType);
-        _providersByCascadingParameterAttributeType[attributeType] = result;
-        return result is not null;
-
-        CascadingModelBindingProvider? FindProviderForAttributeType(Type attributeType)
-        {
-            foreach (var provider in ModelBindingProviders)
-            {
-                if (provider.SupportsCascadingParameterAttributeType(attributeType))
-                {
-                    return provider;
-                }
-            }
-
-            return null;
-        }
+        return (formName!, valueType);
     }
 }
