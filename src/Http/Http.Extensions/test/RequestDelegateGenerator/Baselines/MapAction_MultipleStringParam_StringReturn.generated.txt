@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
                     Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                     options.EndpointBuilder.Metadata.Add(new SourceKey(@"TestMapActions.cs", 25));
-                    options.EndpointBuilder.Metadata.Add(new GeneratedProducesResponseTypeMetadata(type: null, statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
+                    options.EndpointBuilder.Metadata.Add(new ProducesResponseTypeMetadata(statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
                     return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
                 },
                 (del, options, inferredMetadataResult) =>
@@ -274,23 +274,6 @@ namespace Microsoft.AspNetCore.Http.Generated
             => runtimeType is null || jsonTypeInfo.Type == runtimeType || jsonTypeInfo.HasKnownPolymorphism();
 
 
-    }
-
-    %GENERATEDCODEATTRIBUTE%
-    file sealed class GeneratedProducesResponseTypeMetadata : IProducesResponseTypeMetadata
-    {
-        public GeneratedProducesResponseTypeMetadata(Type? type, int statusCode, string[] contentTypes)
-        {
-            Type = type;
-            StatusCode = statusCode;
-            ContentTypes = contentTypes;
-        }
-
-        public Type? Type { get; }
-
-        public int StatusCode { get; }
-
-        public IEnumerable<string> ContentTypes { get; }
     }
 
     %GENERATEDCODEATTRIBUTE%

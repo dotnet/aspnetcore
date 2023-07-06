@@ -19,7 +19,6 @@
     <Compile Include="$(SharedSourceRoot)PropertyAsParameterInfo.cs" LinkBase="Shared" />
     <Compile Include="..\..\Shared\StreamCopyOperationInternal.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)ApiExplorerTypes\*.cs" LinkBase="Shared" />
-    <Compile Include="$(SharedSourceRoot)RoutingMetadata\AcceptsMetadata.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)TypeNameHelper\TypeNameHelper.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)ProblemDetails\ProblemDetailsDefaults.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)ValueStringBuilder\**\*.cs" LinkBase="Shared" />
