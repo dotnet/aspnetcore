@@ -134,4 +134,9 @@ Later on, this will be checked using this condition:
       Microsoft.AspNetCore.Identity;
     </PackagesInPatch>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.40' ">
+    <PackagesInPatch>
+      Microsoft.AspNetCore.SignalR.Redis;
+    </PackagesInPatch>
+  </PropertyGroup>
 </Project>

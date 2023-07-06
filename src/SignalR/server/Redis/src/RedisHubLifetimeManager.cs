@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
 
             var connectionChannel = _channels.Connection(connection.ConnectionId);
             RedisLog.Unsubscribe(_logger, connectionChannel);
-            tasks.Add(_bus.UnsubscribeAsync(connectionChannel));
+            tasks.Add(_bus.UnsubscribeAsync(RedisChannels.GetChannel(connectionChannel)));
 
             var feature = connection.Features.Get<IRedisFeature>();
             var groupNames = feature.Groups;
@@ -268,7 +268,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
         {
             await EnsureRedisServerConnection();
             RedisLog.PublishToChannel(_logger, channel);
-            await _bus.PublishAsync(channel, payload);
+            await _bus.PublishAsync(RedisChannels.GetChannel(channel), payload);
         }
 
         private async Task AddGroupAsyncCore(HubConnectionContext connection, string groupName)
@@ -300,7 +300,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             await _groups.RemoveSubscriptionAsync(groupChannel, connection, async channelName =>
             {
                 RedisLog.Unsubscribe(_logger, channelName);
-                await _bus.UnsubscribeAsync(channelName);
+                await _bus.UnsubscribeAsync(RedisChannels.GetChannel(channelName));
             });
 
             var feature = connection.Features.Get<IRedisFeature>();
@@ -332,7 +332,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             return _users.RemoveSubscriptionAsync(userChannel, connection, async channelName =>
             {
                 RedisLog.Unsubscribe(_logger, channelName);
-                await _bus.UnsubscribeAsync(channelName);
+                await _bus.UnsubscribeAsync(RedisChannels.GetChannel(channelName));
             });
         }
 
@@ -424,7 +424,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             var connectionChannel = _channels.Connection(connection.ConnectionId);
 
             RedisLog.Subscribing(_logger, connectionChannel);
-            return _bus.SubscribeAsync(connectionChannel, async (c, data) =>
+            return _bus.SubscribeAsync(RedisChannels.GetChannel(connectionChannel), async (c, data) =>
             {
                 var invocation = _protocol.ReadInvocation((byte[])data);
                 await connection.WriteAsync(invocation.Message);
@@ -437,7 +437,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
 
             return _users.AddSubscriptionAsync(userChannel, connection, async (channelName, subscriptions) =>
             {
-                await _bus.SubscribeAsync(channelName, async (c, data) =>
+                await _bus.SubscribeAsync(RedisChannels.GetChannel(channelName), async (c, data) =>
                 {
                     try
                     {
@@ -462,7 +462,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
         private Task SubscribeToGroupAsync(string groupChannel, HubConnectionStore groupConnections)
         {
             RedisLog.Subscribing(_logger, groupChannel);
-            return _bus.SubscribeAsync(groupChannel, async (c, data) =>
+            return _bus.SubscribeAsync(RedisChannels.GetChannel(groupChannel), async (c, data) =>
             {
                 try
                 {
