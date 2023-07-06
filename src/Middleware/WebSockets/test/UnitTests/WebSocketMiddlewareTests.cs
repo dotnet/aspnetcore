@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.WebSockets;
 using System.Text;
+using Microsoft.AspNetCore.Connections;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing;
@@ -495,6 +496,146 @@ namespace Microsoft.AspNetCore.WebSockets.Test
                     await client.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
 
                     Assert.Equal(WebSocketState.Closed, client.State);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task WebSocket_Abort_Interrupts_Pending_ReceiveAsync()
+        {
+            WebSocket serverSocket = null;
+
+            // Events that we want to sequence execution across client and server.
+            var socketWasAccepted = new ManualResetEventSlim();
+            var socketWasAborted = new ManualResetEventSlim();
+            var firstReceiveOccured = new ManualResetEventSlim();
+            var secondReceiveInitiated = new ManualResetEventSlim();
+
+            Exception receiveException = null;
+
+            await using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
+            {
+                Assert.True(context.WebSockets.IsWebSocketRequest);
+                serverSocket = await context.WebSockets.AcceptWebSocketAsync();
+                socketWasAccepted.Set();
+
+                var serverBuffer = new byte[1024];
+
+                try
+                {
+                    while (serverSocket.State is WebSocketState.Open or WebSocketState.CloseSent)
+                    {
+                        if (firstReceiveOccured.IsSet)
+                        {
+                            var pendingResponse = serverSocket.ReceiveAsync(serverBuffer, default);
+                            secondReceiveInitiated.Set();
+                            var response = await pendingResponse;
+                        }
+                        else
+                        {
+                            var response = await serverSocket.ReceiveAsync(serverBuffer, default);
+                            firstReceiveOccured.Set();
+                        }
+                    }
+                }
+                catch (ConnectionAbortedException ex)
+                {
+                    socketWasAborted.Set();
+                    receiveException = ex;
+                }
+                catch (Exception ex)
+                {
+                    // Capture this exception so a test failure can give us more information.
+                    receiveException = ex;
+                }
+                finally
+                {
+                    Assert.IsType<ConnectionAbortedException>(receiveException);
+                }
+            }))
+            {
+                var clientBuffer = new byte[1024];
+
+                using (var client = new ClientWebSocket())
+                {
+                    await client.ConnectAsync(new Uri($"ws://127.0.0.1:{port}/"), CancellationToken.None);
+
+                    var socketWasAcceptedDidNotTimeout = socketWasAccepted.Wait(10000);
+                    Assert.True(socketWasAcceptedDidNotTimeout, "Socket was not accepted within the allotted time.");
+
+                    await client.SendAsync(clientBuffer, WebSocketMessageType.Binary, false, default);
+
+                    var firstReceiveOccuredDidNotTimeout = firstReceiveOccured.Wait(10000);
+                    Assert.True(firstReceiveOccuredDidNotTimeout, "First receive did not occur within the allotted time.");
+
+                    var secondReceiveInitiatedDidNotTimeout = secondReceiveInitiated.Wait(10000);
+                    Assert.True(secondReceiveInitiatedDidNotTimeout, "Second receive was not initiated within the allotted time.");
+
+                    serverSocket.Abort();
+
+                    var socketWasAbortedDidNotTimeout = socketWasAborted.Wait(1000); // Give it a second to process the abort.
+                    Assert.True(socketWasAbortedDidNotTimeout, "Abort did not occur within the allotted time.");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task WebSocket_AllowsCancelling_Pending_ReceiveAsync_When_CancellationTokenProvided()
+        {
+            WebSocket serverSocket = null;
+            CancellationTokenSource cts = new CancellationTokenSource();
+
+            var socketWasAccepted = new ManualResetEventSlim();
+            var operationWasCancelled = new ManualResetEventSlim();
+            var firstReceiveOccured = new ManualResetEventSlim();
+
+            await using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
+            {
+                Assert.True(context.WebSockets.IsWebSocketRequest);
+                serverSocket = await context.WebSockets.AcceptWebSocketAsync();
+                socketWasAccepted.Set();
+
+                var serverBuffer = new byte[1024];
+
+                var finishedWithOperationCancelled = false;
+
+                try
+                {
+                    while (serverSocket.State is WebSocketState.Open or WebSocketState.CloseSent)
+                    {
+                        var response = await serverSocket.ReceiveAsync(serverBuffer, cts.Token);
+                        firstReceiveOccured.Set();
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    operationWasCancelled.Set();
+                    finishedWithOperationCancelled = true;
+                }
+                finally
+                {
+                    Assert.True(finishedWithOperationCancelled);
+                }
+            }))
+            {
+                var clientBuffer = new byte[1024];
+
+                using (var client = new ClientWebSocket())
+                {
+                    await client.ConnectAsync(new Uri($"ws://127.0.0.1:{port}/"), CancellationToken.None);
+
+                    var socketWasAcceptedDidNotTimeout = socketWasAccepted.Wait(10000);
+                    Assert.True(socketWasAcceptedDidNotTimeout, "Socket was not accepted within the allotted time.");
+
+                    await client.SendAsync(clientBuffer, WebSocketMessageType.Binary, false, default);
+
+                    var firstReceiveOccuredDidNotTimeout = firstReceiveOccured.Wait(10000);
+                    Assert.True(firstReceiveOccuredDidNotTimeout, "First receive did not occur within the allotted time.");
+
+                    cts.Cancel();
+
+                    var operationWasCancelledDidNotTimeout = operationWasCancelled.Wait(1000); // Give it a second to process the abort.
+                    Assert.True(operationWasCancelledDidNotTimeout, "Cancel did not occur within the allotted time.");
                 }
             }
         }
