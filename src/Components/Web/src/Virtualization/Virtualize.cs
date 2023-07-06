@@ -225,7 +225,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
         _lastRenderedItemCount = 0;
 
-        if (!_loading && _itemCount == 0 && _emptyContent != null)
+        if (_loadedItems != null && !_loading && _itemCount == 0 && _emptyContent != null)
         {
             builder.AddContent(4, _emptyContent);
         }
