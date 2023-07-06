@@ -18,7 +18,7 @@ internal sealed class RedirectToHttpsRule : IRule
         {
             var host = context.HttpContext.Request.Host;
             int port;
-            if (SSLPort.HasValue && (port = SSLPort.GetValueOrDefault()) > 0)
+            if (SSLPort.HasValue && (port = SSLPort.Value) > 0)
             {
                 // a specific SSL port is specified
                 host = new HostString(host.Host, port);

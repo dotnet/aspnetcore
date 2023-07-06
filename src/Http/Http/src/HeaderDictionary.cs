@@ -136,7 +136,7 @@ public class HeaderDictionary : IHeaderDictionary
             ThrowIfReadOnly();
             if (value.HasValue)
             {
-                this[HeaderNames.ContentLength] = HeaderUtilities.FormatNonNegativeInt64(value.GetValueOrDefault());
+                this[HeaderNames.ContentLength] = HeaderUtilities.FormatNonNegativeInt64(value.Value);
             }
             else
             {
