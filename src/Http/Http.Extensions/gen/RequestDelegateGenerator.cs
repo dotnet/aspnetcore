@@ -167,12 +167,17 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                     codeWriter.EndBlock();
                 }
 
-                var verbs = endpoints
+                return stringWriter.ToString();
+            });
+
+        var httpVerbs = endpoints
+            .Collect()
+            .Select((endpoints, _) =>
+            {
+                return endpoints
                     .Select(endpoint => endpoint.EmitterContext.HttpMethod!)
                     .Where(verb => verb is not null)
                     .ToImmutableHashSet();
-
-                return (stringWriter.ToString(), verbs);
             });
 
         var endpointHelpers = endpoints
@@ -266,11 +271,16 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                 return stringWriter.ToString();
             });
 
-        var thunksAndEndpoints = thunks.Collect().Combine(stronglyTypedEndpointDefinitions).Combine(endpointHelpers).Combine(helperTypes);
+        var thunksAndEndpoints = thunks
+            .Collect()
+            .Combine(stronglyTypedEndpointDefinitions)
+            .Combine(httpVerbs)
+            .Combine(endpointHelpers)
+            .Combine(helperTypes);
 
         context.RegisterSourceOutput(thunksAndEndpoints, (context, sources) =>
         {
-            var (((thunks, (endpointsCode, verbs)), helperMethods), helperTypes) = sources;
+            var ((((thunks, endpointsCode), httpVerbs), helperMethods), helperTypes) = sources;
 
             if (thunks.IsDefaultOrEmpty || string.IsNullOrEmpty(endpointsCode))
             {
@@ -289,7 +299,7 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                 endpoints: endpointsCode,
                 helperMethods: helperMethods ?? string.Empty,
                 helperTypes: helperTypes ?? string.Empty,
-                verbs: verbs);
+                verbs: httpVerbs);
 
             context.AddSource("GeneratedRouteBuilderExtensions.g.cs", code);
         });
