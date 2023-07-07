@@ -50,7 +50,7 @@ public class WebAssemblyICUShardingTest : ServerTestBase<ToggleExecutionModeServ
     {
         // Arrange
         // This verifies the CJK icu data set.
-        var culture = new CultureInfo(code); 
+        var culture = new CultureInfo(code);
         Assert.Equal(culture.ToString(), code);
         Initialize(culture);
 
