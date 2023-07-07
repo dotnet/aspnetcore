@@ -1,7 +1,7 @@
 {
   "author": "Microsoft",
   "name": "Blazor WebAssembly App Empty",
-  "description": "An empty project template for creating a Blazor app that runs on WebAssembly and is optionally hosted by an ASP.NET Core app. This template does not have any content in it.",
+  "description": "An empty project template for creating a Blazor app that runs on WebAssembly. This template does not have any content in it.",
   "symbols/Framework/description": "The target framework for the project.",
   "symbols/Framework/choices/net8.0/description": "Target net8.0",
   "_symbols/Framework/choices/net8.0/description.comment": "{Locked='net8.0'}",
