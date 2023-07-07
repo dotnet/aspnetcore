@@ -38,7 +38,7 @@ To get started, fork this repo and then clone it locally. This workflow assumes 
     ./eng/scripts/InstallVisualStudio.ps1 Enterprise Preview
     ```
 
-    Replace `Enterprise` with `Professional` or `Community` if that is your preferred Visual Studio edition. 
+    Replace `Enterprise` with `Professional` or `Community` if that is your preferred Visual Studio edition.
     The preview channel is currently required as it supports the preview version of the SDK that is used.
 
     If you are seeing errors similar to `the imported project "....\aspnetcore.tools\msbuild\17.1.0\tools\MSBuild\Microsoft\VC\v170\Microsoft.Cpp.Default.props" was not found`, try installing/updating Visual Studio as above.

@@ -15,6 +15,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Components.Endpoints.Tests.TestComponents;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.Endpoints.Forms;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -403,6 +404,7 @@ public class RazorComponentResultExecutorTest
         var mockWebHostEnvironment = Mock.Of<IWebHostEnvironment>(
             x => x.EnvironmentName == (environmentName ?? Environments.Production));
         var serviceCollection = new ServiceCollection()
+            .AddAntiforgery()
             .AddSingleton(new DiagnosticListener("test"))
             .AddSingleton<IWebHostEnvironment>(mockWebHostEnvironment)
             .AddSingleton<RazorComponentResultExecutor>()
@@ -413,6 +415,9 @@ public class RazorComponentResultExecutorTest
             .AddSingleton<ComponentStatePersistenceManager>()
             .AddSingleton<IDataProtectionProvider, FakeDataProtectionProvider>()
             .AddSingleton<FormDataProvider, HttpContextFormDataProvider>()
+            .AddSingleton<ComponentStatePersistenceManager>()
+            .AddSingleton<PersistentComponentState>(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State)
+            .AddSingleton<AntiforgeryStateProvider, EndpointAntiforgeryStateProvider>()
             .AddLogging();
 
         var result = new DefaultHttpContext { RequestServices = serviceCollection.BuildServiceProvider() };

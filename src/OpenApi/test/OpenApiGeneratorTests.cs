@@ -527,7 +527,8 @@ public class OpenApiOperationGeneratorTests
         // Arrange
         var operation = GetOpenApiOperation(() => "",
             additionalMetadata: new[] {
-                new ProducesResponseTypeMetadata(typeof(ProblemDetails), StatusCodes.Status400BadRequest, "application/json+problem") });
+                new ProducesResponseTypeMetadata(StatusCodes.Status400BadRequest, typeof(ProblemDetails), new [] { "application/json+problem" })
+            });
 
         // Assert
         var responses = Assert.Single(operation.Responses);
@@ -543,7 +544,7 @@ public class OpenApiOperationGeneratorTests
         var operation = GetOpenApiOperation(() => "",
             additionalMetadata: new object[]
             {
-                new ProducesResponseTypeMetadata(typeof(InferredJsonClass), StatusCodes.Status200OK, "application/json"),
+                new ProducesResponseTypeMetadata(StatusCodes.Status200OK, typeof(InferredJsonClass), new[] { "application/json" }),
                 new EndpointNameMetadata(endpointGroupName)
             });
 
@@ -559,7 +560,7 @@ public class OpenApiOperationGeneratorTests
         var operation = GetOpenApiOperation(() => "",
             additionalMetadata: new object[]
             {
-                new ProducesResponseTypeMetadata(typeof(InferredJsonClass), StatusCodes.Status200OK, "application/json"),
+                new ProducesResponseTypeMetadata(StatusCodes.Status200OK, typeof(InferredJsonClass), new[] { "application/json" }),
                 new ExcludeFromDescriptionAttribute()
             });
 
@@ -573,10 +574,10 @@ public class OpenApiOperationGeneratorTests
         var operation = GetOpenApiOperation(() => "",
             additionalMetadata: new[]
             {
-                    new ProducesResponseTypeMetadata(typeof(InferredJsonClass), StatusCodes.Status200OK, "application/json"),
-                    new ProducesResponseTypeMetadata(typeof(HttpValidationProblemDetails), StatusCodes.Status400BadRequest, "application/problem+json"),
-                    new ProducesResponseTypeMetadata(typeof(ProblemDetails), StatusCodes.Status404NotFound, "application/problem+json"),
-                    new ProducesResponseTypeMetadata(typeof(ProblemDetails), StatusCodes.Status409Conflict, "application/problem+json")
+                    new ProducesResponseTypeMetadata(StatusCodes.Status200OK, typeof(InferredJsonClass), new[] { "application/json" }),
+                    new ProducesResponseTypeMetadata(StatusCodes.Status400BadRequest, typeof(HttpValidationProblemDetails), new[] { "application/problem+json" }),
+                    new ProducesResponseTypeMetadata(StatusCodes.Status404NotFound, typeof(ProblemDetails), new[] { "application/problem+json" }),
+                    new ProducesResponseTypeMetadata(StatusCodes.Status409Conflict, typeof(ProblemDetails), new[] { "application/problem+json" })
             });
         var responses = operation.Responses;
 
@@ -616,8 +617,8 @@ public class OpenApiOperationGeneratorTests
         var operation = GetOpenApiOperation(() => "",
             additionalMetadata: new[]
             {
-                new ProducesResponseTypeMetadata(typeof(InferredJsonClass), StatusCodes.Status200OK, "application/json"),
-                new ProducesResponseTypeMetadata(typeof(InferredJsonClass), StatusCodes.Status201Created, "application/json")
+                new ProducesResponseTypeMetadata(StatusCodes.Status200OK, typeof(InferredJsonClass), new[] { "application/json" }),
+                new ProducesResponseTypeMetadata(StatusCodes.Status201Created, typeof(InferredJsonClass), new[] { "application/json" })
             });
 
         var responses = operation.Responses;
@@ -646,7 +647,7 @@ public class OpenApiOperationGeneratorTests
         var operation = GetOpenApiOperation(() => "",
             additionalMetadata: new[]
             {
-                new AcceptsMetadata(typeof(string), true, new string[] { "application/json", "application/xml"})
+                new AcceptsMetadata(new string[] { "application/json", "application/xml"}, typeof(string), true)
             });
 
         var requestBody = operation.RequestBody;
@@ -672,7 +673,7 @@ public class OpenApiOperationGeneratorTests
         var operation = GetOpenApiOperation((InferredJsonClass inferredJsonClass) => "",
                 additionalMetadata: new[]
                 {
-                    new AcceptsMetadata(typeof(InferredJsonClass), true, new string[] { "application/json"})
+                    new AcceptsMetadata(new string[] { "application/json" }, typeof(InferredJsonClass), true)
                 });
 
         // Assert
@@ -865,7 +866,7 @@ public class OpenApiOperationGeneratorTests
                 // Metadata added by the `IEndpointMetadataProvider` on `TypedResults.Ok`
                 new ProducesResponseTypeMetadata(StatusCodes.Status200OK),
                 // Metadata added by the `Produces<Type>` extension method
-                new ProducesResponseTypeMetadata(typeof(InferredJsonClass), StatusCodes.Status200OK, "application/json"),
+                new ProducesResponseTypeMetadata(StatusCodes.Status200OK, typeof(InferredJsonClass), new[] { "application/json" }),
             });
 
         var response = Assert.Single(operation.Responses);

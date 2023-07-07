@@ -1,0 +1,29 @@
+name: Markdownlint
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    paths:
+      - "**/*.md"
+      - ".markdownlint.json"
+      - ".github/workflows/markdownlint.yml"
+      - ".github/workflows/markdownlint-problem-matcher.json"
+
+jobs:
+  lint:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js
+      uses: actions/setup-node@v1
+      with:
+        node-version: 16.x
+    - name: Run Markdownlint
+      run: |
+        echo "::add-matcher::.github/workflows/markdownlint-problem-matcher.json"
+        npm i -g markdownlint-cli
+        markdownlint "docs/**/*.md"

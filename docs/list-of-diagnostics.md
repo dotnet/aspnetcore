@@ -79,7 +79,6 @@
 |  __`RDG009`__ | Invalid nested AsParameters |
 |  __`RDG010`__ | Unexpected nullable type |
 
-
 ### SignalR Source Generator (`SSG0000-SSG0110`)
 
 | Diagnostic ID     | Description |

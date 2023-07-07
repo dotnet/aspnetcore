@@ -175,6 +175,11 @@ public sealed class RenderTreeBuilder : IDisposable
             throw new InvalidOperationException($"Valueless attributes may only be added immediately after frames of type {RenderTreeFrameType.Element}");
         }
 
+        if (TrackNamedEventHandlers && string.Equals(name, "@onsubmit:name", StringComparison.Ordinal))
+        {
+            SetEventHandlerName("");
+        }
+
         _entries.AppendAttribute(sequence, name, BoxedTrue);
     }
 
@@ -226,7 +231,14 @@ public sealed class RenderTreeBuilder : IDisposable
         AssertCanAddAttribute();
         if (value != null || _lastNonAttributeFrameType == RenderTreeFrameType.Component)
         {
-            _entries.AppendAttribute(sequence, name, value);
+            if (TrackNamedEventHandlers && value != null && string.Equals(name, "@onsubmit:name", StringComparison.Ordinal))
+            {
+                SetEventHandlerName(value);
+            }
+            else
+            {
+                _entries.AppendAttribute(sequence, name, value);
+            }
         }
         else
         {
@@ -371,7 +383,14 @@ public sealed class RenderTreeBuilder : IDisposable
             {
                 if (boolValue)
                 {
-                    _entries.AppendAttribute(sequence, name, BoxedTrue);
+                    if (TrackNamedEventHandlers && string.Equals(name, "@onsubmit:name", StringComparison.Ordinal))
+                    {
+                        SetEventHandlerName("");
+                    }
+                    else
+                    {
+                        _entries.AppendAttribute(sequence, name, BoxedTrue);
+                    }
                 }
                 else
                 {
@@ -396,8 +415,17 @@ public sealed class RenderTreeBuilder : IDisposable
             }
             else
             {
-                // The value is either a string, or should be treated as a string.
-                _entries.AppendAttribute(sequence, name, value.ToString());
+                var valueAsString = value.ToString();
+                if (TrackNamedEventHandlers && valueAsString != null && string.Equals(name, "@onsubmit:name", StringComparison.Ordinal))
+                {
+                    SetEventHandlerName(valueAsString);
+                }
+                else
+                {
+                    // The value is either a string, or should be treated as a string.
+                    _entries.AppendAttribute(sequence, name, valueAsString);
+                }
+
             }
         }
         else if (_lastNonAttributeFrameType == RenderTreeFrameType.Component)
@@ -873,6 +901,18 @@ public sealed class RenderTreeBuilder : IDisposable
                     // This attribute has been overridden. For now, blank out its name to *mark* it. We'll do a pass
                     // later to wipe it out.
                     frame = default;
+                    // We are wiping out this frame, which means that if we are tracking named events, we have to adjust the
+                    // indexes of the named event handlers that come after this frame.
+                    if (_seenEventHandlerNames != null && _seenEventHandlerNames.Count > 0)
+                    {
+                        foreach (var (name, eventIndex) in _seenEventHandlerNames)
+                        {
+                            if (eventIndex >= i)
+                            {
+                                _seenEventHandlerNames[name] = eventIndex - 1;
+                            }
+                        }
+                    }
                 }
                 else
                 {
