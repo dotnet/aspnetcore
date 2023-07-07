@@ -64,7 +64,7 @@ public static class RazorComponentsServiceCollectionExtensions
         services.AddSupplyValueFromFormProvider();
         services.TryAddScoped<AntiforgeryStateProvider, EndpointAntiforgeryStateProvider>();
         services.TryAddScoped<HttpContextFormDataProvider>();
-        services.TryAddScoped<IFormValueMapper, HttpContextFormValueModelBinder>();
+        services.TryAddScoped<IFormValueMapper, HttpContextFormValueMapper>();
 
         return new DefaultRazorComponentsBuilder(services);
     }
