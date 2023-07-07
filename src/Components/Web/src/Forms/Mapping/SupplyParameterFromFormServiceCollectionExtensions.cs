@@ -4,7 +4,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace Microsoft.AspNetCore.Components.Forms.ModelBinding;
+namespace Microsoft.AspNetCore.Components.Forms.Mapping;
 
 /// <summary>
 /// Extension methods for configuring <see cref="SupplyParameterFromFormAttribute"/> within an <see cref="IServiceCollection"/>.
@@ -21,7 +21,7 @@ public static class SupplyParameterFromFormServiceCollectionExtensions
         serviceCollection.TryAddEnumerable(ServiceDescriptor.Scoped<ICascadingValueSupplier, SupplyParameterFromFormValueProvider>(services =>
         {
             return new SupplyParameterFromFormValueProvider(
-                services.GetRequiredService<IFormValueModelBinder>(),
+                services.GetRequiredService<IFormValueMapper>(),
                 services.GetRequiredService<NavigationManager>(),
                 null, "");
         }));

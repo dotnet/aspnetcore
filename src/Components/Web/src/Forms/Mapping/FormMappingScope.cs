@@ -2,13 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection.Metadata;
-using Microsoft.AspNetCore.Components.Forms.ModelBinding;
+using Microsoft.AspNetCore.Components.Forms.Mapping;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components.Forms;
 
 /// <summary>
-/// Defines the mapping context for data bound from form posts.
+/// Defines the mapping context for data received from form posts.
 /// </summary>
 public sealed class FormMappingScope : ICascadingValueSupplier, IComponent
 {
@@ -24,13 +24,13 @@ public sealed class FormMappingScope : ICascadingValueSupplier, IComponent
     /// <summary>
     /// Specifies the content to be rendered inside this <see cref="FormMappingScope"/>.
     /// </summary>
-    [Parameter] public RenderFragment<ModelBindingContext> ChildContent { get; set; } = default!;
+    [Parameter] public RenderFragment<FormMappingContext> ChildContent { get; set; } = default!;
 
-    [CascadingParameter] private ModelBindingContext? ParentContext { get; set; }
+    [CascadingParameter] private FormMappingContext? ParentContext { get; set; }
 
     [Inject] internal NavigationManager Navigation { get; set; } = null!;
 
-    [Inject] internal IFormValueModelBinder? FormValueModelBinder { get; set; } // Nonnull only on platforms that support HTTP form posts
+    [Inject] internal IFormValueMapper? FormValueModelBinder { get; set; } // Nonnull only on platforms that support HTTP form posts
 
     void IComponent.Attach(RenderHandle renderHandle)
     {
@@ -66,7 +66,7 @@ public sealed class FormMappingScope : ICascadingValueSupplier, IComponent
     private void BuildRenderTree(RenderTreeBuilder builder)
     {
         _hasPendingQueuedRender = false;
-        builder.AddContent(0, ChildContent, _cascadingValueSupplier!.BindingContext);
+        builder.AddContent(0, ChildContent, _cascadingValueSupplier!.MappingContext);
     }
 
     // The implementation of ICascadingValueSupplier won't be used until this component is rendered,

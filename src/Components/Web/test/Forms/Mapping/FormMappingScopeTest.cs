@@ -3,7 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.AspNetCore.Components.Forms.ModelBinding;
+using Microsoft.AspNetCore.Components.Forms.Mapping;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,16 +20,16 @@ public class FormMappingScopeTest
         var serviceCollection = new ServiceCollection();
         _navigationManager = new TestNavigationManager();
         serviceCollection.AddSingleton<NavigationManager>(_navigationManager);
-        serviceCollection.AddSingleton<IFormValueModelBinder, TestFormValueModelBinder>();
+        serviceCollection.AddSingleton<IFormValueMapper, TestFormValueMapper>();
         var services = serviceCollection.BuildServiceProvider();
         _renderer = new TestRenderer(services);
     }
 
     [Fact]
-    public void FormMappingScope_NoBindingContextId_ForDefaultName()
+    public void FormMappingScope_NoMappingContextId_ForDefaultName()
     {
-        ModelBindingContext capturedContext = null;
-        RenderFragment<ModelBindingContext> contents = (ctx) => b => { capturedContext = ctx; };
+        FormMappingContext capturedContext = null;
+        RenderFragment<FormMappingContext> contents = (ctx) => b => { capturedContext = ctx; };
 
         var testComponent = new TestComponent(builder =>
         {
@@ -45,7 +45,7 @@ public class FormMappingScopeTest
         // Assert
         Assert.NotNull(capturedContext);
         Assert.Empty(capturedContext.Name);
-        Assert.Empty(capturedContext.BindingContextId);
+        Assert.Empty(capturedContext.MappingContextId);
     }
 
     [Theory]
@@ -56,10 +56,10 @@ public class FormMappingScopeTest
     [InlineData("path/with/multiple/segments?and=query#hashtoo", "path/with/multiple/segments?and=query&handler=named-context")]
     [InlineData("path/with/#multiple/segments?and=query#hashtoo", "path/with/?handler=named-context")]
     [InlineData("path/with/multiple/segments#hashtoo?and=query", "path/with/multiple/segments?handler=named-context")]
-    public void GeneratesCorrect_BindingContextId_ForNamedBinders(string url, string expectedBindingContextId)
+    public void GeneratesCorrect_MappingContextId_ForNamedMappers(string url, string expectedMappingContextId)
     {
-        ModelBindingContext capturedContext = null;
-        RenderFragment<ModelBindingContext> contents = (ctx) => b => { capturedContext = ctx; };
+        FormMappingContext capturedContext = null;
+        RenderFragment<FormMappingContext> contents = (ctx) => b => { capturedContext = ctx; };
         _navigationManager.NavigateTo(_navigationManager.ToAbsoluteUri(url).ToString());
 
         var testComponent = new TestComponent(builder =>
@@ -76,14 +76,14 @@ public class FormMappingScopeTest
 
         // Assert
         Assert.NotNull(capturedContext);
-        Assert.Equal(expectedBindingContextId, capturedContext.BindingContextId);
+        Assert.Equal(expectedMappingContextId, capturedContext.MappingContextId);
     }
 
     [Fact]
     public void FormMappingScope_CanProvideName()
     {
-        ModelBindingContext capturedContext = null;
-        RenderFragment<ModelBindingContext> contents = (ctx) => b => { capturedContext = ctx; };
+        FormMappingContext capturedContext = null;
+        RenderFragment<FormMappingContext> contents = (ctx) => b => { capturedContext = ctx; };
 
         var testComponent = new TestComponent(builder =>
         {
@@ -100,15 +100,15 @@ public class FormMappingScopeTest
         // Assert
         Assert.NotNull(capturedContext);
         Assert.Equal("named-context", capturedContext.Name);
-        Assert.Equal("path?query=value&handler=named-context", capturedContext.BindingContextId);
+        Assert.Equal("path?query=value&handler=named-context", capturedContext.MappingContextId);
     }
 
     [Fact]
     public void FormMappingScope_CanNestNamedContexts()
     {
-        ModelBindingContext capturedContext = null;
-        RenderFragment<ModelBindingContext> contents = (ctx) => b => { capturedContext = ctx; };
-        RenderFragment<ModelBindingContext> nested = (ctx) => b =>
+        FormMappingContext capturedContext = null;
+        RenderFragment<FormMappingContext> contents = (ctx) => b => { capturedContext = ctx; };
+        RenderFragment<FormMappingContext> nested = (ctx) => b =>
         {
             b.OpenComponent<FormMappingScope>(0);
             b.AddAttribute(1, nameof(FormMappingScope.Name), "child-context");
@@ -131,15 +131,15 @@ public class FormMappingScopeTest
         // Assert
         Assert.NotNull(capturedContext);
         Assert.Equal("parent-context.child-context", capturedContext.Name);
-        Assert.Equal("path?query=value&handler=parent-context.child-context", capturedContext.BindingContextId);
+        Assert.Equal("path?query=value&handler=parent-context.child-context", capturedContext.MappingContextId);
     }
 
     [Fact]
     public void FormMappingScope_CanNestWithDefaultContext()
     {
-        ModelBindingContext capturedContext = null;
-        RenderFragment<ModelBindingContext> contents = (ctx) => b => { capturedContext = ctx; };
-        RenderFragment<ModelBindingContext> nested = (ctx) => b =>
+        FormMappingContext capturedContext = null;
+        RenderFragment<FormMappingContext> contents = (ctx) => b => { capturedContext = ctx; };
+        RenderFragment<FormMappingContext> nested = (ctx) => b =>
         {
             b.OpenComponent<FormMappingScope>(0);
             b.AddAttribute(1, nameof(FormMappingScope.Name), "child-context");
@@ -161,15 +161,15 @@ public class FormMappingScopeTest
         // Assert
         Assert.NotNull(capturedContext);
         Assert.Equal("child-context", capturedContext.Name);
-        Assert.Equal("path?query=value&handler=child-context", capturedContext.BindingContextId);
+        Assert.Equal("path?query=value&handler=child-context", capturedContext.MappingContextId);
     }
 
     [Fact]
     public void Throws_IfDefaultContextIsNotTheRoot()
     {
-        ModelBindingContext capturedContext = null;
-        RenderFragment<ModelBindingContext> contents = (ctx) => b => { capturedContext = ctx; };
-        RenderFragment<ModelBindingContext> nested = (ctx) => b =>
+        FormMappingContext capturedContext = null;
+        RenderFragment<FormMappingContext> contents = (ctx) => b => { capturedContext = ctx; };
+        RenderFragment<FormMappingContext> nested = (ctx) => b =>
         {
             b.OpenComponent<FormMappingScope>(0);
             b.AddAttribute(1, nameof(FormMappingScope.ChildContent), contents);
@@ -187,14 +187,14 @@ public class FormMappingScopeTest
 
         // Act
         var exception = Assert.Throws<InvalidOperationException>(() => _renderer.RenderRootComponent(id));
-        Assert.Equal("Nested binding contexts must define a Name. (Parent context) = 'parent-context'.", exception.Message);
+        Assert.Equal("Nested form mapping contexts must define a Name. (Parent context) = 'parent-context'.", exception.Message);
     }
 
     [Fact]
     public void Throws_IfNameChanges()
     {
-        ModelBindingContext capturedContext = null;
-        RenderFragment<ModelBindingContext> contents = (ctx) => b => { capturedContext = ctx; };
+        FormMappingContext capturedContext = null;
+        RenderFragment<FormMappingContext> contents = (ctx) => b => { capturedContext = ctx; };
         var contextName = "parent-context";
 
         var testComponent = new TestComponent(builder =>
@@ -252,9 +252,9 @@ public class FormMappingScopeTest
             => _renderFragment(builder);
     }
 
-    private class TestFormValueModelBinder : IFormValueModelBinder
+    private class TestFormValueMapper : IFormValueMapper
     {
-        public bool CanBind(Type valueType, string formName = null) => false;
-        public void Bind(FormValueModelBindingContext context) { }
+        public bool CanMap(Type valueType, string formName = null) => false;
+        public void Map(FormValueMappingContext context) { }
     }
 }

@@ -1,8 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Components.Forms.ModelBinding;
-using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Forms.Mapping;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -73,7 +72,7 @@ public class SupplyParameterFromFormTest
     static TestRenderer CreateRendererWithFormValueModelBinder()
     {
         var services = new ServiceCollection();
-        services.AddSingleton<IFormValueModelBinder, TestFormModelValueBinder>();
+        services.AddSingleton<IFormValueMapper, TestFormModelValueBinder>();
         return new TestRenderer(services.BuildServiceProvider());
     }
 
@@ -87,11 +86,11 @@ public class SupplyParameterFromFormTest
         [SupplyParameterFromForm(Handler = "some-name")] public string FormParameter { get; set; }
     }
 
-    class TestFormModelValueBinder(string FormName = "") : IFormValueModelBinder
+    class TestFormModelValueBinder(string FormName = "") : IFormValueMapper
     {
-        public void Bind(FormValueModelBindingContext context) { }
+        public void Map(FormValueMappingContext context) { }
 
-        public bool CanBind(Type valueType, string formName = null)
+        public bool CanMap(Type valueType, string formName = null)
             => formName is null || formName == FormName;
     }
 

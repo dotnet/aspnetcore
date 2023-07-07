@@ -1,42 +1,42 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Components.Forms.ModelBinding;
+namespace Microsoft.AspNetCore.Components.Forms.Mapping;
 
 /// <summary>
-/// Exposes validation messages for a given <see cref="ModelBindingContext"/>.
+/// Exposes validation messages for a given <see cref="FormMappingContext"/>.
 /// </summary>
-internal class ModelBindingContextValidator : ComponentBase, IDisposable
+internal class FormMappingValidator : ComponentBase, IDisposable
 {
     private IDisposable? _subscriptions;
     private EditContext? _originalEditContext;
 
     [CascadingParameter] internal EditContext? CurrentEditContext { get; set; }
 
-    [CascadingParameter] internal ModelBindingContext? BindingContext { get; set; }
+    [CascadingParameter] internal FormMappingContext? MappingContext { get; set; }
 
     /// <inheritdoc />
     protected override void OnInitialized()
     {
         if (CurrentEditContext == null)
         {
-            throw new InvalidOperationException($"{nameof(ModelBindingContextValidator)} requires a cascading " +
+            throw new InvalidOperationException($"{nameof(FormMappingValidator)} requires a cascading " +
                 $"parameter of type {nameof(EditContext)}.");
         }
 
-        if (BindingContext == null)
+        if (MappingContext == null)
         {
             return;
         }
 
-        _subscriptions = CurrentEditContext.EnableBindingContextExtensions(BindingContext);
+        _subscriptions = CurrentEditContext.EnableFormMappingContextExtensions(MappingContext);
         _originalEditContext = CurrentEditContext;
     }
 
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        if (BindingContext == null)
+        if (MappingContext == null)
         {
             return;
         }

@@ -1,22 +1,22 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Components.Forms.ModelBinding;
+namespace Microsoft.AspNetCore.Components.Forms.Mapping;
 
 /// <summary>
-/// A context that tracks information about binding a single form value using model binding.
+/// A context that tracks information about mapping a single value from form data.
 /// </summary>
-public class FormValueModelBindingContext
+public class FormValueMappingContext
 {
     private bool _resultSet;
 
     /// <summary>
-    /// Initializes a new instance of <see cref="FormValueModelBindingContext"/>.
+    /// Initializes a new instance of <see cref="FormValueMappingContext"/>.
     /// </summary>
-    /// <param name="formName">The name of the form to bind data from.</param>
-    /// <param name="valueType">The <see cref="Type"/> of the value to bind.</param>
-    /// <param name="parameterName">The name of the parameter to bind data to.</param>
-    public FormValueModelBindingContext(string formName, Type valueType, string parameterName)
+    /// <param name="formName">The name of the form to map data from.</param>
+    /// <param name="valueType">The <see cref="Type"/> of the value to map.</param>
+    /// <param name="parameterName">The name of the parameter to map data to.</param>
+    public FormValueMappingContext(string formName, Type valueType, string parameterName)
     {
         ArgumentNullException.ThrowIfNull(formName, nameof(formName));
         ArgumentNullException.ThrowIfNull(valueType, nameof(valueType));
@@ -28,17 +28,17 @@ public class FormValueModelBindingContext
     }
 
     /// <summary>
-    /// Gets the name of the form to bind data from.
+    /// Gets the name of the form to map data from.
     /// </summary>
     public string FormName { get; }
 
     /// <summary>
-    /// Gets the name of the parameter to bind data to.
+    /// Gets the name of the parameter to map data to.
     /// </summary>
     public string ParameterName { get; }
 
     /// <summary>
-    /// Gets the <see cref="Type"/> of the value to bind.
+    /// Gets the <see cref="Type"/> of the value to map.
     /// </summary>
     public Type ValueType { get; }
 
@@ -57,14 +57,14 @@ public class FormValueModelBindingContext
     public Action<string, object>? MapErrorToContainer { get; set; }
 
     /// <summary>
-    /// Gets the result of the binding operation.
+    /// Gets the result of the mapping operation.
     /// </summary>
     public object? Result { get; private set; }
 
     /// <summary>
-    /// Sets the result of the binding operation.
+    /// Sets the result of the mapping operation.
     /// </summary>
-    /// <param name="result">The result of the binding operation.</param>
+    /// <param name="result">The result of the mapping operation.</param>
     /// <exception cref="InvalidOperationException">Thrown if the result has already been set.</exception>
     public void SetResult(object? result)
     {

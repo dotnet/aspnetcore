@@ -1,34 +1,34 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Components.Forms.ModelBinding;
+using Microsoft.AspNetCore.Components.Forms.Mapping;
 
 namespace Microsoft.AspNetCore.Components.Forms;
 
 /// <summary>
-/// The binding context associated with a given model binding operation.
+/// The context associated with a given form mapping operation.
 /// </summary>
-public sealed class ModelBindingContext
+public sealed class FormMappingContext
 {
-    private Dictionary<string, ModelBindingError>? _errors;
-    private List<KeyValuePair<string, ModelBindingError>>? _pendingErrors;
-    private Dictionary<string, Dictionary<string, ModelBindingError>>? _errorsByFormName;
+    private Dictionary<string, FormMappingError>? _errors;
+    private List<KeyValuePair<string, FormMappingError>>? _pendingErrors;
+    private Dictionary<string, Dictionary<string, FormMappingError>>? _errorsByFormName;
 
-    internal ModelBindingContext(string name, string bindingContextId)
+    internal FormMappingContext(string name, string mappingContextId)
     {
         ArgumentNullException.ThrowIfNull(name);
-        ArgumentNullException.ThrowIfNull(bindingContextId);
+        ArgumentNullException.ThrowIfNull(mappingContextId);
         // We are initializing the root context, that can be a "named" root context, or the default context.
-        // A named root context only provides a name, and that acts as the BindingId
-        // A "default" root context does not provide a name, and instead it provides an explicit Binding ID.
-        // The explicit binding ID matches that of the default handler, which is the URL Path.
-        if (string.IsNullOrEmpty(name) ^ string.IsNullOrEmpty(bindingContextId))
+        // A named root context only provides a name, and that acts as the MappingId
+        // A "default" root context does not provide a name, and instead it provides an explicit Mapping ID.
+        // The explicit mapping ID matches that of the default handler, which is the URL Path.
+        if (string.IsNullOrEmpty(name) ^ string.IsNullOrEmpty(mappingContextId))
         {
-            throw new InvalidOperationException("A root binding context needs to provide a name and explicit binding context id or none.");
+            throw new InvalidOperationException("A root mapping context needs to provide a name and explicit mapping context id or none.");
         }
 
         Name = name;
-        BindingContextId = bindingContextId ?? name;
+        MappingContextId = mappingContextId ?? name;
     }
 
     /// <summary>
@@ -37,17 +37,17 @@ public sealed class ModelBindingContext
     public string Name { get; }
 
     /// <summary>
-    /// The computed identifier used to determine what parts of the app can bind data.
+    /// The computed identifier used to determine what parts of the app can map data.
     /// </summary>
-    public string BindingContextId { get; }
+    public string MappingContextId { get; }
 
     /// <summary>
     /// Retrieves the list of errors for a given model key.
     /// </summary>
     /// <param name="key">The key used to identify the specific part of the model.</param>
     /// <returns>The list of errors associated with that part of the model if any.</returns>
-    public ModelBindingError? GetErrors(string key) =>
-        _errors?.TryGetValue(key, out var bindingError) == true ? bindingError : null;
+    public FormMappingError? GetErrors(string key) =>
+        _errors?.TryGetValue(key, out var mappingError) == true ? mappingError : null;
 
     /// <summary>
     /// Retrieves the list of errors for a given model key.
@@ -55,24 +55,24 @@ public sealed class ModelBindingContext
     /// <param name="key">The key used to identify the specific part of the model.</param>
     /// <param name="formName">Form name for a form under this context.</param>
     /// <returns>The list of errors associated with that part of the model if any.</returns>
-    public ModelBindingError? GetErrors(string formName, string key) =>
+    public FormMappingError? GetErrors(string formName, string key) =>
         _errorsByFormName?.TryGetValue(formName, out var formErrors) == true &&
-        formErrors.TryGetValue(key, out var bindingError) == true ? bindingError : null;
+        formErrors.TryGetValue(key, out var mappingError) == true ? mappingError : null;
 
     /// <summary>
     /// Retrieves all the errors for the model.
     /// </summary>
     /// <returns>The list of errors associated with the model if any.</returns>
-    public IEnumerable<ModelBindingError> GetAllErrors()
+    public IEnumerable<FormMappingError> GetAllErrors()
     {
         return GetAllErrorsCore(_errors);
     }
 
-    private static IEnumerable<ModelBindingError> GetAllErrorsCore(Dictionary<string, ModelBindingError>? errors)
+    private static IEnumerable<FormMappingError> GetAllErrorsCore(Dictionary<string, FormMappingError>? errors)
     {
         if (errors == null)
         {
-            return Array.Empty<ModelBindingError>();
+            return Array.Empty<FormMappingError>();
         }
 
         return errors.Values;
@@ -83,61 +83,61 @@ public sealed class ModelBindingContext
     /// </summary>
     /// <param name="formName">Form name for a form under this context.</param>
     /// <returns>The list of errors associated with the model if any.</returns>
-    public IEnumerable<ModelBindingError> GetAllErrors(string formName)
+    public IEnumerable<FormMappingError> GetAllErrors(string formName)
     {
         return _errorsByFormName?.TryGetValue(formName, out var formErrors) == true ?
             GetAllErrorsCore(formErrors) :
-            Array.Empty<ModelBindingError>();
+            Array.Empty<FormMappingError>();
     }
 
     /// <summary>
-    /// Retrieves the attempted value that failed to bind for a given model key.
+    /// Retrieves the attempted value that failed to map for a given model key.
     /// </summary>
     /// <param name="key">The key used to identify the specific part of the model.</param>
     /// <returns>The attempted value associated with that part of the model if any.</returns>
     public string? GetAttemptedValue(string key) =>
-        _errors?.TryGetValue(key, out var bindingError) == true ? bindingError.AttemptedValue : null;
+        _errors?.TryGetValue(key, out var mappingError) == true ? mappingError.AttemptedValue : null;
 
     /// <summary>
-    /// Retrieves the attempted value that failed to bind for a given model key.
+    /// Retrieves the attempted value that failed to map for a given model key.
     /// </summary>
     /// <param name="formName">Form name for a form under this context.</param>
     /// <param name="key">The key used to identify the specific part of the model.</param>
     /// <returns>The attempted value associated with that part of the model if any.</returns>
     public string? GetAttemptedValue(string formName, string key) =>
         _errorsByFormName?.TryGetValue(formName, out var formErrors) == true &&
-            formErrors.TryGetValue(key, out var bindingError) ? bindingError.AttemptedValue : null;
+            formErrors.TryGetValue(key, out var mappingError) ? mappingError.AttemptedValue : null;
 
-    internal static string Combine(ModelBindingContext? parentContext, string name) =>
+    internal static string Combine(FormMappingContext? parentContext, string name) =>
         string.IsNullOrEmpty(parentContext?.Name) ? name : $"{parentContext.Name}.{name}";
 
     internal void AddError(string key, FormattableString error, string? attemptedValue)
     {
-        _errors ??= new Dictionary<string, ModelBindingError>();
+        _errors ??= new Dictionary<string, FormMappingError>();
         AddErrorCore(_errors, key, error, attemptedValue, ref _pendingErrors);
     }
 
-    private static void AddErrorCore(Dictionary<string, ModelBindingError> errors, string key, FormattableString error, string? attemptedValue, ref List<KeyValuePair<string, ModelBindingError>>? pendingErrors)
+    private static void AddErrorCore(Dictionary<string, FormMappingError> errors, string key, FormattableString error, string? attemptedValue, ref List<KeyValuePair<string, FormMappingError>>? pendingErrors)
     {
-        if (!errors.TryGetValue(key, out var bindingError))
+        if (!errors.TryGetValue(key, out var mappingError))
         {
-            bindingError = new ModelBindingError(key, new List<FormattableString>() { error }, attemptedValue);
-            errors.Add(key, bindingError);
+            mappingError = new FormMappingError(key, new List<FormattableString>() { error }, attemptedValue);
+            errors.Add(key, mappingError);
             pendingErrors ??= new();
-            pendingErrors.Add(new KeyValuePair<string, ModelBindingError>(key, bindingError));
+            pendingErrors.Add(new KeyValuePair<string, FormMappingError>(key, mappingError));
         }
         else
         {
-            bindingError.AddError(error);
+            mappingError.AddError(error);
         }
     }
 
     internal void AddError(string formName, string key, FormattableString error, string? attemptedValue)
     {
-        _errorsByFormName ??= new Dictionary<string, Dictionary<string, ModelBindingError>>();
+        _errorsByFormName ??= new Dictionary<string, Dictionary<string, FormMappingError>>();
         if (!_errorsByFormName.TryGetValue(formName, out var formErrors))
         {
-            formErrors = new Dictionary<string, ModelBindingError>();
+            formErrors = new Dictionary<string, FormMappingError>();
             _errorsByFormName.Add(formName, formErrors);
         }
         AddErrorCore(formErrors, key, error, attemptedValue, ref _pendingErrors);
@@ -164,7 +164,7 @@ public sealed class ModelBindingContext
         _pendingErrors.Clear();
     }
 
-    internal void SetErrors(string formName, ModelBindingContext childContext)
+    internal void SetErrors(string formName, FormMappingContext childContext)
     {
         if (_errorsByFormName == null || !_errorsByFormName.TryGetValue(formName, out var formErrors))
         {

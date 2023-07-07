@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Endpoints.DependencyInjection;
 using Microsoft.AspNetCore.Components.Endpoints.Forms;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.AspNetCore.Components.Forms.ModelBinding;
+using Microsoft.AspNetCore.Components.Forms.Mapping;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
@@ -64,7 +64,7 @@ public static class RazorComponentsServiceCollectionExtensions
         services.AddSupplyValueFromFormProvider();
         services.TryAddScoped<AntiforgeryStateProvider, EndpointAntiforgeryStateProvider>();
         services.TryAddScoped<HttpContextFormDataProvider>();
-        services.TryAddScoped<IFormValueModelBinder, HttpContextFormValueModelBinder>();
+        services.TryAddScoped<IFormValueMapper, HttpContextFormValueModelBinder>();
 
         return new DefaultRazorComponentsBuilder(services);
     }

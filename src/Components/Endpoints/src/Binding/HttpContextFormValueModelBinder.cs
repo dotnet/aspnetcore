@@ -6,12 +6,12 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Globalization;
 using Microsoft.AspNetCore.Components.Endpoints.Binding;
-using Microsoft.AspNetCore.Components.Forms.ModelBinding;
+using Microsoft.AspNetCore.Components.Forms.Mapping;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
-internal sealed class HttpContextFormValueModelBinder : IFormValueModelBinder
+internal sealed class HttpContextFormValueModelBinder : IFormValueMapper
 {
     private readonly HttpContextFormDataProvider _formData;
     private readonly FormDataMapperOptions _options = new();
@@ -22,7 +22,7 @@ internal sealed class HttpContextFormValueModelBinder : IFormValueModelBinder
         _formData = formData;
     }
 
-    public bool CanBind(Type valueType, string? formName = null)
+    public bool CanMap(Type valueType, string? formName = null)
     {
         if (formName == null)
         {
@@ -38,10 +38,10 @@ internal sealed class HttpContextFormValueModelBinder : IFormValueModelBinder
         }
     }
 
-    public void Bind(FormValueModelBindingContext context)
+    public void Map(FormValueMappingContext context)
     {
         // This will func to a proper binder
-        if (!CanBind(context.ValueType, context.FormName))
+        if (!CanMap(context.ValueType, context.FormName))
         {
             context.SetResult(null);
         }
@@ -58,7 +58,7 @@ internal sealed class HttpContextFormValueModelBinder : IFormValueModelBinder
     internal abstract class FormValueSupplier
     {
         public abstract void Deserialize(
-            FormValueModelBindingContext context,
+            FormValueMappingContext context,
             FormDataMapperOptions options,
             IReadOnlyDictionary<string, StringValues> form);
     }
@@ -66,7 +66,7 @@ internal sealed class HttpContextFormValueModelBinder : IFormValueModelBinder
     internal class FormValueSupplier<T> : FormValueSupplier
     {
         public override void Deserialize(
-            FormValueModelBindingContext context,
+            FormValueMappingContext context,
             FormDataMapperOptions options,
             IReadOnlyDictionary<string, StringValues> form)
         {

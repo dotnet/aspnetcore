@@ -3,61 +3,46 @@
 
 using System.Globalization;
 
-namespace Microsoft.AspNetCore.Components.Forms.ModelBinding;
+namespace Microsoft.AspNetCore.Components.Forms.Mapping;
 
-/// <summary>
-/// Extension methods to add <see cref="ModelBindingContext"/> errors to an <see cref="EditContext"/>.
-/// </summary>
-internal static class EditContextBindingExtensions
+internal static class EditContextFormMappingExtensions
 {
     private static readonly object _key = new();
 
-    /// <summary>
-    /// Enables <see cref="ModelBindingContext"/> errors to be added to the <see cref="EditContext"/>.
-    /// </summary>
-    /// <param name="context">The <see cref="EditContext"/>.</param>
-    /// <param name="bindingContext">The <see cref="ModelBindingContext"/>.</param>
-    /// <returns></returns>
-    public static IDisposable EnableBindingContextExtensions(this EditContext context, ModelBindingContext bindingContext)
+    public static IDisposable EnableFormMappingContextExtensions(this EditContext context, FormMappingContext mappingContext)
     {
         ArgumentNullException.ThrowIfNull(context, nameof(context));
-        ArgumentNullException.ThrowIfNull(bindingContext, nameof(bindingContext));
+        ArgumentNullException.ThrowIfNull(mappingContext, nameof(mappingContext));
 
-        context.Properties[_key] = bindingContext;
+        context.Properties[_key] = mappingContext;
 
-        return new BindingContextEventSubscriptions(context, bindingContext);
+        return new MappingContextEventSubscriptions(context, mappingContext);
     }
 
-    /// <summary>
-    /// Gets the attempted value for the specified field name.
-    /// </summary>
-    /// <param name="context">The <see cref="EditContext"/>.</param>
-    /// <param name="fieldName">The field name.</param>
-    /// <returns></returns>
     public static string? GetAttemptedValue(this EditContext context, string fieldName)
     {
         ArgumentNullException.ThrowIfNull(context, nameof(context));
         ArgumentNullException.ThrowIfNull(fieldName, nameof(fieldName));
 
-        if (context.Properties.TryGetValue(_key, out var result) && result is ModelBindingContext bindingContext)
+        if (context.Properties.TryGetValue(_key, out var result) && result is FormMappingContext mappingContext)
         {
-            return bindingContext.GetAttemptedValue(fieldName);
+            return mappingContext.GetAttemptedValue(fieldName);
         }
 
         return null;
     }
 
-    private sealed class BindingContextEventSubscriptions : IDisposable
+    private sealed class MappingContextEventSubscriptions : IDisposable
     {
         private readonly EditContext _editContext;
-        private readonly ModelBindingContext _bindingContext;
+        private readonly FormMappingContext _mappingContext;
         private ValidationMessageStore? _messages;
         private bool _hasmessages;
 
-        public BindingContextEventSubscriptions(EditContext editContext, ModelBindingContext serviceProvider)
+        public MappingContextEventSubscriptions(EditContext editContext, FormMappingContext mappingContext)
         {
             _editContext = editContext;
-            _bindingContext = serviceProvider;
+            _mappingContext = mappingContext;
 
             _editContext.OnValidationRequested += OnValidationRequested;
         }
@@ -66,14 +51,14 @@ internal static class EditContextBindingExtensions
         {
             if (_messages != null)
             {
-                // We already added the messages from the binding context,
+                // We already added the messages from the mapping context,
                 // we don't have to do anything.
                 return;
             }
 
             _messages = new ValidationMessageStore(_editContext);
             var adddedMessages = false;
-            foreach (var error in _bindingContext.GetAllErrors())
+            foreach (var error in _mappingContext.GetAllErrors())
             {
                 var owner = error.Container;
                 var key = error.Name;
@@ -92,7 +77,7 @@ internal static class EditContextBindingExtensions
 
             if (adddedMessages)
             {
-                // There were binding errors, notify.
+                // There were mapping errors, notify.
                 _editContext.NotifyValidationStateChanged();
             }
         }

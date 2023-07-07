@@ -33,7 +33,7 @@
 
     [SupplyParameterFromForm] public int Parameter { get; set; } = 0;
 
-    [CascadingParameter] public ModelBindingContext Context { get; set; }
+    [CascadingParameter] public FormMappingContext Context { get; set; }
 
     protected override void OnInitialized()
     {
