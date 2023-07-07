@@ -92,7 +92,7 @@ internal class SSRRenderModeBoundary : IComponent
         builder.CloseComponent();
     }
 
-    public (ServerComponentMarker?, WebAssemblyComponentMarker?) ToMarkers(HttpContext httpContext)
+    public (ServerComponentMarker?, WebAssemblyComponentMarker?) ToMarkers(int componentId, HttpContext httpContext)
     {
         var parameters = _latestParameters is null
             ? ParameterView.Empty
@@ -106,7 +106,7 @@ internal class SSRRenderModeBoundary : IComponent
             var serverComponentSerializer = httpContext.RequestServices.GetRequiredService<ServerComponentSerializer>();
 
             var invocationId = EndpointHtmlRenderer.GetOrCreateInvocationId(httpContext);
-            serverMarker = serverComponentSerializer.SerializeInvocation(invocationId, _componentType, parameters, _prerender);
+            serverMarker = serverComponentSerializer.SerializeInvocation(componentId, invocationId, _componentType, parameters, _prerender);
         }
 
         WebAssemblyComponentMarker? webAssemblyMarker = null;

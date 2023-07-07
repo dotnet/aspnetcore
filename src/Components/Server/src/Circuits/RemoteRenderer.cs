@@ -59,6 +59,9 @@ internal partial class RemoteRenderer : WebRenderer
         return RenderRootComponentAsync(componentId, parameters);
     }
 
+    // This ID needs to be kept in sync with the Blazor JS implementation.
+    protected override int AllocateRendererId() => 1;
+
     protected override void AttachRootComponentToBrowser(int componentId, string domElementSelector)
     {
         var attachComponentTask = _client.SendAsync("JS.AttachComponent", componentId, domElementSelector);

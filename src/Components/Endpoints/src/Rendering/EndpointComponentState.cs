@@ -16,8 +16,6 @@ internal sealed class EndpointComponentState : ComponentState
 {
     private static readonly ConcurrentDictionary<Type, StreamRenderingAttribute?> _streamRenderingAttributeByComponentType = new();
 
-    private bool _wasIncludedInStreamingResponse;
-
     public EndpointComponentState(Renderer renderer, int componentId, IComponent component, ComponentState? parentComponentState)
         : base(renderer, componentId, component, parentComponentState)
     {
@@ -33,27 +31,9 @@ internal sealed class EndpointComponentState : ComponentState
         {
             StreamRendering = parentEndpointComponentState?.StreamRendering ?? false;
         }
-
-        if (Component is SSRRenderModeBoundary)
-        {
-            IsInteractive = true;
-        }
-        else
-        {
-            IsInteractive = parentEndpointComponentState?.IsInteractive ?? false;
-        }
     }
 
     public bool StreamRendering { get; }
-
-    public bool IsInteractive { get; }
-
-    public bool WasIncludedInStreamingResponse => _wasIncludedInStreamingResponse;
-
-    public void MarkAsIncludedInStreamingResponse()
-    {
-        _wasIncludedInStreamingResponse = true;
-    }
 
     /// <summary>
     /// MetadataUpdateHandler event. This is invoked by the hot reload host via reflection.

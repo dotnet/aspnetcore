@@ -49,9 +49,9 @@ public sealed class JSComponentConfigurationStore
     }
 
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(JSComponentParameter))]
-    [DynamicDependency(nameof(WebRenderer.WebRendererInteropMethods.AddRootComponent), typeof(WebRenderer.WebRendererInteropMethods))]
-    [DynamicDependency(nameof(WebRenderer.WebRendererInteropMethods.SetRootComponentParameters), typeof(WebRenderer.WebRendererInteropMethods))]
-    [DynamicDependency(nameof(WebRenderer.WebRendererInteropMethods.RemoveRootComponent), typeof(WebRenderer.WebRendererInteropMethods))]
+    [DynamicDependency(nameof(WebRenderer.WebRendererInteropMethods.AddJSRootComponent), typeof(WebRenderer.WebRendererInteropMethods))]
+    [DynamicDependency(nameof(WebRenderer.WebRendererInteropMethods.SetJSRootComponentParameters), typeof(WebRenderer.WebRendererInteropMethods))]
+    [DynamicDependency(nameof(WebRenderer.WebRendererInteropMethods.RemoveJSRootComponent), typeof(WebRenderer.WebRendererInteropMethods))]
     internal void Add([DynamicallyAccessedMembers(LinkerFlags.Component)] Type componentType, string identifier, string javaScriptInitializer)
     {
         Add(componentType, identifier);

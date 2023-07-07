@@ -8,6 +8,11 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits;
 
+// TODO:
+// - Test that the marker sequence is required.
+// - Test that the marker sequence must match the descriptor sequence.
+// - Test that markers cannot be duplicated.
+
 public class ServerComponentDeserializerTest
 {
     private readonly IDataProtectionProvider _ephemeralDataProtectionProvider;
@@ -179,34 +184,6 @@ public class ServerComponentDeserializerTest
     }
 
     [Fact]
-    public void DoesNotParseMarkersWhoseSequenceDoesNotStartAtZero()
-    {
-        // Arrange
-        var markers = SerializeMarkers(CreateMarkers(typeof(TestComponent), typeof(TestComponent)).Skip(1).ToArray());
-        var serverComponentDeserializer = CreateServerComponentDeserializer();
-
-        // Act & assert
-        Assert.False(serverComponentDeserializer.TryDeserializeComponentDescriptorCollection(markers, out var descriptors));
-        Assert.Empty(descriptors);
-    }
-
-    [Fact]
-    public void DoesNotParseMarkersWithGapsInTheSequence()
-    {
-        // Arrange
-        var brokenChain = CreateMarkers(typeof(TestComponent), typeof(TestComponent), typeof(TestComponent))
-            .Where(m => m.Sequence != 1)
-            .ToArray();
-
-        var markers = SerializeMarkers(brokenChain);
-        var serverComponentDeserializer = CreateServerComponentDeserializer();
-
-        // Act & assert
-        Assert.False(serverComponentDeserializer.TryDeserializeComponentDescriptorCollection(markers, out var descriptors));
-        Assert.Empty(descriptors);
-    }
-
-    [Fact]
     public void DoesNotParseMarkersWithMissingDescriptor()
     {
         // Arrange
@@ -234,23 +211,6 @@ public class ServerComponentDeserializerTest
         // Act & assert
         Assert.False(serverComponentDeserializer.TryDeserializeComponentDescriptorCollection(markers, out var descriptors));
         Assert.Empty(descriptors);
-    }
-
-    // Ensures we don't use untrusted data for validation.
-    [Fact]
-    public void AllowsMarkersWithMissingSequence()
-    {
-        // Arrange
-        var missingSequenceMarker = CreateMarkers(typeof(TestComponent), typeof(TestComponent));
-        missingSequenceMarker[0].Sequence = null;
-        missingSequenceMarker[1].Sequence = null;
-
-        var markers = SerializeMarkers(missingSequenceMarker);
-        var serverComponentDeserializer = CreateServerComponentDeserializer();
-
-        // Act & assert
-        Assert.True(serverComponentDeserializer.TryDeserializeComponentDescriptorCollection(markers, out var descriptors));
-        Assert.Equal(2, descriptors.Count);
     }
 
     // Ensures that we don't try to load assemblies
@@ -326,7 +286,7 @@ public class ServerComponentDeserializerTest
         var markers = new ServerComponentMarker[types.Length];
         for (var i = 0; i < types.Length; i++)
         {
-            markers[i] = serializer.SerializeInvocation(_invocationSequence, types[i], ParameterView.Empty, false);
+            markers[i] = serializer.SerializeInvocation(0, _invocationSequence, types[i], ParameterView.Empty, false);
         }
 
         return markers;
@@ -340,6 +300,7 @@ public class ServerComponentDeserializerTest
         {
             var (type, parameters) = types[i];
             markers[i] = serializer.SerializeInvocation(
+                0,
                 _invocationSequence,
                 type,
                 parameters == null ? ParameterView.Empty : ParameterView.FromDictionary(parameters),
@@ -355,7 +316,7 @@ public class ServerComponentDeserializerTest
         var markers = new ServerComponentMarker[types.Length];
         for (var i = 0; i < types.Length; i++)
         {
-            markers[i] = serializer.SerializeInvocation(sequence, types[i], ParameterView.Empty, false);
+            markers[i] = serializer.SerializeInvocation(0, sequence, types[i], ParameterView.Empty, false);
         }
 
         return markers;

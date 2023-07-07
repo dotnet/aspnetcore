@@ -79,6 +79,8 @@ internal partial class EndpointHtmlRenderer
         var count = renderBatch.UpdatedComponents.Count;
         if (count > 0)
         {
+            writer.Write("<blazor-ssr>");
+
             // Each time we transmit the HTML for a component, we also transmit the HTML for its descendants.
             // So, if we transmitted *every* component in the batch separately, there would be a lot of duplication.
             // The subtrees projected from each component would overlap a lot.
@@ -98,35 +100,14 @@ internal partial class EndpointHtmlRenderer
             var componentIdsInDepthOrder = bufSizeRequired < 1024
                 ? MemoryMarshal.Cast<byte, ComponentIdAndDepth>(stackalloc byte[bufSizeRequired])
                 : new ComponentIdAndDepth[count];
-            var includedComponentCount = 0;
             for (var i = 0; i < count; i++)
             {
                 var componentId = renderBatch.UpdatedComponents.Array[i].ComponentId;
                 var componentState = (EndpointComponentState)GetComponentState(componentId);
 
-                if (componentState.IsInteractive && componentState.WasIncludedInStreamingResponse)
-                {
-                    // If a component with an interactive render mode was already included in a
-                    // streaming response, then don't include it again. This minimizes the possibility
-                    // that a stream rendering update forces an interactive component to be re-initialized
-                    // after interactivity has already begun.
-
-                    // It should be noted that a non-interactive parent component might still SSR the
-                    // interactive component again, at which point the browser will remove and
-                    // re-initialize the component with updated parameter values.
-                    continue;
-                }
-
-                componentIdsInDepthOrder[includedComponentCount] = new(componentId, GetComponentDepth(componentState));
-                includedComponentCount++;
+                componentIdsInDepthOrder[i] = new(componentId, GetComponentDepth(componentState));
             }
 
-            if (includedComponentCount == 0)
-            {
-                return;
-            }
-
-            componentIdsInDepthOrder = componentIdsInDepthOrder[..includedComponentCount];
             MemoryExtensions.Sort(componentIdsInDepthOrder, static (left, right) => left.Depth - right.Depth);
 
             // Reset the component rendering tracker. This is safe to share as an instance field because batch-rendering
@@ -139,8 +120,6 @@ internal partial class EndpointHtmlRenderer
             {
                 _visitedComponentIdsInCurrentStreamingBatch.Clear();
             }
-
-            writer.Write("<blazor-ssr>");
 
             // Now process the list, skipping any we've already visited in an earlier iteration
             for (var i = 0; i < componentIdsInDepthOrder.Length; i++)
@@ -216,8 +195,6 @@ internal partial class EndpointHtmlRenderer
         var componentState = (EndpointComponentState)GetComponentState(componentId);
         var renderBoundaryMarkers = allowBoundaryMarkers && componentState.StreamRendering;
 
-        componentState.MarkAsIncludedInStreamingResponse();
-
         // TODO: It's not clear that we actually want to emit the interactive component markers using this
         // HTML-comment syntax that we've used historically, plus we likely want some way to coalesce both
         // marker types into a single thing for auto mode (the code below emits both separately for auto).
@@ -226,7 +203,7 @@ internal partial class EndpointHtmlRenderer
         // streaming SSR or progressively-enhanced navigation.
 
         var (serverMarker, webAssemblyMarker) = componentState.Component is SSRRenderModeBoundary boundary
-            ? boundary.ToMarkers(_httpContext)
+            ? boundary.ToMarkers(componentId, _httpContext)
             : default;
 
         if (serverMarker.HasValue)

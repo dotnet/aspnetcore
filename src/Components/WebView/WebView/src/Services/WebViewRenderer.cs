@@ -31,6 +31,9 @@ internal sealed class WebViewRenderer : WebRenderer
 
     public override Dispatcher Dispatcher => _dispatcher;
 
+    // This ID needs to be kept in sync with the Blazor JS implementation.
+    protected override int AllocateRendererId() => 3;
+
     protected override void HandleException(Exception exception)
     {
         // Notify the JS code so it can show the in-app UI

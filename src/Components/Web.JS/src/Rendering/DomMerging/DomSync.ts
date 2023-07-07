@@ -120,8 +120,7 @@ function domNodeComparer(a: Node, b: Node): UpdateCost {
 
   switch (a.nodeType) {
     case Node.TEXT_NODE:
-    case Node.COMMENT_NODE:
-      // We're willing to update text and comment nodes in place, but treat the update operation as being
+      // We're willing to update text nodes in place, but treat the update operation as being
       // as costly as an insertion or deletion
       return a.textContent === b.textContent ? UpdateCost.None : UpdateCost.Some;
     case Node.ELEMENT_NODE:

@@ -22,7 +22,8 @@ export class WebAssemblyComponentAttacher {
   public resolveRegisteredElement(id: string): LogicalElement | undefined {
     const parsedId = Number.parseInt(id);
     if (!Number.isNaN(parsedId)) {
-      return toLogicalRootCommentElement(this.componentsById[parsedId].start as Comment, this.componentsById[parsedId].end as Comment);
+      const component = this.componentsById[parsedId];
+      return toLogicalRootCommentElement(component.start as Comment, component.end as Comment, component.id);
     } else {
       return undefined;
     }

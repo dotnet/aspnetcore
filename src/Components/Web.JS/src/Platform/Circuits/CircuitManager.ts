@@ -43,6 +43,7 @@ export class CircuitDescriptor {
     if (connection.state !== HubConnectionState.Connected) {
       return false;
     }
+
     const result = await connection.invoke<string>(
       'StartCircuit',
       navigationManagerFunctions.getBaseURI(),
@@ -69,7 +70,8 @@ export class CircuitDescriptor {
     // ... or it may be a root component added by .NET
     const parsedSequence = Number.parseInt(sequenceOrIdentifier);
     if (!Number.isNaN(parsedSequence)) {
-      return toLogicalRootCommentElement(this.components[parsedSequence].start as Comment, this.components[parsedSequence].end as Comment);
+      const component = this.components[parsedSequence];
+      return toLogicalRootCommentElement(component.start as Comment, component.end as Comment, component.id);
     }
 
     throw new Error(`Invalid sequence number or identifier '${sequenceOrIdentifier}'.`);

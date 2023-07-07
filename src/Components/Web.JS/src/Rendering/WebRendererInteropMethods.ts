@@ -5,7 +5,7 @@ import { DotNet } from '@microsoft/dotnet-js-interop';
 import { EventDescriptor } from './Events/EventDelegator';
 import { enableJSRootComponents, JSComponentParametersByIdentifier, JSComponentIdentifiersByInitializer } from './JSRootComponents';
 
-const interopMethodsByRendererId: DotNet.DotNetObject[] = [];
+const interopMethodsByRenderer = new Map<number, DotNet.DotNetObject>();
 
 let resolveRendererAttached : () => void;
 
@@ -14,12 +14,16 @@ export const rendererAttached = new Promise<void>((resolve) => {
 });
 
 export function attachWebRendererInterop(
+  rendererId: number,
   interopMethods: DotNet.DotNetObject,
   jsComponentParameters: JSComponentParametersByIdentifier,
   jsComponentInitializers: JSComponentIdentifiersByInitializer,
-): number {
-  const rendererId = interopMethodsByRendererId.length;
-  interopMethodsByRendererId.push(interopMethods);
+): void {
+  if (interopMethodsByRenderer.has(rendererId)) {
+    throw new Error(`Interop methods are already registered for renderer ${rendererId}`);
+  }
+
+  interopMethodsByRenderer.set(rendererId, interopMethods);
 
   if (Object.keys(jsComponentParameters).length > 0) {
     const manager = getInteropMethods(rendererId);
@@ -27,12 +31,6 @@ export function attachWebRendererInterop(
   }
 
   resolveRendererAttached();
-  return rendererId;
-}
-
-export function disposeComponentAsync(browserRendererId: number, componentId: number): Promise<void> {
-  const interopMethods = getInteropMethods(browserRendererId);
-  return interopMethods.invokeMethodAsync('RemoveRootComponent', componentId);
 }
 
 export function dispatchEvent(browserRendererId: number, eventDescriptor: EventDescriptor, eventArgs: any): void {
@@ -42,8 +40,13 @@ export function dispatchEvent(browserRendererId: number, eventDescriptor: EventD
   });
 }
 
+export function removeRootComponentAsync(browserRendererId: number, componentId: number): Promise<void> {
+  const interopMethods = getInteropMethods(browserRendererId);
+  return interopMethods.invokeMethodAsync('RemoveRootComponent', componentId);
+}
+
 function getInteropMethods(rendererId: number): DotNet.DotNetObject {
-  const interopMethods = interopMethodsByRendererId[rendererId];
+  const interopMethods = interopMethodsByRenderer.get(rendererId);
   if (!interopMethods) {
     throw new Error(`No interop methods are registered for renderer ${rendererId}`);
   }

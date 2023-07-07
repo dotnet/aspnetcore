@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree;
 public abstract class WebRenderer : Renderer
 {
     private readonly DotNetObjectReference<WebRendererInteropMethods> _interopMethodsReference;
-    private readonly Task<int> _attachTask;
+    private readonly int _rendererId;
 
     /// <summary>
     /// Constructs an instance of <see cref="WebRenderer"/>.
@@ -36,48 +36,40 @@ public abstract class WebRenderer : Renderer
     {
         _interopMethodsReference = DotNetObjectReference.Create(
             new WebRendererInteropMethods(this, jsonOptions, jsComponentInterop));
+        _rendererId = AllocateRendererId();
 
         // Supply a DotNetObjectReference to JS that it can use to call us back for events etc.
         jsComponentInterop.AttachToRenderer(this);
         var jsRuntime = serviceProvider.GetRequiredService<IJSRuntime>();
-        _attachTask = jsRuntime.InvokeAsync<int>(
+        jsRuntime.InvokeVoidAsync(
             "Blazor._internal.attachWebRendererInterop",
+            _rendererId,
             _interopMethodsReference,
             jsComponentInterop.Configuration.JSComponentParametersByIdentifier,
-            jsComponentInterop.Configuration.JSComponentIdentifiersByInitializer)
-            .AsTask();
+            jsComponentInterop.Configuration.JSComponentIdentifiersByInitializer).Preserve();
     }
 
     /// <summary>
     /// Gets the identifier for the renderer.
     /// </summary>
-    /// <remarks>
-    /// Accessing <see cref="RendererId"/> before the renderer is attached will throw an <see cref="InvalidOperationException"/>. Call
-    /// <see cref="WaitUntilAttachedAsync"/> to wait until the renderer gets attached to the browser.
-    /// </remarks>
     protected int RendererId
     {
-        get
-        {
-            if (!_attachTask.IsCompletedSuccessfully)
-            {
-                throw new InvalidOperationException($"'{nameof(RendererId)}' does not have a value until {nameof(WaitUntilAttachedAsync)} completes successfully.");
-            }
+        get => _rendererId;
 
-            return _attachTask.Result;
-        }
-
-        [Obsolete($"The renderer ID gets assigned automatically upon construction.")]
+        [Obsolete($"The renderer ID can be assigned by overriding '{nameof(AllocateRendererId)}'.")]
         init { /* No-op */ }
     }
 
     /// <summary>
-    /// Waits until the renderer is attached to the browser. The renderer must be attached before
-    /// renders can be processed.
+    /// Allocates an identifier for the renderer.
     /// </summary>
-    /// <returns></returns>
-    public Task WaitUntilAttachedAsync()
-        => _attachTask;
+    protected virtual int AllocateRendererId()
+    {
+        // We return '0' by default, which is reserved so that classes deriving from this
+        // type don't need to worry about allocating an ID unless they're using multiple renderers.
+        // As soon as multiple renderers are used, this needs to return a unique identifier.
+        return 0;
+    }
 
     /// <summary>
     /// Instantiates a root component and attaches it to the browser within the specified element.
@@ -123,6 +115,7 @@ public abstract class WebRenderer : Renderer
         private readonly JSComponentInterop _jsComponentInterop;
 
         [DynamicDependency(nameof(DispatchEventAsync))]
+        [DynamicDependency(nameof(RemoveRootComponent))]
         public WebRendererInteropMethods(WebRenderer renderer, JsonSerializerOptions jsonOptions, JSComponentInterop jsComponentInterop)
         {
             _renderer = renderer;
@@ -140,16 +133,20 @@ public abstract class WebRenderer : Renderer
                 webEventData.EventArgs);
         }
 
+        [JSInvokable]
+        public void RemoveRootComponent(int componentId)
+            => _renderer.RemoveRootComponent(componentId);
+
         [JSInvokable] // Linker preserves this if you call RootComponents.Add
-        public int AddRootComponent(string identifier, string domElementSelector)
+        public int AddJSRootComponent(string identifier, string domElementSelector)
             => _jsComponentInterop.AddRootComponent(identifier, domElementSelector);
 
         [JSInvokable] // Linker preserves this if you call RootComponents.Add
-        public void SetRootComponentParameters(int componentId, int parameterCount, JsonElement parametersJson)
+        public void SetJSRootComponentParameters(int componentId, int parameterCount, JsonElement parametersJson)
             => _jsComponentInterop.SetRootComponentParameters(componentId, parameterCount, parametersJson, _jsonOptions);
 
         [JSInvokable] // Linker preserves this if you call RootComponents.Add
-        public void RemoveRootComponent(int componentId)
+        public void RemoveJSRootComponent(int componentId)
             => _jsComponentInterop.RemoveRootComponent(componentId);
     }
 }

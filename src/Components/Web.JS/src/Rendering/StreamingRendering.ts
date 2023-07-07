@@ -72,8 +72,9 @@ function insertStreamingContentIntoDocument(componentIdAsString: string, docFrag
     existingContent.setStart(startMarker, startMarker.textContent!.length);
     existingContent.setEnd(endMarker, 0);
 
+    const destinationRoot = endMarker.parentNode!;
     const isNodeExcludedFromUpdate = (node: Node) => existingContent.comparePoint(node, 0) !== 0;
-    navigationEnhancementCallbacks.beforeDocumentUpdated(isNodeExcludedFromUpdate);
+    navigationEnhancementCallbacks.beforeDocumentUpdated(destinationRoot, docFrag, isNodeExcludedFromUpdate);
 
     if (enableDomPreservation) {
       synchronizeDomContent({ startExclusive: startMarker, endExclusive: endMarker }, docFrag);
@@ -82,7 +83,7 @@ function insertStreamingContentIntoDocument(componentIdAsString: string, docFrag
       existingContent.deleteContents();
 
       while (docFrag.childNodes[0]) {
-        endMarker.parentNode!.insertBefore(docFrag.childNodes[0], endMarker);
+        destinationRoot.insertBefore(docFrag.childNodes[0], endMarker);
       }
     }
 

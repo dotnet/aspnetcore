@@ -12,13 +12,19 @@ internal struct ServerComponentMarker
 {
     public const string ServerMarkerType = "server";
 
-    private ServerComponentMarker(string? type, string? descriptor, int? sequence, string? prerenderId) : this()
+    private ServerComponentMarker(int? componentId, string? type, string? descriptor, int? sequence, string? prerenderId) : this()
     {
+        ComponentId = componentId;
         Type = type;
         PrerenderId = prerenderId;
         Descriptor = descriptor;
         Sequence = sequence;
     }
+
+    // The ID of the component. This is used on the client-side to
+    // match up component markers with the underlying SSR component instances
+    // if a component gets multiple SSR updates.
+    public int? ComponentId { get; set; }
 
     // The order in which this component was rendered/produced
     // on the server. It matches the number on the descriptor
@@ -42,12 +48,12 @@ internal struct ServerComponentMarker
     public string? Descriptor { get; set; }
 
     // Creates a marker for a prerendered component.
-    public static ServerComponentMarker Prerendered(int sequence, string descriptor) =>
-        new ServerComponentMarker(ServerMarkerType, descriptor, sequence, Guid.NewGuid().ToString("N"));
+    public static ServerComponentMarker Prerendered(int componentId, int sequence, string descriptor) =>
+        new ServerComponentMarker(componentId, ServerMarkerType, descriptor, sequence, Guid.NewGuid().ToString("N"));
 
     // Creates a marker for a non prerendered component
-    public static ServerComponentMarker NonPrerendered(int sequence, string descriptor) =>
-        new ServerComponentMarker(ServerMarkerType, descriptor, sequence, null);
+    public static ServerComponentMarker NonPrerendered(int componentId, int sequence, string descriptor) =>
+        new ServerComponentMarker(componentId, ServerMarkerType, descriptor, sequence, null);
 
     // Creates the end marker for a prerendered component.
     public ServerComponentMarker GetEndRecord()
@@ -57,6 +63,6 @@ internal struct ServerComponentMarker
             throw new InvalidOperationException("Can't get an end record for non-prerendered components.");
         }
 
-        return new ServerComponentMarker(null, null, null, PrerenderId);
+        return new ServerComponentMarker(null, null, null, null, PrerenderId);
     }
 }

@@ -33,8 +33,9 @@ import { createSymbolOrFallback } from './SymbolUtil';
 const logicalChildrenPropname = createSymbolOrFallback('_blazorLogicalChildren');
 const logicalParentPropname = createSymbolOrFallback('_blazorLogicalParent');
 const logicalEndSiblingPropname = createSymbolOrFallback('_blazorLogicalEnd');
+const logicalRootOriginalComponentIdPropname = createSymbolOrFallback('_blazorOriginalComponentId');
 
-export function toLogicalRootCommentElement(start: Comment, end: Comment): LogicalElement {
+export function toLogicalRootCommentElement(start: Comment, end: Comment, originalComponentId: number): LogicalElement {
   // Now that we support start/end comments as component delimiters we are going to be setting up
   // adding the components rendered output as siblings of the start/end tags (between).
   // For that to work, we need to appropriately configure the parent element to be a logical element
@@ -61,6 +62,7 @@ export function toLogicalRootCommentElement(start: Comment, end: Comment): Logic
   Array.from(parent.childNodes).forEach(n => children.push(n as unknown as LogicalElement));
 
   start[logicalParentPropname] = parentLogicalElement;
+  start[logicalRootOriginalComponentIdPropname] = originalComponentId;
   // We might not have an end comment in the case of non-prerendered components.
   if (end) {
     start[logicalEndSiblingPropname] = end;
@@ -91,12 +93,12 @@ export function emptyLogicalElement(element: LogicalElement): void {
   }
 }
 
-export function moveLogicalRootToDocumentFragment(element: LogicalElement): void {
+export function moveLogicalRootToDocumentFragment(element: LogicalElement): DocumentFragment {
   const lastNode = findLastDomNodeInRange(element) as Node;
   const range = new Range();
-  range.setStart(element as unknown as Node, 0);
-  range.setEnd(lastNode, lastNode.childNodes.length);
-  range.extractContents();
+  range.setStartBefore(element as unknown as Node);
+  range.setEndAfter(lastNode);
+  return range.extractContents();
 }
 
 export function createAndInsertLogicalContainer(parent: LogicalElement, childIndex: number): LogicalElement {
@@ -174,6 +176,10 @@ export function getLogicalSiblingEnd(element: LogicalElement): LogicalElement | 
 
 export function getLogicalChild(parent: LogicalElement, childIndex: number): LogicalElement {
   return getLogicalChildrenArray(parent)[childIndex];
+}
+
+export function getLogicalRootOriginalComponentId(element: LogicalElement): number | null {
+  return element[logicalRootOriginalComponentIdPropname] || null;
 }
 
 // SVG elements support `foreignObject` children that can hold arbitrary HTML.
