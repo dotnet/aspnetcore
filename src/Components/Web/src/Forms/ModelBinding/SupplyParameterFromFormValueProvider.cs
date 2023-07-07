@@ -8,10 +8,8 @@ namespace Microsoft.AspNetCore.Components.Forms.ModelBinding;
 
 internal class SupplyParameterFromFormValueProvider : ICascadingValueSupplier
 {
-    public bool IsFixed => true;
-
-    private ModelBindingContext? _bindingContext;
-    private IFormValueSupplier _formValueSupplier;
+    private readonly ModelBindingContext? _bindingContext;
+    private readonly IFormValueSupplier _formValueSupplier;
 
     public ModelBindingContext? BindingContext => _bindingContext;
 
@@ -45,6 +43,8 @@ internal class SupplyParameterFromFormValueProvider : ICascadingValueSupplier
         }
     }
 
+    bool ICascadingValueSupplier.IsFixed => true;
+
     bool ICascadingValueSupplier.CanSupplyValue(in CascadingParameterInfo parameterInfo)
     {
         // We supply a ModelBindingContext
@@ -64,10 +64,10 @@ internal class SupplyParameterFromFormValueProvider : ICascadingValueSupplier
     }
 
     void ICascadingValueSupplier.Subscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
-        => throw new NotSupportedException();
+        => throw new NotSupportedException(); // IsFixed = true, so the framework won't call this
 
     void ICascadingValueSupplier.Unsubscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
-        => throw new NotSupportedException();
+        => throw new NotSupportedException(); // IsFixed = true, so the framework won't call this
 
     object? ICascadingValueSupplier.GetCurrentValue(in CascadingParameterInfo parameterInfo)
     {
