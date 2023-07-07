@@ -76,7 +76,7 @@ public abstract class RequestDelegateCreationTestBase : LoggedTest
         return (Assert.Single(runResult.Results), updatedCompilation);
     }
 
-    internal static RequestDelegateGenerator.StaticRouteHandlerModel.Endpoint  GetStaticEndpoint(GeneratorRunResult result, string stepName) =>
+    internal static RequestDelegateGenerator.StaticRouteHandlerModel.Endpoint GetStaticEndpoint(GeneratorRunResult result, string stepName) =>
         Assert.Single(GetStaticEndpoints(result, stepName));
 
     internal static RequestDelegateGenerator.StaticRouteHandlerModel.Endpoint[] GetStaticEndpoints(GeneratorRunResult result, string stepName)
@@ -109,14 +109,14 @@ public abstract class RequestDelegateCreationTestBase : LoggedTest
         }
     }
 
-    internal Endpoint GetEndpointFromCompilation(Compilation compilation, bool? expectSourceKeyOverride = null, IServiceProvider serviceProvider = null) =>
-        Assert.Single(GetEndpointsFromCompilation(compilation, expectSourceKeyOverride, serviceProvider));
+    internal Endpoint GetEndpointFromCompilation(Compilation compilation, bool? expectGeneratedCodeOverride = null, IServiceProvider serviceProvider = null) =>
+        Assert.Single(GetEndpointsFromCompilation(compilation, expectGeneratedCodeOverride, serviceProvider));
 
-    internal Endpoint[] GetEndpointsFromCompilation(Compilation compilation, bool? expectSourceKeyOverride = null, IServiceProvider serviceProvider = null)
+    internal Endpoint[] GetEndpointsFromCompilation(Compilation compilation, bool? expectGeneratedCodeOverride = null, IServiceProvider serviceProvider = null)
     {
         var assemblyName = compilation.AssemblyName!;
         var symbolsName = Path.ChangeExtension(assemblyName, "pdb");
-        var expectSourceKey = (expectSourceKeyOverride ?? true) && IsGeneratorEnabled;
+        var expectGeneratedCode = (expectGeneratedCodeOverride ?? true) && IsGeneratorEnabled;
 
         var output = new MemoryStream();
         var pdb = new MemoryStream();
@@ -169,18 +169,18 @@ public abstract class RequestDelegateCreationTestBase : LoggedTest
 
         foreach (var endpoint in endpoints)
         {
-            var sourceKeyMetadata = endpoint.Metadata.OfType<GeneratedCodeAttribute>().SingleOrDefault();
+            var generatedCodeAttribute = endpoint.Metadata.OfType<GeneratedCodeAttribute>().SingleOrDefault();
 
-            if (expectSourceKey)
+            if (expectGeneratedCode)
             {
-                Assert.NotNull(sourceKeyMetadata);
-                var generatedCode = Assert.IsType<GeneratedCodeAttribute>(sourceKeyMetadata);
+                Assert.NotNull(generatedCodeAttribute);
+                var generatedCode = Assert.IsType<GeneratedCodeAttribute>(generatedCodeAttribute);
                 Assert.Equal(typeof(RequestDelegateGeneratorSources).Assembly.FullName, generatedCode.Tool);
                 Assert.Equal(typeof(RequestDelegateGeneratorSources).Assembly.GetName().Version?.ToString(), generatedCode.Version);
             }
             else
             {
-                Assert.Null(sourceKeyMetadata);
+                Assert.Null(generatedCodeAttribute);
             }
         }
 

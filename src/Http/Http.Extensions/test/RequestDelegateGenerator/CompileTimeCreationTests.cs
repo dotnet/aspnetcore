@@ -46,7 +46,7 @@ app.MapGet("/hello", (HttpContext context) => Task.CompletedTask);
     public async Task SupportsSameInterceptorsFromDifferentFiles()
     {
         var project = CreateProject();
-        var source = GetMapActionString("""app.MapGet("/", (string name) => "Hello {name}!");""");
+        var source = GetMapActionString("""app.MapGet("/", (string name) => "Hello {name}!");app.MapGet("/bye", (string name) => "Bye {name}!");""");
         var otherSource = GetMapActionString("""app.MapGet("/", (string name) => "Hello {name}!");""", "OtherTestMapActions");
         project = project.AddDocument("TestMapActions.cs", SourceText.From(source, Encoding.UTF8)).Project;
         project = project.AddDocument("OtherTestMapActions.cs", SourceText.From(otherSource, Encoding.UTF8)).Project;
