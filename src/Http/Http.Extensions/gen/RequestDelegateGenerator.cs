@@ -175,6 +175,7 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
             .Select((endpoints, _) =>
             {
                 return endpoints
+                    .Distinct(EndpointHttpMethodComparer.Instance)
                     .Select(endpoint => endpoint.EmitterContext.HttpMethod!)
                     .Where(verb => verb is not null)
                     .ToImmutableHashSet();
