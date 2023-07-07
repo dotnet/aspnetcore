@@ -1197,4 +1197,57 @@ public class ForwardedHeadersMiddlewareTests
         Assert.False(context.Request.Headers.ContainsKey("X-Original-Prefix"));
         Assert.True(context.Request.Headers.ContainsKey("X-Forwarded-Prefix"));
     }
+
+    [Theory]
+    [InlineData("11.111.111.11", "host1, host2", "h1, h2", "/prefix1, /prefix2")]
+    [InlineData("11.111.111.11, 22.222.222.22", "host1", "h1, h2", "/prefix1, /prefix2")]
+    [InlineData("11.111.111.11, 22.222.222.22", "host1, host2", "h1", "/prefix1, /prefix2")]
+    [InlineData("11.111.111.11, 22.222.222.22", "host1, host2", "h1, h2", "/prefix1")]
+    public async Task XForwardedPrefixParameterCountMismatch(
+        string forwardedFor,
+        string forwardedHost,
+        string forwardedProto,
+        string forwardedPrefix)
+    {
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .Configure(app =>
+                {
+                    app.UseForwardedHeaders(new ForwardedHeadersOptions
+                    {
+                        ForwardedHeaders =
+                            ForwardedHeaders.XForwardedFor |
+                            ForwardedHeaders.XForwardedHost |
+                            ForwardedHeaders.XForwardedProto |
+                            ForwardedHeaders.XForwardedPrefix,
+                        RequireHeaderSymmetry = true,
+                    });
+                });
+            }).Build();
+
+        await host.StartAsync();
+
+        var server = host.GetTestServer();
+
+        var context = await server.SendAsync(c =>
+        {
+            c.Request.Headers["X-Forwarded-For"] = forwardedFor;
+            c.Request.Headers["X-Forwarded-Host"] = forwardedHost;
+            c.Request.Headers["X-Forwarded-Proto"] = forwardedProto;
+            c.Request.Headers["X-Forwarded-Prefix"] = forwardedPrefix;
+        });
+
+        Assert.Equal(PathString.Empty, context.Request.PathBase);
+        Assert.False(context.Request.Headers.ContainsKey("X-Original-For"));
+        Assert.False(context.Request.Headers.ContainsKey("X-Original-Host"));
+        Assert.False(context.Request.Headers.ContainsKey("X-Original-Proto"));
+        Assert.False(context.Request.Headers.ContainsKey("X-Original-Prefix"));
+        Assert.True(context.Request.Headers.ContainsKey("X-Forwarded-For"));
+        Assert.True(context.Request.Headers.ContainsKey("X-Forwarded-Host"));
+        Assert.True(context.Request.Headers.ContainsKey("X-Forwarded-Proto"));
+        Assert.True(context.Request.Headers.ContainsKey("X-Forwarded-Prefix"));
+    }
 }
