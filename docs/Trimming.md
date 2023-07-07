@@ -98,7 +98,7 @@ Alternatively, you can use `Activate.ps1` to ensure you're using the right dotne
 
 ### Native AOT
 
-Native AOT testing is substantially the same * just name your project \*.NativeAotTests.proj, rather than \*.TrimmingTests.proj.
+Native AOT testing is substantially the same: just name your project \*.NativeAotTests.proj, rather than \*.TrimmingTests.proj.
 
 ### Tips
 
