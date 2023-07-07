@@ -33,6 +33,7 @@ public static class ComponentsWebViewServiceCollectionExtensions
         services.TryAddScoped<IErrorBoundaryLogger, WebViewErrorBoundaryLogger>();
         services.TryAddScoped<FormDataProvider, DefaultFormDataProvider>();
         services.TryAddScoped<IFormValueModelBinder, WebViewFormValueModelBinder>();
+        services.AddSupplyValueFromQueryProvider();
 
         return services;
     }
