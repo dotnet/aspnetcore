@@ -18,7 +18,7 @@ public class EditFormTest
     {
         var services = new ServiceCollection();
         services.AddSingleton<NavigationManager, TestNavigationManager>();
-        services.AddSingleton<IFormValueModelBinder, TestFormValueSupplier>();
+        services.AddSingleton<IFormValueModelBinder, TestFormValueModelBinder>();
         services.AddAntiforgery();
         services.AddLogging();
         services.AddSingleton<ComponentStatePersistenceManager>();
@@ -454,7 +454,7 @@ public class EditFormTest
         }
     }
 
-    private class TestFormValueSupplier : IFormValueModelBinder
+    private class TestFormValueModelBinder : IFormValueModelBinder
     {
         public bool CanBind(Type valueType, string formName = null) => false;
         public void Bind(FormValueModelBindingContext context) { }

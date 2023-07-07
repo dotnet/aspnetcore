@@ -1,6 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms.ModelBinding;
+
 namespace Microsoft.Extensions.DependencyInjection;
 
 public class RazorComponentsServiceCollectionExtensionsTest
@@ -64,7 +67,26 @@ public class RazorComponentsServiceCollectionExtensionsTest
         {
             var services = new ServiceCollection();
             RazorComponentsServiceCollectionExtensions.AddRazorComponents(services);
-            return services.Select(x => x.ServiceType);
+
+            var multiRegistrationServiceTypes = MultiRegistrationServiceTypes;
+            return services
+                .Where(sd => !multiRegistrationServiceTypes.ContainsKey(sd.ServiceType))
+                .Select(sd => sd.ServiceType);
+        }
+    }
+
+    private Dictionary<Type, Type[]> MultiRegistrationServiceTypes
+    {
+        get
+        {
+            return new Dictionary<Type, Type[]>()
+            {
+                [typeof(ICascadingValueSupplier)] = new[]
+                {
+                    typeof(SupplyParameterFromFormValueProvider),
+                    typeof(SupplyParameterFromQueryProviderServiceCollectionExtensions.SupplyValueFromQueryValueProvider),
+                }
+            };
         }
     }
 

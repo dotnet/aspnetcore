@@ -1,32 +1,39 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Components.Forms.ModelBinding;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Test.Helpers;
-using Moq;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Components.Forms.PostHandling;
 
 public class SupplyParameterFromFormTest
 {
     [Fact]
-    public void FindCascadingParameters_HandlesSupplyParameterFromFormValues()
+    public async Task FindCascadingParameters_HandlesSupplyParameterFromFormValues()
     {
         // Arrange
+        var renderer = CreateRendererWithFormValueModelBinder();
         var cascadingModelBinder = new CascadingModelBinder
         {
-            Navigation = Mock.Of<NavigationManager>(),
-            Name = ""
+            Navigation = new TestNavigationManager(),
+            FormValueModelBinder = new TestFormModelValueBinder(),
+            ChildContent = modelBindingContext => builder =>
+            {
+                builder.OpenComponent<FormParametersComponent>(0);
+                builder.CloseComponent();
+            }
         };
 
-        cascadingModelBinder.SetParameters(new());
-
-        var states = CreateAncestry(
-            cascadingModelBinder,
-            new FormParametersComponent());
-
         // Act
-        var result = CascadingParameterState.FindCascadingParameters(states.Last());
+        var componentId = renderer.AssignRootComponentId(cascadingModelBinder);
+        await renderer.RenderRootComponentAsync(componentId);
+        var formComponentState = renderer.Batches.Single()
+            .GetComponentFrames<FormParametersComponent>().Single()
+            .ComponentState;
+
+        var result = CascadingParameterState.FindCascadingParameters(formComponentState);
 
         // Assert
         var supplier = Assert.Single(result);
@@ -34,47 +41,40 @@ public class SupplyParameterFromFormTest
     }
 
     [Fact]
-    public void FindCascadingParameters_HandlesSupplyParameterFromFormValues_WithName()
+    public async Task FindCascadingParameters_HandlesSupplyParameterFromFormValues_WithName()
     {
         // Arrange
+        var renderer = CreateRendererWithFormValueModelBinder();
         var cascadingModelBinder = new CascadingModelBinder
         {
             Navigation = new TestNavigationManager(),
-            Name = "some-name"
+            FormValueModelBinder = new TestFormModelValueBinder("some-name"),
+            ChildContent = modelBindingContext => builder =>
+            {
+                builder.OpenComponent<FormParametersComponentWithName>(0);
+                builder.CloseComponent();
+            }
         };
 
-        cascadingModelBinder.SetParameters(new());
-
-        var states = CreateAncestry(
-            cascadingModelBinder,
-            new FormParametersComponentWithName());
-
         // Act
-        var result = CascadingParameterState.FindCascadingParameters(states.Last());
+        var componentId = renderer.AssignRootComponentId(cascadingModelBinder);
+        await renderer.RenderRootComponentAsync(componentId);
+        var formComponentState = renderer.Batches.Single()
+            .GetComponentFrames<FormParametersComponentWithName>().Single()
+            .ComponentState;
+
+        var result = CascadingParameterState.FindCascadingParameters(formComponentState);
 
         // Assert
         var supplier = Assert.Single(result);
         Assert.Equal(cascadingModelBinder, supplier.ValueSupplier);
     }
 
-    static ComponentState[] CreateAncestry(params IComponent[] components)
+    static TestRenderer CreateRendererWithFormValueModelBinder()
     {
-        var result = new ComponentState[components.Length];
-
-        for (var i = 0; i < components.Length; i++)
-        {
-            result[i] = CreateComponentState(
-                components[i],
-                i == 0 ? null : result[i - 1]);
-        }
-
-        return result;
-    }
-
-    static ComponentState CreateComponentState(
-        IComponent component, ComponentState parentComponentState = null)
-    {
-        return new ComponentState(new TestRenderer(), 0, component, parentComponentState);
+        var services = new ServiceCollection();
+        services.AddSingleton<IFormValueModelBinder, TestFormModelValueBinder>();
+        return new TestRenderer(services.BuildServiceProvider());
     }
 
     class FormParametersComponent : TestComponentBase
@@ -87,13 +87,22 @@ public class SupplyParameterFromFormTest
         [SupplyParameterFromForm(Handler = "some-name")] public string FormParameter { get; set; }
     }
 
+    class TestFormModelValueBinder(string FormName = "") : IFormValueModelBinder
+    {
+        public void Bind(FormValueModelBindingContext context) { }
+
+        public bool CanBind(Type valueType, string formName = null)
+            => formName is null || formName == FormName;
+    }
+
     class TestComponentBase : IComponent
     {
         public void Attach(RenderHandle renderHandle)
-            => throw new NotImplementedException();
+        {
+        }
 
         public Task SetParametersAsync(ParameterView parameters)
-            => throw new NotImplementedException();
+            => Task.CompletedTask;
     }
 
     class TestNavigationManager : NavigationManager

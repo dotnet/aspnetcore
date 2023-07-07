@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Binding;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.Forms.ModelBinding;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebView.Services;
@@ -31,8 +32,7 @@ public static class ComponentsWebViewServiceCollectionExtensions
         services.TryAddScoped<NavigationManager, WebViewNavigationManager>();
         services.TryAddScoped<IErrorBoundaryLogger, WebViewErrorBoundaryLogger>();
         services.TryAddScoped<FormDataProvider, DefaultFormDataProvider>();
-        services.TryAddScoped<IFormValueSupplier, WebViewFormValueSupplier>();
-        services.TryAddEnumerable(ServiceDescriptor.Scoped<CascadingModelBindingProvider, CascadingQueryModelBindingProvider>());
+        services.TryAddScoped<IFormValueModelBinder, WebViewFormValueModelBinder>();
 
         return services;
     }

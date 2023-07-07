@@ -9,13 +9,16 @@ namespace Microsoft.AspNetCore.Components.Forms.ModelBinding;
 internal class SupplyParameterFromFormValueProvider : ICascadingValueSupplier
 {
     private readonly ModelBindingContext _bindingContext;
-    private readonly IFormValueModelBinder _formValueSupplier;
+    private readonly IFormValueModelBinder _formValueModelBinder;
 
     public ModelBindingContext BindingContext => _bindingContext;
 
-    public SupplyParameterFromFormValueProvider(IFormValueModelBinder formValueSupplier, NavigationManager navigation, ModelBindingContext? parentContext, string thisName)
+    public SupplyParameterFromFormValueProvider(IFormValueModelBinder formValueModelBinder, NavigationManager navigation, ModelBindingContext? parentContext, string thisName)
     {
-        _formValueSupplier = formValueSupplier;
+        ArgumentNullException.ThrowIfNull(formValueModelBinder);
+        ArgumentNullException.ThrowIfNull(navigation);
+
+        _formValueModelBinder = formValueModelBinder;
         Name = thisName;
 
         // BindingContextId: action parameter used to define the handler
@@ -60,7 +63,7 @@ internal class SupplyParameterFromFormValueProvider : ICascadingValueSupplier
         if (parameterInfo.Attribute is SupplyParameterFromFormAttribute)
         {
             var (formName, valueType) = GetFormNameAndValueType(_bindingContext, parameterInfo);
-            return _formValueSupplier.CanBind(valueType, formName);
+            return _formValueModelBinder.CanBind(valueType, formName);
         }
 
         return false;
@@ -106,7 +109,7 @@ internal class SupplyParameterFromFormValueProvider : ICascadingValueSupplier
             MapErrorToContainer = bindingContext.AttachParentValue
         };
 
-        _formValueSupplier.Bind(context);
+        _formValueModelBinder.Bind(context);
 
         return context.Result;
     }

@@ -30,7 +30,7 @@ public sealed class CascadingModelBinder : ICascadingValueSupplier, IComponent
 
     [Inject] internal NavigationManager Navigation { get; set; } = null!;
 
-    [Inject] internal IFormValueModelBinder FormValueSupplier { get; set; } = null!;
+    [Inject] internal IFormValueModelBinder FormValueModelBinder { get; set; } = null!;
 
     void IComponent.Attach(RenderHandle renderHandle)
     {
@@ -47,7 +47,7 @@ public sealed class CascadingModelBinder : ICascadingValueSupplier, IComponent
 
         if (_cascadingValueSupplier is null)
         {
-            _cascadingValueSupplier = new SupplyParameterFromFormValueProvider(FormValueSupplier, Navigation, ParentContext, Name);
+            _cascadingValueSupplier = new SupplyParameterFromFormValueProvider(FormValueModelBinder, Navigation, ParentContext, Name);
         }
         else if (!string.Equals(Name, _cascadingValueSupplier.Name))
         {

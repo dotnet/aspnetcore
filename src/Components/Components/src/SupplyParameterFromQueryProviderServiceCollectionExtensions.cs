@@ -20,11 +20,11 @@ public static class SupplyParameterFromQueryProviderServiceCollectionExtensions
     /// <returns>The <see cref="IServiceCollection"/>.</returns>
     public static IServiceCollection AddSupplyValueFromQueryProvider(this IServiceCollection services)
     {
-        services.TryAddEnumerable(ServiceDescriptor.Scoped<ICascadingValueSupplier, SupplyValueFromQueryProvider>());
+        services.TryAddEnumerable(ServiceDescriptor.Scoped<ICascadingValueSupplier, SupplyValueFromQueryValueProvider>());
         return services;
     }
 
-    private sealed class SupplyValueFromQueryProvider : ICascadingValueSupplier, IDisposable
+    internal sealed class SupplyValueFromQueryValueProvider : ICascadingValueSupplier, IDisposable
     {
         private readonly QueryParameterValueSupplier _queryParameterValueSupplier = new();
         private readonly NavigationManager _navigationManager;
@@ -32,7 +32,7 @@ public static class SupplyParameterFromQueryProviderServiceCollectionExtensions
         private bool _isSubscribedToLocationChanges;
         private bool _queryParametersMightHaveChanged = true;
 
-        public SupplyValueFromQueryProvider(NavigationManager navigationManager)
+        public SupplyValueFromQueryValueProvider(NavigationManager navigationManager)
         {
             _navigationManager = navigationManager;
         }
