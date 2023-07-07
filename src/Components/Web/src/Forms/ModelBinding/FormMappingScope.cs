@@ -8,21 +8,21 @@ using Microsoft.AspNetCore.Components.Rendering;
 namespace Microsoft.AspNetCore.Components.Forms;
 
 /// <summary>
-/// Defines the binding context for data bound from external sources.
+/// Defines the mapping context for data bound from form posts.
 /// </summary>
-public sealed class CascadingModelBinder : ICascadingValueSupplier, IComponent
+public sealed class FormMappingScope : ICascadingValueSupplier, IComponent
 {
     private SupplyParameterFromFormValueProvider? _cascadingValueSupplier;
     private RenderHandle _handle;
     private bool _hasPendingQueuedRender;
 
     /// <summary>
-    /// The binding context name.
+    /// The mapping context name.
     /// </summary>
     [Parameter] public string Name { get; set; } = "";
 
     /// <summary>
-    /// Specifies the content to be rendered inside this <see cref="CascadingModelBinder"/>.
+    /// Specifies the content to be rendered inside this <see cref="FormMappingScope"/>.
     /// </summary>
     [Parameter] public RenderFragment<ModelBindingContext> ChildContent { get; set; } = default!;
 
@@ -42,7 +42,7 @@ public sealed class CascadingModelBinder : ICascadingValueSupplier, IComponent
         parameters.SetParameterProperties(this);
         if (ParentContext != null && string.IsNullOrEmpty(Name))
         {
-            throw new InvalidOperationException($"Nested binding contexts must define a Name. (Parent context) = '{ParentContext.Name}'.");
+            throw new InvalidOperationException($"Nested form mapping contexts must define a Name. (Parent context) = '{ParentContext.Name}'.");
         }
 
         if (_cascadingValueSupplier is null)
@@ -51,7 +51,7 @@ public sealed class CascadingModelBinder : ICascadingValueSupplier, IComponent
         }
         else if (!string.Equals(Name, _cascadingValueSupplier.Name))
         {
-            throw new InvalidOperationException($"{nameof(CascadingModelBinder)} '{nameof(Name)}' can't change after initialization.");
+            throw new InvalidOperationException($"{nameof(FormMappingScope)} '{nameof(Name)}' can't change after initialization.");
         }
 
         if (!_hasPendingQueuedRender)

@@ -10,12 +10,12 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Components;
 
-public class CascadingModelBinderTest
+public class FormMappingScopeTest
 {
     private readonly TestRenderer _renderer;
     private TestNavigationManager _navigationManager;
 
-    public CascadingModelBinderTest()
+    public FormMappingScopeTest()
     {
         var serviceCollection = new ServiceCollection();
         _navigationManager = new TestNavigationManager();
@@ -26,15 +26,15 @@ public class CascadingModelBinderTest
     }
 
     [Fact]
-    public void CascadingModelBinder_NoBindingContextId_ForDefaultName()
+    public void FormMappingScope_NoBindingContextId_ForDefaultName()
     {
         ModelBindingContext capturedContext = null;
         RenderFragment<ModelBindingContext> contents = (ctx) => b => { capturedContext = ctx; };
 
         var testComponent = new TestComponent(builder =>
         {
-            builder.OpenComponent<CascadingModelBinder>(0);
-            builder.AddAttribute(1, nameof(CascadingModelBinder.ChildContent), contents);
+            builder.OpenComponent<FormMappingScope>(0);
+            builder.AddAttribute(1, nameof(FormMappingScope.ChildContent), contents);
             builder.CloseComponent();
         });
         var id = _renderer.AssignRootComponentId(testComponent);
@@ -64,9 +64,9 @@ public class CascadingModelBinderTest
 
         var testComponent = new TestComponent(builder =>
         {
-            builder.OpenComponent<CascadingModelBinder>(0);
-            builder.AddAttribute(1, nameof(CascadingModelBinder.Name), "named-context");
-            builder.AddAttribute(2, nameof(CascadingModelBinder.ChildContent), contents);
+            builder.OpenComponent<FormMappingScope>(0);
+            builder.AddAttribute(1, nameof(FormMappingScope.Name), "named-context");
+            builder.AddAttribute(2, nameof(FormMappingScope.ChildContent), contents);
             builder.CloseComponent();
         });
         var id = _renderer.AssignRootComponentId(testComponent);
@@ -80,16 +80,16 @@ public class CascadingModelBinderTest
     }
 
     [Fact]
-    public void CascadingModelBinder_CanProvideName()
+    public void FormMappingScope_CanProvideName()
     {
         ModelBindingContext capturedContext = null;
         RenderFragment<ModelBindingContext> contents = (ctx) => b => { capturedContext = ctx; };
 
         var testComponent = new TestComponent(builder =>
         {
-            builder.OpenComponent<CascadingModelBinder>(0);
-            builder.AddAttribute(1, nameof(CascadingModelBinder.Name), "named-context");
-            builder.AddAttribute(2, nameof(CascadingModelBinder.ChildContent), contents);
+            builder.OpenComponent<FormMappingScope>(0);
+            builder.AddAttribute(1, nameof(FormMappingScope.Name), "named-context");
+            builder.AddAttribute(2, nameof(FormMappingScope.ChildContent), contents);
             builder.CloseComponent();
         });
         var id = _renderer.AssignRootComponentId(testComponent);
@@ -104,23 +104,23 @@ public class CascadingModelBinderTest
     }
 
     [Fact]
-    public void CascadingModelBinder_CanNestNamedContexts()
+    public void FormMappingScope_CanNestNamedContexts()
     {
         ModelBindingContext capturedContext = null;
         RenderFragment<ModelBindingContext> contents = (ctx) => b => { capturedContext = ctx; };
         RenderFragment<ModelBindingContext> nested = (ctx) => b =>
         {
-            b.OpenComponent<CascadingModelBinder>(0);
-            b.AddAttribute(1, nameof(CascadingModelBinder.Name), "child-context");
-            b.AddAttribute(2, nameof(CascadingModelBinder.ChildContent), contents);
+            b.OpenComponent<FormMappingScope>(0);
+            b.AddAttribute(1, nameof(FormMappingScope.Name), "child-context");
+            b.AddAttribute(2, nameof(FormMappingScope.ChildContent), contents);
             b.CloseComponent();
         };
 
         var testComponent = new TestComponent(builder =>
         {
-            builder.OpenComponent<CascadingModelBinder>(0);
-            builder.AddAttribute(1, nameof(CascadingModelBinder.Name), "parent-context");
-            builder.AddAttribute(2, nameof(CascadingModelBinder.ChildContent), nested);
+            builder.OpenComponent<FormMappingScope>(0);
+            builder.AddAttribute(1, nameof(FormMappingScope.Name), "parent-context");
+            builder.AddAttribute(2, nameof(FormMappingScope.ChildContent), nested);
             builder.CloseComponent();
         });
         var id = _renderer.AssignRootComponentId(testComponent);
@@ -135,22 +135,22 @@ public class CascadingModelBinderTest
     }
 
     [Fact]
-    public void CascadingModelBinder_CanNestWithDefaultContext()
+    public void FormMappingScope_CanNestWithDefaultContext()
     {
         ModelBindingContext capturedContext = null;
         RenderFragment<ModelBindingContext> contents = (ctx) => b => { capturedContext = ctx; };
         RenderFragment<ModelBindingContext> nested = (ctx) => b =>
         {
-            b.OpenComponent<CascadingModelBinder>(0);
-            b.AddAttribute(1, nameof(CascadingModelBinder.Name), "child-context");
-            b.AddAttribute(2, nameof(CascadingModelBinder.ChildContent), contents);
+            b.OpenComponent<FormMappingScope>(0);
+            b.AddAttribute(1, nameof(FormMappingScope.Name), "child-context");
+            b.AddAttribute(2, nameof(FormMappingScope.ChildContent), contents);
             b.CloseComponent();
         };
 
         var testComponent = new TestComponent(builder =>
         {
-            builder.OpenComponent<CascadingModelBinder>(0);
-            builder.AddAttribute(2, nameof(CascadingModelBinder.ChildContent), nested);
+            builder.OpenComponent<FormMappingScope>(0);
+            builder.AddAttribute(2, nameof(FormMappingScope.ChildContent), nested);
             builder.CloseComponent();
         });
         var id = _renderer.AssignRootComponentId(testComponent);
@@ -171,16 +171,16 @@ public class CascadingModelBinderTest
         RenderFragment<ModelBindingContext> contents = (ctx) => b => { capturedContext = ctx; };
         RenderFragment<ModelBindingContext> nested = (ctx) => b =>
         {
-            b.OpenComponent<CascadingModelBinder>(0);
-            b.AddAttribute(1, nameof(CascadingModelBinder.ChildContent), contents);
+            b.OpenComponent<FormMappingScope>(0);
+            b.AddAttribute(1, nameof(FormMappingScope.ChildContent), contents);
             b.CloseComponent();
         };
 
         var testComponent = new TestComponent(builder =>
         {
-            builder.OpenComponent<CascadingModelBinder>(0);
-            builder.AddAttribute(1, nameof(CascadingModelBinder.Name), "parent-context");
-            builder.AddAttribute(2, nameof(CascadingModelBinder.ChildContent), nested);
+            builder.OpenComponent<FormMappingScope>(0);
+            builder.AddAttribute(1, nameof(FormMappingScope.Name), "parent-context");
+            builder.AddAttribute(2, nameof(FormMappingScope.ChildContent), nested);
             builder.CloseComponent();
         });
         var id = _renderer.AssignRootComponentId(testComponent);
@@ -199,9 +199,9 @@ public class CascadingModelBinderTest
 
         var testComponent = new TestComponent(builder =>
         {
-            builder.OpenComponent<CascadingModelBinder>(0);
-            builder.AddAttribute(1, nameof(CascadingModelBinder.Name), contextName);
-            builder.AddAttribute(2, nameof(CascadingModelBinder.ChildContent), contents);
+            builder.OpenComponent<FormMappingScope>(0);
+            builder.AddAttribute(1, nameof(FormMappingScope.Name), contextName);
+            builder.AddAttribute(2, nameof(FormMappingScope.ChildContent), contents);
             builder.CloseComponent();
         });
         var id = _renderer.AssignRootComponentId(testComponent);
@@ -211,7 +211,7 @@ public class CascadingModelBinderTest
         contextName = "changed";
         var exception = Assert.Throws<InvalidOperationException>(testComponent.TriggerRender);
 
-        Assert.Equal("CascadingModelBinder 'Name' can't change after initialization.", exception.Message);
+        Assert.Equal("FormMappingScope 'Name' can't change after initialization.", exception.Message);
     }
 
     private class RouteViewTestNavigationManager : NavigationManager

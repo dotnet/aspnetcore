@@ -9,12 +9,6 @@ Microsoft.AspNetCore.Components.Forms.AntiforgeryStateProvider
 Microsoft.AspNetCore.Components.Forms.AntiforgeryStateProvider.AntiforgeryStateProvider() -> void
 Microsoft.AspNetCore.Components.Forms.AntiforgeryToken
 Microsoft.AspNetCore.Components.Forms.AntiforgeryToken.AntiforgeryToken() -> void
-Microsoft.AspNetCore.Components.Forms.CascadingModelBinder
-Microsoft.AspNetCore.Components.Forms.CascadingModelBinder.CascadingModelBinder() -> void
-Microsoft.AspNetCore.Components.Forms.CascadingModelBinder.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.Forms.ModelBindingContext!>!
-Microsoft.AspNetCore.Components.Forms.CascadingModelBinder.ChildContent.set -> void
-Microsoft.AspNetCore.Components.Forms.CascadingModelBinder.Name.get -> string!
-Microsoft.AspNetCore.Components.Forms.CascadingModelBinder.Name.set -> void
 Microsoft.AspNetCore.Components.Forms.Editor<T>
 Microsoft.AspNetCore.Components.Forms.Editor<T>.Editor() -> void
 Microsoft.AspNetCore.Components.Forms.Editor<T>.NameFor(System.Linq.Expressions.LambdaExpression! expression) -> string!
@@ -24,6 +18,12 @@ Microsoft.AspNetCore.Components.Forms.Editor<T>.ValueChanged.get -> Microsoft.As
 Microsoft.AspNetCore.Components.Forms.Editor<T>.ValueChanged.set -> void
 Microsoft.AspNetCore.Components.Forms.Editor<T>.ValueExpression.get -> System.Linq.Expressions.Expression<System.Func<T>!>!
 Microsoft.AspNetCore.Components.Forms.Editor<T>.ValueExpression.set -> void
+Microsoft.AspNetCore.Components.Forms.FormMappingScope
+Microsoft.AspNetCore.Components.Forms.FormMappingScope.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.Forms.ModelBindingContext!>!
+Microsoft.AspNetCore.Components.Forms.FormMappingScope.ChildContent.set -> void
+Microsoft.AspNetCore.Components.Forms.FormMappingScope.FormMappingScope() -> void
+Microsoft.AspNetCore.Components.Forms.FormMappingScope.Name.get -> string!
+Microsoft.AspNetCore.Components.Forms.FormMappingScope.Name.set -> void
 Microsoft.AspNetCore.Components.Forms.InputBase<TValue>.NameAttributeValue.get -> string!
 Microsoft.AspNetCore.Components.Forms.EditForm.FormHandlerName.get -> string?
 Microsoft.AspNetCore.Components.Forms.EditForm.FormHandlerName.set -> void

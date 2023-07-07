@@ -15,7 +15,7 @@ public class SupplyParameterFromFormTest
     {
         // Arrange
         var renderer = CreateRendererWithFormValueModelBinder();
-        var cascadingModelBinder = new CascadingModelBinder
+        var formMappingScope = new FormMappingScope
         {
             Navigation = new TestNavigationManager(),
             FormValueModelBinder = new TestFormModelValueBinder(),
@@ -27,7 +27,7 @@ public class SupplyParameterFromFormTest
         };
 
         // Act
-        var componentId = renderer.AssignRootComponentId(cascadingModelBinder);
+        var componentId = renderer.AssignRootComponentId(formMappingScope);
         await renderer.RenderRootComponentAsync(componentId);
         var formComponentState = renderer.Batches.Single()
             .GetComponentFrames<FormParametersComponent>().Single()
@@ -37,7 +37,7 @@ public class SupplyParameterFromFormTest
 
         // Assert
         var supplier = Assert.Single(result);
-        Assert.Equal(cascadingModelBinder, supplier.ValueSupplier);
+        Assert.Equal(formMappingScope, supplier.ValueSupplier);
     }
 
     [Fact]
@@ -45,7 +45,7 @@ public class SupplyParameterFromFormTest
     {
         // Arrange
         var renderer = CreateRendererWithFormValueModelBinder();
-        var cascadingModelBinder = new CascadingModelBinder
+        var formMappingScope = new FormMappingScope
         {
             Navigation = new TestNavigationManager(),
             FormValueModelBinder = new TestFormModelValueBinder("some-name"),
@@ -57,7 +57,7 @@ public class SupplyParameterFromFormTest
         };
 
         // Act
-        var componentId = renderer.AssignRootComponentId(cascadingModelBinder);
+        var componentId = renderer.AssignRootComponentId(formMappingScope);
         await renderer.RenderRootComponentAsync(componentId);
         var formComponentState = renderer.Batches.Single()
             .GetComponentFrames<FormParametersComponentWithName>().Single()
@@ -67,7 +67,7 @@ public class SupplyParameterFromFormTest
 
         // Assert
         var supplier = Assert.Single(result);
-        Assert.Equal(cascadingModelBinder, supplier.ValueSupplier);
+        Assert.Equal(formMappingScope, supplier.ValueSupplier);
     }
 
     static TestRenderer CreateRendererWithFormValueModelBinder()
