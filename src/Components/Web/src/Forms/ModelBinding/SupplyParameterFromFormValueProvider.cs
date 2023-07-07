@@ -8,10 +8,10 @@ namespace Microsoft.AspNetCore.Components.Forms.ModelBinding;
 
 internal class SupplyParameterFromFormValueProvider : ICascadingValueSupplier
 {
-    private readonly ModelBindingContext? _bindingContext;
+    private readonly ModelBindingContext _bindingContext;
     private readonly IFormValueSupplier _formValueSupplier;
 
-    public ModelBindingContext? BindingContext => _bindingContext;
+    public ModelBindingContext BindingContext => _bindingContext;
 
     public SupplyParameterFromFormValueProvider(IFormValueSupplier formValueSupplier, NavigationManager navigation, ModelBindingContext? parentContext, string thisName)
     {

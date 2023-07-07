@@ -12,7 +12,8 @@ namespace Microsoft.AspNetCore.Components.Forms;
 /// </summary>
 public sealed class CascadingModelBinder : ICascadingValueSupplier, IComponent
 {
-    private SupplyParameterFromFormValueProvider? _cascadingValueSupplier;
+    private ICascadingValueSupplier? _cascadingValueSupplier;
+    private ModelBindingContext? _bindingContext;
     private RenderHandle _handle;
     private bool _hasPendingQueuedRender;
 
@@ -26,7 +27,7 @@ public sealed class CascadingModelBinder : ICascadingValueSupplier, IComponent
     /// </summary>
     [Parameter] public RenderFragment<ModelBindingContext> ChildContent { get; set; } = default!;
 
-    [CascadingParameter] ModelBindingContext? ParentContext { get; set; }
+    [CascadingParameter] private ModelBindingContext? ParentContext { get; set; }
 
     [Inject] internal NavigationManager Navigation { get; set; } = null!;
 
@@ -47,36 +48,38 @@ public sealed class CascadingModelBinder : ICascadingValueSupplier, IComponent
 
         if (_cascadingValueSupplier is null)
         {
-            _cascadingValueSupplier = new SupplyParameterFromFormValueProvider(FormValueSupplier, Navigation, ParentContext, Name);
+            var cascadingValueSupplier = new SupplyParameterFromFormValueProvider(FormValueSupplier, Navigation, ParentContext, Name);
+            _cascadingValueSupplier = cascadingValueSupplier;
+            _bindingContext = cascadingValueSupplier.BindingContext;
         }
 
-        Render();
+        if (!_hasPendingQueuedRender)
+        {
+            _hasPendingQueuedRender = true;
+            _handle.Render(BuildRenderTree);
+        }
 
         return Task.CompletedTask;
     }
 
-    private void Render()
+    private void BuildRenderTree(RenderTreeBuilder builder)
     {
-        if (_hasPendingQueuedRender)
-        {
-            return;
-        }
-        _hasPendingQueuedRender = true;
-        _handle.Render(builder =>
-        {
-            _hasPendingQueuedRender = false;
-            builder.AddContent(0, ChildContent, _cascadingValueSupplier.BindingContext!);
-        });
+        _hasPendingQueuedRender = false;
+        builder.AddContent(0, ChildContent, _bindingContext!);
     }
 
+    // The implementation of ICascadingValueSupplier won't be used until this component is rendered,
+    // because it's only used by descendant components. So we know _cascadingValueSupplier will be
+    // nonnull by that time.
+
     bool ICascadingValueSupplier.IsFixed
-        => ((ICascadingValueSupplier)_cascadingValueSupplier!).IsFixed;
+        => _cascadingValueSupplier!.IsFixed;
 
     bool ICascadingValueSupplier.CanSupplyValue(in CascadingParameterInfo parameterInfo)
-        => ((ICascadingValueSupplier)_cascadingValueSupplier!).CanSupplyValue(parameterInfo);
+        => _cascadingValueSupplier!.CanSupplyValue(parameterInfo);
 
     object? ICascadingValueSupplier.GetCurrentValue(in CascadingParameterInfo parameterInfo)
-        => ((ICascadingValueSupplier)_cascadingValueSupplier!).GetCurrentValue(in parameterInfo);
+        => _cascadingValueSupplier!.GetCurrentValue(in parameterInfo);
 
     void ICascadingValueSupplier.Subscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
         => throw new NotSupportedException();
