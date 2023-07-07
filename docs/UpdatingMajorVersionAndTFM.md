@@ -23,11 +23,6 @@ Typically, we will update the Major Version before updating the TFM. This is bec
   * One way to ensure this is to check out the release branch shipping the previous release (**after API surface area has been finalized**), run `.\eng\scripts\mark-shipped.cmd` there, copy over all of the `PublicAPI.Unshipped.txt` and `PublicAPI.Shipped.txt` files into a new branch based off of `main`, and build the repo. Any failures there will tell you whether or not there are new APIs in main that need to be put back into the `PublicAPI.Unshipped.txt` files.
     * The result of `.\eng\scripts\mark-shipped.cmd` should be checked in to the release branch as well, as part of the RTM release.
 
-
-
-[foo](#doesnotexist)
-
-
 ### Validation
 
 * CI must be green.
