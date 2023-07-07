@@ -1,13 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable enable
+using System.Diagnostics;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Http.Metadata;
 
 /// <summary>
 /// Metadata that specifies the supported request content types.
 /// </summary>
+[DebuggerDisplay("{ToString(),nq}")]
 public sealed class AcceptsMetadata : IAcceptsMetadata
 {
     /// <summary>
@@ -39,4 +41,10 @@ public sealed class AcceptsMetadata : IAcceptsMetadata
     /// Gets a value that determines if the request body is optional.
     /// </summary>
     public bool IsOptional { get; }
+
+    /// <inheritdoc/>>
+    public override string ToString()
+    {
+        return DebuggerHelpers.GetDebugText(nameof(ContentTypes), ContentTypes, nameof(RequestType), RequestType, nameof(IsOptional), IsOptional, includeNullValues: false, prefix: "Accepts");
+    }
 }
