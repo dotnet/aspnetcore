@@ -62,7 +62,7 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                 {
                     codeWriter.WriteLine($$"""[InterceptsLocation(@"{{location.File}}", {{location.LineNumber}}, {{location.CharacterNumber}})]""");
                 }
-                codeWriter.WriteLine($"internal static RouteHandlerBuilder {endpoint.HttpMethod}_{endpoint.Location.LineNumber}_{endpoint.Location.CharacterNumber}(");
+                codeWriter.WriteLine($"internal static RouteHandlerBuilder {endpoint.HttpMethod}{endpointWithLocations.Index}(");
                 codeWriter.Indent++;
                 codeWriter.WriteLine("this IEndpointRouteBuilder endpoints,");
                 // MapFallback overloads that only take a delegate do not need a pattern argument

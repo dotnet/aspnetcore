@@ -69,6 +69,32 @@ app.MapGet("/hello", (HttpContext context) => Task.CompletedTask);
     }
 
     [Fact]
+    public async Task SupportsDifferentInterceptorsFromSameLocation()
+    {
+        var project = CreateProject();
+        var source = GetMapActionString("""app.MapGet("/", (string name) => "Hello {name}!");""");
+        var otherSource = GetMapActionString("""app.MapGet("/", (int age) => "Hello {age}!");""", "OtherTestMapActions");
+        project = project.AddDocument("TestMapActions.cs", SourceText.From(source, Encoding.UTF8)).Project;
+        project = project.AddDocument("OtherTestMapActions.cs", SourceText.From(otherSource, Encoding.UTF8)).Project;
+        var compilation = await project.GetCompilationAsync();
+
+        var generator = new RequestDelegateGenerator.RequestDelegateGenerator().AsSourceGenerator();
+        GeneratorDriver driver = CSharpGeneratorDriver.Create(generators: new[]
+            {
+                generator
+            },
+            driverOptions: new GeneratorDriverOptions(IncrementalGeneratorOutputKind.None, trackIncrementalGeneratorSteps: true),
+            parseOptions: ParseOptions);
+        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var updatedCompilation,
+            out var _);
+
+        var diagnostics = updatedCompilation.GetDiagnostics();
+        Assert.Empty(diagnostics.Where(d => d.Severity >= DiagnosticSeverity.Warning));
+
+        await VerifyAgainstBaselineUsingFile(updatedCompilation);
+    }
+
+    [Fact]
     public async Task SourceMapsAllPathsInAttribute()
     {
         var currentDirectory = Directory.GetCurrentDirectory();

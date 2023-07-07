@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Http.Generated
         [InterceptsLocation(@"TestMapActions.cs", 27, 5)]
         [InterceptsLocation(@"TestMapActions.cs", 28, 5)]
         [InterceptsLocation(@"TestMapActions.cs", 29, 5)]
-        internal static RouteHandlerBuilder MapGet_25_13(
+        internal static RouteHandlerBuilder MapGet0(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
             Delegate handler)

@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis;
 
 internal static class IncrementalValuesProviderExtensions
 {
-    public static IncrementalValuesProvider<(TSource Source, ImmutableArray<TElement> Elements)> GroupWith<TSource, TElement>(
+    public static IncrementalValuesProvider<(TSource Source, int Index, ImmutableArray<TElement> Elements)> GroupWith<TSource, TElement>(
         this IncrementalValuesProvider<TSource> source,
         Func<TSource, TElement> sourceToElementTransform,
         IEqualityComparer<TSource> comparer)
@@ -25,11 +25,13 @@ internal static class IncrementalValuesProviderExtensions
                 }
                 builder.Add(sourceToElementTransform(value));
             }
-            ImmutableArray<(TSource Key, ImmutableArray<TElement> Elements)>.Builder result =
-                ImmutableArray.CreateBuilder<(TSource, ImmutableArray<TElement>)>();
-            foreach (KeyValuePair<TSource, ImmutableArray<TElement>.Builder> entry in map)
+            ImmutableArray<(TSource Key, int Index, ImmutableArray<TElement> Elements)>.Builder result =
+                ImmutableArray.CreateBuilder<(TSource, int, ImmutableArray<TElement>)>();
+            var index = 0;
+            foreach (var entry in map)
             {
-                result.Add((entry.Key, entry.Value.ToImmutable()));
+                result.Add((entry.Key, index, entry.Value.ToImmutable()));
+                index++;
             }
             return result;
         });
