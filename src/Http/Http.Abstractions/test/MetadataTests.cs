@@ -11,11 +11,11 @@ public class MetadataTests
     public void ProducesResponseTypeMetadata_ToString()
     {
         // Act and Assert
-        Assert.Equal("ProducesResponseType StatusCode: 100", new ProducesResponseTypeMetadata(100).ToString());
-        Assert.Equal("ProducesResponseType StatusCode: 200, ContentTypes: application/json", new ProducesResponseTypeMetadata(200, contentTypes: new[] { "application/json" }).ToString());
-        Assert.Equal("ProducesResponseType StatusCode: 300, ContentTypes: application/json,text/plain", new ProducesResponseTypeMetadata(300, contentTypes: new[] { "application/json", "text/plain" }).ToString());
-        Assert.Equal("ProducesResponseType StatusCode: 400, Type: System.Version", new ProducesResponseTypeMetadata(400, type: typeof(Version)).ToString());
-        Assert.Equal("ProducesResponseType StatusCode: 500, Type: System.Void", new ProducesResponseTypeMetadata(500, type: typeof(void)).ToString());
+        Assert.Equal("Produces StatusCode: 100", new ProducesResponseTypeMetadata(100).ToString());
+        Assert.Equal("Produces StatusCode: 200, ContentTypes: application/json", new ProducesResponseTypeMetadata(200, contentTypes: new[] { "application/json" }).ToString());
+        Assert.Equal("Produces StatusCode: 300, ContentTypes: application/json,text/plain", new ProducesResponseTypeMetadata(300, contentTypes: new[] { "application/json", "text/plain" }).ToString());
+        Assert.Equal("Produces StatusCode: 400, Type: System.Version", new ProducesResponseTypeMetadata(400, type: typeof(Version)).ToString());
+        Assert.Equal("Produces StatusCode: 500, Type: System.Void", new ProducesResponseTypeMetadata(500, type: typeof(void)).ToString());
     }
 
     [Fact]

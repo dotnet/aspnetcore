@@ -76,7 +76,7 @@ public sealed class ProducesResponseTypeMetadata : IProducesResponseTypeMetadata
     /// <inheritdoc/>>
     public override string ToString()
     {
-        return DebuggerHelpers.GetDebugText(nameof(StatusCode), StatusCode, nameof(ContentTypes), ContentTypes, nameof(Type), Type, includeNullValues: false, prefix: "ProducesResponseType");
+        return DebuggerHelpers.GetDebugText(nameof(StatusCode), StatusCode, nameof(ContentTypes), ContentTypes, nameof(Type), Type, includeNullValues: false, prefix: "Produces");
     }
 
     internal static ProducesResponseTypeMetadata CreateUnvalidated(Type? type, int statusCode, IEnumerable<string> contentTypes) => new(statusCode, type, contentTypes);

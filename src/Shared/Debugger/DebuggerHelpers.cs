@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Shared;
 
@@ -101,10 +102,13 @@ internal static class DebuggerHelpers
         {
             return false;
         }
-        if (value is IEnumerable enumerable && !enumerable.GetEnumerator().MoveNext())
+
+        // Empty collections don't have a value.
+        if (value is not string && value is IEnumerable enumerable && !enumerable.GetEnumerator().MoveNext())
         {
             return false;
         }
+
         return true;
     }
 
