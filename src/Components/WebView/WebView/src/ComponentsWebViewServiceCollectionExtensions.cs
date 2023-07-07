@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Binding;
-using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Forms.ModelBinding;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
@@ -31,7 +29,6 @@ public static class ComponentsWebViewServiceCollectionExtensions
         services.TryAddScoped<IScrollToLocationHash, WebViewScrollToLocationHash>();
         services.TryAddScoped<NavigationManager, WebViewNavigationManager>();
         services.TryAddScoped<IErrorBoundaryLogger, WebViewErrorBoundaryLogger>();
-        services.TryAddScoped<FormDataProvider, DefaultFormDataProvider>();
         services.TryAddScoped<IFormValueModelBinder, WebViewFormValueModelBinder>();
         services.AddSupplyValueFromQueryProvider();
 

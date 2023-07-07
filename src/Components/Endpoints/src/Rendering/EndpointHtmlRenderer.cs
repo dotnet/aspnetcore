@@ -83,11 +83,10 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
             authenticationStateProvider.SetAuthenticationState(Task.FromResult(authenticationState));
         }
 
-        if (handler != null &&
-            form != null &&
-            httpContext.RequestServices.GetRequiredService<FormDataProvider>() is HttpContextFormDataProvider formDataProvider)
+        if (handler != null && form != null)
         {
-            formDataProvider.SetFormData(handler, new FormCollectionReadOnlyDictionary(form));
+            httpContext.RequestServices.GetRequiredService<HttpContextFormDataProvider>()
+                .SetFormData(handler, new FormCollectionReadOnlyDictionary(form));
         }
 
         if (httpContext.RequestServices.GetService<AntiforgeryStateProvider>() is EndpointAntiforgeryStateProvider antiforgery)

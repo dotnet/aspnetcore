@@ -4,7 +4,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text.Json;
-using Microsoft.AspNetCore.Components.Binding;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Forms.ModelBinding;
 using Microsoft.AspNetCore.Components.Infrastructure;
@@ -263,7 +262,6 @@ public sealed class WebAssemblyHostBuilder
         {
             builder.AddProvider(new WebAssemblyConsoleLoggerProvider(DefaultWebAssemblyJSRuntime.Instance));
         });
-        Services.AddSingleton<FormDataProvider, DefaultFormDataProvider>();
         Services.AddSingleton<IFormValueModelBinder, WebAssemblyFormModelBinder>();
         Services.AddSupplyValueFromQueryProvider();
     }

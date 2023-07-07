@@ -1,9 +1,6 @@
 #nullable enable
 *REMOVED*override Microsoft.AspNetCore.Components.Forms.InputFile.OnInitialized() -> void
 abstract Microsoft.AspNetCore.Components.Forms.AntiforgeryStateProvider.GetAntiforgeryToken() -> Microsoft.AspNetCore.Components.Forms.AntiforgeryRequestToken?
-abstract Microsoft.AspNetCore.Components.Forms.FormDataProvider.Entries.get -> System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.Extensions.Primitives.StringValues>!
-abstract Microsoft.AspNetCore.Components.Forms.FormDataProvider.Name.get -> string?
-Microsoft.AspNetCore.Components.CascadingModelBinder
 Microsoft.AspNetCore.Components.Forms.AntiforgeryRequestToken
 Microsoft.AspNetCore.Components.Forms.AntiforgeryRequestToken.AntiforgeryRequestToken(string! value, string! formFieldName) -> void
 Microsoft.AspNetCore.Components.Forms.AntiforgeryRequestToken.FormFieldName.get -> string!
@@ -27,12 +24,7 @@ Microsoft.AspNetCore.Components.Forms.Editor<T>.ValueChanged.get -> Microsoft.As
 Microsoft.AspNetCore.Components.Forms.Editor<T>.ValueChanged.set -> void
 Microsoft.AspNetCore.Components.Forms.Editor<T>.ValueExpression.get -> System.Linq.Expressions.Expression<System.Func<T>!>!
 Microsoft.AspNetCore.Components.Forms.Editor<T>.ValueExpression.set -> void
-Microsoft.AspNetCore.Components.Forms.FormDataProvider
-Microsoft.AspNetCore.Components.Forms.FormDataProvider.FormDataProvider() -> void
-Microsoft.AspNetCore.Components.Forms.FormDataProvider.IsFormDataAvailable.get -> bool
 Microsoft.AspNetCore.Components.Forms.InputBase<TValue>.NameAttributeValue.get -> string!
-Microsoft.AspNetCore.Components.Forms.EditForm.BindingContext.get -> Microsoft.AspNetCore.Components.ModelBindingContext?
-Microsoft.AspNetCore.Components.Forms.EditForm.BindingContext.set -> void
 Microsoft.AspNetCore.Components.Forms.EditForm.FormHandlerName.get -> string?
 Microsoft.AspNetCore.Components.Forms.EditForm.FormHandlerName.set -> void
 Microsoft.AspNetCore.Components.Forms.ModelBinding.FormValueModelBindingContext

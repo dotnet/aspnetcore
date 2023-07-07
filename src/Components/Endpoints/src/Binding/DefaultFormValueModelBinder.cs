@@ -6,7 +6,6 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Globalization;
 using Microsoft.AspNetCore.Components.Endpoints.Binding;
-using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Forms.ModelBinding;
 using Microsoft.Extensions.Primitives;
 
@@ -18,9 +17,9 @@ internal sealed class DefaultFormValueModelBinder : IFormValueModelBinder
     private readonly FormDataMapperOptions _options = new();
     private static readonly ConcurrentDictionary<Type, FormValueSupplier> _cache = new();
 
-    public DefaultFormValueModelBinder(FormDataProvider formData)
+    public DefaultFormValueModelBinder(HttpContextFormDataProvider formData)
     {
-        _formData = (HttpContextFormDataProvider)formData;
+        _formData = formData;
     }
 
     public bool CanBind(Type valueType, string? formName = null)

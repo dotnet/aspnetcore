@@ -80,10 +80,7 @@ public class EditForm : ComponentBase
     /// </summary>
     [Parameter] public EventCallback<EditContext> OnInvalidSubmit { get; set; }
 
-    /// <summary>
-    /// Gets the context associated with data bound to the EditContext in this form.
-    /// </summary>
-    [CascadingParameter] public ModelBindingContext? BindingContext { get; set; }
+    [CascadingParameter] private ModelBindingContext? BindingContext { get; set; }
 
     /// <summary>
     /// Gets or sets the form name.
