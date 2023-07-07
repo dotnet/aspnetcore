@@ -12,7 +12,7 @@ internal partial class EndpointHtmlRenderer
 {
     private static readonly object ComponentSequenceKey = new object();
 
-    protected override IComponent ResolveComponentForRenderMode(Type componentType, int? parentComponentId, IComponentActivator componentActivator, IComponentRenderMode componentTypeRenderMode)
+    protected override IComponent ResolveComponentForRenderMode(Type componentType, int? parentComponentId, IComponentActivator componentActivator, IComponentRenderMode renderMode)
     {
         var closestRenderModeBoundary = parentComponentId.HasValue
             ? GetClosestRenderModeBoundary(parentComponentId.Value)
@@ -27,7 +27,7 @@ internal partial class EndpointHtmlRenderer
         else
         {
             // This component is the start of a subtree with a rendermode, so introduce a new rendermode boundary here
-            return new SSRRenderModeBoundary(componentType, componentTypeRenderMode);
+            return new SSRRenderModeBoundary(componentType, renderMode);
         }
     }
 

@@ -1,0 +1,18 @@
+﻿@page "/forms/form-element-antiforgery"
+@using Microsoft.AspNetCore.Components.Forms
+
+<h2>Default form</h2>
+
+<form method="post" @onsubmit="() => _submitted = true" @onsubmit:name="">
+    <AntiforgeryToken />
+    <input id="send" type="submit" value="Send" />
+</form>
+
+@if (_submitted)
+{
+    <p id="pass">Form submitted!</p>
+}
+
+@code{
+    bool _submitted = false;
+}

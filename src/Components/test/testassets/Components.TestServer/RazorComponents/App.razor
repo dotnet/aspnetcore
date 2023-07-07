@@ -13,27 +13,35 @@
             <RouteView RouteData="@routeData" />
             <FocusOnNavigate RouteData="@routeData" Selector="h1" />
         </Found>
-        <NotFound>
-            <PageTitle>Not found</PageTitle>
-            <LayoutView>
-                <p role="alert">Sorry, there's nothing at this address.</p>
-            </LayoutView>
-        </NotFound>
+        <NotFound>There's nothing here</NotFound>
     </Router>
     <script src="_framework/blazor.web.js" autostart="false" suppress-error="BL9992"></script>
     <script suppress-error="BL9992">
         const suppressEnhancedNavigation = sessionStorage.getItem('suppress-enhanced-navigation') === 'true';
         sessionStorage.removeItem('suppress-enhanced-navigation');
-        Blazor.start({
-            ssr: {
-                disableDomPreservation: suppressEnhancedNavigation,
-            },
-            webAssembly: {
-                loadBootResource: function (type, name, defaultUri, integrity) {
-                    return `WasmMinimal/_framework/${name}`;
+
+        function callBlazorStart() {
+            Blazor.start({
+                ssr: {
+                    disableDomPreservation: suppressEnhancedNavigation,
                 },
-            },
-        });
+                webAssembly: {
+                    loadBootResource: function (type, name, defaultUri, integrity) {
+                        return `WasmMinimal/_framework/${name}`;
+                    },
+                },
+            });
+        }
+
+        if (location.search.indexOf('suppress-autostart') < 0) {
+            callBlazorStart();
+        } else {
+            const startButton = document.createElement('button');
+            startButton.id = 'call-blazor-start';
+            startButton.textContent = 'Call Blazor.start()';
+            startButton.onclick = callBlazorStart;
+            document.body.appendChild(startButton);
+        }
     </script>
 </body>
 </html>

@@ -167,22 +167,27 @@ public class EditForm : ComponentBase
                 builder.AddAttribute(2, "action", bindingContext.BindingContextId);
             }
 
-            builder.AddMultipleAttributes(3, AdditionalAttributes);
-            builder.AddAttribute(4, "onsubmit", _handleSubmitDelegate);
+            if (bindingContext != null)
+            {
+                builder.AddAttribute(3, "method", "post");
+            }
+
+            builder.AddMultipleAttributes(4, AdditionalAttributes);
+            builder.AddAttribute(5, "onsubmit", _handleSubmitDelegate);
             if (bindingContext != null)
             {
                 builder.SetEventHandlerName(bindingContext.Name);
             }
-            builder.OpenComponent<CascadingValue<EditContext>>(5);
-            builder.AddComponentParameter(6, "IsFixed", true);
-            builder.AddComponentParameter(7, "Value", _editContext);
+            builder.OpenComponent<CascadingValue<EditContext>>(6);
+            builder.AddComponentParameter(7, "IsFixed", true);
+            builder.AddComponentParameter(8, "Value", _editContext);
             if (bindingContext != null && !OperatingSystem.IsBrowser())
             {
-                builder.AddComponentParameter(8, "ChildContent", _renderWithBindingValidator);
+                builder.AddComponentParameter(9, "ChildContent", _renderWithBindingValidator);
             }
             else
             {
-                builder.AddComponentParameter(8, "ChildContent", ChildContent?.Invoke(_editContext));
+                builder.AddComponentParameter(10, "ChildContent", ChildContent?.Invoke(_editContext));
             }
             builder.CloseComponent();
             builder.CloseElement();
@@ -191,7 +196,9 @@ public class EditForm : ComponentBase
 
     private void RenderWithBindingValidator(RenderTreeBuilder builder)
     {
-        builder.OpenComponent<ModelBindingContextValidator>(1);
+        builder.OpenComponent<ModelBindingContextValidator>(0);
+        builder.CloseComponent();
+        builder.OpenComponent<AntiforgeryToken>(1);
         builder.CloseComponent();
         builder.AddContent(2, ChildContent!, EditContext);
     }
