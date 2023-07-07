@@ -63,8 +63,6 @@ public static class RazorComponentsServiceCollectionExtensions
         // Form handling
         services.AddSupplyValueFromFormProvider();
         services.TryAddScoped<AntiforgeryStateProvider, EndpointAntiforgeryStateProvider>();
-
-        // TODO: Try to merge these two services
         services.TryAddScoped<HttpContextFormDataProvider>();
         services.TryAddScoped<IFormValueModelBinder, DefaultFormValueModelBinder>();
 
