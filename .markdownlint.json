@@ -9,7 +9,7 @@
     "ol-prefix":                       { "one_or_ordered": true },
     "blanks-around-fences":            false,
     "blanks-around-lists":             false,
-     "no-inline-html":                 { "allowed_elements": [ "summary", "details" ]},
+    "no-inline-html":                 { "allowed_elements": [ "summary", "details" ]},
     "no-bare-urls":                    false,
     "single-trailing-newline":         false,
     "emphasis-style":                  false,
