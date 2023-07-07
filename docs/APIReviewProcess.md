@@ -26,7 +26,7 @@ Before marking an issue as `api-ready-for-review`, make sure that the issue has 
 * A short description that will help reviewers not familiar with this area.
 * The API changes in ref-assembly format. It's fine to link this to the generated ref-assembly-code in the PR. If the changes are to an area that does produce ref-assemblies, please write out what it would look like in ref-assembly format for us to review.
 
-````text
+```text
 Good: This is the API for the widget factory, users use it in startup code to
 configure how their widgets work. We have an overload that accepts URI, but
 not one that accepts string, so we're adding it for convenience.
