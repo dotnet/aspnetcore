@@ -2,10 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection.Metadata;
-using Microsoft.AspNetCore.Components.Binding;
+using Microsoft.AspNetCore.Components.Forms.ModelBinding;
 using Microsoft.AspNetCore.Components.Rendering;
 
-namespace Microsoft.AspNetCore.Components;
+namespace Microsoft.AspNetCore.Components.Forms;
 
 /// <summary>
 /// Defines the binding context for data bound from external sources.

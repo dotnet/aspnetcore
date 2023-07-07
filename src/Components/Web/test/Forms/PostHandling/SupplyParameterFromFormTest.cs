@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Components.Binding;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Moq;
@@ -14,19 +13,13 @@ public class SupplyParameterFromFormTest
     public void FindCascadingParameters_HandlesSupplyParameterFromFormValues()
     {
         // Arrange
-        var provider = new TestCascadingFormModelBindingProvider
-        {
-            FormName = "",
-            CurrentValue = "some value",
-        };
         var cascadingModelBinder = new CascadingModelBinder
         {
-            ModelBindingProviders = new[] { provider },
             Navigation = Mock.Of<NavigationManager>(),
             Name = ""
         };
 
-        cascadingModelBinder.UpdateBindingInformation(cascadingModelBinder.Navigation, null, cascadingModelBinder.Name);
+        cascadingModelBinder.SetParameters(new());
 
         var states = CreateAncestry(
             cascadingModelBinder,
@@ -44,19 +37,13 @@ public class SupplyParameterFromFormTest
     public void FindCascadingParameters_HandlesSupplyParameterFromFormValues_WithName()
     {
         // Arrange
-        var provider = new TestCascadingFormModelBindingProvider
-        {
-            FormName = "some-name",
-            CurrentValue = "some value",
-        };
         var cascadingModelBinder = new CascadingModelBinder
         {
-            ModelBindingProviders = new[] { provider },
             Navigation = new TestNavigationManager(),
             Name = "some-name"
         };
 
-        cascadingModelBinder.UpdateBindingInformation(cascadingModelBinder.Navigation, null, cascadingModelBinder.Name);
+        cascadingModelBinder.SetParameters(new());
 
         var states = CreateAncestry(
             cascadingModelBinder,
@@ -115,26 +102,5 @@ public class SupplyParameterFromFormTest
         {
             Initialize("https://localhost:85/subdir/", "https://localhost:85/subdir/path?query=value#hash");
         }
-    }
-
-    private class TestCascadingFormModelBindingProvider : CascadingModelBindingProvider
-    {
-        public required string FormName { get; init; }
-
-        public required string CurrentValue { get; init; }
-
-        protected internal override bool AreValuesFixed => true;
-
-        protected internal override bool CanSupplyValue(ModelBindingContext bindingContext, in CascadingParameterInfo parameterInfo)
-            => string.Equals(bindingContext.Name, FormName, StringComparison.Ordinal);
-
-        protected internal override object GetCurrentValue(ModelBindingContext bindingContext, in CascadingParameterInfo parameterInfo)
-            => CurrentValue;
-
-        protected internal override bool SupportsCascadingParameterAttributeType(Type attributeType)
-            => attributeType == typeof(SupplyParameterFromFormAttribute);
-
-        protected internal override bool SupportsParameterType(Type parameterType)
-            => parameterType == typeof(string);
     }
 }

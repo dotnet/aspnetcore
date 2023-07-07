@@ -3,11 +3,11 @@
 
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Binding;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Endpoints.DependencyInjection;
 using Microsoft.AspNetCore.Components.Endpoints.Forms;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.Forms.ModelBinding;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
@@ -62,9 +62,12 @@ public static class RazorComponentsServiceCollectionExtensions
 
         // Form handling
         services.AddSupplyValueFromFormProvider();
+        services.TryAddScoped<AntiforgeryStateProvider, EndpointAntiforgeryStateProvider>();
+
+        // TODO: Try to merge these two services
         services.TryAddScoped<FormDataProvider, HttpContextFormDataProvider>();
         services.TryAddScoped<IFormValueSupplier, DefaultFormValuesSupplier>();
-        services.TryAddScoped<AntiforgeryStateProvider, EndpointAntiforgeryStateProvider>();
+
         return new DefaultRazorComponentsBuilder(services);
     }
 

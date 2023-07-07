@@ -3,6 +3,7 @@
 
 using System.Collections.ObjectModel;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.Forms.ModelBinding;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;

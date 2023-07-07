@@ -2,7 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNetCore.Components.Binding;
+using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.Forms.ModelBinding;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.Extensions.DependencyInjection;
@@ -200,8 +201,7 @@ public class CascadingModelBinderTest
         {
             builder.OpenComponent<CascadingModelBinder>(0);
             builder.AddAttribute(1, nameof(CascadingModelBinder.Name), contextName);
-            builder.AddAttribute(2, nameof(CascadingModelBinder.IsFixed), true);
-            builder.AddAttribute(3, nameof(CascadingModelBinder.ChildContent), contents);
+            builder.AddAttribute(2, nameof(CascadingModelBinder.ChildContent), contents);
             builder.CloseComponent();
         });
         var id = _renderer.AssignRootComponentId(testComponent);
@@ -212,30 +212,6 @@ public class CascadingModelBinderTest
         var exception = Assert.Throws<InvalidOperationException>(testComponent.TriggerRender);
 
         Assert.Equal("'CascadingModelBinder' 'Name' can't change after initialized.", exception.Message);
-    }
-
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public void Throws_WhenIsFixed_Changes(bool isFixed)
-    {
-        ModelBindingContext capturedContext = null;
-        RenderFragment<ModelBindingContext> contents = (ctx) => b => { capturedContext = ctx; };
-        var testComponent = new TestComponent(builder =>
-        {
-            builder.OpenComponent<CascadingModelBinder>(0);
-            builder.AddAttribute(1, nameof(CascadingModelBinder.IsFixed), isFixed);
-            builder.AddAttribute(2, nameof(CascadingModelBinder.ChildContent), contents);
-            builder.CloseComponent();
-        });
-        var id = _renderer.AssignRootComponentId(testComponent);
-        _renderer.RenderRootComponent(id);
-
-        // Act
-        isFixed = !isFixed;
-        var exception = Assert.Throws<InvalidOperationException>(testComponent.TriggerRender);
-
-        Assert.Equal("The value of IsFixed cannot be changed dynamically.", exception.Message);
     }
 
     [Fact]

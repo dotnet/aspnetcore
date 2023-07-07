@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using Microsoft.AspNetCore.Components.Forms.ModelBinding;
 
 namespace Microsoft.AspNetCore.Components.Forms;
 

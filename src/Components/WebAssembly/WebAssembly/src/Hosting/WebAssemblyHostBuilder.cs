@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.Binding;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.Forms.ModelBinding;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Routing;

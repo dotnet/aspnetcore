@@ -5,9 +5,9 @@ using System.Buffers;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Globalization;
-using Microsoft.AspNetCore.Components.Binding;
 using Microsoft.AspNetCore.Components.Endpoints.Binding;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.Forms.ModelBinding;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;

@@ -3,7 +3,7 @@
 
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNetCore.Components.Forms;
+namespace Microsoft.AspNetCore.Components.Forms.ModelBinding;
 
 /// <summary>
 /// An interface implemented by <see cref="FormDataProvider"/> classes that can receive

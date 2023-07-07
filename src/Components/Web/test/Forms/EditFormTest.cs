@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Components.Binding;
+using Microsoft.AspNetCore.Components.Forms.ModelBinding;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -19,7 +19,6 @@ public class EditFormTest
         var services = new ServiceCollection();
         services.AddSingleton<NavigationManager, TestNavigationManager>();
         services.AddSingleton<IFormValueSupplier, TestFormValueSupplier>();
-        services.AddSingleton<CascadingModelBindingProvider, CascadingFormModelBindingProvider>();
         services.AddAntiforgery();
         services.AddLogging();
         services.AddSingleton<ComponentStatePersistenceManager>();

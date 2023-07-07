@@ -1,12 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Components.Binding;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.Options;
-
 namespace Microsoft.Extensions.DependencyInjection;
 
 public class RazorComponentsServiceCollectionExtensionsTest
@@ -70,26 +64,7 @@ public class RazorComponentsServiceCollectionExtensionsTest
         {
             var services = new ServiceCollection();
             RazorComponentsServiceCollectionExtensions.AddRazorComponents(services);
-
-            var multiRegistrationServiceTypes = MultiRegistrationServiceTypes;
-            return services
-                .Where(sd => !multiRegistrationServiceTypes.ContainsKey(sd.ServiceType))
-                .Select(sd => sd.ServiceType);
-        }
-    }
-
-    private Dictionary<Type, Type[]> MultiRegistrationServiceTypes
-    {
-        get
-        {
-            return new Dictionary<Type, Type[]>()
-            {
-                [typeof(CascadingModelBindingProvider)] = new[]
-                {
-                    typeof(CascadingFormModelBindingProvider),
-                    typeof(CascadingQueryModelBindingProvider),
-                }
-            };
+            return services.Select(x => x.ServiceType);
         }
     }
 
