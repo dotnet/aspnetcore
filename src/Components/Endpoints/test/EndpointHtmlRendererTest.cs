@@ -1297,7 +1297,7 @@ public class EndpointHtmlRendererTest
         services.AddSingleton<ComponentStatePersistenceManager>();
         services.AddSingleton(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
         services.AddSingleton<ServerComponentSerializer>();
-        services.AddSingleton<FormDataProvider, HttpContextFormDataProvider>();
+        services.AddSingleton<HttpContextFormDataProvider>();
         services.AddAntiforgery();
         services.AddSingleton<ComponentStatePersistenceManager>();
         services.AddSingleton<PersistentComponentState>(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
