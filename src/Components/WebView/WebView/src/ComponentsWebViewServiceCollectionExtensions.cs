@@ -29,7 +29,6 @@ public static class ComponentsWebViewServiceCollectionExtensions
         services.TryAddScoped<IScrollToLocationHash, WebViewScrollToLocationHash>();
         services.TryAddScoped<NavigationManager, WebViewNavigationManager>();
         services.TryAddScoped<IErrorBoundaryLogger, WebViewErrorBoundaryLogger>();
-        services.TryAddScoped<IFormValueModelBinder, WebViewFormValueModelBinder>();
         services.AddSupplyValueFromQueryProvider();
 
         return services;

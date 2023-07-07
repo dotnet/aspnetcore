@@ -262,7 +262,6 @@ public sealed class WebAssemblyHostBuilder
         {
             builder.AddProvider(new WebAssemblyConsoleLoggerProvider(DefaultWebAssemblyJSRuntime.Instance));
         });
-        Services.AddSingleton<IFormValueModelBinder, WebAssemblyFormModelBinder>();
         Services.AddSupplyValueFromQueryProvider();
     }
 }

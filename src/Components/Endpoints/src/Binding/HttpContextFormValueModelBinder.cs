@@ -11,13 +11,13 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
-internal sealed class DefaultFormValueModelBinder : IFormValueModelBinder
+internal sealed class HttpContextFormValueModelBinder : IFormValueModelBinder
 {
     private readonly HttpContextFormDataProvider _formData;
     private readonly FormDataMapperOptions _options = new();
     private static readonly ConcurrentDictionary<Type, FormValueSupplier> _cache = new();
 
-    public DefaultFormValueModelBinder(HttpContextFormDataProvider formData)
+    public HttpContextFormValueModelBinder(HttpContextFormDataProvider formData)
     {
         _formData = formData;
     }

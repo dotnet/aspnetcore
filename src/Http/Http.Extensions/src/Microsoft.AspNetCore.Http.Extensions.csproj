@@ -31,7 +31,7 @@
     </EmbeddedResource>
     <Compile Include="$(RepoRoot)src\Shared\ClosedGenericMatcher\ClosedGenericMatcher.cs" LinkBase="SharedFormBinding" />
     <!-- Exclude Blazor-specific form binding suppliers. -->
-    <Compile Remove="$(RepoRoot)src\Components\Endpoints\src\Binding\DefaultFormValueModelBinder.cs" LinkBase="SharedFormBinding" />
+    <Compile Remove="$(RepoRoot)src\Components\Endpoints\src\Binding\HttpContextFormValueModelBinder.cs" LinkBase="SharedFormBinding" />
     <Compile Remove="$(RepoRoot)src\Components\Endpoints\src\Binding\HttpContextFormDataProvider.cs" LinkBase="SharedFormBinding" />
   </ItemGroup>
 

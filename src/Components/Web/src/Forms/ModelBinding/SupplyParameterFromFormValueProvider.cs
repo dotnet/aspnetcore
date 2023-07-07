@@ -9,13 +9,12 @@ namespace Microsoft.AspNetCore.Components.Forms.ModelBinding;
 internal class SupplyParameterFromFormValueProvider : ICascadingValueSupplier
 {
     private readonly ModelBindingContext _bindingContext;
-    private readonly IFormValueModelBinder _formValueModelBinder;
+    private readonly IFormValueModelBinder? _formValueModelBinder;
 
     public ModelBindingContext BindingContext => _bindingContext;
 
-    public SupplyParameterFromFormValueProvider(IFormValueModelBinder formValueModelBinder, NavigationManager navigation, ModelBindingContext? parentContext, string thisName)
+    public SupplyParameterFromFormValueProvider(IFormValueModelBinder? formValueModelBinder, NavigationManager navigation, ModelBindingContext? parentContext, string thisName)
     {
-        ArgumentNullException.ThrowIfNull(formValueModelBinder);
         ArgumentNullException.ThrowIfNull(navigation);
 
         _formValueModelBinder = formValueModelBinder;
@@ -60,7 +59,7 @@ internal class SupplyParameterFromFormValueProvider : ICascadingValueSupplier
         }
 
         // We also supply values for [SupplyValueFromForm]
-        if (parameterInfo.Attribute is SupplyParameterFromFormAttribute)
+        if (_formValueModelBinder is not null && parameterInfo.Attribute is SupplyParameterFromFormAttribute)
         {
             var (formName, valueType) = GetFormNameAndValueType(_bindingContext, parameterInfo);
             return _formValueModelBinder.CanBind(valueType, formName);
@@ -78,9 +77,9 @@ internal class SupplyParameterFromFormValueProvider : ICascadingValueSupplier
         }
 
         // We also supply values for [SupplyValueFromForm]
-        if (parameterInfo.Attribute is SupplyParameterFromFormAttribute)
+        if (_formValueModelBinder is { } binder && parameterInfo.Attribute is SupplyParameterFromFormAttribute)
         {
-            return GetFormPostValue(_bindingContext, parameterInfo);
+            return GetFormPostValue(binder, _bindingContext, parameterInfo);
         }
 
         throw new InvalidOperationException($"Received an unexpected attribute type {parameterInfo.Attribute.GetType()}");
@@ -92,7 +91,7 @@ internal class SupplyParameterFromFormValueProvider : ICascadingValueSupplier
     void ICascadingValueSupplier.Unsubscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
         => throw new NotSupportedException(); // IsFixed = true, so the framework won't call this
 
-    internal object? GetFormPostValue(ModelBindingContext? bindingContext, in CascadingParameterInfo parameterInfo)
+    internal static object? GetFormPostValue(IFormValueModelBinder formValueModelBinder, ModelBindingContext? bindingContext, in CascadingParameterInfo parameterInfo)
     {
         Debug.Assert(bindingContext != null);
         var (formName, valueType) = GetFormNameAndValueType(bindingContext, parameterInfo);
@@ -109,7 +108,7 @@ internal class SupplyParameterFromFormValueProvider : ICascadingValueSupplier
             MapErrorToContainer = bindingContext.AttachParentValue
         };
 
-        _formValueModelBinder.Bind(context);
+        formValueModelBinder.Bind(context);
 
         return context.Result;
     }
