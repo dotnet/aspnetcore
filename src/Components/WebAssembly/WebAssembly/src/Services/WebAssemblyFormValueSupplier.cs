@@ -5,8 +5,8 @@ using Microsoft.AspNetCore.Components.Forms.ModelBinding;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Services;
 
-internal class WebAssemblyFormValueSupplier : IFormValueSupplier
+internal class WebAssemblyFormValueSupplier : IFormValueModelBinder
 {
     public bool CanBind(Type valueType, string? formName = null) => false;
-    public void Bind(FormValueSupplierContext context) { }
+    public void Bind(FormValueModelBindingContext context) { }
 }

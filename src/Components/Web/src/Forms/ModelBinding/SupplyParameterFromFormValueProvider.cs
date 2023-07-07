@@ -9,11 +9,11 @@ namespace Microsoft.AspNetCore.Components.Forms.ModelBinding;
 internal class SupplyParameterFromFormValueProvider : ICascadingValueSupplier
 {
     private readonly ModelBindingContext _bindingContext;
-    private readonly IFormValueSupplier _formValueSupplier;
+    private readonly IFormValueModelBinder _formValueSupplier;
 
     public ModelBindingContext BindingContext => _bindingContext;
 
-    public SupplyParameterFromFormValueProvider(IFormValueSupplier formValueSupplier, NavigationManager navigation, ModelBindingContext? parentContext, string thisName)
+    public SupplyParameterFromFormValueProvider(IFormValueModelBinder formValueSupplier, NavigationManager navigation, ModelBindingContext? parentContext, string thisName)
     {
         _formValueSupplier = formValueSupplier;
 
@@ -97,7 +97,7 @@ internal class SupplyParameterFromFormValueProvider : ICascadingValueSupplier
             bindingContext.AddError :
             (name, message, value) => bindingContext.AddError(formName, parameterName, message, value);
 
-        var context = new FormValueSupplierContext(formName!, valueType, parameterName)
+        var context = new FormValueModelBindingContext(formName!, valueType, parameterName)
         {
             OnError = errorHandler,
             MapErrorToContainer = bindingContext.AttachParentValue

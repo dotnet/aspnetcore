@@ -4,26 +4,24 @@
 namespace Microsoft.AspNetCore.Components.Forms.ModelBinding;
 
 /// <summary>
-/// Context for binding a form value.
+/// A context that tracks information about binding a single form value using model binding.
 /// </summary>
-public class FormValueSupplierContext
+public class FormValueModelBindingContext
 {
     private bool _resultSet;
 
     /// <summary>
-    /// Initializes a new instance of <see cref="FormValueSupplierContext"/>.
+    /// Initializes a new instance of <see cref="FormValueModelBindingContext"/>.
     /// </summary>
     /// <param name="formName">The name of the form to bind data from.</param>
     /// <param name="valueType">The <see cref="Type"/> of the value to bind.</param>
     /// <param name="parameterName">The name of the parameter to bind data to.</param>
-    public FormValueSupplierContext(
-        string formName,
-        Type valueType,
-        string parameterName)
+    public FormValueModelBindingContext(string formName, Type valueType, string parameterName)
     {
         ArgumentNullException.ThrowIfNull(formName, nameof(formName));
         ArgumentNullException.ThrowIfNull(valueType, nameof(valueType));
         ArgumentNullException.ThrowIfNull(parameterName, nameof(parameterName));
+
         FormName = formName;
         ParameterName = parameterName;
         ValueType = valueType;
@@ -74,6 +72,7 @@ public class FormValueSupplierContext
         {
             throw new InvalidOperationException($"The result has already been set to '{Result}'.");
         }
+
         _resultSet = true;
         Result = result;
     }

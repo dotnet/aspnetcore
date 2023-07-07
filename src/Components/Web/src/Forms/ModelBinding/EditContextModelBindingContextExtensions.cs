@@ -2,9 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
-using Microsoft.AspNetCore.Components.Forms.ModelBinding;
 
-namespace Microsoft.AspNetCore.Components.Forms;
+namespace Microsoft.AspNetCore.Components.Forms.ModelBinding;
 
 /// <summary>
 /// Extension methods to add <see cref="ModelBindingContext"/> errors to an <see cref="EditContext"/>.

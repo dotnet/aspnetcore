@@ -6,18 +6,18 @@ namespace Microsoft.AspNetCore.Components.Forms.ModelBinding;
 /// <summary>
 /// An error that occurred during the form mapping process.
 /// </summary>
-public class BindingError
+public class ModelBindingError
 {
     private static readonly char[] Separators = new char[] { '.', '[' };
     private readonly List<FormattableString> _errorMessages;
 
     /// <summary>
-    /// Initializes a new instance of <see cref="BindingError"/>.
+    /// Initializes a new instance of <see cref="ModelBindingError"/>.
     /// </summary>
     /// <param name="path">The path from the root of the binding operation to the property or element that failed to bind.</param>
     /// <param name="errorMessages">The error messages associated with the binding error.</param>
     /// <param name="attemptedValue">The attempted value that failed to bind.</param>
-    internal BindingError(string path, List<FormattableString> errorMessages, string? attemptedValue)
+    internal ModelBindingError(string path, List<FormattableString> errorMessages, string? attemptedValue)
     {
         _errorMessages = errorMessages;
         AttemptedValue = attemptedValue;

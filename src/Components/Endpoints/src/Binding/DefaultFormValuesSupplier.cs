@@ -12,7 +12,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
-internal sealed class DefaultFormValuesSupplier : IFormValueSupplier
+internal sealed class DefaultFormValuesSupplier : IFormValueModelBinder
 {
     private readonly HttpContextFormDataProvider _formData;
     private readonly FormDataMapperOptions _options = new();
@@ -39,7 +39,7 @@ internal sealed class DefaultFormValuesSupplier : IFormValueSupplier
         }
     }
 
-    public void Bind(FormValueSupplierContext context)
+    public void Bind(FormValueModelBindingContext context)
     {
         // This will func to a proper binder
         if (!CanBind(context.ValueType, context.FormName))
@@ -59,7 +59,7 @@ internal sealed class DefaultFormValuesSupplier : IFormValueSupplier
     internal abstract class FormValueSupplier
     {
         public abstract void Deserialize(
-            FormValueSupplierContext context,
+            FormValueModelBindingContext context,
             FormDataMapperOptions options,
             IReadOnlyDictionary<string, StringValues> form);
     }
@@ -67,7 +67,7 @@ internal sealed class DefaultFormValuesSupplier : IFormValueSupplier
     internal class FormValueSupplier<T> : FormValueSupplier
     {
         public override void Deserialize(
-            FormValueSupplierContext context,
+            FormValueModelBindingContext context,
             FormDataMapperOptions options,
             IReadOnlyDictionary<string, StringValues> form)
         {

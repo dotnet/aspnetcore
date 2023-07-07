@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Components.Forms.ModelBinding;
 /// <summary>
 /// Binds form data values to a model.
 /// </summary>
-public interface IFormValueSupplier
+public interface IFormValueModelBinder
 {
     /// <summary>
     /// Determines whether the specified value type can be bound.
@@ -18,7 +18,7 @@ public interface IFormValueSupplier
 
     /// <summary>
     /// Binds the form with the specified name to a value of the specified type.
-    /// <param name="context">The <see cref="FormValueSupplierContext"/>.</param>
+    /// <param name="context">The <see cref="FormValueModelBindingContext"/>.</param>
     /// </summary>
-    void Bind(FormValueSupplierContext context);
+    void Bind(FormValueModelBindingContext context);
 }

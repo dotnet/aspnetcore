@@ -31,7 +31,7 @@ public sealed class CascadingModelBinder : ICascadingValueSupplier, IComponent
 
     [Inject] internal NavigationManager Navigation { get; set; } = null!;
 
-    [Inject] internal IFormValueSupplier FormValueSupplier { get; set; } = null!;
+    [Inject] internal IFormValueModelBinder FormValueSupplier { get; set; } = null!;
 
     void IComponent.Attach(RenderHandle renderHandle)
     {

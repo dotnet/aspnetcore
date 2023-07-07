@@ -12,6 +12,12 @@ Microsoft.AspNetCore.Components.Forms.AntiforgeryStateProvider
 Microsoft.AspNetCore.Components.Forms.AntiforgeryStateProvider.AntiforgeryStateProvider() -> void
 Microsoft.AspNetCore.Components.Forms.AntiforgeryToken
 Microsoft.AspNetCore.Components.Forms.AntiforgeryToken.AntiforgeryToken() -> void
+Microsoft.AspNetCore.Components.Forms.CascadingModelBinder
+Microsoft.AspNetCore.Components.Forms.CascadingModelBinder.CascadingModelBinder() -> void
+Microsoft.AspNetCore.Components.Forms.CascadingModelBinder.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.Forms.ModelBindingContext!>!
+Microsoft.AspNetCore.Components.Forms.CascadingModelBinder.ChildContent.set -> void
+Microsoft.AspNetCore.Components.Forms.CascadingModelBinder.Name.get -> string!
+Microsoft.AspNetCore.Components.Forms.CascadingModelBinder.Name.set -> void
 Microsoft.AspNetCore.Components.Forms.Editor<T>
 Microsoft.AspNetCore.Components.Forms.Editor<T>.Editor() -> void
 Microsoft.AspNetCore.Components.Forms.Editor<T>.NameFor(System.Linq.Expressions.LambdaExpression! expression) -> string!
@@ -24,13 +30,43 @@ Microsoft.AspNetCore.Components.Forms.Editor<T>.ValueExpression.set -> void
 Microsoft.AspNetCore.Components.Forms.FormDataProvider
 Microsoft.AspNetCore.Components.Forms.FormDataProvider.FormDataProvider() -> void
 Microsoft.AspNetCore.Components.Forms.FormDataProvider.IsFormDataAvailable.get -> bool
-Microsoft.AspNetCore.Components.Forms.IHostEnvironmentFormDataProvider
-Microsoft.AspNetCore.Components.Forms.IHostEnvironmentFormDataProvider.SetFormData(string! name, System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.Extensions.Primitives.StringValues>! formData) -> void
 Microsoft.AspNetCore.Components.Forms.InputBase<TValue>.NameAttributeValue.get -> string!
 Microsoft.AspNetCore.Components.Forms.EditForm.BindingContext.get -> Microsoft.AspNetCore.Components.ModelBindingContext?
 Microsoft.AspNetCore.Components.Forms.EditForm.BindingContext.set -> void
 Microsoft.AspNetCore.Components.Forms.EditForm.FormHandlerName.get -> string?
 Microsoft.AspNetCore.Components.Forms.EditForm.FormHandlerName.set -> void
+Microsoft.AspNetCore.Components.Forms.ModelBinding.FormValueModelBindingContext
+Microsoft.AspNetCore.Components.Forms.ModelBinding.FormValueModelBindingContext.FormName.get -> string!
+Microsoft.AspNetCore.Components.Forms.ModelBinding.FormValueModelBindingContext.FormValueModelBindingContext(string! formName, System.Type! valueType, string! parameterName) -> void
+Microsoft.AspNetCore.Components.Forms.ModelBinding.FormValueModelBindingContext.MapErrorToContainer.get -> System.Action<string!, object!>?
+Microsoft.AspNetCore.Components.Forms.ModelBinding.FormValueModelBindingContext.MapErrorToContainer.set -> void
+Microsoft.AspNetCore.Components.Forms.ModelBinding.FormValueModelBindingContext.OnError.get -> System.Action<string!, System.FormattableString!, string?>?
+Microsoft.AspNetCore.Components.Forms.ModelBinding.FormValueModelBindingContext.OnError.set -> void
+Microsoft.AspNetCore.Components.Forms.ModelBinding.FormValueModelBindingContext.ParameterName.get -> string!
+Microsoft.AspNetCore.Components.Forms.ModelBinding.FormValueModelBindingContext.Result.get -> object?
+Microsoft.AspNetCore.Components.Forms.ModelBinding.FormValueModelBindingContext.SetResult(object? result) -> void
+Microsoft.AspNetCore.Components.Forms.ModelBinding.FormValueModelBindingContext.ValueType.get -> System.Type!
+Microsoft.AspNetCore.Components.Forms.ModelBinding.IFormValueModelBinder
+Microsoft.AspNetCore.Components.Forms.ModelBinding.IFormValueModelBinder.Bind(Microsoft.AspNetCore.Components.Forms.ModelBinding.FormValueModelBindingContext! context) -> void
+Microsoft.AspNetCore.Components.Forms.ModelBinding.IFormValueModelBinder.CanBind(System.Type! valueType, string? formName = null) -> bool
+Microsoft.AspNetCore.Components.Forms.ModelBinding.IHostEnvironmentFormDataProvider
+Microsoft.AspNetCore.Components.Forms.ModelBinding.IHostEnvironmentFormDataProvider.SetFormData(string! name, System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.Extensions.Primitives.StringValues>! formData) -> void
+Microsoft.AspNetCore.Components.Forms.ModelBinding.ModelBindingError
+Microsoft.AspNetCore.Components.Forms.ModelBinding.ModelBindingError.AttemptedValue.get -> string?
+Microsoft.AspNetCore.Components.Forms.ModelBinding.ModelBindingError.Container.get -> object!
+Microsoft.AspNetCore.Components.Forms.ModelBinding.ModelBindingError.ErrorMessages.get -> System.Collections.Generic.IReadOnlyList<System.FormattableString!>!
+Microsoft.AspNetCore.Components.Forms.ModelBinding.ModelBindingError.Name.get -> string!
+Microsoft.AspNetCore.Components.Forms.ModelBinding.ModelBindingError.Path.get -> string!
+Microsoft.AspNetCore.Components.Forms.ModelBinding.SupplyParameterFromFormServiceCollectionExtensions
+Microsoft.AspNetCore.Components.Forms.ModelBindingContext
+Microsoft.AspNetCore.Components.Forms.ModelBindingContext.BindingContextId.get -> string!
+Microsoft.AspNetCore.Components.Forms.ModelBindingContext.GetAllErrors() -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Components.Forms.ModelBinding.ModelBindingError!>!
+Microsoft.AspNetCore.Components.Forms.ModelBindingContext.GetAllErrors(string! formName) -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Components.Forms.ModelBinding.ModelBindingError!>!
+Microsoft.AspNetCore.Components.Forms.ModelBindingContext.GetAttemptedValue(string! formName, string! key) -> string?
+Microsoft.AspNetCore.Components.Forms.ModelBindingContext.GetAttemptedValue(string! key) -> string?
+Microsoft.AspNetCore.Components.Forms.ModelBindingContext.GetErrors(string! formName, string! key) -> Microsoft.AspNetCore.Components.Forms.ModelBinding.ModelBindingError?
+Microsoft.AspNetCore.Components.Forms.ModelBindingContext.GetErrors(string! key) -> Microsoft.AspNetCore.Components.Forms.ModelBinding.ModelBindingError?
+Microsoft.AspNetCore.Components.Forms.ModelBindingContext.Name.get -> string!
 Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer
 Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.BeginRenderingComponent(Microsoft.AspNetCore.Components.IComponent! component, Microsoft.AspNetCore.Components.ParameterView initialParameters) -> Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent
 Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.BeginRenderingComponent(System.Type! componentType, Microsoft.AspNetCore.Components.ParameterView initialParameters) -> Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent
@@ -90,6 +126,7 @@ override Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute.Name.s
 override Microsoft.AspNetCore.Components.Web.RenderModeAutoAttribute.Mode.get -> Microsoft.AspNetCore.Components.IComponentRenderMode!
 override Microsoft.AspNetCore.Components.Web.RenderModeServerAttribute.Mode.get -> Microsoft.AspNetCore.Components.IComponentRenderMode!
 override Microsoft.AspNetCore.Components.Web.RenderModeWebAssemblyAttribute.Mode.get -> Microsoft.AspNetCore.Components.IComponentRenderMode!
+static Microsoft.AspNetCore.Components.Forms.ModelBinding.SupplyParameterFromFormServiceCollectionExtensions.AddSupplyValueFromFormProvider(this Microsoft.Extensions.DependencyInjection.IServiceCollection! serviceCollection) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.AspNetCore.Components.Web.RenderMode.Auto.get -> Microsoft.AspNetCore.Components.Web.AutoRenderMode!
 static Microsoft.AspNetCore.Components.Web.RenderMode.Server.get -> Microsoft.AspNetCore.Components.Web.ServerRenderMode!
 static Microsoft.AspNetCore.Components.Web.RenderMode.WebAssembly.get -> Microsoft.AspNetCore.Components.Web.WebAssemblyRenderMode!

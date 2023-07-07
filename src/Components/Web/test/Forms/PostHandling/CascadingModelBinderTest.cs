@@ -20,7 +20,7 @@ public class CascadingModelBinderTest
         var serviceCollection = new ServiceCollection();
         _navigationManager = new TestNavigationManager();
         serviceCollection.AddSingleton<NavigationManager>(_navigationManager);
-        serviceCollection.AddSingleton<IFormValueSupplier, TestFormValueSupplier>();
+        serviceCollection.AddSingleton<IFormValueModelBinder, TestFormValueSupplier>();
         var services = serviceCollection.BuildServiceProvider();
         _renderer = new TestRenderer(services);
     }
@@ -307,9 +307,9 @@ public class CascadingModelBinderTest
             => _renderFragment(builder);
     }
 
-    private class TestFormValueSupplier : IFormValueSupplier
+    private class TestFormValueSupplier : IFormValueModelBinder
     {
         public bool CanBind(Type valueType, string formName = null) => false;
-        public void Bind(FormValueSupplierContext context) { }
+        public void Bind(FormValueModelBindingContext context) { }
     }
 }

@@ -66,7 +66,7 @@ public static class RazorComponentsServiceCollectionExtensions
 
         // TODO: Try to merge these two services
         services.TryAddScoped<FormDataProvider, HttpContextFormDataProvider>();
-        services.TryAddScoped<IFormValueSupplier, DefaultFormValuesSupplier>();
+        services.TryAddScoped<IFormValueModelBinder, DefaultFormValuesSupplier>();
 
         return new DefaultRazorComponentsBuilder(services);
     }

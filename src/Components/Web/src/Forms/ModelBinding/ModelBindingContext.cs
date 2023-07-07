@@ -10,9 +10,9 @@ namespace Microsoft.AspNetCore.Components.Forms;
 /// </summary>
 public sealed class ModelBindingContext
 {
-    private Dictionary<string, BindingError>? _errors;
-    private List<KeyValuePair<string, BindingError>>? _pendingErrors;
-    private Dictionary<string, Dictionary<string, BindingError>>? _errorsByFormName;
+    private Dictionary<string, ModelBindingError>? _errors;
+    private List<KeyValuePair<string, ModelBindingError>>? _pendingErrors;
+    private Dictionary<string, Dictionary<string, ModelBindingError>>? _errorsByFormName;
 
     internal ModelBindingContext(string name, string bindingContextId)
     {
@@ -46,7 +46,7 @@ public sealed class ModelBindingContext
     /// </summary>
     /// <param name="key">The key used to identify the specific part of the model.</param>
     /// <returns>The list of errors associated with that part of the model if any.</returns>
-    public BindingError? GetErrors(string key) =>
+    public ModelBindingError? GetErrors(string key) =>
         _errors?.TryGetValue(key, out var bindingError) == true ? bindingError : null;
 
     /// <summary>
@@ -55,7 +55,7 @@ public sealed class ModelBindingContext
     /// <param name="key">The key used to identify the specific part of the model.</param>
     /// <param name="formName">Form name for a form under this context.</param>
     /// <returns>The list of errors associated with that part of the model if any.</returns>
-    public BindingError? GetErrors(string formName, string key) =>
+    public ModelBindingError? GetErrors(string formName, string key) =>
         _errorsByFormName?.TryGetValue(formName, out var formErrors) == true &&
         formErrors.TryGetValue(key, out var bindingError) == true ? bindingError : null;
 
@@ -63,16 +63,16 @@ public sealed class ModelBindingContext
     /// Retrieves all the errors for the model.
     /// </summary>
     /// <returns>The list of errors associated with the model if any.</returns>
-    public IEnumerable<BindingError> GetAllErrors()
+    public IEnumerable<ModelBindingError> GetAllErrors()
     {
         return GetAllErrorsCore(_errors);
     }
 
-    private static IEnumerable<BindingError> GetAllErrorsCore(Dictionary<string, BindingError>? errors)
+    private static IEnumerable<ModelBindingError> GetAllErrorsCore(Dictionary<string, ModelBindingError>? errors)
     {
         if (errors == null)
         {
-            return Array.Empty<BindingError>();
+            return Array.Empty<ModelBindingError>();
         }
 
         return errors.Values;
@@ -83,11 +83,11 @@ public sealed class ModelBindingContext
     /// </summary>
     /// <param name="formName">Form name for a form under this context.</param>
     /// <returns>The list of errors associated with the model if any.</returns>
-    public IEnumerable<BindingError> GetAllErrors(string formName)
+    public IEnumerable<ModelBindingError> GetAllErrors(string formName)
     {
         return _errorsByFormName?.TryGetValue(formName, out var formErrors) == true ?
             GetAllErrorsCore(formErrors) :
-            Array.Empty<BindingError>();
+            Array.Empty<ModelBindingError>();
     }
 
     /// <summary>
@@ -113,18 +113,18 @@ public sealed class ModelBindingContext
 
     internal void AddError(string key, FormattableString error, string? attemptedValue)
     {
-        _errors ??= new Dictionary<string, BindingError>();
+        _errors ??= new Dictionary<string, ModelBindingError>();
         AddErrorCore(_errors, key, error, attemptedValue, ref _pendingErrors);
     }
 
-    private static void AddErrorCore(Dictionary<string, BindingError> errors, string key, FormattableString error, string? attemptedValue, ref List<KeyValuePair<string, BindingError>>? pendingErrors)
+    private static void AddErrorCore(Dictionary<string, ModelBindingError> errors, string key, FormattableString error, string? attemptedValue, ref List<KeyValuePair<string, ModelBindingError>>? pendingErrors)
     {
         if (!errors.TryGetValue(key, out var bindingError))
         {
-            bindingError = new BindingError(key, new List<FormattableString>() { error }, attemptedValue);
+            bindingError = new ModelBindingError(key, new List<FormattableString>() { error }, attemptedValue);
             errors.Add(key, bindingError);
             pendingErrors ??= new();
-            pendingErrors.Add(new KeyValuePair<string, BindingError>(key, bindingError));
+            pendingErrors.Add(new KeyValuePair<string, ModelBindingError>(key, bindingError));
         }
         else
         {
@@ -134,10 +134,10 @@ public sealed class ModelBindingContext
 
     internal void AddError(string formName, string key, FormattableString error, string? attemptedValue)
     {
-        _errorsByFormName ??= new Dictionary<string, Dictionary<string, BindingError>>();
+        _errorsByFormName ??= new Dictionary<string, Dictionary<string, ModelBindingError>>();
         if (!_errorsByFormName.TryGetValue(formName, out var formErrors))
         {
-            formErrors = new Dictionary<string, BindingError>();
+            formErrors = new Dictionary<string, ModelBindingError>();
             _errorsByFormName.Add(formName, formErrors);
         }
         AddErrorCore(formErrors, key, error, attemptedValue, ref _pendingErrors);
