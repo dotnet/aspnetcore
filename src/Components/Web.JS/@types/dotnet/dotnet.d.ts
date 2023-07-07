@@ -174,14 +174,14 @@ type MonoConfig = {
      * exports from library es6 modules
      *
      * nuget packages can contain wwwroot/*.lib.module.js which are treated as es6 modules
-     * runtime calls 'onRuntimeReady' and pass in runtime API
+     * runtime calls 'onRuntimeConfigLoaded(config: MonoConfig)' and 'onRuntimeReady(api: RuntimeAPI)'
      * blazor calls 'beforeStart' and 'afterStarted'
      */
     libraryInitializers?: any[];
     /**
      * definition of assets to load along with the runtime.
      */
-    resources?: ResourceGroups$1;
+    resources?: ResourceGroups;
     /**
      * config extensions declared in MSBuild items @(WasmBootConfigExtension)
      */
@@ -190,24 +190,24 @@ type MonoConfig = {
     };
 };
 type ResourceExtensions = {
-    [extensionName: string]: ResourceList$1;
+    [extensionName: string]: ResourceList;
 };
-interface ResourceGroups$1 {
+interface ResourceGroups {
     readonly hash?: string;
-    readonly assembly?: ResourceList$1;
-    readonly lazyAssembly?: ResourceList$1;
-    readonly pdb?: ResourceList$1;
-    readonly runtime?: ResourceList$1;
+    readonly assembly?: ResourceList;
+    readonly lazyAssembly?: ResourceList;
+    readonly pdb?: ResourceList;
+    readonly runtime?: ResourceList;
     readonly satelliteResources?: {
-        [cultureName: string]: ResourceList$1;
+        [cultureName: string]: ResourceList;
     };
-    readonly libraryInitializers?: ResourceList$1;
+    readonly libraryInitializers?: ResourceList;
     readonly extensions?: ResourceExtensions;
     readonly vfs?: {
-        [virtualPath: string]: ResourceList$1;
+        [virtualPath: string]: ResourceList;
     };
 }
-type ResourceList$1 = {
+type ResourceList = {
     [name: string]: string;
 };
 /**
@@ -345,65 +345,6 @@ type ModuleAPI = {
 type CreateDotnetRuntimeType = (moduleFactory: DotnetModuleConfig | ((api: RuntimeAPI) => DotnetModuleConfig)) => Promise<RuntimeAPI>;
 type WebAssemblyBootResourceType = "assembly" | "pdb" | "dotnetjs" | "dotnetwasm" | "globalization" | "manifest" | "configuration";
 
-interface BootJsonData {
-    readonly entryAssembly: string;
-    readonly resources: ResourceGroups;
-    /** Gets a value that determines if this boot config was produced from a non-published build (i.e. dotnet build or dotnet run) */
-    readonly debugBuild: boolean;
-    readonly debugLevel: number;
-    readonly linkerEnabled: boolean;
-    readonly cacheBootResources: boolean;
-    readonly config: string[];
-    readonly icuDataMode: ICUDataMode;
-    readonly startupMemoryCache: boolean | undefined;
-    readonly runtimeOptions: string[] | undefined;
-    readonly environmentVariables?: {
-        [name: string]: string;
-    };
-    readonly diagnosticTracing?: boolean;
-    readonly pthreadPoolSize: number;
-    modifiableAssemblies: string | null;
-    aspnetCoreBrowserTools: string | null;
-    readonly extensions?: {
-        [name: string]: any;
-    };
-}
-type BootJsonDataExtension = {
-    [extensionName: string]: ResourceList;
-};
-interface ResourceGroups {
-    readonly hash?: string;
-    readonly assembly: ResourceList;
-    readonly lazyAssembly: ResourceList;
-    readonly pdb?: ResourceList;
-    readonly runtime: ResourceList;
-    readonly satelliteResources?: {
-        [cultureName: string]: ResourceList;
-    };
-    readonly libraryInitializers?: ResourceList;
-    readonly extensions?: BootJsonDataExtension;
-    readonly runtimeAssets: ExtendedResourceList;
-    readonly vfs?: {
-        [virtualPath: string]: ResourceList;
-    };
-}
-type ResourceList = {
-    [name: string]: string;
-};
-type ExtendedResourceList = {
-    [name: string]: {
-        hash: string;
-        behavior: string;
-    };
-};
-declare enum ICUDataMode {
-    Sharded = 0,
-    All = 1,
-    Invariant = 2,
-    Custom = 3,
-    Hybrid = 4
-}
-
 interface IDisposable {
     dispose(): void;
     get isDisposed(): boolean;
@@ -438,4 +379,4 @@ declare global {
 }
 declare const createDotnetRuntime: CreateDotnetRuntimeType;
 
-export { AssetEntry, BootJsonData, CreateDotnetRuntimeType, DotnetModuleConfig, EmscriptenModule, ICUDataMode, IMemoryView, ModuleAPI, MonoConfig, ResourceRequest, RuntimeAPI, createDotnetRuntime as default, dotnet, exit };
+export { AssetEntry, CreateDotnetRuntimeType, DotnetModuleConfig, EmscriptenModule, IMemoryView, ModuleAPI, MonoConfig, ResourceRequest, RuntimeAPI, createDotnetRuntime as default, dotnet, exit };
