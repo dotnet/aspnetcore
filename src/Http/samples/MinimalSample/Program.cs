@@ -14,7 +14,7 @@ app.Logger.LogInformation($"Current process ID: {Environment.ProcessId}");
 string Plaintext() => "Hello, World!";
 app.MapGet("/plaintext", Plaintext);
 
-app.MapGet("/", (HttpContext c) => $"""
+app.MapGet("/", () => $"""
     Operating System: {Environment.OSVersion}
     .NET version: {Environment.Version}
     Username: {Environment.UserName}
