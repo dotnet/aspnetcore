@@ -3,12 +3,11 @@
 
 using System.Collections.ObjectModel;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.AspNetCore.Components.Forms.ModelBinding;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
-internal sealed class HttpContextFormDataProvider : FormDataProvider, IHostEnvironmentFormDataProvider
+internal sealed class HttpContextFormDataProvider : FormDataProvider
 {
     private string? _name;
     private IReadOnlyDictionary<string, StringValues>? _entries;
@@ -17,7 +16,7 @@ internal sealed class HttpContextFormDataProvider : FormDataProvider, IHostEnvir
 
     public override IReadOnlyDictionary<string, StringValues> Entries => _entries ?? ReadOnlyDictionary<string, StringValues>.Empty;
 
-    void IHostEnvironmentFormDataProvider.SetFormData(string name, IReadOnlyDictionary<string, StringValues> form)
+    public void SetFormData(string name, IReadOnlyDictionary<string, StringValues> form)
     {
         _name = name;
         _entries = form;

@@ -85,9 +85,9 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
 
         if (handler != null &&
             form != null &&
-            httpContext.RequestServices.GetRequiredService<FormDataProvider>() is IHostEnvironmentFormDataProvider formData)
+            httpContext.RequestServices.GetRequiredService<FormDataProvider>() is HttpContextFormDataProvider formDataProvider)
         {
-            formData.SetFormData(handler, new FormCollectionReadOnlyDictionary(form));
+            formDataProvider.SetFormData(handler, new FormCollectionReadOnlyDictionary(form));
         }
 
         if (httpContext.RequestServices.GetService<AntiforgeryStateProvider>() is EndpointAntiforgeryStateProvider antiforgery)

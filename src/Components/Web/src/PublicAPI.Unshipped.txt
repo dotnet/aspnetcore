@@ -49,8 +49,6 @@ Microsoft.AspNetCore.Components.Forms.ModelBinding.FormValueModelBindingContext.
 Microsoft.AspNetCore.Components.Forms.ModelBinding.IFormValueModelBinder
 Microsoft.AspNetCore.Components.Forms.ModelBinding.IFormValueModelBinder.Bind(Microsoft.AspNetCore.Components.Forms.ModelBinding.FormValueModelBindingContext! context) -> void
 Microsoft.AspNetCore.Components.Forms.ModelBinding.IFormValueModelBinder.CanBind(System.Type! valueType, string? formName = null) -> bool
-Microsoft.AspNetCore.Components.Forms.ModelBinding.IHostEnvironmentFormDataProvider
-Microsoft.AspNetCore.Components.Forms.ModelBinding.IHostEnvironmentFormDataProvider.SetFormData(string! name, System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.Extensions.Primitives.StringValues>! formData) -> void
 Microsoft.AspNetCore.Components.Forms.ModelBinding.ModelBindingError
 Microsoft.AspNetCore.Components.Forms.ModelBinding.ModelBindingError.AttemptedValue.get -> string?
 Microsoft.AspNetCore.Components.Forms.ModelBinding.ModelBindingError.Container.get -> object!
