@@ -12,8 +12,7 @@ namespace Microsoft.AspNetCore.Components.Forms;
 /// </summary>
 public sealed class CascadingModelBinder : ICascadingValueSupplier, IComponent
 {
-    private ICascadingValueSupplier? _cascadingValueSupplier;
-    private ModelBindingContext? _bindingContext;
+    private SupplyParameterFromFormValueProvider? _cascadingValueSupplier;
     private RenderHandle _handle;
     private bool _hasPendingQueuedRender;
 
@@ -48,9 +47,11 @@ public sealed class CascadingModelBinder : ICascadingValueSupplier, IComponent
 
         if (_cascadingValueSupplier is null)
         {
-            var cascadingValueSupplier = new SupplyParameterFromFormValueProvider(FormValueSupplier, Navigation, ParentContext, Name);
-            _cascadingValueSupplier = cascadingValueSupplier;
-            _bindingContext = cascadingValueSupplier.BindingContext;
+            _cascadingValueSupplier = new SupplyParameterFromFormValueProvider(FormValueSupplier, Navigation, ParentContext, Name);
+        }
+        else if (!string.Equals(Name, _cascadingValueSupplier.Name))
+        {
+            throw new InvalidOperationException($"{nameof(CascadingModelBinder)} '{nameof(Name)}' can't change after initialization.");
         }
 
         if (!_hasPendingQueuedRender)
@@ -65,7 +66,7 @@ public sealed class CascadingModelBinder : ICascadingValueSupplier, IComponent
     private void BuildRenderTree(RenderTreeBuilder builder)
     {
         _hasPendingQueuedRender = false;
-        builder.AddContent(0, ChildContent, _bindingContext!);
+        builder.AddContent(0, ChildContent, _cascadingValueSupplier!.BindingContext);
     }
 
     // The implementation of ICascadingValueSupplier won't be used until this component is rendered,
@@ -73,7 +74,7 @@ public sealed class CascadingModelBinder : ICascadingValueSupplier, IComponent
     // nonnull by that time.
 
     bool ICascadingValueSupplier.IsFixed
-        => _cascadingValueSupplier!.IsFixed;
+        => true;
 
     bool ICascadingValueSupplier.CanSupplyValue(in CascadingParameterInfo parameterInfo)
         => _cascadingValueSupplier!.CanSupplyValue(parameterInfo);

@@ -191,7 +191,7 @@ public class CascadingModelBinderTest
     }
 
     [Fact]
-    public void Throws_WhenIsFixedAndNameChanges()
+    public void Throws_IfNameChanges()
     {
         ModelBindingContext capturedContext = null;
         RenderFragment<ModelBindingContext> contents = (ctx) => b => { capturedContext = ctx; };
@@ -211,62 +211,7 @@ public class CascadingModelBinderTest
         contextName = "changed";
         var exception = Assert.Throws<InvalidOperationException>(testComponent.TriggerRender);
 
-        Assert.Equal("'CascadingModelBinder' 'Name' can't change after initialized.", exception.Message);
-    }
-
-    [Fact]
-    public void CanChange_Name_WhenNotFixed()
-    {
-        ModelBindingContext capturedContext = null;
-        ModelBindingContext originalContext = null;
-        RenderFragment<ModelBindingContext> contents = (ctx) => b => { capturedContext = ctx; };
-        var contextName = "parent-context";
-
-        var testComponent = new TestComponent(builder =>
-        {
-            builder.OpenComponent<CascadingModelBinder>(0);
-            builder.AddAttribute(1, nameof(CascadingModelBinder.Name), contextName);
-            builder.AddAttribute(3, nameof(CascadingModelBinder.ChildContent), contents);
-            builder.CloseComponent();
-        });
-        var id = _renderer.AssignRootComponentId(testComponent);
-        _renderer.RenderRootComponent(id);
-
-        originalContext = capturedContext;
-        contextName = "changed";
-
-        // Act
-        testComponent.TriggerRender();
-
-        Assert.NotSame(capturedContext, originalContext);
-        Assert.Equal("changed", capturedContext.Name);
-    }
-
-    [Fact]
-    public void CanChange_BindingContextId_WhenNotFixed()
-    {
-        ModelBindingContext capturedContext = null;
-        ModelBindingContext originalContext = null;
-        RenderFragment<ModelBindingContext> contents = (ctx) => b => { capturedContext = ctx; };
-
-        var testComponent = new TestComponent(builder =>
-        {
-            builder.OpenComponent<CascadingModelBinder>(0);
-            builder.AddComponentParameter(1, nameof(CascadingModelBinder.Name), "context-name");
-            builder.AddComponentParameter(2, nameof(CascadingModelBinder.ChildContent), contents);
-            builder.CloseComponent();
-        });
-        var id = _renderer.AssignRootComponentId(testComponent);
-        _renderer.RenderRootComponent(id);
-
-        originalContext = capturedContext;
-
-        // Act
-        _navigationManager.NavigateTo(_navigationManager.ToAbsoluteUri("fetch-data/6").ToString());
-        testComponent.TriggerRender();
-
-        Assert.NotSame(capturedContext, originalContext);
-        Assert.Equal("fetch-data/6?handler=context-name", capturedContext.BindingContextId);
+        Assert.Equal("CascadingModelBinder 'Name' can't change after initialization.", exception.Message);
     }
 
     private class RouteViewTestNavigationManager : NavigationManager

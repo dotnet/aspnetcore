@@ -16,6 +16,7 @@ internal class SupplyParameterFromFormValueProvider : ICascadingValueSupplier
     public SupplyParameterFromFormValueProvider(IFormValueModelBinder formValueSupplier, NavigationManager navigation, ModelBindingContext? parentContext, string thisName)
     {
         _formValueSupplier = formValueSupplier;
+        Name = thisName;
 
         // BindingContextId: action parameter used to define the handler
         // Name: form name and context used to bind
@@ -43,9 +44,11 @@ internal class SupplyParameterFromFormValueProvider : ICascadingValueSupplier
         }
     }
 
+    public string Name { get; }
+
     bool ICascadingValueSupplier.IsFixed => true;
 
-    bool ICascadingValueSupplier.CanSupplyValue(in CascadingParameterInfo parameterInfo)
+    public bool CanSupplyValue(in CascadingParameterInfo parameterInfo)
     {
         // We supply a ModelBindingContext
         if (parameterInfo.Attribute is CascadingParameterAttribute && parameterInfo.PropertyType == typeof(ModelBindingContext))
@@ -63,13 +66,7 @@ internal class SupplyParameterFromFormValueProvider : ICascadingValueSupplier
         return false;
     }
 
-    void ICascadingValueSupplier.Subscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
-        => throw new NotSupportedException(); // IsFixed = true, so the framework won't call this
-
-    void ICascadingValueSupplier.Unsubscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
-        => throw new NotSupportedException(); // IsFixed = true, so the framework won't call this
-
-    object? ICascadingValueSupplier.GetCurrentValue(in CascadingParameterInfo parameterInfo)
+    public object? GetCurrentValue(in CascadingParameterInfo parameterInfo)
     {
         // We supply a ModelBindingContext
         if (parameterInfo.Attribute is CascadingParameterAttribute && parameterInfo.PropertyType == typeof(ModelBindingContext))
@@ -85,6 +82,12 @@ internal class SupplyParameterFromFormValueProvider : ICascadingValueSupplier
 
         throw new InvalidOperationException($"Received an unexpected attribute type {parameterInfo.Attribute.GetType()}");
     }
+
+    void ICascadingValueSupplier.Subscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
+        => throw new NotSupportedException(); // IsFixed = true, so the framework won't call this
+
+    void ICascadingValueSupplier.Unsubscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
+        => throw new NotSupportedException(); // IsFixed = true, so the framework won't call this
 
     internal object? GetFormPostValue(ModelBindingContext? bindingContext, in CascadingParameterInfo parameterInfo)
     {
