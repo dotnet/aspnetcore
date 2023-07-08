@@ -1131,6 +1131,7 @@ public class ForwardedHeadersMiddlewareTests
     [InlineData("", "/foo%2F/", "/foo%2F", "/")]
     [InlineData("/foo", "/bar", "/bar", "/foo")]
     [InlineData("/foo", "/", "", "/foo")]
+    [InlineData("/foo bar", "/", "", "/foo%20bar")]
     public async Task XForwardedPrefix(
         string pathBase,
         string forwardedPrefix,
@@ -1157,7 +1158,7 @@ public class ForwardedHeadersMiddlewareTests
 
         var context = await server.SendAsync(c =>
         {
-            c.Request.PathBase = pathBase;
+            c.Request.PathBase = new PathString(pathBase);
             c.Request.Headers["X-Forwarded-Prefix"] = forwardedPrefix;
         });
 
