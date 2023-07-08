@@ -1,12 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable enable
-
 using System.Collections;
+using System.Diagnostics;
+using System.Linq;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 
+[DebuggerDisplay("Count = {Count}")]
+[DebuggerTypeProxy(typeof(CopyOnWriteListDebugView<>))]
 internal sealed class CopyOnWriteList<T> : IList<T>
 {
     private readonly IReadOnlyList<T> _source;
@@ -113,4 +115,13 @@ internal sealed class CopyOnWriteList<T> : IList<T>
     {
         return GetEnumerator();
     }
+}
+
+// This debug view is not a nested private class to avoid a nested generic argument conflict.
+internal sealed class CopyOnWriteListDebugView<T>(CopyOnWriteList<T> collection)
+{
+    private readonly CopyOnWriteList<T> _collection = collection;
+
+    [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+    public T[] Items => _collection.ToArray();
 }

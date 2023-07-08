@@ -45,6 +45,7 @@ public abstract class RazorPageBase : IRazorPage
     /// <summary>
     /// Gets the <see cref="TextWriter"/> that the page is writing output to.
     /// </summary>
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     public virtual TextWriter Output
     {
         get
@@ -63,6 +64,7 @@ public abstract class RazorPageBase : IRazorPage
     public string Path { get; set; } = default!;
 
     /// <inheritdoc />
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     public IDictionary<string, RenderAsyncDelegate> SectionWriters { get; } =
         new Dictionary<string, RenderAsyncDelegate>(StringComparer.OrdinalIgnoreCase);
 
@@ -72,18 +74,22 @@ public abstract class RazorPageBase : IRazorPage
     public dynamic ViewBag => ViewContext?.ViewBag!;
 
     /// <inheritdoc />
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     public bool IsLayoutBeingRendered { get; set; }
 
     /// <inheritdoc />
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     public IHtmlContent? BodyContent { get; set; }
 
     /// <inheritdoc />
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     public IDictionary<string, RenderAsyncDelegate> PreviousSectionWriters { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets a <see cref="System.Diagnostics.DiagnosticSource"/> instance used to instrument the page execution.
     /// </summary>
     [RazorInject]
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     public DiagnosticSource DiagnosticSource { get; set; } = default!;
 
     /// <summary>
@@ -91,6 +97,7 @@ public abstract class RazorPageBase : IRazorPage
     /// handles non-<see cref="IHtmlContent"/> C# expressions.
     /// </summary>
     [RazorInject]
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     public HtmlEncoder HtmlEncoder { get; set; } = default!;
 
     /// <summary>
