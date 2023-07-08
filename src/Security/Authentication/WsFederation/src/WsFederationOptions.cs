@@ -26,13 +26,6 @@ public class WsFederationOptions : RemoteAuthenticationOptions
             new JwtSecurityTokenHandler()
         };
 
-    private ICollection<TokenHandler> _tokenHandlers = new Collection<TokenHandler>()
-        {
-            new Saml2SecurityTokenHandler(),
-            new SamlSecurityTokenHandler(),
-            new JsonWebTokenHandler(){ MapInboundClaims = true }
-        };
-
     private TokenValidationParameters _tokenValidationParameters = new TokenValidationParameters();
 
     /// <summary>
@@ -46,6 +39,13 @@ public class WsFederationOptions : RemoteAuthenticationOptions
         //  If you manage to get it configured, then you can set RemoteSignOutPath accordingly.
         RemoteSignOutPath = "/signin-wsfed";
         Events = new WsFederationEvents();
+
+        TokenHandlers = new Collection<TokenHandler>()
+        {
+            new Saml2SecurityTokenHandler(),
+            new SamlSecurityTokenHandler(),
+            new JsonWebTokenHandler{ MapInboundClaims = JwtSecurityTokenHandler.DefaultMapInboundClaims }
+        };
     }
 
     /// <summary>
@@ -122,14 +122,7 @@ public class WsFederationOptions : RemoteAuthenticationOptions
     /// </summary>
     public ICollection<TokenHandler> TokenHandlers
     {
-        get
-        {
-            return _tokenHandlers;
-        }
-        set
-        {
-            _tokenHandlers = value ?? throw new ArgumentNullException(nameof(TokenHandlers));
-        }
+        get; private set;
     }
 
     /// <summary>
@@ -207,11 +200,13 @@ public class WsFederationOptions : RemoteAuthenticationOptions
     public new bool SaveTokens { get; set; }
 
     /// <summary>
-    /// Gets of sets the <see cref="UseTokenHandlers"/> property to control if <see cref="TokenHandlers"/> or <see cref="SecurityTokenHandlers"/> will be used to validate the inbound token.
-    /// The advantage of using the TokenHandlers is:
-    /// <para>There is an Async model.</para>
-    /// <para>The default token handler is a <see cref="JsonWebTokenHandler"/> which is 30 % faster when validating.</para>
-    /// <para>There is an ability to make use of a Last-Known-Good model for metadata that protects applications when metadata is published with errors.</para>
+    /// Gets or sets whether <see cref="TokenHandlers"/> or <see cref="SecurityTokenHandlers"/> will be used to validate the inbound token.
     /// </summary>
-    public bool UseTokenHandlers { get; set; }
+    /// <remarks>
+    /// The advantage of using the TokenHandlers are:
+    /// <para>There is an Async model.</para>
+    /// <para>The default token handler for JsonWebTokens is a <see cref="JsonWebTokenHandler"/> which is faster than a <see cref="JwtSecurityTokenHandler"/>.</para>
+    /// <para>There is an ability to make use of a Last-Known-Good model for metadata that protects applications when metadata is published with errors.</para>
+    /// </remarks>
+    public bool UseTokenHandlers { get; set; } = true;
 }

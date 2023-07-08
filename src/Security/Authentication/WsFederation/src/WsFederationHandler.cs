@@ -242,7 +242,7 @@ public class WsFederationHandler : RemoteAuthenticationHandler<WsFederationOptio
             wsFederationMessage = securityTokenReceivedContext.ProtocolMessage;
             properties = messageReceivedContext.Properties!;
 
-            var tvp = await SetupTokenValidationParameters();
+            var tvp = await SetupTokenValidationParametersAsync();
             ClaimsPrincipal? principal = null;
             SecurityToken? validatedToken = null;
             if (Options.UseTokenHandlers)
@@ -368,8 +368,7 @@ public class WsFederationHandler : RemoteAuthenticationHandler<WsFederationOptio
         }
     }
 
-    // TODO - this method could be shared across OIDC, WsFed, JwtBearer to ensure consistency
-    private async Task<TokenValidationParameters> SetupTokenValidationParameters()
+    private async Task<TokenValidationParameters> SetupTokenValidationParametersAsync()
     {
         // Clone to avoid cross request race conditions for updated configurations.
         var tokenValidationParameters = Options.TokenValidationParameters.Clone();

@@ -96,7 +96,7 @@ public class JwtBearerHandler : AuthenticationHandler<JwtBearerOptions>
                 }
             }
 
-            var tvp = await SetupTokenValidationParameters();
+            var tvp = await SetupTokenValidationParametersAsync();
             List<Exception>? validationFailures = null;
             SecurityToken? validatedToken = null;
             ClaimsPrincipal? principal = null;
@@ -237,7 +237,7 @@ public class JwtBearerHandler : AuthenticationHandler<JwtBearerOptions>
         }
     }
 
-    private async Task<TokenValidationParameters> SetupTokenValidationParameters()
+    private async Task<TokenValidationParameters> SetupTokenValidationParametersAsync()
     {
         // Clone to avoid cross request race conditions for updated configurations.
         var tokenValidationParameters = Options.TokenValidationParameters.Clone();

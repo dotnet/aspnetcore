@@ -18,6 +18,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -40,6 +41,13 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
 
     private void ConfigureDefaults(JwtBearerOptions o)
     {
+    }
+
+    [Fact]
+    public void MapInboundClaimsDefaults()
+    {
+        JwtBearerOptions jwtBearerOptions = new JwtBearerOptions();
+        Assert()
     }
 
     [Fact]
@@ -121,9 +129,18 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
     {
         var options = new JwtBearerOptions();
         Assert.True(options.MapInboundClaims);
+
         var jwtHandler = options.SecurityTokenValidators.First() as JwtSecurityTokenHandler;
         Assert.NotNull(jwtHandler);
         Assert.True(jwtHandler.MapInboundClaims);
+
+        var tokenHandler = options.TokenHandlers.First() as JsonWebTokenHandler;
+        Assert.NotNull(tokenHandler);
+        Assert.True(tokenHandler.MapInboundClaims);
+
+        options.MapInboundClaims = false;
+        Assert.False(jwtHandler.MapInboundClaims);
+        Assert.False(tokenHandler.MapInboundClaims);
     }
 
     [Fact]
