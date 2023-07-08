@@ -1164,10 +1164,10 @@ public class ForwardedHeadersMiddlewareTests
     }
 
     [Theory]
-    [InlineData("", "invalid")]
-    [InlineData("", "invalid/")]
-    [InlineData("", "%2Finvalid")]
-    public async Task XForwardedPrefixInvalidPath(string pathBase, string forwardedPrefix)
+    [InlineData("invalid")]
+    [InlineData("invalid/")]
+    [InlineData("%2Finvalid")]
+    public async Task XForwardedPrefixInvalidPath(string forwardedPrefix)
     {
         using var host = new HostBuilder()
             .ConfigureWebHost(webHostBuilder =>
@@ -1189,11 +1189,10 @@ public class ForwardedHeadersMiddlewareTests
 
         var context = await server.SendAsync(c =>
         {
-            c.Request.PathBase = pathBase;
             c.Request.Headers["X-Forwarded-Prefix"] = forwardedPrefix;
         });
 
-        Assert.Equal(pathBase, context.Request.PathBase);
+        Assert.Equal(PathString.Empty, context.Request.PathBase);
         Assert.False(context.Request.Headers.ContainsKey("X-Original-Prefix"));
         Assert.True(context.Request.Headers.ContainsKey("X-Forwarded-Prefix"));
     }
