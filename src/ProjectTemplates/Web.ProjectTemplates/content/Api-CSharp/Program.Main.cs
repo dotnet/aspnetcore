@@ -38,16 +38,7 @@ public class Program
     }
 }
 
-public class Todo(int id, string? title, DateOnly? dueBy = null, bool isComplete = false)
-{
-    public int Id { get; set; } = id;
-
-    public string? Title { get; set; } = title;
-
-    public DateOnly? DueBy { get; set; } = dueBy;
-
-    public bool IsComplete { get; set; } = isComplete;
-}
+public record Todo(int id, string? title, DateOnly? dueBy = null, bool isComplete = false);
 
 #if (NativeAot)
 [JsonSerializable(typeof(Todo[]))]
