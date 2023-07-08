@@ -1123,15 +1123,19 @@ public class ForwardedHeadersMiddlewareTests
     }
 
     [Theory]
-    [InlineData("", "/foo", "/foo")]
-    [InlineData("", "/foo/", "/foo")]
-    [InlineData("", "/foo%20bar", "/foo bar")]
-    [InlineData("", "/foo?bar?", "/foo?bar?")]
-    [InlineData("", "/foo%2F", "/foo%2F")]
-    [InlineData("", "/foo%2F/", "/foo%2F")]
-    [InlineData("/foo", "/bar", "/bar")]
-    [InlineData("/foo", "/", "")]
-    public async Task XForwardedPrefix(string pathBase, string forwardedPrefix, string expectedUnescapedPathBase)
+    [InlineData("", "/foo", "/foo", "/")]
+    [InlineData("", "/foo/", "/foo", "/")]
+    [InlineData("", "/foo%20bar", "/foo bar", "/")]
+    [InlineData("", "/foo?bar?", "/foo?bar?", "/")]
+    [InlineData("", "/foo%2F", "/foo%2F", "/")]
+    [InlineData("", "/foo%2F/", "/foo%2F", "/")]
+    [InlineData("/foo", "/bar", "/bar", "/foo")]
+    [InlineData("/foo", "/", "", "/foo")]
+    public async Task XForwardedPrefix(
+        string pathBase,
+        string forwardedPrefix,
+        string expectedUnescapedPathBase,
+        string expectedOriginalPrefix)
     {
         using var host = new HostBuilder()
             .ConfigureWebHost(webHostBuilder =>
@@ -1158,7 +1162,7 @@ public class ForwardedHeadersMiddlewareTests
         });
 
         Assert.Equal(expectedUnescapedPathBase, context.Request.PathBase.Value);
-        Assert.Equal(pathBase, context.Request.Headers["X-Original-Prefix"]);
+        Assert.Equal(expectedOriginalPrefix, context.Request.Headers["X-Original-Prefix"]);
         // Should have been consumed and removed
         Assert.False(context.Request.Headers.ContainsKey("X-Forwarded-Prefix"));
     }

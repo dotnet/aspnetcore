@@ -368,7 +368,9 @@ public class ForwardedHeadersMiddleware
             if (checkPrefix && currentValues.Prefix != null)
             {
                 // Save the original
-                requestHeaders[_options.OriginalPrefixHeaderName] = request.PathBase.ToString();
+                requestHeaders[_options.OriginalPrefixHeaderName] =
+                    request.PathBase.HasValue ? request.PathBase.ToString() : "/";
+
                 if (forwardedPrefix!.Length > entriesConsumed)
                 {
                     // Truncate the consumed header values
@@ -379,6 +381,7 @@ public class ForwardedHeadersMiddleware
                     // All values were consumed
                     requestHeaders.Remove(_options.ForwardedPrefixHeaderName);
                 }
+
                 request.PathBase = PathString.FromUriComponent(currentValues.Prefix.TrimEnd('/'));
             }
         }
