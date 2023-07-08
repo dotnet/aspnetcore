@@ -1,7 +1,6 @@
 #if (NativeAot)
 using System.Text.Json.Serialization;
 #endif
-using Company.ApiApplication1;
 
 var builder = WebApplication.CreateSlimBuilder(args);
 
@@ -14,7 +13,13 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 #endif
 var app = builder.Build();
 
-var sampleTodos = TodoGenerator.GenerateTodos().ToArray();
+Todo[] sampleTodos = [
+    new(1, "Walk the dog"),
+    new(2, "Do the dishes", DateOnly.FromDateTime(DateTime.Now)),
+    new(3, "Do the laundry", DateOnly.FromDateTime(DateTime.Now.AddDays(1))),
+    new(4, "Clean the bathroom"),
+    new(5, "Clean the car", DateOnly.FromDateTime(DateTime.Now.AddDays(2)))
+];
 
 var todosApi = app.MapGroup("/todos");
 todosApi.MapGet("/", () => sampleTodos);
@@ -24,6 +29,17 @@ todosApi.MapGet("/{id}", (int id) =>
         : Results.NotFound());
 
 app.Run();
+
+public class Todo(int id, string? title, DateOnly? dueBy = null, bool isComplete = false)
+{
+    public int Id { get; set; } = id;
+
+    public string? Title { get; set; } = title;
+
+    public DateOnly? DueBy { get; set; } = dueBy;
+
+    public bool IsComplete { get; set; } = isComplete;
+}
 
 #if (NativeAot)
 [JsonSerializable(typeof(Todo[]))]
