@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
   "name": "App WebAssembly Blazor vuota",
-  "description": "An empty project template for creating a Blazor app that runs on WebAssembly. This template does not have any content in it.",
+  "description": "Modello di progetto vuoto per la creazione di un'app Blazor eseguita in WebAssembly. Questo modello non presenta alcun contenuto.",
   "symbols/Framework/description": "Il framework di destinazione per il progetto.",
   "symbols/Framework/choices/net8.0/description": "Destinazione net8.0",
   "symbols/skipRestore/description": "Se specificato, ignora il ripristino automatico del progetto durante la creazione.",

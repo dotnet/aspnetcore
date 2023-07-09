@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
   "name": "Blazor WebAssembly Uygulaması Boş",
-  "description": "An empty project template for creating a Blazor app that runs on WebAssembly. This template does not have any content in it.",
+  "description": "WebAssembly üzerinde çalışan bir Blazor uygulaması oluşturmak için boş bir proje şablonu. Bu şablonun içinde herhangi bir içerik yok.",
   "symbols/Framework/description": "Projenin hedef çerçevesi.",
   "symbols/Framework/choices/net8.0/description": "Hedef net8.0",
   "symbols/skipRestore/description": "Belirtilirse, oluşturma sırasında projenin otomatik geri yüklenmesini atlar.",

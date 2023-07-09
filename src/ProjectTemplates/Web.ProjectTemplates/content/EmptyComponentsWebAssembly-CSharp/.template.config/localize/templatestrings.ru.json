@@ -1,7 +1,7 @@
 ﻿{
   "author": "Майкрософт",
   "name": "Пустое приложение Blazor WebAssembly",
-  "description": "An empty project template for creating a Blazor app that runs on WebAssembly. This template does not have any content in it.",
+  "description": "Пустой шаблон проекта для создания приложения Blazor, работающего на WebAssembly. В этом шаблоне нет содержимого.",
   "symbols/Framework/description": "Целевая платформа для проекта.",
   "symbols/Framework/choices/net8.0/description": "Целевая net8.0",
   "symbols/skipRestore/description": "Если установлено, автоматическое восстановление проекта при создании пропускается.",

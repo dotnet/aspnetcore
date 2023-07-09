@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
   "name": "Aplikace Blazor WebAssembly je prázdná.",
-  "description": "An empty project template for creating a Blazor app that runs on WebAssembly. This template does not have any content in it.",
+  "description": "Prázdná šablona projektu pro vytvoření aplikace Blazor, která běží na WebAssembly. Tato šablona neobsahuje žádný obsah.",
   "symbols/Framework/description": "Cílová architektura pro projekt",
   "symbols/Framework/choices/net8.0/description": "Cílový net8.0",
   "symbols/skipRestore/description": "Pokud se tato možnost zadá, přeskočí automatické obnovení projektu při vytvoření.",
