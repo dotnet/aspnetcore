@@ -42,7 +42,7 @@ public partial class StartupAnalyzer : DiagnosticAnalyzer
         internal static readonly DiagnosticDescriptor IncorrectlyConfiguredProblemDetailsWriter = new(
             "ASP0026",
             "Custom IProblemDetailsWriter is incorrectly configured",
-            "The custom IProblemDetailsWriter must be registered before calling AddControllers, AddControllersWithViews, or AddRazorPages.",
+            "The custom IProblemDetailsWriter must be registered before calling AddControllers, AddControllersWithViews, AddMvc, or AddRazorPages.",
             "Usage",
             DiagnosticSeverity.Warning,
             isEnabledByDefault: true,
