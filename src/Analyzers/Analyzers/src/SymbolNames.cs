@@ -51,8 +51,6 @@ internal static class SymbolNames
 
     public static class MvcServiceCollectionExtensions
     {
-        public const string MetadataName = "Microsoft.Extensions.DependencyInjection.MvcServiceCollectionExtensions";
-
         public const string AddControllersMethodName = "AddControllers";
 
         public const string AddControllersWithViewsMethodName = "AddControllersWithViews";
@@ -60,5 +58,19 @@ internal static class SymbolNames
         public const string AddMvcMethodName = "AddMvc";
 
         public const string AddRazorPagesMethodName = "AddRazorPages";
+    }
+
+    public static class ServiceCollectionServiceExtensions
+    {
+        public const string AddTransientMethodName = "AddTransient";
+
+        public const string AddScopedMethodName = "AddScoped";
+
+        public const string AddSingletonMethodName = "AddSingleton";
+    }
+
+    public static class IProblemDetailsWriter
+    {
+        public const string Name = "IProblemDetailsWriter";
     }
 }
