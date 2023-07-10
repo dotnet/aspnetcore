@@ -5,7 +5,7 @@ using System.Globalization;
 using BenchmarkDotNet.Attributes;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
+namespace Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 public class FormDataMapperComplexTypeBenchmark
 {
     private FormDataMapperOptions _formMapperOptions;

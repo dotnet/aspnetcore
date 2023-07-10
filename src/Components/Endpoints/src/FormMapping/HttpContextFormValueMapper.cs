@@ -4,6 +4,7 @@
 using System.Buffers;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 using Microsoft.AspNetCore.Components.Forms.Mapping;
@@ -89,6 +90,8 @@ internal sealed class HttpContextFormValueMapper : IFormValueMapper
 
     internal abstract class FormValueSupplier
     {
+        [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
+        [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
         public abstract void Deserialize(
             FormValueMappingContext context,
             FormDataMapperOptions options,
@@ -97,6 +100,8 @@ internal sealed class HttpContextFormValueMapper : IFormValueMapper
 
     internal class FormValueSupplier<T> : FormValueSupplier
     {
+        [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
+        [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
         public override void Deserialize(
             FormValueMappingContext context,
             FormDataMapperOptions options,

@@ -46,6 +46,8 @@ internal class CollectionConverter<TCollection, TCollectionPolicy, TBuffer, TEle
         _elementConverter = elementConverter;
     }
 
+    [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
     internal override bool TryRead(
         ref FormDataReader context,
         Type type,

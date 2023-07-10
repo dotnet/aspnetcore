@@ -3,27 +3,26 @@
 
 using System.Globalization;
 using BenchmarkDotNet.Attributes;
-using Microsoft.AspNetCore.Components.Endpoints.Binding;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNetCore.Components.Binding;
+namespace Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 
-public class FormDataMapperDictionaryBenchmark
+public class FormDataMapperCollectionBenchmark
 {
     private FormDataMapperOptions _formMapperOptions;
     private Dictionary<FormKey, StringValues> _formDataEntries;
     private FormDataReader _formDataReader;
 
-    public static char[] Buffer = new char[2048];
-
     [Params(0, 1, 10, 100, 1000)]
-    public int DictionarySize { get; set; }
+    public int CollectionSize { get; set; }
+
+    public static char[] Buffer = new char[2048];
 
     [GlobalSetup]
     public void Setup()
     {
         _formMapperOptions = new FormDataMapperOptions();
-        _formDataEntries = Enumerable.Range(0, DictionarySize)
+        _formDataEntries = Enumerable.Range(0, CollectionSize)
             .ToDictionary(i => new FormKey($"[{i}]".AsMemory()), i => new StringValues(i.ToString(CultureInfo.InvariantCulture)));
     }
 
@@ -34,8 +33,8 @@ public class FormDataMapperDictionaryBenchmark
     }
 
     [Benchmark]
-    public Dictionary<int, int> MapPrimitiveTypeDictionary()
+    public List<int> MapPrimitiveCollectionType()
     {
-        return FormDataMapper.Map<Dictionary<int, int>>(_formDataReader, _formMapperOptions);
+        return FormDataMapper.Map<List<int>>(_formDataReader, _formMapperOptions);
     }
 }

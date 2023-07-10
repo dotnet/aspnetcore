@@ -9,7 +9,6 @@
 
   <ItemGroup>
     <Reference Include="BenchmarkDotNet" />
-    <Reference Include="Microsoft.AspNetCore.Components" />
     <Reference Include="Microsoft.AspNetCore.Components.Endpoints" />
 
     <Compile Include="$(SharedSourceRoot)BenchmarkRunner\*.cs" />

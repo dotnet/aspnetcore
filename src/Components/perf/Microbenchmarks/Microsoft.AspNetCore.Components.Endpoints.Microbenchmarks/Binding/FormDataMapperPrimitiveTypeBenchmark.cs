@@ -5,16 +5,13 @@ using System.Globalization;
 using BenchmarkDotNet.Attributes;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
+namespace Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 
-public class FormDataMapperCollectionBenchmark
+public class FormDataMapperPrimitiveTypeBenchmark
 {
     private FormDataMapperOptions _formMapperOptions;
     private Dictionary<FormKey, StringValues> _formDataEntries;
     private FormDataReader _formDataReader;
-
-    [Params(0, 1, 10, 100, 1000)]
-    public int CollectionSize { get; set; }
 
     public static char[] Buffer = new char[2048];
 
@@ -22,19 +19,19 @@ public class FormDataMapperCollectionBenchmark
     public void Setup()
     {
         _formMapperOptions = new FormDataMapperOptions();
-        _formDataEntries = Enumerable.Range(0, CollectionSize)
-            .ToDictionary(i => new FormKey($"[{i}]".AsMemory()), i => new StringValues(i.ToString(CultureInfo.InvariantCulture)));
-    }
-
-    [IterationSetup]
-    public void IterationSetup()
-    {
+        _formDataEntries = new Dictionary<FormKey, StringValues> { [new FormKey("value".AsMemory())] = "3" };
         _formDataReader = new FormDataReader(_formDataEntries, CultureInfo.InvariantCulture, Buffer);
+        _formDataReader.PushPrefix("value");
     }
 
     [Benchmark]
-    public List<int> MapPrimitiveCollectionType()
+    public int ModelBinding_PrimitiveType_Components()
     {
-        return FormDataMapper.Map<List<int>>(_formDataReader, _formMapperOptions);
+        var result = FormDataMapper.Map<int>(_formDataReader, _formMapperOptions);
+        if (result != 3)
+        {
+            throw new InvalidOperationException();
+        }
+        return result;
     }
 }

@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
+namespace Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 
 public struct Address
 {

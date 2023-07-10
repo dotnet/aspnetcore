@@ -24,6 +24,8 @@ internal sealed class DictionaryConverter<TDictionary, TDictionaryPolicy, TBuffe
         _valueConverter = elementConverter;
     }
 
+    [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
     internal override bool TryRead(
         ref FormDataReader context,
         Type type,

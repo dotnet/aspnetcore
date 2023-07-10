@@ -2,7 +2,6 @@
   "solution": {
     "path": "..\\..\\AspNetCore.sln",
     "projects": [
-      "..\\AspNetCore6\\src\\Components\\perf\\Microbenchmarks\\Microsoft.AspNetCore.Components.Endpoints\\Microsoft.AspNetCore.Components.Endpoints.Microbenchmarks.csproj",
       "src\\Components\\Analyzers\\src\\Microsoft.AspNetCore.Components.Analyzers.csproj",
       "src\\Components\\Analyzers\\test\\Microsoft.AspNetCore.Components.Analyzers.Tests.csproj",
       "src\\Components\\Authorization\\src\\Microsoft.AspNetCore.Components.Authorization.csproj",
@@ -46,6 +45,7 @@
       "src\\Components\\benchmarkapps\\Wasm.Performance\\ConsoleHost\\Wasm.Performance.ConsoleHost.csproj",
       "src\\Components\\benchmarkapps\\Wasm.Performance\\Driver\\Wasm.Performance.Driver.csproj",
       "src\\Components\\benchmarkapps\\Wasm.Performance\\TestApp\\Wasm.Performance.TestApp.csproj",
+      "src\\Components\\perf\\Microbenchmarks\\Microsoft.AspNetCore.Components.Endpoints.Microbenchmarks\\Microsoft.AspNetCore.Components.Endpoints.Microbenchmarks.csproj",
       "src\\Components\\test\\E2ETest\\Microsoft.AspNetCore.Components.E2ETests.csproj",
       "src\\Components\\test\\testassets\\BasicTestApp\\BasicTestApp.csproj",
       "src\\Components\\test\\testassets\\Components.TestServer\\Components.TestServer.csproj",
