@@ -522,7 +522,6 @@ internal abstract partial class ResourceInvoker
                             nameof(IAsyncResourceFilter.OnResourceExecutionAsync),
                             filter);
                     }
-                    
                     goto case State.ResourceEnd;
                 }
 
