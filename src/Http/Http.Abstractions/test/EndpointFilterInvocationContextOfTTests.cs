@@ -18,14 +18,6 @@ public class EndpointFilterInvocationContextOfTTests
     }
 
     [Fact]
-    public void ProhibitsUnsupportedListOperations()
-    {
-        var context = new EndpointFilterInvocationContext<string, int, bool>(new DefaultHttpContext(), "This is a test", 42, false);
-        Assert.Throws<NotSupportedException>(() => context.Contains("string"));
-        Assert.Throws<NotSupportedException>(() => context.IndexOf(0));
-    }
-
-    [Fact]
     public void ThrowsExceptionForInvalidCastOnGetArgument()
     {
         var context = new EndpointFilterInvocationContext<string, int, bool, Todo>(new DefaultHttpContext(), "This is a test", 42, false, new Todo());
@@ -62,6 +54,16 @@ public class EndpointFilterInvocationContextOfTTests
             enumeratedCount++;
         }
         Assert.Equal(4, enumeratedCount);
+    }
+
+    [Fact]
+    public void HandlesIListReadOperations()
+    {
+        var context = new EndpointFilterInvocationContext<string, int, bool>(new DefaultHttpContext(), "This is a test", 42, false);
+        Assert.True(context.Contains("This is a test"));
+        Assert.False(context.Contains("This does not exist"));
+        Assert.Equal(1, context.IndexOf(0));
+        Assert.Equal(-1, context.IndexOf(21));
     }
 
     // Test for https://github.com/dotnet/aspnetcore/issues/41489

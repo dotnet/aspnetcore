@@ -61,7 +61,13 @@ internal sealed class EndpointFilterInvocationContext<T0> : EndpointFilterInvoca
 
     public bool Contains(object? item)
     {
-        throw new NotSupportedException();
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            if (Arguments[i].Equals(item))
+            {
+                return true;
+            }
+        }
     }
 
     public void CopyTo(object?[] array, int arrayIndex)
@@ -91,7 +97,15 @@ internal sealed class EndpointFilterInvocationContext<T0> : EndpointFilterInvoca
 
     public int IndexOf(object? item)
     {
-        throw new NotSupportedException();
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            if (Arguments[i].Equals(item))
+            {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     public void Insert(int index, object? item)
@@ -173,7 +187,13 @@ internal sealed class EndpointFilterInvocationContext<T0, T1> : EndpointFilterIn
 
     public bool Contains(object? item)
     {
-        throw new NotSupportedException();
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            if (Arguments[i].Equals(item))
+            {
+                return true;
+            }
+        }
     }
 
     public void CopyTo(object?[] array, int arrayIndex)
@@ -204,7 +224,15 @@ internal sealed class EndpointFilterInvocationContext<T0, T1> : EndpointFilterIn
 
     public int IndexOf(object? item)
     {
-        throw new NotSupportedException();
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            if (Arguments[i].Equals(item))
+            {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     public void Insert(int index, object? item)
@@ -292,7 +320,13 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2> : EndpointFilt
 
     public bool Contains(object? item)
     {
-        throw new NotSupportedException();
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            if (Arguments[i].Equals(item))
+            {
+                return true;
+            }
+        }
     }
 
     public void CopyTo(object?[] array, int arrayIndex)
@@ -324,7 +358,15 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2> : EndpointFilt
 
     public int IndexOf(object? item)
     {
-        throw new NotSupportedException();
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            if (Arguments[i].Equals(item))
+            {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     public void Insert(int index, object? item)
@@ -418,7 +460,13 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3> : Endpoint
 
     public bool Contains(object? item)
     {
-        throw new NotSupportedException();
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            if (Arguments[i].Equals(item))
+            {
+                return true;
+            }
+        }
     }
 
     public void CopyTo(object?[] array, int arrayIndex)
@@ -451,7 +499,15 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3> : Endpoint
 
     public int IndexOf(object? item)
     {
-        throw new NotSupportedException();
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            if (Arguments[i].Equals(item))
+            {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     public void Insert(int index, object? item)
@@ -551,7 +607,13 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4> : Endp
 
     public bool Contains(object? item)
     {
-        throw new NotSupportedException();
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            if (Arguments[i].Equals(item))
+            {
+                return true;
+            }
+        }
     }
 
     public void CopyTo(object?[] array, int arrayIndex)
@@ -585,7 +647,15 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4> : Endp
 
     public int IndexOf(object? item)
     {
-        throw new NotSupportedException();
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            if (Arguments[i].Equals(item))
+            {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     public void Insert(int index, object? item)
@@ -691,7 +761,13 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5> : 
 
     public bool Contains(object? item)
     {
-        throw new NotSupportedException();
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            if (Arguments[i].Equals(item))
+            {
+                return true;
+            }
+        }
     }
 
     public void CopyTo(object?[] array, int arrayIndex)
@@ -726,7 +802,15 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5> : 
 
     public int IndexOf(object? item)
     {
-        throw new NotSupportedException();
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            if (Arguments[i].Equals(item))
+            {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     public void Insert(int index, object? item)
@@ -838,7 +922,13 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5, T6
 
     public bool Contains(object? item)
     {
-        throw new NotSupportedException();
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            if (Arguments[i].Equals(item))
+            {
+                return true;
+            }
+        }
     }
 
     public void CopyTo(object?[] array, int arrayIndex)
@@ -874,7 +964,15 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5, T6
 
     public int IndexOf(object? item)
     {
-        throw new NotSupportedException();
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            if (Arguments[i].Equals(item))
+            {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     public void Insert(int index, object? item)
@@ -992,7 +1090,13 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5, T6
 
     public bool Contains(object? item)
     {
-        throw new NotSupportedException();
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            if (Arguments[i].Equals(item))
+            {
+                return true;
+            }
+        }
     }
 
     public void CopyTo(object?[] array, int arrayIndex)
@@ -1029,7 +1133,15 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5, T6
 
     public int IndexOf(object? item)
     {
-        throw new NotSupportedException();
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            if (Arguments[i].Equals(item))
+            {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     public void Insert(int index, object? item)
@@ -1153,7 +1265,13 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5, T6
 
     public bool Contains(object? item)
     {
-        throw new NotSupportedException();
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            if (Arguments[i].Equals(item))
+            {
+                return true;
+            }
+        }
     }
 
     public void CopyTo(object?[] array, int arrayIndex)
@@ -1191,7 +1309,15 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5, T6
 
     public int IndexOf(object? item)
     {
-        throw new NotSupportedException();
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            if (Arguments[i].Equals(item))
+            {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     public void Insert(int index, object? item)
@@ -1321,7 +1447,13 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5, T6
 
     public bool Contains(object? item)
     {
-        throw new NotSupportedException();
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            if (Arguments[i].Equals(item))
+            {
+                return true;
+            }
+        }
     }
 
     public void CopyTo(object?[] array, int arrayIndex)
@@ -1360,7 +1492,15 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5, T6
 
     public int IndexOf(object? item)
     {
-        throw new NotSupportedException();
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            if (Arguments[i].Equals(item))
+            {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     public void Insert(int index, object? item)

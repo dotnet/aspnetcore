@@ -73,7 +73,13 @@ internal sealed class EndpointFilterInvocationContext<<# foreach (var argumentCo
 
     public bool Contains(object? item)
     {
-        throw new NotSupportedException();
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            if (Arguments[i].Equals(item))
+            {
+                return true;
+            }
+        }
     }
 
     public void CopyTo(object?[] array, int arrayIndex)
@@ -104,7 +110,15 @@ internal sealed class EndpointFilterInvocationContext<<# foreach (var argumentCo
 
     public int IndexOf(object? item)
     {
-        throw new NotSupportedException();
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            if (Arguments[i].Equals(item))
+            {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     public void Insert(int index, object? item)
