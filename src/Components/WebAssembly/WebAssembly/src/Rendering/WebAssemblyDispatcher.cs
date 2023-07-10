@@ -3,6 +3,10 @@
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering;
 
+// When Blazor is deployed with multi-threaded runtime, WebAssemblyDispatcher will help to dispatch all JS interop calls to the main thread.
+// This is necessary because all JS objects have thread affinity. They are only available on the thread (WebWorker) which created them.
+// Also DOM is only available on the main (browser) thread.
+// The calls to InvokeAsync methods are dispatched synchronously and the returned Task is only resolved after the main thread finished the callback.
 internal sealed class WebAssemblyDispatcher : Dispatcher
 {
     public static readonly Dispatcher Instance = new WebAssemblyDispatcher();

@@ -17,7 +17,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if(!RuntimeInformation.IsOSPlatform(OSPlatform.Create("Browser")))
+        if(!OperatingSystem.IsBrowser())
         {
             return;
         }
