@@ -63,7 +63,7 @@ internal sealed class EndpointFilterInvocationContext<T0> : EndpointFilterInvoca
     {
         for (int i = 0; i < Arguments.Count; i++)
         {
-            if (Arguments[i].Equals(item))
+            if (Arguments[i]?.Equals(item) == true)
             {
                 return true;
             }
@@ -99,7 +99,7 @@ internal sealed class EndpointFilterInvocationContext<T0> : EndpointFilterInvoca
     {
         for (int i = 0; i < Arguments.Count; i++)
         {
-            if (Arguments[i].Equals(item))
+            if (Arguments[i]?.Equals(item) == true)
             {
                 return i;
             }
@@ -189,7 +189,7 @@ internal sealed class EndpointFilterInvocationContext<T0, T1> : EndpointFilterIn
     {
         for (int i = 0; i < Arguments.Count; i++)
         {
-            if (Arguments[i].Equals(item))
+            if (Arguments[i]?.Equals(item) == true)
             {
                 return true;
             }
@@ -226,7 +226,7 @@ internal sealed class EndpointFilterInvocationContext<T0, T1> : EndpointFilterIn
     {
         for (int i = 0; i < Arguments.Count; i++)
         {
-            if (Arguments[i].Equals(item))
+            if (Arguments[i]?.Equals(item) == true)
             {
                 return i;
             }
@@ -322,7 +322,7 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2> : EndpointFilt
     {
         for (int i = 0; i < Arguments.Count; i++)
         {
-            if (Arguments[i].Equals(item))
+            if (Arguments[i]?.Equals(item) == true)
             {
                 return true;
             }
@@ -360,7 +360,7 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2> : EndpointFilt
     {
         for (int i = 0; i < Arguments.Count; i++)
         {
-            if (Arguments[i].Equals(item))
+            if (Arguments[i]?.Equals(item) == true)
             {
                 return i;
             }
@@ -462,7 +462,7 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3> : Endpoint
     {
         for (int i = 0; i < Arguments.Count; i++)
         {
-            if (Arguments[i].Equals(item))
+            if (Arguments[i]?.Equals(item) == true)
             {
                 return true;
             }
@@ -501,7 +501,7 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3> : Endpoint
     {
         for (int i = 0; i < Arguments.Count; i++)
         {
-            if (Arguments[i].Equals(item))
+            if (Arguments[i]?.Equals(item) == true)
             {
                 return i;
             }
@@ -609,7 +609,7 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4> : Endp
     {
         for (int i = 0; i < Arguments.Count; i++)
         {
-            if (Arguments[i].Equals(item))
+            if (Arguments[i]?.Equals(item) == true)
             {
                 return true;
             }
@@ -649,7 +649,7 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4> : Endp
     {
         for (int i = 0; i < Arguments.Count; i++)
         {
-            if (Arguments[i].Equals(item))
+            if (Arguments[i]?.Equals(item) == true)
             {
                 return i;
             }
@@ -763,7 +763,7 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5> : 
     {
         for (int i = 0; i < Arguments.Count; i++)
         {
-            if (Arguments[i].Equals(item))
+            if (Arguments[i]?.Equals(item) == true)
             {
                 return true;
             }
@@ -804,7 +804,7 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5> : 
     {
         for (int i = 0; i < Arguments.Count; i++)
         {
-            if (Arguments[i].Equals(item))
+            if (Arguments[i]?.Equals(item) == true)
             {
                 return i;
             }
@@ -924,7 +924,7 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5, T6
     {
         for (int i = 0; i < Arguments.Count; i++)
         {
-            if (Arguments[i].Equals(item))
+            if (Arguments[i]?.Equals(item) == true)
             {
                 return true;
             }
@@ -966,7 +966,7 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5, T6
     {
         for (int i = 0; i < Arguments.Count; i++)
         {
-            if (Arguments[i].Equals(item))
+            if (Arguments[i]?.Equals(item) == true)
             {
                 return i;
             }
@@ -1092,7 +1092,7 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5, T6
     {
         for (int i = 0; i < Arguments.Count; i++)
         {
-            if (Arguments[i].Equals(item))
+            if (Arguments[i]?.Equals(item) == true)
             {
                 return true;
             }
@@ -1135,7 +1135,7 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5, T6
     {
         for (int i = 0; i < Arguments.Count; i++)
         {
-            if (Arguments[i].Equals(item))
+            if (Arguments[i]?.Equals(item) == true)
             {
                 return i;
             }
@@ -1267,7 +1267,7 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5, T6
     {
         for (int i = 0; i < Arguments.Count; i++)
         {
-            if (Arguments[i].Equals(item))
+            if (Arguments[i]?.Equals(item) == true)
             {
                 return true;
             }
@@ -1311,7 +1311,7 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5, T6
     {
         for (int i = 0; i < Arguments.Count; i++)
         {
-            if (Arguments[i].Equals(item))
+            if (Arguments[i]?.Equals(item) == true)
             {
                 return i;
             }
@@ -1449,7 +1449,7 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5, T6
     {
         for (int i = 0; i < Arguments.Count; i++)
         {
-            if (Arguments[i].Equals(item))
+            if (Arguments[i]?.Equals(item) == true)
             {
                 return true;
             }
@@ -1494,7 +1494,7 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5, T6
     {
         for (int i = 0; i < Arguments.Count; i++)
         {
-            if (Arguments[i].Equals(item))
+            if (Arguments[i]?.Equals(item) == true)
             {
                 return i;
             }

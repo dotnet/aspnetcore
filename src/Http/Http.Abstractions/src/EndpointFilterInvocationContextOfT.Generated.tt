@@ -75,7 +75,7 @@ internal sealed class EndpointFilterInvocationContext<<# foreach (var argumentCo
     {
         for (int i = 0; i < Arguments.Count; i++)
         {
-            if (Arguments[i].Equals(item))
+            if (Arguments[i]?.Equals(item) == true)
             {
                 return true;
             }
@@ -112,7 +112,7 @@ internal sealed class EndpointFilterInvocationContext<<# foreach (var argumentCo
     {
         for (int i = 0; i < Arguments.Count; i++)
         {
-            if (Arguments[i].Equals(item))
+            if (Arguments[i]?.Equals(item) == true)
             {
                 return i;
             }
