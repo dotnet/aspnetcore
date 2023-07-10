@@ -61,7 +61,7 @@ public abstract class RevalidatingServerAuthenticationStateProvider
         try
         {
             var authenticationState = await authenticationStateTask;
-            if (authenticationState.User.Identity.IsAuthenticated)
+            if (authenticationState.User.Identity?.IsAuthenticated ?? false)
             {
                 while (!cancellationToken.IsCancellationRequested)
                 {
