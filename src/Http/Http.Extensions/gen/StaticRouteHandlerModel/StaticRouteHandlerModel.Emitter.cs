@@ -36,18 +36,20 @@ internal static class StaticRouteHandlerModelEmitter
 
     public static string EmitVerb(this Endpoint endpoint)
     {
-        return endpoint.HttpMethod switch
+        (var verbSymbol, endpoint.EmitterContext.HttpMethod) = endpoint.HttpMethod switch
         {
-            "MapGet" => "GetVerb",
-            "MapPut" => "PutVerb",
-            "MapPost" => "PostVerb",
-            "MapDelete" => "DeleteVerb",
-            "MapPatch" => "PatchVerb",
-            "MapMethods" => "httpMethods",
-            "Map" => "null",
-            "MapFallback" => "null",
+            "MapGet" => ("GetVerb", "Get"),
+            "MapPut" => ("PutVerb", "Put"),
+            "MapPost" => ("PostVerb", "Post"),
+            "MapDelete" => ("DeleteVerb", "Delete"),
+            "MapPatch" => ("PatchVerb", "Patch"),
+            "MapMethods" => ("httpMethods", null),
+            "Map" => ("null", null),
+            "MapFallback" => ("null", null),
             _ => throw new ArgumentException($"Received unexpected HTTP method: {endpoint.HttpMethod}")
         };
+
+        return verbSymbol;
     }
 
     /*

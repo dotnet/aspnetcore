@@ -1,17 +1,18 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Immutable;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Operations;
-using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel.Emitters;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel;
+using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel.Emitters;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.AspNetCore.Http.RequestDelegateGenerator;
 
@@ -122,7 +123,7 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
             .Collect()
             .Select((endpoints, _) =>
             {
-                var dedupedByDelegate = endpoints.Distinct<Endpoint>(EndpointDelegateComparer.Instance);
+                var dedupedByDelegate = endpoints.Distinct(EndpointDelegateComparer.Instance);
                 using var stringWriter = new StringWriter(CultureInfo.InvariantCulture);
                 using var codeWriter = new CodeWriter(stringWriter, baseIndent: 2);
                 foreach (var endpoint in dedupedByDelegate)
@@ -167,6 +168,17 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                 }
 
                 return stringWriter.ToString();
+            });
+
+        var httpVerbs = endpoints
+            .Collect()
+            .Select((endpoints, _) =>
+            {
+                return endpoints
+                    .Distinct(EndpointHttpMethodComparer.Instance)
+                    .Select(endpoint => endpoint.EmitterContext.HttpMethod!)
+                    .Where(verb => verb is not null)
+                    .ToImmutableHashSet();
             });
 
         var endpointHelpers = endpoints
@@ -260,11 +272,16 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                 return stringWriter.ToString();
             });
 
-        var thunksAndEndpoints = thunks.Collect().Combine(stronglyTypedEndpointDefinitions).Combine(endpointHelpers).Combine(helperTypes);
+        var thunksAndEndpoints = thunks
+            .Collect()
+            .Combine(stronglyTypedEndpointDefinitions)
+            .Combine(httpVerbs)
+            .Combine(endpointHelpers)
+            .Combine(helperTypes);
 
         context.RegisterSourceOutput(thunksAndEndpoints, (context, sources) =>
         {
-            var (((thunks, endpointsCode), helperMethods), helperTypes) = sources;
+            var ((((thunks, endpointsCode), httpVerbs), helperMethods), helperTypes) = sources;
 
             if (thunks.IsDefaultOrEmpty || string.IsNullOrEmpty(endpointsCode))
             {
@@ -282,7 +299,8 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                 thunks: thunksCode.ToString(),
                 endpoints: endpointsCode,
                 helperMethods: helperMethods ?? string.Empty,
-                helperTypes: helperTypes ?? string.Empty);
+                helperTypes: helperTypes ?? string.Empty,
+                verbs: httpVerbs);
 
             context.AddSource("GeneratedRouteBuilderExtensions.g.cs", code);
         });
