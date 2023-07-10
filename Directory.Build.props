@@ -128,7 +128,7 @@
     <NoWarn>$(NoWarn);IL2121</NoWarn>
 
     <!-- // Temporary diagnostic code from https://github.com/dotnet/extensions/pull/4130 for metrics APIs used in test. -->
-    <NoWarn>TBD</NoWarn>
+    <NoWarn>$(NoWarn);TBD</NoWarn>
   </PropertyGroup>
 
   <!-- Source code settings -->
