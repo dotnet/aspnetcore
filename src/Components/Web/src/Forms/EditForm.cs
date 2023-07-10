@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using Microsoft.AspNetCore.Components.Forms.Mapping;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components.Forms;
@@ -79,10 +80,7 @@ public class EditForm : ComponentBase
     /// </summary>
     [Parameter] public EventCallback<EditContext> OnInvalidSubmit { get; set; }
 
-    /// <summary>
-    /// Gets the context associated with data bound to the EditContext in this form.
-    /// </summary>
-    [CascadingParameter] public ModelBindingContext? BindingContext { get; set; }
+    [CascadingParameter] private FormMappingContext? BindingContext { get; set; }
 
     /// <summary>
     /// Gets or sets the form name.
@@ -137,9 +135,9 @@ public class EditForm : ComponentBase
 
         if (FormHandlerName != null)
         {
-            builder.OpenComponent<CascadingModelBinder>(0);
-            builder.AddComponentParameter(1, nameof(CascadingModelBinder.Name), FormHandlerName);
-            builder.AddComponentParameter(2, nameof(CascadingModelBinder.ChildContent), (RenderFragment<ModelBindingContext>)RenderWithNamedContext);
+            builder.OpenComponent<FormMappingScope>(0);
+            builder.AddComponentParameter(1, nameof(FormMappingScope.Name), FormHandlerName);
+            builder.AddComponentParameter(2, nameof(FormMappingScope.ChildContent), (RenderFragment<FormMappingContext>)RenderWithNamedContext);
             builder.CloseComponent();
         }
         else
@@ -149,12 +147,12 @@ public class EditForm : ComponentBase
 
         builder.CloseRegion();
 
-        RenderFragment RenderWithNamedContext(ModelBindingContext context)
+        RenderFragment RenderWithNamedContext(FormMappingContext context)
         {
             return builder => RenderFormContents(builder, context);
         }
 
-        void RenderFormContents(RenderTreeBuilder builder, ModelBindingContext? bindingContext)
+        void RenderFormContents(RenderTreeBuilder builder, FormMappingContext? bindingContext)
         {
             builder.OpenElement(0, "form");
             if (!string.IsNullOrEmpty(bindingContext?.Name))
@@ -162,9 +160,9 @@ public class EditForm : ComponentBase
                 builder.AddAttribute(1, "name", bindingContext.Name);
             }
 
-            if (!string.IsNullOrEmpty(bindingContext?.BindingContextId))
+            if (!string.IsNullOrEmpty(bindingContext?.MappingContextId))
             {
-                builder.AddAttribute(2, "action", bindingContext.BindingContextId);
+                builder.AddAttribute(2, "action", bindingContext.MappingContextId);
             }
 
             if (bindingContext != null)
@@ -196,7 +194,7 @@ public class EditForm : ComponentBase
 
     private void RenderWithBindingValidator(RenderTreeBuilder builder)
     {
-        builder.OpenComponent<ModelBindingContextValidator>(0);
+        builder.OpenComponent<FormMappingValidator>(0);
         builder.CloseComponent();
         builder.OpenComponent<AntiforgeryToken>(1);
         builder.CloseComponent();

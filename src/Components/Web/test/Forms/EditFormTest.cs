@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Components.Binding;
+using Microsoft.AspNetCore.Components.Forms.Mapping;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -18,9 +18,7 @@ public class EditFormTest
     {
         var services = new ServiceCollection();
         services.AddSingleton<NavigationManager, TestNavigationManager>();
-        services.AddSingleton<IFormValueSupplier, TestFormValueSupplier>();
-        services.AddSingleton<CascadingModelBindingProvider, CascadingFormModelBindingProvider>();
-        services.AddSingleton<CascadingModelBindingProvider, CascadingQueryModelBindingProvider>();
+        services.AddSingleton<IFormValueMapper, TestFormValueModelBinder>();
         services.AddAntiforgery();
         services.AddLogging();
         services.AddSingleton<ComponentStatePersistenceManager>();
@@ -129,7 +127,7 @@ public class EditFormTest
         {
             Model = model,
             FormName = "my-form",
-            BindingContext = new ModelBindingContext("", "")
+            BindingContext = new FormMappingContext("", "")
         };
 
         // Act
@@ -150,7 +148,7 @@ public class EditFormTest
         {
             Model = model,
             FormName = "my-form",
-            BindingContext = new ModelBindingContext("parent-context", "path?handler=parent-context")
+            BindingContext = new FormMappingContext("parent-context", "path?handler=parent-context")
         };
 
         // Act
@@ -177,7 +175,7 @@ public class EditFormTest
                 ["name"] = "my-explicit-name",
                 ["action"] = "/somewhere/else",
             },
-            BindingContext = new ModelBindingContext("parent-context", "path?handler=parent-context")
+            BindingContext = new FormMappingContext("parent-context", "path?handler=parent-context")
         };
 
         // Act
@@ -198,7 +196,7 @@ public class EditFormTest
         var rootComponent = new TestEditFormHostComponent
         {
             Model = model,
-            BindingContext = new ModelBindingContext("", ""),
+            BindingContext = new FormMappingContext("", ""),
             SubmitHandler = ctx => { }
         };
 
@@ -262,7 +260,7 @@ public class EditFormTest
         var rootComponent = new TestEditFormHostComponent
         {
             Model = model,
-            BindingContext = new ModelBindingContext("", "")
+            BindingContext = new FormMappingContext("", "")
         };
 
         // Act
@@ -302,7 +300,7 @@ public class EditFormTest
         {
             Model = model,
             FormName = "my-form",
-            BindingContext = new ModelBindingContext("", "")
+            BindingContext = new FormMappingContext("", "")
         };
 
         // Act
@@ -322,7 +320,7 @@ public class EditFormTest
         {
             Model = model,
             FormName = "my-form",
-            BindingContext = new ModelBindingContext("parent-context", "path?handler=parent-context")
+            BindingContext = new FormMappingContext("parent-context", "path?handler=parent-context")
         };
 
         // Act
@@ -406,7 +404,7 @@ public class EditFormTest
 
         public TestModel Model { get; set; }
 
-        public ModelBindingContext BindingContext { get; set; }
+        public FormMappingContext BindingContext { get; set; }
 
         public Action<EditContext> SubmitHandler { get; set; }
 
@@ -418,9 +416,9 @@ public class EditFormTest
         {
             if (BindingContext != null)
             {
-                builder.OpenComponent<CascadingModelBinder>(0);
-                builder.AddComponentParameter(1, nameof(CascadingModelBinder.Name), BindingContext.Name);
-                builder.AddComponentParameter(3, nameof(CascadingModelBinder.ChildContent), (RenderFragment<ModelBindingContext>)((_) => RenderForm));
+                builder.OpenComponent<FormMappingScope>(0);
+                builder.AddComponentParameter(1, nameof(FormMappingScope.Name), BindingContext.Name);
+                builder.AddComponentParameter(3, nameof(FormMappingScope.ChildContent), (RenderFragment<FormMappingContext>)((_) => RenderForm));
                 builder.CloseComponent();
             }
             else
@@ -456,9 +454,9 @@ public class EditFormTest
         }
     }
 
-    private class TestFormValueSupplier : IFormValueSupplier
+    private class TestFormValueModelBinder : IFormValueMapper
     {
-        public bool CanBind(Type valueType, string formName = null) => false;
-        public void Bind(FormValueSupplierContext context) { }
+        public bool CanMap(Type valueType, string formName = null) => false;
+        public void Map(FormValueMappingContext context) { }
     }
 }

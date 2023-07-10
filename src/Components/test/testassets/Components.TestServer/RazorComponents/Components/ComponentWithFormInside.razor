@@ -13,7 +13,7 @@
 }
 
 @code{
-    [CascadingParameter] public ModelBindingContext BindingContext { get; set; }
+    [CascadingParameter] public FormMappingContext BindingContext { get; set; }
 
     bool _submitted = false;
     EditContext _editContext = new EditContext(new object());

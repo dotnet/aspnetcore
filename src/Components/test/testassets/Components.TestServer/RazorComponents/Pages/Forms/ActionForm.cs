@@ -7,11 +7,11 @@ namespace Microsoft.AspNetCore.Components.Forms;
 
 public class ActionForm : ComponentBase
 {
-    [Parameter] public RenderFragment<ModelBindingContext>? ChildContent { get; set; }
+    [Parameter] public RenderFragment<FormMappingContext>? ChildContent { get; set; }
 
-    [EditorRequired][Parameter] public EventCallback<ModelBindingContext> OnSubmit { get; set; }
+    [EditorRequired][Parameter] public EventCallback<FormMappingContext> OnSubmit { get; set; }
 
-    [CascadingParameter] public ModelBindingContext BindingContext { get; set; }
+    [CascadingParameter] public FormMappingContext BindingContext { get; set; }
 
     [Parameter] public string? FormHandlerName { get; set; }
 
@@ -28,9 +28,9 @@ public class ActionForm : ComponentBase
     {
         if (FormHandlerName != null)
         {
-            builder.OpenComponent<CascadingModelBinder>(0);
-            builder.AddComponentParameter(1, nameof(CascadingModelBinder.Name), FormHandlerName);
-            builder.AddComponentParameter(2, nameof(CascadingModelBinder.ChildContent), (RenderFragment<ModelBindingContext>)RenderWithNamedContext);
+            builder.OpenComponent<FormMappingScope>(0);
+            builder.AddComponentParameter(1, nameof(FormMappingScope.Name), FormHandlerName);
+            builder.AddComponentParameter(2, nameof(FormMappingScope.ChildContent), (RenderFragment<FormMappingContext>)RenderWithNamedContext);
             builder.CloseComponent();
         }
         else
@@ -38,19 +38,19 @@ public class ActionForm : ComponentBase
             RenderFormContents(builder, BindingContext);
         }
 
-        RenderFragment RenderWithNamedContext(ModelBindingContext context)
+        RenderFragment RenderWithNamedContext(FormMappingContext context)
         {
             return builder => RenderFormContents(builder, context);
         }
 
-        void RenderFormContents(RenderTreeBuilder builder, ModelBindingContext? bindingContext)
+        void RenderFormContents(RenderTreeBuilder builder, FormMappingContext? bindingContext)
         {
             builder.OpenElement(0, "form");
             builder.AddAttribute(1, "name", bindingContext.Name);
 
-            if (!string.IsNullOrEmpty(bindingContext?.BindingContextId))
+            if (!string.IsNullOrEmpty(bindingContext?.MappingContextId))
             {
-                builder.AddAttribute(2, "action", bindingContext.BindingContextId);
+                builder.AddAttribute(2, "action", bindingContext.MappingContextId);
             }
 
             builder.AddAttribute(3, "method", "POST");

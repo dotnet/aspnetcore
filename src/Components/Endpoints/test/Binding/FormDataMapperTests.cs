@@ -13,7 +13,7 @@ using System.Xml.Linq;
 using Microsoft.Diagnostics.Runtime;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
+namespace Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 
 public class FormDataMapperTests
 {
