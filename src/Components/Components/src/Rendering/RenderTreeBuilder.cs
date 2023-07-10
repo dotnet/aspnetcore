@@ -27,11 +27,7 @@ public sealed class RenderTreeBuilder : IDisposable
     private RenderTreeFrameType? _lastNonAttributeFrameType;
     private bool _hasSeenAddMultipleAttributes;
     private Dictionary<string, int>? _seenAttributeNames;
-    private Dictionary<string, int>? _seenEventHandlerNames;
     private IComponentRenderMode? _pendingComponentCallSiteRenderMode; // TODO: Remove when Razor compiler supports call-site @rendermode
-
-    // Configure the render tree builder to capture the event handler names.
-    internal bool TrackNamedEventHandlers { get; set; }
 
     /// <summary>
     /// The reserved parameter name used for supplying child content.
@@ -175,11 +171,6 @@ public sealed class RenderTreeBuilder : IDisposable
             throw new InvalidOperationException($"Valueless attributes may only be added immediately after frames of type {RenderTreeFrameType.Element}");
         }
 
-        if (TrackNamedEventHandlers && string.Equals(name, "@onsubmit:name", StringComparison.Ordinal))
-        {
-            SetEventHandlerName("");
-        }
-
         _entries.AppendAttribute(sequence, name, BoxedTrue);
     }
 
@@ -231,9 +222,11 @@ public sealed class RenderTreeBuilder : IDisposable
         AssertCanAddAttribute();
         if (value != null || _lastNonAttributeFrameType == RenderTreeFrameType.Component)
         {
-            if (TrackNamedEventHandlers && value != null && string.Equals(name, "@onsubmit:name", StringComparison.Ordinal))
+            // TODO: Remove this once the Razor compiler is updated to support @onsubmit:name
+            // That should compile directly as a call to AddNameForEventHandler.
+            if (string.Equals(name, "@onsubmit:name", StringComparison.Ordinal) && _lastNonAttributeFrameType == RenderTreeFrameType.Element)
             {
-                SetEventHandlerName(value);
+                AddNameForEventHandler(sequence, "onsubmit", value!);
             }
             else
             {
@@ -383,14 +376,7 @@ public sealed class RenderTreeBuilder : IDisposable
             {
                 if (boolValue)
                 {
-                    if (TrackNamedEventHandlers && string.Equals(name, "@onsubmit:name", StringComparison.Ordinal))
-                    {
-                        SetEventHandlerName("");
-                    }
-                    else
-                    {
-                        _entries.AppendAttribute(sequence, name, BoxedTrue);
-                    }
+                    _entries.AppendAttribute(sequence, name, BoxedTrue);
                 }
                 else
                 {
@@ -415,17 +401,8 @@ public sealed class RenderTreeBuilder : IDisposable
             }
             else
             {
-                var valueAsString = value.ToString();
-                if (TrackNamedEventHandlers && valueAsString != null && string.Equals(name, "@onsubmit:name", StringComparison.Ordinal))
-                {
-                    SetEventHandlerName(valueAsString);
-                }
-                else
-                {
-                    // The value is either a string, or should be treated as a string.
-                    _entries.AppendAttribute(sequence, name, valueAsString);
-                }
-
+                // The value is either a string, or should be treated as a string.
+                _entries.AppendAttribute(sequence, name, value.ToString());
             }
         }
         else if (_lastNonAttributeFrameType == RenderTreeFrameType.Component)
@@ -513,42 +490,6 @@ public sealed class RenderTreeBuilder : IDisposable
         }
 
         prevFrame.AttributeEventUpdatesAttributeNameField = updatesAttributeName;
-    }
-
-    /// <summary>
-    /// <para>
-    /// Indicates that the preceding attribute represents a named event handler
-    /// with the given <paramref name="eventHandlerName"/>.
-    /// </para>
-    /// <para>
-    /// This information is used by the rendering system to support dispatching
-    /// external events by name.
-    /// </para>
-    /// </summary>
-    /// <param name="eventHandlerName">The name associated with this event handler.</param>
-    public void SetEventHandlerName(string eventHandlerName)
-    {
-        if (!TrackNamedEventHandlers)
-        {
-            return;
-        }
-
-        if (_entries.Count == 0)
-        {
-            throw new InvalidOperationException("No preceding attribute frame exists.");
-        }
-
-        ref var prevFrame = ref _entries.Buffer[_entries.Count - 1];
-        if (prevFrame.FrameTypeField != RenderTreeFrameType.Attribute && !(prevFrame.AttributeValue is MulticastDelegate or IEventCallback))
-        {
-            throw new InvalidOperationException($"The previous attribute is not an event handler.");
-        }
-
-        _seenEventHandlerNames ??= new();
-        if (!_seenEventHandlerNames.TryAdd(eventHandlerName, _entries.Count - 1))
-        {
-            throw new InvalidOperationException($"An event handler '{eventHandlerName}' is already defined in this component.");
-        }
     }
 
     /// <summary>
@@ -756,6 +697,24 @@ public sealed class RenderTreeBuilder : IDisposable
     }
 
     /// <summary>
+    /// Associates a custom name, <paramref name="eventName"/>, with the event of type
+    /// <paramref name="eventType"/> within the enclosing element.
+    /// </summary>
+    /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
+    /// <param name="eventType">The type of event, such as 'onsubmit'.</param>
+    /// <param name="eventName">The application-specified name for this handler.</param>
+    public void AddNameForEventHandler(int sequence, string eventType, string eventName)
+    {
+        if (GetCurrentParentFrameType() != RenderTreeFrameType.Element)
+        {
+            throw new InvalidOperationException($"Named event handlers may only be added as children of frames of type {RenderTreeFrameType.Element}");
+        }
+
+        _entries.AppendNamedEventHandler(sequence, eventType, eventName);
+        _lastNonAttributeFrameType = RenderTreeFrameType.NameForEventHandler;
+    }
+
+    /// <summary>
     /// Appends a frame representing a region of frames.
     /// </summary>
     /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
@@ -822,8 +781,6 @@ public sealed class RenderTreeBuilder : IDisposable
         _lastNonAttributeFrameType = null;
         _hasSeenAddMultipleAttributes = false;
         _seenAttributeNames?.Clear();
-        _seenEventHandlerNames?.Clear();
-        TrackNamedEventHandlers = false;
     }
 
     // internal because this should only be used during the post-event tree patching logic
@@ -901,18 +858,6 @@ public sealed class RenderTreeBuilder : IDisposable
                     // This attribute has been overridden. For now, blank out its name to *mark* it. We'll do a pass
                     // later to wipe it out.
                     frame = default;
-                    // We are wiping out this frame, which means that if we are tracking named events, we have to adjust the
-                    // indexes of the named event handlers that come after this frame.
-                    if (_seenEventHandlerNames != null && _seenEventHandlerNames.Count > 0)
-                    {
-                        foreach (var (name, eventIndex) in _seenEventHandlerNames)
-                        {
-                            if (eventIndex >= i)
-                            {
-                                _seenEventHandlerNames[name] = eventIndex - 1;
-                            }
-                        }
-                    }
                 }
                 else
                 {
@@ -971,10 +916,5 @@ public sealed class RenderTreeBuilder : IDisposable
     public void Dispose()
     {
         _entries.Dispose();
-    }
-
-    internal Dictionary<string, int>? GetNamedEvents()
-    {
-        return _seenEventHandlerNames;
     }
 }

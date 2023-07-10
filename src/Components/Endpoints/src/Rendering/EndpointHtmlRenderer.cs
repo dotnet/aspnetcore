@@ -111,55 +111,6 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         _formHandler = name;
     }
 
-    protected override bool ShouldTrackNamedEventHandlers() => _formHandler != null;
-
-    protected override void TrackNamedEventId(ulong eventHandlerId, int componentId, string eventNameId)
-    {
-        if (_formHandler == null || !string.Equals(eventNameId, _formHandler, StringComparison.Ordinal))
-        {
-            // We only track event names when we are deciding how to dispatch an event and when the event
-            // matches the identifier for the event we are trying to dispatch.
-            return;
-        }
-
-        if (_capturedNamedEvent.EventNameId == null)
-        {
-            // This is the first time we see the event being tracked, we capture it.
-            _capturedNamedEvent = new(eventHandlerId, componentId, eventNameId);
-            return;
-        }
-
-        if (_capturedNamedEvent.ComponentId != componentId)
-        {
-            // At this point we have already seen this event once. Once a component instance defines a named
-            // event, that component is the owner of that event name until we dispatch the event.
-            // Dispatching the event happens after we've achieved quiesce.
-            // * No two separate components can define an event with the same name identifier.
-            // * No other component can define the same named event even if the existing registration
-            //   is no longer part of the set of rendered components.
-            //   * This gives customers a clear an easy rule about how forms need to be rendered when you
-            //     want to support handling POST requests.
-            //   * Note that this only affects receiving POST request, it does not impact interactive components
-            //     and it does not impact prerendering components.
-            try
-            {
-                // Two components are trying to simultaneously define the same name.
-                var state = GetComponentState(_capturedNamedEvent.ComponentId);
-                throw new InvalidOperationException(
-                    $@"Two different components are trying to define the same named event '{eventNameId}':
-'{GenerateComponentPath(state)}'
-'{GenerateComponentPath(GetComponentState(componentId))}'");
-            }
-            catch (ArgumentException)
-            {
-                // The component that originally defined the name was disposed.
-                throw new InvalidOperationException(
-                    $"The named event '{eventNameId}' was already defined earlier by a component with id '{_capturedNamedEvent.ComponentId}' but this " +
-                    $"component was removed before receiving the dispatched event.");
-            }
-        }
-    }
-
     internal bool HasCapturedEvent() => _capturedNamedEvent != default;
 
     internal Task DispatchCapturedEvent()

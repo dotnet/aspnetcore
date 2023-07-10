@@ -149,4 +149,20 @@ internal sealed class RenderTreeFrameArrayBuilder : ArrayBuilder<RenderTreeFrame
             ComponentRenderModeField = renderMode,
         };
     }
+
+    public void AppendNamedEventHandler(int sequence, string eventType, string eventName)
+    {
+        if (_itemsInUse == _items.Length)
+        {
+            GrowBuffer(_items.Length * 2);
+        }
+
+        _items[_itemsInUse++] = new RenderTreeFrame
+        {
+            SequenceField = sequence,
+            FrameTypeField = RenderTreeFrameType.NameForEventHandler,
+            NamedEventHandlerEventTypeField = eventType,
+            AttributeEventUpdatesAttributeNameField = eventName,
+        };
+    }
 }

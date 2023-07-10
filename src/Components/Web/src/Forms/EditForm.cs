@@ -172,10 +172,6 @@ public class EditForm : ComponentBase
 
             builder.AddMultipleAttributes(4, AdditionalAttributes);
             builder.AddAttribute(5, "onsubmit", _handleSubmitDelegate);
-            if (bindingContext != null)
-            {
-                builder.SetEventHandlerName(bindingContext.Name);
-            }
             builder.OpenComponent<CascadingValue<EditContext>>(6);
             builder.AddComponentParameter(7, "IsFixed", true);
             builder.AddComponentParameter(8, "Value", _editContext);

@@ -282,6 +282,25 @@ public struct RenderTreeFrame
         }
     }
 
+    // --------------------------------------------------------------------------------
+    // RenderTreeFrameType.NameForEventHandler
+    // --------------------------------------------------------------------------------
+
+    [FieldOffset(16)] internal string NamedEventHandlerEventTypeField;
+    [FieldOffset(24)] internal string NamedEventHandlerEventNameField;
+
+    /// <summary>
+    /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.NameForEventHandler"/>,
+    /// gets the type of the event being named (for example, 'onsubmit'). Otherwise, the value is undefined.
+    /// </summary>
+    public string NamedEventHandlerEventType => NamedEventHandlerEventTypeField;
+
+    /// <summary>
+    /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.NameForEventHandler"/>,
+    /// gets the application-supplied name for the handler. Otherwise, the value is undefined.
+    /// </summary>
+    public string NamedEventHandlerEventName => NamedEventHandlerEventNameField;
+
     // Element constructor
     private RenderTreeFrame(int sequence, int elementSubtreeLength, string elementName, object elementKey)
         : this()

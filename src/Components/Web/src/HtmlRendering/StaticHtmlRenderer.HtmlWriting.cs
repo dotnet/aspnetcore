@@ -73,6 +73,7 @@ public partial class StaticHtmlRenderer
                 return RenderFrames(output, frames, position + 1, frame.RegionSubtreeLength - 1);
             case RenderTreeFrameType.ElementReferenceCapture:
             case RenderTreeFrameType.ComponentReferenceCapture:
+            case RenderTreeFrameType.NameForEventHandler:
                 return ++position;
             default:
                 throw new InvalidOperationException($"Invalid element frame type '{frame.FrameType}'.");
