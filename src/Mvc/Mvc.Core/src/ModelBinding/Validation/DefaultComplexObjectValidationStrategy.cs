@@ -96,7 +96,7 @@ internal sealed class DefaultComplexObjectValidationStrategy : IValidationStrate
                     if (!_modelMetadata.BoundConstructorParameterMapping.TryGetValue(parameter, out var property))
                     {
                         throw new InvalidOperationException(
-                            Resources.FormatValidationStrategy_MappedPropertyNotFound(parameter, _modelMetadata.ModelType));
+                            Resources.FormatValidationStrategy_MappedPropertyNotFound(parameterName, _modelMetadata.ModelType));
                     }
 
                     _entry = new ValidationEntry(parameter, key, () => GetModel(_model, property));

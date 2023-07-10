@@ -5,7 +5,7 @@ Building this repo produces build artifacts in the directory structure described
 
 See also https://github.com/dotnet/arcade/blob/master/Documentation/ArcadeSdk.md This repo follows _most_ of the conventions described there.
 
-```
+```text
 artifacts/
   installers/
     $(Configuration)/

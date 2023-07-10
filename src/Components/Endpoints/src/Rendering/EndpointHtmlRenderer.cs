@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Endpoints.DependencyInjection;
+using Microsoft.AspNetCore.Components.Endpoints.Forms;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure;
 using Microsoft.AspNetCore.Components.Infrastructure;
@@ -75,17 +76,21 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         var navigationManager = (IHostEnvironmentNavigationManager)httpContext.RequestServices.GetRequiredService<NavigationManager>();
         navigationManager?.Initialize(GetContextBaseUri(httpContext.Request), GetFullUri(httpContext.Request));
 
-        var authenticationStateProvider = httpContext.RequestServices.GetService<AuthenticationStateProvider>() as IHostEnvironmentAuthenticationStateProvider;
-        if (authenticationStateProvider != null)
+        if (httpContext.RequestServices.GetService<AuthenticationStateProvider>() is IHostEnvironmentAuthenticationStateProvider authenticationStateProvider)
         {
             var authenticationState = new AuthenticationState(httpContext.User);
             authenticationStateProvider.SetAuthenticationState(Task.FromResult(authenticationState));
         }
 
-        var formData = httpContext.RequestServices.GetRequiredService<FormDataProvider>() as IHostEnvironmentFormDataProvider;
-        if (handler != null && form != null && formData != null)
+        if (handler != null && form != null)
         {
-            formData.SetFormData(handler, new FormCollectionReadOnlyDictionary(form));
+            httpContext.RequestServices.GetRequiredService<HttpContextFormDataProvider>()
+                .SetFormData(handler, new FormCollectionReadOnlyDictionary(form));
+        }
+
+        if (httpContext.RequestServices.GetService<AntiforgeryStateProvider>() is EndpointAntiforgeryStateProvider antiforgery)
+        {
+            antiforgery.SetRequestContext(httpContext);
         }
 
         // It's important that this is initialized since a component might try to restore state during prerendering
@@ -164,6 +169,8 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
             throw new InvalidOperationException($"No named event handler was captured for '{_formHandler}'.");
         }
 
+        // We no longer need to track the form handler, as we already captured the event.
+        _formHandler = null;
         return DispatchEventAsync(_capturedNamedEvent.EventHandlerId, null, EventArgs.Empty, quiesce: true);
     }
 

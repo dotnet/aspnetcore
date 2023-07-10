@@ -1,4 +1,4 @@
-{
+﻿{
   "author": "Microsoft",
   "name": "Aplicativo Blazor WebAssembly",
   "description": "Um modelo de projeto para criar um aplicativo Blazor que é executado no WebAssembly e, opcionalmente, é hospedado por um aplicativo ASP.NET Core. Esse modelo pode ser usado para aplicativos Web com IUs (interfaces do usuário) completas e dinâmicas.",

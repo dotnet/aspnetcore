@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
-using Microsoft.AspNetCore.Components.Binding;
+using Microsoft.AspNetCore.Components.Forms.Mapping;
 
 namespace Microsoft.AspNetCore.Components.Forms;
 
@@ -26,6 +26,8 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
     private Type? _nullableUnderlyingType;
 
     [CascadingParameter] private EditContext? CascadedEditContext { get; set; }
+
+    [CascadingParameter] private HtmlFieldPrefix FieldPrefix { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets a collection of additional attributes that will be applied to the created element.
@@ -206,9 +208,8 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
             {
                 if (_formattedValueExpression is null && ValueExpression is not null)
                 {
-                    _formattedValueExpression = ExpressionFormatter.FormatLambda(
-                        ValueExpression,
-                        EditContext.GetConvertibleValues());
+                    _formattedValueExpression = FieldPrefix != null ? FieldPrefix.GetFieldName(ValueExpression) :
+                        ExpressionFormatter.FormatLambda(ValueExpression);
                 }
 
                 return _formattedValueExpression ?? string.Empty;
@@ -279,6 +280,15 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
         var hasAriaInvalidAttribute = AdditionalAttributes != null && AdditionalAttributes.ContainsKey("aria-invalid");
         if (EditContext.GetValidationMessages(FieldIdentifier).Any())
         {
+            // If this input is associated with an incoming value from an HTTP form post (via model binding),
+            // retain the attempted value even if it's unparseable
+            var attemptedValue = EditContext.GetAttemptedValue(NameAttributeValue);
+            if (attemptedValue != null)
+            {
+                _parsingFailed = true;
+                _incomingValueBeforeParsing = attemptedValue;
+            }
+
             if (hasAriaInvalidAttribute)
             {
                 // Do not overwrite the attribute value

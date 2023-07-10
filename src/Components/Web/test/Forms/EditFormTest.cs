@@ -1,9 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNetCore.Components.Binding;
+using Microsoft.AspNetCore.Components.Forms.Mapping;
+using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
@@ -19,9 +18,12 @@ public class EditFormTest
     {
         var services = new ServiceCollection();
         services.AddSingleton<NavigationManager, TestNavigationManager>();
-        services.AddSingleton<IFormValueSupplier, TestFormValueSupplier>();
-        services.AddSingleton<CascadingModelBindingProvider, CascadingFormModelBindingProvider>();
-        services.AddSingleton<CascadingModelBindingProvider, CascadingQueryModelBindingProvider>();
+        services.AddSingleton<IFormValueMapper, TestFormValueModelBinder>();
+        services.AddAntiforgery();
+        services.AddLogging();
+        services.AddSingleton<ComponentStatePersistenceManager>();
+        services.AddSingleton(services => services.GetRequiredService<ComponentStatePersistenceManager>().State);
+        services.AddSingleton<AntiforgeryStateProvider, DefaultAntiforgeryStateProvider>();
         _testRenderer = new(services.BuildServiceProvider());
     }
 
@@ -76,11 +78,13 @@ public class EditFormTest
         Assert.Same(model, returnedEditContext.Model);
     }
 
-    [Fact]
-    public async Task ReturnsEditContextWhenEditContextParameterUsed()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ReturnsEditContextWhenEditContextParameterUsed(bool createFieldPath)
     {
         // Arrange
-        var editContext = new EditContext(new TestModel());
+        var editContext = new EditContext(new TestModel()) { ShouldUseFieldIdentifiers = createFieldPath };
         var rootComponent = new TestEditFormHostComponent
         {
             EditContext = editContext
@@ -123,7 +127,7 @@ public class EditFormTest
         {
             Model = model,
             FormName = "my-form",
-            BindingContext = new ModelBindingContext("", "", t => true)
+            BindingContext = new FormMappingContext("", "")
         };
 
         // Act
@@ -144,7 +148,7 @@ public class EditFormTest
         {
             Model = model,
             FormName = "my-form",
-            BindingContext = new ModelBindingContext("parent-context", "path?handler=parent-context", t => true )
+            BindingContext = new FormMappingContext("parent-context", "path?handler=parent-context")
         };
 
         // Act
@@ -165,11 +169,13 @@ public class EditFormTest
         {
             Model = model,
             FormName = "my-form",
-            AdditionalFormAttributes = new Dictionary<string, object>() {
+            AdditionalFormAttributes = new Dictionary<string, object>()
+            {
+                ["method"] = "dialog",
                 ["name"] = "my-explicit-name",
                 ["action"] = "/somewhere/else",
             },
-            BindingContext = new ModelBindingContext("parent-context", "path?handler=parent-context", t => true)
+            BindingContext = new FormMappingContext("parent-context", "path?handler=parent-context")
         };
 
         // Act
@@ -177,8 +183,9 @@ public class EditFormTest
         var attributes = GetFormElementAttributeFrames().ToArray();
 
         // Assert
-        AssertFrame.Attribute(attributes[0], "name", "my-explicit-name");
-        AssertFrame.Attribute(attributes[1], "action", "/somewhere/else");
+        AssertFrame.Attribute(attributes[0], "method", "dialog");
+        AssertFrame.Attribute(attributes[1], "name", "my-explicit-name");
+        AssertFrame.Attribute(attributes[2], "action", "/somewhere/else");
     }
 
     [Fact]
@@ -189,7 +196,7 @@ public class EditFormTest
         var rootComponent = new TestEditFormHostComponent
         {
             Model = model,
-            BindingContext = new ModelBindingContext("", "", t => true),
+            BindingContext = new FormMappingContext("", ""),
             SubmitHandler = ctx => { }
         };
 
@@ -198,8 +205,9 @@ public class EditFormTest
         var attributes = GetFormElementAttributeFrames();
 
         // Assert
-        var frame = Assert.Single(attributes);
-        AssertFrame.Attribute(frame, "onsubmit");
+        Assert.Collection(attributes,
+            frame => AssertFrame.Attribute(frame, "method"),
+            frame => AssertFrame.Attribute(frame, "onsubmit"));
     }
 
     [Fact]
@@ -252,7 +260,7 @@ public class EditFormTest
         var rootComponent = new TestEditFormHostComponent
         {
             Model = model,
-            BindingContext = new ModelBindingContext("", "", t => true)
+            BindingContext = new FormMappingContext("", "")
         };
 
         // Act
@@ -292,7 +300,7 @@ public class EditFormTest
         {
             Model = model,
             FormName = "my-form",
-            BindingContext = new ModelBindingContext("", "", t => true)
+            BindingContext = new FormMappingContext("", "")
         };
 
         // Act
@@ -312,7 +320,7 @@ public class EditFormTest
         {
             Model = model,
             FormName = "my-form",
-            BindingContext = new ModelBindingContext("parent-context", "path?handler=parent-context", t => true)
+            BindingContext = new FormMappingContext("parent-context", "path?handler=parent-context")
         };
 
         // Act
@@ -396,7 +404,7 @@ public class EditFormTest
 
         public TestModel Model { get; set; }
 
-        public ModelBindingContext BindingContext { get; set; }
+        public FormMappingContext BindingContext { get; set; }
 
         public Action<EditContext> SubmitHandler { get; set; }
 
@@ -408,9 +416,9 @@ public class EditFormTest
         {
             if (BindingContext != null)
             {
-                builder.OpenComponent<CascadingModelBinder>(0);
-                builder.AddComponentParameter(1, nameof(CascadingModelBinder.Name), BindingContext.Name);
-                builder.AddComponentParameter(3, nameof(CascadingModelBinder.ChildContent), (RenderFragment<ModelBindingContext>)((_) => RenderForm));
+                builder.OpenComponent<FormMappingScope>(0);
+                builder.AddComponentParameter(1, nameof(FormMappingScope.Name), BindingContext.Name);
+                builder.AddComponentParameter(3, nameof(FormMappingScope.ChildContent), (RenderFragment<FormMappingContext>)((_) => RenderForm));
                 builder.CloseComponent();
             }
             else
@@ -446,22 +454,9 @@ public class EditFormTest
         }
     }
 
-    private class TestFormValueSupplier : IFormValueSupplier
+    private class TestFormValueModelBinder : IFormValueMapper
     {
-        public bool CanBind(string formName, Type valueType)
-        {
-            return false;
-        }
-
-        public bool CanConvertSingleValue(Type type)
-        {
-            return false;
-        }
-
-        public bool TryBind(string formName, Type valueType, [NotNullWhen(true)] out object boundValue)
-        {
-            boundValue = null;
-            return false;
-        }
+        public bool CanMap(Type valueType, string formName = null) => false;
+        public void Map(FormValueMappingContext context) { }
     }
 }

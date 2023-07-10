@@ -90,7 +90,7 @@ public class ComponentTagHelperTest
                 .AddLogging()
                 .AddScoped<ComponentStatePersistenceManager>()
                 .AddScoped(_ => navManager.Object)
-                .AddScoped<FormDataProvider, HttpContextFormDataProvider>()
+                .AddScoped<HttpContextFormDataProvider>()
                 .BuildServiceProvider(),
         };
 

@@ -134,4 +134,19 @@ internal sealed class RenderTreeFrameArrayBuilder : ArrayBuilder<RenderTreeFrame
             FrameTypeField = RenderTreeFrameType.Region,
         };
     }
+
+    public void AppendComponentRenderMode(int sequence, IComponentRenderMode renderMode)
+    {
+        if (_itemsInUse == _items.Length)
+        {
+            GrowBuffer(_items.Length * 2);
+        }
+
+        _items[_itemsInUse++] = new RenderTreeFrame
+        {
+            SequenceField = sequence,
+            FrameTypeField = RenderTreeFrameType.ComponentRenderMode,
+            ComponentRenderModeField = renderMode,
+        };
+    }
 }

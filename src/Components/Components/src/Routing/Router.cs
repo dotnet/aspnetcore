@@ -8,7 +8,6 @@ using System.Reflection.Metadata;
 using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Components.Routing;
 
@@ -27,7 +26,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
     bool _navigationInterceptionEnabled;
     ILogger<Router> _logger;
 
-    private Type? _updateScrollPositionForHashLastHandlerType;
+    private string _updateScrollPositionForHashLastLocation;
     private bool _updateScrollPositionForHash;
 
     private CancellationTokenSource _onNavigateCts;
@@ -47,8 +46,6 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
     [Inject] private ILoggerFactory LoggerFactory { get; set; }
 
     [Inject] IServiceProvider ServiceProvider { get; set; }
-
-    private IRoutingStateProvider? RoutingStateProvider { get; set; }
 
     /// <summary>
     /// Gets or sets the assembly that should be searched for components matching the URI.
@@ -104,7 +101,6 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         _baseUri = NavigationManager.BaseUri;
         _locationAbsolute = NavigationManager.Uri;
         NavigationManager.LocationChanged += OnLocationChanged;
-        RoutingStateProvider = ServiceProvider.GetService<IRoutingStateProvider>();
 
         if (HotReloadManager.Default.MetadataUpdateSupported)
         {
@@ -198,18 +194,8 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
             return;
         }
 
-        var locationPath = NavigationManager.ToBaseRelativePath(_locationAbsolute);
-        locationPath = TrimQueryOrHash(locationPath);
-
-        // In order to avoid routing twice we check for RouteData
-        if (RoutingStateProvider?.RouteData is { } endpointRouteData)
-        {
-            Log.NavigatingToComponent(_logger, endpointRouteData.PageType, locationPath, _baseUri);
-
-            _renderHandle.Render(Found(endpointRouteData));
-
-            return;
-        }
+        var relativePath = NavigationManager.ToBaseRelativePath(_locationAbsolute);
+        var locationPath = TrimQueryOrHash(relativePath);
 
         RefreshRouteTable();
 
@@ -231,10 +217,10 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
                 context.Parameters ?? _emptyParametersDictionary);
             _renderHandle.Render(Found(routeData));
 
-            // If you navigate to a different page, then after the next render we'll update the scroll position
-            if (context.Handler != _updateScrollPositionForHashLastHandlerType)
+            // If you navigate to a different path, then after the next render we'll update the scroll position
+            if (relativePath != _updateScrollPositionForHashLastLocation)
             {
-                _updateScrollPositionForHashLastHandlerType = context.Handler;
+                _updateScrollPositionForHashLastLocation = relativePath;
                 _updateScrollPositionForHash = true;
             }
         }

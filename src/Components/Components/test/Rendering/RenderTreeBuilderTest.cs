@@ -2080,6 +2080,130 @@ public class RenderTreeBuilderTest
         Assert.StartsWith($"Render output is invalid for component of type '{typeof(TestComponent).FullName}'. A frame of type 'Region' was left unclosed.", ex.Message);
     }
 
+    [Fact]
+    public void ComponentHasNoFlagsByDefault()
+    {
+        // Arrange
+        var builder = new RenderTreeBuilder();
+
+        // Act
+        builder.OpenComponent<TestComponent>(0);
+        builder.CloseComponent();
+
+        // Assert
+        Assert.Collection(
+            builder.GetFrames().AsEnumerable(),
+            frame =>
+            {
+                AssertFrame.Component<TestComponent>(frame, 1, 0);
+                Assert.Equal(default, frame.ComponentFrameFlags);
+            });
+    }
+
+    [Fact]
+    public void CanAddComponentRenderMode()
+    {
+        // Arrange
+        var builder = new RenderTreeBuilder();
+        var renderMode = new TestRenderMode();
+
+        // Act
+        builder.OpenComponent<TestComponent>(0);
+        builder.AddComponentParameter(1, "param", 123);
+        builder.AddComponentRenderMode(2, renderMode);
+        builder.CloseComponent();
+
+        // Assert
+        Assert.Collection(
+            builder.GetFrames().AsEnumerable(),
+            frame =>
+            {
+                AssertFrame.Component<TestComponent>(frame, 3, 0);
+                Assert.True(frame.ComponentFrameFlags.HasFlag(ComponentFrameFlags.HasCallerSpecifiedRenderMode));
+            },
+            frame => AssertFrame.Attribute(frame, "param", 123, 1),
+            frame => AssertFrame.ComponentRenderMode(frame, renderMode, 2));
+    }
+
+    [Fact]
+    public void CannotAddComponentRenderModeToElement()
+    {
+        // Arrange
+        var builder = new RenderTreeBuilder();
+        builder.OpenElement(0, "something");
+
+        // Act/Assert
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+        {
+            builder.AddComponentRenderMode(1, new TestRenderMode());
+        });
+        Assert.Equal($"The enclosing frame is not of the required type '{nameof(RenderTreeFrameType.Component)}'.", ex.Message);
+    }
+
+    [Fact]
+    public void CannotAddNullComponentRenderMode()
+    {
+        // Arrange
+        var builder = new RenderTreeBuilder();
+        builder.OpenComponent<TestComponent>(0);
+
+        // Act/Assert
+        var ex = Assert.Throws<ArgumentNullException>(() =>
+        {
+            builder.AddComponentRenderMode(1, null);
+        });
+        Assert.Equal("renderMode", ex.ParamName);
+    }
+
+    [Fact]
+    public void CannotAddParametersAfterComponentRenderMode()
+    {
+        // Arrange
+        var builder = new RenderTreeBuilder();
+        builder.OpenComponent<TestComponent>(0);
+        builder.AddComponentRenderMode(1, new TestRenderMode());
+
+        // Act/Assert
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+        {
+            builder.AddComponentParameter(2, "key", "value");
+        });
+        Assert.Equal($"Component parameters may only be added immediately after frames of type {RenderTreeFrameType.Component}", ex.Message);
+    }
+
+    [Fact]
+    public void TemporaryApiForCallSiteComponentRenderModeWorksEvenIfOtherParameterAddedAfter()
+    {
+        // For the temporary syntax rendermode=@something (as opposed to @rendermode=@something), we can't guarantee
+        // the Razor compiler will emit the AddComponentParameter call for rendermode last. For example if there's a
+        // ChildContent it will actually emit that last. So for the temporary syntax to be usable it has to support
+        // other component parameters being added afterwards, even though that does not need to be supported for
+        // AddComponentRenderMode (since the compiler can be sure to add that after all component parameters).
+
+        // Arrange
+        var builder = new RenderTreeBuilder();
+        var renderMode = new TestRenderMode();
+
+        // Act
+        builder.OpenComponent<TestComponent>(0);
+        builder.AddComponentParameter(1, "param", 123);
+        builder.AddComponentParameter(2, "@rendermode", renderMode);
+        builder.AddComponentParameter(3, "anotherparam", 456);
+        builder.CloseComponent();
+
+        // Assert
+        Assert.Collection(
+            builder.GetFrames().AsEnumerable(),
+            frame =>
+            {
+                AssertFrame.Component<TestComponent>(frame, 4, 0);
+                Assert.True(frame.ComponentFrameFlags.HasFlag(ComponentFrameFlags.HasCallerSpecifiedRenderMode));
+            },
+            frame => AssertFrame.Attribute(frame, "param", 123, 1),
+            frame => AssertFrame.Attribute(frame, "anotherparam", 456, 3),
+            frame => AssertFrame.ComponentRenderMode(frame, renderMode, 0));
+    }
+
     private class TestComponent : IComponent
     {
         public void Attach(RenderHandle renderHandle) { }

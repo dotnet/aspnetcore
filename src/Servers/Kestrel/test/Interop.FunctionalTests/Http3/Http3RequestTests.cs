@@ -98,7 +98,7 @@ public class Http3RequestTests : LoggedTest
             // Dispose the client to end the connection.
             client.Dispose();
             // Wait for measurement to be available.
-            await connectionDuration.WaitForMeasurementsAsync(numMeasurements: 1).DefaultTimeout();
+            await connectionDuration.WaitForMeasurementsAsync(minCount: 1).DefaultTimeout();
 
             // Assert
             Assert.Collection(connectionDuration.GetMeasurementSnapshot(),

@@ -4,6 +4,7 @@
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Components.Endpoints.Forms;
 using Microsoft.AspNetCore.Components.Endpoints.Tests.TestComponents;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Infrastructure;
@@ -1296,7 +1297,12 @@ public class EndpointHtmlRendererTest
         services.AddSingleton<ComponentStatePersistenceManager>();
         services.AddSingleton(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
         services.AddSingleton<ServerComponentSerializer>();
-        services.AddSingleton<FormDataProvider, HttpContextFormDataProvider>();
+        services.AddSingleton<HttpContextFormDataProvider>();
+        services.AddAntiforgery();
+        services.AddSingleton<ComponentStatePersistenceManager>();
+        services.AddSingleton<PersistentComponentState>(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
+        services.AddSingleton<AntiforgeryStateProvider, EndpointAntiforgeryStateProvider>();
+
         return services;
     }
 

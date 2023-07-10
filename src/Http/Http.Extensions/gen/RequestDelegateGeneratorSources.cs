@@ -32,55 +32,6 @@ internal static class RequestDelegateGeneratorSources
 
 """;
 
-    public static string ProducesResponseTypeMetadataType => $$"""
-    {{GeneratedCodeAttribute}}
-    file sealed class GeneratedProducesResponseTypeMetadata : IProducesResponseTypeMetadata
-    {
-        public GeneratedProducesResponseTypeMetadata(Type? type, int statusCode, string[] contentTypes)
-        {
-            Type = type;
-            StatusCode = statusCode;
-            ContentTypes = contentTypes;
-        }
-
-        public Type? Type { get; }
-
-        public int StatusCode { get; }
-
-        public IEnumerable<string> ContentTypes { get; }
-    }
-
-""";
-
-    public static string AcceptsMetadataType => $$"""
-    {{GeneratedCodeAttribute}}
-    file sealed class GeneratedAcceptsMetadata : IAcceptsMetadata
-    {
-        public GeneratedAcceptsMetadata(string[] contentTypes)
-        {
-            ArgumentNullException.ThrowIfNull(contentTypes);
-
-            ContentTypes = contentTypes;
-        }
-
-        public GeneratedAcceptsMetadata(Type? type, bool isOptional, string[] contentTypes)
-        {
-            ArgumentNullException.ThrowIfNull(type);
-            ArgumentNullException.ThrowIfNull(contentTypes);
-
-            RequestType = type;
-            ContentTypes = contentTypes;
-            IsOptional = isOptional;
-        }
-
-        public IReadOnlyList<string> ContentTypes { get; }
-
-        public Type? RequestType { get; }
-
-        public bool IsOptional { get; }
-    }
-""";
-
     public static string PopulateEndpointMetadataMethod => """
         private static void PopulateMetadataForEndpoint<T>(MethodInfo method, EndpointBuilder builder)
             where T : IEndpointMetadataProvider

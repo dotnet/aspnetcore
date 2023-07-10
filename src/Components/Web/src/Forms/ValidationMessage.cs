@@ -52,7 +52,7 @@ public class ValidationMessage<TValue> : ComponentBase, IDisposable
                 $"{nameof(For)} parameter.");
         }
         else if (For != _previousFieldAccessor)
-        {
+        {            
             _fieldIdentifier = FieldIdentifier.Create(For);
             _previousFieldAccessor = For;
         }

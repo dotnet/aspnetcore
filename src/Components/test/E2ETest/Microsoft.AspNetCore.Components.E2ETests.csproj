@@ -49,7 +49,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\testassets\Components.TestServer\Components.TestServer.csproj" />
-    <ProjectReference Include="..\..\WebAssembly\testassets\Wasm.Authentication.Server\Wasm.Authentication.Server.csproj" />
     <ProjectReference Include="..\..\WebAssembly\testassets\HostedInAspNet.Client\HostedInAspNet.Client.csproj" />
     <ProjectReference Include="..\..\WebAssembly\testassets\HostedInAspNet.Server\HostedInAspNet.Server.csproj" />
   </ItemGroup>

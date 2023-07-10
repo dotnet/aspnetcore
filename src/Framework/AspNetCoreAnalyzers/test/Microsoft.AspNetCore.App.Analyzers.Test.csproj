@@ -4,6 +4,8 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <RootNamespace>Microsoft.AspNetCore.Analyzers</RootNamespace>
+    <!-- Disable analyzer warnings for analyzers in test project. -->
+    <NoWarn>$(NoWarn);RS1036;RS2008</NoWarn>
    </PropertyGroup>
 
   <ItemGroup>
