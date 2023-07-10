@@ -18,6 +18,14 @@ public class EndpointFilterInvocationContextOfTTests
     }
 
     [Fact]
+    public void ProhibitsUnsupportedListOperations()
+    {
+        var context = new EndpointFilterInvocationContext<string, int, bool>(new DefaultHttpContext(), "This is a test", 42, false);
+        Assert.Throws<NotSupportedException>(() => context.Contains("string"));
+        Assert.Throws<NotSupportedException>(() => context.IndexOf(0));
+    }
+
+    [Fact]
     public void ThrowsExceptionForInvalidCastOnGetArgument()
     {
         var context = new EndpointFilterInvocationContext<string, int, bool, Todo>(new DefaultHttpContext(), "This is a test", 42, false, new Todo());
