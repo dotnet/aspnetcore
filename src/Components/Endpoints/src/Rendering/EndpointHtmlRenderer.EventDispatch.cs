@@ -14,18 +14,18 @@ internal partial class EndpointHtmlRenderer
 
     internal Task DispatchSubmitEventAsync(string? handlerName)
     {
-        if (string.IsNullOrEmpty(handlerName))
+        if (handlerName is null)
         {
             // Currently this also happens if you forget to add the hidden field, but soon we'll do that automatically, so the
             // message is designed around that.
-            throw new InvalidOperationException($"Cannot dispatch the POST request to the Razor Component endpoint, because the POST data does not specify which form is being submitted. To fix this, ensure form elements have an @onsubmit:name attribute with any unique value, or pass a Name parameter if using EditForm.");
+            throw new InvalidOperationException($"Cannot dispatch the POST request to the Razor Component endpoint, because the POST data does not specify which form is being submitted. To fix this, ensure form elements have an @onsubmit:name attribute with any unique value, or pass a FormHandlerName parameter if using EditForm.");
         }
 
         if (!_namedSubmitEventsByAssignedName.TryGetValue(handlerName, out var frameLocation))
         {
             // This might only be possible if you deploy an app update and someone tries to submit
             // an old version of a form, and your new app no longer has a matching name
-            throw new InvalidOperationException($"Cannot submit the form '{handlerName}' because no submit handler was found with that name. Ensure forms have a unique @onsubmit:name attribute, or pass the Name parameter if using EditForm.");
+            throw new InvalidOperationException($"Cannot submit the form '{handlerName}' because no submit handler was found with that name. Ensure forms have a unique @onsubmit:name attribute, or pass the FormHandlerName parameter if using EditForm.");
         }
 
         var eventHandlerId = FindEventHandlerIdForNamedEvent("onsubmit", frameLocation.ComponentId, frameLocation.FrameIndex);
