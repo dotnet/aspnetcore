@@ -1345,7 +1345,7 @@ public class WebApplicationTests
     }
 
     [Theory]
-    [MemberData(nameof(CreateBuilderFuncs))]
+    [MemberData(nameof(CreateNonEmptyBuilderFuncs))] // empty builder doesn't enable HostFiltering
     public async Task WebApplicationConfiguration_HostFilterOptionsAreReloadable(CreateBuilderFunc createBuilder)
     {
         var builder = createBuilder();
@@ -1431,7 +1431,7 @@ public class WebApplicationTests
     }
 
     [Theory]
-    [MemberData(nameof(CreateBuilderFuncs))]
+    [MemberData(nameof(CreateNonEmptyBuilderFuncs))] // empty builder doesn't enable ForwardedHeaders
     public async Task WebApplicationConfiguration_EnablesForwardedHeadersFromConfig(CreateBuilderFunc createBuilder)
     {
         var builder = createBuilder();
@@ -1752,6 +1752,7 @@ public class WebApplicationTests
         Assert.Single(builder.Services.Where(descriptor => descriptor.ServiceType == typeof(IWebHostEnvironment)));
         Assert.Single(builder.Services.Where(descriptor => descriptor.ServiceType == typeof(IOptionsChangeTokenSource<HostFilteringOptions>)));
         Assert.Single(builder.Services.Where(descriptor => descriptor.ServiceType == typeof(IServer)));
+        Assert.Single(builder.Services.Where(descriptor => descriptor.ServiceType == typeof(EndpointDataSource)));
 
         await using var app = builder.Build();
 
@@ -1768,10 +1769,11 @@ public class WebApplicationTests
 
         Assert.Empty(builder.Services.Where(descriptor => descriptor.ServiceType == typeof(IConfigureOptions<LoggerFactoryOptions>)));
         Assert.Empty(builder.Services.Where(descriptor => descriptor.ServiceType == typeof(IServer)));
+        Assert.Empty(builder.Services.Where(descriptor => descriptor.ServiceType == typeof(IOptionsChangeTokenSource<HostFilteringOptions>)));
 
         // These services are still necessary
         Assert.Single(builder.Services.Where(descriptor => descriptor.ServiceType == typeof(IWebHostEnvironment)));
-        Assert.Single(builder.Services.Where(descriptor => descriptor.ServiceType == typeof(IOptionsChangeTokenSource<HostFilteringOptions>)));
+        Assert.Single(builder.Services.Where(descriptor => descriptor.ServiceType == typeof(EndpointDataSource)));
     }
 
     [Theory]
