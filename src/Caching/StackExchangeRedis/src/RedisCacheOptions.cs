@@ -72,7 +72,5 @@ public class RedisCacheOptions : IOptions<RedisCacheOptions>
             options.LibraryName = $"{provider.LibraryName} {libSuffix}";
         }
         return options;
-
-
     }
 }
