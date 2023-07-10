@@ -185,11 +185,6 @@ and are generated based on the last package release.
     <LatestPackageReference Include="AngleSharp" />
     <LatestPackageReference Include="BenchmarkDotNet" />
     <LatestPackageReference Include="CommandLineParser" />
-    <LatestPackageReference Include="Duende.IdentityServer" />
-    <LatestPackageReference Include="Duende.IdentityServer.AspNetIdentity" />
-    <LatestPackageReference Include="Duende.IdentityServer.EntityFramework" />
-    <LatestPackageReference Include="Duende.IdentityServer.EntityFramework.Storage" />
-    <LatestPackageReference Include="Duende.IdentityServer.Storage" />
     <LatestPackageReference Include="FSharp.Core" />
     <LatestPackageReference Include="Google.Api.CommonProtos" />
     <LatestPackageReference Include="Google.Protobuf" />
