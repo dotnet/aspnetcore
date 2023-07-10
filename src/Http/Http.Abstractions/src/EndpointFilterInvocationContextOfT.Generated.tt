@@ -80,6 +80,8 @@ internal sealed class EndpointFilterInvocationContext<<# foreach (var argumentCo
                 return true;
             }
         }
+
+        return false;
     }
 
     public void CopyTo(object?[] array, int arrayIndex)

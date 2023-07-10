@@ -68,6 +68,8 @@ internal sealed class EndpointFilterInvocationContext<T0> : EndpointFilterInvoca
                 return true;
             }
         }
+
+        return false;
     }
 
     public void CopyTo(object?[] array, int arrayIndex)
@@ -194,6 +196,8 @@ internal sealed class EndpointFilterInvocationContext<T0, T1> : EndpointFilterIn
                 return true;
             }
         }
+
+        return false;
     }
 
     public void CopyTo(object?[] array, int arrayIndex)
@@ -327,6 +331,8 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2> : EndpointFilt
                 return true;
             }
         }
+
+        return false;
     }
 
     public void CopyTo(object?[] array, int arrayIndex)
@@ -467,6 +473,8 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3> : Endpoint
                 return true;
             }
         }
+
+        return false;
     }
 
     public void CopyTo(object?[] array, int arrayIndex)
@@ -614,6 +622,8 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4> : Endp
                 return true;
             }
         }
+
+        return false;
     }
 
     public void CopyTo(object?[] array, int arrayIndex)
@@ -768,6 +778,8 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5> : 
                 return true;
             }
         }
+
+        return false;
     }
 
     public void CopyTo(object?[] array, int arrayIndex)
@@ -929,6 +941,8 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5, T6
                 return true;
             }
         }
+
+        return false;
     }
 
     public void CopyTo(object?[] array, int arrayIndex)
@@ -1097,6 +1111,8 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5, T6
                 return true;
             }
         }
+
+        return false;
     }
 
     public void CopyTo(object?[] array, int arrayIndex)
@@ -1272,6 +1288,8 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5, T6
                 return true;
             }
         }
+
+        return false;
     }
 
     public void CopyTo(object?[] array, int arrayIndex)
@@ -1454,6 +1472,8 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5, T6
                 return true;
             }
         }
+
+        return false;
     }
 
     public void CopyTo(object?[] array, int arrayIndex)
