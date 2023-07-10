@@ -281,7 +281,7 @@ public class ComponentState : IAsyncDisposable
     internal ValueTask DisposeInBatchAsync(RenderBatchBuilder batchBuilder)
     {
         // We don't expect these things to throw.
-        RenderTreeDiffBuilder.DisposeFrames(batchBuilder, CurrentRenderTree.GetFrames());
+        RenderTreeDiffBuilder.DisposeFrames(batchBuilder, ComponentId, CurrentRenderTree.GetFrames());
 
         if (_hasAnyCascadingParameterSubscriptions)
         {

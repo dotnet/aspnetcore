@@ -223,10 +223,10 @@ public sealed class RenderTreeBuilder : IDisposable
         if (value != null || _lastNonAttributeFrameType == RenderTreeFrameType.Component)
         {
             // TODO: Remove this once the Razor compiler is updated to support @onsubmit:name
-            // That should compile directly as a call to AddNameForEventHandler.
+            // That should compile directly as a call to AddNamedValue.
             if (string.Equals(name, "@onsubmit:name", StringComparison.Ordinal) && _lastNonAttributeFrameType == RenderTreeFrameType.Element)
             {
-                AddNameForEventHandler(sequence, "onsubmit", value!);
+                AddNamedValue(sequence, "@onsubmit:name", value!);
             }
             else
             {
@@ -697,21 +697,21 @@ public sealed class RenderTreeBuilder : IDisposable
     }
 
     /// <summary>
-    /// Associates a custom name, <paramref name="eventName"/>, with the event of type
-    /// <paramref name="eventType"/> within the enclosing element.
+    /// Creates a name-value pair in the render tree.
     /// </summary>
     /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
-    /// <param name="eventType">The type of event, such as 'onsubmit'.</param>
-    /// <param name="eventName">The application-specified name for this handler.</param>
-    public void AddNameForEventHandler(int sequence, string eventType, string eventName)
+    /// <param name="name">A name.</param>
+    /// <param name="value">A value.</param>
+    public void AddNamedValue(int sequence, string name, object? value)
     {
+        // No reason why this couldn't be allowed for components too, but it's not a scenario we have currently
         if (GetCurrentParentFrameType() != RenderTreeFrameType.Element)
         {
-            throw new InvalidOperationException($"Named event handlers may only be added as children of frames of type {RenderTreeFrameType.Element}");
+            throw new InvalidOperationException($"Name-value frames may only be added as children of frames of type {RenderTreeFrameType.Element}");
         }
 
-        _entries.AppendNamedEventHandler(sequence, eventType, eventName);
-        _lastNonAttributeFrameType = RenderTreeFrameType.NameForEventHandler;
+        _entries.AppendNamedValue(sequence, name, value);
+        _lastNonAttributeFrameType = RenderTreeFrameType.NamedValue;
     }
 
     /// <summary>

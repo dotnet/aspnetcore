@@ -65,7 +65,7 @@ public enum RenderTreeFrameType : short
     ComponentRenderMode = 9,
 
     /// <summary>
-    /// Identifies an event handler using an application-specified name.
+    /// Represents an arbitrary name-value pair at a location in the render tree.
     /// </summary>
-    NameForEventHandler = 10,
+    NamedValue = 10,
 }

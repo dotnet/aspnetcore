@@ -283,30 +283,23 @@ public struct RenderTreeFrame
     }
 
     // --------------------------------------------------------------------------------
-    // RenderTreeFrameType.NameForEventHandler
+    // RenderTreeFrameType.NamedValue
     // --------------------------------------------------------------------------------
 
-    [FieldOffset(8)] internal ulong NamedEventHandlerEventHandlerIdField;
-    [FieldOffset(16)] internal string NamedEventHandlerEventTypeField;
-    [FieldOffset(24)] internal string NamedEventHandlerEventNameField;
+    [FieldOffset(16)] internal string NamedValueNameField;
+    [FieldOffset(24)] internal object NamedValueValueField;
 
     /// <summary>
-    /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.NameForEventHandler"/>,
-    /// gets the type of the event being named (for example, 'onsubmit'). Otherwise, the value is undefined.
+    /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.NamedValue"/>,
+    /// gets the name from the name-value pair. Otherwise, the value is undefined.
     /// </summary>
-    public ulong NamedEventHandlerEventHandlerId => NamedEventHandlerEventHandlerIdField;
+    public string NamedValueName => NamedValueNameField;
 
     /// <summary>
-    /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.NameForEventHandler"/>,
-    /// gets the type of the event being named (for example, 'onsubmit'). Otherwise, the value is undefined.
+    /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.NamedValue"/>,
+    /// gets the value from the name-value pair. Otherwise, the value is undefined.
     /// </summary>
-    public string NamedEventHandlerEventType => NamedEventHandlerEventTypeField;
-
-    /// <summary>
-    /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.NameForEventHandler"/>,
-    /// gets the application-supplied name for the handler. Otherwise, the value is undefined.
-    /// </summary>
-    public string NamedEventHandlerEventName => NamedEventHandlerEventNameField;
+    public object NamedValueValue => NamedValueValueField;
 
     // Element constructor
     private RenderTreeFrame(int sequence, int elementSubtreeLength, string elementName, object elementKey)

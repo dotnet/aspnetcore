@@ -36,9 +36,10 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 /// </summary>
 internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrerenderer
 {
+    private const string OnSubmitNameAttribute = "@onsubmit:name";
     private readonly IServiceProvider _services;
-    private readonly Dictionary<ulong, string> _namedEventsByEventHandlerId = new();
-    private readonly Dictionary<string, ulong> _namedEventsByEventHandlerName = new(StringComparer.Ordinal);
+    private readonly Dictionary<(int ComponentId, int FrameIndex), string> _namedEventsByLocation = new();
+    private readonly Dictionary<string, (int ComponentId, int FrameIndex)> _namedEventsByAssignedName = new(StringComparer.Ordinal);
 
     private Task? _servicesInitializedTask;
 
@@ -116,14 +117,52 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
             throw new InvalidOperationException($"Cannot dispatch the POST request to the Razor Component endpoint, because the POST data does not specify which form is being submitted. To fix this, ensure form elements have an @onsubmit:name attribute with any unique value, or pass a Name parameter if using EditForm.");
         }
 
-        if (!_namedEventsByEventHandlerName.TryGetValue(handlerName, out var eventHandlerId))
+        if (!_namedEventsByAssignedName.TryGetValue(handlerName, out var frameLocation))
         {
             // This might only be possible if you deploy an app update and someone tries to submit
             // an old version of a form, and your new app no longer has a matching name
-            throw new InvalidOperationException($"Cannot submit the form '{handlerName}' because no submit handler was found. Ensure forms have a unique @onsubmit:name attribute, or pass the Name parameter if using EditForm.");
+            throw new InvalidOperationException($"Cannot submit the form '{handlerName}' because no submit handler was found with that name. Ensure forms have a unique @onsubmit:name attribute, or pass the Name parameter if using EditForm.");
         }
 
+        var eventHandlerId = FindEventHandlerIdForNamedEvent(frameLocation.ComponentId, frameLocation.FrameIndex);
         return DispatchEventAsync(eventHandlerId, null, EventArgs.Empty, quiesce: true);
+    }
+
+    private ulong FindEventHandlerIdForNamedEvent(int componentId, int frameIndex)
+    {
+        var frames = GetCurrentRenderTreeFrames(componentId);
+        ref var frame = ref frames.Array[frameIndex];
+
+        if (frame.FrameType != RenderTreeFrameType.NamedValue)
+        {
+            // This should not be possible, as the system doesn't create a way that the location could be wrong. But if it happens, we want to know.
+            throw new InvalidOperationException($"The named value frame for component '{componentId}' at index '{frameIndex}' unexpectedly matches a frame of type '{frame.FrameType}'.");
+        }
+
+        if (!string.Equals(frame.NamedValueName, OnSubmitNameAttribute, StringComparison.Ordinal))
+        {
+            // This should not be possible, as currently we are only tracking name-values with the expected name. But if it happens, we want to know.
+            throw new InvalidOperationException($"Expected a named value with name '{OnSubmitNameAttribute}' but found the name '{frame.NamedValueName}'.");
+        }
+
+        for (var i = frameIndex - 1; i >= 0; i--)
+        {
+            ref var candidate = ref frames.Array[i];
+            if (candidate.FrameType == RenderTreeFrameType.Attribute)
+            {
+                if (candidate.AttributeEventHandlerId > 0 && string.Equals(candidate.AttributeName, "onsubmit", StringComparison.OrdinalIgnoreCase))
+                {
+                    return candidate.AttributeEventHandlerId;
+                }
+            }
+            else if (candidate.FrameType == RenderTreeFrameType.Element)
+            {
+                break;
+            }
+        }
+
+        // This won't be possible if the Razor compiler requires @onsubmit:name to be used only when there's an @onsubmit.
+        throw new InvalidOperationException($"The {frame.NamedValueName} value in component {componentId} at index {frameIndex} does not match a preceding event handler.");
     }
 
     private static string GenerateComponentPath(ComponentState state)
@@ -192,30 +231,44 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
 
     private void UpdateNamedEventCapture(in RenderBatch renderBatch)
     {
-        if (renderBatch.RemovedNamedEventHandlerIDs is { } removedIds)
+        if (renderBatch.RemovedNamedValues is {} removed)
         {
-            foreach (var id in removedIds)
+            var removedCount = removed.Count;
+            var removedArray = removed.Array;
+            for (var i = 0; i < removedCount; i++)
             {
-                if (_namedEventsByEventHandlerId.Remove(id, out var name))
+                ref var removedEntry = ref removedArray[i];
+                if (string.Equals(removedEntry.Name, OnSubmitNameAttribute, StringComparison.Ordinal))
                 {
-                    _namedEventsByEventHandlerName.Remove(name);
+                    var location = (removedEntry.ComponentId, removedEntry.FrameIndex);
+                    if (_namedEventsByLocation.Remove(location, out var assignedName))
+                    {
+                        _namedEventsByAssignedName.Remove(assignedName);
+                    }
                 }
             }
         }
 
-        if (renderBatch.AddedNamedEventHandlers is { } added)
+        if (renderBatch.AddedNamedValues is { } added)
         {
-            foreach (var entry in added)
+            var addedCount = added.Count;
+            var addedArray = added.Array;
+            for (var i = 0; i < addedCount; i++)
             {
-                if (_namedEventsByEventHandlerId.TryAdd(entry.EventHandlerId, entry.AssignedEventName))
+                ref var addedEntry = ref addedArray[i];
+                if (string.Equals(addedEntry.Name, OnSubmitNameAttribute, StringComparison.Ordinal) && addedEntry.Value is string assignedName)
                 {
-                    _namedEventsByEventHandlerName.Add(entry.AssignedEventName, entry.EventHandlerId);
-                }
-                else
-                {
-                    // We could allow multiple events with the same name, since they are all tracked separately. However
-                    // this is most likely a mistake on the developer's part so we will consider it an error.
-                    throw new InvalidOperationException($"There is more than one named event with the name '{entry.AssignedEventName}'. Ensure named events have unique names.");
+                    var location = (addedEntry.ComponentId, addedEntry.FrameIndex);
+                    if (_namedEventsByAssignedName.TryAdd(assignedName, location))
+                    {
+                        _namedEventsByLocation.Add(location, assignedName);
+                    }
+                    else
+                    {
+                        // We could allow multiple events with the same name, since they are all tracked separately. However
+                        // this is most likely a mistake on the developer's part so we will consider it an error.
+                        throw new InvalidOperationException($"There is more than one named event with the name '{assignedName}'. Ensure named events have unique names.");
+                    }
                 }
             }
         }
@@ -239,8 +292,6 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         // it has to end with a trailing slash
         return result.EndsWith('/') ? result : result += "/";
     }
-
-    private record struct NamedEvent(ulong EventHandlerId, int ComponentId, string EventNameId);
 
     private sealed class FormCollectionReadOnlyDictionary : IReadOnlyDictionary<string, StringValues>
     {
