@@ -3,7 +3,6 @@
 
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
-using System.Text;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Endpoints.DependencyInjection;
 using Microsoft.AspNetCore.Components.Endpoints.Forms;

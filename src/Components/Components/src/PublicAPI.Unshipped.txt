@@ -41,7 +41,6 @@ Microsoft.AspNetCore.Components.RenderTree.NamedEvent.NamedEvent() -> void
 Microsoft.AspNetCore.Components.RenderTree.NamedEvent.NamedEvent(int componentId, int frameIndex, string! eventType, string! assignedName) -> void
 Microsoft.AspNetCore.Components.RenderTree.RenderBatch.AddedNamedEvents.get -> Microsoft.AspNetCore.Components.RenderTree.ArrayRange<Microsoft.AspNetCore.Components.RenderTree.NamedEvent>?
 Microsoft.AspNetCore.Components.RenderTree.RenderBatch.RemovedNamedEvents.get -> Microsoft.AspNetCore.Components.RenderTree.ArrayRange<Microsoft.AspNetCore.Components.RenderTree.NamedEvent>?
-Microsoft.AspNetCore.Components.RenderTree.Renderer.GetCurrentRenderTreeFrames(int componentId, bool optional) -> Microsoft.AspNetCore.Components.RenderTree.ArrayRange<Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame>?
 Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.ComponentFrameFlags.get -> Microsoft.AspNetCore.Components.RenderTree.ComponentFrameFlags
 Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType.ComponentRenderMode = 9 -> Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType
 Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType.NamedEvent = 10 -> Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType

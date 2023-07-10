@@ -18,13 +18,14 @@ internal partial class EndpointHtmlRenderer
         {
             // Currently this also happens if you forget to add the hidden field, but soon we'll do that automatically, so the
             // message is designed around that.
-            throw new InvalidOperationException($"Cannot dispatch the POST request to the Razor Component endpoint, because the POST data does not specify which form is being submitted. To fix this, ensure form elements have an @onsubmit:name attribute with any unique value, or pass a FormHandlerName parameter if using EditForm.");
+            throw new InvalidOperationException("Cannot dispatch the POST request to the Razor Component endpoint, because the POST data does not specify which form is being submitted. To fix this, ensure form elements have an @onsubmit:name attribute with any unique value, or pass a FormHandlerName parameter if using EditForm.");
         }
 
         if (!_namedSubmitEventsByAssignedName.TryGetValue(handlerName, out var frameLocation))
         {
-            // This might only be possible if you deploy an app update and someone tries to submit
-            // an old version of a form, and your new app no longer has a matching name
+            // This may happen if you deploy an app update and someone still on the old page submits a form,
+            // or if you're dynamically building the UI and the submitted form doesn't exist the next time
+            // the page is rendered
             throw new InvalidOperationException($"Cannot submit the form '{handlerName}' because no submit handler was found with that name. Ensure forms have a unique @onsubmit:name attribute, or pass the FormHandlerName parameter if using EditForm.");
         }
 
@@ -71,7 +72,7 @@ internal partial class EndpointHtmlRenderer
                         // We could allow multiple events with the same name, since they are all tracked separately. However
                         // this is most likely a mistake on the developer's part so we will consider it an error.
                         var existingEntry = _namedSubmitEventsByAssignedName[assignedName];
-                        throw new InvalidOperationException($"There is more than one named event with the name '{assignedName}'. Ensure named events have unique names. The following components both use this name: "
+                        throw new InvalidOperationException($"There is more than one named event with the name '{assignedName}'. Ensure named events have unique names. The following components both use this name:"
                             + $"\n - {GenerateComponentPath(existingEntry.ComponentId)}"
                             + $"\n - {GenerateComponentPath(addedEntry.ComponentId)}");
                     }

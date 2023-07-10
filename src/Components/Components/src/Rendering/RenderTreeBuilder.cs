@@ -28,6 +28,7 @@ public sealed class RenderTreeBuilder : IDisposable
     private bool _hasSeenAddMultipleAttributes;
     private Dictionary<string, int>? _seenAttributeNames;
     private IComponentRenderMode? _pendingComponentCallSiteRenderMode; // TODO: Remove when Razor compiler supports call-site @rendermode
+    private (int Sequence, string AssignedName)? _pendingNamedSubmitEvent; // TODO: Remove when Razor compiler supports @onsubmit:name
 
     /// <summary>
     /// The reserved parameter name used for supplying child content.
@@ -63,6 +64,12 @@ public sealed class RenderTreeBuilder : IDisposable
     /// </summary>
     public void CloseElement()
     {
+        if (_pendingNamedSubmitEvent is { } pendingNamedSubmitEvent)
+        {
+            AddNamedEvent(pendingNamedSubmitEvent.Sequence, "onsubmit", pendingNamedSubmitEvent.AssignedName);
+            _pendingNamedSubmitEvent = default;
+        }
+
         var indexOfEntryBeingClosed = _openElementIndices.Pop();
 
         // We might be closing an element with only attributes, run the duplicate cleanup pass
@@ -226,7 +233,7 @@ public sealed class RenderTreeBuilder : IDisposable
             // That should compile directly as a call to AddNamedValue.
             if (string.Equals(name, "@onsubmit:name", StringComparison.Ordinal) && _lastNonAttributeFrameType == RenderTreeFrameType.Element)
             {
-                AddNamedEvent(sequence, "onsubmit", value!);
+                _pendingNamedSubmitEvent = (sequence, value!);
             }
             else
             {
@@ -704,6 +711,9 @@ public sealed class RenderTreeBuilder : IDisposable
     /// <param name="assignedName">The application-assigned name.</param>
     public void AddNamedEvent(int sequence, string eventType, string assignedName)
     {
+        ArgumentNullException.ThrowIfNull(eventType);
+        ArgumentNullException.ThrowIfNull(assignedName);
+
         // Note that we could trivially extend this to a generic concept of "named values" that exist within the rendertree
         // and are tracked when added, removed, or updated. Currently we don't need that generality, but if we ever do, we
         // can replace RenderTreeFrameType.NamedEvent with RenderTreeFrameType.NamedValue and use it to implement named events.

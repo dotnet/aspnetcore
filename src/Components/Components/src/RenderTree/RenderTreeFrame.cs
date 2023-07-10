@@ -414,6 +414,12 @@ public struct RenderTreeFrame
     internal static RenderTreeFrame ComponentReferenceCapture(int sequence, Action<object> componentReferenceCaptureAction, int parentFrameIndex)
         => new RenderTreeFrame(sequence, componentReferenceCaptureAction: componentReferenceCaptureAction, parentFrameIndex: parentFrameIndex);
 
+    internal static RenderTreeFrame NamedEvent(int sequence, string eventType, string assignedName)
+        => new RenderTreeFrame { SequenceField = sequence, FrameTypeField = RenderTreeFrameType.NamedEvent, NamedEventTypeField = eventType, NamedEventAssignedNameField = assignedName };
+
+    internal static RenderTreeFrame ComponentRenderModeFrame(int sequence, IComponentRenderMode renderMode)
+        => new RenderTreeFrame { SequenceField = sequence, FrameTypeField = RenderTreeFrameType.ComponentRenderMode, ComponentRenderModeField = renderMode };
+
     internal RenderTreeFrame WithElementSubtreeLength(int elementSubtreeLength)
         => new RenderTreeFrame(SequenceField, elementSubtreeLength: elementSubtreeLength, ElementNameField, ElementKeyField);
 

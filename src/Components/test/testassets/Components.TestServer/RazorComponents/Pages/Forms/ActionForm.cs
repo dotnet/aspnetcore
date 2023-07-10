@@ -58,9 +58,9 @@ public class ActionForm : ComponentBase
 
             if (bindingContext != null)
             {
-                builder.SetEventHandlerName(bindingContext.Name);
+                builder.AddNamedEvent(5, "onsubmit", bindingContext.Name);
             }
-            builder.AddContent(5, ChildContent?.Invoke(bindingContext));
+            builder.AddContent(6, ChildContent?.Invoke(bindingContext));
 
             builder.CloseElement();
         }
