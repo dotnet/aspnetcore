@@ -192,76 +192,30 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
 
     private void UpdateNamedEventCapture(in RenderBatch renderBatch)
     {
-        // Remove disposed ones
-        var disposedEventHandlerCount = renderBatch.DisposedEventHandlerIDs.Count;
-        var disposedEventHandlerArray = renderBatch.DisposedEventHandlerIDs.Array;
-        for (var i = 0; i < disposedEventHandlerCount; i++)
+        if (renderBatch.RemovedNamedEventHandlerIDs is { } removedIds)
         {
-            var id = disposedEventHandlerArray[i];
-            if (_namedEventsByEventHandlerId.Remove(id, out var name))
+            foreach (var id in removedIds)
             {
-                _namedEventsByEventHandlerName.Remove(name);
+                if (_namedEventsByEventHandlerId.Remove(id, out var name))
+                {
+                    _namedEventsByEventHandlerName.Remove(name);
+                }
             }
         }
 
-        // Find and add new ones
-        // TODO: Instead of scanning the current rendertree for each updated component,
-        // we could observe the frames during diffing and track them as some separate
-        // feature of the batch
-        var updatedComponentCount = renderBatch.UpdatedComponents.Count;
-        var updatedComponentArray = renderBatch.UpdatedComponents.Array;
-        for (var i = 0; i < updatedComponentCount; i++)
+        if (renderBatch.AddedNamedEventHandlers is { } added)
         {
-            // TODO: Bear in mind that a given component may occur multiple times in this list
-            // based on how many times it was updated. Would be better if the names were tracked
-            // within individual edits/diffs so you only considered the changes once.
-            ref var updatedComponent = ref updatedComponentArray[i];
-            var currentFrames = GetCurrentRenderTreeFrames(updatedComponent.ComponentId, optional: true);
-            if (!currentFrames.HasValue)
+            foreach (var entry in added)
             {
-                continue;
-            }
-
-            var currentFramesCount = currentFrames.Value.Count;
-            var currentFramesArray = currentFrames.Value.Array;
-            for (var frameIndex = 0; frameIndex < currentFramesCount; frameIndex++)
-            {
-                // TODO: Would MemoryExtensions.IndexOf help?
-                ref var frame = ref currentFramesArray[frameIndex];
-                if (frame.FrameType == RenderTreeFrameType.NameForEventHandler)
+                if (_namedEventsByEventHandlerId.TryAdd(entry.EventHandlerId, entry.AssignedEventName))
                 {
-                    // Find the enclosing matching event
-                    ulong? foundEventHandlerId = default;
-                    for (var scanIndex = frameIndex - 1; scanIndex >= 0; scanIndex--)
-                    {
-                        ref var scanFrame = ref currentFramesArray[scanIndex];
-                        if (scanFrame.FrameType == RenderTreeFrameType.Element)
-                        {
-                            break;
-                        }
-                        else if (scanFrame.FrameType == RenderTreeFrameType.Attribute
-                            && scanFrame.AttributeEventHandlerId != default
-                            && string.Equals(scanFrame.AttributeName, frame.NamedEventHandlerEventType, StringComparison.Ordinal))
-                        {
-                            foundEventHandlerId = scanFrame.AttributeEventHandlerId;
-                            break;
-                        }
-                    }
-
-                    if (foundEventHandlerId.HasValue)
-                    {
-                        // This is not right as it will fail if the component renders multiple times and tries
-                        // to change the event handler ID. Need to track at the point we assign event handler IDs.
-                        if (_namedEventsByEventHandlerId.TryAdd(foundEventHandlerId.Value, frame.NamedEventHandlerEventName))
-                        {
-                            _namedEventsByEventHandlerName.Add(frame.NamedEventHandlerEventName, foundEventHandlerId.Value);
-                        }
-                        else if (_namedEventsByEventHandlerName.TryGetValue(frame.NamedEventHandlerEventName, out var existingId)
-                            && existingId != foundEventHandlerId.Value)
-                        {
-                            throw new InvalidOperationException($"There is more than one named event with the name '{frame.NamedEventHandlerEventName}'. Ensure named events have unique names.");
-                        }
-                    }
+                    _namedEventsByEventHandlerName.Add(entry.AssignedEventName, entry.EventHandlerId);
+                }
+                else
+                {
+                    // We could allow multiple events with the same name, since they are all tracked separately. However
+                    // this is most likely a mistake on the developer's part so we will consider it an error.
+                    throw new InvalidOperationException($"There is more than one named event with the name '{entry.AssignedEventName}'. Ensure named events have unique names.");
                 }
             }
         }

@@ -22,6 +22,8 @@ internal sealed class RenderBatchBuilder : IDisposable
     public ArrayBuilder<RenderTreeDiff> UpdatedComponentDiffs { get; } = new ArrayBuilder<RenderTreeDiff>();
     public ArrayBuilder<int> DisposedComponentIds { get; } = new ArrayBuilder<int>();
     public ArrayBuilder<ulong> DisposedEventHandlerIds { get; } = new ArrayBuilder<ulong>();
+    private List<NamedEventHandler>? AddedNamedEventHandlers;
+    private List<ulong>? RemovedNamedEventHandlers;
 
     // Buffers referenced by UpdatedComponentDiffs
     public ArrayBuilder<RenderTreeEdit> EditsBuffer { get; } = new ArrayBuilder<RenderTreeEdit>(64);
@@ -54,6 +56,9 @@ internal sealed class RenderBatchBuilder : IDisposable
         DisposedComponentIds.Clear();
         DisposedEventHandlerIds.Clear();
         AttributeDiffSet.Clear();
+
+        AddedNamedEventHandlers?.Clear();
+        RemovedNamedEventHandlers?.Clear();
     }
 
     public RenderBatch ToBatch()
@@ -61,7 +66,11 @@ internal sealed class RenderBatchBuilder : IDisposable
             UpdatedComponentDiffs.ToRange(),
             ReferenceFramesBuffer.ToRange(),
             DisposedComponentIds.ToRange(),
-            DisposedEventHandlerIds.ToRange());
+            DisposedEventHandlerIds.ToRange())
+        {
+            AddedNamedEventHandlers = AddedNamedEventHandlers,
+            RemovedNamedEventHandlerIDs = RemovedNamedEventHandlers,
+        };
 
     public void InvalidateParameterViews()
     {
@@ -77,6 +86,18 @@ internal sealed class RenderBatchBuilder : IDisposable
         {
             _parameterViewValidityStamp++;
         }
+    }
+
+    public void AddNamedEventHandler(ulong eventHandlerId, string eventType, string assignedEventName)
+    {
+        AddedNamedEventHandlers ??= new();
+        AddedNamedEventHandlers.Add(new NamedEventHandler(eventHandlerId, eventType, assignedEventName));
+    }
+
+    public void RemoveNamedEventHandler(ulong eventHandlerId)
+    {
+        RemovedNamedEventHandlers ??= new();
+        RemovedNamedEventHandlers.Add(eventHandlerId);
     }
 
     public void Dispose()

@@ -33,6 +33,16 @@ public readonly struct RenderBatch
     /// </summary>
     public ArrayRange<ulong> DisposedEventHandlerIDs { get; }
 
+    /// <summary>
+    /// Gets the named event handlers that were added, or null.
+    /// </summary>
+    public List<NamedEventHandler>? AddedNamedEventHandlers { get; init; }
+
+    /// <summary>
+    /// Gets the event handler IDs of named event handlers that were removed, or null.
+    /// </summary>
+    public List<ulong>? RemovedNamedEventHandlerIDs { get; init; }
+
     internal RenderBatch(
         ArrayRange<RenderTreeDiff> updatedComponents,
         ArrayRange<RenderTreeFrame> referenceFrames,

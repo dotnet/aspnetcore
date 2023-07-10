@@ -727,7 +727,19 @@ internal static class RenderTreeDiffBuilder
 
             case RenderTreeFrameType.NameForEventHandler:
                 {
-                    // TODO: Consider tracking here
+                    if (oldFrame.NamedEventHandlerEventHandlerIdField != newFrame.NamedEventHandlerEventHandlerIdField
+                        || !string.Equals(oldFrame.NamedEventHandlerEventTypeField, newFrame.NamedEventHandlerEventTypeField, StringComparison.Ordinal)
+                        || !string.Equals(oldFrame.NamedEventHandlerEventNameField, newFrame.NamedEventHandlerEventNameField, StringComparison.Ordinal))
+                    {
+                        // We could track the updates more efficiently, but this situation will be uncommon, so it's enough
+                        // to treat it as a delete+add
+                        diffContext.BatchBuilder.RemoveNamedEventHandler(oldFrame.NamedEventHandlerEventHandlerIdField);
+                        diffContext.BatchBuilder.AddNamedEventHandler(
+                            newFrame.NamedEventHandlerEventHandlerIdField,
+                            newFrame.NamedEventHandlerEventTypeField,
+                            newFrame.NamedEventHandlerEventNameField);
+                    }
+
                     break;
                 }
 
@@ -826,6 +838,11 @@ internal static class RenderTreeDiffBuilder
                     InitializeNewComponentReferenceCaptureFrame(ref diffContext, ref newFrame);
                     break;
                 }
+            case RenderTreeFrameType.NameForEventHandler:
+                {
+                    InitializeNewNameForEventHandlerFrame(ref diffContext, diffContext.NewTree, newFrameIndex);
+                    break;
+                }
             default:
                 throw new NotImplementedException($"Unexpected frame type during {nameof(InsertNewFrame)}: {newFrame.FrameTypeField}");
         }
@@ -869,6 +886,14 @@ internal static class RenderTreeDiffBuilder
             case RenderTreeFrameType.Markup:
                 {
                     diffContext.Edits.Append(RenderTreeEdit.RemoveFrame(diffContext.SiblingIndex));
+                    break;
+                }
+            case RenderTreeFrameType.NameForEventHandler:
+                {
+                    if (oldFrame.NamedEventHandlerEventHandlerIdField > 0)
+                    {
+                        diffContext.BatchBuilder.RemoveNamedEventHandler(oldFrame.NamedEventHandlerEventHandlerIdField);
+                    }
                     break;
                 }
             default:
@@ -925,6 +950,9 @@ internal static class RenderTreeDiffBuilder
                     break;
                 case RenderTreeFrameType.ComponentReferenceCapture:
                     InitializeNewComponentReferenceCaptureFrame(ref diffContext, ref frame);
+                    break;
+                case RenderTreeFrameType.NameForEventHandler:
+                    InitializeNewNameForEventHandlerFrame(ref diffContext, diffContext.NewTree, i);
                     break;
             }
         }
@@ -983,6 +1011,36 @@ internal static class RenderTreeDiffBuilder
         newFrame.ComponentReferenceCaptureActionField(componentInstance);
     }
 
+    private static void InitializeNewNameForEventHandlerFrame(ref DiffContext diffContext, RenderTreeFrame[] frames, int frameIndex)
+    {
+        ref var nameForEventHandlerFrame = ref frames[frameIndex];
+        ulong? foundEventHandlerId = default;
+        for (var i = frameIndex - 1; i >= 0; i--)
+        {
+            ref var candidate = ref frames[i];
+            if (candidate.FrameType == RenderTreeFrameType.Attribute
+                && candidate.AttributeEventHandlerId > 0
+                && string.Equals(candidate.AttributeName, nameForEventHandlerFrame.NamedEventHandlerEventType, StringComparison.Ordinal))
+            {
+                foundEventHandlerId = candidate.AttributeEventHandlerId;
+                break;
+            }
+            else if (candidate.FrameType == RenderTreeFrameType.Element)
+            {
+                break;
+            }
+        }
+
+        if (foundEventHandlerId.HasValue)
+        {
+            nameForEventHandlerFrame.NamedEventHandlerEventHandlerIdField = foundEventHandlerId.Value;
+            diffContext.BatchBuilder.AddNamedEventHandler(
+                foundEventHandlerId.Value,
+                nameForEventHandlerFrame.NamedEventHandlerEventType,
+                nameForEventHandlerFrame.NamedEventHandlerEventName);
+        }
+    }
+
     private static void DisposeFramesInRange(RenderBatchBuilder batchBuilder, RenderTreeFrame[] frames, int startIndex, int endIndexExcl)
     {
         for (var i = startIndex; i < endIndexExcl; i++)
@@ -995,6 +1053,10 @@ internal static class RenderTreeDiffBuilder
             else if (frame.FrameTypeField == RenderTreeFrameType.Attribute && frame.AttributeEventHandlerIdField > 0)
             {
                 batchBuilder.DisposedEventHandlerIds.Append(frame.AttributeEventHandlerIdField);
+            }
+            else if (frame.FrameTypeField == RenderTreeFrameType.NameForEventHandler && frame.NamedEventHandlerEventHandlerIdField > 0)
+            {
+                batchBuilder.RemoveNamedEventHandler(frame.NamedEventHandlerEventHandlerIdField);
             }
         }
     }

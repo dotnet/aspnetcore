@@ -286,8 +286,15 @@ public struct RenderTreeFrame
     // RenderTreeFrameType.NameForEventHandler
     // --------------------------------------------------------------------------------
 
+    [FieldOffset(8)] internal ulong NamedEventHandlerEventHandlerIdField;
     [FieldOffset(16)] internal string NamedEventHandlerEventTypeField;
     [FieldOffset(24)] internal string NamedEventHandlerEventNameField;
+
+    /// <summary>
+    /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.NameForEventHandler"/>,
+    /// gets the type of the event being named (for example, 'onsubmit'). Otherwise, the value is undefined.
+    /// </summary>
+    public ulong NamedEventHandlerEventHandlerId => NamedEventHandlerEventHandlerIdField;
 
     /// <summary>
     /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.NameForEventHandler"/>,
