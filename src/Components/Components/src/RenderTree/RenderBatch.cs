@@ -34,29 +34,29 @@ public readonly struct RenderBatch
     public ArrayRange<ulong> DisposedEventHandlerIDs { get; }
 
     /// <summary>
-    /// Gets the named values that were added, or null.
+    /// Gets the named events that were added, or null.
     /// </summary>
-    public ArrayRange<NamedValue>? AddedNamedValues { get; }
+    public ArrayRange<NamedEvent>? AddedNamedEvents { get; }
 
     /// <summary>
-    /// Gets the named values that were removed, or null.
+    /// Gets the named events that were removed, or null.
     /// </summary>
-    public ArrayRange<NamedValue>? RemovedNamedValues { get; }
+    public ArrayRange<NamedEvent>? RemovedNamedEvents { get; }
 
     internal RenderBatch(
         ArrayRange<RenderTreeDiff> updatedComponents,
         ArrayRange<RenderTreeFrame> referenceFrames,
         ArrayRange<int> disposedComponentIDs,
         ArrayRange<ulong> disposedEventHandlerIDs,
-        ArrayRange<NamedValue>? addedNamedValues,
-        ArrayRange<NamedValue>? removedNamedValues)
+        ArrayRange<NamedEvent>? addedNamedEvents,
+        ArrayRange<NamedEvent>? removedNamedEvents)
     {
         UpdatedComponents = updatedComponents;
         ReferenceFrames = referenceFrames;
         DisposedComponentIDs = disposedComponentIDs;
         DisposedEventHandlerIDs = disposedEventHandlerIDs;
-        AddedNamedValues = addedNamedValues;
-        RemovedNamedValues = removedNamedValues;
+        AddedNamedEvents = addedNamedEvents;
+        RemovedNamedEvents = removedNamedEvents;
     }
 }
 

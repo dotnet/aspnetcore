@@ -226,7 +226,7 @@ public sealed class RenderTreeBuilder : IDisposable
             // That should compile directly as a call to AddNamedValue.
             if (string.Equals(name, "@onsubmit:name", StringComparison.Ordinal) && _lastNonAttributeFrameType == RenderTreeFrameType.Element)
             {
-                AddNamedValue(sequence, "@onsubmit:name", value!);
+                AddNamedEvent(sequence, "onsubmit", value!);
             }
             else
             {
@@ -697,21 +697,24 @@ public sealed class RenderTreeBuilder : IDisposable
     }
 
     /// <summary>
-    /// Creates a name-value pair in the render tree.
+    /// Assigns a name to an event in the enclosing element.
     /// </summary>
     /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
-    /// <param name="name">A name.</param>
-    /// <param name="value">A value.</param>
-    public void AddNamedValue(int sequence, string name, object? value)
+    /// <param name="eventType">The event type, e.g., 'onsubmit'.</param>
+    /// <param name="assignedName">The application-assigned name.</param>
+    public void AddNamedEvent(int sequence, string eventType, string assignedName)
     {
-        // No reason why this couldn't be allowed for components too, but it's not a scenario we have currently
+        // Note that we could trivially extend this to a generic concept of "named values" that exist within the rendertree
+        // and are tracked when added, removed, or updated. Currently we don't need that generality, but if we ever do, we
+        // can replace RenderTreeFrameType.NamedEvent with RenderTreeFrameType.NamedValue and use it to implement named events.
+
         if (GetCurrentParentFrameType() != RenderTreeFrameType.Element)
         {
-            throw new InvalidOperationException($"Name-value frames may only be added as children of frames of type {RenderTreeFrameType.Element}");
+            throw new InvalidOperationException($"Named events may only be added as children of frames of type {RenderTreeFrameType.Element}");
         }
 
-        _entries.AppendNamedValue(sequence, name, value);
-        _lastNonAttributeFrameType = RenderTreeFrameType.NamedValue;
+        _entries.AppendNamedEvent(sequence, eventType, assignedName);
+        _lastNonAttributeFrameType = RenderTreeFrameType.NamedEvent;
     }
 
     /// <summary>

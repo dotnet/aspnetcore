@@ -29,22 +29,22 @@ Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddComponentParamete
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddComponentRenderMode(int sequence, Microsoft.AspNetCore.Components.IComponentRenderMode! renderMode) -> void
 *REMOVED*Microsoft.AspNetCore.Components.RouteData.RouteData(System.Type! pageType, System.Collections.Generic.IReadOnlyDictionary<string!, object!>! routeValues) -> void
 *REMOVED*Microsoft.AspNetCore.Components.RouteData.RouteValues.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>!
-Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddNamedValue(int sequence, string! name, object? value) -> void
+Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddNamedEvent(int sequence, string! eventType, string! assignedName) -> void
 Microsoft.AspNetCore.Components.RenderTree.ComponentFrameFlags
 Microsoft.AspNetCore.Components.RenderTree.ComponentFrameFlags.HasCallerSpecifiedRenderMode = 1 -> Microsoft.AspNetCore.Components.RenderTree.ComponentFrameFlags
-Microsoft.AspNetCore.Components.RenderTree.NamedValue
-Microsoft.AspNetCore.Components.RenderTree.NamedValue.ComponentId.get -> int
-Microsoft.AspNetCore.Components.RenderTree.NamedValue.FrameIndex.get -> int
-Microsoft.AspNetCore.Components.RenderTree.NamedValue.Name.get -> string!
-Microsoft.AspNetCore.Components.RenderTree.NamedValue.NamedValue() -> void
-Microsoft.AspNetCore.Components.RenderTree.NamedValue.NamedValue(int componentId, int frameIndex, string! name, object? value) -> void
-Microsoft.AspNetCore.Components.RenderTree.NamedValue.Value.get -> object?
-Microsoft.AspNetCore.Components.RenderTree.RenderBatch.AddedNamedValues.get -> Microsoft.AspNetCore.Components.RenderTree.ArrayRange<Microsoft.AspNetCore.Components.RenderTree.NamedValue>?
-Microsoft.AspNetCore.Components.RenderTree.RenderBatch.RemovedNamedValues.get -> Microsoft.AspNetCore.Components.RenderTree.ArrayRange<Microsoft.AspNetCore.Components.RenderTree.NamedValue>?
+Microsoft.AspNetCore.Components.RenderTree.NamedEvent
+Microsoft.AspNetCore.Components.RenderTree.NamedEvent.AssignedName.get -> string!
+Microsoft.AspNetCore.Components.RenderTree.NamedEvent.ComponentId.get -> int
+Microsoft.AspNetCore.Components.RenderTree.NamedEvent.EventType.get -> string!
+Microsoft.AspNetCore.Components.RenderTree.NamedEvent.FrameIndex.get -> int
+Microsoft.AspNetCore.Components.RenderTree.NamedEvent.NamedEvent() -> void
+Microsoft.AspNetCore.Components.RenderTree.NamedEvent.NamedEvent(int componentId, int frameIndex, string! eventType, string! assignedName) -> void
+Microsoft.AspNetCore.Components.RenderTree.RenderBatch.AddedNamedEvents.get -> Microsoft.AspNetCore.Components.RenderTree.ArrayRange<Microsoft.AspNetCore.Components.RenderTree.NamedEvent>?
+Microsoft.AspNetCore.Components.RenderTree.RenderBatch.RemovedNamedEvents.get -> Microsoft.AspNetCore.Components.RenderTree.ArrayRange<Microsoft.AspNetCore.Components.RenderTree.NamedEvent>?
 Microsoft.AspNetCore.Components.RenderTree.Renderer.GetCurrentRenderTreeFrames(int componentId, bool optional) -> Microsoft.AspNetCore.Components.RenderTree.ArrayRange<Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame>?
 Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.ComponentFrameFlags.get -> Microsoft.AspNetCore.Components.RenderTree.ComponentFrameFlags
 Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType.ComponentRenderMode = 9 -> Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType
-Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType.NamedValue = 10 -> Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType
+Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType.NamedEvent = 10 -> Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType
 Microsoft.AspNetCore.Components.RouteData.RouteData(System.Type! pageType, System.Collections.Generic.IReadOnlyDictionary<string!, object?>! routeValues) -> void
 Microsoft.AspNetCore.Components.RouteData.RouteValues.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object?>!
 Microsoft.AspNetCore.Components.Routing.IRoutingStateProvider
@@ -103,5 +103,5 @@ virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.CreateComponentState
 virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.DispatchEventAsync(ulong eventHandlerId, Microsoft.AspNetCore.Components.RenderTree.EventFieldInfo? fieldInfo, System.EventArgs! eventArgs, bool quiesce) -> System.Threading.Tasks.Task!
 virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.ResolveComponentForRenderMode(System.Type! componentType, int? parentComponentId, Microsoft.AspNetCore.Components.IComponentActivator! componentActivator, Microsoft.AspNetCore.Components.IComponentRenderMode! renderMode) -> Microsoft.AspNetCore.Components.IComponent!
 ~Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.ComponentRenderMode.get -> Microsoft.AspNetCore.Components.IComponentRenderMode
-~Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.NamedValueName.get -> string
-~Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.NamedValueValue.get -> object
+~Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.NamedEventAssignedName.get -> string
+~Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.NamedEventType.get -> string

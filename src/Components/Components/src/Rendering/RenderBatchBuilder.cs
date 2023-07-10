@@ -22,8 +22,8 @@ internal sealed class RenderBatchBuilder : IDisposable
     public ArrayBuilder<RenderTreeDiff> UpdatedComponentDiffs { get; } = new ArrayBuilder<RenderTreeDiff>();
     public ArrayBuilder<int> DisposedComponentIds { get; } = new ArrayBuilder<int>();
     public ArrayBuilder<ulong> DisposedEventHandlerIds { get; } = new ArrayBuilder<ulong>();
-    public ArrayBuilder<NamedValue>? AddedNamedValues;
-    public ArrayBuilder<NamedValue>? RemovedNamedValues;
+    public ArrayBuilder<NamedEvent>? AddedNamedEvents;
+    public ArrayBuilder<NamedEvent>? RemovedNamedEvents;
 
     // Buffers referenced by UpdatedComponentDiffs
     public ArrayBuilder<RenderTreeEdit> EditsBuffer { get; } = new ArrayBuilder<RenderTreeEdit>(64);
@@ -56,8 +56,8 @@ internal sealed class RenderBatchBuilder : IDisposable
         DisposedComponentIds.Clear();
         DisposedEventHandlerIds.Clear();
         AttributeDiffSet.Clear();
-        AddedNamedValues?.Clear();
-        RemovedNamedValues?.Clear();
+        AddedNamedEvents?.Clear();
+        RemovedNamedEvents?.Clear();
     }
 
     public RenderBatch ToBatch()
@@ -66,8 +66,8 @@ internal sealed class RenderBatchBuilder : IDisposable
             ReferenceFramesBuffer.ToRange(),
             DisposedComponentIds.ToRange(),
             DisposedEventHandlerIds.ToRange(),
-            AddedNamedValues?.ToRange(),
-            RemovedNamedValues?.ToRange());
+            AddedNamedEvents?.ToRange(),
+            RemovedNamedEvents?.ToRange());
 
     public void InvalidateParameterViews()
     {
@@ -85,16 +85,16 @@ internal sealed class RenderBatchBuilder : IDisposable
         }
     }
 
-    public void AddNamedValue(int componentId, int frameIndex, ref RenderTreeFrame frame)
+    public void AddNamedEvent(int componentId, int frameIndex, ref RenderTreeFrame frame)
     {
-        AddedNamedValues ??= new();
-        AddedNamedValues.Append(new NamedValue(componentId, frameIndex, frame.NamedValueNameField, frame.NamedValueValueField));
+        AddedNamedEvents ??= new();
+        AddedNamedEvents.Append(new NamedEvent(componentId, frameIndex, frame.NamedEventType, frame.NamedEventAssignedName));
     }
 
-    public void RemoveNamedValue(int componentId, int frameIndex, ref RenderTreeFrame frame)
+    public void RemoveNamedEvent(int componentId, int frameIndex, ref RenderTreeFrame frame)
     {
-        RemovedNamedValues ??= new();
-        RemovedNamedValues.Append(new NamedValue(componentId, frameIndex, frame.NamedValueNameField, frame.NamedValueValueField));
+        RemovedNamedEvents ??= new();
+        RemovedNamedEvents.Append(new NamedEvent(componentId, frameIndex, frame.NamedEventType, frame.NamedEventAssignedName));
     }
 
     public void Dispose()
@@ -104,7 +104,7 @@ internal sealed class RenderBatchBuilder : IDisposable
         UpdatedComponentDiffs.Dispose();
         DisposedComponentIds.Dispose();
         DisposedEventHandlerIds.Dispose();
-        AddedNamedValues?.Dispose();
-        RemovedNamedValues?.Dispose();
+        AddedNamedEvents?.Dispose();
+        RemovedNamedEvents?.Dispose();
     }
 }

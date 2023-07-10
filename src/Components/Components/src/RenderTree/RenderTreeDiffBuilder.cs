@@ -726,17 +726,17 @@ internal static class RenderTreeDiffBuilder
                     break;
                 }
 
-            case RenderTreeFrameType.NamedValue:
+            case RenderTreeFrameType.NamedEvent:
                 {
-                    // We don't have a use case for the names changing, so we don't even check that. We assume for a given sequence number
-                    // the name is always a constant. What can change is the frame index and the value.
+                    // We don't have a use case for the event types changing, so we don't even check that. We assume for a given sequence number
+                    // the event type is always a constant. What can change is the frame index and the assigned name.
                     if (oldFrameIndex != newFrameIndex
-                        || ChangeDetection.MayHaveChanged(oldFrame.NamedValueValueField, newFrame.NamedValueValueField))
+                        || !string.Equals(oldFrame.NamedEventAssignedName, newFrame.NamedEventAssignedName, StringComparison.Ordinal))
                     {
                         // We could track the updates as a concept in its own right, but this situation will be uncommon,
                         // so it's enough to treat it as a delete+add
-                        diffContext.BatchBuilder.RemoveNamedValue(diffContext.ComponentId, oldFrameIndex, ref oldFrame);
-                        diffContext.BatchBuilder.AddNamedValue(diffContext.ComponentId, newFrameIndex, ref newFrame);
+                        diffContext.BatchBuilder.RemoveNamedEvent(diffContext.ComponentId, oldFrameIndex, ref oldFrame);
+                        diffContext.BatchBuilder.AddNamedEvent(diffContext.ComponentId, newFrameIndex, ref newFrame);
                     }
 
                     break;
@@ -837,9 +837,9 @@ internal static class RenderTreeDiffBuilder
                     InitializeNewComponentReferenceCaptureFrame(ref diffContext, ref newFrame);
                     break;
                 }
-            case RenderTreeFrameType.NamedValue:
+            case RenderTreeFrameType.NamedEvent:
                 {
-                    InitializeNewNamedValue(ref diffContext, newFrameIndex);
+                    InitializeNewNamedEvent(ref diffContext, newFrameIndex);
                     break;
                 }
             default:
@@ -887,9 +887,9 @@ internal static class RenderTreeDiffBuilder
                     diffContext.Edits.Append(RenderTreeEdit.RemoveFrame(diffContext.SiblingIndex));
                     break;
                 }
-            case RenderTreeFrameType.NamedValue:
+            case RenderTreeFrameType.NamedEvent:
                 {
-                    diffContext.BatchBuilder.RemoveNamedValue(diffContext.ComponentId, oldFrameIndex, ref diffContext.OldTree[oldFrameIndex]);
+                    diffContext.BatchBuilder.RemoveNamedEvent(diffContext.ComponentId, oldFrameIndex, ref diffContext.OldTree[oldFrameIndex]);
                     break;
                 }
             default:
@@ -947,8 +947,8 @@ internal static class RenderTreeDiffBuilder
                 case RenderTreeFrameType.ComponentReferenceCapture:
                     InitializeNewComponentReferenceCaptureFrame(ref diffContext, ref frame);
                     break;
-                case RenderTreeFrameType.NamedValue:
-                    InitializeNewNamedValue(ref diffContext, i);
+                case RenderTreeFrameType.NamedEvent:
+                    InitializeNewNamedEvent(ref diffContext, i);
                     break;
             }
         }
@@ -1007,9 +1007,9 @@ internal static class RenderTreeDiffBuilder
         newFrame.ComponentReferenceCaptureActionField(componentInstance);
     }
 
-    private static void InitializeNewNamedValue(ref DiffContext diffContext, int newTreeFrameIndex)
+    private static void InitializeNewNamedEvent(ref DiffContext diffContext, int newTreeFrameIndex)
     {
-        diffContext.BatchBuilder.AddNamedValue(diffContext.ComponentId, newTreeFrameIndex, ref diffContext.NewTree[newTreeFrameIndex]);
+        diffContext.BatchBuilder.AddNamedEvent(diffContext.ComponentId, newTreeFrameIndex, ref diffContext.NewTree[newTreeFrameIndex]);
     }
 
     private static void DisposeFramesInRange(RenderBatchBuilder batchBuilder, int componentId, RenderTreeFrame[] frames, int startIndex, int endIndexExcl)
@@ -1025,9 +1025,9 @@ internal static class RenderTreeDiffBuilder
             {
                 batchBuilder.DisposedEventHandlerIds.Append(frame.AttributeEventHandlerIdField);
             }
-            else if (frame.FrameTypeField == RenderTreeFrameType.NamedValue)
+            else if (frame.FrameTypeField == RenderTreeFrameType.NamedEvent)
             {
-                batchBuilder.RemoveNamedValue(componentId, i, ref frames[i]);
+                batchBuilder.RemoveNamedEvent(componentId, i, ref frames[i]);
             }
         }
     }

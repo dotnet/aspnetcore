@@ -150,7 +150,7 @@ internal sealed class RenderTreeFrameArrayBuilder : ArrayBuilder<RenderTreeFrame
         };
     }
 
-    public void AppendNamedValue(int sequence, string name, object? value)
+    public void AppendNamedEvent(int sequence, string eventType, string assignedName)
     {
         if (_itemsInUse == _items.Length)
         {
@@ -160,9 +160,9 @@ internal sealed class RenderTreeFrameArrayBuilder : ArrayBuilder<RenderTreeFrame
         _items[_itemsInUse++] = new RenderTreeFrame
         {
             SequenceField = sequence,
-            FrameTypeField = RenderTreeFrameType.NamedValue,
-            NamedValueNameField = name,
-            NamedValueValueField = value,
+            FrameTypeField = RenderTreeFrameType.NamedEvent,
+            NamedEventTypeField = eventType,
+            NamedEventAssignedNameField = assignedName,
         };
     }
 }

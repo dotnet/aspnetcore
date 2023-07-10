@@ -283,23 +283,23 @@ public struct RenderTreeFrame
     }
 
     // --------------------------------------------------------------------------------
-    // RenderTreeFrameType.NamedValue
+    // RenderTreeFrameType.NamedEvent
     // --------------------------------------------------------------------------------
 
-    [FieldOffset(16)] internal string NamedValueNameField;
-    [FieldOffset(24)] internal object NamedValueValueField;
+    [FieldOffset(16)] internal string NamedEventTypeField;
+    [FieldOffset(24)] internal string NamedEventAssignedNameField;
 
     /// <summary>
-    /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.NamedValue"/>,
-    /// gets the name from the name-value pair. Otherwise, the value is undefined.
+    /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.NamedEvent"/>,
+    /// gets the event type. Otherwise, the value is undefined.
     /// </summary>
-    public string NamedValueName => NamedValueNameField;
+    public string NamedEventType => NamedEventTypeField;
 
     /// <summary>
-    /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.NamedValue"/>,
-    /// gets the value from the name-value pair. Otherwise, the value is undefined.
+    /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.NamedEvent"/>,
+    /// gets the assigned name. Otherwise, the value is undefined.
     /// </summary>
-    public object NamedValueValue => NamedValueValueField;
+    public string NamedEventAssignedName => NamedEventAssignedNameField;
 
     // Element constructor
     private RenderTreeFrame(int sequence, int elementSubtreeLength, string elementName, object elementKey)
