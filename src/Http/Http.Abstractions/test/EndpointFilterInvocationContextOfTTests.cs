@@ -60,8 +60,10 @@ public class EndpointFilterInvocationContextOfTTests
     public void HandlesIListReadOperations()
     {
         var context = new EndpointFilterInvocationContext<int?, string, int, bool>(new DefaultHttpContext(), (int?)null, "This is a test", 42, false);
+#pragma warning disable xUnit2017 // Do not use Contains() to check if a value exists in a collection
         Assert.True(context.Contains("This is a test"));
         Assert.False(context.Contains("This does not exist"));
+#pragma warning restore xUnit2017 // Do not use Contains() to check if a value exists in a collection
         Assert.Equal(2, context.IndexOf(42));
         Assert.Equal(-1, context.IndexOf(21));
     }
