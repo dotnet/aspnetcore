@@ -30,7 +30,7 @@ todosApi.MapGet("/{id}", (int id) =>
 
 app.Run();
 
-public record Todo(int id, string? title, DateOnly? dueBy = null, bool isComplete = false);
+public record Todo(int Id, string? Title, DateOnly? DueBy = null, bool IsComplete = false);
 
 #if (NativeAot)
 [JsonSerializable(typeof(Todo[]))]
