@@ -37,11 +37,12 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrerenderer
 {
     private readonly IServiceProvider _services;
+    private readonly Dictionary<ulong, string> _namedEventsByEventHandlerId = new();
+    private readonly Dictionary<string, ulong> _namedEventsByEventHandlerName = new(StringComparer.Ordinal);
+
     private Task? _servicesInitializedTask;
 
     private HttpContext _httpContext = default!; // Always set at the start of an inbound call
-    private string? _formHandler;
-    private NamedEvent _capturedNamedEvent;
 
     // The underlying Renderer always tracks the pending tasks representing *full* quiescence, i.e.,
     // when everything (regardless of streaming SSR) is fully complete. In this subclass we also track
@@ -106,23 +107,23 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         }
     }
 
-    internal void SetFormHandlerName(string name)
+    internal Task DispatchSubmitEventAsync(string? handlerName)
     {
-        _formHandler = name;
-    }
-
-    internal bool HasCapturedEvent() => _capturedNamedEvent != default;
-
-    internal Task DispatchCapturedEvent()
-    {
-        if (_capturedNamedEvent == default)
+        if (string.IsNullOrEmpty(handlerName))
         {
-            throw new InvalidOperationException($"No named event handler was captured for '{_formHandler}'.");
+            // Currently this also happens if you forget to add the hidden field, but soon we'll do that automatically, so the
+            // message is designed around that.
+            throw new InvalidOperationException($"Cannot dispatch the POST request to the Razor Component endpoint, because the POST data does not specify which form is being submitted. To fix this, ensure form elements have an @onsubmit:name attribute with any unique value, or pass a Name parameter if using EditForm.");
         }
 
-        // We no longer need to track the form handler, as we already captured the event.
-        _formHandler = null;
-        return DispatchEventAsync(_capturedNamedEvent.EventHandlerId, null, EventArgs.Empty, quiesce: true);
+        if (!_namedEventsByEventHandlerName.TryGetValue(handlerName, out var eventHandlerId))
+        {
+            // This might only be possible if you deploy an app update and someone tries to submit
+            // an old version of a form, and your new app no longer has a matching name
+            throw new InvalidOperationException($"Cannot submit the form '{handlerName}' because no submit handler was found. Ensure forms have a unique @onsubmit:name attribute, or pass the Name parameter if using EditForm.");
+        }
+
+        return DispatchEventAsync(eventHandlerId, null, EventArgs.Empty, quiesce: true);
     }
 
     private static string GenerateComponentPath(ComponentState state)
@@ -168,6 +169,8 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
 
     protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
     {
+        UpdateNamedEventCapture(in renderBatch);
+
         if (_streamingUpdatesWriter is { } writer)
         {
             SendBatchAsStreamingUpdate(renderBatch, writer);
@@ -184,6 +187,83 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         {
             await writerToFlush.FlushAsync();
             await completion;
+        }
+    }
+
+    private void UpdateNamedEventCapture(in RenderBatch renderBatch)
+    {
+        // Remove disposed ones
+        var disposedEventHandlerCount = renderBatch.DisposedEventHandlerIDs.Count;
+        var disposedEventHandlerArray = renderBatch.DisposedEventHandlerIDs.Array;
+        for (var i = 0; i < disposedEventHandlerCount; i++)
+        {
+            var id = disposedEventHandlerArray[i];
+            if (_namedEventsByEventHandlerId.Remove(id, out var name))
+            {
+                _namedEventsByEventHandlerName.Remove(name);
+            }
+        }
+
+        // Find and add new ones
+        // TODO: Instead of scanning the current rendertree for each updated component,
+        // we could observe the frames during diffing and track them as some separate
+        // feature of the batch
+        var updatedComponentCount = renderBatch.UpdatedComponents.Count;
+        var updatedComponentArray = renderBatch.UpdatedComponents.Array;
+        for (var i = 0; i < updatedComponentCount; i++)
+        {
+            // TODO: Bear in mind that a given component may occur multiple times in this list
+            // based on how many times it was updated. Would be better if the names were tracked
+            // within individual edits/diffs so you only considered the changes once.
+            ref var updatedComponent = ref updatedComponentArray[i];
+            var currentFrames = GetCurrentRenderTreeFrames(updatedComponent.ComponentId, optional: true);
+            if (!currentFrames.HasValue)
+            {
+                continue;
+            }
+
+            var currentFramesCount = currentFrames.Value.Count;
+            var currentFramesArray = currentFrames.Value.Array;
+            for (var frameIndex = 0; frameIndex < currentFramesCount; frameIndex++)
+            {
+                // TODO: Would MemoryExtensions.IndexOf help?
+                ref var frame = ref currentFramesArray[frameIndex];
+                if (frame.FrameType == RenderTreeFrameType.NameForEventHandler)
+                {
+                    // Find the enclosing matching event
+                    ulong? foundEventHandlerId = default;
+                    for (var scanIndex = frameIndex - 1; scanIndex >= 0; scanIndex--)
+                    {
+                        ref var scanFrame = ref currentFramesArray[scanIndex];
+                        if (scanFrame.FrameType == RenderTreeFrameType.Element)
+                        {
+                            break;
+                        }
+                        else if (scanFrame.FrameType == RenderTreeFrameType.Attribute
+                            && scanFrame.AttributeEventHandlerId != default
+                            && string.Equals(scanFrame.AttributeName, frame.NamedEventHandlerEventType, StringComparison.Ordinal))
+                        {
+                            foundEventHandlerId = scanFrame.AttributeEventHandlerId;
+                            break;
+                        }
+                    }
+
+                    if (foundEventHandlerId.HasValue)
+                    {
+                        // This is not right as it will fail if the component renders multiple times and tries
+                        // to change the event handler ID. Need to track at the point we assign event handler IDs.
+                        if (_namedEventsByEventHandlerId.TryAdd(foundEventHandlerId.Value, frame.NamedEventHandlerEventName))
+                        {
+                            _namedEventsByEventHandlerName.Add(frame.NamedEventHandlerEventName, foundEventHandlerId.Value);
+                        }
+                        else if (_namedEventsByEventHandlerName.TryGetValue(frame.NamedEventHandlerEventName, out var existingId)
+                            && existingId != foundEventHandlerId.Value)
+                        {
+                            throw new InvalidOperationException($"There is more than one named event with the name '{frame.NamedEventHandlerEventName}'. Ensure named events have unique names.");
+                        }
+                    }
+                }
+            }
         }
     }
 

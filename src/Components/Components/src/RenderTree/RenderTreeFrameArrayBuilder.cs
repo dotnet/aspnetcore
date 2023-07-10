@@ -162,7 +162,7 @@ internal sealed class RenderTreeFrameArrayBuilder : ArrayBuilder<RenderTreeFrame
             SequenceField = sequence,
             FrameTypeField = RenderTreeFrameType.NameForEventHandler,
             NamedEventHandlerEventTypeField = eventType,
-            AttributeEventUpdatesAttributeNameField = eventName,
+            NamedEventHandlerEventNameField = eventName,
         };
     }
 }

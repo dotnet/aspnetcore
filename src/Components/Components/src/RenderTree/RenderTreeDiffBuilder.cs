@@ -725,6 +725,12 @@ internal static class RenderTreeDiffBuilder
                     break;
                 }
 
+            case RenderTreeFrameType.NameForEventHandler:
+                {
+                    // TODO: Consider tracking here
+                    break;
+                }
+
             // We don't handle attributes here, they have their own diff logic.
             // See AppendDiffEntriesForAttributeFrame
             default:

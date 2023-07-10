@@ -202,6 +202,15 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     protected ArrayRange<RenderTreeFrame> GetCurrentRenderTreeFrames(int componentId) => GetRequiredComponentState(componentId).CurrentRenderTree.GetFrames();
 
     /// <summary>
+    /// Gets the current render tree for a given component.
+    /// </summary>
+    /// <param name="componentId">The id for the component.</param>
+    /// <param name="optional">A flag to indicate whether the lookup is required to succeed. If false, disposed or nonexisting component IDs will return a null result.</param>
+    /// <returns>The <see cref="RenderTreeBuilder"/> representing the current render tree.</returns>
+    protected ArrayRange<RenderTreeFrame>? GetCurrentRenderTreeFrames(int componentId, bool optional)
+        => (optional ? GetOptionalComponentState(componentId) : GetRequiredComponentState(componentId))?.CurrentRenderTree.GetFrames();
+
+    /// <summary>
     /// Performs the first render for a root component, waiting for this component and all
     /// children components to finish rendering in case there is any asynchronous work being
     /// done by any of the components. After this, the root component
