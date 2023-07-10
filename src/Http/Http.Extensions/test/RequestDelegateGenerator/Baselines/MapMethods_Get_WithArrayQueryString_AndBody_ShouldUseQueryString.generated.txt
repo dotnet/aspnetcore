@@ -54,12 +54,7 @@ namespace Microsoft.AspNetCore.Http.Generated
     %GENERATEDCODEATTRIBUTE%
     file static class GeneratedRouteBuilderExtensionsCore
     {
-        private static readonly string[] GetVerb = new[] { Microsoft.AspNetCore.Http.HttpMethods.Get };
-        private static readonly string[] PostVerb = new[] { Microsoft.AspNetCore.Http.HttpMethods.Post };
-        private static readonly string[] PutVerb = new[]  { Microsoft.AspNetCore.Http.HttpMethods.Put };
-        private static readonly string[] DeleteVerb = new[] { Microsoft.AspNetCore.Http.HttpMethods.Delete };
-        private static readonly string[] PatchVerb = new[] { Microsoft.AspNetCore.Http.HttpMethods.Patch };
-
+        
         [InterceptsLocation(@"TestMapActions.cs", 25, 13)]
         internal static RouteHandlerBuilder MapMethods0(
             this IEndpointRouteBuilder endpoints,

@@ -44,22 +44,6 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void CanDispatchToTheDefaultFormWithBody(bool suppressEnhancedNavigation)
-    {
-        var dispatchToForm = new DispatchToForm(this)
-        {
-            Url = "forms/default-form-with-body",
-            FormCssSelector = "form",
-            InputFieldValue = "stranger",
-            ExpectedActionValue = null,
-            SuppressEnhancedNavigation = suppressEnhancedNavigation,
-        };
-        DispatchToFormCore(dispatchToForm);
-    }
-
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
     public void CanBindParameterToTheDefaultForm(bool suppressEnhancedNavigation)
     {
         var dispatchToForm = new DispatchToForm(this)

@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Components.Binding;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Moq;
@@ -357,65 +356,7 @@ public class CascadingParameterStateTest
             });
     }
 
-    [Fact]
-    public void FindCascadingParameters_HandlesSupplyParameterFromFormValues()
-    {
-        // Arrange
-        var provider = new TestCascadingFormModelBindingProvider
-        {
-            FormName = "",
-            CurrentValue = "some value",
-        };
-        var cascadingModelBinder = new CascadingModelBinder
-        {
-            ModelBindingProviders = new[] { provider },
-            Navigation = Mock.Of<NavigationManager>(),
-            Name = ""
-        };
-
-        cascadingModelBinder.UpdateBindingInformation("https://localhost/");
-
-        var states = CreateAncestry(
-            cascadingModelBinder,
-            new FormParametersComponent());
-
-        // Act
-        var result = CascadingParameterState.FindCascadingParameters(states.Last());
-
-        // Assert
-        var supplier = Assert.Single(result);
-        Assert.Equal(cascadingModelBinder, supplier.ValueSupplier);
-    }
-
-    [Fact]
-    public void FindCascadingParameters_HandlesSupplyParameterFromFormValues_WithName()
-    {
-        // Arrange
-        var provider = new TestCascadingFormModelBindingProvider
-        {
-            FormName = "some-name",
-            CurrentValue = "some value",
-        };
-        var cascadingModelBinder = new CascadingModelBinder
-        {
-            ModelBindingProviders = new[] { provider },
-            Navigation = new TestNavigationManager(),
-            Name = "some-name"
-        };
-
-        cascadingModelBinder.UpdateBindingInformation("https://localhost/");
-
-        var states = CreateAncestry(
-            cascadingModelBinder,
-            new FormParametersComponentWithName());
-
-        // Act
-        var result = CascadingParameterState.FindCascadingParameters(states.Last());
-
-        // Assert
-        var supplier = Assert.Single(result);
-        Assert.Equal(cascadingModelBinder, supplier.ValueSupplier);
-    }
+    
 
     static ComponentState[] CreateAncestry(params IComponent[] components)
     {
@@ -459,16 +400,6 @@ public class CascadingParameterStateTest
 
     class ComponentWithNoParams : TestComponentBase
     {
-    }
-
-    class FormParametersComponent : TestComponentBase
-    {
-        [SupplyParameterFromForm] public string FormParameter { get; set; }
-    }
-
-    class FormParametersComponentWithName : TestComponentBase
-    {
-        [SupplyParameterFromForm(Handler = "some-name")] public string FormParameter { get; set; }
     }
 
     class ComponentWithNoCascadingParams : TestComponentBase
@@ -515,27 +446,6 @@ public class CascadingParameterStateTest
     class CascadingValueTypeBaseClass { }
     class CascadingValueTypeDerivedClass : CascadingValueTypeBaseClass, ICascadingValueTypeDerivedClassInterface { }
     interface ICascadingValueTypeDerivedClassInterface { }
-
-    private class TestCascadingFormModelBindingProvider : CascadingModelBindingProvider
-    {
-        public required string FormName { get; init; }
-
-        public required string CurrentValue { get; init; }
-
-        protected internal override bool AreValuesFixed => true;
-
-        protected internal override bool CanSupplyValue(ModelBindingContext bindingContext, in CascadingParameterInfo parameterInfo)
-            => string.Equals(bindingContext.Name, FormName, StringComparison.Ordinal);
-
-        protected internal override object GetCurrentValue(ModelBindingContext bindingContext, in CascadingParameterInfo parameterInfo)
-            => CurrentValue;
-
-        protected internal override bool SupportsCascadingParameterAttributeType(Type attributeType)
-            => attributeType == typeof(SupplyParameterFromFormAttribute);
-
-        protected internal override bool SupportsParameterType(Type parameterType)
-            => parameterType == typeof(string);
-    }
 
     class TestNavigationManager : NavigationManager
     {

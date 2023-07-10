@@ -1,8 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Http.Metadata;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http;
@@ -10,6 +12,7 @@ namespace Microsoft.AspNetCore.Http;
 /// <summary>
 /// Specifies the type of the value and status code returned by the action.
 /// </summary>
+[DebuggerDisplay("{ToString(),nq}")]
 public sealed class ProducesResponseTypeMetadata : IProducesResponseTypeMetadata
 {
     /// <summary>
@@ -20,12 +23,12 @@ public sealed class ProducesResponseTypeMetadata : IProducesResponseTypeMetadata
     /// <param name="contentTypes">Content types supported by the response.</param>
     public ProducesResponseTypeMetadata(int statusCode, Type? type = null, string[]? contentTypes = null)
     {
-        this.StatusCode = statusCode;
-        this.Type = type;
+        StatusCode = statusCode;
+        Type = type;
 
         if (contentTypes is null || contentTypes.Length == 0)
         {
-            this.ContentTypes = Enumerable.Empty<string>();
+            ContentTypes = Enumerable.Empty<string>();
         }
         else
         {
@@ -35,7 +38,7 @@ public sealed class ProducesResponseTypeMetadata : IProducesResponseTypeMetadata
                 ValidateContentType(contentTypes[i]);
             }
 
-            this.ContentTypes = contentTypes;
+            ContentTypes = contentTypes;
         }
 
         static void ValidateContentType(string type)
@@ -69,6 +72,12 @@ public sealed class ProducesResponseTypeMetadata : IProducesResponseTypeMetadata
     /// Gets or sets the content types associated with the response.
     /// </summary>
     public IEnumerable<string> ContentTypes { get; private set; }
+
+    /// <inheritdoc/>>
+    public override string ToString()
+    {
+        return DebuggerHelpers.GetDebugText(nameof(StatusCode), StatusCode, nameof(ContentTypes), ContentTypes, nameof(Type), Type, includeNullValues: false, prefix: "Produces");
+    }
 
     internal static ProducesResponseTypeMetadata CreateUnvalidated(Type? type, int statusCode, IEnumerable<string> contentTypes) => new(statusCode, type, contentTypes);
 }

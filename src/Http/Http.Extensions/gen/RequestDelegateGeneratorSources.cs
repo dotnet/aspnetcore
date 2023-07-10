@@ -1,6 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+using System.Collections.Immutable;
+using System.Linq;
+using System.Text;
 using Microsoft.CodeAnalysis.CSharp;
 namespace Microsoft.AspNetCore.Http.RequestDelegateGenerator;
 
@@ -437,7 +441,7 @@ internal static class RequestDelegateGeneratorSources
     }
 """;
 
-    public static string GetGeneratedRouteBuilderExtensionsSource(string endpoints, string helperMethods, string helperTypes) => $$"""
+    public static string GetGeneratedRouteBuilderExtensionsSource(string endpoints, string helperMethods, string helperTypes, ImmutableHashSet<string> verbs) => $$"""
 {{SourceHeader}}
 
 namespace System.Runtime.CompilerServices
@@ -486,12 +490,7 @@ namespace Microsoft.AspNetCore.Http.Generated
     {{GeneratedCodeAttribute}}
     file static class GeneratedRouteBuilderExtensionsCore
     {
-        private static readonly string[] GetVerb = new[] { Microsoft.AspNetCore.Http.HttpMethods.Get };
-        private static readonly string[] PostVerb = new[] { Microsoft.AspNetCore.Http.HttpMethods.Post };
-        private static readonly string[] PutVerb = new[]  { Microsoft.AspNetCore.Http.HttpMethods.Put };
-        private static readonly string[] DeleteVerb = new[] { Microsoft.AspNetCore.Http.HttpMethods.Delete };
-        private static readonly string[] PatchVerb = new[] { Microsoft.AspNetCore.Http.HttpMethods.Patch };
-
+        {{GetVerbs(verbs)}}
         {{endpoints}}
 
         internal static RouteHandlerBuilder MapCore(
@@ -571,4 +570,16 @@ namespace Microsoft.AspNetCore.Http.Generated
 {{LogOrThrowExceptionHelperClass}}
 }
 """;
+
+    public static string GetVerbs(ImmutableHashSet<string> verbs)
+    {
+        var builder = new StringBuilder();
+
+        foreach (string verb in verbs.OrderBy(p => p, StringComparer.Ordinal))
+        {
+            builder.AppendLine($$"""private static readonly string[] {{verb}}Verb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.{{verb}} };""");
+        }
+
+        return builder.ToString();
+    }
 }
