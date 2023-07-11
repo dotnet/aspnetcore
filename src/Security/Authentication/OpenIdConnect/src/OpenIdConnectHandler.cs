@@ -656,8 +656,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
                 {
                     var tokenValidationResult = await ValidateTokenUsingHandlerAsync(authorizationResponse.IdToken, properties, validationParameters);
                     user = new ClaimsPrincipal(tokenValidationResult.ClaimsIdentity);
-                    // todo: need to use converter in 7x branch here
-                    jwt = new JwtSecurityToken();
+                    jwt = JwtSecurityTokenConverter.Convert(tokenValidationResult.SecurityToken as JsonWebToken);
                 }
                 else
                 {
@@ -737,8 +736,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
                 {
                     var tokenValidationResult = await ValidateTokenUsingHandlerAsync(tokenEndpointResponse.IdToken, properties, validationParameters);
                     tokenEndpointUser = new ClaimsPrincipal(tokenValidationResult.ClaimsIdentity);
-                    // TODO: need to use converter to create jwt
-                    tokenEndpointJwt = new JwtSecurityToken();
+                    tokenEndpointJwt = JwtSecurityTokenConverter.Convert(tokenValidationResult.SecurityToken as JsonWebToken);
                 }
                 else
                 {
@@ -1323,7 +1321,11 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
     // Note this modifies properties if Options.UseTokenLifetime
     private async Task<TokenValidationResult> ValidateTokenUsingHandlerAsync(string idToken, AuthenticationProperties properties, TokenValidationParameters validationParameters)
     {
-        if (_configuration != null)
+        if (Options.ConfigurationManager is BaseConfigurationManager baseConfigurationManager)
+        {
+            validationParameters.ConfigurationManager = baseConfigurationManager;
+        }
+        else if (_configuration != null)
         {
             var issuer = new[] { _configuration.Issuer };
             validationParameters.ValidIssuers = validationParameters.ValidIssuers?.Concat(issuer) ?? issuer;
