@@ -839,7 +839,7 @@ public class EndpointHtmlRendererTest
         var componentId = renderer.TestAssignRootComponentId(component);
 
         var exception = Assert.Throws<InvalidOperationException>(component.TriggerRender);
-        Assert.Equal(expectedError, exception.Message.ReplaceLineEndings());
+        Assert.Equal(expectedError.ReplaceLineEndings(), exception.Message.ReplaceLineEndings());
     }
 
     [Fact]
