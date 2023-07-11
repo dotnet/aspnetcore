@@ -241,20 +241,6 @@ public static class WebHost
         ConfigureWebDefaultsWorker(builder.UseKestrelCore().ConfigureKestrel(ConfigureKestrel), configureRouting: null);
     }
 
-    internal static void ConfigureWebDefaultsEmpty(IWebHostBuilder builder)
-    {
-        // Note this doesn't configure any server - Kestrel or otherwise.
-        // It also doesn't register HostFiltering or ForwardedHeaders.
-        // It is "empty" and up to the caller to configure these services.
-
-        builder.ConfigureServices((hostingContext, services) =>
-        {
-            // Routing services need to be registered in order for WebApplication to
-            // implement IEndpointRouteBuilder (i.e. MapGet, etc) correctly.
-            services.AddRoutingCore();
-        });
-    }
-
     private static void ConfigureKestrel(WebHostBuilderContext builderContext, KestrelServerOptions options)
     {
         options.Configure(builderContext.Configuration.GetSection("Kestrel"), reloadOnChange: true);

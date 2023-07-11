@@ -185,7 +185,9 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
         bootstrapHostBuilder.ConfigureSlimWebHost(
             webHostBuilder =>
             {
-                AspNetCore.WebHost.ConfigureWebDefaultsEmpty(webHostBuilder);
+                // Note this doesn't configure any WebHost server - Kestrel or otherwise.
+                // It also doesn't register Routing, HostFiltering, or ForwardedHeaders.
+                // It is "empty" and up to the caller to configure these services.
 
                 // Runs inline.
                 webHostBuilder.Configure((context, app) => ConfigureApplication(context, app, allowDeveloperExceptionPage: false));

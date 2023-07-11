@@ -50,7 +50,8 @@ public class WebApplicationTests
     private static WebApplicationBuilder CreateEmptyBuilder()
     {
         var builder = WebApplication.CreateEmptyBuilder(new());
-        // CreateEmptyBuilder doesn't register an IServer.
+        // CreateEmptyBuilder doesn't register an IServer or Routing.
+        builder.Services.AddRoutingCore();
         builder.WebHost.UseKestrelCore();
         return builder;
     }
@@ -79,7 +80,8 @@ public class WebApplicationTests
     private static WebApplicationBuilder CreateEmptyBuilderArgs(string[] args)
     {
         var builder = WebApplication.CreateEmptyBuilder(new() { Args = args });
-        // CreateEmptyBuilder doesn't register an IServer.
+        // CreateEmptyBuilder doesn't register an IServer or Routing.
+        builder.Services.AddRoutingCore();
         builder.WebHost.UseKestrelCore();
         return builder;
     }
@@ -108,7 +110,8 @@ public class WebApplicationTests
     private static WebApplicationBuilder CreateEmptyBuilderOptions(WebApplicationOptions options)
     {
         var builder = WebApplication.CreateEmptyBuilder(options);
-        // CreateEmptyBuilder doesn't register an IServer.
+        // CreateEmptyBuilder doesn't register an IServer or Routing.
+        builder.Services.AddRoutingCore();
         builder.WebHost.UseKestrelCore();
         return builder;
     }
@@ -1768,12 +1771,12 @@ public class WebApplicationTests
         var builder = WebApplication.CreateEmptyBuilder(new());
 
         Assert.Empty(builder.Services.Where(descriptor => descriptor.ServiceType == typeof(IConfigureOptions<LoggerFactoryOptions>)));
-        Assert.Empty(builder.Services.Where(descriptor => descriptor.ServiceType == typeof(IServer)));
         Assert.Empty(builder.Services.Where(descriptor => descriptor.ServiceType == typeof(IOptionsChangeTokenSource<HostFilteringOptions>)));
+        Assert.Empty(builder.Services.Where(descriptor => descriptor.ServiceType == typeof(IServer)));
+        Assert.Empty(builder.Services.Where(descriptor => descriptor.ServiceType == typeof(EndpointDataSource)));
 
         // These services are still necessary
         Assert.Single(builder.Services.Where(descriptor => descriptor.ServiceType == typeof(IWebHostEnvironment)));
-        Assert.Single(builder.Services.Where(descriptor => descriptor.ServiceType == typeof(EndpointDataSource)));
     }
 
     [Theory]
