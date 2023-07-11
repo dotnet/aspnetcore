@@ -135,26 +135,20 @@ public class EditForm : ComponentBase
 
         if (BindingContext != null)
         {
-            // This is clearly not right but will be removed shortly anyway
-            var action = !string.IsNullOrEmpty(BindingContext.MappingContextId)
-                ? CombineStrings(BindingContext.MappingContextId, FormHandlerName)
-                : !string.IsNullOrEmpty(FormHandlerName) ? TempNav!.ToBaseRelativePath(TempNav!.GetUriWithQueryParameter("handler", FormHandlerName)) : null;
-            if (!string.IsNullOrEmpty(action))
-            {
-                builder.AddAttribute(1, "action", action);
-            }
-
+            // TODO: Remove bindingcontext.id concept
             builder.AddAttribute(2, "method", "post");
         }
 
         builder.AddMultipleAttributes(3, AdditionalAttributes);
         builder.AddAttribute(4, "onsubmit", _handleSubmitDelegate);
 
+        // In SSR cases, we register onsubmit as a named event and emit other child elements
+        // to include the handler and antiforgery token in the post data
         if (BindingContext != null)
         {
-            var submitEventName = CombineStrings(BindingContext.Name, FormHandlerName);
-            builder.AddNamedEvent(5, "onsubmit", submitEventName ?? string.Empty);
-            RenderSSRFormHandlingChildren(builder, 6);
+            var submitEventName = CombineStrings(BindingContext.Name, FormHandlerName) ?? string.Empty;
+            builder.AddNamedEvent(5, "onsubmit", submitEventName);
+            RenderSSRFormHandlingChildren(builder, 6, submitEventName);
         }
 
         builder.OpenComponent<CascadingValue<EditContext>>(7);
@@ -171,7 +165,7 @@ public class EditForm : ComponentBase
     private static string? CombineStrings(string? a, string? b)
         => string.IsNullOrEmpty(a) ? b : string.IsNullOrEmpty(b) ? a : $"{a}.{b}";
 
-    private void RenderSSRFormHandlingChildren(RenderTreeBuilder builder, int sequence)
+    private void RenderSSRFormHandlingChildren(RenderTreeBuilder builder, int sequence, string submitEventName)
     {
         builder.OpenRegion(sequence);
 
@@ -181,6 +175,12 @@ public class EditForm : ComponentBase
 
         builder.OpenComponent<AntiforgeryToken>(3);
         builder.CloseComponent();
+
+        builder.OpenElement(4, "input");
+        builder.AddAttribute(5, "type", "hidden");
+        builder.AddAttribute(6, "name", "handler");
+        builder.AddAttribute(7, "value", submitEventName);
+        builder.CloseElement();
 
         builder.CloseRegion();
     }

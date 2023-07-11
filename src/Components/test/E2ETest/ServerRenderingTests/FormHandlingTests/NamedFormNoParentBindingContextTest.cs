@@ -32,12 +32,7 @@ public class NamedFormNoParentBindingContextTest : ServerTestBase<BasicTestAppSe
         Browser.Exists(By.Id("ready"));
 
         var form = Browser.Exists(By.CssSelector("form"));
-        var formTarget = form.GetAttribute("action");
-        var actionValue = form.GetDomAttribute("action");
-        var baseUri = new Uri(_serverFixture.RootUri, ServerPathBase).ToString();
-
-        Assert.Equal($"{baseUri}/?handler=named-form-handler", formTarget);
-        Assert.Equal("?handler=named-form-handler", actionValue);
+        Browser.Equal("named-form-handler", () => form.FindElement(By.CssSelector("input[name=handler]")).GetAttribute("value"));
 
         Browser.Click(By.Id("send"));
         Browser.Exists(By.Id("pass"));

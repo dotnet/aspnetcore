@@ -47,19 +47,20 @@ public class ActionForm : ComponentBase
         {
             builder.OpenElement(0, "form");
             builder.AddAttribute(1, "name", bindingContext.Name);
-
-            if (!string.IsNullOrEmpty(bindingContext?.MappingContextId))
-            {
-                builder.AddAttribute(2, "action", bindingContext.MappingContextId);
-            }
-
-            builder.AddAttribute(3, "method", "POST");
-            builder.AddAttribute(4, "onsubmit", async () => await OnSubmit.InvokeAsync(bindingContext));
+            builder.AddAttribute(6, "method", "POST");
+            builder.AddAttribute(7, "onsubmit", async () => await OnSubmit.InvokeAsync(bindingContext));
 
             if (bindingContext != null)
             {
                 builder.AddNamedEvent(5, "onsubmit", bindingContext.Name);
+
+                builder.OpenElement(2, "input");
+                builder.AddAttribute(3, "type", "hidden");
+                builder.AddAttribute(4, "name", "handler");
+                builder.AddAttribute(5, "value", bindingContext.Name);
+                builder.CloseElement();
             }
+
             builder.AddContent(6, ChildContent?.Invoke(bindingContext));
 
             builder.CloseElement();

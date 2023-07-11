@@ -111,17 +111,17 @@ internal class RazorComponentEndpointInvoker
             {
                 _context.Response.StatusCode = StatusCodes.Status400BadRequest;
             }
-            var formValid = TrySetFormHandler(out var handler);
+            var formValid = TryGetFormHandler(out var handler);
             return new(valid && formValid, isPost, handler);
         }
 
         return new(true, false, null);
     }
 
-    private bool TrySetFormHandler([NotNullWhen(true)] out string? handler)
+    private bool TryGetFormHandler([NotNullWhen(true)] out string? handler)
     {
         handler = "";
-        if (_context.Request.Query.TryGetValue("handler", out var value))
+        if (_context.Request.Form.TryGetValue("handler", out var value))
         {
             if (value.Count != 1)
             {
