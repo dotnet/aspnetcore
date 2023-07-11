@@ -153,7 +153,6 @@ public class EditForm : ComponentBase
         if (BindingContext != null)
         {
             var submitEventName = CombineStrings(BindingContext.Name, FormHandlerName);
-            builder.AddAttribute(5, "name", submitEventName); // TODO: Remove this. Need to update a lot of E2E tests that look for it.
             builder.AddNamedEvent(5, "onsubmit", submitEventName ?? string.Empty);
             RenderSSRFormHandlingChildren(builder, 6);
         }

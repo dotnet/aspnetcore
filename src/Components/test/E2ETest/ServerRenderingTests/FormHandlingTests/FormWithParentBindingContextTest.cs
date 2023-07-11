@@ -694,7 +694,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         var dispatchToForm = new DispatchToForm(this)
         {
             Url = "forms/named-form",
-            FormCssSelector = "form[name=named-form-handler]",
+            FormCssSelector = "form",
             ExpectedActionValue = "forms/named-form?handler=named-form-handler",
             SuppressEnhancedNavigation = suppressEnhancedNavigation,
         };
@@ -709,7 +709,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         var dispatchToForm = new DispatchToForm(this)
         {
             Url = "forms/named-form-bound-parameter",
-            FormCssSelector = "form[name=named-form-handler]",
+            FormCssSelector = "form",
             ExpectedActionValue = "forms/named-form-bound-parameter?handler=named-form-handler",
             InputFieldId = "Parameter",
             InputFieldCssSelector = "input[name=Parameter]",
@@ -727,7 +727,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         var dispatchToForm = new DispatchToForm(this)
         {
             Url = "forms/nested-named-form",
-            FormCssSelector = "form[name=\"parent-context.named-form-handler\"]",
+            FormCssSelector = "form",
             ExpectedActionValue = "forms/nested-named-form?handler=parent-context.named-form-handler",
             SuppressEnhancedNavigation = suppressEnhancedNavigation,
         };
@@ -742,7 +742,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         var dispatchToForm = new DispatchToForm(this)
         {
             Url = "forms/nested-named-form-bound-parameter",
-            FormCssSelector = """form[name="parent-context.named-form-handler"]""",
+            FormCssSelector = "form",
             ExpectedActionValue = "forms/nested-named-form-bound-parameter?handler=parent-context.named-form-handler",
             InputFieldId = "Parameter",
             InputFieldCssSelector = "input[name=Parameter]",
