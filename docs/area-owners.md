@@ -34,6 +34,6 @@ The **dotnet/runtime** repo has [its own list](https://github.com/dotnet/runtime
 
 While not necessarily associated with a specific area, these community members have the power to assist with routing and labeling issues and pull requests, and are generally knowledgeable about how the repo works:
 
-|||||||
-|-|-|-|-|-|-|
-[@david-acker](https://github.com/@david-acker) | [@egil](https://github.com/@egil) | [@gfoidl](https://github.com/@gfoidl) | [@hishamco](https://github.com/@hishamco) | [@Kahbazi](https://github.com/@Kahbazi) | [@martincostello](https://github.com/@martincostello) |
+| [@hishamco](https://github.com/hishamco) | [@Kahbazi](https://github.com/Kahbazi) | [@martincostello](https://github.com/martincostello) |
+|-|-|-|
+**[@david-acker](https://github.com/david-acker)** | **[@egil](https://github.com/egil)** | **[@gfoidl](https://github.com/gfoidl)** |
