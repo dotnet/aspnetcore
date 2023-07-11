@@ -47,7 +47,7 @@ public class KnownHeaders
         InternalHeaderNames.AltUsed
     };
 
-    public class InternalHeader
+    public sealed class InternalHeader
     {
         public string Identifier { get; }
 
