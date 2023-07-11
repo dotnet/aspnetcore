@@ -14,29 +14,18 @@ public class SupplyParameterFromFormTest
     {
         // Arrange
         var renderer = CreateRendererWithFormValueModelBinder();
-        var formMappingScope = new FormMappingScope
-        {
-            Navigation = new TestNavigationManager(),
-            FormValueModelBinder = new TestFormModelValueBinder(),
-            ChildContent = modelBindingContext => builder =>
-            {
-                builder.OpenComponent<FormParametersComponent>(0);
-                builder.CloseComponent();
-            }
-        };
+        var formComponent = new FormParametersComponent();
 
         // Act
-        var componentId = renderer.AssignRootComponentId(formMappingScope);
+        var componentId = renderer.AssignRootComponentId(formComponent);
         await renderer.RenderRootComponentAsync(componentId);
-        var formComponentState = renderer.Batches.Single()
-            .GetComponentFrames<FormParametersComponent>().Single()
-            .ComponentState;
+        var formComponentState = renderer.GetComponentState(formComponent);
 
         var result = CascadingParameterState.FindCascadingParameters(formComponentState);
 
         // Assert
         var supplier = Assert.Single(result);
-        Assert.Equal(formMappingScope, supplier.ValueSupplier);
+        Assert.IsType<SupplyParameterFromFormValueProvider>(supplier.ValueSupplier);
     }
 
     [Fact]
@@ -46,8 +35,8 @@ public class SupplyParameterFromFormTest
         var renderer = CreateRendererWithFormValueModelBinder();
         var formMappingScope = new FormMappingScope
         {
-            Navigation = new TestNavigationManager(),
-            FormValueModelBinder = new TestFormModelValueBinder("some-name"),
+            Name = "scope-name",
+            FormValueModelBinder = new TestFormModelValueBinder("scope-name.handler-name"),
             ChildContent = modelBindingContext => builder =>
             {
                 builder.OpenComponent<FormParametersComponentWithName>(0);
@@ -72,7 +61,10 @@ public class SupplyParameterFromFormTest
     static TestRenderer CreateRendererWithFormValueModelBinder()
     {
         var services = new ServiceCollection();
-        services.AddSingleton<IFormValueMapper, TestFormModelValueBinder>();
+        var valueBinder = new TestFormModelValueBinder();
+        services.AddSingleton<IFormValueMapper>(valueBinder);
+        services.AddSingleton<ICascadingValueSupplier>(_ => new SupplyParameterFromFormValueProvider(
+            valueBinder, mappingScopeName: ""));
         return new TestRenderer(services.BuildServiceProvider());
     }
 
@@ -83,7 +75,7 @@ public class SupplyParameterFromFormTest
 
     class FormParametersComponentWithName : TestComponentBase
     {
-        [SupplyParameterFromForm(Handler = "some-name")] public string FormParameter { get; set; }
+        [SupplyParameterFromForm(Handler = "handler-name")] public string FormParameter { get; set; }
     }
 
     class TestFormModelValueBinder(string FormName = "") : IFormValueMapper
@@ -102,13 +94,5 @@ public class SupplyParameterFromFormTest
 
         public Task SetParametersAsync(ParameterView parameters)
             => Task.CompletedTask;
-    }
-
-    class TestNavigationManager : NavigationManager
-    {
-        public TestNavigationManager()
-        {
-            Initialize("https://localhost:85/subdir/", "https://localhost:85/subdir/path?query=value#hash");
-        }
     }
 }

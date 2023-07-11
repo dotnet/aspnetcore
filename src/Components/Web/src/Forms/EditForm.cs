@@ -78,16 +78,13 @@ public class EditForm : ComponentBase
     /// </summary>
     [Parameter] public EventCallback<EditContext> OnInvalidSubmit { get; set; }
 
-    [CascadingParameter] private FormMappingContext? BindingContext { get; set; }
+    [CascadingParameter] private FormMappingContext? MappingContext { get; set; }
 
     /// <summary>
     /// Gets or sets the form handler name. This is not used by interactive forms.
     /// It is only used when posting to a server-side endpoint.
     /// </summary>
-    /// <remarks>
     [Parameter] public string? FormHandlerName { get; set; }
-
-    [Inject] private NavigationManager? TempNav { get; set; } // TODO: Remove
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -133,9 +130,8 @@ public class EditForm : ComponentBase
 
         builder.OpenElement(0, "form");
 
-        if (BindingContext != null)
+        if (MappingContext != null)
         {
-            // TODO: Remove bindingcontext.id concept
             builder.AddAttribute(2, "method", "post");
         }
 
@@ -144,11 +140,11 @@ public class EditForm : ComponentBase
 
         // In SSR cases, we register onsubmit as a named event and emit other child elements
         // to include the handler and antiforgery token in the post data
-        if (BindingContext != null)
+        if (MappingContext != null)
         {
-            var submitEventName = CombineStrings(BindingContext.Name, FormHandlerName) ?? string.Empty;
-            builder.AddNamedEvent(5, "onsubmit", submitEventName);
-            RenderSSRFormHandlingChildren(builder, 6, submitEventName);
+            var combinedFormName = MappingContext.GetCombinedFormName(FormHandlerName) ?? string.Empty;
+            builder.AddNamedEvent(5, "onsubmit", combinedFormName);
+            RenderSSRFormHandlingChildren(builder, 6, combinedFormName);
         }
 
         builder.OpenComponent<CascadingValue<EditContext>>(7);
@@ -161,9 +157,6 @@ public class EditForm : ComponentBase
 
         builder.CloseRegion();
     }
-
-    private static string? CombineStrings(string? a, string? b)
-        => string.IsNullOrEmpty(a) ? b : string.IsNullOrEmpty(b) ? a : $"{a}.{b}";
 
     private void RenderSSRFormHandlingChildren(RenderTreeBuilder builder, int sequence, string submitEventName)
     {

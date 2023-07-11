@@ -14,32 +14,16 @@ public sealed class FormMappingContext
     private List<KeyValuePair<string, FormMappingError>>? _pendingErrors;
     private Dictionary<string, Dictionary<string, FormMappingError>>? _errorsByFormName;
 
-    internal FormMappingContext(string name, string mappingContextId)
+    internal FormMappingContext(string name)
     {
         ArgumentNullException.ThrowIfNull(name);
-        ArgumentNullException.ThrowIfNull(mappingContextId);
-        // We are initializing the root context, that can be a "named" root context, or the default context.
-        // A named root context only provides a name, and that acts as the MappingId
-        // A "default" root context does not provide a name, and instead it provides an explicit Mapping ID.
-        // The explicit mapping ID matches that of the default handler, which is the URL Path.
-        if (string.IsNullOrEmpty(name) ^ string.IsNullOrEmpty(mappingContextId))
-        {
-            throw new InvalidOperationException("A root mapping context needs to provide a name and explicit mapping context id or none.");
-        }
-
         Name = name;
-        MappingContextId = mappingContextId ?? name;
     }
 
     /// <summary>
     /// The context name.
     /// </summary>
     public string Name { get; }
-
-    /// <summary>
-    /// The computed identifier used to determine what parts of the app can map data.
-    /// </summary>
-    public string MappingContextId { get; }
 
     /// <summary>
     /// Retrieves the list of errors for a given model key.
@@ -108,8 +92,17 @@ public sealed class FormMappingContext
         _errorsByFormName?.TryGetValue(formName, out var formErrors) == true &&
             formErrors.TryGetValue(key, out var mappingError) ? mappingError.AttemptedValue : null;
 
-    internal static string Combine(FormMappingContext? parentContext, string name) =>
-        string.IsNullOrEmpty(parentContext?.Name) ? name : $"{parentContext.Name}.{name}";
+    internal string GetCombinedFormName(string? formHandlerName)
+    {
+        if (string.IsNullOrEmpty(Name))
+        {
+            return string.IsNullOrEmpty(formHandlerName) ? string.Empty : formHandlerName;
+        }
+        else
+        {
+            return string.IsNullOrEmpty(formHandlerName) ? Name : $"{Name}.{formHandlerName}";
+        }
+    }
 
     internal void AddError(string key, FormattableString error, string? attemptedValue)
     {

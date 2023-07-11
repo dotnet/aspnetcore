@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Components.Rendering;
 namespace Microsoft.AspNetCore.Components.Forms;
 
 /// <summary>
-/// Defines the mapping context for data received from form posts.
+/// Defines the mapping scope for data received from form posts.
 /// </summary>
 public sealed class FormMappingScope : ICascadingValueSupplier, IComponent
 {
@@ -17,18 +17,14 @@ public sealed class FormMappingScope : ICascadingValueSupplier, IComponent
     private bool _hasPendingQueuedRender;
 
     /// <summary>
-    /// The mapping context name.
+    /// The mapping scope name.
     /// </summary>
-    [Parameter] public string Name { get; set; } = "";
+    [Parameter, EditorRequired] public string Name { get; set; } = default!;
 
     /// <summary>
     /// Specifies the content to be rendered inside this <see cref="FormMappingScope"/>.
     /// </summary>
     [Parameter] public RenderFragment<FormMappingContext> ChildContent { get; set; } = default!;
-
-    [CascadingParameter] private FormMappingContext? ParentContext { get; set; }
-
-    [Inject] internal NavigationManager Navigation { get; set; } = null!;
 
     [Inject] internal IFormValueMapper? FormValueModelBinder { get; set; } // Nonnull only on platforms that support HTTP form posts
 
@@ -40,16 +36,17 @@ public sealed class FormMappingScope : ICascadingValueSupplier, IComponent
     Task IComponent.SetParametersAsync(ParameterView parameters)
     {
         parameters.SetParameterProperties(this);
-        if (ParentContext != null && string.IsNullOrEmpty(Name))
-        {
-            throw new InvalidOperationException($"Nested form mapping contexts must define a Name. (Parent context) = '{ParentContext.Name}'.");
-        }
 
         if (_cascadingValueSupplier is null)
         {
-            _cascadingValueSupplier = new SupplyParameterFromFormValueProvider(FormValueModelBinder, Navigation, ParentContext, Name);
+            if (string.IsNullOrEmpty(Name))
+            {
+                throw new InvalidOperationException($"The {nameof(FormMappingScope)} component requires a nonempty {nameof(Name)} parameter value.");
+            }
+
+            _cascadingValueSupplier = new SupplyParameterFromFormValueProvider(FormValueModelBinder, Name);
         }
-        else if (!string.Equals(Name, _cascadingValueSupplier.Name))
+        else if (!string.Equals(Name, _cascadingValueSupplier.MappingScopeName))
         {
             throw new InvalidOperationException($"{nameof(FormMappingScope)} '{nameof(Name)}' can't change after initialization.");
         }
