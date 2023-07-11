@@ -57,6 +57,8 @@ namespace Microsoft.AspNetCore.Http.Generated
         private static readonly string[] GetVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Get };
 
         [InterceptsLocation(@"TestMapActions.cs", 25, 13)]
+        [InterceptsLocation(@"TestMapActions.cs", 25, 63)]
+        [InterceptsLocation(@"OtherTestMapActions.cs", 25, 13)]
         internal static RouteHandlerBuilder MapGet0(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
@@ -76,11 +78,13 @@ namespace Microsoft.AspNetCore.Http.Generated
                 Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                 Debug.Assert(options.EndpointBuilder.ApplicationServices != null, "ApplicationServices not found.");
                 Debug.Assert(options.EndpointBuilder.FilterFactories != null, "FilterFactories not found.");
-                var handler = Cast(del, global::System.String (global::Microsoft.AspNetCore.Http.HttpRequest arg0, global::Microsoft.AspNetCore.Http.HttpResponse arg1) => throw null!);
+                var handler = Cast(del, global::System.String (global::System.String arg0) => throw null!);
                 EndpointFilterDelegate? filteredInvocation = null;
                 var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
+                var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
                 var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? new JsonOptions();
                 var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonOptions.SerializerOptions.GetTypeInfo(typeof(object));
+                var name_RouteOrQueryResolver = GeneratedRouteBuilderExtensionsCore.ResolveFromRouteOrQuery("name", options.RouteParameterNames);
 
                 if (options.EndpointBuilder.FilterFactories.Count > 0)
                 {
@@ -90,7 +94,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         {
                             return ValueTask.FromResult<object?>(Results.Empty);
                         }
-                        return ValueTask.FromResult<object?>(handler(ic.GetArgument<global::Microsoft.AspNetCore.Http.HttpRequest>(0)!, ic.GetArgument<global::Microsoft.AspNetCore.Http.HttpResponse>(1)!));
+                        return ValueTask.FromResult<object?>(handler(ic.GetArgument<global::System.String>(0)!));
                     },
                     options.EndpointBuilder,
                     handler.Method);
@@ -99,15 +103,22 @@ namespace Microsoft.AspNetCore.Http.Generated
                 Task RequestHandler(HttpContext httpContext)
                 {
                     var wasParamCheckFailure = false;
-                    var req_local = httpContext.Request;
-                    var res_local = httpContext.Response;
+                    // Endpoint Parameter: name (Type = string, IsOptional = False, IsParsable = False, IsArray = False, Source = RouteOrQuery)
+                    var name_raw = name_RouteOrQueryResolver(httpContext);
+                    if (name_raw is StringValues { Count: 0 })
+                    {
+                        wasParamCheckFailure = true;
+                        logOrThrowExceptionHelper.RequiredParameterNotProvided("string", "name", "route or query string");
+                    }
+                    var name_temp = (string?)name_raw;
+                    string name_local = name_temp!;
 
                     if (wasParamCheckFailure)
                     {
                         httpContext.Response.StatusCode = 400;
                         return Task.CompletedTask;
                     }
-                    var result = handler(req_local, res_local);
+                    var result = handler(name_local!);
                     if (result is string)
                     {
                         httpContext.Response.ContentType ??= "text/plain; charset=utf-8";
@@ -122,14 +133,21 @@ namespace Microsoft.AspNetCore.Http.Generated
                 async Task RequestHandlerFiltered(HttpContext httpContext)
                 {
                     var wasParamCheckFailure = false;
-                    var req_local = httpContext.Request;
-                    var res_local = httpContext.Response;
+                    // Endpoint Parameter: name (Type = string, IsOptional = False, IsParsable = False, IsArray = False, Source = RouteOrQuery)
+                    var name_raw = name_RouteOrQueryResolver(httpContext);
+                    if (name_raw is StringValues { Count: 0 })
+                    {
+                        wasParamCheckFailure = true;
+                        logOrThrowExceptionHelper.RequiredParameterNotProvided("string", "name", "route or query string");
+                    }
+                    var name_temp = (string?)name_raw;
+                    string name_local = name_temp!;
 
                     if (wasParamCheckFailure)
                     {
                         httpContext.Response.StatusCode = 400;
                     }
-                    var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::Microsoft.AspNetCore.Http.HttpRequest, global::Microsoft.AspNetCore.Http.HttpResponse>(httpContext, req_local, res_local));
+                    var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::System.String>(httpContext, name_local!));
                     if (result is not null)
                     {
                         await GeneratedRouteBuilderExtensionsCore.ExecuteReturnAsync(result, httpContext, objectJsonTypeInfo);
@@ -221,6 +239,12 @@ namespace Microsoft.AspNetCore.Http.Generated
         private static bool ShouldUseWith(this JsonTypeInfo jsonTypeInfo, [NotNullWhen(false)] Type? runtimeType)
             => runtimeType is null || jsonTypeInfo.Type == runtimeType || jsonTypeInfo.HasKnownPolymorphism();
 
+        private static Func<HttpContext, StringValues> ResolveFromRouteOrQuery(string parameterName, IEnumerable<string>? routeParameterNames)
+        {
+            return routeParameterNames?.Contains(parameterName, StringComparer.OrdinalIgnoreCase) == true
+                ? (httpContext) => new StringValues((string?)httpContext.Request.RouteValues[parameterName])
+                : (httpContext) => httpContext.Request.Query[parameterName];
+        }
 
     }
 

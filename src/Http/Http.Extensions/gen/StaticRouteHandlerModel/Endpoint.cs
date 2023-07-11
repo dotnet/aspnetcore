@@ -95,7 +95,7 @@ internal class Endpoint
     public EndpointParameter[] Parameters { get; } = Array.Empty<EndpointParameter>();
     public List<Diagnostic> Diagnostics { get; } = new List<Diagnostic>();
 
-    public (string File, int LineNumber) Location { get; }
+    public (string File, int LineNumber, int CharacterNumber) Location { get; }
     public IInvocationOperation Operation { get; }
 
     public override bool Equals(object o) =>
@@ -138,13 +138,16 @@ internal class Endpoint
         return hashCode.ToHashCode();
     }
 
-    private static (string, int) GetLocation(IInvocationOperation operation)
+    private static (string, int, int) GetLocation(IInvocationOperation operation)
     {
         var operationSpan = operation.Syntax.Span;
-        var filePath = operation.Syntax.SyntaxTree.GetDisplayPath(operationSpan, operation.SemanticModel?.Compilation.Options.SourceReferenceResolver);
+        var filePath = operation.Syntax.SyntaxTree.GetInterceptorFilePath(operation.SemanticModel?.Compilation.Options.SourceReferenceResolver);
         var span = operation.Syntax.SyntaxTree.GetLineSpan(operationSpan);
         var lineNumber = span.StartLinePosition.Line + 1;
-        return (filePath, lineNumber);
+        // Calculate the character offset to the end of the Map invocation detected
+        var invocationLength = ((MemberAccessExpressionSyntax)((InvocationExpressionSyntax)operation.Syntax).Expression).Expression.Span.Length;
+        var characterNumber = span.StartLinePosition.Character + invocationLength + 2;
+        return (filePath, lineNumber, characterNumber);
     }
 
     private static string GetHttpMethod(IInvocationOperation operation)

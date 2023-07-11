@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
@@ -21,7 +22,8 @@ internal static class RequestDelegateGeneratorSources
 #nullable enable
 """;
 
-    public static string GeneratedCodeAttribute => $@"[System.CodeDom.Compiler.GeneratedCodeAttribute(""{typeof(RequestDelegateGeneratorSources).Assembly.FullName}"", ""{typeof(RequestDelegateGeneratorSources).Assembly.GetName().Version}"")]";
+    public static string GeneratedCodeConstructor => $@"System.CodeDom.Compiler.GeneratedCodeAttribute(""{typeof(RequestDelegateGeneratorSources).Assembly.FullName}"", ""{typeof(RequestDelegateGeneratorSources).Assembly.GetName().Version}"")";
+    public static string GeneratedCodeAttribute => $"[{GeneratedCodeConstructor}]";
 
     public static string ContentTypeConstantsType => $$"""
     {{GeneratedCodeAttribute}}
@@ -439,25 +441,19 @@ internal static class RequestDelegateGeneratorSources
     }
 """;
 
-    public static string GetGeneratedRouteBuilderExtensionsSource(string genericThunks, string thunks, string endpoints, string helperMethods, string helperTypes, ImmutableHashSet<string> verbs) => $$"""
+    public static string GetGeneratedRouteBuilderExtensionsSource(string endpoints, string helperMethods, string helperTypes, ImmutableHashSet<string> verbs) => $$"""
 {{SourceHeader}}
 
-namespace Microsoft.AspNetCore.Builder
+namespace System.Runtime.CompilerServices
 {
     {{GeneratedCodeAttribute}}
-    internal sealed class SourceKey
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
+    file sealed class InterceptsLocationAttribute : Attribute
     {
-        public string Path { get; init; }
-        public int Line { get; init; }
-
-        public SourceKey(string path, int line)
+        public InterceptsLocationAttribute(string filePath, int line, int column)
         {
-            Path = path;
-            Line = line;
         }
     }
-
-{{GetEndpoints(endpoints, verbs)}}
 }
 
 namespace Microsoft.AspNetCore.Http.Generated
@@ -471,6 +467,7 @@ namespace Microsoft.AspNetCore.Http.Generated
     using System.Globalization;
     using System.Linq;
     using System.Reflection;
+    using System.Runtime.CompilerServices;
     using System.Text.Json;
     using System.Text.Json.Serialization.Metadata;
     using System.Threading.Tasks;
@@ -493,8 +490,24 @@ namespace Microsoft.AspNetCore.Http.Generated
     {{GeneratedCodeAttribute}}
     file static class GeneratedRouteBuilderExtensionsCore
     {
-{{GetGenericThunks(genericThunks)}}
-{{GetThunks(thunks)}}
+        {{GetVerbs(verbs)}}
+        {{endpoints}}
+
+        internal static RouteHandlerBuilder MapCore(
+            this IEndpointRouteBuilder routes,
+            string pattern,
+            Delegate handler,
+            IEnumerable<string>? httpMethods,
+            MetadataPopulator populateMetadata,
+            RequestDelegateFactoryFunc createRequestDelegate)
+        {
+            return RouteHandlerServices.Map(routes, pattern, handler, httpMethods, populateMetadata, createRequestDelegate);
+        }
+
+        private static T Cast<T>(Delegate d, T _) where T : Delegate
+        {
+            return (T)d;
+        }
 
         private static EndpointFilterDelegate BuildFilterDelegate(EndpointFilterDelegate filteredInvocation, EndpointBuilder builder, MethodInfo mi)
         {
@@ -557,83 +570,15 @@ namespace Microsoft.AspNetCore.Http.Generated
 {{LogOrThrowExceptionHelperClass}}
 }
 """;
-    private static string GetGenericThunks(string genericThunks) => genericThunks != string.Empty ? $$"""
-        private static class GenericThunks<T>
-        {
-            public static readonly Dictionary<(string, int), (MetadataPopulator, RequestDelegateFactoryFunc)> map = new()
-            {
-                {{genericThunks}}
-            };
-        }
 
-        internal static RouteHandlerBuilder MapCore<T>(
-            this IEndpointRouteBuilder routes,
-            string pattern,
-            Delegate handler,
-            IEnumerable<string> httpMethods,
-            string filePath,
-            int lineNumber)
-        {
-            var (populateMetadata, createRequestDelegate) = GenericThunks<T>.map[(filePath, lineNumber)];
-            return RouteHandlerServices.Map(routes, pattern, handler, httpMethods, populateMetadata, createRequestDelegate);
-        }
-""" : string.Empty;
-
-    private static string GetThunks(string thunks) => thunks != string.Empty ? $$"""
-        private static readonly Dictionary<(string, int), (MetadataPopulator, RequestDelegateFactoryFunc)> map = new()
-        {
-{{thunks}}
-        };
-
-        internal static RouteHandlerBuilder MapCore(
-            this IEndpointRouteBuilder routes,
-            string pattern,
-            Delegate handler,
-            IEnumerable<string>? httpMethods,
-            string filePath,
-            int lineNumber)
-        {
-            var (populateMetadata, createRequestDelegate) = map[(filePath, lineNumber)];
-            return RouteHandlerServices.Map(routes, pattern, handler, httpMethods, populateMetadata, createRequestDelegate);
-        }
-""" : string.Empty;
-
-    private static string GetEndpoints(string endpoints, ImmutableHashSet<string> verbs)
+    public static string GetVerbs(ImmutableHashSet<string> verbs)
     {
-        if (endpoints == string.Empty)
-        {
-            return string.Empty;
-        }
-
         var builder = new StringBuilder();
-        builder.Append($$"""
-    // This class needs to be internal so that the compiled application
-    // has access to the strongly-typed endpoint definitions that are
-    // generated by the compiler so that they will be favored by
-    // overload resolution and opt the runtime in to the code generated
-    // implementation produced here.
-    {{GeneratedCodeAttribute}}
-    internal static class GenerateRouteBuilderEndpoints
-    {
 
-""");
-
-        foreach (string verb in verbs.OrderBy(p => p, System.StringComparer.Ordinal))
+        foreach (string verb in verbs.OrderBy(p => p, StringComparer.Ordinal))
         {
-            builder.AppendLine($$"""
-        private static readonly string[] {{verb}}Verb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.{{verb}} };
-""");
+            builder.AppendLine($$"""private static readonly string[] {{verb}}Verb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.{{verb}} };""");
         }
-
-        if (verbs.Count > 0)
-        {
-            builder.AppendLine();
-        }
-
-        builder.Append($$"""
-        {{endpoints}}
-    }
-""");
 
         return builder.ToString();
     }
