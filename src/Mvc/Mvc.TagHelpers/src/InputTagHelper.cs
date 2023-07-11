@@ -116,7 +116,6 @@ public class InputTagHelper : TagHelper
     [HtmlAttributeName("type")]
     public string InputTypeName { get; set; }
 
-
     /// <summary>
     /// The name of the associated form
     /// </summary>
