@@ -11,7 +11,7 @@ internal class FormMappingValidator : ComponentBase, IDisposable
     private IDisposable? _subscriptions;
     private EditContext? _originalEditContext;
 
-    [CascadingParameter] internal EditContext? CurrentEditContext { get; set; }
+    [Parameter] public EditContext? CurrentEditContext { get; set; }
 
     [CascadingParameter] internal FormMappingContext? MappingContext { get; set; }
 
@@ -20,7 +20,7 @@ internal class FormMappingValidator : ComponentBase, IDisposable
     {
         if (CurrentEditContext == null)
         {
-            throw new InvalidOperationException($"{nameof(FormMappingValidator)} requires a cascading " +
+            throw new InvalidOperationException($"{nameof(FormMappingValidator)} requires a " +
                 $"parameter of type {nameof(EditContext)}.");
         }
 
