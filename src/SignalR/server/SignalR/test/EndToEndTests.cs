@@ -72,6 +72,7 @@ public class EndToEndTests : FunctionalTestBase
     [Theory]
     [MemberData(nameof(TransportTypes))]
     [LogLevel(LogLevel.Trace)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/49315")]
     public async Task CanStartAndStopConnectionUsingGivenTransport(HttpTransportType transportType)
     {
         await using (var server = await StartServer<Startup>())
