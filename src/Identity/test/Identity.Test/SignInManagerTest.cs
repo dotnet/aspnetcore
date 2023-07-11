@@ -671,6 +671,41 @@ public class SignInManagerTest
     }
 
     [Fact]
+    public async Task TwoFactorSignInAsyncReturnsLockedOut()
+    {
+        // Setup
+        var user = new PocoUser { UserName = "Foo" };
+        var manager = SetupUserManager(user);
+        var provider = "twofactorprovider";
+        var code = "123456";
+        var lockedout = false;
+        manager.Setup(m => m.AccessFailedAsync(user)).Returns(() =>
+        {
+            lockedout = true;
+            return Task.FromResult(IdentityResult.Success);
+        }).Verifiable();
+        manager.Setup(m => m.SupportsUserLockout).Returns(true).Verifiable();
+        manager.Setup(m => m.IsLockedOutAsync(user)).Returns(() => Task.FromResult(lockedout));
+        manager.Setup(m => m.VerifyTwoFactorTokenAsync(user, provider, code)).ReturnsAsync(false).Verifiable();
+        
+        var context = new DefaultHttpContext();
+        var auth = MockAuth(context);
+        var helper = SetupSignInManager(manager.Object, context);
+        var id = SignInManager<PocoUser>.StoreTwoFactorInfo(user.Id, loginProvider: null);
+
+        auth.Setup(a => a.AuthenticateAsync(context, IdentityConstants.TwoFactorUserIdScheme))
+            .ReturnsAsync(AuthenticateResult.Success(new AuthenticationTicket(id, null, IdentityConstants.TwoFactorUserIdScheme))).Verifiable();
+
+        // Act
+        var result = await helper.TwoFactorSignInAsync(provider, code, isPersistent: false, rememberClient: false);
+
+        // Assert
+        Assert.True(result.IsLockedOut);
+        manager.Verify();
+        auth.Verify();
+    }
+
+    [Fact]
     public async Task RememberClientStoresUserId()
     {
         // Setup
@@ -1169,16 +1204,9 @@ public class SignInManagerTest
         manager.Verify();
     }
 
-    public static object[][] AccessFailedResults => new object[][]
-    {
-        new object[] { IdentityResult.Success },
-        new object[] { null },
-        new object[] { IdentityResult.Failed() },
-    };
-
     [Theory]
-    [MemberData(nameof(AccessFailedResults))]
-    public async Task TwoFactorSignInLockedOutResultIsAlwaysGenericFailureRegardlessOfTheAccessFailedAsyncResult(IdentityResult accessFailedResult)
+    [MemberData(nameof(ExpectedLockedOutSignInResultsGivenAccessFailedResults))]
+    public async Task TwoFactorSignInLockedOutResultIsDependentOnTheAccessFailedAsyncResult(IdentityResult accessFailedResult, SignInResult expectedSignInResult)
     {
         // Setup
         var isLockedOutCallCount = 0;
@@ -1204,8 +1232,7 @@ public class SignInManagerTest
         var result = await helper.TwoFactorSignInAsync(provider, code, false, false);
 
         // Assert
-        // Unlike password sign in, 2fa always returns SignInResult.Failed rather than LockedOut.
-        Assert.Same(SignInResult.Failed, result);
+        Assert.Same(expectedSignInResult, result);
         manager.Verify();
         auth.Verify();
     }
