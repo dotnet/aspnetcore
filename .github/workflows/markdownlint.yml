@@ -5,11 +5,8 @@ permissions:
 
 # run even on changes without markdown changes, so that we can
 # make it in GitHub a required check for PR's
-pr:
-  autoCancel: true
-  branches:
-    include:
-    - '*'
+on:
+  pull_request:
 
 jobs:
   lint:
