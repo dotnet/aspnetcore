@@ -1,7 +1,7 @@
 #if (NativeAot)
 using System.Text.Json.Serialization;
-#endif
 
+#endif
 var builder = WebApplication.CreateSlimBuilder(args);
 
 #if (NativeAot)
