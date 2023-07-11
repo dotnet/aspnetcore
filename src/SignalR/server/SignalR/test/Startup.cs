@@ -10,7 +10,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 
@@ -67,8 +69,13 @@ public class Startup
         services.AddSingleton<IAuthorizationHandler, TestAuthHandler>();
 
         // Since tests run in parallel, it's possible multiple servers will startup,
-        // we use an ephemeral key provider to avoid filesystem contention issues
+        // we use an ephemeral key provider and repository to avoid filesystem contention issues
         services.AddSingleton<IDataProtectionProvider, EphemeralDataProtectionProvider>();
+
+        services.Configure<KeyManagementOptions>(options =>
+        {
+            options.XmlRepository = new EphemeralXmlRepository();
+        });
     }
 
     public void Configure(IApplicationBuilder app)
