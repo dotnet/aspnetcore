@@ -44,13 +44,6 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
     }
 
     [Fact]
-    public void MapInboundClaimsDefaults()
-    {
-        JwtBearerOptions jwtBearerOptions = new JwtBearerOptions();
-        Assert()
-    }
-
-    [Fact]
     public async Task BearerTokenValidation()
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(new string('a', 128)));

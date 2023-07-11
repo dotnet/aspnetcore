@@ -208,5 +208,5 @@ public class WsFederationOptions : RemoteAuthenticationOptions
     /// <para>The default token handler for JsonWebTokens is a <see cref="JsonWebTokenHandler"/> which is faster than a <see cref="JwtSecurityTokenHandler"/>.</para>
     /// <para>There is an ability to make use of a Last-Known-Good model for metadata that protects applications when metadata is published with errors.</para>
     /// </remarks>
-    public bool UseTokenHandlers { get; set; } = true;
+    public bool UseTokenHandlers { get; set; }
 }
