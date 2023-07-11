@@ -116,6 +116,13 @@ public class InputTagHelper : TagHelper
     [HtmlAttributeName("type")]
     public string InputTypeName { get; set; }
 
+
+    /// <summary>
+    /// The name of the associated form
+    /// </summary>
+    /// <remarks>
+    /// Used to associate a hidden checkbox tag to the respecting form when <see cref="CheckBoxHiddenInputRenderMode"/> is not <see cref="CheckBoxHiddenInputRenderMode.None"/>.
+    /// </remarks>
     [HtmlAttributeName("form")]
     public string FormName { get; set; }
 
