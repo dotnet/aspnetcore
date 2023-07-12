@@ -92,7 +92,7 @@ public sealed class FormMappingContext
         _errorsByFormName?.TryGetValue(formName, out var formErrors) == true &&
             formErrors.TryGetValue(key, out var mappingError) ? mappingError.AttemptedValue : null;
 
-    internal string GetCombinedFormName(string? formHandlerName)
+    internal string GetScopeQualifiedFormName(string? formHandlerName)
     {
         if (string.IsNullOrEmpty(Name))
         {

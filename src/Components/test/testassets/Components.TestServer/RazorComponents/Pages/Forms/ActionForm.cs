@@ -52,13 +52,7 @@ public class ActionForm : ComponentBase
 
             if (bindingContext != null)
             {
-                builder.AddNamedEvent(5, "onsubmit", bindingContext.Name);
-
-                builder.OpenElement(2, "input");
-                builder.AddAttribute(3, "type", "hidden");
-                builder.AddAttribute(4, "name", "handler");
-                builder.AddAttribute(5, "value", bindingContext.Name);
-                builder.CloseElement();
+                builder.AddNamedEvent(5, "onsubmit", "");
             }
 
             builder.AddContent(6, ChildContent?.Invoke(bindingContext));

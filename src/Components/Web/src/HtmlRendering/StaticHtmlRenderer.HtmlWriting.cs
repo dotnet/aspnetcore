@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -171,16 +172,35 @@ public partial class StaticHtmlRenderer
             ref var enclosingElementFrame = ref frames.Array[enclosingElementFrameIndex];
             if (string.Equals(enclosingElementFrame.ElementName, "form", StringComparison.OrdinalIgnoreCase))
             {
-                if (FindFormMappingContext(componentId) is { } formMappingContext)
+                if (TryGetScopeQualifiedEventName(componentId, frames.Array[namedEventFramePosition].NamedEventAssignedName, out var combinedFormName))
                 {
-                    var combinedFormName = formMappingContext.GetCombinedFormName(
-                        frames.Array[namedEventFramePosition].NamedEventAssignedName);
-
                     output.Write("<input type=\"hidden\" name=\"handler\" value=\"");
                     _htmlEncoder.Encode(output, combinedFormName);
                     output.Write("\" />");
                 }
             }
+        }
+    }
+
+    /// <summary>
+    /// Gets the fully scope-qualified name for a named event, if the component is within
+    /// a <see cref="FormMappingContext"/> (whether or not that mapping context is named).
+    /// </summary>
+    /// <param name="componentId">The ID of the component that defines a named event.</param>
+    /// <param name="eventName">The name assigned to the named event.</param>
+    /// <param name="scopeQualifiedEventName">The scope-qualified event name.</param>
+    /// <returns>A flag to indicate whether a value could be produced.</returns>
+    protected bool TryGetScopeQualifiedEventName(int componentId, string eventName, [NotNullWhen(true)] out string? scopeQualifiedEventName)
+    {
+        if (FindFormMappingContext(componentId) is { } formMappingContext)
+        {
+            scopeQualifiedEventName = formMappingContext.GetScopeQualifiedFormName(eventName);
+            return true;
+        }
+        else
+        {
+            scopeQualifiedEventName = null;
+            return false;
         }
     }
 

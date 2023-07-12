@@ -40,8 +40,8 @@ internal class SupplyParameterFromFormValueProvider : ICascadingValueSupplier
         // We also supply values for [SupplyValueFromForm]
         if (_formValueMapper is not null && parameterInfo.Attribute is SupplyParameterFromFormAttribute supplyParameterFromFormAttribute)
         {
-            var combinedFormName = _mappingContext.GetCombinedFormName(supplyParameterFromFormAttribute.Handler);
-            return _formValueMapper.CanMap(parameterInfo.PropertyType, combinedFormName);
+            var scopeQualifiedFormName = _mappingContext.GetScopeQualifiedFormName(supplyParameterFromFormAttribute.Handler);
+            return _formValueMapper.CanMap(parameterInfo.PropertyType, scopeQualifiedFormName);
         }
 
         return false;
@@ -73,15 +73,15 @@ internal class SupplyParameterFromFormValueProvider : ICascadingValueSupplier
     internal static object? GetFormPostValue(IFormValueMapper formValueMapper, FormMappingContext? mappingContext, in CascadingParameterInfo parameterInfo, SupplyParameterFromFormAttribute supplyParameterFromFormAttribute)
     {
         Debug.Assert(mappingContext != null);
-        var combinedFormName = mappingContext.GetCombinedFormName(supplyParameterFromFormAttribute.Handler);
+        var scopeQualifiedFormName = mappingContext.GetScopeQualifiedFormName(supplyParameterFromFormAttribute.Handler);
 
         var parameterName = parameterInfo.Attribute.Name ?? parameterInfo.PropertyName;
         var handler = ((SupplyParameterFromFormAttribute)parameterInfo.Attribute).Handler;
         Action<string, FormattableString, string?> errorHandler = string.IsNullOrEmpty(handler) ?
             mappingContext.AddError :
-            (name, message, value) => mappingContext.AddError(combinedFormName, parameterName, message, value);
+            (name, message, value) => mappingContext.AddError(scopeQualifiedFormName, parameterName, message, value);
 
-        var context = new FormValueMappingContext(combinedFormName, parameterInfo.PropertyType, parameterName)
+        var context = new FormValueMappingContext(scopeQualifiedFormName, parameterInfo.PropertyType, parameterName)
         {
             OnError = errorHandler,
             MapErrorToContainer = mappingContext.AttachParentValue

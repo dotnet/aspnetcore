@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 internal partial class EndpointHtmlRenderer
 {
     private readonly Dictionary<(int ComponentId, int FrameIndex), string> _namedSubmitEventsByLocation = new();
-    private readonly Dictionary<string, (int ComponentId, int FrameIndex)> _namedSubmitEventsByAssignedName = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, (int ComponentId, int FrameIndex)> _namedSubmitEventsByScopeQualifiedName = new(StringComparer.Ordinal);
 
     internal Task DispatchSubmitEventAsync(string? handlerName)
     {
@@ -21,7 +21,7 @@ internal partial class EndpointHtmlRenderer
             throw new InvalidOperationException("Cannot dispatch the POST request to the Razor Component endpoint, because the POST data does not specify which form is being submitted. To fix this, ensure form elements have an @onsubmit:name attribute with any unique value, or pass a FormHandlerName parameter if using EditForm.");
         }
 
-        if (!_namedSubmitEventsByAssignedName.TryGetValue(handlerName, out var frameLocation))
+        if (!_namedSubmitEventsByScopeQualifiedName.TryGetValue(handlerName, out var frameLocation))
         {
             // This may happen if you deploy an app update and someone still on the old page submits a form,
             // or if you're dynamically building the UI and the submitted form doesn't exist the next time
@@ -47,9 +47,9 @@ internal partial class EndpointHtmlRenderer
                 if (string.Equals(removedEntry.EventType, "onsubmit", StringComparison.Ordinal))
                 {
                     var location = (removedEntry.ComponentId, removedEntry.FrameIndex);
-                    if (_namedSubmitEventsByLocation.Remove(location, out var assignedName))
+                    if (_namedSubmitEventsByLocation.Remove(location, out var scopeQualifiedName))
                     {
-                        _namedSubmitEventsByAssignedName.Remove(assignedName);
+                        _namedSubmitEventsByScopeQualifiedName.Remove(scopeQualifiedName);
                     }
                 }
             }
@@ -62,19 +62,22 @@ internal partial class EndpointHtmlRenderer
             for (var i = 0; i < addedCount; i++)
             {
                 ref var addedEntry = ref addedArray[i];
-                if (string.Equals(addedEntry.EventType, "onsubmit", StringComparison.Ordinal) && addedEntry.AssignedName is string assignedName)
+                if (string.Equals(addedEntry.EventType, "onsubmit", StringComparison.Ordinal)
+                    && addedEntry.AssignedName is string assignedName
+                    && TryGetScopeQualifiedEventName(addedEntry.ComponentId, assignedName, out var scopeQualifiedName))
                 {
                     var location = (addedEntry.ComponentId, addedEntry.FrameIndex);
-                    if (_namedSubmitEventsByAssignedName.TryAdd(assignedName, location))
+
+                    if (_namedSubmitEventsByScopeQualifiedName.TryAdd(scopeQualifiedName, location))
                     {
-                        _namedSubmitEventsByLocation.Add(location, assignedName);
+                        _namedSubmitEventsByLocation.Add(location, scopeQualifiedName);
                     }
                     else
                     {
                         // We could allow multiple events with the same name, since they are all tracked separately. However
                         // this is most likely a mistake on the developer's part so we will consider it an error.
-                        var existingEntry = _namedSubmitEventsByAssignedName[assignedName];
-                        throw new InvalidOperationException($"There is more than one named event with the name '{assignedName}'. Ensure named events have unique names. The following components both use this name:"
+                        var existingEntry = _namedSubmitEventsByScopeQualifiedName[scopeQualifiedName];
+                        throw new InvalidOperationException($"There is more than one named event with the name '{scopeQualifiedName}'. Ensure named events have unique names. The following components both use this name:"
                             + $"\n - {GenerateComponentPath(existingEntry.ComponentId)}"
                             + $"\n - {GenerateComponentPath(addedEntry.ComponentId)}");
                     }
