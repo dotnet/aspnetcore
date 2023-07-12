@@ -13,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Diagnostics.Runtime.Interop;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
@@ -1018,12 +1019,12 @@ public class TodoChild : Todo
 
 public class TodoWithExplicitIParsable : IParsable<TodoWithExplicitIParsable>
 {
-    public static TodoWithExplicitIParsable Parse(string s, IFormatProvider provider)
+    static TodoWithExplicitIParsable IParsable<TodoWithExplicitIParsable>.Parse(string s, IFormatProvider provider)
     {
         return new TodoWithExplicitIParsable();
     }
 
-    public static bool TryParse(string s, IFormatProvider provider, out TodoWithExplicitIParsable result)
+    static bool IParsable<TodoWithExplicitIParsable>.TryParse(string s, IFormatProvider provider, out TodoWithExplicitIParsable result)
     {
         result = new TodoWithExplicitIParsable();
         return true;
