@@ -20,6 +20,8 @@ namespace Microsoft.AspNetCore.Routing;
 /// </summary>
 public static class IdentityApiEndpointRouteBuilderExtensions
 {
+    private static readonly NoopResult _noopResult = new NoopResult();
+
     /// <summary>
     /// Add endpoints for registering, logging in, and logging out using ASP.NET Core Identity.
     /// </summary>
@@ -34,6 +36,9 @@ public static class IdentityApiEndpointRouteBuilderExtensions
         ArgumentNullException.ThrowIfNull(endpoints);
 
         var routeGroup = endpoints.MapGroup("");
+
+        var timeProvider = endpoints.ServiceProvider.GetRequiredService<TimeProvider>();
+        var bearerTokenOptions = endpoints.ServiceProvider.GetRequiredService<IOptionsMonitor<BearerTokenOptions>>();
 
         // NOTE: We cannot inject UserManager<TUser> directly because the TUser generic parameter is currently unsupported by RDG.
         // https://github.com/dotnet/aspnetcore/issues/47338
@@ -54,32 +59,22 @@ public static class IdentityApiEndpointRouteBuilderExtensions
             return TypedResults.ValidationProblem(result.Errors.ToDictionary(e => e.Code, e => new[] { e.Description }));
         });
 
-        routeGroup.MapPost("/login", async Task<Results<UnauthorizedHttpResult, Ok<AccessTokenResponse>, SignInHttpResult>>
+        routeGroup.MapPost("/login", async Task<Results<UnauthorizedHttpResult, Ok<AccessTokenResponse>, IResult>>
             ([FromBody] LoginRequest login, [FromQuery] bool? cookieMode, [FromServices] IServiceProvider sp) =>
         {
-            var userManager = sp.GetRequiredService<UserManager<TUser>>();
-            var user = await userManager.FindByNameAsync(login.Username);
+            var signInManager = sp.GetRequiredService<SignInManager<TUser>>();
 
-            if (user is null || !await userManager.CheckPasswordAsync(user, login.Password))
-            {
-                return TypedResults.Unauthorized();
-            }
+            signInManager.AuthenticationScheme = cookieMode == true ? IdentityConstants.ApplicationScheme : IdentityConstants.BearerScheme;
+            var result = await signInManager.PasswordSignInAsync(login.Username, login.Password, isPersistent: true, lockoutOnFailure: true);
 
-            var claimsFactory = sp.GetRequiredService<IUserClaimsPrincipalFactory<TUser>>();
-            var claimsPrincipal = await claimsFactory.CreateAsync(user);
-
-            var useCookies = cookieMode ?? false;
-            var scheme = useCookies ? IdentityConstants.ApplicationScheme : IdentityConstants.BearerScheme;
-
-            return TypedResults.SignIn(claimsPrincipal, authenticationScheme: scheme);
+            return result.Succeeded ? _noopResult : TypedResults.Unauthorized();
         });
 
         routeGroup.MapPost("/refresh", async Task<Results<UnauthorizedHttpResult, Ok<AccessTokenResponse>, SignInHttpResult, ChallengeHttpResult>>
-            ([FromBody] RefreshRequest refreshRequest, [FromServices] IOptionsMonitor<BearerTokenOptions> optionsMonitor, [FromServices] TimeProvider timeProvider, [FromServices] IServiceProvider sp) =>
+            ([FromBody] RefreshRequest refreshRequest, [FromServices] IServiceProvider sp) =>
         {
             var signInManager = sp.GetRequiredService<SignInManager<TUser>>();
-            var identityBearerOptions = optionsMonitor.Get(IdentityConstants.BearerScheme);
-            var refreshTokenProtector = identityBearerOptions.RefreshTokenProtector ?? throw new ArgumentException($"{nameof(identityBearerOptions.RefreshTokenProtector)} is null", nameof(optionsMonitor));
+            var refreshTokenProtector = bearerTokenOptions.Get(IdentityConstants.BearerScheme).RefreshTokenProtector;
             var refreshTicket = refreshTokenProtector.Unprotect(refreshRequest.RefreshToken);
 
             // Reject the /refresh attempt with a 401 if the token expired or the security stamp validation fails
@@ -101,12 +96,15 @@ public static class IdentityApiEndpointRouteBuilderExtensions
     // Wrap RouteGroupBuilder with a non-public type to avoid a potential future behavioral breaking change.
     private sealed class IdentityEndpointsConventionBuilder(RouteGroupBuilder inner) : IEndpointConventionBuilder
     {
-#pragma warning disable CA1822 // Mark members as static False positive reported by https://github.com/dotnet/roslyn-analyzers/issues/6573
         private IEndpointConventionBuilder InnerAsConventionBuilder => inner;
-#pragma warning restore CA1822 // Mark members as static
 
         public void Add(Action<EndpointBuilder> convention) => InnerAsConventionBuilder.Add(convention);
         public void Finally(Action<EndpointBuilder> finallyConvention) => InnerAsConventionBuilder.Finally(finallyConvention);
+    }
+
+    private sealed class NoopResult : IResult
+    {
+        public Task ExecuteAsync(HttpContext httpContext) => Task.CompletedTask;
     }
 
     [AttributeUsage(AttributeTargets.Parameter)]

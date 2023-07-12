@@ -18,7 +18,9 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
+using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Identity.FunctionalTests;
 
@@ -34,10 +36,27 @@ public class MapIdentityApiTests : LoggedTest
         await using var app = await CreateAppAsync(AddIdentityActions[addIdentityMode]);
         using var client = app.GetTestClient();
 
-        var response = await client.PostAsJsonAsync("/identity/register", new { Username, Password });
+        AssertOkAndEmpty(await client.PostAsJsonAsync("/identity/register", new { Username, Password }));
+    }
 
-        response.EnsureSuccessStatusCode();
-        Assert.Equal(0, response.Content.Headers.ContentLength);
+    [Theory]
+    [MemberData(nameof(AddIdentityModes))]
+    public async Task LoginFailsGivenUnregisteredUser(string addIdentityMode)
+    {
+        await using var app = await CreateAppAsync(AddIdentityActions[addIdentityMode]);
+        using var client = app.GetTestClient();
+
+        AssertUnauthorizedAndEmpty(await client.PostAsJsonAsync("/identity/login", new { Username, Password }));
+    }
+
+    [Fact]
+    public async Task LoginFailsGivenWrongPassword()
+    {
+        await using var app = await CreateAppAsync();
+        using var client = app.GetTestClient();
+
+        await client.PostAsJsonAsync("/identity/register", new { Username, Password });
+        AssertUnauthorizedAndEmpty(await client.PostAsJsonAsync("/identity/login", new { Username, Password = "wrong" }));
     }
 
     [Theory]
@@ -73,11 +92,11 @@ public class MapIdentityApiTests : LoggedTest
 
         await using var app = await CreateAppAsync(services =>
         {
+            services.AddSingleton<TimeProvider>(clock);
             services.AddIdentityCore<ApplicationUser>().AddApiEndpoints().AddEntityFrameworkStores<ApplicationDbContext>();
             services.AddAuthentication(IdentityConstants.BearerScheme).AddIdentityBearerToken<ApplicationUser>(options =>
             {
                 options.BearerTokenExpiration = expireTimeSpan;
-                options.TimeProvider = clock;
             });
         });
 
@@ -126,7 +145,7 @@ public class MapIdentityApiTests : LoggedTest
         // The compiler does not see Assert.True's DoesNotReturnIfAttribute :(
         if (setCookieHeader.Split(';', 2) is not [var cookieHeader, _])
         {
-            throw new Exception("Invalid Set-Cookie header!");
+            throw new XunitException("Invalid Set-Cookie header!");
         }
 
         client.DefaultRequestHeaders.Add(HeaderNames.Cookie, cookieHeader);
@@ -136,7 +155,7 @@ public class MapIdentityApiTests : LoggedTest
     [Fact]
     public async Task CannotLoginWithCookiesWithOnlyCoreServices()
     {
-        await using var app = await CreateAppAsync(AddIdentityEndpointsBearerOnly);
+        await using var app = await CreateAppAsync(AddIdentityApiEndpointsBearerOnly);
         using var client = app.GetTestClient();
 
         await client.PostAsJsonAsync("/identity/register", new { Username, Password });
@@ -259,7 +278,7 @@ public class MapIdentityApiTests : LoggedTest
         // Still works one second before expiration.
         refreshResponse = await client.PostAsJsonAsync("/identity/refresh", new { refreshToken });
         Assert.True(refreshResponse.IsSuccessStatusCode);
-        
+
         // The bearer token stopped working 41 hours ago with the default 1 hour expiration.
         client.DefaultRequestHeaders.Authorization = new("Bearer", accessToken);
         AssertUnauthorizedAndEmpty(await client.GetAsync("/auth/hello"));
@@ -270,7 +289,7 @@ public class MapIdentityApiTests : LoggedTest
         AssertUnauthorizedAndEmpty(await client.PostAsJsonAsync("/identity/refresh", new { refreshToken }));
 
         // But the last refresh_token from the successful /refresh only a second ago has not expired.
-        var refreshContent =  await refreshResponse.Content.ReadFromJsonAsync<JsonElement>();
+        var refreshContent = await refreshResponse.Content.ReadFromJsonAsync<JsonElement>();
         refreshToken = refreshContent.GetProperty("refresh_token").GetString();
 
         refreshResponse = await client.PostAsJsonAsync("/identity/refresh", new { refreshToken });
@@ -332,6 +351,62 @@ public class MapIdentityApiTests : LoggedTest
         Assert.Equal($"Hello, {newUsername}!", await client.GetStringAsync("/auth/hello"));
     }
 
+    [Fact]
+    public async Task LoginCanBeLockedOut()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            AddIdentityApiEndpoints(services);
+            services.Configure<IdentityOptions>(options =>
+            {
+                options.Lockout.MaxFailedAccessAttempts = 1;
+            });
+        });
+        using var client = app.GetTestClient();
+
+        await client.PostAsJsonAsync("/identity/register", new { Username, Password });
+
+        AssertUnauthorizedAndEmpty(await client.PostAsJsonAsync("/identity/login", new { Username, Password = "wrong" }));
+
+        Assert.Single(TestSink.Writes, w =>
+            w.LoggerName == "Microsoft.AspNetCore.Identity.SignInManager" &&
+            w.EventId == new EventId(3, "UserLockedOut"));
+
+        AssertUnauthorizedAndEmpty(await client.PostAsJsonAsync("/identity/login", new { Username, Password }));
+    }
+
+    [Fact]
+    public async Task LockoutCanBeDisabled()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            AddIdentityApiEndpoints(services);
+            services.Configure<IdentityOptions>(options =>
+            {
+                options.Lockout.AllowedForNewUsers = false;
+                options.Lockout.MaxFailedAccessAttempts = 1;
+            });
+        });
+        using var client = app.GetTestClient();
+
+        await client.PostAsJsonAsync("/identity/register", new { Username, Password });
+
+        AssertUnauthorizedAndEmpty(await client.PostAsJsonAsync("/identity/login", new { Username, Password = "wrong" }));
+
+        Assert.DoesNotContain(TestSink.Writes, w =>
+            w.LoggerName == "Microsoft.AspNetCore.Identity.SignInManager" &&
+            w.EventId == new EventId(3, "UserLockedOut"));
+
+        var loginResponse = await client.PostAsJsonAsync("/identity/login", new { Username, Password });
+        loginResponse.EnsureSuccessStatusCode();
+    }
+
+    private static void AssertOkAndEmpty(HttpResponseMessage response)
+    {
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(0, response.Content.Headers.ContentLength);
+    }
+
     private static void AssertUnauthorizedAndEmpty(HttpResponseMessage response)
     {
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -352,7 +427,7 @@ public class MapIdentityApiTests : LoggedTest
         // Dispose SqliteConnection with host by registering as a singleton factory.
         builder.Services.AddSingleton(() => dbConnection);
 
-        configureServices ??= AddIdentityEndpoints;
+        configureServices ??= AddIdentityApiEndpoints;
         configureServices(builder.Services);
 
         var app = builder.Build();
@@ -373,10 +448,10 @@ public class MapIdentityApiTests : LoggedTest
         return app;
     }
 
-    private static void AddIdentityEndpoints(IServiceCollection services)
+    private static void AddIdentityApiEndpoints(IServiceCollection services)
         => services.AddIdentityApiEndpoints<ApplicationUser>().AddEntityFrameworkStores<ApplicationDbContext>();
 
-    private static void AddIdentityEndpointsBearerOnly(IServiceCollection services)
+    private static void AddIdentityApiEndpointsBearerOnly(IServiceCollection services)
     {
         services
             .AddIdentityCore<ApplicationUser>()
@@ -392,8 +467,8 @@ public class MapIdentityApiTests : LoggedTest
 
     private static Dictionary<string, Action<IServiceCollection>> AddIdentityActions { get; } = new()
     {
-        [nameof(AddIdentityEndpoints)] = AddIdentityEndpoints,
-        [nameof(AddIdentityEndpointsBearerOnly)] = AddIdentityEndpointsBearerOnly,
+        [nameof(AddIdentityApiEndpoints)] = AddIdentityApiEndpoints,
+        [nameof(AddIdentityApiEndpointsBearerOnly)] = AddIdentityApiEndpointsBearerOnly,
     };
 
     public static object[][] AddIdentityModes => AddIdentityActions.Keys.Select(key => new object[] { key }).ToArray();
