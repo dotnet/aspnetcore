@@ -65,10 +65,7 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
             // Runs inline.
             webHostBuilder.Configure(ConfigureApplication);
 
-            webHostBuilder.UseSetting(WebHostDefaults.ApplicationKey, _hostApplicationBuilder.Environment.ApplicationName ?? "");
-            webHostBuilder.UseSetting(WebHostDefaults.PreventHostingStartupKey, Configuration[WebHostDefaults.PreventHostingStartupKey]);
-            webHostBuilder.UseSetting(WebHostDefaults.HostingStartupAssembliesKey, Configuration[WebHostDefaults.HostingStartupAssembliesKey]);
-            webHostBuilder.UseSetting(WebHostDefaults.HostingStartupExcludeAssembliesKey, Configuration[WebHostDefaults.HostingStartupExcludeAssembliesKey]);
+            InitializeWebHostSettings(webHostBuilder);
         },
         options =>
         {
@@ -134,10 +131,7 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
                 // Runs inline.
                 webHostBuilder.Configure(ConfigureApplication);
 
-                webHostBuilder.UseSetting(WebHostDefaults.ApplicationKey, _hostApplicationBuilder.Environment.ApplicationName ?? "");
-                webHostBuilder.UseSetting(WebHostDefaults.PreventHostingStartupKey, Configuration[WebHostDefaults.PreventHostingStartupKey]);
-                webHostBuilder.UseSetting(WebHostDefaults.HostingStartupAssembliesKey, Configuration[WebHostDefaults.HostingStartupAssembliesKey]);
-                webHostBuilder.UseSetting(WebHostDefaults.HostingStartupExcludeAssembliesKey, Configuration[WebHostDefaults.HostingStartupExcludeAssembliesKey]);
+                InitializeWebHostSettings(webHostBuilder);
             },
             options =>
             {
@@ -192,13 +186,7 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
                 // Runs inline.
                 webHostBuilder.Configure((context, app) => ConfigureApplication(context, app, allowDeveloperExceptionPage: false));
 
-                webHostBuilder.UseSetting(WebHostDefaults.ApplicationKey, _hostApplicationBuilder.Environment.ApplicationName ?? "");
-
-                // NOTE: There is no way to add Configuration before this gets called, so it is unnecessary
-                // to set the following properties from the Configuration:
-                // - WebHostDefaults.PreventHostingStartupKey
-                // - WebHostDefaults.HostingStartupAssembliesKey
-                // - WebHostDefaults.HostingStartupExcludeAssembliesKey
+                InitializeWebHostSettings(webHostBuilder);
             },
             options =>
             {
@@ -225,6 +213,14 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
         WebHost = new ConfigureWebHostBuilder(webHostContext, Configuration, Services);
 
         return genericWebHostServiceDescriptor;
+    }
+
+    private void InitializeWebHostSettings(IWebHostBuilder webHostBuilder)
+    {
+        webHostBuilder.UseSetting(WebHostDefaults.ApplicationKey, _hostApplicationBuilder.Environment.ApplicationName ?? "");
+        webHostBuilder.UseSetting(WebHostDefaults.PreventHostingStartupKey, Configuration[WebHostDefaults.PreventHostingStartupKey]);
+        webHostBuilder.UseSetting(WebHostDefaults.HostingStartupAssembliesKey, Configuration[WebHostDefaults.HostingStartupAssembliesKey]);
+        webHostBuilder.UseSetting(WebHostDefaults.HostingStartupExcludeAssembliesKey, Configuration[WebHostDefaults.HostingStartupExcludeAssembliesKey]);
     }
 
     private static DefaultServiceProviderFactory GetServiceProviderFactory(HostApplicationBuilder hostApplicationBuilder)
