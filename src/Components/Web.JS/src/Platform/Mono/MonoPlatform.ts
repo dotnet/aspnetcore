@@ -177,7 +177,7 @@ function prepareRuntimeConfig(options: Partial<WebAssemblyStartOptions>): Dotnet
     applicationEnvironment: options.environment,
   };
 
-  const onConfigLoaded = async (loadedConfig: MonoConfig, { INTERNAL: MONO_INTERNAL }) => {
+  const onConfigLoaded = async (loadedConfig: MonoConfig, { invokeLibraryInitializers }) => {
     if (!loadedConfig.environmentVariables) {
       loadedConfig.environmentVariables = {};
     }
@@ -189,7 +189,7 @@ function prepareRuntimeConfig(options: Partial<WebAssemblyStartOptions>): Dotnet
     Blazor._internal.getApplicationEnvironment = () => loadedConfig.applicationEnvironment!;
 
     const initializerArguments = [options, loadedConfig.resources?.extensions ?? {}];
-    await MONO_INTERNAL.invokeLibraryInitializers('beforeStart', initializerArguments);
+    await invokeLibraryInitializers('beforeStart', initializerArguments);
   };
 
   const moduleConfig = (window['Module'] || {}) as typeof Module;
