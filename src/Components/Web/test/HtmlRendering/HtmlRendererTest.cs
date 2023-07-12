@@ -1079,7 +1079,7 @@ public class HtmlRendererTest
             var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
             // Assert
-            Assert.Equal("<form><input type=\"hidden\" name=\"handler\" value=\"myscope.somename\" /></form>", result.ToHtmlString());
+            Assert.Equal("<form><input type=\"hidden\" name=\"handler\" value=\"[myscope]somename\" /></form>", result.ToHtmlString());
         });
     }
 
@@ -1262,7 +1262,7 @@ public class HtmlRendererTest
 
     class TestFormValueMapper : IFormValueMapper
     {
-        public bool CanMap(Type valueType, string formName = null)
+        public bool CanMap(Type valueType, string mappingScopeName, string formName)
             => throw new NotImplementedException();
 
         public void Map(FormValueMappingContext context)

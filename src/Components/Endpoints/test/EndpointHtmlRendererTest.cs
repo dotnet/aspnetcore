@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Components.Endpoints.Forms;
 using Microsoft.AspNetCore.Components.Endpoints.Tests.TestComponents;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.Forms.Mapping;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Test.Helpers;
@@ -821,7 +822,7 @@ public class EndpointHtmlRendererTest
     public void Duplicate_NamedEventHandlers_AcrossComponents_Throws()
     {
         // Arrange
-        var expectedError = @"There is more than one named event with the name 'default'. Ensure named events have unique names. The following components both use this name:
+        var expectedError = @"There is more than one named event with the name 'default'. Ensure named events have unique names, or are in scopes with distinct names. The following components both use this name:
  - TestComponent > NamedEventHandlerComponent
  - TestComponent > OtherNamedEventHandlerComponent";
 
@@ -1228,6 +1229,7 @@ public class EndpointHtmlRendererTest
         services.AddSingleton<ComponentStatePersistenceManager>();
         services.AddSingleton<PersistentComponentState>(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
         services.AddSingleton<AntiforgeryStateProvider, EndpointAntiforgeryStateProvider>();
+        services.AddSingleton<ICascadingValueSupplier>(_ => new SupplyParameterFromFormValueProvider(null, ""));
 
         return services;
     }

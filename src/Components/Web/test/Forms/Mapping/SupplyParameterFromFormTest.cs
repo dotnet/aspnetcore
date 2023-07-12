@@ -29,14 +29,14 @@ public class SupplyParameterFromFormTest
     }
 
     [Fact]
-    public async Task FindCascadingParameters_HandlesSupplyParameterFromFormValues_WithName()
+    public async Task FindCascadingParameters_HandlesSupplyParameterFromFormValues_WithMappingScopeName()
     {
         // Arrange
         var renderer = CreateRendererWithFormValueModelBinder();
         var formMappingScope = new FormMappingScope
         {
             Name = "scope-name",
-            FormValueModelBinder = new TestFormModelValueBinder("scope-name.handler-name"),
+            FormValueModelBinder = new TestFormModelValueBinder("[scope-name]handler-name"),
             ChildContent = modelBindingContext => builder =>
             {
                 builder.OpenComponent<FormParametersComponentWithName>(0);
@@ -78,12 +78,21 @@ public class SupplyParameterFromFormTest
         [SupplyParameterFromForm(Handler = "handler-name")] public string FormParameter { get; set; }
     }
 
-    class TestFormModelValueBinder(string FormName = "") : IFormValueMapper
+    class TestFormModelValueBinder(string IncomingScopeQualifiedFormName = "") : IFormValueMapper
     {
         public void Map(FormValueMappingContext context) { }
 
-        public bool CanMap(Type valueType, string formName = null)
-            => formName is null || formName == FormName;
+        public bool CanMap(Type valueType, string mappingScopeName, string formName)
+        {
+            if (string.IsNullOrEmpty(mappingScopeName))
+            {
+                return IncomingScopeQualifiedFormName == (formName ?? string.Empty);
+            }
+            else
+            {
+                return IncomingScopeQualifiedFormName == $"[{mappingScopeName}]{formName ?? string.Empty}";
+            }
+        }
     }
 
     class TestComponentBase : IComponent

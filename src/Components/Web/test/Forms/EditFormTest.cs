@@ -155,7 +155,7 @@ public class EditFormTest
 
             // Assigns name to the submit event
             frame => AssertFrame.Attribute(frame, "onsubmit"),
-            frame => AssertFrame.NamedEvent(frame, "onsubmit", "mapping-context-name.my-form"),
+            frame => AssertFrame.NamedEvent(frame, "onsubmit", "my-form"),
 
             frame => AssertFrame.Region(frame, 4),
 
@@ -273,7 +273,7 @@ public class EditFormTest
 
     private class TestFormValueModelBinder : IFormValueMapper
     {
-        public bool CanMap(Type valueType, string formName = null) => false;
+        public bool CanMap(Type valueType, string mappingScopeName, string formName) => false;
         public void Map(FormValueMappingContext context) { }
     }
 }

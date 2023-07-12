@@ -77,7 +77,7 @@ internal partial class EndpointHtmlRenderer
                         // We could allow multiple events with the same name, since they are all tracked separately. However
                         // this is most likely a mistake on the developer's part so we will consider it an error.
                         var existingEntry = _namedSubmitEventsByScopeQualifiedName[scopeQualifiedName];
-                        throw new InvalidOperationException($"There is more than one named event with the name '{scopeQualifiedName}'. Ensure named events have unique names. The following components both use this name:"
+                        throw new InvalidOperationException($"There is more than one named event with the name '{scopeQualifiedName}'. Ensure named events have unique names, or are in scopes with distinct names. The following components both use this name:"
                             + $"\n - {GenerateComponentPath(existingEntry.ComponentId)}"
                             + $"\n - {GenerateComponentPath(addedEntry.ComponentId)}");
                     }
