@@ -194,7 +194,7 @@ public partial class StaticHtmlRenderer
     {
         if (FindFormMappingContext(componentId) is { } formMappingContext)
         {
-            scopeQualifiedEventName = formMappingContext.GetScopeQualifiedFormName(eventName);
+            scopeQualifiedEventName = CreateScopeQualifiedFormName(formMappingContext, eventName);
             return true;
         }
         else
@@ -213,6 +213,19 @@ public partial class StaticHtmlRenderer
             componentState);
 
         return (FormMappingContext?)supplier?.GetCurrentValue(_findFormMappingContext);
+    }
+
+    internal string CreateScopeQualifiedFormName(FormMappingContext mappingContext, string? formHandlerName)
+    {
+        var mappingScopeName = mappingContext.MappingScopeName;
+        if (string.IsNullOrEmpty(mappingScopeName))
+        {
+            return formHandlerName ?? string.Empty;
+        }
+        else
+        {
+            return $"[{mappingScopeName}]{formHandlerName ?? string.Empty}";
+        }
     }
 
     private static bool TryFindEnclosingElementFrame(ArrayRange<RenderTreeFrame> frames, int frameIndex, out int result)

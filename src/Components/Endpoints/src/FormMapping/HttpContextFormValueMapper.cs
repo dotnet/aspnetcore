@@ -22,26 +22,58 @@ internal sealed class HttpContextFormValueMapper : IFormValueMapper
         _formData = formData;
     }
 
-    public bool CanMap(Type valueType, string? formName = null)
+    public bool CanMap(Type valueType, string scopeName, string? formName)
     {
-        if (formName == null)
+        // We must always match on scope
+        if (!_formData.TryGetIncomingHandlerName(out var incomingScopeQualifiedFormName)
+            || !MatchesScope(incomingScopeQualifiedFormName, scopeName, out var incomingFormName))
         {
-            return _options.ResolveConverter(valueType) != null;
+            return false;
+        }
+
+        // Matching on formname is optional, enforced only if a nonempty form name was demanded by the receiver
+        if (formName is not null && !incomingFormName.Equals(formName, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        return _options.ResolveConverter(valueType) is not null;
+    }
+
+    private static bool MatchesScope(string incomingScopeQualifiedFormName, string currentMappingScopeName, out ReadOnlySpan<char> incomingFormName)
+    {
+        if (incomingScopeQualifiedFormName.StartsWith('['))
+        {
+            // The scope-qualified name is in the form "[scopename]formname", so validate that the [scopename]
+            // prefix matches and return the formname part
+            var incomingScopeQualifiedFormNameSpan = incomingScopeQualifiedFormName.AsSpan();
+            if (incomingScopeQualifiedFormNameSpan[1..].StartsWith(currentMappingScopeName, StringComparison.Ordinal)
+                && incomingScopeQualifiedFormName.Length >= currentMappingScopeName.Length + 2
+                && incomingScopeQualifiedFormName[currentMappingScopeName.Length + 1] == ']')
+            {
+                incomingFormName = incomingScopeQualifiedFormNameSpan[(currentMappingScopeName.Length + 1)..];
+                return true;
+            }
         }
         else
         {
-            var result = _formData.IsFormDataAvailable &&
-                string.Equals(formName, _formData.Name, StringComparison.Ordinal) &&
-                _options.ResolveConverter(valueType) != null;
-
-            return result;
+            // The scope-qualified name is in the form "formname", so validating that the scopename matches
+            // means checking that it's empty
+            if (string.IsNullOrEmpty(currentMappingScopeName))
+            {
+                incomingFormName = incomingScopeQualifiedFormName;
+                return true;
+            }
         }
+
+        incomingFormName = default;
+        return false;
     }
 
     public void Map(FormValueMappingContext context)
     {
         // This will func to a proper binder
-        if (!CanMap(context.ValueType, context.FormName))
+        if (!CanMap(context.ValueType, context.MappingScopeName, context.RestrictToFormName))
         {
             context.SetResult(null);
         }

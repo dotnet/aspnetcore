@@ -43,6 +43,13 @@ public sealed class FormMappingScope : ICascadingValueSupplier, IComponent
             {
                 throw new InvalidOperationException($"The {nameof(FormMappingScope)} component requires a nonempty {nameof(Name)} parameter value.");
             }
+            else if (Name.StartsWith('['))
+            {
+                // We use "scope-qualified form name starts with [" as a signal that there's a nonempty scope, so don't let the name itself start that way
+                // Alternatively we could avoid packing both the scope and form name into a single string, or use some encoding. However it's very unlikely
+                // this restriction will affect anyone, and the exact representation is an internal implementation detail.
+                throw new InvalidOperationException($"The mapping scope name '{Name}' starts with a disallowed character.");
+            }
 
             _cascadingValueSupplier = new SupplyParameterFromFormValueProvider(FormValueModelBinder, Name);
         }

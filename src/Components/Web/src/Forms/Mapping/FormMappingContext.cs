@@ -14,16 +14,16 @@ public sealed class FormMappingContext
     private List<KeyValuePair<string, FormMappingError>>? _pendingErrors;
     private Dictionary<string, Dictionary<string, FormMappingError>>? _errorsByFormName;
 
-    internal FormMappingContext(string name)
+    internal FormMappingContext(string mappingScopeName)
     {
-        ArgumentNullException.ThrowIfNull(name);
-        Name = name;
+        ArgumentNullException.ThrowIfNull(mappingScopeName);
+        MappingScopeName = mappingScopeName;
     }
 
     /// <summary>
-    /// The context name.
+    /// The mapping scope name.
     /// </summary>
-    public string Name { get; }
+    public string MappingScopeName { get; }
 
     /// <summary>
     /// Retrieves the list of errors for a given model key.
@@ -91,18 +91,6 @@ public sealed class FormMappingContext
     public string? GetAttemptedValue(string formName, string key) =>
         _errorsByFormName?.TryGetValue(formName, out var formErrors) == true &&
             formErrors.TryGetValue(key, out var mappingError) ? mappingError.AttemptedValue : null;
-
-    internal string GetScopeQualifiedFormName(string? formHandlerName)
-    {
-        if (string.IsNullOrEmpty(Name))
-        {
-            return string.IsNullOrEmpty(formHandlerName) ? string.Empty : formHandlerName;
-        }
-        else
-        {
-            return string.IsNullOrEmpty(formHandlerName) ? Name : $"{Name}.{formHandlerName}";
-        }
-    }
 
     internal void AddError(string key, FormattableString error, string? attemptedValue)
     {

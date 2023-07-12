@@ -41,7 +41,7 @@ public class FormMappingScopeTest
 
         // Assert
         Assert.NotNull(capturedContext);
-        Assert.Equal("named-context", capturedContext.Name);
+        Assert.Equal("named-context", capturedContext.MappingScopeName);
     }
 
     [Fact]
@@ -71,7 +71,7 @@ public class FormMappingScopeTest
 
         // Assert
         Assert.NotNull(capturedContext);
-        Assert.Equal("child-context", capturedContext.Name);
+        Assert.Equal("child-context", capturedContext.MappingScopeName);
     }
 
     [Theory]

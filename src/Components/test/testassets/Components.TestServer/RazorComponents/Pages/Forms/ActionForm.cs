@@ -46,7 +46,7 @@ public class ActionForm : ComponentBase
         void RenderFormContents(RenderTreeBuilder builder, FormMappingContext? bindingContext)
         {
             builder.OpenElement(0, "form");
-            builder.AddAttribute(1, "name", bindingContext.Name);
+            builder.AddAttribute(1, "name", bindingContext.MappingScopeName);
             builder.AddAttribute(6, "method", "POST");
             builder.AddAttribute(7, "onsubmit", async () => await OnSubmit.InvokeAsync(bindingContext));
 

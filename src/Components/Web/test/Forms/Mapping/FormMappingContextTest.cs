@@ -11,13 +11,13 @@ public class FormMappingContextTest
     public void CanCreate_MappingContext_WithDefaultName()
     {
         var context = new FormMappingContext("");
-        Assert.Equal("", context.Name);
+        Assert.Equal("", context.MappingScopeName);
     }
 
     [Fact]
     public void CanCreate_MappingContext_WithName()
     {
         var context = new FormMappingContext("name");
-        Assert.Equal("name", context.Name);
+        Assert.Equal("name", context.MappingScopeName);
     }
 }
