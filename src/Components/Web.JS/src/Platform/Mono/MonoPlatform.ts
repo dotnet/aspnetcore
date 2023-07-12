@@ -12,7 +12,6 @@ import { WebAssemblyBootResourceType, WebAssemblyStartOptions } from '../WebAsse
 import { Blazor } from '../../GlobalExports';
 import { DotnetModuleConfig, EmscriptenModule, MonoConfig, ModuleAPI, RuntimeAPI, GlobalizationMode } from 'dotnet';
 import { BINDINGType, MONOType } from 'dotnet/dotnet-legacy';
-import { invokeOnBeforeStart } from '../../JSInitializers/JSInitializers.WebAssembly';
 
 // initially undefined and only fully initialized after createEmscriptenModuleInstance()
 export let BINDING: BINDINGType = undefined as any;
@@ -171,14 +170,14 @@ async function importDotnetJs(startOptions: Partial<WebAssemblyStartOptions>): P
   return await import(/* webpackIgnore: true */ absoluteSrc);
 }
 
-function prepareRuntimeConfig(options: Partial<WebAssemblyStartOptions>, platformApi: any): DotnetModuleConfig {
+function prepareRuntimeConfig(options: Partial<WebAssemblyStartOptions>): DotnetModuleConfig {
   const config: MonoConfig = {
     maxParallelDownloads: 1000000, // disable throttling parallel downloads
     enableDownloadRetry: false, // disable retry downloads
     applicationEnvironment: options.environment,
   };
 
-  const onConfigLoaded = async (loadedConfig: MonoConfig): Promise<void> => {
+  const onConfigLoaded = async (loadedConfig: MonoConfig, { INTERNAL: MONO_INTERNAL }) => {
     if (!loadedConfig.environmentVariables) {
       loadedConfig.environmentVariables = {};
     }
@@ -189,34 +188,34 @@ function prepareRuntimeConfig(options: Partial<WebAssemblyStartOptions>, platfor
 
     Blazor._internal.getApplicationEnvironment = () => loadedConfig.applicationEnvironment!;
 
-    platformApi.jsInitializer = await invokeOnBeforeStart(loadedConfig, options);
+    const initializerArguments = [options, loadedConfig.resources?.extensions ?? {}];
+    await MONO_INTERNAL.invokeLibraryInitializers('beforeStart', initializerArguments);
   };
 
   const moduleConfig = (window['Module'] || {}) as typeof Module;
   // TODO (moduleConfig as any).preloadPlugins = []; // why do we need this ?
   const dotnetModuleConfig: DotnetModuleConfig = {
     ...moduleConfig,
-    onConfigLoaded,
+    onConfigLoaded: (onConfigLoaded as (config: MonoConfig) => void | Promise<void>),
     onDownloadResourceProgress: setProgress,
     config,
     disableDotnet6Compatibility: false,
-    print,
-    printErr,
+    out: print,
+    err: printErr,
   };
 
   return dotnetModuleConfig;
 }
 
 async function createRuntimeInstance(options: Partial<WebAssemblyStartOptions>): Promise<PlatformApi> {
-  const platformApi: Partial<PlatformApi> = {};
   const { dotnet } = await importDotnetJs(options);
-  const moduleConfig = prepareRuntimeConfig(options, platformApi);
+  const moduleConfig = prepareRuntimeConfig(options);
   const anyDotnet = (dotnet as any);
 
   anyDotnet.withStartupOptions(options).withModuleConfig(moduleConfig);
 
   runtime = await dotnet.create();
-  const { MONO: mono, BINDING: binding, Module: module, setModuleImports, INTERNAL: mono_internal, getConfig } = runtime;
+  const { MONO: mono, BINDING: binding, Module: module, setModuleImports, INTERNAL: mono_internal, getConfig, invokeLibraryInitializers } = runtime;
   Module = module;
   BINDING = binding;
   MONO = mono;
@@ -236,7 +235,9 @@ async function createRuntimeInstance(options: Partial<WebAssemblyStartOptions>):
   });
   attachInteropInvoker();
 
-  return platformApi as PlatformApi;
+  return {
+    invokeLibraryInitializers,
+  };
 }
 
 function setProgress(resourcesLoaded, totalResources) {

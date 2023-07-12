@@ -11,10 +11,6 @@ export type BlazorInitializer = { beforeStart: BeforeBlazorStartedCallback, afte
 export class JSInitializer {
   private afterStartedCallbacks: AfterBlazorStartedCallback[] = [];
 
-  addAfterStartedCallback(afterStartedCallback: AfterBlazorStartedCallback): void {
-    this.afterStartedCallbacks.push(afterStartedCallback);
-  }
-
   async importInitializersAsync(initializerFiles: string[], initializerArguments: unknown[]): Promise<void> {
     // This code is not called on WASM, because library intializers are imported by runtime.
 

@@ -3,7 +3,6 @@
 
 import { MonoObject, MonoString, MonoArray } from 'dotnet/dotnet-legacy';
 import { WebAssemblyStartOptions } from './WebAssemblyStartOptions';
-import { JSInitializer } from '../JSInitializers/JSInitializers';
 
 export interface Platform {
   start(options: Partial<WebAssemblyStartOptions>): Promise<PlatformApi>;
@@ -29,7 +28,7 @@ export interface Platform {
 }
 
 export type PlatformApi = {
-  jsInitializer: JSInitializer
+  invokeLibraryInitializers(functionName: string, args: unknown[]): Promise<void>;
 }
 
 export interface HeapLock {
