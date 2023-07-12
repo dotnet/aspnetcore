@@ -45,6 +45,8 @@ public sealed class RenderTreeBuilder : IDisposable
     /// <param name="elementName">A value representing the type of the element.</param>
     public void OpenElement(int sequence, string elementName)
     {
+        CompletePendingNamedSubmitEvent();
+
         // We are entering a new scope, since we track the "duplicate attributes" per
         // element/component we might need to clean them up now.
         if (_hasSeenAddMultipleAttributes)
@@ -64,11 +66,7 @@ public sealed class RenderTreeBuilder : IDisposable
     /// </summary>
     public void CloseElement()
     {
-        if (_pendingNamedSubmitEvent is { } pendingNamedSubmitEvent)
-        {
-            AddNamedEvent(pendingNamedSubmitEvent.Sequence, "onsubmit", pendingNamedSubmitEvent.AssignedName);
-            _pendingNamedSubmitEvent = default;
-        }
+        CompletePendingNamedSubmitEvent();
 
         var indexOfEntryBeingClosed = _openElementIndices.Pop();
 
@@ -80,6 +78,16 @@ public sealed class RenderTreeBuilder : IDisposable
         }
 
         _entries.Buffer[indexOfEntryBeingClosed].ElementSubtreeLengthField = _entries.Count - indexOfEntryBeingClosed;
+    }
+
+    // TODO: Remove this once Razor supports @onsubmit:name
+    private void CompletePendingNamedSubmitEvent()
+    {
+        if (_pendingNamedSubmitEvent is { } pendingNamedSubmitEvent)
+        {
+            AddNamedEvent(pendingNamedSubmitEvent.Sequence, "onsubmit", pendingNamedSubmitEvent.AssignedName);
+            _pendingNamedSubmitEvent = default;
+        }
     }
 
     /// <summary>
@@ -592,6 +600,8 @@ public sealed class RenderTreeBuilder : IDisposable
 
     private void OpenComponentUnchecked(int sequence, [DynamicallyAccessedMembers(Component)] Type componentType)
     {
+        CompletePendingNamedSubmitEvent();
+
         // We are entering a new scope, since we track the "duplicate attributes" per
         // element/component we might need to clean them up now.
         if (_hasSeenAddMultipleAttributes)

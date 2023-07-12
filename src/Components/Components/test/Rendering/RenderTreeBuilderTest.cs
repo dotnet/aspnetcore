@@ -2300,15 +2300,18 @@ public class RenderTreeBuilderTest
         builder.AddAttribute(1, "attr1", 123);
         builder.AddAttribute(2, "@onsubmit:name", "some custom name");
         builder.AddAttribute(3, "attr2", 456);
+        builder.OpenElement(4, "other");
+        builder.CloseElement();
         builder.CloseElement();
 
         // Assert
         Assert.Collection(
             builder.GetFrames().AsEnumerable(),
-            frame => AssertFrame.Element(frame, "div", 4, 0),
+            frame => AssertFrame.Element(frame, "div", 5, 0),
             frame => AssertFrame.Attribute(frame, "attr1", "123", 1),
             frame => AssertFrame.Attribute(frame, "attr2", "456", 3),
-            frame => AssertFrame.NamedEvent(frame, "onsubmit", "some custom name", 2));
+            frame => AssertFrame.NamedEvent(frame, "onsubmit", "some custom name", 2),
+            frame => AssertFrame.Element(frame, "other", 1));
     }
 
     private class TestComponent : IComponent
