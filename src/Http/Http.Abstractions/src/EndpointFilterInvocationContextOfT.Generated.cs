@@ -42,7 +42,7 @@ internal sealed class EndpointFilterInvocationContext<T0> : EndpointFilterInvoca
     public override IList<object?> Arguments => this;
 
     public T0 Arg0 { get; set; }
-
+    
     public int Count => 1;
 
     public bool IsReadOnly => false;
