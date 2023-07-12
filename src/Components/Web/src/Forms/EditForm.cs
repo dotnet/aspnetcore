@@ -144,7 +144,7 @@ public class EditForm : ComponentBase
         {
             var combinedFormName = MappingContext.GetCombinedFormName(FormHandlerName) ?? string.Empty;
             builder.AddNamedEvent(5, "onsubmit", combinedFormName);
-            RenderSSRFormHandlingChildren(builder, 6, combinedFormName);
+            RenderSSRFormHandlingChildren(builder, 6);
         }
 
         builder.OpenComponent<CascadingValue<EditContext>>(7);
@@ -158,7 +158,7 @@ public class EditForm : ComponentBase
         builder.CloseRegion();
     }
 
-    private void RenderSSRFormHandlingChildren(RenderTreeBuilder builder, int sequence, string submitEventName)
+    private void RenderSSRFormHandlingChildren(RenderTreeBuilder builder, int sequence)
     {
         builder.OpenRegion(sequence);
 
@@ -168,12 +168,6 @@ public class EditForm : ComponentBase
 
         builder.OpenComponent<AntiforgeryToken>(3);
         builder.CloseComponent();
-
-        builder.OpenElement(4, "input");
-        builder.AddAttribute(5, "type", "hidden");
-        builder.AddAttribute(6, "name", "handler");
-        builder.AddAttribute(7, "value", submitEventName);
-        builder.CloseElement();
 
         builder.CloseRegion();
     }

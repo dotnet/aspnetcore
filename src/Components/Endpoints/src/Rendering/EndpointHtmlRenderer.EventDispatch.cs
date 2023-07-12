@@ -30,7 +30,9 @@ internal partial class EndpointHtmlRenderer
         }
 
         var eventHandlerId = FindEventHandlerIdForNamedEvent("onsubmit", frameLocation.ComponentId, frameLocation.FrameIndex);
-        return DispatchEventAsync(eventHandlerId, null, EventArgs.Empty, quiesce: true);
+        return eventHandlerId.HasValue
+            ? DispatchEventAsync(eventHandlerId.Value, null, EventArgs.Empty, quiesce: true)
+            : Task.CompletedTask;
     }
 
     private void UpdateNamedEvents(in RenderBatch renderBatch)
@@ -81,7 +83,7 @@ internal partial class EndpointHtmlRenderer
         }
     }
 
-    private ulong FindEventHandlerIdForNamedEvent(string eventType, int componentId, int frameIndex)
+    private ulong? FindEventHandlerIdForNamedEvent(string eventType, int componentId, int frameIndex)
     {
         var frames = GetCurrentRenderTreeFrames(componentId);
         ref var frame = ref frames.Array[frameIndex];
@@ -114,8 +116,8 @@ internal partial class EndpointHtmlRenderer
             }
         }
 
-        // This won't be possible if the Razor compiler requires @onsubmit:name to be used only when there's an @onsubmit.
-        throw new InvalidOperationException($"The event named '{frame.NamedEventAssignedName}' in component {componentId} at index {frameIndex} does not match a preceding event handler.");
+        // No match found
+        return default;
     }
 
     private string GenerateComponentPath(int componentId)
