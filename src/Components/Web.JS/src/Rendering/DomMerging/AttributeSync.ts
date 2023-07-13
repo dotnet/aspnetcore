@@ -7,51 +7,70 @@ export function synchronizeAttributes(destination: Element, source: Element) {
   const destAttrs = destination.attributes;
   const sourceAttrs = source.attributes;
 
-  // Optimize for the common case where all attributes are unchanged and are even still in the same order
-  const destAttrsLength = destAttrs.length;
-  if (destAttrsLength === sourceAttrs.length) {
-    let hasDifference = false;
-    for (let i = 0; i < destAttrsLength; i++) {
-      const sourceAttr = sourceAttrs.item(i)!;
-      const destAttr = destAttrs.item(i)!;
-      if (sourceAttr.name !== destAttr.name || readSpecialPropertyOrAttributeValue(sourceAttr) !== readSpecialPropertyOrAttributeValue(destAttr)) {
-        hasDifference = true;
-        break;
-      }
+  // Skip most of the work in the common case where all attributes are unchanged and are even still in the same order
+  if (!attributeSetsAreIdentical(destAttrs, sourceAttrs)) {
+    const remainingDestAttrs = new Map<string, Attr>();
+    for (const destAttr of destination.attributes as any) {
+      remainingDestAttrs.set(destAttr.name, destAttr);
     }
 
-    if (!hasDifference) {
-      return;
-    }
-  }
+    for (const sourceAttr of source.attributes as any as Attr[]) {
+      const existingDestAttr = sourceAttr.namespaceURI
+        ? destination.getAttributeNodeNS(sourceAttr.namespaceURI, sourceAttr.localName)
+        : destination.getAttributeNode(sourceAttr.name);
+      if (existingDestAttr) {
+        if (readSpecialPropertyOrAttributeValue(existingDestAttr) !== readSpecialPropertyOrAttributeValue(sourceAttr)) {
+          // Update
+          applyAttributeOrProperty(destination, sourceAttr);
+        }
 
-  // There's some difference
-  const remainingDestAttrs = new Map<string, Attr>();
-  for (const destAttr of destination.attributes as any) {
-    remainingDestAttrs.set(destAttr.name, destAttr);
-  }
-
-  for (const sourceAttr of source.attributes as any as Attr[]) {
-    const existingDestAttr = sourceAttr.namespaceURI
-      ? destination.getAttributeNodeNS(sourceAttr.namespaceURI, sourceAttr.localName)
-      : destination.getAttributeNode(sourceAttr.name);
-    if (existingDestAttr) {
-      if (readSpecialPropertyOrAttributeValue(existingDestAttr) !== readSpecialPropertyOrAttributeValue(sourceAttr)) {
-        // Update
+        remainingDestAttrs.delete(existingDestAttr.name);
+      } else {
+        // Insert
         applyAttributeOrProperty(destination, sourceAttr);
       }
+    }
 
-      remainingDestAttrs.delete(existingDestAttr.name);
-    } else {
-      // Insert
-      applyAttributeOrProperty(destination, sourceAttr);
+    for (const attrToDelete of remainingDestAttrs.values()) {
+      // Delete
+      removeAttributeOrProperty(destination, attrToDelete);
     }
   }
 
-  for (const attrToDelete of remainingDestAttrs.values()) {
-    // Delete
-    removeAttributeOrProperty(destination, attrToDelete);
+  // Even if the attributes were identical, there's one further special case to consider.
+  // If it's an input element, and the attributes do not contain a 'value'/'checked' attribute, then
+  // we have to clear the value explicitly since the above logic won't have looked at it.
+  //
+  // Cases we don't have to deal with here:
+  //  - If the attributes *do* contain 'value'/'checked'. The above logic will already have synchronized
+  //    the value property because it uses readSpecialPropertyOrAttributeValue and applyAttributeOrProperty.
+  //  - Select elements. These are more complex because the value we need to reset to depends on <option>
+  //    elements that are added later. The current workaround is simply not to retain <select> elements at
+  //    all during DOM sync. If this needs to change, we'll need some even more sophisticated way of
+  //    using deferred value assignment.
+  if (source instanceof HTMLInputElement) {
+    const valuePropName = source.type === 'checkbox' ? 'checked' : 'value';
+    if (sourceAttrs.getNamedItem(valuePropName) === null) {
+      tryApplySpecialProperty(destination, valuePropName, null);
+    }
   }
+}
+
+function attributeSetsAreIdentical(destAttrs: NamedNodeMap, sourceAttrs: NamedNodeMap): boolean {
+  const destAttrsLength = destAttrs.length;
+  if (destAttrsLength !== sourceAttrs.length) {
+    return false;
+  }
+
+  for (let i = 0; i < destAttrsLength; i++) {
+    const sourceAttr = sourceAttrs.item(i)!;
+    const destAttr = destAttrs.item(i)!;
+    if (sourceAttr.name !== destAttr.name || readSpecialPropertyOrAttributeValue(sourceAttr) !== readSpecialPropertyOrAttributeValue(destAttr)) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 function applyAttributeOrProperty(element: Element, attr: Attr) {

@@ -93,6 +93,9 @@ function treatAsMatch(destination: Node, source: Node) {
       synchronizeAttributes(destination as Element, source as Element);
       applyAnyDeferredValue(destination as Element);
       synchronizeDomContent(destination as Element, source as Element);
+      if (destination instanceof HTMLTextAreaElement && source instanceof HTMLTextAreaElement && destination.value !== source.value) {
+        destination.value = source.value;
+      }
       break;
     case Node.DOCUMENT_TYPE_NODE:
       // See comment below about doctype nodes. We leave them alone.
@@ -132,7 +135,10 @@ function domNodeComparer(a: Node, b: Node): UpdateCost {
       //       to return UpdateCost.Infinite if either has a key but they don't match. This will prevent unwanted retention.
       //       For the converse (forcing retention, even if that means reordering), we could post-process the list of
       //       inserts/deletes to find matches based on key to treat those pairs as 'move' operations.
-      return (a as Element).tagName === (b as Element).tagName ? UpdateCost.None : UpdateCost.Infinite;
+      const aTagName = (a as Element).tagName;
+      return aTagName === (b as Element).tagName && aTagName !== 'SELECT'
+        ? UpdateCost.None
+        : UpdateCost.Infinite;
     case Node.DOCUMENT_TYPE_NODE:
       // It's invalid to insert or delete doctype, and we have no use case for doing that. So just skip such
       // nodes by saying they are always unchanged.
