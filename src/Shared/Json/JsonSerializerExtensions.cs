@@ -18,6 +18,7 @@ internal static class JsonSerializerExtensions
 
     public static JsonTypeInfo GetReadOnlyTypeInfo(this JsonSerializerOptions options, Type type)
     {
+        options.TypeInfoResolver ??= new EmptyJsonTypeInfoResolver();
         options.MakeReadOnly();
         return options.GetTypeInfo(type);
     }

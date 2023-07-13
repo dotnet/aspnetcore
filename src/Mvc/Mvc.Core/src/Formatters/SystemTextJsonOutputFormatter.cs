@@ -23,6 +23,7 @@ public class SystemTextJsonOutputFormatter : TextOutputFormatter
     {
         SerializerOptions = jsonSerializerOptions;
 
+        jsonSerializerOptions.TypeInfoResolver ??= new EmptyJsonTypeInfoResolver();
         jsonSerializerOptions.MakeReadOnly();
 
         SupportedEncodings.Add(Encoding.UTF8);
