@@ -14,6 +14,7 @@ internal struct FormDataReader
     private readonly IReadOnlyDictionary<FormKey, StringValues> _readOnlyMemoryKeys;
     private readonly Memory<char> _prefixBuffer;
     private Memory<char> _currentPrefixBuffer;
+    private int _currentDepth = 0;
 
     // As an implementation detail, reuse FormKey for the values.
     // It's just a thin wrapper over ReadOnlyMemory<char> that caches
@@ -30,6 +31,8 @@ internal struct FormDataReader
     internal ReadOnlyMemory<char> CurrentPrefix => _currentPrefixBuffer;
 
     public IFormatProvider Culture { get; internal set; }
+
+    public int MaxRecursionDepth { get; set; } = 64;
 
     public Action<string, FormattableString, string?>? ErrorHandler { get; set; }
 
@@ -136,6 +139,13 @@ internal struct FormDataReader
 
     internal void PopPrefix(ReadOnlySpan<char> key)
     {
+        if (_currentDepth > MaxRecursionDepth)
+        {
+            return;
+        }
+
+        _currentDepth--;
+        Debug.Assert(_currentDepth >= 0);
         var keyLength = key.Length;
         // If keyLength is bigger than the current scope keyLength typically means there is a 
         // bug where some part of the code has not popped the scope appropriately.
@@ -157,6 +167,12 @@ internal struct FormDataReader
 
     internal void PushPrefix(scoped ReadOnlySpan<char> key)
     {
+        _currentDepth++;
+        if (_currentDepth > MaxRecursionDepth)
+        {
+            throw new InvalidOperationException($"The maximum recursion depth of '{MaxRecursionDepth}' was exceeded.");
+        }
+
         // We automatically append a "." before adding the suffix, except when its the first element pushed to the
         // scope, or when we are accessing a property after a collection or an indexer like items[1].
         var separator = _currentPrefixBuffer.Length > 0 && key[0] != '['

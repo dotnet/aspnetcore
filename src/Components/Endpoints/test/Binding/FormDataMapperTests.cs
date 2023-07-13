@@ -1083,7 +1083,7 @@ public class FormDataMapperTests
     }
 
     [Fact]
-    public void CanDeserialize_ComplexRecursiveTypes_RecursiveList()
+    public void CanDeserialize_ComplexRecursiveTypes_ThrowsWhenMaxRecursionDepthExceeded()
     {
         // Arrange
         var expected = new RecursiveList()
@@ -1117,28 +1117,12 @@ public class FormDataMapperTests
         };
 
         var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
+        reader.MaxRecursionDepth = 5;
         var options = new FormDataMapperOptions();
 
-        // Act
-        var result = FormDataMapper.Map<RecursiveList>(reader, options);
-
-        // Assert
-        Assert.NotNull(result);
-        Assert.Multiple(() =>
-        {
-            Assert.Equal(expected.Head, result.Head);
-            Assert.Equal(expected.Tail.Head, result.Tail.Head);
-            Assert.Equal(expected.Tail.Tail.Head, result.Tail.Tail.Head);
-            Assert.Equal(expected.Tail.Tail.Tail.Head, result.Tail.Tail.Tail.Head);
-            Assert.Equal(expected.Tail.Tail.Tail.Tail.Head, result.Tail.Tail.Tail.Tail.Head);
-            Assert.Equal(expected.Tail.Tail.Tail.Tail.Tail.Head, result.Tail.Tail.Tail.Tail.Tail.Head);
-            Assert.Equal(expected.Tail.Tail.Tail.Tail.Tail.Tail.Head, result.Tail.Tail.Tail.Tail.Tail.Tail.Head);
-            Assert.Equal(expected.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Head, result.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Head);
-            Assert.Equal(expected.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Head, result.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Head);
-            Assert.Equal(expected.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Head, result.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Head);
-            Assert.Equal(expected.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Head, result.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Head);
-            Assert.Null(result.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail);
-        });
+        // Act && Assert
+        var exception = Assert.Throws<InvalidOperationException>(() => FormDataMapper.Map<RecursiveList>(reader, options));
+        Assert.Equal("The maximum recursion depth of '5' was exceeded.", exception.Message);
     }
 
     [Fact]
