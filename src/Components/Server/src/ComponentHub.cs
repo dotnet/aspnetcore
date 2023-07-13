@@ -189,6 +189,44 @@ internal sealed partial class ComponentHub : Hub
         return false;
     }
 
+    public async ValueTask AddRootComponents(string serializedComponentRecords)
+    {
+        var circuitHost = await GetActiveCircuitAsync();
+        if (circuitHost == null)
+        {
+            return;
+        }
+
+        if (!_serverComponentSerializer.TryDeserializeComponentDescriptorCollection(serializedComponentRecords, out var components))
+        {
+            Log.InvalidInputData(_logger);
+            await NotifyClientError(Clients.Caller, "The list of component records is not valid.");
+            Context.Abort();
+            return;
+        }
+
+        _ = circuitHost.AddRootComponents(components, CancellationToken.None);
+    }
+
+    public async ValueTask UpdateRootComponents(string serializedComponentRecords)
+    {
+        var circuitHost = await GetActiveCircuitAsync();
+        if (circuitHost == null)
+        {
+            return;
+        }
+
+        if (!_serverComponentSerializer.TryDeserializeComponentDescriptorCollection(serializedComponentRecords, out var components))
+        {
+            Log.InvalidInputData(_logger);
+            await NotifyClientError(Clients.Caller, "The list of component records is not valid.");
+            Context.Abort();
+            return;
+        }
+
+        _ = circuitHost.UpdateRootComponents(components, CancellationToken.None);
+    }
+
     public async ValueTask BeginInvokeDotNetFromJS(string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson)
     {
         var circuitHost = await GetActiveCircuitAsync();

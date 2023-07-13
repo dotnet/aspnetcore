@@ -68,18 +68,16 @@ function insertStreamingContentIntoDocument(componentIdAsString: string, docFrag
   const markers = findStreamingMarkers(componentIdAsString);
   if (markers) {
     const { startMarker, endMarker } = markers;
-    const existingContent = new Range();
-    existingContent.setStart(startMarker, startMarker.textContent!.length);
-    existingContent.setEnd(endMarker, 0);
-
-    const destinationRoot = endMarker.parentNode!;
-    const isNodeExcludedFromUpdate = (node: Node) => existingContent.comparePoint(node, 0) !== 0;
-    navigationEnhancementCallbacks.beforeDocumentUpdated(destinationRoot, docFrag, isNodeExcludedFromUpdate);
+    navigationEnhancementCallbacks.beforeDocumentUpdated();
 
     if (enableDomPreservation) {
       synchronizeDomContent({ startExclusive: startMarker, endExclusive: endMarker }, docFrag);
     } else {
       // In this mode we completely delete the old content before inserting the new content
+      const destinationRoot = endMarker.parentNode!;
+      const existingContent = new Range();
+      existingContent.setStart(startMarker, startMarker.textContent!.length);
+      existingContent.setEnd(endMarker, 0);
       existingContent.deleteContents();
 
       while (docFrag.childNodes[0]) {

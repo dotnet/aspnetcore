@@ -1,0 +1,81 @@
+﻿@using System.Threading.Channels;
+@using TestContentPackage;
+
+<p>
+    Every time you make a request to <a id="add-counter-link" href="streaming-interactivity/add-counter/1" target="_blank">add counter</a>, we'll
+    add an interactive counter to this response.
+</p>
+<p>
+    Complete the response by visiting <a id="end-response-link" href="streaming-interactivity/end-response" target="_blank">end response</a>.
+</p>
+
+<div>
+    @foreach (var counter in _counters)
+    {
+        <Counter
+            @rendermode="@RenderMode.Server"
+            @key="@counter.Id"
+            IdSuffix="@counter.Id.ToString()"
+            IncrementAmount="counter.IncrementAmount" />
+    }
+</div>
+
+<p id="status">
+    @if (_finished)
+    {
+        <text>Finished</text>
+    }
+    else
+    {
+        <text>Waiting for more...</text>
+    }
+</p>
+
+@code {
+
+    static Channel<object> StreamingCommandChannel;
+
+    readonly List<CounterInfo> _counters = new();
+
+    int _nextCounterId = 0;
+    bool _finished = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        StreamingCommandChannel = Channel.CreateUnbounded<object>();
+
+        await foreach (var command in StreamingCommandChannel.Reader.ReadAllAsync())
+        {
+            switch (command)
+            {
+                case AddCounterCommand addCounter:
+                    _counters.Add(new(_nextCounterId++, addCounter.IncrementAmount));
+                    break;
+                default:
+                    continue;
+            }
+
+            StateHasChanged();
+        }
+
+        _finished = true;
+    }
+
+    public static void MapEndpoints(IEndpointRouteBuilder endpoints)
+    {
+        endpoints.MapGet("streaming-interactivity/add-counter/{incrementAmount:int}", (int incrementAmount) =>
+        {
+            StreamingCommandChannel.Writer.TryWrite(new AddCounterCommand(incrementAmount));
+            return $"Added counter with increment amount {incrementAmount}";
+        });
+
+        endpoints.MapGet("streaming-interactivity/end-response", () =>
+        {
+            StreamingCommandChannel.Writer.Complete();
+            return "Response ended";
+        });
+    }
+
+    private record CounterInfo(int Id, int IncrementAmount);
+    private record AddCounterCommand(int IncrementAmount);
+}

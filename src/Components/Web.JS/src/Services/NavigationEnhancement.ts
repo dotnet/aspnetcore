@@ -35,8 +35,10 @@ let currentEnhancedNavigationAbortController: AbortController | null;
 let navigationEnhancementCallbacks: NavigationEnhancementCallbacks;
 
 export interface NavigationEnhancementCallbacks {
-  beforeDocumentUpdated: (destinationRoot: Node, newContent?: Node, isDestinationNodeExcluded?: ((node: Node) => boolean)) => void;
+  beforeEnhancedNavigation: () => void;
+  beforeDocumentUpdated: () => void;
   afterDocumentUpdated: () => void;
+  afterEnhancedNavigation: () => void;
 }
 
 export function attachProgressivelyEnhancedNavigationListener(callbacks: NavigationEnhancementCallbacks) {
@@ -106,6 +108,8 @@ function onDocumentSubmit(event: SubmitEvent) {
 }
 
 export async function performEnhancedPageLoad(internalDestinationHref: string, fetchOptions?: RequestInit) {
+  navigationEnhancementCallbacks.beforeEnhancedNavigation();
+
   // First, stop any preceding enhanced page load
   currentEnhancedNavigationAbortController?.abort();
 
@@ -129,18 +133,18 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, f
       if (responseContentType?.startsWith('text/html') && initialContent) {
         // For HTML responses, regardless of the status code, display it
         const parsedHtml = new DOMParser().parseFromString(initialContent, 'text/html');
-        navigationEnhancementCallbacks.beforeDocumentUpdated(document, parsedHtml);
+        navigationEnhancementCallbacks.beforeDocumentUpdated();
         synchronizeDomContent(document, parsedHtml);
         navigationEnhancementCallbacks.afterDocumentUpdated();
       } else if (responseContentType?.startsWith('text/') && initialContent) {
         // For any other text-based content, we'll just display it, because that's what
         // would happen if this was a non-enhanced request.
-        navigationEnhancementCallbacks.beforeDocumentUpdated(document);
+        navigationEnhancementCallbacks.beforeDocumentUpdated();
         replaceDocumentWithPlainText(initialContent);
         navigationEnhancementCallbacks.afterDocumentUpdated();
       } else if ((response.status < 200 || response.status >= 300) && !initialContent) {
         // For any non-success response that has no content at all, make up our own error UI
-        navigationEnhancementCallbacks.beforeDocumentUpdated(document);
+        navigationEnhancementCallbacks.beforeDocumentUpdated();
         replaceDocumentWithPlainText(`Error: ${response.status} ${response.statusText}`);
         navigationEnhancementCallbacks.afterDocumentUpdated();
       } else {
@@ -155,7 +159,7 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, f
           location.replace(internalDestinationHref);
         } else {
           // For non-get requests, we can't safely re-request, so just treat it as an error
-          navigationEnhancementCallbacks.beforeDocumentUpdated(document);
+          navigationEnhancementCallbacks.beforeDocumentUpdated();
           replaceDocumentWithPlainText(`Error: ${fetchOptions.method} request to ${internalDestinationHref} returned non-HTML content of type ${responseContentType || 'unspecified'}.`);
           navigationEnhancementCallbacks.afterDocumentUpdated();
         }
@@ -178,6 +182,8 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, f
       targetElem?.scrollIntoView();
     }
   }
+
+  navigationEnhancementCallbacks.afterEnhancedNavigation();
 }
 
 async function getResponsePartsWithFraming(responsePromise: Promise<Response>, abortSignal: AbortSignal, onInitialDocument: (response: Response, initialDocumentText: string) => void, onStreamingElement: (streamingElementMarkup) => void) {

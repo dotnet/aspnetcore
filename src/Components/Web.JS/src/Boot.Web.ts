@@ -9,7 +9,7 @@
 //    of interactive components
 
 import { DotNet } from '@microsoft/dotnet-js-interop';
-import { startCircuit } from './Boot.Server.Common';
+import { addServerDescriptor, processRemovedServerDescriptors, processUpdatedServerDescriptors, startCircuit } from './Boot.Server.Common';
 import { startWebAssembly } from './Boot.WebAssembly.Common';
 import { shouldAutoStart } from './BootCommon';
 import { Blazor } from './GlobalExports';
@@ -17,22 +17,13 @@ import { WebStartOptions } from './Platform/WebStartOptions';
 import { attachStreamingRenderingListener } from './Rendering/StreamingRendering';
 import { NavigationEnhancementCallbacks, attachProgressivelyEnhancedNavigationListener } from './Services/NavigationEnhancement';
 import { WebAssemblyComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
-import { ServerComponentDescriptor, discoverComponents } from './Services/ComponentDescriptorDiscovery';
-import { LogicalElement, getLogicalRootOriginalComponentId, moveLogicalRootToDocumentFragment } from './Rendering/LogicalElements';
-import { removeRootComponentAsync } from './Rendering/WebRendererInteropMethods';
-import { RootComponentInfo, rootComponentInfoPropname } from './Rendering/Renderer';
+import { ServerComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
+import { DescriptorHandler, attachComponentDescriptorHandler, processComponentDescriptors } from './Rendering/DomMerging/BoundarySync';
 
 let started = false;
+let isPerformingEnhnacedNavigation = false;
 let webStartOptions: Partial<WebStartOptions> | undefined;
-
-const pendingSSRComponentsByComponentId = new Map<number, SSRComponent>();
-let pendingElementToFocus : Element | null = null;
-
-interface SSRComponent {
-  interactiveDocFrag?: DocumentFragment,
-  serverDescriptor?: ServerComponentDescriptor,
-  webAssemblyDescriptor?: WebAssemblyComponentDescriptor,
-}
+let lastActiveElement: Element | null = null;
 
 function boot(options?: Partial<WebStartOptions>) : Promise<void> {
   if (started) {
@@ -42,155 +33,97 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
   webStartOptions = options;
 
   const navigationEnhancementCallbacks: NavigationEnhancementCallbacks = {
+    beforeEnhancedNavigation,
     beforeDocumentUpdated,
     afterDocumentUpdated,
+    afterEnhancedNavigation,
   };
 
+  const descriptorHandler: DescriptorHandler = {
+    onDescriptorAdded,
+  };
+
+  attachComponentDescriptorHandler(descriptorHandler);
   attachStreamingRenderingListener(options?.ssr, navigationEnhancementCallbacks);
 
   if (!options?.ssr?.disableDomPreservation) {
     attachProgressivelyEnhancedNavigationListener(navigationEnhancementCallbacks);
   }
 
+  processComponentDescriptors(document);
+
   return Promise.resolve();
 }
 
-function beforeDocumentUpdated(destinationRoot: Node, newContent?: Node, isNodeExcludedFromUpdate?: (node: Node) => boolean) {
-  pendingSSRComponentsByComponentId.clear();
-  pendingElementToFocus = document.activeElement;
-
-  if (newContent) {
-    const newServerComponents = discoverComponents(newContent, 'server') as ServerComponentDescriptor[];
-    const newWebAssemblyComponents = discoverComponents(newContent, 'webassembly') as WebAssemblyComponentDescriptor[];
-
-    for (const serverDescriptor of newServerComponents) {
-      pendingSSRComponentsByComponentId.set(serverDescriptor.id, {
-        serverDescriptor,
-      });
-    }
-
-    for (const webAssemblyDescriptor of newWebAssemblyComponents) {
-      // TODO: For now, we assume only one comment is present for a given component.
-      // When we implement auto mode we'll have to either:
-      // * Account for the possibility of mulitple comments being present.
-      // * Come up with a new SSR component representation.
-      if (pendingSSRComponentsByComponentId.has(webAssemblyDescriptor.id)) {
-        throw new Error("The 'auto' render mode is not supported yet.");
-      }
-      pendingSSRComponentsByComponentId.set(webAssemblyDescriptor.id, {
-        webAssemblyDescriptor,
-      });
-    }
+function onDescriptorAdded(descriptor: ServerComponentDescriptor | WebAssemblyComponentDescriptor) {
+  switch (descriptor.type) {
+    case 'server':
+      // Start the circuit now so that it's more likely to be ready by the time interactivity actually starts.
+      startCircuitIfNotStarted();
+      addServerDescriptor(descriptor);
+      break;
+    case 'webassembly':
+      startWebAssemblyIfNotStarted();
+      // TODO: WebAssembly.
+      break;
   }
+}
 
-  const iterator = document.createNodeIterator(destinationRoot, NodeFilter.SHOW_COMMENT);
-  while (iterator.nextNode()) {
-    const node = iterator.referenceNode;
-    const rootComponentInfo = node[rootComponentInfoPropname] as RootComponentInfo;
-    if (!rootComponentInfo || isNodeExcludedFromUpdate?.(node)) {
-      continue;
-    }
+function beforeEnhancedNavigation() {
+  isPerformingEnhnacedNavigation = true;
+}
 
-    const nodeAsLogicalElement = node as unknown as LogicalElement;
-    const ssrComponentId = getLogicalRootOriginalComponentId(nodeAsLogicalElement);
-    if (!ssrComponentId) {
-      throw new Error('Unknown SSR component ID for interactive root component.');
-    }
-
-    // Synchronously move the DOM owned by this component to a document fragment so
-    // that the document can be updated without touching renderer-managed DOM.
-    const docFrag = moveLogicalRootToDocumentFragment(nodeAsLogicalElement);
-
-    const pendingSSRComponent = pendingSSRComponentsByComponentId.get(ssrComponentId);
-    if (pendingSSRComponent) {
-      // Mark the SSR component as needing to be replaced by an existing interactive component
-      // after the document gets updated.
-      pendingSSRComponent.interactiveDocFrag = docFrag;
-
-      // Since the interactive component already exists, normalize the descriptor to a non-prerendered
-      // format. We will later use the marker to move the interactive DOM back in place and supply
-      // updated component parameters.
-      const descriptor = pendingSSRComponent?.serverDescriptor ?? pendingSSRComponent.webAssemblyDescriptor!;
-      const { start, end } = descriptor;
-      if (end) {
-        const range = new Range();
-        range.setStartAfter(start);
-        range.setEndAfter(end);
-        range.deleteContents();
-      }
-    } else {
-      // The interactive component has no corresponding descriptor, so we initiate an asynchronous disposal
-      // of the component, which will eventually clean up its remaining browser-side state.
-      removeRootComponentAsync(rootComponentInfo.browserRendererId, rootComponentInfo.componentId);
-    }
-  }
+function beforeDocumentUpdated() {
+  lastActiveElement = document.activeElement;
 }
 
 function afterDocumentUpdated() {
-  const serverComponentsToAdd: ServerComponentDescriptor[] = [];
-  const webAssemblyComponentsToAdd: WebAssemblyComponentDescriptor[] = [];
-
-  for (const ssrComponent of pendingSSRComponentsByComponentId.values()) {
-    const docFrag = ssrComponent.interactiveDocFrag;
-    const marker = ssrComponent.serverDescriptor ?? ssrComponent.webAssemblyDescriptor!;
-    if (docFrag) {
-      // The component already had established content on the page, so we restore
-      // the original content.
-      const markerComment = marker.start;
-      if (markerComment.ownerDocument !== document) {
-        throw new Error('Component marker comment was not merged into the DOM.');
-      }
-
-      const markerParent = markerComment.parentNode!;
-      markerParent.insertBefore(docFrag, markerComment);
-      markerParent.removeChild(markerComment);
-      // TODO: Update component values.
-    } else {
-      // Initialize new components.
-      if (ssrComponent.serverDescriptor) {
-        serverComponentsToAdd.push(ssrComponent.serverDescriptor);
-      } else if (ssrComponent.webAssemblyDescriptor) {
-        webAssemblyComponentsToAdd.push(ssrComponent.webAssemblyDescriptor);
-      }
-    }
+  if ((lastActiveElement instanceof HTMLElement) && lastActiveElement !== document.activeElement) {
+    lastActiveElement.focus();
   }
 
-  if (serverComponentsToAdd.length) {
-    addServerRootComponents(serverComponentsToAdd);
-  }
-
-  if (webAssemblyComponentsToAdd.length) {
-    addWebAssemblyRootComponents(webAssemblyComponentsToAdd);
-  }
-
-  if ((pendingElementToFocus instanceof HTMLElement) && document.activeElement !== pendingElementToFocus) {
-    pendingElementToFocus.focus();
-  }
-
-  pendingElementToFocus = null;
-  pendingSSRComponentsByComponentId.clear();
+  lastActiveElement = null;
+  handleUpdatedDescriptors();
 }
 
-let startCircuitPromise: Promise<void> | null = null;
-async function addServerRootComponents(descriptors: ServerComponentDescriptor[]) {
-  if (!startCircuitPromise) {
-    startCircuitPromise = startCircuit(webStartOptions?.circuit, descriptors);
-    await startCircuitPromise;
-  } else {
-    await startCircuitPromise;
-    // TODO: Update component parameters.
+function afterEnhancedNavigation() {
+  isPerformingEnhnacedNavigation = false;
+  handleUpdatedDescriptors();
+}
+
+function handleUpdatedDescriptors() {
+  processRemovedServerDescriptors();
+
+  if (!isPerformingEnhnacedNavigation) {
+    // We avoid adding new root components during enhanced navigations.
+
+    // TODO: Handle 'activate' and 'update' seprately.
+    // We might want to update parameters of existing components
+    // without activating new ones.
+    processUpdatedServerDescriptors();
   }
 }
 
-let startWebAssemblyPromise: Promise<void> | null = null;
-async function addWebAssemblyRootComponents(descriptors: WebAssemblyComponentDescriptor[]) {
-  if (!startWebAssemblyPromise) {
-    startWebAssemblyPromise = startWebAssembly(webStartOptions?.webAssembly, descriptors);
-    await startWebAssemblyPromise;
-  } else {
-    await startWebAssemblyPromise;
-    // TODO: Update component parameters.
+let circuitStarted = false;
+async function startCircuitIfNotStarted() {
+  if (circuitStarted) {
+    return;
   }
+
+  circuitStarted = true;
+  await startCircuit(webStartOptions?.circuit);
+  handleUpdatedDescriptors();
+}
+
+let webAssemblyStarted = false;
+async function startWebAssemblyIfNotStarted() {
+  if (webAssemblyStarted) {
+    return;
+  }
+
+  webAssemblyStarted = true;
+  await startWebAssembly(webStartOptions?.webAssembly);
+  handleUpdatedDescriptors();
 }
 
 Blazor.start = boot;

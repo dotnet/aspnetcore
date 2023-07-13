@@ -203,7 +203,7 @@ internal partial class EndpointHtmlRenderer
         // streaming SSR or progressively-enhanced navigation.
 
         var (serverMarker, webAssemblyMarker) = componentState.Component is SSRRenderModeBoundary boundary
-            ? boundary.ToMarkers(componentId, _httpContext)
+            ? boundary.ToMarkers(_httpContext)
             : default;
 
         if (serverMarker.HasValue)

@@ -1,22 +1,29 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-export function discoverComponents(root: Node, type: 'webassembly' | 'server'): ServerComponentDescriptor[] | WebAssemblyComponentDescriptor[] {
-  switch (type){
+export function discoverComponents(root: Node, type: 'webassembly' | 'server', directChildrenOnly?: boolean): ServerComponentDescriptor[] | WebAssemblyComponentDescriptor[] {
+  if (!root.hasChildNodes()) {
+    return [];
+  }
+
+  return discoverComponentsFromNodeList(root.childNodes, type, directChildrenOnly);
+}
+
+export function discoverComponentsFromNodeList(nodes: NodeListOf<ChildNode>, type: 'webassembly' | 'server', directChildrenOnly?: boolean): ServerComponentDescriptor[] | WebAssemblyComponentDescriptor[] {
+  switch (type) {
     case 'webassembly':
-      return discoverWebAssemblyComponents(root);
+      return discoverWebAssemblyComponents(nodes, directChildrenOnly);
     case 'server':
-      return discoverServerComponents(root);
+      return discoverServerComponents(nodes, directChildrenOnly);
   }
 }
 
-function discoverServerComponents(root: Node): ServerComponentDescriptor[] {
-  const componentComments = resolveComponentComments(root, 'server') as ServerComponentComment[];
+function discoverServerComponents(nodes: NodeListOf<ChildNode>, directChildrenOnly?: boolean): ServerComponentDescriptor[] {
+  const componentComments = resolveComponentComments(nodes, 'server', directChildrenOnly) as ServerComponentComment[];
   const discoveredComponents: ServerComponentDescriptor[] = [];
   for (let i = 0; i < componentComments.length; i++) {
     const componentComment = componentComments[i];
     const entry = new ServerComponentDescriptor(
-      componentComment.componentId,
       componentComment.type,
       componentComment.start,
       componentComment.end,
@@ -59,8 +66,8 @@ export function discoverPersistedState(node: Node): string | null | undefined {
   return;
 }
 
-function discoverWebAssemblyComponents(root: Node): WebAssemblyComponentDescriptor[] {
-  const componentComments = resolveComponentComments(root, 'webassembly') as WebAssemblyComponentDescriptor[];
+function discoverWebAssemblyComponents(nodes: NodeListOf<ChildNode>, directChildrenOnly?: boolean): WebAssemblyComponentDescriptor[] {
+  const componentComments = resolveComponentComments(nodes, 'webassembly', directChildrenOnly) as WebAssemblyComponentDescriptor[];
   const discoveredComponents: WebAssemblyComponentDescriptor[] = [];
   for (let i = 0; i < componentComments.length; i++) {
     const componentComment = componentComments[i];
@@ -87,7 +94,6 @@ interface ComponentComment {
 
 interface ServerComponentComment {
   type: 'server';
-  componentId: number,
   sequence: number;
   descriptor: string;
   start: Node;
@@ -106,19 +112,16 @@ interface WebAssemblyComponentComment {
   end?: Node;
 }
 
-function resolveComponentComments(node: Node, type: 'webassembly' | 'server'): ComponentComment[] {
-  if (!node.hasChildNodes()) {
-    return [];
-  }
-
+function resolveComponentComments(nodes: NodeListOf<ChildNode>, type: 'webassembly' | 'server', directChildrenOnly?: boolean): ComponentComment[] {
   const result: ComponentComment[] = [];
-  const childNodeIterator = new ComponentCommentIterator(node.childNodes);
+  const childNodeIterator = new ComponentCommentIterator(nodes);
   while (childNodeIterator.next() && childNodeIterator.currentElement) {
     const componentComment = getComponentComment(childNodeIterator, type);
     if (componentComment) {
       result.push(componentComment);
-    } else {
-      const childResults = resolveComponentComments(childNodeIterator.currentElement, type);
+    } else if (!directChildrenOnly && childNodeIterator.currentElement.hasChildNodes()) {
+      const childNodes = childNodeIterator.currentElement.childNodes;
+      const childResults = resolveComponentComments(childNodes, type);
       for (let j = 0; j < childResults.length; j++) {
         const childResult = childResults[j];
         result.push(childResult);
@@ -177,7 +180,7 @@ function assertNotDirectlyOnDocument(marker: Node) {
 }
 
 function createServerComponentComment(payload: ServerComponentComment, start: Node, iterator: ComponentCommentIterator): ServerComponentComment | undefined {
-  const { type, componentId, descriptor, sequence, prerenderId } = payload;
+  const { type, descriptor, sequence, prerenderId } = payload;
 
   // Regardless of whether this comment matches the type we're looking for (i.e., 'server'), we still need to move the iterator
   // on to its end position since we don't want to recurse into unrelated prerendered components, nor do we want to get confused
@@ -205,7 +208,6 @@ function createServerComponentComment(payload: ServerComponentComment, start: No
 
   return {
     type,
-    componentId,
     sequence,
     descriptor,
     start,
@@ -323,11 +325,10 @@ interface ServerComponentMarker {
   type: string;
   sequence: number;
   descriptor: string;
+  interactiveComponentId?: number;
 }
 
 export class ServerComponentDescriptor {
-  public id: number;
-
   public type: string;
 
   public start: Node;
@@ -338,8 +339,9 @@ export class ServerComponentDescriptor {
 
   public descriptor: string;
 
-  public constructor(id: number, type: string, start: Node, end: Node | undefined, sequence: number, descriptor: string) {
-    this.id = id;
+  public interactiveComponentId?: number;
+
+  public constructor(type: string, start: Node, end: Node | undefined, sequence: number, descriptor: string) {
     this.type = type;
     this.start = start;
     this.end = end;
@@ -348,7 +350,7 @@ export class ServerComponentDescriptor {
   }
 
   public toRecord(): ServerComponentMarker {
-    const result = { type: this.type, sequence: this.sequence, descriptor: this.descriptor };
+    const result = { type: this.type, sequence: this.sequence, descriptor: this.descriptor, interactiveComponentId: this.interactiveComponentId };
     return result;
   }
 }

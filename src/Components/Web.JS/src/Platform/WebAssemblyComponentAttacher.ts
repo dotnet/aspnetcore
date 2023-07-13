@@ -4,6 +4,7 @@
 import { LogicalElement, toLogicalRootCommentElement } from '../Rendering/LogicalElements';
 import { WebAssemblyComponentDescriptor } from '../Services/ComponentDescriptorDiscovery';
 
+// TODO: Update this class to support dynamically-added descriptors.
 export class WebAssemblyComponentAttacher {
   public preregisteredComponents: WebAssemblyComponentDescriptor[];
 
@@ -23,7 +24,7 @@ export class WebAssemblyComponentAttacher {
     const parsedId = Number.parseInt(id);
     if (!Number.isNaN(parsedId)) {
       const component = this.componentsById[parsedId];
-      return toLogicalRootCommentElement(component.start as Comment, component.end as Comment, component.id);
+      return toLogicalRootCommentElement(component);
     } else {
       return undefined;
     }

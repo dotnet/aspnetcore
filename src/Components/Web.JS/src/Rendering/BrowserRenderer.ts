@@ -393,22 +393,15 @@ function clearElement(element: Element) {
 }
 
 function clearBetween(start: Node, end: Node): void {
-  const logicalParent = getLogicalParent(start as unknown as LogicalElement);
-  if (!logicalParent) {
-    throw new Error("Can't clear between nodes. The start node does not have a logical parent.");
-  }
-  const children = getLogicalChildrenArray(logicalParent);
-  const removeStart = children.indexOf(start as unknown as LogicalElement) + 1;
-  const endIndex = children.indexOf(end as unknown as LogicalElement);
-
-  // We remove the end component comment from the DOM as we don't need it after this point.
-  for (let i = removeStart; i <= endIndex; i++) {
-    removeLogicalChild(logicalParent, removeStart);
-  }
+  const range = new Range();
+  range.setStartAfter(start);
+  range.setEndBefore(end);
+  range.deleteContents();
 
   // We sanitize the start comment by removing all the information from it now that we don't need it anymore
   // as it adds noise to the DOM.
   start.textContent = '!';
+  end.textContent = '!';
 }
 
 function stripOnPrefix(attributeName: string) {

@@ -59,6 +59,11 @@ internal partial class RemoteRenderer : WebRenderer
         return RenderRootComponentAsync(componentId, parameters);
     }
 
+    public Task SetRootComponentParametersAsync(int componentId, ParameterView parameters)
+    {
+        return RenderRootComponentAsync(componentId, parameters);
+    }
+
     // This ID needs to be kept in sync with the Blazor JS implementation.
     protected override int AllocateRendererId() => 1;
 

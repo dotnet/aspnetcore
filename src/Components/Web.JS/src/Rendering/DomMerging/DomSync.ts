@@ -3,9 +3,15 @@
 
 import { applyAnyDeferredValue } from '../DomSpecialPropertyUtil';
 import { synchronizeAttributes } from './AttributeSync';
+import { insertBoundaryCommentsIntoDestination, insertBoundaryCommentsIntoNewContent, insertBoundary, isBoundaryComment, processComponentDescriptors, synchronizeBoundary } from './BoundarySync';
 import { UpdateCost, ItemList, Operation, computeEditScript } from './EditScript';
 
 export function synchronizeDomContent(destination: CommentBoundedRange | Node, newContent: Node) {
+  // Start by transforming all child nodes involving a root component (either SSR'd or interactive) to
+  // boundary comments that can be easily synchronized.
+  insertBoundaryCommentsIntoDestination(destination);
+  insertBoundaryCommentsIntoNewContent(newContent);
+
   let destinationParent: Node;
   let nextDestinationNode: Node | null;
   let originalNodesForDiff: ItemList<Node>;
@@ -25,14 +31,17 @@ export function synchronizeDomContent(destination: CommentBoundedRange | Node, n
   const editScript = computeEditScript(
     originalNodesForDiff,
     newContent.childNodes,
-    domNodeComparer);
+    domNodeComparer
+  );
 
   // Handle any common leading items
   let nextNewContentNode = newContent.firstChild; // Could be null
   for (let i = 0; i < editScript.skipCount; i++) {
-    treatAsMatch(nextDestinationNode!, nextNewContentNode!);
-    nextDestinationNode = nextDestinationNode!.nextSibling!;
+    const destination = nextDestinationNode!;
+    const source = nextNewContentNode!;
+    nextDestinationNode = nextDestinationNode!.nextSibling;
     nextNewContentNode = nextNewContentNode!.nextSibling;
+    treatAsMatch(destination, source);
   }
 
   // Handle any edited region
@@ -43,26 +52,34 @@ export function synchronizeDomContent(destination: CommentBoundedRange | Node, n
     for (let editIndex = 0; editIndex < editsLength; editIndex++) {
       const operation = edits[editIndex];
       switch (operation) {
-        case Operation.Keep:
-          treatAsMatch(nextDestinationNode!, nextNewContentNode!);
+        case Operation.Keep: {
+          const destination = nextDestinationNode!;
+          const source = nextNewContentNode!;
           nextDestinationNode = nextDestinationNode!.nextSibling;
           nextNewContentNode = nextNewContentNode!.nextSibling;
+          treatAsMatch(destination, source);
           break;
-        case Operation.Update:
-          treatAsSubstitution(nextDestinationNode!, nextNewContentNode!);
+        }
+        case Operation.Update: {
+          const destination = nextDestinationNode!;
+          const source = nextNewContentNode!;
           nextDestinationNode = nextDestinationNode!.nextSibling;
           nextNewContentNode = nextNewContentNode!.nextSibling;
+          treatAsSubstitution(destination, source);
           break;
-        case Operation.Delete:
+        }
+        case Operation.Delete: {
           const nodeToRemove = nextDestinationNode!;
           nextDestinationNode = nodeToRemove.nextSibling;
           destinationParent.removeChild(nodeToRemove);
           break;
-        case Operation.Insert:
+        }
+        case Operation.Insert: {
           const nodeToInsert = nextNewContentNode!;
           nextNewContentNode = nodeToInsert.nextSibling;
-          destinationParent.insertBefore(nodeToInsert, nextDestinationNode);
+          treatAsInsertion(nodeToInsert, nextDestinationNode, destinationParent);
           break;
+        }
         default:
           throw new Error(`Unexpected operation: '${operation}'`);
       }
@@ -72,9 +89,11 @@ export function synchronizeDomContent(destination: CommentBoundedRange | Node, n
     // These can only exist if there were some edits, otherwise everything would be in the set of common leading items
     const endAtNodeExclOrNull = destination instanceof Node ? null : destination.endExclusive;
     while (nextDestinationNode !== endAtNodeExclOrNull) {
-      treatAsMatch(nextDestinationNode!, nextNewContentNode!);
+      const destination = nextDestinationNode!;
+      const source = nextNewContentNode!;
       nextDestinationNode = nextDestinationNode!.nextSibling;
       nextNewContentNode = nextNewContentNode!.nextSibling;
+      treatAsMatch(destination, source);
     }
     if (nextNewContentNode) {
       // Should never be possible, as it would imply a bug in the edit script calculation, or possibly an unsupported
@@ -87,7 +106,9 @@ export function synchronizeDomContent(destination: CommentBoundedRange | Node, n
 function treatAsMatch(destination: Node, source: Node) {
   switch (destination.nodeType) {
     case Node.TEXT_NODE:
+      break;
     case Node.COMMENT_NODE:
+      synchronizeBoundary(destination as Comment, source as Comment);
       break;
     case Node.ELEMENT_NODE:
       synchronizeAttributes(destination as Element, source as Element);
@@ -105,11 +126,19 @@ function treatAsMatch(destination: Node, source: Node) {
 function treatAsSubstitution(destination: Node, source: Node) {
   switch (destination.nodeType) {
     case Node.TEXT_NODE:
-    case Node.COMMENT_NODE:
       (destination as Text).textContent = (source as Text).textContent;
       break;
     default:
       throw new Error(`Not implemented: substituting nodes of type ${destination.nodeType}`);
+  }
+}
+
+function treatAsInsertion(nodeToInsert: Node, nextNode: Node | null, parentNode: Node) {
+  if (isBoundaryComment(nodeToInsert)) {
+    insertBoundary(nodeToInsert as Comment, nextNode, parentNode);
+  } else {
+    processComponentDescriptors(nodeToInsert);
+    parentNode.insertBefore(nodeToInsert, nextNode);
   }
 }
 
@@ -120,9 +149,13 @@ function domNodeComparer(a: Node, b: Node): UpdateCost {
 
   switch (a.nodeType) {
     case Node.TEXT_NODE:
+    case Node.COMMENT_NODE:
       // We're willing to update text nodes in place, but treat the update operation as being
       // as costly as an insertion or deletion
-      return a.textContent === b.textContent ? UpdateCost.None : UpdateCost.Some;
+
+      // TODO: Make this comparison smarter. It should know whether we're dealing with a boundary
+      // comment.
+      return a.textContent === b.textContent ? UpdateCost.None : UpdateCost.Infinite;
     case Node.ELEMENT_NODE:
       // For elements, we're only doing a shallow comparison and don't know if attributes/descendants are different.
       // We never 'update' one element type into another. We regard the update cost for same-type elements as zero because

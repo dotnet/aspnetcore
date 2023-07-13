@@ -20,8 +20,9 @@ import { RendererId } from './Rendering/RendererId';
 
 let renderingFailed = false;
 let connection: HubConnection;
-let circuit: CircuitDescriptor;
 let dispatcher: DotNet.ICallDispatcher;
+
+const circuit = new CircuitDescriptor();
 
 export async function startCircuit(userOptions?: Partial<CircuitStartOptions>, components?: ServerComponentDescriptor[]): Promise<void> {
   // Establish options to be used
@@ -52,7 +53,6 @@ export async function startCircuit(userOptions?: Partial<CircuitStartOptions>, c
   logger.log(LogLevel.Information, 'Starting up Blazor server-side application.');
 
   const appState = discoverPersistedState(document);
-  circuit = new CircuitDescriptor(components || [], appState || '');
 
   // Configure navigation via SignalR
   Blazor._internal.navigationManager.listenForNavigationEvents((uri: string, state: string | undefined, intercepted: boolean): Promise<void> => {
@@ -77,7 +77,7 @@ export async function startCircuit(userOptions?: Partial<CircuitStartOptions>, c
   });
 
   const initialConnection = await initializeConnection(options, logger, circuit);
-  const circuitStarted = await circuit.startCircuit(initialConnection);
+  const circuitStarted = await circuit.startCircuit(initialConnection, appState || '', components || []);
   if (!circuitStarted) {
     logger.log(LogLevel.Error, 'Failed to start the circuit.');
     return;
@@ -102,6 +102,18 @@ export async function startCircuit(userOptions?: Partial<CircuitStartOptions>, c
   jsInitializer.invokeAfterStartedCallbacks(Blazor);
 }
 
+export function addServerDescriptor(descriptor: ServerComponentDescriptor) {
+  circuit.registerDescriptor(descriptor);
+}
+
+export function processRemovedServerDescriptors() {
+  circuit.handleRemovedDescriptors();
+}
+
+export function processUpdatedServerDescriptors() {
+  circuit.handleUpdatedDescriptors();
+}
+
 async function initializeConnection(options: CircuitStartOptions, logger: Logger, circuit: CircuitDescriptor): Promise<HubConnection> {
   const hubProtocol = new MessagePackHubProtocol();
   (hubProtocol as unknown as { name: string }).name = 'blazorpack';
@@ -114,7 +126,7 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
 
   const newConnection = connectionBuilder.build();
 
-  newConnection.on('JS.AttachComponent', (componentId, selector) => attachRootComponentToLogicalElement(RendererId.Server, circuit.resolveElement(selector), componentId, false));
+  newConnection.on('JS.AttachComponent', (componentId, selector) => attachRootComponentToLogicalElement(RendererId.Server, circuit.resolveElement(selector, componentId), componentId, false));
   newConnection.on('JS.BeginInvokeJS', dispatcher.beginInvokeJSFromDotNet.bind(dispatcher));
   newConnection.on('JS.EndInvokeDotNet', dispatcher.endInvokeDotNetFromJS.bind(dispatcher));
   newConnection.on('JS.ReceiveByteArray', dispatcher.receiveByteArray.bind(dispatcher));

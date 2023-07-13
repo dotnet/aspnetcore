@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+import { ServerComponentDescriptor, WebAssemblyComponentDescriptor } from '../Services/ComponentDescriptorDiscovery';
 import { createSymbolOrFallback } from './SymbolUtil';
 
 /*
@@ -33,9 +34,9 @@ import { createSymbolOrFallback } from './SymbolUtil';
 const logicalChildrenPropname = createSymbolOrFallback('_blazorLogicalChildren');
 const logicalParentPropname = createSymbolOrFallback('_blazorLogicalParent');
 const logicalEndSiblingPropname = createSymbolOrFallback('_blazorLogicalEnd');
-const logicalRootOriginalComponentIdPropname = createSymbolOrFallback('_blazorOriginalComponentId');
+const logicalRootDescriptorPropname = createSymbolOrFallback('_blazorLogicalRootDescriptor');
 
-export function toLogicalRootCommentElement(start: Comment, end: Comment, originalComponentId: number): LogicalElement {
+export function toLogicalRootCommentElement(descriptor: ServerComponentDescriptor | WebAssemblyComponentDescriptor): LogicalElement {
   // Now that we support start/end comments as component delimiters we are going to be setting up
   // adding the components rendered output as siblings of the start/end tags (between).
   // For that to work, we need to appropriately configure the parent element to be a logical element
@@ -52,17 +53,21 @@ export function toLogicalRootCommentElement(start: Comment, end: Comment, origin
   // |- *div
   // |- *component
   // |- *footer
-  if (!start.parentNode) {
+  const { start, end } = descriptor;
+  const parent = start.parentNode;
+
+  if (!parent) {
     throw new Error(`Comment not connected to the DOM ${start.textContent}`);
   }
 
-  const parent = start.parentNode;
   const parentLogicalElement = toLogicalElement(parent, /* allow existing contents */ true);
   const children = getLogicalChildrenArray(parentLogicalElement);
-  Array.from(parent.childNodes).forEach(n => children.push(n as unknown as LogicalElement));
+
+  children.push(start as unknown as LogicalElement);
+  children.push(end as unknown as LogicalElement);
 
   start[logicalParentPropname] = parentLogicalElement;
-  start[logicalRootOriginalComponentIdPropname] = originalComponentId;
+  start[logicalRootDescriptorPropname] = descriptor;
   // We might not have an end comment in the case of non-prerendered components.
   if (end) {
     start[logicalEndSiblingPropname] = end;
@@ -178,8 +183,8 @@ export function getLogicalChild(parent: LogicalElement, childIndex: number): Log
   return getLogicalChildrenArray(parent)[childIndex];
 }
 
-export function getLogicalRootOriginalComponentId(element: LogicalElement): number | null {
-  return element[logicalRootOriginalComponentIdPropname] || null;
+export function getLogicalRootDescriptor(element: LogicalElement): ServerComponentDescriptor | WebAssemblyComponentDescriptor {
+  return element[logicalRootDescriptorPropname] || null;
 }
 
 // SVG elements support `foreignObject` children that can hold arbitrary HTML.

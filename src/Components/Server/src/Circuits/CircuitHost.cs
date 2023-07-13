@@ -144,6 +144,76 @@ internal partial class CircuitHost : IAsyncDisposable
         });
     }
 
+    // TODO: Consider accomplishing this using JS interop instead.
+    public Task AddRootComponents(IReadOnlyList<ComponentDescriptor> descriptors, CancellationToken cancellationToken)
+    {
+        AssertInitialized();
+        AssertNotDisposed();
+
+        return Renderer.Dispatcher.InvokeAsync(async () =>
+        {
+            try
+            {
+                // Here, we add each root component but don't await the returned tasks so that the
+                // components can be processed in parallel.
+                var count = descriptors.Count;
+                var pendingRenders = new Task[count];
+                for (var i = 0; i < count; i++)
+                {
+                    var (componentType, parameters, sequence) = descriptors[i];
+                    pendingRenders[i] = Renderer.AddComponentAsync(componentType, parameters, sequence.ToString(CultureInfo.InvariantCulture));
+                }
+
+                // Now we wait for all components to finish rendering.
+                await Task.WhenAll(pendingRenders);
+            }
+            catch (Exception ex)
+            {
+                //Log.InitializationFailed(_logger, ex);
+                UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
+                await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex), ex);
+            }
+        });
+    }
+
+    // TODO: Consider accomplishing this using JS interop instead.
+    public Task UpdateRootComponents(IReadOnlyList<ComponentDescriptor> descriptors, CancellationToken cancellationToken)
+    {
+        AssertInitialized();
+        AssertNotDisposed();
+
+        return Renderer.Dispatcher.InvokeAsync(async () =>
+        {
+            try
+            {
+                // Here, we add each root component but don't await the returned tasks so that the
+                // components can be processed in parallel.
+                var count = descriptors.Count;
+                var pendingRenders = new Task[count];
+                for (var i = 0; i < count; i++)
+                {
+                    var descriptor = descriptors[i];
+
+                    if (!descriptor.InteractiveComponentId.HasValue)
+                    {
+                        throw new InvalidOperationException("Attempted to update a root component without providing an interactive component ID.");
+                    }
+
+                    pendingRenders[i] = Renderer.SetRootComponentParametersAsync(descriptor.InteractiveComponentId.Value, descriptor.Parameters);
+                }
+
+                // Now we wait for all components to finish rendering.
+                await Task.WhenAll(pendingRenders);
+            }
+            catch (Exception ex)
+            {
+                //Log.InitializationFailed(_logger, ex);
+                UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
+                await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex), ex);
+            }
+        });
+    }
+
     // We handle errors in DisposeAsync because there's no real value in letting it propagate.
     // We run user code here (CircuitHandlers) and it's reasonable to expect some might throw, however,
     // there isn't anything better to do than log when one of these exceptions happens - because the

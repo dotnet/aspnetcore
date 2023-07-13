@@ -18,10 +18,10 @@ internal sealed class ServerComponentSerializer
             .CreateProtector(ServerComponentSerializationSettings.DataProtectionProviderPurpose)
             .ToTimeLimitedDataProtector();
 
-    public ServerComponentMarker SerializeInvocation(int componentId, ServerComponentInvocationSequence invocationId, Type type, ParameterView parameters, bool prerendered)
+    public ServerComponentMarker SerializeInvocation(ServerComponentInvocationSequence invocationId, Type type, ParameterView parameters, bool prerendered)
     {
         var (sequence, serverComponent) = CreateSerializedServerComponent(invocationId, type, parameters);
-        return prerendered ? ServerComponentMarker.Prerendered(componentId, sequence, serverComponent) : ServerComponentMarker.NonPrerendered(componentId, sequence, serverComponent);
+        return prerendered ? ServerComponentMarker.Prerendered(sequence, serverComponent) : ServerComponentMarker.NonPrerendered(sequence, serverComponent);
     }
 
     private (int sequence, string payload) CreateSerializedServerComponent(
