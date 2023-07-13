@@ -253,7 +253,7 @@ public static class MvcServiceCollectionExtensions
     /// To add services for controllers with views call <see cref="AddControllersWithViews(IServiceCollection)"/>.
     /// </para>
     /// </remarks>
-    [RequiresUnreferencedCode("Razor Pages does not currently support native AOT.", Url = "https://aka.ms/aspnet/nativeaot")]
+    [RequiresUnreferencedCode("Razor Pages does not currently support trimming or native AOT,", Url = "https://aka.ms/aspnet/trimming")]
     public static IMvcBuilder AddRazorPages(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
