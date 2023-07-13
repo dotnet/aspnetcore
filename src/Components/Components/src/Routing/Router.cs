@@ -26,7 +26,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
     bool _navigationInterceptionEnabled;
     ILogger<Router> _logger;
 
-    private Type? _updateScrollPositionForHashLastHandlerType;
+    private string _updateScrollPositionForHashLastLocation;
     private bool _updateScrollPositionForHash;
 
     private CancellationTokenSource _onNavigateCts;
@@ -194,8 +194,8 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
             return;
         }
 
-        var locationPath = NavigationManager.ToBaseRelativePath(_locationAbsolute);
-        locationPath = TrimQueryOrHash(locationPath);
+        var relativePath = NavigationManager.ToBaseRelativePath(_locationAbsolute);
+        var locationPath = TrimQueryOrHash(relativePath);
 
         RefreshRouteTable();
 
@@ -217,10 +217,10 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
                 context.Parameters ?? _emptyParametersDictionary);
             _renderHandle.Render(Found(routeData));
 
-            // If you navigate to a different page, then after the next render we'll update the scroll position
-            if (context.Handler != _updateScrollPositionForHashLastHandlerType)
+            // If you navigate to a different path, then after the next render we'll update the scroll position
+            if (relativePath != _updateScrollPositionForHashLastLocation)
             {
-                _updateScrollPositionForHashLastHandlerType = context.Handler;
+                _updateScrollPositionForHashLastLocation = relativePath;
                 _updateScrollPositionForHash = true;
             }
         }

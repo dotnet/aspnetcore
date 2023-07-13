@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
 using System;
+using System.CodeDom.Compiler;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
@@ -499,7 +500,7 @@ app.MapPost("/test/pattern", [Attribute1, Attribute2] (AddsCustomParameterMetada
         //       of this test from RDF.
         var filteredMetadata = endpoint.Metadata.Where(
             m => m.GetType().Name != "NullableContextAttribute" &&
-            m.GetType().Name != "SourceKey" &&
+            m is not GeneratedCodeAttribute &&
             m is not MethodInfo &&
             m is not HttpMethodMetadata &&
             m is not Attribute1 &&

@@ -4,7 +4,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text.Json;
-using Microsoft.AspNetCore.Components.Binding;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -256,13 +255,12 @@ public sealed class WebAssemblyHostBuilder
         Services.AddSingleton(new LazyAssemblyLoader(DefaultWebAssemblyJSRuntime.Instance));
         Services.AddSingleton<ComponentStatePersistenceManager>();
         Services.AddSingleton<PersistentComponentState>(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
+        Services.AddSingleton<AntiforgeryStateProvider, DefaultAntiforgeryStateProvider>();
         Services.AddSingleton<IErrorBoundaryLogger, WebAssemblyErrorBoundaryLogger>();
         Services.AddLogging(builder =>
         {
             builder.AddProvider(new WebAssemblyConsoleLoggerProvider(DefaultWebAssemblyJSRuntime.Instance));
         });
-        Services.AddSingleton<FormDataProvider, DefaultFormDataProvider>();
-        Services.AddSingleton<IFormValueSupplier, WebAssemblyFormValueSupplier>();
-        Services.AddSingleton<CascadingModelBindingProvider, CascadingQueryModelBindingProvider>();
+        Services.AddSupplyValueFromQueryProvider();
     }
 }

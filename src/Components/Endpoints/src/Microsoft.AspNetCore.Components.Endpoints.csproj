@@ -20,7 +20,7 @@
   <UsingTask AssemblyFile="$(_FileProviderTaskAssembly)" TaskName="Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.GenerateEmbeddedResourcesManifest" />
 
   <ItemGroup>
-    <EmbeddedResource Update="Binding\FormDataResources.resx" ExcludeFromManifest="true" />
+    <EmbeddedResource Update="FormMapping\FormDataResources.resx" ExcludeFromManifest="true" />
     <EmbeddedResource Update="Resources.resx" ExcludeFromManifest="true" />
   </ItemGroup>
 
@@ -33,8 +33,9 @@
     <Compile Include="$(RepoRoot)src\Shared\Components\ComponentParameter.cs" LinkBase="DependencyInjection" />
     <Compile Include="$(RepoRoot)src\Shared\Components\PrerenderComponentApplicationStore.cs" LinkBase="DependencyInjection" />
     <Compile Include="$(RepoRoot)src\Shared\Components\ProtectedPrerenderComponentApplicationStore.cs" LinkBase="DependencyInjection" />
-    <Compile Include="$(RepoRoot)src\Shared\ClosedGenericMatcher\ClosedGenericMatcher.cs" LinkBase="Binding" />
+    <Compile Include="$(RepoRoot)src\Shared\ClosedGenericMatcher\ClosedGenericMatcher.cs" LinkBase="FormMapping" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\CacheHeaderSettings.cs" Link="Shared\CacheHeaderSettings.cs" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\DefaultAntiforgeryStateProvider.cs" LinkBase="Forms" />
 
     <Compile Include="$(SharedSourceRoot)PropertyHelper\**\*.cs" />
 
@@ -44,6 +45,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Antiforgery" />
     <Reference Include="Microsoft.AspNetCore.Components.Authorization" />
     <Reference Include="Microsoft.AspNetCore.Components.Web" />
     <Reference Include="Microsoft.AspNetCore.DataProtection.Extensions" />

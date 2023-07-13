@@ -84,6 +84,8 @@ public class ComponentState : IAsyncDisposable
 
     internal RenderTreeBuilder CurrentRenderTree { get; set; }
 
+    internal Renderer Renderer => _renderer;
+
     internal void RenderIntoBatch(RenderBatchBuilder batchBuilder, RenderFragment renderFragment, out Exception? renderFragmentException)
     {
         renderFragmentException = null;
@@ -96,7 +98,6 @@ public class ComponentState : IAsyncDisposable
         }
 
         _nextRenderTree.Clear();
-        _nextRenderTree.TrackNamedEventHandlers = _renderer.ShouldTrackNamedEventHandlers();
 
         try
         {
@@ -122,8 +123,7 @@ public class ComponentState : IAsyncDisposable
             batchBuilder,
             ComponentId,
             _nextRenderTree.GetFrames(),
-            CurrentRenderTree.GetFrames(),
-            CurrentRenderTree.GetNamedEvents());
+            CurrentRenderTree.GetFrames());
         batchBuilder.UpdatedComponentDiffs.Append(diff);
         batchBuilder.InvalidateParameterViews();
     }
@@ -181,6 +181,15 @@ public class ComponentState : IAsyncDisposable
 
     internal void NotifyCascadingValueChanged(in ParameterViewLifetime lifetime)
     {
+        // If the component was already disposed, we must not try to supply new parameters. Among other reasons,
+        // _latestDirectParametersSnapshot will already have been disposed and that puts it into an invalid state
+        // so we can't even read from it. Note that disposal doesn't instantly trigger unsubscription from cascading
+        // values - that only happens when the ComponentState is processed later by the disposal queue.
+        if (_componentWasDisposed)
+        {
+            return;
+        }
+
         var directParams = _latestDirectParametersSnapshot != null
             ? new ParameterView(lifetime, _latestDirectParametersSnapshot.Buffer, 0)
             : ParameterView.Empty;
@@ -272,7 +281,7 @@ public class ComponentState : IAsyncDisposable
     internal ValueTask DisposeInBatchAsync(RenderBatchBuilder batchBuilder)
     {
         // We don't expect these things to throw.
-        RenderTreeDiffBuilder.DisposeFrames(batchBuilder, CurrentRenderTree.GetFrames());
+        RenderTreeDiffBuilder.DisposeFrames(batchBuilder, ComponentId, CurrentRenderTree.GetFrames());
 
         if (_hasAnyCascadingParameterSubscriptions)
         {

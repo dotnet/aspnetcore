@@ -983,6 +983,28 @@ public class HtmlRendererTest
         });
     }
 
+    [Fact]
+    public async Task RenderComponentAsync_IgnoresNamedEvents()
+    {
+        // Arrange
+        var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
+        {
+            rtb.OpenElement(0, "div");
+            rtb.AddNamedEvent(1, "someevent", "somename");
+            rtb.CloseElement();
+        })).BuildServiceProvider();
+
+        var htmlRenderer = GetHtmlRenderer(serviceProvider);
+        await htmlRenderer.Dispatcher.InvokeAsync(async () =>
+        {
+            // Act
+            var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
+
+            // Assert
+            Assert.Equal("<div></div>", result.ToHtmlString());
+        });
+    }
+
     void AssertHtmlContentEquals(IEnumerable<string> expected, HtmlRootComponent actual)
         => AssertHtmlContentEquals(string.Join(string.Empty, expected), actual);
 

@@ -408,7 +408,7 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
     {
         ArgumentNullException.ThrowIfNull(array);
 
-        if (arrayIndex < 0 || arrayIndex > array.Length || array.Length - arrayIndex < this.Count)
+        if (arrayIndex < 0 || arrayIndex > array.Length || array.Length - arrayIndex < Count)
         {
             throw new ArgumentOutOfRangeException(nameof(arrayIndex));
         }

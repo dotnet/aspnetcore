@@ -3,10 +3,11 @@
 
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Binding;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Endpoints.DependencyInjection;
+using Microsoft.AspNetCore.Components.Endpoints.Forms;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.Forms.Mapping;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
@@ -30,6 +31,9 @@ public static class RazorComponentsServiceCollectionExtensions
     [RequiresUnreferencedCode("Razor Components does not currently support native AOT.", Url = "https://aka.ms/aspnet/nativeaot")]
     public static IRazorComponentsBuilder AddRazorComponents(this IServiceCollection services)
     {
+        // Dependencies
+        services.AddAntiforgery();
+
         services.TryAddSingleton<RazorComponentsMarkerService>();
 
         // Results
@@ -54,12 +58,13 @@ public static class RazorComponentsServiceCollectionExtensions
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<RazorComponentsEndpointsOptions>, RazorComponentsEndpointsDetailedErrorsConfiguration>());
         services.TryAddScoped<EndpointRoutingStateProvider>();
         services.TryAddScoped<IRoutingStateProvider>(sp => sp.GetRequiredService<EndpointRoutingStateProvider>());
+        services.AddSupplyValueFromQueryProvider();
 
         // Form handling
-        services.TryAddScoped<FormDataProvider, HttpContextFormDataProvider>();
-        services.TryAddScoped<IFormValueSupplier, DefaultFormValuesSupplier>();
-        services.TryAddEnumerable(ServiceDescriptor.Scoped<CascadingModelBindingProvider, CascadingQueryModelBindingProvider>());
-        services.TryAddEnumerable(ServiceDescriptor.Scoped<CascadingModelBindingProvider, CascadingFormModelBindingProvider>());
+        services.AddSupplyValueFromFormProvider();
+        services.TryAddScoped<AntiforgeryStateProvider, EndpointAntiforgeryStateProvider>();
+        services.TryAddScoped<HttpContextFormDataProvider>();
+        services.TryAddScoped<IFormValueMapper, HttpContextFormValueMapper>();
 
         return new DefaultRazorComponentsBuilder(services);
     }

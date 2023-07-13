@@ -489,6 +489,51 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.True(() => GetPeopleNames(container).Contains("Person 25"));
     }
 
+    [Fact]
+    public void EmptyContentRendered_Sync()
+    {
+        Browser.MountTestComponent<VirtualizationComponent>();
+        Browser.Exists(By.Id("no-data-sync"));
+    }
+
+    [Fact]
+    public void EmptyContentRendered_Async()
+    {
+        Browser.MountTestComponent<VirtualizationComponent>();
+        var finishLoadingWithItemsButton = Browser.Exists(By.Id("finish-loading-button"));
+        var finishLoadingWithoutItemsButton = Browser.Exists(By.Id("finish-loading-button-empty"));
+        var refreshDataAsync = Browser.Exists(By.Id("refresh-data-async"));
+
+        // Check that no items or placeholders are visible.
+        // No data fetches have happened so we don't know how many items there are.
+        Browser.Equal(0, GetItemCount);
+        Browser.Equal(0, GetPlaceholderCount);
+
+        // Check that <EmptyContent> is not shown while loading
+        Browser.DoesNotExist(By.Id("no-data-async"));
+
+        // Load the initial set of items.
+        finishLoadingWithItemsButton.Click();
+
+        // Check that <EmptyContent> is still not shown (because there are items loaded)
+        Browser.DoesNotExist(By.Id("no-data-async"));
+
+        // Start loading
+        refreshDataAsync.Click();
+
+        // Check that <EmptyContent> is not shown
+        Browser.DoesNotExist(By.Id("no-data-async"));
+
+        // Simulate 0 items
+        finishLoadingWithoutItemsButton.Click();
+
+        // Check that <EmptyContent> is shown
+        Browser.Exists(By.Id("no-data-async"));
+
+        int GetItemCount() => Browser.FindElements(By.Id("async-item")).Count;
+        int GetPlaceholderCount() => Browser.FindElements(By.Id("async-placeholder")).Count;
+    }
+
     private string[] GetPeopleNames(IWebElement container)
     {
         var peopleElements = container.FindElements(By.CssSelector(".person span"));
