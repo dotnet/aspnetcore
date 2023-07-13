@@ -51,7 +51,7 @@ internal sealed class HttpContextFormValueMapper : IFormValueMapper
                 && incomingScopeQualifiedFormName.Length >= currentMappingScopeName.Length + 2
                 && incomingScopeQualifiedFormName[currentMappingScopeName.Length + 1] == ']')
             {
-                incomingFormName = incomingScopeQualifiedFormNameSpan[(currentMappingScopeName.Length + 1)..];
+                incomingFormName = incomingScopeQualifiedFormNameSpan[(currentMappingScopeName.Length + 2)..];
                 return true;
             }
         }

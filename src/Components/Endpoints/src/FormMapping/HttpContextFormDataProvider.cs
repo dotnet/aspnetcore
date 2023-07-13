@@ -16,9 +16,9 @@ internal sealed class HttpContextFormDataProvider
 
     public IReadOnlyDictionary<string, StringValues> Entries => _entries ?? ReadOnlyDictionary<string, StringValues>.Empty;
 
-    public void SetFormData(string name, IReadOnlyDictionary<string, StringValues> form)
+    public void SetFormData(string incomingHandlerName, IReadOnlyDictionary<string, StringValues> form)
     {
-        _incomingHandlerName = name;
+        _incomingHandlerName = incomingHandlerName;
         _entries = form;
     }
 
