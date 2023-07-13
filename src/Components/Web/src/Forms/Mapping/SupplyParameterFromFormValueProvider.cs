@@ -55,9 +55,9 @@ internal class SupplyParameterFromFormValueProvider : ICascadingValueSupplier
         }
 
         // We also supply values for [SupplyValueFromForm]
-        if (_formValueMapper is { } valueMapper && parameterInfo.Attribute is SupplyParameterFromFormAttribute supplyParameterFromFormAttribute)
+        if (_formValueMapper is { } valueMapper && parameterInfo.Attribute is SupplyParameterFromFormAttribute)
         {
-            return GetFormPostValue(valueMapper, _mappingContext, parameterInfo, supplyParameterFromFormAttribute);
+            return GetFormPostValue(valueMapper, _mappingContext, parameterInfo);
         }
 
         throw new InvalidOperationException($"Received an unexpected attribute type {parameterInfo.Attribute.GetType()}");
@@ -69,7 +69,7 @@ internal class SupplyParameterFromFormValueProvider : ICascadingValueSupplier
     void ICascadingValueSupplier.Unsubscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
         => throw new NotSupportedException(); // IsFixed = true, so the framework won't call this
 
-    internal static object? GetFormPostValue(IFormValueMapper formValueMapper, FormMappingContext? mappingContext, in CascadingParameterInfo parameterInfo, SupplyParameterFromFormAttribute supplyParameterFromFormAttribute)
+    internal static object? GetFormPostValue(IFormValueMapper formValueMapper, FormMappingContext? mappingContext, in CascadingParameterInfo parameterInfo)
     {
         Debug.Assert(mappingContext != null);
 
