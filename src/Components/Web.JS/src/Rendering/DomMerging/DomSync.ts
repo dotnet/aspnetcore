@@ -90,11 +90,17 @@ function treatAsMatch(destination: Node, source: Node) {
     case Node.COMMENT_NODE:
       break;
     case Node.ELEMENT_NODE:
+      const editableElementValue = getEditableElementValue(source as Element);
       synchronizeAttributes(destination as Element, source as Element);
       applyAnyDeferredValue(destination as Element);
       synchronizeDomContent(destination as Element, source as Element);
-      if (destination instanceof HTMLTextAreaElement && source instanceof HTMLTextAreaElement && destination.value !== source.value) {
-        destination.value = source.value;
+
+      // This is a much simpler alternative to the deferred-value-assignment logic we use in interactive rendering.
+      // Because this sync algorithm goes depth-first, we know all the attributes and descendants are fully in sync
+      // by now, so setting any "special value" property is just a matter of assigning it right now (we don't have
+      // to be concerned that it's invalid because it doesn't correspond to an <option> child or a min/max attribute).
+      if (editableElementValue !== null) {
+        ensureEditableValueSynchronized(destination as Element, editableElementValue);
       }
       break;
     case Node.DOCUMENT_TYPE_NODE:
@@ -135,10 +141,7 @@ function domNodeComparer(a: Node, b: Node): UpdateCost {
       //       to return UpdateCost.Infinite if either has a key but they don't match. This will prevent unwanted retention.
       //       For the converse (forcing retention, even if that means reordering), we could post-process the list of
       //       inserts/deletes to find matches based on key to treat those pairs as 'move' operations.
-      const aTagName = (a as Element).tagName;
-      return aTagName === (b as Element).tagName && aTagName !== 'SELECT'
-        ? UpdateCost.None
-        : UpdateCost.Infinite;
+      return (a as Element).tagName === (b as Element).tagName ? UpdateCost.None : UpdateCost.Infinite;
     case Node.DOCUMENT_TYPE_NODE:
       // It's invalid to insert or delete doctype, and we have no use case for doing that. So just skip such
       // nodes by saying they are always unchanged.
@@ -146,6 +149,32 @@ function domNodeComparer(a: Node, b: Node): UpdateCost {
     default:
       // For anything else we know nothing, so the risk-averse choice is to say we can't retain or update the old value
       return UpdateCost.Infinite;
+  }
+}
+
+function ensureEditableValueSynchronized(destination: Element, value: any) {
+  if (destination instanceof HTMLTextAreaElement && destination.value !== value) {
+    destination.value = value as string;
+  } else if (destination instanceof HTMLSelectElement && destination.selectedIndex !== value) {
+    destination.selectedIndex = value as number;
+  } else if (destination instanceof HTMLInputElement) {
+    if (destination.type === 'checkbox' && destination.checked !== value) {
+      destination.checked = value as boolean;
+    } else if (destination.value !== value) {
+      destination.value = value as string;
+    }
+  }
+}
+
+function getEditableElementValue(elem: Element): string | boolean | number | null {
+  if (elem instanceof HTMLSelectElement) {
+    return elem.selectedIndex;
+  } else if (elem instanceof HTMLInputElement) {
+    return elem.type === 'checkbox' ? elem.checked : (elem.getAttribute('value') || '');
+  } else if (elem instanceof HTMLTextAreaElement) {
+    return elem.value;
+  } else {
+    return null;
   }
 }
 

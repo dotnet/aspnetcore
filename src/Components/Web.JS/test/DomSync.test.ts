@@ -383,16 +383,14 @@ describe('DomSync', () => {
       + `<option value='new2'></option>`
       + `<option value='new3' selected></option>` +
       `</select>`);
-    const originalSelect = destination.startExclusive.nextSibling as HTMLSelectElement;
-    originalSelect.value = 'original2';
+    const selectElem = destination.startExclusive.nextSibling as HTMLSelectElement;
+    selectElem.value = 'original2';
 
     // Act
     synchronizeDomContent(destination, newContent);
 
     // Assert
-    const newSelect = destination.startExclusive.nextSibling as HTMLSelectElement;
-    expect(newSelect).toBeInstanceOf(HTMLSelectElement);
-    expect(newSelect.value).toBe('new3');
+    expect(selectElem.value).toBe('new3');
   });
 
   test('should be able to update an input range to a value outside the min/max of the old content', () => {
@@ -454,23 +452,21 @@ describe('DomSync', () => {
     const newContent1 = makeNewContent(`<select><option value='v1'>1</option><option value='v2' selected>2</option><option value='v3'>3</option></select>`);
     const newContent2 = makeNewContent(`<select><option value='v1'>1</option><option value='v2'>2</option><option value='v3' selected>3</option></select>`);
 
-    const originalSelect = destination.startExclusive.nextSibling as HTMLSelectElement;
-    expect(originalSelect.selectedIndex).toBe(0);
+    const selectElem = destination.startExclusive.nextSibling as HTMLSelectElement;
+    expect(selectElem.selectedIndex).toBe(0);
 
     // Act/Assert 1: Initial update
     synchronizeDomContent(destination, newContent1);
-    const newSelect1 = destination.startExclusive.nextSibling as HTMLSelectElement;
-    expect(newSelect1.selectedIndex).toBe(1);
+    expect(selectElem.selectedIndex).toBe(1);
 
     // Act/Assert 2: The user performs an edit, then we try to synchronize the DOM
     // with some content that matches the edit exactly. The diff algorithm will see
     // that the DOM already matches the desired output, so it won't track any new
     // deferred value. We need to check the old deferred value doesn't reappear.
-    newSelect1.selectedIndex = 2;
-    expect(newSelect1.selectedIndex).toBe(2);
+    selectElem.selectedIndex = 2;
+    expect(selectElem.selectedIndex).toBe(2);
     synchronizeDomContent(destination, newContent2);
-    const newSelect2 = destination.startExclusive.nextSibling as HTMLSelectElement;
-    expect(newSelect2.selectedIndex).toBe(2);
+    expect(selectElem.selectedIndex).toBe(2);
   });
 
   test('should treat doctype nodes as unchanged', () => {
@@ -513,22 +509,18 @@ test('should remove value if neither source nor destination has one', () => {
 
   const inputText = destination.startExclusive.nextSibling as HTMLInputElement;
   const inputCheckbox = inputText.nextElementSibling as HTMLInputElement;
-  const originalSelect = inputCheckbox.nextElementSibling as HTMLSelectElement;
+  const select = inputCheckbox.nextElementSibling as HTMLSelectElement;
 
   // Act: User makes some edits, then we synchronize to the blank content
   inputText.value = 'Some edit';
   inputCheckbox.checked = true;
-  originalSelect.selectedIndex = 2;
+  select.selectedIndex = 2;
   synchronizeDomContent(destination, newContent);
 
   // Assert: Edits were cleared
   expect(inputText.value).toStrictEqual('');
   expect(inputCheckbox.checked).toStrictEqual(false);
-
-  // Assert: the <select> was not retained, and the new instance is correct
-  const newSelect = inputCheckbox.nextElementSibling as HTMLSelectElement;
-  expect(newSelect).not.toBe(originalSelect);
-  expect(newSelect.selectedIndex).toStrictEqual(1);
+  expect(select.selectedIndex).toStrictEqual(1);
 });
 
 function makeExistingContent(html: string): CommentBoundedRange {
