@@ -644,7 +644,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         var dispatchToForm = new DispatchToForm(this)
         {
             Url = "forms/named-form-bound-primitive-parameter",
-            FormCssSelector = "form[name=named-form-handler]",
+            FormCssSelector = "form[name=my-bound-form]",
             ExpectedHandlerValue = "named-form-handler",
             InputFieldId = "Parameter",
             InputFieldCssSelector = "input[name=Parameter]",
@@ -715,13 +715,13 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void CanDispatchToNamedFormInNestedContext(bool suppressEnhancedNavigation)
+    public void CanDispatchToNamedFormInMappingScope(bool suppressEnhancedNavigation)
     {
         var dispatchToForm = new DispatchToForm(this)
         {
             Url = "forms/nested-named-form",
             FormCssSelector = "form",
-            ExpectedHandlerValue = "parent-context.named-form-handler",
+            ExpectedHandlerValue = "[parent-context]named-form-handler",
             SuppressEnhancedNavigation = suppressEnhancedNavigation,
         };
         DispatchToFormCore(dispatchToForm);
@@ -730,13 +730,13 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void CanBindFormValueFromNestedNamedFormWithBody(bool suppressEnhancedNavigation)
+    public void CanBindFormValueFromNamedFormInMappingScopeWithBody(bool suppressEnhancedNavigation)
     {
         var dispatchToForm = new DispatchToForm(this)
         {
             Url = "forms/nested-named-form-bound-parameter",
             FormCssSelector = "form",
-            ExpectedHandlerValue = "parent-context.named-form-handler",
+            ExpectedHandlerValue = "[parent-context]named-form-handler",
             InputFieldId = "Parameter",
             InputFieldCssSelector = "input[name=Parameter]",
             InputFieldValue = "stranger",
