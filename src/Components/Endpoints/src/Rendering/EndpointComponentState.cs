@@ -19,7 +19,6 @@ internal sealed class EndpointComponentState : ComponentState
     public EndpointComponentState(Renderer renderer, int componentId, IComponent component, ComponentState? parentComponentState)
         : base(renderer, componentId, component, parentComponentState)
     {
-        var parentEndpointComponentState = (EndpointComponentState?)LogicalParentComponentState;
         var streamRenderingAttribute = _streamRenderingAttributeByComponentType.GetOrAdd(component.GetType(),
             type => type.GetCustomAttribute<StreamRenderingAttribute>());
 
@@ -29,6 +28,7 @@ internal sealed class EndpointComponentState : ComponentState
         }
         else
         {
+            var parentEndpointComponentState = (EndpointComponentState?)LogicalParentComponentState;
             StreamRendering = parentEndpointComponentState?.StreamRendering ?? false;
         }
     }

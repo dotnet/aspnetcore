@@ -356,7 +356,6 @@ export class ServerComponentDescriptor {
 }
 
 export class WebAssemblyComponentDescriptor {
-  // FIXME: The ID should represent the SSR component's ID.
   private static globalId = 1;
 
   public type: 'webassembly';

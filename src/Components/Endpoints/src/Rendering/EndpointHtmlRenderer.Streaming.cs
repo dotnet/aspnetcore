@@ -3,7 +3,6 @@
 
 using System.Runtime.InteropServices;
 using System.Text.Encodings.Web;
-using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -103,9 +102,7 @@ internal partial class EndpointHtmlRenderer
             for (var i = 0; i < count; i++)
             {
                 var componentId = renderBatch.UpdatedComponents.Array[i].ComponentId;
-                var componentState = (EndpointComponentState)GetComponentState(componentId);
-
-                componentIdsInDepthOrder[i] = new(componentId, GetComponentDepth(componentState));
+                componentIdsInDepthOrder[i] = new(componentId, GetComponentDepth(componentId));
             }
 
             MemoryExtensions.Sort(componentIdsInDepthOrder, static (left, right) => left.Depth - right.Depth);
@@ -149,9 +146,10 @@ internal partial class EndpointHtmlRenderer
         }
     }
 
-    private static int GetComponentDepth(ComponentState componentState)
+    private int GetComponentDepth(int componentId)
     {
         // Regard root components as depth 0, their immediate children as 1, etc.
+        var componentState = GetComponentState(componentId);
         var depth = 0;
         while (componentState.ParentComponentState is { } parentComponentState)
         {
