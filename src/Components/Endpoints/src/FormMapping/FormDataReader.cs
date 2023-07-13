@@ -116,6 +116,19 @@ internal struct FormDataReader
         return result;
     }
 
+    internal readonly bool CurrentPrefixExists()
+    {
+        foreach (var key in _readOnlyMemoryKeys.Keys)
+        {
+            if (key.Value.Span.StartsWith(_currentPrefixBuffer.Span, StringComparison.Ordinal))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     internal void PopPrefix(string key)
     {
         PopPrefix(key.AsSpan());

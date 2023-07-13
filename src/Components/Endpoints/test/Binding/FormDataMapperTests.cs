@@ -1083,6 +1083,183 @@ public class FormDataMapperTests
     }
 
     [Fact]
+    public void CanDeserialize_ComplexRecursiveTypes_RecursiveList()
+    {
+        // Arrange
+        var expected = new RecursiveList()
+        {
+            Head = 10,
+            Tail = null
+        };
+
+        for (var i = 10 - 1; i >= 0; i--)
+        {
+            expected = new RecursiveList()
+            {
+                Head = i,
+                Tail = expected
+            };
+        }
+
+        var data = new Dictionary<string, StringValues>()
+        {
+            ["Head"] = "0",
+            ["Tail.Head"] = "1",
+            ["Tail.Tail.Head"] = "2",
+            ["Tail.Tail.Tail.Head"] = "3",
+            ["Tail.Tail.Tail.Tail.Head"] = "4",
+            ["Tail.Tail.Tail.Tail.Tail.Head"] = "5",
+            ["Tail.Tail.Tail.Tail.Tail.Tail.Head"] = "6",
+            ["Tail.Tail.Tail.Tail.Tail.Tail.Tail.Head"] = "7",
+            ["Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Head"] = "8",
+            ["Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Head"] = "9",
+            ["Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Head"] = "10",
+        };
+
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
+        var options = new FormDataMapperOptions();
+
+        // Act
+        var result = FormDataMapper.Map<RecursiveList>(reader, options);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Multiple(() =>
+        {
+            Assert.Equal(expected.Head, result.Head);
+            Assert.Equal(expected.Tail.Head, result.Tail.Head);
+            Assert.Equal(expected.Tail.Tail.Head, result.Tail.Tail.Head);
+            Assert.Equal(expected.Tail.Tail.Tail.Head, result.Tail.Tail.Tail.Head);
+            Assert.Equal(expected.Tail.Tail.Tail.Tail.Head, result.Tail.Tail.Tail.Tail.Head);
+            Assert.Equal(expected.Tail.Tail.Tail.Tail.Tail.Head, result.Tail.Tail.Tail.Tail.Tail.Head);
+            Assert.Equal(expected.Tail.Tail.Tail.Tail.Tail.Tail.Head, result.Tail.Tail.Tail.Tail.Tail.Tail.Head);
+            Assert.Equal(expected.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Head, result.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Head);
+            Assert.Equal(expected.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Head, result.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Head);
+            Assert.Equal(expected.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Head, result.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Head);
+            Assert.Equal(expected.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Head, result.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Head);
+            Assert.Null(result.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail);
+        });
+    }
+
+    [Fact]
+    public void CanDeserialize_ComplexRecursiveCollectionTypes_RecursiveTree()
+    {
+        // Arrange
+        var expected = new RecursiveTree()
+        {
+            Value = 10,
+            Children = null
+        };
+
+        for (var i = 10 - 1; i >= 0; i--)
+        {
+            expected = new RecursiveTree()
+            {
+                Value = i,
+                Children = new List<RecursiveTree>() { expected }
+            };
+        }
+
+        var data = new Dictionary<string, StringValues>()
+        {
+            ["Value"] = "0",
+            ["Children[0].Value"] = "1",
+            ["Children[0].Children[0].Value"] = "2",
+            ["Children[0].Children[0].Children[0].Value"] = "3",
+            ["Children[0].Children[0].Children[0].Children[0].Value"] = "4",
+            ["Children[0].Children[0].Children[0].Children[0].Children[0].Value"] = "5",
+            ["Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value"] = "6",
+            ["Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value"] = "7",
+            ["Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value"] = "8",
+            ["Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value"] = "9",
+            ["Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value"] = "10",
+        };
+
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
+        var options = new FormDataMapperOptions();
+
+        // Act
+        var result = FormDataMapper.Map<RecursiveTree>(reader, options);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Multiple(() =>
+        {
+            Assert.Equal(expected.Value, result.Value);
+            Assert.Equal(expected.Children[0].Value, result.Children[0].Value);
+            Assert.Equal(expected.Children[0].Children[0].Value, result.Children[0].Children[0].Value);
+            Assert.Equal(expected.Children[0].Children[0].Children[0].Value, result.Children[0].Children[0].Children[0].Value);
+            Assert.Equal(expected.Children[0].Children[0].Children[0].Children[0].Value, result.Children[0].Children[0].Children[0].Children[0].Value);
+            Assert.Equal(expected.Children[0].Children[0].Children[0].Children[0].Children[0].Value, result.Children[0].Children[0].Children[0].Children[0].Children[0].Value);
+            Assert.Equal(expected.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value, result.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value);
+            Assert.Equal(expected.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value, result.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value);
+            Assert.Equal(expected.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value, result.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value);
+            Assert.Equal(expected.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value, result.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value);
+            Assert.Equal(expected.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value, result.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value);
+            Assert.Null(result.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children);
+        });
+    }
+
+    [Fact]
+    public void CanDeserialize_ComplexRecursiveCollectionTypes_RecursiveDictionaryTree()
+    {
+        // Arrange
+        var expected = new RecursiveDictionaryTree()
+        {
+            Value = 10,
+            Children = null
+        };
+
+        for (var i = 10 - 1; i >= 0; i--)
+        {
+            expected = new RecursiveDictionaryTree()
+            {
+                Value = i,
+                Children = new Dictionary<int, RecursiveDictionaryTree>() { [0] = expected }
+            };
+        }
+
+        var data = new Dictionary<string, StringValues>()
+        {
+            ["Value"] = "0",
+            ["Children[0].Value"] = "1",
+            ["Children[0].Children[0].Value"] = "2",
+            ["Children[0].Children[0].Children[0].Value"] = "3",
+            ["Children[0].Children[0].Children[0].Children[0].Value"] = "4",
+            ["Children[0].Children[0].Children[0].Children[0].Children[0].Value"] = "5",
+            ["Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value"] = "6",
+            ["Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value"] = "7",
+            ["Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value"] = "8",
+            ["Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value"] = "9",
+            ["Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value"] = "10",
+        };
+
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
+        var options = new FormDataMapperOptions();
+
+        // Act
+        var result = FormDataMapper.Map<RecursiveTree>(reader, options);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Multiple(() =>
+        {
+            Assert.Equal(expected.Value, result.Value);
+            Assert.Equal(expected.Children[0].Value, result.Children[0].Value);
+            Assert.Equal(expected.Children[0].Children[0].Value, result.Children[0].Children[0].Value);
+            Assert.Equal(expected.Children[0].Children[0].Children[0].Value, result.Children[0].Children[0].Children[0].Value);
+            Assert.Equal(expected.Children[0].Children[0].Children[0].Children[0].Value, result.Children[0].Children[0].Children[0].Children[0].Value);
+            Assert.Equal(expected.Children[0].Children[0].Children[0].Children[0].Children[0].Value, result.Children[0].Children[0].Children[0].Children[0].Children[0].Value);
+            Assert.Equal(expected.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value, result.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value);
+            Assert.Equal(expected.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value, result.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value);
+            Assert.Equal(expected.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value, result.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value);
+            Assert.Equal(expected.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value, result.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value);
+            Assert.Equal(expected.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value, result.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value);
+            Assert.Null(result.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children);
+        });
+    }
+
+    [Fact]
     public void Deserialize_ComplexType_ContinuesMappingAfterPropertyError()
     {
         // Arrange
@@ -1473,4 +1650,23 @@ internal class CustomCollection<T> : ICollection<T>
     public IEnumerator<T> GetEnumerator() => _inner.GetEnumerator();
     IEnumerator IEnumerable.GetEnumerator() => _inner.GetEnumerator();
     public void CopyTo(T[] array, int arrayIndex) => _inner.CopyTo(array, arrayIndex);
+}
+
+internal class RecursiveList
+{
+    public int Head { get; set; }
+    public RecursiveList Tail { get; set; }
+}
+
+internal class RecursiveTree
+{
+    public int Value { get; set; }
+    public List<RecursiveTree> Children { get; set; }
+}
+
+internal class RecursiveDictionaryTree
+{
+    public int Value { get; set; }
+
+    public Dictionary<int, RecursiveDictionaryTree> Children { get; set; }
 }

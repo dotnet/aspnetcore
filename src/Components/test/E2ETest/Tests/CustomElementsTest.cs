@@ -116,7 +116,7 @@ public class CustomElementsTest : ServerTestBase<ToggleExecutionModeServerFixtur
         app.FindElement(By.Id("update-complex-parameters-0")).Click();
 
         // The complex object parameter was updated.
-        var expectedComplexObjectValue = @"{ Property = ""Clicked 2 times"" }";
+        var expectedComplexObjectValue = @"{ PropertyInfo = ""Clicked 2 times"" }";
         Browser.Equal(expectedComplexObjectValue, () => app.FindElement(By.Id("custom-element-0")).FindElement(By.ClassName("complex-type-param")).Text);
 
         app.FindElement(By.Id("custom-element-0")).FindElement(By.ClassName("invoke-callback")).Click();

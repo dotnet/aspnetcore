@@ -10,19 +10,18 @@ namespace Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 internal sealed class FormDataMapperOptions
 {
     private readonly ConcurrentDictionary<Type, FormDataConverter> _converters = new();
-    private readonly List<Func<Type, FormDataMapperOptions, FormDataConverter?>> _factories = new();
+    private readonly List<IFormDataConverterFactory> _factories = new();
 
     [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
     [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
     public FormDataMapperOptions()
     {
         _converters = new(WellKnownConverters.Converters);
-
-        _factories.Add((type, options) => ParsableConverterFactory.Instance.CanConvert(type, options) ? ParsableConverterFactory.Instance.CreateConverter(type, options) : null);
-        _factories.Add((type, options) => NullableConverterFactory.Instance.CanConvert(type, options) ? NullableConverterFactory.Instance.CreateConverter(type, options) : null);
-        _factories.Add((type, options) => DictionaryConverterFactory.Instance.CanConvert(type, options) ? DictionaryConverterFactory.Instance.CreateConverter(type, options) : null);
-        _factories.Add((type, options) => CollectionConverterFactory.Instance.CanConvert(type, options) ? CollectionConverterFactory.Instance.CreateConverter(type, options) : null);
-        _factories.Add((type, options) => ComplexTypeConverterFactory.Instance.CanConvert(type, options) ? ComplexTypeConverterFactory.Instance.CreateConverter(type, options) : null);
+        _factories.Add(new ParsableConverterFactory());
+        _factories.Add(new NullableConverterFactory());
+        _factories.Add(new DictionaryConverterFactory());
+        _factories.Add(new CollectionConverterFactory());
+        _factories.Add(new ComplexTypeConverterFactory(this));
     }
 
     // Not configurable for now, this is the max number of elements we will bind. This is important for
@@ -35,6 +34,9 @@ internal sealed class FormDataMapperOptions
     internal int MaxKeyBufferSize = FormReader.DefaultKeyLengthLimit;
 
     internal bool UseCurrentCulture;
+
+    // For testing purposes only.
+    internal List<IFormDataConverterFactory> Factories => _factories;
 
     internal bool HasConverter(Type valueType) => _converters.ContainsKey(valueType);
 
@@ -51,13 +53,11 @@ internal sealed class FormDataMapperOptions
 
     private static FormDataConverter CreateConverter(Type type, FormDataMapperOptions options)
     {
-        FormDataConverter? converter;
         foreach (var factory in options._factories)
         {
-            converter = factory(type, options);
-            if (converter != null)
+            if (factory.CanConvert(type, options))
             {
-                return converter;
+                return factory.CreateConverter(type, options);
             }
         }
 
@@ -73,5 +73,23 @@ internal sealed class FormDataMapperOptions
     internal void AddConverter<T>(FormDataConverter<T> converter)
     {
         _converters[typeof(T)] = converter;
+    }
+
+    internal bool CanConvert(Type type)
+    {
+        if (_converters.ContainsKey(type))
+        {
+            return true;
+        }
+
+        foreach (var factory in _factories)
+        {
+            if (factory.CanConvert(type, this))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

@@ -3,11 +3,11 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
-using Microsoft.Extensions.Internal;
+using Microsoft.AspNetCore.Components.Endpoints.FormMapping.Metadata;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 
-internal sealed class ComplexTypeExpressionConverterFactory<T> : ComplexTypeExpressionConverterFactory
+internal sealed class ComplexTypeExpressionConverterFactory<T>(FormDataMetadataFactory factory) : ComplexTypeExpressionConverterFactory
 {
     [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
     [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
@@ -21,7 +21,8 @@ internal sealed class ComplexTypeExpressionConverterFactory<T> : ComplexTypeExpr
     [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
     private CompiledComplexTypeConverter<T>.ConverterDelegate CreateConverterBody(Type type, FormDataMapperOptions options)
     {
-        var properties = PropertyHelper.GetVisibleProperties(type);
+        var metadata = factory.GetOrCreateMetadataFor(type, options);
+        var properties = metadata.Properties;
 
         var (readerParam, typeParam, optionsParam, resultParam, foundValueParam) = CreateFormDataConverterParameters();
         var parameters = new List<ParameterExpression>() { readerParam, typeParam, optionsParam, resultParam, foundValueParam };
@@ -39,23 +40,43 @@ internal sealed class ComplexTypeExpressionConverterFactory<T> : ComplexTypeExpr
             Expression.Assign(succeeded, Expression.Constant(true)),
         };
 
+        var end = Expression.Label("done");
+
+        if (metadata.IsRecursive)
+        {
+            // For recursive types we need to do a prefix check.
+            // if(!reader.CurrentPrefixExists())
+            // {
+            //     found = false;
+            //     return true;
+            // }
+            //
+            body.Add(
+                Expression.IfThen(
+                    Expression.Not(Expression.Call(readerParam, nameof(FormDataReader.CurrentPrefixExists), Array.Empty<Type>())),
+                        Expression.Block(
+                            Expression.Assign(foundValueParam, Expression.Constant(false)),
+                            Expression.Assign(succeeded, Expression.Constant(true)),
+                            Expression.Goto(end))));
+        }
+
         // Create the property blocks
 
         // var propertyConverter = options.ResolveConverter(typeof(string));
-        // reader.PushPrefix("Property");
+        // reader.PushPrefix("PropertyInfo");
         // succeeded &= propertyConverter.TryRead(ref reader, typeof(string), options, out propertyVar, out foundProperty);
         // found ||= foundProperty;
-        // reader.PopPrefix("Property");
-        for (var i = 0; i < properties.Length; i++)
+        // reader.PopPrefix("PropertyInfo");
+        for (var i = 0; i < properties.Count; i++)
         {
             // Declare variable for the converter
             var property = properties[i].Property;
-            var propertyConverterType = typeof(FormDataConverter<>).MakeGenericType(property.PropertyType);
+            var propertyConverterType = typeof(FormDataConverter<>).MakeGenericType(property.PropertyInfo.PropertyType);
             var propertyConverterVar = Expression.Variable(propertyConverterType, $"{property.Name}Converter");
             variables.Add(propertyConverterVar);
 
             // Declare variable for property value.
-            var propertyVar = Expression.Variable(property.PropertyType, property.Name);
+            var propertyVar = Expression.Variable(property.PropertyInfo.PropertyType, property.Name);
             propertyLocals.Add(propertyVar);
 
             // Resolve and assign converter
@@ -67,22 +88,22 @@ internal sealed class ComplexTypeExpressionConverterFactory<T> : ComplexTypeExpr
                 Expression.Call(
                     optionsParam,
                     nameof(FormDataMapperOptions.ResolveConverter),
-                    new[] { property.PropertyType },
+                    new[] { property.PropertyInfo.PropertyType },
                     Array.Empty<Expression>()));
             body.Add(propertyConverter);
 
             // try
             // {
-            //     reader.PushPrefix("Property");
+            //     reader.PushPrefix("PropertyInfo");
             //     succeeded &= propertyConverter.TryRead(ref reader, typeof(string), options, out propertyVar, out foundProperty);
             // }
             // finally
             // {
-            //     reader.PopPrefix("Property");
+            //     reader.PopPrefix("PropertyInfo");
             // }
             body.Add(Expression.TryFinally(
                 body: Expression.Block(
-                    // reader.PushPrefix("Property");
+                    // reader.PushPrefix("PropertyInfo");
                     Expression.Call(
                         readerParam,
                         nameof(FormDataReader.PushPrefix),
@@ -96,11 +117,11 @@ internal sealed class ComplexTypeExpressionConverterFactory<T> : ComplexTypeExpr
                             nameof(FormDataConverter<T>.TryRead),
                             Type.EmptyTypes,
                             readerParam,
-                            Expression.Constant(property.PropertyType),
+                            Expression.Constant(property.PropertyInfo.PropertyType),
                             optionsParam,
                             propertyVar,
                             propertyFoundValue))),
-                // reader.PopPrefix("Property");
+                // reader.PopPrefix("PropertyInfo");
                 @finally: Expression.Call(
                     readerParam,
                     nameof(FormDataReader.PopPrefix),
@@ -117,6 +138,7 @@ internal sealed class ComplexTypeExpressionConverterFactory<T> : ComplexTypeExpr
         // foundValue && !failures;
 
         body.Add(Expression.Assign(foundValueParam, localFoundValueVar));
+        body.Add(Expression.Label(end));
         body.Add(succeeded);
 
         variables.AddRange(propertyLocals);
@@ -126,7 +148,7 @@ internal sealed class ComplexTypeExpressionConverterFactory<T> : ComplexTypeExpr
         static IEnumerable<Expression> CreateInstanceAndAssignProperties(
             Type model,
             ParameterExpression resultParam,
-            PropertyHelper[] props,
+            IList<FormDataPropertyMetadata> props,
             List<ParameterExpression> variables,
             ParameterExpression succeeded,
             ParameterExpression context)
@@ -152,9 +174,9 @@ internal sealed class ComplexTypeExpressionConverterFactory<T> : ComplexTypeExpr
                         Array.Empty<Type>(),
                         Expression.Convert(resultParam, typeof(object))));
 
-            for (var i = 0; i < props.Length; i++)
+            for (var i = 0; i < props.Count; i++)
             {
-                yield return Expression.Assign(Expression.Property(resultParam, props[i].Property), variables[i]);
+                yield return Expression.Assign(Expression.Property(resultParam, props[i].Property.PropertyInfo), variables[i]);
             }
         }
     }

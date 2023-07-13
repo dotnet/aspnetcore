@@ -14,13 +14,11 @@ internal class CollectionConverterFactory : IFormDataConverterFactory
     [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
     public bool CanConvert(Type type, FormDataMapperOptions options)
     {
-        var enumerable = ClosedGenericMatcher.ExtractGenericInterface(type, typeof(IEnumerable<>));
-        if (enumerable == null && !(type.IsArray && type.GetArrayRank() == 1))
+        var element = ResolveElementType(type);
+        if (element == null)
         {
             return false;
         }
-
-        var element = enumerable != null ? enumerable.GetGenericArguments()[0] : type.GetElementType()!;
 
         if (Activator.CreateInstance(typeof(TypedCollectionConverterFactory<,>)
             .MakeGenericType(type, element!)) is not IFormDataConverterFactory factory)
@@ -29,6 +27,19 @@ internal class CollectionConverterFactory : IFormDataConverterFactory
         }
 
         return factory.CanConvert(type, options);
+    }
+
+    [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
+    public static Type? ResolveElementType(Type type)
+    {
+        var enumerable = ClosedGenericMatcher.ExtractGenericInterface(type, typeof(IEnumerable<>));
+        if (enumerable == null && !(type.IsArray && type.GetArrayRank() == 1))
+        {
+            return null;
+        }
+
+        return enumerable != null ? enumerable.GetGenericArguments()[0] : type.GetElementType()!;
     }
 
     [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
