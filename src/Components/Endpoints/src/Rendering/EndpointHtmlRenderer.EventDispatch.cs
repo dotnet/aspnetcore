@@ -64,7 +64,7 @@ internal partial class EndpointHtmlRenderer
                 ref var addedEntry = ref addedArray[i];
                 if (string.Equals(addedEntry.EventType, "onsubmit", StringComparison.Ordinal)
                     && addedEntry.AssignedName is string assignedName
-                    && TryGetScopeQualifiedEventName(addedEntry.ComponentId, assignedName, out var scopeQualifiedName))
+                    && TryCreateScopeQualifiedEventName(addedEntry.ComponentId, assignedName, out var scopeQualifiedName))
                 {
                     var location = (addedEntry.ComponentId, addedEntry.FrameIndex);
 

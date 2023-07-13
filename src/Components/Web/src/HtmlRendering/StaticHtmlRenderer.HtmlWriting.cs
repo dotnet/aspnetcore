@@ -167,12 +167,14 @@ public partial class StaticHtmlRenderer
     {
         // Strictly speaking we could just emit the hidden input unconditionally, but since we currently
         // only intend to support this for "form submit" events, validate that's the case
-        if (TryFindEnclosingElementFrame(frames, namedEventFramePosition, out var enclosingElementFrameIndex))
+        ref var namedEventFrame = ref frames.Array[namedEventFramePosition];
+        if (string.Equals(namedEventFrame.NamedEventType, "onsubmit", StringComparison.Ordinal)
+            && TryFindEnclosingElementFrame(frames, namedEventFramePosition, out var enclosingElementFrameIndex))
         {
             ref var enclosingElementFrame = ref frames.Array[enclosingElementFrameIndex];
             if (string.Equals(enclosingElementFrame.ElementName, "form", StringComparison.OrdinalIgnoreCase))
             {
-                if (TryGetScopeQualifiedEventName(componentId, frames.Array[namedEventFramePosition].NamedEventAssignedName, out var combinedFormName))
+                if (TryCreateScopeQualifiedEventName(componentId, namedEventFrame.NamedEventAssignedName, out var combinedFormName))
                 {
                     output.Write("<input type=\"hidden\" name=\"handler\" value=\"");
                     _htmlEncoder.Encode(output, combinedFormName);
@@ -183,18 +185,21 @@ public partial class StaticHtmlRenderer
     }
 
     /// <summary>
-    /// Gets the fully scope-qualified name for a named event, if the component is within
+    /// Creates the fully scope-qualified name for a named event, if the component is within
     /// a <see cref="FormMappingContext"/> (whether or not that mapping context is named).
     /// </summary>
     /// <param name="componentId">The ID of the component that defines a named event.</param>
-    /// <param name="eventName">The name assigned to the named event.</param>
+    /// <param name="assignedEventName">The name assigned to the named event.</param>
     /// <param name="scopeQualifiedEventName">The scope-qualified event name.</param>
     /// <returns>A flag to indicate whether a value could be produced.</returns>
-    protected bool TryGetScopeQualifiedEventName(int componentId, string eventName, [NotNullWhen(true)] out string? scopeQualifiedEventName)
+    protected bool TryCreateScopeQualifiedEventName(int componentId, string assignedEventName, [NotNullWhen(true)] out string? scopeQualifiedEventName)
     {
-        if (FindFormMappingContext(componentId) is { } formMappingContext)
+        if (FindFormMappingContext(componentId) is { } mappingContext)
         {
-            scopeQualifiedEventName = CreateScopeQualifiedFormName(formMappingContext, eventName);
+            var mappingScopeName = mappingContext.MappingScopeName;
+            scopeQualifiedEventName = string.IsNullOrEmpty(mappingScopeName)
+                ? assignedEventName
+                : $"[{mappingScopeName}]{assignedEventName}";
             return true;
         }
         else
@@ -213,19 +218,6 @@ public partial class StaticHtmlRenderer
             componentState);
 
         return (FormMappingContext?)supplier?.GetCurrentValue(_findFormMappingContext);
-    }
-
-    internal string CreateScopeQualifiedFormName(FormMappingContext mappingContext, string? formHandlerName)
-    {
-        var mappingScopeName = mappingContext.MappingScopeName;
-        if (string.IsNullOrEmpty(mappingScopeName))
-        {
-            return formHandlerName ?? string.Empty;
-        }
-        else
-        {
-            return $"[{mappingScopeName}]{formHandlerName ?? string.Empty}";
-        }
     }
 
     private static bool TryFindEnclosingElementFrame(ArrayRange<RenderTreeFrame> frames, int frameIndex, out int result)
