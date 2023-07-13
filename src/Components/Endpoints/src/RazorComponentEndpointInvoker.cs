@@ -77,7 +77,12 @@ internal class RazorComponentEndpointInvoker
             ParameterView.Empty,
             waitForQuiescence: isPost);
 
-        var quiesceTask = isPost ? _renderer.DispatchSubmitEventAsync(handler) : htmlContent.QuiescenceTask;
+        var isBadRequest = false;
+        var quiesceTask = isPost ? _renderer.DispatchSubmitEventAsync(handler, out isBadRequest) : htmlContent.QuiescenceTask;
+        if (isBadRequest)
+        {
+            return;
+        }
 
         if (isPost)
         {

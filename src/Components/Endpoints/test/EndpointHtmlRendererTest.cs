@@ -19,6 +19,8 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.JSInterop;
@@ -850,6 +852,7 @@ public class EndpointHtmlRendererTest
         var renderer = GetEndpointHtmlRenderer();
         var invoked = false;
         var handler = () => { invoked = true; };
+        var isBadRequest = false;
         await renderer.Dispatcher.InvokeAsync(async () =>
         {
             var result = renderer.BeginRenderingComponent(
@@ -862,11 +865,12 @@ public class EndpointHtmlRendererTest
             await result.QuiescenceTask;
 
             // Act
-            await renderer.DispatchSubmitEventAsync("default");
+            await renderer.DispatchSubmitEventAsync("default", out isBadRequest);
         });
 
         // Assert
         Assert.True(invoked);
+        Assert.False(isBadRequest);
     }
 
     [Fact]
@@ -874,60 +878,57 @@ public class EndpointHtmlRendererTest
     {
         // Arrange
         var renderer = GetEndpointHtmlRenderer();
+        var isBadRequest = false;
+        var httpContext = new DefaultHttpContext();
+        var bodyStream = new MemoryStream();
+        httpContext.Response.Body = bodyStream;
+        httpContext.RequestServices = new ServiceCollection()
+            .AddSingleton<IHostEnvironment>(new TestEnvironment(Environments.Development))
+            .BuildServiceProvider();
 
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            renderer.Dispatcher.InvokeAsync(async () =>
-            {
-                var result = renderer.BeginRenderingComponent(typeof(NamedEventHandlerComponent), ParameterView.Empty);
-                await result.QuiescenceTask;
+        await renderer.Dispatcher.InvokeAsync(async () =>
+        {
+            await renderer.RenderEndpointComponent(httpContext, typeof(NamedEventHandlerComponent), ParameterView.Empty, true);
 
-                // Act
-                await renderer.DispatchSubmitEventAsync(null);
-            }));
+            // Act
+            await renderer.DispatchSubmitEventAsync(null, out isBadRequest);
+        });
 
-        Assert.StartsWith("Cannot dispatch the POST request to the Razor Component endpoint, because the POST data does not specify which form is being submitted.", exception.Message);
+        httpContext.Response.Body.Position = 0;
+
+        Assert.True(isBadRequest);
+        Assert.Equal(400, httpContext.Response.StatusCode);
+        Assert.StartsWith("Cannot dispatch the POST request to the Razor Component endpoint, because the POST data does not specify which form is being submitted.",
+            await new StreamReader(bodyStream).ReadToEndAsync());
     }
 
     [Fact]
-    public async Task Dispatching_WhenNamedEventNeverExisted_Throws()
+    public async Task Dispatching_WhenNamedEventDoesNotExist_Throws()
     {
         // Arrange
         var renderer = GetEndpointHtmlRenderer();
+        var isBadRequest = false;
+        var httpContext = new DefaultHttpContext();
+        var bodyStream = new MemoryStream();
+        httpContext.Response.Body = bodyStream;
+        httpContext.RequestServices = new ServiceCollection()
+            .AddSingleton<IHostEnvironment>(new TestEnvironment(Environments.Development))
+            .BuildServiceProvider();
 
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            renderer.Dispatcher.InvokeAsync(async () =>
-            {
-                var result = renderer.BeginRenderingComponent(typeof(NamedEventHandlerComponent), ParameterView.Empty);
-                await result.QuiescenceTask;
+        await renderer.Dispatcher.InvokeAsync(async () =>
+        {
+            await renderer.RenderEndpointComponent(httpContext, typeof(NamedEventHandlerComponent), ParameterView.Empty, true);
 
-                // Act
-                await renderer.DispatchSubmitEventAsync("other");
-            }));
+            // Act
+            await renderer.DispatchSubmitEventAsync("other", out isBadRequest);
+        });
 
-        Assert.StartsWith("Cannot submit the form 'other' because", exception.Message);
-    }
+        httpContext.Response.Body.Position = 0;
 
-    [Fact]
-    public async Task Dispatching_WhenNamedEventWasRemoved_Throws()
-    {
-        // Arrange
-        var renderer = GetEndpointHtmlRenderer();
-        var invoked = false;
-
-        var component = new NamedEventHandlerComponent { Handler = () => { invoked = true; } };
-        var result = await renderer.Dispatcher.InvokeAsync(() => renderer.BeginRenderingComponent(component, ParameterView.Empty));
-        await result.QuiescenceTask;
-
-        // Act/Assert
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            renderer.Dispatcher.InvokeAsync(async () =>
-            {
-                renderer.RemoveRootComponent(result.ComponentId);
-                await renderer.DispatchSubmitEventAsync("default");
-            }));
-
-        Assert.StartsWith("Cannot submit the form 'default' because", exception.Message);
-        Assert.False(invoked);
+        Assert.True(isBadRequest);
+        Assert.Equal(400, httpContext.Response.StatusCode);
+        Assert.StartsWith("Cannot submit the form 'other' because",
+            await new StreamReader(bodyStream).ReadToEndAsync());
     }
 
     [Fact]
@@ -936,6 +937,7 @@ public class EndpointHtmlRendererTest
         // Arrange
         var renderer = GetEndpointHtmlRenderer();
         var continuationTcs = new TaskCompletionSource();
+        var isBadRequest = false;
 
         // Act
         var component = new MultiAsyncRenderNamedEventHandlerComponent { Continue = continuationTcs.Task };
@@ -949,8 +951,9 @@ public class EndpointHtmlRendererTest
 
         // Act/Assert: Dispatching the event uses the final delegate, not the intermediate one
         Assert.Null(component.Message);
-        await renderer.Dispatcher.InvokeAsync(() => renderer.DispatchSubmitEventAsync("default"));
+        await renderer.Dispatcher.InvokeAsync(() => renderer.DispatchSubmitEventAsync("default", out isBadRequest));
         Assert.Equal("Received call to updated handler", component.Message);
+        Assert.False(isBadRequest);
     }
 
     [Fact]
@@ -1314,5 +1317,13 @@ public class EndpointHtmlRendererTest
     private class AsyncDisposableState
     {
         public bool AsyncDisposableRan { get; set; }
+    }
+
+    private class TestEnvironment(string environmentName) : IHostEnvironment
+    {
+        public string EnvironmentName { get => environmentName; set => throw new NotImplementedException(); }
+        public string ApplicationName { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public string ContentRootPath { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public IFileProvider ContentRootFileProvider { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
     }
 }

@@ -3,6 +3,9 @@
 
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using System.Text;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
@@ -12,13 +15,14 @@ internal partial class EndpointHtmlRenderer
     private readonly Dictionary<(int ComponentId, int FrameIndex), string> _namedSubmitEventsByLocation = new();
     private readonly Dictionary<string, (int ComponentId, int FrameIndex)> _namedSubmitEventsByScopeQualifiedName = new(StringComparer.Ordinal);
 
-    internal Task DispatchSubmitEventAsync(string? handlerName)
+    internal Task DispatchSubmitEventAsync(string? handlerName, out bool isBadRequest)
     {
         if (handlerName is null)
         {
-            // Currently this also happens if you forget to add the hidden field, but soon we'll do that automatically, so the
-            // message is designed around that.
-            throw new InvalidOperationException("Cannot dispatch the POST request to the Razor Component endpoint, because the POST data does not specify which form is being submitted. To fix this, ensure form elements have an @onsubmit:name attribute with any unique value, or pass a FormHandlerName parameter if using EditForm.");
+            // This is likely during development if the developer adds <form method=post> without @onsubmit:name,
+            // or in production if someone just does a POST request because they want to
+            isBadRequest = true;
+            return ReturnBadRequestAsync("Cannot dispatch the POST request to the Razor Component endpoint, because the POST data does not specify which form is being submitted. To fix this, ensure form elements have an @onsubmit:name attribute with any unique value, or pass a FormHandlerName parameter if using EditForm.");
         }
 
         if (!_namedSubmitEventsByScopeQualifiedName.TryGetValue(handlerName, out var frameLocation))
@@ -26,12 +30,23 @@ internal partial class EndpointHtmlRenderer
             // This may happen if you deploy an app update and someone still on the old page submits a form,
             // or if you're dynamically building the UI and the submitted form doesn't exist the next time
             // the page is rendered
-            throw new InvalidOperationException($"Cannot submit the form '{handlerName}' because no submit handler was found with that name. Ensure forms have a unique @onsubmit:name attribute, or pass the FormHandlerName parameter if using EditForm.");
+            isBadRequest = true;
+            return ReturnBadRequestAsync($"Cannot submit the form '{handlerName}' because no submit handler was found with that name. Ensure forms have a unique @onsubmit:name attribute, or pass the FormHandlerName parameter if using EditForm.");
         }
 
+        isBadRequest = false;
         var eventHandlerId = FindEventHandlerIdForNamedEvent("onsubmit", frameLocation.ComponentId, frameLocation.FrameIndex);
         return eventHandlerId.HasValue
             ? DispatchEventAsync(eventHandlerId.Value, null, EventArgs.Empty, quiesce: true)
+            : Task.CompletedTask;
+    }
+
+    private Task ReturnBadRequestAsync(string detailedMessage)
+    {
+        _httpContext.Response.StatusCode = 400;
+        _httpContext.Response.ContentType = "text/plain";
+        return _httpContext.RequestServices.GetService<IHostEnvironment>()?.IsDevelopment() == true
+            ? _httpContext.Response.WriteAsync(detailedMessage)
             : Task.CompletedTask;
     }
 

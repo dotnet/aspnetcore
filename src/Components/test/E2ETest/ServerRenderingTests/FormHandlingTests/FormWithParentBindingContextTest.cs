@@ -791,7 +791,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
             Url = "forms/disappears-before-dispatching",
             FormCssSelector = "form",
             SubmitButtonId = "test-send",
-            ShouldCauseInternalServerError = true,
+            ShouldCauseBadRequest = true,
         };
         DispatchToFormCore(dispatchToForm);
     }
