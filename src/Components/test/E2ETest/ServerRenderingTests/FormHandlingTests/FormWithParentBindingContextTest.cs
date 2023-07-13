@@ -884,15 +884,39 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void FormElementWithAntiforgery(bool suppressEnhancedNavigation)
+    public void CanUsePlainForm(bool suppressEnhancedNavigation)
     {
         var dispatchToForm = new DispatchToForm(this)
         {
-            Url = "forms/form-element-antiforgery",
+            Url = "forms/plain-form",
+            DispatchEvent = false,
             FormCssSelector = "form",
+            ExpectedHandlerValue = "my-form",
             SuppressEnhancedNavigation = suppressEnhancedNavigation,
         };
         DispatchToFormCore(dispatchToForm);
+
+        Browser.Exists(By.CssSelector("#StringViaExplicitPropertyName input")).SendKeys("StringViaExplicitPropertyName value");
+        Browser.Exists(By.CssSelector("#StringViaOverriddenName input")).SendKeys("StringViaOverriddenName value");
+        Browser.Exists(By.CssSelector("#StringViaOverriddenNameUnmatched input")).SendKeys("StringViaOverriddenNameUnmatched value");
+        Browser.Exists(By.CssSelector("#StringViaExpression input")).SendKeys("StringViaExpression value");
+        Browser.Exists(By.CssSelector("#StringViaExpressionWithHandler input")).SendKeys("StringViaExpressionWithHandler value");
+        Browser.Exists(By.CssSelector("#StringViaExpressionWithUnmatchedHandler input")).SendKeys("StringViaExpressionWithUnmatchedHandler value");
+        Browser.Exists(By.CssSelector("#PersonName input")).SendKeys("PersonName value");
+        Browser.Exists(By.CssSelector("#PersonAge input")).Clear(); // Remove the existing zero, otherwise we'll get 1230
+        Browser.Exists(By.CssSelector("#PersonAge input")).SendKeys("123");
+
+        Browser.Exists(By.Id("send")).Click();
+        Browser.Exists(By.Id("pass"));
+
+        Browser.Equal("StringViaExplicitPropertyName value", () => Browser.Exists(By.CssSelector("#StringViaExplicitPropertyName input")).GetAttribute("value"));
+        Browser.Equal("StringViaOverriddenName value", () => Browser.Exists(By.CssSelector("#StringViaOverriddenName input")).GetAttribute("value"));
+        Browser.Equal(/* should not match */ "", () => Browser.Exists(By.CssSelector("#StringViaOverriddenNameUnmatched input")).GetAttribute("value"));
+        Browser.Equal("StringViaExpression value", () => Browser.Exists(By.CssSelector("#StringViaExpression input")).GetAttribute("value"));
+        Browser.Equal("StringViaExpressionWithHandler value", () => Browser.Exists(By.CssSelector("#StringViaExpressionWithHandler input")).GetAttribute("value"));
+        Browser.Equal(/* should not match */ "", () => Browser.Exists(By.CssSelector("#StringViaExpressionWithUnmatchedHandler input")).GetAttribute("value"));
+        Browser.Equal("PersonName value", () => Browser.Exists(By.CssSelector("#PersonName input")).GetAttribute("value"));
+        Browser.Equal("123", () => Browser.Exists(By.CssSelector("#PersonAge input")).GetAttribute("value"));
     }
 
     [Fact]
