@@ -46,11 +46,12 @@ internal static class DebugProxyLauncher
         var executablePath = LocateDebugProxyExecutable(environment);
         var muxerPath = DotNetMuxer.MuxerPathOrDefault();
         var ownerPid = Environment.ProcessId;
-
+        var noProxyEnvVar = Environment.GetEnvironmentVariable("NO_PROXY");
+        var ignoreProxyForLocalAddress = (noProxyEnvVar.Equals("localhost") || noProxyEnvVar.Equals("127.0.0.1")) ? "--IgnoreProxyForLocalAddress True";
         var processStartInfo = new ProcessStartInfo
         {
             FileName = muxerPath,
-            Arguments = $"exec \"{executablePath}\" --OwnerPid {ownerPid} --DevToolsUrl {devToolsHost} --IsFirefoxDebugging {isFirefox} --FirefoxProxyPort 6001",
+            Arguments = $"exec \"{executablePath}\" --OwnerPid {ownerPid} --DevToolsUrl {devToolsHost} --IsFirefoxDebugging {isFirefox} --FirefoxProxyPort 6001 {ignoreProxyForLocalAddress}",
             UseShellExecute = false,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
