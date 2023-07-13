@@ -2271,6 +2271,21 @@ public class RenderTreeBuilderTest
     }
 
     [Fact]
+    public void CannotAddNamedEventWithEmptyAssignedName()
+    {
+        // Arrange
+        var builder = new RenderTreeBuilder();
+        builder.OpenElement(0, "elem");
+
+        // Act/Assert
+        var ex = Assert.Throws<ArgumentException>(() =>
+        {
+            builder.AddNamedEvent(1, "eventtype", "");
+        });
+        Assert.Equal("assignedName", ex.ParamName);
+    }
+
+    [Fact]
     public void CannotAddAttributesAfterNamedEvent()
     {
         // Arrange

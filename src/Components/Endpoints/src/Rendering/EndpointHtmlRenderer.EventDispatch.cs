@@ -17,10 +17,10 @@ internal partial class EndpointHtmlRenderer
 
     internal Task DispatchSubmitEventAsync(string? handlerName, out bool isBadRequest)
     {
-        if (handlerName is null)
+        if (string.IsNullOrEmpty(handlerName))
         {
             // This is likely during development if the developer adds <form method=post> without @onsubmit:name,
-            // or in production if someone just does a POST request because they want to
+            // or in production if someone just does a POST request even though there's no UI to trigger it
             isBadRequest = true;
             return ReturnBadRequestAsync("Cannot dispatch the POST request to the Razor Component endpoint, because the POST data does not specify which form is being submitted. To fix this, ensure form elements have an @onsubmit:name attribute with any unique value, or pass a FormHandlerName parameter if using EditForm.");
         }

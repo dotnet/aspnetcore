@@ -722,7 +722,7 @@ public sealed class RenderTreeBuilder : IDisposable
     public void AddNamedEvent(int sequence, string eventType, string assignedName)
     {
         ArgumentNullException.ThrowIfNull(eventType);
-        ArgumentNullException.ThrowIfNull(assignedName);
+        ArgumentException.ThrowIfNullOrEmpty(assignedName);
 
         // Note that we could trivially extend this to a generic concept of "named values" that exist within the rendertree
         // and are tracked when added, removed, or updated. Currently we don't need that generality, but if we ever do, we

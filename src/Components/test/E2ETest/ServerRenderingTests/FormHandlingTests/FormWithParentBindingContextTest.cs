@@ -884,6 +884,21 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
+    public void FormNoHandlerReturnBadRequest(bool suppressEnhancedNavigation)
+    {
+        var dispatchToForm = new DispatchToForm(this)
+        {
+            Url = "forms/no-handler",
+            FormCssSelector = "form",
+            ShouldCauseBadRequest = true,
+            SuppressEnhancedNavigation = suppressEnhancedNavigation,
+        };
+        DispatchToFormCore(dispatchToForm);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
     public void CanUsePlainForm(bool suppressEnhancedNavigation)
     {
         var dispatchToForm = new DispatchToForm(this)

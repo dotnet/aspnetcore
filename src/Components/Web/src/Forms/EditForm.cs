@@ -142,7 +142,11 @@ public class EditForm : ComponentBase
         // to include the handler and antiforgery token in the post data
         if (MappingContext != null)
         {
-            builder.AddNamedEvent(5, "onsubmit", FormHandlerName ?? string.Empty);
+            if (!string.IsNullOrEmpty(FormHandlerName))
+            {
+                builder.AddNamedEvent(5, "onsubmit", FormHandlerName);
+            }
+
             RenderSSRFormHandlingChildren(builder, 6);
         }
 
