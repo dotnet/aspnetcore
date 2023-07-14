@@ -8,8 +8,7 @@ import * as Environment from './Environment';
 import { BINDING, monoPlatform, dispatcher } from './Platform/Mono/MonoPlatform';
 import { renderBatch, getRendererer, attachRootComponentToElement, attachRootComponentToLogicalElement } from './Rendering/Renderer';
 import { SharedMemoryRenderBatch } from './Rendering/RenderBatch/SharedMemoryRenderBatch';
-import { WebAssemblyResourceLoader } from './Platform/WebAssemblyResourceLoader';
-import { Pointer } from './Platform/Platform';
+import { PlatformApi, Pointer } from './Platform/Platform';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
 import { addDispatchEventMiddleware } from './Rendering/WebRendererInteropMethods';
 import { JSInitializer } from './JSInitializers/JSInitializers';
@@ -107,21 +106,18 @@ export async function startWebAssembly(options?: Partial<WebAssemblyStartOptions
     }
   };
 
-  let resourceLoader: WebAssemblyResourceLoader;
-  let jsInitializer: JSInitializer;
+  let api: PlatformApi;
   try {
-    const api = await platform.start(options ?? {});
-    resourceLoader = api.resourceLoader;
-    jsInitializer = api.jsInitializer;
+    api = await platform.start(options ?? {});
   } catch (ex) {
     throw new Error(`Failed to start platform. Reason: ${ex}`);
   }
 
   // Start up the application
-  platform.callEntryPoint(resourceLoader.bootConfig.entryAssembly);
+  platform.callEntryPoint();
   // At this point .NET has been initialized (and has yielded), we can't await the promise becasue it will
   // only end when the app finishes running
-  jsInitializer.invokeAfterStartedCallbacks(Blazor);
+  api.invokeLibraryInitializers('afterStarted', [Blazor]);
 }
 
 // obsolete, legacy, don't use for new code!
