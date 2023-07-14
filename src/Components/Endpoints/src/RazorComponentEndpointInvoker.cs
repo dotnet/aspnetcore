@@ -133,7 +133,7 @@ internal class RazorComponentEndpointInvoker
     {
         isBadRequest = false;
 
-        if (_context.Request.Form.TryGetValue("handler", out var value))
+        if (_context.Request.Form.TryGetValue("_handler", out var value))
         {
             if (value.Count != 1)
             {

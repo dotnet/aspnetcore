@@ -28,7 +28,7 @@ public sealed class RenderTreeBuilder : IDisposable
     private bool _hasSeenAddMultipleAttributes;
     private Dictionary<string, int>? _seenAttributeNames;
     private IComponentRenderMode? _pendingComponentCallSiteRenderMode; // TODO: Remove when Razor compiler supports call-site @rendermode
-    private (int Sequence, string AssignedName)? _pendingNamedSubmitEvent; // TODO: Remove when Razor compiler supports @onsubmit:name
+    private (int Sequence, string AssignedName)? _pendingNamedSubmitEvent; // TODO: Remove when Razor compiler supports @formname
 
     /// <summary>
     /// The reserved parameter name used for supplying child content.
@@ -80,7 +80,7 @@ public sealed class RenderTreeBuilder : IDisposable
         _entries.Buffer[indexOfEntryBeingClosed].ElementSubtreeLengthField = _entries.Count - indexOfEntryBeingClosed;
     }
 
-    // TODO: Remove this once Razor supports @onsubmit:name
+    // TODO: Remove this once Razor supports @formname
     private void CompletePendingNamedSubmitEvent()
     {
         if (_pendingNamedSubmitEvent is { } pendingNamedSubmitEvent)
@@ -237,9 +237,9 @@ public sealed class RenderTreeBuilder : IDisposable
         AssertCanAddAttribute();
         if (value != null || _lastNonAttributeFrameType == RenderTreeFrameType.Component)
         {
-            // TODO: Remove this once the Razor compiler is updated to support @onsubmit:name
-            // That should compile directly as a call to AddNamedValue.
-            if (string.Equals(name, "@onsubmit:name", StringComparison.Ordinal) && _lastNonAttributeFrameType == RenderTreeFrameType.Element)
+            // TODO: Remove this once the Razor compiler is updated to support @formname
+            // That should compile directly as a call to AddNamedEvent.
+            if (string.Equals(name, "@formname", StringComparison.Ordinal) && _lastNonAttributeFrameType == RenderTreeFrameType.Element)
             {
                 _pendingNamedSubmitEvent = (sequence, value!);
             }

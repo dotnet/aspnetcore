@@ -176,7 +176,7 @@ public partial class StaticHtmlRenderer
             {
                 if (TryCreateScopeQualifiedEventName(componentId, namedEventFrame.NamedEventAssignedName, out var combinedFormName))
                 {
-                    output.Write("<input type=\"hidden\" name=\"handler\" value=\"");
+                    output.Write("<input type=\"hidden\" name=\"_handler\" value=\"");
                     _htmlEncoder.Encode(output, combinedFormName);
                     output.Write("\" />");
                 }

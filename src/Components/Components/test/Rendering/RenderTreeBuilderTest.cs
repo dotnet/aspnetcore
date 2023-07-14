@@ -2302,9 +2302,9 @@ public class RenderTreeBuilderTest
     }
 
     [Fact]
-    public void TemporaryApiForNamedSubmitEventsWorksEvenIfAttributesAddedAfter()
+    public void TemporaryApiForFormNameEventsWorksEvenIfAttributesAddedAfter()
     {
-        // TODO: Remove this once the Razor compiler is updated to support @onsubmit:name directly
+        // TODO: Remove this once the Razor compiler is updated to support @formname directly
 
         // Arrange
         var builder = new RenderTreeBuilder();
@@ -2313,7 +2313,7 @@ public class RenderTreeBuilderTest
         // Act
         builder.OpenElement(0, "div");
         builder.AddAttribute(1, "attr1", 123);
-        builder.AddAttribute(2, "@onsubmit:name", "some custom name");
+        builder.AddAttribute(2, "@formname", "some custom name");
         builder.AddAttribute(3, "attr2", 456);
         builder.OpenElement(4, "other");
         builder.CloseElement();

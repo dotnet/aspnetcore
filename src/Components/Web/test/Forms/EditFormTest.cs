@@ -264,7 +264,7 @@ public class EditFormTest
                 {
                     builder.AddComponentParameter(4, "OnValidSubmit", new EventCallback<EditContext>(null, SubmitHandler));
                 }
-                builder.AddComponentParameter(5, "FormHandlerName", FormName);
+                builder.AddComponentParameter(5, "FormName", FormName);
 
                 builder.CloseComponent();
             }

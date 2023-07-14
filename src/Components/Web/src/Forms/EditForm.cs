@@ -81,10 +81,10 @@ public class EditForm : ComponentBase
     [CascadingParameter] private FormMappingContext? MappingContext { get; set; }
 
     /// <summary>
-    /// Gets or sets the form handler name. This is not used by interactive forms.
-    /// It is only used when posting to a server-side endpoint.
+    /// Gets or sets the form handler name. This is required for posting it to a server-side endpoint.
+    /// It is not used during interactive rendering.
     /// </summary>
-    [Parameter] public string? FormHandlerName { get; set; }
+    [Parameter] public string? FormName { get; set; }
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -142,9 +142,9 @@ public class EditForm : ComponentBase
         // to include the handler and antiforgery token in the post data
         if (MappingContext != null)
         {
-            if (!string.IsNullOrEmpty(FormHandlerName))
+            if (!string.IsNullOrEmpty(FormName))
             {
-                builder.AddNamedEvent(5, "onsubmit", FormHandlerName);
+                builder.AddNamedEvent(5, "onsubmit", FormName);
             }
 
             RenderSSRFormHandlingChildren(builder, 6);

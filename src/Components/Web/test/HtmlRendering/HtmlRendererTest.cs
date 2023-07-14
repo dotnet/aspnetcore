@@ -1051,7 +1051,7 @@ public class HtmlRendererTest
             var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
             // Assert
-            Assert.Equal("<form><input type=\"hidden\" name=\"handler\" value=\"some &lt;name&gt;\" /></form>", result.ToHtmlString());
+            Assert.Equal("<form><input type=\"hidden\" name=\"_handler\" value=\"some &lt;name&gt;\" /></form>", result.ToHtmlString());
         });
     }
 
@@ -1079,7 +1079,7 @@ public class HtmlRendererTest
             var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
             // Assert
-            Assert.Equal("<form><input type=\"hidden\" name=\"handler\" value=\"[myscope]somename\" /></form>", result.ToHtmlString());
+            Assert.Equal("<form><input type=\"hidden\" name=\"_handler\" value=\"[myscope]somename\" /></form>", result.ToHtmlString());
         });
     }
 

@@ -991,7 +991,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
 
         if (dispatch.ExpectedHandlerValue != null)
         {
-            var handlerInput = form.FindElement(By.CssSelector("input[type=hidden][name=handler]"));
+            var handlerInput = form.FindElement(By.CssSelector("input[type=hidden][name=_handler]"));
             Assert.Equal(dispatch.ExpectedHandlerValue, handlerInput.GetAttribute("value"));
         }
 

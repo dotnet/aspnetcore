@@ -33,8 +33,8 @@ Microsoft.AspNetCore.Components.Forms.FormMappingScope.FormMappingScope() -> voi
 Microsoft.AspNetCore.Components.Forms.FormMappingScope.Name.get -> string!
 Microsoft.AspNetCore.Components.Forms.FormMappingScope.Name.set -> void
 Microsoft.AspNetCore.Components.Forms.InputBase<TValue>.NameAttributeValue.get -> string!
-Microsoft.AspNetCore.Components.Forms.EditForm.FormHandlerName.get -> string?
-Microsoft.AspNetCore.Components.Forms.EditForm.FormHandlerName.set -> void
+Microsoft.AspNetCore.Components.Forms.EditForm.FormName.get -> string?
+Microsoft.AspNetCore.Components.Forms.EditForm.FormName.set -> void
 Microsoft.AspNetCore.Components.Forms.Mapping.FormMappingError
 Microsoft.AspNetCore.Components.Forms.Mapping.FormMappingError.AttemptedValue.get -> string?
 Microsoft.AspNetCore.Components.Forms.Mapping.FormMappingError.Container.get -> object!
