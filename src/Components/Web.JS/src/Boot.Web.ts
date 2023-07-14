@@ -9,7 +9,7 @@
 //    of interactive components
 
 import { DotNet } from '@microsoft/dotnet-js-interop';
-import { addServerDescriptor, processRemovedServerDescriptors, processUpdatedServerDescriptors, startCircuit } from './Boot.Server.Common';
+import { startCircuit } from './Boot.Server.Common';
 import { startWebAssembly } from './Boot.WebAssembly.Common';
 import { shouldAutoStart } from './BootCommon';
 import { Blazor } from './GlobalExports';
@@ -19,11 +19,16 @@ import { NavigationEnhancementCallbacks, attachProgressivelyEnhancedNavigationLi
 import { WebAssemblyComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
 import { ServerComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
 import { DescriptorHandler, attachComponentDescriptorHandler, processComponentDescriptors } from './Rendering/DomMerging/BoundarySync';
+import { RootComponentManager } from './Services/RootComponentManager';
+import { RendererId } from './Rendering/RendererId';
 
 let started = false;
 let isPerformingEnhnacedNavigation = false;
 let webStartOptions: Partial<WebStartOptions> | undefined;
 let lastActiveElement: Element | null = null;
+
+const circuitRootComponents = new RootComponentManager(RendererId.Server);
+const webAssemblyRootComponents = new RootComponentManager(RendererId.WebAssembly);
 
 function boot(options?: Partial<WebStartOptions>) : Promise<void> {
   if (started) {
@@ -60,11 +65,11 @@ function onDescriptorAdded(descriptor: ServerComponentDescriptor | WebAssemblyCo
     case 'server':
       // Start the circuit now so that it's more likely to be ready by the time interactivity actually starts.
       startCircuitIfNotStarted();
-      addServerDescriptor(descriptor);
+      circuitRootComponents.registerComponentDescriptor(descriptor);
       break;
     case 'webassembly':
       startWebAssemblyIfNotStarted();
-      // TODO: WebAssembly.
+      webAssemblyRootComponents.registerComponentDescriptor(descriptor);
       break;
   }
 }
@@ -92,16 +97,9 @@ function afterEnhancedNavigation() {
 }
 
 function handleUpdatedDescriptors() {
-  processRemovedServerDescriptors();
-
-  if (!isPerformingEnhnacedNavigation) {
-    // We avoid adding new root components during enhanced navigations.
-
-    // TODO: Handle 'activate' and 'update' seprately.
-    // We might want to update parameters of existing components
-    // without activating new ones.
-    processUpdatedServerDescriptors();
-  }
+  const shouldAddNewRootComponents = !isPerformingEnhnacedNavigation;
+  circuitRootComponents.handleUpdatedRootComponents(shouldAddNewRootComponents);
+  webAssemblyRootComponents.handleUpdatedRootComponents(shouldAddNewRootComponents);
 }
 
 let circuitStarted = false;
@@ -111,7 +109,7 @@ async function startCircuitIfNotStarted() {
   }
 
   circuitStarted = true;
-  await startCircuit(webStartOptions?.circuit);
+  await startCircuit(webStartOptions?.circuit, circuitRootComponents);
   handleUpdatedDescriptors();
 }
 
@@ -122,7 +120,7 @@ async function startWebAssemblyIfNotStarted() {
   }
 
   webAssemblyStarted = true;
-  await startWebAssembly(webStartOptions?.webAssembly);
+  await startWebAssembly(webStartOptions?.webAssembly, webAssemblyRootComponents);
   handleUpdatedDescriptors();
 }
 

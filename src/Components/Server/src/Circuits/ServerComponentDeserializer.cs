@@ -105,18 +105,6 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
                 return false;
             }
 
-            // We force the client to send descriptors in the order that they appear on the page
-            // as a way to ensure that descriptors don't get duplicated.
-            // The client might be lying about the sequence, but we validate its value
-            // after we unprotect the descriptor. This check is done early to avoid
-            // unprotecting descriptors that we know are invalid.
-            if (marker.Sequence <= lastSequence)
-            {
-                Log.InvalidMarkerSequence(_logger, lastSequence, marker.Sequence);
-                descriptors.Clear();
-                return false;
-            }
-
             var (descriptor, serverComponent) = DeserializeServerComponent(marker);
             if (descriptor == null)
             {
@@ -125,11 +113,19 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
                 return false;
             }
 
-            // If the marker's sequence doesn't match the descriptor's sequence, we know that the
-            // client was lying about the sequence.
-            if (marker.Sequence != serverComponent.Sequence)
+            // We force our client to send the descriptors in order so that we do minimal work.
+            // The list of descriptors starts with 0 and lastSequence is initialized to -1 so this
+            // check covers that the sequence starts by 0.
+            if (lastSequence != serverComponent.Sequence - 1)
             {
-                Log.MismatchedSequence(_logger, serverComponent.Sequence, marker.Sequence);
+                if (lastSequence == -1)
+                {
+                    Log.DescriptorSequenceMustStartAtZero(_logger, serverComponent.Sequence);
+                }
+                else
+                {
+                    Log.OutOfSequenceDescriptor(_logger, lastSequence, serverComponent.Sequence);
+                }
                 descriptors.Clear();
                 return false;
             }
@@ -149,6 +145,12 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
         }
 
         return true;
+    }
+
+    public ComponentDescriptor DeserializeServerComponentDescriptor(ServerComponentMarker record)
+    {
+        var (descriptor, _) = DeserializeServerComponent(record);
+        return descriptor;
     }
 
     private (ComponentDescriptor, ServerComponent) DeserializeServerComponent(ServerComponentMarker record)
@@ -198,8 +200,7 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
         {
             ComponentType = componentType,
             Parameters = parameters,
-            Sequence = serverComponent.Sequence,
-            InteractiveComponentId = record.InteractiveComponentId,
+            Sequence = serverComponent.Sequence
         };
 
         return (componentDescriptor, serverComponent);
@@ -225,10 +226,10 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
         [LoggerMessage(6, LogLevel.Debug, "The descriptor invocationId is '{invocationId}' and got a descriptor with invocationId '{currentInvocationId}'.", EventName = "MismatchedInvocationId")]
         public static partial void MismatchedInvocationId(ILogger<ServerComponentDeserializer> logger, string invocationId, string currentInvocationId);
 
-        [LoggerMessage(9, LogLevel.Debug, "The last descriptor sequence was '{lastSequence}' and got a marker with sequence '{markerSequence}'.", EventName = "InvalidMarkerSequence")]
-        public static partial void InvalidMarkerSequence(ILogger<ServerComponentDeserializer> logger, int lastSequence, int? markerSequence);
+        [LoggerMessage(7, LogLevel.Debug, "The last descriptor sequence was '{lastSequence}' and got a descriptor with sequence '{sequence}'.", EventName = "OutOfSequenceDescriptor")]
+        public static partial void OutOfSequenceDescriptor(ILogger<ServerComponentDeserializer> logger, int lastSequence, int sequence);
 
-        [LoggerMessage(10, LogLevel.Debug, "The descriptor sequence '{expectedSequence}' did not match the marker sequence '{markerSequence}'.", EventName = "DescriptorSequenceMustStartAtZero")]
-        public static partial void MismatchedSequence(ILogger<ServerComponentDeserializer> logger, int expectedSequence, int? markerSequence);
+        [LoggerMessage(8, LogLevel.Debug, "The descriptor sequence '{sequence}' is an invalid start sequence.", EventName = "DescriptorSequenceMustStartAtZero")]
+        public static partial void DescriptorSequenceMustStartAtZero(ILogger<ServerComponentDeserializer> logger, int sequence);
     }
 }

@@ -8,4 +8,6 @@ internal interface IServerComponentDeserializer
     bool TryDeserializeComponentDescriptorCollection(
         string serializedComponentRecords,
         out List<ComponentDescriptor> descriptors);
+
+    ComponentDescriptor DeserializeServerComponentDescriptor(ServerComponentMarker record);
 }

@@ -321,15 +321,27 @@ class ComponentCommentIterator {
   }
 }
 
-interface ServerComponentMarker {
-  type: string;
+export type ComponentMarker = ServerComponentMarker | WebAssemblyComponentMarker;
+
+type ServerComponentMarker = {
+  type: 'server';
   sequence: number;
   descriptor: string;
   interactiveComponentId?: number;
 }
 
+type WebAssemblyComponentMarker = {
+  type: 'webassembly';
+  typeName: string;
+  assembly: string;
+  parameterDefinitions?: string;
+  parameterValues?: string;
+}
+
+export type ComponentDescriptor = ServerComponentDescriptor | WebAssemblyComponentDescriptor;
+
 export class ServerComponentDescriptor {
-  public type: string;
+  public type: 'server';
 
   public start: Node;
 
@@ -341,7 +353,7 @@ export class ServerComponentDescriptor {
 
   public interactiveComponentId?: number;
 
-  public constructor(type: string, start: Node, end: Node | undefined, sequence: number, descriptor: string) {
+  public constructor(type: 'server', start: Node, end: Node | undefined, sequence: number, descriptor: string) {
     this.type = type;
     this.start = start;
     this.end = end;
@@ -349,9 +361,26 @@ export class ServerComponentDescriptor {
     this.descriptor = descriptor;
   }
 
+  public getUniqueId(): number {
+    return this.sequence;
+  }
+
+  public merge(other: ComponentDescriptor) {
+    if (this.type !== other.type) {
+      throw new Error(`Cannot merge component descriptors with differing types '${this.type}' and '${other.type}'.`);
+    }
+
+    this.sequence = other.sequence;
+    this.descriptor = other.descriptor;
+  }
+
   public toRecord(): ServerComponentMarker {
-    const result = { type: this.type, sequence: this.sequence, descriptor: this.descriptor, interactiveComponentId: this.interactiveComponentId };
-    return result;
+    return {
+      type: this.type,
+      sequence: this.sequence,
+      descriptor: this.descriptor,
+      interactiveComponentId: this.interactiveComponentId,
+    };
   }
 }
 
@@ -383,5 +412,37 @@ export class WebAssemblyComponentDescriptor {
     this.parameterValues = parameterValues;
     this.start = start;
     this.end = end;
+  }
+
+  public getUniqueId(): number {
+    return this.id;
+  }
+
+  public merge(other: ComponentDescriptor) {
+    if (this.type !== other.type) {
+      throw new Error(`Cannot merge component descriptors with differing types '${this.type}' and '${other.type}'.`);
+    }
+
+    if (this.typeName !== other.typeName) {
+      throw new Error(`Cannot merge component descriptors with different component types '${this.typeName}' and '${other.typeName}'.`);
+    }
+
+    if (this.assembly !== other.assembly) {
+      throw new Error(`Cannot merge component descriptors with different assemblies '${this.assembly}' and '${other.assembly}'.`);
+    }
+
+    this.parameterDefinitions = other.parameterDefinitions;
+    this.parameterValues = other.parameterValues;
+    this.id = other.id;
+  }
+
+  public toRecord(): WebAssemblyComponentMarker {
+    return {
+      type: this.type,
+      typeName: this.typeName,
+      assembly: this.assembly,
+      parameterDefinitions: this.parameterDefinitions,
+      parameterValues: this.parameterValues,
+    };
   }
 }

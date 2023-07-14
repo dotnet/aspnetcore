@@ -1,15 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { ServerComponentDescriptor, WebAssemblyComponentDescriptor, discoverComponents } from '../../Services/ComponentDescriptorDiscovery';
+import { ComponentDescriptor, ServerComponentDescriptor, WebAssemblyComponentDescriptor, discoverComponents } from '../../Services/ComponentDescriptorDiscovery';
 import { LogicalElement, getLogicalRootDescriptor, moveLogicalRootToDocumentFragment } from '../LogicalElements';
 import { CommentBoundedRange, synchronizeDomContent } from './DomSync';
 
 const boundaryDataSymbol = Symbol();
 const descriptorSymbol = Symbol();
 let descriptorHandler: DescriptorHandler;
-
-type ComponentDescriptor = ServerComponentDescriptor | WebAssemblyComponentDescriptor;
 
 interface BoundaryCommentData {
   descriptor: ComponentDescriptor;
@@ -39,7 +37,6 @@ export function insertBoundaryCommentsIntoDestination(destination: CommentBounde
 
   while (nextDestinationNode && nextDestinationNode !== endAtNodeExclOrNull) {
     if (nextDestinationNode.nodeType !== Node.COMMENT_NODE) {
-      // Only consider comment nodes.
       nextDestinationNode = nextDestinationNode.nextSibling;
       continue;
     }
@@ -134,12 +131,7 @@ export function synchronizeBoundary(destination: Comment, source: Comment) {
     throw new Error(`Attempted to merge component descriptors with different types: '${destinationBoundaryData.type}' and '${newBoundaryData.type}'.`);
   }
 
-  // Merge the descriptors together, preserving the start and end comments.
-  Object.assign(destinationBoundaryData.descriptor, {
-    ...newBoundaryData.descriptor,
-    start: destinationBoundaryData.descriptor.start,
-    end: destinationBoundaryData.descriptor.end,
-  });
+  destinationBoundaryData.descriptor.merge(newBoundaryData.descriptor);
 
   const destinationParent = destination.parentNode!;
   switch (destinationBoundaryData.type) {

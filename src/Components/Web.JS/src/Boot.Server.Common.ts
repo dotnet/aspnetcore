@@ -17,14 +17,14 @@ import { discoverPersistedState, ServerComponentDescriptor } from './Services/Co
 import { sendJSDataStream } from './Platform/Circuits/CircuitStreamingInterop';
 import { fetchAndInvokeInitializers } from './JSInitializers/JSInitializers.Server';
 import { RendererId } from './Rendering/RendererId';
+import { RootComponentManager } from './Services/RootComponentManager';
 
 let renderingFailed = false;
 let connection: HubConnection;
+let circuit: CircuitDescriptor;
 let dispatcher: DotNet.ICallDispatcher;
 
-const circuit = new CircuitDescriptor();
-
-export async function startCircuit(userOptions?: Partial<CircuitStartOptions>, components?: ServerComponentDescriptor[]): Promise<void> {
+export async function startCircuit(userOptions?: Partial<CircuitStartOptions>, components?: ServerComponentDescriptor[] | RootComponentManager): Promise<void> {
   // Establish options to be used
   const options = resolveOptions(userOptions);
   const jsInitializer = await fetchAndInvokeInitializers(options);
@@ -53,6 +53,7 @@ export async function startCircuit(userOptions?: Partial<CircuitStartOptions>, c
   logger.log(LogLevel.Information, 'Starting up Blazor server-side application.');
 
   const appState = discoverPersistedState(document);
+  circuit = new CircuitDescriptor(components || [], appState || '');
 
   // Configure navigation via SignalR
   Blazor._internal.navigationManager.listenForNavigationEvents((uri: string, state: string | undefined, intercepted: boolean): Promise<void> => {
@@ -77,7 +78,7 @@ export async function startCircuit(userOptions?: Partial<CircuitStartOptions>, c
   });
 
   const initialConnection = await initializeConnection(options, logger, circuit);
-  const circuitStarted = await circuit.startCircuit(initialConnection, appState || '', components || []);
+  const circuitStarted = await circuit.startCircuit(initialConnection);
   if (!circuitStarted) {
     logger.log(LogLevel.Error, 'Failed to start the circuit.');
     return;
@@ -100,18 +101,6 @@ export async function startCircuit(userOptions?: Partial<CircuitStartOptions>, c
   logger.log(LogLevel.Information, 'Blazor server-side application started.');
 
   jsInitializer.invokeAfterStartedCallbacks(Blazor);
-}
-
-export function addServerDescriptor(descriptor: ServerComponentDescriptor) {
-  circuit.registerDescriptor(descriptor);
-}
-
-export function processRemovedServerDescriptors() {
-  circuit.handleRemovedDescriptors();
-}
-
-export function processUpdatedServerDescriptors() {
-  circuit.handleUpdatedDescriptors();
 }
 
 async function initializeConnection(options: CircuitStartOptions, logger: Logger, circuit: CircuitDescriptor): Promise<HubConnection> {

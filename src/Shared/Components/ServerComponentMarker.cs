@@ -41,11 +41,6 @@ internal struct ServerComponentMarker
     // The value will be null for end markers.
     public string? Descriptor { get; set; }
 
-    // A browser-assigned ID that uniquely identifies the component.
-    // The client uses this value to track which marker an interactive
-    // component should attach to.
-    public int? InteractiveComponentId { get; set; }
-
     // Creates a marker for a prerendered component.
     public static ServerComponentMarker Prerendered(int sequence, string descriptor) =>
         new ServerComponentMarker(ServerMarkerType, descriptor, sequence, Guid.NewGuid().ToString("N"));

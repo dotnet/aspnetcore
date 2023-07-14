@@ -33,6 +33,10 @@ export function attachWebRendererInterop(
   resolveRendererAttached();
 }
 
+export function isRendererAttached(browserRendererId: number): boolean {
+  return interopMethodsByRenderer.has(browserRendererId);
+}
+
 export function dispatchEvent(browserRendererId: number, eventDescriptor: EventDescriptor, eventArgs: any): void {
   return dispatchEventMiddleware(browserRendererId, eventDescriptor.eventHandlerId, () => {
     const interopMethods = getInteropMethods(browserRendererId);
@@ -40,9 +44,9 @@ export function dispatchEvent(browserRendererId: number, eventDescriptor: EventD
   });
 }
 
-export function removeRootComponentAsync(browserRendererId: number, componentId: number): Promise<void> {
+export function updateRootComponents(browserRendererId: number, operationsJson: string): Promise<void> {
   const interopMethods = getInteropMethods(browserRendererId);
-  return interopMethods.invokeMethodAsync('RemoveRootComponent', componentId);
+  return interopMethods.invokeMethodAsync('UpdateRootComponents', operationsJson);
 }
 
 function getInteropMethods(rendererId: number): DotNet.DotNetObject {

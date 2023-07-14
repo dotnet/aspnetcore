@@ -3,27 +3,33 @@
 
 import { LogicalElement, toLogicalRootCommentElement } from '../Rendering/LogicalElements';
 import { WebAssemblyComponentDescriptor } from '../Services/ComponentDescriptorDiscovery';
+import { RootComponentManager } from '../Services/RootComponentManager';
 
-// TODO: Update this class to support dynamically-added descriptors.
 export class WebAssemblyComponentAttacher {
   public preregisteredComponents: WebAssemblyComponentDescriptor[];
 
   private componentsById: { [index: number]: WebAssemblyComponentDescriptor };
 
-  public constructor(components: WebAssemblyComponentDescriptor[]) {
-    this.preregisteredComponents = components;
-    const componentsById = {};
-    for (let index = 0; index < components.length; index++) {
-      const component = components[index];
-      componentsById[component.id] = component;
+  private rootComponentManager?: RootComponentManager;
+
+  public constructor(components: WebAssemblyComponentDescriptor[] | RootComponentManager) {
+    this.componentsById = {};
+    if (components instanceof RootComponentManager) {
+      this.preregisteredComponents = [];
+      this.rootComponentManager = components;
+    } else {
+      this.preregisteredComponents = components;
+      for (let index = 0; index < components.length; index++) {
+        const component = components[index];
+        this.componentsById[component.id] = component;
+      }
     }
-    this.componentsById = componentsById;
   }
 
-  public resolveRegisteredElement(id: string): LogicalElement | undefined {
+  public resolveRegisteredElement(id: string, componentId: number): LogicalElement | undefined {
     const parsedId = Number.parseInt(id);
     if (!Number.isNaN(parsedId)) {
-      const component = this.componentsById[parsedId];
+      const component = this.rootComponentManager?.resolveRootComponent(parsedId, componentId) || this.componentsById[parsedId];
       return toLogicalRootCommentElement(component);
     } else {
       return undefined;
