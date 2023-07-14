@@ -23,6 +23,7 @@ internal sealed class ComplexTypeExpressionConverterFactory<T>(FormDataMetadataF
     {
         var metadata = factory.GetOrCreateMetadataFor(type, options);
         var properties = metadata.Properties;
+        var constructorParameters = metadata.ConstructorParameters;
 
         var (readerParam, typeParam, optionsParam, resultParam, foundValueParam) = CreateFormDataConverterParameters();
         var parameters = new List<ParameterExpression>() { readerParam, typeParam, optionsParam, resultParam, foundValueParam };
@@ -33,7 +34,8 @@ internal sealed class ComplexTypeExpressionConverterFactory<T>(FormDataMetadataF
         var localFoundValueVar = Expression.Variable(typeof(bool), "localFoundValue");
 
         var variables = new List<ParameterExpression>() { propertyFoundValue, succeeded, localFoundValueVar };
-        var propertyLocals = new List<ParameterExpression>();
+        var propertyValueLocals = new List<ParameterExpression>();
+        var constructorParameterValueLocals = new List<ParameterExpression>();
 
         var body = new List<Expression>()
         {
@@ -60,6 +62,77 @@ internal sealed class ComplexTypeExpressionConverterFactory<T>(FormDataMetadataF
                             Expression.Goto(end))));
         }
 
+        // Create the constructor parameter blocks
+
+        // var parameterConverter = options.ResolveConverter(typeof(string));
+        // reader.PushPrefix("PropertyInfo");
+        // succeeded &= parameterConverter.TryRead(ref reader, typeof(string), options, out constructorParameterVar, out foundProperty);
+        // found ||= foundProperty;
+        // reader.PopPrefix("PropertyInfo");
+        for (var i = 0; i < constructorParameters.Count; i++)
+        {
+            // Declare variable for the converter
+            var constructorParameter = constructorParameters[i];
+            var constructorParameterConverterType = typeof(FormDataConverter<>).MakeGenericType(constructorParameter.Type);
+            var constructorParameterConverterVar = Expression.Variable(constructorParameterConverterType, $"{constructorParameter.Name}Converter");
+            variables.Add(constructorParameterConverterVar);
+
+            // Declare variable for constructorParameter value.
+            var constructorParameterVar = Expression.Variable(constructorParameter.Type, constructorParameter.Name);
+            constructorParameterValueLocals.Add(constructorParameterVar);
+
+            // Resolve and assign converter
+            // Create the block to try and map the constructorParameter and update variables.
+            // returnParam &= { PushPrefix(constructorParameter.Name); var res = TryRead(...); PopPrefix(...); return res; }
+            // var constructorParameterConverter = options.ResolveConverter<TProperty>());
+            var constructorParameterConverter = Expression.Assign(
+                constructorParameterConverterVar,
+                Expression.Call(
+                    optionsParam,
+                    nameof(FormDataMapperOptions.ResolveConverter),
+                    new[] { constructorParameter.Type },
+                    Array.Empty<Expression>()));
+            body.Add(constructorParameterConverter);
+
+            // try
+            // {
+            //     reader.PushPrefix("PropertyInfo");
+            //     succeeded &= constructorParameterConverter.TryRead(ref reader, typeof(string), options, out constructorParameterVar, out foundProperty);
+            // }
+            // finally
+            // {
+            //     reader.PopPrefix("PropertyInfo");
+            // }
+            body.Add(Expression.TryFinally(
+                body: Expression.Block(
+                    // reader.PushPrefix("PropertyInfo");
+                    Expression.Call(
+                        readerParam,
+                        nameof(FormDataReader.PushPrefix),
+                        Array.Empty<Type>(),
+                        Expression.Constant(constructorParameter.Name)),
+                    // succeeded &= constructorParameterConverter.TryRead(ref reader, typeof(string), options, out constructorParameterVar, out foundProperty);
+                    Expression.AndAssign(
+                        succeeded,
+                        Expression.Call(
+                            constructorParameterConverterVar,
+                            nameof(FormDataConverter<T>.TryRead),
+                            Type.EmptyTypes,
+                            readerParam,
+                            Expression.Constant(constructorParameter.Type),
+                            optionsParam,
+                            constructorParameterVar,
+                            propertyFoundValue))),
+                // reader.PopPrefix("PropertyInfo");
+                @finally: Expression.Call(
+                    readerParam,
+                    nameof(FormDataReader.PopPrefix),
+                    Array.Empty<Type>(),
+                    Expression.Constant(constructorParameter.Name))));
+
+            body.Add(Expression.OrAssign(localFoundValueVar, propertyFoundValue));
+        }
+
         // Create the property blocks
 
         // var propertyConverter = options.ResolveConverter(typeof(string));
@@ -70,14 +143,14 @@ internal sealed class ComplexTypeExpressionConverterFactory<T>(FormDataMetadataF
         for (var i = 0; i < properties.Count; i++)
         {
             // Declare variable for the converter
-            var property = properties[i].Property;
-            var propertyConverterType = typeof(FormDataConverter<>).MakeGenericType(property.PropertyInfo.PropertyType);
+            var property = properties[i];
+            var propertyConverterType = typeof(FormDataConverter<>).MakeGenericType(property.Type);
             var propertyConverterVar = Expression.Variable(propertyConverterType, $"{property.Name}Converter");
             variables.Add(propertyConverterVar);
 
             // Declare variable for property value.
-            var propertyVar = Expression.Variable(property.PropertyInfo.PropertyType, property.Name);
-            propertyLocals.Add(propertyVar);
+            var propertyVar = Expression.Variable(property.Type, property.Name);
+            propertyValueLocals.Add(propertyVar);
 
             // Resolve and assign converter
             // Create the block to try and map the property and update variables.
@@ -88,7 +161,7 @@ internal sealed class ComplexTypeExpressionConverterFactory<T>(FormDataMetadataF
                 Expression.Call(
                     optionsParam,
                     nameof(FormDataMapperOptions.ResolveConverter),
-                    new[] { property.PropertyInfo.PropertyType },
+                    new[] { property.Type },
                     Array.Empty<Expression>()));
             body.Add(propertyConverter);
 
@@ -117,7 +190,7 @@ internal sealed class ComplexTypeExpressionConverterFactory<T>(FormDataMetadataF
                             nameof(FormDataConverter<T>.TryRead),
                             Type.EmptyTypes,
                             readerParam,
-                            Expression.Constant(property.PropertyInfo.PropertyType),
+                            Expression.Constant(property.Type),
                             optionsParam,
                             propertyVar,
                             propertyFoundValue))),
@@ -133,7 +206,7 @@ internal sealed class ComplexTypeExpressionConverterFactory<T>(FormDataMetadataF
 
         body.Add(Expression.IfThen(
             localFoundValueVar,
-            Expression.Block(CreateInstanceAndAssignProperties(type, resultParam, properties, propertyLocals, succeeded, readerParam))));
+            Expression.Block(CreateInstanceAndAssignProperties(metadata, resultParam, constructorParameters, constructorParameterValueLocals, properties, propertyValueLocals, succeeded, readerParam))));
 
         // foundValue && !failures;
 
@@ -141,21 +214,30 @@ internal sealed class ComplexTypeExpressionConverterFactory<T>(FormDataMetadataF
         body.Add(Expression.Label(end));
         body.Add(succeeded);
 
-        variables.AddRange(propertyLocals);
+        variables.AddRange(constructorParameterValueLocals);
+        variables.AddRange(propertyValueLocals);
 
         return CreateConverterFunction(parameters, variables, body);
 
         static IEnumerable<Expression> CreateInstanceAndAssignProperties(
-            Type model,
+            FormDataTypeMetadata model,
             ParameterExpression resultParam,
+            IList<FormDataParameterInfo> constructorParameters,
+            List<ParameterExpression> constructorParameterValueLocals,
             IList<FormDataPropertyMetadata> props,
             List<ParameterExpression> variables,
             ParameterExpression succeeded,
             ParameterExpression context)
         {
-            if (!model.IsValueType)
+            if (model.Constructor == null && !model.Type.IsValueType)
             {
-                yield return Expression.Assign(resultParam, Expression.New(model));
+                throw new InvalidOperationException($"Type '{model.Type}' does not have a constructor. " +
+                    $"A single public constructor is required for mapping the type.");
+            }
+
+            if (model.Constructor != null)
+            {
+                yield return Expression.Assign(resultParam, Expression.New(model.Constructor, constructorParameterValueLocals));
             }
 
             // if(!succeeded && context.AttachInstanceToErrorsHandler != null)
@@ -176,7 +258,7 @@ internal sealed class ComplexTypeExpressionConverterFactory<T>(FormDataMetadataF
 
             for (var i = 0; i < props.Count; i++)
             {
-                yield return Expression.Assign(Expression.Property(resultParam, props[i].Property.PropertyInfo), variables[i]);
+                yield return Expression.Assign(Expression.Property(resultParam, props[i].Property), variables[i]);
             }
         }
     }

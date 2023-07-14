@@ -3,6 +3,7 @@
 
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.FormMapping.Metadata;
@@ -26,7 +27,10 @@ internal class FormDataTypeMetadata
 
     public ConstructorInfo Constructor { get; set; }
 
+    public IList<FormDataParameterInfo> ConstructorParameters { get; set; } = new List<FormDataParameterInfo>();
+
     public IList<FormDataPropertyMetadata> Properties { get; set; } = new List<FormDataPropertyMetadata>();
+
     public bool IsRecursive { get; internal set; }
 }
 
@@ -108,11 +112,54 @@ internal class FormDataMetadataFactory(List<IFormDataConverterFactory> factories
             result.Constructor = constructors[0];
         }
 
-        var candidateProperty = PropertyHelper.GetVisibleProperties(type);
-        foreach (var property in candidateProperty)
+        if (result.Constructor != null)
         {
-            var propertyTypeInfo = GetOrCreateMetadataFor(property.PropertyInfo.PropertyType, options);
+            var values = result.Constructor.GetParameters();
+
+            foreach (var parameter in values)
+            {
+                var parameterTypeInfo = GetOrCreateMetadataFor(parameter.ParameterType, options);
+                result.ConstructorParameters.Add(new FormDataParameterInfo(parameter, parameterTypeInfo));
+            }
+        }
+
+        var candidateProperty = PropertyHelper.GetVisibleProperties(type);
+        foreach (var propertyHelper in candidateProperty)
+        {
+            var property = propertyHelper.PropertyInfo;
+            var matchingConstructorParameter = result
+                .ConstructorParameters
+                .FirstOrDefault(p => string.Equals(p.Name, property.Name, StringComparison.OrdinalIgnoreCase));
+
+            if (matchingConstructorParameter != null)
+            {
+                var dataMember = property.GetCustomAttribute<DataMemberAttribute>();
+                if (dataMember != null && dataMember.IsNameSetExplicitly && dataMember.Name != null)
+                {
+                    matchingConstructorParameter.Name = dataMember.Name;
+                }
+
+                // The propertyHelper is already present in the constructor, we don't need to add it again.
+                continue;
+            }
+
+            var ignoreDataMember = property.GetCustomAttribute<IgnoreDataMemberAttribute>();
+            if (ignoreDataMember != null)
+            {
+                // The propertyHelper is marked as ignored, we don't need to add it.
+                continue;
+            }
+
+            var propertyTypeInfo = GetOrCreateMetadataFor(property.PropertyType, options);
             var propertyInfo = new FormDataPropertyMetadata(property, propertyTypeInfo);
+
+            var dataMemberAttribute = property.GetCustomAttribute<DataMemberAttribute>();
+            if (dataMemberAttribute != null && dataMemberAttribute.IsNameSetExplicitly && dataMemberAttribute.Name != null)
+            {
+                propertyInfo.Name = dataMemberAttribute.Name;
+                propertyInfo.Required = dataMemberAttribute.IsRequired;
+            }
+
             result.Properties.Add(propertyInfo);
         }
 
@@ -130,12 +177,12 @@ internal class FormDataMetadataFactory(List<IFormDataConverterFactory> factories
     {
         // Mark any type as recursive if its already present in the current resolution graph or
         // if there is a base type for it on the resolution graph.
-        // For example, given A and B : A. With A having a property of type B.
+        // For example, given A and B : A. With A having a propertyHelper of type B.
         // when we inspect B, we can tell that A is recursive because you can have A -> B -> B -> B -> ...
         // The opposite scenario is not something we need to worry about because we don't support polymorphism,
         // meaning that we will never create an instance of B if the declared type is A.
-        // In that scenario, A and B : A. With B having a property of type A.
-        // The recursion stops at A, because A doesn't define the property and we will never bind B to A.
+        // In that scenario, A and B : A. With B having a propertyHelper of type A.
+        // The recursion stops at A, because A doesn't define the propertyHelper and we will never bind B to A.
         // If in the future we support polymorphism, it's a matter or updating the logic below to account for it.
         for (var i = 0; i < _context.CurrentTypes.Count; i++)
         {

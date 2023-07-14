@@ -17,13 +17,15 @@ internal class ComplexTypeConverterFactory(FormDataMapperOptions options) : IFor
     [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
     public bool CanConvert(Type type, FormDataMapperOptions options)
     {
-        if (type.GetConstructor(Type.EmptyTypes) == null && !type.IsValueType)
-        {
-            // For right now, require a public parameterless constructor.
-            return false;
-        }
         if (type.IsGenericTypeDefinition)
         {
+            return false;
+        }
+
+        var constructors = type.GetConstructors();
+        if (constructors.Length > 1 || (constructors.Length == 0 && !type.IsValueType))
+        {
+            // We can't select the constructor when there are multiple of them.
             return false;
         }
 

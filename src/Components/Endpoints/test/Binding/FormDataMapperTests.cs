@@ -9,6 +9,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Globalization;
+using System.Runtime.Serialization;
 using System.Xml.Linq;
 using Microsoft.Diagnostics.Runtime;
 using Microsoft.Extensions.Primitives;
@@ -1313,6 +1314,107 @@ public class FormDataMapperTests
         Assert.Equal(expected.MonthlyFrequency, result.MonthlyFrequency);
     }
 
+    [Fact]
+    public void CanDeserialize_ComplexTypeWithConstructorParameters_KeyValuePair()
+    {
+        // Arrange
+        var expected = new KeyValuePair<string, int>("Age", 20);
+        var data = new Dictionary<string, StringValues>()
+        {
+            ["Key"] = "Age",
+            ["Value"] = "20",
+        };
+
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
+        var options = new FormDataMapperOptions();
+
+        // Act
+        var result = FormDataMapper.Map<KeyValuePair<string, int>>(reader, options);
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void CanDeserialize_ComplexType_RecordType()
+    {
+        // Arrange
+        var expected = new ClassRecordType("Age", 20);
+        var data = new Dictionary<string, StringValues>()
+        {
+            ["Key"] = "Age",
+            ["Value"] = "20",
+        };
+
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
+        var options = new FormDataMapperOptions();
+
+        // Act
+        var result = FormDataMapper.Map<ClassRecordType>(reader, options);
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void CanDeserialize_ComplexType_StructRecordType()
+    {
+        // Arrange
+        var expected = new StructRecordType("Age", 20);
+        var data = new Dictionary<string, StringValues>()
+        {
+            ["Key"] = "Age",
+            ["Value"] = "20",
+        };
+
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
+        var options = new FormDataMapperOptions();
+
+        // Act
+        var result = FormDataMapper.Map<StructRecordType>(reader, options);
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void CanDeserialize_ComplexType_AppliesDataMemberRelatedAttributes()
+    {
+        // Arrange
+        var expected = new DataMemberAttributesType { Key = "Age", Value = 20 };
+        var data = new Dictionary<string, StringValues>()
+        {
+            ["mycustomkey"] = "Age",
+            ["mycustomvalue"] = "20",
+            ["Ignored"] = "This should be ignored",
+        };
+
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
+        var options = new FormDataMapperOptions();
+
+        // Act
+        var result = FormDataMapper.Map<DataMemberAttributesType>(reader, options);
+        Assert.Equal(expected.Key, result.Key);
+        Assert.Equal(expected.Value, result.Value);
+        Assert.Null(result.Ignored);
+    }
+
+    [Fact]
+    public void CanDeserialize_ComplexType_AppliesDataMemberRelatedAttributes_FromMatchingConstructorParameters()
+    {
+        // Arrange
+        var expected = new DataMemberAttributesType { Key = "Age", Value = 20 };
+        var data = new Dictionary<string, StringValues>()
+        {
+            ["mycustomkey"] = "Age",
+            ["mycustomvalue"] = "20",
+            ["Ignored"] = "This should be ignored",
+        };
+
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
+        var options = new FormDataMapperOptions();
+
+        // Act
+        var result = FormDataMapper.Map<DataMemberAttributesType>(reader, options);
+        Assert.Equal(expected.Key, result.Key);
+        Assert.Equal(expected.Value, result.Value);
+        Assert.Null(result.Ignored);
+    }
+
     public static TheoryData<string, Type, object> NullableBasicTypes
     {
         get
@@ -1653,4 +1755,38 @@ internal class RecursiveDictionaryTree
     public int Value { get; set; }
 
     public Dictionary<int, RecursiveDictionaryTree> Children { get; set; }
+}
+
+internal record ClassRecordType(string Key, int Value);
+
+internal record struct StructRecordType(string Key, int Value);
+
+internal class DataMemberAttributesType
+{
+    [DataMember(Name = "mycustomkey")]
+    public string Key { get; set; }
+
+    [DataMember(Name = "mycustomvalue")]
+    public int Value { get; set; }
+
+    [IgnoreDataMember]
+    public string Ignored { get; set; }
+}
+
+internal class DataMemberAttributesConstructorType
+{
+    public DataMemberAttributesConstructorType(string key, int value)
+    {
+        Key = key;
+        Value = value;
+    }
+
+    [DataMember(Name = "mycustomkey")]
+    public string Key { get; set; }
+
+    [DataMember(Name = "mycustomvalue")]
+    public int Value { get; set; }
+
+    [IgnoreDataMember]
+    public string Ignored { get; set; }
 }
