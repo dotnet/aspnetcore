@@ -1534,6 +1534,37 @@
       ]
     }
   },
+  "blazorwasm": {
+    "None": {
+      "Template": "blazorwasm",
+      "Arguments": "new blazorwasm",
+      "Files": [
+        "App.razor",
+        "_Imports.razor",
+        "Program.cs",
+        "Pages/Counter.razor",
+        "Pages/FetchData.razor",
+        "Pages/Index.razor",
+        "Properties/launchSettings.json",
+        "Shared/MainLayout.razor",
+        "Shared/MainLayout.razor.css",
+        "Shared/NavMenu.razor",
+        "Shared/NavMenu.razor.css",
+        "wwwroot/favicon.png",
+        "wwwroot/icon-192.png",
+        "wwwroot/index.html",
+        "wwwroot/css/app.css",
+        "wwwroot/css/bootstrap/bootstrap.min.css",
+        "wwwroot/css/bootstrap/bootstrap.min.css.map",
+        "wwwroot/css/bootstrap-icons/bootstrap-icons.css",
+        "wwwroot/css/bootstrap-icons/bootstrap-icons.json",
+        "wwwroot/css/bootstrap-icons/bootstrap-icons.min.css",
+        "wwwroot/css/bootstrap-icons/bootstrap-icons.scss",
+        "wwwroot/css/bootstrap-icons/fonts/bootstrap-icons.woff",
+        "wwwroot/css/bootstrap-icons/fonts/bootstrap-icons.woff2",
+        "wwwroot/sample-data/weather.json"
+      ]
+    },
     "Individual": {
       "Template": "blazorwasm",
       "Arguments": "new blazorwasm -au Individual",
