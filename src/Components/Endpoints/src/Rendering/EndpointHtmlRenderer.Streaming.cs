@@ -104,7 +104,6 @@ internal partial class EndpointHtmlRenderer
                 var componentId = renderBatch.UpdatedComponents.Array[i].ComponentId;
                 componentIdsInDepthOrder[i] = new(componentId, GetComponentDepth(componentId));
             }
-
             MemoryExtensions.Sort(componentIdsInDepthOrder, static (left, right) => left.Depth - right.Depth);
 
             // Reset the component rendering tracker. This is safe to share as an instance field because batch-rendering
