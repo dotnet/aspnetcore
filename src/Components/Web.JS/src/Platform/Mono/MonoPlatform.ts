@@ -210,9 +210,21 @@ function prepareRuntimeConfig(options: Partial<WebAssemblyStartOptions>): Dotnet
 async function createRuntimeInstance(options: Partial<WebAssemblyStartOptions>): Promise<PlatformApi> {
   const { dotnet } = await importDotnetJs(options);
   const moduleConfig = prepareRuntimeConfig(options);
-  const anyDotnet = (dotnet as any);
 
-  anyDotnet.withStartupOptions(options).withModuleConfig(moduleConfig);
+  if (options.applicationCulture) {
+    dotnet.withApplicationCulture(options.applicationCulture);
+  }
+
+  if (options.environment) {
+    dotnet.withApplicationEnvironment(options.environment);
+  }
+
+  if (options.loadBootResource) {
+    dotnet.withResourceLoader(options.loadBootResource);
+  }
+
+  const anyDotnet = (dotnet as any);
+  anyDotnet.withModuleConfig(moduleConfig);
 
   if (options.configureRuntime) {
     options.configureRuntime(dotnet);
