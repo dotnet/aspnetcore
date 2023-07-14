@@ -1,0 +1,93 @@
+﻿@using Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection;
+
+<h1>QuickGridC Template</h1>
+
+<p>Example of using templates to customize the columns of the QuickGridC grid</p>
+
+@if (gridData == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <QuickGridC TGridItem="WeatherForecast" Items="@gridData" FilterSortChanged="FilterSortChanged">
+        <PropertyColumnC Property="@(e => e.Date)">
+            <ColumnOptions>
+                <form>
+                    <lab> Find</lab>
+                    <input type="date" @bind-value="@findDate" />
+                    <button type="button" @onclick="() => {context.ApplyColumnFilter(e => e.Date == findDate); context.OptionApplied=true; context.IsOptionVisible = false; }">Find</button>
+                    <button type="button" @onclick="() => {context.ApplyColumnFilter(null); context.OptionApplied=false; context.IsOptionVisible = false;}">Reset</button>
+                </form>
+            </ColumnOptions>
+        </PropertyColumnC>
+        <PropertyColumnC Property="@(e => e.TemperatureC)">
+            <HeaderTemplate>
+                Temp. (C)
+                @{
+                    context.SetPropertyExpressionAndType(e => e.TemperatureC); context.IsSortable = true; 
+                }
+                <button @onclick="() => context.ApplySort()">@context.GetSortDirection()?.ToString()</button>
+            </HeaderTemplate>
+        </PropertyColumnC>
+        <TemplateColumnC>
+            <ChildContent>
+                @context.TemperatureF.ToString()
+            </ChildContent>
+            <HeaderTemplate>
+                Temp. (F)
+                @{
+                    context.SetPropertyExpressionAndType(e => e.TemperatureF); context.IsSortable = true; context.CheckSortability();
+                }
+                <button @onclick="() => context.ApplySort()">@context.GetSortDirection()?.ToString()</button>
+                <button @onclick="() => context.ApplyColumnFilter(e => e.TemperatureF > 50)">Filter: > 50</button>
+                <button @onclick="() => context.ApplyColumnFilter(null)">Reset</button>
+            </HeaderTemplate>
+        </TemplateColumnC>
+        <TemplateColumnC Title="Summary">
+            @context.Summary
+        </TemplateColumnC>
+    </QuickGridC>
+    <GridPaging PaginationState="gridPagingState" />
+}
+
+@code {
+    #nullable enable
+    private WeatherForecast[]? gridData;
+    #nullable restore
+    private IQueryable<WeatherForecast> dataSource = default!;
+    private IQueryable<WeatherForecast> dataQuery = default!;
+    private GridPagingState gridPagingState = new(5);
+
+    private DateOnly findDate = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        dataSource = (await WeatherForecastService.GetForecastAsync(DateOnly.FromDateTime(DateTime.Now))).AsQueryable();
+        dataQuery = dataSource;
+        gridPagingState.PageChanged += HandlePageChange;
+        gridPagingState.CurrentPage = 1;
+    }
+
+    private void FilterSortChanged(GridFilteringAndSorting<WeatherForecast> filteringAndSorting)
+    {
+        dataQuery = filteringAndSorting.ApplyFilterAndSortExpressionsForLinq(dataSource);
+        gridPagingState.CurrentPage = 1;
+    }
+
+    private void HandlePageChange(object sender, GridPageChangedEventArgs e)
+    {
+        e.TotalItems = dataQuery.Count();
+
+        var queryable = dataQuery;
+
+        if (e.Skip > 0)
+            queryable = queryable.Skip(e.Skip);
+
+        queryable = queryable.Take(e.ItemsPerPage);
+
+        gridData = queryable.ToArray();
+        StateHasChanged();
+    }
+}
+

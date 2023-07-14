@@ -1,0 +1,196 @@
+﻿@using Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection;
+
+@if (People == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <p> les parametre PropertyColumnC</p>
+    <button class="btn btn-sm btn-primary" @onclick=@(()=> cssManagerDefault = !cssManagerDefault)> change the style</button>
+    <div class="form-control">
+
+        <select class="form-select form-select-sm" @bind="@column" @bind:event="oninput">
+            @foreach (var item in columns)
+            {
+                <option value="@item">@item</option>
+            }
+        </select>
+        <div hidden="@optionsBool[column]["HeaderTemplate"]">
+            <div>
+                <div class="input-group input-group-sm">
+                    <div class="input-group-text">
+                        <input class="form-check-input mt-0" type="checkbox" aria-label="Checkbox for following Title input"
+                               checked="@optionsBool[column]["Title"]"
+                        @bind-value:get="@optionsBool[column]["Title"]"
+                        @bind-value:set="@((value) =>{ optionsBool[column]["Title"] = value; optionsString[column]["Title"] = optionsBool[column]["Title"]?  optionsString[column]["Title"]: null;  })">
+                    </div>
+                    <span class="input-group-text">Title</span>
+                    <input type="text" aria-label="Title" class="form-control"
+                    @bind-value:get="@optionsString[column]["Title"]" @bind-value:set="@((value) => {optionsString[column]["Title"]= optionsBool[column]["Title"]? value:null;})">
+
+                    <div class="input-group-text">
+                        <input class="form-check-input mt-0" type="checkbox" aria-label="Checkbox for following DisplayFormat input"
+                               checked="@optionsBool[column]["DisplayFormat"]"
+                        @bind-value:get="@optionsBool[column]["DisplayFormat"]"
+                        @bind-value:set="@((value) =>{ optionsBool[column]["DisplayFormat"] = value; optionsString[column]["DisplayFormat"] = optionsBool[column]["DisplayFormat"]?  optionsString[column]["DisplayFormat"]: null;  })">
+                    </div>
+                    <span class="input-group-text">DisplayFormat</span>
+                    <input type="text" aria-label="DisplayFormat" class="form-control"
+                    @bind-value:get="@optionsString[column]["DisplayFormat"]" @bind-value:set="@((value) => {optionsString[column]["DisplayFormat"] = optionsBool[column]["DisplayFormat"] ? value : null;})">
+                </div>
+            </div>
+            <div class="form-control form-control-sm">
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="inlineRadioOptions" id="hasOption1"
+                           checked="@optionsBool[column]["HasFilterOptions"]"
+                    @onchange="@(()=> {@optionsBool[column]["HasFilterOptions"] = true;@optionsBool[column]["HasAdvancedFilterOptions"] = false;} )">
+                    <label class="form-check-label" for="hasOption1">HasFilterOptions</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="inlineRadioOptions" id="hasOption2"
+                           checked="@optionsBool[column]["HasAdvancedFilterOptions"]"
+                    @onchange="@(()=> {@optionsBool[column]["HasFilterOptions"] = false;@optionsBool[column]["HasAdvancedFilterOptions"] = true;} )">
+                    <label class="form-check-label" for="hasOption2">HasAdvancedFilterOptions</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="inlineRadioOptions" id="hasOption3"
+                           checked="@(!optionsBool[column]["HasFilterOptions"] && !optionsBool[column]["HasAdvancedFilterOptions"])"
+                    @onchange="@(()=> {@optionsBool[column]["HasFilterOptions"] = false;@optionsBool[column]["HasAdvancedFilterOptions"] = false;} )">
+                    <label class="form-check-label" for="hasOption3">Not</label>
+                </div>
+               
+                <div class="input-group input-group-sm mb-3">
+                    <label class="input-group-text" for="inputGroupFile01">MaxFilters</label>
+                    <input type="number" class="form-control" id="inputGroupFile01"
+                           disabled="@(!optionsBool[column]["HasAdvancedFilterOptions"])"
+                    @bind-value="@optionsInt[column]["MaxFilters"]">
+                </div>
+            </div>
+            <div class="form-control form-control-sm">
+                <div class="form-check form-check-inline form-switch">
+                    <input class="form-check-input" type="checkbox" role="switch" id="checkIsSortable"
+                           checked="@optionsBool[column]["IsSortable"]"
+                    @bind-value="@optionsBool[column]["IsSortable"]">
+                    <label class="form-check-label" for="checkIsSortable">IsSortable</label>
+                </div>
+                <div class="form-check form-check-inline form-switch">
+                    <input class="form-check-input" type="checkbox" role="switch" id="checkMultipleSortingAllowed"
+                           checked="@optionsBool[column]["MultipleSortingAllowed"]"
+                    @bind-value="@optionsBool[column]["MultipleSortingAllowed"]" disabled="@(!optionsBool[column]["IsSortable"])">
+                    <label class="form-check-label" for="checkMultipleSortingAllowed">MultipleSortingAllowed</label>
+                </div>
+            </div>
+        </div>
+    </div>
+    <QuickGridC TGridItem="Person" Items="@People" FilterSortChanged="FilterSortChanged" CssClassAndStyle="@(cssManagerDefault?new():gridHtmlCssManager)">
+
+
+        <PropertyColumnC Property="@(e => e.FirstName)"
+                         DisplayFormat="@optionsString["FirstName"]["DisplayFormat"]"
+                         HasFilterOptions="@optionsBool["FirstName"]["HasFilterOptions"]"
+                         HasAdvancedFilterOptions="@optionsBool["FirstName"]["HasAdvancedFilterOptions"]"
+                         MaxFilters="@optionsInt["FirstName"]["MaxFilters"]" Title="@optionsString["FirstName"]["Title"]"
+                         IsSortable="@optionsBool["FirstName"]["IsSortable"]"
+                         MultipleSortingAllowed="@optionsBool["FirstName"]["MultipleSortingAllowed"]" />
+
+        <PropertyColumnC Property="@(e => e.LastName)" DisplayFormat="@optionsString["LastName"]["DisplayFormat"]"
+                         HasFilterOptions="@optionsBool["LastName"]["HasFilterOptions"]"
+                         HasAdvancedFilterOptions="@optionsBool["LastName"]["HasAdvancedFilterOptions"]"
+                         MaxFilters="@optionsInt["LastName"]["MaxFilters"]" Title="@optionsString["LastName"]["Title"]"
+                         IsSortable="@optionsBool["LastName"]["IsSortable"]"
+                         MultipleSortingAllowed="@optionsBool["LastName"]["MultipleSortingAllowed"]" />
+
+        <PropertyColumnC Property="@(e => e.BirthDate)" DisplayFormat="@optionsString["BirthDate"]["DisplayFormat"]"
+                         HasFilterOptions="@optionsBool["BirthDate"]["HasFilterOptions"]"
+                         HasAdvancedFilterOptions="@optionsBool["BirthDate"]["HasAdvancedFilterOptions"]"
+                         MaxFilters="@optionsInt["BirthDate"]["MaxFilters"]" Title="@optionsString["BirthDate"]["Title"]"
+                         IsSortable="@optionsBool["BirthDate"]["IsSortable"]"
+                         MultipleSortingAllowed="@optionsBool["BirthDate"]["MultipleSortingAllowed"]" />
+
+        <PropertyColumnC Property="@(e => e.Gender)" DisplayFormat="@optionsString["Gender"]["DisplayFormat"]"
+                         HasFilterOptions="@optionsBool["Gender"]["HasFilterOptions"]"
+                         HasAdvancedFilterOptions="@optionsBool["Gender"]["HasAdvancedFilterOptions"]"
+                         MaxFilters="@optionsInt["Gender"]["MaxFilters"]" Title="@optionsString["Gender"]["Title"]"
+                         IsSortable="@optionsBool["Gender"]["IsSortable"]"
+                         MultipleSortingAllowed="@optionsBool["Gender"]["MultipleSortingAllowed"]" />
+
+        <PropertyColumnC Property="@(e => e.Sold)" DisplayFormat="@optionsString["Sold"]["DisplayFormat"]"
+                         HasFilterOptions="@optionsBool["Sold"]["HasFilterOptions"]"
+                         HasAdvancedFilterOptions="@optionsBool["Sold"]["HasAdvancedFilterOptions"]"
+                         MaxFilters="@optionsInt["Sold"]["MaxFilters"]" Title="@optionsString["Sold"]["Title"]"
+                         IsSortable="@optionsBool["Sold"]["IsSortable"]"
+                         MultipleSortingAllowed="@optionsBool["Sold"]["MultipleSortingAllowed"]" />
+
+        <PropertyColumnC Property="@(e => e.Active)" DisplayFormat="@optionsString["Active"]["DisplayFormat"]"
+                         HasFilterOptions="@optionsBool["Active"]["HasFilterOptions"]"
+                         HasAdvancedFilterOptions="@optionsBool["Active"]["HasAdvancedFilterOptions"]"
+                         MaxFilters="@optionsInt["Active"]["MaxFilters"]" Title="@optionsString["Active"]["Title"]"
+                         IsSortable="@optionsBool["Active"]["IsSortable"]"
+                         MultipleSortingAllowed="@optionsBool["Active"]["MultipleSortingAllowed"]" />
+    </QuickGridC>
+    <GridPaging PaginationState="GridPagingState" />
+}
+
+@code {
+    private Dictionary<string, Dictionary<string, bool>> optionsBool = new();
+    private Dictionary<string, Dictionary<string, int>> optionsInt = new();
+    #nullable enable
+    private Dictionary<string, Dictionary<string, string?>> optionsString = new();
+    #nullable restore
+    private List<string> columns;
+    private string column;
+    private GridHtmlCssManager gridHtmlCssManager;
+    private bool cssManagerDefault = true;
+    public PeopleGrid()
+    {
+        gridHtmlCssManager = new MyGridCssManager();
+        columns = new() { nameof(Person.FirstName), nameof(Person.LastName), nameof(Person.BirthDate), nameof(Person.Gender), nameof(Person.Sold), nameof(Person.Active) };
+        column = columns.First();
+        #nullable enable
+        Dictionary<string, string?> os = new();
+        #nullable restore
+        os.Add("Title", null);
+        os.Add("DisplayFormat", null);
+        optionsString.Add(nameof(Person.FirstName), os.ToDictionary());
+        optionsString.Add(nameof(Person.LastName), os.ToDictionary());
+        optionsString.Add(nameof(Person.BirthDate), os.ToDictionary());
+        optionsString.Add(nameof(Person.Gender), os.ToDictionary());
+        optionsString.Add(nameof(Person.Sold), os.ToDictionary());
+        optionsString.Add(nameof(Person.Active), os.ToDictionary());
+
+        Dictionary<string, int> oi = new();
+        oi.Add("MaxFilters", 5);
+        optionsInt.Add("FirstName", oi.ToDictionary());
+        optionsInt.Add(nameof(Person.LastName), oi.ToDictionary());
+        optionsInt.Add(nameof(Person.BirthDate), oi.ToDictionary());
+        optionsInt.Add(nameof(Person.Gender), oi.ToDictionary());
+        optionsInt.Add(nameof(Person.Sold), oi.ToDictionary());
+        optionsInt.Add(nameof(Person.Active), oi.ToDictionary());
+        Dictionary<string, bool> ob = new();
+        ob.Add("HasFilterOptions", true);
+        ob.Add("HasAdvancedFilterOptions", false);
+        ob.Add("IsSortable", true);
+        ob.Add("MultipleSortingAllowed", true);
+        ob.Add("Title", false);
+        ob.Add("DisplayFormat", false);
+        ob.Add("HeaderTemplate", false);
+        ob.Add("ColumnOptions", false);
+        optionsBool.Add(nameof(Person.FirstName), ob.ToDictionary());
+        optionsBool.Add(nameof(Person.LastName), ob.ToDictionary());
+        optionsBool.Add(nameof(Person.BirthDate), ob.ToDictionary());
+        optionsBool.Add(nameof(Person.Gender), ob.ToDictionary());
+        optionsBool.Add(nameof(Person.Sold), ob.ToDictionary());
+        optionsBool.Add(nameof(Person.Active), ob.ToDictionary());
+    }
+    #nullable enable
+    [Parameter, EditorRequired] public ICollection<Person>? People { get; set; }
+    #nullable restore
+    [Parameter, EditorRequired] public GridPagingState GridPagingState { get; set; } = default!;
+    [Parameter, EditorRequired] public EventCallback<GridFilteringAndSorting<Person>> FilterSortChanged { get; set; }
+
+    protected override Task OnParametersSetAsync()
+    {
+        return Task.CompletedTask;
+    }
+}

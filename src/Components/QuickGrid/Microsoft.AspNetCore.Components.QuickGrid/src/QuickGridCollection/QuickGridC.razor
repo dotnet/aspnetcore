@@ -1,0 +1,72 @@
+﻿@using Microsoft.AspNetCore.Components.Rendering;
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Infrastructure;
+
+@namespace Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection
+@typeparam TGridItem
+
+<CascadingValue TValue="InternalGridContext<TGridItem>" Value="_internalGridContext" IsFixed=true>
+    @{
+        StartCollectingColumns();
+    }
+    @ChildContent
+    <Defer>
+        @{
+            FinishCollectingColumns();
+        }
+        
+        <div class="@CssClassAndStyle[CssClass.Grid_div]" style="@CssClassAndStyle[CssStyle.Grid_div]">
+            <table class="@CssClassAndStyle[CssClass.Grid_div_table]" style="@CssClassAndStyle[CssStyle.Grid_div_table]">
+                <thead class="@CssClassAndStyle[CssClass.Grid_div_table_thead]" style="@CssClassAndStyle[CssStyle.Grid_div_table_thead]">
+                    @_ColumnHeaders
+                </thead>
+                <tbody class="@CssClassAndStyle[CssClass.Grid_div_table_thead]" style="@CssClassAndStyle[CssStyle.Grid_div_table_thead]">
+                    @_CellText
+                </tbody>
+            </table>
+        </div>
+    </Defer>
+
+</CascadingValue>
+
+@code {
+    private void RenderColumnHeaders(RenderTreeBuilder __builder)
+    {
+        <tr class="@CssClassAndStyle[CssClass.Grid_div_table_thead_tr]" style="@CssClassAndStyle[CssStyle.Grid_div_table_thead_tr]">
+            @foreach (var column in _columns)
+            {
+                <th class="@CssClassAndStyle[CssClass.Grid_div_table_thead_tr_th]"
+                    style="@CssClassAndStyle[CssStyle.Grid_div_table_thead_tr_th]"
+                    aria-sort="@AriaSortValue(column)">
+                    
+                    @column.HeaderContent
+                </th>
+            }
+        </tr>
+    }
+    private void RenderCellText(RenderTreeBuilder __builder)
+    {
+        var initialRowIndex = 2; // aria-rowindex is 1-based, plus the first row is the header
+        var rowIndex = initialRowIndex;
+        foreach (var item in _currentItems)
+        {
+            RenderRow(__builder, item, rowIndex++);
+        }
+    }
+    private void RenderRow(RenderTreeBuilder __builder, TGridItem item, int rowIndex)
+    {
+        <tr class="@CssClassAndStyle[CssClass.Grid_div_table_tbody_tr]"
+            style="@CssClassAndStyle[CssStyle.Grid_div_table_tbody_tr]"
+            aria-rowindex="@rowIndex"
+        @onclick="(() =>  HandleRowSelection(item))">
+            @foreach (var column in _columns)
+            {
+                <td class="@CssClassAndStyle[CssClass.Grid_div_table_tbody_tr_td]" style="@CssClassAndStyle[CssStyle.Grid_div_table_tbody_tr_td]">
+                    @{
+                        column.CellContent(__builder, item);
+                    }
+                </td>
+            }
+        </tr>
+    }
+}

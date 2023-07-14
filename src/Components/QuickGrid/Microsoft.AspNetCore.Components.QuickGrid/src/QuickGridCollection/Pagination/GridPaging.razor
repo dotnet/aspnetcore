@@ -1,0 +1,49 @@
+﻿@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Pagination
+
+@namespace Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection
+@inherits GridPagingBase
+
+@if (PageCount > 1)
+{
+    <nav aria-label="...">
+        <ul class="pagination pagination-sm">
+            <li class="page-item @(HasPreviousPage?"":"disabled")" style="@(HasPreviousPage?"cursor: pointer;":"")">
+                <a class="page-link" aria-label="Previous" @onclick="PreviousPage">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            @foreach (var i in DistributePages())
+            {
+                int buffer = i;
+                if (i == 0)
+                {
+                    <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </li>
+                }
+                else if (i == CurrentPage)
+                {
+                    <li class="page-item active" aria-current="page" @onclick="@(() => GoToPage(buffer))">
+                        <span class="page-link">@i</span>
+                    </li>
+                }
+                else
+                {
+                    <li class="page-item"><a class="page-link" @onclick="@(() => GoToPage(buffer))" style="cursor: pointer;">@i</a></li>
+                }
+            }
+            <li class="page-item @(HasNextPage?"":"disabled")" style="@(HasNextPage?"cursor: pointer;":"")">
+                <a class="page-link" aria-label="Next" @onclick="NextPage">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+        </ul>
+    </nav>    
+}
+@code {
+
+
+
+
+}

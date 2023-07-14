@@ -1,0 +1,46 @@
+﻿@using Microsoft.AspNetCore.Components.Rendering;
+@using Microsoft.AspNetCore.Components.Web
+@using System.Linq.Expressions;
+@using Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Infrastructure;
+@using Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.MenuOptions;
+
+@namespace Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns
+@typeparam TGridItem
+@inherits MenuFiltre<TGridItem>
+
+@RenderFragment
+
+@code {
+
+    protected sealed override void OptionRender(RenderTreeBuilder __builder, int index)
+    {
+        this.filterIndex = index;
+
+        <div class="@CssClassAndStyle[CssClass.MenuAdvancedFilter_div]" style="@CssClassAndStyle[CssStyle.MenuAdvancedFilter_div]">
+
+            @if (index < MaxColumnFilters - 1)
+            {
+                bool disabled = !showAddFilterButton[index];
+
+                <button class="@CssClassAndStyle[CssClass.MenuAdvancedFilter_div_button_Operator]"
+                        style="@CssClassAndStyle[CssStyle.MenuAdvancedFilter_div_button_Operator]"
+                @onclick="ToggleFilterOperator">
+                    @if (filterOperator == FilterOperator.AndAlso)
+                    {
+                        <strong>And</strong> <text> -> Or</text>
+                    }
+                    else if (filterOperator == FilterOperator.Or)
+                    {
+                        <strong>Or</strong> <text> -> And</text>
+                    }
+                </button>
+                <button class="@CssClassAndStyle[CssClass.MenuAdvancedFilter_div_button_Add]"
+                        style="@CssClassAndStyle[CssStyle.MenuAdvancedFilter_div_button_Add]"
+                        disabled="@disabled" @onclick="AddColumnFilter">
+                    ADD
+                </button>
+            }
+        </div>
+    }
+
+}

@@ -1,0 +1,67 @@
+﻿@using Microsoft.AspNetCore.Components.Rendering;
+@using Microsoft.AspNetCore.Components.Web
+@using System.Linq.Expressions;
+@using Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Infrastructure;
+@namespace Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns
+@typeparam TGridItem
+
+@code {
+    private void RenderDefaultHeaderContent(RenderTreeBuilder __builder)
+    {
+        if (HeaderTemplate != null && _lastAssignedColumn != null)
+        {
+            @HeaderTemplate(new(_lastAssignedColumn))
+        }
+        else
+        {
+            <!-- todo: add an alignment manager  -->
+            @SortContent
+            @Title
+            @OptionsContent
+        }
+    }
+    private void RenderSortContent(RenderTreeBuilder __builder)
+    {
+        <i id="sort" class="@CssClassAndStyle[CssClass.Column_Sort_i]" style="@CssClassAndStyle[CssStyle.Column_Sort_i]">
+            <i class="@( GetSortClass())" style="@( GetSortStyle())" @onclick="@( () => ApplySort())"></i>
+        </i>
+    }
+    private void RenderOptionsContent(RenderTreeBuilder __builder)
+    {
+        if (ColumnOptions != null || hasFilterOptions || hasAdvancedFilterOptions)
+        {
+            <i class="@CssClassAndStyle[CssClass.Column_Options_i]" style="@CssClassAndStyle[CssStyle.Column_Options_i]">
+                <i class="@GetColumnOptionCssClass()" style="@GetColumnOptionCssStyle()" @onclick="( () =>  ToggleColumnOptionsVisibility() )"></i>
+                <div class="@(isOptionVisible?CssClassAndStyle[CssClass.Column_Options_i_div_Show]:CssClassAndStyle[CssClass.Column_Options_i_div_NoShow] )"
+                     style="@(isOptionVisible?CssClassAndStyle[CssStyle.Column_Options_i_div_Show]:CssClassAndStyle[CssStyle.Column_Options_i_div_NoShow] )">
+                    <!-- todo: remplace true par isOptionVisible et persister les données des menu  -->
+                    @if (true)
+                    {
+                        @if (ColumnOptions != null && _lastAssignedColumn != null)
+                        {
+                            @ColumnOptions(new(_lastAssignedColumn))
+                        }
+                        else
+                        {
+                            <CascadingValue TValue="ColumnCBase<TGridItem>" Value="_lastAssignedColumn" IsFixed=true>
+                                @if (hasAdvancedFilterOptions)
+                                {
+                                    <MenuAdvancedFilter TGridItem="TGridItem" />
+                                }
+                                else if (hasFilterOptions)
+                                {
+                                    <MenuFiltre TGridItem="TGridItem" />
+                                }
+                            </CascadingValue>
+                        }
+                    }
+                </div>
+            </i>
+            @if (isOptionVisible)
+            {
+                <div style="position: fixed; width: 100%; height: 100%; top: 0%; left: 0%;" @onclick="( () =>  ToggleColumnOptionsVisibility() )"></div>
+            }
+        }
+    }
+    
+}

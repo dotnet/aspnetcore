@@ -1,0 +1,104 @@
+﻿@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Rendering;
+@using Microsoft.AspNetCore.Components.Web
+@using System.Linq.Expressions;
+@using Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Infrastructure;
+
+@namespace Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns
+@typeparam TGridItem
+
+@RenderFragment
+
+@code {
+
+    private void FromRender(RenderTreeBuilder __builder)
+    {
+        <from class="@CssClassAndStyle[CssClass.MenuFiltre_from]" style="@CssClassAndStyle[CssStyle.MenuFiltre_from]">
+            <div name="input" class="@CssClassAndStyle[CssClass.MenuFiltre_from_divInput]" style="@CssClassAndStyle[CssStyle.MenuFiltre_from_divInput]">
+                @for (int i = 0; i < columnFilterAdditions + 1; i++)
+                {
+                    FindOptionRender(__builder, i);
+                    InputRender(__builder, i);
+                    OptionRender(__builder, i);
+                }
+            </div>
+            <div name="action" class="@CssClassAndStyle[CssClass.MenuFiltre_from_divAction]" style="@CssClassAndStyle[CssStyle.MenuFiltre_from_divAction]">
+                <button name="reset" class="@CssClassAndStyle[CssClass.MenuFiltre_from_divAction_buttonReset]" style="@CssClassAndStyle[CssStyle.MenuFiltre_from_divAction_buttonReset]"
+                        type="button" @onclick="ResetColumnFilters">
+                    Reset
+                </button>
+                <button name="ok" class="@CssClassAndStyle[CssClass.MenuFiltre_from_divAction_buttonOk]" style="@CssClassAndStyle[CssStyle.MenuFiltre_from_divAction_buttonOk]"
+                        type="button" @onclick="ApplyFilters">
+                    OK
+                </button>
+            </div>
+        </from>
+    }
+    private void InputRender(RenderTreeBuilder __builder, int index)
+    {
+        if (TypeOfProperty.IsEnum)
+        {
+            if (String.IsNullOrEmpty((string?)filterValues[index]))
+            {
+                if (Enum.GetValues(TypeOfProperty).Length > 0)
+                {
+                    filterValues[index] = (Enum.GetValues(TypeOfProperty)).GetValue(0)!.ToString()!;
+                }
+            }
+            <select name="inputEnumValue" class="@CssClassAndStyle[CssClass.MenuFiltre_from_divInput_selectInputEnumValue]"
+                    style="@CssClassAndStyle[CssStyle.MenuFiltre_from_divInput_selectInputEnumValue]"
+            @bind:get="@filterValues[index]?.ToString()" @bind:set=@((arg) => filterValues[index] = arg)>
+                @foreach (var opt in Enum.GetValues(TypeOfProperty))
+                {
+                    <option value="@opt.ToString()">@opt</option>
+                }
+            </select>
+        }
+        else if (htmlInputType == "select")
+        {
+            if (String.IsNullOrEmpty((string?)filterValues[index]))
+            {
+                filterValues[index] = true.ToString();
+            }
+            <select name="inputBoolValue" class="@CssClassAndStyle[CssClass.MenuFiltre_from_divInput_selectInputBoolValue]"
+                    style="@CssClassAndStyle[CssStyle.MenuFiltre_from_divInput_selectInputBoolValue]"
+            @bind:get="@filterValues[index]?.ToString()" @bind:set=@((arg) => filterValues[index] = arg)>
+                <option value="@true.ToString()" selected="@true">True</option>
+                <option value="@false.ToString()">False</option>
+            </select>
+
+        }
+        else
+        {
+            <input name="inputValue" type="@htmlInputType" class="@CssClassAndStyle[CssClass.MenuFiltre_from_divInput_inputInputValue]"
+                   style="@CssClassAndStyle[CssStyle.MenuFiltre_from_divInput_inputInputValue]"
+            value="@filterValues[index]" @onchange="@((arg) => filterValues[index] = arg.Value)" />
+        }
+    }
+    private void ChandedInput(int index, object? obj)
+    {
+        if (htmlInputType != "text")
+        {
+            if (obj is string e && e == string.Empty)
+                filterValues[index] = null;
+        }
+        else
+            filterValues[index] = obj;
+    }
+    private void FindOptionRender(RenderTreeBuilder __builder, int index)
+    {
+        <select name="inputOption" class="@CssClassAndStyle[CssClass.MenuFiltre_from_divInput_selectInputOption]"
+                style="@CssClassAndStyle[CssStyle.MenuFiltre_from_divInput_selectInputOption]"
+        @bind:get="@selectedFilterOptions[index].ToString()"
+        @bind:set=@((arg) => selectedFilterOptions[index] = (Enum) Enum.Parse(optionsType, arg.ToString()))>
+            @foreach (var opt in GetListOptionFiltre(index))
+            {
+                <option value="@opt" selected="@(selectedFilterOptions[index].Equals(opt))">@opt</option>
+            }
+        </select>
+    }
+    protected virtual void OptionRender(RenderTreeBuilder __builder, int index)
+    {
+
+    }
+}

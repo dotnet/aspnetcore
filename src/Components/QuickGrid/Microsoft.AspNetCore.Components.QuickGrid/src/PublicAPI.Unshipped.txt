@@ -2,6 +2,7 @@
 abstract Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.CellContent(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder, TGridItem item) -> void
 abstract Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.SortBy.get -> Microsoft.AspNetCore.Components.QuickGrid.GridSort<TGridItem>?
 abstract Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.SortBy.set -> void
+abstract Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.ColumnCBase<TGridItem>.CellContent(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder, TGridItem item) -> void
 Microsoft.AspNetCore.Components.QuickGrid.Align
 Microsoft.AspNetCore.Components.QuickGrid.Align.Center = 1 -> Microsoft.AspNetCore.Components.QuickGrid.Align
 Microsoft.AspNetCore.Components.QuickGrid.Align.End = 2 -> Microsoft.AspNetCore.Components.QuickGrid.Align
@@ -115,6 +116,241 @@ Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.Theme.get -> stri
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.Theme.set -> void
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.Virtualize.get -> bool
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.Virtualize.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.ColumnCBase<TGridItem>
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.ColumnCBase<TGridItem>.AddColumn() -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.ColumnCBase<TGridItem>.ColumnCBase() -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.ColumnCBase<TGridItem>.ColumnOptions.get -> Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.ColumnOptionsContext<TGridItem>!>?
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.ColumnCBase<TGridItem>.ColumnOptions.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.ColumnCBase<TGridItem>.hasAdvancedFilterOptions -> bool
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.ColumnCBase<TGridItem>.hasFilterOptions -> bool
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.ColumnCBase<TGridItem>.HeaderContent.get -> Microsoft.AspNetCore.Components.RenderFragment!
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.ColumnCBase<TGridItem>.HeaderContent.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.ColumnCBase<TGridItem>.HeaderTemplate.get -> Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.HeaderTemplateContext<TGridItem>!>?
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.ColumnCBase<TGridItem>.HeaderTemplate.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.ColumnCBase<TGridItem>.isSortable -> bool
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.ColumnCBase<TGridItem>.maxFilters -> int
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.ColumnCBase<TGridItem>.multipleSortingAllowed -> bool
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.ColumnCBase<TGridItem>.OptionsContent.get -> Microsoft.AspNetCore.Components.RenderFragment!
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.ColumnCBase<TGridItem>.OptionsContent.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.ColumnCBase<TGridItem>.propertyExpression -> System.Linq.Expressions.Expression<System.Func<TGridItem, object?>!>?
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.ColumnCBase<TGridItem>.SortContent.get -> Microsoft.AspNetCore.Components.RenderFragment!
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.ColumnCBase<TGridItem>.SortContent.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.ColumnCBase<TGridItem>.Title.get -> string?
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.ColumnCBase<TGridItem>.Title.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.ColumnCBase<TGridItem>.typeOfProperty -> System.Type?
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.ColumnOptionsContext<TGridItem>
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.ColumnOptionsContext<TGridItem>.ApplyColumnFilter(System.Linq.Expressions.Expression<System.Func<TGridItem, bool>!>? expression) -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.ColumnOptionsContext<TGridItem>.ColumnOptionsContext(Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.ColumnCBase<TGridItem>! column) -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.ColumnOptionsContext<TGridItem>.IsOptionVisible.get -> bool
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.ColumnOptionsContext<TGridItem>.IsOptionVisible.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.ColumnOptionsContext<TGridItem>.OptionApplied.get -> bool
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.ColumnOptionsContext<TGridItem>.OptionApplied.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.HeaderTemplateContext<TGridItem>
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.HeaderTemplateContext<TGridItem>.ApplyColumnFilter(System.Linq.Expressions.Expression<System.Func<TGridItem, bool>!>? expression) -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.HeaderTemplateContext<TGridItem>.ApplySort() -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.HeaderTemplateContext<TGridItem>.CheckSortability() -> bool
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.HeaderTemplateContext<TGridItem>.GetSortDirection() -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.SortDirection?
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.HeaderTemplateContext<TGridItem>.HeaderTemplateContext(Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.ColumnCBase<TGridItem>! column) -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.HeaderTemplateContext<TGridItem>.IsSortable.get -> bool
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.HeaderTemplateContext<TGridItem>.IsSortable.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.HeaderTemplateContext<TGridItem>.MultipleSortingAllowed.get -> bool
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.HeaderTemplateContext<TGridItem>.MultipleSortingAllowed.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.HeaderTemplateContext<TGridItem>.SetPropertyExpressionAndType<TPro>(System.Linq.Expressions.Expression<System.Func<TGridItem, TPro>!>! expression) -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.MenuAdvancedFilter<TGridItem>
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.MenuAdvancedFilter<TGridItem>.MenuAdvancedFilter() -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.MenuFiltre<TGridItem>
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.MenuFiltre<TGridItem>.Column.get -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.ColumnCBase<TGridItem>!
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.MenuFiltre<TGridItem>.Column.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.MenuFiltre<TGridItem>.columnFilterAdditions -> int
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.MenuFiltre<TGridItem>.columnFilterExpressions -> System.Collections.Generic.List<System.Linq.Expressions.Expression<System.Func<TGridItem, bool>!>!>?
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.MenuFiltre<TGridItem>.CssClassAndStyle.get -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridHtmlCssManager!
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.MenuFiltre<TGridItem>.filterOptions -> System.Collections.Generic.List<System.Collections.Generic.List<System.Enum!>!>!
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.MenuFiltre<TGridItem>.filterValues -> System.Collections.Generic.List<object?>!
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.MenuFiltre<TGridItem>.Grid.get -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.QuickGridC<TGridItem>!
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.MenuFiltre<TGridItem>.MenuFiltre() -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.MenuFiltre<TGridItem>.optionsType -> System.Type!
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.MenuFiltre<TGridItem>.PropertyExpression.get -> System.Linq.Expressions.Expression<System.Func<TGridItem, object?>!>!
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.MenuFiltre<TGridItem>.RenderFragment.get -> Microsoft.AspNetCore.Components.RenderFragment!
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.MenuFiltre<TGridItem>.ResetColumnFilters() -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.MenuFiltre<TGridItem>.selectedFilterOptions -> System.Collections.Generic.List<System.Enum!>!
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.MenuFiltre<TGridItem>.selectedFilterOptionsDefault -> System.Collections.Generic.List<System.Enum!>!
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.MenuFiltre<TGridItem>.TypeOfProperty.get -> System.Type!
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass.Column_Options_i = 13 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass.Column_Options_i_div_NoShow = 14 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass.Column_Options_i_div_Show = 15 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass.Column_Options_i_i_ColumnOptionActive = 16 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass.Column_Options_i_i_ColumnOptionNotActive = 17 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass.Column_Options_i_i_MenuAdvancedFilterActive = 20 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass.Column_Options_i_i_MenuAdvancedFilterNotActive = 21 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass.Column_Options_i_i_MenuFiltreActive = 18 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass.Column_Options_i_i_MenuFiltreNotActive = 19 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass.Column_Sort_i = 8 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass.Column_Sort_i_i_SortAsc = 9 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass.Column_Sort_i_i_Sortdefault = 11 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass.Column_Sort_i_i_SortDesc = 10 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass.Column_Sort_i_i_SortNot = 12 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass.Grid_div = 0 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass.Grid_div_table = 1 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass.Grid_div_table_tbody = 5 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass.Grid_div_table_tbody_tr = 6 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass.Grid_div_table_tbody_tr_td = 7 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass.Grid_div_table_thead = 2 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass.Grid_div_table_thead_tr = 3 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass.Grid_div_table_thead_tr_th = 4 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass.MenuAdvancedFilter_div = 31 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass.MenuAdvancedFilter_div_button_Add = 33 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass.MenuAdvancedFilter_div_button_Operator = 32 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass.MenuFiltre_from = 22 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass.MenuFiltre_from_divAction = 28 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass.MenuFiltre_from_divAction_buttonOk = 29 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass.MenuFiltre_from_divAction_buttonReset = 30 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass.MenuFiltre_from_divInput = 23 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass.MenuFiltre_from_divInput_inputInputValue = 27 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass.MenuFiltre_from_divInput_selectInputBoolValue = 26 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass.MenuFiltre_from_divInput_selectInputEnumValue = 25 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass.MenuFiltre_from_divInput_selectInputOption = 24 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle.Column_Options_i = 13 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle.Column_Options_i_div_NoShow = 14 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle.Column_Options_i_div_Show = 15 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle.Column_Options_i_i_ColumnOptionActive = 16 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle.Column_Options_i_i_ColumnOptionNotActive = 17 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle.Column_Options_i_i_MenuAdvancedFilterActive = 20 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle.Column_Options_i_i_MenuAdvancedFilterNotActive = 21 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle.Column_Options_i_i_MenuFiltreActive = 18 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle.Column_Options_i_i_MenuFiltreNotActive = 19 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle.Column_Sort_i = 8 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle.Column_Sort_i_i_SortAsc = 9 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle.Column_Sort_i_i_Sortdefault = 11 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle.Column_Sort_i_i_SortDesc = 10 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle.Column_Sort_i_i_SortNot = 12 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle.Grid_div = 0 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle.Grid_div_table = 1 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle.Grid_div_table_tbody = 5 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle.Grid_div_table_tbody_tr = 6 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle.Grid_div_table_tbody_tr_td = 7 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle.Grid_div_table_thead = 2 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle.Grid_div_table_thead_tr = 3 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle.Grid_div_table_thead_tr_th = 4 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle.MenuAdvancedFilter_div = 31 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle.MenuAdvancedFilter_div_button_Add = 33 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle.MenuAdvancedFilter_div_button_Operator = 32 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle.MenuFiltre_from = 22 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle.MenuFiltre_from_divAction = 28 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle.MenuFiltre_from_divAction_buttonOk = 29 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle.MenuFiltre_from_divAction_buttonReset = 30 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle.MenuFiltre_from_divInput = 23 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle.MenuFiltre_from_divInput_inputInputValue = 27 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle.MenuFiltre_from_divInput_selectInputBoolValue = 26 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle.MenuFiltre_from_divInput_selectInputEnumValue = 25 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle.MenuFiltre_from_divInput_selectInputOption = 24 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.FilterOperator
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.FilterOperator.And = 1 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.FilterOperator
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.FilterOperator.AndAlso = 0 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.FilterOperator
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.FilterOperator.AndAssign = 2 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.FilterOperator
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.FilterOperator.Or = 3 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.FilterOperator
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.FilterOperator.OrAssign = 5 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.FilterOperator
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.FilterOperator.OrElse = 4 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.FilterOperator
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridFilteringAndSorting<TGridItem>
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridFilteringAndSorting<TGridItem>.ApplyFilterAndSortExpressions(System.Linq.IQueryable<TGridItem>! queryable, Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.FilterOperator operatorType = Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.FilterOperator.AndAlso) -> System.Linq.IQueryable<TGridItem>!
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridFilteringAndSorting<TGridItem>.ApplyFilterAndSortExpressionsForLinq(System.Linq.IQueryable<TGridItem>! queryable, bool useDefaultValueForNull = false, bool ignoreCaseInStringComparison = true, Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.FilterOperator operatorType = Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.FilterOperator.AndAlso) -> System.Linq.IQueryable<TGridItem>!
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridFilteringAndSorting<TGridItem>.ApplyFilterExpressions(System.Linq.IQueryable<TGridItem>! queryable, Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.FilterOperator operatorType = Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.FilterOperator.AndAlso) -> System.Linq.IQueryable<TGridItem>?
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridFilteringAndSorting<TGridItem>.ApplyFilterExpressionsForLinq(System.Linq.IQueryable<TGridItem>! queryable, bool useDefaultValueForNull = false, bool ignoreCaseInStringComparison = true, Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.FilterOperator operatorType = Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.FilterOperator.AndAlso) -> System.Linq.IQueryable<TGridItem>?
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridFilteringAndSorting<TGridItem>.ApplySortExpressions(System.Linq.IQueryable<TGridItem>! queryable) -> System.Linq.IOrderedQueryable<TGridItem>?
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridFilteringAndSorting<TGridItem>.CombineFilterExpressions(Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.FilterOperator operatorType = Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.FilterOperator.AndAlso) -> System.Linq.Expressions.Expression<System.Func<TGridItem, bool>!>?
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridFilteringAndSorting<TGridItem>.CombineFilterExpressionsForLinq(bool useDefaultValueForNull = false, bool ignoreCaseInStringComparison = true, Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.FilterOperator operatorType = Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.FilterOperator.AndAlso) -> System.Linq.Expressions.Expression<System.Func<TGridItem, bool>!>?
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridFilteringAndSorting<TGridItem>.FilterExpressions.get -> System.Linq.Expressions.Expression<System.Func<TGridItem, bool>!>![]?
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridFilteringAndSorting<TGridItem>.GridFilteringAndSorting() -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridFilteringAndSorting<TGridItem>.HasFilterExpressions() -> bool
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridFilteringAndSorting<TGridItem>.HasSortExpressions() -> bool
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridFilteringAndSorting<TGridItem>.SortExpressions.get -> (Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.SortedLinq, System.Linq.Expressions.Expression<System.Func<TGridItem, object?>!>!)[]?
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridHtmlCssManager
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridHtmlCssManager.GridHtmlCssManager() -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridHtmlCssManager.this[Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass classHtml].get -> string!
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridHtmlCssManager.this[Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass classHtml].set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridHtmlCssManager.this[Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle styleCss].get -> string!
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridHtmlCssManager.this[Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle styleCss].set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridPageChangedEventArgs
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridPageChangedEventArgs.GridPageChangedEventArgs(Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridPagingState! pagingState) -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridPageChangedEventArgs.ItemsPerPage.get -> int
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridPageChangedEventArgs.NextLink.get -> string?
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridPageChangedEventArgs.NextLink.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridPageChangedEventArgs.Skip.get -> int
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridPageChangedEventArgs.TotalItems.get -> int
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridPageChangedEventArgs.TotalItems.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridPagingState
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridPagingState.CurrentPage.get -> int
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridPagingState.CurrentPage.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridPagingState.GridPagingState(int itemsPerPage = 20) -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridPagingState.ItemsPerPage.get -> int
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridPagingState.ItemsPerPage.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridPagingState.NextLink.get -> string?
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridPagingState.NextLink.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridPagingState.PageChanged -> System.EventHandler<Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridPageChangedEventArgs!>!
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridPagingState.PageCount.get -> int
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridPagingState.Skip.get -> int
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridPagingState.TotalItems.get -> int
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridPagingState.TotalItems.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Infrastructure.Defer
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Infrastructure.Defer.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Infrastructure.Defer.ChildContent.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Infrastructure.Defer.Defer() -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Pagination.GridPagingBase
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Pagination.GridPagingBase.CurrentPage.get -> int
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Pagination.GridPagingBase.CurrentPage.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Pagination.GridPagingBase.DistributePages() -> int[]!
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Pagination.GridPagingBase.GridPagingBase() -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Pagination.GridPagingBase.HasNextPage.get -> bool
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Pagination.GridPagingBase.HasPreviousPage.get -> bool
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Pagination.GridPagingBase.ItemsPerPage.get -> int
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Pagination.GridPagingBase.ItemsPerPage.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Pagination.GridPagingBase.PageCount.get -> int
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Pagination.GridPagingBase.PaginationState.get -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridPagingState!
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Pagination.GridPagingBase.PaginationState.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Pagination.GridPagingBase.TotalItems.get -> int
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Pagination.GridPagingBase.TotalItems.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.PropertyColumnC<TGridItem, TProp>
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.PropertyColumnC<TGridItem, TProp>.DisplayFormat.get -> string?
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.PropertyColumnC<TGridItem, TProp>.DisplayFormat.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.PropertyColumnC<TGridItem, TProp>.HasAdvancedFilterOptions.get -> bool
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.PropertyColumnC<TGridItem, TProp>.HasAdvancedFilterOptions.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.PropertyColumnC<TGridItem, TProp>.HasFilterOptions.get -> bool
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.PropertyColumnC<TGridItem, TProp>.HasFilterOptions.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.PropertyColumnC<TGridItem, TProp>.IsSortable.get -> bool
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.PropertyColumnC<TGridItem, TProp>.IsSortable.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.PropertyColumnC<TGridItem, TProp>.MaxFilters.get -> int
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.PropertyColumnC<TGridItem, TProp>.MaxFilters.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.PropertyColumnC<TGridItem, TProp>.MultipleSortingAllowed.get -> bool
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.PropertyColumnC<TGridItem, TProp>.MultipleSortingAllowed.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.PropertyColumnC<TGridItem, TProp>.Property.get -> System.Linq.Expressions.Expression<System.Func<TGridItem, TProp>!>!
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.PropertyColumnC<TGridItem, TProp>.Property.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.PropertyColumnC<TGridItem, TProp>.PropertyColumnC() -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.QuickGridC<TGridItem>
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.QuickGridC<TGridItem>.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.QuickGridC<TGridItem>.ChildContent.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.QuickGridC<TGridItem>.CssClassAndStyle.get -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridHtmlCssManager!
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.QuickGridC<TGridItem>.CssClassAndStyle.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.QuickGridC<TGridItem>.FilterSortChanged.get -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridFilteringAndSorting<TGridItem>>
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.QuickGridC<TGridItem>.FilterSortChanged.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.QuickGridC<TGridItem>.Items.get -> System.Collections.Generic.ICollection<TGridItem>!
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.QuickGridC<TGridItem>.Items.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.QuickGridC<TGridItem>.QuickGridC() -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.QuickGridC<TGridItem>.RowSelected.get -> Microsoft.AspNetCore.Components.EventCallback<TGridItem>
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.QuickGridC<TGridItem>.RowSelected.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.SortDirection
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.SortDirection.Ascending = 1 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.SortDirection
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.SortDirection.Default = 0 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.SortDirection
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.SortDirection.Descending = 2 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.SortDirection
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.SortedLinq
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.SortedLinq.OrderBy = 0 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.SortedLinq
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.SortedLinq.OrderByDescending = 1 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.SortedLinq
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.SortedLinq.ThenBy = 2 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.SortedLinq
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.SortedLinq.ThenByDescending = 3 -> Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.SortedLinq
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.TemplateColumnC<TGridItem>
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.TemplateColumnC<TGridItem>.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment<TGridItem>!
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.TemplateColumnC<TGridItem>.ChildContent.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.TemplateColumnC<TGridItem>.TemplateColumnC() -> void
 Microsoft.AspNetCore.Components.QuickGrid.SortDirection
 Microsoft.AspNetCore.Components.QuickGrid.SortDirection.Ascending = 1 -> Microsoft.AspNetCore.Components.QuickGrid.SortDirection
 Microsoft.AspNetCore.Components.QuickGrid.SortDirection.Auto = 0 -> Microsoft.AspNetCore.Components.QuickGrid.SortDirection
@@ -137,6 +373,14 @@ override Microsoft.AspNetCore.Components.QuickGrid.PropertyColumn<TGridItem, TPr
 override Microsoft.AspNetCore.Components.QuickGrid.PropertyColumn<TGridItem, TProp>.SortBy.set -> void
 override Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.OnParametersSetAsync() -> System.Threading.Tasks.Task!
+override Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.MenuAdvancedFilter<TGridItem>.ApplyColumnFilterFromGrid() -> void
+override Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.MenuAdvancedFilter<TGridItem>.GetListOptionFiltre(int index) -> System.Collections.Generic.List<System.Enum!>!
+override Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.MenuFiltre<TGridItem>.OnParametersSet() -> void
+override Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.PropertyColumnC<TGridItem, TProp>.CellContent(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder, TGridItem item) -> void
+override Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.PropertyColumnC<TGridItem, TProp>.OnParametersSet() -> void
+override Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.QuickGridC<TGridItem>.OnParametersSetAsync() -> System.Threading.Tasks.Task!
+override Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.TemplateColumnC<TGridItem>.CellContent(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder, TGridItem item) -> void
+override Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.TemplateColumnC<TGridItem>.OnParametersSet() -> void
 override Microsoft.AspNetCore.Components.QuickGrid.TemplateColumn<TGridItem>.CellContent(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder, TGridItem item) -> void
 override Microsoft.AspNetCore.Components.QuickGrid.TemplateColumn<TGridItem>.IsSortableByDefault() -> bool
 override Microsoft.AspNetCore.Components.QuickGrid.TemplateColumn<TGridItem>.SortBy.get -> Microsoft.AspNetCore.Components.QuickGrid.GridSort<TGridItem>?
@@ -145,6 +389,13 @@ static Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderResult.From<TG
 static Microsoft.AspNetCore.Components.QuickGrid.GridSort<TGridItem>.ByAscending<U>(System.Linq.Expressions.Expression<System.Func<TGridItem, U>!>! expression) -> Microsoft.AspNetCore.Components.QuickGrid.GridSort<TGridItem>!
 static Microsoft.AspNetCore.Components.QuickGrid.GridSort<TGridItem>.ByDescending<U>(System.Linq.Expressions.Expression<System.Func<TGridItem, U>!>! expression) -> Microsoft.AspNetCore.Components.QuickGrid.GridSort<TGridItem>!
 virtual Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.IsSortableByDefault() -> bool
+virtual Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.MenuFiltre<TGridItem>.ApplyColumnFilterFromGrid() -> void
+virtual Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.MenuFiltre<TGridItem>.GetListOptionFiltre(int index) -> System.Collections.Generic.List<System.Enum!>!
+virtual Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridHtmlCssManager.InitializedClassCss() -> System.Collections.Generic.Dictionary<Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass, string!>!
+virtual Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridHtmlCssManager.InitializedStyleCss() -> System.Collections.Generic.Dictionary<Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle, string!>!
+virtual Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Pagination.GridPagingBase.GoToPage(int pageIndex) -> void
+virtual Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Pagination.GridPagingBase.NextPage() -> void
+virtual Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Pagination.GridPagingBase.PreviousPage() -> void
 ~override Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Microsoft.AspNetCore.Components.QuickGrid.Paginator.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void

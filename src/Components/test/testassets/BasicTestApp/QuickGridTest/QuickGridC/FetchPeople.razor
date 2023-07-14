@@ -1,0 +1,53 @@
+﻿@using Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection;
+
+
+<h1>QuickGridC Demonstration</h1>
+
+<p>This is a demonstration of using the parameters of the QuickGridC component and its subcomponent PropertyColumnC</p>
+
+
+<PeopleGrid People="gridData" FilterSortChanged="FilterSortChanged" GridPagingState="gridPagingState" />
+
+@code {
+    #nullable enable
+    private List<Person>? gridData;
+    #nullable restore
+    private IQueryable<Person> dataSource = default!;
+
+    private IQueryable<Person> dataQuery = default!;
+
+    private GridFilteringAndSorting<Person> filteringAndSorting = default!;
+    private GridPagingState gridPagingState = new(5);
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        dataSource = (await PersonService.GetPeopleAsync()).AsQueryable();
+
+        dataQuery = dataSource;
+
+        gridPagingState.PageChanged += HandlePageChange;
+        gridPagingState.CurrentPage = 1;
+    }
+
+    private void FilterSortChanged(GridFilteringAndSorting<Person> filteringAndSorting)
+    {
+        // utilisation de Linq
+        dataQuery = filteringAndSorting.ApplyFilterAndSortExpressionsForLinq(dataSource);
+
+        gridPagingState.CurrentPage = 1;
+    }
+
+    private void HandlePageChange(object sender, GridPageChangedEventArgs e)
+    {
+        e.TotalItems = dataQuery.Count();
+        var queryable = dataQuery;
+        if (e.Skip > 0)
+            queryable = queryable.Skip(e.Skip);
+        queryable = queryable.Take(e.ItemsPerPage);
+        gridData = queryable.ToList();
+
+        StateHasChanged();
+    }
+
+}
