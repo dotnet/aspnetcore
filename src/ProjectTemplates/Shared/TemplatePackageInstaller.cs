@@ -95,15 +95,12 @@ internal static class TemplatePackageInstaller
             throw new InvalidOperationException($"Failed to find required templates in {packagesDir}. Please ensure the *Templates*.nupkg have been built.");
         }
 
-        Assert.Equal(4, builtPackages.Length);
+        Assert.Equal(3, builtPackages.Length);
 
         await VerifyCannotFindTemplateAsync(output, "web");
         await VerifyCannotFindTemplateAsync(output, "webapp");
         await VerifyCannotFindTemplateAsync(output, "webapi");
         await VerifyCannotFindTemplateAsync(output, "mvc");
-        await VerifyCannotFindTemplateAsync(output, "react");
-        await VerifyCannotFindTemplateAsync(output, "reactredux");
-        await VerifyCannotFindTemplateAsync(output, "angular");
 
         foreach (var packagePath in builtPackages)
         {
@@ -115,7 +112,6 @@ internal static class TemplatePackageInstaller
         await VerifyCanFindTemplate(output, "webapp");
         await VerifyCanFindTemplate(output, "web");
         await VerifyCanFindTemplate(output, "webapi");
-        await VerifyCanFindTemplate(output, "react");
     }
 
     private static async Task VerifyCanFindTemplate(ITestOutputHelper output, string templateName)
