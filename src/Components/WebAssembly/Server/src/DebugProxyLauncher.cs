@@ -47,7 +47,7 @@ internal static class DebugProxyLauncher
         var muxerPath = DotNetMuxer.MuxerPathOrDefault();
         var ownerPid = Environment.ProcessId;
         var noProxyEnvVar = Environment.GetEnvironmentVariable("NO_PROXY");
-        var ignoreProxyForLocalAddress = (noProxyEnvVar.Equals("localhost") || noProxyEnvVar.Equals("127.0.0.1")) ? "--IgnoreProxyForLocalAddress True";
+        var ignoreProxyForLocalAddress = (noProxyEnvVar is not null && (noProxyEnvVar.Equals("localhost") || noProxyEnvVar.Equals("127.0.0.1"))) ? "--IgnoreProxyForLocalAddress True" : "";
         var processStartInfo = new ProcessStartInfo
         {
             FileName = muxerPath,
