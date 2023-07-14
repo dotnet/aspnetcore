@@ -23,7 +23,7 @@ internal partial class EndpointHtmlRenderer
             // This is likely during development if the developer adds <form method=post> without @formname,
             // or in production if someone just does a POST request even though there's no UI to trigger it
             isBadRequest = true;
-            return ReturnErrorResponse("Cannot dispatch the POST request to the Razor Component endpoint, because the POST data does not specify which form is being submitted. To fix this, ensure form elements have an @formname attribute with any unique value, or pass a FormName parameter if using EditForm.");
+            return ReturnErrorResponse("The POST request does not specify which form is being submitted. To fix this, ensure <form> elements have a @formname attribute with any unique value, or pass a FormName parameter if using <EditForm>.");
         }
 
         if (!_namedSubmitEventsByScopeQualifiedName.TryGetValue(handlerName, out var locationsForName) || locationsForName.Count == 0)
@@ -32,7 +32,7 @@ internal partial class EndpointHtmlRenderer
             // or if you're dynamically building the UI and the submitted form doesn't exist the next time
             // the page is rendered
             isBadRequest = true;
-            return ReturnErrorResponse($"Cannot submit the form '{handlerName}' because no submit handler was found with that name. Ensure forms have a unique @formname attribute, or pass the FormName parameter if using EditForm.");
+            return ReturnErrorResponse($"Cannot submit the form '{handlerName}' because no form on the page currently has that name.");
         }
 
         if (locationsForName.Count > 1)

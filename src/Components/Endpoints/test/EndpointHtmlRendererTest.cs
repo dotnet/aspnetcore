@@ -899,7 +899,7 @@ public class EndpointHtmlRendererTest
 
         Assert.True(isBadRequest);
         Assert.Equal(400, httpContext.Response.StatusCode);
-        Assert.StartsWith("Cannot dispatch the POST request to the Razor Component endpoint, because the POST data does not specify which form is being submitted.",
+        Assert.StartsWith("The POST request does not specify which form is being submitted.",
             await new StreamReader(bodyStream).ReadToEndAsync());
     }
 
