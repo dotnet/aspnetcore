@@ -52,50 +52,53 @@ internal partial class EndpointHtmlRenderer
 
     private void UpdateNamedEvents(in RenderBatch renderBatch)
     {
-        if (renderBatch.RemovedNamedEvents is { } removed)
+        if (renderBatch.NamedEventChanges is { } changes)
         {
-            var removedCount = removed.Count;
-            var removedArray = removed.Array;
-            for (var i = 0; i < removedCount; i++)
+            var changesCount = changes.Count;
+            var changesArray = changes.Array;
+            for (var i = 0; i < changesCount; i++)
             {
-                ref var removedEntry = ref removedArray[i];
-                if (string.Equals(removedEntry.EventType, "onsubmit", StringComparison.Ordinal))
+                ref var change = ref changesArray[i];
+                if (!string.Equals(change.EventType, "onsubmit", StringComparison.Ordinal))
                 {
-                    var location = (removedEntry.ComponentId, removedEntry.FrameIndex);
-                    if (_namedSubmitEventsByLocation.Remove(location, out var scopeQualifiedName))
-                    {
-                        _namedSubmitEventsByScopeQualifiedName.Remove(scopeQualifiedName);
-                    }
+                    continue;
                 }
-            }
-        }
 
-        if (renderBatch.AddedNamedEvents is { } added)
-        {
-            var addedCount = added.Count;
-            var addedArray = added.Array;
-            for (var i = 0; i < addedCount; i++)
-            {
-                ref var addedEntry = ref addedArray[i];
-                if (string.Equals(addedEntry.EventType, "onsubmit", StringComparison.Ordinal)
-                    && addedEntry.AssignedName is string assignedName
-                    && TryCreateScopeQualifiedEventName(addedEntry.ComponentId, assignedName, out var scopeQualifiedName))
+                switch (change.Type)
                 {
-                    var location = (addedEntry.ComponentId, addedEntry.FrameIndex);
+                    case NamedEventChange.ChangeType.Added:
+                    {
+                        if (TryCreateScopeQualifiedEventName(change.ComponentId, change.AssignedName, out var scopeQualifiedName))
+                        {
+                            var location = (change.ComponentId, change.FrameIndex);
 
-                    if (_namedSubmitEventsByScopeQualifiedName.TryAdd(scopeQualifiedName, location))
-                    {
-                        _namedSubmitEventsByLocation.Add(location, scopeQualifiedName);
+                            if (_namedSubmitEventsByScopeQualifiedName.TryAdd(scopeQualifiedName, location))
+                            {
+                                _namedSubmitEventsByLocation.Add(location, scopeQualifiedName);
+                            }
+                            else
+                            {
+                                // We could allow multiple events with the same name, since they are all tracked separately. However
+                                // this is most likely a mistake on the developer's part so we will consider it an error.
+                                var existingEntry = _namedSubmitEventsByScopeQualifiedName[scopeQualifiedName];
+                                throw new InvalidOperationException($"There is more than one named event with the name '{scopeQualifiedName}'. Ensure named events have unique names, or are in scopes with distinct names. The following components both use this name:"
+                                    + $"\n - {GenerateComponentPath(existingEntry.ComponentId)}"
+                                    + $"\n - {GenerateComponentPath(change.ComponentId)}");
+                            }
+                        }
+                        break;
                     }
-                    else
+                    case NamedEventChange.ChangeType.Removed:
                     {
-                        // We could allow multiple events with the same name, since they are all tracked separately. However
-                        // this is most likely a mistake on the developer's part so we will consider it an error.
-                        var existingEntry = _namedSubmitEventsByScopeQualifiedName[scopeQualifiedName];
-                        throw new InvalidOperationException($"There is more than one named event with the name '{scopeQualifiedName}'. Ensure named events have unique names, or are in scopes with distinct names. The following components both use this name:"
-                            + $"\n - {GenerateComponentPath(existingEntry.ComponentId)}"
-                            + $"\n - {GenerateComponentPath(addedEntry.ComponentId)}");
+                        var location = (change.ComponentId, change.FrameIndex);
+                        if (_namedSubmitEventsByLocation.Remove(location, out var scopeQualifiedName))
+                        {
+                            _namedSubmitEventsByScopeQualifiedName.Remove(scopeQualifiedName);
+                        }
+                        break;
                     }
+                    default:
+                        throw new NotSupportedException($"Received unknown named event change type {change.Type}");
                 }
             }
         }
