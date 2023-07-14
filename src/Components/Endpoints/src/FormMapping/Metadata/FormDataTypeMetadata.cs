@@ -27,7 +27,7 @@ internal class FormDataTypeMetadata
 
     public ConstructorInfo Constructor { get; set; }
 
-    public IList<FormDataParameterInfo> ConstructorParameters { get; set; } = new List<FormDataParameterInfo>();
+    public IList<FormDataParameterMetadata> ConstructorParameters { get; set; } = new List<FormDataParameterMetadata>();
 
     public IList<FormDataPropertyMetadata> Properties { get; set; } = new List<FormDataPropertyMetadata>();
 
@@ -119,7 +119,7 @@ internal class FormDataMetadataFactory(List<IFormDataConverterFactory> factories
             foreach (var parameter in values)
             {
                 var parameterTypeInfo = GetOrCreateMetadataFor(parameter.ParameterType, options);
-                result.ConstructorParameters.Add(new FormDataParameterInfo(parameter, parameterTypeInfo));
+                result.ConstructorParameters.Add(new FormDataParameterMetadata(parameter, parameterTypeInfo));
             }
         }
 

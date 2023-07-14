@@ -4,7 +4,7 @@
 using System.Reflection;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.FormMapping.Metadata;
-internal class FormDataParameterInfo(ParameterInfo parameter, FormDataTypeMetadata parameterTypeInfo) : IFormDataValue
+internal class FormDataParameterMetadata(ParameterInfo parameter, FormDataTypeMetadata parameterTypeInfo) : IFormDataValue
 {
     public ParameterInfo Parameter { get; } = parameter;
     public string Name { get; set; } = parameter.Name!;
