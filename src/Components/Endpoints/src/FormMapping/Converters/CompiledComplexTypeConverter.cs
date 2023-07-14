@@ -11,6 +11,19 @@ internal class CompiledComplexTypeConverter<T>(CompiledComplexTypeConverter<T>.C
 
     [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
     [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
-    internal override bool TryRead(ref FormDataReader context, Type type, FormDataMapperOptions options, out T? result, out bool found) =>
-        body(ref context, type, options, out result, out found);
+    internal override bool TryRead(ref FormDataReader context, Type type, FormDataMapperOptions options, out T? result, out bool found)
+    {
+        result = default;
+        found = false;
+
+        try
+        {
+            return body(ref context, type, options, out result, out found);
+        }
+        catch (Exception ex)
+        {
+            context.AddMappingError(ex, null);
+            return false;
+        }
+    }
 }

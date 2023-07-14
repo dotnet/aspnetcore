@@ -5,6 +5,7 @@ using System.Collections;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.FormMapping;
@@ -42,6 +43,19 @@ internal struct FormDataReader
     {
         ArgumentNullException.ThrowIfNull(errorMessage);
 
+        if (ErrorHandler == null)
+        {
+            throw new FormDataMappingException(new FormDataMappingError(_currentPrefixBuffer.ToString(), errorMessage, attemptedValue));
+        }
+
+        ErrorHandler.Invoke(_currentPrefixBuffer.ToString(), errorMessage, attemptedValue);
+    }
+
+    public void AddMappingError(Exception exception, string? attemptedValue)
+    {
+        ArgumentNullException.ThrowIfNull(exception);
+
+        var errorMessage = FormattableStringFactory.Create(exception.Message);
         if (ErrorHandler == null)
         {
             throw new FormDataMappingException(new FormDataMappingError(_currentPrefixBuffer.ToString(), errorMessage, attemptedValue));

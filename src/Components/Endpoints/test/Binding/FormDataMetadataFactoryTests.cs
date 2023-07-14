@@ -86,24 +86,24 @@ public class FormDataMetadataFactoryTests
         Assert.Equal(typeof(KeyValuePair<int, string>), metadata.Type);
         Assert.Equal(TypeKind.Object, metadata.Kind);
         Assert.NotNull(metadata.Constructor);
-        Assert.Collection(metadata.Properties,
-            property =>
+        Assert.Collection(metadata.ConstructorParameters,
+            parameter =>
             {
-                Assert.Equal("Key", property.Property.Name);
-                Assert.NotNull(property.PropertyMetadata);
-                Assert.Equal(typeof(int), property.PropertyMetadata.Type);
-                Assert.Equal(TypeKind.Primitive, property.PropertyMetadata.Kind);
-                Assert.Null(property.PropertyMetadata.Constructor);
-                Assert.Empty(property.PropertyMetadata.Properties);
+                Assert.Equal("key", parameter.Name);
+                Assert.NotNull(parameter.ParameterMetadata);
+                Assert.Equal(typeof(int), parameter.ParameterMetadata.Type);
+                Assert.Equal(TypeKind.Primitive, parameter.ParameterMetadata.Kind);
+                Assert.Null(parameter.ParameterMetadata.Constructor);
+                Assert.Empty(parameter.ParameterMetadata.Properties);
             },
-            property =>
+            parameter =>
             {
-                Assert.Equal("Value", property.Property.Name);
-                Assert.NotNull(property.PropertyMetadata);
-                Assert.Equal(typeof(string), property.PropertyMetadata.Type);
-                Assert.Equal(TypeKind.Primitive, property.PropertyMetadata.Kind);
-                Assert.Null(property.PropertyMetadata.Constructor);
-                Assert.Empty(property.PropertyMetadata.Properties);
+                Assert.Equal("value", parameter.Name);
+                Assert.NotNull(parameter.ParameterMetadata);
+                Assert.Equal(typeof(string), parameter.ParameterMetadata.Type);
+                Assert.Equal(TypeKind.Primitive, parameter.ParameterMetadata.Kind);
+                Assert.Null(parameter.ParameterMetadata.Constructor);
+                Assert.Empty(parameter.ParameterMetadata.Properties);
             });
     }
 

@@ -9,10 +9,13 @@ using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Globalization;
+using System.Reflection.Metadata;
 using System.Runtime.Serialization;
 using System.Xml.Linq;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.Diagnostics.Runtime;
 using Microsoft.Extensions.Primitives;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 
@@ -1084,7 +1087,7 @@ public class FormDataMapperTests
     }
 
     [Fact]
-    public void CanDeserialize_ComplexRecursiveTypes_ThrowsWhenMaxRecursionDepthExceeded()
+    public void CanDeserialize_ComplexRecursiveTypes_RecursiveList()
     {
         // Arrange
         var expected = new RecursiveList()
@@ -1118,12 +1121,91 @@ public class FormDataMapperTests
         };
 
         var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
-        reader.MaxRecursionDepth = 5;
         var options = new FormDataMapperOptions();
 
-        // Act && Assert
-        var exception = Assert.Throws<InvalidOperationException>(() => FormDataMapper.Map<RecursiveList>(reader, options));
-        Assert.Equal("The maximum recursion depth of '5' was exceeded.", exception.Message);
+        // Act
+        var result = FormDataMapper.Map<RecursiveList>(reader, options);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Multiple(() =>
+        {
+            Assert.Equal(expected.Head, result.Head);
+            Assert.Equal(expected.Tail.Head, result.Tail.Head);
+            Assert.Equal(expected.Tail.Tail.Head, result.Tail.Tail.Head);
+            Assert.Equal(expected.Tail.Tail.Tail.Head, result.Tail.Tail.Tail.Head);
+            Assert.Equal(expected.Tail.Tail.Tail.Tail.Head, result.Tail.Tail.Tail.Tail.Head);
+            Assert.Equal(expected.Tail.Tail.Tail.Tail.Tail.Head, result.Tail.Tail.Tail.Tail.Tail.Head);
+            Assert.Equal(expected.Tail.Tail.Tail.Tail.Tail.Tail.Head, result.Tail.Tail.Tail.Tail.Tail.Tail.Head);
+            Assert.Equal(expected.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Head, result.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Head);
+            Assert.Equal(expected.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Head, result.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Head);
+            Assert.Equal(expected.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Head, result.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Head);
+            Assert.Equal(expected.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Head, result.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Head);
+            Assert.Null(result.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail);
+        });
+    }
+
+    [Fact]
+    public void CanDeserialize_ComplexRecursiveTypes_ThrowsWhenMaxRecursionDepthExceeded()
+    {
+        // Arrange
+        var expected = new RecursiveList()
+        {
+            Head = 5,
+            Tail = null
+        };
+
+        for (var i = 5 - 1; i >= 0; i--)
+        {
+            expected = new RecursiveList()
+            {
+                Head = i,
+                Tail = expected
+            };
+        }
+
+        var data = new Dictionary<string, StringValues>()
+        {
+            ["Head"] = "0",
+            ["Tail.Head"] = "1",
+            ["Tail.Tail.Head"] = "2",
+            ["Tail.Tail.Tail.Head"] = "3",
+            ["Tail.Tail.Tail.Tail.Head"] = "4",
+            ["Tail.Tail.Tail.Tail.Tail.Head"] = "5",
+            ["Tail.Tail.Tail.Tail.Tail.Tail.Head"] = "6",
+            ["Tail.Tail.Tail.Tail.Tail.Tail.Tail.Head"] = "7",
+            ["Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Head"] = "8",
+            ["Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Head"] = "9",
+            ["Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Head"] = "10",
+        };
+
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
+        reader.MaxRecursionDepth = 5;
+        var errors = new List<FormDataMappingError>();
+        reader.ErrorHandler = (key, message, exception) =>
+        {
+            errors.Add(new FormDataMappingError(key, message, exception));
+        };
+
+        var options = new FormDataMapperOptions();
+
+        // Act
+        var result = FormDataMapper.Map<RecursiveList>(reader, options);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Multiple(() =>
+        {
+            Assert.Equal(expected.Head, result.Head);
+            Assert.Equal(expected.Tail.Head, result.Tail.Head);
+            Assert.Equal(expected.Tail.Tail.Head, result.Tail.Tail.Head);
+            Assert.Equal(expected.Tail.Tail.Tail.Head, result.Tail.Tail.Tail.Head);
+            Assert.Equal(expected.Tail.Tail.Tail.Tail.Head, result.Tail.Tail.Tail.Tail.Head);
+            Assert.Null(result.Tail.Tail.Tail.Tail.Tail);
+        });
+        var error = Assert.Single(errors);
+        Assert.Equal("Tail.Tail.Tail.Tail.Tail", error.Key);
+        Assert.Equal("The maximum recursion depth of '5' was exceeded.", error.Message.ToString(CultureInfo.InvariantCulture));
     }
 
     [Fact]
@@ -1397,7 +1479,7 @@ public class FormDataMapperTests
     public void CanDeserialize_ComplexType_AppliesDataMemberRelatedAttributes_FromMatchingConstructorParameters()
     {
         // Arrange
-        var expected = new DataMemberAttributesType { Key = "Age", Value = 20 };
+        var expected = new DataMemberAttributesConstructorType("Age", 20);
         var data = new Dictionary<string, StringValues>()
         {
             ["mycustomkey"] = "Age",
@@ -1409,10 +1491,63 @@ public class FormDataMapperTests
         var options = new FormDataMapperOptions();
 
         // Act
-        var result = FormDataMapper.Map<DataMemberAttributesType>(reader, options);
+        var result = FormDataMapper.Map<DataMemberAttributesConstructorType>(reader, options);
         Assert.Equal(expected.Key, result.Key);
         Assert.Equal(expected.Value, result.Value);
         Assert.Null(result.Ignored);
+    }
+
+    [Fact]
+    public void CanDeserialize_ComplexType_DoesNotRegisterMissingRequiredParametersIfNoValueFound()
+    {
+        // Arrange
+        var expected = new ThrowsWithMissingParameterValue("Age");
+        var data = new Dictionary<string, StringValues>() { };
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
+        var errors = new List<FormDataMappingError>();
+        reader.ErrorHandler = (key, message, attemptedValue) =>
+        {
+            errors.Add(new FormDataMappingError(key, message, attemptedValue));
+        };
+
+        var options = new FormDataMapperOptions();
+
+        // Act
+        var result = FormDataMapper.Map<ThrowsWithMissingParameterValue>(reader, options);
+
+        // Assert
+        Assert.Null(result);
+        Assert.Empty(errors);
+    }
+
+    [Fact]
+    public void CanDeserialize_ComplexType_ThrowsFromConstructor()
+    {
+        // Arrange
+        var expected = new ThrowsWithMissingParameterValue("Age");
+        var data = new Dictionary<string, StringValues>() { ["value"] = "20" };
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
+        var errors = new List<FormDataMappingError>();
+        reader.ErrorHandler = (key, message, attemptedValue) =>
+        {
+            errors.Add(new FormDataMappingError(key, message, attemptedValue));
+        };
+
+        var options = new FormDataMapperOptions();
+
+        // Act
+        var result = FormDataMapper.Map<ThrowsWithMissingParameterValue>(reader, options);
+
+        // Assert
+        Assert.Null(result);
+        Assert.Equal(2, errors.Count);
+        var error = errors[0];
+        Assert.Equal("key", error.Key);
+        Assert.Equal("Missing required value for constructor parameter 'key'.", error.Message.ToString(CultureInfo.InvariantCulture));
+
+        var constructorError = errors[1];
+        Assert.Equal("", constructorError.Key);
+        Assert.Equal("Value cannot be null. (Parameter 'key')", constructorError.Message.ToString(CultureInfo.InvariantCulture));
     }
 
     public static TheoryData<string, Type, object> NullableBasicTypes
@@ -1789,4 +1924,17 @@ internal class DataMemberAttributesConstructorType
 
     [IgnoreDataMember]
     public string Ignored { get; set; }
+}
+
+public class ThrowsWithMissingParameterValue
+{
+    public ThrowsWithMissingParameterValue(string key)
+    {
+        ArgumentNullException.ThrowIfNull(key);
+        Key = key;
+    }
+
+    public string Key { get; set; }
+
+    public int Value { get; set; }
 }

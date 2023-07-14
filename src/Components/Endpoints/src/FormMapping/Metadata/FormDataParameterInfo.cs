@@ -12,7 +12,7 @@ internal class FormDataParameterInfo(ParameterInfo parameter, FormDataTypeMetada
 
     public bool Required => true;
 
-    internal FormDataTypeMetadata ParameterTypeInfo { get; } = parameterTypeInfo;
+    internal FormDataTypeMetadata ParameterMetadata { get; } = parameterTypeInfo;
 }
 
 internal interface IFormDataValue

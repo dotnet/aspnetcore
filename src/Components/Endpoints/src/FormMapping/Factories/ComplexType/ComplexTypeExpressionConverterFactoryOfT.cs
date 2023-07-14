@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Components.Endpoints.FormMapping.Metadata;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.FormMapping;
@@ -82,7 +83,7 @@ internal sealed class ComplexTypeExpressionConverterFactory<T>(FormDataMetadataF
             constructorParameterValueLocals.Add(constructorParameterVar);
 
             // Resolve and assign converter
-            // Create the block to try and map the constructorParameter and update variables.
+            // Create the block to try and map the constructorParameter and update propsLocals.
             // returnParam &= { PushPrefix(constructorParameter.Name); var res = TryRead(...); PopPrefix(...); return res; }
             // var constructorParameterConverter = options.ResolveConverter<TProperty>());
             var constructorParameterConverter = Expression.Assign(
@@ -98,6 +99,10 @@ internal sealed class ComplexTypeExpressionConverterFactory<T>(FormDataMetadataF
             // {
             //     reader.PushPrefix("PropertyInfo");
             //     succeeded &= constructorParameterConverter.TryRead(ref reader, typeof(string), options, out constructorParameterVar, out foundProperty);
+            //     if(!succeeded || !found)
+            //     {
+            //         reader.AddMappingError("Missing required value for constructor parameter {0}", constructorParameter.Name);
+            //     }
             // }
             // finally
             // {
@@ -122,7 +127,25 @@ internal sealed class ComplexTypeExpressionConverterFactory<T>(FormDataMetadataF
                             Expression.Constant(constructorParameter.Type),
                             optionsParam,
                             constructorParameterVar,
-                            propertyFoundValue))),
+                            propertyFoundValue)),
+                    //     if(!found)
+                    //     {
+                    //         reader.AddMappingError("Missing required value for constructor parameter {0}", constructorParameter.Name);
+                    //     }
+                    Expression.IfThen(Expression.Not(propertyFoundValue),
+                        Expression.Call(
+                            readerParam,
+                            nameof(FormDataReader.AddMappingError),
+                            Array.Empty<Type>(),
+                            // FormattableStringFactory.Create("Missing required value for constructor parameter '{0}'.", constructorParameter.Name)
+                            Expression.Call(
+                                typeof(FormattableStringFactory),
+                                nameof(FormattableStringFactory.Create),
+                                Array.Empty<Type>(),
+                                Expression.Constant("Missing required value for constructor parameter '{0}'."),
+                                Expression.NewArrayInit(typeof(object), Expression.Constant(constructorParameter.Name, typeof(string)))),
+                            Expression.Constant(null, typeof(string))))
+                    ),
                 // reader.PopPrefix("PropertyInfo");
                 @finally: Expression.Call(
                     readerParam,
@@ -153,7 +176,7 @@ internal sealed class ComplexTypeExpressionConverterFactory<T>(FormDataMetadataF
             propertyValueLocals.Add(propertyVar);
 
             // Resolve and assign converter
-            // Create the block to try and map the property and update variables.
+            // Create the block to try and map the property and update propsLocals.
             // returnParam &= { PushPrefix(property.Name); var res = TryRead(...); PopPrefix(...); return res; }
             // var propertyConverter = options.ResolveConverter<TProperty>());
             var propertyConverter = Expression.Assign(
@@ -174,26 +197,53 @@ internal sealed class ComplexTypeExpressionConverterFactory<T>(FormDataMetadataF
             // {
             //     reader.PopPrefix("PropertyInfo");
             // }
-            body.Add(Expression.TryFinally(
-                body: Expression.Block(
-                    // reader.PushPrefix("PropertyInfo");
+
+            var propertyBody = new List<Expression>
+            {
+                // reader.PushPrefix("PropertyInfo");
+                Expression.Call(
+                readerParam,
+                nameof(FormDataReader.PushPrefix),
+                Array.Empty<Type>(),
+                Expression.Constant(property.Name)),
+
+                // succeeded &= propertyConverter.TryRead(ref reader, typeof(string), options, out propertyVar, out foundProperty);
+                Expression.AndAssign(
+                    succeeded,
+                    Expression.Call(
+                        propertyConverterVar,
+                        nameof(FormDataConverter<T>.TryRead),
+                        Type.EmptyTypes,
+                        readerParam,
+                        Expression.Constant(property.Type),
+                        optionsParam,
+                        propertyVar,
+                        propertyFoundValue))
+            };
+
+            if (property.Required)
+            {
+                //     if(!found)
+                //     {
+                //         reader.AddMappingError("Missing required value for constructor parameter {0}", constructorParameter.Name);
+                //     }
+                Expression.IfThen(Expression.Not(propertyFoundValue),
                     Expression.Call(
                         readerParam,
-                        nameof(FormDataReader.PushPrefix),
+                        nameof(FormDataReader.AddMappingError),
                         Array.Empty<Type>(),
-                        Expression.Constant(property.Name)),
-                    // succeeded &= propertyConverter.TryRead(ref reader, typeof(string), options, out propertyVar, out foundProperty);
-                    Expression.AndAssign(
-                        succeeded,
+                        // FormattableStringFactory.Create("Missing required value for property parameter '{0}'.", property.Name)
                         Expression.Call(
-                            propertyConverterVar,
-                            nameof(FormDataConverter<T>.TryRead),
-                            Type.EmptyTypes,
-                            readerParam,
-                            Expression.Constant(property.Type),
-                            optionsParam,
-                            propertyVar,
-                            propertyFoundValue))),
+                            typeof(FormattableStringFactory),
+                            nameof(FormattableStringFactory.Create),
+                            Array.Empty<Type>(),
+                            Expression.Constant("Missing required value for property parameter '{0}'."),
+                            Expression.NewArrayInit(typeof(object), Expression.Constant(property.Name, typeof(string)))),
+                        Expression.Constant(null, typeof(string))));
+            }
+
+            body.Add(Expression.TryFinally(
+                body: Expression.Block(propertyBody),
                 // reader.PopPrefix("PropertyInfo");
                 @finally: Expression.Call(
                     readerParam,
@@ -206,7 +256,16 @@ internal sealed class ComplexTypeExpressionConverterFactory<T>(FormDataMetadataF
 
         body.Add(Expression.IfThen(
             localFoundValueVar,
-            Expression.Block(CreateInstanceAndAssignProperties(metadata, resultParam, constructorParameters, constructorParameterValueLocals, properties, propertyValueLocals, succeeded, readerParam))));
+            Expression.Block(CreateInstanceAndAssignProperties(
+                metadata,
+                resultParam,
+                constructorParameters,
+                constructorParameterValueLocals,
+                properties,
+                propertyValueLocals,
+                variables,
+                succeeded,
+                readerParam))));
 
         // foundValue && !failures;
 
@@ -225,6 +284,7 @@ internal sealed class ComplexTypeExpressionConverterFactory<T>(FormDataMetadataF
             IList<FormDataParameterInfo> constructorParameters,
             List<ParameterExpression> constructorParameterValueLocals,
             IList<FormDataPropertyMetadata> props,
+            List<ParameterExpression> propsLocals,
             List<ParameterExpression> variables,
             ParameterExpression succeeded,
             ParameterExpression context)
@@ -237,28 +297,74 @@ internal sealed class ComplexTypeExpressionConverterFactory<T>(FormDataMetadataF
 
             if (model.Constructor != null)
             {
-                yield return Expression.Assign(resultParam, Expression.New(model.Constructor, constructorParameterValueLocals));
+                // try
+                // {
+                //     result = new T(...);
+                // }
+                // catch(Exception ex)
+                // {
+                //     reader.AddMappingError(ex.Message);
+                //     succeeded = false;
+                // }
+                var exception = Expression.Variable(typeof(Exception), "constructorException");
+                variables.Add(exception);
+                yield return Expression.TryCatch(
+                    Expression.Assign(resultParam, Expression.New(model.Constructor, constructorParameterValueLocals)),
+                    Expression.Catch(
+                        exception,
+                        Expression.Block(
+                            Expression.Call(
+                                context,
+                                nameof(FormDataReader.AddMappingError),
+                                Array.Empty<Type>(),
+                                exception,
+                                Expression.Constant(null, typeof(string))),
+                            Expression.Assign(succeeded, Expression.Constant(false, typeof(bool))),
+                            resultParam)));
             }
 
-            // if(!succeeded && context.AttachInstanceToErrorsHandler != null)
+            // if(!succeeded && context.AttachInstanceToErrorsHandler != null && result != null)
             // {
             //     context.AttachInstanceToErrors((object)result);
             // }
             yield return Expression.IfThen(
                 Expression.And(
-                    Expression.Not(succeeded),
-                    Expression.NotEqual(
-                        Expression.Property(context, nameof(FormDataReader.AttachInstanceToErrorsHandler)),
-                        Expression.Constant(null, typeof(Action<string, object>)))),
-                    Expression.Call(
-                        context,
-                        nameof(FormDataReader.AttachInstanceToErrors),
-                        Array.Empty<Type>(),
-                        Expression.Convert(resultParam, typeof(object))));
+                    Expression.And(
+                        Expression.Not(succeeded),
+                        Expression.NotEqual(
+                            Expression.Property(context, nameof(FormDataReader.AttachInstanceToErrorsHandler)),
+                            Expression.Constant(null, typeof(Action<string, object>)))),
+                        Expression.NotEqual(resultParam, Expression.Constant(null, resultParam.Type))),
+                Expression.Call(
+                    context,
+                    nameof(FormDataReader.AttachInstanceToErrors),
+                    Array.Empty<Type>(),
+                    Expression.Convert(resultParam, typeof(object))));
 
-            for (var i = 0; i < props.Count; i++)
+            if (!model.Type.IsValueType)
             {
-                yield return Expression.Assign(Expression.Property(resultParam, props[i].Property), variables[i]);
+                var assignments = new List<Expression>();
+                for (var i = 0; i < props.Count; i++)
+                {
+                    assignments.Add(Expression.Assign(Expression.Property(resultParam, props[i].Property), propsLocals[i]));
+                }
+
+                // if(result != null)
+                // {
+                //     result.Property1 = property1;
+                //     result.Property2 = property2;
+                //     ...
+                // }
+                yield return Expression.IfThen(
+                    Expression.NotEqual(resultParam, Expression.Constant(null, resultParam.Type)),
+                    Expression.Block(assignments));
+            }
+            else
+            {
+                for (var i = 0; i < props.Count; i++)
+                {
+                    yield return Expression.Assign(Expression.Property(resultParam, props[i].Property), propsLocals[i]);
+                }
             }
         }
     }
