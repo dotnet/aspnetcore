@@ -85,13 +85,13 @@ internal sealed class RenderBatchBuilder : IDisposable
     public void AddNamedEvent(int componentId, int frameIndex, ref RenderTreeFrame frame)
     {
         NamedEventChanges ??= new();
-        NamedEventChanges.Append(new NamedEventChange(NamedEventChange.ChangeType.Added, componentId, frameIndex, frame.NamedEventType, frame.NamedEventAssignedName));
+        NamedEventChanges.Append(new NamedEventChange(NamedEventChangeType.Added, componentId, frameIndex, frame.NamedEventType, frame.NamedEventAssignedName));
     }
 
     public void RemoveNamedEvent(int componentId, int frameIndex, ref RenderTreeFrame frame)
     {
         NamedEventChanges ??= new();
-        NamedEventChanges.Append(new NamedEventChange(NamedEventChange.ChangeType.Removed, componentId, frameIndex, frame.NamedEventType, frame.NamedEventAssignedName));
+        NamedEventChanges.Append(new NamedEventChange(NamedEventChangeType.Removed, componentId, frameIndex, frame.NamedEventType, frame.NamedEventAssignedName));
     }
 
     public void Dispose()

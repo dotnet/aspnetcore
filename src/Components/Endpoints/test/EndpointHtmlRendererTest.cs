@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net.Http;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -821,15 +822,14 @@ public class EndpointHtmlRendererTest
     }
 
     [Fact]
-    public void Duplicate_NamedEventHandlers_AcrossComponents_Throws()
+    public async void Duplicate_NamedEventHandlers_AcrossComponents_ThowsOnDispatch()
     {
         // Arrange
-        var expectedError = @"There is more than one named event with the name 'default'. Ensure named events have unique names, or are in scopes with distinct names. The following components both use this name:
+        var expectedError = @"There is more than one named submit event with the name 'default'. Ensure named submit events have unique names, or are in scopes with distinct names. The following components use this name:
  - TestComponent > NamedEventHandlerComponent
  - TestComponent > OtherNamedEventHandlerComponent";
 
         var renderer = GetEndpointHtmlRenderer();
-
         var component = new TestComponent(builder =>
         {
             builder.OpenComponent<NamedEventHandlerComponent>(0);
@@ -838,10 +838,11 @@ public class EndpointHtmlRendererTest
             builder.CloseComponent();
         });
 
-        // Act
-        var componentId = renderer.TestAssignRootComponentId(component);
+        await renderer.Dispatcher.InvokeAsync(() => renderer.BeginRenderingComponent(component, ParameterView.Empty).QuiescenceTask);
 
-        var exception = Assert.Throws<InvalidOperationException>(component.TriggerRender);
+        // Act/Assert
+        bool isBadRequest;
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => renderer.DispatchSubmitEventAsync("default", out isBadRequest));
         Assert.Equal(expectedError.ReplaceLineEndings(), exception.Message.ReplaceLineEndings());
     }
 

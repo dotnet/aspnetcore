@@ -760,13 +760,26 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     }
 
     [Fact]
-    public void CannotRenderAmbiguousForms()
+    public void CanRenderAmbiguousForms()
     {
         var dispatchToForm = new DispatchToForm(this)
         {
             Url = "forms/ambiguous-forms",
             FormCssSelector = "form",
             DispatchEvent = false,
+            ShouldCauseInternalServerError = false,
+        };
+        DispatchToFormCore(dispatchToForm);
+    }
+
+    [Fact]
+    public void CannotSubmitAmbiguousForms()
+    {
+        var dispatchToForm = new DispatchToForm(this)
+        {
+            Url = "forms/ambiguous-forms",
+            FormCssSelector = "form",
+            DispatchEvent = true,
             ShouldCauseInternalServerError = true,
         };
         DispatchToFormCore(dispatchToForm);

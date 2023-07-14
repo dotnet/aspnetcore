@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System.Linq;
 using System.Text;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
@@ -13,7 +14,7 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 internal partial class EndpointHtmlRenderer
 {
     private readonly Dictionary<(int ComponentId, int FrameIndex), string> _namedSubmitEventsByLocation = new();
-    private readonly Dictionary<string, (int ComponentId, int FrameIndex)> _namedSubmitEventsByScopeQualifiedName = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, HashSet<(int ComponentId, int FrameIndex)>> _namedSubmitEventsByScopeQualifiedName = new(StringComparer.Ordinal);
 
     internal Task DispatchSubmitEventAsync(string? handlerName, out bool isBadRequest)
     {
@@ -22,26 +23,48 @@ internal partial class EndpointHtmlRenderer
             // This is likely during development if the developer adds <form method=post> without @onsubmit:name,
             // or in production if someone just does a POST request even though there's no UI to trigger it
             isBadRequest = true;
-            return ReturnBadRequestAsync("Cannot dispatch the POST request to the Razor Component endpoint, because the POST data does not specify which form is being submitted. To fix this, ensure form elements have an @onsubmit:name attribute with any unique value, or pass a FormHandlerName parameter if using EditForm.");
+            return ReturnErrorResponse("Cannot dispatch the POST request to the Razor Component endpoint, because the POST data does not specify which form is being submitted. To fix this, ensure form elements have an @onsubmit:name attribute with any unique value, or pass a FormHandlerName parameter if using EditForm.");
         }
 
-        if (!_namedSubmitEventsByScopeQualifiedName.TryGetValue(handlerName, out var frameLocation))
+        if (!_namedSubmitEventsByScopeQualifiedName.TryGetValue(handlerName, out var locationsForName) || locationsForName.Count == 0)
         {
             // This may happen if you deploy an app update and someone still on the old page submits a form,
             // or if you're dynamically building the UI and the submitted form doesn't exist the next time
             // the page is rendered
             isBadRequest = true;
-            return ReturnBadRequestAsync($"Cannot submit the form '{handlerName}' because no submit handler was found with that name. Ensure forms have a unique @onsubmit:name attribute, or pass the FormHandlerName parameter if using EditForm.");
+            return ReturnErrorResponse($"Cannot submit the form '{handlerName}' because no submit handler was found with that name. Ensure forms have a unique @onsubmit:name attribute, or pass the FormHandlerName parameter if using EditForm.");
+        }
+
+        if (locationsForName.Count > 1)
+        {
+            // We could allow multiple events with the same name, since they are all tracked separately. However
+            // this is most likely a mistake on the developer's part so we will consider it an error.
+            // This is an internal server error, not a bad request, because the application itself is at fault
+            // and needs to find out about it. End users can't trigger this unless the app has a bug.
+            throw new InvalidOperationException(CreateMessageForAmbiguousNamedSubmitEvent(handlerName, locationsForName));
         }
 
         isBadRequest = false;
+        var frameLocation = locationsForName.Single();
         var eventHandlerId = FindEventHandlerIdForNamedEvent("onsubmit", frameLocation.ComponentId, frameLocation.FrameIndex);
         return eventHandlerId.HasValue
             ? DispatchEventAsync(eventHandlerId.Value, null, EventArgs.Empty, quiesce: true)
             : Task.CompletedTask;
     }
 
-    private Task ReturnBadRequestAsync(string detailedMessage)
+    private string CreateMessageForAmbiguousNamedSubmitEvent(string scopeQualifiedName, IEnumerable<(int ComponentId, int FrameIndex)> locations)
+    {
+        var sb = new StringBuilder($"There is more than one named submit event with the name '{scopeQualifiedName}'. Ensure named submit events have unique names, or are in scopes with distinct names. The following components use this name:");
+
+        foreach (var location in locations)
+        {
+            sb.Append($"\n - {GenerateComponentPath(location.ComponentId)}");
+        }
+
+        return sb.ToString();
+    }
+
+    private Task ReturnErrorResponse(string detailedMessage)
     {
         _httpContext.Response.StatusCode = 400;
         _httpContext.Response.ContentType = "text/plain";
@@ -50,7 +73,7 @@ internal partial class EndpointHtmlRenderer
             : Task.CompletedTask;
     }
 
-    private void UpdateNamedEvents(in RenderBatch renderBatch)
+    private void UpdateNamedSubmitEvents(in RenderBatch renderBatch)
     {
         if (renderBatch.NamedEventChanges is { } changes)
         {
@@ -64,44 +87,52 @@ internal partial class EndpointHtmlRenderer
                     continue;
                 }
 
-                switch (change.Type)
+                switch (change.ChangeType)
                 {
-                    case NamedEventChange.ChangeType.Added:
+                    case NamedEventChangeType.Added:
                     {
                         if (TryCreateScopeQualifiedEventName(change.ComponentId, change.AssignedName, out var scopeQualifiedName))
                         {
+                            var locationsForName = GetOrAddNewToDictionary(_namedSubmitEventsByScopeQualifiedName, scopeQualifiedName);
                             var location = (change.ComponentId, change.FrameIndex);
-
-                            if (_namedSubmitEventsByScopeQualifiedName.TryAdd(scopeQualifiedName, location))
+                            if (!locationsForName.Add(location))
                             {
-                                _namedSubmitEventsByLocation.Add(location, scopeQualifiedName);
-                            }
-                            else
-                            {
-                                // We could allow multiple events with the same name, since they are all tracked separately. However
-                                // this is most likely a mistake on the developer's part so we will consider it an error.
-                                var existingEntry = _namedSubmitEventsByScopeQualifiedName[scopeQualifiedName];
-                                throw new InvalidOperationException($"There is more than one named event with the name '{scopeQualifiedName}'. Ensure named events have unique names, or are in scopes with distinct names. The following components both use this name:"
-                                    + $"\n - {GenerateComponentPath(existingEntry.ComponentId)}"
-                                    + $"\n - {GenerateComponentPath(change.ComponentId)}");
+                                // This shouldn't be possible, since each NamedEvent frame innately has a distinct location
+                                throw new InvalidOperationException($"A single named submit event is tracked more than once at the same location.");
                             }
                         }
                         break;
                     }
-                    case NamedEventChange.ChangeType.Removed:
+                    case NamedEventChangeType.Removed:
                     {
                         var location = (change.ComponentId, change.FrameIndex);
                         if (_namedSubmitEventsByLocation.Remove(location, out var scopeQualifiedName))
                         {
-                            _namedSubmitEventsByScopeQualifiedName.Remove(scopeQualifiedName);
+                            var locationsForName = _namedSubmitEventsByScopeQualifiedName[scopeQualifiedName];
+                            locationsForName.Remove(location);
+                            if (locationsForName.Count == 0)
+                            {
+                                _namedSubmitEventsByScopeQualifiedName.Remove(scopeQualifiedName);
+                            }
                         }
                         break;
                     }
                     default:
-                        throw new NotSupportedException($"Received unknown named event change type {change.Type}");
+                        throw new NotSupportedException($"Received unknown named event change type {change.ChangeType}");
                 }
             }
         }
+    }
+
+    private static TVal GetOrAddNewToDictionary<TKey, TVal>(Dictionary<TKey, TVal> dictionary, TKey key) where TKey: notnull where TVal: new()
+    {
+        if (!dictionary.TryGetValue(key, out var value))
+        {
+            value = new();
+            dictionary.Add(key, value);
+        }
+
+        return value;
     }
 
     private ulong? FindEventHandlerIdForNamedEvent(string eventType, int componentId, int frameIndex)

@@ -10,17 +10,17 @@ namespace Microsoft.AspNetCore.Components.RenderTree;
 /// <remarks>
 /// Constructs an instance of <see cref="NamedEventChange"/>.
 /// </remarks>
-/// <param name="type">The type of the change.</param>
+/// <param name="changeType">The type of the change.</param>
 /// <param name="componentId">The ID of the component holding the named value.</param>
 /// <param name="frameIndex">The index of the <see cref="RenderTreeFrameType.NamedEvent"/> frame within the component's current render output.</param>
 /// <param name="eventType">The event type.</param>
 /// <param name="assignedName">The application-assigned name.</param>
-public readonly struct NamedEventChange(NamedEventChange.ChangeType type, int componentId, int frameIndex, string eventType, string assignedName)
+public readonly struct NamedEventChange(NamedEventChangeType changeType, int componentId, int frameIndex, string eventType, string assignedName)
 {
     /// <summary>
     /// Describes the type of the change.
     /// </summary>
-    public readonly ChangeType Type { get; } = type;
+    public readonly NamedEventChangeType ChangeType { get; } = changeType;
 
     /// <summary>
     /// The ID of the component holding the named event.
@@ -41,20 +41,4 @@ public readonly struct NamedEventChange(NamedEventChange.ChangeType type, int co
     /// The application-assigned name.
     /// </summary>
     public readonly string AssignedName { get; } = assignedName;
-
-    /// <summary>
-    /// Describes the change.
-    /// </summary>
-    public enum ChangeType : int
-    {
-        /// <summary>
-        /// Indicates that the item was added.
-        /// </summary>
-        Added,
-
-        /// <summary>
-        /// Indicates that the item was removed.
-        /// </summary>
-        Removed,
-    }
 }
