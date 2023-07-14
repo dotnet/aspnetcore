@@ -33,6 +33,13 @@ public class WebAssemblyConfigureRuntimeTest
         Browser.Equal("true", () => element.Text);
     }
 
+    [Fact]
+    public void BlazorRuntimeApiWorks()
+    {
+        var element = Browser.Exists(By.Id("build-configuration"));
+        Browser.Equal("Release", () => element.Text);
+    }
+
     private void WaitUntilLoaded()
     {
         var app = Browser.Exists(By.TagName("app"));
