@@ -214,6 +214,10 @@ async function createRuntimeInstance(options: Partial<WebAssemblyStartOptions>):
 
   anyDotnet.withStartupOptions(options).withModuleConfig(moduleConfig);
 
+  if (options.configureRuntime) {
+    options.configureRuntime(dotnet);
+  }
+
   runtime = await dotnet.create();
   const { MONO: mono, BINDING: binding, Module: module, setModuleImports, INTERNAL: mono_internal, getConfig, invokeLibraryInitializers } = runtime;
   Module = module;
@@ -223,6 +227,7 @@ async function createRuntimeInstance(options: Partial<WebAssemblyStartOptions>):
 
   attachDebuggerHotkey(getConfig());
 
+  Blazor.runtime = runtime;
   Blazor._internal.dotNetCriticalError = printErr;
   setModuleImports('blazor-internal', {
     Blazor: { _internal: Blazor._internal },
