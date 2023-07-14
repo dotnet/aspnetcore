@@ -263,15 +263,17 @@ public partial class SystemTextJsonOutputFormatterTest : JsonOutputFormatterTest
         jsonOptions.JsonSerializerOptions.TypeInfoResolver = null;
 
         var stjOutputFormatter = SystemTextJsonOutputFormatter.CreateFormatter(jsonOptions);
-        Assert.IsType<IJsonTypeInfoResolver>(stjOutputFormatter.SerializerOptions.TypeInfoResolver);
+        Assert.IsAssignableFrom<IJsonTypeInfoResolver>(stjOutputFormatter.SerializerOptions.TypeInfoResolver);
     }
 
-    [ConditionalFact]
+    [ConditionalTheory]
     [RemoteExecutionSupported]
-    public void STJOutputFormatter_UsesEmptyResolver_WhenJsonIsReflectionEnabledByDefaultFalse()
+    [InlineData(false)]
+    [InlineData(true)]
+    public void STJOutputFormatter_UsesEmptyResolver_WhenJsonIsReflectionEnabledByDefaultFalse(bool isReflectionEnabledByDefault)
     {
         var options = new RemoteInvokeOptions();
-        options.RuntimeConfigurationOptions.Add("System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault", false.ToString());
+        options.RuntimeConfigurationOptions.Add("System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault", isReflectionEnabledByDefault.ToString());
 
         using var remoteHandle = RemoteExecutor.Invoke(static () =>
         {
@@ -281,24 +283,11 @@ public partial class SystemTextJsonOutputFormatterTest : JsonOutputFormatterTest
             // Assert
             var stjOutputFormatter = SystemTextJsonOutputFormatter.CreateFormatter(jsonOptions);
             Assert.IsAssignableFrom<IJsonTypeInfoResolver>(stjOutputFormatter.SerializerOptions.TypeInfoResolver);
-        }, options);
-    }
-
-    [ConditionalFact]
-    [RemoteExecutionSupported]
-    public void STJOutputFormatter_UsesEmptyResolver_WhenJsonIsReflectionEnabledByDefaultTrue()
-    {
-        var options = new RemoteInvokeOptions();
-        options.RuntimeConfigurationOptions.Add("System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault", true.ToString());
-
-        using var remoteHandle = RemoteExecutor.Invoke(static () =>
-        {
-            // Arrange
-            var jsonOptions = new JsonOptions();
-
-            // Assert
-            var stjOutputFormatter = SystemTextJsonOutputFormatter.CreateFormatter(jsonOptions);
-            Assert.IsType<DefaultJsonTypeInfoResolver>(stjOutputFormatter.SerializerOptions.TypeInfoResolver);
+            // Use default resolver if reflection is enabled instead of empty one
+            if (JsonSerializer.IsReflectionEnabledByDefault)
+            {
+                Assert.IsType<DefaultJsonTypeInfoResolver>(stjOutputFormatter.SerializerOptions.TypeInfoResolver);
+            }
         }, options);
     }
 

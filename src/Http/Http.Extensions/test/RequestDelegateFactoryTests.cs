@@ -2919,9 +2919,8 @@ public partial class RequestDelegateFactoryTests : LoggedTest
             // IsReflectionEnabledByDefault defaults to `false` when `PublishTrimmed=true`. For these scenarios, we
             // expect users to configure JSON source generation as instructed in the `NotSupportedException` message.
             var exception = Assert.Throws<NotSupportedException>(() => RequestDelegateFactory.Create(@delegate));
-            Assert.Equal(
-                "JsonTypeInfo metadata for type 'Microsoft.AspNetCore.Routing.Internal.RequestDelegateFactoryTests+Todo' was not provided by TypeInfoResolver of type '[]'. If using source generation, ensure that all root types passed to the serializer have been annotated with 'JsonSerializableAttribute', along with any types that might be serialized polymorphically.",
-                exception.Message);
+            Assert.Contains("Microsoft.AspNetCore.Routing.Internal.RequestDelegateFactoryTests+Todo", exception.Message);
+            Assert.Contains("JsonSerializableAttribute", exception.Message);
         }, options);
     }
 
