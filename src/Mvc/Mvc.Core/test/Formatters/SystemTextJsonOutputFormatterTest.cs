@@ -263,7 +263,7 @@ public partial class SystemTextJsonOutputFormatterTest : JsonOutputFormatterTest
         jsonOptions.JsonSerializerOptions.TypeInfoResolver = null;
 
         var stjOutputFormatter = SystemTextJsonOutputFormatter.CreateFormatter(jsonOptions);
-        Assert.IsType<EmptyJsonTypeInfoResolver>(stjOutputFormatter.SerializerOptions.TypeInfoResolver);
+        Assert.IsType<IJsonTypeInfoResolver>(stjOutputFormatter.SerializerOptions.TypeInfoResolver);
     }
 
     [ConditionalFact]

@@ -23,6 +23,7 @@ public class SystemTextJsonOutputFormatter : TextOutputFormatter
     {
         SerializerOptions = jsonSerializerOptions;
 
+        // Use JsonTypeInfoResolver.Combine() to produce an empty TypeInfoResolver
         jsonSerializerOptions.TypeInfoResolver ??= JsonTypeInfoResolver.Combine();
         jsonSerializerOptions.MakeReadOnly();
 
