@@ -3,11 +3,13 @@
   "author": "Microsoft",
   "classifications": [
     "Web",
-    "WebAPI"
+    "Web API",
+    "API",
+    "Service"
   ],
   "name": "ASP.NET Core Web API",
   "generatorVersions": "[1.0.0.0-*)",
-  "description": "A project template for creating an ASP.NET Core application with an example Controller for a RESTful HTTP service. This template can also be used for ASP.NET Core MVC Views and Controllers.",
+  "description": "A project template for creating a RESTful Web API using ASP.NET Core controllers or minimal APIs, with optional support for OpenAPI and authentication.",
   "groupIdentity": "Microsoft.Web.WebApi",
   "precedence": "9800",
   "identity": "Microsoft.Web.WebApi.CSharp.8.0",

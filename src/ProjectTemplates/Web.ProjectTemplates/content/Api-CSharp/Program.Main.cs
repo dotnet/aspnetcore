@@ -8,7 +8,11 @@ public class Program
 {
     public static void Main(string[] args)
     {
+        #if (NativeAot)
         var builder = WebApplication.CreateSlimBuilder(args);
+        #else
+        var builder = WebApplication.CreateBuilder(args);
+        #endif
 
         #if (NativeAot)
         builder.Services.ConfigureHttpJsonOptions(options =>

@@ -3,11 +3,13 @@
   "author": "Microsoft",
   "classifications": [
     "Web",
-    "API"
+    "Web API",
+    "API",
+    "Service"
   ],
-  "name": "ASP.NET Core API",
+  "name": "ASP.NET Core REST API",
   "generatorVersions": "[1.0.0.0-*)",
-  "description": "A project template for creating an ASP.NET Core API application.",
+  "description": "A project template for creating a RESTful HTTP API using ASP.NET Core, with optional support for publishing as native AOT.",
   "groupIdentity": "Microsoft.Web.Api",
   "precedence": "9000",
   "identity": "Microsoft.Web.Api.CSharp.8.0",

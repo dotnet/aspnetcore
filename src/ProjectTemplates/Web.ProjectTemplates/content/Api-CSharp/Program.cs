@@ -2,7 +2,11 @@
 using System.Text.Json.Serialization;
 
 #endif
+#if (NativeAot)
 var builder = WebApplication.CreateSlimBuilder(args);
+#else
+var builder = WebApplication.CreateBuilder(args);
+#endif
 
 #if (NativeAot)
 builder.Services.ConfigureHttpJsonOptions(options =>
