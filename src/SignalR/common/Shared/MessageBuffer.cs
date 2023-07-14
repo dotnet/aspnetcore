@@ -19,6 +19,8 @@ internal sealed class MessageBuffer : IDisposable
 {
     private static readonly TaskCompletionSource<FlushResult> _completedTCS = new TaskCompletionSource<FlushResult>();
 
+    public static readonly TimeSpan AckRate = TimeSpan.FromSeconds(1);
+
     private readonly ConnectionContext _connection;
     private readonly IHubProtocol _protocol;
     private readonly AckMessage _ackMessage = new(0);
@@ -27,9 +29,9 @@ internal sealed class MessageBuffer : IDisposable
     private readonly int _bufferLimit = 100 * 1000;
 
 #if NET8_0_OR_GREATER
-    private readonly PeriodicTimer _timer = new(TimeSpan.FromSeconds(1));
+    private readonly PeriodicTimer _timer;
 #else
-    private readonly TimerAwaitable _timer = new(TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+    private readonly TimerAwaitable _timer = new(AckRate, AckRate);
 #endif
     private readonly SemaphoreSlim _writeLock = new(1, 1);
 
@@ -53,9 +55,13 @@ internal sealed class MessageBuffer : IDisposable
         _completedTCS.SetResult(new());
     }
 
-    // TODO: pass in limits
-    public MessageBuffer(ConnectionContext connection, IHubProtocol protocol)
+    public MessageBuffer(ConnectionContext connection, IHubProtocol protocol, TimeProvider timeProvider)
     {
+#if NET8_0_OR_GREATER
+        timeProvider ??= TimeProvider.System;
+        _timer = new(AckRate, timeProvider);
+#endif
+
         // TODO: pool
         _buffer = new LinkedBuffer();
 
@@ -67,6 +73,11 @@ internal sealed class MessageBuffer : IDisposable
 #endif
         _ = RunTimer();
     }
+
+    // TODO: pass in limits
+    public MessageBuffer(ConnectionContext connection, IHubProtocol protocol)
+        : this(connection, protocol, TimeProvider.System)
+    { }
 
     private async Task RunTimer()
     {
@@ -89,10 +100,19 @@ internal sealed class MessageBuffer : IDisposable
                     await _writeLock.WaitAsync().ConfigureAwait(false);
                     try
                     {
+                        // No need to try and send when we know the connection is down
+                        if (!_resend.Task.IsCompleted)
+                        {
+                            continue;
+                        }
+
                         _protocol.WriteMessage(_ackMessage, _connection.Transport.Output);
                         await _connection.Transport.Output.FlushAsync().ConfigureAwait(false);
                         _lastAckedId = sequenceId;
                     }
+                    // Ignore Pipe errors. The connection closed but might come back, if it doesn't come back MessageBuffer with be disposed
+                    // which disposes the timer.
+                    catch { }
                     finally
                     {
                         _writeLock.Release();
@@ -125,9 +145,6 @@ internal sealed class MessageBuffer : IDisposable
         // If we wrote messages around the entire buffer before another Ack arrived we would end up reading the Ack position and writing over a buffered message
         _waitForAck.Reader.TryRead(out _);
 
-        // TODO: We could consider buffering messages until they hit backpressure in the case when the connection is down
-        await _resend.Task.ConfigureAwait(false);
-
         var waitForResend = false;
 
         await _writeLock.WaitAsync(cancellationToken: default).ConfigureAwait(false);
@@ -139,6 +156,12 @@ internal sealed class MessageBuffer : IDisposable
             }
             else
             {
+                // No need to try and send when we know the connection is down
+                if (!_resend.Task.IsCompleted)
+                {
+                    return new FlushResult(isCanceled: false, isCompleted: true);
+                }
+
                 // Non-ackable message, don't add to buffer
                 return await _connection.Transport.Output.WriteAsync(hubMessage.GetSerializedMessage(_protocol), cancellationToken).ConfigureAwait(false);
             }
@@ -148,6 +171,13 @@ internal sealed class MessageBuffer : IDisposable
             {
                 _bufferedByteCount += messageBytes.Length;
                 _buffer.AddMessage(hubMessage, _totalMessageCount);
+            }
+
+            // No need to try and send when we know the connection is down
+            // Message has been added to the buffer and byte count is tracked for app level backpressure
+            if (!_resend.Task.IsCompleted)
+            {
+                return new FlushResult(isCanceled: false, isCompleted: true);
             }
 
             return await _connection.Transport.Output.WriteAsync(messageBytes, cancellationToken).ConfigureAwait(false);
@@ -184,8 +214,8 @@ internal sealed class MessageBuffer : IDisposable
         lock (Lock)
         {
             var item = _buffer.RemoveMessages(ackMessage.SequenceId, _protocol);
-            _buffer = item.Item1;
-            _bufferedByteCount -= item.Item2;
+            _buffer = item.buffer;
+            _bufferedByteCount -= item.returnCredit;
 
             newCount = _bufferedByteCount;
         }
@@ -270,20 +300,25 @@ internal sealed class MessageBuffer : IDisposable
             _sequenceMessage.SequenceId = _totalMessageCount + 1;
 
             var isFirst = true;
+            // Loop over all buffered messages and send them
             foreach (var item in _buffer.GetMessages())
             {
                 if (item.SequenceId > 0)
                 {
+                    // The first message we send is a SequenceMessage with the ID of the first unacked message we're sending
                     if (isFirst)
                     {
                         _sequenceMessage.SequenceId = item.SequenceId;
+                        // No need to flush since we're immediately calling WriteAsync after
                         _protocol.WriteMessage(_sequenceMessage, _connection.Transport.Output);
                         isFirst = false;
                     }
+                    // Use WriteAsync instead of doing all Writes and then a FlushAsync so we can observe backpressure
                     finalResult = await _connection.Transport.Output.WriteAsync(item.HubMessage!.GetSerializedMessage(_protocol)).ConfigureAwait(false);
                 }
             }
 
+            // There were no buffered messages, we still need to send the SequenceMessage to let the client know what ID messages will start at
             if (isFirst)
             {
                 _protocol.WriteMessage(_sequenceMessage, _connection.Transport.Output);
@@ -293,6 +328,8 @@ internal sealed class MessageBuffer : IDisposable
         catch (Exception ex)
         {
             tcs.SetException(ex);
+            // Observe exception in case WriteAsync isn't waiting on the task
+            _ = tcs.Task.Exception;
         }
         finally
         {
@@ -354,12 +391,12 @@ internal sealed class MessageBuffer : IDisposable
             }
         }
 
-        public (LinkedBuffer, int returnCredit) RemoveMessages(long sequenceId, IHubProtocol protocol)
+        public (LinkedBuffer buffer, int returnCredit) RemoveMessages(long sequenceId, IHubProtocol protocol)
         {
             return RemoveMessagesCore(this, sequenceId, protocol);
         }
 
-        private static (LinkedBuffer, int returnCredit) RemoveMessagesCore(LinkedBuffer linkedBuffer, long sequenceId, IHubProtocol protocol)
+        private static (LinkedBuffer buffer, int returnCredit) RemoveMessagesCore(LinkedBuffer linkedBuffer, long sequenceId, IHubProtocol protocol)
         {
             var returnCredit = 0;
             while (linkedBuffer._startingSequenceId <= sequenceId)

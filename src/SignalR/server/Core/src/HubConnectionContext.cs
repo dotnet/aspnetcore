@@ -577,7 +577,7 @@ public partial class HubConnectionContext
                                 if (_connectionContext.Features.Get<IReconnectFeature>() is IReconnectFeature feature)
                                 {
                                     _useAcks = true;
-                                    _messageBuffer = new MessageBuffer(_connectionContext, Protocol);
+                                    _messageBuffer = new MessageBuffer(_connectionContext, Protocol, _timeProvider);
                                     feature.NotifyOnReconnect = _messageBuffer.Resend;
                                 }
                                 return true;

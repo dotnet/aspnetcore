@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Time.Testing;
 
 namespace Microsoft.AspNetCore.SignalR.Tests.Internal;
 
@@ -41,7 +42,7 @@ public class MessageBufferTests
     }
 
     [Fact]
-    public async Task WriteBlocksOnAckWhenBufferFull()
+    public async Task WriteBlocksOnAckWhenMessageBufferFull()
     {
         var protocol = new JsonHubProtocol();
         var connection = new TestConnectionContext();
@@ -75,6 +76,45 @@ public class MessageBufferTests
         Assert.IsType<StreamItemMessage>(message);
 
         pipes.Application.Input.AdvanceTo(buffer.Start);
+    }
+
+    [Fact]
+    public async Task BackpressureWriteMessageSurvivesReconnect()
+    {
+        var protocol = new JsonHubProtocol();
+        var connection = new TestConnectionContext();
+        var pipeOptions = new PipeOptions(pauseWriterThreshold: 100, resumeWriterThreshold: 50);
+        var pipes = DuplexPipe.CreateConnectionPair(new PipeOptions(), pipeOptions);
+        connection.Transport = pipes.Transport;
+        using var messageBuffer = new MessageBuffer(connection, protocol);
+
+        await messageBuffer.WriteAsync(new SerializedHubMessage(new InvocationMessage("t", new object[] { new byte[40] })), default);
+
+        // Write will hit pipe backpressure
+        var writeTask = messageBuffer.WriteAsync(new SerializedHubMessage(new InvocationMessage("t", new object[] { new byte[40] })), default);
+        Assert.False(writeTask.IsCompleted);
+
+        DuplexPipe.UpdateConnectionPair(ref pipes, connection, pipeOptions);
+        messageBuffer.Resend();
+
+        var res = await pipes.Application.Input.ReadAsync();
+        var buffer = res.Buffer;
+        Assert.True(protocol.TryParseMessage(ref buffer, new TestBinder(), out var message));
+        Assert.IsType<SequenceMessage>(message);
+
+        pipes.Application.Input.AdvanceTo(buffer.Start);
+
+        for (var i = 0; i < 2; i++)
+        {
+            res = await pipes.Application.Input.ReadAsync();
+            buffer = res.Buffer;
+            Assert.True(protocol.TryParseMessage(ref buffer, new TestBinder(), out message));
+            Assert.IsType<InvocationMessage>(message);
+
+            pipes.Application.Input.AdvanceTo(buffer.Start);
+        }
+
+        Assert.False(pipes.Application.Input.TryRead(out res));
     }
 
     [Fact]
@@ -234,6 +274,131 @@ public class MessageBufferTests
 
             pipes.Application.Input.AdvanceTo(buffer.Start);
         }
+
+        Assert.False(pipes.Application.Input.TryRead(out res));
+    }
+
+    [Fact]
+    public async Task CanSendMessagesWhilePipeClosed()
+    {
+        var protocol = new JsonHubProtocol();
+        var connection = new TestConnectionContext();
+        var pipes = DuplexPipe.CreateConnectionPair(new PipeOptions(), new PipeOptions());
+        connection.Transport = pipes.Transport;
+        using var messageBuffer = new MessageBuffer(connection, protocol);
+
+        await messageBuffer.WriteAsync(new SerializedHubMessage(new StreamItemMessage("1", null)), default);
+
+        // simulate connection closing
+        pipes.Application.Input.Complete();
+
+        // send while connection down
+        await messageBuffer.WriteAsync(new SerializedHubMessage(new StreamItemMessage("1", null)), default);
+        await messageBuffer.WriteAsync(new SerializedHubMessage(new StreamItemMessage("1", null)), default);
+
+        // simulate reconnect
+        DuplexPipe.UpdateConnectionPair(ref pipes, connection);
+        messageBuffer.Resend();
+
+        var res = await pipes.Application.Input.ReadAsync();
+        var buffer = res.Buffer;
+        Assert.True(protocol.TryParseMessage(ref buffer, new TestBinder(), out var message));
+        Assert.IsType<SequenceMessage>(message);
+
+        pipes.Application.Input.AdvanceTo(buffer.Start);
+
+        for (var i = 0; i < 3; i++)
+        {
+            res = await pipes.Application.Input.ReadAsync();
+            buffer = res.Buffer;
+            Assert.True(protocol.TryParseMessage(ref buffer, new TestBinder(), out message));
+            Assert.IsType<StreamItemMessage>(message);
+
+            pipes.Application.Input.AdvanceTo(buffer.Start);
+        }
+
+        Assert.False(pipes.Application.Input.TryRead(out res));
+    }
+
+    [Fact]
+    public async Task AckMessagesSentAutomatically()
+    {
+        var protocol = new JsonHubProtocol();
+        var connection = new TestConnectionContext();
+        var pipes = DuplexPipe.CreateConnectionPair(new PipeOptions(), new PipeOptions());
+        connection.Transport = pipes.Transport;
+        var timeProvider = new FakeTimeProvider();
+        using var messageBuffer = new MessageBuffer(connection, protocol, timeProvider);
+
+        // Simulate receiving messages
+        Assert.True(messageBuffer.ShouldProcessMessage(new StreamItemMessage("1", null)));
+        Assert.True(messageBuffer.ShouldProcessMessage(new StreamItemMessage("1", null)));
+
+        timeProvider.Advance(MessageBuffer.AckRate);
+
+        var res = await pipes.Application.Input.ReadAsync();
+        var buffer = res.Buffer;
+        Assert.True(protocol.TryParseMessage(ref buffer, new TestBinder(), out var message));
+        var ackMessage = Assert.IsType<AckMessage>(message);
+        pipes.Application.Input.AdvanceTo(buffer.Start);
+
+        Assert.Equal(2, ackMessage.SequenceId);
+
+        Assert.True(messageBuffer.ShouldProcessMessage(new StreamItemMessage("1", null)));
+
+        timeProvider.Advance(MessageBuffer.AckRate);
+
+        res = await pipes.Application.Input.ReadAsync();
+        buffer = res.Buffer;
+        Assert.True(protocol.TryParseMessage(ref buffer, new TestBinder(), out message));
+        ackMessage = Assert.IsType<AckMessage>(message);
+        pipes.Application.Input.AdvanceTo(buffer.Start);
+
+        Assert.Equal(3, ackMessage.SequenceId);
+    }
+
+    [Fact]
+    public async Task AckMessagesStillSentAutomaticallyAfterPipeClosesWithError()
+    {
+        var protocol = new JsonHubProtocol();
+        var connection = new TestConnectionContext();
+        var pipes = DuplexPipe.CreateConnectionPair(new PipeOptions(), new PipeOptions());
+        connection.Transport = pipes.Transport;
+        var timeProvider = new FakeTimeProvider();
+        using var messageBuffer = new MessageBuffer(connection, protocol, timeProvider);
+
+        // Simulate receiving messages
+        Assert.True(messageBuffer.ShouldProcessMessage(new StreamItemMessage("1", null)));
+        Assert.True(messageBuffer.ShouldProcessMessage(new StreamItemMessage("1", null)));
+
+        // simulate connection closing
+        pipes.Application.Input.Complete(new Exception());
+
+        // Triger Ack timer so it sees error
+        timeProvider.Advance(MessageBuffer.AckRate);
+
+        // simulate reconnect
+        DuplexPipe.UpdateConnectionPair(ref pipes, connection);
+        messageBuffer.Resend();
+
+        var res = await pipes.Application.Input.ReadAsync();
+        var buffer = res.Buffer;
+        Assert.True(protocol.TryParseMessage(ref buffer, new TestBinder(), out var message));
+        Assert.IsType<SequenceMessage>(message);
+        pipes.Application.Input.AdvanceTo(buffer.Start);
+
+        Assert.True(messageBuffer.ShouldProcessMessage(new SequenceMessage(2)));
+        Assert.True(messageBuffer.ShouldProcessMessage(new StreamItemMessage("1", null)));
+
+        timeProvider.Advance(MessageBuffer.AckRate);
+
+        res = await pipes.Application.Input.ReadAsync();
+        buffer = res.Buffer;
+        Assert.True(protocol.TryParseMessage(ref buffer, new TestBinder(), out message));
+        var ackMessage = Assert.IsType<AckMessage>(message);
+        pipes.Application.Input.AdvanceTo(buffer.Start);
+
+        Assert.Equal(3, ackMessage.SequenceId);
     }
 }
 
@@ -281,10 +446,10 @@ internal sealed class DuplexPipe : IDuplexPipe
         }
     }
 
-    public static void UpdateConnectionPair(ref DuplexPipePair duplexPipePair, ConnectionContext connection)
+    public static void UpdateConnectionPair(ref DuplexPipePair duplexPipePair, ConnectionContext connection, PipeOptions pipeOptions = null)
     {
         var prevPipe = duplexPipePair.Application.Input;
-        var input = new Pipe();
+        var input = new Pipe(pipeOptions ?? new PipeOptions());
 
         // Add new pipe for reading from and writing to transport from app code
         var transportToApplication = new DuplexPipe(duplexPipePair.Transport.Input, input.Writer);

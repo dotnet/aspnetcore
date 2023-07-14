@@ -34,6 +34,10 @@
     <Reference Include="System.Threading.Channels" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(TargetFramework)' != '$(DefaultNetCoreTargetFramework)'">
+    <Reference Include="Microsoft.Bcl.TimeProvider" />
+  </ItemGroup>
+
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Client.FunctionalTests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Client.Tests" />
