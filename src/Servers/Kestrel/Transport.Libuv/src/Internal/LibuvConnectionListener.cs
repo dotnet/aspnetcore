@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -134,9 +135,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         {
             // TODO: Move thread management to LibuvTransportFactory
             // TODO: Split endpoint management from thread management
+
+            // When `FinOnError` is false (the default), we need to be able to forcibly abort connections.
+            // On Windows, libuv 1.10.0 will call `shutdown`, preventing forcible abort, on any socket
+            // not flagged as `UV_HANDLE_SHARED_TCP_SOCKET`.  The only way we've found to cause socket
+            // to be flagged as `UV_HANDLE_SHARED_TCP_SOCKET` is to share it across a named pipe (which
+            // must, itself, be flagged `ipc`), which naturally happens when a `ListenerPrimary` dispatches
+            // a connection to a `ListenerSecondary`.  Therefore, in scenarios where this is required, we
+            // tell the `ListenerPrimary` to dispatch *all* connections to secondary and create an
+            // additional `ListenerSecondary` to replace the lost capacity.
+            var dispatchAllToSecondary = Libuv.IsWindows && !TransportContext.Options.FinOnError;
+
 #pragma warning disable CS0618
-            for (var index = 0; index < TransportOptions.ThreadCount; index++)
+            var threadCount = dispatchAllToSecondary
+                ? TransportOptions.ThreadCount + 1
+                : TransportOptions.ThreadCount;
 #pragma warning restore CS0618
+
+            for (var index = 0; index < threadCount; index++)
             {
                 Threads.Add(new LibuvThread(Libuv, TransportContext));
             }
@@ -148,10 +164,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
             try
             {
-#pragma warning disable CS0618
-                if (TransportOptions.ThreadCount == 1)
-#pragma warning restore CS0618
+                if (threadCount == 1)
                 {
+                    Debug.Assert(!dispatchAllToSecondary, "Should have taken the primary/secondary code path");
+
                     var listener = new Listener(TransportContext);
                     _listeners.Add(listener);
                     await listener.StartAsync(EndPoint, Threads[0]).ConfigureAwait(false);
@@ -162,7 +178,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                     var pipeName = (Libuv.IsWindows ? @"\\.\pipe\kestrel_" : "/tmp/kestrel_") + Guid.NewGuid().ToString("n");
                     var pipeMessage = Guid.NewGuid().ToByteArray();
 
-                    var listenerPrimary = new ListenerPrimary(TransportContext);
+                    var listenerPrimary = new ListenerPrimary(TransportContext, dispatchAllToSecondary);
                     _listeners.Add(listenerPrimary);
                     await listenerPrimary.StartAsync(pipeName, pipeMessage, EndPoint, Threads[0]).ConfigureAwait(false);
                     EndPoint = listenerPrimary.EndPoint;
