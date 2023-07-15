@@ -53,7 +53,8 @@ internal static class HttpContextDebugFormatter
 
     private static string GetRequestUrl(HttpRequest request, bool includeQueryString)
     {
-        // Check the request has a URL. The URL might be missing because of "new DefaultHttpContext()".
+        // The URL might be missing because the context was manually created in a test, e.g. new DefaultHttpContext()
+        // If there is no request URL then provide a more understable empty value.
         if (string.IsNullOrEmpty(request.Scheme) ||
             !request.Host.HasValue ||
             !request.PathBase.HasValue ||
