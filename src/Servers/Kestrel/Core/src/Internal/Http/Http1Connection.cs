@@ -98,7 +98,14 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         _http1Output.Dispose();
     }
 
-    public void OnInputOrOutputCompleted()
+    void IRequestProcessor.OnInputOrOutputCompleted()
+    {
+        // Closed gracefully.
+        _http1Output.Abort(ServerOptions.FinOnError ? new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient) : null!);
+        CancelRequestAbortedToken();
+    }
+
+    void IHttpOutputAborter.OnInputOrOutputCompleted()
     {
         _http1Output.Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient));
         CancelRequestAbortedToken();
