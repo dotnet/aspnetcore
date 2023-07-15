@@ -271,6 +271,8 @@ Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridHtmlCssManager
 Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridHtmlCssManager.this[Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass classHtml].set -> void
 Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridHtmlCssManager.this[Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle styleCss].get -> string!
 Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridHtmlCssManager.this[Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssStyle styleCss].set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridPaging
+Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridPaging.GridPaging() -> void
 Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridPageChangedEventArgs
 Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridPageChangedEventArgs.GridPageChangedEventArgs(Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridPagingState! pagingState) -> void
 Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridPageChangedEventArgs.ItemsPerPage.get -> int
@@ -399,3 +401,5 @@ virtual Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Pagination
 ~override Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Microsoft.AspNetCore.Components.QuickGrid.Paginator.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.ColumnCBase<TGridItem>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void

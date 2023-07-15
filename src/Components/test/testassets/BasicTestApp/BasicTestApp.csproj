@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -45,18 +45,16 @@
     <BlazorWebAssemblyLazyLoad Include="LazyTestContentPackage.wasm" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="QuickGridTest\QuickGridC\" />
-  </ItemGroup>
-
   <!-- Workaround for https://github.com/dotnet/aspnetcore/issues/30791 -->
   <Target Name="_FixupPublishBug" AfterTargets="_ProcessPublishFilesForBlazor" BeforeTargets="_BlazorCompressPublishFiles" Condition="'$(TestTrimmedApps)' == 'true'">
     <ItemGroup>
       <ResolvedFileToPublish RelativePath="$([System.String]::Copy('%(ResolvedFileToPublish.RelativePath)').Replace('subdir\subdir', 'subdir').Replace('subdir/subdir', 'subdir'))" />
 
-      <ResolvedFileToPublish Include="@(ResolvedFileToPublish)" RelativePath="$([System.String]::Copy('%(ResolvedFileToPublish.RelativePath)').Replace('subdir\_content', '_content').Replace('subdir/subdir', '_content'))" Condition="$([System.String]::Copy('%(ResolvedFileToPublish.RelativePath)').Replace('subdir\_content', 'subdir/_content').Contains('subdir/_content'))" />
+      <ResolvedFileToPublish
+        Include="@(ResolvedFileToPublish)"
+        RelativePath="$([System.String]::Copy('%(ResolvedFileToPublish.RelativePath)').Replace('subdir\_content', '_content').Replace('subdir/subdir', '_content'))"
+        Condition="$([System.String]::Copy('%(ResolvedFileToPublish.RelativePath)').Replace('subdir\_content', 'subdir/_content').Contains('subdir/_content'))" />
     </ItemGroup>
   </Target>
 
 </Project>
-
