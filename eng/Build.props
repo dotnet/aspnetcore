@@ -39,11 +39,9 @@
                " />
 
     <!-- These projects are not meant to be built in this repo. In the Installers case, must explicitly opt in. -->
-    <!-- On the other hand, the main spa-templates project is just another project in this repo. -->
     <ProjectToExclude Include="
                       $(RepoRoot)src\submodules\googletest\**\*.*proj;
                       $(RepoRoot)src\submodules\MessagePack-CSharp\**\*.*proj;
-                      $(RepoRoot)src\submodules\spa-templates\src\content\**\*.csproj;
                       $(RepoRoot)src\Components\Web.JS\node_modules\**\*.*proj;
                       $(RepoRoot)src\Installers\**\*.*proj;
                       $(RepoRoot)src\ProjectTemplates\Web.ProjectTemplates\content\**\*.*proj;
@@ -196,7 +194,6 @@
                           $(RepoRoot)src\Testing\**\*.csproj;
                           $(RepoRoot)src\Grpc\**\*.csproj;
                           $(RepoRoot)src\ProjectTemplates\**\*.csproj;
-                          $(RepoRoot)src\submodules\spa-templates\src\*.csproj;
                           $(RepoRoot)src\Extensions\**\*.csproj;
                           $(RepoRoot)src\BuildAfterTargetingPack\*.csproj;
                           $(RepoRoot)src\OpenApi\**\*.csproj;
