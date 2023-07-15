@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
@@ -10,8 +10,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
-    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" />
+    <ProjectReference Include="..\..\Core\src\Microsoft.AspNetCore.Server.Kestrel.Core.csproj" />
+    <ProjectReference Include="..\..\Https\src\Microsoft.AspNetCore.Server.Kestrel.Https.csproj" />
+    <ProjectReference Include="..\..\Transport.Abstractions\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.csproj" />
+    <ProjectReference Include="..\..\Transport.Libuv\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.csproj" />
+    <ProjectReference Include="..\..\Transport.Sockets\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj" />
+    <ProjectReference Include="..\src\Microsoft.AspNetCore.Server.Kestrel.csproj" />
   </ItemGroup>
 
 </Project>

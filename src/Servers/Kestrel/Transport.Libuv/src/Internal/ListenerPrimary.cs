@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -22,6 +23,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         private readonly List<UvPipeHandle> _dispatchPipes = new List<UvPipeHandle>();
         // The list of pipes we've created but may not be part of _dispatchPipes
         private readonly List<UvPipeHandle> _createdPipes = new List<UvPipeHandle>();
+
+        // If true, dispatch all connections to _dispatchPipes - don't process any in the primary
+        private readonly bool _dispatchAll;
+
         private int _dispatchIndex;
         private string _pipeName;
         private byte[] _pipeMessage;
@@ -32,8 +37,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         // but it has no other functional significance
         private readonly ArraySegment<ArraySegment<byte>> _dummyMessage = new ArraySegment<ArraySegment<byte>>(new[] { new ArraySegment<byte>(new byte[] { 1, 2, 3, 4 }) });
 
-        public ListenerPrimary(LibuvTransportContext transportContext) : base(transportContext)
+        public ListenerPrimary(LibuvTransportContext transportContext, bool dispatchAll) : base(transportContext)
         {
+            _dispatchAll = dispatchAll;
         }
 
         /// <summary>
@@ -105,9 +111,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         protected override void DispatchConnection(UvStreamHandle socket)
         {
-            var index = _dispatchIndex++ % (_dispatchPipes.Count + 1);
+            var modulus = _dispatchAll ? _dispatchPipes.Count : (_dispatchPipes.Count + 1);
+            if (modulus == 0) {
+                if (_createdPipes.Count == 0) {
+                    Log.LogError(0, $"Connection received before listeners were initialized - see https://aka.ms/dotnet/aspnet/finonerror for possible mitigations");
+                }
+                else {
+                    Log.LogError(0, "Unable to process connection since listeners failed to initialize - see https://aka.ms/dotnet/aspnet/finonerror for possible mitigations");
+                }
+
+                return;
+            }
+
+            var index = _dispatchIndex++ % modulus;
             if (index == _dispatchPipes.Count)
             {
+                Debug.Assert(!_dispatchAll, "Should have dispatched to a secondary listener");
                 base.DispatchConnection(socket);
             }
             else

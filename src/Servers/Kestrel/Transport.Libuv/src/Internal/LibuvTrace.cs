@@ -22,6 +22,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         private static readonly Action<ILogger, string, Exception> _connectionWriteFin =
             LoggerMessage.Define<string>(LogLevel.Debug, new EventId(7, nameof(ConnectionWriteFin)), @"Connection id ""{ConnectionId}"" sending FIN.");
 
+        private static readonly Action<ILogger, string, Exception> _connectionWriteRst =
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(8, nameof(ConnectionWriteRst)), @"Connection id ""{ConnectionId}"" sending RST.");
+
         private static readonly Action<ILogger, string, int, Exception> _connectionWroteFin =
             LoggerMessage.Define<string, int>(LogLevel.Debug, new EventId(8, nameof(ConnectionWroteFin)), @"Connection id ""{ConnectionId}"" sent FIN with status ""{Status}"".");
 
@@ -56,6 +59,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         public void ConnectionWriteFin(string connectionId)
         {
             _connectionWriteFin(_logger, connectionId, null);
+        }
+
+        public void ConnectionWriteRst(string connectionId) {
+            _connectionWriteRst(_logger, connectionId, null);
         }
 
         public void ConnectionWroteFin(string connectionId, int status)

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -57,6 +58,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
             _uv_timer_start = NativeMethods.uv_timer_start;
             _uv_timer_stop = NativeMethods.uv_timer_stop;
             _uv_now = NativeMethods.uv_now;
+            _setsockopt = NativeMethods.setsockopt;
         }
 
         // Second ctor that doesn't set any fields only to be used by MockLibuv
@@ -421,6 +423,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
             ThrowIfErrored(_uv_tcp_getpeername(handle, out addr, ref namelen));
         }
 
+        protected delegate int setsockopt_func(IntPtr s, SocketOptionLevel level, SocketOptionName optname, ref int optval, int optlen);
+        protected setsockopt_func _setsockopt;
+        public void setsockopt(IntPtr s, SocketOptionLevel level, SocketOptionName optname, int optval)
+        {
+            var status = _setsockopt(s, level, optname, ref optval, optlen: sizeof(int));
+            ThrowIfErrored(status);
+        }
+
         public uv_buf_t buf_init(IntPtr memory, int len)
         {
             return new uv_buf_t(memory, len, IsWindows);
@@ -629,6 +639,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
 
             [DllImport("WS2_32.dll", CallingConvention = CallingConvention.Winapi)]
             public static extern int WSAGetLastError();
+
+            [DllImport("WS2_32.dll", CallingConvention = CallingConvention.Winapi)]
+            public static extern int setsockopt(IntPtr s, SocketOptionLevel level, SocketOptionName optname, ref int optval, int optlen);
         }
     }
 }

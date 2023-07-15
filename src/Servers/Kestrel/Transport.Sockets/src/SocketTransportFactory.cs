@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                 throw new ArgumentNullException(nameof(dispatcher));
             }
 
-            return new SocketTransport(endPointInformation, dispatcher, _appLifetime, _options.IOQueueCount, _trace);
+            return new SocketTransport(endPointInformation, dispatcher, _appLifetime, _options.IOQueueCount, _trace, _options.FinOnError);
         }
     }
 }

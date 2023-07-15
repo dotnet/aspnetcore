@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -33,13 +33,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         private Task _listenTask;
         private Exception _listenException;
         private volatile bool _unbinding;
+        private readonly bool _finOnError;
 
         internal SocketTransport(
             IEndPointInformation endPointInformation,
             IConnectionDispatcher dispatcher,
             IApplicationLifetime applicationLifetime,
             int ioQueueCount,
-            ISocketsTrace trace)
+            ISocketsTrace trace,
+            bool finOnError)
         {
             Debug.Assert(endPointInformation != null);
             Debug.Assert(endPointInformation.Type == ListenType.IPEndPoint);
@@ -51,6 +53,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             _dispatcher = dispatcher;
             _appLifetime = applicationLifetime;
             _trace = trace;
+            _finOnError = finOnError;
 
             if (ioQueueCount > 0)
             {
@@ -154,7 +157,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                             var acceptSocket = await _listenSocket.AcceptAsync();
                             acceptSocket.NoDelay = _endPointInformation.NoDelay;
 
-                            var connection = new SocketConnection(acceptSocket, _memoryPool, _schedulers[schedulerIndex], _trace);
+                            var connection = new SocketConnection(acceptSocket, _memoryPool, _schedulers[schedulerIndex], _trace, _finOnError);
                             HandleConnectionAsync(connection);
                         }
                         catch (SocketException) when (!_unbinding)

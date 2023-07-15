@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -33,8 +33,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         private volatile bool _aborted;
         private volatile ConnectionAbortedException _abortReason;
         private long _totalBytesWritten;
+        private readonly bool _finOnError;
 
-        internal SocketConnection(Socket socket, MemoryPool<byte> memoryPool, PipeScheduler scheduler, ISocketsTrace trace)
+        internal SocketConnection(Socket socket, MemoryPool<byte> memoryPool, PipeScheduler scheduler, ISocketsTrace trace, bool finOnError)
         {
             Debug.Assert(socket != null);
             Debug.Assert(memoryPool != null);
@@ -44,6 +45,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             MemoryPool = memoryPool;
             _scheduler = scheduler;
             _trace = trace;
+            _finOnError = finOnError;
 
             var localEndPoint = (IPEndPoint)_socket.LocalEndPoint;
             var remoteEndPoint = (IPEndPoint)_socket.RemoteEndPoint;
@@ -96,9 +98,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         {
             _abortReason = abortReason;
             Output.CancelPendingRead();
-
-            // Try to gracefully close the socket to match libuv behavior.
-            Shutdown();
+            Shutdown(abortReason);
         }
 
         private async Task DoReceive()
@@ -194,7 +194,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
         private async Task DoSend()
         {
-            Exception error = null;
+            Exception shutdownReason = null;
+            Exception unexpectedError = null;
 
             try
             {
@@ -203,33 +204,33 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             catch (SocketException ex) when (IsConnectionResetError(ex.SocketErrorCode))
             {
                 // A connection reset can be reported as SocketError.ConnectionAborted on Windows
-                error = null;
+                shutdownReason = new ConnectionResetException(ex.Message, ex);
                 _trace.ConnectionReset(ConnectionId);
             }
             catch (SocketException ex) when (IsConnectionAbortError(ex.SocketErrorCode))
             {
-                error = null;
+                shutdownReason = ex;
             }
             catch (ObjectDisposedException)
             {
-                error = null;
+                // This should always be ignored since Shutdown() must have already been called by Abort().
             }
             catch (IOException ex)
             {
-                error = ex;
-                _trace.ConnectionError(ConnectionId, error);
+                shutdownReason = unexpectedError = ex;
+                _trace.ConnectionError(ConnectionId, ex);
             }
             catch (Exception ex)
             {
-                error = new IOException(ex.Message, ex);
-                _trace.ConnectionError(ConnectionId, error);
+                shutdownReason = unexpectedError = new IOException(ex.Message, ex);
+                _trace.ConnectionError(ConnectionId, unexpectedError);
             }
             finally
             {
-                Shutdown();
+                Shutdown(shutdownReason);
 
                 // Complete the output after disposing the socket
-                Output.Complete(error);
+                Output.Complete(unexpectedError);
             }
         }
 
@@ -266,7 +267,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             }
         }
 
-        private void Shutdown()
+        private void Shutdown(Exception shutdownReason)
         {
             lock (_shutdownLock)
             {
@@ -276,11 +277,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                     // Without this, the RequestsCanBeAbortedMidRead test will sometimes fail when
                     // a BadHttpRequestException is thrown instead of a TaskCanceledException.
                     _aborted = true;
+
+                    // We only want to abort the connection on error.
+                    if (!_finOnError && shutdownReason != null)
+                    {
+                        _trace.ConnectionWriteRst(ConnectionId);
+
+                        // This forces an abortive close with linger time 0 (and implies Dispose)
+                        _socket.Close(timeout: 0);
+                        return;
+                    }
+
                     _trace.ConnectionWriteFin(ConnectionId);
 
                     try
                     {
-                        // Try to gracefully close the socket even for aborts to match libuv behavior.
                         _socket.Shutdown(SocketShutdown.Both);
                     }
                     catch

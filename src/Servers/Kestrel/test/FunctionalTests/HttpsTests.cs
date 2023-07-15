@@ -25,6 +25,8 @@ using Microsoft.Extensions.Logging.Abstractions.Internal;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
+using static Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.FinOnErrorHelpers;
+
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
     public class HttpsTests : LoggedTest
@@ -244,8 +246,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             Assert.False(loggerProvider.ErrorLogger.ObjectDisposedExceptionLogged);
         }
 
-        [Fact]
-        public async Task DoesNotThrowObjectDisposedExceptionFromWriteAsyncAfterConnectionIsAborted()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task DoesNotThrowObjectDisposedExceptionFromWriteAsyncAfterConnectionIsAborted(bool fin)
         {
             var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             var loggerProvider = new HandshakeErrorLoggerProvider();
@@ -258,6 +262,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         listenOptions.UseHttps(TestResources.TestCertificatePath, "testPassword");
                     });
                 })
+                .ConfigureServices(services => SetFinOnError(services, fin))
                 .ConfigureServices(AddTestLogging)
                 .ConfigureLogging(builder => builder.AddProvider(loggerProvider))
                 .Configure(app => app.Run(async httpContext =>
@@ -289,7 +294,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     var request = Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\nHost:\r\n\r\n");
                     await sslStream.WriteAsync(request, 0, request.Length);
 
-                    await sslStream.ReadAsync(new byte[32], 0, 32);
+                    if (ExpectFinOnError(fin))
+                    {
+                        await sslStream.ReadAsync(new byte[32], 0, 32);
+                    }
+                    else
+                    {
+                        await Assert.ThrowsAsync<IOException>(() => sslStream.ReadAsync(new byte[32], 0, 32));
+                    }
                 }
             }
 
@@ -365,8 +377,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        [Fact]
-        public async Task HandshakeTimesOutAndIsLoggedAsDebug()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task HandshakeTimesOutAndIsLoggedAsDebug(bool fin)
         {
             var loggerProvider = new HandshakeErrorLoggerProvider();
             LoggerFactory.AddProvider(loggerProvider);
@@ -382,6 +396,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         });
                     });
                 })
+                .ConfigureServices(services => SetFinOnError(services, fin))
                 .ConfigureServices(AddTestLogging)
                 .Configure(app => app.Run(httpContext => Task.CompletedTask));
 
@@ -392,8 +407,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 using (var socket = await HttpClientSlim.GetSocket(new Uri($"https://127.0.0.1:{host.GetPort()}/")))
                 using (var stream = new NetworkStream(socket, ownsSocket: false))
                 {
-                    // No data should be sent and the connection should be closed in well under 30 seconds.
-                    Assert.Equal(0, await stream.ReadAsync(new byte[1], 0, 1).DefaultTimeout());
+                    if (ExpectFinOnError(fin))
+                    {
+                        // No data should be sent and the connection should be closed in well under 30 seconds.
+                        Assert.Equal(0, await stream.ReadAsync(new byte[1], 0, 1).DefaultTimeout());
+                    }
+                    else
+                    {
+                        await Assert.ThrowsAsync<IOException>(() => stream.ReadAsync(new byte[1], 0, 1)).DefaultTimeout();
+                    }
                 }
             }
 

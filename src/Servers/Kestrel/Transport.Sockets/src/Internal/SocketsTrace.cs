@@ -22,6 +22,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         private static readonly Action<ILogger, string, Exception> _connectionWriteFin =
             LoggerMessage.Define<string>(LogLevel.Debug, new EventId(7, nameof(ConnectionWriteFin)), @"Connection id ""{ConnectionId}"" sending FIN.");
 
+        private static readonly Action<ILogger, string, Exception> _connectionWriteRst =
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(8, nameof(ConnectionWriteRst)), @"Connection id ""{ConnectionId}"" sending RST.");
+
         private static readonly Action<ILogger, string, Exception> _connectionError =
             LoggerMessage.Define<string>(LogLevel.Information, new EventId(14, nameof(ConnectionError)), @"Connection id ""{ConnectionId}"" communication error.");
 
@@ -49,6 +52,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         public void ConnectionWriteFin(string connectionId)
         {
             _connectionWriteFin(_logger, connectionId, null);
+        }
+
+        public void ConnectionWriteRst(string connectionId)
+        {
+            _connectionWriteRst(_logger, connectionId, null);
         }
 
         public void ConnectionWrite(string connectionId, int count)
