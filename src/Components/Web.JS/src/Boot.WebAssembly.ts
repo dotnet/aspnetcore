@@ -27,9 +27,9 @@ window['DotNet'] = DotNet;
 
 if (shouldAutoStart()) {
   boot().catch(error => {
-    if (typeof Module !== 'undefined' && Module.printErr) {
+    if (typeof Module !== 'undefined' && Module.err) {
       // Logs it, and causes the error UI to appear
-      Module.printErr(error);
+      Module.err(error);
     } else {
       // The error must have happened so early we didn't yet set up the error UI, so just log to console
       console.error(error);
