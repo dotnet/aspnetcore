@@ -241,4 +241,57 @@ public class Wrapper<T> { }
         Assert.Empty(result.GeneratedSources);
         Assert.All(result.Diagnostics, diagnostic => Assert.Equal(DiagnosticDescriptors.InaccessibleTypesNotSupported.Id, diagnostic.Id));
     }
+
+    [Fact]
+    public async Task HandlesEndpointsWithAndWithoutDiagnostics()
+    {
+        var source = $$"""
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
+
+public static class TestMapActions
+{
+    public static IEndpointRouteBuilder MapTestEndpoints(this IEndpointRouteBuilder app)
+    {
+        app.MapPost("/a", (MyType? value) => "Hello world!");
+        app.MapGet("/b", () => "Hello world!");
+        app.MapPost("/c", (Wrapper<MyType>? value) => "Hello world!");
+        return app;
+    }
+
+    private class MyType { }
+}
+
+public class Wrapper<T> { }
+""";
+        var project = CreateProject();
+        project = project.AddDocument("TestMapActions.cs", SourceText.From(source, Encoding.UTF8)).Project;
+        var compilation = await project.GetCompilationAsync();
+
+        var generator = new RequestDelegateGenerator.RequestDelegateGenerator().AsSourceGenerator();
+        GeneratorDriver driver = CSharpGeneratorDriver.Create(generators: new[]
+            {
+                generator
+            },
+            driverOptions: new GeneratorDriverOptions(IncrementalGeneratorOutputKind.None, trackIncrementalGeneratorSteps: true),
+            parseOptions: ParseOptions);
+        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var updatedCompilation,
+            out var diagnostics);
+        var generatorRunResult = driver.GetRunResult();
+
+        // Emits diagnostic and generates source for all endpoints
+        var result = Assert.IsType<GeneratorRunResult>(Assert.Single(generatorRunResult.Results));
+        Assert.All(result.Diagnostics, diagnostic => Assert.Equal(DiagnosticDescriptors.InaccessibleTypesNotSupported.Id, diagnostic.Id));
+
+        // All endpoints can be invoked
+        var endpoints = GetEndpointsFromCompilation(updatedCompilation, skipGeneratedCodeCheck: true);
+        foreach (var endpoint in endpoints)
+        {
+            var httpContext = CreateHttpContext();
+            await endpoint.RequestDelegate(httpContext);
+            await VerifyResponseBodyAsync(httpContext, "Hello world!");
+        }
+
+        await VerifyAgainstBaselineUsingFile(updatedCompilation);
+    }
 }

@@ -1,5 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -14,10 +15,12 @@ internal static class DiagnosticEmitter
         {
             diagnostics.Add(Diagnostic.Create(DiagnosticDescriptors.TypeParametersNotSupported, location));
         }
+
         if (response.ResponseType?.DeclaredAccessibility is Accessibility.Private or Accessibility.Protected)
         {
             diagnostics.Add(Diagnostic.Create(DiagnosticDescriptors.InaccessibleTypesNotSupported, location));
         }
+
         if (response.ResponseType?.IsAnonymousType == true)
         {
             diagnostics.Add(Diagnostic.Create(DiagnosticDescriptors.UnableToResolveAnonymousReturnType, location));
@@ -33,6 +36,7 @@ internal static class DiagnosticEmitter
         {
             diagnostics.Add(Diagnostic.Create(DiagnosticDescriptors.TypeParametersNotSupported, location));
         }
+
         if (typeSymbol.DeclaredAccessibility is Accessibility.Private or Accessibility.Protected ||
             typeSymbol is INamedTypeSymbol &&
             ((INamedTypeSymbol)typeSymbol).TypeArguments.Any(typeArg =>
