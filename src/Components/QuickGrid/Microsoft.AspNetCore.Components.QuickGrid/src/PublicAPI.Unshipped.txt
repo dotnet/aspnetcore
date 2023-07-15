@@ -376,7 +376,9 @@ override Microsoft.AspNetCore.Components.QuickGrid.PropertyColumn<TGridItem, TPr
 override Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.OnParametersSetAsync() -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.MenuAdvancedFilter<TGridItem>.ApplyColumnFilterFromGrid() -> void
+override Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.MenuAdvancedFilter<TGridItem>.OptionRender(RenderTreeBuilder __builder, int index) -> void
 override Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.MenuAdvancedFilter<TGridItem>.GetListOptionFiltre(int index) -> System.Collections.Generic.List<System.Enum!>!
+override Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.MenuFiltre<TGridItem>.OptionRender(RenderTreeBuilder __builder, int index) -> void
 override Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.MenuFiltre<TGridItem>.OnParametersSet() -> void
 override Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.PropertyColumnC<TGridItem, TProp>.CellContent(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder, TGridItem item) -> void
 override Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.PropertyColumnC<TGridItem, TProp>.OnParametersSet() -> void
@@ -403,3 +405,6 @@ virtual Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Pagination
 ~override Microsoft.AspNetCore.Components.QuickGrid.Paginator.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.ColumnCBase<TGridItem>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridPaging.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.QuickGridC<TGridItem>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.MenuFiltre<TGridItem>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.MenuAdvancedFilter<TGridItem>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
