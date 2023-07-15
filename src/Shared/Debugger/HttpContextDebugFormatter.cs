@@ -53,6 +53,16 @@ internal static class HttpContextDebugFormatter
 
     private static string GetRequestUrl(HttpRequest request, bool includeQueryString)
     {
+        // Check the request has a URL. The URL might be missing because of "new DefaultHttpContext()".
+        if (string.IsNullOrEmpty(request.Scheme) ||
+            !request.Host.HasValue ||
+            !request.PathBase.HasValue ||
+            !request.Path.HasValue ||
+            !request.QueryString.HasValue)
+        {
+            return "(unset)";
+        }
+
         return $"{request.Scheme}://{request.Host.Value}{request.PathBase.Value}{request.Path.Value}{(includeQueryString ? request.QueryString.Value : string.Empty)}";
     }
 }
