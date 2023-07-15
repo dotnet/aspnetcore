@@ -376,7 +376,7 @@ override Microsoft.AspNetCore.Components.QuickGrid.PropertyColumn<TGridItem, TPr
 override Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.OnParametersSetAsync() -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.MenuAdvancedFilter<TGridItem>.ApplyColumnFilterFromGrid() -> void
-override Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.MenuAdvancedFilter<TGridItem>.OptionRender(RenderTreeBuilder __builder, int index) -> void
+override Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.MenuAdvancedFilter<TGridItem>.OptionRender(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder, int index) -> void
 override Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.MenuAdvancedFilter<TGridItem>.GetListOptionFiltre(int index) -> System.Collections.Generic.List<System.Enum!>!
 override Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.MenuFiltre<TGridItem>.OnParametersSet() -> void
 override Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.PropertyColumnC<TGridItem, TProp>.CellContent(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder, TGridItem item) -> void
@@ -392,7 +392,7 @@ static Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderResult.From<TG
 static Microsoft.AspNetCore.Components.QuickGrid.GridSort<TGridItem>.ByAscending<U>(System.Linq.Expressions.Expression<System.Func<TGridItem, U>!>! expression) -> Microsoft.AspNetCore.Components.QuickGrid.GridSort<TGridItem>!
 static Microsoft.AspNetCore.Components.QuickGrid.GridSort<TGridItem>.ByDescending<U>(System.Linq.Expressions.Expression<System.Func<TGridItem, U>!>! expression) -> Microsoft.AspNetCore.Components.QuickGrid.GridSort<TGridItem>!
 virtual Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.IsSortableByDefault() -> bool
-virtual Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.MenuFiltre<TGridItem>.OptionRender(RenderTreeBuilder __builder, int index) -> void
+virtual Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.MenuFiltre<TGridItem>.OptionRender(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder, int index) -> void
 virtual Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.MenuFiltre<TGridItem>.ApplyColumnFilterFromGrid() -> void
 virtual Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.MenuFiltre<TGridItem>.GetListOptionFiltre(int index) -> System.Collections.Generic.List<System.Enum!>!
 virtual Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridHtmlCssManager.InitializedClassCss() -> System.Collections.Generic.Dictionary<Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.CssClass, string!>!
