@@ -136,6 +136,8 @@ Later on, this will be checked using this condition:
   </PropertyGroup>
   <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.40' ">
     <PackagesInPatch>
+      Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv;
+      Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
       Microsoft.AspNetCore.SignalR.Redis;
     </PackagesInPatch>
   </PropertyGroup>

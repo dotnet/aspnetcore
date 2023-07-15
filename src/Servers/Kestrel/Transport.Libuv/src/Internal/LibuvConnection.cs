@@ -6,6 +6,7 @@ using System.Buffers;
 using System.IO;
 using System.IO.Pipelines;
 using System.Net;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -28,13 +29,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         private readonly UvStreamHandle _socket;
         private readonly CancellationTokenSource _connectionClosedTokenSource = new CancellationTokenSource();
 
+        private readonly bool _finOnError;
+
         private volatile ConnectionAbortedException _abortReason;
 
         private MemoryHandle _bufferHandle;
 
         public LibuvConnection(UvStreamHandle socket, ILibuvTrace log, LibuvThread thread, IPEndPoint remoteEndPoint, IPEndPoint localEndPoint)
+            : this(socket, log, thread, remoteEndPoint, localEndPoint, finOnError: false)
+        {
+        }
+
+        internal LibuvConnection(UvStreamHandle socket, ILibuvTrace log, LibuvThread thread, IPEndPoint remoteEndPoint, IPEndPoint localEndPoint, bool finOnError)
         {
             _socket = socket;
+            _finOnError = finOnError; ;
 
             RemoteAddress = remoteEndPoint?.Address;
             RemotePort = remoteEndPoint?.Port ?? 0;
@@ -94,6 +103,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 }
                 finally
                 {
+                    if (!_finOnError && _abortReason != null)
+                    {
+                        // When shutdown isn't clean (note that we're using _abortReason, rather than inputError, to exclude that case),
+                        // we set the DontLinger socket option to cause libuv to send a RST and release any buffered response data.
+                        SetDontLingerOption(_socket);
+                    }
+
                     // Now, complete the input so that no more reads can happen
                     Input.Complete(inputError ?? _abortReason ?? new ConnectionAbortedException());
                     Output.Complete(outputError);
@@ -102,8 +118,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                     // on the stream handle
                     Input.CancelPendingFlush();
 
-                    // Send a FIN
-                    Log.ConnectionWriteFin(ConnectionId);
+                    if (!_finOnError && _abortReason != null)
+                    {
+                        // Send a RST
+                        Log.ConnectionWriteRst(ConnectionId);
+                    }
+                    else
+                    {
+                        // Send a FIN
+                        Log.ConnectionWriteFin(ConnectionId);
+                    }
 
                     // We're done with the socket now
                     _socket.Dispose();
@@ -116,13 +140,39 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             }
         }
 
+        /// <remarks>
+        /// This should be called on <see cref="_socket"/> before it is disposed.
+        /// Both <see cref="Abort"/> and <see cref="Start"/> call dispose but, rather than predict
+        /// which will do so first (which varies), we make this method idempotent and call it in both.
+        /// </remarks>
+        private static void SetDontLingerOption(UvStreamHandle socket)
+        {
+            if (!socket.IsClosed && !socket.IsInvalid) {
+                var libuv = socket.Libuv;
+                if (libuv.IsWindows) // p/invoke of setsockopt is Windows-specific
+                {
+                    var pSocket = IntPtr.Zero;
+                    libuv.uv_fileno(socket, ref pSocket);
+                    libuv.setsockopt(pSocket, SocketOptionLevel.Socket, SocketOptionName.DontLinger, 0);
+                }
+            }
+        }
+
         public override void Abort(ConnectionAbortedException abortReason)
         {
             _abortReason = abortReason;
             Output.CancelPendingRead();
-            
-            // This cancels any pending I/O.
-            Thread.Post(s => s.Dispose(), _socket);
+
+            Thread.Post(/*static*/ (self) =>
+            {
+                if (!self._finOnError)
+                {
+                    SetDontLingerOption(self._socket);
+                }
+
+                // This cancels any pending I/O.
+                self._socket.Dispose();
+            }, this);
         }
 
         // Called on Libuv thread
