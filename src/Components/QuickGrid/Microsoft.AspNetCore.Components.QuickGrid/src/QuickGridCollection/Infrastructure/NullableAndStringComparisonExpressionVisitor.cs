@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Infrastr
 /// <summary>
 /// A custom expression visitor that handles expressions with Nullable values and case-insensitive string comparisons.
 /// </summary>
-internal class NullableAndStringComparisonExpressionVisitor : ExpressionVisitor
+internal sealed class NullableAndStringComparisonExpressionVisitor : ExpressionVisitor
 {
     private readonly bool useDefaultValueForNull;
     private readonly bool ignoreCaseInStringComparison;

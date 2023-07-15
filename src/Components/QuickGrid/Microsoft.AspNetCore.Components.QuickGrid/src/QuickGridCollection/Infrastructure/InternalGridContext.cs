@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Infrastructure;
 
-internal class InternalGridContext<TGridItem>(QuickGridC<TGridItem> grid)
+internal sealed class InternalGridContext<TGridItem>(QuickGridC<TGridItem> grid)
 {
     public QuickGridC<TGridItem> Grid { get; } = grid;
 }

@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns;
-internal class ColumnCException : Exception
+internal sealed class ColumnCException : Exception
 {
     public ColumnCException()
     {

@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection;
-internal class QuickGridCException : Exception
+internal sealed class QuickGridCException : Exception
 {
     public QuickGridCException()
     {

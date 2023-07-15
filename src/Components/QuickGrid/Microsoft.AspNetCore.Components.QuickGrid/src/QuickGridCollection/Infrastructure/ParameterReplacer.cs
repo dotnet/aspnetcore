@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 
 namespace Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Infrastructure;
 
-internal class ParameterReplacer : ExpressionVisitor
+internal sealed class ParameterReplacer : ExpressionVisitor
 {
     private readonly ParameterExpression _oldParameter;
     private readonly ParameterExpression _newParameter;

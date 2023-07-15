@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.MenuOptions;
-internal class MenuOptionException : Exception
+internal sealed class MenuOptionException : Exception
 {
     public MenuOptionException()
     {
