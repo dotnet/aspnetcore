@@ -402,4 +402,4 @@ virtual Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Pagination
 ~override Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Microsoft.AspNetCore.Components.QuickGrid.Paginator.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 ~override Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.Columns.ColumnCBase<TGridItem>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
-~override Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
+~override Microsoft.AspNetCore.Components.QuickGrid.QuickGridCollection.GridPaging.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
