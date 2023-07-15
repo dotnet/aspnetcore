@@ -92,8 +92,7 @@
       "src\\SignalR\\common\\Protocols.NewtonsoftJson\\src\\Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson.csproj",
       "src\\SignalR\\common\\SignalR.Common\\src\\Microsoft.AspNetCore.SignalR.Common.csproj",
       "src\\SignalR\\server\\Core\\src\\Microsoft.AspNetCore.SignalR.Core.csproj",
-      "src\\SignalR\\server\\SignalR\\src\\Microsoft.AspNetCore.SignalR.csproj",
-      "src\\submodules\\spa-templates\\src\\Microsoft.DotNet.Web.Spa.ProjectTemplates.csproj"
+      "src\\SignalR\\server\\SignalR\\src\\Microsoft.AspNetCore.SignalR.csproj"
     ]
   }
 }
