@@ -8,10 +8,13 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Identity.DefaultUI.WebSite;
 using Identity.DefaultUI.WebSite.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing;
@@ -36,14 +39,22 @@ public class MapIdentityApiTests : LoggedTest
         await using var app = await CreateAppAsync(AddIdentityActions[addIdentityMode]);
         using var client = app.GetTestClient();
 
-        AssertOkAndEmpty(await client.PostAsJsonAsync("/identity/register", new { Username, Password }));
+        AssertOkAndEmpty(await client.PostAsJsonAsync("/identity/register", new { Username, Password, Email = Username }));
     }
 
-    [Theory]
-    [MemberData(nameof(AddIdentityModes))]
-    public async Task LoginFailsGivenUnregisteredUser(string addIdentityMode)
+    [Fact]
+    public async Task RegisterFailsGivenNoEmail()
     {
-        await using var app = await CreateAppAsync(AddIdentityActions[addIdentityMode]);
+        await using var app = await CreateAppAsync();
+        using var client = app.GetTestClient();
+
+        AssertBadRequestAndEmpty(await client.PostAsJsonAsync("/identity/register", new { Username, Password }));
+    }
+
+    [Fact]
+    public async Task LoginFailsGivenUnregisteredUser()
+    {
+        await using var app = await CreateAppAsync();
         using var client = app.GetTestClient();
 
         AssertUnauthorizedAndEmpty(await client.PostAsJsonAsync("/identity/login", new { Username, Password }));
@@ -55,7 +66,7 @@ public class MapIdentityApiTests : LoggedTest
         await using var app = await CreateAppAsync();
         using var client = app.GetTestClient();
 
-        await client.PostAsJsonAsync("/identity/register", new { Username, Password });
+        await client.PostAsJsonAsync("/identity/register", new { Username, Password, Email = Username });
         AssertUnauthorizedAndEmpty(await client.PostAsJsonAsync("/identity/login", new { Username, Password = "wrong" }));
     }
 
@@ -66,7 +77,7 @@ public class MapIdentityApiTests : LoggedTest
         await using var app = await CreateAppAsync(AddIdentityActions[addIdentityMode]);
         using var client = app.GetTestClient();
 
-        await client.PostAsJsonAsync("/identity/register", new { Username, Password });
+        await client.PostAsJsonAsync("/identity/register", new { Username, Password, Email = Username });
         var loginResponse = await client.PostAsJsonAsync("/identity/login", new { Username, Password });
 
         loginResponse.EnsureSuccessStatusCode();
@@ -102,7 +113,7 @@ public class MapIdentityApiTests : LoggedTest
 
         using var client = app.GetTestClient();
 
-        await client.PostAsJsonAsync("/identity/register", new { Username, Password });
+        await client.PostAsJsonAsync("/identity/register", new { Username, Password, Email = Username });
         var loginResponse = await client.PostAsJsonAsync("/identity/login", new { Username, Password });
 
         var loginContent = await loginResponse.Content.ReadFromJsonAsync<JsonElement>();
@@ -133,7 +144,7 @@ public class MapIdentityApiTests : LoggedTest
         await using var app = await CreateAppAsync();
         using var client = app.GetTestClient();
 
-        await client.PostAsJsonAsync("/identity/register", new { Username, Password });
+        await client.PostAsJsonAsync("/identity/register", new { Username, Password, Email = Username });
         var loginResponse = await client.PostAsJsonAsync("/identity/login?cookieMode=true", new { Username, Password });
 
         loginResponse.EnsureSuccessStatusCode();
@@ -158,7 +169,7 @@ public class MapIdentityApiTests : LoggedTest
         await using var app = await CreateAppAsync(AddIdentityApiEndpointsBearerOnly);
         using var client = app.GetTestClient();
 
-        await client.PostAsJsonAsync("/identity/register", new { Username, Password });
+        await client.PostAsJsonAsync("/identity/register", new { Username, Password, Email = Username });
 
         await Assert.ThrowsAsync<InvalidOperationException>(()
             => client.PostAsJsonAsync("/identity/login?cookieMode=true", new { Username, Password }));
@@ -182,7 +193,7 @@ public class MapIdentityApiTests : LoggedTest
 
         using var client = app.GetTestClient();
 
-        await client.PostAsJsonAsync("/identity/register", new { Username, Password });
+        await client.PostAsJsonAsync("/identity/register", new { Username, Password, Email = Username });
         var loginResponse = await client.PostAsJsonAsync("/identity/login", new { Username, Password });
 
         var loginContent = await loginResponse.Content.ReadFromJsonAsync<JsonElement>();
@@ -218,7 +229,7 @@ public class MapIdentityApiTests : LoggedTest
         await using var app = await CreateAppAsync(AddIdentityActions[addIdentityMode]);
         using var client = app.GetTestClient();
 
-        await client.PostAsJsonAsync("/identity/register", new { Username, Password });
+        await client.PostAsJsonAsync("/identity/register", new { Username, Password, Email = Username });
         var loginResponse = await client.PostAsJsonAsync("/identity/login", new { Username, Password });
         var loginContent = await loginResponse.Content.ReadFromJsonAsync<JsonElement>();
         var refreshToken = loginContent.GetProperty("refresh_token").GetString();
@@ -262,7 +273,7 @@ public class MapIdentityApiTests : LoggedTest
 
         using var client = app.GetTestClient();
 
-        await client.PostAsJsonAsync("/identity/register", new { Username, Password });
+        await client.PostAsJsonAsync("/identity/register", new { Username, Password, Email = Username });
         var loginResponse = await client.PostAsJsonAsync("/identity/login", new { Username, Password });
 
         var loginContent = await loginResponse.Content.ReadFromJsonAsync<JsonElement>();
@@ -300,14 +311,13 @@ public class MapIdentityApiTests : LoggedTest
         Assert.Equal($"Hello, {Username}!", await client.GetStringAsync("/auth/hello"));
     }
 
-    [Theory]
-    [MemberData(nameof(AddIdentityModes))]
-    public async Task RefreshReturns401UnauthorizedIfSecurityStampChanges(string addIdentityMode)
+    [Fact]
+    public async Task RefreshReturns401UnauthorizedIfSecurityStampChanges()
     {
-        await using var app = await CreateAppAsync(AddIdentityActions[addIdentityMode]);
+        await using var app = await CreateAppAsync();
         using var client = app.GetTestClient();
 
-        await client.PostAsJsonAsync("/identity/register", new { Username, Password });
+        await client.PostAsJsonAsync("/identity/register", new { Username, Password, Email = Username });
         var loginResponse = await client.PostAsJsonAsync("/identity/login", new { Username, Password });
         var loginContent = await loginResponse.Content.ReadFromJsonAsync<JsonElement>();
         var refreshToken = loginContent.GetProperty("refresh_token").GetString();
@@ -322,14 +332,13 @@ public class MapIdentityApiTests : LoggedTest
         AssertUnauthorizedAndEmpty(await client.PostAsJsonAsync("/identity/refresh", new { refreshToken }));
     }
 
-    [Theory]
-    [MemberData(nameof(AddIdentityModes))]
-    public async Task RefreshUpdatesUserFromStore(string addIdentityMode)
+    [Fact]
+    public async Task RefreshUpdatesUserFromStore()
     {
-        await using var app = await CreateAppAsync(AddIdentityActions[addIdentityMode]);
+        await using var app = await CreateAppAsync();
         using var client = app.GetTestClient();
 
-        await client.PostAsJsonAsync("/identity/register", new { Username, Password });
+        await client.PostAsJsonAsync("/identity/register", new { Username, Password, Email = Username });
         var loginResponse = await client.PostAsJsonAsync("/identity/login", new { Username, Password });
         var loginContent = await loginResponse.Content.ReadFromJsonAsync<JsonElement>();
         var refreshToken = loginContent.GetProperty("refresh_token").GetString();
@@ -364,7 +373,7 @@ public class MapIdentityApiTests : LoggedTest
         });
         using var client = app.GetTestClient();
 
-        await client.PostAsJsonAsync("/identity/register", new { Username, Password });
+        await client.PostAsJsonAsync("/identity/register", new { Username, Password, Email = Username });
 
         AssertUnauthorizedAndEmpty(await client.PostAsJsonAsync("/identity/login", new { Username, Password = "wrong" }));
 
@@ -389,7 +398,7 @@ public class MapIdentityApiTests : LoggedTest
         });
         using var client = app.GetTestClient();
 
-        await client.PostAsJsonAsync("/identity/register", new { Username, Password });
+        await client.PostAsJsonAsync("/identity/register", new { Username, Password, Email = Username });
 
         AssertUnauthorizedAndEmpty(await client.PostAsJsonAsync("/identity/login", new { Username, Password = "wrong" }));
 
@@ -401,19 +410,148 @@ public class MapIdentityApiTests : LoggedTest
         loginResponse.EnsureSuccessStatusCode();
     }
 
-    private static void AssertOkAndEmpty(HttpResponseMessage response)
+    [Fact]
+    public async Task AccountConfirmationCanBeEnabled()
     {
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(0, response.Content.Headers.ContentLength);
+        var emailSender = new TestEmailSender();
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            AddIdentityApiEndpoints(services);
+            services.AddSingleton<IEmailSender>(emailSender);
+            services.Configure<IdentityOptions>(options =>
+            {
+                options.SignIn.RequireConfirmedAccount = true;
+            });
+        });
+        using var client = app.GetTestClient();
+
+        await client.PostAsJsonAsync("/identity/register", new { Username, Password, Email = Username });
+
+        var email = Assert.Single(emailSender.Emails);
+
+        AssertUnauthorizedAndEmpty(await client.PostAsJsonAsync("/identity/login", new { Username, Password }));
+
+        Assert.Single(TestSink.Writes, w =>
+            w.LoggerName == "Microsoft.AspNetCore.Identity.SignInManager" &&
+            w.EventId == new EventId(4, "UserCannotSignInWithoutConfirmedAccount"));
+
+        var confirmEmailResponse = await client.GetAsync(GetEmailConfirmationLink(email));
+        confirmEmailResponse.EnsureSuccessStatusCode();
+
+        var loginResponse = await client.PostAsJsonAsync("/identity/login", new { Username, Password });
+        loginResponse.EnsureSuccessStatusCode();
     }
 
-    private static void AssertUnauthorizedAndEmpty(HttpResponseMessage response)
+    [Fact]
+    public async Task EmailConfirmationCanBeEnabled()
     {
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-        Assert.Equal(0, response.Content.Headers.ContentLength);
+        var emailSender = new TestEmailSender();
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            AddIdentityApiEndpoints(services);
+            services.AddSingleton<IEmailSender>(emailSender);
+            services.Configure<IdentityOptions>(options =>
+            {
+                options.SignIn.RequireConfirmedEmail = true;
+            });
+        });
+        using var client = app.GetTestClient();
+
+        await client.PostAsJsonAsync("/identity/register", new { Username, Password, Email = Username });
+
+        var email = Assert.Single(emailSender.Emails);
+
+        AssertUnauthorizedAndEmpty(await client.PostAsJsonAsync("/identity/login", new { Username, Password }));
+
+        Assert.Single(TestSink.Writes, w =>
+            w.LoggerName == "Microsoft.AspNetCore.Identity.SignInManager" &&
+            w.EventId == new EventId(0, "UserCannotSignInWithoutConfirmedEmail"));
+
+        var confirmEmailResponse = await client.GetAsync(GetEmailConfirmationLink(email));
+        confirmEmailResponse.EnsureSuccessStatusCode();
+
+        var loginResponse = await client.PostAsJsonAsync("/identity/login", new { Username, Password });
+        loginResponse.EnsureSuccessStatusCode();
     }
 
-    private async Task<WebApplication> CreateAppAsync<TUser, TContext>(Action<IServiceCollection>? configureServices)
+    [Fact]
+    public async Task CanAddEndpointsToMultipleRouteGroupsForSameUserType()
+    {
+        // Test with confirmation email since that tests link generation capabilities
+        var emailSender = new TestEmailSender();
+
+        await using var app = await CreateAppAsync<ApplicationUser, ApplicationDbContext>(services =>
+        {
+            AddIdentityApiEndpoints(services);
+            services.AddSingleton<IEmailSender>(emailSender);
+            services.Configure<IdentityOptions>(options =>
+            {
+                options.SignIn.RequireConfirmedAccount = true;
+            });
+        }, autoStart: false);
+        app.MapGroup("/identity2").MapIdentityApi<ApplicationUser>();
+
+        await app.StartAsync();
+        using var client = app.GetTestClient();
+
+        async Task TestLoginWithConfirmedAccount(string groupPrefix, string userName)
+        {
+            await client.PostAsJsonAsync($"{groupPrefix}/register", new { userName, Password, Email = Username });
+
+            var email = emailSender.Emails.Last();
+
+            AssertUnauthorizedAndEmpty(await client.PostAsJsonAsync($"{groupPrefix}/login", new { userName, Password }));
+
+            var confirmEmailResponse = await client.GetAsync(GetEmailConfirmationLink(email));
+            confirmEmailResponse.EnsureSuccessStatusCode();
+
+            var loginResponse = await client.PostAsJsonAsync($"{groupPrefix}/login", new { userName, Password });
+            loginResponse.EnsureSuccessStatusCode();
+        }
+
+        await TestLoginWithConfirmedAccount("/identity", "a@example.com");
+        await TestLoginWithConfirmedAccount("/identity2", "b@example.com");
+    }
+
+    [Fact]
+    public async Task CanAddEndpointsToMultipleRouteGroupsForMultipleUsersTypes()
+    {
+        // Test with confirmation email since that tests link generation capabilities
+        var emailSender = new TestEmailSender();
+
+        await using var app = await CreateAppAsync<ApplicationUser, ApplicationDbContext>(services =>
+        {
+            AddIdentityApiEndpoints<ApplicationUser, ApplicationDbContext>(services);
+
+            // We just added cookie and/or bearer auth scheme(s) above. We cannot re-add these without an error.
+            services
+                .AddDbContext<IdentityDbContext<IdentityUser>>((sp, options) => options.UseSqlite(sp.GetRequiredService<SqliteConnection>()))
+                .AddIdentityCore<IdentityUser>()
+                .AddEntityFrameworkStores<IdentityDbContext<IdentityUser>>()
+                .AddApiEndpoints();
+
+            services.AddSingleton<IEmailSender>(emailSender);
+            services.Configure<IdentityOptions>(options =>
+            {
+                options.SignIn.RequireConfirmedAccount = true;
+            });
+        }, autoStart: false);
+
+        // The following two lines are already taken care of by CreateAppAsync for ApplicationUser and ApplicationDbContext
+        await app.Services.GetRequiredService<IdentityDbContext<IdentityUser>>().Database.EnsureCreatedAsync();
+        app.MapGroup("/identity2").MapIdentityApi<IdentityUser>();
+
+        await app.StartAsync();
+        using var client = app.GetTestClient();
+
+        // We can use the same username twice since we're using two distinct DbContexts.
+        await TestRegistrationWithAccountConfirmation(client, emailSender, "/identity", Username);
+        await TestRegistrationWithAccountConfirmation(client, emailSender, "/identity2", Username);
+    }
+
+    private async Task<WebApplication> CreateAppAsync<TUser, TContext>(Action<IServiceCollection>? configureServices, bool autoStart = true)
         where TUser : class, new()
         where TContext : DbContext
     {
@@ -423,11 +561,10 @@ public class MapIdentityApiTests : LoggedTest
         builder.Services.AddAuthorization();
 
         var dbConnection = new SqliteConnection($"DataSource=:memory:");
-        builder.Services.AddDbContext<TContext>(options => options.UseSqlite(dbConnection));
         // Dispose SqliteConnection with host by registering as a singleton factory.
-        builder.Services.AddSingleton(() => dbConnection);
+        builder.Services.AddSingleton(_ => dbConnection);
 
-        configureServices ??= AddIdentityApiEndpoints;
+        configureServices ??= AddIdentityApiEndpoints<TUser, TContext>;
         configureServices(builder.Services);
 
         var app = builder.Build();
@@ -443,17 +580,30 @@ public class MapIdentityApiTests : LoggedTest
 
         await dbConnection.OpenAsync();
         await app.Services.GetRequiredService<TContext>().Database.EnsureCreatedAsync();
-        await app.StartAsync();
+
+        if (autoStart)
+        {
+            await app.StartAsync();
+        }
 
         return app;
     }
 
+    private static void AddIdentityApiEndpoints<TUser, TContext>(IServiceCollection services)
+        where TUser : class, new()
+        where TContext : DbContext
+    {
+        services.AddDbContext<TContext>((sp, options) => options.UseSqlite(sp.GetRequiredService<SqliteConnection>()))
+            .AddIdentityApiEndpoints<TUser>().AddEntityFrameworkStores<TContext>();
+    }
+
     private static void AddIdentityApiEndpoints(IServiceCollection services)
-        => services.AddIdentityApiEndpoints<ApplicationUser>().AddEntityFrameworkStores<ApplicationDbContext>();
+        => AddIdentityApiEndpoints<ApplicationUser, ApplicationDbContext>(services);
 
     private static void AddIdentityApiEndpointsBearerOnly(IServiceCollection services)
     {
         services
+            .AddDbContext<ApplicationDbContext>((sp, options) => options.UseSqlite(sp.GetRequiredService<SqliteConnection>()))
             .AddIdentityCore<ApplicationUser>()
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddApiEndpoints();
@@ -472,4 +622,63 @@ public class MapIdentityApiTests : LoggedTest
     };
 
     public static object[][] AddIdentityModes => AddIdentityActions.Keys.Select(key => new object[] { key }).ToArray();
+
+    private static void AssertOkAndEmpty(HttpResponseMessage response)
+    {
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(0, response.Content.Headers.ContentLength);
+    }
+
+    private static void AssertBadRequestAndEmpty(HttpResponseMessage response)
+    {
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(0, response.Content.Headers.ContentLength);
+    }
+
+    private static void AssertUnauthorizedAndEmpty(HttpResponseMessage response)
+    {
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.Equal(0, response.Content.Headers.ContentLength);
+    }
+
+    private static string GetEmailConfirmationLink(Email email)
+    {
+        // Update if we add more links to the email.
+        var confirmationMatch = Regex.Match(email.HtmlMessage, "href='(.*?)'");
+        Assert.True(confirmationMatch.Success);
+        Assert.Equal(2, confirmationMatch.Groups.Count);
+
+        return WebUtility.HtmlDecode(confirmationMatch.Groups[1].Value);
+    }
+
+    private async Task TestRegistrationWithAccountConfirmation(HttpClient client, TestEmailSender emailSender, string? groupPrefix = null, string? username = null)
+    {
+        groupPrefix ??= "";
+        username ??= Username;
+
+        await client.PostAsJsonAsync($"{groupPrefix}/register", new { username, Password, Email = username });
+
+        var email = emailSender.Emails.Last();
+
+        AssertUnauthorizedAndEmpty(await client.PostAsJsonAsync($"{groupPrefix}/login", new { username, Password }));
+
+        var confirmEmailResponse = await client.GetAsync(GetEmailConfirmationLink(email));
+        confirmEmailResponse.EnsureSuccessStatusCode();
+
+        var loginResponse = await client.PostAsJsonAsync($"{groupPrefix}/login", new { username, Password });
+        loginResponse.EnsureSuccessStatusCode();
+    }
+
+    private sealed class TestEmailSender : IEmailSender
+    {
+        public List<Email> Emails { get; set; } = new();
+
+        public Task SendEmailAsync(string email, string subject, string htmlMessage)
+        {
+            Emails.Add(new(email, subject, htmlMessage));
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed record Email(string Address, string Subject, string HtmlMessage);
 }
