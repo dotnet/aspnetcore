@@ -56,7 +56,7 @@ export function synchronizeAttributes(destination: Element, source: Element) {
 
 function applyAttributeOrProperty(element: Element, attr: Attr) {
   // If we need to assign a special property on the element, do so
-  tryApplySpecialProperty(element, attr.name, attr.value)
+  tryApplySpecialProperty(element, attr.name, attr.value);
 
   // Either way, also update the attribute
   if (attr.namespaceURI) {

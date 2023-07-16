@@ -18,14 +18,13 @@ import { attachStreamingRenderingListener } from './Rendering/StreamingRendering
 import { NavigationEnhancementCallbacks, attachProgressivelyEnhancedNavigationListener } from './Services/NavigationEnhancement';
 import { WebAssemblyComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
 import { ServerComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
-import { DescriptorHandler, attachComponentDescriptorHandler, processComponentDescriptors } from './Rendering/DomMerging/BoundarySync';
 import { RootComponentManager } from './Services/RootComponentManager';
 import { RendererId } from './Rendering/RendererId';
+import { DescriptorHandler, attachComponentDescriptorHandler, registerAllComponentDescriptors } from './Rendering/DomMerging/DomSync';
 
 let started = false;
-let isPerformingEnhnacedNavigation = false;
+let isPerformingEnhancedNavigation = false;
 let webStartOptions: Partial<WebStartOptions> | undefined;
-let lastActiveElement: Element | null = null;
 
 const circuitRootComponents = new RootComponentManager(RendererId.Server);
 const webAssemblyRootComponents = new RootComponentManager(RendererId.WebAssembly);
@@ -39,13 +38,12 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
 
   const navigationEnhancementCallbacks: NavigationEnhancementCallbacks = {
     beforeEnhancedNavigation,
-    beforeDocumentUpdated,
     afterDocumentUpdated,
     afterEnhancedNavigation,
   };
 
   const descriptorHandler: DescriptorHandler = {
-    onDescriptorAdded,
+    registerComponentDescriptor,
   };
 
   attachComponentDescriptorHandler(descriptorHandler);
@@ -55,15 +53,14 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
     attachProgressivelyEnhancedNavigationListener(navigationEnhancementCallbacks);
   }
 
-  processComponentDescriptors(document);
+  registerAllComponentDescriptors(document);
 
   return Promise.resolve();
 }
 
-function onDescriptorAdded(descriptor: ServerComponentDescriptor | WebAssemblyComponentDescriptor) {
+function registerComponentDescriptor(descriptor: ServerComponentDescriptor | WebAssemblyComponentDescriptor) {
   switch (descriptor.type) {
     case 'server':
-      // Start the circuit now so that it's more likely to be ready by the time interactivity actually starts.
       startCircuitIfNotStarted();
       circuitRootComponents.registerComponentDescriptor(descriptor);
       break;
@@ -75,29 +72,20 @@ function onDescriptorAdded(descriptor: ServerComponentDescriptor | WebAssemblyCo
 }
 
 function beforeEnhancedNavigation() {
-  isPerformingEnhnacedNavigation = true;
-}
-
-function beforeDocumentUpdated() {
-  lastActiveElement = document.activeElement;
+  isPerformingEnhancedNavigation = true;
 }
 
 function afterDocumentUpdated() {
-  if ((lastActiveElement instanceof HTMLElement) && lastActiveElement !== document.activeElement) {
-    lastActiveElement.focus();
-  }
-
-  lastActiveElement = null;
   handleUpdatedDescriptors();
 }
 
 function afterEnhancedNavigation() {
-  isPerformingEnhnacedNavigation = false;
+  isPerformingEnhancedNavigation = false;
   handleUpdatedDescriptors();
 }
 
 function handleUpdatedDescriptors() {
-  const shouldAddNewRootComponents = !isPerformingEnhnacedNavigation;
+  const shouldAddNewRootComponents = !isPerformingEnhancedNavigation;
   circuitRootComponents.handleUpdatedRootComponents(shouldAddNewRootComponents);
   webAssemblyRootComponents.handleUpdatedRootComponents(shouldAddNewRootComponents);
 }

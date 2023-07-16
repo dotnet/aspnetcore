@@ -3,7 +3,7 @@
 
 import { RenderBatch, ArrayBuilderSegment, RenderTreeEdit, RenderTreeFrame, EditType, FrameType, ArrayValues } from './RenderBatch/RenderBatch';
 import { EventDelegator } from './Events/EventDelegator';
-import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, getLogicalChildrenArray, getLogicalSiblingEnd, permuteLogicalChildren, getClosestDomElement, emptyLogicalElement } from './LogicalElements';
+import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, permuteLogicalChildren, getClosestDomElement, emptyLogicalElement } from './LogicalElements';
 import { applyCaptureIdToElement } from './ElementReferenceCapture';
 import { attachToEventDelegator as attachNavigationManagerToEventDelegator } from '../Services/NavigationManager';
 import { applyAnyDeferredValue, tryApplySpecialProperty } from './DomSpecialPropertyUtil';
@@ -13,6 +13,7 @@ const elementsToClearOnRootComponentRender: { [componentId: number]: LogicalElem
 const internalAttributeNamePrefix = '__internal_';
 const eventPreventDefaultAttributeNamePrefix = 'preventDefault_';
 const eventStopPropagationAttributeNamePrefix = 'stopPropagation_';
+const interactiveRootComponentPropname = Symbol();
 
 export class BrowserRenderer {
   public eventDelegator: EventDelegator;
@@ -31,6 +32,7 @@ export class BrowserRenderer {
   }
 
   public attachRootComponentToLogicalElement(componentId: number, element: LogicalElement, appendContent: boolean): void {
+    markAsInteractiveRootComponentElement(element);
     this.attachComponentToElement(componentId, element);
     this.rootComponentIds.add(componentId);
 
@@ -50,13 +52,13 @@ export class BrowserRenderer {
     // On the first render for each root component, clear any existing content (e.g., prerendered)
     const rootElementToClear = elementsToClearOnRootComponentRender[componentId];
     if (rootElementToClear) {
-      const rootElementToClearEnd = getLogicalSiblingEnd(rootElementToClear);
       delete elementsToClearOnRootComponentRender[componentId];
+      emptyLogicalElement(rootElementToClear);
 
-      if (!rootElementToClearEnd) {
-        clearElement(rootElementToClear as unknown as Element);
-      } else {
-        clearBetween(rootElementToClear as unknown as Node, rootElementToClearEnd as unknown as Comment);
+      if (rootElementToClear instanceof Comment) {
+        // We sanitize start comments by removing all the information from it now that we don't need it anymore
+        // as it adds noise to the DOM.
+        rootElementToClear.textContent = '!';
       }
     }
 
@@ -355,6 +357,14 @@ export class BrowserRenderer {
   }
 }
 
+function markAsInteractiveRootComponentElement(element: LogicalElement) {
+  element[interactiveRootComponentPropname] = true;
+}
+
+export function isInteractiveRootComponentElement(element: LogicalElement) {
+  return interactiveRootComponentPropname in element;
+}
+
 export interface ComponentDescriptor {
   start: Node;
   end: Node;
@@ -383,25 +393,6 @@ function countDescendantFrames(batch: RenderBatch, frame: RenderTreeFrame): numb
     default:
       return 0;
   }
-}
-
-function clearElement(element: Element) {
-  let childNode: Node | null;
-  while ((childNode = element.firstChild)) {
-    element.removeChild(childNode);
-  }
-}
-
-function clearBetween(start: Node, end: Node): void {
-  const range = new Range();
-  range.setStartAfter(start);
-  range.setEndBefore(end);
-  range.deleteContents();
-
-  // We sanitize the start comment by removing all the information from it now that we don't need it anymore
-  // as it adds noise to the DOM.
-  start.textContent = '!';
-  end.textContent = '!';
 }
 
 function stripOnPrefix(attributeName: string) {

@@ -68,8 +68,6 @@ function insertStreamingContentIntoDocument(componentIdAsString: string, docFrag
   const markers = findStreamingMarkers(componentIdAsString);
   if (markers) {
     const { startMarker, endMarker } = markers;
-    navigationEnhancementCallbacks.beforeDocumentUpdated();
-
     if (enableDomPreservation) {
       synchronizeDomContent({ startExclusive: startMarker, endExclusive: endMarker }, docFrag);
     } else {

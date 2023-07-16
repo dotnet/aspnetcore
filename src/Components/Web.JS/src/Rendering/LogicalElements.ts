@@ -33,7 +33,6 @@ import { createSymbolOrFallback } from './SymbolUtil';
 
 const logicalChildrenPropname = createSymbolOrFallback('_blazorLogicalChildren');
 const logicalParentPropname = createSymbolOrFallback('_blazorLogicalParent');
-const logicalEndSiblingPropname = createSymbolOrFallback('_blazorLogicalEnd');
 const logicalRootDescriptorPropname = createSymbolOrFallback('_blazorLogicalRootDescriptor');
 
 export function toLogicalRootCommentElement(descriptor: ServerComponentDescriptor | WebAssemblyComponentDescriptor): LogicalElement {
@@ -54,8 +53,15 @@ export function toLogicalRootCommentElement(descriptor: ServerComponentDescripto
   // |- *component
   // |- *footer
   const { start, end } = descriptor;
-  const parent = start.parentNode;
+  const existingDescriptor = start[logicalRootDescriptorPropname];
+  if (existingDescriptor) {
+    if (existingDescriptor !== descriptor) {
+      throw new Error('The start component comment was already associated with another component descriptor.');
+    }
+    return start as unknown as LogicalElement;
+  }
 
+  const parent = start.parentNode;
   if (!parent) {
     throw new Error(`Comment not connected to the DOM ${start.textContent}`);
   }
@@ -63,31 +69,53 @@ export function toLogicalRootCommentElement(descriptor: ServerComponentDescripto
   const parentLogicalElement = toLogicalElement(parent, /* allow existing contents */ true);
   const children = getLogicalChildrenArray(parentLogicalElement);
 
-  children.push(start as unknown as LogicalElement);
-  children.push(end as unknown as LogicalElement);
-
   start[logicalParentPropname] = parentLogicalElement;
   start[logicalRootDescriptorPropname] = descriptor;
-  // We might not have an end comment in the case of non-prerendered components.
+  const startLogicalElement = toLogicalElement(start);
+
   if (end) {
-    start[logicalEndSiblingPropname] = end;
-    toLogicalElement(end);
+    // We need to make each element between the start and end comments a logical child
+    // of the start node.
+    const rootCommentChildren = getLogicalChildrenArray(startLogicalElement);
+    const startNextChildIndex = Array.prototype.indexOf.call(children, startLogicalElement) + 1;
+    let childToMove: LogicalElement | null = null;
+
+    while (childToMove !== end as unknown as LogicalElement) {
+      childToMove = children.splice(startNextChildIndex, 1)[0];
+      if (!childToMove) {
+        throw new Error('Could not find the end component comment in the parent logical node list');
+      }
+      childToMove[logicalParentPropname] = start;
+      rootCommentChildren.push(childToMove);
+    }
   }
-  return toLogicalElement(start);
+
+  return startLogicalElement;
 }
 
 export function toLogicalElement(element: Node, allowExistingContents?: boolean): LogicalElement {
-  // Normally it's good to assert that the element has started empty, because that's the usual
-  // situation and we probably have a bug if it's not. But for the element that contain prerendered
-  // root components, we want to let them keep their content until we replace it.
-  if (element.childNodes.length > 0 && !allowExistingContents) {
-    throw new Error('New logical elements must start empty, or allowExistingContents must be true');
+  if (logicalChildrenPropname in element) { // If it's already a logical element, leave it alone
+    return element as unknown as LogicalElement;
   }
 
-  if (!(logicalChildrenPropname in element)) { // If it's already a logical element, leave it alone
-    element[logicalChildrenPropname] = [];
+  const childrenArray: LogicalElement[] = [];
+
+  if (element.childNodes.length > 0) {
+    // Normally it's good to assert that the element has started empty, because that's the usual
+    // situation and we probably have a bug if it's not. But for the elements that contain prerendered
+    // root components, we want to let them keep their content until we replace it.
+    if (!allowExistingContents) {
+      throw new Error('New logical elements must start empty, or allowExistingContents must be true');
+    }
+
+    element.childNodes.forEach(child => {
+      const childLogicalElement = toLogicalElement(child, /* allowExistingContents */ true);
+      childLogicalElement[logicalParentPropname] = element;
+      childrenArray.push(childLogicalElement);
+    });
   }
 
+  element[logicalChildrenPropname] = childrenArray;
   return element as unknown as LogicalElement;
 }
 
@@ -112,37 +140,55 @@ export function createAndInsertLogicalContainer(parent: LogicalElement, childInd
   return containerElement as unknown as LogicalElement;
 }
 
+export function insertLogicalChildBefore(child: Node, parent: LogicalElement, before: LogicalElement | null): void {
+  const childrenArray = getLogicalChildrenArray(parent);
+  let childIndex: number;
+  if (before) {
+    childIndex = Array.prototype.indexOf.call(childrenArray, before);
+    if (childIndex < 0) {
+      throw new Error('Could not find logical element in the parent logical node list');
+    }
+  } else {
+    childIndex = childrenArray.length;
+  }
+  insertLogicalChild(child, parent, childIndex);
+}
+
 export function insertLogicalChild(child: Node, parent: LogicalElement, childIndex: number): void {
   const childAsLogicalElement = child as unknown as LogicalElement;
-  if (child instanceof Comment) {
-    const existingGrandchildren = getLogicalChildrenArray(childAsLogicalElement);
-    if (existingGrandchildren && getLogicalChildrenArray(childAsLogicalElement).length > 0) {
-      // There's nothing to stop us implementing support for this scenario, and it's not difficult
-      // (after inserting 'child' itself, also iterate through its logical children and physically
-      // put them as following-siblings in the DOM). However there's no scenario that requires it
-      // presently, so if we did implement it there'd be no good way to have tests for it.
-      throw new Error('Not implemented: inserting non-empty logical container');
+
+  // If the child is a component comment with logical siblings, its siblings also
+  // need to be inserted into the parent node
+  let nodeToInsert = child;
+  if (isLogicalElement(child)) {
+    const lastNodeToInsert = findLastDomNodeInRange(childAsLogicalElement);
+    if (lastNodeToInsert !== child) {
+      const range = new Range();
+      range.setStartBefore(child);
+      range.setEndAfter(lastNodeToInsert);
+      nodeToInsert = range.extractContents();
     }
   }
 
-  if (getLogicalParent(childAsLogicalElement)) {
-    // Likewise, we could easily support this scenario too (in this 'if' block, just splice
-    // out 'child' from the logical children array of its previous logical parent by using
-    // Array.prototype.indexOf to determine its previous sibling index).
-    // But again, since there's not currently any scenario that would use it, we would not
-    // have any test coverage for such an implementation.
-    throw new Error('Not implemented: moving existing logical children');
+  // If the node we're inserting already has a logical parent,
+  // remove it from its sibling array
+  const existingLogicalParent = getLogicalParent(childAsLogicalElement);
+  if (existingLogicalParent) {
+    const existingSiblingArray = getLogicalChildrenArray(existingLogicalParent);
+    const existingChildIndex = Array.prototype.indexOf.call(existingSiblingArray, childAsLogicalElement);
+    existingSiblingArray.splice(existingChildIndex, 1);
+    delete childAsLogicalElement[logicalParentPropname];
   }
 
   const newSiblings = getLogicalChildrenArray(parent);
   if (childIndex < newSiblings.length) {
     // Insert
     const nextSibling = newSiblings[childIndex] as any as Node;
-    nextSibling.parentNode!.insertBefore(child, nextSibling);
+    nextSibling.parentNode!.insertBefore(nodeToInsert, nextSibling);
     newSiblings.splice(childIndex, 0, childAsLogicalElement);
   } else {
     // Append
-    appendDomNode(child, parent);
+    appendDomNode(nodeToInsert, parent);
     newSiblings.push(childAsLogicalElement);
   }
 
@@ -175,10 +221,6 @@ export function getLogicalParent(element: LogicalElement): LogicalElement | null
   return (element[logicalParentPropname] as LogicalElement) || null;
 }
 
-export function getLogicalSiblingEnd(element: LogicalElement): LogicalElement | null {
-  return (element[logicalEndSiblingPropname] as LogicalElement) || null;
-}
-
 export function getLogicalChild(parent: LogicalElement, childIndex: number): LogicalElement {
   return getLogicalChildrenArray(parent)[childIndex];
 }
@@ -203,6 +245,16 @@ export function isSvgElement(element: LogicalElement): boolean {
 
 export function getLogicalChildrenArray(element: LogicalElement): LogicalElement[] {
   return element[logicalChildrenPropname] as LogicalElement[];
+}
+
+export function getLogicalNextSibling(element: LogicalElement): LogicalElement | null {
+  const siblings = getLogicalChildrenArray(getLogicalParent(element)!);
+  const siblingIndex = Array.prototype.indexOf.call(siblings, element);
+  return siblings[siblingIndex + 1] || null;
+}
+
+export function isLogicalElement(element: Node): boolean {
+  return logicalChildrenPropname in element;
 }
 
 export function permuteLogicalChildren(parent: LogicalElement, permutationList: PermutationListEntry[]): void {
@@ -281,12 +333,6 @@ interface PermutationListEntryWithTrackingData extends PermutationListEntry {
   moveToBeforeMarker?: Node,
 }
 
-function getLogicalNextSibling(element: LogicalElement): LogicalElement | null {
-  const siblings = getLogicalChildrenArray(getLogicalParent(element)!);
-  const siblingIndex = Array.prototype.indexOf.call(siblings, element);
-  return siblings[siblingIndex + 1] || null;
-}
-
 function appendDomNode(child: Node, parent: LogicalElement) {
   // This function only puts 'child' into the DOM in the right place relative to 'parent'
   // It does not update the logical children array of anything
@@ -310,7 +356,7 @@ function appendDomNode(child: Node, parent: LogicalElement) {
 
 // Returns the final node (in depth-first evaluation order) that is a descendant of the logical element.
 // As such, the entire subtree is between 'element' and 'findLastDomNodeInRange(element)' inclusive.
-function findLastDomNodeInRange(element: LogicalElement) {
+function findLastDomNodeInRange(element: LogicalElement): Node {
   if (element instanceof Element || element instanceof DocumentFragment) {
     return element;
   }
@@ -318,13 +364,13 @@ function findLastDomNodeInRange(element: LogicalElement) {
   const nextSibling = getLogicalNextSibling(element);
   if (nextSibling) {
     // Simple case: not the last logical sibling, so take the node before the next sibling
-    return (nextSibling as any as Node).previousSibling;
+    return (nextSibling as any as Node).previousSibling!;
   } else {
     // Harder case: there's no logical next-sibling, so recurse upwards until we find
     // a logical ancestor that does have one, or a physical element
     const logicalParent = getLogicalParent(element)!;
     return logicalParent instanceof Element || logicalParent instanceof DocumentFragment
-      ? logicalParent.lastChild
+      ? logicalParent.lastChild!
       : findLastDomNodeInRange(logicalParent);
   }
 }
