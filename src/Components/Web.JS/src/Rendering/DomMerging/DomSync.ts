@@ -18,36 +18,37 @@ export function attachComponentDescriptorHandler(handler: DescriptorHandler) {
   descriptorHandler = handler;
 }
 
-export function synchronizeDomContent(destination: CommentBoundedRange | Node, newContent: Node, skipSearchForNewComponents?: boolean) {
-  // Start by identifying top-level component markers in the new content
+export function synchronizeDomContent(destination: CommentBoundedRange | Node, newContent: Node) {
+  // Start by recursively identifying component markers in the new content
   // and converting them into logical elements so they correctly participate
   // in logical element synchronization
-  if (!skipSearchForNewComponents) {
-    upgradeComponentCommentsToLogicalRootComments(newContent);
-  }
+  upgradeComponentCommentsToLogicalRootComments(newContent);
 
+  // Then, synchronize the preprocessed DOM content
+  synchronizePreprocessedDomContent(destination, newContent);
+}
+
+function synchronizePreprocessedDomContent(destination: CommentBoundedRange | Node, newContent: Node) {
+  // Determine the destination's parent node, i.e., the node containing the children
+  // we intend to synchronize. This might sometimes be a logical parent.
   let destinationParent: Node;
   if (destination instanceof Node) {
     destinationParent = destination;
   } else {
-    if (isLogicalElement(destination.startExclusive)) {
-      destinationParent = getLogicalParent(destination.startExclusive as unknown as LogicalElement) as unknown as Node;
-    } else {
-      destinationParent = destination.startExclusive.parentNode!;
-    }
+    destinationParent =
+      getLogicalParent(destination.startExclusive as unknown as LogicalElement) as unknown as Node ??
+      destination.startExclusive.parentNode!;
   }
-
-  const isSynchronizingLogicalElements = isLogicalElement(destinationParent) || isLogicalElement(newContent);
 
   // If only one out of the destination and new content is a logical element, we normalize
   // the other to also be a logical element
+  const isSynchronizingLogicalElements = isLogicalElement(destinationParent) || isLogicalElement(newContent);
   if (isSynchronizingLogicalElements) {
     toLogicalElement(destinationParent, /* allowExistingContents */ true);
     toLogicalElement(newContent, /* allowExistingContents */ true);
   }
 
-  // When working with logical elements, we need an array of logical children array rather
-  // than the child DOM node list
+  // Create abstract lists of child nodes
   let originalNodesForDiff: ItemList<Node>;
   let newNodesForDiff: ItemList<Node>;
   if (isSynchronizingLogicalElements) {
@@ -73,7 +74,6 @@ export function synchronizeDomContent(destination: CommentBoundedRange | Node, n
 
   let destinationWalker: EditWalker;
   let sourceWalker: EditWalker;
-
   if (isSynchronizingLogicalElements) {
     destinationWalker = new LogicalElementEditWalker(originalNodesForDiff.item(0) as unknown as LogicalElement);
     sourceWalker = new LogicalElementEditWalker(newNodesForDiff.item(0) as unknown as LogicalElement);
@@ -157,15 +157,15 @@ function treatAsMatch(destination: Node, source: Node) {
       }
 
       if (destinationRootDescriptor) {
-        // TODO: Rename 'merge' to 'update'?
-        destinationRootDescriptor.merge(sourceRootDescriptor);
+        // Update the existing descriptor with hte new descriptor's data
+        destinationRootDescriptor.update(sourceRootDescriptor);
 
         const isDestinationInteractive = isInteractiveRootComponentElement(destinationAsLogicalElement);
         if (isDestinationInteractive) {
           // Don't sync DOM content for already-interactive components becuase their content is managed
           // by the renderer.
         } else {
-          synchronizeDomContent(destination, source, /* skipSearchForNewComponents */ true);
+          synchronizePreprocessedDomContent(destination, source);
         }
       }
       break;
@@ -173,7 +173,7 @@ function treatAsMatch(destination: Node, source: Node) {
     case Node.ELEMENT_NODE:
       synchronizeAttributes(destination as Element, source as Element);
       applyAnyDeferredValue(destination as Element);
-      synchronizeDomContent(destination as Element, source as Element, /* skipSearchForNewComponents */ true);
+      synchronizePreprocessedDomContent(destination as Element, source as Element);
       break;
     case Node.DOCUMENT_TYPE_NODE:
       // See comment below about doctype nodes. We leave them alone.
@@ -195,14 +195,12 @@ function treatAsSubstitution(destination: Node, source: Node) {
 }
 
 function treatAsDeletion(nodeToDelete: Node, parentNode: Node) {
-  // TODO: We should really probably be checking if the _parent_ is a logical node.
-  // This is because root logical nodes are guaranteed to be represented as actual
-  // DOM elements rather than comment nodes, so it's safe to remvoe the root directly.
-  if (isLogicalElement(nodeToDelete)) {
-    // It's not safe to call 'removeLogicalChild' here because that can potentially
-    // interfere with renderer-managed DOM. Instead, we insert the logical element into
-    // a new document fragment, which allows the renderer to continue applying render
-    // batches until related components get disposed.
+  if (isLogicalElement(parentNode)) {
+    // It's not safe to call 'removeLogicalChild' here because it recursively removes
+    // logical descendants from their parents, and that can potentially interfere with
+    // renderer-managed DOM. Instead, we insert the logical element into a new document
+    // fragment, which allows the renderer to continue applying render batches until
+    // related components get disposed.
     const docFrag = toLogicalElement(document.createDocumentFragment());
     insertLogicalChild(nodeToDelete, docFrag, 0);
   } else {
@@ -251,9 +249,9 @@ function domNodeComparer(a: Node, b: Node): UpdateCost {
       const rootDescriptorB = getLogicalRootDescriptor(b as unknown as LogicalElement);
 
       if (rootDescriptorA || rootDescriptorB) {
-        // If either node represents a root component comment, they must both be components with matching keys.
+        // If either node represents a root component comment, they must both be components of with matching keys.
         // We will update a component with a non-component or a component with a different key.
-        return rootDescriptorA && rootDescriptorB /* TODO: && key matches */
+        return rootDescriptorA && rootDescriptorB && rootDescriptorA.matches(rootDescriptorB)
           ? UpdateCost.None
           : UpdateCost.Infinite;
       } else {
@@ -326,7 +324,7 @@ class DomNodeEditWalker implements EditWalker {
 
   advance() {
     if (!this.current) {
-      throw new Error('Cannot advance beyond the end of the sibling list');
+      throw new Error('Cannot advance beyond the end of the sibling array');
     }
 
     this.current = this.current.nextSibling!;
@@ -342,7 +340,7 @@ class LogicalElementEditWalker implements EditWalker {
 
   advance() {
     if (!this.current) {
-      throw new Error('Cannot advance beyond the end of the logical children list');
+      throw new Error('Cannot advance beyond the end of the logical children array');
     }
 
     const nextSibling = getLogicalNextSibling(this.current as unknown as LogicalElement);
@@ -382,7 +380,7 @@ class LogicalElementNodeList implements ItemList<Node> {
     const childNodes = getLogicalChildrenArray(element);
     this.length = childNodes.length;
 
-    // This is done so this type works with Array.prototype.indexOf, which expects an array-like object
+    // This is done for compatibility with Array.prototype.indexOf, which expects an array-like object
     Object.assign(this, childNodes);
   }
 

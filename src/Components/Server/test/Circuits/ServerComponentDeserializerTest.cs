@@ -326,7 +326,7 @@ public class ServerComponentDeserializerTest
         var markers = new ServerComponentMarker[types.Length];
         for (var i = 0; i < types.Length; i++)
         {
-            markers[i] = serializer.SerializeInvocation(_invocationSequence, types[i], ParameterView.Empty, false);
+            markers[i] = serializer.SerializeInvocation(_invocationSequence, types[i], ParameterView.Empty, null, false);
         }
 
         return markers;
@@ -343,6 +343,7 @@ public class ServerComponentDeserializerTest
                 _invocationSequence,
                 type,
                 parameters == null ? ParameterView.Empty : ParameterView.FromDictionary(parameters),
+                null,
                 false);
         }
 
@@ -355,7 +356,7 @@ public class ServerComponentDeserializerTest
         var markers = new ServerComponentMarker[types.Length];
         for (var i = 0; i < types.Length; i++)
         {
-            markers[i] = serializer.SerializeInvocation(sequence, types[i], ParameterView.Empty, false);
+            markers[i] = serializer.SerializeInvocation(sequence, types[i], ParameterView.Empty, null, false);
         }
 
         return markers;

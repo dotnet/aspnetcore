@@ -134,8 +134,12 @@ internal partial class EndpointHtmlRenderer
                 writer.Write(componentId);
                 writer.Write("\">");
 
-                // We don't need boundary markers at the top-level since the info is on the <template> anyway.
-                WriteComponentHtml(componentId, writer, allowBoundaryMarkers: false);
+                // We don't need boundary markers at the top-level since the info is on the <template> anyway,
+                // so it's fine that the logic in 'RenderChildComponent' doesn't run for the top-level components.
+                // We can also be sure that SSR render boundary components will only get updated by their ancestors,
+                // (they don't re-render on their own), so the logic to output component comments will always run
+                // for boundary components.
+                WriteComponentHtml(componentId, writer);
 
                 writer.Write("</template>");
             }
@@ -182,15 +186,14 @@ internal partial class EndpointHtmlRenderer
         writer.Write("</template></blazor-ssr>");
     }
 
-    protected override void WriteComponentHtml(int componentId, TextWriter output)
-        => WriteComponentHtml(componentId, output, allowBoundaryMarkers: true);
-
-    private void WriteComponentHtml(int componentId, TextWriter output, bool allowBoundaryMarkers)
+    protected override int RenderChildComponent(TextWriter output, ArrayRange<RenderTreeFrame> frames, int position)
     {
-        _visitedComponentIdsInCurrentStreamingBatch?.Add(componentId);
+        ref var frame = ref frames.Array[position];
 
-        var componentState = (EndpointComponentState)GetComponentState(componentId);
-        var renderBoundaryMarkers = allowBoundaryMarkers && componentState.StreamRendering;
+        _visitedComponentIdsInCurrentStreamingBatch?.Add(frame.ComponentId);
+
+        var componentState = (EndpointComponentState)GetComponentState(frame.ComponentId);
+        var renderBoundaryMarkers = componentState.StreamRendering;
 
         // TODO: It's not clear that we actually want to emit the interactive component markers using this
         // HTML-comment syntax that we've used historically, plus we likely want some way to coalesce both
@@ -198,9 +201,8 @@ internal partial class EndpointHtmlRenderer
         // It may be better to use a custom element like <blazor-component ...>[prerendered]<blazor-component>
         // so it's easier for the JS code to react automatically whenever this gets inserted or updated during
         // streaming SSR or progressively-enhanced navigation.
-
         var (serverMarker, webAssemblyMarker) = componentState.Component is SSRRenderModeBoundary boundary
-            ? boundary.ToMarkers(_httpContext)
+            ? boundary.ToMarkers(_httpContext, ref frame)
             : default;
 
         if (serverMarker.HasValue)
@@ -221,16 +223,16 @@ internal partial class EndpointHtmlRenderer
         if (renderBoundaryMarkers)
         {
             output.Write("<!--bl:");
-            output.Write(componentId);
+            output.Write(frame.ComponentId);
             output.Write("-->");
         }
 
-        base.WriteComponentHtml(componentId, output);
+        WriteComponentHtml(frame.ComponentId, output);
 
         if (renderBoundaryMarkers)
         {
             output.Write("<!--/bl:");
-            output.Write(componentId);
+            output.Write(frame.ComponentId);
             output.Write("-->");
         }
 
@@ -243,6 +245,8 @@ internal partial class EndpointHtmlRenderer
         {
             ServerComponentSerializer.AppendEpilogue(output, serverMarker.Value);
         }
+
+        return position + frame.ComponentSubtreeLength;
     }
 
     private readonly record struct ComponentIdAndDepth(int ComponentId, int Depth);

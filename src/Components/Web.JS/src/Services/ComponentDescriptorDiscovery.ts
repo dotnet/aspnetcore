@@ -29,6 +29,7 @@ function discoverServerComponents(nodes: NodeListOf<ChildNode>, directChildrenOn
       componentComment.end,
       componentComment.sequence,
       componentComment.descriptor,
+      componentComment.key
     );
 
     discoveredComponents.push(entry);
@@ -79,6 +80,7 @@ function discoverWebAssemblyComponents(nodes: NodeListOf<ChildNode>, directChild
       componentComment.typeName,
       componentComment.parameterDefinitions,
       componentComment.parameterValues,
+      componentComment.key
     );
 
     discoveredComponents.push(entry);
@@ -99,6 +101,7 @@ interface ServerComponentComment {
   start: Comment;
   end?: Comment;
   prerenderId?: string;
+  key?: string;
 }
 
 interface WebAssemblyComponentComment {
@@ -110,6 +113,7 @@ interface WebAssemblyComponentComment {
   prerenderId?: string;
   start: Comment;
   end?: Comment;
+  key?: string;
 }
 
 function resolveComponentComments(nodes: NodeListOf<ChildNode>, type: 'webassembly' | 'server', directChildrenOnly?: boolean): ComponentComment[] {
@@ -180,7 +184,7 @@ function assertNotDirectlyOnDocument(marker: Node) {
 }
 
 function createServerComponentComment(payload: ServerComponentComment, start: Comment, iterator: ComponentCommentIterator): ServerComponentComment | undefined {
-  const { type, descriptor, sequence, prerenderId } = payload;
+  const { type, descriptor, sequence, prerenderId, key } = payload;
 
   // Regardless of whether this comment matches the type we're looking for (i.e., 'server'), we still need to move the iterator
   // on to its end position since we don't want to recurse into unrelated prerendered components, nor do we want to get confused
@@ -213,11 +217,12 @@ function createServerComponentComment(payload: ServerComponentComment, start: Co
     start,
     prerenderId,
     end,
+    key,
   };
 }
 
 function createWebAssemblyComponentComment(payload: WebAssemblyComponentComment, start: Comment, iterator: ComponentCommentIterator): WebAssemblyComponentComment | undefined {
-  const { type, assembly, typeName, parameterDefinitions, parameterValues, prerenderId } = payload;
+  const { type, assembly, typeName, parameterDefinitions, parameterValues, prerenderId, key } = payload;
 
   // Regardless of whether this comment matches the type we're looking for (i.e., 'webassembly'), we still need to move the iterator
   // on to its end position since we don't want to recurse into unrelated prerendered components, nor do we want to get confused
@@ -252,6 +257,7 @@ function createWebAssemblyComponentComment(payload: WebAssemblyComponentComment,
     start,
     prerenderId,
     end,
+    key,
   };
 }
 
@@ -351,21 +357,28 @@ export class ServerComponentDescriptor {
 
   public descriptor: string;
 
-  public constructor(type: 'server', start: Comment, end: Comment | undefined, sequence: number, descriptor: string) {
+  public key?: string;
+
+  public constructor(type: 'server', start: Comment, end: Comment | undefined, sequence: number, descriptor: string, key: string | undefined) {
     this.type = type;
     this.start = start;
     this.end = end;
     this.sequence = sequence;
     this.descriptor = descriptor;
+    this.key = key;
   }
 
   public getUniqueId(): number {
     return this.sequence;
   }
 
-  public merge(other: ComponentDescriptor) {
-    if (this.type !== other.type) {
-      throw new Error(`Cannot merge component descriptors with differing types '${this.type}' and '${other.type}'.`);
+  public matches(other: ComponentDescriptor): other is ServerComponentDescriptor {
+    return this.type === other.type && this.key === other.key;
+  }
+
+  public update(other: ComponentDescriptor) {
+    if (!this.matches(other)) {
+      throw new Error(`Cannot merge mismatching component descriptors:\n${JSON.stringify(this)}\nand\n${JSON.stringify(other)}`);
     }
 
     this.end = other.end;
@@ -401,7 +414,9 @@ export class WebAssemblyComponentDescriptor {
 
   public end?: Comment;
 
-  public constructor(type: 'webassembly', start: Comment, end: Comment | undefined, assembly: string, typeName: string, parameterDefinitions?: string, parameterValues?: string) {
+  public key?: string;
+
+  public constructor(type: 'webassembly', start: Comment, end: Comment | undefined, assembly: string, typeName: string, parameterDefinitions?: string, parameterValues?: string, key?: string) {
     this.id = WebAssemblyComponentDescriptor.globalId++;
     this.type = type;
     this.assembly = assembly;
@@ -409,30 +424,25 @@ export class WebAssemblyComponentDescriptor {
     this.parameterDefinitions = parameterDefinitions;
     this.parameterValues = parameterValues;
     this.start = start;
-    // this.end = end;
+    this.key = key;
   }
 
   public getUniqueId(): number {
     return this.id;
   }
 
-  public merge(other: ComponentDescriptor) {
-    if (this.type !== other.type) {
-      throw new Error(`Cannot merge component descriptors with differing types '${this.type}' and '${other.type}'.`);
-    }
+  public matches(other: ComponentDescriptor): other is WebAssemblyComponentDescriptor {
+    return this.type === other.type && this.typeName === other.typeName && this.assembly === other.assembly && this.key === other.key;
+  }
 
-    if (this.typeName !== other.typeName) {
-      throw new Error(`Cannot merge component descriptors with different component types '${this.typeName}' and '${other.typeName}'.`);
-    }
-
-    if (this.assembly !== other.assembly) {
-      throw new Error(`Cannot merge component descriptors with different assemblies '${this.assembly}' and '${other.assembly}'.`);
+  public update(other: ComponentDescriptor) {
+    if (!this.matches(other)) {
+      throw new Error(`Cannot merge mismatching component descriptors:\n${JSON.stringify(this)}\nand\n${JSON.stringify(other)}`);
     }
 
     this.parameterDefinitions = other.parameterDefinitions;
     this.parameterValues = other.parameterValues;
     this.id = other.id;
-    // this.end = other.end;
   }
 
   public toRecord(): WebAssemblyComponentMarker {

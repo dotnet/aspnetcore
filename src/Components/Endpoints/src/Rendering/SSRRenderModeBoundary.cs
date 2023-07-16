@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -92,11 +94,12 @@ internal class SSRRenderModeBoundary : IComponent
         builder.CloseComponent();
     }
 
-    public (ServerComponentMarker?, WebAssemblyComponentMarker?) ToMarkers(HttpContext httpContext)
+    public (ServerComponentMarker?, WebAssemblyComponentMarker?) ToMarkers(HttpContext httpContext, ref RenderTreeFrame frame)
     {
         var parameters = _latestParameters is null
             ? ParameterView.Empty
             : ParameterView.FromDictionary((IDictionary<string, object?>)_latestParameters);
+        var markerKey = GetMarkerKey(ref frame);
 
         ServerComponentMarker? serverMarker = null;
         if (_renderMode is ServerRenderMode or AutoRenderMode)
@@ -106,15 +109,23 @@ internal class SSRRenderModeBoundary : IComponent
             var serverComponentSerializer = httpContext.RequestServices.GetRequiredService<ServerComponentSerializer>();
 
             var invocationId = EndpointHtmlRenderer.GetOrCreateInvocationId(httpContext);
-            serverMarker = serverComponentSerializer.SerializeInvocation(invocationId, _componentType, parameters, _prerender);
+            serverMarker = serverComponentSerializer.SerializeInvocation(invocationId, _componentType, parameters, markerKey, _prerender);
         }
 
         WebAssemblyComponentMarker? webAssemblyMarker = null;
         if (_renderMode is WebAssemblyRenderMode or AutoRenderMode)
         {
-            webAssemblyMarker = WebAssemblyComponentSerializer.SerializeInvocation(_componentType, parameters, _prerender);
+            webAssemblyMarker = WebAssemblyComponentSerializer.SerializeInvocation(_componentType, parameters, markerKey, _prerender);
         }
 
         return (serverMarker, webAssemblyMarker);
+    }
+
+    private static string GetMarkerKey(ref RenderTreeFrame frame)
+    {
+        return HashCode.Combine(
+            frame.Sequence,
+            frame.ComponentKey)
+            .ToString("x", CultureInfo.InvariantCulture);
     }
 }

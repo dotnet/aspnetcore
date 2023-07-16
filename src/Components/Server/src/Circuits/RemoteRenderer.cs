@@ -105,7 +105,11 @@ internal partial class RemoteRenderer : WebRenderer
                 return;
             }
 
-            var descriptor = _serverComponentDeserializer.DeserializeServerComponentDescriptor(operation.Marker);
+            if (!_serverComponentDeserializer.TryDeserializeSingleComponentDescriptor(operation.Marker, out var descriptor))
+            {
+                throw new InvalidOperationException("Failed to deserialize a component descriptor when adding a new root component.");
+            }
+
             _ = AddComponentAsync(descriptor.ComponentType, descriptor.Parameters, selectorId.ToString(CultureInfo.InvariantCulture));
         }
 
@@ -117,7 +121,19 @@ internal partial class RemoteRenderer : WebRenderer
                 return;
             }
 
-            var descriptor = _serverComponentDeserializer.DeserializeServerComponentDescriptor(operation.Marker);
+            var componentState = GetComponentState(componentId);
+
+            if (!_serverComponentDeserializer.TryDeserializeSingleComponentDescriptor(operation.Marker, out var descriptor))
+            {
+                throw new InvalidOperationException("Failed to deserialize a component descriptor when updating an existing root component.");
+            }
+
+            if (descriptor.ComponentType != componentState.Component.GetType())
+            {
+                Log.InvalidRootComponentOperation(_logger, operation.Type, message: "Component type mismatch.");
+                return;
+            }
+
             _ = RenderRootComponentAsync(componentId, descriptor.Parameters);
         }
 

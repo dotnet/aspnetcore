@@ -108,7 +108,14 @@ public sealed class WebAssemblyHostBuilder
             var typeName = jsMethods.RegisteredComponents_GetTypeName(id);
             var serializedParameterDefinitions = jsMethods.RegisteredComponents_GetParameterDefinitions(id);
             var serializedParameterValues = jsMethods.RegisteredComponents_GetParameterValues(id);
-            registeredComponents[i] = new WebAssemblyComponentMarker(WebAssemblyComponentMarker.ClientMarkerType, assembly, typeName, serializedParameterDefinitions, serializedParameterValues, id.ToString(CultureInfo.InvariantCulture));
+            registeredComponents[i] = new WebAssemblyComponentMarker(
+                WebAssemblyComponentMarker.ClientMarkerType,
+                assembly,
+                typeName,
+                serializedParameterDefinitions,
+                serializedParameterValues,
+                key: null,
+                id.ToString(CultureInfo.InvariantCulture));
         }
 
         _rootComponentCache = new RootComponentTypeCache();

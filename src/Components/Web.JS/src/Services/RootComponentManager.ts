@@ -133,7 +133,7 @@ export class RootComponentManager {
 
   private doesComponentNeedUpdate(descriptor: ComponentDescriptor) {
     const id = descriptor.getUniqueId();
-    return this._lastUpdatedIdByDescriptor[id] !== id;
+    return this._lastUpdatedIdByDescriptor.get(descriptor) !== id;
   }
 
   private markComponentAsUpdated(descriptor: ComponentDescriptor) {
