@@ -19,15 +19,15 @@ import { NavigationEnhancementCallbacks, attachProgressivelyEnhancedNavigationLi
 import { WebAssemblyComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
 import { ServerComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
 import { RootComponentManager } from './Services/RootComponentManager';
-import { RendererId } from './Rendering/RendererId';
+import { WebRendererId } from './Rendering/WebRendererId';
 import { DescriptorHandler, attachComponentDescriptorHandler, registerAllComponentDescriptors } from './Rendering/DomMerging/DomSync';
 
 let started = false;
 let isPerformingEnhancedNavigation = false;
 let webStartOptions: Partial<WebStartOptions> | undefined;
 
-const circuitRootComponents = new RootComponentManager(RendererId.Server);
-const webAssemblyRootComponents = new RootComponentManager(RendererId.WebAssembly);
+const circuitRootComponents = new RootComponentManager(WebRendererId.Server);
+const webAssemblyRootComponents = new RootComponentManager(WebRendererId.WebAssembly);
 
 function boot(options?: Partial<WebStartOptions>) : Promise<void> {
   if (started) {

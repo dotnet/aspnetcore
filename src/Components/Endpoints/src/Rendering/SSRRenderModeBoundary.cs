@@ -121,9 +121,10 @@ internal class SSRRenderModeBoundary : IComponent
         return (serverMarker, webAssemblyMarker);
     }
 
-    private static string GetMarkerKey(ref RenderTreeFrame frame)
+    private string GetMarkerKey(ref RenderTreeFrame frame)
     {
         return HashCode.Combine(
+            _componentType.FullName,
             frame.Sequence,
             frame.ComponentKey)
             .ToString("x", CultureInfo.InvariantCulture);

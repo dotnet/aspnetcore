@@ -45,8 +45,8 @@ internal struct ServerComponentMarker
     // The value will be null for end markers.
     public string? Descriptor { get; set; }
 
-    // A string to allow clients to determine when two markers represent different
-    // component instances.
+    // An additional string that the browser can use when comparing markers to determine
+    // whether they represent different component instances.
     public string? Key { get; set; }
 
     // Creates a marker for a prerendered component.

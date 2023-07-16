@@ -24,7 +24,7 @@ export const RootComponentsFunctions = {
     pendingRootComponentContainers.set(containerIdentifier, toElement);
 
     // Instruct .NET to add and render the new root component
-    const componentId = await getRequiredManager().invokeMethodAsync<number>('AddJSRootComponent', componentIdentifier, containerIdentifier);
+    const componentId = await getRequiredManager().invokeMethodAsync<number>('AddRootComponent', componentIdentifier, containerIdentifier);
     const component = new DynamicRootComponent(componentId, jsComponentParametersByIdentifier[componentIdentifier]);
     await component.setParameters(initialParameters);
     return component;
@@ -99,12 +99,12 @@ class DynamicRootComponent {
       mappedParameters[key] = callbackWrapper.getJSObjectReference();
     }
 
-    return getRequiredManager().invokeMethodAsync('SetJSRootComponentParameters', this._componentId, parameterCount, mappedParameters);
+    return getRequiredManager().invokeMethodAsync('SetRootComponentParameters', this._componentId, parameterCount, mappedParameters);
   }
 
   async dispose() {
     if (this._componentId !== null) {
-      await getRequiredManager().invokeMethodAsync('RemoveJSRootComponent', this._componentId);
+      await getRequiredManager().invokeMethodAsync('RemoveRootComponent', this._componentId);
       this._componentId = null; // Ensure it can't be used again
 
       for (const jsEventCallbackWrapper of this._jsEventCallbackWrappers.values()) {

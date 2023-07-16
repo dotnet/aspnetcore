@@ -63,6 +63,7 @@
     <Compile Include="$(ComponentsSharedSourceRoot)src\RootComponentOperationType.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\RootComponentTypeCache.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\DefaultAntiforgeryStateProvider.cs" LinkBase="Forms" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\WebRendererId.cs" />
 
     <Compile Include="..\..\Shared\src\BrowserNavigationManagerInterop.cs" />
     <Compile Include="..\..\Shared\src\JsonSerializerOptionsProvider.cs" />

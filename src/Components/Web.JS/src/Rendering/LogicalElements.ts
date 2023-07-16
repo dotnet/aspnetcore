@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { ServerComponentDescriptor, WebAssemblyComponentDescriptor } from '../Services/ComponentDescriptorDiscovery';
-import { createSymbolOrFallback } from './SymbolUtil';
 
 /*
   A LogicalElement plays the same role as an Element instance from the point of view of the
@@ -31,9 +30,9 @@ import { createSymbolOrFallback } from './SymbolUtil';
   - Whenever a logical child is added or removed, we update the parent's array of logical children
 */
 
-const logicalChildrenPropname = createSymbolOrFallback('_blazorLogicalChildren');
-const logicalParentPropname = createSymbolOrFallback('_blazorLogicalParent');
-const logicalRootDescriptorPropname = createSymbolOrFallback('_blazorLogicalRootDescriptor');
+const logicalChildrenPropname = Symbol();
+const logicalParentPropname = Symbol();
+const logicalRootDescriptorPropname = Symbol();
 
 export function toLogicalRootCommentElement(descriptor: ServerComponentDescriptor | WebAssemblyComponentDescriptor): LogicalElement {
   // Now that we support start/end comments as component delimiters we are going to be setting up
@@ -78,15 +77,16 @@ export function toLogicalRootCommentElement(descriptor: ServerComponentDescripto
     // of the start node.
     const rootCommentChildren = getLogicalChildrenArray(startLogicalElement);
     const startNextChildIndex = Array.prototype.indexOf.call(children, startLogicalElement) + 1;
-    let childToMove: LogicalElement | null = null;
+    let lastMovedChild: LogicalElement | null = null;
 
-    while (childToMove !== end as unknown as LogicalElement) {
-      childToMove = children.splice(startNextChildIndex, 1)[0];
+    while (lastMovedChild !== end as unknown as LogicalElement) {
+      const childToMove = children.splice(startNextChildIndex, 1)[0];
       if (!childToMove) {
         throw new Error('Could not find the end component comment in the parent logical node list');
       }
       childToMove[logicalParentPropname] = start;
       rootCommentChildren.push(childToMove);
+      lastMovedChild = childToMove;
     }
   }
 
@@ -124,14 +124,6 @@ export function emptyLogicalElement(element: LogicalElement): void {
   while (childrenArray.length) {
     removeLogicalChild(element, 0);
   }
-}
-
-export function moveLogicalRootToDocumentFragment(element: LogicalElement): DocumentFragment {
-  const lastNode = findLastDomNodeInRange(element) as Node;
-  const range = new Range();
-  range.setStartBefore(element as unknown as Node);
-  range.setEndAfter(lastNode);
-  return range.extractContents();
 }
 
 export function createAndInsertLogicalContainer(parent: LogicalElement, childIndex: number): LogicalElement {

@@ -97,8 +97,8 @@ export class RootComponentManager {
         }
 
         // If we make it here, that means we either:
-        // 1. Haven't started to add the component, in which case we have no further action to take.
-        // 2. Have started to add the component, but it hasn't become interactive yet. In this case,
+        // 1. Haven't started to make the component interactive, in which case we have no further action to take.
+        // 2. Have started to make the component interactive, but it hasn't become interactive yet. In this case,
         //    we'll wait to remove the component until after we have a component ID to provide.
       }
     }

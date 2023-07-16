@@ -146,15 +146,15 @@ public abstract class WebRenderer : Renderer
             => _renderer.UpdateRootComponents(operationsJson);
 
         [JSInvokable] // Linker preserves this if you call RootComponents.Add
-        public int AddJSRootComponent(string identifier, string domElementSelector)
+        public int AddRootComponent(string identifier, string domElementSelector)
             => _jsComponentInterop.AddRootComponent(identifier, domElementSelector);
 
         [JSInvokable] // Linker preserves this if you call RootComponents.Add
-        public void SetJSRootComponentParameters(int componentId, int parameterCount, JsonElement parametersJson)
+        public void SetRootComponentParameters(int componentId, int parameterCount, JsonElement parametersJson)
             => _jsComponentInterop.SetRootComponentParameters(componentId, parameterCount, parametersJson, _jsonOptions);
 
         [JSInvokable] // Linker preserves this if you call RootComponents.Add
-        public void RemoveJSRootComponent(int componentId)
+        public void RemoveRootComponent(int componentId)
             => _jsComponentInterop.RemoveRootComponent(componentId);
     }
 }

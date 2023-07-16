@@ -18,17 +18,27 @@ export function attachComponentDescriptorHandler(handler: DescriptorHandler) {
   descriptorHandler = handler;
 }
 
-export function synchronizeDomContent(destination: CommentBoundedRange | Node, newContent: Node) {
+export function registerAllComponentDescriptors(root: Node) {
+  const descriptors = upgradeComponentCommentsToLogicalRootComments(root);
+
+  for (const descriptor of descriptors) {
+    descriptorHandler?.registerComponentDescriptor(descriptor);
+  }
+}
+
+export { preprocessAndSynchronizeDomContent as synchronizeDomContent };
+
+function preprocessAndSynchronizeDomContent(destination: CommentBoundedRange | Node, newContent: Node) {
   // Start by recursively identifying component markers in the new content
   // and converting them into logical elements so they correctly participate
   // in logical element synchronization
   upgradeComponentCommentsToLogicalRootComments(newContent);
 
   // Then, synchronize the preprocessed DOM content
-  synchronizePreprocessedDomContent(destination, newContent);
+  synchronizeDomContentCore(destination, newContent);
 }
 
-function synchronizePreprocessedDomContent(destination: CommentBoundedRange | Node, newContent: Node) {
+function synchronizeDomContentCore(destination: CommentBoundedRange | Node, newContent: Node) {
   // Determine the destination's parent node, i.e., the node containing the children
   // we intend to synchronize. This might sometimes be a logical parent.
   let destinationParent: Node;
@@ -165,7 +175,7 @@ function treatAsMatch(destination: Node, source: Node) {
           // Don't sync DOM content for already-interactive components becuase their content is managed
           // by the renderer.
         } else {
-          synchronizePreprocessedDomContent(destination, source);
+          synchronizeDomContentCore(destination, source);
         }
       }
       break;
@@ -173,7 +183,7 @@ function treatAsMatch(destination: Node, source: Node) {
     case Node.ELEMENT_NODE:
       synchronizeAttributes(destination as Element, source as Element);
       applyAnyDeferredValue(destination as Element);
-      synchronizePreprocessedDomContent(destination as Element, source as Element);
+      synchronizeDomContentCore(destination as Element, source as Element);
       break;
     case Node.DOCUMENT_TYPE_NODE:
       // See comment below about doctype nodes. We leave them alone.
@@ -279,13 +289,6 @@ function domNodeComparer(a: Node, b: Node): UpdateCost {
   }
 }
 
-export function registerAllComponentDescriptors(root: Node) {
-  const descriptors = upgradeComponentCommentsToLogicalRootComments(root);
-
-  for (const descriptor of descriptors) {
-    descriptorHandler?.registerComponentDescriptor(descriptor);
-  }
-}
 
 function upgradeComponentCommentsToLogicalRootComments(root: Node): ComponentDescriptor[] {
   const serverDescriptors = discoverComponents(root, 'server') as ServerComponentDescriptor[];
@@ -298,6 +301,15 @@ function upgradeComponentCommentsToLogicalRootComments(root: Node): ComponentDes
       allDescriptors.push(existingDescriptor);
     } else {
       toLogicalRootCommentElement(descriptor);
+
+      // Since we've already parsed the payloads from the start and end comments,
+      // we sanitize them to reduce noise in the DOM.
+      const { start, end } = descriptor;
+      start.textContent = 'bl-root';
+      if (end) {
+        end.textContent = '/bl-root';
+      }
+
       allDescriptors.push(descriptor);
     }
   }

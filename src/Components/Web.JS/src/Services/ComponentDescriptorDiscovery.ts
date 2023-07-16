@@ -1,25 +1,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-export function discoverComponents(root: Node, type: 'webassembly' | 'server', directChildrenOnly?: boolean): ServerComponentDescriptor[] | WebAssemblyComponentDescriptor[] {
-  if (!root.hasChildNodes()) {
-    return [];
-  }
-
-  return discoverComponentsFromNodeList(root.childNodes, type, directChildrenOnly);
-}
-
-export function discoverComponentsFromNodeList(nodes: NodeListOf<ChildNode>, type: 'webassembly' | 'server', directChildrenOnly?: boolean): ServerComponentDescriptor[] | WebAssemblyComponentDescriptor[] {
+export function discoverComponents(root: Node, type: 'webassembly' | 'server'): ServerComponentDescriptor[] | WebAssemblyComponentDescriptor[] {
   switch (type) {
     case 'webassembly':
-      return discoverWebAssemblyComponents(nodes, directChildrenOnly);
+      return discoverWebAssemblyComponents(root);
     case 'server':
-      return discoverServerComponents(nodes, directChildrenOnly);
+      return discoverServerComponents(root);
   }
 }
 
-function discoverServerComponents(nodes: NodeListOf<ChildNode>, directChildrenOnly?: boolean): ServerComponentDescriptor[] {
-  const componentComments = resolveComponentComments(nodes, 'server', directChildrenOnly) as ServerComponentComment[];
+function discoverServerComponents(root: Node, directChildrenOnly?: boolean): ServerComponentDescriptor[] {
+  const componentComments = resolveComponentComments(root, 'server', directChildrenOnly) as ServerComponentComment[];
   const discoveredComponents: ServerComponentDescriptor[] = [];
   for (let i = 0; i < componentComments.length; i++) {
     const componentComment = componentComments[i];
@@ -67,8 +59,8 @@ export function discoverPersistedState(node: Node): string | null | undefined {
   return;
 }
 
-function discoverWebAssemblyComponents(nodes: NodeListOf<ChildNode>, directChildrenOnly?: boolean): WebAssemblyComponentDescriptor[] {
-  const componentComments = resolveComponentComments(nodes, 'webassembly', directChildrenOnly) as WebAssemblyComponentDescriptor[];
+function discoverWebAssemblyComponents(node: Node, directChildrenOnly?: boolean): WebAssemblyComponentDescriptor[] {
+  const componentComments = resolveComponentComments(node, 'webassembly', directChildrenOnly) as WebAssemblyComponentDescriptor[];
   const discoveredComponents: WebAssemblyComponentDescriptor[] = [];
   for (let i = 0; i < componentComments.length; i++) {
     const componentComment = componentComments[i];
@@ -116,16 +108,15 @@ interface WebAssemblyComponentComment {
   key?: string;
 }
 
-function resolveComponentComments(nodes: NodeListOf<ChildNode>, type: 'webassembly' | 'server', directChildrenOnly?: boolean): ComponentComment[] {
+function resolveComponentComments(node: Node, type: 'webassembly' | 'server', directChildrenOnly?: boolean): ComponentComment[] {
   const result: ComponentComment[] = [];
-  const childNodeIterator = new ComponentCommentIterator(nodes);
+  const childNodeIterator = new ComponentCommentIterator(node.childNodes);
   while (childNodeIterator.next() && childNodeIterator.currentElement) {
     const componentComment = getComponentComment(childNodeIterator, type);
     if (componentComment) {
       result.push(componentComment);
     } else if (!directChildrenOnly && childNodeIterator.currentElement.hasChildNodes()) {
-      const childNodes = childNodeIterator.currentElement.childNodes;
-      const childResults = resolveComponentComments(childNodes, type);
+      const childResults = resolveComponentComments(childNodeIterator.currentElement, type);
       for (let j = 0; j < childResults.length; j++) {
         const childResult = childResults[j];
         result.push(childResult);
@@ -333,7 +324,6 @@ type ServerComponentMarker = {
   type: 'server';
   sequence: number;
   descriptor: string;
-  interactiveComponentId?: number;
 }
 
 type WebAssemblyComponentMarker = {
@@ -373,7 +363,7 @@ export class ServerComponentDescriptor {
   }
 
   public matches(other: ComponentDescriptor): other is ServerComponentDescriptor {
-    return this.type === other.type && this.key === other.key;
+    return this.key === other.key && this.type === other.type;
   }
 
   public update(other: ComponentDescriptor) {
@@ -432,7 +422,7 @@ export class WebAssemblyComponentDescriptor {
   }
 
   public matches(other: ComponentDescriptor): other is WebAssemblyComponentDescriptor {
-    return this.type === other.type && this.typeName === other.typeName && this.assembly === other.assembly && this.key === other.key;
+    return this.key === other.key && this.type === other.type && this.typeName === other.typeName && this.assembly === other.assembly;
   }
 
   public update(other: ComponentDescriptor) {

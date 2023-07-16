@@ -61,6 +61,9 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
     private readonly RootComponentTypeCache _rootComponentTypeCache;
     private readonly ComponentParameterDeserializer _parametersDeserializer;
 
+    // The following fields are only used in TryDeserializeSingleComponentDescriptor.
+    // The TryDeserializeComponentDescriptorCollection method uses a stateless
+    // approach to efficiently detect invalid component records.
     private readonly HashSet<Guid> _expiredInvocationIds = new();
     private readonly HashSet<int> _seenSequenceNumbersForCurrentInvocation = new();
     private Guid? _currentInvocationId;
