@@ -36,7 +36,7 @@ public abstract class WebRenderer : Renderer
     {
         _interopMethodsReference = DotNetObjectReference.Create(
             new WebRendererInteropMethods(this, jsonOptions, jsComponentInterop));
-        _rendererId = AllocateRendererId();
+        _rendererId = GetWebRendererId();
 
         // Supply a DotNetObjectReference to JS that it can use to call us back for events etc.
         jsComponentInterop.AttachToRenderer(this);
@@ -56,14 +56,14 @@ public abstract class WebRenderer : Renderer
     {
         get => _rendererId;
 
-        [Obsolete($"The renderer ID can be assigned by overriding '{nameof(AllocateRendererId)}'.")]
+        [Obsolete($"The renderer ID can be assigned by overriding '{nameof(GetWebRendererId)}'.")]
         init { /* No-op */ }
     }
 
     /// <summary>
     /// Allocates an identifier for the renderer.
     /// </summary>
-    protected virtual int AllocateRendererId()
+    protected virtual int GetWebRendererId()
     {
         // We return '0' by default, which is reserved so that classes deriving from this
         // type don't need to worry about allocating an ID unless they're using multiple renderers.

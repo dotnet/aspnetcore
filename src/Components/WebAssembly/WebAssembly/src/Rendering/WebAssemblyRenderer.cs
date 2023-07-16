@@ -45,7 +45,7 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
     }
 
     // This ID needs to be kept in sync with the Blazor JS implementation.
-    protected override int AllocateRendererId() => 2;
+    protected override int GetWebRendererId() => 2;
 
     protected override void AttachRootComponentToBrowser(int componentId, string domElementSelector)
     {

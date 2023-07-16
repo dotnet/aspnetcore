@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.SignalR;
@@ -433,13 +434,14 @@ public class RemoteRendererTest
             NullLoggerFactory.Instance,
             new CircuitOptions(),
             circuitClient ?? new CircuitClientProxy(),
+            new TestServerComponentDeserializer(),
             NullLogger.Instance);
     }
 
     private class TestRemoteRenderer : RemoteRenderer
     {
-        public TestRemoteRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, CircuitOptions options, CircuitClientProxy client, ILogger logger)
-            : base(serviceProvider, loggerFactory, options, client, logger, CreateJSRuntime(options), new CircuitJSComponentInterop(options))
+        public TestRemoteRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, CircuitOptions options, CircuitClientProxy client, IServerComponentDeserializer serverComponentDeserializer, ILogger logger)
+            : base(serviceProvider, loggerFactory, options, client, serverComponentDeserializer, logger, CreateJSRuntime(options), new CircuitJSComponentInterop(options))
         {
         }
 
@@ -534,6 +536,21 @@ public class RemoteRendererTest
         public void TriggerRender()
         {
             Component.TriggerRender();
+        }
+    }
+
+    private class TestServerComponentDeserializer : IServerComponentDeserializer
+    {
+        public bool TryDeserializeComponentDescriptorCollection(string serializedComponentRecords, out List<ComponentDescriptor> descriptors)
+        {
+            descriptors = default;
+            return true;
+        }
+
+        public bool TryDeserializeSingleComponentDescriptor(ServerComponentMarker record, [NotNullWhen(true)] out ComponentDescriptor result)
+        {
+            result = default;
+            return true;
         }
     }
 }

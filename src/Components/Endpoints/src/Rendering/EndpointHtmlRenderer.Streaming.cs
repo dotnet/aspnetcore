@@ -186,13 +186,12 @@ internal partial class EndpointHtmlRenderer
         writer.Write("</template></blazor-ssr>");
     }
 
-    protected override int RenderChildComponent(TextWriter output, ArrayRange<RenderTreeFrame> frames, int position)
+    protected override void RenderChildComponent(TextWriter output, ref RenderTreeFrame componentFrame)
     {
-        ref var frame = ref frames.Array[position];
+        var componentId = componentFrame.ComponentId;
+        _visitedComponentIdsInCurrentStreamingBatch?.Add(componentId);
 
-        _visitedComponentIdsInCurrentStreamingBatch?.Add(frame.ComponentId);
-
-        var componentState = (EndpointComponentState)GetComponentState(frame.ComponentId);
+        var componentState = (EndpointComponentState)GetComponentState(componentId);
         var renderBoundaryMarkers = componentState.StreamRendering;
 
         // TODO: It's not clear that we actually want to emit the interactive component markers using this
@@ -202,7 +201,7 @@ internal partial class EndpointHtmlRenderer
         // so it's easier for the JS code to react automatically whenever this gets inserted or updated during
         // streaming SSR or progressively-enhanced navigation.
         var (serverMarker, webAssemblyMarker) = componentState.Component is SSRRenderModeBoundary boundary
-            ? boundary.ToMarkers(_httpContext, ref frame)
+            ? boundary.ToMarkers(_httpContext, ref componentFrame)
             : default;
 
         if (serverMarker.HasValue)
@@ -223,16 +222,16 @@ internal partial class EndpointHtmlRenderer
         if (renderBoundaryMarkers)
         {
             output.Write("<!--bl:");
-            output.Write(frame.ComponentId);
+            output.Write(componentId);
             output.Write("-->");
         }
 
-        WriteComponentHtml(frame.ComponentId, output);
+        WriteComponentHtml(componentId, output);
 
         if (renderBoundaryMarkers)
         {
             output.Write("<!--/bl:");
-            output.Write(frame.ComponentId);
+            output.Write(componentId);
             output.Write("-->");
         }
 
@@ -245,8 +244,6 @@ internal partial class EndpointHtmlRenderer
         {
             ServerComponentSerializer.AppendEpilogue(output, serverMarker.Value);
         }
-
-        return position + frame.ComponentSubtreeLength;
     }
 
     private readonly record struct ComponentIdAndDepth(int ComponentId, int Depth);
