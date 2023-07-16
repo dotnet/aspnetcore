@@ -64,7 +64,7 @@ In most cases, this is because the option _Use previews of the .NET Core SDK_ in
 
 Executing `.\restore.cmd` or `.\build.cmd` may produce these errors when your development environment is not configured with the correct C++ installation:
 
-```
+```text
 C:\git\aspnetcore\src\Servers\IIS\build\Build.Common.Settings(12,3): error MSB4019: The imported project "C:\git\aspnet
 core\.tools\msbuild\17.1.0\tools\MSBuild\Microsoft\VC\v170\Microsoft.Cpp.Default.props" was not found. Confirm that the
  expression in the Import declaration "C:\git\aspnetcore\.tools\msbuild\17.1.0\tools\MSBuild\Microsoft\VC\v170\\Microso

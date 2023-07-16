@@ -408,6 +408,57 @@ describe('DomSync', () => {
     expect(inputRange.max).toBe('1050');
   });
 
+  test('should not replay old deferred value on subsequent update (input)', () => {
+    // This case may seem obscure but represents a bug that existed at one point.
+    // The 'deferred' values tracked for some element types need to be cleared
+    // after usage otherwise older values can overwrite newer ones.
+
+    const destination = makeExistingContent(`<input value='First'>`);
+    const newContent1 = makeNewContent(`<input value='Second'>`);
+    const newContent2 = makeNewContent(`<input value='Third'>`);
+
+    const elem = destination.startExclusive.nextSibling as HTMLInputElement;
+    expect(elem.value).toBe('First');
+
+    // Act/Assert 1: Initial update
+    synchronizeDomContent(destination, newContent1);
+    expect(elem.value).toBe('Second');
+
+    // Act/Assert 2: The user performs an edit, then we try to synchronize the DOM
+    // with some content that matches the edit exactly. The diff algorithm will see
+    // that the DOM already matches the desired output, so it won't track any new
+    // deferred value. We need to check the old deferred value doesn't reappear.
+    elem.value = 'Third';
+    synchronizeDomContent(destination, newContent2);
+    expect(elem.value).toBe('Third');
+  });
+
+  test('should not replay old deferred value on subsequent update (select)', () => {
+    // This case may seem obscure but represents a bug that existed at one point.
+    // The 'deferred' values tracked for some element types need to be cleared
+    // after usage otherwise older values can overwrite newer ones.
+
+    const destination = makeExistingContent(`<select><option value='v1' selected /><option value='v2' /><option value='v3' /></select>`);
+    const newContent1 = makeNewContent(`<select><option value='v1' /><option value='v2' selected /><option value='v3' /></select>`);
+    const newContent2 = makeNewContent(`<select><option value='v1' /><option value='v2' /><option value='v3' selected /></select>`);
+
+    const elem = destination.startExclusive.nextSibling as HTMLSelectElement;
+    expect(elem.selectedIndex).toBe(0);
+
+    // Act/Assert 1: Initial update
+    synchronizeDomContent(destination, newContent1);
+    expect(elem.selectedIndex).toBe(1);
+
+    // Act/Assert 2: The user performs an edit, then we try to synchronize the DOM
+    // with some content that matches the edit exactly. The diff algorithm will see
+    // that the DOM already matches the desired output, so it won't track any new
+    // deferred value. We need to check the old deferred value doesn't reappear.
+    elem.selectedIndex = 2;
+    expect(elem.selectedIndex).toBe(2);
+    synchronizeDomContent(destination, newContent2);
+    expect(elem.selectedIndex).toBe(2);
+  });
+
   test('should treat doctype nodes as unchanged', () => {
     // Can't update a doctype after the document is created, nor is there a use case for doing so
     // We just have to skip them, as it would be an error to try removing or inserting them

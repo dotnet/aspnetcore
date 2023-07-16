@@ -77,12 +77,7 @@ internal class RazorComponentEndpointInvoker
             ParameterView.Empty,
             waitForQuiescence: isPost);
 
-        if (isPost && !_renderer.HasCapturedEvent())
-        {
-            _context.Response.StatusCode = StatusCodes.Status404NotFound;
-        }
-
-        var quiesceTask = isPost ? _renderer.DispatchCapturedEvent() : htmlContent.QuiescenceTask;
+        var quiesceTask = isPost ? _renderer.DispatchSubmitEventAsync(handler) : htmlContent.QuiescenceTask;
 
         if (isPost)
         {
@@ -140,7 +135,6 @@ internal class RazorComponentEndpointInvoker
             }
         }
 
-        _renderer.SetFormHandlerName(handler!);
         return true;
     }
 

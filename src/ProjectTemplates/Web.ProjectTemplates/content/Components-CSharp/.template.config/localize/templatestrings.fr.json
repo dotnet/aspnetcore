@@ -11,7 +11,7 @@
   "symbols/iisHttpPort/description": "Numéro de port à utiliser pour le point de terminaison HTTP IIS Express dans launchSettings.json.",
   "symbols/iisHttpsPort/description": "Numéro de port à utiliser pour le point de terminaison HTTPS IIS Express dans launchSettings.json. Cette option s’applique uniquement lorsque le paramètre no-https n’est pas utilisé (no-https sera ignoré si IndividualAuth ou OrganizationalAuth est utilisé).",
   "symbols/UseWebAssembly/displayName": "_Utiliser des composants WebAssembly interactifs",
-  "symbols/UseWebAssembly/description": "Si ce paramètre est spécifié, configure le projet pour afficher les composants de manière interactive sur le navigateur à l’aide de WebAssembly.",
+  "symbols/UseWebAssembly/description": "S’il est spécifié, configure le projet pour afficher les composants de manière interactive dans le navigateur à l’aide de WebAssembly.",
   "symbols/UseServer/displayName": "_Utiliser les composants serveur interactifs",
   "symbols/UseServer/description": "Si ce paramètre est spécifié, configure le projet pour afficher les composants de manière interactive sur le serveur.",
   "symbols/PWA/displayName": "_Application web progressive",

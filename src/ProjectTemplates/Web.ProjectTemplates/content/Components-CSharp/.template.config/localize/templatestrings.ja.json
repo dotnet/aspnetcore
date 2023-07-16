@@ -11,7 +11,7 @@
   "symbols/iisHttpPort/description": "launchSettings.json の IIS Express HTTP エンドポイントに使用するポート番号。",
   "symbols/iisHttpsPort/description": "launchSettings.json で IIS Express HTTPS エンドポイントに使用するポート番号。このオプションは、HTTPS 以外のパラメーターが使用されていない場合にのみ適用されます (IndividualAuth または OrganizationalAuth が使用されている場合は、HTTPS 以外は無視されます)。",
   "symbols/UseWebAssembly/displayName": "_対話型 WebAssembly コンポーネントを使用する",
-  "symbols/UseWebAssembly/description": "指定した場合、WebAssembly を使用してブラウザー上でコンポーネントを対話的にレンダリングするようにプロジェクトを構成します。",
+  "symbols/UseWebAssembly/description": "指定した場合、WebAssembly を使用してブラウザーでコンポーネントを対話的にレンダリングするようにプロジェクトを構成します。",
   "symbols/UseServer/displayName": "_対話型サーバー コンポーネントを使用する",
   "symbols/UseServer/description": "指定した場合、サーバー上でコンポーネントを対話的にレンダリングするようにプロジェクトを構成します。",
   "symbols/PWA/displayName": "プログレッシブ Web アプリケーション(_P)",

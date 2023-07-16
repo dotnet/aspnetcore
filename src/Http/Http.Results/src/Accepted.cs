@@ -81,6 +81,6 @@ public sealed class Accepted : IResult, IEndpointMetadataProvider, IStatusCodeHt
         ArgumentNullException.ThrowIfNull(method);
         ArgumentNullException.ThrowIfNull(builder);
 
-        builder.Metadata.Add(new ProducesResponseTypeMetadata(StatusCodes.Status202Accepted));
+        builder.Metadata.Add(new ProducesResponseTypeMetadata(StatusCodes.Status202Accepted, typeof(void)));
     }
 }

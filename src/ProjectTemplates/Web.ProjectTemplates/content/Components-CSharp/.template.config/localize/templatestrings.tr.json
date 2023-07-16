@@ -11,7 +11,7 @@
   "symbols/iisHttpPort/description": "launchSettings.json içinde IIS Express HTTP uç noktası için kullanılacak bağlantı noktası numarası.",
   "symbols/iisHttpsPort/description": "launchSettings.json içinde IIS Express HTTPS uç noktası için kullanılacak bağlantı noktası numarası. Bu seçenek yalnızca no-https parametresi kullanılmazsa uygulanabilir (IndividualAuth veya OrganizationalAuth kullanılırsa no-https yoksayılır).",
   "symbols/UseWebAssembly/displayName": "_Etkileşimli WebAssembly bileşenlerini kullanın",
-  "symbols/UseWebAssembly/description": "Belirtilmişse, projeyi Webassembly kullanarak tarayıcıda etkileşimli olarak işleyecek şekilde yapılandırır.",
+  "symbols/UseWebAssembly/description": "Belirtilmişse, projeyi Webassembly kullanarak bileşenleri tarayıcıda etkileşimli olarak işleyecek şekilde yapılandırır.",
   "symbols/UseServer/displayName": "_Etkileşimli sunucu bileşenlerini kullanın",
   "symbols/UseServer/description": "Belirtilmişse, projeyi bileşenleri sunucuda etkileşimli olarak işleyecek şekilde yapılandırır.",
   "symbols/PWA/displayName": "_Aşamalı Web Uygulaması",

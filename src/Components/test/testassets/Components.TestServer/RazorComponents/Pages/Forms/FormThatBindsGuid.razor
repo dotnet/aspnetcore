@@ -33,7 +33,7 @@
 
     [SupplyParameterFromForm(Handler = "bind-guid")] public Guid Id { get; set; } = Guid.NewGuid();
 
-    [CascadingParameter] public ModelBindingContext Context { get; set; }
+    [CascadingParameter] public FormMappingContext Context { get; set; }
 
     protected override void OnInitialized()
     {

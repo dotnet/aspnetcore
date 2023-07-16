@@ -59,7 +59,7 @@
 
     [SupplyParameterFromForm] public Customer Model { get; set; }
 
-    [CascadingParameter] public ModelBindingContext Context { get; set; }
+    [CascadingParameter] public FormMappingContext Context { get; set; }
 
     protected override void OnInitialized() => Model ??= new Customer();
 

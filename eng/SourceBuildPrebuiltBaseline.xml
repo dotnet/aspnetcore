@@ -12,6 +12,14 @@
     <UsagePattern IdentityGlob="NuGet.Packaging/*6.2.4*" />
     <UsagePattern IdentityGlob="NuGet.Versioning/*6.2.4*" />
 
+    <!-- Only used by the ASP.NET Core CI, not needed for source build -->
+    <UsagePattern IdentityGlob="System.Composition/6.0.0*" />
+    <UsagePattern IdentityGlob="System.Composition.AttributedModel/*7.0.0*" />
+    <UsagePattern IdentityGlob="System.Composition.Convention/*7.0.0*" />
+    <UsagePattern IdentityGlob="System.Composition.Hosting/*7.0.0*" />
+    <UsagePattern IdentityGlob="System.Composition.Runtime/*7.0.0*" />
+    <UsagePattern IdentityGlob="System.Composition.TypedParts/*7.0.0*" />
+
     <!-- These are what the analyzers are built against. They are overridden in full source build.
          It may be possible to generate SBRPs -->
     <UsagePattern IdentityGlob="Microsoft.CodeAnalysis.Analyzers/*2.9.4*" />
@@ -20,7 +28,7 @@
     <UsagePattern IdentityGlob="Microsoft.CodeAnalysis.CSharp/*3.3.1*" />
     <UsagePattern IdentityGlob="Microsoft.CodeAnalysis.CSharp.Workspaces/*3.3.1*" />
     <UsagePattern IdentityGlob="Microsoft.CodeAnalysis.Workspaces.Common/*3.3.1*" />
-    <UsagePattern IdentityGlob="System.Composition/*1.0.31*" />
+    <UsagePattern IdentityGlob="System.Composition/*7.0.0*" />
     <UsagePattern IdentityGlob="System.Threading.Tasks.Extensions/*4.5.3*" />
 
     <!-- Added to unblock dependency flow, needs review. -->

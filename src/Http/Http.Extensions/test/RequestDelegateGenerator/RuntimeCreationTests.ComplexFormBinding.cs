@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net.Http;
-using Microsoft.AspNetCore.Components.Endpoints.Binding;
+using Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Primitives;
 

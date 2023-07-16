@@ -44,22 +44,6 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void CanDispatchToTheDefaultFormWithBody(bool suppressEnhancedNavigation)
-    {
-        var dispatchToForm = new DispatchToForm(this)
-        {
-            Url = "forms/default-form-with-body",
-            FormCssSelector = "form",
-            InputFieldValue = "stranger",
-            ExpectedActionValue = null,
-            SuppressEnhancedNavigation = suppressEnhancedNavigation,
-        };
-        DispatchToFormCore(dispatchToForm);
-    }
-
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
     public void CanBindParameterToTheDefaultForm(bool suppressEnhancedNavigation)
     {
         var dispatchToForm = new DispatchToForm(this)
@@ -784,32 +768,15 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     }
 
     [Fact]
-    public void CanRenderAmbiguousForms()
+    public void CannotRenderAmbiguousForms()
     {
         var dispatchToForm = new DispatchToForm(this)
         {
             Url = "forms/ambiguous-forms",
             FormCssSelector = "form",
             ExpectedActionValue = null,
-            DispatchEvent = false
-        };
-        DispatchToFormCore(dispatchToForm);
-    }
-
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public void DispatchingToAmbiguousFormFails(bool suppressEnhancedNavigation)
-    {
-        var dispatchToForm = new DispatchToForm(this)
-        {
-            Url = "forms/ambiguous-forms",
-            FormCssSelector = "form",
-            ExpectedActionValue = null,
-            DispatchEvent = true,
-            SubmitButtonId = "send-second",
+            DispatchEvent = false,
             ShouldCauseInternalServerError = true,
-            SuppressEnhancedNavigation = suppressEnhancedNavigation,
         };
         DispatchToFormCore(dispatchToForm);
     }
@@ -835,19 +802,6 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
             FormCssSelector = "form",
             ExpectedActionValue = null,
             SubmitButtonId = "test-send",
-            ShouldCauseInternalServerError = true,
-        };
-        DispatchToFormCore(dispatchToForm);
-    }
-
-    [Fact]
-    public void ChangingComponentsToDispatchBeforeQuiesceDoesNotBind()
-    {
-        var dispatchToForm = new DispatchToForm(this)
-        {
-            Url = "forms/switching-components-does-not-bind",
-            FormCssSelector = "form",
-            ExpectedActionValue = null,
             ShouldCauseInternalServerError = true,
         };
         DispatchToFormCore(dispatchToForm);
@@ -987,6 +941,13 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         }
 
         GoTo(dispatch.Url);
+
+        if (!dispatch.DispatchEvent && dispatch.ShouldCauseInternalServerError)
+        {
+            // Chrome's built-in error UI for a 500 response when there's no response content
+            Browser.Exists(By.Id("main-frame-error"));
+            return;
+        }
 
         Browser.Exists(By.Id(dispatch.Ready));
         var form = Browser.Exists(By.CssSelector(dispatch.FormCssSelector));

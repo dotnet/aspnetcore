@@ -15,7 +15,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Components.Endpoints.Binding;
+using Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Http.Json;
@@ -1915,7 +1915,7 @@ public static partial class RequestDelegateFactory
             return;
         }
 
-        factoryContext.EndpointBuilder.Metadata.Add(new AcceptsMetadata(type, factoryContext.AllowEmptyRequestBody, contentTypes));
+        factoryContext.EndpointBuilder.Metadata.Add(new AcceptsMetadata(contentTypes, type, factoryContext.AllowEmptyRequestBody));
     }
 
     private static void InferFormAcceptsMetadata(RequestDelegateFactoryContext factoryContext)

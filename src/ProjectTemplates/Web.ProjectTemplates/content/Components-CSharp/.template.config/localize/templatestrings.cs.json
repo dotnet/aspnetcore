@@ -11,7 +11,7 @@
   "symbols/iisHttpPort/description": "Číslo portu, který se má použít pro koncový bod IIS Express HTTP v souboru launchSettings.json.",
   "symbols/iisHttpsPort/description": "Číslo portu, který se má použít pro koncový bod IIS Express HTTPS v souboru launchSettings.json. Tato možnost se dá použít jenom v případě, že se nepoužije parametr no-https (no-https se bude ignorovat, pokud se použije IndividualAuth nebo OrganizationalAuth).",
   "symbols/UseWebAssembly/displayName": "_Použít interaktivní komponenty WebAssembly",
-  "symbols/UseWebAssembly/description": "Pokud je zadáno, nakonfiguruje projekt tak, aby vykresloval komponenty interaktivně v prohlížeči pomocí WebAssembly.",
+  "symbols/UseWebAssembly/description": "Pokud je zadáno, nakonfiguruje projekt tak, aby vykreslovat komponenty interaktivně v prohlížeči pomocí WebAssembly.",
   "symbols/UseServer/displayName": "_Použít interaktivní serverové komponenty",
   "symbols/UseServer/description": "Pokud je zadáno, nakonfiguruje projekt tak, aby vykresloval komponenty interaktivně na serveru.",
   "symbols/PWA/displayName": "_Progresivní webová aplikace",

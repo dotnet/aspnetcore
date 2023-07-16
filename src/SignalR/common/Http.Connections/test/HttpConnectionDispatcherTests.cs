@@ -21,6 +21,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Abstractions;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
@@ -3303,8 +3304,13 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
                     services.AddConnections();
 
                     // Since tests run in parallel, it's possible multiple servers will startup,
-                    // we use an ephemeral key provider to avoid filesystem contention issues
+                    // we use an ephemeral key provider and repository to avoid filesystem contention issues
                     services.AddSingleton<IDataProtectionProvider, EphemeralDataProtectionProvider>();
+
+                    services.Configure<KeyManagementOptions>(options =>
+                    {
+                        options.XmlRepository = new EphemeralXmlRepository();
+                    });
                 })
                 .Configure(app =>
                 {
@@ -3448,8 +3454,13 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
                     services.AddAuthorization();
 
                     // Since tests run in parallel, it's possible multiple servers will startup,
-                    // we use an ephemeral key provider to avoid filesystem contention issues
+                    // we use an ephemeral key provider and repository to avoid filesystem contention issues
                     services.AddSingleton<IDataProtectionProvider, EphemeralDataProtectionProvider>();
+
+                    services.Configure<KeyManagementOptions>(options =>
+                    {
+                        options.XmlRepository = new EphemeralXmlRepository();
+                    });
                 })
                 .Configure(app =>
                 {

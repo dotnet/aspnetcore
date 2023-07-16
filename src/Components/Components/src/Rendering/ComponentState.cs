@@ -98,7 +98,6 @@ public class ComponentState : IAsyncDisposable
         }
 
         _nextRenderTree.Clear();
-        _nextRenderTree.TrackNamedEventHandlers = _renderer.ShouldTrackNamedEventHandlers();
 
         try
         {
@@ -124,8 +123,7 @@ public class ComponentState : IAsyncDisposable
             batchBuilder,
             ComponentId,
             _nextRenderTree.GetFrames(),
-            CurrentRenderTree.GetFrames(),
-            CurrentRenderTree.GetNamedEvents());
+            CurrentRenderTree.GetFrames());
         batchBuilder.UpdatedComponentDiffs.Append(diff);
         batchBuilder.InvalidateParameterViews();
     }
@@ -283,7 +281,7 @@ public class ComponentState : IAsyncDisposable
     internal ValueTask DisposeInBatchAsync(RenderBatchBuilder batchBuilder)
     {
         // We don't expect these things to throw.
-        RenderTreeDiffBuilder.DisposeFrames(batchBuilder, CurrentRenderTree.GetFrames());
+        RenderTreeDiffBuilder.DisposeFrames(batchBuilder, ComponentId, CurrentRenderTree.GetFrames());
 
         if (_hasAnyCascadingParameterSubscriptions)
         {
