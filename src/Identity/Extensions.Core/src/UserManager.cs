@@ -112,6 +112,18 @@ public class UserManager<TUser> : IDisposable where TUser : class
                 {
                     RegisterTokenProvider(providerName, provider);
                 }
+                else if (description.OtherProviderTypes != null)
+                {
+                    foreach (var otherProviderType in description.OtherProviderTypes)
+                    {
+                        var otherProvider = services.GetRequiredService(otherProviderType) as IUserTwoFactorTokenProvider<TUser>;
+                        if (otherProvider != null)
+                        {
+                            RegisterTokenProvider(providerName, otherProvider);
+                            break;
+                        }
+                    }
+                }
             }
         }
 
