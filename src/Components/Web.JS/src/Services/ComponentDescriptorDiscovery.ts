@@ -10,8 +10,8 @@ export function discoverComponents(root: Node, type: 'webassembly' | 'server'): 
   }
 }
 
-function discoverServerComponents(root: Node, directChildrenOnly?: boolean): ServerComponentDescriptor[] {
-  const componentComments = resolveComponentComments(root, 'server', directChildrenOnly) as ServerComponentComment[];
+function discoverServerComponents(root: Node): ServerComponentDescriptor[] {
+  const componentComments = resolveComponentComments(root, 'server') as ServerComponentComment[];
   const discoveredComponents: ServerComponentDescriptor[] = [];
   for (let i = 0; i < componentComments.length; i++) {
     const componentComment = componentComments[i];
@@ -59,8 +59,8 @@ export function discoverPersistedState(node: Node): string | null | undefined {
   return;
 }
 
-function discoverWebAssemblyComponents(node: Node, directChildrenOnly?: boolean): WebAssemblyComponentDescriptor[] {
-  const componentComments = resolveComponentComments(node, 'webassembly', directChildrenOnly) as WebAssemblyComponentDescriptor[];
+function discoverWebAssemblyComponents(node: Node): WebAssemblyComponentDescriptor[] {
+  const componentComments = resolveComponentComments(node, 'webassembly') as WebAssemblyComponentDescriptor[];
   const discoveredComponents: WebAssemblyComponentDescriptor[] = [];
   for (let i = 0; i < componentComments.length; i++) {
     const componentComment = componentComments[i];
@@ -108,14 +108,14 @@ interface WebAssemblyComponentComment {
   key?: string;
 }
 
-function resolveComponentComments(node: Node, type: 'webassembly' | 'server', directChildrenOnly?: boolean): ComponentComment[] {
+function resolveComponentComments(node: Node, type: 'webassembly' | 'server'): ComponentComment[] {
   const result: ComponentComment[] = [];
   const childNodeIterator = new ComponentCommentIterator(node.childNodes);
   while (childNodeIterator.next() && childNodeIterator.currentElement) {
     const componentComment = getComponentComment(childNodeIterator, type);
     if (componentComment) {
       result.push(componentComment);
-    } else if (!directChildrenOnly && childNodeIterator.currentElement.hasChildNodes()) {
+    } else if (childNodeIterator.currentElement.hasChildNodes()) {
       const childResults = resolveComponentComments(childNodeIterator.currentElement, type);
       for (let j = 0; j < childResults.length; j++) {
         const childResult = childResults[j];
