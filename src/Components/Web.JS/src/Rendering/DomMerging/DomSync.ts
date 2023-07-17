@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { ComponentDescriptor, ServerComponentDescriptor, WebAssemblyComponentDescriptor, discoverComponents } from '../../Services/ComponentDescriptorDiscovery';
+import { AutoComponentDescriptor, ComponentDescriptor, ServerComponentDescriptor, WebAssemblyComponentDescriptor, discoverComponents } from '../../Services/ComponentDescriptorDiscovery';
 import { isInteractiveRootComponentElement } from '../BrowserRenderer';
 import { applyAnyDeferredValue } from '../DomSpecialPropertyUtil';
 import { LogicalElement, getLogicalChildrenArray, getLogicalNextSibling, getLogicalParent, getLogicalRootDescriptor, insertLogicalChild, insertLogicalChildBefore, isLogicalElement, toLogicalElement, toLogicalRootCommentElement } from '../LogicalElements';
@@ -302,9 +302,14 @@ function domNodeComparer(a: Node, b: Node): UpdateCost {
 function upgradeComponentCommentsToLogicalRootComments(root: Node): ComponentDescriptor[] {
   const serverDescriptors = discoverComponents(root, 'server') as ServerComponentDescriptor[];
   const webAssemblyDescriptors = discoverComponents(root, 'webassembly') as WebAssemblyComponentDescriptor[];
+  const autoDescriptors = discoverComponents(root, 'auto') as AutoComponentDescriptor[];
   const allDescriptors: ComponentDescriptor[] = [];
 
-  for (const descriptor of [...serverDescriptors, ...webAssemblyDescriptors]) {
+  for (const descriptor of [
+    ...serverDescriptors,
+    ...webAssemblyDescriptors,
+    ...autoDescriptors,
+  ]) {
     const existingDescriptor = getLogicalRootDescriptor(descriptor.start as unknown as LogicalElement);
     if (existingDescriptor) {
       allDescriptors.push(existingDescriptor);
@@ -397,7 +402,9 @@ class LogicalElementEditWalker implements EditWalker {
 
 class SiblingSubsetNodeList implements ItemList<Node> {
   private readonly siblings: ItemList<Node>;
+
   private readonly startIndex: number;
+
   private readonly endIndexExcl: number;
 
   readonly length: number;
