@@ -29,12 +29,7 @@ internal class Endpoint
         }
 
         Response = new EndpointResponse(method, wellKnownTypes);
-        if (Response.IsAnonymousType)
-        {
-            Diagnostics.Add(Diagnostic.Create(DiagnosticDescriptors.UnableToResolveAnonymousReturnType, Operation.Syntax.GetLocation()));
-            return;
-        }
-
+        Response.EmitRequiredDiagnostics(Diagnostics, Operation.Syntax.GetLocation());
         IsAwaitable = Response?.IsAwaitable == true;
 
         EmitterContext.HasResponseMetadata = Response is { } response && !(response.IsIResult || response.HasNoResponse);
@@ -55,7 +50,13 @@ internal class Endpoint
 
         for (var i = 0; i < method.Parameters.Length; i++)
         {
-            var parameter = new EndpointParameter(this, method.Parameters[i], wellKnownTypes);
+            var parameterSymbol = method.Parameters[i];
+            parameterSymbol.EmitRequiredDiagnostics(Diagnostics, Operation.Syntax.GetLocation());
+            if (Diagnostics.Count > 0)
+            {
+                continue;
+            }
+            var parameter = new EndpointParameter(this, parameterSymbol, wellKnownTypes);
 
             switch (parameter.Source)
             {
@@ -82,6 +83,7 @@ internal class Endpoint
         Parameters = parameters;
 
         EmitterContext.RequiresLoggingHelper = !Parameters.All(parameter =>
+            parameter is not null &&
             parameter.Source == EndpointParameterSource.SpecialType ||
             parameter is { IsArray: true, ElementType.SpecialType: SpecialType.System_String, Source: EndpointParameterSource.Query });
     }
