@@ -51,14 +51,14 @@ internal sealed class PropertyHelper
     /// </summary>
     public PropertyHelper(PropertyInfo property)
     {
-        PropertyInfo = property ?? throw new ArgumentNullException(nameof(property));
+        Property = property ?? throw new ArgumentNullException(nameof(property));
         Name = property.Name;
     }
 
     /// <summary>
-    /// Gets the backing <see cref="System.Reflection.PropertyInfo"/>.
+    /// Gets the backing <see cref="PropertyInfo"/>.
     /// </summary>
-    public PropertyInfo PropertyInfo { get; }
+    public PropertyInfo Property { get; }
 
     /// <summary>
     /// Gets (or sets in derived types) the property name.
@@ -73,7 +73,7 @@ internal sealed class PropertyHelper
         [RequiresUnreferencedCode("This API is not trim safe.")]
         get
         {
-            return _valueGetter ??= MakeFastPropertyGetter(PropertyInfo);
+            return _valueGetter ??= MakeFastPropertyGetter(Property);
         }
     }
 
@@ -85,7 +85,7 @@ internal sealed class PropertyHelper
         [RequiresUnreferencedCode("This API is not trim safe.")]
         get
         {
-            return _valueSetter ??= MakeFastPropertySetter(PropertyInfo);
+            return _valueSetter ??= MakeFastPropertySetter(Property);
         }
     }
 
@@ -295,7 +295,7 @@ internal sealed class PropertyHelper
             var typeInput = setMethod.DeclaringType!;
             var parameterType = parameters[0].ParameterType;
 
-            // Create a delegate TDeclaringType -> { TDeclaringType.PropertyInfo = TValue; }
+            // Create a delegate TDeclaringType -> { TDeclaringType.Property = TValue; }
             var propertySetterAsAction =
                 setMethod.CreateDelegate(typeof(Action<,>).MakeGenericType(typeInput, parameterType));
             var callPropertySetterClosedGenericMethod =
@@ -429,7 +429,7 @@ internal sealed class PropertyHelper
         var allProperties = GetProperties(type, allPropertiesCache);
         foreach (var propertyHelper in allProperties)
         {
-            if (propertyHelper.PropertyInfo.DeclaringType != type)
+            if (propertyHelper.Property.DeclaringType != type)
             {
                 allPropertiesDefinedOnType = false;
                 break;
@@ -447,7 +447,7 @@ internal sealed class PropertyHelper
         var filteredProperties = new List<PropertyHelper>(allProperties.Length);
         foreach (var propertyHelper in allProperties)
         {
-            var declaringType = propertyHelper.PropertyInfo.DeclaringType;
+            var declaringType = propertyHelper.Property.DeclaringType;
             if (declaringType == type)
             {
                 filteredProperties.Add(propertyHelper);
