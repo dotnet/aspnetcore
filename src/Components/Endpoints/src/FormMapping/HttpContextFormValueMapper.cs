@@ -8,6 +8,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 using Microsoft.AspNetCore.Components.Forms.Mapping;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
@@ -15,12 +17,15 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 internal sealed class HttpContextFormValueMapper : IFormValueMapper
 {
     private readonly HttpContextFormDataProvider _formData;
-    private readonly FormDataMapperOptions _options = new();
+    private readonly FormDataMapperOptions _options;
     private static readonly ConcurrentDictionary<Type, FormValueSupplier> _cache = new();
 
-    public HttpContextFormValueMapper(HttpContextFormDataProvider formData)
+    public HttpContextFormValueMapper(
+        HttpContextFormDataProvider formData,
+        IOptions<RazorComponentOptions> options)
     {
         _formData = formData;
+        _options = options.Value._formMappingOptions;
     }
 
     public bool CanMap(Type valueType, string scopeName, string? formName)
@@ -128,8 +133,12 @@ internal sealed class HttpContextFormValueMapper : IFormValueMapper
                     buffer.AsMemory(0, options.MaxKeyBufferSize))
                 {
                     ErrorHandler = context.OnError,
-                    AttachInstanceToErrorsHandler = context.MapErrorToContainer
+                    AttachInstanceToErrorsHandler = context.MapErrorToContainer,
+                    MaxRecursionDepth = options.MaxRecursionDepth,
+                    MaxErrorCount = options.MaxErrorCount,
+                    Culture = options.UseCurrentCulture ? CultureInfo.CurrentCulture : CultureInfo.InvariantCulture,
                 };
+
                 reader.PushPrefix(context.ParameterName);
                 var result = FormDataMapper.Map<T>(reader, options);
                 context.SetResult(result);

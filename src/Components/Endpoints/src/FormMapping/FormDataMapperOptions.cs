@@ -30,6 +30,8 @@ internal sealed class FormDataMapperOptions
     // Binding to collection using hashes, where the payload can be crafted to force the worst case on insertion
     // which is O(n).
     internal int MaxCollectionSize = 100;
+    internal int MaxRecursionDepth = 100;
+    internal int MaxErrorCount = 100;
 
     internal int MaxKeyBufferSize = FormReader.DefaultKeyLengthLimit;
 

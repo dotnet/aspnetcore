@@ -16,6 +16,7 @@ internal struct FormDataReader
     private readonly Memory<char> _prefixBuffer;
     private Memory<char> _currentPrefixBuffer;
     private int _currentDepth = 0;
+    private int _errorCount = 0;
 
     // As an implementation detail, reuse FormKey for the values.
     // It's just a thin wrapper over ReadOnlyMemory<char> that caches
@@ -38,6 +39,7 @@ internal struct FormDataReader
     public Action<string, FormattableString, string?>? ErrorHandler { get; set; }
 
     public Action<string, object>? AttachInstanceToErrorsHandler { get; set; }
+    public int MaxErrorCount { get; set; } = 100;
 
     public void AddMappingError(FormattableString errorMessage, string? attemptedValue)
     {
@@ -59,6 +61,20 @@ internal struct FormDataReader
         if (ErrorHandler == null)
         {
             throw new FormDataMappingException(new FormDataMappingError(_currentPrefixBuffer.ToString(), errorMessage, attemptedValue));
+        }
+
+        _errorCount++;
+        if (_errorCount == MaxErrorCount - 1)
+        {
+            ErrorHandler.Invoke(
+                _currentPrefixBuffer.ToString(),
+                FormattableStringFactory.Create($"Maximum number of errors ({MaxErrorCount}) reached. Further errors will be suppressed."),
+                null);
+        }
+
+        if (_errorCount >= MaxErrorCount)
+        {
+            return;
         }
 
         ErrorHandler.Invoke(_currentPrefixBuffer.ToString(), errorMessage, attemptedValue);
