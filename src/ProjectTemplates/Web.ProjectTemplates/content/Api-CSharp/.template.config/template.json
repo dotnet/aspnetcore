@@ -7,16 +7,13 @@
     "API",
     "Service"
   ],
-  "name": "ASP.NET Core REST API",
+  "name": "ASP.NET Core Web API (native AOT)",
   "generatorVersions": "[1.0.0.0-*)",
-  "description": "A project template for creating a RESTful HTTP API using ASP.NET Core minimal APIs, with optional support for publishing as native AOT.",
+  "description": "A project template for creating a RESTful Web API using ASP.NET Core minimal APIs published as native AOT.",
   "groupIdentity": "Microsoft.Web.Api",
   "precedence": "9000",
   "identity": "Microsoft.Web.Api.CSharp.8.0",
-  "shortName": [
-    "api",
-    "restapi"
-  ],
+  "shortName": "webapiaot",
   "tags": {
     "language": "C#",
     "type": "project"
@@ -133,13 +130,6 @@
       "defaultValue": "false",
       "displayName": "Do not use _top-level statements",
       "description": "Whether to generate an explicit Program class and Main method instead of top-level statements."
-    },
-    "NativeAot" : {
-      "type": "parameter",
-      "datatype": "bool",
-      "defaultValue": "false",
-      "displayName": "Enable _native AOT publish",
-      "description": "Whether to enable the project for publishing as native AOT."
     }
   },
   "primaryOutputs": [

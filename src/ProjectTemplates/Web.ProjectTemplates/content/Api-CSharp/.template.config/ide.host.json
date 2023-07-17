@@ -1,6 +1,6 @@
 {
   "$schema": "http://json.schemastore.org/ide.host",
-  "order": 210,
+  "order": 100,
   "icon": "ide/API.png",
   "supportsDocker": true,
   "symbolInfo": [
@@ -9,10 +9,6 @@
       "isVisible": true,
       "persistenceScope": "shared",
       "persistenceScopeName": "Microsoft"
-    },
-    {
-      "id": "NativeAot",
-      "isVisible": true
     }
   ]
 }

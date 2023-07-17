@@ -57,19 +57,19 @@
           }
         },
         {
-          "condition": "(UseMinimalAPIs)",
+          "condition": "(UsingMinimalAPIs)",
           "exclude": [
             "Controllers/WeatherForecastController.cs"
           ]
         },
         {
-          "condition": "(UseMinimalAPIs && !UseProgramMain)",
+          "condition": "(UsingMinimalAPIs && !UseProgramMain)",
           "exclude": [
             "WeatherForecast.cs"
           ]
         },
         {
-          "condition": "(!UseProgramMain && UseMinimalAPIs && (NoAuth || WindowsAuth))",
+          "condition": "(!UseProgramMain && UsingMinimalAPIs && (NoAuth || WindowsAuth))",
           "exclude": [
             "Program.cs",
             "Program.MinimalAPIs.OrgOrIndividualB2CAuth.cs"
@@ -79,7 +79,7 @@
           }
         },
         {
-          "condition": "(!UseProgramMain && UseMinimalAPIs && (IndividualAuth || OrganizationalAuth))",
+          "condition": "(!UseProgramMain && UsingMinimalAPIs && (IndividualAuth || OrganizationalAuth))",
           "exclude": [
             "Program.cs",
             "Program.MinimalAPIs.WindowsOrNoAuth.cs"
@@ -89,7 +89,7 @@
           }
         },
         {
-          "condition": "(UseControllers)",
+          "condition": "(UsingControllers)",
           "exclude": [
             "Program.MinimalAPIs.WindowsOrNoAuth.cs",
             "Program.MinimalAPIs.OrgOrIndividualB2CAuth.cs"
@@ -323,8 +323,14 @@
     "UseMinimalAPIs": {
       "type": "parameter",
       "datatype": "bool",
-      "defaultValue": "false",
+      "defaultValue": "true",
       "description": "Whether to use minimal APIs instead of controllers."
+    },
+    "UseControllers": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Whether to use controllers instead of minimal APIs. This option overides the value specified by --minimal."
     },
     "Framework": {
       "type": "parameter",
@@ -390,13 +396,17 @@
       "defaultValue": "false",
       "description": "Disable OpenAPI (Swagger) support"
     },
+    "UsingControllers": {
+      "type": "computed",
+      "value": "(UseControllers || !UseMinimalAPIs)"
+    },
+    "UsingMinimalAPIs": {
+      "type": "computed",
+      "value": "(!UsingControllers)"
+    },
     "EnableOpenAPI": {
       "type": "computed",
       "value": "(!DisableOpenAPI)"
-    },
-    "UseControllers": {
-      "type": "computed",
-      "value": "(!UseMinimalAPIs)"
     },
     "UseProgramMain": {
       "type": "parameter",

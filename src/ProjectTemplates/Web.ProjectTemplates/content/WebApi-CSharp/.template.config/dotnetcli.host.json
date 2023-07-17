@@ -6,7 +6,11 @@
     },
     "UseMinimalAPIs": {
       "longName": "use-minimal-apis",
-      "shortName": "minimal"
+      "shortName": "minimal",
+      "isHidden": true
+    },
+    "UseControllers": {
+      "longName": "use-controllers"
     },
     "AADInstance": {
       "longName": "aad-instance",
