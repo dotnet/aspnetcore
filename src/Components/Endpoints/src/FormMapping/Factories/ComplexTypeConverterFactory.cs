@@ -42,7 +42,7 @@ internal class ComplexTypeConverterFactory(FormDataMapperOptions options) : IFor
         var propertyHelper = PropertyHelper.GetVisibleProperties(type);
         foreach (var helper in propertyHelper)
         {
-            if (!options.CanConvert(helper.PropertyInfo.PropertyType))
+            if (!options.CanConvert(helper.Property.PropertyType))
             {
                 return false;
             }

@@ -129,7 +129,7 @@ internal class FormDataMetadataFactory(List<IFormDataConverterFactory> factories
         var candidateProperty = PropertyHelper.GetVisibleProperties(type);
         foreach (var propertyHelper in candidateProperty)
         {
-            var property = propertyHelper.PropertyInfo;
+            var property = propertyHelper.Property;
             var matchingConstructorParameter = result
                 .ConstructorParameters
                 .FirstOrDefault(p => string.Equals(p.Name, property.Name, StringComparison.OrdinalIgnoreCase));
