@@ -95,7 +95,7 @@ internal class RazorComponentEndpointInvoker
         // renderer sync context and cause a batch that would get missed.
         htmlContent.WriteTo(writer, HtmlEncoder.Default); // Don't use WriteToAsync, as per the comment above
 
-        if (!quiesceTask.IsCompleted)
+        if (!quiesceTask.IsCompletedSuccessfully)
         {
             await _renderer.SendStreamingUpdatesAsync(_context, quiesceTask, writer);
         }
