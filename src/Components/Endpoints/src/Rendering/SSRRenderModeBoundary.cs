@@ -94,12 +94,12 @@ internal class SSRRenderModeBoundary : IComponent
         builder.CloseComponent();
     }
 
-    public (ServerComponentMarker?, WebAssemblyComponentMarker?) ToMarkers(HttpContext httpContext, ref RenderTreeFrame frame)
+    public (ServerComponentMarker?, WebAssemblyComponentMarker?) ToMarkers(HttpContext httpContext, int sequence, object? key)
     {
         var parameters = _latestParameters is null
             ? ParameterView.Empty
             : ParameterView.FromDictionary((IDictionary<string, object?>)_latestParameters);
-        var markerKey = GetMarkerKey(ref frame);
+        var markerKey = GenerateMarkerKey(sequence, key);
 
         ServerComponentMarker? serverMarker = null;
         if (_renderMode is ServerRenderMode or AutoRenderMode)
@@ -121,12 +121,8 @@ internal class SSRRenderModeBoundary : IComponent
         return (serverMarker, webAssemblyMarker);
     }
 
-    private string GetMarkerKey(ref RenderTreeFrame frame)
+    private string GenerateMarkerKey(int sequence, object? key)
     {
-        return HashCode.Combine(
-            _componentType.FullName,
-            frame.Sequence,
-            frame.ComponentKey)
-            .ToString("x", CultureInfo.InvariantCulture);
+        return HashCode.Combine(_componentType.FullName, sequence, key).ToString("x", CultureInfo.InvariantCulture);
     }
 }

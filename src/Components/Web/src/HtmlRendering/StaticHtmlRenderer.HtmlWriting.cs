@@ -22,7 +22,7 @@ public partial class StaticHtmlRenderer
     /// </summary>
     /// <param name="componentId">The ID of the component whose current HTML state is to be rendered.</param>
     /// <param name="output">The output destination.</param>
-    protected internal void WriteComponentHtml(int componentId, TextWriter output)
+    protected internal virtual void WriteComponentHtml(int componentId, TextWriter output)
     {
         // We're about to walk over some buffers inside the renderer that can be mutated during rendering.
         // So, we require exclusive access to the renderer during this synchronous process.

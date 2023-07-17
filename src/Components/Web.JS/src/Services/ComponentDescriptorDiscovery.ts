@@ -414,6 +414,7 @@ export class WebAssemblyComponentDescriptor {
     this.parameterDefinitions = parameterDefinitions;
     this.parameterValues = parameterValues;
     this.start = start;
+    this.end = end;
     this.key = key;
   }
 
