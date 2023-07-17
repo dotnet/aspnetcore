@@ -3,7 +3,6 @@
 
 using System.Buffers;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Antiforgery;
@@ -11,6 +10,7 @@ using Microsoft.AspNetCore.Antiforgery.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -77,7 +77,12 @@ internal class RazorComponentEndpointInvoker
             ParameterView.Empty,
             waitForQuiescence: isPost);
 
-        var quiesceTask = isPost ? _renderer.DispatchSubmitEventAsync(handler) : htmlContent.QuiescenceTask;
+        var isBadRequest = false;
+        var quiesceTask = isPost ? _renderer.DispatchSubmitEventAsync(handler, out isBadRequest) : htmlContent.QuiescenceTask;
+        if (isBadRequest)
+        {
+            return;
+        }
 
         if (isPost)
         {
@@ -110,32 +115,38 @@ internal class RazorComponentEndpointInvoker
             if (!valid)
             {
                 _context.Response.StatusCode = StatusCodes.Status400BadRequest;
+
+                if (_context.RequestServices.GetService<IHostEnvironment>()?.IsDevelopment() == true)
+                {
+                    await _context.Response.WriteAsync("A valid antiforgery token was not provided with the request. Add an antiforgery token, or disable antiforgery validation for this endpoint.");
+                }
             }
-            var formValid = TrySetFormHandler(out var handler);
-            return new(valid && formValid, isPost, handler);
+
+            var handler = GetFormHandler(out var isBadRequest);
+            return new(valid && !isBadRequest, isPost, handler);
         }
 
         return new(true, false, null);
     }
 
-    private bool TrySetFormHandler([NotNullWhen(true)] out string? handler)
+    private string? GetFormHandler(out bool isBadRequest)
     {
-        handler = "";
-        if (_context.Request.Query.TryGetValue("handler", out var value))
+        isBadRequest = false;
+
+        if (_context.Request.Form.TryGetValue("_handler", out var value))
         {
             if (value.Count != 1)
             {
                 _context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                handler = null;
-                return false;
+                isBadRequest = true;
             }
             else
             {
-                handler = value[0]!;
+                return value[0]!;
             }
         }
 
-        return true;
+        return null;
     }
 
     private static TextWriter CreateResponseWriter(Stream bodyStream)

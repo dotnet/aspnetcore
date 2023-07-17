@@ -35,7 +35,6 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         {
             Url = "forms/default-form",
             FormCssSelector = "form",
-            ExpectedActionValue = null,
             SuppressEnhancedNavigation = suppressEnhancedNavigation,
         };
         DispatchToFormCore(dispatchToForm);
@@ -50,7 +49,6 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         {
             Url = "forms/default-form-bound-parameter",
             FormCssSelector = "form",
-            ExpectedActionValue = null,
             InputFieldId = "Parameter",
             InputFieldCssSelector = "input[name=Parameter]",
             InputFieldValue = "stranger",
@@ -68,7 +66,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         {
             Url = "forms/multiple-forms-bound-parameter-no-conflicts",
             FormCssSelector = "form[name=bind-integer]",
-            ExpectedActionValue = "forms/multiple-forms-bound-parameter-no-conflicts?handler=bind-integer",
+            ExpectedHandlerValue = "bind-integer",
             InputFieldId = "Id",
             InputFieldCssSelector = "form[name=bind-integer] input[name=Id]",
             InputFieldValue = "abc",
@@ -94,7 +92,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         {
             Url = "forms/multiple-forms-bound-parameter-no-conflicts",
             FormCssSelector = "form[name=bind-guid]",
-            ExpectedActionValue = "forms/multiple-forms-bound-parameter-no-conflicts?handler=bind-guid",
+            ExpectedHandlerValue = "bind-guid",
             SubmitButtonId = "send-guid",
             UpdateFormAction = () =>
             {
@@ -121,7 +119,6 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         {
             Url = "forms/default-form-bound-multiple-primitive-parameters",
             FormCssSelector = "form",
-            ExpectedActionValue = null,
             UpdateFormAction = () =>
             {
                 Browser.Exists(By.CssSelector("input[name=Parameter]")).Clear();
@@ -147,7 +144,6 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         {
             Url = "forms/default-form-bound-multiple-primitive-parameters-changed-names",
             FormCssSelector = "form",
-            ExpectedActionValue = null,
             UpdateFormAction = () =>
             {
                 Browser.Exists(By.CssSelector("input[name=UpdatedParameter]")).Clear();
@@ -173,7 +169,6 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         {
             Url = "forms/default-form-bound-multiple-primitive-parameters",
             FormCssSelector = "form",
-            ExpectedActionValue = null,
             UpdateFormAction = () =>
             {
                 Browser.Exists(By.CssSelector("input[name=Parameter]")).Clear();
@@ -211,7 +206,6 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         {
             Url = "forms/default-form-bound-primitive-parameter",
             FormCssSelector = "form",
-            ExpectedActionValue = null,
             InputFieldId = "Parameter",
             InputFieldCssSelector = "input[name=Parameter]",
             InputFieldValue = "abc",
@@ -650,8 +644,8 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         var dispatchToForm = new DispatchToForm(this)
         {
             Url = "forms/named-form-bound-primitive-parameter",
-            FormCssSelector = "form[name=named-form-handler]",
-            ExpectedActionValue = "forms/named-form-bound-primitive-parameter?handler=named-form-handler",
+            FormCssSelector = "form[name=my-bound-form]",
+            ExpectedHandlerValue = "named-form-handler",
             InputFieldId = "Parameter",
             InputFieldCssSelector = "input[name=Parameter]",
             InputFieldValue = "abc",
@@ -680,7 +674,6 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
             Url = "forms/default-form-with-body-on-initialized",
             FormCssSelector = "form",
             InputFieldValue = "stranger",
-            ExpectedActionValue = null,
             SuppressEnhancedNavigation = suppressEnhancedNavigation,
         };
         DispatchToFormCore(dispatchToForm);
@@ -694,8 +687,8 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         var dispatchToForm = new DispatchToForm(this)
         {
             Url = "forms/named-form",
-            FormCssSelector = "form[name=named-form-handler]",
-            ExpectedActionValue = "forms/named-form?handler=named-form-handler",
+            FormCssSelector = "form",
+            ExpectedHandlerValue = "named-form-handler",
             SuppressEnhancedNavigation = suppressEnhancedNavigation,
         };
         DispatchToFormCore(dispatchToForm);
@@ -709,8 +702,8 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         var dispatchToForm = new DispatchToForm(this)
         {
             Url = "forms/named-form-bound-parameter",
-            FormCssSelector = "form[name=named-form-handler]",
-            ExpectedActionValue = "forms/named-form-bound-parameter?handler=named-form-handler",
+            FormCssSelector = "form",
+            ExpectedHandlerValue = "named-form-handler",
             InputFieldId = "Parameter",
             InputFieldCssSelector = "input[name=Parameter]",
             InputFieldValue = "stranger",
@@ -722,13 +715,13 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void CanDispatchToNamedFormInNestedContext(bool suppressEnhancedNavigation)
+    public void CanDispatchToNamedFormInMappingScope(bool suppressEnhancedNavigation)
     {
         var dispatchToForm = new DispatchToForm(this)
         {
             Url = "forms/nested-named-form",
-            FormCssSelector = "form[name=\"parent-context.named-form-handler\"]",
-            ExpectedActionValue = "forms/nested-named-form?handler=parent-context.named-form-handler",
+            FormCssSelector = "form",
+            ExpectedHandlerValue = "[parent-context]named-form-handler",
             SuppressEnhancedNavigation = suppressEnhancedNavigation,
         };
         DispatchToFormCore(dispatchToForm);
@@ -737,13 +730,13 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void CanBindFormValueFromNestedNamedFormWithBody(bool suppressEnhancedNavigation)
+    public void CanBindFormValueFromNamedFormInMappingScopeWithBody(bool suppressEnhancedNavigation)
     {
         var dispatchToForm = new DispatchToForm(this)
         {
             Url = "forms/nested-named-form-bound-parameter",
-            FormCssSelector = """form[name="parent-context.named-form-handler"]""",
-            ExpectedActionValue = "forms/nested-named-form-bound-parameter?handler=parent-context.named-form-handler",
+            FormCssSelector = "form",
+            ExpectedHandlerValue = "[parent-context]named-form-handler",
             InputFieldId = "Parameter",
             InputFieldCssSelector = "input[name=Parameter]",
             InputFieldValue = "stranger",
@@ -761,21 +754,32 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         {
             Url = "forms/form-defined-inside-component",
             FormCssSelector = "form",
-            ExpectedActionValue = null,
             SuppressEnhancedNavigation = suppressEnhancedNavigation,
         };
         DispatchToFormCore(dispatchToForm);
     }
 
     [Fact]
-    public void CannotRenderAmbiguousForms()
+    public void CanRenderAmbiguousForms()
     {
         var dispatchToForm = new DispatchToForm(this)
         {
             Url = "forms/ambiguous-forms",
             FormCssSelector = "form",
-            ExpectedActionValue = null,
             DispatchEvent = false,
+            ShouldCauseInternalServerError = false,
+        };
+        DispatchToFormCore(dispatchToForm);
+    }
+
+    [Fact]
+    public void CannotSubmitAmbiguousForms()
+    {
+        var dispatchToForm = new DispatchToForm(this)
+        {
+            Url = "forms/ambiguous-forms",
+            FormCssSelector = "form",
+            DispatchEvent = true,
             ShouldCauseInternalServerError = true,
         };
         DispatchToFormCore(dispatchToForm);
@@ -788,7 +792,6 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         {
             Url = "forms/async-rendered-form",
             FormCssSelector = "form",
-            ExpectedActionValue = null
         };
         DispatchToFormCore(dispatchToForm);
     }
@@ -800,9 +803,8 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         {
             Url = "forms/disappears-before-dispatching",
             FormCssSelector = "form",
-            ExpectedActionValue = null,
             SubmitButtonId = "test-send",
-            ShouldCauseInternalServerError = true,
+            ShouldCauseBadRequest = true,
         };
         DispatchToFormCore(dispatchToForm);
     }
@@ -860,7 +862,6 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         {
             Url = "forms/no-antiforgery",
             FormCssSelector = "form",
-            ExpectedActionValue = null,
             ShouldCauseBadRequest = true,
             SuppressEnhancedNavigation = suppressEnhancedNavigation,
         };
@@ -876,7 +877,6 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         {
             Url = "forms/disable-antiforgery-check",
             FormCssSelector = "form",
-            ExpectedActionValue = null,
             SuppressEnhancedNavigation = suppressEnhancedNavigation,
         };
         DispatchToFormCore(dispatchToForm);
@@ -889,7 +889,6 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         {
             Url = "forms/antiforgery-after-response-started",
             FormCssSelector = "form",
-            ExpectedActionValue = null,
             SuppressEnhancedNavigation = true,
         };
         DispatchToFormCore(dispatchToForm);
@@ -898,16 +897,54 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void FormElementWithAntiforgery(bool suppressEnhancedNavigation)
+    public void FormNoHandlerReturnBadRequest(bool suppressEnhancedNavigation)
     {
         var dispatchToForm = new DispatchToForm(this)
         {
-            Url = "forms/form-element-antiforgery",
+            Url = "forms/no-handler",
             FormCssSelector = "form",
-            ExpectedActionValue = null,
+            ShouldCauseBadRequest = true,
             SuppressEnhancedNavigation = suppressEnhancedNavigation,
         };
         DispatchToFormCore(dispatchToForm);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void CanUsePlainForm(bool suppressEnhancedNavigation)
+    {
+        var dispatchToForm = new DispatchToForm(this)
+        {
+            Url = "forms/plain-form",
+            DispatchEvent = false,
+            FormCssSelector = "form",
+            ExpectedHandlerValue = "my-form",
+            SuppressEnhancedNavigation = suppressEnhancedNavigation,
+        };
+        DispatchToFormCore(dispatchToForm);
+
+        Browser.Exists(By.CssSelector("#StringViaExplicitPropertyName input")).SendKeys("StringViaExplicitPropertyName value");
+        Browser.Exists(By.CssSelector("#StringViaOverriddenName input")).SendKeys("StringViaOverriddenName value");
+        Browser.Exists(By.CssSelector("#StringViaOverriddenNameUnmatched input")).SendKeys("StringViaOverriddenNameUnmatched value");
+        Browser.Exists(By.CssSelector("#StringViaExpression input")).SendKeys("StringViaExpression value");
+        Browser.Exists(By.CssSelector("#StringViaExpressionWithHandler input")).SendKeys("StringViaExpressionWithHandler value");
+        Browser.Exists(By.CssSelector("#StringViaExpressionWithUnmatchedHandler input")).SendKeys("StringViaExpressionWithUnmatchedHandler value");
+        Browser.Exists(By.CssSelector("#PersonName input")).SendKeys("PersonName value");
+        Browser.Exists(By.CssSelector("#PersonAge input")).Clear(); // Remove the existing zero, otherwise we'll get 1230
+        Browser.Exists(By.CssSelector("#PersonAge input")).SendKeys("123");
+
+        Browser.Exists(By.Id("send")).Click();
+        Browser.Exists(By.Id("pass"));
+
+        Browser.Equal("StringViaExplicitPropertyName value", () => Browser.Exists(By.CssSelector("#StringViaExplicitPropertyName input")).GetAttribute("value"));
+        Browser.Equal("StringViaOverriddenName value", () => Browser.Exists(By.CssSelector("#StringViaOverriddenName input")).GetAttribute("value"));
+        Browser.Equal(/* should not match */ "", () => Browser.Exists(By.CssSelector("#StringViaOverriddenNameUnmatched input")).GetAttribute("value"));
+        Browser.Equal("StringViaExpression value", () => Browser.Exists(By.CssSelector("#StringViaExpression input")).GetAttribute("value"));
+        Browser.Equal("StringViaExpressionWithHandler value", () => Browser.Exists(By.CssSelector("#StringViaExpressionWithHandler input")).GetAttribute("value"));
+        Browser.Equal(/* should not match */ "", () => Browser.Exists(By.CssSelector("#StringViaExpressionWithUnmatchedHandler input")).GetAttribute("value"));
+        Browser.Equal("PersonName value", () => Browser.Exists(By.CssSelector("#PersonName input")).GetAttribute("value"));
+        Browser.Equal("123", () => Browser.Exists(By.CssSelector("#PersonAge input")).GetAttribute("value"));
     }
 
     [Fact]
@@ -951,10 +988,12 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
 
         Browser.Exists(By.Id(dispatch.Ready));
         var form = Browser.Exists(By.CssSelector(dispatch.FormCssSelector));
-        var formTarget = form.GetAttribute("action");
-        var actionValue = form.GetDomAttribute("action");
-        Assert.Equal(dispatch.ExpectedTarget, formTarget);
-        Assert.Equal(dispatch.ExpectedActionValue, actionValue);
+
+        if (dispatch.ExpectedHandlerValue != null)
+        {
+            var handlerInput = form.FindElement(By.CssSelector("input[type=hidden][name=_handler]"));
+            Assert.Equal(dispatch.ExpectedHandlerValue, handlerInput.GetAttribute("value"));
+        }
 
         if (!dispatch.DispatchEvent)
         {
@@ -1023,7 +1062,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
             {
                 // Verify the same form element is still in the page
                 // We wouldn't be allowed to read the attribute if the element is stale
-                Assert.Equal(dispatch.ExpectedTarget, form.GetAttribute("action"));
+                Assert.Equal("post", form.GetAttribute("method"));
             }
         }
     }
@@ -1040,10 +1079,8 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         public string SubmitPassId = "pass";
         public string Ready = "ready";
         public string FormCssSelector;
-        public string ExpectedActionValue;
+        public string ExpectedHandlerValue;
         public string InputFieldValue;
-
-        public string ExpectedTarget => $"{Base}/{ExpectedActionValue ?? Url}";
 
         public bool DispatchEvent { get; internal set; } = true;
 

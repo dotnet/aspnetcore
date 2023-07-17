@@ -24,6 +24,7 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
     private bool _previousParsingAttemptFailed;
     private ValidationMessageStore? _parsingValidationMessages;
     private Type? _nullableUnderlyingType;
+    private bool _shouldGenerateFieldNames;
 
     [CascadingParameter] private EditContext? CascadedEditContext { get; set; }
 
@@ -204,7 +205,7 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
                 return Convert.ToString(nameAttributeValue, CultureInfo.InvariantCulture) ?? string.Empty;
             }
 
-            if (EditContext?.ShouldUseFieldIdentifiers ?? false)
+            if (_shouldGenerateFieldNames)
             {
                 if (_formattedValueExpression is null && ValueExpression is not null)
                 {
@@ -241,6 +242,12 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
             {
                 EditContext = CascadedEditContext;
                 EditContext.OnValidationStateChanged += _validationStateChangedHandler;
+                _shouldGenerateFieldNames = EditContext.ShouldUseFieldIdentifiers;
+            }
+            else
+            {
+                // Ideally we'd know if we were in an SSR context but we don't
+                _shouldGenerateFieldNames = !OperatingSystem.IsBrowser();
             }
 
             _nullableUnderlyingType = Nullable.GetUnderlyingType(typeof(TValue));

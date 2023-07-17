@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.RenderTree;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components;
@@ -43,7 +44,7 @@ internal readonly struct CascadingParameterState
         for (var infoIndex = 0; infoIndex < numInfos; infoIndex++)
         {
             ref var info = ref infos[infoIndex];
-            var supplier = GetMatchingCascadingValueSupplier(info, componentState);
+            var supplier = GetMatchingCascadingValueSupplier(info, componentState.Renderer, componentState.LogicalParentComponentState);
             if (supplier != null)
             {
                 // Although not all parameters might be matched, we know the maximum number
@@ -55,10 +56,10 @@ internal readonly struct CascadingParameterState
         return resultStates ?? (IReadOnlyList<CascadingParameterState>)Array.Empty<CascadingParameterState>();
     }
 
-    private static ICascadingValueSupplier? GetMatchingCascadingValueSupplier(in CascadingParameterInfo info, ComponentState componentState)
+    internal static ICascadingValueSupplier? GetMatchingCascadingValueSupplier(in CascadingParameterInfo info, Renderer renderer, ComponentState? componentState)
     {
         // First scan up through the component hierarchy
-        var candidate = componentState.LogicalParentComponentState;
+        var candidate = componentState;
         while (candidate is not null)
         {
             if (candidate.Component is ICascadingValueSupplier valueSupplier && valueSupplier.CanSupplyValue(info))
@@ -70,7 +71,7 @@ internal readonly struct CascadingParameterState
         }
 
         // We got to the root and found no match, so now look at the providers registered in DI
-        foreach (var valueSupplier in componentState.Renderer.ServiceProviderCascadingValueSuppliers)
+        foreach (var valueSupplier in renderer.ServiceProviderCascadingValueSuppliers)
         {
             if (valueSupplier.CanSupplyValue(info))
             {
