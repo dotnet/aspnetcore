@@ -968,15 +968,157 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         Browser.Exists(By.Id("pass"));
     }
 
-    private void DispatchToFormCore(DispatchToForm dispatch)
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void HandleErrorsOutsideErrorBoundary_OnInitialRender(bool suppressEnhancedNavigation, bool enableStreaming)
     {
-        if (dispatch.SuppressEnhancedNavigation)
+        SuppressEnhancedNavigation(suppressEnhancedNavigation);
+        GoTo($"forms/error-outside-error-boundary{( enableStreaming ? "-streaming" : "" )}");
+
+        Browser.Exists(By.LinkText("Throw during initial render")).Click();
+        AssertHasInternalServerError(suppressEnhancedNavigation);
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void HandleErrorsOutsideErrorBoundary_SynchronouslyInSubmitEvent(bool suppressEnhancedNavigation, bool enableStreaming)
+    {
+        SuppressEnhancedNavigation(suppressEnhancedNavigation);
+        GoTo($"forms/error-outside-error-boundary{(enableStreaming ? "-streaming" : "")}");
+
+        Browser.Exists(By.Id("throw-sync")).Click();
+        AssertHasInternalServerError(suppressEnhancedNavigation, enableStreaming);
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void HandleErrorsOutsideErrorBoundary_AsynchronouslyInSubmitEvent(bool suppressEnhancedNavigation, bool enableStreaming)
+    {
+        SuppressEnhancedNavigation(suppressEnhancedNavigation);
+        GoTo($"forms/error-outside-error-boundary{(enableStreaming ? "-streaming" : "")}");
+
+        Browser.Exists(By.Id("throw-async")).Click();
+        AssertHasInternalServerError(suppressEnhancedNavigation, enableStreaming);
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void HandleErrorsInsideErrorBoundary_OnInitialRender(bool suppressEnhancedNavigation, bool enableStreaming)
+    {
+        SuppressEnhancedNavigation(suppressEnhancedNavigation);
+        GoTo($"forms/error-in-error-boundary{(enableStreaming ? "-streaming" : "")}");
+
+        Browser.Exists(By.LinkText("Throw during initial render")).Click();
+
+        var errorBoundaryContent = Browser.Exists(By.Id("error-content"));
+        Assert.Contains("This is a deliberate error during initial render", errorBoundaryContent.Text);
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void HandleErrorsInsideErrorBoundary_SynchronouslyInSubmitEvent(bool suppressEnhancedNavigation, bool enableStreaming)
+    {
+        SuppressEnhancedNavigation(suppressEnhancedNavigation);
+        GoTo($"forms/error-in-error-boundary{(enableStreaming ? "-streaming" : "")}");
+
+        Browser.Exists(By.Id("throw-sync")).Click();
+
+        var errorBoundaryContent = Browser.Exists(By.Id("error-content"));
+        Assert.Contains("This is a deliberate form-event synchronous error", errorBoundaryContent.Text);
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void HandleErrorsInsideErrorBoundary_AsynchronouslyInSubmitEvent(bool suppressEnhancedNavigation, bool enableStreaming)
+    {
+        SuppressEnhancedNavigation(suppressEnhancedNavigation);
+        GoTo($"forms/error-in-error-boundary{(enableStreaming ? "-streaming" : "")}");
+
+        Browser.Exists(By.Id("throw-async")).Click();
+
+        var errorBoundaryContent = Browser.Exists(By.Id("error-content"));
+        Assert.Contains("This is a deliberate form-event asynchronous error", errorBoundaryContent.Text);
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void CanPostRedirectGet_Synchronous(bool suppressEnhancedNavigation, bool enableStreaming)
+    {
+        SuppressEnhancedNavigation(suppressEnhancedNavigation);
+        GoTo($"forms/post-redirect-get{(enableStreaming ? "-streaming" : "")}");
+
+        Browser.Exists(By.Id("sync-redirect")).Click();
+        Browser.Exists(By.Id("nav-home"));
+        Browser.True(() => Browser.Url.EndsWith("/nav", StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void CanPostRedirectGet_Asynchronous(bool suppressEnhancedNavigation, bool enableStreaming)
+    {
+        SuppressEnhancedNavigation(suppressEnhancedNavigation);
+        GoTo($"forms/post-redirect-get{(enableStreaming ? "-streaming" : "")}");
+
+        Browser.Exists(By.Id("async-redirect")).Click();
+        Browser.Exists(By.Id("nav-home"));
+        Browser.True(() => Browser.Url.EndsWith("/nav", StringComparison.Ordinal));
+    }
+
+    private void SuppressEnhancedNavigation(bool shouldSuppress)
+    {
+        if (shouldSuppress)
         {
             GoTo("");
             Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
             ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('suppress-enhanced-navigation', 'true')");
         }
+    }
 
+    private void AssertHasInternalServerError(bool suppressedEnhancedNavigation, bool streaming = false)
+    {
+        if (streaming)
+        {
+            Browser.True(() => Browser.FindElement(By.TagName("html")).Text.Contains("There was an unhandled exception on the current request"));
+        }
+        else if (suppressedEnhancedNavigation)
+        {
+            // Chrome's built-in error UI for a 500 response when there's no response content
+            Browser.Exists(By.Id("main-frame-error"));
+        }
+        else
+        {
+            // The UI generated by enhanced nav when there's no response content
+            Browser.Contains("Error: 500", () => Browser.Exists(By.TagName("html")).Text);
+        }
+    }
+
+    private void DispatchToFormCore(DispatchToForm dispatch)
+    {
+        SuppressEnhancedNavigation(dispatch.SuppressEnhancedNavigation);
         GoTo(dispatch.Url);
 
         if (!dispatch.DispatchEvent && dispatch.ShouldCauseInternalServerError)
@@ -1018,16 +1160,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
 
         if (dispatch.ShouldCauseInternalServerError)
         {
-            if (dispatch.SuppressEnhancedNavigation)
-            {
-                // Chrome's built-in error UI for a 500 response when there's no response content
-                Browser.Exists(By.Id("main-frame-error"));
-            }
-            else
-            {
-                // The UI generated by enhanced nav when there's no response content
-                Browser.Contains("Error: 500", () => Browser.Exists(By.TagName("html")).Text);
-            }
+            AssertHasInternalServerError(dispatch.SuppressEnhancedNavigation);
         }
         else if (dispatch.ShouldCauseBadRequest)
         {
