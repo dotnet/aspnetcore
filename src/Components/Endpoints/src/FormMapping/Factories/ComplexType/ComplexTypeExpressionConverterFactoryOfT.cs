@@ -97,6 +97,9 @@ internal sealed class ComplexTypeExpressionConverterFactory<T>(FormDataMetadataF
         return CreateConverterFunction(parameters, variables, body);
 
     }
+
+    [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
     private static IEnumerable<Expression> CreateInstanceAndAssignProperties(
         FormDataTypeMetadata model,
         ParameterExpression resultParam,
@@ -211,6 +214,8 @@ internal sealed class ComplexTypeExpressionConverterFactory<T>(FormDataMetadataF
         }
     }
 
+    [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
     private static IEnumerable<Expression> ReportMissingValues(
         Expression readerParam,
         List<ParameterExpression> constructorParameters,
@@ -306,6 +311,8 @@ internal sealed class ComplexTypeExpressionConverterFactory<T>(FormDataMetadataF
         }
     }
 
+    [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
     private static void MapPropertyValues(
         IList<FormDataPropertyMetadata> properties,
         ParameterExpression readerParam,
@@ -391,6 +398,8 @@ internal sealed class ComplexTypeExpressionConverterFactory<T>(FormDataMetadataF
         }
     }
 
+    [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
     private static void MapConstructorParameters(
         IList<FormDataParameterMetadata> constructorParameters,
         ParameterExpression readerParam,
@@ -480,14 +489,20 @@ internal sealed class ComplexTypeExpressionConverterFactory<T>(FormDataMetadataF
         }
     }
 
+    [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
     private static Expression GetValueLocalVariableFoundExpression(ParameterExpression constructorParameterVar)
     {
         return Expression.PropertyOrField(constructorParameterVar, nameof(ValueTuple<bool, object>.Item1));
     }
 
+    [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
     private static Expression GetValueLocalVariableValueExpression(ParameterExpression constructorParameterVar) =>
         Expression.PropertyOrField(constructorParameterVar, nameof(ValueTuple<bool, object>.Item2));
 
+    [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
     private static ParameterExpression CreateValueLocalVariable(IFormDataValue constructorParameter)
     {
         return Expression.Variable(typeof(ValueTuple<,>).MakeGenericType(typeof(bool), constructorParameter.Type), constructorParameter.Name);
@@ -500,6 +515,8 @@ internal sealed class ComplexTypeExpressionConverterFactory<T>(FormDataMetadataF
     //     return true;
     // }
     //
+    [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
     private static ConditionalExpression CreatePrefixCheckForRecursiveTypes(ParameterExpression readerParam, ParameterExpression foundValueParam, ParameterExpression succeeded, LabelTarget end)
     {
         return Expression.IfThen(

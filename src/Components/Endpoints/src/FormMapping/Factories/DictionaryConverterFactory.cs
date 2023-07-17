@@ -37,6 +37,8 @@ internal class DictionaryConverterFactory : IFormDataConverterFactory
         return factory.CanConvert(type, options);
     }
 
+    [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
     internal static (Type keyType, Type valueType) ResolveDictionaryTypes(Type type)
     {
         // Type must implement IDictionary<TKey, TValue> IReadOnlyDictionary<TKey, TValue>

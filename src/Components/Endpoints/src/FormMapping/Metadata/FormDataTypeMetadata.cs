@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
@@ -25,7 +26,7 @@ internal class FormDataTypeMetadata
 
     public FormDataTypeMetadata? ValueType { get; set; }
 
-    public ConstructorInfo Constructor { get; set; }
+    public ConstructorInfo? Constructor { get; set; }
 
     public IList<FormDataParameterMetadata> ConstructorParameters { get; set; } = new List<FormDataParameterMetadata>();
 
@@ -41,6 +42,8 @@ internal class FormDataMetadataFactory(List<IFormDataConverterFactory> factories
     private readonly DictionaryConverterFactory _dictionaryFactory = factories.OfType<DictionaryConverterFactory>().Single();
     private readonly CollectionConverterFactory _collectionFactory = factories.OfType<CollectionConverterFactory>().Single();
 
+    [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
     public FormDataTypeMetadata GetOrCreateMetadataFor(Type type, FormDataMapperOptions options)
     {
         // We are walking the graph in order to detect recursive types.

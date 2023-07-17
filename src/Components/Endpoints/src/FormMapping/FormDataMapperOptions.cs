@@ -46,11 +46,15 @@ internal sealed class FormDataMapperOptions
             converter is ISingleValueConverter;
     }
 
+    [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
     internal FormDataConverter<T> ResolveConverter<T>()
     {
         return (FormDataConverter<T>)_converters.GetOrAdd(typeof(T), CreateConverter, this);
     }
 
+    [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
     private static FormDataConverter CreateConverter(Type type, FormDataMapperOptions options)
     {
         foreach (var factory in options._factories)
@@ -64,17 +68,23 @@ internal sealed class FormDataMapperOptions
         throw new InvalidOperationException($"No converter registered for type '{type.FullName}'.");
     }
 
+    [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
     internal FormDataConverter ResolveConverter(Type type)
     {
         return _converters.GetOrAdd(type, CreateConverter, this);
     }
 
     // For testing
+    [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
     internal void AddConverter<T>(FormDataConverter<T> converter)
     {
         _converters[typeof(T)] = converter;
     }
 
+    [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
     internal bool CanConvert(Type type)
     {
         if (_converters.ContainsKey(type))
