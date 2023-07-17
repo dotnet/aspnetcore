@@ -662,10 +662,10 @@
       "AuthOption": "None"
     }
   },
-  "api": {
+  "webapiaot": {
     "Default": {
-      "Template": "api",
-      "Arguments": "new api",
+      "Template": "webapiaot",
+      "Arguments": "new webapiaot",
       "Files": [
         "appsettings.Development.json",
         "appsettings.json",
@@ -676,8 +676,8 @@
       "AuthOption": "None"
     },
     "ProgramMain": {
-      "Template": "api",
-      "Arguments": "new api --use-program-main",
+      "Template": "webapiaot",
+      "Arguments": "new webapiaot --use-program-main",
       "Files": [
         "appsettings.Development.json",
         "appsettings.json",
