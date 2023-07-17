@@ -10,7 +10,8 @@
       "isHidden": true
     },
     "UseControllers": {
-      "longName": "use-controllers"
+      "longName": "use-controllers",
+      "shortName": "controllers"
     },
     "AADInstance": {
       "longName": "aad-instance",
