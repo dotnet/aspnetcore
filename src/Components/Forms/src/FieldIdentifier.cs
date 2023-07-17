@@ -130,17 +130,21 @@ public readonly struct FieldIdentifier : IEquatable<FieldIdentifier>
                 break;
             case MethodCallExpression methodCallExpression when ExpressionFormatter.IsSingleArgumentIndexer(accessorBody):
                 fieldName = ExpressionFormatter.FormatIndexArgument(methodCallExpression.Arguments[0]);
-                model = GetModelFromIndexer(methodCallExpression);
+                model = GetModelFromIndexer(methodCallExpression.Object!);
+                break;
+            case BinaryExpression binaryExpression when binaryExpression.NodeType == ExpressionType.ArrayIndex:
+                fieldName = ExpressionFormatter.FormatIndexArgument(binaryExpression.Right);
+                model = GetModelFromIndexer(binaryExpression.Left);
                 break;
             default:
                 throw new ArgumentException($"The provided expression contains a {accessorBody.GetType().Name} which is not supported. {nameof(FieldIdentifier)} only supports simple member accessors (fields, properties) of an object.");
         }
     }
 
-    private static object GetModelFromIndexer(MethodCallExpression methodCallExpression)
+    private static object GetModelFromIndexer(Expression methodCallExpression)
     {
         object model;
-        var methodCallObjectLambda = Expression.Lambda(methodCallExpression.Object!);
+        var methodCallObjectLambda = Expression.Lambda(methodCallExpression!);
         var methodCallObjectLambdaCompiled = (Func<object?>)methodCallObjectLambda.Compile();
         var result = methodCallObjectLambdaCompiled();
         if (result is null)

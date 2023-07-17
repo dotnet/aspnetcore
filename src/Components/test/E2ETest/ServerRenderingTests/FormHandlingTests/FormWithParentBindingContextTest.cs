@@ -1116,6 +1116,49 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         }
     }
 
+        [Fact]
+    public void PostingCollectionsThatExceedTheLimitFails()
+    {
+        var dispatchToForm = new DispatchToForm(this)
+        {
+            Url = "forms/default-form-max-collection-limit",
+            FormCssSelector = "form",
+            AssertErrors = (errors) =>
+            {
+                var error = Assert.Single(errors);
+                Assert.Equal("The number of elements in the collection exceeded the maximum number of '100' elements allowed.", errors[0].Text);
+            },
+            ErrorSelector = "ul.validation-errors > li.validation-message",
+        };
+        DispatchToFormCore(dispatchToForm);
+    }
+
+    [Fact]
+    public void PostingFormWithErrorsDoesNotExceedMaximumErrors()
+    {
+        var dispatchToForm = new DispatchToForm(this)
+        {
+            Url = "forms/default-form-max-collection-limit",
+            FormCssSelector = "form",
+            UpdateFormAction = () =>
+            {
+                var elements = Browser.FindElements(By.CssSelector("input[type='text']"));
+                for (var i = 0; i < elements.Count; i++)
+                {
+                    var element = elements[i];
+                    element.Clear();
+                    element.SendKeys("a");
+                }
+            },
+            AssertErrors = (errors) =>
+            {
+                Assert.Equal(10, errors.Count);
+            },
+            ErrorSelector = "ul.validation-errors > li.validation-message",
+        };
+        DispatchToFormCore(dispatchToForm);
+    }
+
     private void DispatchToFormCore(DispatchToForm dispatch)
     {
         SuppressEnhancedNavigation(dispatch.SuppressEnhancedNavigation);
@@ -1177,7 +1220,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         }
         else if (dispatch.ShouldCauseBindingErrors)
         {
-            var errors = Browser.FindElements(By.CssSelector("#errors > li"));
+            var errors = Browser.FindElements(By.CssSelector(dispatch.ErrorSelector));
             dispatch.AssertErrors(errors);
         }
         else
@@ -1226,6 +1269,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         public bool SuppressEnhancedNavigation { get; internal set; }
         public Action UpdateFormAction { get; internal set; }
         public Action<ReadOnlyCollection<IWebElement>> AssertErrors { get; internal set; }
+        public string ErrorSelector { get; internal set; } = "#errors > li";
     }
 
     private string GetExpectedTarget(FormWithParentBindingContextTest test, string expectedActionValue, string url)

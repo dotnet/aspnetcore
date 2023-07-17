@@ -50,21 +50,8 @@ internal struct FormDataReader
             throw new FormDataMappingException(new FormDataMappingError(_currentPrefixBuffer.ToString(), errorMessage, attemptedValue));
         }
 
-        ErrorHandler.Invoke(_currentPrefixBuffer.ToString(), errorMessage, attemptedValue);
-    }
-
-    public void AddMappingError(Exception exception, string? attemptedValue)
-    {
-        ArgumentNullException.ThrowIfNull(exception);
-
-        var errorMessage = FormattableStringFactory.Create(exception.Message);
-        if (ErrorHandler == null)
-        {
-            throw new FormDataMappingException(new FormDataMappingError(_currentPrefixBuffer.ToString(), errorMessage, attemptedValue));
-        }
-
         _errorCount++;
-        if (_errorCount == MaxErrorCount - 1)
+        if (_errorCount == MaxErrorCount)
         {
             ErrorHandler.Invoke(
                 _currentPrefixBuffer.ToString(),
@@ -78,6 +65,14 @@ internal struct FormDataReader
         }
 
         ErrorHandler.Invoke(_currentPrefixBuffer.ToString(), errorMessage, attemptedValue);
+    }
+
+    public void AddMappingError(Exception exception, string? attemptedValue)
+    {
+        ArgumentNullException.ThrowIfNull(exception);
+
+        var errorMessage = FormattableStringFactory.Create(exception.Message);
+        AddMappingError(errorMessage, attemptedValue);
     }
 
     public void AttachInstanceToErrors(object value)
