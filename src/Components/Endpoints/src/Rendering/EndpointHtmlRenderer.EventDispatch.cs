@@ -48,7 +48,7 @@ internal partial class EndpointHtmlRenderer
         var frameLocation = locationsForName.Single();
         var eventHandlerId = FindEventHandlerIdForNamedEvent("onsubmit", frameLocation.ComponentId, frameLocation.FrameIndex);
         return eventHandlerId.HasValue
-            ? DispatchEventAsync(eventHandlerId.Value, null, EventArgs.Empty, quiesce: true)
+            ? DispatchEventAsync(eventHandlerId.Value, null, EventArgs.Empty, waitForQuiescence: true)
             : Task.CompletedTask;
     }
 
