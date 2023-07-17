@@ -77,48 +77,56 @@ internal partial class EndpointHtmlRenderer
     {
         if (renderBatch.NamedEventChanges is { } changes)
         {
-            var changesCount = changes.Count;
-            var changesArray = changes.Array;
-            for (var i = 0; i < changesCount; i++)
-            {
-                ref var change = ref changesArray[i];
-                if (!string.Equals(change.EventType, "onsubmit", StringComparison.Ordinal))
-                {
-                    continue;
-                }
+            ProcessNamedSubmitEventRemovals(changes);
+            ProcessNamedSubmitEventAdditions(changes);
+        }
+    }
 
-                switch (change.ChangeType)
+    private void ProcessNamedSubmitEventRemovals(ArrayRange<NamedEventChange> changes)
+    {
+        var changesCount = changes.Count;
+        var changesArray = changes.Array;
+        for (var i = 0; i < changesCount; i++)
+        {
+            ref var change = ref changesArray[i];
+            if (change.ChangeType == NamedEventChangeType.Removed
+                && string.Equals(change.EventType, "onsubmit", StringComparison.Ordinal))
+            {
+                var location = (change.ComponentId, change.FrameIndex);
+                if (_namedSubmitEventsByLocation.Remove(location, out var scopeQualifiedName))
                 {
-                    case NamedEventChangeType.Added:
+                    var locationsForName = _namedSubmitEventsByScopeQualifiedName[scopeQualifiedName];
+                    locationsForName.Remove(location);
+                    if (locationsForName.Count == 0)
                     {
-                        if (TryCreateScopeQualifiedEventName(change.ComponentId, change.AssignedName, out var scopeQualifiedName))
-                        {
-                            var locationsForName = GetOrAddNewToDictionary(_namedSubmitEventsByScopeQualifiedName, scopeQualifiedName);
-                            var location = (change.ComponentId, change.FrameIndex);
-                            if (!locationsForName.Add(location))
-                            {
-                                // This shouldn't be possible, since each NamedEvent frame innately has a distinct location
-                                throw new InvalidOperationException($"A single named submit event is tracked more than once at the same location.");
-                            }
-                        }
-                        break;
+                        _namedSubmitEventsByScopeQualifiedName.Remove(scopeQualifiedName);
                     }
-                    case NamedEventChangeType.Removed:
+                }
+            }
+        }
+    }
+
+    private void ProcessNamedSubmitEventAdditions(ArrayRange<NamedEventChange> changes)
+    {
+        var changesCount = changes.Count;
+        var changesArray = changes.Array;
+        for (var i = 0; i < changesCount; i++)
+        {
+            ref var change = ref changesArray[i];
+            if (change.ChangeType == NamedEventChangeType.Added
+                && string.Equals(change.EventType, "onsubmit", StringComparison.Ordinal))
+            {
+                if (TryCreateScopeQualifiedEventName(change.ComponentId, change.AssignedName, out var scopeQualifiedName))
+                {
+                    var locationsForName = GetOrAddNewToDictionary(_namedSubmitEventsByScopeQualifiedName, scopeQualifiedName);
+                    var location = (change.ComponentId, change.FrameIndex);
+                    if (!locationsForName.Add(location))
                     {
-                        var location = (change.ComponentId, change.FrameIndex);
-                        if (_namedSubmitEventsByLocation.Remove(location, out var scopeQualifiedName))
-                        {
-                            var locationsForName = _namedSubmitEventsByScopeQualifiedName[scopeQualifiedName];
-                            locationsForName.Remove(location);
-                            if (locationsForName.Count == 0)
-                            {
-                                _namedSubmitEventsByScopeQualifiedName.Remove(scopeQualifiedName);
-                            }
-                        }
-                        break;
+                        // This shouldn't be possible, since each NamedEvent frame innately has a distinct location
+                        throw new InvalidOperationException($"A single named submit event is tracked more than once at the same location.");
                     }
-                    default:
-                        throw new NotSupportedException($"Received unknown named event change type {change.ChangeType}");
+
+                    _namedSubmitEventsByLocation.Add(location, scopeQualifiedName);
                 }
             }
         }

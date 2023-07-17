@@ -958,6 +958,93 @@ public class EndpointHtmlRendererTest
     }
 
     [Fact]
+    public async Task Dispatching_WhenComponentReRendersNamedEventAtSameLocation()
+    {
+        // Arrange
+        var renderer = GetEndpointHtmlRenderer();
+        var continuationTcs = new TaskCompletionSource();
+        var firstRender = true;
+        var isBadRequest = false;
+        var eventReceivedCount = 0;
+
+        // Act
+        TestComponent component = null;
+        component = new TestComponent(builder =>
+        {
+            // Since the key will change, the diffing system will process what follows as new
+            // content. It happens to deal with the "add" side of that before the "remove"
+            // side of that, which means the resulting batch will try to add a second copy
+            // of the named event before it removes the old copy. This test just needs to
+            // observe it doesn't lead to a problem. At one point in development this was a bug.
+            builder.OpenElement(0, "form");
+            builder.SetKey(firstRender);
+
+            builder.AddAttribute(1, "onsubmit", () => { eventReceivedCount++; component.TriggerRender(); });
+            builder.AddNamedEvent(2, "onsubmit", "my-name");
+            builder.CloseElement();
+
+            firstRender = false;
+        });
+        var result = await renderer.Dispatcher.InvokeAsync(() => renderer.BeginRenderingComponent(component, ParameterView.Empty));
+
+        // Act/Assert
+        await renderer.Dispatcher.InvokeAsync(() => renderer.DispatchSubmitEventAsync("my-name", out isBadRequest));
+        Assert.False(isBadRequest);
+        Assert.Equal(1, eventReceivedCount);
+    }
+
+    [Fact]
+    public async Task Dispatching_WhenNamedEventChangesName()
+    {
+        // Arrange
+        var renderer = GetEndpointHtmlRenderer();
+        var continuationTcs = new TaskCompletionSource();
+        var firstRender = true;
+        var isBadRequest = false;
+        var eventReceivedCount = 0;
+        var httpContext = new DefaultHttpContext();
+        var bodyStream = new MemoryStream();
+        httpContext.Response.Body = bodyStream;
+        httpContext.RequestServices = new ServiceCollection()
+            .AddSingleton<IHostEnvironment>(new TestEnvironment(Environments.Development))
+            .BuildServiceProvider();
+
+        TestComponent component = null;
+        component = new TestComponent(builder =>
+        {
+            builder.OpenElement(0, "form");
+            builder.AddAttribute(1, "onsubmit", () => { eventReceivedCount++; });
+            builder.AddNamedEvent(2, "onsubmit", firstRender ? "my-name-1" : "my-name-2");
+            builder.CloseElement();
+            firstRender = false;
+        });
+
+        // Act
+        await renderer.Dispatcher.InvokeAsync(async () =>
+        {
+            await renderer.RenderEndpointComponent(httpContext, typeof(EmptyComponent), ParameterView.Empty, true);
+            await renderer.BeginRenderingComponent(component, ParameterView.Empty).QuiescenceTask;
+        });
+
+        // Cause the name to change
+        component.TriggerRender();
+
+        // Act/Assert: Can dispatch with new name
+        await renderer.Dispatcher.InvokeAsync(() => renderer.DispatchSubmitEventAsync("my-name-2", out isBadRequest));
+        Assert.False(isBadRequest);
+        Assert.Equal(1, eventReceivedCount);
+
+        // Act/Assert: Cannot dispatch with old name
+        await renderer.Dispatcher.InvokeAsync(() => renderer.DispatchSubmitEventAsync("my-name-1", out isBadRequest));
+        Assert.Equal(1, eventReceivedCount);
+        Assert.True(isBadRequest);
+        Assert.Equal(400, httpContext.Response.StatusCode);
+        httpContext.Response.Body.Position = 0;
+        Assert.StartsWith("Cannot submit the form 'my-name-1' because",
+            await new StreamReader(bodyStream).ReadToEndAsync());
+    }
+
+    [Fact]
     public async Task RenderMode_CanRenderInteractiveComponents()
     {
         // Arrange
@@ -1314,6 +1401,8 @@ public class EndpointHtmlRendererTest
             return default;
         }
     }
+
+    class EmptyComponent : ComponentBase { }
 
     private class AsyncDisposableState
     {
