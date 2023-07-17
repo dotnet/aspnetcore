@@ -13,7 +13,10 @@
   "groupIdentity": "Microsoft.Web.Api",
   "precedence": "9000",
   "identity": "Microsoft.Web.Api.CSharp.8.0",
-  "shortName": "api",
+  "shortName": [
+    "api",
+    "restapi"
+  ],
   "tags": {
     "language": "C#",
     "type": "project"
