@@ -216,10 +216,16 @@ internal partial class EndpointHtmlRenderer
                 _httpContext.Response.Headers.CacheControl = "no-cache, no-store, max-age=0";
             }
 
-            ServerComponentSerializer.AppendPreamble(output, serverMarker.Value);
+            if (webAssemblyMarker.HasValue)
+            {
+                AutoComponentSerializer.AppendPreamble(output, serverMarker.Value, webAssemblyMarker.Value);
+            }
+            else
+            {
+                ServerComponentSerializer.AppendPreamble(output, serverMarker.Value);
+            }
         }
-
-        if (webAssemblyMarker.HasValue)
+        else if (webAssemblyMarker.HasValue)
         {
             WebAssemblyComponentSerializer.AppendPreamble(output, webAssemblyMarker.Value);
         }
@@ -240,14 +246,26 @@ internal partial class EndpointHtmlRenderer
             output.Write("-->");
         }
 
-        if (webAssemblyMarker.HasValue && webAssemblyMarker.Value.PrerenderId is not null)
+        if (serverMarker.HasValue)
         {
-            WebAssemblyComponentSerializer.AppendEpilogue(output, webAssemblyMarker.Value);
+            if (serverMarker.Value.PrerenderId is not null)
+            {
+                if (webAssemblyMarker.HasValue)
+                {
+                    AutoComponentSerializer.AppendEpilogue(output, serverMarker.Value);
+                }
+                else
+                {
+                    ServerComponentSerializer.AppendEpilogue(output, serverMarker.Value);
+                }
+            }
         }
-
-        if (serverMarker.HasValue && serverMarker.Value.PrerenderId is not null)
+        else if (webAssemblyMarker.HasValue)
         {
-            ServerComponentSerializer.AppendEpilogue(output, serverMarker.Value);
+            if (webAssemblyMarker.Value.PrerenderId is not null)
+            {
+                WebAssemblyComponentSerializer.AppendEpilogue(output, webAssemblyMarker.Value);
+            }
         }
     }
 

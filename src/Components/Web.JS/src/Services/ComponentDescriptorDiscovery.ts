@@ -1,12 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-export function discoverComponents(root: Node, type: 'webassembly' | 'server'): ServerComponentDescriptor[] | WebAssemblyComponentDescriptor[] {
+export function discoverComponents(root: Node, type: 'webassembly' | 'server' | 'auto'): ServerComponentDescriptor[] | WebAssemblyComponentDescriptor[] | AutoComponentDescriptor[] {
   switch (type) {
     case 'webassembly':
       return discoverWebAssemblyComponents(root);
     case 'server':
       return discoverServerComponents(root);
+    case 'auto':
+      return discoverAutoComponents(root);
   }
 }
 
@@ -60,7 +62,7 @@ export function discoverPersistedState(node: Node): string | null | undefined {
 }
 
 function discoverWebAssemblyComponents(node: Node): WebAssemblyComponentDescriptor[] {
-  const componentComments = resolveComponentComments(node, 'webassembly') as WebAssemblyComponentDescriptor[];
+  const componentComments = resolveComponentComments(node, 'webassembly') as WebAssemblyComponentComment[];
   const discoveredComponents: WebAssemblyComponentDescriptor[] = [];
   for (let i = 0; i < componentComments.length; i++) {
     const componentComment = componentComments[i];
@@ -81,8 +83,29 @@ function discoverWebAssemblyComponents(node: Node): WebAssemblyComponentDescript
   return discoveredComponents.sort((a, b): number => a.id - b.id);
 }
 
+function discoverAutoComponents(node: Node): AutoComponentDescriptor[] {
+  const componentComments = resolveComponentComments(node, 'auto') as AutoComponentComment[];
+  const discoveredComponents: AutoComponentDescriptor[] = [];
+  for (let i = 0; i < componentComments.length; i++) {
+    const componentComment = componentComments[i];
+    const s = componentComment.server;
+    const w = componentComment.webAssembly;
+    const entry = new AutoComponentDescriptor(
+      componentComment.type,
+      componentComment.start,
+      componentComment.end,
+      new ServerComponentDescriptor(s.type, s.start, s.end, s.sequence, s.descriptor, s.key),
+      new WebAssemblyComponentDescriptor(w.type, w.start, w.end, w.assembly, w.typeName, w.parameterDefinitions, w.parameterValues, w.key)
+    );
+
+    discoveredComponents.push(entry);
+  }
+
+  return discoveredComponents;
+}
+
 interface ComponentComment {
-  type: 'server' | 'webassembly';
+  type: 'server' | 'webassembly' | 'auto';
   prerenderId?: string;
 }
 
@@ -108,7 +131,16 @@ interface WebAssemblyComponentComment {
   key?: string;
 }
 
-function resolveComponentComments(node: Node, type: 'webassembly' | 'server'): ComponentComment[] {
+interface AutoComponentComment {
+  type: 'auto'
+  server: ServerComponentComment;
+  webAssembly: WebAssemblyComponentComment;
+  prerenderId?: string;
+  start: Comment;
+  end?: Comment;
+}
+
+function resolveComponentComments(node: Node, type: 'webassembly' | 'server' | 'auto'): ComponentComment[] {
   const result: ComponentComment[] = [];
   const childNodeIterator = new ComponentCommentIterator(node.childNodes);
   while (childNodeIterator.next() && childNodeIterator.currentElement) {
@@ -129,7 +161,7 @@ function resolveComponentComments(node: Node, type: 'webassembly' | 'server'): C
 
 const blazorCommentRegularExpression = new RegExp(/^\s*Blazor:[^{]*(?<descriptor>.*)$/);
 
-function getComponentComment(commentNodeIterator: ComponentCommentIterator, type: 'webassembly' | 'server'): ComponentComment | undefined {
+function getComponentComment(commentNodeIterator: ComponentCommentIterator, type: 'webassembly' | 'server' | 'auto'): ComponentComment | undefined {
   const candidateStart = commentNodeIterator.currentElement;
 
   if (!candidateStart || candidateStart.nodeType !== Node.COMMENT_NODE) {
@@ -148,6 +180,8 @@ function getComponentComment(commentNodeIterator: ComponentCommentIterator, type
             return createWebAssemblyComponentComment(componentComment as WebAssemblyComponentComment, candidateStart as Comment, commentNodeIterator);
           case 'server':
             return createServerComponentComment(componentComment as ServerComponentComment, candidateStart as Comment, commentNodeIterator);
+          case 'auto':
+            return createAutoComponentComment(componentComment as AutoComponentComment, candidateStart as Comment, commentNodeIterator);
         }
       } catch (error) {
         throw new Error(`Found malformed component comment at ${candidateStart.textContent}`);
@@ -161,7 +195,7 @@ function getComponentComment(commentNodeIterator: ComponentCommentIterator, type
 function parseCommentPayload(json: string): ComponentComment {
   const payload = JSON.parse(json) as ComponentComment;
   const { type } = payload;
-  if (type !== 'server' && type !== 'webassembly') {
+  if (type !== 'server' && type !== 'webassembly' && type !== 'auto') {
     throw new Error(`Invalid component type '${type}'.`);
   }
 
@@ -252,6 +286,38 @@ function createWebAssemblyComponentComment(payload: WebAssemblyComponentComment,
   };
 }
 
+function createAutoComponentComment(payload: AutoComponentComment, start: Comment, iterator: ComponentCommentIterator): AutoComponentComment | undefined {
+  const { type, prerenderId, server, webAssembly } = payload;
+
+  const end = prerenderId ? getComponentEndComment(prerenderId, iterator) : undefined;
+  if (server?.prerenderId && !end) {
+    throw new Error(`Could not find an end component comment for '${start}'.`);
+  }
+
+  if (type !== 'auto') {
+    return undefined;
+  }
+
+  return {
+    type,
+    server: {
+      ...server,
+      start,
+      end,
+    },
+    webAssembly: {
+      ...webAssembly,
+      start,
+      end,
+      // See comment in createWebAssemblyComponentComment
+      parameterDefinitions: webAssembly.parameterDefinitions && atob(webAssembly.parameterDefinitions),
+      parameterValues: webAssembly.parameterValues && atob(webAssembly.parameterValues),
+    },
+    start,
+    end,
+  };
+}
+
 function getComponentEndComment(prerenderedId: string, iterator: ComponentCommentIterator): Comment | undefined {
   while (iterator.next() && iterator.currentElement) {
     const node = iterator.currentElement;
@@ -334,7 +400,7 @@ type WebAssemblyComponentMarker = {
   parameterValues?: string;
 }
 
-export type ComponentDescriptor = ServerComponentDescriptor | WebAssemblyComponentDescriptor;
+export type ComponentDescriptor = ServerComponentDescriptor | WebAssemblyComponentDescriptor | AutoComponentDescriptor;
 
 export class ServerComponentDescriptor {
   private static globalId = 1;
@@ -364,7 +430,7 @@ export class ServerComponentDescriptor {
   }
 
   public matches(other: ComponentDescriptor): other is ServerComponentDescriptor {
-    return this.key === other.key && this.type === other.type;
+    return this.type === other.type && this.key === other.key;
   }
 
   public update(other: ComponentDescriptor) {
@@ -372,7 +438,6 @@ export class ServerComponentDescriptor {
       throw new Error(`Cannot merge mismatching component descriptors:\n${JSON.stringify(this)}\nand\n${JSON.stringify(other)}`);
     }
 
-    this.end = other.end;
     this.sequence = other.sequence;
     this.descriptor = other.descriptor;
     this.id = other.id;
@@ -421,7 +486,7 @@ export class WebAssemblyComponentDescriptor {
   }
 
   public matches(other: ComponentDescriptor): other is WebAssemblyComponentDescriptor {
-    return this.key === other.key && this.type === other.type && this.typeName === other.typeName && this.assembly === other.assembly;
+    return this.type === other.type && this.key === other.key && this.typeName === other.typeName && this.assembly === other.assembly;
   }
 
   public update(other: ComponentDescriptor) {
@@ -442,5 +507,74 @@ export class WebAssemblyComponentDescriptor {
       parameterDefinitions: this.parameterDefinitions,
       parameterValues: this.parameterValues,
     };
+  }
+}
+
+export class AutoComponentDescriptor {
+  private static globalId = 1;
+
+  public type: 'auto';
+
+  public id: number;
+
+  public start: Comment;
+
+  public end?: Comment;
+
+  public serverDescriptor: ServerComponentDescriptor;
+
+  public webAssemblyDescriptor: WebAssemblyComponentDescriptor;
+
+  private resolvedType: 'server' | 'webassembly' | undefined;
+
+  public constructor(type: 'auto', start: Comment, end: Comment | undefined, serverDescriptor: ServerComponentDescriptor, webAssemblyDescriptor: WebAssemblyComponentDescriptor) {
+    this.id = AutoComponentDescriptor.globalId++;
+    this.type = type;
+    this.start = start;
+    this.end = end;
+    this.serverDescriptor = serverDescriptor;
+    this.webAssemblyDescriptor = webAssemblyDescriptor;
+  }
+
+  public matches(other: ComponentDescriptor): other is AutoComponentDescriptor {
+    return this.type === other.type && this.serverDescriptor.matches(other.serverDescriptor) && this.webAssemblyDescriptor.matches(other.webAssemblyDescriptor);
+  }
+
+  public update(other: ComponentDescriptor) {
+    if (!this.matches(other)) {
+      throw new Error(`Cannot merge mismatching component descriptors:\n${JSON.stringify(this)}\nand\n${JSON.stringify(other)}`);
+    }
+
+    this.serverDescriptor.update(other.serverDescriptor);
+    this.webAssemblyDescriptor.update(other.webAssemblyDescriptor);
+  }
+
+  public hasResolvedType(): boolean {
+    return this.resolvedType !== undefined;
+  }
+
+  public setResolvedType(type: 'server' | 'webassembly') {
+    if (this.resolvedType) {
+      throw new Error('Auto components can only resolve to a component type once');
+    }
+    this.resolvedType = type;
+  }
+
+  public getResolvedType(): 'server' | 'webassembly' {
+    if (!this.resolvedType) {
+      throw new Error('Cannot get the resolved type of an auto component before setResolvedType() is called');
+    }
+    return this.resolvedType;
+  }
+
+  public toRecord(): ServerComponentMarker | WebAssemblyComponentMarker {
+    switch (this.resolvedType) {
+      case 'server':
+        return this.serverDescriptor.toRecord();
+      case 'webassembly':
+        return this.webAssemblyDescriptor.toRecord();
+      default:
+        throw new Error(`Auto component record cannot be created from resolved marker type '${this.resolvedType}'`);
+    }
   }
 }

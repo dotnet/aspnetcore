@@ -3,6 +3,7 @@
 
 import { ComponentDescriptor, ComponentMarker } from './ComponentDescriptorDiscovery';
 import { isRendererAttached, updateRootComponents } from '../Rendering/WebRendererInteropMethods';
+import { WebRendererId } from '../Rendering/WebRendererId';
 
 type RootComponentOperation = RootComponentAddOperation | RootComponentUpdateOperation | RootComponentRemoveOperation;
 
@@ -23,6 +24,14 @@ type RootComponentRemoveOperation = {
   componentId: number;
 };
 
+let resolveAutoMode: () => 'server' | 'webassembly' = () => {
+  throw new Error('No auto mode resolver has been attached');
+};
+
+export function attachAutoModeResolver(resolver: () => 'server' | 'webassembly') {
+  resolveAutoMode = resolver;
+}
+
 export class RootComponentManager {
   private readonly _registeredDescriptors = new Set<ComponentDescriptor>();
 
@@ -32,8 +41,6 @@ export class RootComponentManager {
 
   private readonly _componentIdsByDescriptor = new Map<ComponentDescriptor, number>();
 
-  constructor(private readonly _browserRendererId: number) { }
-
   public registerComponentDescriptor(descriptor: ComponentDescriptor) {
     this._registeredDescriptors.add(descriptor);
   }
@@ -42,73 +49,119 @@ export class RootComponentManager {
     this._registeredDescriptors.delete(descriptor);
   }
 
-  public async handleUpdatedRootComponents(addNewRootComponents: boolean) {
-    await this.handleUpdatedRootComponentsCore(this._registeredDescriptors, addNewRootComponents);
+  public handleUpdatedRootComponents(addNewRootComponents: boolean) {
+    this.handleUpdatedRootComponentsCore(this._registeredDescriptors, addNewRootComponents);
   }
 
-  private async handleUpdatedRootComponentsCore(descriptors: Iterable<ComponentDescriptor>, addNewRootComponents: boolean) {
-    if (!isRendererAttached(this._browserRendererId)) {
-      // There's no attached renderer to update interactive root components, so we'll no-op.
-      // An alternative would be to asynchronously wait for the renderer to attach before
-      // continuing, but that might happen at an inconvenient point in the future. For example,
-      // 'addNewRootComponents' might have been specified as 'true', but this method could
-      // continue execution at a time when the caller would have preferred it to be 'false'.
-      return;
-    }
-
-    const operations: RootComponentOperation[] = [];
+  private handleUpdatedRootComponentsCore(descriptors: Iterable<ComponentDescriptor>, addNewRootComponents: boolean) {
+    const operationsByRendererId = new Map<WebRendererId, RootComponentOperation[]>();
 
     for (const descriptor of descriptors) {
-      if (isDescriptorInDocument(descriptor)) {
-        if (!this.doesComponentNeedUpdate(descriptor)) {
-          // The descriptor has not changed.
-          continue;
-        }
+      let rendererId = this.getRendererId(descriptor);
 
-        if (!this.hasComponentEverBeenUpdated(descriptor)) {
-          if (addNewRootComponents) {
-            // This is the first time we're seeing this marker.
-            this.markComponentAsUpdated(descriptor);
-            this.markComponentAsPendingResolution(descriptor);
-            operations.push({ type: 'add', selectorId: descriptor.id, marker: descriptor.toRecord() });
-          }
-          continue;
-        }
-
-        const componentId = this.getInteractiveComponentId(descriptor);
-        if (componentId !== undefined) {
-          // The component has become interactive, so we'll update its parameters.
-          this.markComponentAsUpdated(descriptor);
-          operations.push({ type: 'update', componentId, marker: descriptor.toRecord() });
-          continue;
-        }
-
-        // We have started to add the component, but it has not become interactive yet.
-        // We'll wait until we have a component ID to work with before sending parameter
-        // updates.
-      } else {
-        this.unregisterComponentDescriptor(descriptor);
-
-        const componentId = this.getInteractiveComponentId(descriptor);
-        if (componentId !== undefined) {
-          // We have an interactive component for this marker, so we'll remove it.
-          operations.push({ type: 'remove', componentId });
-          continue;
-        }
-
-        // If we make it here, that means we either:
-        // 1. Haven't started to make the component interactive, in which case we have no further action to take.
-        // 2. Have started to make the component interactive, but it hasn't become interactive yet. In this case,
-        //    we'll wait to remove the component until after we have a component ID to provide.
+      if (rendererId === null && addNewRootComponents && descriptor.type === 'auto') {
+        const resolvedType = resolveAutoMode();
+        descriptor.setResolvedType(resolvedType);
+        rendererId = this.getRendererId(descriptor);
       }
+
+      if (rendererId === null || !isRendererAttached(rendererId)) {
+        // There descriptor's renderer is not attached, so we'll no-op.
+        // An alternative would be to asynchronously wait for the renderer to attach before
+        // continuing, but that might happen at an inconvenient point in the future. For example,
+        // 'addNewRootComponents' might have been specified as 'true', but this method could
+        // continue execution at a time when the caller would have preferred it to be 'false'.
+        continue;
+      }
+
+      const operation = this.determinePendingOperation(descriptor, addNewRootComponents);
+      if (!operation) {
+        continue;
+      }
+
+      let operations = operationsByRendererId.get(rendererId);
+      if (!operations) {
+        operations = [];
+        operationsByRendererId.set(rendererId, operations);
+      }
+
+      operations.push(operation);
     }
 
-    if (!operations.length) {
-      return;
+    for (const [rendererId, operations] of operationsByRendererId) {
+      const operationsJson = JSON.stringify(operations);
+      updateRootComponents(rendererId, operationsJson);
+    }
+  }
+
+  private getRendererId(descriptor: ComponentDescriptor): WebRendererId | null {
+    let type: 'server' | 'webassembly';
+    if (descriptor.type === 'auto') {
+      if (descriptor.hasResolvedType()) {
+        type = descriptor.getResolvedType();
+      } else {
+        return null;
+      }
+    } else {
+      type = descriptor.type;
     }
 
-    const operationsJson = JSON.stringify(operations);
-    await updateRootComponents(this._browserRendererId, operationsJson);
+    switch (type) {
+      case 'server':
+        return WebRendererId.Server;
+      case 'webassembly':
+        return WebRendererId.WebAssembly;
+    }
+  }
+
+  private determinePendingOperation(descriptor: ComponentDescriptor, addIfNewComponent?: boolean): RootComponentOperation | null {
+    if (isDescriptorInDocument(descriptor)) {
+      if (!this.doesComponentNeedUpdate(descriptor)) {
+        // The descriptor has not changed.
+        return null;
+      }
+
+      if (!this.hasComponentEverBeenUpdated(descriptor)) {
+        if (addIfNewComponent) {
+          // This is the first time we're seeing this marker.
+          this.markComponentAsUpdated(descriptor);
+          this.markComponentAsPendingResolution(descriptor);
+
+          if (descriptor.type === 'auto' && !descriptor.hasResolvedType()) {
+            const resolvedType = resolveAutoMode();
+            descriptor.setResolvedType(resolvedType);
+          }
+
+          return { type: 'add', selectorId: descriptor.id, marker: descriptor.toRecord() };
+        }
+      }
+
+      const componentId = this.getInteractiveComponentId(descriptor);
+      if (componentId !== undefined) {
+        // The component has become interactive, so we'll update its parameters.
+        this.markComponentAsUpdated(descriptor);
+        return { type: 'update', componentId, marker: descriptor.toRecord() };
+      }
+
+      // We have started to add the component, but it has not become interactive yet.
+      // We'll wait until we have a component ID to work with before sending parameter
+      // updates.
+    } else {
+      this.unregisterComponentDescriptor(descriptor);
+
+      const componentId = this.getInteractiveComponentId(descriptor);
+      if (componentId !== undefined) {
+        // We have an interactive component for this marker, so we'll remove it.
+        return { type: 'remove', componentId };
+      }
+
+      // If we make it here, that means we either:
+      // 1. Haven't started to make the component interactive, in which case we have no further action to take.
+      // 2. Have started to make the component interactive, but it hasn't become interactive yet. In this case,
+      //    we'll wait to remove the component until after we have a component ID to provide.
+    }
+
+    return null;
   }
 
   public resolveRootComponent(resolutionId: number, componentId: number): ComponentDescriptor {

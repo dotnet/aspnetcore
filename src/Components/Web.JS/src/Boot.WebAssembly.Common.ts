@@ -11,17 +11,20 @@ import { SharedMemoryRenderBatch } from './Rendering/RenderBatch/SharedMemoryRen
 import { PlatformApi, Pointer } from './Platform/Platform';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
 import { addDispatchEventMiddleware } from './Rendering/WebRendererInteropMethods';
-import { JSInitializer } from './JSInitializers/JSInitializers';
 import { WebAssemblyComponentDescriptor, discoverPersistedState } from './Services/ComponentDescriptorDiscovery';
 import { receiveDotNetDataStream } from './StreamingInterop';
 import { WebAssemblyComponentAttacher } from './Platform/WebAssemblyComponentAttacher';
 import { RootComponentManager } from './Services/RootComponentManager';
+
+let platformStartPromise: Promise<PlatformApi> | undefined;
 
 export async function startWebAssembly(options?: Partial<WebAssemblyStartOptions>, components?: WebAssemblyComponentDescriptor[] | RootComponentManager): Promise<void> {
   if (inAuthRedirectIframe()) {
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     await new Promise(() => { }); // See inAuthRedirectIframe for explanation
   }
+
+  const platformStartPromise = loadWebAssemblyPlatform(options);
 
   addDispatchEventMiddleware((browserRendererId, eventHandlerId, continuation) => {
     // It's extremely unusual, but an event can be raised while we're in the middle of synchronously applying a
@@ -46,10 +49,6 @@ export async function startWebAssembly(options?: Partial<WebAssemblyStartOptions
   Blazor._internal.endInvokeDotNetFromJS = endInvokeDotNetFromJS;
   Blazor._internal.receiveWebAssemblyDotNetDataStream = receiveWebAssemblyDotNetDataStream;
   Blazor._internal.receiveByteArray = receiveByteArray;
-
-  // Configure environment for execution under Mono WebAssembly with shared-memory rendering
-  const platform = Environment.setPlatform(monoPlatform);
-  Blazor.platform = platform;
   Blazor._internal.renderBatch = (browserRendererId: number, batchAddress: Pointer) => {
     // We're going to read directly from the .NET memory heap, so indicate to the platform
     // that we don't want anything to modify the memory contents during this time. Currently this
@@ -109,16 +108,27 @@ export async function startWebAssembly(options?: Partial<WebAssemblyStartOptions
 
   let api: PlatformApi;
   try {
-    api = await platform.start(options ?? {});
+    api = await platformStartPromise;
   } catch (ex) {
     throw new Error(`Failed to start platform. Reason: ${ex}`);
   }
 
   // Start up the application
-  platform.callEntryPoint();
+  monoPlatform.callEntryPoint();
   // At this point .NET has been initialized (and has yielded), we can't await the promise becasue it will
   // only end when the app finishes running
   api.invokeLibraryInitializers('afterStarted', [Blazor]);
+}
+
+export function loadWebAssemblyPlatform(options?: Partial<WebAssemblyStartOptions>): Promise<PlatformApi> {
+  if (!platformStartPromise) {
+    // Configure environment for execution under Mono WebAssembly with shared-memory rendering
+    const platform = Environment.setPlatform(monoPlatform);
+    Blazor.platform = platform;
+    platformStartPromise = platform.start(options ?? {});
+  }
+
+  return platformStartPromise;
 }
 
 // obsolete, legacy, don't use for new code!

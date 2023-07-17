@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { ServerComponentDescriptor, WebAssemblyComponentDescriptor } from '../Services/ComponentDescriptorDiscovery';
+import { ComponentDescriptor } from '../Services/ComponentDescriptorDiscovery';
 
 /*
   A LogicalElement plays the same role as an Element instance from the point of view of the
@@ -34,7 +34,7 @@ const logicalChildrenPropname = Symbol();
 const logicalParentPropname = Symbol();
 const logicalRootDescriptorPropname = Symbol();
 
-export function toLogicalRootCommentElement(descriptor: ServerComponentDescriptor | WebAssemblyComponentDescriptor): LogicalElement {
+export function toLogicalRootCommentElement(descriptor: ComponentDescriptor): LogicalElement {
   // Now that we support start/end comments as component delimiters we are going to be setting up
   // adding the components rendered output as siblings of the start/end tags (between).
   // For that to work, we need to appropriately configure the parent element to be a logical element
@@ -217,7 +217,7 @@ export function getLogicalChild(parent: LogicalElement, childIndex: number): Log
   return getLogicalChildrenArray(parent)[childIndex];
 }
 
-export function getLogicalRootDescriptor(element: LogicalElement): ServerComponentDescriptor | WebAssemblyComponentDescriptor {
+export function getLogicalRootDescriptor(element: LogicalElement): ComponentDescriptor {
   return element[logicalRootDescriptorPropname] || null;
 }
 
