@@ -104,6 +104,7 @@ public class MapIdentityApiTests : LoggedTest
         await using var app = await CreateAppAsync(services =>
         {
             services.AddSingleton<TimeProvider>(clock);
+            services.AddDbContext<ApplicationDbContext>((sp, options) => options.UseSqlite(sp.GetRequiredService<SqliteConnection>()));
             services.AddIdentityCore<ApplicationUser>().AddApiEndpoints().AddEntityFrameworkStores<ApplicationDbContext>();
             services.AddAuthentication(IdentityConstants.BearerScheme).AddIdentityBearerToken<ApplicationUser>(options =>
             {
@@ -180,6 +181,7 @@ public class MapIdentityApiTests : LoggedTest
     {
         await using var app = await CreateAppAsync(services =>
         {
+            services.AddDbContext<ApplicationDbContext>((sp, options) => options.UseSqlite(sp.GetRequiredService<SqliteConnection>()));
             services.AddIdentityCore<ApplicationUser>().AddApiEndpoints().AddEntityFrameworkStores<ApplicationDbContext>();
             services.AddAuthentication(IdentityConstants.BearerScheme).AddIdentityBearerToken<ApplicationUser>(options =>
             {
@@ -264,6 +266,7 @@ public class MapIdentityApiTests : LoggedTest
         await using var app = await CreateAppAsync(services =>
         {
             services.AddSingleton<TimeProvider>(clock);
+            services.AddDbContext<ApplicationDbContext>((sp, options) => options.UseSqlite(sp.GetRequiredService<SqliteConnection>()));
             services.AddIdentityCore<ApplicationUser>().AddApiEndpoints().AddEntityFrameworkStores<ApplicationDbContext>();
             services.AddAuthentication(IdentityConstants.BearerScheme).AddIdentityBearerToken<ApplicationUser>(options =>
             {
@@ -491,28 +494,14 @@ public class MapIdentityApiTests : LoggedTest
                 options.SignIn.RequireConfirmedAccount = true;
             });
         }, autoStart: false);
+
         app.MapGroup("/identity2").MapIdentityApi<ApplicationUser>();
 
         await app.StartAsync();
         using var client = app.GetTestClient();
 
-        async Task TestLoginWithConfirmedAccount(string groupPrefix, string userName)
-        {
-            await client.PostAsJsonAsync($"{groupPrefix}/register", new { userName, Password, Email = Username });
-
-            var email = emailSender.Emails.Last();
-
-            AssertUnauthorizedAndEmpty(await client.PostAsJsonAsync($"{groupPrefix}/login", new { userName, Password }));
-
-            var confirmEmailResponse = await client.GetAsync(GetEmailConfirmationLink(email));
-            confirmEmailResponse.EnsureSuccessStatusCode();
-
-            var loginResponse = await client.PostAsJsonAsync($"{groupPrefix}/login", new { userName, Password });
-            loginResponse.EnsureSuccessStatusCode();
-        }
-
-        await TestLoginWithConfirmedAccount("/identity", "a@example.com");
-        await TestLoginWithConfirmedAccount("/identity2", "b@example.com");
+        await TestRegistrationWithAccountConfirmation(client, emailSender, "/identity", "a@example.com");
+        await TestRegistrationWithAccountConfirmation(client, emailSender, "/identity2", "b@example.com");
     }
 
     [Fact]
@@ -521,16 +510,22 @@ public class MapIdentityApiTests : LoggedTest
         // Test with confirmation email since that tests link generation capabilities
         var emailSender = new TestEmailSender();
 
+        // Even with OnModelCreating tricks to prefix table names, using the same database
+        // for multiple user tables is difficult because index conflics, so we just use a different db.
+        var dbConnection2 = new SqliteConnection($"DataSource=:memory:");
+
         await using var app = await CreateAppAsync<ApplicationUser, ApplicationDbContext>(services =>
         {
             AddIdentityApiEndpoints<ApplicationUser, ApplicationDbContext>(services);
 
             // We just added cookie and/or bearer auth scheme(s) above. We cannot re-add these without an error.
             services
-                .AddDbContext<IdentityDbContext<IdentityUser>>((sp, options) => options.UseSqlite(sp.GetRequiredService<SqliteConnection>()))
+                .AddDbContext<IdentityDbContext>((sp, options) => options.UseSqlite(dbConnection2))
                 .AddIdentityCore<IdentityUser>()
-                .AddEntityFrameworkStores<IdentityDbContext<IdentityUser>>()
+                .AddEntityFrameworkStores<IdentityDbContext>()
                 .AddApiEndpoints();
+
+            services.AddSingleton<IDisposable>(_ => dbConnection2);
 
             services.AddSingleton<IEmailSender>(emailSender);
             services.Configure<IdentityOptions>(options =>
@@ -540,7 +535,9 @@ public class MapIdentityApiTests : LoggedTest
         }, autoStart: false);
 
         // The following two lines are already taken care of by CreateAppAsync for ApplicationUser and ApplicationDbContext
-        await app.Services.GetRequiredService<IdentityDbContext<IdentityUser>>().Database.EnsureCreatedAsync();
+        await dbConnection2.OpenAsync();
+        await app.Services.GetRequiredService<IdentityDbContext>().Database.EnsureCreatedAsync();
+
         app.MapGroup("/identity2").MapIdentityApi<IdentityUser>();
 
         await app.StartAsync();

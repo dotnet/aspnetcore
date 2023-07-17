@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Identity;
 
@@ -22,10 +23,14 @@ public class TokenProviderDescriptor
     /// <summary>
     /// The type that will be used for this token provider.
     /// </summary>
-    public Type ProviderType { get; }
+    public Type ProviderType { get; internal set; }
 
     /// <summary>
     /// If specified, the instance to be used for the token provider.
     /// </summary>
     public object? ProviderInstance { get; set; }
+
+    // Temporary fix to test MapIdentityApi's support for multiple TUser and TContext.
+    // There's nothing as permanent as a temporary fix, but it seems better than now support.
+    internal List<Type>? OtherProviderTypes { get; set; }
 }
