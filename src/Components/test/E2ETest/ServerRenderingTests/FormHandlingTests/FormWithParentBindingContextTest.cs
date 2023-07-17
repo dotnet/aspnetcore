@@ -1058,6 +1058,36 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         Assert.Contains("This is a deliberate form-event asynchronous error", errorBoundaryContent.Text);
     }
 
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void CanPostRedirectGet_Synchronous(bool suppressEnhancedNavigation, bool enableStreaming)
+    {
+        SuppressEnhancedNavigation(suppressEnhancedNavigation);
+        GoTo($"forms/post-redirect-get{(enableStreaming ? "-streaming" : "")}");
+
+        Browser.Exists(By.Id("sync-redirect")).Click();
+        Browser.Exists(By.Id("nav-home"));
+        Browser.True(() => Browser.Url.EndsWith("/nav", StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void CanPostRedirectGet_Asynchronous(bool suppressEnhancedNavigation, bool enableStreaming)
+    {
+        SuppressEnhancedNavigation(suppressEnhancedNavigation);
+        GoTo($"forms/post-redirect-get{(enableStreaming ? "-streaming" : "")}");
+
+        Browser.Exists(By.Id("async-redirect")).Click();
+        Browser.Exists(By.Id("nav-home"));
+        Browser.True(() => Browser.Url.EndsWith("/nav", StringComparison.Ordinal));
+    }
+
     private void SuppressEnhancedNavigation(bool shouldSuppress)
     {
         if (shouldSuppress)

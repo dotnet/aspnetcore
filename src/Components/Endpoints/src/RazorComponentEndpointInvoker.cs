@@ -77,16 +77,29 @@ internal class RazorComponentEndpointInvoker
             ParameterView.Empty,
             waitForQuiescence: isPost);
 
-        var isBadRequest = false;
-        var quiesceTask = isPost ? _renderer.DispatchSubmitEventAsync(handler, out isBadRequest) : htmlContent.QuiescenceTask;
-        if (isBadRequest)
+        Task quiesceTask;
+        if (!isPost)
         {
-            return;
+            quiesceTask = htmlContent.QuiescenceTask;
         }
-
-        if (isPost)
+        else
         {
-            await Task.WhenAll(_renderer.NonStreamingPendingTasks);
+            try
+            {
+                var isBadRequest = false;
+                quiesceTask = _renderer.DispatchSubmitEventAsync(handler, out isBadRequest);
+                if (isBadRequest)
+                {
+                    return;
+                }
+
+                await Task.WhenAll(_renderer.NonStreamingPendingTasks);
+            }
+            catch (NavigationException ex)
+            {
+                await EndpointHtmlRenderer.HandleNavigationException(_context, ex);
+                quiesceTask = Task.CompletedTask;
+            }
         }
 
         // Importantly, we must not yield this thread (which holds exclusive access to the renderer sync context)
