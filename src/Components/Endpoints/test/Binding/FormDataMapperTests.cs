@@ -7,15 +7,9 @@ using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
-using System.Drawing;
 using System.Globalization;
-using System.Reflection.Metadata;
 using System.Runtime.Serialization;
-using System.Xml.Linq;
-using Microsoft.AspNetCore.DataProtection.KeyManagement;
-using Microsoft.Diagnostics.Runtime;
 using Microsoft.Extensions.Primitives;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 
@@ -33,6 +27,46 @@ public class FormDataMapperTests
 
         // Act
         var result = CallDeserialize(reader, options, type);
+
+        // Assert
+        Assert.Equal(expected, result);
+    }
+
+    [Theory]
+    [InlineData("Red", Colors.Red)]
+    [InlineData("RED", Colors.Red)]
+    [InlineData("BlUe", Colors.Blue)]
+    [InlineData("green", Colors.Green)]
+    public void CanDeserialize_EnumTypes(string value, Colors expected)
+    {
+        // Arrange
+        var collection = new Dictionary<string, StringValues>() { ["value"] = new StringValues(value) };
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
+        reader.PushPrefix("value");
+        var options = new FormDataMapperOptions();
+
+        // Act
+        var result = CallDeserialize(reader, options, typeof(Colors));
+
+        // Assert
+        Assert.Equal(expected, result);
+    }
+
+    [Theory]
+    [InlineData("Red", Colors.Red)]
+    [InlineData("RED", Colors.Red)]
+    [InlineData("BlUe", Colors.Blue)]
+    [InlineData("green", Colors.Green)]
+    public void CanDeserialize_NullableEnumTypes(string value, Colors expected)
+    {
+        // Arrange
+        var collection = new Dictionary<string, StringValues>() { ["value"] = new StringValues(value) };
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
+        reader.PushPrefix("value");
+        var options = new FormDataMapperOptions();
+
+        // Act
+        var result = CallDeserialize(reader, options, typeof(Colors?));
 
         // Assert
         Assert.Equal(expected, result);
@@ -1840,6 +1874,13 @@ internal abstract class TestArrayPoolBufferAdapter
     }
 }
 
+public enum Colors
+{
+    Red,
+    Green,
+    Blue
+}
+
 internal struct Address
 {
     public string Street { get; set; }
@@ -1865,7 +1906,7 @@ internal class FrequentCustomer : Customer
     public double MonthlyFrequency { get; set; }
 }
 
-// Implements ICollection<T> delegating to List<T> _inner;
+// Implements ICollection<TEnum> delegating to List<TEnum> _inner;
 internal class CustomCollection<T> : ICollection<T>
 {
     private readonly List<T> _inner = new();

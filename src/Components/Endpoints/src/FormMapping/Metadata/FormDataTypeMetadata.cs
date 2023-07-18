@@ -82,7 +82,7 @@ internal class FormDataMetadataFactory(List<IFormDataConverterFactory> factories
         }
 
         // These blocks are evaluated in a specific order.
-        if (_parsableFactory.CanConvert(type, options) ||
+        if (_parsableFactory.CanConvert(type, options) || type.IsEnum ||
             (Nullable.GetUnderlyingType(type) is { } underlyingType &&
                 _parsableFactory.CanConvert(underlyingType, options)))
         {
