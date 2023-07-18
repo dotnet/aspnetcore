@@ -147,11 +147,7 @@ public static class IdentityServiceCollectionExtensions
             .AddIdentityBearerToken<TUser>()
             .AddIdentityCookies();
 
-        return services.AddIdentityCore<TUser>(o =>
-            {
-                o.Stores.MaxLengthForKeys = 128;
-                configure(o);
-            })
+        return services.AddIdentityCore<TUser>(configure)
             .AddApiEndpoints();
     }
 

@@ -25,6 +25,7 @@ public class SignInManager<TUser> where TUser : class
     private readonly IAuthenticationSchemeProvider _schemes;
     private readonly IUserConfirmation<TUser> _confirmation;
     private HttpContext? _context;
+    private TUser? _twoFactorUser;
 
     /// <summary>
     /// Creates a new instance of <see cref="SignInManager{TUser}"/>.
@@ -83,7 +84,12 @@ public class SignInManager<TUser> where TUser : class
     /// <summary>
     /// The authentication scheme to sign in with. Defaults to <see cref="IdentityConstants.ApplicationScheme"/>.
     /// </summary>
-    public string AuthenticationScheme { get; set; } = IdentityConstants.ApplicationScheme;
+    public string PrimaryAuthenticationScheme { get; set; } = IdentityConstants.ApplicationScheme;
+
+    /// <summary>
+    /// The two-factor code used to immediately complete password sign in if required.
+    /// </summary>
+    public string? TwoFactorCode { get; set; }
 
     /// <summary>
     /// The <see cref="HttpContext"/> used.
@@ -121,7 +127,7 @@ public class SignInManager<TUser> where TUser : class
     {
         ArgumentNullException.ThrowIfNull(principal);
         return principal.Identities != null &&
-            principal.Identities.Any(i => i.AuthenticationType == AuthenticationScheme);
+            principal.Identities.Any(i => i.AuthenticationType == PrimaryAuthenticationScheme);
     }
 
     /// <summary>
@@ -160,7 +166,7 @@ public class SignInManager<TUser> where TUser : class
     /// <returns>The task object representing the asynchronous operation.</returns>
     public virtual async Task RefreshSignInAsync(TUser user)
     {
-        var auth = await Context.AuthenticateAsync(AuthenticationScheme);
+        var auth = await Context.AuthenticateAsync(PrimaryAuthenticationScheme);
         IList<Claim> claims = Array.Empty<Claim>();
 
         var authenticationMethod = auth?.Principal?.FindFirst(ClaimTypes.AuthenticationMethod);
@@ -236,7 +242,7 @@ public class SignInManager<TUser> where TUser : class
         {
             userPrincipal.Identities.First().AddClaim(claim);
         }
-        await Context.SignInAsync(AuthenticationScheme,
+        await Context.SignInAsync(PrimaryAuthenticationScheme,
             userPrincipal,
             authenticationProperties ?? new AuthenticationProperties());
     }
@@ -246,7 +252,7 @@ public class SignInManager<TUser> where TUser : class
     /// </summary>
     public virtual async Task SignOutAsync()
     {
-        await Context.SignOutAsync(AuthenticationScheme);
+        await Context.SignOutAsync(PrimaryAuthenticationScheme);
         await Context.SignOutAsync(IdentityConstants.ExternalScheme);
         await Context.SignOutAsync(IdentityConstants.TwoFactorUserIdScheme);
     }
@@ -419,6 +425,11 @@ public class SignInManager<TUser> where TUser : class
     /// </returns>
     public virtual async Task<bool> IsTwoFactorClientRememberedAsync(TUser user)
     {
+        if (await _schemes.GetSchemeAsync(IdentityConstants.TwoFactorUserIdScheme) == null)
+        {
+            return false;
+        }
+
         var userId = await UserManager.GetUserIdAsync(user);
         var result = await Context.AuthenticateAsync(IdentityConstants.TwoFactorRememberMeScheme);
         return (result?.Principal != null && result.Principal.FindFirstValue(ClaimTypes.Name) == userId);
@@ -455,20 +466,15 @@ public class SignInManager<TUser> where TUser : class
     public virtual async Task<SignInResult> TwoFactorRecoveryCodeSignInAsync(string recoveryCode)
     {
         var twoFactorInfo = await RetrieveTwoFactorInfoAsync();
-        if (twoFactorInfo == null || twoFactorInfo.UserId == null)
-        {
-            return SignInResult.Failed;
-        }
-        var user = await UserManager.FindByIdAsync(twoFactorInfo.UserId);
-        if (user == null)
+        if (twoFactorInfo == null)
         {
             return SignInResult.Failed;
         }
 
-        var result = await UserManager.RedeemTwoFactorRecoveryCodeAsync(user, recoveryCode);
+        var result = await UserManager.RedeemTwoFactorRecoveryCodeAsync(twoFactorInfo.User, recoveryCode);
         if (result.Succeeded)
         {
-            return await DoTwoFactorSignInAsync(user, twoFactorInfo, isPersistent: false, rememberClient: false);
+            return await DoTwoFactorSignInAsync(twoFactorInfo.User, twoFactorInfo, isPersistent: false, rememberClient: false);
         }
 
         // We don't protect against brute force attacks since codes are expected to be random.
@@ -496,10 +502,13 @@ public class SignInManager<TUser> where TUser : class
             await Context.SignOutAsync(IdentityConstants.ExternalScheme);
         }
         // Cleanup two factor user id cookie
-        await Context.SignOutAsync(IdentityConstants.TwoFactorUserIdScheme);
-        if (rememberClient)
+        if (await _schemes.GetSchemeAsync(IdentityConstants.TwoFactorUserIdScheme) != null)
         {
-            await RememberTwoFactorClientAsync(user);
+            await Context.SignOutAsync(IdentityConstants.TwoFactorUserIdScheme);
+            if (rememberClient)
+            {
+                await RememberTwoFactorClientAsync(user);
+            }
         }
         await SignInWithClaimsAsync(user, isPersistent, claims);
         return SignInResult.Success;
@@ -517,16 +526,12 @@ public class SignInManager<TUser> where TUser : class
     public virtual async Task<SignInResult> TwoFactorAuthenticatorSignInAsync(string code, bool isPersistent, bool rememberClient)
     {
         var twoFactorInfo = await RetrieveTwoFactorInfoAsync();
-        if (twoFactorInfo == null || twoFactorInfo.UserId == null)
-        {
-            return SignInResult.Failed;
-        }
-        var user = await UserManager.FindByIdAsync(twoFactorInfo.UserId);
-        if (user == null)
+        if (twoFactorInfo == null)
         {
             return SignInResult.Failed;
         }
 
+        var user = twoFactorInfo.User;
         var error = await PreSignInCheck(user);
         if (error != null)
         {
@@ -564,16 +569,12 @@ public class SignInManager<TUser> where TUser : class
     public virtual async Task<SignInResult> TwoFactorSignInAsync(string provider, string code, bool isPersistent, bool rememberClient)
     {
         var twoFactorInfo = await RetrieveTwoFactorInfoAsync();
-        if (twoFactorInfo == null || twoFactorInfo.UserId == null)
-        {
-            return SignInResult.Failed;
-        }
-        var user = await UserManager.FindByIdAsync(twoFactorInfo.UserId);
-        if (user == null)
+        if (twoFactorInfo == null)
         {
             return SignInResult.Failed;
         }
 
+        var user = twoFactorInfo.User;
         var error = await PreSignInCheck(user);
         if (error != null)
         {
@@ -610,7 +611,7 @@ public class SignInManager<TUser> where TUser : class
             return null;
         }
 
-        return await UserManager.FindByIdAsync(info.UserId!);
+        return info.User;
     }
 
     /// <summary>
@@ -801,11 +802,21 @@ public class SignInManager<TUser> where TUser : class
     {
         if (!bypassTwoFactor && await IsTwoFactorEnabledAsync(user))
         {
-            if (!await IsTwoFactorClientRememberedAsync(user))
+            if (TwoFactorCode != null)
             {
-                // Store the userId for use after two factor check
-                var userId = await UserManager.GetUserIdAsync(user);
-                await Context.SignInAsync(IdentityConstants.TwoFactorUserIdScheme, StoreTwoFactorInfo(userId, loginProvider));
+                _twoFactorUser = user;
+                // isPersistent and rememberClient affect the application and 2fa cookies respectively if used.
+                return await TwoFactorAuthenticatorSignInAsync(TwoFactorCode, isPersistent, rememberClient: isPersistent);
+            }
+            else if (!await IsTwoFactorClientRememberedAsync(user))
+            {
+                if (await _schemes.GetSchemeAsync(IdentityConstants.TwoFactorUserIdScheme) != null)
+                {
+                    // Store the userId for use after two factor check
+                    var userId = await UserManager.GetUserIdAsync(user);
+                    await Context.SignInAsync(IdentityConstants.TwoFactorUserIdScheme, StoreTwoFactorInfo(userId, loginProvider));
+                }
+
                 return SignInResult.TwoFactorRequired;
             }
         }
@@ -827,16 +838,37 @@ public class SignInManager<TUser> where TUser : class
 
     private async Task<TwoFactorAuthenticationInfo?> RetrieveTwoFactorInfoAsync()
     {
-        var result = await Context.AuthenticateAsync(IdentityConstants.TwoFactorUserIdScheme);
-        if (result?.Principal != null)
+        if (_twoFactorUser != null)
         {
             return new TwoFactorAuthenticationInfo
             {
-                UserId = result.Principal.FindFirstValue(ClaimTypes.Name),
-                LoginProvider = result.Principal.FindFirstValue(ClaimTypes.AuthenticationMethod)
+                User = _twoFactorUser,
             };
         }
-        return null;
+
+        var result = await Context.AuthenticateAsync(IdentityConstants.TwoFactorUserIdScheme);
+        if (result?.Principal == null)
+        {
+            return null;
+        }    
+
+        var userId = result.Principal.FindFirstValue(ClaimTypes.Name);
+        if (userId == null)
+        {
+            return null;
+        }
+
+        var user = await UserManager.FindByIdAsync(userId);
+        if (user == null)
+        {
+            return null;
+        }
+
+        return new TwoFactorAuthenticationInfo
+        {
+            User = user,
+            LoginProvider = result.Principal.FindFirstValue(ClaimTypes.AuthenticationMethod),
+        };
     }
 
     /// <summary>
@@ -958,7 +990,7 @@ public class SignInManager<TUser> where TUser : class
 
     internal sealed class TwoFactorAuthenticationInfo
     {
-        public string? UserId { get; set; }
-        public string? LoginProvider { get; set; }
+        public required TUser User { get; init; }
+        public string? LoginProvider { get; init; }
     }
 }
