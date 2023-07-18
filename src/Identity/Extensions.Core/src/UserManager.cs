@@ -106,23 +106,15 @@ public class UserManager<TUser> : IDisposable where TUser : class
             {
                 var description = Options.Tokens.ProviderMap[providerName];
 
-                var provider = (description.ProviderInstance ?? services.GetRequiredService(description.ProviderType))
-                    as IUserTwoFactorTokenProvider<TUser>;
+                var provider = description.ProviderInstance as IUserTwoFactorTokenProvider<TUser>;
+                if (provider == null && description.GetProviderType<IUserTwoFactorTokenProvider<TUser>>() is Type providerType)
+                {
+                    provider = (IUserTwoFactorTokenProvider<TUser>)services.GetRequiredService(providerType);
+                }
+
                 if (provider != null)
                 {
                     RegisterTokenProvider(providerName, provider);
-                }
-                else if (description.OtherProviderTypes != null)
-                {
-                    foreach (var otherProviderType in description.OtherProviderTypes)
-                    {
-                        var otherProvider = services.GetRequiredService(otherProviderType) as IUserTwoFactorTokenProvider<TUser>;
-                        if (otherProvider != null)
-                        {
-                            RegisterTokenProvider(providerName, otherProvider);
-                            break;
-                        }
-                    }
                 }
             }
         }

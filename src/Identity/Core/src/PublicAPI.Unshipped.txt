@@ -4,8 +4,10 @@ Microsoft.AspNetCore.Identity.SecurityStampValidator<TUser>.SecurityStampValidat
 Microsoft.AspNetCore.Identity.SecurityStampValidator<TUser>.TimeProvider.get -> System.TimeProvider!
 Microsoft.AspNetCore.Identity.SecurityStampValidatorOptions.TimeProvider.get -> System.TimeProvider?
 Microsoft.AspNetCore.Identity.SecurityStampValidatorOptions.TimeProvider.set -> void
-Microsoft.AspNetCore.Identity.SignInManager<TUser>.AuthenticationScheme.get -> string!
-Microsoft.AspNetCore.Identity.SignInManager<TUser>.AuthenticationScheme.set -> void
+Microsoft.AspNetCore.Identity.SignInManager<TUser>.PrimaryAuthenticationScheme.get -> string!
+Microsoft.AspNetCore.Identity.SignInManager<TUser>.PrimaryAuthenticationScheme.set -> void
+Microsoft.AspNetCore.Identity.SignInManager<TUser>.TwoFactorCode.get -> string?
+Microsoft.AspNetCore.Identity.SignInManager<TUser>.TwoFactorCode.set -> void
 Microsoft.AspNetCore.Identity.TwoFactorSecurityStampValidator<TUser>.TwoFactorSecurityStampValidator(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Identity.SecurityStampValidatorOptions!>! options, Microsoft.AspNetCore.Identity.SignInManager<TUser!>! signInManager, Microsoft.Extensions.Logging.ILoggerFactory! logger) -> void
 Microsoft.AspNetCore.Routing.IdentityApiEndpointRouteBuilderExtensions
 static Microsoft.AspNetCore.Identity.IdentityAuthenticationBuilderExtensions.AddIdentityBearerToken<TUser>(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder! builder) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!

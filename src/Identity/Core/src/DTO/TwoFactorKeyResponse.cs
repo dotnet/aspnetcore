@@ -3,9 +3,7 @@
 
 namespace Microsoft.AspNetCore.Identity.DTO;
 
-internal sealed class LoginRequest
+internal sealed class TwoFactorKeyResponse
 {
-    public required string Username { get; init; }
-    public required string Password { get; init; }
-    public string? TwoFactorCode { get; init; }
+    public required string SharedKey { get; init; }
 }
