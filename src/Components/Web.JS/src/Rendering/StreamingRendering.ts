@@ -83,7 +83,7 @@ function insertStreamingContentIntoDocument(componentIdAsString: string, docFrag
       }
     }
 
-    navigationEnhancementCallbacks.afterDocumentUpdated();
+    navigationEnhancementCallbacks.documentUpdated();
   }
 }
 

@@ -21,6 +21,7 @@ import { ServerComponentDescriptor } from './Services/ComponentDescriptorDiscove
 import { RootComponentManager } from './Services/RootComponentManager';
 import { WebRendererId } from './Rendering/WebRendererId';
 import { DescriptorHandler, attachComponentDescriptorHandler, registerAllComponentDescriptors } from './Rendering/DomMerging/DomSync';
+import { waitForRendererAttached } from './Rendering/WebRendererInteropMethods';
 
 let started = false;
 let isPerformingEnhancedNavigation = false;
@@ -37,9 +38,9 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
   webStartOptions = options;
 
   const navigationEnhancementCallbacks: NavigationEnhancementCallbacks = {
-    beforeEnhancedNavigation,
-    afterDocumentUpdated,
-    afterEnhancedNavigation,
+    enhancedNavigationStarted,
+    documentUpdated,
+    enhancedNavigationCompleted,
   };
 
   const descriptorHandler: DescriptorHandler = {
@@ -71,16 +72,16 @@ function registerComponentDescriptor(descriptor: ServerComponentDescriptor | Web
   }
 }
 
-function beforeEnhancedNavigation() {
+function enhancedNavigationStarted() {
   isPerformingEnhancedNavigation = true;
 }
 
-function afterDocumentUpdated() {
+function enhancedNavigationCompleted() {
+  isPerformingEnhancedNavigation = false;
   handleUpdatedDescriptors();
 }
 
-function afterEnhancedNavigation() {
-  isPerformingEnhancedNavigation = false;
+function documentUpdated() {
   handleUpdatedDescriptors();
 }
 
@@ -98,6 +99,7 @@ async function startCircuitIfNotStarted() {
 
   circuitStarted = true;
   await startCircuit(webStartOptions?.circuit, circuitRootComponents);
+  await waitForRendererAttached(WebRendererId.Server);
   handleUpdatedDescriptors();
 }
 
@@ -109,6 +111,7 @@ async function startWebAssemblyIfNotStarted() {
 
   webAssemblyStarted = true;
   await startWebAssembly(webStartOptions?.webAssembly, webAssemblyRootComponents);
+  await waitForRendererAttached(WebRendererId.WebAssembly);
   handleUpdatedDescriptors();
 }
 

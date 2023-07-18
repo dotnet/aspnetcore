@@ -35,9 +35,9 @@ let currentEnhancedNavigationAbortController: AbortController | null;
 let navigationEnhancementCallbacks: NavigationEnhancementCallbacks;
 
 export interface NavigationEnhancementCallbacks {
-  beforeEnhancedNavigation: () => void;
-  afterDocumentUpdated: () => void;
-  afterEnhancedNavigation: () => void;
+  enhancedNavigationStarted: () => void;
+  enhancedNavigationCompleted: () => void;
+  documentUpdated: () => void;
 }
 
 export function attachProgressivelyEnhancedNavigationListener(callbacks: NavigationEnhancementCallbacks) {
@@ -107,7 +107,7 @@ function onDocumentSubmit(event: SubmitEvent) {
 }
 
 export async function performEnhancedPageLoad(internalDestinationHref: string, fetchOptions?: RequestInit) {
-  navigationEnhancementCallbacks.beforeEnhancedNavigation();
+  navigationEnhancementCallbacks.enhancedNavigationStarted();
 
   // First, stop any preceding enhanced page load
   currentEnhancedNavigationAbortController?.abort();
@@ -133,16 +133,16 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, f
         // For HTML responses, regardless of the status code, display it
         const parsedHtml = new DOMParser().parseFromString(initialContent, 'text/html');
         synchronizeDomContent(document, parsedHtml);
-        navigationEnhancementCallbacks.afterDocumentUpdated();
+        navigationEnhancementCallbacks.documentUpdated();
       } else if (responseContentType?.startsWith('text/') && initialContent) {
         // For any other text-based content, we'll just display it, because that's what
         // would happen if this was a non-enhanced request.
         replaceDocumentWithPlainText(initialContent);
-        navigationEnhancementCallbacks.afterDocumentUpdated();
+        navigationEnhancementCallbacks.documentUpdated();
       } else if ((response.status < 200 || response.status >= 300) && !initialContent) {
         // For any non-success response that has no content at all, make up our own error UI
         replaceDocumentWithPlainText(`Error: ${response.status} ${response.statusText}`);
-        navigationEnhancementCallbacks.afterDocumentUpdated();
+        navigationEnhancementCallbacks.documentUpdated();
       } else {
         // For any other response, it's not HTML and we don't know what to do. It might be plain text,
         // or an image, or something else.
@@ -156,7 +156,7 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, f
         } else {
           // For non-get requests, we can't safely re-request, so just treat it as an error
           replaceDocumentWithPlainText(`Error: ${fetchOptions.method} request to ${internalDestinationHref} returned non-HTML content of type ${responseContentType || 'unspecified'}.`);
-          navigationEnhancementCallbacks.afterDocumentUpdated();
+          navigationEnhancementCallbacks.documentUpdated();
         }
       }
     },
@@ -176,9 +176,9 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, f
       const targetElem = document.getElementById(hash);
       targetElem?.scrollIntoView();
     }
-  }
 
-  navigationEnhancementCallbacks.afterEnhancedNavigation();
+    navigationEnhancementCallbacks.enhancedNavigationCompleted();
+  }
 }
 
 async function getResponsePartsWithFraming(responsePromise: Promise<Response>, abortSignal: AbortSignal, onInitialDocument: (response: Response, initialDocumentText: string) => void, onStreamingElement: (streamingElementMarkup) => void) {
