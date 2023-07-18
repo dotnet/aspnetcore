@@ -49,7 +49,7 @@ internal partial class CircuitHost : IAsyncDisposable
         if (CircuitId.Secret is null)
         {
             // Prevent the use of a 'default' secret.
-            throw new ArgumentException($"PropertyInfo '{nameof(CircuitId.Secret)}' cannot be null.", nameof(circuitId));
+            throw new ArgumentException($"Property '{nameof(CircuitId.Secret)}' cannot be null.", nameof(circuitId));
         }
 
         _scope = scope;

@@ -214,7 +214,7 @@ internal sealed class PropertyHelper
         {
             // TODO: Remove disable when https://github.com/dotnet/linker/issues/2715 is complete.
 #pragma warning disable IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
-            // SortCriteria methods in the CLR can be turned into static methods where the first parameter
+            // Instance methods in the CLR can be turned into static methods where the first parameter
             // is open over "target". This parameter is always passed by reference, so we have a code
             // path for value types and a code path for reference types.
             if (getMethod.DeclaringType!.IsValueType)
@@ -289,7 +289,7 @@ internal sealed class PropertyHelper
         {
             // TODO: Remove disable when https://github.com/dotnet/linker/issues/2715 is complete.
 #pragma warning disable IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
-            // SortCriteria methods in the CLR can be turned into static methods where the first parameter
+            // Instance methods in the CLR can be turned into static methods where the first parameter
             // is open over "target". This parameter is always passed by reference, so we have a code
             // path for value types and a code path for reference types.
             var typeInput = setMethod.DeclaringType!;
