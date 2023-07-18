@@ -767,6 +767,19 @@
       ],
       "AuthOption": "None"
     },
+    "ControllersOverridesMinimal": {
+      "Template": "webapi",
+      "Arguments": "new webapi -controllers -minimal",
+      "Files": [
+        "appsettings.Development.json",
+        "appsettings.json",
+        "Program.cs",
+        "WeatherForecast.cs",
+        "Controllers/WeatherForecastController.cs",
+        "Properties/launchSettings.json"
+      ],
+      "AuthOption": "None"
+    },
     "MinimalIndividualB2C": {
       "Template": "webapi",
       "Arguments": "new webapi -au IndividualB2C --aad-b2c-instance https://login.microsoftonline.com/tfp/ --domain fake-b2c-domain.onmicrosoft.com --client-id 64f31f76-2750-49e4-aab9-f5de105b5172 -ssp B2C_1_SiUpIn",
@@ -816,6 +829,17 @@
     "Minimal": {
       "Template": "webapi",
       "Arguments": "new webapi -au None",
+      "Files": [
+        "appsettings.Development.json",
+        "appsettings.json",
+        "Program.cs",
+        "Properties/launchSettings.json"
+      ],
+      "AuthOption": "None"
+    },
+    "MinimalExplicit": {
+      "Template": "webapi",
+      "Arguments": "new webapi --use-minimal",
       "Files": [
         "appsettings.Development.json",
         "appsettings.json",

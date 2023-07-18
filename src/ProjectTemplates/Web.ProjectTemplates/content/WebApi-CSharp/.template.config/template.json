@@ -320,18 +320,6 @@
       "defaultValue": "false",
       "description": "Whether to use LocalDB instead of SQLite. This option only applies if --auth Individual or --auth IndividualB2C is specified."
     },
-    "UseMinimalAPIs": {
-      "type": "parameter",
-      "datatype": "bool",
-      "defaultValue": "true",
-      "description": "Whether to use minimal APIs instead of controllers."
-    },
-    "UseControllers": {
-      "type": "parameter",
-      "datatype": "bool",
-      "defaultValue": "false",
-      "description": "Whether to use controllers instead of minimal APIs. This option overides the value specified by --minimal."
-    },
     "Framework": {
       "type": "parameter",
       "description": "The target framework for the project.",
@@ -396,14 +384,6 @@
       "defaultValue": "false",
       "description": "Disable OpenAPI (Swagger) support"
     },
-    "UsingControllers": {
-      "type": "computed",
-      "value": "(UseControllers || !UseMinimalAPIs)"
-    },
-    "UsingMinimalAPIs": {
-      "type": "computed",
-      "value": "(!UsingControllers)"
-    },
     "EnableOpenAPI": {
       "type": "computed",
       "value": "(!DisableOpenAPI)"
@@ -414,6 +394,26 @@
       "defaultValue": "false",
       "displayName": "Do not use _top-level statements",
       "description": "Whether to generate an explicit Program class and Main method instead of top-level statements."
+    },
+    "UseMinimalAPIs": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "true",
+      "description": "Whether to use minimal APIs instead of controllers."
+    },
+    "UseControllers": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Whether to use controllers instead of minimal APIs. This option overides the value specified by --minimal."
+    },
+    "UsingControllers": {
+      "type": "computed",
+      "value": "(UseControllers || !UseMinimalAPIs)"
+    },
+    "UsingMinimalAPIs": {
+      "type": "computed",
+      "value": "(!UsingControllers)"
     }
   },
   "primaryOutputs": [

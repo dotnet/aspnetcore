@@ -24,6 +24,7 @@
   "symbols/NoHttps/description": "是否禁用 HTTPS。仅当 IndividualB2C、SingleOrg 或 MultiOrg 不用于 --auth 时，此选项才适用。",
   "symbols/UseLocalDB/description": "是否使用 LocalDB 而不是 SQLite。仅当指定了 --auth Individual 或 --auth IndividualB2C 时，此选项才适用。",
   "symbols/UseMinimalAPIs/description": "是否使用最小 API 而不是控制器。",
+  "symbols/UseControllers/description": "Whether to use controllers instead of minimal APIs. This option overides the value specified by --minimal.",
   "symbols/Framework/description": "项目的目标框架。",
   "symbols/Framework/choices/net8.0/description": "目标 net8.0",
   "symbols/skipRestore/description": "如果指定，则在创建时跳过项目的自动还原。",

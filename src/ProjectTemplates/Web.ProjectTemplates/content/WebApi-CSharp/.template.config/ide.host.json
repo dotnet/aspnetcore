@@ -20,31 +20,24 @@
       "persistenceScope": "templateGroup"
     },
     {
-      "id": "UseMinimalAPIs",
-      "name": {
-        "text": "Use controllers (uncheck to use minimal APIs)",
-        "overrideDefaultText": true
-      },
-      "invertBoolean": true,
-      "isVisible": false,
-      "defaultValue": "true",
-      "persistenceScope": "templateGroup"
-    },
-    {
-      "id": "UseControllers",
-      "name": {
-        "text": "Use controllers",
-        "overrideDefaultText": true
-      },
-      "isVisible": true,
-      "defaultValue": "false",
-      "persistenceScope": "templateGroup"
-    },
-    {
       "id": "UseProgramMain",
       "isVisible": true,
       "persistenceScope": "shared",
       "persistenceScopeName": "Microsoft"
+    },
+    {
+      "id": "UseMinimalAPIs",
+      "name": {
+        "text": "Use controllers",
+        "overrideDefaultText": true
+      },
+      "description": {
+        "text": "Use controllers instead of minimal APIs.",
+        "overrideDefaultText": true
+      },
+      "invertBoolean": true,
+      "isVisible": true,
+      "persistenceScope": "templateGroup"
     }
   ],
   "disableHttpsSymbol": "NoHttps"

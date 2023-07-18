@@ -24,6 +24,7 @@
   "symbols/NoHttps/description": "Ya sea para desactivar HTTPS. Esta opción solo se aplica si no se utilizan IndividualB2C, SingleOrg o MultiOrg para --auth.",
   "symbols/UseLocalDB/description": "Indica si se va a usar LocalDB en lugar de SQLite. Esta opción solo se aplica si se especifica --auth Individual o --auth IndividualB2C.",
   "symbols/UseMinimalAPIs/description": "Indica si se deben usar API mínimas en lugar de controladores.",
+  "symbols/UseControllers/description": "Whether to use controllers instead of minimal APIs. This option overides the value specified by --minimal.",
   "symbols/Framework/description": "Marco de destino del proyecto.",
   "symbols/Framework/choices/net8.0/description": "net8.0 de destino",
   "symbols/skipRestore/description": "Si se especifica, se omite la restauración automática del proyecto durante la creación.",
