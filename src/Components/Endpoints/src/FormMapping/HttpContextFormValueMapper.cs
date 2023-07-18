@@ -127,7 +127,7 @@ internal sealed class HttpContextFormValueMapper : IFormValueMapper
                 }
                 buffer = ArrayPool<char>.Shared.Rent(options.MaxKeyBufferSize);
 
-                var reader = new FormDataReader(
+                using var reader = new FormDataReader(
                     dictionary,
                     options.UseCurrentCulture ? CultureInfo.CurrentCulture : CultureInfo.InvariantCulture,
                     buffer.AsMemory(0, options.MaxKeyBufferSize))

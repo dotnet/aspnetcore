@@ -1592,6 +1592,26 @@ public class FormDataMapperTests
         Assert.Equal("Value cannot be null. (Parameter 'key')", constructorError.Message.ToString(CultureInfo.InvariantCulture));
     }
 
+    [Fact]
+    public void RecursiveTypes_Comparer_SortsValues_Correctly()
+    {
+        // Arrange
+        var data = new Dictionary<string, StringValues>()
+        {
+            ["customerId"] = "20",
+            ["customer[Id]"] = "20",
+            ["customer.Id"] = "20"
+        };
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
+        reader.PushPrefix("customer");
+
+        // Act
+        var result = reader.CurrentPrefixExists();
+
+        // Assert
+        Assert.True(result);
+    }
+
     public static TheoryData<string, Type, object> NullableBasicTypes
     {
         get
