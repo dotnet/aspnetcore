@@ -36,7 +36,10 @@ internal readonly struct PrefixResolver : IDisposable
 
     public void Dispose()
     {
-        ArrayPool<FormKey>.Shared.Return(_sortedKeys);
+        if (_sortedKeys != null)
+        {
+            ArrayPool<FormKey>.Shared.Return(_sortedKeys);
+        }
     }
 
     private class FormKeyComparer(bool checkPrefix) : IComparer<FormKey>
