@@ -839,7 +839,7 @@
     },
     "MinimalExplicit": {
       "Template": "webapi",
-      "Arguments": "new webapi --use-minimal",
+      "Arguments": "new webapi --use-minimal-apis",
       "Files": [
         "appsettings.Development.json",
         "appsettings.json",
