@@ -785,7 +785,6 @@
         "appsettings.Development.json",
         "appsettings.json",
         "Program.cs",
-        "WeatherForecast.cs",
         "Properties/launchSettings.json"
       ],
       "AuthOption": "IndividualB2C"
@@ -808,7 +807,6 @@
         "appsettings.Development.json",
         "appsettings.json",
         "Program.cs",
-        "WeatherForecast.cs",
         "Properties/launchSettings.json"
       ],
       "AuthOption": "SingleOrg"
@@ -831,14 +829,13 @@
         "appsettings.Development.json",
         "appsettings.json",
         "Program.cs",
-        "WeatherForecast.cs",
         "Properties/launchSettings.json"
       ],
       "AuthOption": "None"
     },
     "Windows": {
       "Template": "webapi",
-      "Arguments": "new webapi -au Windows",
+      "Arguments": "new webapi -controllers -au Windows",
       "Files": [
         "appsettings.Development.json",
         "appsettings.json",
@@ -851,7 +848,7 @@
     },
     "WindowsProgramMain": {
       "Template": "webapi",
-      "Arguments": "new webapi -au Windows --use-program-main",
+      "Arguments": "new webapi -controllers -au Windows --use-program-main",
       "Files": [
         "appsettings.Development.json",
         "appsettings.json",
@@ -880,7 +877,6 @@
         "appsettings.Development.json",
         "appsettings.json",
         "Program.cs",
-        "WeatherForecast.cs",
         "Properties/launchSettings.json"
       ],
       "AuthOption": "Windows"
