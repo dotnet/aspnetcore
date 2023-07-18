@@ -24,6 +24,7 @@
   "symbols/NoHttps/description": "HTTPS'nin kapatılıp kapatılmayacağı. Bu seçenek yalnızca IndividualB2C, SingleOrg veya MultiOrg -- auth için kullanılmazsa geçerlidir.",
   "symbols/UseLocalDB/description": "SQLite yerine LocalDB'nin kullanılıp kullanılmayacağı. Bu seçenek yalnızca --auth Individual veya --auth IndividualB2C belirtilirse geçerlidir.",
   "symbols/UseMinimalAPIs/description": "Denetleyiciler yerine minimal API’lerin kullanılıp kullanılmayacağı.",
+  "symbols/UseControllers/description": "Whether to use controllers instead of minimal APIs. This option overides the value specified by --minimal.",
   "symbols/Framework/description": "Projenin hedef çerçevesi.",
   "symbols/Framework/choices/net8.0/description": "Hedef net8.0",
   "symbols/skipRestore/description": "Belirtilirse, oluşturma sırasında projenin otomatik geri yüklenmesini atlar.",

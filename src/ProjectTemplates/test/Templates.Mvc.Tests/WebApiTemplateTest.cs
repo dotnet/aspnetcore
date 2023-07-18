@@ -111,7 +111,7 @@ public class WebApiTemplateTest : LoggedTest
     public Task WebApiTemplateFSharp() => WebApiTemplateCore(languageOverride: "F#");
 
     [Fact]
-    public Task WebApiTemplateNoHttpsFSharp() => WebApiTemplateCore(languageOverride: "F#", args: new[] { ArgConstants.NoHttps } );
+    public Task WebApiTemplateNoHttpsFSharp() => WebApiTemplateCore(languageOverride: "F#", args: new[] { ArgConstants.NoHttps });
 
     [ConditionalFact]
     [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]

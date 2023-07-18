@@ -24,6 +24,7 @@
   "symbols/NoHttps/description": "Следует ли отключить HTTPS. Этот параметр применяется, только если для --auth не используются IndividualB2C, SingleOrg или MultiOrg.",
   "symbols/UseLocalDB/description": "Следует ли использовать LocalDB вместо SQLite. Этот параметр применяется, только если указывается --auth Individual или --auth IndividualB2C.",
   "symbols/UseMinimalAPIs/description": "Следует ли использовать минимальные API вместо контроллеров.",
+  "symbols/UseControllers/description": "Whether to use controllers instead of minimal APIs. This option overides the value specified by --minimal.",
   "symbols/Framework/description": "Целевая платформа для проекта.",
   "symbols/Framework/choices/net8.0/description": "Целевая net8.0",
   "symbols/skipRestore/description": "Если установлено, автоматическое восстановление проекта при создании пропускается.",

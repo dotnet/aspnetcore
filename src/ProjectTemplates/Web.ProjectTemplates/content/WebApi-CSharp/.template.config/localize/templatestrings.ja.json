@@ -24,6 +24,7 @@
   "symbols/NoHttps/description": "HTTPS をオフにするかどうか。このオプションは、IndividualB2C、SingleOrg、または MultiOrg が --auth に使用されていない場合にのみ適用されます。",
   "symbols/UseLocalDB/description": "SQLite の代わりに LocalDB を使用するかどうか。このオプションは、--auth Individual または --auth IndividualB2C が指定されている場合にのみ適用されます。",
   "symbols/UseMinimalAPIs/description": "コントローラーの代わりに最小限の API を使用するかどうか。",
+  "symbols/UseControllers/description": "Whether to use controllers instead of minimal APIs. This option overides the value specified by --minimal.",
   "symbols/Framework/description": "プロジェクトのターゲット フレームワークです。",
   "symbols/Framework/choices/net8.0/description": "ターゲット net8.0",
   "symbols/skipRestore/description": "指定した場合、作成時にプロジェクトの自動復元がスキップされます。",

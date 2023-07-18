@@ -24,6 +24,7 @@
   "symbols/NoHttps/description": "HTTPS를 끌지 여부입니다. 이 옵션은 개별B2C, SingleOrg 또는 MultiOrg가 --auth에 사용되지 않는 경우에만 적용됩니다.",
   "symbols/UseLocalDB/description": "SQLite 대신 LocalDB를 사용할지 여부입니다. 이 옵션은 --auth Individual 또는 --auth IndividualB2C가 지정된 경우에만 적용됩니다.",
   "symbols/UseMinimalAPIs/description": "컨트롤러 대신 최소 API를 사용할지 여부입니다.",
+  "symbols/UseControllers/description": "Whether to use controllers instead of minimal APIs. This option overides the value specified by --minimal.",
   "symbols/Framework/description": "프로젝트에 대한 대상 프레임워크입니다.",
   "symbols/Framework/choices/net8.0/description": "대상 net8.0",
   "symbols/skipRestore/description": "지정된 경우, 프로젝트 생성 시 자동 복원을 건너뜁니다.",
