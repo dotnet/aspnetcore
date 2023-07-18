@@ -19,17 +19,10 @@
         <a class="dismiss">🗙</a>
     </div>
 
-    <div id="build-configuration"></div>
-
     <script src="_framework/blazor.webassembly.js" autostart="false"></script>
     <script>
         (function(){
-            Blazor.start({
-                configureRuntime: dotnet => {
-                    dotnet.withEnvironmentVariable("CONFIGURE_RUNTIME", "true");
-                }
-            }).then(function () {
-                document.getElementById('build-configuration').innerText = Blazor.runtime.runtimeBuildInfo.buildConfiguration;
+            Blazor.start().then(function () {
                 window['__aspnetcore__testing__blazor_wasm__started__'] = true;
             });
         })();

@@ -48,6 +48,10 @@
         function getCurrentUrl() {
             return location.href;
         }
+
+        function getRuntimeBuildConfiguration() {
+            return Blazor.runtime.runtimeBuildInfo.buildConfiguration;
+        }
     </script>
     <script src="_framework/blazor.webassembly.js"></script>
 
