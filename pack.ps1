@@ -1,3 +1,6 @@
+# Globals... for now.
+$Configuration = "Release"
+
 function Build-Project
 {
     param (
@@ -20,7 +23,7 @@ function Build-Project
 
     $ProjectFullPath = $ProjectFiles[0].FullName
 
-    dotnet pack $ProjectFullPath
+    dotnet pack -c $Configuration $ProjectFullPath
     if (!$?) {
         throw "Failed to build project $ProjectFullPath."
     }
