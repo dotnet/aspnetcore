@@ -52,7 +52,7 @@ internal readonly struct CascadingParameterState
                 resultStates ??= new List<CascadingParameterState>(infos.Length - infoIndex);
                 resultStates.Add(new CascadingParameterState(info, supplier));
 
-                if (info.Attribute.SingleDeliveryInternal)
+                if (info.Attribute.SingleDelivery)
                 {
                     hasSingleDeliveryParameters = true;
                     if (!supplier.IsFixed)

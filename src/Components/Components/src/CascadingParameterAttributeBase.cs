@@ -18,7 +18,5 @@ public abstract class CascadingParameterAttributeBase : Attribute
     /// Gets a flag indicating whether the cascading parameter should
     /// be supplied only once per component.
     /// </summary>
-    private protected virtual bool SingleDelivery => false;
-
-    internal bool SingleDeliveryInternal => SingleDelivery;
+    internal virtual bool SingleDelivery => false;
 }

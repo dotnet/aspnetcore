@@ -24,5 +24,5 @@ public sealed class SupplyParameterFromFormAttribute : CascadingParameterAttribu
     public string? Handler { get; set; }
 
     /// <inheritdoc />
-    private protected override bool SingleDelivery => true;
+    internal override bool SingleDelivery => true;
 }

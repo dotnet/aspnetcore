@@ -193,7 +193,7 @@ public class ComponentState : IAsyncDisposable
         List<CascadingParameterState>? remainingCascadingParameters = null;
         foreach (var param in _cascadingParameters)
         {
-            if (!param.ParameterInfo.Attribute.SingleDeliveryInternal)
+            if (!param.ParameterInfo.Attribute.SingleDelivery)
             {
                 remainingCascadingParameters ??= new(_cascadingParameters.Count /* upper bound on capacity needed */);
                 remainingCascadingParameters.Add(param);

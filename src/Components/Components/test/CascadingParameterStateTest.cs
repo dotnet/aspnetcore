@@ -478,7 +478,7 @@ public class CascadingParameterStateTest
     {
         public override string Name { get; set; }
 
-        private protected override bool SingleDelivery => true;
+        internal override bool SingleDelivery => true;
     }
 
     class SupplyParameterWithSingleDeliveryComponent(bool isFixed) : ComponentBase, ICascadingValueSupplier
