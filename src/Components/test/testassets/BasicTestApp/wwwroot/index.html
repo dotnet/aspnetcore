@@ -53,7 +53,17 @@
             return Blazor.runtime.runtimeBuildInfo.buildConfiguration;
         }
     </script>
-    <script src="_framework/blazor.webassembly.js"></script>
+    <script src="_framework/blazor.webassembly.js" autostart="false"></script>
+
+    <script>
+        (function(){
+            Blazor.start({
+                configureRuntime: dotnet => {
+                    dotnet.withEnvironmentVariable("CONFIGURE_RUNTIME", "true");
+                }
+            });
+        })();
+    </script>
 
     <!-- Used by ExternalContentPackage -->
     <script src="_content/TestContentPackage/prompt.js"></script>
