@@ -144,7 +144,7 @@ public static class IdentityServiceCollectionExtensions
                 compositeOptions.ForwardDefault = IdentityConstants.BearerScheme;
                 compositeOptions.ForwardAuthenticate = IdentityConstants.BearerAndApplicationScheme;
             })
-            .AddIdentityBearerToken<TUser>()
+            .AddBearerToken(IdentityConstants.BearerScheme)
             .AddIdentityCookies();
 
         return services.AddIdentityCore<TUser>(configure)

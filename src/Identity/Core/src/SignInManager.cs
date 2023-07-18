@@ -25,7 +25,7 @@ public class SignInManager<TUser> where TUser : class
     private readonly IAuthenticationSchemeProvider _schemes;
     private readonly IUserConfirmation<TUser> _confirmation;
     private HttpContext? _context;
-    private TUser? _twoFactorUser;
+    private TwoFactorAuthenticationInfo? _twoFactorInfo;
 
     /// <summary>
     /// Creates a new instance of <see cref="SignInManager{TUser}"/>.
@@ -85,11 +85,6 @@ public class SignInManager<TUser> where TUser : class
     /// The authentication scheme to sign in with. Defaults to <see cref="IdentityConstants.ApplicationScheme"/>.
     /// </summary>
     public string PrimaryAuthenticationScheme { get; set; } = IdentityConstants.ApplicationScheme;
-
-    /// <summary>
-    /// The two-factor code used to immediately complete password sign in if required.
-    /// </summary>
-    public string? TwoFactorCode { get; set; }
 
     /// <summary>
     /// The <see cref="HttpContext"/> used.
@@ -245,6 +240,9 @@ public class SignInManager<TUser> where TUser : class
         await Context.SignInAsync(PrimaryAuthenticationScheme,
             userPrincipal,
             authenticationProperties ?? new AuthenticationProperties());
+
+        // This is useful for updating claims immediately when hitting MapIdentityApi's /account/info endpoint with cookies.
+        Context.User = userPrincipal;
     }
 
     /// <summary>
@@ -253,8 +251,15 @@ public class SignInManager<TUser> where TUser : class
     public virtual async Task SignOutAsync()
     {
         await Context.SignOutAsync(PrimaryAuthenticationScheme);
-        await Context.SignOutAsync(IdentityConstants.ExternalScheme);
-        await Context.SignOutAsync(IdentityConstants.TwoFactorUserIdScheme);
+
+        if (await _schemes.GetSchemeAsync(IdentityConstants.ExternalScheme) != null)
+        {
+            await Context.SignOutAsync(IdentityConstants.ExternalScheme);
+        }
+        if (await _schemes.GetSchemeAsync(IdentityConstants.TwoFactorUserIdScheme) != null)
+        {
+            await Context.SignOutAsync(IdentityConstants.TwoFactorUserIdScheme);
+        }
     }
 
     /// <summary>
@@ -425,7 +430,7 @@ public class SignInManager<TUser> where TUser : class
     /// </returns>
     public virtual async Task<bool> IsTwoFactorClientRememberedAsync(TUser user)
     {
-        if (await _schemes.GetSchemeAsync(IdentityConstants.TwoFactorUserIdScheme) == null)
+        if (await _schemes.GetSchemeAsync(IdentityConstants.TwoFactorRememberMeScheme) == null)
         {
             return false;
         }
@@ -495,10 +500,13 @@ public class SignInManager<TUser> where TUser : class
         var claims = new List<Claim>();
         claims.Add(new Claim("amr", "mfa"));
 
-        // Cleanup external cookie
         if (twoFactorInfo.LoginProvider != null)
         {
             claims.Add(new Claim(ClaimTypes.AuthenticationMethod, twoFactorInfo.LoginProvider));
+        }
+        // Cleanup external cookie
+        if (await _schemes.GetSchemeAsync(IdentityConstants.ExternalScheme) != null)
+        {
             await Context.SignOutAsync(IdentityConstants.ExternalScheme);
         }
         // Cleanup two factor user id cookie
@@ -802,14 +810,16 @@ public class SignInManager<TUser> where TUser : class
     {
         if (!bypassTwoFactor && await IsTwoFactorEnabledAsync(user))
         {
-            if (TwoFactorCode != null)
+            if (!await IsTwoFactorClientRememberedAsync(user))
             {
-                _twoFactorUser = user;
-                // isPersistent and rememberClient affect the application and 2fa cookies respectively if used.
-                return await TwoFactorAuthenticatorSignInAsync(TwoFactorCode, isPersistent, rememberClient: isPersistent);
-            }
-            else if (!await IsTwoFactorClientRememberedAsync(user))
-            {
+                // Allow the two-factor flow to continue later within the same request with or without a TwoFactorUserIdScheme in
+                // the event that the two-factor code or recovery code has already been provided as is the case for MapIdentityApi.
+                _twoFactorInfo = new()
+                {
+                    User = user,
+                    LoginProvider = loginProvider,
+                };
+
                 if (await _schemes.GetSchemeAsync(IdentityConstants.TwoFactorUserIdScheme) != null)
                 {
                     // Store the userId for use after two factor check
@@ -838,19 +848,16 @@ public class SignInManager<TUser> where TUser : class
 
     private async Task<TwoFactorAuthenticationInfo?> RetrieveTwoFactorInfoAsync()
     {
-        if (_twoFactorUser != null)
+        if (_twoFactorInfo != null)
         {
-            return new TwoFactorAuthenticationInfo
-            {
-                User = _twoFactorUser,
-            };
+            return _twoFactorInfo;
         }
 
         var result = await Context.AuthenticateAsync(IdentityConstants.TwoFactorUserIdScheme);
         if (result?.Principal == null)
         {
             return null;
-        }    
+        }
 
         var userId = result.Principal.FindFirstValue(ClaimTypes.Name);
         if (userId == null)

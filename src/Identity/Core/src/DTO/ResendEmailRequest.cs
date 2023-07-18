@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Identity.DTO;
 
-internal sealed class TwoFactorKeyResponse
+internal sealed class ResendEmailRequest
 {
-    public required string SharedKey { get; init; }
+    public required string Email { get; init; }
 }
