@@ -256,7 +256,7 @@ public class PollyHttpClientBuilderExtensionsTest
         // Act1
         serviceCollection.AddHttpClient("example.com", c => c.BaseAddress = new Uri("http://example.com"))
             .AddTransientHttpErrorPolicy(b => b.RetryAsync(5))
-            .ConfigurePrimaryHttpMessageHandler(() => PrimaryHandler)
+            .ConfigurePrimaryHttpMessageHandler(() => handler)
             .ConfigureAdditionalHttpMessageHandlers((handlers, _) => additionalHandlers = handlers);
 
         var services = serviceCollection.BuildServiceProvider();
@@ -301,7 +301,7 @@ public class PollyHttpClientBuilderExtensionsTest
         // Act1
         serviceCollection.AddHttpClient("example.com", c => c.BaseAddress = new Uri("http://example.com"))
             .AddTransientHttpErrorPolicy(b => b.RetryAsync(5))
-            .ConfigurePrimaryHttpMessageHandler(() => PrimaryHandler)
+            .ConfigurePrimaryHttpMessageHandler(() => handler)
             .ConfigureAdditionalHttpMessageHandlers((handlers, _) => additionalHandlers = handlers);
 
         var services = serviceCollection.BuildServiceProvider();
