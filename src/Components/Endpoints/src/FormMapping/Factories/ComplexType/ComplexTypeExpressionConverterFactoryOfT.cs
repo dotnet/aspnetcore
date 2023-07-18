@@ -34,7 +34,8 @@ internal sealed class ComplexTypeExpressionConverterFactory<T>(FormDataMetadataF
         var propertyFoundValue = Expression.Variable(typeof(bool), "foundValueForProperty");
         var succeeded = Expression.Variable(typeof(bool), "succeeded");
         var localFoundValueVar = Expression.Variable(typeof(bool), "localFoundValue");
-        var variables = new List<ParameterExpression>() { propertyFoundValue, succeeded, localFoundValueVar };
+        var exceptionVar = Expression.Variable(typeof(Exception), "mappingException");
+        var variables = new List<ParameterExpression>() { propertyFoundValue, succeeded, localFoundValueVar, exceptionVar };
 
         var propertyValueLocals = new List<ParameterExpression>();
         var constructorParameterValueLocals = new List<ParameterExpression>();
@@ -58,6 +59,7 @@ internal sealed class ComplexTypeExpressionConverterFactory<T>(FormDataMetadataF
             propertyFoundValue,
             succeeded,
             localFoundValueVar,
+            exceptionVar,
             variables,
             constructorParameterValueLocals,
             body);
@@ -69,6 +71,7 @@ internal sealed class ComplexTypeExpressionConverterFactory<T>(FormDataMetadataF
             propertyFoundValue,
             succeeded,
             localFoundValueVar,
+            exceptionVar,
             variables,
             propertyValueLocals,
             body);
@@ -320,6 +323,7 @@ internal sealed class ComplexTypeExpressionConverterFactory<T>(FormDataMetadataF
         ParameterExpression propertyFoundValue,
         ParameterExpression succeeded,
         ParameterExpression localFoundValueVar,
+        ParameterExpression exceptionVar,
         List<ParameterExpression> variables,
         List<ParameterExpression> propertyValueLocals,
         List<Expression> body)
@@ -355,7 +359,7 @@ internal sealed class ComplexTypeExpressionConverterFactory<T>(FormDataMetadataF
                     Array.Empty<Expression>()));
             body.Add(propertyConverter);
 
-            body.Add(Expression.TryFinally(
+            body.Add(Expression.TryCatchFinally(
                 // try
                 // {
                 //     reader.PushPrefix("PropertyInfo");
@@ -390,7 +394,18 @@ internal sealed class ComplexTypeExpressionConverterFactory<T>(FormDataMetadataF
                     readerParam,
                     nameof(FormDataReader.PopPrefix),
                     Array.Empty<Type>(),
-                    Expression.Constant(property.Name))));
+                    Expression.Constant(property.Name)),
+                handlers: Expression.Catch(
+                    exceptionVar,
+                    Expression.Block(
+                        Expression.Call(
+                            readerParam,
+                            nameof(FormDataReader.AddMappingError),
+                            Array.Empty<Type>(),
+                            exceptionVar,
+                            Expression.Constant(null, typeof(string))),
+                        Expression.Assign(succeeded, Expression.Constant(false, typeof(bool)))
+                    ))));
 
             // parameter.found = foundProperty;
             body.Add(Expression.Assign(GetValueLocalVariableFoundExpression(propertyVar), propertyFoundValue));
@@ -407,6 +422,7 @@ internal sealed class ComplexTypeExpressionConverterFactory<T>(FormDataMetadataF
         ParameterExpression propertyFoundValue,
         ParameterExpression succeeded,
         ParameterExpression localFoundValueVar,
+        ParameterExpression exceptionVar,
         List<ParameterExpression> variables,
         List<ParameterExpression> constructorParameterValueLocals,
         List<Expression> body)
@@ -456,7 +472,7 @@ internal sealed class ComplexTypeExpressionConverterFactory<T>(FormDataMetadataF
             // {
             //     reader.PopPrefix("PropertyInfo");
             // }
-            body.Add(Expression.TryFinally(
+            body.Add(Expression.TryCatchFinally(
                 body: Expression.Block(
                     // reader.PushPrefix("PropertyInfo");
                     Expression.Call(
@@ -481,7 +497,18 @@ internal sealed class ComplexTypeExpressionConverterFactory<T>(FormDataMetadataF
                     readerParam,
                     nameof(FormDataReader.PopPrefix),
                     Array.Empty<Type>(),
-                    Expression.Constant(constructorParameter.Name))));
+                    Expression.Constant(constructorParameter.Name)),
+                handlers: Expression.Catch(
+                    exceptionVar,
+                    Expression.Block(
+                        Expression.Call(
+                            readerParam,
+                            nameof(FormDataReader.AddMappingError),
+                            Array.Empty<Type>(),
+                            exceptionVar,
+                            Expression.Constant(null, typeof(string))),
+                        Expression.Assign(succeeded, Expression.Constant(false, typeof(bool)))
+                    ))));
 
             // parameter.found = foundProperty;
             body.Add(Expression.Assign(GetValueLocalVariableFoundExpression(constructorParameterVar), propertyFoundValue));

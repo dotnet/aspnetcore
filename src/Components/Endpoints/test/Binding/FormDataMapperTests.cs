@@ -1203,9 +1203,17 @@ public class FormDataMapperTests
             Assert.Equal(expected.Tail.Tail.Tail.Tail.Head, result.Tail.Tail.Tail.Tail.Head);
             Assert.Null(result.Tail.Tail.Tail.Tail.Tail);
         });
-        var error = Assert.Single(errors);
-        Assert.Equal("Tail.Tail.Tail.Tail.Tail", error.Key);
-        Assert.Equal("The maximum recursion depth of '5' was exceeded.", error.Message.ToString(CultureInfo.InvariantCulture));
+        Assert.Collection(errors,
+            e =>
+            {
+                Assert.Equal("Tail.Tail.Tail.Tail.Tail", e.Key);
+                Assert.Equal("The maximum recursion depth of '5' was exceeded for 'Tail.Tail.Tail.Tail.Tail.Head'.", e.Message.ToString(CultureInfo.InvariantCulture));
+            },
+            e =>
+            {
+                Assert.Equal("Tail.Tail.Tail.Tail.Tail", e.Key);
+                Assert.Equal("The maximum recursion depth of '5' was exceeded for 'Tail.Tail.Tail.Tail.Tail.Tail'.", e.Message.ToString(CultureInfo.InvariantCulture));
+            });
     }
 
     [Fact]

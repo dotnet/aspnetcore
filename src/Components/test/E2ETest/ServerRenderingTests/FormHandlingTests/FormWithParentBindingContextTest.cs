@@ -1134,6 +1134,24 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     }
 
     [Fact]
+    public void PostingMaxRecursionDepthExceedTheLimitFails()
+    {
+        var dispatchToForm = new DispatchToForm(this)
+        {
+            Url = "forms/default-form-max-recursion-depth",
+            FormCssSelector = "form",
+            AssertErrors = (errors) =>
+            {
+                Assert.Collection(errors,
+                    err => Assert.Equal("The maximum recursion depth of '5' was exceeded for 'Values.Tail.Tail.Tail.Tail.Head'.", errors[0].Text),
+                    err => Assert.Equal("The maximum recursion depth of '5' was exceeded for 'Values.Tail.Tail.Tail.Tail.Tail'.", errors[1].Text));
+            },
+            ErrorSelector = "ul.validation-errors > li.validation-message",
+        };
+        DispatchToFormCore(dispatchToForm);
+    }
+
+    [Fact]
     public void PostingFormWithErrorsDoesNotExceedMaximumErrors()
     {
         var dispatchToForm = new DispatchToForm(this)

@@ -193,16 +193,15 @@ internal struct FormDataReader
     internal void PushPrefix(scoped ReadOnlySpan<char> key)
     {
         _currentDepth++;
-        if (_currentDepth > MaxRecursionDepth)
-        {
-            throw new InvalidOperationException($"The maximum recursion depth of '{MaxRecursionDepth}' was exceeded.");
-        }
-
         // We automatically append a "." before adding the suffix, except when its the first element pushed to the
         // scope, or when we are accessing a property after a collection or an indexer like items[1].
         var separator = _currentPrefixBuffer.Length > 0 && key[0] != '['
             ? ".".AsSpan()
             : "".AsSpan();
+        if (_currentDepth > MaxRecursionDepth)
+        {
+            throw new InvalidOperationException($"The maximum recursion depth of '{MaxRecursionDepth}' was exceeded for '{_currentPrefixBuffer}{separator}{key}'.");
+        }
 
         Debug.Assert(_prefixBuffer.Length >= (_currentPrefixBuffer.Length + separator.Length));
 

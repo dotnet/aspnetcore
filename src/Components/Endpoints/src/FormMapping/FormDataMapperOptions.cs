@@ -29,11 +29,13 @@ internal sealed class FormDataMapperOptions
     // Some examples of this are:
     // Binding to collection using hashes, where the payload can be crafted to force the worst case on insertion
     // which is O(n).
-    internal int MaxCollectionSize = 100;
+    internal int MaxCollectionSize = FormReader.DefaultValueCountLimit;
+
+    // MVC uses 32, JSON uses 64. Let's stick to STJ default.
     internal int MaxRecursionDepth = 64;
 
-    // This is normally 100, but we are making it 10 because we are running into a bug with synchronous reads.
-    internal int MaxErrorCount = 10;
+    // This is normally 200 (similar to ModelStateDictionary.DefaultMaxAllowedErrors in MVC) 
+    internal int MaxErrorCount = 200;
 
     internal int MaxKeyBufferSize = FormReader.DefaultKeyLengthLimit;
 
