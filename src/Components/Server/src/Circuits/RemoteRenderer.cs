@@ -74,7 +74,7 @@ internal partial class RemoteRenderer : WebRenderer
 
     protected override void UpdateRootComponents(string operationsJson)
     {
-        var operations = JsonSerializer.Deserialize<IEnumerable<RootComponentOperation<ServerComponentMarker>>>(
+        var operations = JsonSerializer.Deserialize<IEnumerable<RootComponentOperation>>(
             operationsJson,
             ServerComponentSerializationSettings.JsonSerializationOptions);
 
@@ -96,7 +96,7 @@ internal partial class RemoteRenderer : WebRenderer
 
         return;
 
-        void AddRootComponent(RootComponentOperation<ServerComponentMarker> operation)
+        void AddRootComponent(RootComponentOperation operation)
         {
             if (operation.SelectorId is not { } selectorId)
             {
@@ -104,7 +104,13 @@ internal partial class RemoteRenderer : WebRenderer
                 return;
             }
 
-            if (!_serverComponentDeserializer.TryDeserializeSingleComponentDescriptor(operation.Marker, out var descriptor))
+            if (operation.Marker is not { } marker)
+            {
+                Log.InvalidRootComponentOperation(_logger, operation.Type, message: "Missing marker.");
+                return;
+            }
+
+            if (!_serverComponentDeserializer.TryDeserializeSingleComponentDescriptor(marker, out var descriptor))
             {
                 throw new InvalidOperationException("Failed to deserialize a component descriptor when adding a new root component.");
             }
@@ -112,7 +118,7 @@ internal partial class RemoteRenderer : WebRenderer
             _ = AddComponentAsync(descriptor.ComponentType, descriptor.Parameters, selectorId.ToString(CultureInfo.InvariantCulture));
         }
 
-        void UpdateRootComponent(RootComponentOperation<ServerComponentMarker> operation)
+        void UpdateRootComponent(RootComponentOperation operation)
         {
             if (operation.ComponentId is not { } componentId)
             {
@@ -120,9 +126,15 @@ internal partial class RemoteRenderer : WebRenderer
                 return;
             }
 
+            if (operation.Marker is not { } marker)
+            {
+                Log.InvalidRootComponentOperation(_logger, operation.Type, message: "Missing marker.");
+                return;
+            }
+
             var componentState = GetComponentState(componentId);
 
-            if (!_serverComponentDeserializer.TryDeserializeSingleComponentDescriptor(operation.Marker, out var descriptor))
+            if (!_serverComponentDeserializer.TryDeserializeSingleComponentDescriptor(marker, out var descriptor))
             {
                 throw new InvalidOperationException("Failed to deserialize a component descriptor when updating an existing root component.");
             }
@@ -136,7 +148,7 @@ internal partial class RemoteRenderer : WebRenderer
             _ = RenderRootComponentAsync(componentId, descriptor.Parameters);
         }
 
-        void RemoveRootComponent(RootComponentOperation<ServerComponentMarker> operation)
+        void RemoveRootComponent(RootComponentOperation operation)
         {
             if (operation.ComponentId is not { } componentId)
             {

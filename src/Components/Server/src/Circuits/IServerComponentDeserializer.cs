@@ -11,5 +11,5 @@ internal interface IServerComponentDeserializer
         string serializedComponentRecords,
         out List<ComponentDescriptor> descriptors);
 
-    bool TryDeserializeSingleComponentDescriptor(ServerComponentMarker record, [NotNullWhen(true)] out ComponentDescriptor? result);
+    bool TryDeserializeSingleComponentDescriptor(ComponentMarker record, [NotNullWhen(true)] out ComponentDescriptor? result);
 }

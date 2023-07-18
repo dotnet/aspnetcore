@@ -3,6 +3,7 @@
 
 using System.Runtime.InteropServices;
 using System.Text.Encodings.Web;
+using System.Text.Json;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -199,35 +200,22 @@ internal partial class EndpointHtmlRenderer
         var componentState = (EndpointComponentState)GetComponentState(componentId);
         var renderBoundaryMarkers = allowBoundaryMarkers && componentState.StreamRendering;
 
-        // TODO: It's not clear that we actually want to emit the interactive component markers using this
-        // HTML-comment syntax that we've used historically, plus we likely want some way to coalesce both
-        // marker types into a single thing for auto mode (the code below emits both separately for auto).
-        // It may be better to use a custom element like <blazor-component ...>[prerendered]<blazor-component>
-        // so it's easier for the JS code to react automatically whenever this gets inserted or updated during
-        // streaming SSR or progressively-enhanced navigation.
-        var (serverMarker, webAssemblyMarker) = componentState.Component is SSRRenderModeBoundary boundary
-            ? boundary.ToMarkers(_httpContext, sequenceAndKey.Sequence, sequenceAndKey.Key)
-            : default;
+        ComponentEndMarker? endMarkerOrNull = default;
 
-        if (serverMarker.HasValue)
+        if (componentState.Component is SSRRenderModeBoundary boundary)
         {
-            if (!_httpContext.Response.HasStarted)
+            var marker = boundary.ToMarker(_httpContext, sequenceAndKey.Sequence, sequenceAndKey.Key);
+            endMarkerOrNull = marker.ToEndMarker();
+
+            if (!_httpContext.Response.HasStarted && marker.Type is ComponentMarker.ServerMarkerType or ComponentMarker.WebAssemblyMarkerType)
             {
                 _httpContext.Response.Headers.CacheControl = "no-cache, no-store, max-age=0";
             }
 
-            if (webAssemblyMarker.HasValue)
-            {
-                AutoComponentSerializer.AppendPreamble(output, serverMarker.Value, webAssemblyMarker.Value);
-            }
-            else
-            {
-                ServerComponentSerializer.AppendPreamble(output, serverMarker.Value);
-            }
-        }
-        else if (webAssemblyMarker.HasValue)
-        {
-            WebAssemblyComponentSerializer.AppendPreamble(output, webAssemblyMarker.Value);
+            var serializedStartRecord = JsonSerializer.Serialize(marker, ServerComponentSerializationSettings.JsonSerializationOptions);
+            output.Write("<!--Blazor:");
+            output.Write(serializedStartRecord);
+            output.Write("-->");
         }
 
         if (renderBoundaryMarkers)
@@ -246,26 +234,12 @@ internal partial class EndpointHtmlRenderer
             output.Write("-->");
         }
 
-        if (serverMarker.HasValue)
+        if (endMarkerOrNull is { } endMarker)
         {
-            if (serverMarker.Value.PrerenderId is not null)
-            {
-                if (webAssemblyMarker.HasValue)
-                {
-                    AutoComponentSerializer.AppendEpilogue(output, serverMarker.Value);
-                }
-                else
-                {
-                    ServerComponentSerializer.AppendEpilogue(output, serverMarker.Value);
-                }
-            }
-        }
-        else if (webAssemblyMarker.HasValue)
-        {
-            if (webAssemblyMarker.Value.PrerenderId is not null)
-            {
-                WebAssemblyComponentSerializer.AppendEpilogue(output, webAssemblyMarker.Value);
-            }
+            var serializedEndRecord = JsonSerializer.Serialize(endMarker, ServerComponentSerializationSettings.JsonSerializationOptions);
+            output.Write("<!--Blazor:");
+            output.Write(serializedEndRecord);
+            output.Write("-->");
         }
     }
 

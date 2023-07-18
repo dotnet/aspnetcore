@@ -25,10 +25,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)Components\ComponentMarker.cs" LinkBase="DependencyInjection" />
     <Compile Include="$(SharedSourceRoot)Components\WebAssemblyComponentSerializationSettings.cs" LinkBase="DependencyInjection" />
     <Compile Include="$(SharedSourceRoot)Components\ServerComponentSerializationSettings.cs" LinkBase="DependencyInjection" />
-    <Compile Include="$(SharedSourceRoot)Components\WebAssemblyComponentMarker.cs" LinkBase="DependencyInjection" />
-    <Compile Include="$(SharedSourceRoot)Components\ServerComponentMarker.cs" LinkBase="DependencyInjection" />
     <Compile Include="$(SharedSourceRoot)Components\ServerComponent.cs" LinkBase="DependencyInjection" />
     <Compile Include="$(RepoRoot)src\Shared\Components\ComponentParameter.cs" LinkBase="DependencyInjection" />
     <Compile Include="$(RepoRoot)src\Shared\Components\PrerenderComponentApplicationStore.cs" LinkBase="DependencyInjection" />

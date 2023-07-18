@@ -433,7 +433,7 @@ public class RemoteRendererTest
         var serviceProvider = CreateServiceProvider();
         var renderer = GetRemoteRenderer(serviceProvider);
         var expectedMessage = "Hello, world!";
-        var operation = new RootComponentOperation<ServerComponentMarker>
+        var operation = new RootComponentOperation
         {
             Type = RootComponentOperationType.Add,
             SelectorId = 1,
@@ -461,7 +461,7 @@ public class RemoteRendererTest
         // Arrange
         var serviceProvider = CreateServiceProvider();
         var renderer = GetRemoteRenderer(serviceProvider);
-        var operation = new RootComponentOperation<ServerComponentMarker>
+        var operation = new RootComponentOperation
         {
             Type = RootComponentOperationType.Add,
             Marker = CreateMarker(typeof(DynamicallyAddedComponent)),
@@ -485,11 +485,11 @@ public class RemoteRendererTest
         // Arrange
         var serviceProvider = CreateServiceProvider();
         var renderer = GetRemoteRenderer(serviceProvider);
-        var operation = new RootComponentOperation<ServerComponentMarker>
+        var operation = new RootComponentOperation
         {
             Type = RootComponentOperationType.Add,
             SelectorId = 1,
-            Marker = new ServerComponentMarker()
+            Marker = new ComponentMarker()
             {
                 Descriptor = "some random text",
             },
@@ -518,7 +518,7 @@ public class RemoteRendererTest
         };
         var expectedMessage = "Updated message";
         var componentId = renderer.AssignRootComponentId(component);
-        var operation = new RootComponentOperation<ServerComponentMarker>
+        var operation = new RootComponentOperation
         {
             Type = RootComponentOperationType.Update,
             ComponentId = componentId,
@@ -550,7 +550,7 @@ public class RemoteRendererTest
             Message = expectedMessage,
         };
         var componentId = renderer.AssignRootComponentId(component);
-        var operation = new RootComponentOperation<ServerComponentMarker>
+        var operation = new RootComponentOperation
         {
             Type = RootComponentOperationType.Update,
             Marker = CreateMarker(typeof(DynamicallyAddedComponent), new()
@@ -583,7 +583,7 @@ public class RemoteRendererTest
         var component2 = new TestComponent();
         var component1Id = renderer.AssignRootComponentId(component1);
         var component2Id = renderer.AssignRootComponentId(component2);
-        var operation = new RootComponentOperation<ServerComponentMarker>
+        var operation = new RootComponentOperation
         {
             Type = RootComponentOperationType.Update,
             ComponentId = component1Id,
@@ -614,7 +614,7 @@ public class RemoteRendererTest
             Message = "Existing message",
         };
         var componentId = renderer.AssignRootComponentId(component);
-        var operation = new RootComponentOperation<ServerComponentMarker>
+        var operation = new RootComponentOperation
         {
             Type = RootComponentOperationType.Update,
             ComponentId = componentId,
@@ -643,7 +643,7 @@ public class RemoteRendererTest
         var renderer = GetRemoteRenderer(serviceProvider);
         var component = new DynamicallyAddedComponent();
         var componentId = renderer.AssignRootComponentId(component);
-        var operation = new RootComponentOperation<ServerComponentMarker>
+        var operation = new RootComponentOperation
         {
             Type = RootComponentOperationType.Remove,
             ComponentId = componentId,
@@ -685,15 +685,16 @@ public class RemoteRendererTest
             NullLogger.Instance);
     }
 
-    private ServerComponentMarker CreateMarker(Type type, Dictionary<string, object> parameters = null)
+    private ComponentMarker CreateMarker(Type type, Dictionary<string, object> parameters = null)
     {
         var serializer = new ServerComponentSerializer(_ephemeralDataProtectionProvider);
-        return serializer.SerializeInvocation(
+        var marker = ComponentMarker.Create(ComponentMarker.ServerMarkerType, false, null);
+        serializer.SerializeInvocation(
+            ref marker,
             _invocationSequence,
             type,
-            parameters is null ? ParameterView.Empty : ParameterView.FromDictionary(parameters),
-            null,
-            false);
+            parameters is null ? ParameterView.Empty : ParameterView.FromDictionary(parameters));
+        return marker;
     }
 
     private class TestRemoteRenderer : RemoteRenderer

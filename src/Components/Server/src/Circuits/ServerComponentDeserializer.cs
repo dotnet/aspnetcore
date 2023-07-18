@@ -92,7 +92,7 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
 
     public bool TryDeserializeComponentDescriptorCollection(string serializedComponentRecords, out List<ComponentDescriptor> descriptors)
     {
-        var markers = JsonSerializer.Deserialize<IEnumerable<ServerComponentMarker>>(serializedComponentRecords, ServerComponentSerializationSettings.JsonSerializationOptions);
+        var markers = JsonSerializer.Deserialize<IEnumerable<ComponentMarker>>(serializedComponentRecords, ServerComponentSerializationSettings.JsonSerializationOptions);
         descriptors = new List<ComponentDescriptor>();
         int lastSequence = -1;
 
@@ -148,7 +148,7 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
         return true;
     }
 
-    public bool TryDeserializeSingleComponentDescriptor(ServerComponentMarker record, [NotNullWhen(true)] out ComponentDescriptor? result)
+    public bool TryDeserializeSingleComponentDescriptor(ComponentMarker record, [NotNullWhen(true)] out ComponentDescriptor? result)
     {
         result = default;
 
@@ -200,9 +200,9 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
         return true;
     }
 
-    private bool IsWellFormedServerComponent(ServerComponentMarker record)
+    private bool IsWellFormedServerComponent(ComponentMarker record)
     {
-        if (record.Type != ServerComponentMarker.ServerMarkerType)
+        if (record.Type != ComponentMarker.ServerMarkerType)
         {
             Log.InvalidMarkerType(_logger, record.Type);
             return false;
@@ -217,7 +217,7 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
         return true;
     }
 
-    private (ComponentDescriptor, ServerComponent) DeserializeServerComponent(ServerComponentMarker record)
+    private (ComponentDescriptor, ServerComponent) DeserializeServerComponent(ComponentMarker record)
     {
         string unprotected;
         try

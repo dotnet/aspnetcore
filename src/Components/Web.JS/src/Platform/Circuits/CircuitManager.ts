@@ -3,7 +3,7 @@
 
 import { internalFunctions as navigationManagerFunctions } from '../../Services/NavigationManager';
 import { toLogicalRootCommentElement, LogicalElement, toLogicalElement } from '../../Rendering/LogicalElements';
-import { ServerComponentDescriptor } from '../../Services/ComponentDescriptorDiscovery';
+import { ServerComponentDescriptor, descriptorToMarker } from '../../Services/ComponentDescriptorDiscovery';
 import { HubConnectionState } from '@microsoft/signalr';
 import { getAndRemovePendingRootComponentContainer } from '../../Rendering/JSRootComponents';
 import { RootComponentManager } from '../../Services/RootComponentManager';
@@ -47,7 +47,7 @@ export class CircuitDescriptor {
 
     const componentsJson = this.components instanceof RootComponentManager
       ? '[]'
-      : JSON.stringify(this.components.map(c => c.toRecord()));
+      : JSON.stringify(this.components.map(c => descriptorToMarker(c)));
 
     const result = await connection.invoke<string>(
       'StartCircuit',

@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Components;
 
-internal sealed class RootComponentOperation<TMarker>
+internal sealed class RootComponentOperation
 {
     // Represents the type of root component operation to perform.
     public RootComponentOperationType Type { get; set; }
@@ -17,6 +17,6 @@ internal sealed class RootComponentOperation<TMarker>
     // operation.
     public int? ComponentId { get; set; }
 
-    // The type of the marker that was initially rendered to the page.
-    public TMarker? Marker { get; set; }
+    // The marker that was initially rendered to the page.
+    public ComponentMarker? Marker { get; set; }
 }
