@@ -8,6 +8,7 @@
     <PackageTags>aspnetcore</PackageTags>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <Nullable>enable</Nullable>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>

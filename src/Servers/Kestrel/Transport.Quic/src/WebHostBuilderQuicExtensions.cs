@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.Hosting
         [RequiresPreviewFeatures]
         public static IWebHostBuilder UseQuic(this IWebHostBuilder hostBuilder)
         {
+            /*
             if (QuicImplementationProviders.Default.IsSupported)
             {
                 return hostBuilder.ConfigureServices(services =>
@@ -25,6 +26,7 @@ namespace Microsoft.AspNetCore.Hosting
                     services.AddSingleton<IMultiplexedConnectionListenerFactory, QuicTransportFactory>();
                 });
             }
+            */
 
             return hostBuilder;
         }

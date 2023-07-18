@@ -6,7 +6,7 @@
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;authentication;security</PackageTags>
-    <IsPackable>false</IsPackable>
+    <IsPackable>true</IsPackable>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 

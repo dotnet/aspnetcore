@@ -9,7 +9,7 @@
     <PackageTags>aspnetcore;iis</PackageTags>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <NativeAssetsTargetFramework>$(DefaultNetCoreTargetFramework)</NativeAssetsTargetFramework>
-    <IsPackable>false</IsPackable>
+    <IsPackable>true</IsPackable>
     <Nullable>enable</Nullable>
 
     <!-- Ignore platform compatibility warnings for this project. We know this only works on windows.-->

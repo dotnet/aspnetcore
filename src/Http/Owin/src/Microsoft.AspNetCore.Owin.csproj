@@ -7,6 +7,7 @@
     <PackageTags>aspnetcore;owin</PackageTags>
     <!-- Nullable disabled because package is not a commonly used. -->
     <Nullable>disable</Nullable>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>

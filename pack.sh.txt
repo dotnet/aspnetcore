@@ -1,0 +1,66 @@
+#! /bin/zsh
+
+set -e 
+
+(cd src/Servers/Kestrel && dotnet pack ./Kestrel.slnf)
+
+dotnet pack **/Microsoft.AspNetCore.Authentication.csproj
+dotnet pack **/Microsoft.AspNetCore.Authentication.Abstractions.csproj
+dotnet pack **/Microsoft.AspNetCore.Authentication.Cookies.csproj
+dotnet pack **/Microsoft.AspNetCore.Authentication.Core.csproj
+dotnet pack **/Microsoft.AspNetCore.Authorization.csproj
+dotnet pack **/Microsoft.AspNetCore.CookiePolicy.csproj
+dotnet pack **/Microsoft.AspNetCore.Connections.Abstractions.csproj
+dotnet pack **/Microsoft.AspNetCore.Diagnostics.Abstractions.csproj
+dotnet pack **/Microsoft.AspNetCore.Diagnostics.csproj
+dotnet pack **/Microsoft.AspNetCore.HostFiltering.csproj
+dotnet pack **/Microsoft.AspNetCore.Hosting.Abstractions.csproj
+dotnet pack **/Microsoft.AspNetCore.Hosting.Server.Abstractions.csproj
+dotnet pack **/Microsoft.AspNetCore.Hosting.csproj
+dotnet pack **/Microsoft.AspNetCore.Http.Abstractions.csproj
+
+# signalR
+dotnet pack **/Microsoft.AspNetCore.Authorization.Policy.csproj
+dotnet pack **/Microsoft.AspNetCore.Http.Connections.csproj
+dotnet pack **/Microsoft.AspNetCore.Http.Connections.Client.csproj
+dotnet pack **/Microsoft.AspNetCore.Http.Connections.Common.csproj
+dotnet pack **/Microsoft.AspNetCore.SignalR.Protocols.Json.csproj
+dotnet pack **/Microsoft.AspNetCore.SignalR.Protocols.MessagePack.csproj
+dotnet pack **/Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson.csproj
+dotnet pack **/Microsoft.AspNetCore.SignalR.Common.csproj
+dotnet pack **/Microsoft.AspNetCore.SignalR.Core.csproj
+dotnet pack **/Microsoft.AspNetCore.SignalR.csproj
+dotnet pack **/Microsoft.AspNetCore.Websockets.csproj
+
+# mvc minimal
+dotnet pack **/Microsoft.AspNetCore.Mvc.ApiExplorer.csproj
+dotnet pack **/Microsoft.AspNetCore.Mvc.Abstractions.csproj
+dotnet pack **/Microsoft.AspNetCore.Mvc.Core.csproj
+dotnet pack **/Microsoft.AspNetCore.ResponseCaching.Abstractions.csproj
+
+dotnet pack **/Microsoft.AspNetCore.Http.Extensions.csproj
+dotnet pack **/Microsoft.AspNetCore.Http.Features.csproj
+dotnet pack **/Microsoft.AspNetCore.Http.Results.csproj
+dotnet pack **/Microsoft.AspNetCore.Http.csproj
+dotnet pack **/Microsoft.AspNetCore.HttpOverrides.csproj
+dotnet pack **/Microsoft.AspNetCore.Localization.csproj
+dotnet pack **/Microsoft.AspNetCore.Owin.csproj
+dotnet pack **/Microsoft.AspNetCore.Metadata.csproj
+dotnet pack **/Microsoft.AspNetCore.ResponseCompression.csproj
+dotnet pack **/Microsoft.AspNetCore.Rewrite.csproj
+dotnet pack **/Microsoft.AspNetCore.Routing.Abstractions.csproj
+dotnet pack **/Microsoft.AspNetCore.Routing.csproj
+dotnet pack **/Microsoft.AspNetCore.Server.IIS.csproj
+dotnet pack **/Microsoft.AspNetCore.Server.IISIntegration.csproj
+dotnet pack **/Microsoft.AspNetCore.Server.Kestrel.Core.csproj
+dotnet pack **/Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.csproj
+dotnet pack **/Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj
+dotnet pack **/Microsoft.AspNetCore.Server.Kestrel.csproj
+dotnet pack **/Microsoft.AspNetCore.StaticFiles.csproj
+dotnet pack **/Microsoft.AspNetCore.WebUtilities.csproj
+dotnet pack **/Microsoft.AspNetCore.csproj
+dotnet pack **/Microsoft.Extensions.Features.csproj
+dotnet pack **/Microsoft.Extensions.FileProviders.Embedded.csproj
+dotnet pack **/Microsoft.Extensions.ObjectPool.csproj
+dotnet pack **/Microsoft.Extensions.WebEncoders.csproj
+dotnet pack **/Microsoft.Net.Http.Headers.csproj

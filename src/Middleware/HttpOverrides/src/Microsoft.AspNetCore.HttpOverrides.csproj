@@ -8,7 +8,7 @@
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;proxy;headers;xforwarded</PackageTags>
-    <IsPackable>false</IsPackable>
+    <IsPackable>true</IsPackable>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 

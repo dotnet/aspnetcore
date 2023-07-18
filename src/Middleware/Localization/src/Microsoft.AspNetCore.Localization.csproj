@@ -7,7 +7,7 @@
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;localization</PackageTags>
-    <IsPackable>false</IsPackable>
+    <IsPackable>true</IsPackable>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 

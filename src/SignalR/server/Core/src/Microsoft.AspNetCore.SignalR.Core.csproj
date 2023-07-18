@@ -5,7 +5,7 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <RootNamespace>Microsoft.AspNetCore.SignalR</RootNamespace>
-    <IsPackable>false</IsPackable>
+    <IsPackable>true</IsPackable>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 

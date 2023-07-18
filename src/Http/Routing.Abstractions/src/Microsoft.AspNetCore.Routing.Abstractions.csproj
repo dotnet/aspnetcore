@@ -9,7 +9,7 @@ Microsoft.AspNetCore.Routing.RouteData</Description>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;routing</PackageTags>
-    <IsPackable>false</IsPackable>
+    <IsPackable>true</IsPackable>
     <Nullable>annotations</Nullable>
   </PropertyGroup>
 

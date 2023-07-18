@@ -13,6 +13,7 @@ Microsoft.AspNetCore.Http.Features.FeatureCollection
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore</PackageTags>
     <Nullable>enable</Nullable>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
 
 </Project>

@@ -12,6 +12,7 @@
     <PackageTags>files;filesystem</PackageTags>
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <Nullable>enable</Nullable>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>

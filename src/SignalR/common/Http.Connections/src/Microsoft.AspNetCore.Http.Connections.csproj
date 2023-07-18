@@ -5,7 +5,7 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <IsPackable>false</IsPackable>
+    <IsPackable>true</IsPackable>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 

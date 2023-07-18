@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Hosting
         public static IWebHostBuilder UseKestrel(this IWebHostBuilder hostBuilder)
         {
 #pragma warning disable CA2252 // Preview Features
-            hostBuilder.UseQuic();
+            //hostBuilder.UseQuic();
 #pragma warning restore CA2252
             return hostBuilder.ConfigureServices(services =>
             {

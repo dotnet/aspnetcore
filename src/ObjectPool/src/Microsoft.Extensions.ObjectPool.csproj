@@ -7,6 +7,7 @@
     <PackageTags>pooling</PackageTags>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <Nullable>enable</Nullable>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>

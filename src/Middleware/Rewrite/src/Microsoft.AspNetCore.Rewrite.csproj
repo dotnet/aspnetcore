@@ -9,7 +9,7 @@
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;urlrewrite;mod_rewrite</PackageTags>
-    <IsPackable>false</IsPackable>
+    <IsPackable>true</IsPackable>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 

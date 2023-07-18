@@ -7,7 +7,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;iis</PackageTags>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <IsPackable>false</IsPackable>
+    <IsPackable>true</IsPackable>
     <Nullable>enable</Nullable>
 
     <!-- Ignore platform compatibility warnings for this project. We know this only works on windows.-->

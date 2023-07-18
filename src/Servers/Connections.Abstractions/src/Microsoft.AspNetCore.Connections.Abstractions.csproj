@@ -9,6 +9,7 @@
     <PackageTags>aspnetcore</PackageTags>
     <NoWarn>CS1591;$(NoWarn)</NoWarn>
     <Nullable>enable</Nullable>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>

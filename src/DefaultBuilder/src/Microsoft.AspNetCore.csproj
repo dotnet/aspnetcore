@@ -6,7 +6,7 @@
     <PackageTags>aspnetcore</PackageTags>
     <Description>Microsoft.AspNetCore</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <IsPackable>false</IsPackable>
+    <IsPackable>true</IsPackable>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 

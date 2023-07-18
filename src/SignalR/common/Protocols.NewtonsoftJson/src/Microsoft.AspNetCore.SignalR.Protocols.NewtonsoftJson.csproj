@@ -6,6 +6,7 @@
     <RootNamespace>Microsoft.AspNetCore.SignalR</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
