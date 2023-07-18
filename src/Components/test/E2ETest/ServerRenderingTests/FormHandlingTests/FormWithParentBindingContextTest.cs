@@ -1088,6 +1088,35 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         Browser.True(() => Browser.Url.EndsWith("/nav", StringComparison.Ordinal));
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void CanMutateDataSuppliedFromForm(bool suppressEnhancedNavigation)
+    {
+        SuppressEnhancedNavigation(suppressEnhancedNavigation);
+        GoTo($"forms/mutate-and-rerender");
+
+        Browser.Exists(By.Id("simple-value")).SendKeys("Abc");
+        Browser.Exists(By.Id("complex-value")).SendKeys("Def");
+        Browser.Equal("1", () => Browser.Exists(By.Id("render-count")).Text);
+
+        // Can perform a submit that mutates the data and rerenders the receiver
+        // Remember that the rendercount would be reset to zero since this is SSR, so
+        // receiving 2 here shows we did render twice on this cycle
+        Browser.Exists(By.Id("mutate-and-notify")).Click();
+        Browser.Equal("Abc Modified", () => Browser.Exists(By.Id("simple-value")).GetAttribute("value"));
+        Browser.Equal("Def Modified", () => Browser.Exists(By.Id("complex-value")).GetAttribute("value"));
+        Browser.Equal("2", () => Browser.Exists(By.Id("render-count")).Text);
+        Browser.Exists(By.Id("received-notification"));
+
+        // Can perform a submit that replaces the received object entirely
+        Browser.Exists(By.Id("clear-and-notify")).Click();
+        Browser.Equal("", () => Browser.Exists(By.Id("simple-value")).GetAttribute("value"));
+        Browser.Equal("", () => Browser.Exists(By.Id("complex-value")).GetAttribute("value"));
+        Browser.Equal("2", () => Browser.Exists(By.Id("render-count")).Text);
+        Browser.Exists(By.Id("received-notification"));
+    }
+
     private void SuppressEnhancedNavigation(bool shouldSuppress)
     {
         if (shouldSuppress)
