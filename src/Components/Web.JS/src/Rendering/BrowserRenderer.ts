@@ -32,7 +32,11 @@ export class BrowserRenderer {
   }
 
   public attachRootComponentToLogicalElement(componentId: number, element: LogicalElement, appendContent: boolean): void {
-    markAsInteractiveRootComponentElement(element);
+    if (isInteractiveRootComponentElement(element)) {
+      throw new Error(`Root component '${componentId}' could not be attached because its target element is already associated with a root component`);
+    }
+
+    markAsInteractiveRootComponentElement(element, true);
     this.attachComponentToElement(componentId, element);
     this.rootComponentIds.add(componentId);
 
@@ -78,7 +82,9 @@ export class BrowserRenderer {
       // When disposing a root component, the container element won't be removed from the DOM (because there's
       // no parent to remove that child), so we empty it to restore it to the state it was in before the root
       // component was added.
-      emptyLogicalElement(this.childComponentLocations[componentId]);
+      const logicalElement = this.childComponentLocations[componentId];
+      markAsInteractiveRootComponentElement(logicalElement, false);
+      emptyLogicalElement(logicalElement);
     }
 
     delete this.childComponentLocations[componentId];
@@ -359,12 +365,12 @@ export class BrowserRenderer {
   }
 }
 
-function markAsInteractiveRootComponentElement(element: LogicalElement) {
-  element[interactiveRootComponentPropname] = true;
+function markAsInteractiveRootComponentElement(element: LogicalElement, isInteractive: boolean) {
+  element[interactiveRootComponentPropname] = isInteractive;
 }
 
-export function isInteractiveRootComponentElement(element: LogicalElement) {
-  return interactiveRootComponentPropname in element;
+export function isInteractiveRootComponentElement(element: LogicalElement): boolean | undefined {
+  return element[interactiveRootComponentPropname];
 }
 
 export interface ComponentDescriptor {

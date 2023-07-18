@@ -70,7 +70,7 @@ export class RootComponentManager {
             // This is the first time we're seeing this marker.
             this.markComponentAsUpdated(descriptor);
             this.markComponentAsPendingResolution(descriptor);
-            operations.push({ type: 'add', selectorId: descriptor.getUniqueId(), marker: descriptor.toRecord() });
+            operations.push({ type: 'add', selectorId: descriptor.id, marker: descriptor.toRecord() });
           }
           continue;
         }
@@ -132,18 +132,15 @@ export class RootComponentManager {
   }
 
   private doesComponentNeedUpdate(descriptor: ComponentDescriptor) {
-    const id = descriptor.getUniqueId();
-    return this._lastUpdatedIdByDescriptor.get(descriptor) !== id;
+    return this._lastUpdatedIdByDescriptor.get(descriptor) !== descriptor.id;
   }
 
   private markComponentAsUpdated(descriptor: ComponentDescriptor) {
-    const id = descriptor.getUniqueId();
-    this._lastUpdatedIdByDescriptor.set(descriptor, id);
+    this._lastUpdatedIdByDescriptor.set(descriptor, descriptor.id);
   }
 
   private markComponentAsPendingResolution(descriptor: ComponentDescriptor) {
-    const id = descriptor.getUniqueId();
-    this._descriptorsToResolveById[id] = descriptor;
+    this._descriptorsToResolveById[descriptor.id] = descriptor;
   }
 
   private resolveComponentById(id: number): ComponentDescriptor | undefined {

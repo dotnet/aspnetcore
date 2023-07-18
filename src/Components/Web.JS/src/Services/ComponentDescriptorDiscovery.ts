@@ -337,11 +337,15 @@ type WebAssemblyComponentMarker = {
 export type ComponentDescriptor = ServerComponentDescriptor | WebAssemblyComponentDescriptor;
 
 export class ServerComponentDescriptor {
+  private static globalId = 1;
+
   public type: 'server';
 
   public start: Comment;
 
   public end?: Comment;
+
+  public id: number;
 
   public sequence: number;
 
@@ -350,16 +354,13 @@ export class ServerComponentDescriptor {
   public key?: string;
 
   public constructor(type: 'server', start: Comment, end: Comment | undefined, sequence: number, descriptor: string, key: string | undefined) {
+    this.id = ServerComponentDescriptor.globalId++;
     this.type = type;
     this.start = start;
     this.end = end;
     this.sequence = sequence;
     this.descriptor = descriptor;
     this.key = key;
-  }
-
-  public getUniqueId(): number {
-    return this.sequence;
   }
 
   public matches(other: ComponentDescriptor): other is ServerComponentDescriptor {
@@ -374,6 +375,7 @@ export class ServerComponentDescriptor {
     this.end = other.end;
     this.sequence = other.sequence;
     this.descriptor = other.descriptor;
+    this.id = other.id;
   }
 
   public toRecord(): ServerComponentMarker {
@@ -416,10 +418,6 @@ export class WebAssemblyComponentDescriptor {
     this.start = start;
     this.end = end;
     this.key = key;
-  }
-
-  public getUniqueId(): number {
-    return this.id;
   }
 
   public matches(other: ComponentDescriptor): other is WebAssemblyComponentDescriptor {
