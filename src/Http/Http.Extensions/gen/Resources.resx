@@ -177,4 +177,16 @@
   <data name="InvalidAsParametersNullable_Message" xml:space="preserve">
     <value>The nullable type '{0}' is not supported. Mark the parameter as non-nullable.</value>
   </data>
+  <data name="TypeParametersNotSupported_Title" xml:space="preserve">
+    <value>Type parameters not supported</value>
+  </data>
+  <data name="TypeParametersNotSupported_Message" xml:space="preserve">
+    <value>Endpoints with generic type parameters are not supported. Compile-time endpoint generation will skip this endpoint.</value>
+  </data>
+  <data name="InaccessibleTypesNotSupported_Title" xml:space="preserve">
+    <value>Unable to resolve inaccessible type</value>
+  </data>
+  <data name="InaccessibleTypesNotSupported_Message" xml:space="preserve">
+    <value>Encountered inaccessible type '{0}' while processing endpoint. Compile-time endpoint generation will skip this endpoint.</value>
+  </data>
 </root>

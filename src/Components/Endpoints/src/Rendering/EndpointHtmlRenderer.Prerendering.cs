@@ -133,7 +133,7 @@ internal partial class EndpointHtmlRenderer
         }
     }
 
-    private static ValueTask<PrerenderedComponentHtmlContent> HandleNavigationException(HttpContext httpContext, NavigationException navigationException)
+    public static ValueTask<PrerenderedComponentHtmlContent> HandleNavigationException(HttpContext httpContext, NavigationException navigationException)
     {
         if (httpContext.Response.HasStarted)
         {

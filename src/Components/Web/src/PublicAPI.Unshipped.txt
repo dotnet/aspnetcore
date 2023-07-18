@@ -25,8 +25,7 @@ Microsoft.AspNetCore.Components.Forms.FormMappingContext.GetAttemptedValue(strin
 Microsoft.AspNetCore.Components.Forms.FormMappingContext.GetAttemptedValue(string! key) -> string?
 Microsoft.AspNetCore.Components.Forms.FormMappingContext.GetErrors(string! formName, string! key) -> Microsoft.AspNetCore.Components.Forms.Mapping.FormMappingError?
 Microsoft.AspNetCore.Components.Forms.FormMappingContext.GetErrors(string! key) -> Microsoft.AspNetCore.Components.Forms.Mapping.FormMappingError?
-Microsoft.AspNetCore.Components.Forms.FormMappingContext.MappingContextId.get -> string!
-Microsoft.AspNetCore.Components.Forms.FormMappingContext.Name.get -> string!
+Microsoft.AspNetCore.Components.Forms.FormMappingContext.MappingScopeName.get -> string!
 Microsoft.AspNetCore.Components.Forms.FormMappingScope
 Microsoft.AspNetCore.Components.Forms.FormMappingScope.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.Forms.FormMappingContext!>!
 Microsoft.AspNetCore.Components.Forms.FormMappingScope.ChildContent.set -> void
@@ -34,8 +33,8 @@ Microsoft.AspNetCore.Components.Forms.FormMappingScope.FormMappingScope() -> voi
 Microsoft.AspNetCore.Components.Forms.FormMappingScope.Name.get -> string!
 Microsoft.AspNetCore.Components.Forms.FormMappingScope.Name.set -> void
 Microsoft.AspNetCore.Components.Forms.InputBase<TValue>.NameAttributeValue.get -> string!
-Microsoft.AspNetCore.Components.Forms.EditForm.FormHandlerName.get -> string?
-Microsoft.AspNetCore.Components.Forms.EditForm.FormHandlerName.set -> void
+Microsoft.AspNetCore.Components.Forms.EditForm.FormName.get -> string?
+Microsoft.AspNetCore.Components.Forms.EditForm.FormName.set -> void
 Microsoft.AspNetCore.Components.Forms.Mapping.FormMappingError
 Microsoft.AspNetCore.Components.Forms.Mapping.FormMappingError.AttemptedValue.get -> string?
 Microsoft.AspNetCore.Components.Forms.Mapping.FormMappingError.Container.get -> object!
@@ -43,8 +42,9 @@ Microsoft.AspNetCore.Components.Forms.Mapping.FormMappingError.ErrorMessages.get
 Microsoft.AspNetCore.Components.Forms.Mapping.FormMappingError.Name.get -> string!
 Microsoft.AspNetCore.Components.Forms.Mapping.FormMappingError.Path.get -> string!
 Microsoft.AspNetCore.Components.Forms.Mapping.FormValueMappingContext
-Microsoft.AspNetCore.Components.Forms.Mapping.FormValueMappingContext.FormName.get -> string!
-Microsoft.AspNetCore.Components.Forms.Mapping.FormValueMappingContext.FormValueMappingContext(string! formName, System.Type! valueType, string! parameterName) -> void
+Microsoft.AspNetCore.Components.Forms.Mapping.FormValueMappingContext.AcceptFormName.get -> string?
+Microsoft.AspNetCore.Components.Forms.Mapping.FormValueMappingContext.AcceptMappingScopeName.get -> string!
+Microsoft.AspNetCore.Components.Forms.Mapping.FormValueMappingContext.FormValueMappingContext(string! acceptMappingScopeName, string? acceptFormName, System.Type! valueType, string! parameterName) -> void
 Microsoft.AspNetCore.Components.Forms.Mapping.FormValueMappingContext.MapErrorToContainer.get -> System.Action<string!, object!>?
 Microsoft.AspNetCore.Components.Forms.Mapping.FormValueMappingContext.MapErrorToContainer.set -> void
 Microsoft.AspNetCore.Components.Forms.Mapping.FormValueMappingContext.OnError.get -> System.Action<string!, System.FormattableString!, string?>?
@@ -54,13 +54,14 @@ Microsoft.AspNetCore.Components.Forms.Mapping.FormValueMappingContext.Result.get
 Microsoft.AspNetCore.Components.Forms.Mapping.FormValueMappingContext.SetResult(object? result) -> void
 Microsoft.AspNetCore.Components.Forms.Mapping.FormValueMappingContext.ValueType.get -> System.Type!
 Microsoft.AspNetCore.Components.Forms.Mapping.IFormValueMapper
-Microsoft.AspNetCore.Components.Forms.Mapping.IFormValueMapper.CanMap(System.Type! valueType, string? formName = null) -> bool
+Microsoft.AspNetCore.Components.Forms.Mapping.IFormValueMapper.CanMap(System.Type! valueType, string! scopeName, string? formName) -> bool
 Microsoft.AspNetCore.Components.Forms.Mapping.IFormValueMapper.Map(Microsoft.AspNetCore.Components.Forms.Mapping.FormValueMappingContext! context) -> void
 Microsoft.AspNetCore.Components.Forms.Mapping.SupplyParameterFromFormServiceCollectionExtensions
 Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer
 Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.BeginRenderingComponent(Microsoft.AspNetCore.Components.IComponent! component, Microsoft.AspNetCore.Components.ParameterView initialParameters) -> Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent
 Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.BeginRenderingComponent(System.Type! componentType, Microsoft.AspNetCore.Components.ParameterView initialParameters) -> Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent
 Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.StaticHtmlRenderer(System.IServiceProvider! serviceProvider, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
+Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.TryCreateScopeQualifiedEventName(int componentId, string! assignedEventName, out string? scopeQualifiedEventName) -> bool
 Microsoft.AspNetCore.Components.RenderTree.WebRenderer.WaitUntilAttachedAsync() -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute
 Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute.Handler.get -> string?
