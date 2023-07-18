@@ -180,11 +180,21 @@ function treatAsMatch(destination: Node, source: Node) {
       }
       break;
     }
-    case Node.ELEMENT_NODE:
+    case Node.ELEMENT_NODE: {
+      const editableElementValue = getEditableElementValue(source as Element);
       synchronizeAttributes(destination as Element, source as Element);
       applyAnyDeferredValue(destination as Element);
       synchronizeDomContentCore(destination as Element, source as Element);
+
+      // This is a much simpler alternative to the deferred-value-assignment logic we use in interactive rendering.
+      // Because this sync algorithm goes depth-first, we know all the attributes and descendants are fully in sync
+      // by now, so setting any "special value" property is just a matter of assigning it right now (we don't have
+      // to be concerned that it's invalid because it doesn't correspond to an <option> child or a min/max attribute).
+      if (editableElementValue !== null) {
+        ensureEditableValueSynchronized(destination as Element, editableElementValue);
+      }
       break;
+    }
     case Node.DOCUMENT_TYPE_NODE:
       // See comment below about doctype nodes. We leave them alone.
       break;
@@ -289,7 +299,6 @@ function domNodeComparer(a: Node, b: Node): UpdateCost {
   }
 }
 
-
 function upgradeComponentCommentsToLogicalRootComments(root: Node): ComponentDescriptor[] {
   const serverDescriptors = discoverComponents(root, 'server') as ServerComponentDescriptor[];
   const webAssemblyDescriptors = discoverComponents(root, 'webassembly') as WebAssemblyComponentDescriptor[];
@@ -315,6 +324,32 @@ function upgradeComponentCommentsToLogicalRootComments(root: Node): ComponentDes
   }
 
   return allDescriptors;
+}
+
+function ensureEditableValueSynchronized(destination: Element, value: any) {
+  if (destination instanceof HTMLTextAreaElement && destination.value !== value) {
+    destination.value = value as string;
+  } else if (destination instanceof HTMLSelectElement && destination.selectedIndex !== value) {
+    destination.selectedIndex = value as number;
+  } else if (destination instanceof HTMLInputElement) {
+    if (destination.type === 'checkbox' && destination.checked !== value) {
+      destination.checked = value as boolean;
+    } else if (destination.value !== value) {
+      destination.value = value as string;
+    }
+  }
+}
+
+function getEditableElementValue(elem: Element): string | boolean | number | null {
+  if (elem instanceof HTMLSelectElement) {
+    return elem.selectedIndex;
+  } else if (elem instanceof HTMLInputElement) {
+    return elem.type === 'checkbox' ? elem.checked : (elem.getAttribute('value') || '');
+  } else if (elem instanceof HTMLTextAreaElement) {
+    return elem.value;
+  } else {
+    return null;
+  }
 }
 
 export interface CommentBoundedRange {

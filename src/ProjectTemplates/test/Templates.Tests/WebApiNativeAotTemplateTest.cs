@@ -8,9 +8,9 @@ using Xunit.Abstractions;
 
 namespace Templates.Test;
 
-public class ApiTemplateTest : LoggedTest
+public class WebApiNativeAotTemplateTest : LoggedTest
 {
-    public ApiTemplateTest(ProjectFactoryFixture factoryFixture)
+    public WebApiNativeAotTemplateTest(ProjectFactoryFixture factoryFixture)
     {
         ProjectFactory = factoryFixture;
     }
@@ -31,50 +31,30 @@ public class ApiTemplateTest : LoggedTest
     }
 
     [ConditionalFact]
-    public async Task ApiTemplateCSharp()
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/47478", Queues = HelixConstants.NativeAotNotSupportedHelixQueues)]
+    public async Task WebApiNativeAotTemplateCSharp()
     {
-        await ApiTemplateCore(languageOverride: null);
+        await WebApiNativeAotTemplateCore(languageOverride: null);
     }
 
     [ConditionalFact]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/47478", Queues = HelixConstants.NativeAotNotSupportedHelixQueues)]
-    public async Task ApiTemplateNativeAotCSharp()
+    public async Task WebApiNativeAotTemplateProgramMainCSharp()
     {
-        await ApiTemplateCore(languageOverride: null, args: new[] { ArgConstants.PublishNativeAot });
+        await WebApiNativeAotTemplateCore(languageOverride: null, args: new[] { ArgConstants.UseProgramMain });
     }
 
-    [ConditionalFact]
-    public async Task ApiTemplateProgramMainCSharp()
+    private async Task WebApiNativeAotTemplateCore(string languageOverride, string[] args = null)
     {
-        await ApiTemplateCore(languageOverride: null, args: new[] { ArgConstants.UseProgramMain });
-    }
-
-    [ConditionalFact]
-    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/47478", Queues = HelixConstants.NativeAotNotSupportedHelixQueues)]
-    public async Task ApiTemplateProgramMainNativeAotCSharp()
-    {
-        await ApiTemplateCore(languageOverride: null, args: new[] { ArgConstants.UseProgramMain, ArgConstants.PublishNativeAot });
-    }
-
-    private async Task ApiTemplateCore(string languageOverride, string[] args = null)
-    {
-        var nativeAot = args?.Contains(ArgConstants.PublishNativeAot) ?? false;
-
         var project = await ProjectFactory.CreateProject(Output);
-        if (nativeAot)
-        {
-            project.SetCurrentRuntimeIdentifier();
-        }
+        project.SetCurrentRuntimeIdentifier();
 
-        await project.RunDotNetNewAsync("api", args: args, language: languageOverride);
+        await project.RunDotNetNewAsync("webapiaot", args: args, language: languageOverride);
 
         var expectedLaunchProfileNames = new[] { "http" };
         await project.VerifyLaunchSettings(expectedLaunchProfileNames);
 
-        if (nativeAot)
-        {
-            await project.VerifyHasProperty("InvariantGlobalization", "true");
-        }
+        await project.VerifyHasProperty("InvariantGlobalization", "true");
 
         // Avoid the F# compiler. See https://github.com/dotnet/aspnetcore/issues/14022
         if (languageOverride != null)
@@ -82,8 +62,8 @@ public class ApiTemplateTest : LoggedTest
             return;
         }
 
-        // Force a restore if native AOT so that RID-specific assets are restored
-        await project.RunDotNetPublishAsync(noRestore: !nativeAot);
+        // Force a restore for native AOT so that RID-specific assets are restored
+        await project.RunDotNetPublishAsync(noRestore: false);
 
         // Run dotnet build after publish. The reason is that one uses Config = Debug and the other uses Config = Release
         // The output from publish will go into bin/Release/netcoreappX.Y/publish and won't be affected by calling build
@@ -100,7 +80,7 @@ public class ApiTemplateTest : LoggedTest
             await AssertEndpoints(aspNetProcess);
         }
 
-        using (var aspNetProcess = project.StartPublishedProjectAsync(noHttps: true, usePublishedAppHost: nativeAot))
+        using (var aspNetProcess = project.StartPublishedProjectAsync(noHttps: true, usePublishedAppHost: true))
         {
             Assert.False(
                 aspNetProcess.Process.HasExited,

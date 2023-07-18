@@ -2,11 +2,11 @@
 
 <h2>Form that binds guid</h2>
 
-<ActionForm FormHandlerName="bind-guid" OnSubmit="() => _submitted = true">
+<form name="bind-guid" method="post" @onsubmit="() => _submitted = true" @formname="bind-guid">
     <input type="text" name="Id" value="@(_attemptedValue ?? Id.ToString())" />
     <input id="send-guid" type="submit" value="Send" />
     <AntiforgeryToken />
-</ActionForm>
+</form>
 
 @if (_submitted)
 {

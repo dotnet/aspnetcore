@@ -13,7 +13,7 @@
     @foreach (var counter in _counters)
     {
         <Counter
-            @rendermode="@RenderMode.Server"
+            @rendermode="@RenderMode.WebAssembly"
             @key="@counter.Id"
             IdSuffix="@counter.Id.ToString()"
             IncrementAmount="counter.IncrementAmount" />

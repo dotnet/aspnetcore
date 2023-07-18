@@ -22,8 +22,7 @@ public static class SupplyParameterFromFormServiceCollectionExtensions
         {
             return new SupplyParameterFromFormValueProvider(
                 services.GetRequiredService<IFormValueMapper>(),
-                services.GetRequiredService<NavigationManager>(),
-                null, "");
+                mappingScopeName: "");
         }));
 
         return serviceCollection;

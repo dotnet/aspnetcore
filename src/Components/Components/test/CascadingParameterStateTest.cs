@@ -16,7 +16,7 @@ public class CascadingParameterStateTest
         var componentState = CreateComponentState(new ComponentWithNoParams());
 
         // Act
-        var result = CascadingParameterState.FindCascadingParameters(componentState);
+        var result = CascadingParameterState.FindCascadingParameters(componentState, out _);
 
         // Assert
         Assert.Empty(result);
@@ -29,7 +29,7 @@ public class CascadingParameterStateTest
         var componentState = CreateComponentState(new ComponentWithNoCascadingParams());
 
         // Act
-        var result = CascadingParameterState.FindCascadingParameters(componentState);
+        var result = CascadingParameterState.FindCascadingParameters(componentState, out _);
 
         // Assert
         Assert.Empty(result);
@@ -42,7 +42,7 @@ public class CascadingParameterStateTest
         var componentState = CreateComponentState(new ComponentWithCascadingParams());
 
         // Act
-        var result = CascadingParameterState.FindCascadingParameters(componentState);
+        var result = CascadingParameterState.FindCascadingParameters(componentState, out _);
 
         // Assert
         Assert.Empty(result);
@@ -59,7 +59,7 @@ public class CascadingParameterStateTest
             new ComponentWithCascadingParams());
 
         // Act
-        var result = CascadingParameterState.FindCascadingParameters(states.Last());
+        var result = CascadingParameterState.FindCascadingParameters(states.Last(), out _);
 
         // Assert
         Assert.Empty(result);
@@ -76,7 +76,7 @@ public class CascadingParameterStateTest
             new ComponentWithCascadingParams());
 
         // Act
-        var result = CascadingParameterState.FindCascadingParameters(states.Last());
+        var result = CascadingParameterState.FindCascadingParameters(states.Last(), out _);
 
         // Assert
         Assert.Collection(result, match =>
@@ -98,7 +98,7 @@ public class CascadingParameterStateTest
             new ComponentWithCascadingParams());
 
         // Act
-        var result = CascadingParameterState.FindCascadingParameters(states.Last());
+        var result = CascadingParameterState.FindCascadingParameters(states.Last(), out _);
 
         // Assert
         Assert.Collection(result.OrderBy(x => x.ParameterInfo.PropertyName),
@@ -124,7 +124,7 @@ public class CascadingParameterStateTest
             new ComponentWithInheritedCascadingParams());
 
         // Act
-        var result = CascadingParameterState.FindCascadingParameters(states.Last());
+        var result = CascadingParameterState.FindCascadingParameters(states.Last(), out _);
 
         // Assert
         Assert.Collection(result.OrderBy(x => x.ParameterInfo.PropertyName),
@@ -149,7 +149,7 @@ public class CascadingParameterStateTest
             new ComponentWithGenericCascadingParam<CascadingValueTypeBaseClass>());
 
         // Act
-        var result = CascadingParameterState.FindCascadingParameters(states.Last());
+        var result = CascadingParameterState.FindCascadingParameters(states.Last(), out _);
 
         // Assert
         Assert.Collection(result, match =>
@@ -168,7 +168,7 @@ public class CascadingParameterStateTest
             new ComponentWithGenericCascadingParam<ICascadingValueTypeDerivedClassInterface>());
 
         // Act
-        var result = CascadingParameterState.FindCascadingParameters(states.Last());
+        var result = CascadingParameterState.FindCascadingParameters(states.Last(), out _);
 
         // Assert
         Assert.Collection(result, match =>
@@ -187,7 +187,7 @@ public class CascadingParameterStateTest
             new ComponentWithGenericCascadingParam<CascadingValueTypeDerivedClass>());
 
         // Act
-        var result = CascadingParameterState.FindCascadingParameters(states.Last());
+        var result = CascadingParameterState.FindCascadingParameters(states.Last(), out _);
 
         // Assert
         Assert.Empty(result);
@@ -202,7 +202,7 @@ public class CascadingParameterStateTest
             new ComponentWithGenericCascadingParam<CascadingValueTypeBaseClass>());
 
         // Act
-        var result = CascadingParameterState.FindCascadingParameters(states.Last());
+        var result = CascadingParameterState.FindCascadingParameters(states.Last(), out _);
 
         // Assert
         Assert.Collection(result, match =>
@@ -221,7 +221,7 @@ public class CascadingParameterStateTest
             new ComponentWithGenericCascadingParam<ValueType1>());
 
         // Act
-        var result = CascadingParameterState.FindCascadingParameters(states.Last());
+        var result = CascadingParameterState.FindCascadingParameters(states.Last(), out _);
 
         // Assert
         Assert.Empty(result);
@@ -236,7 +236,7 @@ public class CascadingParameterStateTest
             new ComponentWithCascadingParams());
 
         // Act
-        var result = CascadingParameterState.FindCascadingParameters(states.Last());
+        var result = CascadingParameterState.FindCascadingParameters(states.Last(), out _);
 
         // Assert
         Assert.Empty(result);
@@ -251,7 +251,7 @@ public class CascadingParameterStateTest
             new ComponentWithNamedCascadingParam());
 
         // Act
-        var result = CascadingParameterState.FindCascadingParameters(states.Last());
+        var result = CascadingParameterState.FindCascadingParameters(states.Last(), out _);
 
         // Assert
         Assert.Empty(result);
@@ -266,7 +266,7 @@ public class CascadingParameterStateTest
             new ComponentWithNamedCascadingParam());
 
         // Act
-        var result = CascadingParameterState.FindCascadingParameters(states.Last());
+        var result = CascadingParameterState.FindCascadingParameters(states.Last(), out _);
 
         // Assert
         Assert.Empty(result);
@@ -281,7 +281,7 @@ public class CascadingParameterStateTest
             new ComponentWithNamedCascadingParam());
 
         // Act
-        var result = CascadingParameterState.FindCascadingParameters(states.Last());
+        var result = CascadingParameterState.FindCascadingParameters(states.Last(), out _);
 
         // Assert
         Assert.Empty(result);
@@ -296,7 +296,7 @@ public class CascadingParameterStateTest
             new ComponentWithNamedCascadingParam());
 
         // Act
-        var result = CascadingParameterState.FindCascadingParameters(states.Last());
+        var result = CascadingParameterState.FindCascadingParameters(states.Last(), out _);
 
         // Assert
         Assert.Collection(result, match =>
@@ -318,7 +318,7 @@ public class CascadingParameterStateTest
             new ComponentWithCascadingParams());
 
         // Act
-        var result = CascadingParameterState.FindCascadingParameters(states.Last());
+        var result = CascadingParameterState.FindCascadingParameters(states.Last(), out _);
 
         // Assert
         Assert.Collection(result.OrderBy(x => x.ParameterInfo.PropertyName),
@@ -344,7 +344,7 @@ public class CascadingParameterStateTest
             new ComponentWithCascadingParams());
 
         // Act
-        var result = CascadingParameterState.FindCascadingParameters(states.Last());
+        var result = CascadingParameterState.FindCascadingParameters(states.Last(), out _);
 
         // Assert
         Assert.Collection(result.OrderBy(x => x.ParameterInfo.PropertyName),
@@ -356,7 +356,49 @@ public class CascadingParameterStateTest
             });
     }
 
-    
+    [Fact]
+    public void FindCascadingParameters_WithoutSingleDelivery()
+    {
+        // Even though ComponentWithCascadingParams itself declares a [SupplyParameterAsSingleDelivery],
+        // none of the suppliers match it, so we'll get hasSingleDeliveryParameters = false
+
+        // Arrange
+        var states = CreateAncestry(
+            CreateCascadingValueComponent(new ValueType1()),
+            new ComponentWithCascadingParams());
+
+        // Act
+        _ = CascadingParameterState.FindCascadingParameters(states.Last(), out var hasSingleDeliveryParameters);
+
+        // Assert
+        Assert.False(hasSingleDeliveryParameters);
+    }
+
+    [Fact]
+    public void FindCascadingParameters_WithSingleDelivery()
+    {
+        // Arrange
+        var states = CreateAncestry(
+            CreateCascadingValueComponent(new ValueType1()),
+            new SupplyParameterWithSingleDeliveryComponent(isFixed: true),
+            new ComponentWithCascadingParams());
+
+        // Act
+        _ = CascadingParameterState.FindCascadingParameters(states.Last(), out var hasSingleDeliveryParameters);
+
+        // Assert
+        Assert.True(hasSingleDeliveryParameters);
+    }
+
+    [Fact]
+    public void FindCascadingParameters_DisallowsSingleDeliveryWhenIsFixedIsFalse()
+    {
+        var ex = Assert.Throws<InvalidOperationException>(() => CreateAncestry(
+            new SupplyParameterWithSingleDeliveryComponent(isFixed: false),
+            new ComponentWithCascadingParams()));
+
+        Assert.StartsWith($"'{typeof(SupplyParameterWithSingleDeliveryAttribute)}' is flagged with SingleDelivery", ex.Message);
+    }
 
     static ComponentState[] CreateAncestry(params IComponent[] components)
     {
@@ -412,6 +454,8 @@ public class CascadingParameterStateTest
         [Parameter] public bool RegularParam { get; set; }
         [CascadingParameter] internal ValueType1 CascadingParam1 { get; set; }
         [CascadingParameter] internal ValueType2 CascadingParam2 { get; set; }
+
+        [SupplyParameterWithSingleDelivery] internal ValueType3 SingleDeliveryCascadingParam { get; set; }
     }
 
     class ComponentWithInheritedCascadingParams : ComponentWithCascadingParams
@@ -428,6 +472,30 @@ public class CascadingParameterStateTest
     {
         [CascadingParameter(Name = "MatchOnName")]
         internal ValueType1 SomeLocalName { get; set; }
+    }
+
+    class SupplyParameterWithSingleDeliveryAttribute : CascadingParameterAttributeBase
+    {
+        public override string Name { get; set; }
+
+        internal override bool SingleDelivery => true;
+    }
+
+    class SupplyParameterWithSingleDeliveryComponent(bool isFixed) : ComponentBase, ICascadingValueSupplier
+    {
+        public bool IsFixed => isFixed;
+
+        public bool CanSupplyValue(in CascadingParameterInfo parameterInfo)
+            => parameterInfo.Attribute is SupplyParameterWithSingleDeliveryAttribute;
+
+        public object GetCurrentValue(in CascadingParameterInfo parameterInfo)
+            => throw new NotImplementedException();
+
+        public void Subscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
+            => throw new NotImplementedException();
+
+        public void Unsubscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
+            => throw new NotImplementedException();
     }
 
     class TestComponentBase : IComponent

@@ -14,40 +14,29 @@ public class SupplyParameterFromFormTest
     {
         // Arrange
         var renderer = CreateRendererWithFormValueModelBinder();
-        var formMappingScope = new FormMappingScope
-        {
-            Navigation = new TestNavigationManager(),
-            FormValueModelBinder = new TestFormModelValueBinder(),
-            ChildContent = modelBindingContext => builder =>
-            {
-                builder.OpenComponent<FormParametersComponent>(0);
-                builder.CloseComponent();
-            }
-        };
+        var formComponent = new FormParametersComponent();
 
         // Act
-        var componentId = renderer.AssignRootComponentId(formMappingScope);
+        var componentId = renderer.AssignRootComponentId(formComponent);
         await renderer.RenderRootComponentAsync(componentId);
-        var formComponentState = renderer.Batches.Single()
-            .GetComponentFrames<FormParametersComponent>().Single()
-            .ComponentState;
+        var formComponentState = renderer.GetComponentState(formComponent);
 
-        var result = CascadingParameterState.FindCascadingParameters(formComponentState);
+        var result = CascadingParameterState.FindCascadingParameters(formComponentState, out _);
 
         // Assert
         var supplier = Assert.Single(result);
-        Assert.Equal(formMappingScope, supplier.ValueSupplier);
+        Assert.IsType<SupplyParameterFromFormValueProvider>(supplier.ValueSupplier);
     }
 
     [Fact]
-    public async Task FindCascadingParameters_HandlesSupplyParameterFromFormValues_WithName()
+    public async Task FindCascadingParameters_HandlesSupplyParameterFromFormValues_WithMappingScopeName()
     {
         // Arrange
         var renderer = CreateRendererWithFormValueModelBinder();
         var formMappingScope = new FormMappingScope
         {
-            Navigation = new TestNavigationManager(),
-            FormValueModelBinder = new TestFormModelValueBinder("some-name"),
+            Name = "scope-name",
+            FormValueModelBinder = new TestFormModelValueBinder("[scope-name]handler-name"),
             ChildContent = modelBindingContext => builder =>
             {
                 builder.OpenComponent<FormParametersComponentWithName>(0);
@@ -62,7 +51,7 @@ public class SupplyParameterFromFormTest
             .GetComponentFrames<FormParametersComponentWithName>().Single()
             .ComponentState;
 
-        var result = CascadingParameterState.FindCascadingParameters(formComponentState);
+        var result = CascadingParameterState.FindCascadingParameters(formComponentState, out _);
 
         // Assert
         var supplier = Assert.Single(result);
@@ -72,7 +61,10 @@ public class SupplyParameterFromFormTest
     static TestRenderer CreateRendererWithFormValueModelBinder()
     {
         var services = new ServiceCollection();
-        services.AddSingleton<IFormValueMapper, TestFormModelValueBinder>();
+        var valueBinder = new TestFormModelValueBinder();
+        services.AddSingleton<IFormValueMapper>(valueBinder);
+        services.AddSingleton<ICascadingValueSupplier>(_ => new SupplyParameterFromFormValueProvider(
+            valueBinder, mappingScopeName: ""));
         return new TestRenderer(services.BuildServiceProvider());
     }
 
@@ -83,15 +75,24 @@ public class SupplyParameterFromFormTest
 
     class FormParametersComponentWithName : TestComponentBase
     {
-        [SupplyParameterFromForm(Handler = "some-name")] public string FormParameter { get; set; }
+        [SupplyParameterFromForm(Handler = "handler-name")] public string FormParameter { get; set; }
     }
 
-    class TestFormModelValueBinder(string FormName = "") : IFormValueMapper
+    class TestFormModelValueBinder(string IncomingScopeQualifiedFormName = "") : IFormValueMapper
     {
         public void Map(FormValueMappingContext context) { }
 
-        public bool CanMap(Type valueType, string formName = null)
-            => formName is null || formName == FormName;
+        public bool CanMap(Type valueType, string mappingScopeName, string formName)
+        {
+            if (string.IsNullOrEmpty(mappingScopeName))
+            {
+                return IncomingScopeQualifiedFormName == (formName ?? string.Empty);
+            }
+            else
+            {
+                return IncomingScopeQualifiedFormName == $"[{mappingScopeName}]{formName ?? string.Empty}";
+            }
+        }
     }
 
     class TestComponentBase : IComponent
@@ -102,13 +103,5 @@ public class SupplyParameterFromFormTest
 
         public Task SetParametersAsync(ParameterView parameters)
             => Task.CompletedTask;
-    }
-
-    class TestNavigationManager : NavigationManager
-    {
-        public TestNavigationManager()
-        {
-            Initialize("https://localhost:85/subdir/", "https://localhost:85/subdir/path?query=value#hash");
-        }
     }
 }
