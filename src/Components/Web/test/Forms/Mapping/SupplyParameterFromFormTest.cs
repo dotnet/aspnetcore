@@ -21,7 +21,7 @@ public class SupplyParameterFromFormTest
         await renderer.RenderRootComponentAsync(componentId);
         var formComponentState = renderer.GetComponentState(formComponent);
 
-        var result = CascadingParameterState.FindCascadingParameters(formComponentState);
+        var result = CascadingParameterState.FindCascadingParameters(formComponentState, out _);
 
         // Assert
         var supplier = Assert.Single(result);
@@ -51,7 +51,7 @@ public class SupplyParameterFromFormTest
             .GetComponentFrames<FormParametersComponentWithName>().Single()
             .ComponentState;
 
-        var result = CascadingParameterState.FindCascadingParameters(formComponentState);
+        var result = CascadingParameterState.FindCascadingParameters(formComponentState, out _);
 
         // Assert
         var supplier = Assert.Single(result);
