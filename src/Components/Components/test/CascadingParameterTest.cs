@@ -735,7 +735,7 @@ public class CascadingParameterTest
     private class SingleDeliveryCascadingParameterAttribute : CascadingParameterAttributeBase
     {
         public override string Name { get; set; }
-        protected internal override bool SingleDelivery => true;
+        private protected override bool SingleDelivery => true;
     }
 
     private class SingleDeliveryCascadingValue : ComponentBase, ICascadingValueSupplier

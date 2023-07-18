@@ -52,7 +52,7 @@ internal readonly struct CascadingParameterState
                 resultStates ??= new List<CascadingParameterState>(infos.Length - infoIndex);
                 resultStates.Add(new CascadingParameterState(info, supplier));
 
-                if (info.Attribute.SingleDelivery)
+                if (info.Attribute.SingleDeliveryInternal)
                 {
                     hasSingleDeliveryParameters = true;
                     if (!supplier.IsFixed)
@@ -60,7 +60,7 @@ internal readonly struct CascadingParameterState
                         // We don't have a use case for IsFixed=false with SingleDelivery=true. To avoid complications about
                         // subscribing/unsubscribing in this case, just disallow it. It shouldn't be possible for this to
                         // occur unless someone creates their own CascadingParameterAttributeBase subclass.
-                        throw new InvalidOperationException($"'{info.Attribute.GetType()}' is flagged with {nameof(CascadingParameterAttributeBase.SingleDelivery)}, but the selected supplier '{supplier.GetType()}' is not flagged with {nameof(ICascadingValueSupplier.IsFixed)}");
+                        throw new InvalidOperationException($"'{info.Attribute.GetType()}' is flagged with SingleDelivery, but the selected supplier '{supplier.GetType()}' is not flagged with {nameof(ICascadingValueSupplier.IsFixed)}");
                     }
                 }
             }
