@@ -3,10 +3,9 @@
 
 namespace Microsoft.AspNetCore.Identity.DTO;
 
-internal sealed class LoginRequest
+internal sealed class InfoResponse
 {
     public required string Username { get; init; }
-    public required string Password { get; init; }
-    public string? TwoFactorCode { get; init; }
-    public string? TwoFactorRecoveryCode { get; init; }
+    public required string Email { get; init; }
+    public required IDictionary<string, string> Claims { get; init; }
 }
