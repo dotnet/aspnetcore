@@ -258,7 +258,7 @@ describe('DomSync', () => {
     expect(newNodes[2].childNodes[0]).toBe(anotherChildWillRetain);
   });
 
-  test('should update input element value property when not modified by user', () => {
+  test('should update input/textarea element value property when not modified by user', () => {
     // For input-like elements, what we mostly care about is the value *property*,
     // not the attribute. When this property hasn't explicitly been written, it takes
     // its value from the value attribute. However we do still also want to update
@@ -269,20 +269,23 @@ describe('DomSync', () => {
 
     // Arrange
     const destination = makeExistingContent(
-      `<input value='original'>`);
+      `<input value='original'><textarea>original</textarea>`);
     const newContent = makeNewContent(
-      `<input value='changed'>`);
-    const destinationNode = toNodeArray(destination)[0] as HTMLInputElement;
+      `<input value='changed'><textarea>changed</textarea>`);
+    const inputElem = toNodeArray(destination)[0] as HTMLInputElement;
+    const textareaElem = inputElem.nextElementSibling as HTMLTextAreaElement;
 
     // Act
     synchronizeDomContent(destination, newContent);
 
     // Assert
-    expect(destinationNode.value).toEqual('changed');
-    expect(destinationNode.getAttribute('value')).toEqual('changed');
+    expect(inputElem.value).toEqual('changed');
+    expect(inputElem.getAttribute('value')).toEqual('changed');
+    expect(textareaElem.value).toEqual('changed');
+    expect(textareaElem.textContent).toEqual('changed');
   });
 
-  test('should update input element value when modified by user and changed in new content', () => {
+  test('should update input/textarea element value when modified by user and changed in new content', () => {
     // After an input-like element is edited (or equivalently, after something
     // is written to its 'value' property), that element's 'value' property
     // no longer stays in sync with the element's 'value' attribute. The property
@@ -297,39 +300,47 @@ describe('DomSync', () => {
 
     // Arrange
     const destination = makeExistingContent(
-      `<input value='original'>`);
+      `<input value='original'><textarea>original</textarea>`);
     const newContent = makeNewContent(
-      `<input value='changed'>`);
-    const destinationNode = toNodeArray(destination)[0] as HTMLInputElement;
-    destinationNode.value = 'edited by user';
+      `<input value='changed'><textarea>changed</textarea>`);
+    const inputElem = toNodeArray(destination)[0] as HTMLInputElement;
+    const textAreaElem = inputElem.nextElementSibling as HTMLTextAreaElement;
+    inputElem.value = 'edited by user';
+    textAreaElem.value = 'edited by user';
 
     // Act
     synchronizeDomContent(destination, newContent);
 
     // Assert
-    expect(destinationNode.value).toEqual('changed');
-    expect(destinationNode.getAttribute('value')).toEqual('changed');
+    expect(inputElem.value).toEqual('changed');
+    expect(inputElem.getAttribute('value')).toEqual('changed');
+    expect(textAreaElem.value).toEqual('changed');
+    expect(textAreaElem.textContent).toEqual('changed');
   });
 
-  test('should update input element value when modified by user but unchanged in new content', () => {
+  test('should update input/textarea element value when modified by user but unchanged in new content', () => {
     // Equivalent to the test above, except the old and new content is identical
     // (so by looking at the attributes alone it seems nothing has to be updated)
     // and we are showing that it still reverts the user's edit
 
     // Arrange
     const destination = makeExistingContent(
-      `<input value='original'>`);
+      `<input value='original'><textarea>original</textarea>`);
     const newContent = makeNewContent(
-      `<input value='original'>`);
-    const destinationNode = toNodeArray(destination)[0] as HTMLInputElement;
-    destinationNode.value = 'edited by user';
+      `<input value='original'><textarea>original</textarea>`);
+    const inputElem = toNodeArray(destination)[0] as HTMLInputElement;
+    const textAreaElem = inputElem.nextElementSibling as HTMLTextAreaElement;
+    inputElem.value = 'edited by user';
+    textAreaElem.value = 'edited by user';
 
     // Act
     synchronizeDomContent(destination, newContent);
 
     // Assert
-    expect(destinationNode.value).toEqual('original');
-    expect(destinationNode.getAttribute('value')).toEqual('original');
+    expect(inputElem.value).toEqual('original');
+    expect(inputElem.getAttribute('value')).toEqual('original');
+    expect(textAreaElem.value).toEqual('original');
+    expect(textAreaElem.textContent).toEqual('original');
   });
 
   test('should be able to add select with nonempty option value', () => {
@@ -379,8 +390,7 @@ describe('DomSync', () => {
     synchronizeDomContent(destination, newContent);
 
     // Assert
-    expect(selectElem).toBeInstanceOf(HTMLSelectElement);
-    expect((selectElem as HTMLSelectElement).value).toBe('new3');
+    expect(selectElem.value).toBe('new3');
   });
 
   test('should be able to update an input range to a value outside the min/max of the old content', () => {
@@ -408,6 +418,57 @@ describe('DomSync', () => {
     expect(inputRange.max).toBe('1050');
   });
 
+  test('should not replay old deferred value on subsequent update (input)', () => {
+    // This case may seem obscure but represents a bug that existed at one point.
+    // The 'deferred' values tracked for some element types need to be cleared
+    // after usage otherwise older values can overwrite newer ones.
+
+    const destination = makeExistingContent(`<input value='First'>`);
+    const newContent1 = makeNewContent(`<input value='Second'>`);
+    const newContent2 = makeNewContent(`<input value='Third'>`);
+
+    const elem = destination.startExclusive.nextSibling as HTMLInputElement;
+    expect(elem.value).toBe('First');
+
+    // Act/Assert 1: Initial update
+    synchronizeDomContent(destination, newContent1);
+    expect(elem.value).toBe('Second');
+
+    // Act/Assert 2: The user performs an edit, then we try to synchronize the DOM
+    // with some content that matches the edit exactly. The diff algorithm will see
+    // that the DOM already matches the desired output, so it won't track any new
+    // deferred value. We need to check the old deferred value doesn't reappear.
+    elem.value = 'Third';
+    synchronizeDomContent(destination, newContent2);
+    expect(elem.value).toBe('Third');
+  });
+
+  test('should not replay old deferred value on subsequent update (select)', () => {
+    // This case may seem obscure but represents a bug that existed at one point.
+    // The 'deferred' values tracked for some element types need to be cleared
+    // after usage otherwise older values can overwrite newer ones.
+
+    const destination = makeExistingContent(`<select><option value='v1' selected>1</option><option value='v2'>2</option><option value='v3'>3</option></select>`);
+    const newContent1 = makeNewContent(`<select><option value='v1'>1</option><option value='v2' selected>2</option><option value='v3'>3</option></select>`);
+    const newContent2 = makeNewContent(`<select><option value='v1'>1</option><option value='v2'>2</option><option value='v3' selected>3</option></select>`);
+
+    const selectElem = destination.startExclusive.nextSibling as HTMLSelectElement;
+    expect(selectElem.selectedIndex).toBe(0);
+
+    // Act/Assert 1: Initial update
+    synchronizeDomContent(destination, newContent1);
+    expect(selectElem.selectedIndex).toBe(1);
+
+    // Act/Assert 2: The user performs an edit, then we try to synchronize the DOM
+    // with some content that matches the edit exactly. The diff algorithm will see
+    // that the DOM already matches the desired output, so it won't track any new
+    // deferred value. We need to check the old deferred value doesn't reappear.
+    selectElem.selectedIndex = 2;
+    expect(selectElem.selectedIndex).toBe(2);
+    synchronizeDomContent(destination, newContent2);
+    expect(selectElem.selectedIndex).toBe(2);
+  });
+
   test('should treat doctype nodes as unchanged', () => {
     // Can't update a doctype after the document is created, nor is there a use case for doing so
     // We just have to skip them, as it would be an error to try removing or inserting them
@@ -431,6 +492,35 @@ describe('DomSync', () => {
     expect(newDocTypeNode).toBe(origDocTypeNode);
     expect(destination.body.textContent).toBe('Goodbye');
   });
+});
+
+test('should remove value if neither source nor destination has one', () => {
+  // Editing an input assigns a 'value' property but does *not* add a 'value' attribute when one was not already there
+  // So if both the source and destination HTML lack a 'value' attribute, it would look to us that nothing has changed.
+  // This test shows that we detect this and clear any 'value' so we correctly match the new content
+
+  // Arrange
+  const unchangedHtml =
+    `<input />` +
+    `<input type='checkbox' />` +
+    `<select><option value='someval1'></option><option value='someval2' selected></option><option value='someval3' ></option></select>`;
+  const destination = makeExistingContent(unchangedHtml);
+  const newContent = makeNewContent(unchangedHtml);
+
+  const inputText = destination.startExclusive.nextSibling as HTMLInputElement;
+  const inputCheckbox = inputText.nextElementSibling as HTMLInputElement;
+  const select = inputCheckbox.nextElementSibling as HTMLSelectElement;
+
+  // Act: User makes some edits, then we synchronize to the blank content
+  inputText.value = 'Some edit';
+  inputCheckbox.checked = true;
+  select.selectedIndex = 2;
+  synchronizeDomContent(destination, newContent);
+
+  // Assert: Edits were cleared
+  expect(inputText.value).toStrictEqual('');
+  expect(inputCheckbox.checked).toStrictEqual(false);
+  expect(select.selectedIndex).toStrictEqual(1);
 });
 
 function makeExistingContent(html: string): CommentBoundedRange {

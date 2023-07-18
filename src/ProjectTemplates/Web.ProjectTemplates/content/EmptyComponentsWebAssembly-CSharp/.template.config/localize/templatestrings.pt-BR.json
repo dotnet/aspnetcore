@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
   "name": "Aplicativo Blazor WebAssembly Vazio",
-  "description": "Um modelo de projeto vazio para criar um aplicativo Blazor executado no WebAssembly e opcionalmente hospedado por um aplicativo ASP.NET Core. Este modelo não tem nenhum conteúdo nele.",
+  "description": "Um modelo de projeto vazio para criar um aplicativo Blazor executado no WebAssembly. Este modelo não possui nenhum conteúdo.",
   "symbols/Framework/description": "A estrutura de destino do projeto.",
   "symbols/Framework/choices/net8.0/description": "net8.0 de destino",
   "symbols/skipRestore/description": "Se especificado, ignora a restauração automática do projeto sendo criado.",

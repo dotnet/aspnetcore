@@ -26,8 +26,18 @@
         "overrideDefaultText": true
       },
       "invertBoolean": true,
-      "isVisible": true,
+      "isVisible": false,
       "defaultValue": "true",
+      "persistenceScope": "templateGroup"
+    },
+    {
+      "id": "UseControllers",
+      "name": {
+        "text": "Use controllers",
+        "overrideDefaultText": true
+      },
+      "isVisible": true,
+      "defaultValue": "false",
       "persistenceScope": "templateGroup"
     },
     {

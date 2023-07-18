@@ -414,7 +414,7 @@ public class RazorComponentResultExecutorTest
             .AddSingleton<ServerComponentSerializer>()
             .AddSingleton<ComponentStatePersistenceManager>()
             .AddSingleton<IDataProtectionProvider, FakeDataProtectionProvider>()
-            .AddSingleton<FormDataProvider, HttpContextFormDataProvider>()
+            .AddSingleton<HttpContextFormDataProvider>()
             .AddSingleton<ComponentStatePersistenceManager>()
             .AddSingleton<PersistentComponentState>(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State)
             .AddSingleton<AntiforgeryStateProvider, EndpointAntiforgeryStateProvider>()

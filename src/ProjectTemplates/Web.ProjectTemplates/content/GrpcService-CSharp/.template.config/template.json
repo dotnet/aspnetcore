@@ -3,11 +3,13 @@
   "author": "Microsoft",
   "classifications": [
     "Web",
-    "gRPC"
+    "gRPC",
+    "API",
+    "Service"
   ],
   "name": "ASP.NET Core gRPC Service",
   "generatorVersions": "[1.0.0.0-*)",
-  "description": "A project template for creating a gRPC ASP.NET Core service.",
+  "description": "A project template for creating a gRPC service using ASP.NET Core, with optional support for publishing as native AOT.",
   "groupIdentity": "Microsoft.Web.Grpc",
   "precedence": "9800",
   "identity": "Microsoft.Grpc.Service.CSharp.8.0",

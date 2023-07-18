@@ -1,12 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net.Http;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Components.Endpoints.Forms;
 using Microsoft.AspNetCore.Components.Endpoints.Tests.TestComponents;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.Forms.Mapping;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Test.Helpers;
@@ -18,6 +20,8 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.JSInterop;
@@ -818,16 +822,14 @@ public class EndpointHtmlRendererTest
     }
 
     [Fact]
-    public void Duplicate_NamedEventHandlers_AcrossComponents_Throws()
+    public async void Duplicate_NamedEventHandlers_AcrossComponents_ThowsOnDispatch()
     {
         // Arrange
-        var expectedError = @"Two different components are trying to define the same named event 'default':
-'TestComponent > NamedEventHandlerComponent'
-'TestComponent > OtherNamedEventHandlerComponent'";
+        var expectedError = @"There is more than one named submit event with the name 'default'. Ensure named submit events have unique names, or are in scopes with distinct names. The following components use this name:
+ - TestComponent > NamedEventHandlerComponent
+ - TestComponent > OtherNamedEventHandlerComponent";
 
         var renderer = GetEndpointHtmlRenderer();
-        renderer.SetFormHandlerName("default");
-
         var component = new TestComponent(builder =>
         {
             builder.OpenComponent<NamedEventHandlerComponent>(0);
@@ -836,90 +838,12 @@ public class EndpointHtmlRendererTest
             builder.CloseComponent();
         });
 
-        // Act
-        var componentId = renderer.TestAssignRootComponentId(component);
+        await renderer.Dispatcher.InvokeAsync(() => renderer.BeginRenderingComponent(component, ParameterView.Empty).QuiescenceTask);
 
-        var exception = Assert.Throws<InvalidOperationException>(component.TriggerRender);
-        Assert.Equal(expectedError, exception.Message);
-    }
-
-    [Fact]
-    public void RecreatedComponent_AcrossDifferentBatches_WithNamedEventHandler_Throws()
-    {
-        // Arrange
-        var expectedError = "The named event 'default' was already defined earlier by a component with id '1' but this " +
-            "component was removed before receiving the dispatched event.";
-
-        var renderer = GetEndpointHtmlRenderer();
-        renderer.SetFormHandlerName("default");
-
-        RenderFragment addComponentRender = builder =>
-        {
-            builder.OpenComponent<NamedEventHandlerComponent>(0);
-            builder.CloseComponent();
-        };
-        RenderFragment removeComponentRender = builder =>
-        {
-        };
-
-        var currentRender = addComponentRender;
-        var component = new TestComponent(builder =>
-        {
-            currentRender(builder);
-        });
-
-        // Act
-        var componentId = renderer.TestAssignRootComponentId(component);
-        renderer.Dispatcher.InvokeAsync(component.TriggerRender);
-        currentRender = removeComponentRender;
-        renderer.Dispatcher.InvokeAsync(component.TriggerRender);
-        currentRender = addComponentRender;
-
-        var exception = Assert.Throws<InvalidOperationException>(component.TriggerRender);
-        Assert.Equal(expectedError, exception.Message);
-    }
-
-    [Fact]
-    public void SameComponent_WithNamedEvent_CanRenderSynchronously_MultipleTimes()
-    {
-        // Arrange
-        var renderer = GetEndpointHtmlRenderer();
-        renderer.SetFormHandlerName("default");
-
-        var component = new TestComponent(builder =>
-        {
-            builder.OpenComponent<MultiRenderNamedEventHandlerComponent>(0);
-            builder.CloseComponent();
-        });
-
-        // Act
-        var componentId = renderer.TestAssignRootComponentId(component);
-        renderer.Dispatcher.InvokeAsync(component.TriggerRender);
-
-        // Assert
-        Assert.Equal(2, renderer.TrackedNamedEvents.Count);
-    }
-
-    [Fact]
-    public async Task SameComponent_WithNamedEvent_CanRenderAsynchronously_MultipleTimes()
-    {
-        // Arrange
-        var renderer = GetEndpointHtmlRenderer();
-        renderer.SetFormHandlerName("default");
-        var continueTaskCompletion = new TaskCompletionSource();
-
-        // Act
-        var result = await renderer.Dispatcher.InvokeAsync(() => renderer.BeginRenderingComponent(
-            typeof(MultiAsyncRenderNamedEventHandlerComponent),
-            ParameterView.FromDictionary(new Dictionary<string, object>
-            {
-                [nameof(MultiAsyncRenderNamedEventHandlerComponent.Continue)] = continueTaskCompletion.Task
-            })));
-
-        // Assert
-        continueTaskCompletion.SetResult();
-        await result.QuiescenceTask;
-        Assert.Equal(2, renderer.TrackedNamedEvents.Count);
+        // Act/Assert
+        bool isBadRequest;
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => renderer.DispatchSubmitEventAsync("default", out isBadRequest));
+        Assert.Equal(expectedError.ReplaceLineEndings(), exception.Message.ReplaceLineEndings());
     }
 
     [Fact]
@@ -927,10 +851,9 @@ public class EndpointHtmlRendererTest
     {
         // Arrange
         var renderer = GetEndpointHtmlRenderer();
-        renderer.SetFormHandlerName("default");
-        var continueTaskCompletion = new TaskCompletionSource();
         var invoked = false;
-        Action handler = () => invoked = true;
+        var handler = () => { invoked = true; };
+        var isBadRequest = false;
         await renderer.Dispatcher.InvokeAsync(async () =>
         {
             var result = renderer.BeginRenderingComponent(
@@ -943,73 +866,182 @@ public class EndpointHtmlRendererTest
             await result.QuiescenceTask;
 
             // Act
-            await renderer.DispatchCapturedEvent();
+            await renderer.DispatchSubmitEventAsync("default", out isBadRequest);
         });
 
         // Assert
         Assert.True(invoked);
+        Assert.False(isBadRequest);
     }
 
     [Fact]
-    public async Task Dispatching_WhenEventHasNotBeenFound_Throws()
+    public async Task Dispatching_WhenNoHandlerIsSpecified_Throws()
     {
         // Arrange
         var renderer = GetEndpointHtmlRenderer();
-        renderer.SetFormHandlerName("other");
+        var isBadRequest = false;
+        var httpContext = new DefaultHttpContext();
+        var bodyStream = new MemoryStream();
+        httpContext.Response.Body = bodyStream;
+        httpContext.RequestServices = new ServiceCollection()
+            .AddSingleton<IHostEnvironment>(new TestEnvironment(Environments.Development))
+            .BuildServiceProvider();
 
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            renderer.Dispatcher.InvokeAsync(async () =>
-            {
-                var result = renderer.BeginRenderingComponent(typeof(NamedEventHandlerComponent), ParameterView.Empty);
-                await result.QuiescenceTask;
+        await renderer.Dispatcher.InvokeAsync(async () =>
+        {
+            await renderer.RenderEndpointComponent(httpContext, typeof(NamedEventHandlerComponent), ParameterView.Empty, true);
 
-                // Act
-                await renderer.DispatchCapturedEvent();
-            }));
+            // Act
+            await renderer.DispatchSubmitEventAsync(null, out isBadRequest);
+        });
 
-        Assert.Equal("No named event handler was captured for 'other'.", exception.Message);
+        httpContext.Response.Body.Position = 0;
+
+        Assert.True(isBadRequest);
+        Assert.Equal(400, httpContext.Response.StatusCode);
+        Assert.StartsWith("The POST request does not specify which form is being submitted.",
+            await new StreamReader(bodyStream).ReadToEndAsync());
     }
 
     [Fact]
-    public void NamedEventHandlers_DifferentComponents_SameNamedHandlerInDifferentBatches_Throws()
+    public async Task Dispatching_WhenNamedEventDoesNotExist_Throws()
     {
         // Arrange
-        var expectedError = "The named event 'default' was already defined earlier by a component with id '1' but this " +
-            "component was removed before receiving the dispatched event.";
-
         var renderer = GetEndpointHtmlRenderer();
-        renderer.SetFormHandlerName("default");
+        var isBadRequest = false;
+        var httpContext = new DefaultHttpContext();
+        var bodyStream = new MemoryStream();
+        httpContext.Response.Body = bodyStream;
+        httpContext.RequestServices = new ServiceCollection()
+            .AddSingleton<IHostEnvironment>(new TestEnvironment(Environments.Development))
+            .BuildServiceProvider();
 
-        RenderFragment addComponentRender = builder =>
+        await renderer.Dispatcher.InvokeAsync(async () =>
         {
-            builder.OpenComponent<NamedEventHandlerComponent>(0);
-            builder.CloseComponent();
-        };
+            await renderer.RenderEndpointComponent(httpContext, typeof(NamedEventHandlerComponent), ParameterView.Empty, true);
 
-        RenderFragment removeComponentRender = builder =>
-        {
-        };
-        RenderFragment thirdRender = builder =>
-        {
-            builder.OpenComponent<NamedEventHandlerComponent>(0);
-            builder.CloseComponent();
-        };
+            // Act
+            await renderer.DispatchSubmitEventAsync("other", out isBadRequest);
+        });
 
-        var currentRender = addComponentRender;
-        var component = new TestComponent(builder =>
+        httpContext.Response.Body.Position = 0;
+
+        Assert.True(isBadRequest);
+        Assert.Equal(400, httpContext.Response.StatusCode);
+        Assert.StartsWith("Cannot submit the form 'other' because",
+            await new StreamReader(bodyStream).ReadToEndAsync());
+    }
+
+    [Fact]
+    public async Task Dispatching_WhenComponentHasRerendered_UsesCurrentDelegate()
+    {
+        // Arrange
+        var renderer = GetEndpointHtmlRenderer();
+        var continuationTcs = new TaskCompletionSource();
+        var isBadRequest = false;
+
+        // Act
+        var component = new MultiAsyncRenderNamedEventHandlerComponent { Continue = continuationTcs.Task };
+        var result = await renderer.Dispatcher.InvokeAsync(() => renderer.BeginRenderingComponent(component, ParameterView.Empty));
+
+        // Assert: it won't complete until we allow it
+        await Task.Delay(500);
+        Assert.False(result.QuiescenceTask.IsCompleted);
+        continuationTcs.SetResult();
+        await result.QuiescenceTask;
+
+        // Act/Assert: Dispatching the event uses the final delegate, not the intermediate one
+        Assert.Null(component.Message);
+        await renderer.Dispatcher.InvokeAsync(() => renderer.DispatchSubmitEventAsync("default", out isBadRequest));
+        Assert.Equal("Received call to updated handler", component.Message);
+        Assert.False(isBadRequest);
+    }
+
+    [Fact]
+    public async Task Dispatching_WhenComponentReRendersNamedEventAtSameLocation()
+    {
+        // Arrange
+        var renderer = GetEndpointHtmlRenderer();
+        var continuationTcs = new TaskCompletionSource();
+        var firstRender = true;
+        var isBadRequest = false;
+        var eventReceivedCount = 0;
+
+        // Act
+        TestComponent component = null;
+        component = new TestComponent(builder =>
         {
-            currentRender(builder);
+            // Since the key will change, the diffing system will process what follows as new
+            // content. It happens to deal with the "add" side of that before the "remove"
+            // side of that, which means the resulting batch will try to add a second copy
+            // of the named event before it removes the old copy. This test just needs to
+            // observe it doesn't lead to a problem. At one point in development this was a bug.
+            builder.OpenElement(0, "form");
+            builder.SetKey(firstRender);
+
+            builder.AddAttribute(1, "onsubmit", () => { eventReceivedCount++; component.TriggerRender(); });
+            builder.AddNamedEvent(2, "onsubmit", "my-name");
+            builder.CloseElement();
+
+            firstRender = false;
+        });
+        var result = await renderer.Dispatcher.InvokeAsync(() => renderer.BeginRenderingComponent(component, ParameterView.Empty));
+
+        // Act/Assert
+        await renderer.Dispatcher.InvokeAsync(() => renderer.DispatchSubmitEventAsync("my-name", out isBadRequest));
+        Assert.False(isBadRequest);
+        Assert.Equal(1, eventReceivedCount);
+    }
+
+    [Fact]
+    public async Task Dispatching_WhenNamedEventChangesName()
+    {
+        // Arrange
+        var renderer = GetEndpointHtmlRenderer();
+        var continuationTcs = new TaskCompletionSource();
+        var firstRender = true;
+        var isBadRequest = false;
+        var eventReceivedCount = 0;
+        var httpContext = new DefaultHttpContext();
+        var bodyStream = new MemoryStream();
+        httpContext.Response.Body = bodyStream;
+        httpContext.RequestServices = new ServiceCollection()
+            .AddSingleton<IHostEnvironment>(new TestEnvironment(Environments.Development))
+            .BuildServiceProvider();
+
+        TestComponent component = null;
+        component = new TestComponent(builder =>
+        {
+            builder.OpenElement(0, "form");
+            builder.AddAttribute(1, "onsubmit", () => { eventReceivedCount++; });
+            builder.AddNamedEvent(2, "onsubmit", firstRender ? "my-name-1" : "my-name-2");
+            builder.CloseElement();
+            firstRender = false;
         });
 
         // Act
-        var componentId = renderer.TestAssignRootComponentId(component);
-        renderer.Dispatcher.InvokeAsync(component.TriggerRender);
-        currentRender = removeComponentRender;
-        renderer.Dispatcher.InvokeAsync(component.TriggerRender);
-        currentRender = thirdRender;
+        await renderer.Dispatcher.InvokeAsync(async () =>
+        {
+            await renderer.RenderEndpointComponent(httpContext, typeof(EmptyComponent), ParameterView.Empty, true);
+            await renderer.BeginRenderingComponent(component, ParameterView.Empty).QuiescenceTask;
+        });
 
-        var exception = Assert.Throws<InvalidOperationException>(component.TriggerRender);
-        Assert.Equal(expectedError, exception.Message);
+        // Cause the name to change
+        component.TriggerRender();
+
+        // Act/Assert: Can dispatch with new name
+        await renderer.Dispatcher.InvokeAsync(() => renderer.DispatchSubmitEventAsync("my-name-2", out isBadRequest));
+        Assert.False(isBadRequest);
+        Assert.Equal(1, eventReceivedCount);
+
+        // Act/Assert: Cannot dispatch with old name
+        await renderer.Dispatcher.InvokeAsync(() => renderer.DispatchSubmitEventAsync("my-name-1", out isBadRequest));
+        Assert.Equal(1, eventReceivedCount);
+        Assert.True(isBadRequest);
+        Assert.Equal(400, httpContext.Response.StatusCode);
+        httpContext.Response.Body.Position = 0;
+        Assert.StartsWith("Cannot submit the form 'my-name-1' because",
+            await new StreamReader(bodyStream).ReadToEndAsync());
     }
 
     [Fact]
@@ -1154,7 +1186,7 @@ public class EndpointHtmlRendererTest
         {
             builder.OpenElement(0, "form");
             builder.AddAttribute(1, "onsubmit", Handler ?? (() => { }));
-            builder.SetEventHandlerName("default");
+            builder.AddNamedEvent(2, "onsubmit", "default");
             builder.CloseElement();
         }
     }
@@ -1169,12 +1201,12 @@ public class EndpointHtmlRendererTest
             if (!hasRendered)
             {
                 builder.AddAttribute(1, "onsubmit", () => { });
-                builder.SetEventHandlerName("default");
+                builder.AddNamedEvent(2, "onsubmit", "default");
             }
             else
             {
                 builder.AddAttribute(1, "onsubmit", () => { GC.KeepAlive(new object()); });
-                builder.SetEventHandlerName("default");
+                builder.AddNamedEvent(2, "onsubmit", "default");
             }
             builder.CloseElement();
             if (!hasRendered)
@@ -1189,21 +1221,17 @@ public class EndpointHtmlRendererTest
     {
         private bool hasRendered;
 
+        public string Message { get; private set; }
+
         [Parameter] public Task Continue { get; set; }
 
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
             builder.OpenElement(0, "form");
-            if (!hasRendered)
-            {
-                builder.AddAttribute(1, "onsubmit", () => { });
-                builder.SetEventHandlerName("default");
-            }
-            else
-            {
-                builder.AddAttribute(1, "onsubmit", () => { GC.KeepAlive(new object()); });
-                builder.SetEventHandlerName("default");
-            }
+            builder.AddAttribute(1, "onsubmit", !hasRendered
+                ? () => { Message = "Received call to original handler"; }
+                : () => { Message = "Received call to updated handler"; });
+            builder.AddNamedEvent(2, "onsubmit", "default");
             builder.CloseElement();
         }
 
@@ -1220,7 +1248,7 @@ public class EndpointHtmlRendererTest
         {
             builder.OpenElement(0, "form");
             builder.AddAttribute(1, "onsubmit", () => { });
-            builder.SetEventHandlerName("default");
+            builder.AddNamedEvent(2, "onsubmit", "default");
             builder.CloseElement();
         }
     }
@@ -1261,16 +1289,6 @@ public class EndpointHtmlRendererTest
         {
             return base.AssignRootComponentId(component);
         }
-
-        protected override void TrackNamedEventId(ulong eventHandlerId, int componentId, string eventNameId)
-        {
-            TrackedNamedEvents.Add(new TrackedNamedEvent(eventHandlerId, componentId, eventNameId));
-            base.TrackNamedEventId(eventHandlerId, componentId, eventNameId);
-        }
-
-        public List<TrackedNamedEvent> TrackedNamedEvents { get; set; } = new List<TrackedNamedEvent>();
-
-        public readonly record struct TrackedNamedEvent(ulong EventHandlerId, int ComponentId, string EventNameId);
     }
 
     private HttpContext GetHttpContext(HttpContext context = null)
@@ -1297,11 +1315,12 @@ public class EndpointHtmlRendererTest
         services.AddSingleton<ComponentStatePersistenceManager>();
         services.AddSingleton(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
         services.AddSingleton<ServerComponentSerializer>();
-        services.AddSingleton<FormDataProvider, HttpContextFormDataProvider>();
+        services.AddSingleton<HttpContextFormDataProvider>();
         services.AddAntiforgery();
         services.AddSingleton<ComponentStatePersistenceManager>();
         services.AddSingleton<PersistentComponentState>(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
         services.AddSingleton<AntiforgeryStateProvider, EndpointAntiforgeryStateProvider>();
+        services.AddSingleton<ICascadingValueSupplier>(_ => new SupplyParameterFromFormValueProvider(null, ""));
 
         return services;
     }
@@ -1383,8 +1402,18 @@ public class EndpointHtmlRendererTest
         }
     }
 
+    class EmptyComponent : ComponentBase { }
+
     private class AsyncDisposableState
     {
         public bool AsyncDisposableRan { get; set; }
+    }
+
+    private class TestEnvironment(string environmentName) : IHostEnvironment
+    {
+        public string EnvironmentName { get => environmentName; set => throw new NotImplementedException(); }
+        public string ApplicationName { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public string ContentRootPath { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public IFileProvider ContentRootFileProvider { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
     }
 }

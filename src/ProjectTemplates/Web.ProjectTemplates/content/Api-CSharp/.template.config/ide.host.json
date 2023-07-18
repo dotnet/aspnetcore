@@ -9,10 +9,6 @@
       "isVisible": true,
       "persistenceScope": "shared",
       "persistenceScopeName": "Microsoft"
-    },
-    {
-      "id": "NativeAot",
-      "isVisible": true
     }
   ]
 }

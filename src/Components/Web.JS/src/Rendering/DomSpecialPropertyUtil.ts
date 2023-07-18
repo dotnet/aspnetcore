@@ -21,35 +21,6 @@ export function tryApplySpecialProperty(element: Element, name: string, value: s
   }
 }
 
-export function readSpecialPropertyOrAttributeValue(attr: Attr) {
-  // This is the inverse of tryApplySpecialProperty.
-  // It does not need to account for 'deferred' values since those are not considered to be in effect
-  // until they are actually written to the element
-  switch (attr.name) {
-    case 'value': {
-      const elem = attr.ownerElement!;
-      switch (elem.tagName) {
-        case 'INPUT':
-        case 'SELECT':
-        case 'TEXTAREA':
-          return (elem as any).value;
-      }
-      break;
-    }
-    case 'checked': {
-      const elem = attr.ownerElement!;
-      switch (elem.tagName) {
-        case 'INPUT':
-          const inputElem = elem as HTMLInputElement;
-          return inputElem.checked ? inputElem.value : '';
-      }
-      break;
-    }
-  }
-
-  return attr.value;
-}
-
 export function applyAnyDeferredValue(element: Element) {
   // We handle setting 'value' on a <select> in three different ways:
   // [1] When inserting a corresponding <option>, in case you're dynamically adding options.
@@ -69,7 +40,8 @@ export function applyAnyDeferredValue(element: Element) {
     trySetSelectValueFromOptionElement(element);
   } else if (deferredValuePropname in element) {
     // Situation 2
-    setDeferredElementValue(element, element[deferredValuePropname]);
+    const deferredValue = element[deferredValuePropname];
+    setDeferredElementValue(element, deferredValue);
   }
 }
 

@@ -29,12 +29,7 @@ internal class Endpoint
         }
 
         Response = new EndpointResponse(method, wellKnownTypes);
-        if (Response.IsAnonymousType)
-        {
-            Diagnostics.Add(Diagnostic.Create(DiagnosticDescriptors.UnableToResolveAnonymousReturnType, Operation.Syntax.GetLocation()));
-            return;
-        }
-
+        Response.EmitRequiredDiagnostics(Diagnostics, Operation.Syntax.GetLocation());
         IsAwaitable = Response?.IsAwaitable == true;
 
         EmitterContext.HasResponseMetadata = Response is { } response && !(response.IsIResult || response.HasNoResponse);
@@ -55,7 +50,13 @@ internal class Endpoint
 
         for (var i = 0; i < method.Parameters.Length; i++)
         {
-            var parameter = new EndpointParameter(this, method.Parameters[i], wellKnownTypes);
+            var parameterSymbol = method.Parameters[i];
+            parameterSymbol.EmitRequiredDiagnostics(Diagnostics, Operation.Syntax.GetLocation());
+            if (Diagnostics.Count > 0)
+            {
+                continue;
+            }
+            var parameter = new EndpointParameter(this, parameterSymbol, wellKnownTypes);
 
             switch (parameter.Source)
             {
@@ -82,6 +83,7 @@ internal class Endpoint
         Parameters = parameters;
 
         EmitterContext.RequiresLoggingHelper = !Parameters.All(parameter =>
+            parameter is not null &&
             parameter.Source == EndpointParameterSource.SpecialType ||
             parameter is { IsArray: true, ElementType.SpecialType: SpecialType.System_String, Source: EndpointParameterSource.Query });
     }
@@ -95,7 +97,7 @@ internal class Endpoint
     public EndpointParameter[] Parameters { get; } = Array.Empty<EndpointParameter>();
     public List<Diagnostic> Diagnostics { get; } = new List<Diagnostic>();
 
-    public (string File, int LineNumber) Location { get; }
+    public (string File, int LineNumber, int CharacterNumber) Location { get; }
     public IInvocationOperation Operation { get; }
 
     public override bool Equals(object o) =>
@@ -138,13 +140,16 @@ internal class Endpoint
         return hashCode.ToHashCode();
     }
 
-    private static (string, int) GetLocation(IInvocationOperation operation)
+    private static (string, int, int) GetLocation(IInvocationOperation operation)
     {
         var operationSpan = operation.Syntax.Span;
-        var filePath = operation.Syntax.SyntaxTree.GetDisplayPath(operationSpan, operation.SemanticModel?.Compilation.Options.SourceReferenceResolver);
+        var filePath = operation.Syntax.SyntaxTree.GetInterceptorFilePath(operation.SemanticModel?.Compilation.Options.SourceReferenceResolver);
         var span = operation.Syntax.SyntaxTree.GetLineSpan(operationSpan);
         var lineNumber = span.StartLinePosition.Line + 1;
-        return (filePath, lineNumber);
+        // Calculate the character offset to the end of the Map invocation detected
+        var invocationLength = ((MemberAccessExpressionSyntax)((InvocationExpressionSyntax)operation.Syntax).Expression).Expression.Span.Length;
+        var characterNumber = span.StartLinePosition.Character + invocationLength + 2;
+        return (filePath, lineNumber, characterNumber);
     }
 
     private static string GetHttpMethod(IInvocationOperation operation)
