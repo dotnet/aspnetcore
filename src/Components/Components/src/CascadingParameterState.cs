@@ -25,10 +25,11 @@ internal readonly struct CascadingParameterState
         ValueSupplier = valueSupplier;
     }
 
-    public static IReadOnlyList<CascadingParameterState> FindCascadingParameters(ComponentState componentState)
+    public static IReadOnlyList<CascadingParameterState> FindCascadingParameters(ComponentState componentState, out bool hasSingleDeliveryParameters)
     {
         var componentType = componentState.Component.GetType();
         var infos = GetCascadingParameterInfos(componentType);
+        hasSingleDeliveryParameters = false;
 
         // For components known not to have any cascading parameters, bail out early
         if (infos.Length == 0)
@@ -50,6 +51,18 @@ internal readonly struct CascadingParameterState
                 // Although not all parameters might be matched, we know the maximum number
                 resultStates ??= new List<CascadingParameterState>(infos.Length - infoIndex);
                 resultStates.Add(new CascadingParameterState(info, supplier));
+
+                if (info.Attribute.SingleDelivery)
+                {
+                    hasSingleDeliveryParameters = true;
+                    if (!supplier.IsFixed)
+                    {
+                        // We don't have a use case for IsFixed=false with SingleDelivery=true. To avoid complications about
+                        // subscribing/unsubscribing in this case, just disallow it. It shouldn't be possible for this to
+                        // occur unless someone creates their own CascadingParameterAttributeBase subclass.
+                        throw new InvalidOperationException($"'{info.Attribute.GetType()}' is flagged with {nameof(CascadingParameterAttributeBase.SingleDelivery)}, but the selected supplier '{supplier.GetType()}' is not flagged with {nameof(ICascadingValueSupplier.IsFixed)}");
+                    }
+                }
             }
         }
 

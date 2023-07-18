@@ -16,9 +16,10 @@ namespace Microsoft.AspNetCore.Components.Rendering;
 public class ComponentState : IAsyncDisposable
 {
     private readonly Renderer _renderer;
-    private readonly IReadOnlyList<CascadingParameterState> _cascadingParameters;
-    private readonly bool _hasCascadingParameters;
     private readonly bool _hasAnyCascadingParameterSubscriptions;
+    private IReadOnlyList<CascadingParameterState> _cascadingParameters;
+    private bool _hasCascadingParameters;
+    private bool _hasSingleDeliveryCascadingParameters;
     private RenderTreeBuilder _nextRenderTree;
     private ArrayBuilder<RenderTreeFrame>? _latestDirectParametersSnapshot; // Lazily instantiated
     private bool _componentWasDisposed;
@@ -39,7 +40,7 @@ public class ComponentState : IAsyncDisposable
             ? (GetSectionOutletLogicalParent(renderer, (SectionOutlet)parentComponentState!.Component) ?? parentComponentState)
             : parentComponentState;
         _renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
-        _cascadingParameters = CascadingParameterState.FindCascadingParameters(this);
+        _cascadingParameters = CascadingParameterState.FindCascadingParameters(this, out _hasSingleDeliveryCascadingParameters);
         CurrentRenderTree = new RenderTreeBuilder();
         _nextRenderTree = new RenderTreeBuilder();
 
@@ -174,9 +175,35 @@ public class ComponentState : IAsyncDisposable
         if (_hasCascadingParameters)
         {
             parameters = parameters.WithCascadingParameters(_cascadingParameters);
+            if (_hasSingleDeliveryCascadingParameters)
+            {
+                StopSupplyingSingleDeliveryCascadingParameters();
+            }
         }
 
         SupplyCombinedParameters(parameters);
+    }
+
+    private void StopSupplyingSingleDeliveryCascadingParameters()
+    {
+        // We're optimizing for the case where there are no single-delivery parameters, or if there were, we already
+        // removed them. In those cases _cascadingParameters is already up-to-date and gets used as-is without any filtering.
+        // In the unusual case were there are single-delivery parameters and we haven't yet removed them, it's OK to
+        // go through the extra work and allocation of creating a new list.
+        List<CascadingParameterState>? remainingCascadingParameters = null;
+        foreach (var param in _cascadingParameters)
+        {
+            if (!param.ParameterInfo.Attribute.SingleDelivery)
+            {
+                remainingCascadingParameters ??= new(_cascadingParameters.Count /* upper bound on capacity needed */);
+                remainingCascadingParameters.Add(param);
+            }
+        }
+
+        // Now update all the tracking state to match the filtered set
+        _hasCascadingParameters = remainingCascadingParameters is not null;
+        _cascadingParameters = (IReadOnlyList<CascadingParameterState>?)remainingCascadingParameters ?? Array.Empty<CascadingParameterState>();
+        _hasSingleDeliveryCascadingParameters = false;
     }
 
     internal void NotifyCascadingValueChanged(in ParameterViewLifetime lifetime)
