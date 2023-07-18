@@ -785,6 +785,7 @@
         "appsettings.Development.json",
         "appsettings.json",
         "Program.cs",
+        "WeatherForecast.cs",
         "Properties/launchSettings.json"
       ],
       "AuthOption": "IndividualB2C"
@@ -807,6 +808,7 @@
         "appsettings.Development.json",
         "appsettings.json",
         "Program.cs",
+        "WeatherForecast.cs",
         "Properties/launchSettings.json"
       ],
       "AuthOption": "SingleOrg"
@@ -829,6 +831,7 @@
         "appsettings.Development.json",
         "appsettings.json",
         "Program.cs",
+        "WeatherForecast.cs",
         "Properties/launchSettings.json"
       ],
       "AuthOption": "None"
@@ -877,6 +880,7 @@
         "appsettings.Development.json",
         "appsettings.json",
         "Program.cs",
+        "WeatherForecast.cs",
         "Properties/launchSettings.json"
       ],
       "AuthOption": "Windows"
