@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-export function discoverComponents(root: Node, type: 'webassembly' | 'server' | 'auto'): ServerComponentDescriptor[] | WebAssemblyComponentDescriptor[] | AutoComponentDescriptor[] {
+export function discoverComponents(root: Node, type: 'webassembly' | 'server' | 'auto'): ComponentDescriptor[] {
   switch (type) {
     case 'webassembly':
       return discoverWebAssemblyComponents(root);
@@ -10,26 +10,6 @@ export function discoverComponents(root: Node, type: 'webassembly' | 'server' | 
     case 'auto':
       return discoverAutoComponents(root);
   }
-}
-
-function discoverServerComponents(root: Node): ServerComponentDescriptor[] {
-  const componentComments = resolveComponentComments(root, 'server') as ServerComponentComment[];
-  const discoveredComponents: ServerComponentDescriptor[] = [];
-  for (let i = 0; i < componentComments.length; i++) {
-    const componentComment = componentComments[i];
-    const entry = new ServerComponentDescriptor(
-      componentComment.type,
-      componentComment.start,
-      componentComment.end,
-      componentComment.sequence,
-      componentComment.descriptor,
-      componentComment.key
-    );
-
-    discoveredComponents.push(entry);
-  }
-
-  return discoveredComponents.sort((a, b): number => a.sequence - b.sequence);
 }
 
 const blazorStateCommentRegularExpression = /^\s*Blazor-Component-State:(?<state>[a-zA-Z0-9+/=]+)$/;
@@ -61,87 +41,23 @@ export function discoverPersistedState(node: Node): string | null | undefined {
   return;
 }
 
+function discoverServerComponents(root: Node): ServerComponentDescriptor[] {
+  const componentComments = resolveComponentComments(root, 'server') as ServerComponentDescriptor[];
+  return componentComments.sort((a, b): number => a.sequence - b.sequence);
+}
+
 function discoverWebAssemblyComponents(node: Node): WebAssemblyComponentDescriptor[] {
-  const componentComments = resolveComponentComments(node, 'webassembly') as WebAssemblyComponentComment[];
-  const discoveredComponents: WebAssemblyComponentDescriptor[] = [];
-  for (let i = 0; i < componentComments.length; i++) {
-    const componentComment = componentComments[i];
-    const entry = new WebAssemblyComponentDescriptor(
-      componentComment.type,
-      componentComment.start,
-      componentComment.end,
-      componentComment.assembly,
-      componentComment.typeName,
-      componentComment.parameterDefinitions,
-      componentComment.parameterValues,
-      componentComment.key
-    );
-
-    discoveredComponents.push(entry);
-  }
-
-  return discoveredComponents.sort((a, b): number => a.id - b.id);
+  const componentComments = resolveComponentComments(node, 'webassembly') as WebAssemblyComponentDescriptor[];
+  return componentComments;
 }
 
 function discoverAutoComponents(node: Node): AutoComponentDescriptor[] {
-  const componentComments = resolveComponentComments(node, 'auto') as AutoComponentComment[];
-  const discoveredComponents: AutoComponentDescriptor[] = [];
-  for (let i = 0; i < componentComments.length; i++) {
-    const componentComment = componentComments[i];
-    const s = componentComment.server;
-    const w = componentComment.webAssembly;
-    const entry = new AutoComponentDescriptor(
-      componentComment.type,
-      componentComment.start,
-      componentComment.end,
-      new ServerComponentDescriptor(s.type, s.start, s.end, s.sequence, s.descriptor, s.key),
-      new WebAssemblyComponentDescriptor(w.type, w.start, w.end, w.assembly, w.typeName, w.parameterDefinitions, w.parameterValues, w.key)
-    );
-
-    discoveredComponents.push(entry);
-  }
-
-  return discoveredComponents;
+  const componentComments = resolveComponentComments(node, 'auto') as AutoComponentDescriptor[];
+  return componentComments;
 }
 
-interface ComponentComment {
-  type: 'server' | 'webassembly' | 'auto';
-  prerenderId?: string;
-}
-
-interface ServerComponentComment {
-  type: 'server';
-  sequence: number;
-  descriptor: string;
-  start: Comment;
-  end?: Comment;
-  prerenderId?: string;
-  key?: string;
-}
-
-interface WebAssemblyComponentComment {
-  type: 'webassembly';
-  typeName: string;
-  assembly: string;
-  parameterDefinitions?: string;
-  parameterValues?: string;
-  prerenderId?: string;
-  start: Comment;
-  end?: Comment;
-  key?: string;
-}
-
-interface AutoComponentComment {
-  type: 'auto'
-  server: ServerComponentComment;
-  webAssembly: WebAssemblyComponentComment;
-  prerenderId?: string;
-  start: Comment;
-  end?: Comment;
-}
-
-function resolveComponentComments(node: Node, type: 'webassembly' | 'server' | 'auto'): ComponentComment[] {
-  const result: ComponentComment[] = [];
+function resolveComponentComments(node: Node, type: 'webassembly' | 'server' | 'auto'): ComponentDescriptor[] {
+  const result: ComponentDescriptor[] = [];
   const childNodeIterator = new ComponentCommentIterator(node.childNodes);
   while (childNodeIterator.next() && childNodeIterator.currentElement) {
     const componentComment = getComponentComment(childNodeIterator, type);
@@ -161,7 +77,7 @@ function resolveComponentComments(node: Node, type: 'webassembly' | 'server' | '
 
 const blazorCommentRegularExpression = new RegExp(/^\s*Blazor:[^{]*(?<descriptor>.*)$/);
 
-function getComponentComment(commentNodeIterator: ComponentCommentIterator, type: 'webassembly' | 'server' | 'auto'): ComponentComment | undefined {
+function getComponentComment(commentNodeIterator: ComponentCommentIterator, type: 'webassembly' | 'server' | 'auto'): ComponentDescriptor | undefined {
   const candidateStart = commentNodeIterator.currentElement;
 
   if (!candidateStart || candidateStart.nodeType !== Node.COMMENT_NODE) {
@@ -175,13 +91,23 @@ function getComponentComment(commentNodeIterator: ComponentCommentIterator, type
       assertNotDirectlyOnDocument(candidateStart);
       try {
         const componentComment = parseCommentPayload(json);
-        switch (type) {
+
+        // Regardless of whether this comment matches the type we're looking for, we still need to move the iterator
+        // on to its end position since we don't want to recurse into unrelated prerendered components, nor do we want to get confused
+        // by the end marker.
+        const candidateEnd = getComponentEndComment(componentComment, candidateStart as Comment, commentNodeIterator);
+
+        if (type !== componentComment.type) {
+          return undefined;
+        }
+
+        switch (componentComment.type) {
           case 'webassembly':
-            return createWebAssemblyComponentComment(componentComment as WebAssemblyComponentComment, candidateStart as Comment, commentNodeIterator);
+            return createWebAssemblyComponentComment(componentComment, candidateStart as Comment, candidateEnd);
           case 'server':
-            return createServerComponentComment(componentComment as ServerComponentComment, candidateStart as Comment, commentNodeIterator);
+            return createServerComponentComment(componentComment, candidateStart as Comment, candidateEnd);
           case 'auto':
-            return createAutoComponentComment(componentComment as AutoComponentComment, candidateStart as Comment, commentNodeIterator);
+            return createAutoComponentComment(componentComment, candidateStart as Comment, candidateEnd);
         }
       } catch (error) {
         throw new Error(`Found malformed component comment at ${candidateStart.textContent}`);
@@ -192,8 +118,8 @@ function getComponentComment(commentNodeIterator: ComponentCommentIterator, type
   }
 }
 
-function parseCommentPayload(json: string): ComponentComment {
-  const payload = JSON.parse(json) as ComponentComment;
+function parseCommentPayload(json: string): ServerComponentMarker | WebAssemblyComponentMarker | AutoComponentMarker {
+  const payload = JSON.parse(json);
   const { type } = payload;
   if (type !== 'server' && type !== 'webassembly' && type !== 'auto') {
     throw new Error(`Invalid component type '${type}'.`);
@@ -208,117 +134,12 @@ function assertNotDirectlyOnDocument(marker: Node) {
   }
 }
 
-function createServerComponentComment(payload: ServerComponentComment, start: Comment, iterator: ComponentCommentIterator): ServerComponentComment | undefined {
-  const { type, descriptor, sequence, prerenderId, key } = payload;
-
-  // Regardless of whether this comment matches the type we're looking for (i.e., 'server'), we still need to move the iterator
-  // on to its end position since we don't want to recurse into unrelated prerendered components, nor do we want to get confused
-  // by the end marker.
-  const end = prerenderId ? getComponentEndComment(prerenderId, iterator) : undefined;
-  if (prerenderId && !end) {
-    throw new Error(`Could not find an end component comment for '${start}'.`);
-  }
-
-  if (type !== 'server') {
+function getComponentEndComment(payload: ComponentMarker, start: Comment, iterator: ComponentCommentIterator): Comment | undefined {
+  const { prerenderId } = payload;
+  if (!prerenderId) {
     return undefined;
   }
 
-  if (!descriptor) {
-    throw new Error('descriptor must be defined when using a descriptor.');
-  }
-
-  if (sequence === undefined) {
-    throw new Error('sequence must be defined when using a descriptor.');
-  }
-
-  if (!Number.isInteger(sequence)) {
-    throw new Error(`Error parsing the sequence '${sequence}' for component '${JSON.stringify(payload)}'`);
-  }
-
-  return {
-    type,
-    sequence,
-    descriptor,
-    start,
-    prerenderId,
-    end,
-    key,
-  };
-}
-
-function createWebAssemblyComponentComment(payload: WebAssemblyComponentComment, start: Comment, iterator: ComponentCommentIterator): WebAssemblyComponentComment | undefined {
-  const { type, assembly, typeName, parameterDefinitions, parameterValues, prerenderId, key } = payload;
-
-  // Regardless of whether this comment matches the type we're looking for (i.e., 'webassembly'), we still need to move the iterator
-  // on to its end position since we don't want to recurse into unrelated prerendered components, nor do we want to get confused
-  // by the end marker.
-  const end = prerenderId ? getComponentEndComment(prerenderId, iterator) : undefined;
-  if (prerenderId && !end) {
-    throw new Error(`Could not find an end component comment for '${start}'.`);
-  }
-
-  if (type !== 'webassembly') {
-    return undefined;
-  }
-
-  if (!assembly) {
-    throw new Error('assembly must be defined when using a descriptor.');
-  }
-
-  if (!typeName) {
-    throw new Error('typeName must be defined when using a descriptor.');
-  }
-
-  return {
-    type,
-    assembly,
-    typeName,
-    // Parameter definitions and values come Base64 encoded from the server, since they contain random data and can make the
-    // comment invalid. We could unencode them in .NET Code, but that would be slower to do and we can leverage the fact that
-    // JS provides a native function that will be much faster and that we are doing this work while we are fetching
-    // blazor.boot.json
-    parameterDefinitions: parameterDefinitions && atob(parameterDefinitions),
-    parameterValues: parameterValues && atob(parameterValues),
-    start,
-    prerenderId,
-    end,
-    key,
-  };
-}
-
-function createAutoComponentComment(payload: AutoComponentComment, start: Comment, iterator: ComponentCommentIterator): AutoComponentComment | undefined {
-  const { type, prerenderId, server, webAssembly } = payload;
-
-  const end = prerenderId ? getComponentEndComment(prerenderId, iterator) : undefined;
-  if (server?.prerenderId && !end) {
-    throw new Error(`Could not find an end component comment for '${start}'.`);
-  }
-
-  if (type !== 'auto') {
-    return undefined;
-  }
-
-  return {
-    type,
-    server: {
-      ...server,
-      start,
-      end,
-    },
-    webAssembly: {
-      ...webAssembly,
-      start,
-      end,
-      // See comment in createWebAssemblyComponentComment
-      parameterDefinitions: webAssembly.parameterDefinitions && atob(webAssembly.parameterDefinitions),
-      parameterValues: webAssembly.parameterValues && atob(webAssembly.parameterValues),
-    },
-    start,
-    end,
-  };
-}
-
-function getComponentEndComment(prerenderedId: string, iterator: ComponentCommentIterator): Comment | undefined {
   while (iterator.next() && iterator.currentElement) {
     const node = iterator.currentElement;
     if (node.nodeType !== Node.COMMENT_NODE) {
@@ -334,30 +155,102 @@ function getComponentEndComment(prerenderedId: string, iterator: ComponentCommen
       continue;
     }
 
-    validateEndComponentPayload(json, prerenderedId);
+    validateEndComponentPayload(json, prerenderId);
 
     return node as Comment;
   }
 
-  return undefined;
+  throw new Error(`Could not find an end component comment for '${start}'.`);
 }
 
-function validateEndComponentPayload(json: string, prerenderedId: string): void {
-  const payload = JSON.parse(json) as ComponentComment;
+let nextUniqueDescriptorId = 0;
+
+function createServerComponentComment(payload: ServerComponentMarker, start: Comment, end: Comment | undefined): ServerComponentDescriptor {
+  validateServerComponentPayload(payload);
+
+  return {
+    ...payload,
+    uniqueId: nextUniqueDescriptorId++,
+    start,
+    end,
+  };
+}
+
+let nextWebAssemblyDescriptorId = 0;
+function createWebAssemblyComponentComment(payload: WebAssemblyComponentMarker, start: Comment, end: Comment | undefined): WebAssemblyComponentDescriptor {
+  validateWebAssemblyComponentPayload(payload);
+
+  return {
+    ...payload,
+    uniqueId: nextUniqueDescriptorId++,
+    id: nextWebAssemblyDescriptorId++,
+    start,
+    end,
+  };
+}
+
+function createAutoComponentComment(payload: AutoComponentMarker, start: Comment, end: Comment | undefined): AutoComponentDescriptor {
+  validateServerComponentPayload(payload);
+  validateWebAssemblyComponentPayload(payload);
+
+  return {
+    ...payload,
+    uniqueId: nextUniqueDescriptorId++,
+    start,
+    end,
+  };
+}
+
+function validateServerComponentPayload(payload: ServerMarkerData) {
+  const { descriptor, sequence } = payload;
+
+  if (!descriptor) {
+    throw new Error('descriptor must be defined when using a descriptor.');
+  }
+
+  if (sequence === undefined) {
+    throw new Error('sequence must be defined when using a descriptor.');
+  }
+
+  if (!Number.isInteger(sequence)) {
+    throw new Error(`Error parsing the sequence '${sequence}' for component '${JSON.stringify(payload)}'`);
+  }
+}
+
+function validateWebAssemblyComponentPayload(payload: WebAssemblyMarkerData) {
+  const { assembly, typeName } = payload;
+
+  if (!assembly) {
+    throw new Error('assembly must be defined when using a descriptor.');
+  }
+
+  if (!typeName) {
+    throw new Error('typeName must be defined when using a descriptor.');
+  }
+
+  // Parameter definitions and values come Base64 encoded from the server, since they contain random data and can make the
+  // comment invalid. We could unencode them in .NET Code, but that would be slower to do and we can leverage the fact that
+  // JS provides a native function that will be much faster and that we are doing this work while we are fetching
+  // blazor.boot.json
+  payload.parameterDefinitions = payload.parameterDefinitions && atob(payload.parameterDefinitions);
+  payload.parameterValues = payload.parameterValues && atob(payload.parameterValues);
+}
+
+function validateEndComponentPayload(json: string, prerenderId: string): void {
+  const payload = JSON.parse(json) as ComponentEndMarker;
   if (Object.keys(payload).length !== 1) {
     throw new Error(`Invalid end of component comment: '${json}'`);
   }
-  const prerenderedEndId = payload.prerenderId;
-  if (!prerenderedEndId) {
+  const prerenderEndId = payload.prerenderId;
+  if (!prerenderEndId) {
     throw new Error(`End of component comment must have a value for the prerendered property: '${json}'`);
   }
-  if (prerenderedEndId !== prerenderedId) {
-    throw new Error(`End of component comment prerendered property must match the start comment prerender id: '${prerenderedId}', '${prerenderedEndId}'`);
+  if (prerenderEndId !== prerenderId) {
+    throw new Error(`End of component comment prerendered property must match the start comment prerender id: '${prerenderId}', '${prerenderEndId}'`);
   }
 }
 
 class ComponentCommentIterator {
-
   private childNodes: NodeListOf<ChildNode>;
 
   private currentIndex: number;
@@ -384,197 +277,89 @@ class ComponentCommentIterator {
   }
 }
 
-export type ComponentMarker = ServerComponentMarker | WebAssemblyComponentMarker;
+export function descriptorToMarker(descriptor: ComponentDescriptor): ComponentMarker {
+  return {
+    ...descriptor,
 
-type ServerComponentMarker = {
-  type: 'server';
-  sequence: number;
-  descriptor: string;
+    // We remove descriptor-specific information to produce a JSON-serializable marker
+    start: undefined,
+    end: undefined,
+  } as unknown as ComponentMarker;
 }
 
-type WebAssemblyComponentMarker = {
-  type: 'webassembly';
-  typeName: string;
-  assembly: string;
-  parameterDefinitions?: string;
-  parameterValues?: string;
+export function canMergeDescriptors(target: ComponentDescriptor, source: ComponentDescriptor): boolean {
+  if (target.type !== source.type || target.key !== source.key) {
+    return false;
+  }
+
+  return true;
+}
+
+export function mergeDescriptors(target: ComponentDescriptor, source: ComponentDescriptor) {
+  if (!canMergeDescriptors(target, source)) {
+    throw new Error(`Cannot merge mismatching component descriptors:\n${JSON.stringify(target)}\nand\n${JSON.stringify(source)}`);
+  }
+
+  target.uniqueId = source.uniqueId;
+
+  if (target.type === 'webassembly' || target.type === 'auto') {
+    const sourceWebAssemblyData = source as WebAssemblyMarkerData;
+    target.parameterDefinitions = sourceWebAssemblyData.parameterDefinitions;
+    target.parameterValues = sourceWebAssemblyData.parameterValues;
+    target.id = sourceWebAssemblyData.id;
+  }
+
+  if (target.type === 'server' || target.type === 'auto') {
+    const sourceServerData = source as ServerMarkerData;
+    target.sequence = sourceServerData.sequence;
+    target.descriptor = sourceServerData.descriptor;
+  }
 }
 
 export type ComponentDescriptor = ServerComponentDescriptor | WebAssemblyComponentDescriptor | AutoComponentDescriptor;
+export type ComponentMarker = ServerComponentMarker | WebAssemblyComponentMarker | AutoComponentMarker;
 
-export class ServerComponentDescriptor {
-  private static globalId = 1;
+export type ServerComponentDescriptor = ServerComponentMarker & DescriptorData;
+export type WebAssemblyComponentDescriptor = WebAssemblyComponentMarker & DescriptorData;
+export type AutoComponentDescriptor = AutoComponentMarker & DescriptorData;
 
-  public type: 'server';
+type DescriptorData = {
+  uniqueId: number;
+  start: Comment;
+  end?: Comment;
+};
 
-  public start: Comment;
-
-  public end?: Comment;
-
-  public id: number;
-
-  public sequence: number;
-
-  public descriptor: string;
-
-  public key?: string;
-
-  public constructor(type: 'server', start: Comment, end: Comment | undefined, sequence: number, descriptor: string, key: string | undefined) {
-    this.id = ServerComponentDescriptor.globalId++;
-    this.type = type;
-    this.start = start;
-    this.end = end;
-    this.sequence = sequence;
-    this.descriptor = descriptor;
-    this.key = key;
-  }
-
-  public matches(other: ComponentDescriptor): other is ServerComponentDescriptor {
-    return this.type === other.type && this.key === other.key;
-  }
-
-  public update(other: ComponentDescriptor) {
-    if (!this.matches(other)) {
-      throw new Error(`Cannot merge mismatching component descriptors:\n${JSON.stringify(this)}\nand\n${JSON.stringify(other)}`);
-    }
-
-    this.sequence = other.sequence;
-    this.descriptor = other.descriptor;
-    this.id = other.id;
-  }
-
-  public toRecord(): ServerComponentMarker {
-    return {
-      type: this.type,
-      sequence: this.sequence,
-      descriptor: this.descriptor,
-    };
-  }
+type ComponentEndMarker = {
+  prerenderId: string;
 }
 
-export class WebAssemblyComponentDescriptor {
-  private static globalId = 1;
+type ServerComponentMarker = {
+  type: 'server';
+} & ServerMarkerData;
 
-  public type: 'webassembly';
+type WebAssemblyComponentMarker = {
+  type: 'webassembly';
+} & WebAssemblyMarkerData;
 
-  public typeName: string;
+type AutoComponentMarker = {
+  type: 'auto';
+} & ServerMarkerData & WebAssemblyMarkerData;
 
-  public assembly: string;
-
-  public parameterDefinitions?: string;
-
-  public parameterValues?: string;
-
-  public id: number;
-
-  public start: Comment;
-
-  public end?: Comment;
-
-  public key?: string;
-
-  public constructor(type: 'webassembly', start: Comment, end: Comment | undefined, assembly: string, typeName: string, parameterDefinitions?: string, parameterValues?: string, key?: string) {
-    this.id = WebAssemblyComponentDescriptor.globalId++;
-    this.type = type;
-    this.assembly = assembly;
-    this.typeName = typeName;
-    this.parameterDefinitions = parameterDefinitions;
-    this.parameterValues = parameterValues;
-    this.start = start;
-    this.end = end;
-    this.key = key;
-  }
-
-  public matches(other: ComponentDescriptor): other is WebAssemblyComponentDescriptor {
-    return this.type === other.type && this.key === other.key && this.typeName === other.typeName && this.assembly === other.assembly;
-  }
-
-  public update(other: ComponentDescriptor) {
-    if (!this.matches(other)) {
-      throw new Error(`Cannot merge mismatching component descriptors:\n${JSON.stringify(this)}\nand\n${JSON.stringify(other)}`);
-    }
-
-    this.parameterDefinitions = other.parameterDefinitions;
-    this.parameterValues = other.parameterValues;
-    this.id = other.id;
-  }
-
-  public toRecord(): WebAssemblyComponentMarker {
-    return {
-      type: this.type,
-      typeName: this.typeName,
-      assembly: this.assembly,
-      parameterDefinitions: this.parameterDefinitions,
-      parameterValues: this.parameterValues,
-    };
-  }
+type CommonMarkerData = {
+  type: string;
+  prerenderId?: string;
+  key?: string;
 }
 
-export class AutoComponentDescriptor {
-  private static globalId = 1;
+type ServerMarkerData = {
+  sequence: number;
+  descriptor: string;
+} & CommonMarkerData;
 
-  public type: 'auto';
-
-  public id: number;
-
-  public start: Comment;
-
-  public end?: Comment;
-
-  public serverDescriptor: ServerComponentDescriptor;
-
-  public webAssemblyDescriptor: WebAssemblyComponentDescriptor;
-
-  private resolvedType: 'server' | 'webassembly' | undefined;
-
-  public constructor(type: 'auto', start: Comment, end: Comment | undefined, serverDescriptor: ServerComponentDescriptor, webAssemblyDescriptor: WebAssemblyComponentDescriptor) {
-    this.id = AutoComponentDescriptor.globalId++;
-    this.type = type;
-    this.start = start;
-    this.end = end;
-    this.serverDescriptor = serverDescriptor;
-    this.webAssemblyDescriptor = webAssemblyDescriptor;
-  }
-
-  public matches(other: ComponentDescriptor): other is AutoComponentDescriptor {
-    return this.type === other.type && this.serverDescriptor.matches(other.serverDescriptor) && this.webAssemblyDescriptor.matches(other.webAssemblyDescriptor);
-  }
-
-  public update(other: ComponentDescriptor) {
-    if (!this.matches(other)) {
-      throw new Error(`Cannot merge mismatching component descriptors:\n${JSON.stringify(this)}\nand\n${JSON.stringify(other)}`);
-    }
-
-    this.serverDescriptor.update(other.serverDescriptor);
-    this.webAssemblyDescriptor.update(other.webAssemblyDescriptor);
-  }
-
-  public hasResolvedType(): boolean {
-    return this.resolvedType !== undefined;
-  }
-
-  public setResolvedType(type: 'server' | 'webassembly') {
-    if (this.resolvedType) {
-      throw new Error('Auto components can only resolve to a component type once');
-    }
-    this.resolvedType = type;
-  }
-
-  public getResolvedType(): 'server' | 'webassembly' {
-    if (!this.resolvedType) {
-      throw new Error('Cannot get the resolved type of an auto component before setResolvedType() is called');
-    }
-    return this.resolvedType;
-  }
-
-  public toRecord(): ServerComponentMarker | WebAssemblyComponentMarker {
-    switch (this.resolvedType) {
-      case 'server':
-        return this.serverDescriptor.toRecord();
-      case 'webassembly':
-        return this.webAssemblyDescriptor.toRecord();
-      default:
-        throw new Error(`Auto component record cannot be created from resolved marker type '${this.resolvedType}'`);
-    }
-  }
-}
+type WebAssemblyMarkerData = {
+  typeName: string;
+  assembly: string;
+  parameterDefinitions: string;
+  parameterValues: string;
+  id: number;
+} & CommonMarkerData;
