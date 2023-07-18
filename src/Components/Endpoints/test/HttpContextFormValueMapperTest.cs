@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
@@ -34,7 +36,7 @@ public class HttpContextFormValueMapperTest
         var formData = new HttpContextFormDataProvider();
         formData.SetFormData(incomingFormName, new Dictionary<string, StringValues>());
 
-        var mapper = new HttpContextFormValueMapper(formData);
+        var mapper = new HttpContextFormValueMapper(formData, Options.Create<RazorComponentOptions>(new()));
 
         var canMap = mapper.CanMap(typeof(string), scopeName, formNameOrNull);
         Assert.Equal(expectedResult, canMap);

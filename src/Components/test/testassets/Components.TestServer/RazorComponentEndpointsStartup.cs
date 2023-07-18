@@ -21,7 +21,12 @@ public class RazorComponentEndpointsStartup<TRootComponent>
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddRazorComponents()
+        services.AddRazorComponents(options =>
+        {
+            options.MaxFormMappingErrorCount = 10;
+            options.MaxFormMappingRecursionDepth = 5;
+            options.MaxFormMappingCollectionSize = 100;
+        })
             .AddServerComponents()
             .AddWebAssemblyComponents(options =>
             {

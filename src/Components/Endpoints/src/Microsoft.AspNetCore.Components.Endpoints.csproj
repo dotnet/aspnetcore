@@ -81,6 +81,7 @@
   </Target>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Endpoints.Microbenchmarks" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Endpoints.Tests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.TagHelpers.Test" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" Key="$(MoqPublicKey)" />

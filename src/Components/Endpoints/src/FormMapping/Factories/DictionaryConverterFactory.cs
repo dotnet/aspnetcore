@@ -14,34 +14,12 @@ internal class DictionaryConverterFactory : IFormDataConverterFactory
     [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
     public bool CanConvert(Type type, FormDataMapperOptions options)
     {
-        // Type must implement IDictionary<TKey, TValue> IReadOnlyDictionary<TKey, TValue>
-        // Note that IDictionary doesn't extend IReadOnlyDictionary, hence the need for two checks
-        var dictionaryType = ClosedGenericMatcher.ExtractGenericInterface(type, typeof(IDictionary<,>)) ??
-            ClosedGenericMatcher.ExtractGenericInterface(type, typeof(IReadOnlyDictionary<,>));
-
-        if (dictionaryType == null)
-        {
-            return false;
-        }
-
-        // Key type must implement IParsable<T>
-        var keyType = dictionaryType?.GetGenericArguments()[0];
-        if (keyType == null)
-        {
-            return false;
-        }
-
-        var parsableKeyType = ClosedGenericMatcher.ExtractGenericInterface(keyType, typeof(IParsable<>));
-        if (parsableKeyType == null)
-        {
-            return false;
-        }
+        var (keyType, valueType) = ResolveDictionaryTypes(type);
 
         // Value must have a converter
-        var valueType = dictionaryType?.GetGenericArguments()[1];
         if (valueType == null)
         {
-            return false;
+            return default;
         }
 
         var converter = options.ResolveConverter(valueType);
@@ -50,15 +28,44 @@ internal class DictionaryConverterFactory : IFormDataConverterFactory
             return false;
         }
 
-        var factory = Activator.CreateInstance(typeof(TypedDictionaryConverterFactory<,,>)
-            .MakeGenericType(type, keyType, valueType)) as IFormDataConverterFactory;
-
-        if (factory == null)
+        if (Activator.CreateInstance(typeof(TypedDictionaryConverterFactory<,,>)
+            .MakeGenericType(type, keyType, valueType)) is not IFormDataConverterFactory factory)
         {
             return false;
         }
 
         return factory.CanConvert(type, options);
+    }
+
+    [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
+    internal static (Type keyType, Type valueType) ResolveDictionaryTypes(Type type)
+    {
+        // Type must implement IDictionary<TKey, TValue> IReadOnlyDictionary<TKey, TValue>
+        // Note that IDictionary doesn't extend IReadOnlyDictionary, hence the need for two checks
+        var dictionaryType = ClosedGenericMatcher.ExtractGenericInterface(type, typeof(IDictionary<,>)) ??
+            ClosedGenericMatcher.ExtractGenericInterface(type, typeof(IReadOnlyDictionary<,>));
+
+        if (dictionaryType == null)
+        {
+            return default;
+        }
+
+        // Key type must implement IParsable<T>
+        var keyType = dictionaryType.GetGenericArguments()[0];
+        if (keyType == null)
+        {
+            return default;
+        }
+
+        var parsableKeyType = ClosedGenericMatcher.ExtractGenericInterface(keyType, typeof(IParsable<>));
+        if (parsableKeyType == null)
+        {
+            return default;
+        }
+
+        var valueType = dictionaryType.GetGenericArguments()[1];
+        return (keyType, valueType);
     }
 
     [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]

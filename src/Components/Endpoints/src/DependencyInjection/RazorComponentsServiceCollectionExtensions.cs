@@ -27,10 +27,12 @@ public static class RazorComponentsServiceCollectionExtensions
     /// Registers services required for server-side rendering of Razor Components.
     /// </summary>
     /// <param name="services">The service collection.</param>
-    /// <returns>A builder for configuring the Razor Components endpoints.</returns>
+    /// <returns>An <see cref="IRazorComponentsBuilder"/> that can be used to further configure the Razor component services.</returns>
     [RequiresUnreferencedCode("Razor Components does not currently support native AOT.", Url = "https://aka.ms/aspnet/nativeaot")]
     public static IRazorComponentsBuilder AddRazorComponents(this IServiceCollection services)
     {
+        ArgumentNullException.ThrowIfNull(services);
+
         // Dependencies
         services.AddAntiforgery();
 
@@ -69,13 +71,28 @@ public static class RazorComponentsServiceCollectionExtensions
         return new DefaultRazorComponentsBuilder(services);
     }
 
-    private sealed class DefaultRazorComponentsBuilder : IRazorComponentsBuilder
+    /// <summary>
+    /// Registers services required for server-side rendering of Razor Components.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="setupAction">An <see cref="Action{RazorComponentOptions}"/> to configure the provided <see cref="RazorComponentOptions"/>.</param>
+    /// <returns>An <see cref="IRazorComponentsBuilder"/> that can be used to further configure the Razor component services.</returns>
+    public static IRazorComponentsBuilder AddRazorComponents(
+        this IServiceCollection services,
+        Action<RazorComponentOptions> setupAction
+        )
     {
-        public DefaultRazorComponentsBuilder(IServiceCollection services)
-        {
-            Services = services;
-        }
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(setupAction);
 
-        public IServiceCollection Services { get; }
+        var builder = services.AddRazorComponents();
+        services.Configure(setupAction);
+
+        return builder;
+    }
+
+    private sealed class DefaultRazorComponentsBuilder(IServiceCollection services) : IRazorComponentsBuilder
+    {
+        public IServiceCollection Services { get; } = services;
     }
 }

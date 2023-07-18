@@ -5,20 +5,25 @@ using System.Collections;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 
-internal struct FormDataReader
+internal struct FormDataReader : IDisposable
 {
     private readonly IReadOnlyDictionary<FormKey, StringValues> _readOnlyMemoryKeys;
     private readonly Memory<char> _prefixBuffer;
     private Memory<char> _currentPrefixBuffer;
+    private int _currentDepth = 0;
+    private int _errorCount = 0;
 
     // As an implementation detail, reuse FormKey for the values.
     // It's just a thin wrapper over ReadOnlyMemory<char> that caches
     // the computed hash code.
     private IReadOnlyDictionary<FormKey, HashSet<FormKey>>? _formDictionaryKeysByPrefix;
+
+    private PrefixResolver _prefixResolver;
 
     public FormDataReader(IReadOnlyDictionary<FormKey, StringValues> formCollection, CultureInfo culture, Memory<char> buffer)
     {
@@ -31,9 +36,12 @@ internal struct FormDataReader
 
     public IFormatProvider Culture { get; internal set; }
 
+    public int MaxRecursionDepth { get; set; } = 64;
+
     public Action<string, FormattableString, string?>? ErrorHandler { get; set; }
 
     public Action<string, object>? AttachInstanceToErrorsHandler { get; set; }
+    public int MaxErrorCount { get; set; } = 100;
 
     public void AddMappingError(FormattableString errorMessage, string? attemptedValue)
     {
@@ -44,7 +52,29 @@ internal struct FormDataReader
             throw new FormDataMappingException(new FormDataMappingError(_currentPrefixBuffer.ToString(), errorMessage, attemptedValue));
         }
 
+        _errorCount++;
+        if (_errorCount == MaxErrorCount)
+        {
+            ErrorHandler.Invoke(
+                _currentPrefixBuffer.ToString(),
+                FormattableStringFactory.Create($"Maximum number of errors ({MaxErrorCount}) reached. Further errors will be suppressed."),
+                null);
+        }
+
+        if (_errorCount >= MaxErrorCount)
+        {
+            return;
+        }
+
         ErrorHandler.Invoke(_currentPrefixBuffer.ToString(), errorMessage, attemptedValue);
+    }
+
+    public void AddMappingError(Exception exception, string? attemptedValue)
+    {
+        ArgumentNullException.ThrowIfNull(exception);
+
+        var errorMessage = FormattableStringFactory.Create(exception.Message);
+        AddMappingError(errorMessage, attemptedValue);
     }
 
     public void AttachInstanceToErrors(object value)
@@ -116,6 +146,28 @@ internal struct FormDataReader
         return result;
     }
 
+    // This only ever gets invoked if we have a recursive type.
+    // Recursive types make an existential check for the current prefix to determine if they
+    // need to continue mapping data.
+    // At that point, we are placing the keys into a sorted array, and we use binary search to
+    // determine if the prefix exists.
+    // We only make this search on recursive paths, as opposed to in every new scope that we push.
+    internal bool CurrentPrefixExists()
+    {
+        if (CurrentPrefix.Span.Length == 0)
+        {
+            // Avoid creating the prefix array at the root level.
+            return _readOnlyMemoryKeys.Count > 0;
+        }
+
+        if (!_prefixResolver.HasValues)
+        {
+            _prefixResolver = new PrefixResolver(_readOnlyMemoryKeys.Keys, _readOnlyMemoryKeys.Count);
+        }
+
+        return _prefixResolver.HasPrefix(_currentPrefixBuffer);
+    }
+
     internal void PopPrefix(string key)
     {
         PopPrefix(key.AsSpan());
@@ -123,6 +175,13 @@ internal struct FormDataReader
 
     internal void PopPrefix(ReadOnlySpan<char> key)
     {
+        if (_currentDepth > MaxRecursionDepth)
+        {
+            return;
+        }
+
+        _currentDepth--;
+        Debug.Assert(_currentDepth >= 0);
         var keyLength = key.Length;
         // If keyLength is bigger than the current scope keyLength typically means there is a 
         // bug where some part of the code has not popped the scope appropriately.
@@ -144,11 +203,16 @@ internal struct FormDataReader
 
     internal void PushPrefix(scoped ReadOnlySpan<char> key)
     {
+        _currentDepth++;
         // We automatically append a "." before adding the suffix, except when its the first element pushed to the
         // scope, or when we are accessing a property after a collection or an indexer like items[1].
         var separator = _currentPrefixBuffer.Length > 0 && key[0] != '['
             ? ".".AsSpan()
             : "".AsSpan();
+        if (_currentDepth > MaxRecursionDepth)
+        {
+            throw new InvalidOperationException($"The maximum recursion depth of '{MaxRecursionDepth}' was exceeded for '{_currentPrefixBuffer}{separator}{key}'.");
+        }
 
         Debug.Assert(_prefixBuffer.Length >= (_currentPrefixBuffer.Length + separator.Length));
 
@@ -192,6 +256,11 @@ internal struct FormDataReader
             // Return the value without the closing bracket ]
             return _currentPrefixBuffer.Span[(index + 1)..^1].ToString();
         }
+    }
+
+    public void Dispose()
+    {
+        _prefixResolver.Dispose();
     }
 
     internal readonly struct FormKeyCollection : IEnumerable<ReadOnlyMemory<char>>

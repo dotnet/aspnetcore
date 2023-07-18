@@ -16,14 +16,7 @@ internal sealed class TypedDictionaryConverterFactory<TDictionaryType, TKey, TVa
     public bool CanConvert(Type type, FormDataMapperOptions options)
     {
         // Resolve the value type converter
-        var valueTypeConverter = options.ResolveConverter<TValue>();
-        if (valueTypeConverter == null)
-        {
-            return false;
-        }
-
-        var keyTypeConverter = options.ResolveConverter<TKey>();
-        if (keyTypeConverter == null)
+        if (!options.CanConvert(typeof(TValue)))
         {
             return false;
         }
