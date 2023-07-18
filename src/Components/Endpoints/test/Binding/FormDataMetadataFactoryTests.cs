@@ -40,6 +40,79 @@ public class FormDataMetadataFactoryTests
     }
 
     [Fact]
+    public void CanCreateMetadata_ForMoreComplexClassTypes()
+    {
+        // Arrange
+        var (factory, options) = ResolveFactory();
+        // Act
+        var metadata = factory.GetOrCreateMetadataFor(typeof(CustomerWithAddress), options);
+
+        // Assert
+        Assert.NotNull(metadata);
+        Assert.Equal(typeof(CustomerWithAddress), metadata.Type);
+        Assert.Equal(TypeKind.Object, metadata.Kind);
+        Assert.False(metadata.IsRecursive);
+        Assert.NotNull(metadata.Constructor);
+        Assert.Collection(metadata.Properties,
+            property =>
+            {
+                Assert.Equal("BillingAddress", property.Property.Name);
+                Assert.NotNull(property.PropertyMetadata);
+                Assert.Equal(typeof(Address), property.PropertyMetadata.Type);
+                Assert.Equal(TypeKind.Object, property.PropertyMetadata.Kind);
+                Assert.Null(property.PropertyMetadata.Constructor);
+                Assert.False(property.PropertyMetadata.IsRecursive);
+                Assert.Collection(property.PropertyMetadata.Properties,
+                   property =>
+                   {
+                       Assert.Equal("Street", property.Property.Name);
+                       Assert.NotNull(property.PropertyMetadata);
+                       Assert.Equal(typeof(string), property.PropertyMetadata.Type);
+                       Assert.Equal(TypeKind.Primitive, property.PropertyMetadata.Kind);
+                       Assert.Null(property.PropertyMetadata.Constructor);
+                       Assert.Empty(property.PropertyMetadata.Properties);
+                   },
+                   property =>
+                   {
+                       Assert.Equal("City", property.Property.Name);
+                       Assert.NotNull(property.PropertyMetadata);
+                       Assert.Equal(typeof(string), property.PropertyMetadata.Type);
+                       Assert.Equal(TypeKind.Primitive, property.PropertyMetadata.Kind);
+                       Assert.Null(property.PropertyMetadata.Constructor);
+                       Assert.Empty(property.PropertyMetadata.Properties);
+                   });
+            },
+            property =>
+            {
+                Assert.Equal("ShippingAddress", property.Property.Name);
+                Assert.NotNull(property.PropertyMetadata);
+                Assert.Equal(typeof(Address), property.PropertyMetadata.Type);
+                Assert.Equal(TypeKind.Object, property.PropertyMetadata.Kind);
+                Assert.Null(property.PropertyMetadata.Constructor);
+                Assert.False(property.PropertyMetadata.IsRecursive);
+                Assert.Collection(property.PropertyMetadata.Properties,
+                    property =>
+                    {
+                        Assert.Equal("Street", property.Property.Name);
+                        Assert.NotNull(property.PropertyMetadata);
+                        Assert.Equal(typeof(string), property.PropertyMetadata.Type);
+                        Assert.Equal(TypeKind.Primitive, property.PropertyMetadata.Kind);
+                        Assert.Null(property.PropertyMetadata.Constructor);
+                        Assert.Empty(property.PropertyMetadata.Properties);
+                    },
+                    property =>
+                    {
+                        Assert.Equal("City", property.Property.Name);
+                        Assert.NotNull(property.PropertyMetadata);
+                        Assert.Equal(typeof(string), property.PropertyMetadata.Type);
+                        Assert.Equal(TypeKind.Primitive, property.PropertyMetadata.Kind);
+                        Assert.Null(property.PropertyMetadata.Constructor);
+                        Assert.Empty(property.PropertyMetadata.Properties);
+                    });
+            });
+    }
+
+    [Fact]
     public void CanCreateMetadata_ForValueTypes()
     {
         // Arrange
@@ -477,4 +550,10 @@ public class Customer
 {
     public int Id { get; set; }
     public string Name { get; set; }
+}
+
+public class CustomerWithAddress
+{
+    public Address BillingAddress { get; set; }
+    public Address ShippingAddress { get; set; }
 }

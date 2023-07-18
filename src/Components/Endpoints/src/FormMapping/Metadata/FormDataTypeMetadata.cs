@@ -46,132 +46,138 @@ internal class FormDataMetadataFactory(List<IFormDataConverterFactory> factories
     [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
     public FormDataTypeMetadata GetOrCreateMetadataFor(Type type, FormDataMapperOptions options)
     {
-        // We are walking the graph in order to detect recursive types.
-        // We evaluate whether a type is:
-        // 1. Primitive
-        // 2. Dictionary
-        // 3. Collection
-        // 4. Complex
-        // Only complex types can be recursive.
-        // We only compute metadata when we are dealing with objects, other classes of
-        // types are handled directly by the appropriate converters.
-        // We keep track of the metadata for the types because it is useful when we generate
-        // the specific object converter for a type.
-        // The code generation varies depending on whether there is recursion or not within
-        // the type graph.
         var shouldClearContext = !_context.ResolutionInProgress;
-        if (shouldClearContext)
+        try
         {
-            _context.BeginResolveGraph();
-        }
-
-        // Try to get the metadata for the type or create and add a new instance.
-        var result = _context.TypeMetadata.TryGetValue(type, out var value) ? value : new FormDataTypeMetadata(type);
-        if (value == null)
-        {
-            _context.TypeMetadata[type] = result;
-        }
-
-        // Check for cycles and mark any type as recursive if needed.
-        DetectCyclesAndMarkMetadataTypesAsRecursive(type, result);
-
-        // We found the value on the existing metadata, we can return it.
-        if (value != null)
-        {
-            return result;
-        }
-
-        // These blocks are evaluated in a specific order.
-        if (_parsableFactory.CanConvert(type, options) || type.IsEnum ||
-            (Nullable.GetUnderlyingType(type) is { } underlyingType &&
-                _parsableFactory.CanConvert(underlyingType, options)))
-        {
-            result.Kind = TypeKind.Primitive;
-            return result;
-        }
-
-        if (_dictionaryFactory.CanConvert(type, options))
-        {
-            result.Kind = TypeKind.Dictionary;
-            var (keyType, valueType) = DictionaryConverterFactory.ResolveDictionaryTypes(type)!;
-            result.KeyType = GetOrCreateMetadataFor(keyType, options);
-            result.ValueType = GetOrCreateMetadataFor(valueType, options);
-            return result;
-        }
-
-        if (_collectionFactory.CanConvert(type, options))
-        {
-            result.Kind = TypeKind.Collection;
-            result.ElementType = GetOrCreateMetadataFor(CollectionConverterFactory.ResolveElementType(type)!, options);
-            return result;
-        }
-
-        result.Kind = TypeKind.Object;
-        _context.Track(type);
-        var constructors = type.GetConstructors();
-
-        if (constructors.Length == 1)
-        {
-            result.Constructor = constructors[0];
-        }
-
-        if (result.Constructor != null)
-        {
-            var values = result.Constructor.GetParameters();
-
-            foreach (var parameter in values)
+            // We are walking the graph in order to detect recursive types.
+            // We evaluate whether a type is:
+            // 1. Primitive
+            // 2. Dictionary
+            // 3. Collection
+            // 4. Complex
+            // Only complex types can be recursive.
+            // We only compute metadata when we are dealing with objects, other classes of
+            // types are handled directly by the appropriate converters.
+            // We keep track of the metadata for the types because it is useful when we generate
+            // the specific object converter for a type.
+            // The code generation varies depending on whether there is recursion or not within
+            // the type graph.
+            if (shouldClearContext)
             {
-                var parameterTypeInfo = GetOrCreateMetadataFor(parameter.ParameterType, options);
-                result.ConstructorParameters.Add(new FormDataParameterMetadata(parameter, parameterTypeInfo));
+                _context.BeginResolveGraph();
             }
-        }
 
-        var candidateProperty = PropertyHelper.GetVisibleProperties(type);
-        foreach (var propertyHelper in candidateProperty)
-        {
-            var property = propertyHelper.Property;
-            var matchingConstructorParameter = result
-                .ConstructorParameters
-                .FirstOrDefault(p => string.Equals(p.Name, property.Name, StringComparison.OrdinalIgnoreCase));
-
-            if (matchingConstructorParameter != null)
+            // Try to get the metadata for the type or create and add a new instance.
+            var result = _context.TypeMetadata.TryGetValue(type, out var value) ? value : new FormDataTypeMetadata(type);
+            if (value == null)
             {
-                var dataMember = property.GetCustomAttribute<DataMemberAttribute>();
-                if (dataMember != null && dataMember.IsNameSetExplicitly && dataMember.Name != null)
+                _context.TypeMetadata[type] = result;
+            }
+
+            // Check for cycles and mark any type as recursive if needed.
+            DetectCyclesAndMarkMetadataTypesAsRecursive(type, result);
+
+            // We found the value on the existing metadata, we can return it.
+            if (value != null)
+            {
+                return result;
+            }
+
+            // These blocks are evaluated in a specific order.
+            if (_parsableFactory.CanConvert(type, options) || type.IsEnum ||
+                (Nullable.GetUnderlyingType(type) is { } underlyingType &&
+                    _parsableFactory.CanConvert(underlyingType, options)))
+            {
+                result.Kind = TypeKind.Primitive;
+                return result;
+            }
+
+            if (_dictionaryFactory.CanConvert(type, options))
+            {
+                result.Kind = TypeKind.Dictionary;
+                var (keyType, valueType) = DictionaryConverterFactory.ResolveDictionaryTypes(type)!;
+                result.KeyType = GetOrCreateMetadataFor(keyType, options);
+                result.ValueType = GetOrCreateMetadataFor(valueType, options);
+                return result;
+            }
+
+            if (_collectionFactory.CanConvert(type, options))
+            {
+                result.Kind = TypeKind.Collection;
+                result.ElementType = GetOrCreateMetadataFor(CollectionConverterFactory.ResolveElementType(type)!, options);
+                return result;
+            }
+
+            result.Kind = TypeKind.Object;
+            _context.Track(type);
+            var constructors = type.GetConstructors();
+
+            if (constructors.Length == 1)
+            {
+                result.Constructor = constructors[0];
+            }
+
+            if (result.Constructor != null)
+            {
+                var values = result.Constructor.GetParameters();
+
+                foreach (var parameter in values)
                 {
-                    matchingConstructorParameter.Name = dataMember.Name;
+                    var parameterTypeInfo = GetOrCreateMetadataFor(parameter.ParameterType, options);
+                    result.ConstructorParameters.Add(new FormDataParameterMetadata(parameter, parameterTypeInfo));
+                }
+            }
+
+            var candidateProperty = PropertyHelper.GetVisibleProperties(type);
+            foreach (var propertyHelper in candidateProperty)
+            {
+                var property = propertyHelper.Property;
+                var matchingConstructorParameter = result
+                    .ConstructorParameters
+                    .FirstOrDefault(p => string.Equals(p.Name, property.Name, StringComparison.OrdinalIgnoreCase));
+
+                if (matchingConstructorParameter != null)
+                {
+                    var dataMember = property.GetCustomAttribute<DataMemberAttribute>();
+                    if (dataMember != null && dataMember.IsNameSetExplicitly && dataMember.Name != null)
+                    {
+                        matchingConstructorParameter.Name = dataMember.Name;
+                    }
+
+                    // The propertyHelper is already present in the constructor, we don't need to add it again.
+                    continue;
                 }
 
-                // The propertyHelper is already present in the constructor, we don't need to add it again.
-                continue;
+                var ignoreDataMember = property.GetCustomAttribute<IgnoreDataMemberAttribute>();
+                if (ignoreDataMember != null)
+                {
+                    // The propertyHelper is marked as ignored, we don't need to add it.
+                    continue;
+                }
+
+                var propertyTypeInfo = GetOrCreateMetadataFor(property.PropertyType, options);
+                var propertyInfo = new FormDataPropertyMetadata(property, propertyTypeInfo);
+
+                var dataMemberAttribute = property.GetCustomAttribute<DataMemberAttribute>();
+                if (dataMemberAttribute != null && dataMemberAttribute.IsNameSetExplicitly && dataMemberAttribute.Name != null)
+                {
+                    propertyInfo.Name = dataMemberAttribute.Name;
+                    propertyInfo.Required = dataMemberAttribute.IsRequired;
+                }
+
+                result.Properties.Add(propertyInfo);
             }
 
-            var ignoreDataMember = property.GetCustomAttribute<IgnoreDataMemberAttribute>();
-            if (ignoreDataMember != null)
-            {
-                // The propertyHelper is marked as ignored, we don't need to add it.
-                continue;
-            }
-
-            var propertyTypeInfo = GetOrCreateMetadataFor(property.PropertyType, options);
-            var propertyInfo = new FormDataPropertyMetadata(property, propertyTypeInfo);
-
-            var dataMemberAttribute = property.GetCustomAttribute<DataMemberAttribute>();
-            if (dataMemberAttribute != null && dataMemberAttribute.IsNameSetExplicitly && dataMemberAttribute.Name != null)
-            {
-                propertyInfo.Name = dataMemberAttribute.Name;
-                propertyInfo.Required = dataMemberAttribute.IsRequired;
-            }
-
-            result.Properties.Add(propertyInfo);
+            return result;
         }
-
-        if (shouldClearContext)
+        finally
         {
-            _context.EndResolveGraph();
+            _context.Untrack(type);
+            if (shouldClearContext)
+            {
+                _context.EndResolveGraph();
+            }
         }
-
-        return result;
     }
 
     internal bool HasMetadataFor(Type type) => _context.TypeMetadata.ContainsKey(type);
@@ -236,6 +242,11 @@ internal class FormDataMetadataFactory(List<IFormDataConverterFactory> factories
         internal void Track(Type type)
         {
             CurrentTypes.Add(type);
+        }
+
+        internal void Untrack(Type type)
+        {
+            CurrentTypes.Remove(type);
         }
     }
 }
