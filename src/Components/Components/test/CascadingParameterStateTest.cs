@@ -455,7 +455,7 @@ public class CascadingParameterStateTest
         [CascadingParameter] internal ValueType1 CascadingParam1 { get; set; }
         [CascadingParameter] internal ValueType2 CascadingParam2 { get; set; }
 
-        [SupplyParameterWithSingleDelivery] internal ValueType3 CascadingParam3 { get; set; }
+        [SupplyParameterWithSingleDelivery] internal ValueType3 SingleDeliveryCascadingParam { get; set; }
     }
 
     class ComponentWithInheritedCascadingParams : ComponentWithCascadingParams
