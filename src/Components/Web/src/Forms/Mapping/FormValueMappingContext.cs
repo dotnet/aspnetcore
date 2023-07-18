@@ -13,24 +13,31 @@ public class FormValueMappingContext
     /// <summary>
     /// Initializes a new instance of <see cref="FormValueMappingContext"/>.
     /// </summary>
-    /// <param name="formName">The name of the form to map data from.</param>
+    /// <param name="acceptMappingScopeName">The name of a <see cref="FormMappingScope"/>. Values will only be mapped if the incoming data corresponds to this scope name.</param>
+    /// <param name="acceptFormName">If set, indicates that the mapping should only receive values if the incoming form matches this name. If null, the mapping should receive data from any form in the mapping scope.</param>
     /// <param name="valueType">The <see cref="Type"/> of the value to map.</param>
     /// <param name="parameterName">The name of the parameter to map data to.</param>
-    public FormValueMappingContext(string formName, Type valueType, string parameterName)
+    public FormValueMappingContext(string acceptMappingScopeName, string? acceptFormName, Type valueType, string parameterName)
     {
-        ArgumentNullException.ThrowIfNull(formName, nameof(formName));
+        ArgumentNullException.ThrowIfNull(acceptMappingScopeName, nameof(acceptMappingScopeName));
         ArgumentNullException.ThrowIfNull(valueType, nameof(valueType));
         ArgumentNullException.ThrowIfNull(parameterName, nameof(parameterName));
 
-        FormName = formName;
+        AcceptMappingScopeName = acceptMappingScopeName;
+        AcceptFormName = acceptFormName;
         ParameterName = parameterName;
         ValueType = valueType;
     }
 
     /// <summary>
-    /// Gets the name of the form to map data from.
+    /// Gets the name of <see cref="FormMappingScope"/> that is allowed to supply data in this context.
     /// </summary>
-    public string FormName { get; }
+    public string AcceptMappingScopeName { get; }
+
+    /// <summary>
+    /// If set, indicates that the mapping should only receive values if the incoming form matches this name. If null, the mapping should receive data from any form in the mapping scope.
+    /// </summary>
+    public string? AcceptFormName { get; }
 
     /// <summary>
     /// Gets the name of the parameter to map data to.

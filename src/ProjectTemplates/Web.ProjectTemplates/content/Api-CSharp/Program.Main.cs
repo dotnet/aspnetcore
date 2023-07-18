@@ -1,7 +1,5 @@
-#if NativeAot
 using System.Text.Json.Serialization;
 
-#endif
 namespace Company.ApiApplication1;
 
 public class Program
@@ -10,13 +8,11 @@ public class Program
     {
         var builder = WebApplication.CreateSlimBuilder(args);
 
-        #if (NativeAot)
         builder.Services.ConfigureHttpJsonOptions(options =>
         {
             options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default);
         });
 
-        #endif
         var app = builder.Build();
 
         var sampleTodos = new Todo[] {
@@ -40,7 +36,6 @@ public class Program
 
 public record Todo(int Id, string? Title, DateOnly? DueBy = null, bool IsComplete = false);
 
-#if (NativeAot)
 [JsonSerializable(typeof(Todo[]))]
 internal partial class AppJsonSerializerContext : JsonSerializerContext
 {

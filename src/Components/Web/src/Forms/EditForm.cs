@@ -13,7 +13,6 @@ namespace Microsoft.AspNetCore.Components.Forms;
 public class EditForm : ComponentBase
 {
     private readonly Func<Task> _handleSubmitDelegate; // Cache to avoid per-render allocations
-    private readonly RenderFragment _renderWithBindingValidator;
 
     private EditContext? _editContext;
     private bool _hasSetEditContextExplicitly;
@@ -24,7 +23,6 @@ public class EditForm : ComponentBase
     public EditForm()
     {
         _handleSubmitDelegate = HandleSubmitAsync;
-        _renderWithBindingValidator = RenderWithBindingValidator;
     }
 
     /// <summary>
@@ -80,16 +78,13 @@ public class EditForm : ComponentBase
     /// </summary>
     [Parameter] public EventCallback<EditContext> OnInvalidSubmit { get; set; }
 
-    [CascadingParameter] private FormMappingContext? BindingContext { get; set; }
+    [CascadingParameter] private FormMappingContext? MappingContext { get; set; }
 
     /// <summary>
-    /// Gets or sets the form name.
+    /// Gets or sets the form handler name. This is required for posting it to a server-side endpoint.
+    /// It is not used during interactive rendering.
     /// </summary>
-    /// <remarks>
-    /// The <c>name</c> attribute on the <c>form</c> element will default to
-    /// the <see cref="FormHandlerName"/> unless an explicit name is provided.
-    /// </remarks>
-    [Parameter] public string? FormHandlerName { get; set; }
+    [Parameter] public string? FormName { get; set; }
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -133,72 +128,51 @@ public class EditForm : ComponentBase
         // optimizing for the common case where _editContext never changes.
         builder.OpenRegion(_editContext.GetHashCode());
 
-        if (FormHandlerName != null)
+        builder.OpenElement(0, "form");
+
+        if (MappingContext != null)
         {
-            builder.OpenComponent<FormMappingScope>(0);
-            builder.AddComponentParameter(1, nameof(FormMappingScope.Name), FormHandlerName);
-            builder.AddComponentParameter(2, nameof(FormMappingScope.ChildContent), (RenderFragment<FormMappingContext>)RenderWithNamedContext);
-            builder.CloseComponent();
+            builder.AddAttribute(2, "method", "post");
         }
-        else
+
+        builder.AddMultipleAttributes(3, AdditionalAttributes);
+        builder.AddAttribute(4, "onsubmit", _handleSubmitDelegate);
+
+        // In SSR cases, we register onsubmit as a named event and emit other child elements
+        // to include the handler and antiforgery token in the post data
+        if (MappingContext != null)
         {
-            RenderFormContents(builder, BindingContext);
+            if (!string.IsNullOrEmpty(FormName))
+            {
+                builder.AddNamedEvent(5, "onsubmit", FormName);
+            }
+
+            RenderSSRFormHandlingChildren(builder, 6);
         }
+
+        builder.OpenComponent<CascadingValue<EditContext>>(7);
+        builder.AddComponentParameter(8, "IsFixed", true);
+        builder.AddComponentParameter(9, "Value", _editContext);
+        builder.AddComponentParameter(10, "ChildContent", ChildContent?.Invoke(_editContext));
+        builder.CloseComponent();
+
+        builder.CloseElement();
 
         builder.CloseRegion();
-
-        RenderFragment RenderWithNamedContext(FormMappingContext context)
-        {
-            return builder => RenderFormContents(builder, context);
-        }
-
-        void RenderFormContents(RenderTreeBuilder builder, FormMappingContext? bindingContext)
-        {
-            builder.OpenElement(0, "form");
-            if (!string.IsNullOrEmpty(bindingContext?.Name))
-            {
-                builder.AddAttribute(1, "name", bindingContext.Name);
-            }
-
-            if (!string.IsNullOrEmpty(bindingContext?.MappingContextId))
-            {
-                builder.AddAttribute(2, "action", bindingContext.MappingContextId);
-            }
-
-            if (bindingContext != null)
-            {
-                builder.AddAttribute(3, "method", "post");
-            }
-
-            builder.AddMultipleAttributes(4, AdditionalAttributes);
-            builder.AddAttribute(5, "onsubmit", _handleSubmitDelegate);
-            if (bindingContext != null)
-            {
-                builder.AddNamedEvent(6, "onsubmit", bindingContext.Name);
-            }
-            builder.OpenComponent<CascadingValue<EditContext>>(7);
-            builder.AddComponentParameter(8, "IsFixed", true);
-            builder.AddComponentParameter(9, "Value", _editContext);
-            if (bindingContext != null && !OperatingSystem.IsBrowser())
-            {
-                builder.AddComponentParameter(10, "ChildContent", _renderWithBindingValidator);
-            }
-            else
-            {
-                builder.AddComponentParameter(11, "ChildContent", ChildContent?.Invoke(_editContext));
-            }
-            builder.CloseComponent();
-            builder.CloseElement();
-        }
     }
 
-    private void RenderWithBindingValidator(RenderTreeBuilder builder)
+    private void RenderSSRFormHandlingChildren(RenderTreeBuilder builder, int sequence)
     {
-        builder.OpenComponent<FormMappingValidator>(0);
+        builder.OpenRegion(sequence);
+
+        builder.OpenComponent<FormMappingValidator>(1);
+        builder.AddComponentParameter(2, nameof(FormMappingValidator.CurrentEditContext), EditContext);
         builder.CloseComponent();
-        builder.OpenComponent<AntiforgeryToken>(1);
+
+        builder.OpenComponent<AntiforgeryToken>(3);
         builder.CloseComponent();
-        builder.AddContent(2, ChildContent!, EditContext);
+
+        builder.CloseRegion();
     }
 
     private async Task HandleSubmitAsync()

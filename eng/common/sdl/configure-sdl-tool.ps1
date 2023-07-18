@@ -93,7 +93,7 @@ try {
       }
       'binskim' {
         if ($targetDirectory) {
-          $tool.Args += "`"Target < $TargetDirectory`""
+          $tool.Args += "`"Target < $TargetDirectory\**`""
         }
         $tool.Args += $BinskimAdditionalRunConfigParams
       }

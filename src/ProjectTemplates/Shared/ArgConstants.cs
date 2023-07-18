@@ -6,7 +6,7 @@ namespace Templates.Test.Helpers;
 internal static class ArgConstants
 {
     public const string UseProgramMain = "--use-program-main";
-    public const string UseMinimalApis = "--use-minimal-apis";
+    public const string UseControllers = "--use-controllers";
     public const string Pwa = "--pwa";
     public const string CallsGraph = "--calls-graph";
     public const string CalledApiUrl = "--called-api-url";

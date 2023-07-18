@@ -3,7 +3,6 @@
 
 #nullable enable
 
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -163,6 +162,14 @@ public class ParameterBindingMethodCacheTests
     public void HasTryParseStringMethod_ReturnsTrueWhenMethodExists(ParameterInfo parameterInfo)
     {
         Assert.True(new ParameterBindingMethodCache().HasTryParseMethod(parameterInfo.ParameterType));
+    }
+
+    [Fact]
+    public void FindTryParseStringMethod_FindsExplicitlyImplementedIParsable()
+    {
+        var type = typeof(TodoWithExplicitIParsable);
+        var methodFound = new ParameterBindingMethodCache().FindTryParseMethod(type);
+        Assert.NotNull(methodFound);
     }
 
     [Fact]
@@ -1514,6 +1521,19 @@ public class ParameterBindingMethodCacheTests
         {
             ClassImpl = type;
             NameImpl = name;
+        }
+    }
+
+    public class TodoWithExplicitIParsable : IParsable<TodoWithExplicitIParsable>
+    {
+        static TodoWithExplicitIParsable IParsable<TodoWithExplicitIParsable>.Parse(string s, IFormatProvider? provider)
+        {
+            throw new NotImplementedException();
+        }
+
+        static bool IParsable<TodoWithExplicitIParsable>.TryParse(string? s, IFormatProvider? provider, out TodoWithExplicitIParsable result)
+        {
+            throw new NotImplementedException();
         }
     }
 }
