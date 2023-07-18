@@ -1116,7 +1116,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         }
     }
 
-        [Fact]
+    [Fact]
     public void PostingCollectionsThatExceedTheLimitFails()
     {
         var dispatchToForm = new DispatchToForm(this)
