@@ -1,72 +1,117 @@
 ﻿@using System.Threading.Channels;
+@using System.Text.Json;
+@using System.Collections.Immutable;
+@using Microsoft.AspNetCore.Mvc;
 @using TestContentPackage;
 
-<p>
-    Every time you make a request to <a id="add-counter-link" href="streaming-interactivity/add-counter/1" target="_blank">add counter</a>, we'll
-    add an interactive counter to this response.
-</p>
-<p>
-    Complete the response by visiting <a id="end-response-link" href="streaming-interactivity/end-response" target="_blank">end response</a>.
-</p>
-
-<div>
-    @foreach (var counter in _counters)
-    {
-        <Counter
-            @rendermode="@RenderMode.WebAssembly"
-            @key="@counter.Id"
-            IdSuffix="@counter.Id.ToString()"
-            IncrementAmount="counter.IncrementAmount" />
-    }
-</div>
+<h3>Current status:</h3>
 
 <p id="status">
-    @if (_finished)
+    @if (_isStreaming)
     {
-        <text>Finished</text>
+        <text>Streaming!</text>
     }
     else
     {
-        <text>Waiting for more...</text>
+        <text>Not streaming!</text>
     }
 </p>
 
+@if (_isStreaming)
+{
+    <p>
+        All counter action links will work via streaming update. Interactivity will not start for
+        newly-added components until you click the "Stop streaming" link below.
+    </p>
+    <p>
+        When running this page manually, you should open each counter action link in a new tab so you can see the streaming updates in real time.
+    </p>
+    <a id="stop-streaming-link" href="@GetEnhancedNavigationUrl(_state, shouldStream: false)">Stop streaming</a>
+}
+else
+{
+    <p>
+        All counter action links will work via enhanced navigation. Interactivity will start immediately
+        for newly-added components.
+    </p>
+    <p>
+        When running this page manually, you can click the links normally and the page will refresh after each action.
+    </p>
+    <a id="start-streaming-link" href="@GetEnhancedNavigationUrl(_state, shouldStream: true)">Start streaming</a>
+}
+
+<div>
+    @foreach (var counter in _state.Counters)
+    {
+        <hr />
+
+        <Counter
+            @rendermode="@GetRenderMode(counter.RenderModeId)"
+            @key="@counter.Id"
+            IdSuffix="@counter.Id.ToString()"
+            IncrementAmount="counter.IncrementAmount" />
+
+        <br />
+
+        @GetActionLink($"remove-counter-link-{counter.Id}", "Remove", _state.WithRemovedCounter(counter))
+        <span> | </span>
+        @GetActionLink($"update-counter-link-{counter.Id}", "Change increment amount", _state.WithUpdatedCounter(counter))
+    }
+</div>
+
+<hr />
+
+<div>
+    @GetActionLink("add-server-counter-link", "Add Server counter", _state.WithAddedCounter(RenderModeId.Server))
+    <span> | </span>
+    @GetActionLink("add-webassembly-counter-link", "Add WebAssembly counter", _state.WithAddedCounter(RenderModeId.WebAssembly))
+    <span> | </span>
+    @GetActionLink("add-auto-counter-link", "Add Auto mode counter", _state.WithAddedCounter(RenderModeId.Auto))
+</div>
+
 @code {
 
-    static Channel<object> StreamingCommandChannel;
+    static Channel<ComponentState> StreamingCommandChannel;
 
-    readonly List<CounterInfo> _counters = new();
+    ComponentState _state = new(ImmutableArray<CounterInfo>.Empty, NextCounterId: 0);
+    bool _isStreaming = false;
 
-    int _nextCounterId = 0;
-    bool _finished = false;
+    [SupplyParameterFromQuery]
+    public string? InitialState { get; set; }
+
+    [SupplyParameterFromQuery]
+    public bool ShouldStream { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        StreamingCommandChannel = Channel.CreateUnbounded<object>();
-
-        await foreach (var command in StreamingCommandChannel.Reader.ReadAllAsync())
+        if (InitialState is not null)
         {
-            switch (command)
-            {
-                case AddCounterCommand addCounter:
-                    _counters.Add(new(_nextCounterId++, addCounter.IncrementAmount));
-                    break;
-                default:
-                    continue;
-            }
-
-            StateHasChanged();
+            _state = ReadStateFromJson(InitialState);
         }
 
-        _finished = true;
+        if (ShouldStream)
+        {
+            _isStreaming = true;
+
+            StreamingCommandChannel = Channel.CreateUnbounded<ComponentState>();
+
+            await foreach (var state in StreamingCommandChannel.Reader.ReadAllAsync())
+            {
+                _state = state;
+                StateHasChanged();
+            }
+        }
+
+        _isStreaming = false;
     }
 
     public static void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
-        endpoints.MapGet("streaming-interactivity/add-counter/{incrementAmount:int}", (int incrementAmount) =>
+        endpoints.MapGet("streaming-interactivity/update-state", ([FromQuery(Name = "state")] string stateJson) =>
         {
-            StreamingCommandChannel.Writer.TryWrite(new AddCounterCommand(incrementAmount));
-            return $"Added counter with increment amount {incrementAmount}";
+            var state = ReadStateFromJson(stateJson);
+            StreamingCommandChannel.Writer.TryWrite(state);
+            return "Updated state";
         });
 
         endpoints.MapGet("streaming-interactivity/end-response", () =>
@@ -76,6 +121,90 @@
         });
     }
 
-    private record CounterInfo(int Id, int IncrementAmount);
-    private record AddCounterCommand(int IncrementAmount);
+    private RenderFragment GetActionLink(string id, string text, ComponentState state)
+    {
+        if (_isStreaming)
+        {
+            var url = GetStreamingUrl(state);
+            return @<a id="@id" href="@url" target="_blank">@text</a>;
+        }
+        else
+        {
+            var url = GetEnhancedNavigationUrl(state, shouldStream: false);
+            return @<a id="@id" href="@url">@text</a>;
+        }
+    }
+
+    private static ComponentState ReadStateFromJson(string stateJson)
+    {
+        return JsonSerializer.Deserialize<ComponentState>(stateJson)
+            ?? throw new InvalidOperationException($"Could not parse state from JSON value '{stateJson}'");
+    }
+
+    private static string GetEscapedStateJson(ComponentState state)
+    {
+        var stateJson = JsonSerializer.Serialize(state);
+        var escapedStateJson = Uri.EscapeDataString(stateJson);
+        return escapedStateJson;
+    }
+
+    private static string GetStreamingUrl(ComponentState state)
+    {
+        var stateJson = GetEscapedStateJson(state);
+        return $"streaming-interactivity/update-state?state={stateJson}";
+    }
+
+    private static string GetEnhancedNavigationUrl(ComponentState state, bool shouldStream)
+    {
+        var stateJson = GetEscapedStateJson(state);
+        return $"streaming-interactivity?{nameof(InitialState)}={stateJson}&{nameof(ShouldStream)}={shouldStream}";
+    }
+
+    private static IComponentRenderMode GetRenderMode(RenderModeId renderMode)
+    {
+        return renderMode switch
+        {
+            RenderModeId.Server => RenderMode.Server,
+            RenderModeId.WebAssembly => RenderMode.WebAssembly,
+            RenderModeId.Auto => RenderMode.Auto,
+            _ => throw new InvalidOperationException($"Unknown render mode: {renderMode}"),
+        };
+    }
+
+    private enum RenderModeId
+    {
+        Server = 0,
+        WebAssembly = 1,
+        Auto = 2,
+    }
+
+    private record struct CounterInfo(int Id, int IncrementAmount, RenderModeId RenderModeId);
+
+    private record ComponentState(ImmutableArray<CounterInfo> Counters, int NextCounterId)
+    {
+        public ComponentState WithAddedCounter(RenderModeId renderMode)
+        {
+            return this with
+            {
+                Counters = Counters.Add(new(NextCounterId, IncrementAmount: 1, renderMode)),
+                NextCounterId = NextCounterId + 1,
+            };
+        }
+
+        public ComponentState WithUpdatedCounter(in CounterInfo counter)
+        {
+            return this with
+            {
+                Counters = Counters.Replace(counter, counter with { IncrementAmount = counter.IncrementAmount + 1 }),
+            };
+        }
+
+        public ComponentState WithRemovedCounter(in CounterInfo counter)
+        {
+            return this with
+            {
+                Counters = Counters.Remove(counter),
+            };
+        }
+    }
 }
