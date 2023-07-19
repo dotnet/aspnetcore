@@ -179,6 +179,53 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Browser.Equal("10", () => countServerElem.Text);
     }
 
+    private const string AddServerId = "add-server-counter-link";
+    private const string AddServerPrerenderedId = "add-server-counter-prerendered-link";
+    private const string AddWebAssemblyId = "add-webassembly-counter-link";
+    private const string AddWebAssemblyPrerenderedId = "add-webassembly-counter-prerendered-link";
+
+    [Theory]
+    [InlineData(AddServerId)]
+    [InlineData(AddServerPrerenderedId)]
+    [InlineData(AddWebAssemblyId)]
+    [InlineData(AddWebAssemblyPrerenderedId)]
+    public void DynamicallyAddedSsrComponent_CanBecomeInteractive_AfterEnhancedNavigation(string addCounterLinkId)
+    {
+        Navigate($"{ServerPathBase}/streaming-interactivity");
+
+        Browser.Equal("Not streaming", () => Browser.FindElement(By.Id("status")).Text);
+
+        Browser.Click(By.Id(addCounterLinkId));
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-0")).Text);
+
+        Browser.Click(By.Id("increment-0"));
+        Browser.Equal("1", () => Browser.FindElement(By.Id("count-0")).Text);
+    }
+
+    [Theory]
+    [InlineData(AddServerId, AddServerId)]
+    [InlineData(AddServerPrerenderedId, AddServerId)]
+    [InlineData(AddWebAssemblyId, AddWebAssemblyId)]
+    [InlineData(AddWebAssemblyPrerenderedId, AddWebAssemblyId)]
+    [InlineData(AddServerPrerenderedId, AddWebAssemblyPrerenderedId)]
+    [InlineData(AddServerPrerenderedId, AddWebAssemblyPrerenderedId, AddServerId)]
+    [InlineData(AddServerPrerenderedId, AddWebAssemblyId, AddWebAssemblyPrerenderedId, AddServerId)]
+    public void MultipleDynamicallyAddedSsrComponents_CanBecomeInteractive_AfterEnhancedNavigation(params string[] addCounterLinkIds)
+    {
+        Navigate($"{ServerPathBase}/streaming-interactivity");
+
+        Browser.Equal("Not streaming", () => Browser.FindElement(By.Id("status")).Text);
+
+        for (var i = 0; i < addCounterLinkIds.Length; i++)
+        {
+            Browser.Click(By.Id(addCounterLinkIds[i]));
+            Browser.Equal("True", () => Browser.FindElement(By.Id($"is-interactive-{i}")).Text);
+            
+            Browser.Click(By.Id($"increment-{i}"));
+            Browser.Equal("1", () => Browser.FindElement(By.Id($"count-{i}")).Text);
+        }
+    }
+
     private string InteractiveCallsiteUrl(bool prerender, int? serverIncrement = default, int? webAssemblyIncrement = default)
     {
         var result = $"{ServerPathBase}/interactive-callsite?suppress-autostart&prerender={prerender}";

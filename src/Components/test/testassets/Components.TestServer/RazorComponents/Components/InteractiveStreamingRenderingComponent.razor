@@ -9,11 +9,11 @@
 <p id="status">
     @if (_isStreaming)
     {
-        <text>Streaming!</text>
+        <text>Streaming</text>
     }
     else
     {
-        <text>Not streaming!</text>
+        <text>Not streaming</text>
     }
 </p>
 
@@ -62,16 +62,27 @@ else
 <hr />
 
 <div>
-    @GetActionLink("add-server-counter-link", "Add Server counter", _state.WithAddedCounter(RenderModeId.Server))
+    Add new counter:
+    <br />
+
+    @GetActionLink("add-server-counter-prerendered-link", "Add Server counter", _state.WithAddedCounter(RenderModeId.ServerPrerendered))
     <span> | </span>
-    @GetActionLink("add-webassembly-counter-link", "Add WebAssembly counter", _state.WithAddedCounter(RenderModeId.WebAssembly))
+    @GetActionLink("add-server-counter-link", "(non-prerendered)", _state.WithAddedCounter(RenderModeId.ServerNonPrerendered))
+    <br />
+
+    @GetActionLink("add-webassembly-counter-prerendered-link", "Add WebAssembly counter", _state.WithAddedCounter(RenderModeId.WebAssemblyPrerendered))
     <span> | </span>
-    @GetActionLink("add-auto-counter-link", "Add Auto mode counter", _state.WithAddedCounter(RenderModeId.Auto))
+    @GetActionLink("add-webassembly-counter-link", "(non-prerendered)", _state.WithAddedCounter(RenderModeId.WebAssemblyNonPrerendered))
+    <br />
+
+    @GetActionLink("add-auto-counter-link", "Add Auto mode counter", _state.WithAddedCounter(RenderModeId.AutoPrerendered))
+    <span> | </span>
+    @GetActionLink("add-auto-counter-non-prerendered-link", "(non-prerendered)", _state.WithAddedCounter(RenderModeId.AutoNonPrerendered))
 </div>
 
 @code {
 
-    static Channel<ComponentState> StreamingCommandChannel;
+    static Channel<ComponentState> StreamingStateChannel;
 
     ComponentState _state = new(ImmutableArray<CounterInfo>.Empty, NextCounterId: 0);
     bool _isStreaming = false;
@@ -93,9 +104,9 @@ else
         {
             _isStreaming = true;
 
-            StreamingCommandChannel = Channel.CreateUnbounded<ComponentState>();
+            StreamingStateChannel = Channel.CreateUnbounded<ComponentState>();
 
-            await foreach (var state in StreamingCommandChannel.Reader.ReadAllAsync())
+            await foreach (var state in StreamingStateChannel.Reader.ReadAllAsync())
             {
                 _state = state;
                 StateHasChanged();
@@ -110,13 +121,13 @@ else
         endpoints.MapGet("streaming-interactivity/update-state", ([FromQuery(Name = "state")] string stateJson) =>
         {
             var state = ReadStateFromJson(stateJson);
-            StreamingCommandChannel.Writer.TryWrite(state);
+            StreamingStateChannel.Writer.TryWrite(state);
             return "Updated state";
         });
 
         endpoints.MapGet("streaming-interactivity/end-response", () =>
         {
-            StreamingCommandChannel.Writer.Complete();
+            StreamingStateChannel.Writer.Complete();
             return "Response ended";
         });
     }
@@ -164,18 +175,24 @@ else
     {
         return renderMode switch
         {
-            RenderModeId.Server => RenderMode.Server,
-            RenderModeId.WebAssembly => RenderMode.WebAssembly,
-            RenderModeId.Auto => RenderMode.Auto,
+            RenderModeId.ServerPrerendered => RenderMode.Server,
+            RenderModeId.ServerNonPrerendered => new ServerRenderMode(false),
+            RenderModeId.WebAssemblyPrerendered => RenderMode.WebAssembly,
+            RenderModeId.WebAssemblyNonPrerendered => new WebAssemblyRenderMode(false),
+            RenderModeId.AutoPrerendered => RenderMode.Auto,
+            RenderModeId.AutoNonPrerendered => new AutoRenderMode(false),
             _ => throw new InvalidOperationException($"Unknown render mode: {renderMode}"),
         };
     }
 
     private enum RenderModeId
     {
-        Server = 0,
-        WebAssembly = 1,
-        Auto = 2,
+        ServerPrerendered = 0,
+        ServerNonPrerendered = 1,
+        WebAssemblyPrerendered = 2,
+        WebAssemblyNonPrerendered = 3,
+        AutoPrerendered = 4,
+        AutoNonPrerendered = 5,
     }
 
     private record struct CounterInfo(int Id, int IncrementAmount, RenderModeId RenderModeId);
