@@ -31,7 +31,15 @@ internal static class HttpContextDebugFormatter
 
     public static string RequestToString(HttpRequest request)
     {
-        var text = $"{request.Method} {GetRequestUrl(request, includeQueryString: true)} {request.Protocol}";
+        var text = GetRequestUrl(request, includeQueryString: true);
+        if (!string.IsNullOrEmpty(request.Method))
+        {
+            text = $"{request.Method} {text}";
+        }
+        if (!string.IsNullOrEmpty(request.Protocol))
+        {
+            text += $" {request.Protocol}";
+        }
         if (!string.IsNullOrEmpty(request.ContentType))
         {
             text += $" {request.ContentType}";
@@ -55,11 +63,7 @@ internal static class HttpContextDebugFormatter
     {
         // The URL might be missing because the context was manually created in a test, e.g. new DefaultHttpContext()
         // If there is no request URL then provide a more understandable empty value.
-        if (string.IsNullOrEmpty(request.Scheme) ||
-            !request.Host.HasValue ||
-            !request.PathBase.HasValue ||
-            !request.Path.HasValue ||
-            !request.QueryString.HasValue)
+        if (string.IsNullOrEmpty(request.Scheme) || !request.Host.HasValue)
         {
             return "(unset)";
         }
