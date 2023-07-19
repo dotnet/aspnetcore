@@ -10,8 +10,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests;
 
-public class WebAssemblyConfigureRuntimeTest
-    : ServerTestBase<BlazorWasmTestAppFixture<Program>>, IDisposable
+public class WebAssemblyConfigureRuntimeTest : ServerTestBase<BlazorWasmTestAppFixture<BasicTestApp.Program>>
 {
     public WebAssemblyConfigureRuntimeTest(
         BrowserFixture browserFixture,
@@ -19,12 +18,15 @@ public class WebAssemblyConfigureRuntimeTest
         ITestOutputHelper output)
         : base(browserFixture, serverFixture, output)
     {
+        _serverFixture.PathBase = "/subdir";
     }
 
     protected override void InitializeAsyncCore()
     {
-        Navigate("/configure-runtime", noReload: true);
-        WaitUntilLoaded();
+        base.InitializeAsyncCore();
+
+        Navigate(ServerPathBase, noReload: false);
+        Browser.MountTestComponent<ConfigureRuntime>();
     }
 
     [Fact]
@@ -39,18 +41,5 @@ public class WebAssemblyConfigureRuntimeTest
     {
         var element = Browser.Exists(By.Id("build-configuration"));
         Browser.Equal("Release", () => element.Text);
-    }
-
-    private void WaitUntilLoaded()
-    {
-        var app = Browser.Exists(By.TagName("app"));
-        Browser.NotEqual("Loading...", () => app.Text);
-    }
-
-    public void Dispose()
-    {
-        // Make the tests run faster by navigating back to the home page when we are done
-        // If we don't, then the next test will reload the whole page before it starts
-        Browser.Exists(By.LinkText("Home")).Click();
     }
 }
