@@ -17,8 +17,8 @@ function Build-Project
 
     $ProjectFullPath = $ProjectFiles[0].FullName
 
-    WriteOutput "Building $ProjectFullPath"
-    
+    Write-Output "Building $ProjectFullPath"
+
     dotnet pack -c $Configuration $ProjectFullPath
     if (!$?) {
         throw "Failed to build project $ProjectFullPath."
