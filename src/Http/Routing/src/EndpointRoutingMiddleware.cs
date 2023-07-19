@@ -164,11 +164,8 @@ internal sealed partial class EndpointRoutingMiddleware
             }
 
             if (endpoint.Metadata.GetMetadata<IAntiforgeryMetadata>() is { RequiresValidation: true } &&
-                httpContext.Request.Method is string method &&
-                !(HttpMethods.IsGet(method) ||
-                    HttpMethods.IsHead(method) ||
-                    HttpMethods.IsTrace(method) ||
-                    HttpMethods.IsOptions(method)))
+                httpContext.Request.Method is {} method &&
+                HttpMethodExtensions.IsValidHttpMethodForForm(method))
             {
                 ThrowCannotShortCircuitAnAntiforgeryRouteException(endpoint);
             }

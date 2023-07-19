@@ -52,11 +52,8 @@ internal sealed partial class EndpointMiddleware
 
                 if (endpoint.Metadata.GetMetadata<IAntiforgeryMetadata>() is { RequiresValidation: true } &&
                     !httpContext.Items.ContainsKey(AntiforgeryMiddlewareWithEndpointInvokedKey) &&
-                    httpContext.Request.Method is string method &&
-                    !(HttpMethods.IsGet(method) ||
-                        HttpMethods.IsHead(method) ||
-                        HttpMethods.IsTrace(method) ||
-                        HttpMethods.IsOptions(method)))
+                    httpContext.Request.Method is {} method &&
+                    HttpMethodExtensions.IsValidHttpMethodForForm(method))
                 {
                     ThrowMissingAntiforgeryMiddlewareException(endpoint);
                 }

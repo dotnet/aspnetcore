@@ -9,13 +9,17 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal;
 
 public class AntiforgeryMiddlewareTest
 {
-    [Fact]
-    public async Task ValidatesAntiforgeryToken()
+    [Theory]
+    [InlineData("POST")]
+    [InlineData("PUT")]
+    [InlineData("PATCH")]
+    public async Task ValidatesAntiforgeryTokenForValidMethods(string method)
     {
         var antiforgeryService = new Mock<IAntiforgery>();
         antiforgeryService.Setup(af => af.ValidateRequestAsync(It.IsAny<HttpContext>())).Returns(Task.FromResult(true));
         var antiforgeryMiddleware = new AntiforgeryMiddleware(antiforgeryService.Object, hc => Task.CompletedTask);
         var httpContext = GetHttpContext();
+        httpContext.Request.Method = method;
 
         await antiforgeryMiddleware.Invoke(httpContext);
 
@@ -40,6 +44,8 @@ public class AntiforgeryMiddlewareTest
     [InlineData("TRACE")]
     [InlineData("HEAD")]
     [InlineData("OPTIONS")]
+    [InlineData("DELETE")]
+    [InlineData("CONNECT")]
     public async Task IgnoresUnsupportedHttpMethods(string method)
     {
         var antiforgeryService = new Mock<IAntiforgery>();
