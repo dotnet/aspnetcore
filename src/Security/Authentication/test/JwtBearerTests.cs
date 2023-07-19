@@ -125,7 +125,9 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
         var options = new JwtBearerOptions();
         Assert.True(options.MapInboundClaims);
 
+#pragma warning disable CS0618 // Type or member is obsolete
         var jwtHandler = options.SecurityTokenValidators.First() as JwtSecurityTokenHandler;
+#pragma warning restore CS0618 // Type or member is obsolete
         Assert.NotNull(jwtHandler);
         Assert.True(jwtHandler.MapInboundClaims);
 
@@ -144,7 +146,9 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
         var options = new JwtBearerOptions();
         options.MapInboundClaims = false;
         Assert.False(options.MapInboundClaims);
+#pragma warning disable CS0618 // Type or member is obsolete
         var jwtHandler = options.SecurityTokenValidators.First() as JwtSecurityTokenHandler;
+#pragma warning restore CS0618 // Type or member is obsolete
         Assert.NotNull(jwtHandler);
         Assert.False(jwtHandler.MapInboundClaims);
     }
@@ -186,8 +190,10 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
                 }
             };
             o.UseSecurityTokenValidators = true;
+#pragma warning disable CS0618 // Type or member is obsolete
             o.SecurityTokenValidators.Clear();
             o.SecurityTokenValidators.Insert(0, new InvalidTokenValidator());
+#pragma warning restore CS0618 // Type or member is obsolete
         },
         async (context, next) =>
         {
@@ -274,8 +280,10 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
         using var host = await CreateHost(options =>
         {
             options.UseSecurityTokenValidators = true;
+#pragma warning disable CS0618 // Type or member is obsolete
             options.SecurityTokenValidators.Clear();
             options.SecurityTokenValidators.Add(new InvalidTokenValidator());
+#pragma warning restore CS0618 // Type or member is obsolete
         });
 
         using var server = host.GetTestServer();
@@ -299,8 +307,10 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
         using var host = await CreateHost(options =>
         {
             options.UseSecurityTokenValidators = true;
+#pragma warning disable CS0618 // Type or member is obsolete
             options.SecurityTokenValidators.Clear();
             options.SecurityTokenValidators.Add(new InvalidTokenValidator(errorType));
+#pragma warning restore CS0618 // Type or member is obsolete
         });
 
         using var server = host.GetTestServer();
@@ -321,8 +331,10 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
         using var host = await CreateHost(options =>
         {
             options.UseSecurityTokenValidators = true;
+#pragma warning disable CS0618 // Type or member is obsolete
             options.SecurityTokenValidators.Clear();
             options.SecurityTokenValidators.Add(new DetailedInvalidTokenValidator(errorType));
+#pragma warning restore CS0618 // Type or member is obsolete
         });
 
         using var server = host.GetTestServer();
@@ -339,8 +351,10 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
         using var host = await CreateHost(options =>
         {
             options.UseSecurityTokenValidators = true;
+#pragma warning disable CS0618 // Type or member is obsolete
             options.SecurityTokenValidators.Clear();
             options.SecurityTokenValidators.Add(new InvalidTokenValidator(errorType));
+#pragma warning restore CS0618 // Type or member is obsolete
         });
 
         using var server = host.GetTestServer();
@@ -356,9 +370,11 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
         using var host = await CreateHost(options =>
         {
             options.UseSecurityTokenValidators = true;
+#pragma warning disable CS0618 // Type or member is obsolete
             options.SecurityTokenValidators.Clear();
             options.SecurityTokenValidators.Add(new InvalidTokenValidator(typeof(SecurityTokenInvalidAudienceException)));
             options.SecurityTokenValidators.Add(new InvalidTokenValidator(typeof(SecurityTokenSignatureKeyNotFoundException)));
+#pragma warning restore CS0618 // Type or member is obsolete
         });
 
         using var server = host.GetTestServer();
@@ -489,8 +505,10 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
                 }
             };
             options.UseSecurityTokenValidators = true;
+#pragma warning disable CS0618 // Type or member is obsolete
             options.SecurityTokenValidators.Clear();
             options.SecurityTokenValidators.Add(new BlobTokenValidator(JwtBearerDefaults.AuthenticationScheme));
+#pragma warning restore CS0618 // Type or member is obsolete
         });
 
         using var server = host.GetTestServer();
@@ -513,11 +531,13 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
                 }
             };
             options.UseSecurityTokenValidators = true;
+#pragma warning disable CS0618 // Type or member is obsolete
             options.SecurityTokenValidators.Clear();
             options.SecurityTokenValidators.Add(new BlobTokenValidator("JWT", token =>
             {
                 Assert.Equal("CustomToken", token);
             }));
+#pragma warning restore CS0618 // Type or member is obsolete
         });
 
         using var server = host.GetTestServer();
@@ -620,8 +640,10 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
                 },
             };
             options.UseSecurityTokenValidators = true;
+#pragma warning disable CS0618 // Type or member is obsolete
             options.SecurityTokenValidators.Clear();
             options.SecurityTokenValidators.Add(new BlobTokenValidator("JWT"));
+#pragma warning restore CS0618 // Type or member is obsolete
         });
 
         using var server = host.GetTestServer();
@@ -653,8 +675,10 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
                 },
             };
             options.UseSecurityTokenValidators = true;
+#pragma warning disable CS0618 // Type or member is obsolete
             options.SecurityTokenValidators.Clear();
             options.SecurityTokenValidators.Add(new BlobTokenValidator("JWT"));
+#pragma warning restore CS0618 // Type or member is obsolete
         });
 
         using var server = host.GetTestServer();
@@ -688,8 +712,10 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
                 },
             };
             options.UseSecurityTokenValidators = true;
+#pragma warning disable CS0618 // Type or member is obsolete
             options.SecurityTokenValidators.Clear();
             options.SecurityTokenValidators.Add(new BlobTokenValidator("JWT"));
+#pragma warning restore CS0618 // Type or member is obsolete
         });
 
         using var server = host.GetTestServer();
@@ -721,8 +747,10 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
                 },
             };
             options.UseSecurityTokenValidators = true;
+#pragma warning disable CS0618 // Type or member is obsolete
             options.SecurityTokenValidators.Clear();
             options.SecurityTokenValidators.Add(new BlobTokenValidator("JWT"));
+#pragma warning restore CS0618 // Type or member is obsolete
         });
 
         using var server = host.GetTestServer();

@@ -123,7 +123,9 @@ public class JwtBearerTests_Handler : SharedAuthenticationTests<JwtBearerOptions
         var options = new JwtBearerOptions();
         Assert.True(options.MapInboundClaims);
 
+#pragma warning disable CS0618 // Type or member is obsolete
         var jwtHandler = options.SecurityTokenValidators.First() as JwtSecurityTokenHandler;
+#pragma warning restore CS0618 // Type or member is obsolete
         Assert.NotNull(jwtHandler);
         Assert.True(jwtHandler.MapInboundClaims);
 
@@ -142,7 +144,9 @@ public class JwtBearerTests_Handler : SharedAuthenticationTests<JwtBearerOptions
         var options = new JwtBearerOptions();
         options.MapInboundClaims = false;
         Assert.False(options.MapInboundClaims);
+#pragma warning disable CS0618 // Type or member is obsolete
         var jwtHandler = options.SecurityTokenValidators.First() as JwtSecurityTokenHandler;
+#pragma warning restore CS0618 // Type or member is obsolete
         Assert.NotNull(jwtHandler);
         Assert.False(jwtHandler.MapInboundClaims);
     }
