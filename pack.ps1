@@ -7,12 +7,6 @@ function Build-Project
         [string]$ProjectName
     )
 
-    try {
-        
-    }
-    catch {
-        <#Do this if a terminating exception happens#>
-    }
     $ProjectFiles = @(Get-ChildItem -Path . -Filter $ProjectName -Recurse -File)
     if ($ProjectFiles.Length -eq 0) {
         throw "Couldn't find project $ProjectName."
@@ -23,6 +17,8 @@ function Build-Project
 
     $ProjectFullPath = $ProjectFiles[0].FullName
 
+    WriteOutput "Building $ProjectFullPath"
+    
     dotnet pack -c $Configuration $ProjectFullPath
     if (!$?) {
         throw "Failed to build project $ProjectFullPath."
