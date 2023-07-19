@@ -61,8 +61,6 @@ function Build-AspNetCore {
     Build-Project Microsoft.AspNetCore.Rewrite.csproj
     Build-Project Microsoft.AspNetCore.Routing.Abstractions.csproj
     Build-Project Microsoft.AspNetCore.Routing.csproj
-    Build-Project Microsoft.AspNetCore.Server.IIS.csproj
-    Build-Project Microsoft.AspNetCore.Server.IISIntegration.csproj
     Build-Project Microsoft.AspNetCore.Server.Kestrel.Core.csproj
     Build-Project Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.csproj
     Build-Project Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj

@@ -50,8 +50,6 @@ dotnet pack **/Microsoft.AspNetCore.ResponseCompression.csproj
 dotnet pack **/Microsoft.AspNetCore.Rewrite.csproj
 dotnet pack **/Microsoft.AspNetCore.Routing.Abstractions.csproj
 dotnet pack **/Microsoft.AspNetCore.Routing.csproj
-dotnet pack **/Microsoft.AspNetCore.Server.IIS.csproj
-dotnet pack **/Microsoft.AspNetCore.Server.IISIntegration.csproj
 dotnet pack **/Microsoft.AspNetCore.Server.Kestrel.Core.csproj
 dotnet pack **/Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.csproj
 dotnet pack **/Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj
