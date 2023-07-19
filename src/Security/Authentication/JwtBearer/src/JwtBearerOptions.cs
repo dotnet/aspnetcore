@@ -111,6 +111,7 @@ public class JwtBearerOptions : AuthenticationSchemeOptions
     /// <summary>
     /// Gets the ordered list of <see cref="ISecurityTokenValidator"/> used to validate access tokens.
     /// </summary>
+    [Obsolete("SecurityTokenValidators is no longer used by default. Use TokenHandlers instead. To continue using SecurityTokenValidators, set UseSecurityTokenValidators to true.")]
     public IList<ISecurityTokenValidator> SecurityTokenValidators { get; private set; }
 
     /// <summary>
@@ -180,5 +181,5 @@ public class JwtBearerOptions : AuthenticationSchemeOptions
     /// <para>The default token handler is a <see cref="JsonWebTokenHandler"/> which is faster than a <see cref="JwtSecurityTokenHandler"/>.</para>
     /// <para>There is an ability to make use of a Last-Known-Good model for metadata that protects applications when metadata is published with errors.</para>
     /// </remarks>
-    public bool UseTokenHandlers { get; set; }
+    public bool UseSecurityTokenValidators { get; set; }
 }

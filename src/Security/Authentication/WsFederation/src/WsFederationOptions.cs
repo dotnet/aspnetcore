@@ -105,6 +105,7 @@ public class WsFederationOptions : RemoteAuthenticationOptions
     /// <summary>
     /// Gets or sets the collection of <see cref="ISecurityTokenValidator"/> used to read and validate the <see cref="SecurityToken"/>s.
     /// </summary>
+    [Obsolete("SecurityTokenHandlers is no longer used by default. Use TokenHandlers instead. To continue using SecurityTokenHandlers, set UseSecurityTokenHandlers to true.")]
     public ICollection<ISecurityTokenValidator> SecurityTokenHandlers
     {
         get
@@ -118,7 +119,7 @@ public class WsFederationOptions : RemoteAuthenticationOptions
     }
 
     /// <summary>
-    /// Gets or sets the collection of <see cref="ISecurityTokenValidator"/> used to read and validate the <see cref="SecurityToken"/>s.
+    /// Gets the collection of <see cref="ISecurityTokenValidator"/> used to read and validate the <see cref="SecurityToken"/>s.
     /// </summary>
     public ICollection<TokenHandler> TokenHandlers
     {
@@ -208,5 +209,5 @@ public class WsFederationOptions : RemoteAuthenticationOptions
     /// <para>The default token handler for JsonWebTokens is a <see cref="JsonWebTokenHandler"/> which is faster than a <see cref="JwtSecurityTokenHandler"/>.</para>
     /// <para>There is an ability to make use of a Last-Known-Good model for metadata that protects applications when metadata is published with errors.</para>
     /// </remarks>
-    public bool UseTokenHandlers { get; set; }
+    public bool UseSecurityTokenHandlers { get; set; }
 }

@@ -9,7 +9,6 @@ using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
 
@@ -20,8 +19,6 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer;
 /// </summary>
 public class JwtBearerHandler : AuthenticationHandler<JwtBearerOptions>
 {
-    private OpenIdConnectConfiguration? _configuration;
-
     /// <summary>
     /// Initializes a new instance of <see cref="JwtBearerHandler"/>.
     /// </summary>
@@ -101,7 +98,7 @@ public class JwtBearerHandler : AuthenticationHandler<JwtBearerOptions>
             SecurityToken? validatedToken = null;
             ClaimsPrincipal? principal = null;
 
-            if (Options.UseTokenHandlers)
+            if (!Options.UseSecurityTokenValidators)
             {
                 foreach (var tokenHandler in Options.TokenHandlers)
                 {
@@ -123,7 +120,7 @@ public class JwtBearerHandler : AuthenticationHandler<JwtBearerOptions>
                     catch (Exception ex)
                     {
                         validationFailures ??= new List<Exception>(1);
-                        RecordTokenValidationError(new SecurityTokenValidationException($"TokenHandler: '{tokenHandler}', threw an exception (see inner exception).", ex), validationFailures);
+                        RecordTokenValidationError(ex, validationFailures);
                     }
                 }
             }
@@ -194,7 +191,7 @@ public class JwtBearerHandler : AuthenticationHandler<JwtBearerOptions>
                 return AuthenticateResult.Fail(authenticationFailedContext.Exception);
             }
 
-            if (Options.UseTokenHandlers)
+            if (!Options.UseSecurityTokenValidators)
             {
                 return AuthenticateResults.TokenHandlerUnableToValidate;
             }
@@ -251,10 +248,10 @@ public class JwtBearerHandler : AuthenticationHandler<JwtBearerOptions>
             if (Options.ConfigurationManager != null)
             {
                 // GetConfigurationAsync has a time interval that must pass before new http request will be issued.
-                _configuration = await Options.ConfigurationManager.GetConfigurationAsync(Context.RequestAborted);
-                var issuers = new[] { _configuration.Issuer };
+                var configuration = await Options.ConfigurationManager.GetConfigurationAsync(Context.RequestAborted);
+                var issuers = new[] { configuration.Issuer };
                 tokenValidationParameters.ValidIssuers = (tokenValidationParameters.ValidIssuers == null ? issuers : tokenValidationParameters.ValidIssuers.Concat(issuers));
-                tokenValidationParameters.IssuerSigningKeys = (tokenValidationParameters.IssuerSigningKeys == null ? _configuration.SigningKeys : tokenValidationParameters.IssuerSigningKeys.Concat(_configuration.SigningKeys));
+                tokenValidationParameters.IssuerSigningKeys = (tokenValidationParameters.IssuerSigningKeys == null ? configuration.SigningKeys : tokenValidationParameters.IssuerSigningKeys.Concat(configuration.SigningKeys));
             }
         }
 
