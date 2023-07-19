@@ -315,8 +315,11 @@ public class EndpointMiddlewareTest
         Assert.True(calledEndpoint);
     }
 
-    [Fact]
-    public async Task Invoke_WithEndpoint_ThrowsIfAntiforgeryMetadataWasFound_ButAntiforgeryMiddlewareNotInvoked()
+    [Theory]
+    [InlineData("POST")]
+    [InlineData("PUT")]
+    [InlineData("PATCH")]
+    public async Task Invoke_WithEndpoint_ThrowsIfAntiforgeryMetadataWasFound_ButAntiforgeryMiddlewareNotInvoked_ForValidHttpMethods(string method)
     {
         // Arrange
         var expected = "Endpoint Test contains anti-forgery metadata, but a middleware was not found that supports anti-forgery." +
@@ -335,6 +338,7 @@ public class EndpointMiddlewareTest
         };
 
         httpContext.SetEndpoint(new Endpoint(throwIfCalled, new EndpointMetadataCollection(AntiforgeryMetadata.ValidationRequired), "Test"));
+        httpContext.Request.Method = method;
 
         var middleware = new EndpointMiddleware(NullLogger<EndpointMiddleware>.Instance, throwIfCalled, RouteOptions);
 
@@ -343,6 +347,39 @@ public class EndpointMiddlewareTest
 
         // Assert
         Assert.Equal(expected, ex.Message);
+    }
+
+    [Theory]
+    [InlineData("GET")]
+    [InlineData("TRACE")]
+    [InlineData("HEAD")]
+    [InlineData("OPTIONS")]
+    [InlineData("DELETE")]
+    [InlineData("CONNECT")]
+    public async Task Invoke_WithEndpoint_WorksIfAntiforgeryMetadataWasFound_ButAntiforgeryMiddlewareNotInvoked_ForInvalidHttpMethods(string method)
+    {
+        // Arrange
+        var message = "Should be called";
+        var httpContext = new DefaultHttpContext
+        {
+            RequestServices = new ServiceProvider()
+        };
+
+        RequestDelegate throwIfCalled = (c) =>
+        {
+            throw new InvalidTimeZoneException(message);
+        };
+
+        httpContext.SetEndpoint(new Endpoint(throwIfCalled, new EndpointMetadataCollection(AntiforgeryMetadata.ValidationRequired), "Test"));
+        httpContext.Request.Method = method;
+
+        var middleware = new EndpointMiddleware(NullLogger<EndpointMiddleware>.Instance, throwIfCalled, RouteOptions);
+
+        // Act & Assert
+        var ex = await Assert.ThrowsAsync<InvalidTimeZoneException>(() => middleware.Invoke(httpContext));
+
+        // Assert
+        Assert.Equal(message, ex.Message);
     }
 
     [Fact]

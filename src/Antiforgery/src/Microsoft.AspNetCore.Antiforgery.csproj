@@ -23,4 +23,8 @@
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" Key="$(MoqPublicKey)" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Antiforgery.Test" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)HttpMethodExtensions.cs" LinkBase="Shared"/>
+  </ItemGroup>
 </Project>
