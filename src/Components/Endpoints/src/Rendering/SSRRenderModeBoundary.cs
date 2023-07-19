@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.Security.Cryptography;
+using System.Text;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Http;
@@ -15,11 +17,14 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 /// </summary>
 internal class SSRRenderModeBoundary : IComponent
 {
+    private static readonly Dictionary<Type, string> s_componentTypeNameHashCache = new();
+
     private readonly Type _componentType;
     private readonly IComponentRenderMode _renderMode;
     private readonly bool _prerender;
     private RenderHandle _renderHandle;
     private IReadOnlyDictionary<string, object?>? _latestParameters;
+    private string? _markerKey;
 
     public SSRRenderModeBoundary(Type componentType, IComponentRenderMode renderMode)
     {
@@ -95,10 +100,13 @@ internal class SSRRenderModeBoundary : IComponent
 
     public (ServerComponentMarker?, WebAssemblyComponentMarker?) ToMarkers(HttpContext httpContext, int sequence, object? key)
     {
+        // We expect that the '@key' and sequence number shouldn't change for a given component instance,
+        // so we lazily compute the marker key once.
+        _markerKey ??= GenerateMarkerKey(sequence, key);
+
         var parameters = _latestParameters is null
             ? ParameterView.Empty
             : ParameterView.FromDictionary((IDictionary<string, object?>)_latestParameters);
-        var markerKey = GenerateMarkerKey(sequence, key);
 
         ServerComponentMarker? serverMarker = null;
         if (_renderMode is ServerRenderMode or AutoRenderMode)
@@ -108,13 +116,13 @@ internal class SSRRenderModeBoundary : IComponent
             var serverComponentSerializer = httpContext.RequestServices.GetRequiredService<ServerComponentSerializer>();
 
             var invocationId = EndpointHtmlRenderer.GetOrCreateInvocationId(httpContext);
-            serverMarker = serverComponentSerializer.SerializeInvocation(invocationId, _componentType, parameters, markerKey, _prerender);
+            serverMarker = serverComponentSerializer.SerializeInvocation(invocationId, _componentType, parameters, _markerKey, _prerender);
         }
 
         WebAssemblyComponentMarker? webAssemblyMarker = null;
         if (_renderMode is WebAssemblyRenderMode or AutoRenderMode)
         {
-            webAssemblyMarker = WebAssemblyComponentSerializer.SerializeInvocation(_componentType, parameters, markerKey, _prerender);
+            webAssemblyMarker = WebAssemblyComponentSerializer.SerializeInvocation(_componentType, parameters, _markerKey, _prerender);
         }
 
         return (serverMarker, webAssemblyMarker);
@@ -122,6 +130,38 @@ internal class SSRRenderModeBoundary : IComponent
 
     private string GenerateMarkerKey(int sequence, object? key)
     {
-        return HashCode.Combine(_componentType.FullName, sequence, key).ToString("x", CultureInfo.InvariantCulture);
+        var componentTypeNameHash = GetOrComputeComponentTypeNameHash(_componentType);
+        return $"{componentTypeNameHash}:{sequence}:{(key as IFormattable)?.ToString(null, CultureInfo.InvariantCulture)}";
+    }
+
+    private static string GetOrComputeComponentTypeNameHash(Type componentType)
+    {
+        if (!s_componentTypeNameHashCache.TryGetValue(componentType, out var hash))
+        {
+            hash = ComputeComponentTypeNameHash(componentType);
+            s_componentTypeNameHashCache.Add(componentType, hash);
+        }
+
+        return hash;
+
+        static string ComputeComponentTypeNameHash(Type componentType)
+        {
+            if (componentType.FullName is not { } typeName)
+            {
+                throw new InvalidOperationException($"An invalid component type was used in {nameof(SSRRenderModeBoundary)}.");
+            }
+
+            var typeNameLength = typeName.Length;
+            var typeNameBytes = typeNameLength < 1024
+                ? stackalloc byte[typeNameLength]
+                : new byte[typeNameLength];
+
+            Encoding.UTF8.GetBytes(typeName, typeNameBytes);
+
+            Span<byte> typeNameHashBytes = stackalloc byte[SHA1.HashSizeInBytes];
+            SHA1.HashData(typeNameBytes, typeNameHashBytes);
+
+            return Convert.ToHexString(typeNameHashBytes);
+        }
     }
 }
