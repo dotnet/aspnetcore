@@ -24,9 +24,9 @@
         newly-added components until you click the "Stop streaming" link below.
     </p>
     <p>
-        When running this page manually, you should open each counter action link in a new tab so you can see the streaming updates in real time.
+        When running this page manually, you should open each link in a background tab so you can see the streaming updates in real time.
     </p>
-    <a id="stop-streaming-link" href="@GetEnhancedNavigationUrl(_state, shouldStream: false)">Stop streaming</a>
+    <a id="stop-streaming-link" href="streaming-interactivity/end-response" target="_blank">Stop streaming</a>
 }
 else
 {
@@ -49,7 +49,8 @@ else
             @rendermode="@GetRenderMode(counter.RenderModeId)"
             @key="@counter.Id"
             IdSuffix="@counter.Id.ToString()"
-            IncrementAmount="counter.IncrementAmount" />
+            IncrementAmount="counter.IncrementAmount"
+            DisposeBrowserConsoleMessage="@($"Counter {counter.Id} was disposed")" />
 
         <br />
 
