@@ -28,26 +28,25 @@ internal sealed class AntiforgeryMiddleware(IAntiforgery antiforgery, RequestDel
             return _next(context);
         }
 
-        return InvokeAwaited(context, endpoint);
-    }
-
-    public async Task InvokeAwaited(HttpContext context, Endpoint? endpoint)
-    {
         if (endpoint?.Metadata.GetMetadata<IAntiforgeryMetadata>() is { RequiresValidation: true })
         {
-            try
-            {
-                await _antiforgery.ValidateRequestAsync(context);
-            }
-            catch (AntiforgeryValidationException e)
-            {
-                context.Features.Set<IAntiforgeryValidationFeature>(new AntiforgeryValidationFeature(false, e));
-                await _next(context);
-                return;
-            }
-            context.Features.Set(AntiforgeryValidationFeature.Valid);
+            return InvokeAwaited(context);
         }
 
+        return _next(context);
+    }
+
+    public async Task InvokeAwaited(HttpContext context)
+    {
+        try
+        {
+            await _antiforgery.ValidateRequestAsync(context);
+            context.Features.Set(AntiforgeryValidationFeature.Valid);
+        }
+        catch (AntiforgeryValidationException e)
+        {
+            context.Features.Set<IAntiforgeryValidationFeature>(new AntiforgeryValidationFeature(false, e));
+        }
         await _next(context);
     }
 }

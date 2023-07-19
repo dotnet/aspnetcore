@@ -3,6 +3,7 @@
 using System.Linq;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Mvc.Core.Filters;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -11,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
 internal sealed class AntiforgeryApplicationModelProvider(IOptions<MvcOptions> mvcOptions, ILogger<AntiforgeryMiddlewareAuthorizationFilter> logger) : IApplicationModelProvider
 {
     private readonly MvcOptions _mvcOptions = mvcOptions.Value;
-    private readonly ILogger<AntiforgeryMiddlewareAuthorizationFilter> _logger = logger;
+    private readonly AntiforgeryMiddlewareAuthorizationFilter AntiforgeryMiddlewareAuthorizationFilter = new(logger);
 
     public int Order => -1000 + 10;
 
@@ -26,16 +27,18 @@ internal sealed class AntiforgeryApplicationModelProvider(IOptions<MvcOptions> m
 
         foreach (var controllerModel in context.Result.Controllers)
         {
-            if (HasValidAntiforgeryMetadata(controllerModel.Attributes))
+            var controllerFilterAdded = false;
+            if (HasValidAntiforgeryMetadata(controllerModel.Attributes, controllerModel.Filters))
             {
-                controllerModel.Filters.Add(new AntiforgeryMiddlewareAuthorizationFilter(_logger));
+                controllerModel.Filters.Add(AntiforgeryMiddlewareAuthorizationFilter);
+                controllerFilterAdded = true;
             }
 
             foreach (var actionModel in controllerModel.Actions)
             {
-                if (HasValidAntiforgeryMetadata(actionModel.Attributes))
+                if (HasValidAntiforgeryMetadata(actionModel.Attributes, actionModel.Filters) && !controllerFilterAdded)
                 {
-                    actionModel.Filters.Add(new AntiforgeryMiddlewareAuthorizationFilter(_logger));
+                    actionModel.Filters.Add(AntiforgeryMiddlewareAuthorizationFilter);
                 }
             }
         }
@@ -46,10 +49,14 @@ internal sealed class AntiforgeryApplicationModelProvider(IOptions<MvcOptions> m
         // Intentionally empty.
     }
 
-    private static bool HasValidAntiforgeryMetadata(IReadOnlyList<object> attributes)
+    private static bool HasValidAntiforgeryMetadata(IReadOnlyList<object> attributes, IList<IFilterMetadata> filters)
     {
         var antiforgeryMetadata = attributes.OfType<IAntiforgeryMetadata>();
-        var antiforgeryAttribute = attributes.OfType<ValidateAntiForgeryTokenAttribute>().FirstOrDefault();
-        return antiforgeryAttribute is null && antiforgeryMetadata.Any();
+        var antiforgeryAttribute = filters.OfType<ValidateAntiForgeryTokenAttribute>().FirstOrDefault();
+        if (antiforgeryAttribute is not null && antiforgeryMetadata.Any())
+        {
+            throw new InvalidOperationException($"Cannot apply [{nameof(ValidateAntiForgeryTokenAttribute)}] and [{nameof(RequireAntiforgeryTokenAttribute)}] at the same time.");
+        }
+        return antiforgeryMetadata.Any();
     }
 }

@@ -37,7 +37,6 @@
     <Compile Include="$(SharedSourceRoot)Debugger\DebuggerHelpers.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)AntiforgeryMetadata.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)HttpMethodExtensions.cs" LinkBase="Shared" />
-    <Compile Include="$(SharedSourceRoot)SizeLimitedStream.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>

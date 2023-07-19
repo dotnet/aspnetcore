@@ -1429,7 +1429,7 @@ public static partial class RequestDelegateFactory
 
             if (feature?.CanHaveBody == true)
             {
-                if (httpContext.Features.Get<IAntiforgeryValidationFeature>() is  { IsValid: false } antiforgeryValidationFeature)
+                if (httpContext.Features.Get<IAntiforgeryValidationFeature>() is { IsValid: false } antiforgeryValidationFeature)
                 {
                     Log.InvalidAntiforgeryToken(httpContext, parameterTypeName, parameterName, antiforgeryValidationFeature.Error!, throwOnBadRequest);
                     httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
@@ -1995,13 +1995,12 @@ public static partial class RequestDelegateFactory
         // var name_reader;
         // var form_dict;
         // var form_buffer;
-        // var form_max_key_length;
         var formArgument = Expression.Variable(parameter.ParameterType, $"{parameter.Name}_local");
         var formReader = Expression.Variable(typeof(FormDataReader), $"{parameter.Name}_reader");
         var formDict = Expression.Variable(typeof(IReadOnlyDictionary<FormKey, StringValues>), "form_dict");
         var formBuffer = Expression.Variable(typeof(char[]), "form_buffer");
 
-        // ProcessForm(context.Request.Form, form_dict, form_max_key_length, form_buffer);
+        // ProcessForm(context.Request.Form, form_dict, form_buffer);
         var processFormExpr = Expression.Call(ProcessFormMethod, FormExpr, formDict, formBuffer);
         // name_reader = new FormDataReader(form_dict, CultureInfo.InvariantCulture, form_buffer.AsMemory(0, FormDataMapperOptions.MaxKeyBufferSize));
         var initializeReaderExpr = Expression.Assign(

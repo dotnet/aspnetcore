@@ -398,6 +398,11 @@ public class AntiforgeryTests
                             return next(context);
                         });
                         app.UseRouting();
+                        app.Use((context, next) =>
+                        {
+                            context.Request.Body = new SizeLimitedStream(context.Request.Body, context.Features.Get<IHttpMaxRequestBodySizeFeature>()?.MaxRequestBodySize);
+                            return next(context);
+                        });
                         app.UseAntiforgery();
                         app.UseEndpoints(b =>
                             b.MapPost("/todo", ([FromForm] Todo todo) => todo).WithMetadata(new RequestSizeLimitMetadata(hasLimit ? 2 : null)));
