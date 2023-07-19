@@ -210,9 +210,25 @@ function prepareRuntimeConfig(options: Partial<WebAssemblyStartOptions>): Dotnet
 async function createRuntimeInstance(options: Partial<WebAssemblyStartOptions>): Promise<PlatformApi> {
   const { dotnet } = await importDotnetJs(options);
   const moduleConfig = prepareRuntimeConfig(options);
-  const anyDotnet = (dotnet as any);
 
-  anyDotnet.withStartupOptions(options).withModuleConfig(moduleConfig);
+  if (options.applicationCulture) {
+    dotnet.withApplicationCulture(options.applicationCulture);
+  }
+
+  if (options.environment) {
+    dotnet.withApplicationEnvironment(options.environment);
+  }
+
+  if (options.loadBootResource) {
+    dotnet.withResourceLoader(options.loadBootResource);
+  }
+
+  const anyDotnet = (dotnet as any);
+  anyDotnet.withModuleConfig(moduleConfig);
+
+  if (options.configureRuntime) {
+    options.configureRuntime(dotnet);
+  }
 
   runtime = await dotnet.create();
   const { MONO: mono, BINDING: binding, Module: module, setModuleImports, INTERNAL: mono_internal, getConfig, invokeLibraryInitializers } = runtime;
@@ -223,6 +239,7 @@ async function createRuntimeInstance(options: Partial<WebAssemblyStartOptions>):
 
   attachDebuggerHotkey(getConfig());
 
+  Blazor.runtime = runtime;
   Blazor._internal.dotNetCriticalError = printErr;
   setModuleImports('blazor-internal', {
     Blazor: { _internal: Blazor._internal },

@@ -432,4 +432,4 @@ declare global {
 }
 declare const createDotnetRuntime: CreateDotnetRuntimeType;
 
-export { AssetEntry, CreateDotnetRuntimeType, DotnetModuleConfig, EmscriptenModule, GlobalizationMode, IMemoryView, ModuleAPI, MonoConfig, ResourceRequest, RuntimeAPI, createDotnetRuntime as default, dotnet, exit };
+export { AssetEntry, CreateDotnetRuntimeType, DotnetHostBuilder, DotnetModuleConfig, EmscriptenModule, GlobalizationMode, IMemoryView, ModuleAPI, MonoConfig, ResourceRequest, RuntimeAPI, createDotnetRuntime as default, dotnet, exit };
