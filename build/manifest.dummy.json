@@ -1,0 +1,9 @@
+{
+    "builds": [
+        {
+            "repo": "https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore",
+            "commit": "DUMMY",
+            "branch": "refs/heads/internal/release/2.1"
+        }  
+    ]
+}
