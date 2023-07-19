@@ -444,7 +444,7 @@ internal static class RequestDelegateGeneratorSources
     public static string AntiforgeryMetadataType = """
 file sealed class AntiforgeryMetadata : IAntiforgeryMetadata
 {
-    public static IAntiforgeryMetadata ValidationRequired = new AntiforgeryMetadata(true);
+    public static readonly IAntiforgeryMetadata ValidationRequired = new AntiforgeryMetadata(true);
 
     public AntiforgeryMetadata(bool requiresValidation)
     {

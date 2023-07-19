@@ -137,29 +137,20 @@ internal class RazorComponentEndpointInvoker
                 {
                     await _context.Response.WriteAsync("A valid antiforgery token was not provided with the request. Add an antiforgery token, or disable antiforgery validation for this endpoint.");
                 }
+                return RequestValidationState.InvalidPostRequest;
             }
 
             var handler = GetFormHandler(out var isBadRequest);
             return new(valid && !isBadRequest, isPost, handler);
         }
 
-        return new(true, false, null);
+        return RequestValidationState.ValidNonPostRequest;
     }
 
     private string? GetFormHandler(out bool isBadRequest)
     {
         isBadRequest = false;
-        var hasValue = false;
-        StringValues value = StringValues.Empty;
-        try
-        {
-            hasValue = _context.Request.Form.TryGetValue("_handler", out value);
-        }
-        // We may be trying to read a Form that's been poisoned because
-        // the anti-forgery token was not valid.
-        catch (InvalidOperationException) { }
-
-        if (hasValue)
+        if (_context.Request.Form.TryGetValue("_handler", out var value))
         {
             if (value.Count != 1)
             {
@@ -171,7 +162,6 @@ internal class RazorComponentEndpointInvoker
                 return value[0]!;
             }
         }
-
         return null;
     }
 
@@ -185,6 +175,9 @@ internal class RazorComponentEndpointInvoker
     [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
     private readonly struct RequestValidationState(bool isValid, bool isPost, string? handlerName)
     {
+        public static readonly RequestValidationState ValidNonPostRequest = new(true, false, null);
+        public static readonly RequestValidationState InvalidPostRequest = new(false, true, null);
+
         public bool IsValid => isValid;
 
         public bool IsPost => isPost;
