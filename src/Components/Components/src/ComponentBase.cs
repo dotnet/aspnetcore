@@ -124,7 +124,8 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
         => true;
 
     /// <summary>
-    /// Method invoked after each time the component has been rendered.
+    /// Method invoked after each time the component has been rendered interactively. This method is not
+    /// invoked during prerendering or server-side rendering.
     /// </summary>
     /// <param name="firstRender">
     /// Set to <c>true</c> if this is the first time <see cref="OnAfterRender(bool)"/> has been invoked
@@ -141,7 +142,8 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
     }
 
     /// <summary>
-    /// Method invoked after each time the component has been rendered. Note that the component does
+    /// Method invoked after each time the component has been rendered interactively. This method is not
+    /// invoked during prerendering or server-side rendering. Note that the component does
     /// not automatically re-render after the completion of any returned <see cref="Task"/>, because
     /// that would cause an infinite render loop.
     /// </summary>
