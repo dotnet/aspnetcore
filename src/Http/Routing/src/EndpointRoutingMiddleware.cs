@@ -136,10 +136,6 @@ internal sealed partial class EndpointRoutingMiddleware
             // We do this during endpoint routing to ensure that successive middlewares in the pipeline
             // can access the feature with the correct value.
             SetMaxRequestBodySize(httpContext);
-            if (httpContext.Features.Get<IHttpMaxRequestBodySizeFeature>() is { } httpMaxRequestBodySizeFeature)
-            {
-                httpContext.Request.Body = new SizeLimitedStream(httpContext.Request.Body, httpMaxRequestBodySizeFeature.MaxRequestBodySize);
-            }
 
             var shortCircuitMetadata = endpoint.Metadata.GetMetadata<ShortCircuitMetadata>();
             if (shortCircuitMetadata is not null)
