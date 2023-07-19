@@ -3,11 +3,13 @@
 
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.ShortCircuit;
@@ -128,6 +130,15 @@ internal sealed partial class EndpointRoutingMiddleware
                 // Just in case, add a special (missing) value as the route tag to metrics.
                 var route = endpoint.Metadata.GetMetadata<IRouteDiagnosticsMetadata>()?.Route ?? "(missing)";
                 _metrics.MatchSuccess(route, isFallback);
+            }
+
+            // Map RequestSizeLimitMetadata to IHttpMaxRequestBodySizeFeature if present on the endpoint.
+            // We do this during endpoint routing to ensure that successive middlewares in the pipeline
+            // can access the feature with the correct value.
+            SetMaxRequestBodySize(httpContext);
+            if (httpContext.Features.Get<IHttpMaxRequestBodySizeFeature>() is { } httpMaxRequestBodySizeFeature)
+            {
+                httpContext.Request.Body = new SizeLimitedStream(httpContext.Request.Body, httpMaxRequestBodySizeFeature.MaxRequestBodySize);
             }
 
             var shortCircuitMetadata = endpoint.Metadata.GetMetadata<ShortCircuitMetadata>();
@@ -292,6 +303,41 @@ internal sealed partial class EndpointRoutingMiddleware
             "but this endpoint is marked with short circuit and it will execute on Routing Middleware.");
     }
 
+    private void SetMaxRequestBodySize(HttpContext context)
+    {
+        var sizeLimitMetadata = context.GetEndpoint()?.Metadata?.GetMetadata<IRequestSizeLimitMetadata>();
+        if (sizeLimitMetadata == null)
+        {
+            Log.MetadataNotFound(_logger);
+            return;
+        }
+
+        var maxRequestBodySizeFeature = context.Features.Get<IHttpMaxRequestBodySizeFeature>();
+        if (maxRequestBodySizeFeature == null)
+        {
+            Log.FeatureNotFound(_logger);
+        }
+        else if (maxRequestBodySizeFeature.IsReadOnly)
+        {
+            Log.FeatureIsReadOnly(_logger);
+        }
+        else
+        {
+            var maxRequestBodySize = sizeLimitMetadata.MaxRequestBodySize;
+            maxRequestBodySizeFeature.MaxRequestBodySize = maxRequestBodySize;
+
+            if (maxRequestBodySize.HasValue)
+            {
+                Log.MaxRequestBodySizeSet(_logger,
+                    maxRequestBodySize.Value.ToString(CultureInfo.InvariantCulture));
+            }
+            else
+            {
+                Log.MaxRequestBodySizeDisabled(_logger);
+            }
+        }
+    }
+
     private static partial class Log
     {
         public static void MatchSuccess(ILogger logger, Endpoint endpoint)
@@ -320,5 +366,20 @@ internal sealed partial class EndpointRoutingMiddleware
 
         [LoggerMessage(7, LogLevel.Debug, "Matched endpoint '{EndpointName}' is a fallback endpoint.", EventName = "FallbackMatch")]
         public static partial void FallbackMatch(ILogger logger, Endpoint endpointName);
+
+        [LoggerMessage(8, LogLevel.Debug, $"The endpoint does not specify the {nameof(IRequestSizeLimitMetadata)}.", EventName = "MetadataNotFound")]
+        public static partial void MetadataNotFound(ILogger logger);
+
+        [LoggerMessage(9, LogLevel.Warning, $"A request body size limit could not be applied. This server does not support the {nameof(IHttpMaxRequestBodySizeFeature)}.", EventName = "FeatureNotFound")]
+        public static partial void FeatureNotFound(ILogger logger);
+
+        [LoggerMessage(10, LogLevel.Warning, $"A request body size limit could not be applied. The {nameof(IHttpMaxRequestBodySizeFeature)} for the server is read-only.", EventName = "FeatureIsReadOnly")]
+        public static partial void FeatureIsReadOnly(ILogger logger);
+
+        [LoggerMessage(11, LogLevel.Debug, "The maximum request body size has been set to {RequestSize}.", EventName = "MaxRequestBodySizeSet")]
+        public static partial void MaxRequestBodySizeSet(ILogger logger, string requestSize);
+
+        [LoggerMessage(12, LogLevel.Debug, "The maximum request body size has been disabled.", EventName = "MaxRequestBodySizeDisabled")]
+        public static partial void MaxRequestBodySizeDisabled(ILogger logger);
     }
 }

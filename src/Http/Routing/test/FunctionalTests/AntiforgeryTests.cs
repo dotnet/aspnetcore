@@ -381,6 +381,71 @@ public class AntiforgeryTests
         Assert.Equal("This form is being accessed with an invalid anti-forgery token. Validate the `IAntiforgeryValidationFeature` on the request before reading from the form.", exception.Message);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task MapPost_WithForm_ValidToken_RequestSizeLimit_Works(bool hasLimit)
+    {
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .Configure(app =>
+                    {
+                        app.Use((context, next) =>
+                        {
+                            context.Features.Set<IHttpMaxRequestBodySizeFeature>(new FakeHttpMaxRequestBodySizeFeature(5_000_000));
+                            return next(context);
+                        });
+                        app.UseRouting();
+                        app.UseAntiforgery();
+                        app.UseEndpoints(b =>
+                            b.MapPost("/todo", ([FromForm] Todo todo) => todo).WithMetadata(new RequestSizeLimitMetadata(hasLimit ? 2 : null)));
+                    })
+                    .UseTestServer();
+            })
+            .ConfigureServices(services =>
+            {
+                services.AddRouting();
+                services.AddAntiforgery();
+            })
+            .Build();
+
+        using var server = host.GetTestServer();
+        await host.StartAsync();
+        var client = server.CreateClient();
+
+        var antiforgery = host.Services.GetRequiredService<IAntiforgery>();
+        var antiforgeryOptions = host.Services.GetRequiredService<IOptions<AntiforgeryOptions>>();
+        var tokens = antiforgery.GetAndStoreTokens(new DefaultHttpContext());
+        var request = new HttpRequestMessage(HttpMethod.Post, "todo");
+        request.Headers.Add("Cookie", antiforgeryOptions.Value.Cookie.Name + "=" + tokens.CookieToken);
+        var nameValueCollection = new List<KeyValuePair<string, string>>
+        {
+            new KeyValuePair<string,string>("__RequestVerificationToken", tokens.RequestToken),
+            new KeyValuePair<string,string>("name", "Test task"),
+            new KeyValuePair<string,string>("isComplete", "false"),
+            new KeyValuePair<string,string>("dueDate", DateTime.Today.AddDays(1).ToString()),
+        };
+        request.Content = new FormUrlEncodedContent(nameValueCollection);
+
+        if (hasLimit)
+        {
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await client.SendAsync(request));
+            Assert.Equal("The maximum number of bytes have been read.", exception.Message);
+        }
+        else
+        {
+            var response = await client.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonSerializer.Deserialize<Todo>(body, SerializerOptions);
+            Assert.Equal("Test task", result.Name);
+            Assert.False(result.IsCompleted);
+            Assert.Equal(DateTime.Today.AddDays(1), result.DueDate);
+        }
+    }
+
     class Todo
     {
         public string Name { get; set; }
@@ -392,5 +457,26 @@ public class AntiforgeryTests
     class FromFormAttribute(string name = "") : Attribute, IFromFormMetadata
     {
         public string Name => name;
+    }
+
+    class RequestSizeLimitMetadata(long? maxRequestBodySize) : IRequestSizeLimitMetadata
+    {
+
+        public long? MaxRequestBodySize => maxRequestBodySize;
+    }
+
+    private class FakeHttpMaxRequestBodySizeFeature : IHttpMaxRequestBodySizeFeature
+    {
+        public FakeHttpMaxRequestBodySizeFeature(
+            long? maxRequestBodySize = null,
+            bool isReadOnly = false)
+        {
+            MaxRequestBodySize = maxRequestBodySize;
+            IsReadOnly = isReadOnly;
+        }
+
+        public bool IsReadOnly { get; }
+
+        public long? MaxRequestBodySize { get; set; }
     }
 }
