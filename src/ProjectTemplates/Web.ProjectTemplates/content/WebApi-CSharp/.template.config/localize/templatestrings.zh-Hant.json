@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
   "name": "ASP.NET Core Web API",
-  "description": "用於建立 ASP.NET Core 應用程式的專案範本，附有 RESTful HTTP 服務的控制器範例。此範本也可用於 ASP.NET Core MVC 的檢視及控制器。",
+  "description": "A project template for creating a RESTful Web API using ASP.NET Core controllers or minimal APIs, with optional support for OpenAPI and authentication.",
   "symbols/auth/choices/None/description": "沒有驗證",
   "symbols/auth/choices/IndividualB2C/description": "具有 Azure AD B2C 的個別驗證",
   "symbols/auth/choices/SingleOrg/description": "單一租用戶的組織驗證",

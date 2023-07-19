@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
   "name": "API Web do ASP.NET Core",
-  "description": "Um modelo de projeto para criar um aplicativo ASP.NET Core com um Controlador de exemplo para um serviço HTTP RESTful. Esse modelo também pode ser usado para Controladores e Exibições do ASP.NET Core MVC.",
+  "description": "A project template for creating a RESTful Web API using ASP.NET Core controllers or minimal APIs, with optional support for OpenAPI and authentication.",
   "symbols/auth/choices/None/description": "Sem autenticação",
   "symbols/auth/choices/IndividualB2C/description": "Autenticação individual com Azure AD B2C",
   "symbols/auth/choices/SingleOrg/description": "Autenticação organizacional para um único locatário",

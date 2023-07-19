@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
   "name": "ASP.NET Core Web API",
-  "description": "Una plantilla de proyecto para crear una aplicación ASP.NET Core con un controlador de ejemplo para un servicio RESTful HTTP. Esta plantilla también puede usarse para controladores y vistas de ASP.NET Core MVC.",
+  "description": "A project template for creating a RESTful Web API using ASP.NET Core controllers or minimal APIs, with optional support for OpenAPI and authentication.",
   "symbols/auth/choices/None/description": "Sin autenticación",
   "symbols/auth/choices/IndividualB2C/description": "Autenticación individual con Azure AD B2C",
   "symbols/auth/choices/SingleOrg/description": "Autenticación organizacional para un único inquilino",
