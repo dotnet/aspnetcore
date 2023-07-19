@@ -113,7 +113,7 @@ public class JwtBearerOptions : AuthenticationSchemeOptions
     /// <summary>
     /// Gets the ordered list of <see cref="ISecurityTokenValidator"/> used to validate access tokens.
     /// </summary>
-    [Obsolete("SecurityTokenValidators is no longer used by default. Use TokenHandlers instead. To continue using SecurityTokenValidators, set UseSecurityTokenValidators to true.")]
+    [Obsolete("SecurityTokenValidators is no longer used by default. Use TokenHandlers instead. To continue using SecurityTokenValidators, set UseSecurityTokenValidators to true. See https://aka.ms/aspnetcore8/security-token-changes")]
     public IList<ISecurityTokenValidator> SecurityTokenValidators { get; private set; }
 
     /// <summary>

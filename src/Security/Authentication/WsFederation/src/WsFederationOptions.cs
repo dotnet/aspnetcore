@@ -105,7 +105,7 @@ public class WsFederationOptions : RemoteAuthenticationOptions
     /// <summary>
     /// Gets or sets the collection of <see cref="ISecurityTokenValidator"/> used to read and validate the <see cref="SecurityToken"/>s.
     /// </summary>
-    [Obsolete("SecurityTokenHandlers is no longer used by default. Use TokenHandlers instead. To continue using SecurityTokenHandlers, set UseSecurityTokenHandlers to true.")]
+    [Obsolete("SecurityTokenHandlers is no longer used by default. Use TokenHandlers instead. To continue using SecurityTokenHandlers, set UseSecurityTokenHandlers to true. See https://aka.ms/aspnetcore8/security-token-changes")]
     public ICollection<ISecurityTokenValidator> SecurityTokenHandlers
     {
         get
