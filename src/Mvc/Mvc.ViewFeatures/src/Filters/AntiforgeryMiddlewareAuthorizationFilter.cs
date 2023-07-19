@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Filters;
 
 internal partial class AntiforgeryMiddlewareAuthorizationFilter(ILogger<AntiforgeryMiddlewareAuthorizationFilter> logger) : IAsyncAuthorizationFilter
 {
-    internal static string AntiforgeryMiddlewareWithEndpointInvokedKey = "__AntiforgeryMiddlewareWithEndpointInvoked";
+    internal static readonly  AntiforgeryMiddlewareWithEndpointInvokedKey = "__AntiforgeryMiddlewareWithEndpointInvoked";
 
     private readonly ILogger _logger = logger;
 
