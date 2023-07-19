@@ -126,6 +126,7 @@ public class JwtBearerHandler : AuthenticationHandler<JwtBearerOptions>
             }
             else
             {
+#pragma warning disable CS0618 // Type or member is obsolete
                 foreach (var validator in Options.SecurityTokenValidators)
                 {
                     if (validator.CanReadToken(token))
@@ -142,6 +143,7 @@ public class JwtBearerHandler : AuthenticationHandler<JwtBearerOptions>
                         }
                     }
                 }
+#pragma warning restore CS0618 // Type or member is obsolete
             }
 
             if (principal != null && validatedToken != null)

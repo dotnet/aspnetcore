@@ -28,7 +28,9 @@ public class JwtBearerOptions : AuthenticationSchemeOptions
     /// </summary>
     public JwtBearerOptions()
     {
+#pragma warning disable CS0618 // Type or member is obsolete
         SecurityTokenValidators = new List<ISecurityTokenValidator> { _defaultHandler };
+#pragma warning restore CS0618 // Type or member is obsolete
         TokenHandlers = new List<TokenHandler> { _defaultTokenHandler };
     }
 
