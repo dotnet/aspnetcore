@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor;
 public abstract class RazorPageBase : IRazorPage
 {
     private readonly Stack<TextWriter> _textWriterStack = new Stack<TextWriter>();
+    private readonly IDictionary<string, RenderAsyncDelegate> _sectionWriters = new Dictionary<string, RenderAsyncDelegate>(StringComparer.OrdinalIgnoreCase);
     private StringWriter? _valueBuffer;
     private ITagHelperFactory? _tagHelperFactory;
     private IViewBufferScope? _bufferScope;
@@ -32,6 +33,14 @@ public abstract class RazorPageBase : IRazorPage
     private AttributeInfo _attributeInfo;
     private TagHelperAttributeInfo _tagHelperAttributeInfo;
     private IUrlHelper? _urlHelper;
+
+    // These fields back properties that are hidden from debugging with DebuggerBrowsableState.Never.
+    // Using a field instead of an auto-property allows the value to be seen in the debugger by expanding the "Non-Public members" option.
+    private bool _isLayoutBeingRendered;
+    private IHtmlContent? _bodyContent;
+    private IDictionary<string, RenderAsyncDelegate> _previousSectionWriters = default!;
+    private DiagnosticSource _diagnosticSource = default!;
+    private HtmlEncoder _htmlEncoder = default!;
 
     /// <inheritdoc/>
     public virtual ViewContext ViewContext { get; set; } = default!;
@@ -65,8 +74,7 @@ public abstract class RazorPageBase : IRazorPage
 
     /// <inheritdoc />
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    public IDictionary<string, RenderAsyncDelegate> SectionWriters { get; } =
-        new Dictionary<string, RenderAsyncDelegate>(StringComparer.OrdinalIgnoreCase);
+    public IDictionary<string, RenderAsyncDelegate> SectionWriters => _sectionWriters;
 
     /// <summary>
     /// Gets the dynamic view data dictionary.
@@ -75,22 +83,38 @@ public abstract class RazorPageBase : IRazorPage
 
     /// <inheritdoc />
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    public bool IsLayoutBeingRendered { get; set; }
+    public bool IsLayoutBeingRendered
+    {
+        get => _isLayoutBeingRendered;
+        set => _isLayoutBeingRendered = value;
+    }
 
     /// <inheritdoc />
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    public IHtmlContent? BodyContent { get; set; }
+    public IHtmlContent? BodyContent
+    {
+        get => _bodyContent;
+        set => _bodyContent = value;
+    }
 
     /// <inheritdoc />
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    public IDictionary<string, RenderAsyncDelegate> PreviousSectionWriters { get; set; } = default!;
+    public IDictionary<string, RenderAsyncDelegate> PreviousSectionWriters
+    {
+        get => _previousSectionWriters;
+        set => _previousSectionWriters = value;
+    }
 
     /// <summary>
     /// Gets or sets a <see cref="System.Diagnostics.DiagnosticSource"/> instance used to instrument the page execution.
     /// </summary>
     [RazorInject]
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    public DiagnosticSource DiagnosticSource { get; set; } = default!;
+    public DiagnosticSource DiagnosticSource
+    {
+        get => _diagnosticSource;
+        set => _diagnosticSource = value;
+    }
 
     /// <summary>
     /// Gets the <see cref="System.Text.Encodings.Web.HtmlEncoder"/> to use when this <see cref="RazorPage"/>
@@ -98,7 +122,11 @@ public abstract class RazorPageBase : IRazorPage
     /// </summary>
     [RazorInject]
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    public HtmlEncoder HtmlEncoder { get; set; } = default!;
+    public HtmlEncoder HtmlEncoder
+    {
+        get => _htmlEncoder;
+        set => _htmlEncoder = value;
+    }
 
     /// <summary>
     /// Gets the <see cref="ClaimsPrincipal"/> of the current logged in user.
