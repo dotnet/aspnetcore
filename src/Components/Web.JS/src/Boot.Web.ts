@@ -15,7 +15,7 @@ import { shouldAutoStart } from './BootCommon';
 import { Blazor } from './GlobalExports';
 import { WebStartOptions } from './Platform/WebStartOptions';
 import { attachStreamingRenderingListener } from './Rendering/StreamingRendering';
-import { NavigationEnhancementCallbacks, attachProgressivelyEnhancedNavigationListener } from './Services/NavigationEnhancement';
+import { NavigationEnhancementCallbacks, attachProgressivelyEnhancedNavigationListener, isPerformingEnhancedPageLoad } from './Services/NavigationEnhancement';
 import { WebAssemblyComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
 import { ServerComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
 import { RootComponentManager } from './Services/RootComponentManager';
@@ -24,7 +24,6 @@ import { DescriptorHandler, attachComponentDescriptorHandler, registerAllCompone
 import { waitForRendererAttached } from './Rendering/WebRendererInteropMethods';
 
 let started = false;
-let isPerformingEnhancedNavigation = false;
 let webStartOptions: Partial<WebStartOptions> | undefined;
 
 const circuitRootComponents = new RootComponentManager(WebRendererId.Server);
@@ -38,9 +37,7 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
   webStartOptions = options;
 
   const navigationEnhancementCallbacks: NavigationEnhancementCallbacks = {
-    enhancedNavigationStarted,
-    documentUpdated,
-    enhancedNavigationCompleted,
+    documentUpdated: handleUpdatedComponentDescriptors,
   };
 
   const descriptorHandler: DescriptorHandler = {
@@ -72,21 +69,8 @@ function registerComponentDescriptor(descriptor: ServerComponentDescriptor | Web
   }
 }
 
-function enhancedNavigationStarted() {
-  isPerformingEnhancedNavigation = true;
-}
-
-function enhancedNavigationCompleted() {
-  isPerformingEnhancedNavigation = false;
-  handleUpdatedDescriptors();
-}
-
-function documentUpdated() {
-  handleUpdatedDescriptors();
-}
-
-function handleUpdatedDescriptors() {
-  const shouldAddNewRootComponents = !isPerformingEnhancedNavigation;
+function handleUpdatedComponentDescriptors() {
+  const shouldAddNewRootComponents = !isPerformingEnhancedPageLoad();
   circuitRootComponents.handleUpdatedRootComponents(shouldAddNewRootComponents);
   webAssemblyRootComponents.handleUpdatedRootComponents(shouldAddNewRootComponents);
 }
@@ -100,7 +84,7 @@ async function startCircuitIfNotStarted() {
   circuitStarted = true;
   await startCircuit(webStartOptions?.circuit, circuitRootComponents);
   await waitForRendererAttached(WebRendererId.Server);
-  handleUpdatedDescriptors();
+  handleUpdatedComponentDescriptors();
 }
 
 let webAssemblyStarted = false;
@@ -112,7 +96,7 @@ async function startWebAssemblyIfNotStarted() {
   webAssemblyStarted = true;
   await startWebAssembly(webStartOptions?.webAssembly, webAssemblyRootComponents);
   await waitForRendererAttached(WebRendererId.WebAssembly);
-  handleUpdatedDescriptors();
+  handleUpdatedComponentDescriptors();
 }
 
 Blazor.start = boot;

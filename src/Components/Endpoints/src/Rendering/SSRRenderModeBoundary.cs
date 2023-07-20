@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
@@ -17,7 +18,7 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 /// </summary>
 internal class SSRRenderModeBoundary : IComponent
 {
-    private static readonly Dictionary<Type, string> s_componentTypeNameHashCache = new();
+    private static readonly ConcurrentDictionary<Type, string> _componentTypeNameHashCache = new();
 
     private readonly Type _componentType;
     private readonly IComponentRenderMode _renderMode;
@@ -130,38 +131,27 @@ internal class SSRRenderModeBoundary : IComponent
 
     private string GenerateMarkerKey(int sequence, object? key)
     {
-        var componentTypeNameHash = GetOrComputeComponentTypeNameHash(_componentType);
+        var componentTypeNameHash = _componentTypeNameHashCache.GetOrAdd(_componentType, ComputeComponentTypeNameHash);
         return $"{componentTypeNameHash}:{sequence}:{(key as IFormattable)?.ToString(null, CultureInfo.InvariantCulture)}";
     }
 
-    private static string GetOrComputeComponentTypeNameHash(Type componentType)
+    private static string ComputeComponentTypeNameHash(Type componentType)
     {
-        if (!s_componentTypeNameHashCache.TryGetValue(componentType, out var hash))
+        if (componentType.FullName is not { } typeName)
         {
-            hash = ComputeComponentTypeNameHash(componentType);
-            s_componentTypeNameHashCache.Add(componentType, hash);
+            throw new InvalidOperationException($"An invalid component type was used in {nameof(SSRRenderModeBoundary)}.");
         }
 
-        return hash;
+        var typeNameLength = typeName.Length;
+        var typeNameBytes = typeNameLength < 1024
+            ? stackalloc byte[typeNameLength]
+            : new byte[typeNameLength];
 
-        static string ComputeComponentTypeNameHash(Type componentType)
-        {
-            if (componentType.FullName is not { } typeName)
-            {
-                throw new InvalidOperationException($"An invalid component type was used in {nameof(SSRRenderModeBoundary)}.");
-            }
+        Encoding.UTF8.GetBytes(typeName, typeNameBytes);
 
-            var typeNameLength = typeName.Length;
-            var typeNameBytes = typeNameLength < 1024
-                ? stackalloc byte[typeNameLength]
-                : new byte[typeNameLength];
+        Span<byte> typeNameHashBytes = stackalloc byte[SHA1.HashSizeInBytes];
+        SHA1.HashData(typeNameBytes, typeNameHashBytes);
 
-            Encoding.UTF8.GetBytes(typeName, typeNameBytes);
-
-            Span<byte> typeNameHashBytes = stackalloc byte[SHA1.HashSizeInBytes];
-            SHA1.HashData(typeNameBytes, typeNameHashBytes);
-
-            return Convert.ToHexString(typeNameHashBytes);
-        }
+        return Convert.ToHexString(typeNameHashBytes);
     }
 }

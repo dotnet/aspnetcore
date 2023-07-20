@@ -33,11 +33,14 @@ different bundles that only contain minimal content.
 
 let currentEnhancedNavigationAbortController: AbortController | null;
 let navigationEnhancementCallbacks: NavigationEnhancementCallbacks;
+let performingEnhancedPageLoad: boolean;
 
 export interface NavigationEnhancementCallbacks {
-  enhancedNavigationStarted: () => void;
-  enhancedNavigationCompleted: () => void;
   documentUpdated: () => void;
+}
+
+export function isPerformingEnhancedPageLoad() {
+  return performingEnhancedPageLoad;
 }
 
 export function attachProgressivelyEnhancedNavigationListener(callbacks: NavigationEnhancementCallbacks) {
@@ -107,7 +110,7 @@ function onDocumentSubmit(event: SubmitEvent) {
 }
 
 export async function performEnhancedPageLoad(internalDestinationHref: string, fetchOptions?: RequestInit) {
-  navigationEnhancementCallbacks.enhancedNavigationStarted();
+  performingEnhancedPageLoad = true;
 
   // First, stop any preceding enhanced page load
   currentEnhancedNavigationAbortController?.abort();
@@ -138,11 +141,9 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, f
         // For any other text-based content, we'll just display it, because that's what
         // would happen if this was a non-enhanced request.
         replaceDocumentWithPlainText(initialContent);
-        navigationEnhancementCallbacks.documentUpdated();
       } else if ((response.status < 200 || response.status >= 300) && !initialContent) {
         // For any non-success response that has no content at all, make up our own error UI
         replaceDocumentWithPlainText(`Error: ${response.status} ${response.statusText}`);
-        navigationEnhancementCallbacks.documentUpdated();
       } else {
         // For any other response, it's not HTML and we don't know what to do. It might be plain text,
         // or an image, or something else.
@@ -156,7 +157,6 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, f
         } else {
           // For non-get requests, we can't safely re-request, so just treat it as an error
           replaceDocumentWithPlainText(`Error: ${fetchOptions.method} request to ${internalDestinationHref} returned non-HTML content of type ${responseContentType || 'unspecified'}.`);
-          navigationEnhancementCallbacks.documentUpdated();
         }
       }
     },
@@ -177,7 +177,8 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, f
       targetElem?.scrollIntoView();
     }
 
-    navigationEnhancementCallbacks.enhancedNavigationCompleted();
+    performingEnhancedPageLoad = false;
+    navigationEnhancementCallbacks.documentUpdated();
   }
 }
 
