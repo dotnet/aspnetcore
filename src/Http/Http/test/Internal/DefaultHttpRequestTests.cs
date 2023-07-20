@@ -253,7 +253,7 @@ public class DefaultHttpRequestTests
         var context = new DefaultHttpContext();
 
         var debugText = HttpContextDebugFormatter.RequestToString(context.Request);
-        Assert.Equal("(unset)", debugText);
+        Assert.Equal("(unspecified)", debugText);
     }
 
     [Fact]
@@ -263,7 +263,7 @@ public class DefaultHttpRequestTests
         context.Request.Method = "GET";
 
         var debugText = HttpContextDebugFormatter.RequestToString(context.Request);
-        Assert.Equal("GET (unset)", debugText);
+        Assert.Equal("GET (unspecified)", debugText);
     }
 
     [Fact]
@@ -273,7 +273,7 @@ public class DefaultHttpRequestTests
         context.Request.Protocol = "HTTP/2";
 
         var debugText = HttpContextDebugFormatter.RequestToString(context.Request);
-        Assert.Equal("(unset) HTTP/2", debugText);
+        Assert.Equal("(unspecified) HTTP/2", debugText);
     }
 
     [Fact]
@@ -283,7 +283,17 @@ public class DefaultHttpRequestTests
         context.Request.ContentType = "application/json";
 
         var debugText = HttpContextDebugFormatter.RequestToString(context.Request);
-        Assert.Equal("(unset) application/json", debugText);
+        Assert.Equal("(unspecified) application/json", debugText);
+    }
+
+    [Fact]
+    public void DebuggerToString_HasQueryString()
+    {
+        var context = new DefaultHttpContext();
+        context.Request.QueryString = new QueryString("?query=true");
+
+        var debugText = HttpContextDebugFormatter.RequestToString(context.Request);
+        Assert.Equal("(unspecified)://(unspecified)?query=true", debugText);
     }
 
     [Fact]

@@ -62,12 +62,27 @@ internal static class HttpContextDebugFormatter
     private static string GetRequestUrl(HttpRequest request, bool includeQueryString)
     {
         // The URL might be missing because the context was manually created in a test, e.g. new DefaultHttpContext()
-        // If there is no request URL then provide a more understandable empty value.
-        if (string.IsNullOrEmpty(request.Scheme) || !request.Host.HasValue)
+        if (string.IsNullOrEmpty(request.Scheme) &&
+            !request.Host.HasValue &&
+            !request.PathBase.HasValue &&
+            !request.Path.HasValue &&
+            !request.QueryString.HasValue)
         {
-            return "(unset)";
+            return "(unspecified)";
         }
 
-        return $"{request.Scheme}://{request.Host.Value}{request.PathBase.Value}{request.Path.Value}{(includeQueryString ? request.QueryString.Value : string.Empty)}";
+        // If some parts of the URL are provided then default the significant parts to avoid a werid output.
+        var scheme = request.Scheme;
+        if (string.IsNullOrEmpty(scheme))
+        {
+            scheme = "(unspecified)";
+        }
+        var host = request.Host.Value;
+        if (string.IsNullOrEmpty(host))
+        {
+            host = "(unspecified)";
+        }
+
+        return $"{scheme}://{host}{request.PathBase.Value}{request.Path.Value}{(includeQueryString ? request.QueryString.Value : string.Empty)}";
     }
 }
