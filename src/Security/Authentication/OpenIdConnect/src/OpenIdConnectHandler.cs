@@ -652,7 +652,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
             {
                 Logger.ReceivedIdToken();
 
-                if (Options.UseTokenHandler)
+                if (!Options.UseSecurityTokenValidator)
                 {
                     var tokenValidationResult = await ValidateTokenUsingHandlerAsync(authorizationResponse.IdToken, properties, validationParameters);
                     user = new ClaimsPrincipal(tokenValidationResult.ClaimsIdentity);
@@ -732,7 +732,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
                 ClaimsPrincipal tokenEndpointUser;
                 JwtSecurityToken tokenEndpointJwt;
 
-                if (Options.UseTokenHandler)
+                if (!Options.UseSecurityTokenValidator)
                 {
                     var tokenValidationResult = await ValidateTokenUsingHandlerAsync(tokenEndpointResponse.IdToken, properties, validationParameters);
                     tokenEndpointUser = new ClaimsPrincipal(tokenValidationResult.ClaimsIdentity);
@@ -1268,11 +1268,13 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
     // Note this modifies properties if Options.UseTokenLifetime
     private ClaimsPrincipal ValidateToken(string idToken, AuthenticationProperties properties, TokenValidationParameters validationParameters, out JwtSecurityToken jwt)
     {
+#pragma warning disable CS0618 // Type or member is obsolete
         if (!Options.SecurityTokenValidator.CanReadToken(idToken))
         {
             Logger.UnableToReadIdToken(idToken);
             throw new SecurityTokenException(string.Format(CultureInfo.InvariantCulture, Resources.UnableToValidateToken, idToken));
         }
+#pragma warning restore CS0618 // Type or member is obsolete
 
         if (_configuration != null)
         {
@@ -1283,7 +1285,9 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
                 ?? _configuration.SigningKeys;
         }
 
+#pragma warning disable CS0618 // Type or member is obsolete
         var principal = Options.SecurityTokenValidator.ValidateToken(idToken, validationParameters, out SecurityToken validatedToken);
+#pragma warning restore CS0618 // Type or member is obsolete
         if (validatedToken is JwtSecurityToken validatedJwt)
         {
             jwt = validatedJwt;

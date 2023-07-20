@@ -1286,8 +1286,10 @@ public class OpenIdConnectEventTests
                             EndSessionEndpoint = "http://testhost/end"
                         };
                         o.StateDataFormat = new TestStateDataFormat();
+#pragma warning disable CS0618 // Type or member is obsolete
                         o.SecurityTokenValidator = new TestTokenValidator();
-                        o.UseTokenHandler = false;
+#pragma warning restore CS0618 // Type or member is obsolete
+                        o.UseSecurityTokenValidator = true;
                         o.ProtocolValidator = new TestProtocolValidator();
                         o.BackchannelHttpHandler = new TestBackchannel();
                     });

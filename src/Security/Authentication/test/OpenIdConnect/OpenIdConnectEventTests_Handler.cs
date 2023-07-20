@@ -1286,7 +1286,7 @@ public class OpenIdConnectEventTests_Handlers
                             EndSessionEndpoint = "http://testhost/end"
                         };
                         o.StateDataFormat = new TestStateDataFormat();
-                        o.UseTokenHandler = true;
+                        o.UseSecurityTokenValidator = false;
                         o.TokenHandler = new TestTokenHandler();
                         o.ProtocolValidator = new TestProtocolValidator();
                         o.BackchannelHttpHandler = new TestBackchannel();
