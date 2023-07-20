@@ -269,7 +269,7 @@ public class OpenIdConnectOptions : RemoteAuthenticationOptions
     /// <summary>
     /// Gets or sets the <see cref="TokenHandler"/> used to validate identity tokens.
     /// <para>
-    /// This will be used instead of <see cref="SecurityTokenValidator"/> if <see cref="UseSecurityTokenValidator"/> is <see langword="false"/>
+    /// This will be used instead of <see cref="SecurityTokenValidator"/> if <see cref="UseSecurityTokenValidator"/> is <see langword="false"/>.
     /// </para>
     /// </summary>
     public TokenHandler TokenHandler { get; set; }
@@ -392,5 +392,13 @@ public class OpenIdConnectOptions : RemoteAuthenticationOptions
     /// <summary>
     /// Gets or sets whether to use the <see cref="TokenHandler"/> or the <see cref="SecurityTokenValidator"/> for validating identity tokens.
     /// </summary>
+    /// <remarks>
+    /// The advantages of using TokenHandler are:
+    /// <para>There is an Async model.</para>
+    /// <para>The default token handler is a <see cref="JsonWebTokenHandler"/> which is faster than a <see cref="JwtSecurityTokenHandler"/>.</para>
+    /// <para>There is an ability to make use of a Last-Known-Good model for metadata that protects applications when metadata is published with errors.</para>
+    /// SecurityTokenValidator can be used when <see cref="TokenValidatedContext.SecurityToken"/> needs a <see cref="JwtSecurityToken"/>.
+    /// When using TokenHandler, <see cref="TokenValidatedContext.SecurityToken"/> will be a <see cref="JsonWebToken"/>. 
+    /// </remarks>
     public bool UseSecurityTokenValidator { get; set; }
 }

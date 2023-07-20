@@ -402,7 +402,6 @@ public class WsFederationHandler : RemoteAuthenticationHandler<WsFederationOptio
         {
             Options.ConfigurationManager.RequestRefresh();
         }
-
     }
 
     /// <summary>

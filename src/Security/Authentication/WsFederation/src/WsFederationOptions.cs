@@ -204,10 +204,12 @@ public class WsFederationOptions : RemoteAuthenticationOptions
     /// Gets or sets whether <see cref="TokenHandlers"/> or <see cref="SecurityTokenHandlers"/> will be used to validate the inbound token.
     /// </summary>
     /// <remarks>
-    /// The advantage of using the TokenHandlers are:
+    /// The advantages of using the TokenHandlers are:
     /// <para>There is an Async model.</para>
     /// <para>The default token handler for JsonWebTokens is a <see cref="JsonWebTokenHandler"/> which is faster than a <see cref="JwtSecurityTokenHandler"/>.</para>
     /// <para>There is an ability to make use of a Last-Known-Good model for metadata that protects applications when metadata is published with errors.</para>
+    /// SecurityTokenHandlers can be used when <see cref="SecurityTokenValidatedContext.SecurityToken"/> needs a <see cref="JwtSecurityToken"/> when the security token is a JWT.
+    /// When using TokenHandlers, <see cref="SecurityTokenValidatedContext.SecurityToken"/> will be a <see cref="JsonWebToken"/> when the security token is a JWT.
     /// </remarks>
     public bool UseSecurityTokenHandlers { get; set; }
 }

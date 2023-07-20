@@ -740,7 +740,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
                 }
                 else
                 {
-                    tokenEndpointUser = ValidateToken(tokenEndpointResponse.IdToken, properties, validationParameters, out  tokenEndpointJwt);
+                    tokenEndpointUser = ValidateToken(tokenEndpointResponse.IdToken, properties, validationParameters, out tokenEndpointJwt);
                 }
 
                 // Avoid reading & deleting the nonce cookie, running the event, etc, if it was already done as part of the authorization response validation.
@@ -1355,7 +1355,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
 
         if (validatedToken is not JsonWebToken)
         {
-            Logger.InvalidSecurityTokenTypeFromHandler(validatedToken?.GetType().ToString());
+            Logger.InvalidSecurityTokenTypeFromHandler(validatedToken?.GetType());
             throw new SecurityTokenException(string.Format(CultureInfo.InvariantCulture, Resources.ValidatedSecurityTokenNotJsonWebToken, validatedToken?.GetType()));
         }
 
