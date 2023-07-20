@@ -23,13 +23,25 @@ namespace Microsoft.AspNetCore.Routing;
 [DebuggerDisplay("Count = {Count}")]
 public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDictionary<string, object?>
 {
-    // 4 is a good default capacity here because that leaves enough space for area/controller/action/id
-    private const int DefaultCapacity = 4;
     private static readonly ConcurrentDictionary<Type, PropertyHelper[]> _propertyCache = new ConcurrentDictionary<Type, PropertyHelper[]>();
 
-    internal KeyValuePair<string, object?>[] _arrayStorage;
+    internal DynamicArray<KeyValuePair<string, object?>> _arrayStorage;
     internal PropertyStorage? _propertyStorage;
     private int _count;
+
+    /// <summary>
+    /// Creates a new <see cref="RouteValueDictionary"/> from the provided Span of items.
+    /// </summary>
+    /// <param name="items">The items spans.</param>
+    /// <returns>A new <see cref="RouteValueDictionary"/>.</returns>
+    //public static RouteValueDictionary FromValues(Span<KeyValuePair<string, object?>> items)
+    //{
+    //    return new RouteValueDictionary
+    //    {
+    //        _arrayStorage = new(items),
+    //        _count = items.Length,
+    //    };
+    //}
 
     /// <summary>
     /// Creates a new <see cref="RouteValueDictionary"/> from the provided array.
@@ -74,7 +86,7 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
 
         return new RouteValueDictionary()
         {
-            _arrayStorage = items!,
+            _arrayStorage = new(items!, start),
             _count = start,
         };
     }
@@ -84,7 +96,6 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
     /// </summary>
     public RouteValueDictionary()
     {
-        _arrayStorage = Array.Empty<KeyValuePair<string, object?>>();
     }
 
     /// <summary>
@@ -129,11 +140,6 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
             var storage = new PropertyStorage(values);
             _propertyStorage = storage;
             _count = storage.Properties.Length;
-            _arrayStorage = Array.Empty<KeyValuePair<string, object?>>();
-        }
-        else
-        {
-            _arrayStorage = Array.Empty<KeyValuePair<string, object?>>();
         }
     }
 
@@ -147,10 +153,6 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
         {
             Initialize(values);
         }
-        else
-        {
-            _arrayStorage = Array.Empty<KeyValuePair<string, object?>>();
-        }
     }
 
     /// <summary>
@@ -162,10 +164,6 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
         if (values is not null)
         {
             Initialize(values);
-        }
-        else
-        {
-            _arrayStorage = Array.Empty<KeyValuePair<string, object?>>();
         }
     }
 
@@ -179,17 +177,11 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
         {
             Initialize(dictionary);
         }
-        else
-        {
-            _arrayStorage = Array.Empty<KeyValuePair<string, object?>>();
-        }
     }
 
     [MemberNotNull(nameof(_arrayStorage))]
     private void Initialize(IEnumerable<KeyValuePair<string, string?>> stringValueEnumerable)
     {
-        _arrayStorage = Array.Empty<KeyValuePair<string, object?>>();
-
         foreach (var kvp in stringValueEnumerable)
         {
             Add(kvp.Key, kvp.Value);
@@ -199,8 +191,6 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
     [MemberNotNull(nameof(_arrayStorage))]
     private void Initialize(IEnumerable<KeyValuePair<string, object?>> keyValueEnumerable)
     {
-        _arrayStorage = Array.Empty<KeyValuePair<string, object?>>();
-
         foreach (var kvp in keyValueEnumerable)
         {
             Add(kvp.Key, kvp.Value);
@@ -215,22 +205,16 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
             // PropertyStorage is immutable so we can just copy it.
             _propertyStorage = dictionary._propertyStorage;
             _count = dictionary._count;
-            _arrayStorage = Array.Empty<KeyValuePair<string, object?>>();
+            _arrayStorage = default;
             return;
         }
 
         var count = dictionary._count;
         if (count > 0)
         {
-            var other = dictionary._arrayStorage;
-            var storage = new KeyValuePair<string, object?>[count];
-            Array.Copy(other, 0, storage, 0, count);
-            _arrayStorage = storage;
+            ref var other = ref dictionary._arrayStorage;
+            _arrayStorage = new(other.AsSpan());
             _count = count;
-        }
-        else
-        {
-            _arrayStorage = Array.Empty<KeyValuePair<string, object?>>();
         }
     }
 
@@ -258,13 +242,13 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
             // We're calling this here for the side-effect of converting from properties
             // to array. We need to create the array even if we just set an existing value since
             // property storage is immutable.
-            EnsureCapacity(_count);
+            EnsureCapacity();
 
             var index = FindIndex(key);
             if (index < 0)
             {
-                EnsureCapacity(_count + 1);
-                _arrayStorage[_count++] = new KeyValuePair<string, object?>(key, value);
+                _arrayStorage.Add(new KeyValuePair<string, object?>(key, value));
+                _count++;
             }
             else
             {
@@ -292,9 +276,9 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
     {
         get
         {
-            EnsureCapacity(_count);
+            EnsureCapacity();
 
-            var array = _arrayStorage;
+            var array = _arrayStorage.AsSpan();
             var keys = new string[_count];
             for (var i = 0; i < keys.Length; i++)
             {
@@ -312,9 +296,9 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
     {
         get
         {
-            EnsureCapacity(_count);
+            EnsureCapacity();
 
-            var array = _arrayStorage;
+            var array = _arrayStorage.AsSpan();
             var values = new object?[_count];
             for (var i = 0; i < values.Length; i++)
             {
@@ -341,7 +325,7 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
             ThrowArgumentNullExceptionForKey();
         }
 
-        EnsureCapacity(_count + 1);
+        EnsureCapacity();
 
         if (ContainsKeyArray(key))
         {
@@ -349,7 +333,7 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
             throw new ArgumentException(message, nameof(key));
         }
 
-        _arrayStorage[_count] = new KeyValuePair<string, object?>(key, value);
+        _arrayStorage.Add(new KeyValuePair<string, object?>(key, value));
         _count++;
     }
 
@@ -363,13 +347,13 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
 
         if (_propertyStorage != null)
         {
-            _arrayStorage = Array.Empty<KeyValuePair<string, object?>>();
+            _arrayStorage.Clear();
             _propertyStorage = null;
             _count = 0;
             return;
         }
 
-        Array.Clear(_arrayStorage, 0, _count);
+        _arrayStorage.Clear();
         _count = 0;
     }
 
@@ -418,10 +402,10 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
             return;
         }
 
-        EnsureCapacity(Count);
+        EnsureCapacity();
 
-        var storage = _arrayStorage;
-        Array.Copy(storage, 0, array, arrayIndex, _count);
+        var storage = _arrayStorage.AsSpan();
+        storage.CopyTo(array.AsSpan(arrayIndex, Count));
     }
 
     /// <inheritdoc />
@@ -450,17 +434,15 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
             return false;
         }
 
-        Debug.Assert(_arrayStorage != null);
 
-        EnsureCapacity(Count);
+        EnsureCapacity();
 
         var index = FindIndex(item.Key);
-        var array = _arrayStorage;
+        ref var array = ref _arrayStorage;
         if (index >= 0 && EqualityComparer<object>.Default.Equals(array[index].Value, item.Value))
         {
-            Array.Copy(array, index + 1, array, index, _count - index);
+            array.RemoveAt(index);
             _count--;
-            array[_count] = default;
             return true;
         }
 
@@ -482,15 +464,13 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
 
         // Ensure property storage is converted to array storage as we'll be
         // applying the lookup and removal on the array
-        EnsureCapacity(_count);
+        EnsureCapacity();
 
         var index = FindIndex(key);
         if (index >= 0)
         {
             _count--;
-            var array = _arrayStorage;
-            Array.Copy(array, index + 1, array, index, _count - index);
-            array[_count] = default;
+            _arrayStorage.RemoveAt(index);
 
             return true;
         }
@@ -521,16 +501,16 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
 
         // Ensure property storage is converted to array storage as we'll be
         // applying the lookup and removal on the array
-        EnsureCapacity(_count);
+        EnsureCapacity();
 
         var index = FindIndex(key);
         if (index >= 0)
         {
             _count--;
-            var array = _arrayStorage;
+
+            ref var array = ref _arrayStorage;
             value = array[index].Value;
-            Array.Copy(array, index + 1, array, index, _count - index);
-            array[_count] = default;
+            array.RemoveAt(index);
 
             return true;
         }
@@ -557,8 +537,8 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
             return false;
         }
 
-        EnsureCapacity(Count + 1);
-        _arrayStorage[Count] = new KeyValuePair<string, object?>(key, value);
+        EnsureCapacity();
+        _arrayStorage.Add(new KeyValuePair<string, object?>(key, value));
         _count++;
         return true;
     }
@@ -608,50 +588,35 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void EnsureCapacity(int capacity)
+    private void EnsureCapacity()
     {
-        if (_propertyStorage != null || _arrayStorage.Length < capacity)
+        if (_propertyStorage != null)
         {
-            EnsureCapacitySlow(capacity);
+            EnsureCapacitySlow();
         }
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2026",
         Justification = "The constructor that would result in _propertyStorage being non-null is annotated with RequiresUnreferencedCodeAttribute. " +
         "We do not need to additionally produce an error in this method since it is shared by trimmer friendly code paths.")]
-    private void EnsureCapacitySlow(int capacity)
+    private void EnsureCapacitySlow()
     {
-        if (_propertyStorage != null)
+        Debug.Assert(_propertyStorage != null);
+
+        var storage = _propertyStorage;
+
+        // If we're converting from properties, it's likely due to an 'add' to make sure we have at least
+        // the default amount of space.
+        var array = new KeyValuePair<string, object?>[storage.Properties.Length];
+
+        for (var i = 0; i < storage.Properties.Length; i++)
         {
-            var storage = _propertyStorage;
-
-            // If we're converting from properties, it's likely due to an 'add' to make sure we have at least
-            // the default amount of space.
-            capacity = Math.Max(DefaultCapacity, Math.Max(storage.Properties.Length, capacity));
-            var array = new KeyValuePair<string, object?>[capacity];
-
-            for (var i = 0; i < storage.Properties.Length; i++)
-            {
-                var property = storage.Properties[i];
-                array[i] = new KeyValuePair<string, object?>(property.Name, property.GetValue(storage.Value));
-            }
-
-            _arrayStorage = array;
-            _propertyStorage = null;
-            return;
+            var property = storage.Properties[i];
+            array[i] = new KeyValuePair<string, object?>(property.Name, property.GetValue(storage.Value));
         }
 
-        if (_arrayStorage.Length < capacity)
-        {
-            capacity = _arrayStorage.Length == 0 ? DefaultCapacity : _arrayStorage.Length * 2;
-            var array = new KeyValuePair<string, object?>[capacity];
-            if (_count > 0)
-            {
-                Array.Copy(_arrayStorage, 0, array, 0, _count);
-            }
-
-            _arrayStorage = array;
-        }
+        _arrayStorage = new(array);
+        _propertyStorage = null;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -659,7 +624,7 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
     {
         // Generally the bounds checking here will be elided by the JIT because this will be called
         // on the same code path as EnsureCapacity.
-        var array = _arrayStorage;
+        var array = _arrayStorage.AsSpan();
         var count = _count;
 
         for (var i = 0; i < count; i++)
@@ -676,7 +641,7 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private bool TryFindItem(string key, out object? value)
     {
-        var array = _arrayStorage;
+        var array = _arrayStorage.AsSpan();
         var count = _count;
 
         // Elide bounds check for indexing.
@@ -699,7 +664,7 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private bool ContainsKeyArray(string key)
     {
-        var array = _arrayStorage;
+        var array = _arrayStorage.AsSpan();
         var count = _count;
 
         // Elide bounds check for indexing.
