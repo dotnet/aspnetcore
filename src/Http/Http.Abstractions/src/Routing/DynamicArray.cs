@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Routing;
 
-// Simple list wrapper that avoids allocations if the number of items is below a threshold.
+// Simple list wrapper that avoids array allocations if the number of items is below a threshold.
 struct DynamicArray<T>
 {
     // 4 is a good default capacity here because that leaves enough space for area/controller/action/id

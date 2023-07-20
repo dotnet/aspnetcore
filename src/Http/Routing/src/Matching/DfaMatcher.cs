@@ -119,7 +119,7 @@ internal sealed partial class DfaMatcher : Matcher
                 var prototype = candidate.Slots;
                 KeyValuePair<string, object?>[]? slotsArray = null;
 
-                // Use a stack allocated array for < 4 values
+                // Use a stack allocated array for < 5 values
                 // and a heap allocated array for anything more
                 var routeValues = new RouteValues();
 
