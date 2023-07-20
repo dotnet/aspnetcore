@@ -1,14 +1,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { SsrStartOptions } from "../Platform/SsrStartOptions";
-import { performEnhancedPageLoad, replaceDocumentWithPlainText } from "../Services/NavigationEnhancement";
-import { isWithinBaseUriSpace } from "../Services/NavigationUtils";
-import { synchronizeDomContent } from "./DomMerging/DomSync";
+import { SsrStartOptions } from '../Platform/SsrStartOptions';
+import { NavigationEnhancementCallbacks, performEnhancedPageLoad, replaceDocumentWithPlainText } from '../Services/NavigationEnhancement';
+import { isWithinBaseUriSpace } from '../Services/NavigationUtils';
+import { synchronizeDomContent } from './DomMerging/DomSync';
 
 let enableDomPreservation = true;
+let navigationEnhancementCallbacks: NavigationEnhancementCallbacks;
 
-export function attachStreamingRenderingListener(options: SsrStartOptions | undefined) {
+export function attachStreamingRenderingListener(options: SsrStartOptions | undefined, callbacks: NavigationEnhancementCallbacks) {
+  navigationEnhancementCallbacks = callbacks;
+
   if (options?.disableDomPreservation) {
     enableDomPreservation = false;
   }
@@ -64,20 +67,23 @@ class BlazorStreamingUpdate extends HTMLElement {
 function insertStreamingContentIntoDocument(componentIdAsString: string, docFrag: DocumentFragment): void {
   const markers = findStreamingMarkers(componentIdAsString);
   if (markers) {
+    const { startMarker, endMarker } = markers;
     if (enableDomPreservation) {
-      synchronizeDomContent({ startExclusive: markers.startMarker, endExclusive: markers.endMarker }, docFrag);
+      synchronizeDomContent({ startExclusive: startMarker, endExclusive: endMarker }, docFrag);
     } else {
       // In this mode we completely delete the old content before inserting the new content
-      const { startMarker, endMarker } = markers;
+      const destinationRoot = endMarker.parentNode!;
       const existingContent = new Range();
       existingContent.setStart(startMarker, startMarker.textContent!.length);
       existingContent.setEnd(endMarker, 0);
       existingContent.deleteContents();
 
       while (docFrag.childNodes[0]) {
-        endMarker.parentNode!.insertBefore(docFrag.childNodes[0], endMarker);
+        destinationRoot.insertBefore(docFrag.childNodes[0], endMarker);
       }
     }
+
+    navigationEnhancementCallbacks.documentUpdated();
   }
 }
 

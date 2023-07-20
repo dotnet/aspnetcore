@@ -5,6 +5,7 @@ import { renderBatch } from '../../Rendering/Renderer';
 import { OutOfProcessRenderBatch } from '../../Rendering/RenderBatch/OutOfProcessRenderBatch';
 import { Logger, LogLevel } from '../Logging/Logger';
 import { HubConnection } from '@microsoft/signalr';
+import { WebRendererId } from '../../Rendering/WebRendererId';
 
 export class RenderQueue {
   private static instance: RenderQueue;
@@ -13,18 +14,15 @@ export class RenderQueue {
 
   private fatalError?: string;
 
-  public browserRendererId: number;
-
   public logger: Logger;
 
-  public constructor(browserRendererId: number, logger: Logger) {
-    this.browserRendererId = browserRendererId;
+  public constructor(logger: Logger) {
     this.logger = logger;
   }
 
   public static getOrCreate(logger: Logger): RenderQueue {
     if (!RenderQueue.instance) {
-      RenderQueue.instance = new RenderQueue(0, logger);
+      RenderQueue.instance = new RenderQueue(logger);
     }
 
     return this.instance;
@@ -54,7 +52,7 @@ export class RenderQueue {
     try {
       this.nextBatchId++;
       this.logger.log(LogLevel.Debug, `Applying batch ${receivedBatchId}.`);
-      renderBatch(this.browserRendererId, new OutOfProcessRenderBatch(batchData));
+      renderBatch(WebRendererId.Server, new OutOfProcessRenderBatch(batchData));
       await this.completeBatch(connection, receivedBatchId);
     } catch (error) {
       this.fatalError = (error as Error).toString();

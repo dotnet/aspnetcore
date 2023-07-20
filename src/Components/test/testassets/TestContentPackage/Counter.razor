@@ -1,4 +1,8 @@
-﻿<p>Increment amount: @IncrementAmount</p>
+﻿@using Microsoft.JSInterop;
+@implements IAsyncDisposable
+@inject IJSRuntime JSRuntime
+
+<p>Increment amount: <span id=increment-amount-@IdSuffix>@IncrementAmount</span></p>
 <p>Interactive: <span id="is-interactive-@IdSuffix">@_isInteractive</span></p>
 <p>Current count: <span id="count-@IdSuffix">@_currentCount</span></p>
 
@@ -14,6 +18,9 @@
     [Parameter, EditorRequired]
     public string IdSuffix { get; set; }
 
+    [Parameter]
+    public string DisposeBrowserConsoleMessage { get; set; }
+
     private void IncrementCount()
     {
         _currentCount += IncrementAmount;
@@ -25,6 +32,14 @@
         {
             _isInteractive = true;
             StateHasChanged();
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_isInteractive && DisposeBrowserConsoleMessage is not null)
+        {
+            await JSRuntime.InvokeVoidAsync("console.log", DisposeBrowserConsoleMessage);
         }
     }
 }
