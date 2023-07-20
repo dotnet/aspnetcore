@@ -121,11 +121,7 @@ function InitializeDotNetCli {
 
   # LTTNG is the logging infrastructure used by Core CLR. Need this variable set
   # so it doesn't output warnings to the console.
-  # Vinyl: HOME isn't set for linux teamcity build agent...
-  export LTTNG_HOME="."
-  if [[ -v HOME -eq 1 ]]; then
-    export LTTNG_HOME="$HOME"
-  fi
+  export LTTNG_HOME="$HOME"
 
   # Source Build uses DotNetCoreSdkDir variable
   if [[ -n "${DotNetCoreSdkDir:-}" ]]; then
