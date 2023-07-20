@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
   "name": "Webové rozhraní API pro ASP.NET Core",
-  "description": "Šablona projektu pro vytvoření aplikace ASP.NET Core s ukázkovým kontrolerem pro službu RESTful HTTP. Tato šablona se dá použít i pro zobrazení a kontrolery ASP.NET Core MVC.",
+  "description": "A project template for creating a RESTful Web API using ASP.NET Core controllers or minimal APIs, with optional support for OpenAPI and authentication.",
   "symbols/auth/choices/None/description": "Bez ověřování",
   "symbols/auth/choices/IndividualB2C/description": "Ověřování Individual pomocí Azure AD B2C",
   "symbols/auth/choices/SingleOrg/description": "Ověřování organizace pro jednoho tenanta",

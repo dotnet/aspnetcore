@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
   "name": "ASP.NET Core 웹 API",
-  "description": "RESTful HTTP 서비스용 예제 컨트롤러를 사용하여 ASP.NET Core 애플리케이션을 만드는 데 사용되는 프로젝트 템플릿입니다. 이 템플릿은 ASP.NET Core MVC 뷰 및 컨트롤러에도 사용할 수 있습니다.",
+  "description": "A project template for creating a RESTful Web API using ASP.NET Core controllers or minimal APIs, with optional support for OpenAPI and authentication.",
   "symbols/auth/choices/None/description": "인증 없음",
   "symbols/auth/choices/IndividualB2C/description": "Azure AD B2C를 사용한 개별 인증",
   "symbols/auth/choices/SingleOrg/description": "단일 테넌트에 대한 조직 인증",

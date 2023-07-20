@@ -2,10 +2,10 @@
   "version": "1.0.0.0",
   "strings": {
     "name": "Internetowy interfejs API platformy ASP.NET Core",
-    "description": "Szablon projektu służący do tworzenia aplikacji platformy ASP.NET Core z przykładowym kontrolerem obsługującym usługę HTTP RESTful. Tego szablonu można także użyć dla widoków i kontrolerów platformy ASP.NET Core MVC.",
+    "description": "A project template for creating a RESTful Web API using ASP.NET Core controllers or minimal APIs, with optional support for OpenAPI and authentication.",
     "parameter.DisableOpenAPI.name": "Włącz obsługę interfejsu _OpenAPI",
     "parameter.DisableOpenAPI.description": "Włącza obsługę interfejsu OpenAPI (Swagger)",
-    "parameter.UseMinimalAPIs.name": "Użyj kontrolerów (usuń zaznaczenie, aby używać minimalnej ilości interfejsów API)",
-    "parameter.UseMinimalAPIs.description": "Określa, czy wygenerować jawną klasę Program i metodę Main zamiast instrukcji najwyższego poziomu."
+    "parameter.UseMinimalAPIs.name": "Use controllers",
+    "parameter.UseMinimalAPIs.description": "Use controllers instead of minimal APIs."
   }
 }
