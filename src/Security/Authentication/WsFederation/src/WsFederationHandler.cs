@@ -245,7 +245,7 @@ public class WsFederationHandler : RemoteAuthenticationHandler<WsFederationOptio
             var tvp = await SetupTokenValidationParametersAsync();
             ClaimsPrincipal? principal = null;
             SecurityToken? validatedToken = null;
-            if (Options.UseTokenHandlers)
+            if (!Options.UseSecurityTokenHandlers)
             {
                 foreach (var tokenHandler in Options.TokenHandlers)
                 {
@@ -277,6 +277,7 @@ public class WsFederationHandler : RemoteAuthenticationHandler<WsFederationOptio
             else
             {
 
+#pragma warning disable CS0618 // Type or member is obsolete
                 foreach (var validator in Options.SecurityTokenHandlers)
                 {
                     if (validator.CanReadToken(token))
@@ -294,11 +295,11 @@ public class WsFederationHandler : RemoteAuthenticationHandler<WsFederationOptio
                         break;
                     }
                 }
+#pragma warning restore CS0618 // Type or member is obsolete
             }
 
             if (principal == null)
             {
-                // TODO - need new string for TokenHandler
                 if (validationFailures == null || validationFailures.Count == 0)
                 {
                     throw new SecurityTokenException(Resources.Exception_NoTokenValidatorFound);
@@ -375,7 +376,6 @@ public class WsFederationHandler : RemoteAuthenticationHandler<WsFederationOptio
 
         if (Options.ConfigurationManager is BaseConfigurationManager baseConfigurationManager)
         {
-            // TODO - we need to add a parameter to TokenValidationParameters for the CancellationToken.
             tokenValidationParameters.ConfigurationManager = baseConfigurationManager;
         }
         else
