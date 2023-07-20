@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -euo pipefail
+
 configuration=Release
 #arch=x64,arm,arm64
 
