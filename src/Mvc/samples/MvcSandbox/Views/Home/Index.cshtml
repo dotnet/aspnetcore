@@ -6,3 +6,10 @@
     <h1 class="display-4">Sandbox</h1>
     <p>This sandbox should give you a quick view of a basic MVC application.</p>
 </div>
+
+<form asp-action="SendFormData" method="post">
+    <input type="text" name="value.Collection[0]" value="0" />
+    <input type="text" name="value.Collection[1]" value="1" />
+    <input type="text" name="value.Collection[2]" value="2" />
+    <input type="submit" value="send" />
+</form>

@@ -22,6 +22,7 @@ public class DefaultModelBindingContext : ModelBindingContext
     private ModelStateDictionary _modelState = default!;
     private ValidationStateDictionary _validationState = default!;
     private int? _maxModelBindingRecursionDepth;
+    private int? _maxModelBindingCollectionSize;
 
     private State _state;
     private readonly Stack<State> _stack = new Stack<State>();
@@ -183,6 +184,18 @@ public class DefaultModelBindingContext : ModelBindingContext
         }
     }
 
+    internal int? MaxModelBindingCollectionSize
+    {
+        get
+        {
+            return _maxModelBindingCollectionSize;
+        }
+        set
+        {
+            _maxModelBindingCollectionSize = value;
+        }
+    }
+
     /// <summary>
     /// Creates a new <see cref="DefaultModelBindingContext"/> for top-level model binding operation.
     /// </summary>
@@ -236,6 +249,14 @@ public class DefaultModelBindingContext : ModelBindingContext
         if (mvcOptions != null)
         {
             bindingContext.MaxModelBindingRecursionDepth = mvcOptions.Value.MaxModelBindingRecursionDepth;
+        }
+        if (bindingInfo?.MaxRecursionDepth != null)
+        {
+            bindingContext.MaxModelBindingRecursionDepth = bindingInfo.MaxRecursionDepth.Value;
+        }
+        if (bindingInfo?.MaxCollectionSize != null)
+        {
+            bindingContext.MaxModelBindingCollectionSize = bindingInfo.MaxCollectionSize.Value;
         }
 
         return bindingContext;

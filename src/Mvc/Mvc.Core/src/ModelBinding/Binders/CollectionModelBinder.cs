@@ -330,10 +330,13 @@ public partial class CollectionModelBinder<TElement> : ICollectionModelBinder
         }
         else
         {
+            var collectionSize = bindingContext is DefaultModelBindingContext def && def.MaxModelBindingCollectionSize != null ?
+                def.MaxModelBindingCollectionSize : _maxModelBindingCollectionSize;
+
             indexNamesIsFinite = false;
-            var limit = _maxModelBindingCollectionSize == int.MaxValue ?
+            var limit = collectionSize == int.MaxValue ?
                 int.MaxValue :
-                _maxModelBindingCollectionSize + 1;
+                collectionSize.Value + 1;
             indexNames = Enumerable
                 .Range(0, limit)
                 .Select(i => i.ToString(CultureInfo.InvariantCulture));

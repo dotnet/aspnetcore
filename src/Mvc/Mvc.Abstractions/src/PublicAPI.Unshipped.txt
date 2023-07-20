@@ -1,1 +1,10 @@
 #nullable enable
+Microsoft.AspNetCore.Mvc.ModelBinding.BindingInfo.MaxCollectionSize.get -> int?
+Microsoft.AspNetCore.Mvc.ModelBinding.BindingInfo.MaxCollectionSize.set -> void
+Microsoft.AspNetCore.Mvc.ModelBinding.BindingInfo.MaxRecursionDepth.get -> int?
+Microsoft.AspNetCore.Mvc.ModelBinding.BindingInfo.MaxRecursionDepth.set -> void
+Microsoft.AspNetCore.Mvc.ModelBinding.IBindingLimitsMetadata
+Microsoft.AspNetCore.Mvc.ModelBinding.IBindingLimitsMetadata.MaxModelBindingCollectionSize.get -> int?
+Microsoft.AspNetCore.Mvc.ModelBinding.IBindingLimitsMetadata.MaxModelBindingCollectionSize.set -> void
+Microsoft.AspNetCore.Mvc.ModelBinding.IBindingLimitsMetadata.MaxModelBindingRecursionDepth.get -> int?
+Microsoft.AspNetCore.Mvc.ModelBinding.IBindingLimitsMetadata.MaxModelBindingRecursionDepth.set -> void

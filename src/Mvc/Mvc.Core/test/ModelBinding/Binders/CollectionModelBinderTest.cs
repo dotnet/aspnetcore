@@ -60,6 +60,29 @@ public class CollectionModelBinderTest
         Assert.DoesNotContain(boundCollection, bindingContext.ValidationState.Keys);
     }
 
+    [Fact]
+    public async Task BindComplexCollectionFromIndexes_CollectionSize()
+    {
+        // Arrange
+        var valueProvider = new SimpleValueProvider
+            {
+                { "someName[0]", "42" },
+                { "someName[1]", "100" },
+                { "someName[2]", "400" }
+            };
+        var bindingContext = GetModelBindingContext(valueProvider, collectionSize: 1);
+        var binder = new CollectionModelBinder<int>(CreateIntBinder(), NullLoggerFactory.Instance);
+
+        // Act
+        var boundCollection = await binder.BindComplexCollectionFromIndexes(bindingContext, indexNames: null);
+
+        // Assert
+        Assert.Equal(new[] { 42, 100 }, boundCollection.Model.ToArray());
+
+        // This uses the default IValidationStrategy
+        Assert.DoesNotContain(boundCollection, bindingContext.ValidationState.Keys);
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -475,7 +498,8 @@ public class CollectionModelBinderTest
 
     private static DefaultModelBindingContext GetModelBindingContext(
         IValueProvider valueProvider,
-        bool isReadOnly = false)
+        bool isReadOnly = false,
+        int? collectionSize = null)
     {
         var metadataProvider = new TestModelMetadataProvider();
         metadataProvider
@@ -490,7 +514,7 @@ public class CollectionModelBinderTest
         bindingContext.ModelName = "someName";
         bindingContext.ModelMetadata = metadata;
         bindingContext.ValueProvider = valueProvider;
-
+        bindingContext.MaxCollectionSize = collectionSize;
         return bindingContext;
     }
 

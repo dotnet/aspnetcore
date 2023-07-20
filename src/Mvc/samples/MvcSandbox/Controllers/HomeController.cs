@@ -14,4 +14,20 @@ public class HomeController : Controller
     {
         return View();
     }
+
+    [FromForm(MaxModelBindingCollectionSize = 1)][BindProperty] public TypeWithCollection Value { get; set; }
+
+    public IActionResult SendFormData()
+    {
+        if (Value.Collection.Count > 2)
+        {
+            return Content("You have failed me for the last time");
+        }
+        return Content("Yolo");
+    }
+
+    public class TypeWithCollection
+    {
+        public List<string> Collection { get; set; }
+    }
 }

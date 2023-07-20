@@ -90,6 +90,16 @@ public class BindingInfo
     public EmptyBodyBehavior EmptyBodyBehavior { get; set; }
 
     /// <summary>
+    /// Gets or sets the maximum number of elements to bind in collections.
+    /// </summary>
+    public int? MaxCollectionSize { get; set; }
+
+    /// <summary>
+    /// Gets or sets the maximum depth of the model object graph that will be bound.
+    /// </summary>
+    public int? MaxRecursionDepth { get; set; }
+
+    /// <summary>
     /// Constructs a new instance of <see cref="BindingInfo"/> from the given <paramref name="attributes"/>.
     /// <para>
     /// This overload does not account for <see cref="BindingInfo"/> specified via <see cref="ModelMetadata"/>. Consider using
@@ -167,6 +177,13 @@ public class BindingInfo
             isBindingInfoPresent = true;
             bindingInfo.EmptyBodyBehavior = configureEmptyBodyBehavior.EmptyBodyBehavior;
             break;
+        }
+
+        foreach (var bindingLimits in attributes.OfType<IBindingLimitsMetadata>())
+        {
+            isBindingInfoPresent = true;
+            bindingInfo.MaxCollectionSize = bindingLimits.MaxModelBindingCollectionSize;
+            bindingInfo.MaxRecursionDepth = bindingLimits.MaxModelBindingRecursionDepth;
         }
 
         return isBindingInfoPresent ? bindingInfo : null;
