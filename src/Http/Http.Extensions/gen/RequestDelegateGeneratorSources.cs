@@ -441,6 +441,19 @@ internal static class RequestDelegateGeneratorSources
     }
 """;
 
+    public static string AntiforgeryMetadataType = """
+file sealed class AntiforgeryMetadata : IAntiforgeryMetadata
+{
+    public static readonly IAntiforgeryMetadata ValidationRequired = new AntiforgeryMetadata(true);
+
+    public AntiforgeryMetadata(bool requiresValidation)
+    {
+        RequiresValidation = requiresValidation;
+    }
+
+    public bool RequiresValidation { get; }
+}
+""";
     public static string GetGeneratedRouteBuilderExtensionsSource(string endpoints, string helperMethods, string helperTypes, ImmutableHashSet<string> verbs) => $$"""
 {{SourceHeader}}
 
@@ -472,6 +485,7 @@ namespace Microsoft.AspNetCore.Http.Generated
     using System.Text.Json.Serialization.Metadata;
     using System.Threading.Tasks;
     using System.IO;
+    using Microsoft.AspNetCore.Antiforgery;
     using Microsoft.AspNetCore.Routing;
     using Microsoft.AspNetCore.Routing.Patterns;
     using Microsoft.AspNetCore.Builder;
