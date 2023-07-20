@@ -16,7 +16,7 @@ public class RouteValueDictionaryTests
 
         // Assert
         Assert.Empty(dict);
-        Assert.Empty(dict._arrayStorage);
+        Assert.Empty(dict._arrayStorage.AsSpan().ToArray());
         Assert.Null(dict._propertyStorage);
     }
 
@@ -29,7 +29,7 @@ public class RouteValueDictionaryTests
 
         // Assert
         Assert.Empty(dict);
-        Assert.Empty(dict._arrayStorage);
+        Assert.Empty(dict._arrayStorage.AsSpan().ToArray());
         Assert.Null(dict._propertyStorage);
     }
 
@@ -47,7 +47,7 @@ public class RouteValueDictionaryTests
 
         // Assert
         Assert.Equal(other, dict);
-        Assert.Single(dict._arrayStorage);
+        Assert.Single(dict._arrayStorage.AsSpan().ToArray());
         Assert.Null(dict._propertyStorage);
 
         var storage = Assert.IsType<KeyValuePair<string, object?>[]>(dict._arrayStorage);
@@ -859,7 +859,7 @@ public class RouteValueDictionaryTests
 
         // The upgrade from property -> array should make space for at least 4 entries
         Assert.Collection(
-            dict._arrayStorage,
+            dict._arrayStorage.AsSpan().ToArray(),
             kvp => Assert.Equal(new KeyValuePair<string, object?>("age", 30), kvp),
             kvp => Assert.Equal(new KeyValuePair<string, object?>("key", "value"), kvp),
             kvp => Assert.Equal(default, kvp),
@@ -988,7 +988,7 @@ public class RouteValueDictionaryTests
         // Assert
         Assert.Empty(dict);
         Assert.Null(dict._propertyStorage);
-        Assert.Empty(dict._arrayStorage);
+        Assert.Empty(dict._arrayStorage.AsSpan().ToArray());
     }
 
     [Fact]
@@ -1789,7 +1789,7 @@ public class RouteValueDictionaryTests
         Assert.True(result);
         Assert.Null(dict._propertyStorage);
         Assert.Collection(
-            dict._arrayStorage,
+            dict._arrayStorage.AsSpan().ToArray(),
             kvp => Assert.Equal(new KeyValuePair<string, object?>("key", "value"), kvp),
             kvp => Assert.Equal(new KeyValuePair<string, object?>("otherKey", "value"), kvp),
             kvp => Assert.Equal(default, kvp),
@@ -1826,7 +1826,7 @@ public class RouteValueDictionaryTests
         // Assert
         Assert.True(result);
         Assert.Collection(
-            dict._arrayStorage,
+            dict._arrayStorage.AsSpan().ToArray(),
             kvp => Assert.Equal(new KeyValuePair<string, object?>("key", "value"), kvp),
             kvp => Assert.Equal(default, kvp),
             kvp => Assert.Equal(default, kvp),
@@ -1848,7 +1848,7 @@ public class RouteValueDictionaryTests
         // Assert
         Assert.True(result);
         Assert.Collection(
-            dict._arrayStorage,
+            dict._arrayStorage.AsSpan().ToArray(),
             kvp => Assert.Equal(new KeyValuePair<string, object?>("key0", "value0"), kvp),
             kvp => Assert.Equal(new KeyValuePair<string, object?>("key1", "value1"), kvp),
             kvp => Assert.Equal(default, kvp),
@@ -1873,7 +1873,7 @@ public class RouteValueDictionaryTests
         // Assert
         Assert.True(result);
         Assert.Collection(
-            dict._arrayStorage,
+            dict._arrayStorage.AsSpan().ToArray(),
             kvp => Assert.Equal(new KeyValuePair<string, object?>("key0", "value0"), kvp),
             kvp => Assert.Equal(new KeyValuePair<string, object?>("key1", "value1"), kvp),
             kvp => Assert.Equal(new KeyValuePair<string, object?>("key2", "value2"), kvp),
@@ -1899,7 +1899,7 @@ public class RouteValueDictionaryTests
         // Assert
         Assert.False(result);
         Assert.Collection(
-            dict._arrayStorage,
+            dict._arrayStorage.AsSpan().ToArray(),
             kvp => Assert.Equal(new KeyValuePair<string, object?>("key0", "value0"), kvp),
             kvp => Assert.Equal(default, kvp),
             kvp => Assert.Equal(default, kvp),
@@ -2154,7 +2154,7 @@ public class RouteValueDictionaryTests
 
     private void AssertEmptyArrayStorage(RouteValueDictionary value)
     {
-        Assert.Same(Array.Empty<KeyValuePair<string, object?>>(), value._arrayStorage);
+        Assert.Empty(value._arrayStorage.AsSpan().ToArray());
     }
 
     private class RegularType
