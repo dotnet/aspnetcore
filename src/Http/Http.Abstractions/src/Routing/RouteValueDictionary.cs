@@ -67,7 +67,6 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
             }
         }
 
-
         return new RouteValueDictionary
         {
             _arrayStorage = new(items[..start]),
@@ -461,7 +460,6 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
         {
             return false;
         }
-
 
         EnsureCapacity();
 

@@ -129,7 +129,6 @@ struct DynamicArray<T>
         _size = 0;
     }
 
-
     [InlineArray(DefaultCapacity)]
     struct InlineArray<TItem>
     {
