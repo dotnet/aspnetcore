@@ -340,6 +340,7 @@ internal static class StaticRouteHandlerModelEmitter
 
         if (endpoint.EmitterContext.HasFormBody)
         {
+            codeWriter.WriteLine("options.EndpointBuilder.Metadata.Add(AntiforgeryMetadata.ValidationRequired);");
             endpoint.EmitFormAcceptsMetadata(codeWriter);
         }
         else if (hasJsonBody)
