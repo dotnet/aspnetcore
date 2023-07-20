@@ -39,6 +39,16 @@ public partial class StaticHtmlRenderer
         RenderFrames(componentId, output, frames, 0, frames.Count);
     }
 
+    /// <summary>
+    /// Renders the specified component frame as HTML to the output.
+    /// </summary>
+    /// <param name="output">The output destination.</param>
+    /// <param name="componentFrame">The <see cref="RenderTreeFrame"/> representing the component to be rendered.</param>
+    protected virtual void RenderChildComponent(TextWriter output, ref RenderTreeFrame componentFrame)
+    {
+        WriteComponentHtml(componentFrame.ComponentId, output);
+    }
+
     private int RenderFrames(int componentId, TextWriter output, ArrayRange<RenderTreeFrame> frames, int position, int maxElements)
     {
         var nextPosition = position;
@@ -306,7 +316,7 @@ public partial class StaticHtmlRenderer
     {
         ref var frame = ref frames.Array[position];
 
-        WriteComponentHtml(frame.ComponentId, output);
+        RenderChildComponent(output, ref frame);
 
         return position + frame.ComponentSubtreeLength;
     }

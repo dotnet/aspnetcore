@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Security.Claims;
 using Components.TestServer.RazorComponents;
 using Components.TestServer.RazorComponents.Pages.Forms;
+using Components.TestServer.RazorComponents.Pages.StreamingRendering;
 using Components.TestServer.Services;
 
 namespace TestServer;
@@ -63,6 +64,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
                 NotEnabledStreamingRenderingComponent.MapEndpoints(endpoints);
                 StreamingRenderingForm.MapEndpoints(endpoints);
+                InteractiveStreamingRenderingComponent.MapEndpoints(endpoints);
 
                 MapEnhancedNavigationEndpoints(endpoints);
             });

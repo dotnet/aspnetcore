@@ -1,6 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
+using Microsoft.AspNetCore.Components.RenderTree;
+
 namespace Microsoft.AspNetCore.Components;
 
 #nullable enable // This is shared-source with Mvc.ViewFeatures which doesn't enable nullability by default
@@ -12,12 +15,13 @@ internal struct ServerComponentMarker
 {
     public const string ServerMarkerType = "server";
 
-    private ServerComponentMarker(string? type, string? descriptor, int? sequence, string? prerenderId) : this()
+    private ServerComponentMarker(string? type, string? descriptor, int? sequence, string? key, string? prerenderId) : this()
     {
         Type = type;
         PrerenderId = prerenderId;
         Descriptor = descriptor;
         Sequence = sequence;
+        Key = key;
     }
 
     // The order in which this component was rendered/produced
@@ -41,13 +45,17 @@ internal struct ServerComponentMarker
     // The value will be null for end markers.
     public string? Descriptor { get; set; }
 
+    // An additional string that the browser can use when comparing markers to determine
+    // whether they represent different component instances.
+    public string? Key { get; set; }
+
     // Creates a marker for a prerendered component.
-    public static ServerComponentMarker Prerendered(int sequence, string descriptor) =>
-        new ServerComponentMarker(ServerMarkerType, descriptor, sequence, Guid.NewGuid().ToString("N"));
+    public static ServerComponentMarker Prerendered(int sequence, string descriptor, string? key) =>
+        new ServerComponentMarker(ServerMarkerType, descriptor, sequence, key, Guid.NewGuid().ToString("N"));
 
     // Creates a marker for a non prerendered component
-    public static ServerComponentMarker NonPrerendered(int sequence, string descriptor) =>
-        new ServerComponentMarker(ServerMarkerType, descriptor, sequence, null);
+    public static ServerComponentMarker NonPrerendered(int sequence, string descriptor, string? key) =>
+        new ServerComponentMarker(ServerMarkerType, descriptor, sequence, key, null);
 
     // Creates the end marker for a prerendered component.
     public ServerComponentMarker GetEndRecord()
@@ -57,6 +65,6 @@ internal struct ServerComponentMarker
             throw new InvalidOperationException("Can't get an end record for non-prerendered components.");
         }
 
-        return new ServerComponentMarker(null, null, null, PrerenderId);
+        return new ServerComponentMarker(null, null, null, null, PrerenderId);
     }
 }

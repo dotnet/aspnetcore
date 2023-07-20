@@ -15,8 +15,9 @@ import { JSInitializer } from './JSInitializers/JSInitializers';
 import { WebAssemblyComponentDescriptor, discoverPersistedState } from './Services/ComponentDescriptorDiscovery';
 import { receiveDotNetDataStream } from './StreamingInterop';
 import { WebAssemblyComponentAttacher } from './Platform/WebAssemblyComponentAttacher';
+import { RootComponentManager } from './Services/RootComponentManager';
 
-export async function startWebAssembly(options?: Partial<WebAssemblyStartOptions>, components?: WebAssemblyComponentDescriptor[]): Promise<void> {
+export async function startWebAssembly(options?: Partial<WebAssemblyStartOptions>, components?: WebAssemblyComponentDescriptor[] | RootComponentManager): Promise<void> {
   if (inAuthRedirectIframe()) {
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     await new Promise(() => { }); // See inAuthRedirectIframe for explanation
@@ -98,7 +99,7 @@ export async function startWebAssembly(options?: Partial<WebAssemblyStartOptions
   Blazor._internal.getPersistedState = () => discoverPersistedState(document) || '';
 
   Blazor._internal.attachRootComponentToElement = (selector, componentId, rendererId: any) => {
-    const element = componentAttacher.resolveRegisteredElement(selector);
+    const element = componentAttacher.resolveRegisteredElement(selector, componentId);
     if (!element) {
       attachRootComponentToElement(selector, componentId, rendererId);
     } else {

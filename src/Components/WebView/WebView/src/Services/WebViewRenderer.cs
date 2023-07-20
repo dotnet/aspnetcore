@@ -31,6 +31,8 @@ internal sealed class WebViewRenderer : WebRenderer
 
     public override Dispatcher Dispatcher => _dispatcher;
 
+    protected override int GetWebRendererId() => (int)WebRendererId.WebView;
+
     protected override void HandleException(Exception exception)
     {
         // Notify the JS code so it can show the in-app UI
