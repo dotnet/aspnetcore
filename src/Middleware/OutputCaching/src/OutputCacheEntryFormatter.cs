@@ -104,7 +104,7 @@ internal static class OutputCacheEntryFormatter
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Unable to write to output-cache");
+            logger.UnableToWriteToOutputCache(ex);
         }
     }
 

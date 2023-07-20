@@ -348,7 +348,7 @@ internal sealed class OutputCacheMiddleware
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unable to query output-cache");
+            _logger.UnableToQueryOutputCache(ex);
             cacheEntry = null;
         }
 
