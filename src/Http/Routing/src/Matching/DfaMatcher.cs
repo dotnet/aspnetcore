@@ -10,6 +10,8 @@ namespace Microsoft.AspNetCore.Routing.Matching;
 
 internal sealed partial class DfaMatcher : Matcher
 {
+    private const int DefaultRouteValuesCapacity = 4;
+
     private readonly ILogger _logger;
     private readonly EndpointSelector _selector;
     private readonly DfaState[] _states;
@@ -115,11 +117,19 @@ internal sealed partial class DfaMatcher : Matcher
                 // We want to create a new array for the route values based on Slots
                 // as a prototype.
                 var prototype = candidate.Slots;
-                var slots = new KeyValuePair<string, object?>[prototype.Length];
+                KeyValuePair<string, object?>[]? slotsArray = null;
+
+                // Use a stack allocated array for < 4 values
+                // and a heap allocated array for anything more
+                var routeValues = new RouteValues();
+
+                var slots = prototype.Length > DefaultRouteValuesCapacity
+                    ? (slotsArray = new KeyValuePair<string, object?>[prototype.Length])
+                    : (Span<KeyValuePair<string, object?>>)routeValues;
 
                 if ((flags & Candidate.CandidateFlags.HasDefaults) != 0)
                 {
-                    Array.Copy(prototype, 0, slots, 0, prototype.Length);
+                    prototype.AsSpan().CopyTo(slots!);
                 }
 
                 if ((flags & Candidate.CandidateFlags.HasCaptures) != 0)
@@ -132,7 +142,9 @@ internal sealed partial class DfaMatcher : Matcher
                     ProcessCatchAll(slots, candidate.CatchAll, path, segments);
                 }
 
-                state.Values = RouteValueDictionary.FromArray(slots);
+                state.Values = slotsArray is not null
+                    ? RouteValueDictionary.FromArray(slotsArray)
+                    : RouteValueDictionary.FromValues(slots);
             }
 
             // Now that we have the route values, we need to process complex segments.
@@ -217,7 +229,7 @@ internal sealed partial class DfaMatcher : Matcher
     }
 
     private static void ProcessCaptures(
-        KeyValuePair<string, object?>[] slots,
+        Span<KeyValuePair<string, object?>> slots,
         (string parameterName, int segmentIndex, int slotIndex)[] captures,
         string path,
         ReadOnlySpan<PathSegment> segments)
@@ -240,7 +252,7 @@ internal sealed partial class DfaMatcher : Matcher
     }
 
     private static void ProcessCatchAll(
-        KeyValuePair<string, object?>[] slots,
+        Span<KeyValuePair<string, object?>> slots,
         in (string parameterName, int segmentIndex, int slotIndex) catchAll,
         string path,
         ReadOnlySpan<PathSegment> segments)
@@ -315,6 +327,18 @@ internal sealed partial class DfaMatcher : Matcher
         }
 
         await _selector.SelectAsync(httpContext, candidateSet);
+    }
+
+    [InlineArray(DefaultRouteValuesCapacity)]
+    private struct RouteValues
+    {
+#pragma warning disable CA1823 // Avoid unused private fields
+#pragma warning disable IDE0044 // Add readonly modifier
+#pragma warning disable IDE0051 // Remove unused private members
+        private KeyValuePair<string, object?> _value0;
+#pragma warning restore IDE0051 // Remove unused private members
+#pragma warning restore IDE0044 // Add readonly modifier
+#pragma warning restore CA1823 // Avoid unused private fields
     }
 
     private static partial class Log

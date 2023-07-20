@@ -35,3 +35,4 @@ static Microsoft.AspNetCore.Http.EndpointFilterInvocationContext.Create<T1, T2, 
 static Microsoft.AspNetCore.Http.EndpointFilterInvocationContext.Create<T1, T2>(Microsoft.AspNetCore.Http.HttpContext! httpContext, T1 arg1, T2 arg2) -> Microsoft.AspNetCore.Http.EndpointFilterInvocationContext!
 static Microsoft.AspNetCore.Http.EndpointFilterInvocationContext.Create<T>(Microsoft.AspNetCore.Http.HttpContext! httpContext, T arg) -> Microsoft.AspNetCore.Http.EndpointFilterInvocationContext!
 static Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult.Instance.get -> Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult!
+static Microsoft.AspNetCore.Routing.RouteValueDictionary.FromValues(System.Span<System.Collections.Generic.KeyValuePair<string!, object?>> items) -> Microsoft.AspNetCore.Routing.RouteValueDictionary!

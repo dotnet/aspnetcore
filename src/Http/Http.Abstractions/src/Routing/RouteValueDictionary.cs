@@ -34,14 +34,46 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
     /// </summary>
     /// <param name="items">The items spans.</param>
     /// <returns>A new <see cref="RouteValueDictionary"/>.</returns>
-    //public static RouteValueDictionary FromValues(Span<KeyValuePair<string, object?>> items)
-    //{
-    //    return new RouteValueDictionary
-    //    {
-    //        _arrayStorage = new(items),
-    //        _count = items.Length,
-    //    };
-    //}
+    public static RouteValueDictionary FromValues(Span<KeyValuePair<string, object?>> items)
+    {
+        // We need to compress the array by removing non-contiguous items. We
+        // typically have a very small number of items to process. We don't need
+        // to preserve order.
+        var start = 0;
+        var end = items.Length - 1;
+
+        // We walk forwards from the beginning of the array and fill in 'null' slots.
+        // We walk backwards from the end of the array end move items in non-null' slots
+        // into whatever start is pointing to. O(n)
+        while (start <= end)
+        {
+            if (items[start].Key != null)
+            {
+                start++;
+            }
+            else if (items[end].Key != null)
+            {
+                // Swap this item into start and advance
+                items[start] = items[end];
+                items[end] = default;
+                start++;
+                end--;
+            }
+            else
+            {
+                // Both null, we need to hold on 'start' since we
+                // still need to fill it with something.
+                end--;
+            }
+        }
+
+
+        return new RouteValueDictionary
+        {
+            _arrayStorage = new(items[..start]),
+            _count = start,
+        };
+    }
 
     /// <summary>
     /// Creates a new <see cref="RouteValueDictionary"/> from the provided array.
