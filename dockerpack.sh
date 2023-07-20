@@ -128,6 +128,7 @@ docker build "$(dirname "$dockerfile")" \
     --tag $tagname \
     -f "$dockerfile"
 
+# Vinyl: Added HOME variable as the teamcity linux build agent does not have a HOME folder by default.
 docker run \
     --rm \
     -t \
@@ -145,6 +146,7 @@ docker run \
     -e SYSTEM_TEAMFOUNDATIONCOLLECTIONURI \
     -e DOTNET_CLI_TELEMETRY_OPTOUT \
     -e Configuration \
+    -e HOME="$DIR" \
     -v "$DIR:$DIR" \
     ${docker_args[@]+"${docker_args[@]}"} \
     $tagname \
