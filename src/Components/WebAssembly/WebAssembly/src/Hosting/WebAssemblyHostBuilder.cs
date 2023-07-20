@@ -107,12 +107,13 @@ public sealed class WebAssemblyHostBuilder
             var typeName = jsMethods.RegisteredComponents_GetTypeName(id);
             var serializedParameterDefinitions = jsMethods.RegisteredComponents_GetParameterDefinitions(id);
             var serializedParameterValues = jsMethods.RegisteredComponents_GetParameterValues(id);
-            registeredComponents[i] = ComponentMarker.Create(ComponentMarker.WebAssemblyMarkerType, false, id.ToString(CultureInfo.InvariantCulture));
+            registeredComponents[i] = ComponentMarker.Create(ComponentMarker.WebAssemblyMarkerType, false, null);
             registeredComponents[i].WriteWebAssemblyData(
                 assembly,
                 typeName,
                 serializedParameterDefinitions,
                 serializedParameterValues);
+            registeredComponents[i].PrerenderId = id.ToString(CultureInfo.InvariantCulture);
         }
 
         _rootComponentCache = new RootComponentTypeCache();

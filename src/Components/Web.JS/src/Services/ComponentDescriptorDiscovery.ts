@@ -48,7 +48,7 @@ function discoverServerComponents(root: Node): ServerComponentDescriptor[] {
 
 function discoverWebAssemblyComponents(node: Node): WebAssemblyComponentDescriptor[] {
   const componentComments = resolveComponentComments(node, 'webassembly') as WebAssemblyComponentDescriptor[];
-  return componentComments;
+  return componentComments.sort((a, b): number => a.id - b.id);
 }
 
 function discoverAutoComponents(node: Node): AutoComponentDescriptor[] {
