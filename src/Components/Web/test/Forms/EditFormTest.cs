@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Components.Binding;
+using Microsoft.AspNetCore.Components.Forms.Mapping;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -17,10 +17,7 @@ public class EditFormTest
     public EditFormTest()
     {
         var services = new ServiceCollection();
-        services.AddSingleton<NavigationManager, TestNavigationManager>();
-        services.AddSingleton<IFormValueSupplier, TestFormValueSupplier>();
-        services.AddSingleton<CascadingModelBindingProvider, CascadingFormModelBindingProvider>();
-        services.AddSingleton<CascadingModelBindingProvider, CascadingQueryModelBindingProvider>();
+        services.AddSingleton<IFormValueMapper, TestFormValueModelBinder>();
         services.AddAntiforgery();
         services.AddLogging();
         services.AddSingleton<ComponentStatePersistenceManager>();
@@ -101,7 +98,7 @@ public class EditFormTest
     }
 
     [Fact]
-    public async Task FormElementNameAndAction_SetToComponentName_WhenFormNameIsProvided()
+    public async Task DoesNotAddSSRContentWhenNoMappingContextPresent()
     {
         // Arrange
         var model = new TestModel();
@@ -112,224 +109,99 @@ public class EditFormTest
         };
 
         // Act
-        _ = await RenderAndGetTestEditFormComponentAsync(rootComponent);
-        var attributes = GetFormElementAttributeFrames().ToArray();
+        await RenderAndGetTestEditFormComponentAsync(rootComponent);
+        var editFormComponentId = _testRenderer.Batches.Single()
+            .GetComponentFrames<EditForm>().Single().ComponentId;
+        var editFormFrames = _testRenderer.GetCurrentRenderTreeFrames(editFormComponentId);
 
-        // Assert
-        AssertFrame.Attribute(attributes[0], "name", "my-form");
-        AssertFrame.Attribute(attributes[1], "action", "path?query=value&handler=my-form");
+        // Assert:
+        //  - Does not set any "method" attribute
+        //  - Does not assign any name to the submit event
+        Assert.Collection(editFormFrames.AsEnumerable(),
+            frame => AssertFrame.Region(frame, 7),
+            frame => AssertFrame.Element(frame, "form", 6),
+            frame => AssertFrame.Attribute(frame, "onsubmit"),
+            frame => AssertFrame.Component<CascadingValue<EditContext>>(frame, 4),
+            frame => AssertFrame.Attribute(frame, "IsFixed", true),
+            frame => AssertFrame.Attribute(frame, "Value"),
+            frame => AssertFrame.Attribute(frame, "ChildContent"));
     }
 
     [Fact]
-    public async Task FormElementNameAndAction_SetToComponentName_WhenCombiningWithDefaultParentBindingContext()
+    public async Task AddSSRContentWhenMappingContextPresent()
     {
         // Arrange
-        var model = new TestModel();
+        var editContext = new EditContext(new object());
         var rootComponent = new TestEditFormHostComponent
         {
-            Model = model,
             FormName = "my-form",
-            BindingContext = new ModelBindingContext("", "")
+            MappingContextName = "mapping-context-name",
+            EditContext = editContext,
         };
 
         // Act
-        _ = await RenderAndGetTestEditFormComponentAsync(rootComponent);
-        var attributes = GetFormElementAttributeFrames().ToArray();
+        await RenderAndGetTestEditFormComponentAsync(rootComponent);
+        var editFormComponentId = _testRenderer.Batches.Single()
+            .GetComponentFrames<EditForm>().Single().ComponentId;
+        var editFormFrames = _testRenderer.GetCurrentRenderTreeFrames(editFormComponentId);
 
         // Assert
-        AssertFrame.Attribute(attributes[0], "name", "my-form");
-        AssertFrame.Attribute(attributes[1], "action", "path?query=value&handler=my-form");
+        Assert.Collection(editFormFrames.AsEnumerable(),
+            frame => AssertFrame.Region(frame, 13),
+            frame => AssertFrame.Element(frame, "form", 12),
+
+            // Sets "method" to "post" by default
+            frame => AssertFrame.Attribute(frame, "method", "post"),
+
+            // Assigns name to the submit event
+            frame => AssertFrame.Attribute(frame, "onsubmit"),
+            frame => AssertFrame.NamedEvent(frame, "onsubmit", "my-form"),
+
+            frame => AssertFrame.Region(frame, 4),
+
+            // Adds FormMappingValidator child
+            frame => AssertFrame.Component<FormMappingValidator>(frame, 2),
+            frame => AssertFrame.Attribute(frame, nameof(FormMappingValidator.CurrentEditContext), editContext),
+
+            // Adds AntiforgeryToken child
+            frame => AssertFrame.Component<AntiforgeryToken>(frame, 1),
+
+            frame => AssertFrame.Component<CascadingValue<EditContext>>(frame, 4),
+            frame => AssertFrame.Attribute(frame, "IsFixed", true),
+            frame => AssertFrame.Attribute(frame, "Value"),
+            frame => AssertFrame.Attribute(frame, "ChildContent"));
     }
 
     [Fact]
-    public async Task FormElementNameAndAction_SetToCombinedIdentifier_WhenCombiningWithNamedParentBindingContext()
+    public async Task CanOverrideMethodWhenMappingContextPresent()
     {
         // Arrange
-        var model = new TestModel();
+        var editContext = new EditContext(new object());
         var rootComponent = new TestEditFormHostComponent
         {
-            Model = model,
             FormName = "my-form",
-            BindingContext = new ModelBindingContext("parent-context", "path?handler=parent-context")
-        };
-
-        // Act
-        _ = await RenderAndGetTestEditFormComponentAsync(rootComponent);
-        var attributes = GetFormElementAttributeFrames().ToArray();
-
-        // Assert
-        AssertFrame.Attribute(attributes[0], "name", "parent-context.my-form");
-        AssertFrame.Attribute(attributes[1], "action", "path?query=value&handler=parent-context.my-form");
-    }
-
-    [Fact]
-    public async Task FormElementNameAndAction_CanBeExplicitlyOverriden()
-    {
-        // Arrange
-        var model = new TestModel();
-        var rootComponent = new TestEditFormHostComponent
-        {
-            Model = model,
-            FormName = "my-form",
-            AdditionalFormAttributes = new Dictionary<string, object>()
+            MappingContextName = "mapping-context-name",
+            EditContext = editContext,
+            AdditionalFormAttributes = new Dictionary<string, object>
             {
-                ["method"] = "dialog",
-                ["name"] = "my-explicit-name",
-                ["action"] = "/somewhere/else",
+                { "method", "my method" },
+                { "custom attribute", "some value" },
             },
-            BindingContext = new ModelBindingContext("parent-context", "path?handler=parent-context")
         };
 
         // Act
-        _ = await RenderAndGetTestEditFormComponentAsync(rootComponent);
-        var attributes = GetFormElementAttributeFrames().ToArray();
+        await RenderAndGetTestEditFormComponentAsync(rootComponent);
+        var editFormComponentId = _testRenderer.Batches.Single()
+            .GetComponentFrames<EditForm>().Single().ComponentId;
+        var editFormFrames = _testRenderer.GetCurrentRenderTreeFrames(editFormComponentId);
+        var editFormAttributes = editFormFrames.AsEnumerable()
+            .SkipWhile(f => f.FrameType != RenderTreeFrameType.Attribute)
+            .TakeWhile(f => f.FrameType == RenderTreeFrameType.Attribute)
+            .ToDictionary(f => f.AttributeName, f => f.AttributeValue);
 
         // Assert
-        AssertFrame.Attribute(attributes[0], "method", "dialog");
-        AssertFrame.Attribute(attributes[1], "name", "my-explicit-name");
-        AssertFrame.Attribute(attributes[2], "action", "/somewhere/else");
-    }
-
-    [Fact]
-    public async Task FormElementNameAndAction_NotSetOnDefaultBindingContext()
-    {
-        // Arrange
-        var model = new TestModel();
-        var rootComponent = new TestEditFormHostComponent
-        {
-            Model = model,
-            BindingContext = new ModelBindingContext("", ""),
-            SubmitHandler = ctx => { }
-        };
-
-        // Act
-        _ = await RenderAndGetTestEditFormComponentAsync(rootComponent);
-        var attributes = GetFormElementAttributeFrames();
-
-        // Assert
-        Assert.Collection(attributes,
-            frame => AssertFrame.Attribute(frame, "method"),
-            frame => AssertFrame.Attribute(frame, "onsubmit"));
-    }
-
-    [Fact]
-    public async Task FormElementNameAndAction_NotSetWhenNoFormNameAndNoBindingContext()
-    {
-        // Arrange
-        var model = new TestModel();
-        var rootComponent = new TestEditFormHostComponent
-        {
-            Model = model,
-            SubmitHandler = ctx => { }
-        };
-
-        // Act
-        _ = await RenderAndGetTestEditFormComponentAsync(rootComponent);
-        var attributes = GetFormElementAttributeFrames();
-
-        // Assert
-        var frame = Assert.Single(attributes);
-        AssertFrame.Attribute(frame, "onsubmit");
-    }
-
-    [Fact]
-    public async Task EventHandlerName_NotSetWhenNoBindingContextProvided()
-    {
-        // Arrange
-        var tracker = TrackEventNames();
-
-        var model = new TestModel();
-        var rootComponent = new TestEditFormHostComponent
-        {
-            Model = model,
-            SubmitHandler = ctx => { }
-        };
-
-        // Act
-        _ = await RenderAndGetTestEditFormComponentAsync(rootComponent);
-
-        // Assert
-        Assert.Null(tracker.EventName);
-    }
-
-    [Fact]
-    public async Task EventHandlerName_SetToBindingIdOnDefaultHandler()
-    {
-        // Arrange
-        var tracker = TrackEventNames();
-
-        var model = new TestModel();
-        var rootComponent = new TestEditFormHostComponent
-        {
-            Model = model,
-            BindingContext = new ModelBindingContext("", "")
-        };
-
-        // Act
-        _ = await RenderAndGetTestEditFormComponentAsync(rootComponent);
-
-        // Assert
-        Assert.Equal("", tracker.EventName);
-    }
-
-    [Fact]
-    public async Task EventHandlerName_SetToFormNameWhenFormNameIsProvided()
-    {
-        // Arrange
-        var tracker = TrackEventNames();
-
-        var model = new TestModel();
-        var rootComponent = new TestEditFormHostComponent
-        {
-            Model = model,
-            FormName = "my-form",
-        };
-
-        // Act
-        _ = await RenderAndGetTestEditFormComponentAsync(rootComponent);
-
-        // Assert
-        Assert.Equal("my-form", tracker.EventName);
-    }
-
-    [Fact]
-    public async Task EventHandlerName_SetToFormNameWhenParentBindingContextIsDefault()
-    {
-        // Arrange
-        var tracker = TrackEventNames();
-        var model = new TestModel();
-        var rootComponent = new TestEditFormHostComponent
-        {
-            Model = model,
-            FormName = "my-form",
-            BindingContext = new ModelBindingContext("", "")
-        };
-
-        // Act
-        _ = await RenderAndGetTestEditFormComponentAsync(rootComponent);
-
-        // Assert
-        Assert.Equal("my-form", tracker.EventName);
-    }
-
-    [Fact]
-    public async Task EventHandlerName_SetToCombinedNameWhenParentBindingContextIsNamed()
-    {
-        // Arrange
-        var tracker = TrackEventNames();
-        var model = new TestModel();
-        var rootComponent = new TestEditFormHostComponent
-        {
-            Model = model,
-            FormName = "my-form",
-            BindingContext = new ModelBindingContext("parent-context", "path?handler=parent-context")
-        };
-
-        // Act
-        _ = await RenderAndGetTestEditFormComponentAsync(rootComponent);
-
-        // Assert
-        Assert.Equal("parent-context.my-form", tracker.EventName);
+        Assert.Equal("my method", editFormAttributes["method"]);
+        Assert.Equal("some value", editFormAttributes["custom attribute"]);
     }
 
     private static EditForm FindEditFormComponent(CapturedBatch batch)
@@ -346,55 +218,6 @@ public class EditFormTest
         return FindEditFormComponent(_testRenderer.Batches.Single());
     }
 
-    private IEnumerable<RenderTreeFrame> GetFormElementAttributeFrames()
-    {
-        var frames = _testRenderer.Batches.Single().ReferenceFrames;
-        var index = frames
-            .Select((frame, index) => (frame, index))
-            .Where(pair => pair.frame.FrameType == RenderTreeFrameType.Element)
-            .Select(pair => pair.index)
-            .Single();
-
-        var attributes = frames
-            .Skip(index + 1)
-            .TakeWhile(f => f.FrameType == RenderTreeFrameType.Attribute);
-
-        return attributes;
-    }
-
-    private int GetComponentFrameIndex()
-    {
-        var frames = _testRenderer.Batches.Single().ReferenceFrames;
-        var frameIndex = frames
-            .Select((frame, index) => (frame, index))
-            .Where(pair => pair.frame.FrameType == RenderTreeFrameType.Component && pair.frame.Component is EditForm)
-            .Select(pair => pair.index)
-            .Single();
-        return frameIndex;
-    }
-
-    private EventHandlerNameTracker TrackEventNames()
-    {
-        var tracker = new EventHandlerNameTracker();
-        _testRenderer.TrackNamedEventHandlers = true;
-        _testRenderer.OnNamedEvent += tracker.Track;
-        return tracker;
-    }
-
-    private class EventHandlerNameTracker
-    {
-        public ulong EventHandlerId { get; private set; }
-
-        public int ComponentId { get; private set; }
-
-        public string EventName { get; private set; }
-
-        internal void Track((ulong, int, string) tuple)
-        {
-            (EventHandlerId, ComponentId, EventName) = tuple;
-        }
-    }
-
     class TestModel
     {
         public string StringProperty { get; set; }
@@ -406,21 +229,21 @@ public class EditFormTest
 
         public TestModel Model { get; set; }
 
-        public ModelBindingContext BindingContext { get; set; }
+        public string MappingContextName { get; set; }
 
         public Action<EditContext> SubmitHandler { get; set; }
 
         public string FormName { get; set; }
 
-        public Dictionary<string, object> AdditionalFormAttributes { get; internal set; }
+        public Dictionary<string, object> AdditionalFormAttributes { get; set; }
 
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
-            if (BindingContext != null)
+            if (MappingContextName is not null)
             {
-                builder.OpenComponent<CascadingModelBinder>(0);
-                builder.AddComponentParameter(1, nameof(CascadingModelBinder.Name), BindingContext.Name);
-                builder.AddComponentParameter(3, nameof(CascadingModelBinder.ChildContent), (RenderFragment<ModelBindingContext>)((_) => RenderForm));
+                builder.OpenComponent<FormMappingScope>(0);
+                builder.AddComponentParameter(1, nameof(FormMappingScope.Name), MappingContextName);
+                builder.AddComponentParameter(3, nameof(FormMappingScope.ChildContent), (RenderFragment<FormMappingContext>)(_ => RenderForm));
                 builder.CloseComponent();
             }
             else
@@ -441,24 +264,16 @@ public class EditFormTest
                 {
                     builder.AddComponentParameter(4, "OnValidSubmit", new EventCallback<EditContext>(null, SubmitHandler));
                 }
-                builder.AddComponentParameter(5, "FormHandlerName", FormName);
+                builder.AddComponentParameter(5, "FormName", FormName);
 
                 builder.CloseComponent();
             }
         }
     }
 
-    class TestNavigationManager : NavigationManager
+    private class TestFormValueModelBinder : IFormValueMapper
     {
-        public TestNavigationManager()
-        {
-            Initialize("https://localhost:85/subdir/", "https://localhost:85/subdir/path?query=value#hash");
-        }
-    }
-
-    private class TestFormValueSupplier : IFormValueSupplier
-    {
-        public bool CanBind(Type valueType, string formName = null) => false;
-        public void Bind(FormValueSupplierContext context) { }
+        public bool CanMap(Type valueType, string mappingScopeName, string formName) => false;
+        public void Map(FormValueMappingContext context) { }
     }
 }

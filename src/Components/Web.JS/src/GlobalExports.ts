@@ -17,6 +17,7 @@ import { getNextChunk } from './StreamingInterop';
 import { RootComponentsFunctions } from './Rendering/JSRootComponents';
 import { attachWebRendererInterop } from './Rendering/WebRendererInteropMethods';
 import { WebStartOptions } from './Platform/WebStartOptions';
+import { RuntimeAPI } from 'dotnet';
 
 // TODO: It's kind of hard to tell which .NET platform(s) some of these APIs are relevant to.
 // It's important to know this information when dealing with the possibility of mulitple .NET platforms being available.
@@ -38,6 +39,7 @@ interface IBlazor {
   start?: ((userOptions?: Partial<CircuitStartOptions>) => Promise<void>) | ((options?: Partial<WebAssemblyStartOptions>) => Promise<void>) | ((options?: Partial<WebStartOptions>) => Promise<void>);
   platform?: Platform;
   rootComponents: typeof RootComponentsFunctions;
+  runtime: RuntimeAPI,
 
   _internal: {
     navigationManager: typeof navigationManagerInternalFunctions | any;
@@ -91,6 +93,7 @@ export const Blazor: IBlazor = {
   navigateTo,
   registerCustomEventType,
   rootComponents: RootComponentsFunctions,
+  runtime: {} as RuntimeAPI,
 
   _internal: {
     navigationManager: navigationManagerInternalFunctions,

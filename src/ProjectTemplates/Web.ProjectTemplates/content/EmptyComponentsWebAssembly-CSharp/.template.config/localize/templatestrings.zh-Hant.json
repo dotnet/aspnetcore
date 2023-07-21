@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
   "name": "Blazor WebAssembly 應用程式空白",
-  "description": "建立 Blazor 應用程式的空白專案範本，可在 WebAssembly 上執行，而且可選擇性地由 ASP.NET Core 應用程式裝載。此範本中沒有任何內容。",
+  "description": "空白專案範本，用於建立可在 WebAssembly 上執行的 Blazor 應用程式。此範本中沒有任何內容。",
   "symbols/Framework/description": "專案的目標 Framework。",
   "symbols/Framework/choices/net8.0/description": "目標 net8.0",
   "symbols/skipRestore/description": "若指定，會在建立時跳過專案的自動還原。",

@@ -10,6 +10,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.WebSockets;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Security.Principal;
 using System.Text;
 using Microsoft.AspNetCore.Authentication;
@@ -21,6 +22,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Abstractions;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
@@ -2988,7 +2990,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
     [InlineData(HttpTransportType.WebSockets)]
     public async Task AuthenticationExpirationSetOnAuthenticatedConnectionWithJWT(HttpTransportType transportType)
     {
-        SymmetricSecurityKey SecurityKey = new SymmetricSecurityKey(Guid.NewGuid().ToByteArray());
+        SymmetricSecurityKey SecurityKey = new SymmetricSecurityKey(SHA256.HashData(Guid.NewGuid().ToByteArray()));
         JwtSecurityTokenHandler JwtTokenHandler = new JwtSecurityTokenHandler();
 
         using var host = CreateHost(services =>
@@ -3150,7 +3152,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
     [InlineData(HttpTransportType.WebSockets)]
     public async Task AuthenticationExpirationUsesCorrectScheme(HttpTransportType transportType)
     {
-        var SecurityKey = new SymmetricSecurityKey(Guid.NewGuid().ToByteArray());
+        var SecurityKey = new SymmetricSecurityKey(SHA256.HashData(Guid.NewGuid().ToByteArray()));
         var JwtTokenHandler = new JwtSecurityTokenHandler();
 
         using var host = CreateHost(services =>
@@ -3303,8 +3305,13 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
                     services.AddConnections();
 
                     // Since tests run in parallel, it's possible multiple servers will startup,
-                    // we use an ephemeral key provider to avoid filesystem contention issues
+                    // we use an ephemeral key provider and repository to avoid filesystem contention issues
                     services.AddSingleton<IDataProtectionProvider, EphemeralDataProtectionProvider>();
+
+                    services.Configure<KeyManagementOptions>(options =>
+                    {
+                        options.XmlRepository = new EphemeralXmlRepository();
+                    });
                 })
                 .Configure(app =>
                 {
@@ -3448,8 +3455,13 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
                     services.AddAuthorization();
 
                     // Since tests run in parallel, it's possible multiple servers will startup,
-                    // we use an ephemeral key provider to avoid filesystem contention issues
+                    // we use an ephemeral key provider and repository to avoid filesystem contention issues
                     services.AddSingleton<IDataProtectionProvider, EphemeralDataProtectionProvider>();
+
+                    services.Configure<KeyManagementOptions>(options =>
+                    {
+                        options.XmlRepository = new EphemeralXmlRepository();
+                    });
                 })
                 .Configure(app =>
                 {

@@ -282,6 +282,25 @@ public struct RenderTreeFrame
         }
     }
 
+    // --------------------------------------------------------------------------------
+    // RenderTreeFrameType.NamedEvent
+    // --------------------------------------------------------------------------------
+
+    [FieldOffset(16)] internal string NamedEventTypeField;
+    [FieldOffset(24)] internal string NamedEventAssignedNameField;
+
+    /// <summary>
+    /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.NamedEvent"/>,
+    /// gets the event type. Otherwise, the value is undefined.
+    /// </summary>
+    public string NamedEventType => NamedEventTypeField;
+
+    /// <summary>
+    /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.NamedEvent"/>,
+    /// gets the assigned name. Otherwise, the value is undefined.
+    /// </summary>
+    public string NamedEventAssignedName => NamedEventAssignedNameField;
+
     // Element constructor
     private RenderTreeFrame(int sequence, int elementSubtreeLength, string elementName, object elementKey)
         : this()
@@ -394,6 +413,12 @@ public struct RenderTreeFrame
 
     internal static RenderTreeFrame ComponentReferenceCapture(int sequence, Action<object> componentReferenceCaptureAction, int parentFrameIndex)
         => new RenderTreeFrame(sequence, componentReferenceCaptureAction: componentReferenceCaptureAction, parentFrameIndex: parentFrameIndex);
+
+    internal static RenderTreeFrame NamedEvent(int sequence, string eventType, string assignedName)
+        => new RenderTreeFrame { SequenceField = sequence, FrameTypeField = RenderTreeFrameType.NamedEvent, NamedEventTypeField = eventType, NamedEventAssignedNameField = assignedName };
+
+    internal static RenderTreeFrame ComponentRenderModeFrame(int sequence, IComponentRenderMode renderMode)
+        => new RenderTreeFrame { SequenceField = sequence, FrameTypeField = RenderTreeFrameType.ComponentRenderMode, ComponentRenderModeField = renderMode };
 
     internal RenderTreeFrame WithElementSubtreeLength(int elementSubtreeLength)
         => new RenderTreeFrame(SequenceField, elementSubtreeLength: elementSubtreeLength, ElementNameField, ElementKeyField);

@@ -142,6 +142,14 @@ public sealed class WebApplication : IHost, IApplicationBuilder, IEndpointRouteB
         new(options, slim: true);
 
     /// <summary>
+    /// Initializes a new instance of the <see cref="WebApplicationBuilder"/> class with no defaults.
+    /// </summary>
+    /// <param name="options">The <see cref="WebApplicationOptions"/> to configure the <see cref="WebApplicationBuilder"/>.</param>
+    /// <returns>The <see cref="WebApplicationBuilder"/>.</returns>
+    public static WebApplicationBuilder CreateEmptyBuilder(WebApplicationOptions options) =>
+        new(options, slim: false, empty: true);
+
+    /// <summary>
     /// Start the application.
     /// </summary>
     /// <param name="cancellationToken"></param>

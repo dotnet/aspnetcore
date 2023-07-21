@@ -5,6 +5,7 @@ using System.Buffers;
 using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.OutputCaching.Serialization;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.OutputCaching;
 /// <summary>
@@ -52,7 +53,7 @@ internal static class OutputCacheEntryFormatter
         return outputCacheEntry;
     }
 
-    public static async ValueTask StoreAsync(string key, OutputCacheEntry value, TimeSpan duration, IOutputCacheStore store, CancellationToken cancellationToken)
+    public static async ValueTask StoreAsync(string key, OutputCacheEntry value, TimeSpan duration, IOutputCacheStore store, ILogger logger, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(value);
         ArgumentNullException.ThrowIfNull(value.Body);
@@ -85,14 +86,25 @@ internal static class OutputCacheEntryFormatter
         }
 
         var payload = new ReadOnlySequence<byte>(segment.Array!, segment.Offset, segment.Count);
-        if (store is IOutputCacheBufferStore bufferStore)
+        try
         {
-            await bufferStore.SetAsync(key, payload, value.Tags, duration, cancellationToken);
+            if (store is IOutputCacheBufferStore bufferStore)
+            {
+                await bufferStore.SetAsync(key, payload, value.Tags, duration, cancellationToken);
+            }
+            else
+            {
+                // legacy API/in-proc: create an isolated right-sized byte[] for the payload
+                await store.SetAsync(key, payload.ToArray(), value.Tags, duration, cancellationToken);
+            }
         }
-        else
+        catch (OperationCanceledException)
         {
-            // legacy API/in-proc: create an isolated right-sized byte[] for the payload
-            await store.SetAsync(key, payload.ToArray(), value.Tags, duration, cancellationToken);
+            // don't report as failure
+        }
+        catch (Exception ex)
+        {
+            logger.UnableToWriteToOutputCache(ex);
         }
     }
 

@@ -1,14 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Globalization;
 using System.Text;
-using System.Text.Unicode;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.OutputCaching.Memory;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -71,6 +70,7 @@ public class OutputCacheMiddlewareTests
             },
             TimeSpan.Zero,
             cache,
+            NullLogger.Instance,
             default);
 
         Assert.True(await middleware.TryServeFromCacheAsync(context, policies));
@@ -102,6 +102,7 @@ public class OutputCacheMiddlewareTests
             },
             TimeSpan.Zero,
             cache,
+            NullLogger.Instance,
             default);
 
         Assert.True(await middleware.TryServeFromCacheAsync(context, policies));
@@ -130,6 +131,7 @@ public class OutputCacheMiddlewareTests
             },
             TimeSpan.Zero,
             cache,
+            NullLogger.Instance,
             default);
 
         Assert.True(await middleware.TryServeFromCacheAsync(context, policies));

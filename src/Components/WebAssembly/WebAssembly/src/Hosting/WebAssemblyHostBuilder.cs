@@ -4,7 +4,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text.Json;
-using Microsoft.AspNetCore.Components.Binding;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -108,13 +107,20 @@ public sealed class WebAssemblyHostBuilder
             var typeName = jsMethods.RegisteredComponents_GetTypeName(id);
             var serializedParameterDefinitions = jsMethods.RegisteredComponents_GetParameterDefinitions(id);
             var serializedParameterValues = jsMethods.RegisteredComponents_GetParameterValues(id);
-            registeredComponents[i] = new WebAssemblyComponentMarker(WebAssemblyComponentMarker.ClientMarkerType, assembly, typeName, serializedParameterDefinitions, serializedParameterValues, id.ToString(CultureInfo.InvariantCulture));
+            registeredComponents[i] = new WebAssemblyComponentMarker(
+                WebAssemblyComponentMarker.ClientMarkerType,
+                assembly,
+                typeName,
+                serializedParameterDefinitions,
+                serializedParameterValues,
+                key: null,
+                id.ToString(CultureInfo.InvariantCulture));
         }
 
+        _rootComponentCache = new RootComponentTypeCache();
         var componentDeserializer = WebAssemblyComponentParameterDeserializer.Instance;
         foreach (var registeredComponent in registeredComponents)
         {
-            _rootComponentCache = new RootComponentTypeCache();
             var componentType = _rootComponentCache.GetRootComponent(registeredComponent.Assembly!, registeredComponent.TypeName!);
             if (componentType is null)
             {
@@ -254,6 +260,7 @@ public sealed class WebAssemblyHostBuilder
         Services.AddSingleton<INavigationInterception>(WebAssemblyNavigationInterception.Instance);
         Services.AddSingleton<IScrollToLocationHash>(WebAssemblyScrollToLocationHash.Instance);
         Services.AddSingleton(new LazyAssemblyLoader(DefaultWebAssemblyJSRuntime.Instance));
+        Services.AddSingleton<RootComponentTypeCache>(_ => _rootComponentCache ?? new());
         Services.AddSingleton<ComponentStatePersistenceManager>();
         Services.AddSingleton<PersistentComponentState>(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
         Services.AddSingleton<AntiforgeryStateProvider, DefaultAntiforgeryStateProvider>();
@@ -262,8 +269,6 @@ public sealed class WebAssemblyHostBuilder
         {
             builder.AddProvider(new WebAssemblyConsoleLoggerProvider(DefaultWebAssemblyJSRuntime.Instance));
         });
-        Services.AddSingleton<FormDataProvider, DefaultFormDataProvider>();
-        Services.AddSingleton<IFormValueSupplier, WebAssemblyFormValueSupplier>();
-        Services.AddSingleton<CascadingModelBindingProvider, CascadingQueryModelBindingProvider>();
+        Services.AddSupplyValueFromQueryProvider();
     }
 }

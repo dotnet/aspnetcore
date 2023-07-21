@@ -185,7 +185,14 @@ internal partial class EndpointHtmlRenderer
     protected override void WriteComponentHtml(int componentId, TextWriter output)
         => WriteComponentHtml(componentId, output, allowBoundaryMarkers: true);
 
-    private void WriteComponentHtml(int componentId, TextWriter output, bool allowBoundaryMarkers)
+    protected override void RenderChildComponent(TextWriter output, ref RenderTreeFrame componentFrame)
+    {
+        var componentId = componentFrame.ComponentId;
+        var sequenceAndKey = new SequenceAndKey(componentFrame.Sequence, componentFrame.ComponentKey);
+        WriteComponentHtml(componentId, output, allowBoundaryMarkers: true, sequenceAndKey);
+    }
+
+    private void WriteComponentHtml(int componentId, TextWriter output, bool allowBoundaryMarkers, SequenceAndKey sequenceAndKey = default)
     {
         _visitedComponentIdsInCurrentStreamingBatch?.Add(componentId);
 
@@ -198,9 +205,8 @@ internal partial class EndpointHtmlRenderer
         // It may be better to use a custom element like <blazor-component ...>[prerendered]<blazor-component>
         // so it's easier for the JS code to react automatically whenever this gets inserted or updated during
         // streaming SSR or progressively-enhanced navigation.
-
         var (serverMarker, webAssemblyMarker) = componentState.Component is SSRRenderModeBoundary boundary
-            ? boundary.ToMarkers(_httpContext)
+            ? boundary.ToMarkers(_httpContext, sequenceAndKey.Sequence, sequenceAndKey.Key)
             : default;
 
         if (serverMarker.HasValue)
@@ -255,6 +261,19 @@ internal partial class EndpointHtmlRenderer
         {
             ComponentId = componentId;
             Depth = depth;
+        }
+    }
+
+    private readonly struct SequenceAndKey
+    {
+        public int Sequence { get; }
+
+        public object? Key { get; }
+
+        public SequenceAndKey(int sequence, object? key)
+        {
+            Sequence = sequence;
+            Key = key;
         }
     }
 }

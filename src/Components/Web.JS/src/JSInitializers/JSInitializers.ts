@@ -2,16 +2,18 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { Blazor } from '../GlobalExports';
-import { rendererAttached } from "../Rendering/WebRendererInteropMethods";
+import { firstRendererAttached } from '../Rendering/WebRendererInteropMethods';
 
 type BeforeBlazorStartedCallback = (...args: unknown[]) => Promise<void>;
 export type AfterBlazorStartedCallback = (blazor: typeof Blazor) => Promise<void>;
-type BlazorInitializer = { beforeStart: BeforeBlazorStartedCallback, afterStarted: AfterBlazorStartedCallback };
+export type BlazorInitializer = { beforeStart: BeforeBlazorStartedCallback, afterStarted: AfterBlazorStartedCallback };
 
 export class JSInitializer {
   private afterStartedCallbacks: AfterBlazorStartedCallback[] = [];
 
   async importInitializersAsync(initializerFiles: string[], initializerArguments: unknown[]): Promise<void> {
+    // This code is not called on WASM, because library intializers are imported by runtime.
+
     await Promise.all(initializerFiles.map(f => importAndInvokeInitializer(this, f)));
 
     function adjustPath(path: string): string {
@@ -39,7 +41,7 @@ export class JSInitializer {
   }
 
   async invokeAfterStartedCallbacks(blazor: typeof Blazor): Promise<void> {
-    await rendererAttached;
+    await firstRendererAttached;
     await Promise.all(this.afterStartedCallbacks.map(callback => callback(blazor)));
   }
 }

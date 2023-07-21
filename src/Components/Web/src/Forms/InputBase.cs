@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
+using Microsoft.AspNetCore.Components.Forms.Mapping;
 
 namespace Microsoft.AspNetCore.Components.Forms;
 
@@ -23,6 +24,7 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
     private bool _previousParsingAttemptFailed;
     private ValidationMessageStore? _parsingValidationMessages;
     private Type? _nullableUnderlyingType;
+    private bool _shouldGenerateFieldNames;
 
     [CascadingParameter] private EditContext? CascadedEditContext { get; set; }
 
@@ -203,7 +205,7 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
                 return Convert.ToString(nameAttributeValue, CultureInfo.InvariantCulture) ?? string.Empty;
             }
 
-            if (EditContext?.ShouldUseFieldIdentifiers ?? false)
+            if (_shouldGenerateFieldNames)
             {
                 if (_formattedValueExpression is null && ValueExpression is not null)
                 {
@@ -240,6 +242,12 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
             {
                 EditContext = CascadedEditContext;
                 EditContext.OnValidationStateChanged += _validationStateChangedHandler;
+                _shouldGenerateFieldNames = EditContext.ShouldUseFieldIdentifiers;
+            }
+            else
+            {
+                // Ideally we'd know if we were in an SSR context but we don't
+                _shouldGenerateFieldNames = !OperatingSystem.IsBrowser();
             }
 
             _nullableUnderlyingType = Nullable.GetUnderlyingType(typeof(TValue));
@@ -279,12 +287,15 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
         var hasAriaInvalidAttribute = AdditionalAttributes != null && AdditionalAttributes.ContainsKey("aria-invalid");
         if (EditContext.GetValidationMessages(FieldIdentifier).Any())
         {
+            // If this input is associated with an incoming value from an HTTP form post (via model binding),
+            // retain the attempted value even if it's unparseable
             var attemptedValue = EditContext.GetAttemptedValue(NameAttributeValue);
             if (attemptedValue != null)
             {
                 _parsingFailed = true;
                 _incomingValueBeforeParsing = attemptedValue;
             }
+
             if (hasAriaInvalidAttribute)
             {
                 // Do not overwrite the attribute value

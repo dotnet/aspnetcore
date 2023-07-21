@@ -88,4 +88,5 @@ export enum FrameType {
   region = 5,
   elementReferenceCapture = 6,
   markup = 8,
+  namedEvent = 10,
 }
