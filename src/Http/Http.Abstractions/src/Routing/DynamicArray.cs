@@ -126,7 +126,9 @@ struct DynamicArray<T>
         Span<T> span = _array ?? (Span<T>)_inlineArray;
 
         span.Clear();
+
         _size = 0;
+        _array = null;
     }
 
     [InlineArray(DefaultCapacity)]

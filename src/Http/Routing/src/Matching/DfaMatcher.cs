@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Patterns;
@@ -10,7 +11,8 @@ namespace Microsoft.AspNetCore.Routing.Matching;
 
 internal sealed partial class DfaMatcher : Matcher
 {
-    private const int DefaultRouteValuesCapacity = 4;
+    private const int DefaultRouteValuesStackCapacity = 4;
+    private const int DefaultCandidateStackCapacity = 4;
 
     private readonly ILogger _logger;
     private readonly EndpointSelector _selector;
@@ -94,7 +96,20 @@ internal sealed partial class DfaMatcher : Matcher
         // set of endpoints before we call the EndpointSelector.
         //
         // `candidateSet` is the mutable state that we pass to the EndpointSelector.
-        var candidateState = new CandidateState[candidateCount];
+
+        // Fast path that avoids allocating the candidate set.
+        // We can use this when there are no policies and we're using the default selector.
+        var useFastPath = policyCount == 0 && _isDefaultEndpointSelector;
+
+        // We use a heap allocated array if we can't use the fast path or
+        // if the candidate set is too big for the stack. Multiple candidates are typically rare.
+        CandidateState[]? candidateStateArray = null;
+
+        var candidateStateValues = new CandidateStateValues();
+
+        var candidateState = useFastPath && candidateCount <= DefaultCandidateStackCapacity
+            ? ((Span<CandidateState>)candidateStateValues)[..candidateCount]
+            : (candidateStateArray = new CandidateState[candidateCount]);
 
         for (var i = 0; i < candidateCount; i++)
         {
@@ -123,7 +138,7 @@ internal sealed partial class DfaMatcher : Matcher
                 // and a heap allocated array for anything more
                 var routeValues = new RouteValues();
 
-                var slots = prototype.Length > DefaultRouteValuesCapacity
+                var slots = prototype.Length > DefaultRouteValuesStackCapacity
                     ? (slotsArray = new KeyValuePair<string, object?>[prototype.Length])
                     : (Span<KeyValuePair<string, object?>>)routeValues;
 
@@ -184,23 +199,22 @@ internal sealed partial class DfaMatcher : Matcher
             }
         }
 
-        if (policyCount == 0 && _isDefaultEndpointSelector)
+        if (useFastPath)
         {
-            // Fast path that avoids allocating the candidate set.
-            //
-            // We can use this when there are no policies and we're using the default selector.
             DefaultEndpointSelector.Select(httpContext, candidateState);
             return Task.CompletedTask;
         }
         else if (policyCount == 0)
         {
+            Debug.Assert(candidateStateArray is not null);
             // Fast path that avoids a state machine.
             //
             // We can use this when there are no policies and a non-default selector.
-            return _selector.SelectAsync(httpContext, new CandidateSet(candidateState));
+            return _selector.SelectAsync(httpContext, new CandidateSet(candidateStateArray!));
         }
 
-        return SelectEndpointWithPoliciesAsync(httpContext, policies, new CandidateSet(candidateState));
+        Debug.Assert(candidateStateArray is not null);
+        return SelectEndpointWithPoliciesAsync(httpContext, policies, new CandidateSet(candidateStateArray!));
     }
 
     internal (Candidate[] candidates, IEndpointSelectorPolicy[] policies) FindCandidateSet(
@@ -329,13 +343,25 @@ internal sealed partial class DfaMatcher : Matcher
         await _selector.SelectAsync(httpContext, candidateSet);
     }
 
-    [InlineArray(DefaultRouteValuesCapacity)]
+    [InlineArray(DefaultRouteValuesStackCapacity)]
     private struct RouteValues
     {
 #pragma warning disable CA1823 // Avoid unused private fields
 #pragma warning disable IDE0044 // Add readonly modifier
 #pragma warning disable IDE0051 // Remove unused private members
         private KeyValuePair<string, object?> _value0;
+#pragma warning restore IDE0051 // Remove unused private members
+#pragma warning restore IDE0044 // Add readonly modifier
+#pragma warning restore CA1823 // Avoid unused private fields
+    }
+
+    [InlineArray(DefaultCandidateStackCapacity)]
+    private struct CandidateStateValues
+    {
+#pragma warning disable CA1823 // Avoid unused private fields
+#pragma warning disable IDE0044 // Add readonly modifier
+#pragma warning disable IDE0051 // Remove unused private members
+        private CandidateState _value0;
 #pragma warning restore IDE0051 // Remove unused private members
 #pragma warning restore IDE0044 // Add readonly modifier
 #pragma warning restore CA1823 // Avoid unused private fields
