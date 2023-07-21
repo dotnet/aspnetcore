@@ -7,10 +7,4 @@ export interface SsrStartOptions {
    * (for example, during enhanced navigation or streaming rendering).
    */
   disableDomPreservation?: boolean;
-
-  /**
-   * Determines how long to wait for the WebAssembly runtime to load before falling back
-   * on Server interactivity for auto components.
-   */
-  autoModeWebAssemblyTimeoutMilliseconds?: number;
 }

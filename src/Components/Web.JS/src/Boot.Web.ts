@@ -33,8 +33,8 @@ enum WebAssemblyLoadingState {
 let started = false;
 let hasCircuitStarted = false;
 let webAssemblyLoadingState = WebAssemblyLoadingState.None;
-let autoModeWebAssemblyTimeoutMilliseconds: number;
 let autoModeTimeoutState: undefined | 'waiting' | 'timed out';
+const autoModeWebAssemblyTimeoutMilliseconds = 100;
 
 const rootComponentManager = new RootComponentManager();
 
@@ -43,7 +43,6 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
     throw new Error('Blazor has already started.');
   }
   started = true;
-  autoModeWebAssemblyTimeoutMilliseconds = options?.ssr?.autoModeWebAssemblyTimeoutMilliseconds ?? 100;
 
   setCircuitOptions(options?.circuit);
   setWebAssemblyOptions(options?.webAssembly);
