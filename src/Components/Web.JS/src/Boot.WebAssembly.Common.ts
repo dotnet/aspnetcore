@@ -11,17 +11,29 @@ import { SharedMemoryRenderBatch } from './Rendering/RenderBatch/SharedMemoryRen
 import { PlatformApi, Pointer } from './Platform/Platform';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
 import { addDispatchEventMiddleware } from './Rendering/WebRendererInteropMethods';
-import { JSInitializer } from './JSInitializers/JSInitializers';
 import { WebAssemblyComponentDescriptor, discoverPersistedState } from './Services/ComponentDescriptorDiscovery';
 import { receiveDotNetDataStream } from './StreamingInterop';
 import { WebAssemblyComponentAttacher } from './Platform/WebAssemblyComponentAttacher';
 import { RootComponentManager } from './Services/RootComponentManager';
 
-export async function startWebAssembly(options?: Partial<WebAssemblyStartOptions>, components?: WebAssemblyComponentDescriptor[] | RootComponentManager): Promise<void> {
+let options: Partial<WebAssemblyStartOptions> | undefined;
+let platformLoadPromise: Promise<void> | undefined;
+
+export function setWebAssemblyOptions(webAssemblyOptions?: Partial<WebAssemblyStartOptions>) {
+  if (options) {
+    throw new Error('WebAssembly options have already been configured.');
+  }
+
+  options = webAssemblyOptions;
+}
+
+export async function startWebAssembly(components?: WebAssemblyComponentDescriptor[] | RootComponentManager): Promise<void> {
   if (inAuthRedirectIframe()) {
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     await new Promise(() => { }); // See inAuthRedirectIframe for explanation
   }
+
+  const platformLoadPromise = loadWebAssemblyPlatform();
 
   addDispatchEventMiddleware((browserRendererId, eventHandlerId, continuation) => {
     // It's extremely unusual, but an event can be raised while we're in the middle of synchronously applying a
@@ -109,7 +121,8 @@ export async function startWebAssembly(options?: Partial<WebAssemblyStartOptions
 
   let api: PlatformApi;
   try {
-    api = await platform.start(options ?? {});
+    await platformLoadPromise;
+    api = await platform.start();
   } catch (ex) {
     throw new Error(`Failed to start platform. Reason: ${ex}`);
   }
@@ -119,6 +132,11 @@ export async function startWebAssembly(options?: Partial<WebAssemblyStartOptions
   // At this point .NET has been initialized (and has yielded), we can't await the promise becasue it will
   // only end when the app finishes running
   api.invokeLibraryInitializers('afterStarted', [Blazor]);
+}
+
+export function loadWebAssemblyPlatform(): Promise<void> {
+  platformLoadPromise ??= monoPlatform.load(options ?? {});
+  return platformLoadPromise;
 }
 
 // obsolete, legacy, don't use for new code!

@@ -99,7 +99,7 @@ public sealed class WebAssemblyHostBuilder
             return;
         }
 
-        var registeredComponents = new WebAssemblyComponentMarker[componentsCount];
+        var registeredComponents = new ComponentMarker[componentsCount];
         for (var i = 0; i < componentsCount; i++)
         {
             var id = jsMethods.RegisteredComponents_GetId(i);
@@ -107,14 +107,13 @@ public sealed class WebAssemblyHostBuilder
             var typeName = jsMethods.RegisteredComponents_GetTypeName(id);
             var serializedParameterDefinitions = jsMethods.RegisteredComponents_GetParameterDefinitions(id);
             var serializedParameterValues = jsMethods.RegisteredComponents_GetParameterValues(id);
-            registeredComponents[i] = new WebAssemblyComponentMarker(
-                WebAssemblyComponentMarker.ClientMarkerType,
+            registeredComponents[i] = ComponentMarker.Create(ComponentMarker.WebAssemblyMarkerType, false, null);
+            registeredComponents[i].WriteWebAssemblyData(
                 assembly,
                 typeName,
                 serializedParameterDefinitions,
-                serializedParameterValues,
-                key: null,
-                id.ToString(CultureInfo.InvariantCulture));
+                serializedParameterValues);
+            registeredComponents[i].PrerenderId = id.ToString(CultureInfo.InvariantCulture);
         }
 
         _rootComponentCache = new RootComponentTypeCache();

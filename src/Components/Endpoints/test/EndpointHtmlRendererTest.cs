@@ -60,7 +60,7 @@ public class EndpointHtmlRendererTest
 
         // Assert
         Assert.True(match.Success);
-        var marker = JsonSerializer.Deserialize<WebAssemblyComponentMarker>(match.Groups[1].Value, ServerComponentSerializationSettings.JsonSerializationOptions);
+        var marker = JsonSerializer.Deserialize<ComponentMarker>(match.Groups[1].Value, ServerComponentSerializationSettings.JsonSerializationOptions);
         Assert.Null(marker.PrerenderId);
         Assert.Equal("webassembly", marker.Type);
         Assert.Equal(typeof(SimpleComponent).Assembly.GetName().Name, marker.Assembly);
@@ -84,7 +84,7 @@ public class EndpointHtmlRendererTest
         // Assert
         Assert.True(match.Success);
         var preamble = match.Groups["preamble"].Value;
-        var preambleMarker = JsonSerializer.Deserialize<WebAssemblyComponentMarker>(preamble, ServerComponentSerializationSettings.JsonSerializationOptions);
+        var preambleMarker = JsonSerializer.Deserialize<ComponentMarker>(preamble, ServerComponentSerializationSettings.JsonSerializationOptions);
         Assert.NotNull(preambleMarker.PrerenderId);
         Assert.Equal("webassembly", preambleMarker.Type);
         Assert.Equal(typeof(SimpleComponent).Assembly.GetName().Name, preambleMarker.Assembly);
@@ -94,7 +94,7 @@ public class EndpointHtmlRendererTest
         Assert.Equal("<h1>Hello from SimpleComponent</h1>", prerenderedContent);
 
         var epilogue = match.Groups["epilogue"].Value;
-        var epilogueMarker = JsonSerializer.Deserialize<WebAssemblyComponentMarker>(epilogue, ServerComponentSerializationSettings.JsonSerializationOptions);
+        var epilogueMarker = JsonSerializer.Deserialize<ComponentMarker>(epilogue, ServerComponentSerializationSettings.JsonSerializationOptions);
         Assert.Equal(preambleMarker.PrerenderId, epilogueMarker.PrerenderId);
         Assert.Null(epilogueMarker.Assembly);
         Assert.Null(epilogueMarker.TypeName);
@@ -126,7 +126,7 @@ public class EndpointHtmlRendererTest
 
         // Assert
         Assert.True(match.Success);
-        var marker = JsonSerializer.Deserialize<WebAssemblyComponentMarker>(match.Groups[1].Value, ServerComponentSerializationSettings.JsonSerializationOptions);
+        var marker = JsonSerializer.Deserialize<ComponentMarker>(match.Groups[1].Value, ServerComponentSerializationSettings.JsonSerializationOptions);
         Assert.Null(marker.PrerenderId);
         Assert.Equal("webassembly", marker.Type);
         Assert.Equal(typeof(GreetingComponent).Assembly.GetName().Name, marker.Assembly);
@@ -163,7 +163,7 @@ public class EndpointHtmlRendererTest
 
         // Assert
         Assert.True(match.Success);
-        var marker = JsonSerializer.Deserialize<WebAssemblyComponentMarker>(match.Groups[1].Value, ServerComponentSerializationSettings.JsonSerializationOptions);
+        var marker = JsonSerializer.Deserialize<ComponentMarker>(match.Groups[1].Value, ServerComponentSerializationSettings.JsonSerializationOptions);
         Assert.Null(marker.PrerenderId);
         Assert.Equal("webassembly", marker.Type);
         Assert.Equal(typeof(GreetingComponent).Assembly.GetName().Name, marker.Assembly);
@@ -199,7 +199,7 @@ public class EndpointHtmlRendererTest
         // Assert
         Assert.True(match.Success);
         var preamble = match.Groups["preamble"].Value;
-        var preambleMarker = JsonSerializer.Deserialize<WebAssemblyComponentMarker>(preamble, ServerComponentSerializationSettings.JsonSerializationOptions);
+        var preambleMarker = JsonSerializer.Deserialize<ComponentMarker>(preamble, ServerComponentSerializationSettings.JsonSerializationOptions);
         Assert.NotNull(preambleMarker.PrerenderId);
         Assert.Equal("webassembly", preambleMarker.Type);
         Assert.Equal(typeof(GreetingComponent).Assembly.GetName().Name, preambleMarker.Assembly);
@@ -218,7 +218,7 @@ public class EndpointHtmlRendererTest
         Assert.Equal("<p>Hello Daniel!</p>", prerenderedContent);
 
         var epilogue = match.Groups["epilogue"].Value;
-        var epilogueMarker = JsonSerializer.Deserialize<WebAssemblyComponentMarker>(epilogue, ServerComponentSerializationSettings.JsonSerializationOptions);
+        var epilogueMarker = JsonSerializer.Deserialize<ComponentMarker>(epilogue, ServerComponentSerializationSettings.JsonSerializationOptions);
         Assert.Equal(preambleMarker.PrerenderId, epilogueMarker.PrerenderId);
         Assert.Null(epilogueMarker.Assembly);
         Assert.Null(epilogueMarker.TypeName);
@@ -248,7 +248,7 @@ public class EndpointHtmlRendererTest
         // Assert
         Assert.True(match.Success);
         var preamble = match.Groups["preamble"].Value;
-        var preambleMarker = JsonSerializer.Deserialize<WebAssemblyComponentMarker>(preamble, ServerComponentSerializationSettings.JsonSerializationOptions);
+        var preambleMarker = JsonSerializer.Deserialize<ComponentMarker>(preamble, ServerComponentSerializationSettings.JsonSerializationOptions);
         Assert.NotNull(preambleMarker.PrerenderId);
         Assert.Equal("webassembly", preambleMarker.Type);
         Assert.Equal(typeof(GreetingComponent).Assembly.GetName().Name, preambleMarker.Assembly);
@@ -266,7 +266,7 @@ public class EndpointHtmlRendererTest
         Assert.Equal("<p>Hello (null)!</p>", prerenderedContent);
 
         var epilogue = match.Groups["epilogue"].Value;
-        var epilogueMarker = JsonSerializer.Deserialize<WebAssemblyComponentMarker>(epilogue, ServerComponentSerializationSettings.JsonSerializationOptions);
+        var epilogueMarker = JsonSerializer.Deserialize<ComponentMarker>(epilogue, ServerComponentSerializationSettings.JsonSerializationOptions);
         Assert.Equal(preambleMarker.PrerenderId, epilogueMarker.PrerenderId);
         Assert.Null(epilogueMarker.Assembly);
         Assert.Null(epilogueMarker.TypeName);
@@ -306,7 +306,7 @@ public class EndpointHtmlRendererTest
 
         // Assert
         Assert.True(match.Success);
-        var marker = JsonSerializer.Deserialize<ServerComponentMarker>(match.Groups[1].Value, ServerComponentSerializationSettings.JsonSerializationOptions);
+        var marker = JsonSerializer.Deserialize<ComponentMarker>(match.Groups[1].Value, ServerComponentSerializationSettings.JsonSerializationOptions);
         Assert.Equal(0, marker.Sequence);
         Assert.Null(marker.PrerenderId);
         Assert.NotNull(marker.Descriptor);
@@ -339,7 +339,7 @@ public class EndpointHtmlRendererTest
         // Assert
         Assert.True(match.Success);
         var preamble = match.Groups["preamble"].Value;
-        var preambleMarker = JsonSerializer.Deserialize<ServerComponentMarker>(preamble, ServerComponentSerializationSettings.JsonSerializationOptions);
+        var preambleMarker = JsonSerializer.Deserialize<ComponentMarker>(preamble, ServerComponentSerializationSettings.JsonSerializationOptions);
         Assert.Equal(0, preambleMarker.Sequence);
         Assert.NotNull(preambleMarker.PrerenderId);
         Assert.NotNull(preambleMarker.Descriptor);
@@ -357,7 +357,7 @@ public class EndpointHtmlRendererTest
         Assert.Equal("<h1>Hello from SimpleComponent</h1>", prerenderedContent);
 
         var epilogue = match.Groups["epilogue"].Value;
-        var epilogueMarker = JsonSerializer.Deserialize<ServerComponentMarker>(epilogue, ServerComponentSerializationSettings.JsonSerializationOptions);
+        var epilogueMarker = JsonSerializer.Deserialize<ComponentMarker>(epilogue, ServerComponentSerializationSettings.JsonSerializationOptions);
         Assert.Equal(preambleMarker.PrerenderId, epilogueMarker.PrerenderId);
         Assert.Null(epilogueMarker.Sequence);
         Assert.Null(epilogueMarker.Descriptor);
@@ -404,7 +404,7 @@ public class EndpointHtmlRendererTest
         // Assert
         Assert.True(firstMatch.Success);
         var preamble = firstMatch.Groups["preamble"].Value;
-        var preambleMarker = JsonSerializer.Deserialize<ServerComponentMarker>(preamble, ServerComponentSerializationSettings.JsonSerializationOptions);
+        var preambleMarker = JsonSerializer.Deserialize<ComponentMarker>(preamble, ServerComponentSerializationSettings.JsonSerializationOptions);
         Assert.Equal(0, preambleMarker.Sequence);
         Assert.NotNull(preambleMarker.Descriptor);
 
@@ -415,7 +415,7 @@ public class EndpointHtmlRendererTest
 
         Assert.True(secondMatch.Success);
         var marker = secondMatch.Groups[1].Value;
-        var markerMarker = JsonSerializer.Deserialize<ServerComponentMarker>(marker, ServerComponentSerializationSettings.JsonSerializationOptions);
+        var markerMarker = JsonSerializer.Deserialize<ComponentMarker>(marker, ServerComponentSerializationSettings.JsonSerializationOptions);
         Assert.Equal(1, markerMarker.Sequence);
         Assert.NotNull(markerMarker.Descriptor);
 
@@ -457,7 +457,7 @@ public class EndpointHtmlRendererTest
 
         // Assert
         Assert.True(match.Success);
-        var marker = JsonSerializer.Deserialize<ServerComponentMarker>(match.Groups[1].Value, ServerComponentSerializationSettings.JsonSerializationOptions);
+        var marker = JsonSerializer.Deserialize<ComponentMarker>(match.Groups[1].Value, ServerComponentSerializationSettings.JsonSerializationOptions);
         Assert.Equal(0, marker.Sequence);
         Assert.Null(marker.PrerenderId);
         Assert.NotNull(marker.Descriptor);
@@ -496,7 +496,7 @@ public class EndpointHtmlRendererTest
 
         // Assert
         Assert.True(match.Success);
-        var marker = JsonSerializer.Deserialize<ServerComponentMarker>(match.Groups[1].Value, ServerComponentSerializationSettings.JsonSerializationOptions);
+        var marker = JsonSerializer.Deserialize<ComponentMarker>(match.Groups[1].Value, ServerComponentSerializationSettings.JsonSerializationOptions);
         Assert.Equal(0, marker.Sequence);
         Assert.Null(marker.PrerenderId);
         Assert.NotNull(marker.Descriptor);
@@ -536,7 +536,7 @@ public class EndpointHtmlRendererTest
         // Assert
         Assert.True(match.Success);
         var preamble = match.Groups["preamble"].Value;
-        var preambleMarker = JsonSerializer.Deserialize<ServerComponentMarker>(preamble, ServerComponentSerializationSettings.JsonSerializationOptions);
+        var preambleMarker = JsonSerializer.Deserialize<ComponentMarker>(preamble, ServerComponentSerializationSettings.JsonSerializationOptions);
         Assert.Equal(0, preambleMarker.Sequence);
         Assert.NotNull(preambleMarker.PrerenderId);
         Assert.NotNull(preambleMarker.Descriptor);
@@ -563,7 +563,7 @@ public class EndpointHtmlRendererTest
         Assert.Equal("<p>Hello SomeName!</p>", prerenderedContent);
 
         var epilogue = match.Groups["epilogue"].Value;
-        var epilogueMarker = JsonSerializer.Deserialize<ServerComponentMarker>(epilogue, ServerComponentSerializationSettings.JsonSerializationOptions);
+        var epilogueMarker = JsonSerializer.Deserialize<ComponentMarker>(epilogue, ServerComponentSerializationSettings.JsonSerializationOptions);
         Assert.Equal(preambleMarker.PrerenderId, epilogueMarker.PrerenderId);
         Assert.Null(epilogueMarker.Sequence);
         Assert.Null(epilogueMarker.Descriptor);
@@ -587,7 +587,7 @@ public class EndpointHtmlRendererTest
         // Assert
         Assert.True(match.Success);
         var preamble = match.Groups["preamble"].Value;
-        var preambleMarker = JsonSerializer.Deserialize<ServerComponentMarker>(preamble, ServerComponentSerializationSettings.JsonSerializationOptions);
+        var preambleMarker = JsonSerializer.Deserialize<ComponentMarker>(preamble, ServerComponentSerializationSettings.JsonSerializationOptions);
         Assert.Equal(0, preambleMarker.Sequence);
         Assert.NotNull(preambleMarker.PrerenderId);
         Assert.NotNull(preambleMarker.Descriptor);
@@ -614,7 +614,7 @@ public class EndpointHtmlRendererTest
         Assert.Equal("<p>Hello (null)!</p>", prerenderedContent);
 
         var epilogue = match.Groups["epilogue"].Value;
-        var epilogueMarker = JsonSerializer.Deserialize<ServerComponentMarker>(epilogue, ServerComponentSerializationSettings.JsonSerializationOptions);
+        var epilogueMarker = JsonSerializer.Deserialize<ComponentMarker>(epilogue, ServerComponentSerializationSettings.JsonSerializationOptions);
         Assert.Equal(preambleMarker.PrerenderId, epilogueMarker.PrerenderId);
         Assert.Null(epilogueMarker.Sequence);
         Assert.Null(epilogueMarker.Descriptor);
@@ -1070,7 +1070,7 @@ public class EndpointHtmlRendererTest
             var markerText = serverMarkerMatch.Groups[1].Value;
             var innerHtml = serverMarkerMatch.Groups[2].Value;
 
-            var marker = JsonSerializer.Deserialize<ServerComponentMarker>(markerText, ServerComponentSerializationSettings.JsonSerializationOptions);
+            var marker = JsonSerializer.Deserialize<ComponentMarker>(markerText, ServerComponentSerializationSettings.JsonSerializationOptions);
             Assert.Equal(0, marker.Sequence);
             Assert.NotNull(marker.PrerenderId);
             Assert.NotNull(marker.Descriptor);
@@ -1099,7 +1099,7 @@ public class EndpointHtmlRendererTest
         {
             var markerText = serverNonPrerenderedMarkerMatch.Groups[1].Value;
 
-            var marker = JsonSerializer.Deserialize<ServerComponentMarker>(markerText, ServerComponentSerializationSettings.JsonSerializationOptions);
+            var marker = JsonSerializer.Deserialize<ComponentMarker>(markerText, ServerComponentSerializationSettings.JsonSerializationOptions);
             Assert.Equal(1, marker.Sequence);
             Assert.Null(marker.PrerenderId);
             Assert.NotNull(marker.Descriptor);
@@ -1127,7 +1127,7 @@ public class EndpointHtmlRendererTest
             var markerText = webAssemblyMarkerMatch.Groups[1].Value;
             var innerHtml = webAssemblyMarkerMatch.Groups[2].Value;
 
-            var marker = JsonSerializer.Deserialize<WebAssemblyComponentMarker>(markerText, ServerComponentSerializationSettings.JsonSerializationOptions);
+            var marker = JsonSerializer.Deserialize<ComponentMarker>(markerText, ServerComponentSerializationSettings.JsonSerializationOptions);
             Assert.Equal(typeof(InteractiveGreetingWebAssembly).FullName, marker.TypeName);
 
             var parameterValues = JsonSerializer.Deserialize<object[]>(Convert.FromBase64String(marker.ParameterValues), WebAssemblyComponentSerializationSettings.JsonSerializationOptions);
@@ -1140,7 +1140,7 @@ public class EndpointHtmlRendererTest
         {
             var markerText = webAssemblyNonPrerenderedMarkerMatch.Groups[1].Value;
 
-            var marker = JsonSerializer.Deserialize<WebAssemblyComponentMarker>(markerText, ServerComponentSerializationSettings.JsonSerializationOptions);
+            var marker = JsonSerializer.Deserialize<ComponentMarker>(markerText, ServerComponentSerializationSettings.JsonSerializationOptions);
             Assert.Equal(typeof(InteractiveGreetingWebAssemblyNonPrerendered).FullName, marker.TypeName);
 
             var parameterValues = JsonSerializer.Deserialize<object[]>(Convert.FromBase64String(marker.ParameterValues), WebAssemblyComponentSerializationSettings.JsonSerializationOptions);
@@ -1169,7 +1169,7 @@ public class EndpointHtmlRendererTest
         var match = Regex.Match(content, PrerenderedComponentPattern, RegexOptions.Singleline);
         Assert.True(match.Success);
         var preamble = match.Groups["preamble"].Value;
-        var preambleMarker = JsonSerializer.Deserialize<WebAssemblyComponentMarker>(preamble, ServerComponentSerializationSettings.JsonSerializationOptions);
+        var preambleMarker = JsonSerializer.Deserialize<ComponentMarker>(preamble, ServerComponentSerializationSettings.JsonSerializationOptions);
         Assert.NotNull(preambleMarker.PrerenderId);
         Assert.Equal("webassembly", preambleMarker.Type);
 

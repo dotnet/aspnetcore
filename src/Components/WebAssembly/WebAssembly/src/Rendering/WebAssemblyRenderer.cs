@@ -55,11 +55,11 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
             RendererId);
     }
 
-    [DynamicDependency(JsonSerialized, typeof(RootComponentOperation<WebAssemblyComponentMarker>))]
+    [DynamicDependency(JsonSerialized, typeof(RootComponentOperation))]
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "The correct members will be preserved by the above DynamicDependency")]
     protected override void UpdateRootComponents(string operationsJson)
     {
-        var operations = JsonSerializer.Deserialize<IEnumerable<RootComponentOperation<WebAssemblyComponentMarker>>>(
+        var operations = JsonSerializer.Deserialize<IEnumerable<RootComponentOperation>>(
             operationsJson,
             WebAssemblyComponentSerializationSettings.JsonSerializationOptions)!;
 
@@ -82,14 +82,18 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
         return;
 
         [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "Root components are expected to be defined in assemblies that do not get trimmed.")]
-        void AddRootComponent(RootComponentOperation<WebAssemblyComponentMarker> operation)
+        void AddRootComponent(RootComponentOperation operation)
         {
             if (operation.SelectorId is not { } selectorId)
             {
                 throw new InvalidOperationException($"The component operation of type '{operation.Type}' requires a '{nameof(operation.SelectorId)}' to be specified.");
             }
 
-            var marker = operation.Marker;
+            if (operation.Marker is not { } marker)
+            {
+                throw new InvalidOperationException($"The component operation of type '{operation.Type}' requires a '{nameof(operation.Marker)}' to be specified.");
+            }
+
             var componentType = _rootComponentCache.GetRootComponent(marker.Assembly!, marker.TypeName!)
                 ?? throw new InvalidOperationException($"Root component type '{marker.TypeName}' could not be found in the assembly '{marker.Assembly}'.");
 
@@ -97,19 +101,23 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
             _ = AddComponentAsync(componentType, parameters, selectorId.ToString(CultureInfo.InvariantCulture));
         }
 
-        void UpdateRootComponent(RootComponentOperation<WebAssemblyComponentMarker> operation)
+        void UpdateRootComponent(RootComponentOperation operation)
         {
             if (operation.ComponentId is not { } componentId)
             {
                 throw new InvalidOperationException($"The component operation of type '{operation.Type}' requires a '{nameof(operation.ComponentId)}' to be specified.");
             }
 
-            var marker = operation.Marker;
+            if (operation.Marker is not { } marker)
+            {
+                throw new InvalidOperationException($"The component operation of type '{operation.Type}' requires a '{nameof(operation.Marker)}' to be specified.");
+            }
+
             var parameters = DeserializeComponentParameters(marker);
             _ = RenderRootComponentAsync(componentId, parameters);
         }
 
-        void RemoveRootComponent(RootComponentOperation<WebAssemblyComponentMarker> operation)
+        void RemoveRootComponent(RootComponentOperation operation)
         {
             if (operation.ComponentId is not { } componentId)
             {
@@ -119,7 +127,7 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
             this.RemoveRootComponent(componentId);
         }
 
-        static ParameterView DeserializeComponentParameters(WebAssemblyComponentMarker marker)
+        static ParameterView DeserializeComponentParameters(ComponentMarker marker)
         {
             var definitions = WebAssemblyComponentParameterDeserializer.GetParameterDefinitions(marker.ParameterDefinitions!);
             var values = WebAssemblyComponentParameterDeserializer.GetParameterValues(marker.ParameterValues!);

@@ -23,8 +23,17 @@ let renderingFailed = false;
 let connection: HubConnection;
 let circuit: CircuitDescriptor;
 let dispatcher: DotNet.ICallDispatcher;
+let userOptions: Partial<CircuitStartOptions> | undefined;
 
-export async function startCircuit(userOptions?: Partial<CircuitStartOptions>, components?: ServerComponentDescriptor[] | RootComponentManager): Promise<void> {
+export function setCircuitOptions(circuitUserOptions?: Partial<CircuitStartOptions>) {
+  if (userOptions) {
+    throw new Error('Circuit options have already been configured.');
+  }
+
+  userOptions = circuitUserOptions;
+}
+
+export async function startCircuit(components?: ServerComponentDescriptor[] | RootComponentManager): Promise<void> {
   // Establish options to be used
   const options = resolveOptions(userOptions);
   const jsInitializer = await fetchAndInvokeInitializers(options);

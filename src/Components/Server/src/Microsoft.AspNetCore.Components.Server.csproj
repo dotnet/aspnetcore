@@ -93,10 +93,10 @@
     <Compile Include="$(MessagePackRoot)Utilities.cs" LinkBase="BlazorPack\MessagePack" />
 
     <!-- Shared descriptor infrastructure with MVC -->
+    <Compile Include="$(RepoRoot)src\Shared\Components\ComponentMarker.cs" />
     <Compile Include="$(RepoRoot)src\Shared\Components\ServerComponent.cs" />
     <Compile Include="$(RepoRoot)src\Shared\Components\ComponentParameter.cs" />
     <Compile Include="$(RepoRoot)src\Shared\Components\ServerComponentSerializationSettings.cs" />
-    <Compile Include="$(RepoRoot)src\Shared\Components\ServerComponentMarker.cs" />
     <Compile Include="$(RepoRoot)src\Shared\Components\PrerenderComponentApplicationStore.cs" />
     <Compile Include="$(RepoRoot)src\Shared\Components\ProtectedPrerenderComponentApplicationStore.cs" />
   </ItemGroup>

@@ -580,7 +580,7 @@ public class CircuitHostTest
             return true;
         }
 
-        public bool TryDeserializeSingleComponentDescriptor(ServerComponentMarker record, [NotNullWhen(true)] out ComponentDescriptor result)
+        public bool TryDeserializeSingleComponentDescriptor(ComponentMarker record, [NotNullWhen(true)] out ComponentDescriptor result)
         {
             result = default;
             return true;
