@@ -18,7 +18,7 @@
     "language": "C#",
     "type": "project"
   },
-  "sourceName": "Company.ApiApplication1",
+  "sourceName": "Company.WebApplication1",
   "preferNameDirectory": true,
   "guids": [
     "53bc9b9d-9d6a-45d4-8429-2a2761773502"
@@ -134,10 +134,10 @@
   },
   "primaryOutputs": [
     {
-      "path": "Company.ApiApplication1.csproj"
+      "path": "Company.WebApplication1.csproj"
     }
   ],
-  "defaultName": "ApiApplication",
+  "defaultName": "WebApplication",
   "postActions": [
     {
       "id": "restore",
