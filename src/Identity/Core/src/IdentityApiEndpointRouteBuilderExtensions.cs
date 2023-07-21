@@ -64,10 +64,11 @@ public static class IdentityApiEndpointRouteBuilderExtensions
                 throw new NotSupportedException($"{nameof(MapIdentityApi)} requires a user store with email support.");
             }
 
-            var emailStore = (IUserEmailStore<TUser>)sp.GetRequiredService<IUserStore<TUser>>();
+            var userStore = sp.GetRequiredService<IUserStore<TUser>>();
+            var emailStore = (IUserEmailStore<TUser>)userStore;
 
             var user = new TUser();
-            await userManager.SetUserNameAsync(user, registration.Username);
+            await userStore.SetUserNameAsync(user, registration.Username, CancellationToken.None);
             await emailStore.SetEmailAsync(user, registration.Email, CancellationToken.None);
             var result = await userManager.CreateAsync(user, registration.Password);
 

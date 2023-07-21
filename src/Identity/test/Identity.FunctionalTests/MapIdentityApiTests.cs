@@ -598,7 +598,7 @@ public class MapIdentityApiTests : LoggedTest
 
         client.DefaultRequestHeaders.Authorization = new("Bearer", accessToken);
 
-        // We cannot enable 2fa without verifying we can produce a valid
+        // We cannot enable 2fa without verifying we can produce a valid one.
         await AssertValidationProblemAsync(await client.PostAsJsonAsync("/identity/account/2fa", new { Enable = true }),
             "RequiresTwoFactor");
         await AssertValidationProblemAsync(await client.PostAsJsonAsync("/identity/account/2fa", new { Enable = true, TwoFactorCode = "wrong" }),
@@ -1013,7 +1013,7 @@ public class MapIdentityApiTests : LoggedTest
         Assert.Equal(Username, claimsAfterEmailChange.GetProperty(ClaimTypes.Email).GetString());
         Assert.Equal(originalNameIdentifier, infoClaims.GetProperty(ClaimTypes.NameIdentifier).GetString());
 
-        // And now the email has changed, the refresh token is invalidated once again invalidated by the security stamp.
+        // And now the email has changed, the refresh token is once again invalidated by the security stamp.
         AssertUnauthorizedAndEmpty(await client.PostAsJsonAsync("/identity/refresh", new { RefreshToken = secondRefreshToken }));
 
         // We will finally see all the claims updated after logging in again.
