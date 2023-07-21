@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Company.ApiApplication1;
+namespace Company.WebApplication1;
 
 public class Program
 {
