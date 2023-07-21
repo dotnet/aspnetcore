@@ -64,12 +64,14 @@ internal sealed partial class CircuitFactory : ICircuitFactory
         var appLifetime = scope.ServiceProvider.GetRequiredService<ComponentStatePersistenceManager>();
         await appLifetime.RestoreStateAsync(store);
 
+        var serverComponentDeserializer = scope.ServiceProvider.GetRequiredService<IServerComponentDeserializer>();
         var jsComponentInterop = new CircuitJSComponentInterop(_options);
         var renderer = new RemoteRenderer(
             scope.ServiceProvider,
             _loggerFactory,
             _options,
             client,
+            serverComponentDeserializer,
             _loggerFactory.CreateLogger<RemoteRenderer>(),
             jsRuntime,
             jsComponentInterop);

@@ -16,13 +16,15 @@ import { attachRootComponentToLogicalElement } from './Rendering/Renderer';
 import { discoverPersistedState, ServerComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
 import { sendJSDataStream } from './Platform/Circuits/CircuitStreamingInterop';
 import { fetchAndInvokeInitializers } from './JSInitializers/JSInitializers.Server';
+import { WebRendererId } from './Rendering/WebRendererId';
+import { RootComponentManager } from './Services/RootComponentManager';
 
 let renderingFailed = false;
 let connection: HubConnection;
 let circuit: CircuitDescriptor;
 let dispatcher: DotNet.ICallDispatcher;
 
-export async function startCircuit(userOptions?: Partial<CircuitStartOptions>, components?: ServerComponentDescriptor[]): Promise<void> {
+export async function startCircuit(userOptions?: Partial<CircuitStartOptions>, components?: ServerComponentDescriptor[] | RootComponentManager): Promise<void> {
   // Establish options to be used
   const options = resolveOptions(userOptions);
   const jsInitializer = await fetchAndInvokeInitializers(options);
@@ -113,7 +115,7 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
 
   const newConnection = connectionBuilder.build();
 
-  newConnection.on('JS.AttachComponent', (componentId, selector) => attachRootComponentToLogicalElement(0, circuit.resolveElement(selector), componentId, false));
+  newConnection.on('JS.AttachComponent', (componentId, selector) => attachRootComponentToLogicalElement(WebRendererId.Server, circuit.resolveElement(selector, componentId), componentId, false));
   newConnection.on('JS.BeginInvokeJS', dispatcher.beginInvokeJSFromDotNet.bind(dispatcher));
   newConnection.on('JS.EndInvokeDotNet', dispatcher.endInvokeDotNetFromJS.bind(dispatcher));
   newConnection.on('JS.ReceiveByteArray', dispatcher.receiveByteArray.bind(dispatcher));

@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 // See the details of the component serialization protocol in WebAssemblyComponentDeserializer.cs on the Components solution.
 internal sealed class WebAssemblyComponentSerializer
 {
-    public static WebAssemblyComponentMarker SerializeInvocation(Type type, ParameterView parameters, bool prerendered)
+    public static WebAssemblyComponentMarker SerializeInvocation(Type type, ParameterView parameters, string? key, bool prerendered)
     {
         var assembly = type.Assembly.GetName().Name ?? throw new InvalidOperationException("Cannot prerender components from assemblies with a null name");
         var typeFullName = type.FullName ?? throw new InvalidOperationException("Cannot prerender component types with a null name");
@@ -19,8 +19,8 @@ internal sealed class WebAssemblyComponentSerializer
         var serializedDefinitions = Convert.ToBase64String(JsonSerializer.SerializeToUtf8Bytes(definitions, WebAssemblyComponentSerializationSettings.JsonSerializationOptions));
         var serializedValues = Convert.ToBase64String(JsonSerializer.SerializeToUtf8Bytes(values, WebAssemblyComponentSerializationSettings.JsonSerializationOptions));
 
-        return prerendered ? WebAssemblyComponentMarker.Prerendered(assembly, typeFullName, serializedDefinitions, serializedValues) :
-            WebAssemblyComponentMarker.NonPrerendered(assembly, typeFullName, serializedDefinitions, serializedValues);
+        return prerendered ? WebAssemblyComponentMarker.Prerendered(assembly, typeFullName, serializedDefinitions, serializedValues, key) :
+            WebAssemblyComponentMarker.NonPrerendered(assembly, typeFullName, serializedDefinitions, serializedValues, key);
     }
 
     internal static void AppendPreamble(TextWriter writer, WebAssemblyComponentMarker record)
