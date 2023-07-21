@@ -23,7 +23,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect;
 
-public class OpenIdConnectEventTests
+public class OpenIdConnectEventTests_Handlers
 {
     private readonly RequestDelegate AppWritePath = context => context.Response.WriteAsync(context.Request.Path);
     private readonly RequestDelegate AppNotImpl = context => { throw new NotImplementedException("App"); };
@@ -1286,10 +1286,8 @@ public class OpenIdConnectEventTests
                             EndSessionEndpoint = "http://testhost/end"
                         };
                         o.StateDataFormat = new TestStateDataFormat();
-#pragma warning disable CS0618 // Type or member is obsolete
-                        o.SecurityTokenValidator = new TestTokenValidator();
-#pragma warning restore CS0618 // Type or member is obsolete
-                        o.UseSecurityTokenValidator = true;
+                        o.UseSecurityTokenValidator = false;
+                        o.TokenHandler = new TestTokenHandler();
                         o.ProtocolValidator = new TestProtocolValidator();
                         o.BackchannelHttpHandler = new TestBackchannel();
                     });
@@ -1347,27 +1345,24 @@ public class OpenIdConnectEventTests
         }
     }
 
-    private class TestTokenValidator : ISecurityTokenValidator
+    private class TestTokenHandler : TokenHandler
     {
-        public bool CanValidateToken => true;
-
-        public int MaximumTokenSizeInBytes
+        public override Task<TokenValidationResult> ValidateTokenAsync(string token, TokenValidationParameters validationParameters)
         {
-            get { return 1024; }
-            set { throw new NotImplementedException(); }
+            Assert.Equal("my_id_token", token);
+            var jwt = new JwtSecurityToken();
+            return Task.FromResult(new TokenValidationResult()
+            {
+                SecurityToken = new JsonWebToken(jwt.EncodedHeader + "." + jwt.EncodedPayload + "."),
+                ClaimsIdentity = new ClaimsIdentity("customAuthType"),
+                IsValid = true
+            });
         }
 
-        public bool CanReadToken(string securityToken)
+        public override SecurityToken ReadToken(string token)
         {
-            Assert.Equal("my_id_token", securityToken);
-            return true;
-        }
-
-        public ClaimsPrincipal ValidateToken(string securityToken, TokenValidationParameters validationParameters, out SecurityToken validatedToken)
-        {
-            Assert.Equal("my_id_token", securityToken);
-            validatedToken = new JwtSecurityToken();
-            return new ClaimsPrincipal(new ClaimsIdentity("customAuthType"));
+            Assert.Equal("my_id_token", token);
+            return new JsonWebToken(token);
         }
     }
 

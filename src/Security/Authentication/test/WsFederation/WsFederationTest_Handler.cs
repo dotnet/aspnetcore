@@ -5,7 +5,6 @@ using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Text;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -16,12 +15,11 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Authentication.WsFederation;
 
-public class WsFederationTest
+public class WsFederationTestHandlers
 {
     [Fact]
     public async Task VerifySchemeDefaults()
@@ -288,14 +286,12 @@ public class WsFederationTest
                     .AddCookie()
                     .AddWsFederation(options =>
                     {
-                        options.UseSecurityTokenHandlers = true;
                         options.Wtrealm = "http://Automation1";
                         options.MetadataAddress = "https://login.windows.net/4afbc689-805b-48cf-a24c-d4aa3248a248/federationmetadata/2007-06/federationmetadata.xml";
                         options.BackchannelHttpHandler = new WaadMetadataDocumentHandler();
                         options.StateDataFormat = new CustomStateDataFormat();
-#pragma warning disable CS0618 // Type or member is obsolete
-                        options.SecurityTokenHandlers = new List<ISecurityTokenValidator>() { new TestSecurityTokenValidator() };
-#pragma warning restore CS0618 // Type or member is obsolete
+                        options.TokenHandlers.Clear();
+                        options.TokenHandlers.Add(new TestSecurityTokenHandler());
                         options.UseTokenLifetime = false;
                         options.AllowUnsolicitedLogins = allowUnsolicited;
                         options.Events = new WsFederationEvents()
