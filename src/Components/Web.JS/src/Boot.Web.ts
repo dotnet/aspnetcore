@@ -9,8 +9,8 @@
 //    of interactive components
 
 import { DotNet } from '@microsoft/dotnet-js-interop';
-import { startCircuit } from './Boot.Server.Common';
-import { loadWebAssemblyPlatform, startWebAssembly } from './Boot.WebAssembly.Common';
+import { setCircuitOptions, startCircuit } from './Boot.Server.Common';
+import { loadWebAssemblyPlatform, setWebAssemblyOptions, startWebAssembly } from './Boot.WebAssembly.Common';
 import { shouldAutoStart } from './BootCommon';
 import { Blazor } from './GlobalExports';
 import { WebStartOptions } from './Platform/WebStartOptions';
@@ -22,9 +22,19 @@ import { DescriptorHandler, attachComponentDescriptorHandler, registerAllCompone
 import { waitForRendererAttached } from './Rendering/WebRendererInteropMethods';
 import { WebRendererId } from './Rendering/WebRendererId';
 
+enum WebAssemblyLoadingState {
+  None = 0,
+  Loading = 1,
+  Loaded = 2,
+  Starting = 3,
+  Started = 4,
+}
+
 let started = false;
-let webStartOptions: Partial<WebStartOptions> | undefined;
-let hasWebAssemblyLoaded = false;
+let hasCircuitStarted = false;
+let webAssemblyLoadingState = WebAssemblyLoadingState.None;
+let autoModeWebAssemblyTimeoutMilliseconds: number;
+let autoModeTimeoutState: undefined | 'waiting' | 'timed out';
 
 const rootComponentManager = new RootComponentManager();
 
@@ -33,7 +43,10 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
     throw new Error('Blazor has already started.');
   }
   started = true;
-  webStartOptions = options;
+  autoModeWebAssemblyTimeoutMilliseconds = options?.ssr?.autoModeWebAssemblyTimeoutMilliseconds ?? 100;
+
+  setCircuitOptions(options?.circuit);
+  setWebAssemblyOptions(options?.webAssembly);
 
   const navigationEnhancementCallbacks: NavigationEnhancementCallbacks = {
     documentUpdated: handleUpdatedComponentDescriptors,
@@ -45,30 +58,59 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
 
   attachComponentDescriptorHandler(descriptorHandler);
   attachStreamingRenderingListener(options?.ssr, navigationEnhancementCallbacks);
-  attachAutoModeResolver(() => {
-    if (hasWebAssemblyLoaded) {
-      startWebAssemblyIfNotStarted();
-      return 'webassembly';
-    } else {
-      startCircuitIfNotStarted();
-      return 'server';
-    }
-  });
+  attachAutoModeResolver(resolveAutoMode);
 
   if (!options?.ssr?.disableDomPreservation) {
     attachProgressivelyEnhancedNavigationListener(navigationEnhancementCallbacks);
   }
 
   registerAllComponentDescriptors(document);
+  handleUpdatedComponentDescriptors();
 
   return Promise.resolve();
+}
+
+function resolveAutoMode(): 'server' | 'webassembly' | null {
+  if (webAssemblyLoadingState >= WebAssemblyLoadingState.Loaded) {
+    // The WebAssembly runtime has loaded or is actively starting, so we'll use
+    // WebAssembly for the component in question. We'll also start
+    // the WebAssembly runtime if it hasn't already.
+    startWebAssemblyIfNotStarted();
+    return 'webassembly';
+  }
+
+  if (autoModeTimeoutState === 'timed out') {
+    // We've waited too long for WebAssembly to initialize, so we'll use the Server
+    // render mode for the component in question. At some point if the WebAssembly
+    // runtime finishes loading, we'll start using it again due to the earlier
+    // check in this function.
+    startCircuitIfNotStarted();
+    return 'server';
+  }
+
+  if (autoModeTimeoutState === undefined) {
+    // The WebAssembly runtime hasn't loaded yet, and this is the first
+    // time auto mode is being requested.
+    // We'll wait a bit for the WebAssembly runtime to load before making
+    // a render mode decision.
+    autoModeTimeoutState = 'waiting';
+    setTimeout(() => {
+      autoModeTimeoutState = 'timed out';
+
+      // We want to ensure that we activate any markers whose render mode didn't get resolved
+      // earlier.
+      handleUpdatedComponentDescriptors();
+    }, autoModeWebAssemblyTimeoutMilliseconds);
+  }
+
+  return null;
 }
 
 function registerComponentDescriptor(descriptor: ComponentDescriptor) {
   rootComponentManager.registerComponentDescriptor(descriptor);
 
   if (descriptor.type === 'auto') {
-    startLoadingWebAssembly();
+    startLoadingWebAssemblyIfNotStarted();
   } else if (descriptor.type === 'server') {
     startCircuitIfNotStarted();
   } else if (descriptor.type === 'webassembly') {
@@ -81,38 +123,36 @@ function handleUpdatedComponentDescriptors() {
   rootComponentManager.handleUpdatedRootComponents(shouldAddNewRootComponents);
 }
 
-let hasCircuitStarted = false;
 async function startCircuitIfNotStarted() {
   if (hasCircuitStarted) {
     return;
   }
 
   hasCircuitStarted = true;
-  await startCircuit(webStartOptions?.circuit, rootComponentManager);
+  await startCircuit(rootComponentManager);
   await waitForRendererAttached(WebRendererId.Server);
   handleUpdatedComponentDescriptors();
 }
 
-let hasStartedLoadingWebAssembly = false;
-async function startLoadingWebAssembly() {
-  if (hasStartedLoadingWebAssembly) {
+async function startLoadingWebAssemblyIfNotStarted() {
+  if (webAssemblyLoadingState >= WebAssemblyLoadingState.Loading) {
     return;
   }
 
-  hasStartedLoadingWebAssembly = true;
-  await loadWebAssemblyPlatform(webStartOptions?.webAssembly);
-  hasWebAssemblyLoaded = true;
+  webAssemblyLoadingState = WebAssemblyLoadingState.Loading;
+  await loadWebAssemblyPlatform();
+  webAssemblyLoadingState = WebAssemblyLoadingState.Loaded;
 }
 
-let isStartingWebAssembly = false;
 async function startWebAssemblyIfNotStarted() {
-  if (isStartingWebAssembly) {
+  if (webAssemblyLoadingState >= WebAssemblyLoadingState.Starting) {
     return;
   }
 
-  isStartingWebAssembly = true;
-  await startWebAssembly(webStartOptions?.webAssembly, rootComponentManager);
+  webAssemblyLoadingState = WebAssemblyLoadingState.Starting;
+  await startWebAssembly(rootComponentManager);
   await waitForRendererAttached(WebRendererId.WebAssembly);
+  webAssemblyLoadingState = WebAssemblyLoadingState.Started;
   handleUpdatedComponentDescriptors();
 }
 

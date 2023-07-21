@@ -202,7 +202,7 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
 
     private bool IsWellFormedServerComponent(ComponentMarker record)
     {
-        if (record.Type != ComponentMarker.ServerMarkerType)
+        if (record.Type is not (ComponentMarker.ServerMarkerType or ComponentMarker.AutoMarkerType))
         {
             Log.InvalidMarkerType(_logger, record.Type);
             return false;

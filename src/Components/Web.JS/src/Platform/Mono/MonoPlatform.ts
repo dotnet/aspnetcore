@@ -51,8 +51,12 @@ function getValueU64(ptr: number) {
 }
 
 export const monoPlatform: Platform = {
-  start: function start(options: Partial<WebAssemblyStartOptions>) {
+  load: function load(options: Partial<WebAssemblyStartOptions>) {
     return createRuntimeInstance(options);
+  },
+
+  start: function start() {
+    return configureRuntimeInstance();
   },
 
   callEntryPoint: async function callEntryPoint(): Promise<any> {
@@ -207,7 +211,7 @@ function prepareRuntimeConfig(options: Partial<WebAssemblyStartOptions>): Dotnet
   return dotnetModuleConfig;
 }
 
-async function createRuntimeInstance(options: Partial<WebAssemblyStartOptions>): Promise<PlatformApi> {
+async function createRuntimeInstance(options: Partial<WebAssemblyStartOptions>): Promise<void> {
   const { dotnet } = await importDotnetJs(options);
   const moduleConfig = prepareRuntimeConfig(options);
 
@@ -231,6 +235,13 @@ async function createRuntimeInstance(options: Partial<WebAssemblyStartOptions>):
   }
 
   runtime = await dotnet.create();
+}
+
+async function configureRuntimeInstance(): Promise<PlatformApi> {
+  if (!runtime) {
+    throw new Error('The runtime must be loaded it gets configured.');
+  }
+
   const { MONO: mono, BINDING: binding, Module: module, setModuleImports, INTERNAL: mono_internal, getConfig, invokeLibraryInitializers } = runtime;
   Module = module;
   BINDING = binding;
