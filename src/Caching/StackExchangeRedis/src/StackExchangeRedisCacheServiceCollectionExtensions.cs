@@ -51,6 +51,8 @@ public static class StackExchangeRedisCacheServiceCollectionExtensions
 
         services.Configure(setupAction);
         // replace here (Add vs TryAdd) is intentional and part of test conditions
+        // long-form name qualification is because of the #if conditional; we'd need a matchin #if around
+        // a using directive, which is messy
         services.AddSingleton<AspNetCore.OutputCaching.IOutputCacheStore, RedisOutputCacheStoreImpl>();
 
         return services;

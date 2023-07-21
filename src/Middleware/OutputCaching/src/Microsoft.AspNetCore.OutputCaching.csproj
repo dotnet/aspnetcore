@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.OutputCaching.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.OutputCaching.Microbenchmarks" />
   </ItemGroup>
   
   <ItemGroup>
@@ -21,7 +22,6 @@
 
   <ItemGroup>
     <Compile Include="$(RepoRoot)src\Shared\TaskToApm.cs" Link="Streams\TaskToApm.cs" />
-    <Compile Include="$(RepoRoot)src\Shared\SegmentWriteStream.cs" Link="Streams\SegmentWriteStream.cs" />
   </ItemGroup>
 
 </Project>
