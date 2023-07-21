@@ -207,7 +207,7 @@ internal partial class EndpointHtmlRenderer
             var marker = boundary.ToMarker(_httpContext, sequenceAndKey.Sequence, sequenceAndKey.Key);
             endMarkerOrNull = marker.ToEndMarker();
 
-            if (!_httpContext.Response.HasStarted && marker.Type is ComponentMarker.ServerMarkerType or ComponentMarker.WebAssemblyMarkerType)
+            if (!_httpContext.Response.HasStarted && marker.Type is ComponentMarker.ServerMarkerType or ComponentMarker.AutoMarkerType)
             {
                 _httpContext.Response.Headers.CacheControl = "no-cache, no-store, max-age=0";
             }
