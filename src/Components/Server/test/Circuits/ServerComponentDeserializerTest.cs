@@ -408,46 +408,48 @@ public class ServerComponentDeserializerTest
             new ComponentParameterDeserializer(NullLogger<ComponentParameterDeserializer>.Instance, new ComponentParametersTypeCache()));
     }
 
-    private string SerializeMarkers(ServerComponentMarker[] markers) =>
+    private string SerializeMarkers(ComponentMarker[] markers) =>
         JsonSerializer.Serialize(markers, ServerComponentSerializationSettings.JsonSerializationOptions);
 
-    private ServerComponentMarker[] CreateMarkers(params Type[] types)
+    private ComponentMarker[] CreateMarkers(params Type[] types)
     {
         var serializer = new ServerComponentSerializer(_ephemeralDataProtectionProvider);
-        var markers = new ServerComponentMarker[types.Length];
+        var markers = new ComponentMarker[types.Length];
         for (var i = 0; i < types.Length; i++)
         {
-            markers[i] = serializer.SerializeInvocation(_invocationSequence, types[i], ParameterView.Empty, null, false);
+            markers[i] = ComponentMarker.Create(ComponentMarker.ServerMarkerType, false, null);
+            serializer.SerializeInvocation(ref markers[i], _invocationSequence, types[i], ParameterView.Empty);
         }
 
         return markers;
     }
 
-    private ServerComponentMarker[] CreateMarkers(params (Type, Dictionary<string, object>)[] types)
+    private ComponentMarker[] CreateMarkers(params (Type, Dictionary<string, object>)[] types)
     {
         var serializer = new ServerComponentSerializer(_ephemeralDataProtectionProvider);
-        var markers = new ServerComponentMarker[types.Length];
+        var markers = new ComponentMarker[types.Length];
         for (var i = 0; i < types.Length; i++)
         {
             var (type, parameters) = types[i];
-            markers[i] = serializer.SerializeInvocation(
+            markers[i] = ComponentMarker.Create(ComponentMarker.ServerMarkerType, false, null);
+            serializer.SerializeInvocation(
+                ref markers[i],
                 _invocationSequence,
                 type,
-                parameters == null ? ParameterView.Empty : ParameterView.FromDictionary(parameters),
-                null,
-                false);
+                parameters == null ? ParameterView.Empty : ParameterView.FromDictionary(parameters));
         }
 
         return markers;
     }
 
-    private ServerComponentMarker[] CreateMarkers(ServerComponentInvocationSequence sequence, params Type[] types)
+    private ComponentMarker[] CreateMarkers(ServerComponentInvocationSequence sequence, params Type[] types)
     {
         var serializer = new ServerComponentSerializer(_ephemeralDataProtectionProvider);
-        var markers = new ServerComponentMarker[types.Length];
+        var markers = new ComponentMarker[types.Length];
         for (var i = 0; i < types.Length; i++)
         {
-            markers[i] = serializer.SerializeInvocation(sequence, types[i], ParameterView.Empty, null, false);
+            markers[i] = ComponentMarker.Create(ComponentMarker.ServerMarkerType, false, null);
+            serializer.SerializeInvocation(ref markers[i], sequence, types[i], ParameterView.Empty);
         }
 
         return markers;
