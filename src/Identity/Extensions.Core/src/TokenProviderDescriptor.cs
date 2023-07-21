@@ -11,8 +11,8 @@ namespace Microsoft.AspNetCore.Identity;
 /// </summary>
 public class TokenProviderDescriptor
 {
-    // Temporary fix to test MapIdentityApi's support for multiple TUser and TContext.
-    // There's nothing as permanent as a temporary fix, but it seems better than now support.
+    // Provides support for multiple TUser types at once.
+    // See MapIdentityApiTests.CanAddEndpointsToMultipleRouteGroupsForMultipleUsersTypes for example usage.
     private readonly Stack<Type> _providerTypes = new(1);
 
     /// <summary>

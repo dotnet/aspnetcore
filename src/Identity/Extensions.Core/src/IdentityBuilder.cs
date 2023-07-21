@@ -153,6 +153,7 @@ public class IdentityBuilder
             // by a SignInManager with a different UserType. We'll continue to just overwrite ProviderInstance until someone asks for a fix though.
             if (options.Tokens.ProviderMap.TryGetValue(providerName, out var descriptor))
             {
+                descriptor.ProviderInstance = null;
                 descriptor.AddProviderType(provider);
             }
             else

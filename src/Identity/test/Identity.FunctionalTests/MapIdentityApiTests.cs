@@ -15,7 +15,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing;
@@ -207,7 +206,7 @@ public class MapIdentityApiTests : LoggedTest
 
         // The normal header still works
         client.DefaultRequestHeaders.Authorization = new("Bearer", accessToken);
-        Assert.Equal($"Hello, {Username}!", await client.GetStringAsync($"/auth/hello"));
+        Assert.Equal($"Hello, {Username}!", await client.GetStringAsync("/auth/hello"));
     }
 
     [Theory]
@@ -217,13 +216,13 @@ public class MapIdentityApiTests : LoggedTest
         await using var app = await CreateAppAsync(AddIdentityActions[addIdentityMode]);
         using var client = app.GetTestClient();
 
-        AssertUnauthorizedAndEmpty(await client.GetAsync($"/auth/hello"));
+        AssertUnauthorizedAndEmpty(await client.GetAsync("/auth/hello"));
 
         client.DefaultRequestHeaders.Authorization = new("Bearer");
-        AssertUnauthorizedAndEmpty(await client.GetAsync($"/auth/hello"));
+        AssertUnauthorizedAndEmpty(await client.GetAsync("/auth/hello"));
 
         client.DefaultRequestHeaders.Authorization = new("Bearer", "");
-        AssertUnauthorizedAndEmpty(await client.GetAsync($"/auth/hello"));
+        AssertUnauthorizedAndEmpty(await client.GetAsync("/auth/hello"));
     }
 
     [Theory]
@@ -541,7 +540,7 @@ public class MapIdentityApiTests : LoggedTest
 
         // Even with OnModelCreating tricks to prefix table names, using the same database
         // for multiple user tables is difficult because index conflics, so we just use a different db.
-        var dbConnection2 = new SqliteConnection($"DataSource=:memory:");
+        var dbConnection2 = new SqliteConnection("DataSource=:memory:");
 
         await using var app = await CreateAppAsync<ApplicationUser, ApplicationDbContext>(services =>
         {
@@ -598,7 +597,7 @@ public class MapIdentityApiTests : LoggedTest
 
         client.DefaultRequestHeaders.Authorization = new("Bearer", accessToken);
 
-        // We cannot enable 2fa without verifying we can produce a valid one.
+        // We cannot enable 2fa without verifying we can produce a valid token.
         await AssertValidationProblemAsync(await client.PostAsJsonAsync("/identity/account/2fa", new { Enable = true }),
             "RequiresTwoFactor");
         await AssertValidationProblemAsync(await client.PostAsJsonAsync("/identity/account/2fa", new { Enable = true, TwoFactorCode = "wrong" }),
@@ -823,21 +822,17 @@ public class MapIdentityApiTests : LoggedTest
         Assert.True(enable2faContent.GetProperty("isTwoFactorEnabled").GetBoolean());
         Assert.False(enable2faContent.GetProperty("isMachineRemembered").GetBoolean());
 
-        client.DefaultRequestHeaders.Clear();
-
         await AssertProblemAsync(await client.PostAsJsonAsync("/identity/login", new { Username, Password }),
             "RequiresTwoFactor");
 
-        var twoFactorLoginResponse = await client.PostAsJsonAsync("/identity/login?cookieMode=true", new { Username, Password, twoFactorCode });
+        var twoFactorLoginResponse = await client.PostAsJsonAsync("/identity/login?cookieMode=true&persistCookies=false", new { Username, Password, twoFactorCode });
         ApplyCookies(client, twoFactorLoginResponse);
 
         var cookie2faResponse = await client.GetFromJsonAsync<JsonElement>("/identity/account/2fa");
         Assert.True(cookie2faResponse.GetProperty("isTwoFactorEnabled").GetBoolean());
-        Assert.False(enable2faContent.GetProperty("isMachineRemembered").GetBoolean());
+        Assert.False(cookie2faResponse.GetProperty("isMachineRemembered").GetBoolean());
 
-        client.DefaultRequestHeaders.Clear();
-
-        var persistentLoginResponse = await client.PostAsJsonAsync("/identity/login?cookieMode=true&persistCookies=true", new { Username, Password, twoFactorCode });
+        var persistentLoginResponse = await client.PostAsJsonAsync("/identity/login?cookieMode=true", new { Username, Password, twoFactorCode });
         ApplyCookies(client, persistentLoginResponse);
 
         var persistent2faResponse = await client.GetFromJsonAsync<JsonElement>("/identity/account/2fa");
@@ -1133,9 +1128,9 @@ public class MapIdentityApiTests : LoggedTest
         client.DefaultRequestHeaders.Clear();
 
         // We can immediately log in with the new password
-        await AssertProblemAsync(await client.PostAsJsonAsync($"/identity/login", new { Username, Password }),
+        await AssertProblemAsync(await client.PostAsJsonAsync("/identity/login", new { Username, Password }),
             "Failed");
-        AssertOk(await client.PostAsJsonAsync($"/identity/login", new { Username, Password = newPassword }));
+        AssertOk(await client.PostAsJsonAsync("/identity/login", new { Username, Password = newPassword }));
     }
 
     [Fact]
@@ -1154,7 +1149,7 @@ public class MapIdentityApiTests : LoggedTest
         var multipleProblemResponse = await client.PostAsJsonAsync("/identity/account/info", new { newPassword, NewUsername = "taken" });
 
         Assert.Equal(HttpStatusCode.BadRequest, multipleProblemResponse.StatusCode);
-        var problemDetails = await multipleProblemResponse.Content.ReadFromJsonAsync<ValidationProblemDetails>();
+        var problemDetails = await multipleProblemResponse.Content.ReadFromJsonAsync<HttpValidationProblemDetails>();
         Assert.NotNull(problemDetails);
 
         Assert.Equal(2, problemDetails.Errors.Count);
@@ -1163,7 +1158,7 @@ public class MapIdentityApiTests : LoggedTest
 
         // We can in fact update multiple things at once if we do it correctly though.
         AssertOk(await client.PostAsJsonAsync("/identity/account/info", new { OldPassword = Password, newPassword, NewUsername = "not-taken" }));
-        AssertOk(await client.PostAsJsonAsync($"/identity/login", new { Username = "not-taken", Password = newPassword }));
+        AssertOk(await client.PostAsJsonAsync("/identity/login", new { Username = "not-taken", Password = newPassword }));
     }
 
     private async Task<WebApplication> CreateAppAsync<TUser, TContext>(Action<IServiceCollection>? configureServices, bool autoStart = true)
@@ -1175,7 +1170,7 @@ public class MapIdentityApiTests : LoggedTest
         builder.Services.AddSingleton(LoggerFactory);
         builder.Services.AddAuthorization();
 
-        var dbConnection = new SqliteConnection($"DataSource=:memory:");
+        var dbConnection = new SqliteConnection("DataSource=:memory:");
         // Dispose SqliteConnection with host by registering as a singleton factory.
         builder.Services.AddSingleton(_ => dbConnection);
 
@@ -1331,7 +1326,7 @@ public class MapIdentityApiTests : LoggedTest
     private static async Task AssertProblemAsync(HttpResponseMessage response, string detail, HttpStatusCode status = HttpStatusCode.Unauthorized)
     {
         Assert.Equal(status, response.StatusCode);
-        var problem = await response.Content.ReadFromJsonAsync<ProblemDetails>();
+        var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>();
         Assert.NotNull(problem);
         Assert.Equal(ReasonPhrases.GetReasonPhrase((int)status), problem.Title);
         Assert.Equal(detail, problem.Detail);
@@ -1340,7 +1335,7 @@ public class MapIdentityApiTests : LoggedTest
     private static async Task AssertValidationProblemAsync(HttpResponseMessage response, string error)
     {
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        var problem = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>();
+        var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>();
         Assert.NotNull(problem);
         var errorEntry = Assert.Single(problem.Errors);
         Assert.Equal(error, errorEntry.Key);
