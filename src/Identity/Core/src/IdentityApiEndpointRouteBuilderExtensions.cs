@@ -28,8 +28,6 @@ namespace Microsoft.AspNetCore.Routing;
 /// </summary>
 public static class IdentityApiEndpointRouteBuilderExtensions
 {
-    private static readonly NoopResult _noopHttpResult = new();
-
     /// <summary>
     /// Add endpoints for registering, logging in, and logging out using ASP.NET Core Identity.
     /// </summary>
@@ -107,7 +105,7 @@ public static class IdentityApiEndpointRouteBuilderExtensions
             if (result.Succeeded)
             {
                 // The signInManager already produced the needed response in the form of a cookie or bearer token.
-                return _noopHttpResult;
+                return TypedResults.Empty;
             }
 
             return TypedResults.Problem(result.ToString(), statusCode: StatusCodes.Status401Unauthorized);
