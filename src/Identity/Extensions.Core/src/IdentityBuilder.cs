@@ -149,7 +149,16 @@ public class IdentityBuilder
         }
         Services.Configure<IdentityOptions>(options =>
         {
-            options.Tokens.ProviderMap[providerName] = new TokenProviderDescriptor(provider);
+            // Overwrite ProviderType if it exists for backcompat, but keep a reference to the old one in case it's needed
+            // by a SignInManager with a different UserType. We'll continue to just overwrite ProviderInstance until someone asks for a fix though.
+            if (options.Tokens.ProviderMap.TryGetValue(providerName, out var descriptor))
+            {
+                descriptor.AddProviderType(provider);
+            }
+            else
+            {
+                options.Tokens.ProviderMap[providerName] = new TokenProviderDescriptor(provider);
+            }
         });
         Services.AddTransient(provider);
         return this;
