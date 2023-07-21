@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Routing;
 /// </summary>
 public static class IdentityApiEndpointRouteBuilderExtensions
 {
-    private static readonly NoopResult _noopHttpResult = new NoopResult();
+    private static readonly NoopResult _noopHttpResult = new();
 
     /// <summary>
     /// Add endpoints for registering, logging in, and logging out using ASP.NET Core Identity.
@@ -424,12 +424,8 @@ public static class IdentityApiEndpointRouteBuilderExtensions
                 routeValues.Add("changedEmail", email);
             }
 
-            var confirmEmailUrl = linkGenerator.GetPathByName(confirmEmailEndpointName, routeValues);
-
-            if (confirmEmailUrl is null)
-            {
-                throw new NotSupportedException($"Could not find endpoint named '{confirmEmailEndpointName}'.");
-            }
+            var confirmEmailUrl = linkGenerator.GetPathByName(confirmEmailEndpointName, routeValues)
+                ?? throw new NotSupportedException($"Could not find endpoint named '{confirmEmailEndpointName}'.");
 
             await emailSender.SendEmailAsync(email, "Confirm your email",
                 $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(confirmEmailUrl)}'>clicking here</a>.");

@@ -36,10 +36,6 @@
     <Reference Include="Microsoft.Extensions.Identity.Stores" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Areas\Identity\Services\" />
-  </ItemGroup>
-
   <Target Name="SetupRazorInputs" BeforeTargets="ResolveRazorGenerateInputs">
     <ItemGroup>
       <_RazorGenerate Include="Areas\Identity\Pages\**\*.cshtml" />
@@ -61,7 +57,14 @@
         <ContentRoot>$([System.IO.Path]::GetFullPath($(_ReferenceAssetContentRoot)))</ContentRoot>
       </ReferenceAssetCandidates>
     </ItemGroup>
-    <DefineStaticWebAssets Condition="'@(ReferenceAssetCandidates-&gt;Count())' != '0'" CandidateAssets="@(ReferenceAssetCandidates)" SourceId="$(PackageId)" SourceType="Project" AssetKind="All" BasePath="$(StaticWebAssetBasePath)">
+    <DefineStaticWebAssets
+      Condition="'@(ReferenceAssetCandidates->Count())' != '0'"
+      CandidateAssets="@(ReferenceAssetCandidates)"
+      SourceId="$(PackageId)"
+      SourceType="Project"
+      AssetKind="All"
+      BasePath="$(StaticWebAssetBasePath)"
+    >
       <Output TaskParameter="Assets" ItemName="ReferenceAsset" />
     </DefineStaticWebAssets>
     <ItemGroup>

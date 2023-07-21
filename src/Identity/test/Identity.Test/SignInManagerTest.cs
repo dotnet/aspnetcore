@@ -3,6 +3,7 @@
 
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -105,7 +106,7 @@ public class SignInManagerTest
         var options = new Mock<IOptions<IdentityOptions>>();
         options.Setup(a => a.Value).Returns(identityOptions);
         var claimsFactory = new UserClaimsPrincipalFactory<PocoUser, PocoRole>(manager, roleManager.Object, options.Object);
-        schemeProvider = schemeProvider ?? new Mock<IAuthenticationSchemeProvider>().Object;
+        schemeProvider = schemeProvider ?? new MockSchemeProvider();
         var sm = new SignInManager<PocoUser>(manager, contextAccessor.Object, claimsFactory, options.Object, null, schemeProvider, new DefaultUserConfirmation<PocoUser>());
         sm.Logger = logger ?? NullLogger<SignInManager<PocoUser>>.Instance;
         return sm;
@@ -1276,5 +1277,30 @@ public class SignInManagerTest
 
             return Task.CompletedTask;
         }
+    }
+
+    private sealed class MockSchemeProvider : IAuthenticationSchemeProvider
+    {
+        private static AuthenticationScheme CreateCookieScheme(string name) => new(IdentityConstants.ApplicationScheme, displayName: null, typeof(CookieAuthenticationHandler));
+
+        private static readonly Dictionary<string, AuthenticationScheme> _defaultCookieSchemes = new()
+        {
+            [IdentityConstants.ApplicationScheme] = CreateCookieScheme(IdentityConstants.ApplicationScheme),
+            [IdentityConstants.ExternalScheme] = CreateCookieScheme(IdentityConstants.ExternalScheme),
+            [IdentityConstants.TwoFactorRememberMeScheme] = CreateCookieScheme(IdentityConstants.TwoFactorRememberMeScheme),
+            [IdentityConstants.TwoFactorUserIdScheme] = CreateCookieScheme(IdentityConstants.TwoFactorUserIdScheme),
+        };
+
+        public Task<IEnumerable<AuthenticationScheme>> GetAllSchemesAsync() => Task.FromResult<IEnumerable<AuthenticationScheme>>(_defaultCookieSchemes.Values);
+        public Task<AuthenticationScheme> GetSchemeAsync(string name) => Task.FromResult(_defaultCookieSchemes.TryGetValue(name, out var scheme) ? scheme : null);
+
+        public void AddScheme(AuthenticationScheme scheme) => throw new NotImplementedException();
+        public void RemoveScheme(string name) => throw new NotImplementedException();
+        public Task<AuthenticationScheme> GetDefaultAuthenticateSchemeAsync() => throw new NotImplementedException();
+        public Task<AuthenticationScheme> GetDefaultChallengeSchemeAsync() => throw new NotImplementedException();
+        public Task<AuthenticationScheme> GetDefaultForbidSchemeAsync() => throw new NotImplementedException();
+        public Task<AuthenticationScheme> GetDefaultSignInSchemeAsync() => throw new NotImplementedException();
+        public Task<AuthenticationScheme> GetDefaultSignOutSchemeAsync() => throw new NotImplementedException();
+        public Task<IEnumerable<AuthenticationScheme>> GetRequestHandlerSchemesAsync() => throw new NotImplementedException();
     }
 }
