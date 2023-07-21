@@ -30,11 +30,11 @@ type RootComponentInfo = {
   interactiveComponentId?: number;
 }
 
-let resolveAutoMode: () => 'server' | 'webassembly' = () => {
+let resolveAutoMode: () => 'server' | 'webassembly' | null = () => {
   throw new Error('No auto mode resolver has been attached');
 };
 
-export function attachAutoModeResolver(resolver: () => 'server' | 'webassembly') {
+export function attachAutoModeResolver(resolver: () => 'server' | 'webassembly' | null) {
   resolveAutoMode = resolver;
 }
 
@@ -87,13 +87,15 @@ export class RootComponentManager {
     }
   }
 
-  private getRendererIdForDescriptor(descriptor: ComponentDescriptor): WebRendererId {
+  private getRendererIdForDescriptor(descriptor: ComponentDescriptor): WebRendererId | null {
     const resolvedType = descriptor.type === 'auto' ? resolveAutoMode() : descriptor.type;
     switch (resolvedType) {
       case 'server':
         return WebRendererId.Server;
       case 'webassembly':
         return WebRendererId.WebAssembly;
+      case null:
+        return null;
     }
   }
 
@@ -106,6 +108,12 @@ export class RootComponentManager {
         }
 
         const rendererId = this.getRendererIdForDescriptor(descriptor);
+        if (rendererId === null) {
+          // The renderer ID for the component has not been decided yet,
+          // probably because the component has an "auto" render mode.
+          return null;
+        }
+
         if (!isRendererAttached(rendererId)) {
           // The renderer for this descriptor is not attached, so we'll no-op.
           // An alternative would be to asynchronously wait for the renderer to attach before
