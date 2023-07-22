@@ -1,1 +1,4 @@
 #nullable enable
+*REMOVED*static Microsoft.AspNetCore.Http.Results.Ok(object? value = null) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.Ok() -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.Ok(object? value) -> Microsoft.AspNetCore.Http.IResult!
