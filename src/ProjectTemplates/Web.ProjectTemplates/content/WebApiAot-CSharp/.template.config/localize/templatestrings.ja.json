@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
-  "name": "ASP.NET Core Web API (native AOT)",
-  "description": "A project template for creating a RESTful Web API using ASP.NET Core minimal APIs published as native AOT.",
+  "name": "ASP.NET Core Web API (ネイティブ AOT)",
+  "description": "最小限の API.NET Core API を使用して RESTful Web API を作成するプロジェクト テンプレート。ネイティブ AOT として公開されます。",
   "symbols/ExcludeLaunchSettings/description": "Whether to exclude launchSettings.json from the generated template.",
   "symbols/kestrelHttpPort/description": "Port number to use for the HTTP endpoint in launchSettings.json.",
   "symbols/iisHttpPort/description": "Port number to use for the IIS Express HTTP endpoint in launchSettings.json.",
