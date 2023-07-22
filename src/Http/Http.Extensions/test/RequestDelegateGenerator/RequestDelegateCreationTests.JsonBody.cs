@@ -16,6 +16,7 @@ public abstract partial class RequestDelegateCreationTests
         get
         {
             var expectedBody = """{"id":0,"name":"Test Item","isComplete":false}""";
+            var nullBody = """null""";
             var todo = new Todo()
             {
                 Id = 0,
@@ -53,23 +54,23 @@ app.MapPost("/", postTodoWithDefault){withFilter}
                 new object[] { fromBodyRequiredSource, null, 400, string.Empty },
                 new object[] { fromBodyAsParametersRequiredSource, todo, 200, expectedBody },
                 new object[] { fromBodyEmptyBodyBehaviorSource, todo, 200, expectedBody },
-                new object[] { fromBodyEmptyBodyBehaviorSource, null, 200, string.Empty },
+                new object[] { fromBodyEmptyBodyBehaviorSource, null, 200, nullBody },
                 new object[] { fromBodyAllowEmptySource, todo, 200, expectedBody },
-                new object[] { fromBodyAllowEmptySource, null, 200, string.Empty },
+                new object[] { fromBodyAllowEmptySource, null, 200, nullBody },
                 new object[] { fromBodyNullableSource, todo, 200, expectedBody },
-                new object[] { fromBodyNullableSource, null, 200, string.Empty },
+                new object[] { fromBodyNullableSource, null, 200, nullBody },
                 new object[] { fromBodyDefaultValueSource, todo, 200, expectedBody },
-                new object[] { fromBodyDefaultValueSource, null, 200, string.Empty },
+                new object[] { fromBodyDefaultValueSource, null, 200, nullBody },
                 new object[] { fromBodyRequiredWithFilterSource, todo, 200, expectedBody },
                 new object[] { fromBodyRequiredWithFilterSource, null, 400, string.Empty },
                 new object[] { fromBodyEmptyBehaviorWithFilterSource, todo, 200, expectedBody },
-                new object[] { fromBodyEmptyBehaviorWithFilterSource, null, 200, string.Empty },
+                new object[] { fromBodyEmptyBehaviorWithFilterSource, null, 200, nullBody },
                 new object[] { fromBodyAllowEmptyWithFilterSource, todo, 200, expectedBody },
-                new object[] { fromBodyAllowEmptyWithFilterSource, null, 200, string.Empty },
+                new object[] { fromBodyAllowEmptyWithFilterSource, null, 200, nullBody },
                 new object[] { fromBodyNullableWithFilterSource, todo, 200, expectedBody },
-                new object[] { fromBodyNullableWithFilterSource, null, 200, string.Empty },
+                new object[] { fromBodyNullableWithFilterSource, null, 200, nullBody },
                 new object[] { fromBodyDefaultValueWithFilterSource, todo, 200, expectedBody },
-                new object[] { fromBodyDefaultValueSource, null, 200, string.Empty },
+                new object[] { fromBodyDefaultValueSource, null, 200, nullBody },
             };
         }
     }
@@ -114,6 +115,7 @@ app.MapPost("/", postTodoWithDefault){withFilter}
     public async Task MapAction_ExplicitBodyParam_ComplexReturn_Snapshot()
     {
         var expectedBody = """{"id":0,"name":"Test Item","isComplete":false}""";
+        var nullBody = """null""";
         var todo = new Todo()
         {
             Id = 0,
@@ -150,7 +152,7 @@ app.MapPost("/fromBodyOptional", ([FromBody] Todo? todo) => TypedResults.Ok(todo
         // formBodyOptional accepts a null input
         httpContext = CreateHttpContextWithBody(null);
         await endpoints[1].RequestDelegate(httpContext);
-        await VerifyResponseBodyAsync(httpContext, string.Empty);
+        await VerifyResponseBodyAsync(httpContext, nullBody);
     }
 
     public static object[][] ImplicitRawFromBodyActions

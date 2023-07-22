@@ -30,15 +30,10 @@ internal static partial class HttpResultsHelper
         string? contentType = null,
         JsonSerializerOptions? jsonSerializerOptions = null)
     {
-        if (value is null)
-        {
-            return Task.CompletedTask;
-        }
-
         jsonSerializerOptions ??= ResolveJsonOptions(httpContext).SerializerOptions;
-        var jsonTypeInfo = (JsonTypeInfo<TValue>)jsonSerializerOptions.GetTypeInfo(typeof(TValue));
+        var jsonTypeInfo = (JsonTypeInfo<TValue?>)jsonSerializerOptions.GetTypeInfo(typeof(TValue?));
 
-        Type? runtimeType = value.GetType();
+        var runtimeType = value?.GetType();
         if (jsonTypeInfo.ShouldUseWith(runtimeType))
         {
             Log.WritingResultAsJson(logger, jsonTypeInfo.Type.Name);
@@ -51,11 +46,11 @@ internal static partial class HttpResultsHelper
         Log.WritingResultAsJson(logger, runtimeType.Name);
         // Since we don't know the type's polymorphic characteristics
         // our best option is to serialize the value as 'object'.
-        // call WriteAsJsonAsync<object>() rather than the declared type
+        // call WriteAsJsonAsync<object?>() rather than the declared type
         // and avoid source generators issues.
         // https://github.com/dotnet/aspnetcore/issues/43894
         // https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json-polymorphism
-        return httpContext.Response.WriteAsJsonAsync<object>(
+        return httpContext.Response.WriteAsJsonAsync<object?>(
            value,
            jsonSerializerOptions,
            contentType: contentType);

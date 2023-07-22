@@ -76,6 +76,90 @@ public partial class HttpResultsHelperTests
     }
 
     [Theory]
+    [InlineData(true, true)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(false, false)]
+    public async Task WriteResultAsJsonAsync_Works_ForNullableValueTypes(bool useJsonContext, bool nullValue)
+    {
+        // Arrange
+        TodoStruct? value = nullValue ? null : new TodoStruct()
+        {
+            Id = 1,
+            IsComplete = true,
+            Name = "Write even more tests!",
+        };
+        var responseBodyStream = new MemoryStream();
+        var httpContext = CreateHttpContext(responseBodyStream);
+        var serializerOptions = new JsonOptions().SerializerOptions;
+
+        if (useJsonContext)
+        {
+            serializerOptions.TypeInfoResolver = TestJsonContext.Default;
+        }
+
+        // Act
+        await HttpResultsHelper.WriteResultAsJsonAsync<TodoStruct?>(httpContext, NullLogger.Instance, value, jsonSerializerOptions: serializerOptions);
+
+        // Assert
+        var body = JsonSerializer.Deserialize<TodoStruct?>(responseBodyStream.ToArray(), serializerOptions);
+
+        if (nullValue)
+        {
+            Assert.Null(body);
+        }
+        else
+        {
+            Assert.NotNull(body);
+            Assert.Equal("Write even more tests!", body.Value.Name);
+            Assert.True(body.Value.IsComplete);
+        }
+    }
+
+#nullable enable
+    [Theory]
+    [InlineData(true, true)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(false, false)]
+    public async Task WriteResultAsJsonAsync_Works_ForNullableReferenceTypes(bool useJsonContext, bool nullValue)
+    {
+        // Arrange
+        var value = nullValue ? null : new Todo()
+        {
+            Id = 1,
+            IsComplete = true,
+            Name = "Write even more tests!",
+        };
+        var responseBodyStream = new MemoryStream();
+        var httpContext = CreateHttpContext(responseBodyStream);
+        var serializerOptions = new JsonOptions().SerializerOptions;
+
+        if (useJsonContext)
+        {
+            serializerOptions.TypeInfoResolver = TestJsonContext.Default;
+        }
+
+        // Act
+        await HttpResultsHelper.WriteResultAsJsonAsync<Todo?>(httpContext, NullLogger.Instance, value, jsonSerializerOptions: serializerOptions);
+
+        // Assert
+        var body = JsonSerializer.Deserialize<Todo?>(responseBodyStream.ToArray(), serializerOptions);
+
+        if (nullValue)
+        {
+            Assert.Null(body);
+        }
+        else
+        {
+            Assert.NotNull(body);
+            Assert.Equal("Write even more tests!", body!.Name);
+            Assert.True(body!.IsComplete);
+        }
+    }
+#nullable restore
+
+    [Theory]
     [InlineData(true)]
     [InlineData(false)]
     public async Task WriteResultAsJsonAsync_Works_ForChildTypes(bool useJsonContext)
@@ -250,6 +334,7 @@ public partial class HttpResultsHelperTests
     [JsonSerializable(typeof(TodoChild))]
     [JsonSerializable(typeof(JsonTodo))]
     [JsonSerializable(typeof(TodoStruct))]
+    [JsonSerializable(typeof(TodoStruct?))]
     [JsonSerializable(typeof(IAsyncEnumerable<JsonTodo>))]
     [JsonSerializable(typeof(JsonTodo[]))]
     private partial class TestJsonContext : JsonSerializerContext
