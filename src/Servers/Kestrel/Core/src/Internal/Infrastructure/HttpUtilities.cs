@@ -605,4 +605,15 @@ internal static partial class HttpUtilities
     }
 }
 
-internal sealed record AltSvcHeader(string Value, byte[] RawBytes);
+internal sealed class AltSvcHeader
+{
+    public string Value { get; }
+    
+    public byte[] RawBytes { get; }
+
+    public AltSvcHeader(string value, byte[] rawBytes)
+    {
+        Value = value;
+        RawBytes = rawBytes;
+    }
+}

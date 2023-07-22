@@ -576,10 +576,44 @@ internal sealed class ComplexTypeExpressionConverterFactory<T>(FormDataMetadataF
             Expression.Parameter(typeof(bool).MakeByRefType(), "foundValue"));
     }
 
-    private record struct FormDataConverterReadParameters(
-        ParameterExpression ReaderParam,
-        ParameterExpression TypeParam,
-        ParameterExpression OptionsParam,
-        ParameterExpression ResultParam,
-        ParameterExpression FoundValueParam);
+    private readonly struct FormDataConverterReadParameters
+    {
+        public ParameterExpression ReaderParam { get; }
+
+        public ParameterExpression TypeParam { get; }
+
+        public ParameterExpression OptionsParam { get; }
+
+        public ParameterExpression ResultParam { get; }
+
+        public ParameterExpression FoundValueParam { get; }
+
+        public FormDataConverterReadParameters(
+            ParameterExpression readerParam,
+            ParameterExpression typeParam,
+            ParameterExpression optionsParam,
+            ParameterExpression resultParam,
+            ParameterExpression foundValueParam)
+        {
+            ReaderParam = readerParam;
+            TypeParam = typeParam;
+            OptionsParam = optionsParam;
+            ResultParam = resultParam;
+            FoundValueParam = foundValueParam;
+        }
+
+        public void Deconstruct(
+            out ParameterExpression readerParam,
+            out ParameterExpression typeParam,
+            out ParameterExpression optionsParam,
+            out ParameterExpression resultParam,
+            out ParameterExpression foundValueParam)
+        {
+            readerParam = ReaderParam;
+            typeParam = TypeParam;
+            optionsParam = OptionsParam;
+            resultParam = ResultParam;
+            foundValueParam = FoundValueParam;
+        }
+    }
 }
