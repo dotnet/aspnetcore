@@ -7,6 +7,8 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.AspNetCore.Http.Results" />
+    <Reference Include="Microsoft.AspNetCore.Routing" />
+    <Reference Include="Microsoft.AspNetCore.TestHost" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
     <Reference Include="Mono.TextTemplating" />
 
