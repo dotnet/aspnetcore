@@ -661,9 +661,15 @@ public static partial class Results
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status200OK"/> response.
     /// </summary>
+    /// <returns>The created <see cref="IResult"/> for the response.</returns>
+    public static IResult Ok() => TypedResults.Ok();
+
+    /// <summary>
+    /// Produces a <see cref="StatusCodes.Status200OK"/> response.
+    /// </summary>
     /// <param name="value">The value to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
-    public static IResult Ok(object? value = null) => value is null ? TypedResults.Ok() : TypedResults.Ok(value);
+    public static IResult Ok(object? value) => TypedResults.Ok(value);
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status200OK"/> response.
