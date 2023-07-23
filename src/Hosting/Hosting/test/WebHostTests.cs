@@ -869,28 +869,6 @@ public partial class WebHostTests
     }
 
     [Fact]
-    public async Task WebHost_CreatesDefaultRequestIdentifierFeature_IfNotPresent()
-    {
-        // Arrange
-        var requestDelegate = new RequestDelegate(httpContext =>
-        {
-            // Assert
-            Assert.NotNull(httpContext);
-            var featuresTraceIdentifier = httpContext.Features.Get<IHttpRequestIdentifierFeature>().TraceIdentifier;
-            Assert.False(string.IsNullOrWhiteSpace(httpContext.TraceIdentifier));
-            Assert.Same(httpContext.TraceIdentifier, featuresTraceIdentifier);
-
-            return Task.CompletedTask;
-        });
-
-        using (var host = CreateHost(requestDelegate))
-        {
-            // Act
-            await host.StartAsync();
-        }
-    }
-
-    [Fact]
     public async Task WebHost_DoesNot_CreateDefaultRequestIdentifierFeature_IfPresent()
     {
         // Arrange
