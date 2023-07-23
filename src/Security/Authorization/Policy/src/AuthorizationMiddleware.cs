@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Authorization;
 
 // This middleware exists to force the correct constructor overload to be called when the user calls UseAuthorization().
 // Since we already expose the AuthorizationMiddleware type, we can't change the constructor signature without breaking it.
-internal class AuthorizationMiddlewareInternal(
+internal sealed class AuthorizationMiddlewareInternal(
     RequestDelegate next,
     IServiceProvider services,
     IAuthorizationPolicyProvider policyProvider,
