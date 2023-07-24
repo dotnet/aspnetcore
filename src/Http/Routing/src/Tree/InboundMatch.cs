@@ -12,7 +12,11 @@ namespace Microsoft.AspNetCore.Routing.Tree;
 /// A candidate route to match incoming URLs in a <see cref="TreeRouter"/>.
 /// </summary>
 [DebuggerDisplay("{DebuggerToString(),nq}")]
+#if !COMPONENTS
 public class InboundMatch
+#else
+internal class InboundMatch
+#endif
 {
     /// <summary>
     /// Gets or sets the <see cref="InboundRouteEntry"/>.

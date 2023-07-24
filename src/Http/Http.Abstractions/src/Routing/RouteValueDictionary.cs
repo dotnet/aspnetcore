@@ -8,20 +8,30 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection.Metadata;
 using System.Runtime.CompilerServices;
+#if !COMPONENTS
 using Microsoft.AspNetCore.Http.Abstractions;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Internal;
+#else
+using Microsoft.AspNetCore.Components.Reflection;
+#endif
+using Microsoft.AspNetCore.Routing;
 
 [assembly: MetadataUpdateHandler(typeof(RouteValueDictionary.MetadataUpdateHandler))]
 
 namespace Microsoft.AspNetCore.Routing;
 
+#if !COMPONENTS
 /// <summary>
 /// An <see cref="IDictionary{String, Object}"/> type for route values.
 /// </summary>
 [DebuggerTypeProxy(typeof(RouteValueDictionaryDebugView))]
 [DebuggerDisplay("Count = {Count}")]
 public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDictionary<string, object?>
+#else
+[DebuggerTypeProxy(typeof(RouteValueDictionaryDebugView))]
+[DebuggerDisplay("Count = {Count}")]
+internal class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDictionary<string, object?>
+#endif
 {
     // 4 is a good default capacity here because that leaves enough space for area/controller/action/id
     private const int DefaultCapacity = 4;
@@ -345,8 +355,12 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
 
         if (ContainsKeyArray(key))
         {
+#if !COMPONENTS
             var message = Resources.FormatRouteValueDictionary_DuplicateKey(key, nameof(RouteValueDictionary));
             throw new ArgumentException(message, nameof(key));
+#else
+            throw new ArgumentException($"An element with the key '{key}' already exists in the {nameof(RouteValueDictionary)}.");
+#endif
         }
 
         _arrayStorage[_count] = new KeyValuePair<string, object?>(key, value);
@@ -842,11 +856,7 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
 
                 if (names.TryGetValue(property.Name, out var duplicate))
                 {
-                    var message = Resources.FormatRouteValueDictionary_DuplicatePropertyName(
-                        type.FullName,
-                        property.Name,
-                        duplicate.Name,
-                        nameof(RouteValueDictionary));
+                    var message = $"The type '{type.FullName}' defines properties '{property.Name}' and '{duplicate.Name}' which differ only by casing. This is not supported by {nameof(RouteValueDictionary)} which uses case-insensitive comparisons.";
                     throw new InvalidOperationException(message);
                 }
 

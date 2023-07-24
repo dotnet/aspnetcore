@@ -1,16 +1,23 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#if !COMPONENTS
 using Microsoft.AspNetCore.Http;
+#endif
 
 namespace Microsoft.AspNetCore.Routing;
 
+#if !COMPONENTS
 /// <summary>
 /// Defines the contract that a class must implement in order to check whether a URL parameter
 /// value is valid for a constraint.
 /// </summary>
 public interface IRouteConstraint : IParameterPolicy
+#else
+internal interface IRouteConstraint : IParameterPolicy
+#endif
 {
+#if !COMPONENTS
     /// <summary>
     /// Determines whether the URL parameter contains a valid value for this constraint.
     /// </summary>
@@ -23,10 +30,17 @@ public interface IRouteConstraint : IParameterPolicy
     /// when an incoming request is being handled or when a URL is being generated.
     /// </param>
     /// <returns><c>true</c> if the URL parameter contains a valid value; otherwise, <c>false</c>.</returns>
+#endif
     bool Match(
+#if !COMPONENTS
         HttpContext? httpContext,
         IRouter? route,
+#endif
         string routeKey,
+#if !COMPONENTS
         RouteValueDictionary values,
         RouteDirection routeDirection);
+#else
+        RouteValueDictionary values);
+#endif
 }

@@ -7,10 +7,14 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Routing.Template;
 
+#if !COMPONENTS
 /// <summary>
 /// Supports matching paths to route templates and extracting parameter values.
 /// </summary>
 public class TemplateMatcher
+#else
+internal class TemplateMatcher
+#endif
 {
     // Perf: This is a cache to avoid looking things up in 'Defaults' each request.
     private readonly bool[] _hasDefaultValue;

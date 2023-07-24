@@ -7,10 +7,14 @@ using Microsoft.AspNetCore.Routing.Template;
 
 namespace Microsoft.AspNetCore.Routing.Tree;
 
+#if !COMPONENTS
 /// <summary>
 /// A tree part of a <see cref="TreeRouter"/>.
 /// </summary>
 public class UrlMatchingTree
+#else
+internal class UrlMatchingTree
+#endif
 {
     /// <summary>
     /// Initializes a new instance of <see cref="UrlMatchingTree"/>.

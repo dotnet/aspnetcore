@@ -7,15 +7,22 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Routing.Constraints;
+#if COMPONENTS
+using Microsoft.AspNetCore.Components.Routing;
+#endif
 
 namespace Microsoft.AspNetCore.Routing.Patterns;
 
+#if !COMPONENTS
 /// <summary>
 /// Contains factory methods for creating <see cref="RoutePattern"/> and related types.
 /// Use <see cref="Parse(string)"/> to parse a route pattern in
 /// string format.
 /// </summary>
 public static class RoutePatternFactory
+#else
+internal static class RoutePatternFactory
+#endif
 {
     private static readonly IReadOnlyDictionary<string, object?> EmptyDictionary =
         new ReadOnlyDictionary<string, object?>(new Dictionary<string, object?>());
@@ -977,6 +984,7 @@ public static class RoutePatternFactory
         return ParameterPolicyCore(constraint);
     }
 
+#if !COMPONENTS
     /// <summary>
     /// Creates a <see cref="RoutePatternParameterPolicyReference"/> from the provided constraint.
     /// </summary>
@@ -984,6 +992,7 @@ public static class RoutePatternFactory
     /// The constraint text, which will be resolved by <see cref="ParameterPolicyFactory"/>.
     /// </param>
     /// <returns>The <see cref="RoutePatternParameterPolicyReference"/>.</returns>
+#endif
     public static RoutePatternParameterPolicyReference Constraint(string constraint)
     {
         if (string.IsNullOrEmpty(constraint))
@@ -1008,6 +1017,7 @@ public static class RoutePatternFactory
         return ParameterPolicyCore(parameterPolicy);
     }
 
+#if !COMPONENTS
     /// <summary>
     /// Creates a <see cref="RoutePatternParameterPolicyReference"/> from the provided object.
     /// </summary>
@@ -1015,6 +1025,7 @@ public static class RoutePatternFactory
     /// The parameter policy text, which will be resolved by <see cref="ParameterPolicyFactory"/>.
     /// </param>
     /// <returns>The <see cref="RoutePatternParameterPolicyReference"/>.</returns>
+#endif
     public static RoutePatternParameterPolicyReference ParameterPolicy(string parameterPolicy)
     {
         if (string.IsNullOrEmpty(parameterPolicy))

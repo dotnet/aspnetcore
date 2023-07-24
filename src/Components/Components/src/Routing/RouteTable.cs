@@ -1,26 +1,19 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Routing.Tree;
+
 namespace Microsoft.AspNetCore.Components.Routing;
 
-internal sealed class RouteTable
+internal sealed class RouteTable(TreeRouter treeRouter)
 {
-    public RouteTable(RouteEntry[] routes)
-    {
-        Routes = routes;
-    }
+    private readonly TreeRouter _router = treeRouter;
 
-    public RouteEntry[] Routes { get; }
+    public TreeRouter? TreeRouter => _router;
 
     public void Route(RouteContext routeContext)
     {
-        for (var i = 0; i < Routes.Length; i++)
-        {
-            Routes[i].Match(routeContext);
-            if (routeContext.Handler != null)
-            {
-                return;
-            }
-        }
+        _router.Route(routeContext);
+        return;
     }
 }

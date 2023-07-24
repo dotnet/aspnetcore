@@ -2,23 +2,35 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+#if !COMPONENTS
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Matching;
+#endif
 
 namespace Microsoft.AspNetCore.Routing.Constraints;
 
+#if !COMPONENTS
 /// <summary>
 /// Constrains a route parameter to represent only decimal values.
 /// </summary>
 public class DecimalRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy, ICachableParameterPolicy
+#else
+internal class DecimalRouteConstraint : IRouteConstraint
+#endif
 {
     /// <inheritdoc />
     public bool Match(
+#if !COMPONENTS
         HttpContext? httpContext,
         IRouter? route,
+#endif
         string routeKey,
+#if !COMPONENTS
         RouteValueDictionary values,
         RouteDirection routeDirection)
+#else
+        RouteValueDictionary values)
+#endif
     {
         ArgumentNullException.ThrowIfNull(routeKey);
         ArgumentNullException.ThrowIfNull(values);
@@ -42,8 +54,10 @@ public class DecimalRouteConstraint : IRouteConstraint, IParameterLiteralNodeMat
         return decimal.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out _);
     }
 
+#if !COMPONENTS
     bool IParameterLiteralNodeMatchingPolicy.MatchesLiteral(string parameterName, string literal)
     {
         return CheckConstraintCore(literal);
     }
+#endif
 }

@@ -2,23 +2,35 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+#if !COMPONENTS
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Matching;
+#endif
 
 namespace Microsoft.AspNetCore.Routing.Constraints;
 
+#if !COMPONENTS
 /// <summary>
 /// Constrains a route parameter to represent only 32-bit floating-point values.
 /// </summary>
 public class FloatRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy, ICachableParameterPolicy
+#else
+internal class FloatRouteConstraint : IRouteConstraint
+#endif
 {
     /// <inheritdoc />
     public bool Match(
+#if !COMPONENTS
         HttpContext? httpContext,
         IRouter? route,
+#endif
         string routeKey,
+#if !COMPONENTS
         RouteValueDictionary values,
         RouteDirection routeDirection)
+#else
+        RouteValueDictionary values)
+#endif
     {
         ArgumentNullException.ThrowIfNull(routeKey);
         ArgumentNullException.ThrowIfNull(values);
@@ -46,8 +58,10 @@ public class FloatRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatch
             out _);
     }
 
+#if !COMPONENTS
     bool IParameterLiteralNodeMatchingPolicy.MatchesLiteral(string parameterName, string literal)
     {
         return CheckConstraintCore(literal);
     }
+#endif
 }

@@ -37,8 +37,12 @@ internal static class ParameterPolicyActivator
             {
                 // Error if type is not a parameter policy
                 throw new RouteCreationException(
-                            Resources.FormatDefaultInlineConstraintResolver_TypeNotConstraint(
-                                                        parameterPolicyType, parameterPolicyKey, typeof(T).Name));
+#if !COMPONENTS
+                    Resources.FormatDefaultInlineConstraintResolver_TypeNotConstraint(
+                        parameterPolicyType, parameterPolicyKey, typeof(T).Name));
+#else
+                    $"The constraint type '{parameterPolicyType}' which is mapped to constraint key '{parameterPolicyKey}' must implement the '{typeof(T).Name}' interface.");
+#endif
             }
 
             // Return null if type is parameter policy but is not the exact type
@@ -118,8 +122,12 @@ internal static class ParameterPolicyActivator
             if (matchingConstructors.Count == 0)
             {
                 throw new RouteCreationException(
-                            Resources.FormatDefaultInlineConstraintResolver_CouldNotFindCtor(
-                                                   parameterPolicyType.Name, arguments.Length));
+#if !COMPONENTS
+                    Resources.FormatDefaultInlineConstraintResolver_CouldNotFindCtor(
+                        parameterPolicyType.Name, arguments.Length));
+#else
+                $"Could not find a constructor for constraint type '{parameterPolicyType.Name}' with the following number of parameters: {arguments.Length}.");
+#endif
             }
             else
             {
@@ -179,8 +187,13 @@ internal static class ParameterPolicyActivator
         if (multipleBestLengthFound)
         {
             throw new RouteCreationException(
-                        Resources.FormatDefaultInlineConstraintResolver_AmbiguousCtors(
-                                               parameterPolicyType.Name, longestLength));
+#if !COMPONENTS
+                Resources.FormatDefaultInlineConstraintResolver_AmbiguousCtors(
+                    parameterPolicyType.Name, longestLength));
+#else
+                $"The constructor to use for activating the constraint type '{parameterPolicyType.Name}' " +
+                $"is ambiguous. Multiple constructors were found with the following number of parameters: {longestLength}.");
+#endif
         }
 
         return longest!;

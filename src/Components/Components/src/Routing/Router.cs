@@ -168,7 +168,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 
         if (!routeKey.Equals(_routeTableLastBuiltForRouteKey))
         {
-            Routes = RouteTableFactory.Create(routeKey);
+            Routes = RouteTableFactory.Create(routeKey, ServiceProvider);
             _routeTableLastBuiltForRouteKey = routeKey;
         }
     }

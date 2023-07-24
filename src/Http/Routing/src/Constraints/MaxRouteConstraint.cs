@@ -2,15 +2,21 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+#if !COMPONENTS
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Matching;
+#endif
 
 namespace Microsoft.AspNetCore.Routing.Constraints;
 
+#if !COMPONENTS
 /// <summary>
 /// Constrains a route parameter to be an integer with a maximum value.
 /// </summary>
 public class MaxRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy, ICachableParameterPolicy
+#else
+internal class MaxRouteConstraint : IRouteConstraint
+#endif
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="MaxRouteConstraint" /> class.
@@ -28,13 +34,21 @@ public class MaxRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchin
 
     /// <inheritdoc />
     public bool Match(
+#if !COMPONENTS
         HttpContext? httpContext,
         IRouter? route,
+#endif
         string routeKey,
+#if !COMPONENTS
         RouteValueDictionary values,
         RouteDirection routeDirection)
+#else
+        RouteValueDictionary values)
+#endif
     {
+#if !COMPONENTS
         ArgumentNullException.ThrowIfNull(routeKey);
+#endif
         ArgumentNullException.ThrowIfNull(values);
 
         if (values.TryGetValue(routeKey, out var value) && value != null)
@@ -55,8 +69,10 @@ public class MaxRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchin
         return false;
     }
 
+#if !COMPONENTS
     bool IParameterLiteralNodeMatchingPolicy.MatchesLiteral(string parameterName, string literal)
     {
         return CheckConstraintCore(literal);
     }
+#endif
 }

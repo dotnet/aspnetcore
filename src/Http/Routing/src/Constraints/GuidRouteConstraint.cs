@@ -2,25 +2,37 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+#if !COMPONENTS
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Matching;
+#endif
 
 namespace Microsoft.AspNetCore.Routing.Constraints;
 
+#if !COMPONENTS
 /// <summary>
 /// Constrains a route parameter to represent only <see cref="Guid"/> values.
 /// Matches values specified in any of the five formats "N", "D", "B", "P", or "X",
 /// supported by Guid.ToString(string) and Guid.ToString(String, IFormatProvider) methods.
 /// </summary>
 public class GuidRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy, ICachableParameterPolicy
+#else
+internal class GuidRouteConstraint : IRouteConstraint
+#endif
 {
     /// <inheritdoc />
     public bool Match(
+#if !COMPONENTS
         HttpContext? httpContext,
         IRouter? route,
+#endif
         string routeKey,
+#if !COMPONENTS
         RouteValueDictionary values,
         RouteDirection routeDirection)
+#else
+        RouteValueDictionary values)
+#endif
     {
         ArgumentNullException.ThrowIfNull(routeKey);
         ArgumentNullException.ThrowIfNull(values);
@@ -44,8 +56,10 @@ public class GuidRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchi
         return Guid.TryParse(valueString, out _);
     }
 
+#if !COMPONENTS
     bool IParameterLiteralNodeMatchingPolicy.MatchesLiteral(string parameterName, string literal)
     {
         return CheckConstraintCore(literal);
     }
+#endif
 }

@@ -7,44 +7,60 @@ using System.Linq;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.Logging;
+#if !COMPONENTS
 using Microsoft.Extensions.ObjectPool;
-
+#endif
 namespace Microsoft.AspNetCore.Routing.Tree;
 
+#if !COMPONENTS
 /// <summary>
 /// Builder for <see cref="TreeRouter"/> instances.
 /// </summary>
 public class TreeRouteBuilder
+#else
+internal class TreeRouteBuilder
+#endif
 {
     private readonly ILogger _logger;
     private readonly ILogger _constraintLogger;
     private readonly UrlEncoder _urlEncoder;
+#if !COMPONENTS
     private readonly ObjectPool<UriBuildingContext> _objectPool;
+#endif
     private readonly IInlineConstraintResolver _constraintResolver;
 
+#if !COMPONENTS
     /// <summary>
     /// Initializes a new instance of <see cref="TreeRouteBuilder"/>.
     /// </summary>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
     /// <param name="objectPool">The <see cref="ObjectPool{UrlBuildingContext}"/>.</param>
     /// <param name="constraintResolver">The <see cref="IInlineConstraintResolver"/>.</param>
+#endif
     internal TreeRouteBuilder(
         ILoggerFactory loggerFactory,
+#if !COMPONENTS
         ObjectPool<UriBuildingContext> objectPool,
+#endif
         IInlineConstraintResolver constraintResolver)
     {
         ArgumentNullException.ThrowIfNull(loggerFactory);
+#if !COMPONENTS
         ArgumentNullException.ThrowIfNull(objectPool);
+#endif
         ArgumentNullException.ThrowIfNull(constraintResolver);
 
         _urlEncoder = UrlEncoder.Default;
+#if !COMPONENTS
         _objectPool = objectPool;
+#endif
         _constraintResolver = constraintResolver;
 
         _logger = loggerFactory.CreateLogger<TreeRouter>();
         _constraintLogger = loggerFactory.CreateLogger(typeof(RouteConstraintMatcher).FullName);
     }
 
+#if !COMPONENTS
     /// <summary>
     /// Adds a new inbound route to the <see cref="TreeRouter"/>.
     /// </summary>
@@ -53,11 +69,20 @@ public class TreeRouteBuilder
     /// <param name="routeName">The route name.</param>
     /// <param name="order">The route order.</param>
     /// <returns>The <see cref="InboundRouteEntry"/>.</returns>
+#endif
     public InboundRouteEntry MapInbound(
+#if !COMPONENTS
         IRouter handler,
+#else
+        Type handler,
+#endif
         RouteTemplate routeTemplate,
+#if !COMPONENTS
         string routeName,
         int order)
+#else
+        List<string>? unusedParameterNames)
+#endif
     {
         ArgumentNullException.ThrowIfNull(handler);
         ArgumentNullException.ThrowIfNull(routeTemplate);
@@ -65,10 +90,17 @@ public class TreeRouteBuilder
         var entry = new InboundRouteEntry()
         {
             Handler = handler,
+#if !COMPONENTS
             Order = order,
+#endif
             Precedence = RoutePrecedence.ComputeInbound(routeTemplate),
+#if !COMPONENTS
             RouteName = routeName,
+#endif
             RouteTemplate = routeTemplate,
+#if COMPONENTS
+            UnusedRouteParameterNames = unusedParameterNames
+#endif
         };
 
         var constraintBuilder = new RouteConstraintBuilder(_constraintResolver, routeTemplate.TemplateText);
@@ -103,6 +135,7 @@ public class TreeRouteBuilder
         return entry;
     }
 
+#if !COMPONENTS
     /// <summary>
     /// Adds a new outbound route to the <see cref="TreeRouter"/>.
     /// </summary>
@@ -164,33 +197,42 @@ public class TreeRouteBuilder
         OutboundEntries.Add(entry);
         return entry;
     }
+#endif
 
+#if !COMPONENTS
     /// <summary>
     /// Gets the list of <see cref="InboundRouteEntry"/>.
     /// </summary>
+#endif
     public IList<InboundRouteEntry> InboundEntries { get; } = new List<InboundRouteEntry>();
 
+#if !COMPONENTS
     /// <summary>
     /// Gets the list of <see cref="OutboundRouteEntry"/>.
     /// </summary>
     public IList<OutboundRouteEntry> OutboundEntries { get; } = new List<OutboundRouteEntry>();
+#endif
 
+#if !COMPONENTS
     /// <summary>
     /// Builds a <see cref="TreeRouter"/> with the <see cref="InboundEntries"/>
     /// and <see cref="OutboundEntries"/> defined in this <see cref="TreeRouteBuilder"/>.
     /// </summary>
     /// <returns>The <see cref="TreeRouter"/>.</returns>
+#endif
     public TreeRouter Build()
     {
         return Build(version: 0);
     }
 
+#if !COMPONENTS
     /// <summary>
     /// Builds a <see cref="TreeRouter"/> with the <see cref="InboundEntries"/>
     /// and <see cref="OutboundEntries"/> defined in this <see cref="TreeRouteBuilder"/>.
     /// </summary>
     /// <param name="version">The version of the <see cref="TreeRouter"/>.</param>
     /// <returns>The <see cref="TreeRouter"/>.</returns>
+#endif
     public TreeRouter Build(int version)
     {
         // Tree route builder builds a tree for each of the different route orders defined by
@@ -211,21 +253,31 @@ public class TreeRouteBuilder
 
         return new TreeRouter(
             trees.Values.OrderBy(tree => tree.Order).ToArray(),
+#if !COMPONENTS
             OutboundEntries,
+#endif
             _urlEncoder,
+#if !COMPONENTS
             _objectPool,
+#endif
             _logger,
+#if !COMPONENTS
             _constraintLogger,
+#endif
             version);
     }
 
+#if !COMPONENTS
     /// <summary>
     /// Removes all <see cref="InboundEntries"/> and <see cref="OutboundEntries"/> from this
     /// <see cref="TreeRouteBuilder"/>.
     /// </summary>
+#endif
     public void Clear()
     {
         InboundEntries.Clear();
+#if !COMPONENTS
         OutboundEntries.Clear();
+#endif
     }
 }

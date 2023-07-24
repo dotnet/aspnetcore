@@ -5,6 +5,9 @@
 
 using System.Buffers;
 using System.Diagnostics;
+#if COMPONENTS
+using Microsoft.AspNetCore.Components.Routing;
+#endif
 
 namespace Microsoft.AspNetCore.Routing.Patterns;
 

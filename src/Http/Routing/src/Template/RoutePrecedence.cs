@@ -9,10 +9,14 @@ using Microsoft.AspNetCore.Routing.Patterns;
 
 namespace Microsoft.AspNetCore.Routing.Template;
 
+#if !COMPONENTS
 /// <summary>
 /// Computes precedence for a route template.
 /// </summary>
 public static class RoutePrecedence
+#else
+internal static class RoutePrecedence
+#endif
 {
     /// <summary>
     ///  Compute the precedence for matching a provided url

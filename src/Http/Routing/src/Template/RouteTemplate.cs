@@ -9,11 +9,16 @@ using Microsoft.AspNetCore.Routing.Patterns;
 
 namespace Microsoft.AspNetCore.Routing.Template;
 
+#if !COMPONENTS
 /// <summary>
 /// Represents the template for a route.
 /// </summary>
 [DebuggerDisplay("{DebuggerToString()}")]
 public class RouteTemplate
+#else
+[DebuggerDisplay("{DebuggerToString()}")]
+internal class RouteTemplate
+#endif
 {
     private const string SeparatorString = "/";
 

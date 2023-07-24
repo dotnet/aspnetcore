@@ -2,15 +2,23 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+#if !COMPONENTS
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Matching;
+#else
+using Microsoft.AspNetCore.Components.Routing;
+#endif
 
 namespace Microsoft.AspNetCore.Routing.Constraints;
 
+#if !COMPONENTS
 /// <summary>
 /// Constraints a route parameter to be an integer within a given range of values.
 /// </summary>
 public class RangeRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy, ICachableParameterPolicy
+#else
+internal class RangeRouteConstraint : IRouteConstraint
+#endif
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="RangeRouteConstraint" /> class.
@@ -42,11 +50,17 @@ public class RangeRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatch
 
     /// <inheritdoc />
     public bool Match(
+#if !COMPONENTS
         HttpContext? httpContext,
         IRouter? route,
+#endif
         string routeKey,
+#if !COMPONENTS
         RouteValueDictionary values,
         RouteDirection routeDirection)
+#else
+        RouteValueDictionary values)
+#endif
     {
         ArgumentNullException.ThrowIfNull(routeKey);
         ArgumentNullException.ThrowIfNull(values);
@@ -69,8 +83,10 @@ public class RangeRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatch
         return false;
     }
 
+#if !COMPONENTS
     bool IParameterLiteralNodeMatchingPolicy.MatchesLiteral(string parameterName, string literal)
     {
         return CheckConstraintCore(literal);
     }
+#endif
 }

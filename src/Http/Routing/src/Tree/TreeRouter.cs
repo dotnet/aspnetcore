@@ -4,30 +4,42 @@
 #nullable disable
 
 using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.Components.Routing;
+#if !COMPONENTS
 using Microsoft.AspNetCore.Routing.Template;
+#endif
 using Microsoft.Extensions.Logging;
+#if !COMPONENTS
 using Microsoft.Extensions.ObjectPool;
-
+#endif
 namespace Microsoft.AspNetCore.Routing.Tree;
 
+#if !COMPONENTS
 /// <summary>
 /// An <see cref="IRouter"/> implementation for attribute routing.
 /// </summary>
 public partial class TreeRouter : IRouter
+#else
+internal partial class TreeRouter
+#endif
 {
-    /// <summary>
-    /// Key used by routing and action selection to match an attribute
-    /// route entry to a group of action descriptors.
-    /// </summary>
-    public static readonly string RouteGroupKey = "!__route_group";
+#if !COMPONENTS
+/// <summary>
+/// Key used by routing and action selection to match an attribute
+/// route entry to a group of action descriptors.
+/// </summary>
+public static readonly string RouteGroupKey = "!__route_group";
 
     private readonly LinkGenerationDecisionTree _linkGenerationTree;
+#endif
     private readonly UrlMatchingTree[] _trees;
+#if !COMPONENTS
     private readonly IDictionary<string, OutboundMatch> _namedEntries;
-
-    private readonly ILogger _logger;
     private readonly ILogger _constraintLogger;
+#endif
+    private readonly ILogger _logger;
 
+#if !COMPONENTS
     /// <summary>
     /// Creates a new instance of <see cref="TreeRouter"/>.
     /// </summary>
@@ -39,26 +51,39 @@ public partial class TreeRouter : IRouter
     /// <param name="constraintLogger">The <see cref="ILogger"/> instance used
     /// in <see cref="RouteConstraintMatcher"/>.</param>
     /// <param name="version">The version of this route.</param>
+#endif
     internal TreeRouter(
         UrlMatchingTree[] trees,
+#if !COMPONENTS
         IEnumerable<OutboundRouteEntry> linkGenerationEntries,
+#endif
         UrlEncoder urlEncoder,
+#if !COMPONENTS
         ObjectPool<UriBuildingContext> objectPool,
+#endif  
         ILogger routeLogger,
+#if !COMPONENTS
         ILogger constraintLogger,
+#endif
         int version)
     {
         ArgumentNullException.ThrowIfNull(trees);
+#if !COMPONENTS
         ArgumentNullException.ThrowIfNull(linkGenerationEntries);
+#endif
         ArgumentNullException.ThrowIfNull(urlEncoder);
+#if !COMPONENTS
         ArgumentNullException.ThrowIfNull(objectPool);
+#endif
         ArgumentNullException.ThrowIfNull(routeLogger);
+#if !COMPONENTS
         ArgumentNullException.ThrowIfNull(constraintLogger);
+#endif
 
         _trees = trees;
         _logger = routeLogger;
+#if !COMPONENTS
         _constraintLogger = constraintLogger;
-
         _namedEntries = new Dictionary<string, OutboundMatch>(StringComparer.OrdinalIgnoreCase);
 
         var outboundMatches = new List<OutboundMatch>();
@@ -96,7 +121,7 @@ public partial class TreeRouter : IRouter
 
         // The decision tree will take care of ordering for these entries.
         _linkGenerationTree = new LinkGenerationDecisionTree(outboundMatches.ToArray());
-
+#endif
         Version = version;
     }
 
@@ -107,6 +132,7 @@ public partial class TreeRouter : IRouter
 
     internal IEnumerable<UrlMatchingTree> MatchingTrees => _trees;
 
+#if !COMPONENTS
     /// <inheritdoc />
     public VirtualPathData GetVirtualPath(VirtualPathContext context)
     {
@@ -142,18 +168,26 @@ public partial class TreeRouter : IRouter
 
     /// <inheritdoc />
     public async Task RouteAsync(RouteContext context)
+#else
+    public void Route(RouteContext context)
+#endif
     {
         foreach (var tree in _trees)
         {
+#if !COMPONENTS
             var tokenizer = new PathTokenizer(context.HttpContext.Request.Path);
+#else
+            var tokenizer = new PathTokenizer(context.Path);
+#endif
             var root = tree.Root;
 
             var treeEnumerator = new TreeEnumerator(root, tokenizer);
 
+#if !COMPONENTS
             // Create a snapshot before processing the route. We'll restore this snapshot before running each
             // to restore the state. This is likely an "empty" snapshot, which doesn't allocate.
             var snapshot = context.RouteData.PushState(router: null, values: null, dataTokens: null);
-
+#endif
             while (treeEnumerator.MoveNext())
             {
                 var node = treeEnumerator.Current;
@@ -162,27 +196,41 @@ public partial class TreeRouter : IRouter
                     var entry = item.Entry;
                     var matcher = item.TemplateMatcher;
 
+#if !COMPONENTS
                     try
                     {
                         if (!matcher.TryMatch(context.HttpContext.Request.Path, context.RouteData.Values))
-                        {
-                            continue;
-                        }
+#else
+                    if (!matcher.TryMatch(context.Path, context.RouteValues))
+#endif
+                    {
+                        continue;
+                    }
 
+#if !COMPONENTS
                         if (!RouteConstraintMatcher.Match(
                             entry.Constraints,
                             context.RouteData.Values,
                             context.HttpContext,
                             this,
                             RouteDirection.IncomingRequest,
-                            _constraintLogger))
-                        {
-                            continue;
-                        }
+#else
+                    if (!RouteConstraintMatcher.Match(
+                            entry.Constraints,
+                            context.RouteValues))
+#endif
+                    {
+#if COMPONENTS
+                        context.RouteData.Clear();
+#endif
+                        continue;
+                    }
 
-                        Log.RequestMatchedRoute(_logger, entry.RouteName, entry.RouteTemplate.TemplateText);
+                    Log.RequestMatchedRoute(_logger, entry.RouteName, entry.RouteTemplate.TemplateText);
+#if COMPONENTS
+                    context.Entry = entry;
+#else
                         context.RouteData.Routers.Add(entry.Handler);
-
                         await entry.Handler.RouteAsync(context);
                         if (context.Handler != null)
                         {
@@ -197,11 +245,13 @@ public partial class TreeRouter : IRouter
                             snapshot.Restore();
                         }
                     }
+#endif
                 }
             }
         }
     }
 
+#if !COMPONENTS
     private VirtualPathData GetVirtualPathForNamedRoute(VirtualPathContext context)
     {
         if (_namedEntries.TryGetValue(context.RouteName, out var match))
@@ -285,6 +335,7 @@ public partial class TreeRouter : IRouter
 
         return new VirtualPathData(this, path);
     }
+#endif
 
     private static partial class Log
     {

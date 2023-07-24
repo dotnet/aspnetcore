@@ -5,15 +5,21 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text.RegularExpressions;
+#if !COMPONENTS
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Matching;
+#endif
 
 namespace Microsoft.AspNetCore.Routing.Constraints;
 
+#if !COMPONENTS
 /// <summary>
 /// Constrains a route parameter to match a regular expression.
 /// </summary>
 public class RegexRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy
+#else
+internal class RegexRouteConstraint : IRouteConstraint
+#endif
 {
     private static readonly TimeSpan RegexMatchTimeout = TimeSpan.FromSeconds(10);
     private readonly Func<Regex>? _regexFactory;
@@ -69,11 +75,17 @@ public class RegexRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatch
 
     /// <inheritdoc />
     public bool Match(
+#if !COMPONENTS
         HttpContext? httpContext,
         IRouter? route,
+#endif
         string routeKey,
+#if !COMPONENTS
         RouteValueDictionary values,
         RouteDirection routeDirection)
+#else
+        RouteValueDictionary values)
+#endif
     {
         ArgumentNullException.ThrowIfNull(routeKey);
         ArgumentNullException.ThrowIfNull(values);
@@ -89,8 +101,10 @@ public class RegexRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatch
         return false;
     }
 
+#if !COMPONENTS
     bool IParameterLiteralNodeMatchingPolicy.MatchesLiteral(string parameterName, string literal)
     {
         return Constraint.IsMatch(literal);
     }
+#endif
 }

@@ -7,11 +7,15 @@ using Microsoft.AspNetCore.Routing.Patterns;
 
 namespace Microsoft.AspNetCore.Routing.Template;
 
+#if !COMPONENTS
 /// <summary>
 /// Represents a part of a route template segment.
 /// </summary>
 [DebuggerDisplay("{DebuggerToString()}")]
 public class TemplatePart
+#else
+internal class TemplatePart
+#endif
 {
     /// <summary>
     /// Constructs a new <see cref="TemplatePart"/> instance.

@@ -12,8 +12,13 @@ namespace Microsoft.AspNetCore.Routing.Tree;
 /// A node in a <see cref="UrlMatchingTree"/>.
 /// </summary>
 [DebuggerDisplay("{DebuggerToString(),nq}")]
+#if !COMPONENTS
 public class UrlMatchingNode
+#else
+internal class UrlMatchingNode
+#endif
 {
+
     /// <summary>
     /// Initializes a new instance of <see cref="UrlMatchingNode"/>.
     /// </summary>

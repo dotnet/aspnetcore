@@ -1,14 +1,18 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Routing.Patterns;
 
 namespace Microsoft.AspNetCore.Routing.Template;
 
+#if !COMPONENTS
 /// <summary>
 /// Provides methods for parsing route template strings.
 /// </summary>
 public static class TemplateParser
+#else
+internal static class TemplateParser
+#endif
 {
     /// <summary>
     /// Creates a <see cref="RouteTemplate"/> for a given <paramref name="routeTemplate"/> string.
