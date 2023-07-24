@@ -24,6 +24,8 @@ Microsoft.AspNetCore.ResponseCompression.csproj
 Microsoft.AspNetCore.Rewrite.csproj
 Microsoft.AspNetCore.Routing.Abstractions.csproj
 Microsoft.AspNetCore.Routing.csproj
+Microsoft.AspNetCore.Server.IIS.csproj
+Microsoft.AspNetCore.Server.IISIntegration.csproj
 Microsoft.AspNetCore.Server.Kestrel.Core.csproj
 Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.csproj
 Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj
