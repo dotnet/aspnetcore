@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.Logging;
 #if !COMPONENTS
 using Microsoft.Extensions.ObjectPool;
+#else
+using Microsoft.AspNetCore.Components.Routing;
 #endif
 namespace Microsoft.AspNetCore.Routing.Tree;
 

@@ -3,6 +3,9 @@
 
 #nullable disable
 
+#if COMPONENTS
+using Microsoft.AspNetCore.Components.Routing;
+#endif
 using Microsoft.AspNetCore.Routing.Template;
 
 namespace Microsoft.AspNetCore.Routing.Tree;

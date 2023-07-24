@@ -4,8 +4,9 @@
 #nullable disable
 
 using System.Text.Encodings.Web;
+#if COMPONENTS
 using Microsoft.AspNetCore.Components.Routing;
-#if !COMPONENTS
+#else
 using Microsoft.AspNetCore.Routing.Template;
 #endif
 using Microsoft.Extensions.Logging;
@@ -24,11 +25,11 @@ internal partial class TreeRouter
 #endif
 {
 #if !COMPONENTS
-/// <summary>
-/// Key used by routing and action selection to match an attribute
-/// route entry to a group of action descriptors.
-/// </summary>
-public static readonly string RouteGroupKey = "!__route_group";
+    /// <summary>
+    /// Key used by routing and action selection to match an attribute
+    /// route entry to a group of action descriptors.
+    /// </summary>
+    public static readonly string RouteGroupKey = "!__route_group";
 
     private readonly LinkGenerationDecisionTree _linkGenerationTree;
 #endif
@@ -203,9 +204,9 @@ public static readonly string RouteGroupKey = "!__route_group";
 #else
                     if (!matcher.TryMatch(context.Path, context.RouteValues))
 #endif
-                    {
-                        continue;
-                    }
+                        {
+                            continue;
+                        }
 
 #if !COMPONENTS
                         if (!RouteConstraintMatcher.Match(
@@ -214,19 +215,20 @@ public static readonly string RouteGroupKey = "!__route_group";
                             context.HttpContext,
                             this,
                             RouteDirection.IncomingRequest,
+                            _constraintLogger))
 #else
                     if (!RouteConstraintMatcher.Match(
                             entry.Constraints,
                             context.RouteValues))
 #endif
-                    {
+                        {
 #if COMPONENTS
                         context.RouteData.Clear();
 #endif
-                        continue;
-                    }
+                            continue;
+                        }
 
-                    Log.RequestMatchedRoute(_logger, entry.RouteName, entry.RouteTemplate.TemplateText);
+                        Log.RequestMatchedRoute(_logger, entry.RouteName, entry.RouteTemplate.TemplateText);
 #if COMPONENTS
                     context.Entry = entry;
 #else

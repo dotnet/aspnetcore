@@ -4,6 +4,8 @@
 #if !COMPONENTS
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+#else
+using Microsoft.AspNetCore.Components.Routing;
 #endif
 
 namespace Microsoft.AspNetCore.Routing;

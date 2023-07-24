@@ -11,14 +11,23 @@ using System.Runtime.CompilerServices;
 #if !COMPONENTS
 using Microsoft.AspNetCore.Http.Abstractions;
 using Microsoft.Extensions.Internal;
+using Microsoft.AspNetCore.Routing;
 #else
+using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Reflection;
 #endif
-using Microsoft.AspNetCore.Routing;
 
+#if COMPONENTS
 [assembly: MetadataUpdateHandler(typeof(RouteValueDictionary.MetadataUpdateHandler))]
+#else
+[assembly: MetadataUpdateHandler(typeof(RouteValueDictionary.MetadataUpdateHandler))]
+#endif
 
+#if COMPONENTS
+namespace Microsoft.AspNetCore.Components.Routing;
+#else
 namespace Microsoft.AspNetCore.Routing;
+#endif
 
 #if !COMPONENTS
 /// <summary>
@@ -283,6 +292,7 @@ internal class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDic
         }
     }
 
+#if !COMPONENTS
     /// <summary>
     /// Gets the comparer for this dictionary.
     /// </summary>
@@ -290,6 +300,7 @@ internal class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDic
     /// This will always be a reference to <see cref="StringComparer.OrdinalIgnoreCase"/>
     /// </remarks>
     public IEqualityComparer<string> Comparer => StringComparer.OrdinalIgnoreCase;
+#endif
 
     /// <inheritdoc />
     public int Count => _count;

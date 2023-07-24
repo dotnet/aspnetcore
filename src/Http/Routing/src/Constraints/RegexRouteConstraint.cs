@@ -8,6 +8,8 @@ using System.Text.RegularExpressions;
 #if !COMPONENTS
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Matching;
+#else
+using Microsoft.AspNetCore.Components.Routing;
 #endif
 
 namespace Microsoft.AspNetCore.Routing.Constraints;

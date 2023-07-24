@@ -3,6 +3,8 @@
 
 #if !COMPONENTS
 using Microsoft.AspNetCore.Http;
+#else
+using Microsoft.AspNetCore.Components.Routing;
 #endif
 
 namespace Microsoft.AspNetCore.Routing.Constraints;

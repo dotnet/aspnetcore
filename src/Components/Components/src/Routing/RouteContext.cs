@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Tree;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
