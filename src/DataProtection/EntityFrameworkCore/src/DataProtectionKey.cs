@@ -11,15 +11,15 @@ public class DataProtectionKey
     /// <summary>
     /// The entity identifier of the <see cref="DataProtectionKey"/>.
     /// </summary>
-    public int Id { get; set; }
+    public virtual int Id { get; set; }
 
     /// <summary>
     /// The friendly name of the <see cref="DataProtectionKey"/>.
     /// </summary>
-    public string? FriendlyName { get; set; }
+    public virtual string? FriendlyName { get; set; }
 
     /// <summary>
     /// The XML representation of the <see cref="DataProtectionKey"/>.
     /// </summary>
-    public string? Xml { get; set; }
+    public virtual string? Xml { get; set; }
 }
