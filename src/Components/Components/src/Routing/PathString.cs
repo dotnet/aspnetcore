@@ -9,7 +9,7 @@ using System.Globalization;
 using System.Text;
 using Microsoft.AspNetCore.Internal;
 
-namespace Microsoft.AspNetCore.Http;
+namespace Microsoft.AspNetCore.Components.Routing;
 
 /// <summary>
 /// Provides correct escaping for Path and PathBase values when needed to reconstruct a request or redirect URI string

@@ -2,6 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Routing.Patterns;
+#if COMPONENTS
+using Microsoft.AspNetCore.Components.Routing.Patterns;
+#endif
 
 namespace Microsoft.AspNetCore.Routing.Template;
 

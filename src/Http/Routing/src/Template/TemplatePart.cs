@@ -4,6 +4,9 @@
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Routing.Patterns;
+#if COMPONENTS
+using Microsoft.AspNetCore.Components.Routing.Patterns;
+#endif
 
 namespace Microsoft.AspNetCore.Routing.Template;
 
@@ -14,6 +17,7 @@ namespace Microsoft.AspNetCore.Routing.Template;
 [DebuggerDisplay("{DebuggerToString()}")]
 public class TemplatePart
 #else
+[DebuggerDisplay("{DebuggerToString()}")]
 internal class TemplatePart
 #endif
 {

@@ -11,7 +11,11 @@ namespace Microsoft.AspNetCore.Routing.Patterns;
 /// are immutable.
 /// </summary>
 [DebuggerDisplay("{DebuggerToString()}")]
+#if !COMPONENTS
 public sealed class RoutePatternParameterPart : RoutePatternPart
+#else
+internal sealed class RoutePatternParameterPart : RoutePatternPart
+#endif
 {
     internal RoutePatternParameterPart(
         string parameterName,

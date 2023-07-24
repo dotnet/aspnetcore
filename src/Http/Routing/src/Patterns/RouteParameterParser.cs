@@ -3,6 +3,10 @@
 
 namespace Microsoft.AspNetCore.Routing.Patterns;
 
+#if COMPONENTS
+using Microsoft.AspNetCore.Components.Routing.Patterns;
+#endif
+
 internal static class RouteParameterParser
 {
     // This code parses the inside of the route parameter

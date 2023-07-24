@@ -17,7 +17,7 @@ internal sealed class RouteContext
 
     public string Path { get; set; }
 
-    public RouteValueDictionary RouteValues { get; set; }
+    public RouteValueDictionary RouteValues { get; set; } = new();
 
     public Dictionary<string, object?> RouteData { get; set; } = new();
 

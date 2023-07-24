@@ -1,6 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Routing.Patterns;
+using Microsoft.AspNetCore.Routing.Template;
+
 namespace Microsoft.AspNetCore.Components.Routing;
 
 public class TemplateParserTests
@@ -12,7 +15,7 @@ public class TemplateParserTests
         var expected = new ExpectedTemplateBuilder().Literal("awesome");
 
         // Act
-        var actual = TemplateParser.ParseTemplate("awesome");
+        var actual = TemplateParser.Parse("awesome");
 
         // Assert
         Assert.Equal(expected, actual, RouteTemplateTestComparer.Instance);
@@ -27,7 +30,7 @@ public class TemplateParserTests
         var expected = new ExpectedTemplateBuilder().Parameter("p");
 
         // Act
-        var actual = TemplateParser.ParseTemplate(template);
+        var actual = TemplateParser.Parse(template);
 
         // Assert
         Assert.Equal(expected, actual, RouteTemplateTestComparer.Instance);
@@ -42,7 +45,7 @@ public class TemplateParserTests
         var expected = new ExpectedTemplateBuilder().Literal("awesome").Literal("cool").Literal("super");
 
         // Act
-        var actual = TemplateParser.ParseTemplate(template);
+        var actual = TemplateParser.Parse(template);
 
         // Assert
         Assert.Equal(expected, actual, RouteTemplateTestComparer.Instance);
@@ -57,7 +60,7 @@ public class TemplateParserTests
         var expected = new ExpectedTemplateBuilder().Parameter("p1").Parameter("p2").Parameter("p3");
 
         // Act
-        var actual = TemplateParser.ParseTemplate(template);
+        var actual = TemplateParser.Parse(template);
 
         // Assert
         Assert.Equal(expected, actual, RouteTemplateTestComparer.Instance);
@@ -72,7 +75,7 @@ public class TemplateParserTests
         var expected = new ExpectedTemplateBuilder().Parameter("p1?").Parameter("p2?").Parameter("p3?");
 
         // Act
-        var actual = TemplateParser.ParseTemplate(template);
+        var actual = TemplateParser.Parse(template);
 
         // Assert
         Assert.Equal(expected, actual, RouteTemplateTestComparer.Instance);
@@ -87,7 +90,7 @@ public class TemplateParserTests
         var expected = new ExpectedTemplateBuilder().Parameter(parsedTemplate);
 
         // Act
-        var actual = TemplateParser.ParseTemplate(template);
+        var actual = TemplateParser.Parse(template);
 
         // Assert
         Assert.Equal(expected, actual, RouteTemplateTestComparer.Instance);
@@ -100,7 +103,7 @@ public class TemplateParserTests
         var expected = new ExpectedTemplateBuilder().Literal("awesome").Literal("wow").Parameter("p");
 
         // Act
-        var actual = TemplateParser.ParseTemplate("awesome/wow/{*p}");
+        var actual = TemplateParser.Parse("awesome/wow/{*p}");
 
         // Assert
         Assert.Equal(expected, actual, RouteTemplateTestComparer.Instance);
@@ -113,7 +116,7 @@ public class TemplateParserTests
         var expected = new ExpectedTemplateBuilder().Literal("awesome").Parameter("p1").Parameter("p2");
 
         // Act
-        var actual = TemplateParser.ParseTemplate("awesome/{p1}/{*p2}");
+        var actual = TemplateParser.Parse("awesome/{p1}/{*p2}");
 
         // Assert
         Assert.Equal(expected, actual, RouteTemplateTestComparer.Instance);
@@ -123,7 +126,7 @@ public class TemplateParserTests
     public void InvalidTemplate_WithRepeatedParameter()
     {
         var ex = Assert.Throws<InvalidOperationException>(
-            () => TemplateParser.ParseTemplate("{p1}/literal/{p1}"));
+            () => TemplateParser.Parse("{p1}/literal/{p1}"));
 
         var expectedMessage = "Invalid template '{p1}/literal/{p1}'. The parameter '{p1}' appears multiple times.";
 
@@ -143,7 +146,7 @@ public class TemplateParserTests
     public void InvalidTemplate_WithMismatchedBraces(string template, string expectedMessage)
     {
         var ex = Assert.Throws<InvalidOperationException>(
-            () => TemplateParser.ParseTemplate(template));
+            () => TemplateParser.Parse(template));
 
         Assert.Equal(expectedMessage, ex.Message);
     }
@@ -158,7 +161,7 @@ public class TemplateParserTests
     public void ParseRouteParameter_ThrowsIf_ParameterContainsSpecialCharacters(string template, string expectedMessage)
     {
         // Act & Assert
-        var ex = Assert.Throws<InvalidOperationException>(() => TemplateParser.ParseTemplate(template));
+        var ex = Assert.Throws<InvalidOperationException>(() => TemplateParser.Parse(template));
 
         Assert.Equal(expectedMessage, ex.Message);
     }
@@ -166,7 +169,7 @@ public class TemplateParserTests
     [Fact]
     public void InvalidTemplate_InvalidParameterNameWithEmptyNameThrows()
     {
-        var ex = Assert.Throws<InvalidOperationException>(() => TemplateParser.ParseTemplate("{a}/{}/{z}"));
+        var ex = Assert.Throws<InvalidOperationException>(() => TemplateParser.Parse("{a}/{}/{z}"));
 
         var expectedMessage = "Invalid template '{a}/{}/{z}'. Empty parameter name in segment '{}' is not allowed.";
 
@@ -176,7 +179,7 @@ public class TemplateParserTests
     [Fact]
     public void InvalidTemplate_ConsecutiveSeparatorsSlashSlashThrows()
     {
-        var ex = Assert.Throws<InvalidOperationException>(() => TemplateParser.ParseTemplate("{a}//{z}"));
+        var ex = Assert.Throws<InvalidOperationException>(() => TemplateParser.Parse("{a}//{z}"));
 
         var expectedMessage = "Invalid template '{a}//{z}'. Empty segments are not allowed.";
 
@@ -186,7 +189,7 @@ public class TemplateParserTests
     [Fact]
     public void InvalidTemplate_LiteralAfterOptionalParam()
     {
-        var ex = Assert.Throws<InvalidOperationException>(() => TemplateParser.ParseTemplate("/test/{a?}/test"));
+        var ex = Assert.Throws<InvalidOperationException>(() => TemplateParser.Parse("/test/{a?}/test"));
 
         var expectedMessage = "Invalid template 'test/{a?}/test'. Non-optional parameters or literal routes cannot appear after optional parameters.";
 
@@ -196,7 +199,7 @@ public class TemplateParserTests
     [Fact]
     public void InvalidTemplate_NonOptionalParamAfterOptionalParam()
     {
-        var ex = Assert.Throws<InvalidOperationException>(() => TemplateParser.ParseTemplate("/test/{a?}/{b}"));
+        var ex = Assert.Throws<InvalidOperationException>(() => TemplateParser.Parse("/test/{a?}/{b}"));
 
         var expectedMessage = "Invalid template 'test/{a?}/{b}'. Non-optional parameters or literal routes cannot appear after optional parameters.";
 
@@ -209,17 +212,17 @@ public class TemplateParserTests
     [InlineData("/test/{a}/{*b*c}")]
     public void InvalidTemplate_CatchAllParamWithIncorrectPlacedAsterisks(string template)
     {
-        var ex = Assert.Throws<InvalidOperationException>(() => TemplateParser.ParseTemplate(template));
+        var ex = Assert.Throws<InvalidOperationException>(() => TemplateParser.Parse(template));
 
         var expectedMessage = $"Invalid template '{template}'. A catch-all parameter may only have '*' or '**' at the beginning of the segment.";
-        
+
         Assert.Equal(expectedMessage, ex.Message);
     }
 
     [Fact]
     public void InvalidTemplate_CatchAllParamNotLast()
     {
-        var ex = Assert.Throws<InvalidOperationException>(() => TemplateParser.ParseTemplate("/test/{*a}/{b}"));
+        var ex = Assert.Throws<InvalidOperationException>(() => TemplateParser.Parse("/test/{*a}/{b}"));
 
         var expectedMessage = "Invalid template 'test/{*a}/{b}'. A catch-all parameter can only appear as the last segment of the route template.";
 
@@ -229,7 +232,7 @@ public class TemplateParserTests
     [Fact]
     public void InvalidTemplate_BadOptionalCharacterPosition()
     {
-        var ex = Assert.Throws<ArgumentException>(() => TemplateParser.ParseTemplate("/test/{a?bc}/{b}"));
+        var ex = Assert.Throws<ArgumentException>(() => TemplateParser.Parse("/test/{a?bc}/{b}"));
 
         var expectedMessage = "Malformed parameter 'a?bc' in route '/test/{a?bc}/{b}'. '?' character can only appear at the end of parameter name.";
 
@@ -238,21 +241,31 @@ public class TemplateParserTests
 
     private class ExpectedTemplateBuilder
     {
+        private string template = "/";
         public IList<TemplateSegment> Segments { get; set; } = new List<TemplateSegment>();
 
         public ExpectedTemplateBuilder Literal(string value)
         {
-            Segments.Add(new TemplateSegment("testtemplate", value, isParameter: false));
+            template += $"{value}/";
+            Segments.Add(new TemplateSegment(new RoutePatternPathSegment(new List<RoutePatternPart>
+            {
+                new RoutePatternLiteralPart(value)
+            })));
             return this;
         }
 
         public ExpectedTemplateBuilder Parameter(string value)
         {
-            Segments.Add(new TemplateSegment("testtemplate", value, isParameter: true));
+            template += "{testtemplate}/";
+            Segments.Add(
+                new TemplateSegment(new RoutePatternPathSegment(new List<RoutePatternPart>
+                {
+                    new RoutePatternParameterPart("testtemplate", value, RoutePatternParameterKind.Standard, Array.Empty<RoutePatternParameterPolicyReference>())
+                })));
             return this;
         }
 
-        public RouteTemplate Build() => new RouteTemplate(string.Join('/', Segments), Segments.ToArray());
+        public RouteTemplate Build() => new RouteTemplate(template, Segments.ToList());
 
         public static implicit operator RouteTemplate(ExpectedTemplateBuilder builder) => builder.Build();
     }
@@ -263,24 +276,28 @@ public class TemplateParserTests
 
         public bool Equals(RouteTemplate x, RouteTemplate y)
         {
-            if (x.Segments.Length != y.Segments.Length)
+            if (x.Segments.Count != y.Segments.Count)
             {
                 return false;
             }
 
-            for (var i = 0; i < x.Segments.Length; i++)
+            for (var i = 0; i < x.Segments.Count; i++)
             {
                 var xSegment = x.Segments[i];
                 var ySegment = y.Segments[i];
-                if (xSegment.IsParameter != ySegment.IsParameter)
+                if (!xSegment.IsSimple || ySegment.IsSimple)
                 {
                     return false;
                 }
-                if (xSegment.IsOptional != ySegment.IsOptional)
+                if (xSegment.Parts[0].IsParameter !=  ySegment.Parts[0].IsParameter)
                 {
                     return false;
                 }
-                if (!string.Equals(xSegment.Value, ySegment.Value, StringComparison.OrdinalIgnoreCase))
+                if ( xSegment.Parts[0].IsOptional !=  ySegment.Parts[0].IsOptional)
+                {
+                    return false;
+                }
+                if (!string.Equals(xSegment.Parts[0].Name, ySegment.Parts[0].Name, StringComparison.OrdinalIgnoreCase))
                 {
                     return false;
                 }

@@ -8,10 +8,15 @@ using System.Linq;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Routing.Constraints;
 #if COMPONENTS
-using Microsoft.AspNetCore.Components.Routing;
+using Microsoft.AspNetCore.Routing.Patterns;
+using Microsoft.AspNetCore.Routing;
 #endif
 
+#if COMPONENTS
+namespace Microsoft.AspNetCore.Components.Routing.Patterns;
+#else
 namespace Microsoft.AspNetCore.Routing.Patterns;
+#endif
 
 #if !COMPONENTS
 /// <summary>
