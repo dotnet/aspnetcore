@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Primitives;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.OutputCaching.Tests;
@@ -23,7 +23,7 @@ public class OutputCacheEntryFormatterTests
             Tags = Array.Empty<string>()
         };
 
-        await OutputCacheEntryFormatter.StoreAsync(key, entry, TimeSpan.Zero, store, default);
+        await OutputCacheEntryFormatter.StoreAsync(key, entry, TimeSpan.Zero, store, NullLogger.Instance, default);
 
         var result = await OutputCacheEntryFormatter.GetAsync(key, store, default);
 
@@ -47,7 +47,7 @@ public class OutputCacheEntryFormatterTests
             Tags = new[] { "tag", "タグ" }
         };
 
-        await OutputCacheEntryFormatter.StoreAsync(key, entry, TimeSpan.Zero, store, default);
+        await OutputCacheEntryFormatter.StoreAsync(key, entry, TimeSpan.Zero, store, NullLogger.Instance, default);
 
         var result = await OutputCacheEntryFormatter.GetAsync(key, store, default);
 
@@ -66,7 +66,7 @@ public class OutputCacheEntryFormatterTests
             Tags = new[] { null, null, "", "tag" }
         };
 
-        await OutputCacheEntryFormatter.StoreAsync(key, entry, TimeSpan.Zero, store, default);
+        await OutputCacheEntryFormatter.StoreAsync(key, entry, TimeSpan.Zero, store, NullLogger.Instance, default);
 
         var result = await OutputCacheEntryFormatter.GetAsync(key, store, default);
 
@@ -89,7 +89,7 @@ public class OutputCacheEntryFormatterTests
             Tags = Array.Empty<string>()
         };
 
-        await OutputCacheEntryFormatter.StoreAsync(key, entry, TimeSpan.Zero, store, default);
+        await OutputCacheEntryFormatter.StoreAsync(key, entry, TimeSpan.Zero, store, NullLogger.Instance, default);
 
         var result = await OutputCacheEntryFormatter.GetAsync(key, store, default);
 

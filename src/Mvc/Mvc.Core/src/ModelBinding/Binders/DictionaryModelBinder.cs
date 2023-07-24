@@ -220,7 +220,7 @@ public partial class DictionaryModelBinder<TKey, TValue> : CollectionModelBinder
         if (targetType.IsAssignableFrom(typeof(Dictionary<TKey, TValue?>)))
         {
             // Collection is a List<KeyValuePair<TKey, TValue>>, never already a Dictionary<TKey, TValue>.
-            return collection.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+            return collection.ToDictionary();
         }
 
         return base.ConvertToCollectionType(targetType, collection);

@@ -54,7 +54,10 @@ internal static partial class HttpUtilities
     {
         Debug.Assert(str.Length == 8, "String must be exactly 8 (ASCII) characters long.");
 
-        var bytes = Encoding.ASCII.GetBytes(str);
+        Span<byte> bytes = stackalloc byte[8];
+        OperationStatus operationStatus = Ascii.FromUtf16(str, bytes, out _);
+
+        Debug.Assert(operationStatus == OperationStatus.Done);
 
         return BinaryPrimitives.ReadUInt64LittleEndian(bytes);
     }
@@ -63,7 +66,11 @@ internal static partial class HttpUtilities
     {
         Debug.Assert(str.Length == 4, "String must be exactly 4 (ASCII) characters long.");
 
-        var bytes = Encoding.ASCII.GetBytes(str);
+        Span<byte> bytes = stackalloc byte[4];
+        OperationStatus operationStatus = Ascii.FromUtf16(str, bytes, out _);
+
+        Debug.Assert(operationStatus == OperationStatus.Done);
+
         return BinaryPrimitives.ReadUInt32LittleEndian(bytes);
     }
 
@@ -598,4 +605,15 @@ internal static partial class HttpUtilities
     }
 }
 
-internal sealed record AltSvcHeader(string Value, byte[] RawBytes);
+internal sealed class AltSvcHeader
+{
+    public string Value { get; }
+    
+    public byte[] RawBytes { get; }
+
+    public AltSvcHeader(string value, byte[] rawBytes)
+    {
+        Value = value;
+        RawBytes = rawBytes;
+    }
+}

@@ -40,23 +40,37 @@ public class KnownHeaders
         .Select(h => h.Name)
         .ToArray();
 
-    // These headers are excluded from generated IHeadersDictionary implementaiton.
+    // These headers are excluded from generated IHeadersDictionary implementation.
     public static readonly string[] NonPublicHeaderNames = new[]
     {
         HeaderNames.DNT,
         InternalHeaderNames.AltUsed
     };
 
-    public record InternalHeader(string Identifier, string Name, bool IsPseudoHeader = false);
+    public sealed class InternalHeader
+    {
+        public string Identifier { get; }
+
+        public string Name { get; }
+        
+        public bool IsPseudoHeader { get; }
+
+        public InternalHeader(string identifier, string name, bool isPseudoHeader = false)
+        {
+            Identifier = identifier;
+            Name = name;
+            IsPseudoHeader = isPseudoHeader;
+        }
+    }
 
     public static readonly InternalHeader[] FormattedInternalHeaderNames = new[]
     {
-        new InternalHeader("Authority", InternalHeaderNames.Authority, IsPseudoHeader: true),
-        new InternalHeader("Method", InternalHeaderNames.Method, IsPseudoHeader: true),
-        new InternalHeader("Path", InternalHeaderNames.Path, IsPseudoHeader: true),
-        new InternalHeader("Scheme", InternalHeaderNames.Scheme, IsPseudoHeader: true),
-        new InternalHeader("Status", InternalHeaderNames.Status, IsPseudoHeader: true),
-        new InternalHeader("Protocol", InternalHeaderNames.Protocol, IsPseudoHeader: true),
+        new InternalHeader("Authority", InternalHeaderNames.Authority, isPseudoHeader: true),
+        new InternalHeader("Method", InternalHeaderNames.Method, isPseudoHeader: true),
+        new InternalHeader("Path", InternalHeaderNames.Path, isPseudoHeader: true),
+        new InternalHeader("Scheme", InternalHeaderNames.Scheme, isPseudoHeader: true),
+        new InternalHeader("Status", InternalHeaderNames.Status, isPseudoHeader: true),
+        new InternalHeader("Protocol", InternalHeaderNames.Protocol, isPseudoHeader: true),
         new InternalHeader("AltUsed", InternalHeaderNames.AltUsed)
     };
 

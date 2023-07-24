@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
   "name": "Aplicación Blazor WebAssembly vacía",
-  "description": "Plantilla de proyecto vacía para crear una aplicación Blazor que se ejecuta en WebAssembly y que, opcionalmente, está hospedada por una aplicación ASP.NET Core. Esta plantilla no contiene ningún contenido.",
+  "description": "Plantilla de proyecto vacía para crear una aplicación Blazor que se ejecuta en WebAssembly. Esta plantilla no contiene ningún contenido.",
   "symbols/Framework/description": "Marco de destino del proyecto.",
   "symbols/Framework/choices/net8.0/description": "net8.0 de destino",
   "symbols/skipRestore/description": "Si se especifica, se omite la restauración automática del proyecto durante la creación.",

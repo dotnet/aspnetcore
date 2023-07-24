@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+import { DotnetHostBuilder } from 'dotnet';
+
 export interface WebAssemblyStartOptions {
   /**
    * Overrides the built-in boot resource loading mechanism so that boot resources can be fetched
@@ -11,7 +13,7 @@ export interface WebAssemblyStartOptions {
    * @param integrity The integrity string representing the expected content in the response.
    * @returns A URI string or a Response promise to override the loading process, or null/undefined to allow the default loading behavior.
    */
-  loadBootResource(type: WebAssemblyBootResourceType, name: string, defaultUri: string, integrity: string) : string | Promise<Response> | null | undefined;
+  loadBootResource(type: WebAssemblyBootResourceType, name: string, defaultUri: string, integrity: string): string | Promise<Response> | null | undefined;
 
   /**
    * Override built-in environment setting on start.
@@ -22,6 +24,11 @@ export interface WebAssemblyStartOptions {
    * Gets the application culture. This is a name specified in the BCP 47 format. See https://tools.ietf.org/html/bcp47
    */
   applicationCulture?: string;
+
+  /**
+   * Allows to override .NET runtime configuration.
+   */
+  configureRuntime(builder: DotnetHostBuilder): void;
 }
 
 // This type doesn't have to align with anything in BootConfig.

@@ -126,6 +126,9 @@
 
     <!-- don't warn about unnecessary trim warning suppressions. can be removed with preview 6. -->
     <NoWarn>$(NoWarn);IL2121</NoWarn>
+
+    <!-- // Temporary diagnostic code from https://github.com/dotnet/extensions/pull/4130 for metrics APIs used in test. -->
+    <NoWarn>$(NoWarn);TBD</NoWarn>
   </PropertyGroup>
 
   <!-- Source code settings -->

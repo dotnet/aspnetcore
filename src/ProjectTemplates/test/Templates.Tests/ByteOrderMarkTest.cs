@@ -33,7 +33,6 @@ public class ByteOrderMarkTest : LoggedTest
 
     [Theory]
     [InlineData("Web.ProjectTemplates")]
-    [InlineData("Web.Spa.ProjectTemplates")]
     [InlineData("Web.ItemTemplates")]
     [InlineData("Web.Client.ItemTemplates")]
     public void JSAndJSONInAllTemplates_ShouldNotContainBOM(string projectName)
@@ -71,7 +70,6 @@ public class ByteOrderMarkTest : LoggedTest
 
     [Theory]
     [InlineData("Web.ProjectTemplates")]
-    [InlineData("Web.Spa.ProjectTemplates")]
     [InlineData("Web.ItemTemplates")]
     [InlineData("Web.Client.ItemTemplates")]
     public void RazorFilesInWebProjects_ShouldContainBOM(string projectName)

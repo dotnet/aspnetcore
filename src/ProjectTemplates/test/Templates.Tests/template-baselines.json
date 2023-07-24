@@ -662,27 +662,13 @@
       "AuthOption": "None"
     }
   },
-  "api": {
+  "webapiaot": {
     "Default": {
-      "Template": "api",
-      "Arguments": "new api",
+      "Template": "webapiaot",
+      "Arguments": "new webapiaot",
       "Files": [
         "appsettings.Development.json",
         "appsettings.json",
-        "Todo.cs",
-        "Program.cs",
-        "{ProjectName}.http",
-        "Properties/launchSettings.json"
-      ],
-      "AuthOption": "None"
-    },
-    "NativeAot": {
-      "Template": "api",
-      "Arguments": "new api --aot",
-      "Files": [
-        "appsettings.Development.json",
-        "appsettings.json",
-        "Todo.cs",
         "Program.cs",
         "{ProjectName}.http",
         "Properties/launchSettings.json"
@@ -690,25 +676,11 @@
       "AuthOption": "None"
     },
     "ProgramMain": {
-      "Template": "api",
-      "Arguments": "new api --use-program-main",
+      "Template": "webapiaot",
+      "Arguments": "new webapiaot --use-program-main",
       "Files": [
         "appsettings.Development.json",
         "appsettings.json",
-        "Todo.cs",
-        "Program.cs",
-        "{ProjectName}.http",
-        "Properties/launchSettings.json"
-      ],
-      "AuthOption": "None"
-    },
-    "ProgramMainNativeAot": {
-      "Template": "api",
-      "Arguments": "new api --aot --use-program-main",
-      "Files": [
-        "appsettings.Development.json",
-        "appsettings.json",
-        "Todo.cs",
         "Program.cs",
         "{ProjectName}.http",
         "Properties/launchSettings.json"
@@ -719,7 +691,7 @@
   "webapi": {
     "IndividualB2C": {
       "Template": "webapi",
-      "Arguments": "new webapi -au IndividualB2C --aad-b2c-instance https://login.microsoftonline.com/tfp/ --domain fake-b2c-domain.onmicrosoft.com --client-id 64f31f76-2750-49e4-aab9-f5de105b5172 -ssp B2C_1_SiUpIn",
+      "Arguments": "new webapi -controllers -au IndividualB2C --aad-b2c-instance https://login.microsoftonline.com/tfp/ --domain fake-b2c-domain.onmicrosoft.com --client-id 64f31f76-2750-49e4-aab9-f5de105b5172 -ssp B2C_1_SiUpIn",
       "Files": [
         "appsettings.Development.json",
         "appsettings.json",
@@ -732,7 +704,7 @@
     },
     "IndividualB2CProgramMain": {
       "Template": "webapi",
-      "Arguments": "new webapi -au IndividualB2C --use-program-main --aad-b2c-instance https://login.microsoftonline.com/tfp/ --domain fake-b2c-domain.onmicrosoft.com --client-id 64f31f76-2750-49e4-aab9-f5de105b5172 -ssp B2C_1_SiUpIn",
+      "Arguments": "new webapi -controllers -au IndividualB2C --use-program-main --aad-b2c-instance https://login.microsoftonline.com/tfp/ --domain fake-b2c-domain.onmicrosoft.com --client-id 64f31f76-2750-49e4-aab9-f5de105b5172 -ssp B2C_1_SiUpIn",
       "Files": [
         "appsettings.Development.json",
         "appsettings.json",
@@ -745,7 +717,7 @@
     },
     "SingleOrg": {
       "Template": "webapi",
-      "Arguments": "new webapi -au SingleOrg --aad-instance https://login.microsoftonline.com/ --domain fake-aad-domain.onmicrosoft.com --client-id db33c356-12cc-4953-9167-00ad56c2e8b2 --tenant-id 7e511586-66ec-4108-bc9c-a68dee0dc2aa",
+      "Arguments": "new webapi -controllers -au SingleOrg --aad-instance https://login.microsoftonline.com/ --domain fake-aad-domain.onmicrosoft.com --client-id db33c356-12cc-4953-9167-00ad56c2e8b2 --tenant-id 7e511586-66ec-4108-bc9c-a68dee0dc2aa",
       "Files": [
         "appsettings.Development.json",
         "appsettings.json",
@@ -758,7 +730,7 @@
     },
     "SingleOrgProgramMain": {
       "Template": "webapi",
-      "Arguments": "new webapi -au SingleOrg --use-program-main --aad-instance https://login.microsoftonline.com/ --domain fake-aad-domain.onmicrosoft.com --client-id db33c356-12cc-4953-9167-00ad56c2e8b2 --tenant-id 7e511586-66ec-4108-bc9c-a68dee0dc2aa",
+      "Arguments": "new webapi -controllers -au SingleOrg --use-program-main --aad-instance https://login.microsoftonline.com/ --domain fake-aad-domain.onmicrosoft.com --client-id db33c356-12cc-4953-9167-00ad56c2e8b2 --tenant-id 7e511586-66ec-4108-bc9c-a68dee0dc2aa",
       "Files": [
         "appsettings.Development.json",
         "appsettings.json",
@@ -771,7 +743,7 @@
     },
     "None": {
       "Template": "webapi",
-      "Arguments": "new webapi -au None",
+      "Arguments": "new webapi -controllers -au None",
       "Files": [
         "appsettings.Development.json",
         "appsettings.json",
@@ -784,7 +756,20 @@
     },
     "NoneProgramMain": {
       "Template": "webapi",
-      "Arguments": "new webapi -au None --use-program-main",
+      "Arguments": "new webapi -controllers -au None --use-program-main",
+      "Files": [
+        "appsettings.Development.json",
+        "appsettings.json",
+        "Program.cs",
+        "WeatherForecast.cs",
+        "Controllers/WeatherForecastController.cs",
+        "Properties/launchSettings.json"
+      ],
+      "AuthOption": "None"
+    },
+    "ControllersOverridesMinimal": {
+      "Template": "webapi",
+      "Arguments": "new webapi -controllers -minimal",
       "Files": [
         "appsettings.Development.json",
         "appsettings.json",
@@ -797,7 +782,7 @@
     },
     "MinimalIndividualB2C": {
       "Template": "webapi",
-      "Arguments": "new webapi -minimal -au IndividualB2C --aad-b2c-instance https://login.microsoftonline.com/tfp/ --domain fake-b2c-domain.onmicrosoft.com --client-id 64f31f76-2750-49e4-aab9-f5de105b5172 -ssp B2C_1_SiUpIn",
+      "Arguments": "new webapi -au IndividualB2C --aad-b2c-instance https://login.microsoftonline.com/tfp/ --domain fake-b2c-domain.onmicrosoft.com --client-id 64f31f76-2750-49e4-aab9-f5de105b5172 -ssp B2C_1_SiUpIn",
       "Files": [
         "appsettings.Development.json",
         "appsettings.json",
@@ -808,7 +793,7 @@
     },
     "MinimalIndividualB2CProgramMain": {
       "Template": "webapi",
-      "Arguments": "new webapi -minimal --use-program-main -au IndividualB2C --aad-b2c-instance https://login.microsoftonline.com/tfp/ --domain fake-b2c-domain.onmicrosoft.com --client-id 64f31f76-2750-49e4-aab9-f5de105b5172 -ssp B2C_1_SiUpIn",
+      "Arguments": "new webapi --use-program-main -au IndividualB2C --aad-b2c-instance https://login.microsoftonline.com/tfp/ --domain fake-b2c-domain.onmicrosoft.com --client-id 64f31f76-2750-49e4-aab9-f5de105b5172 -ssp B2C_1_SiUpIn",
       "Files": [
         "appsettings.Development.json",
         "appsettings.json",
@@ -820,7 +805,7 @@
     },
     "MinimalSingleOrg": {
       "Template": "webapi",
-      "Arguments": "new webapi -minimal -au SingleOrg --aad-instance https://login.microsoftonline.com/ --domain fake-aad-domain.onmicrosoft.com --client-id db33c356-12cc-4953-9167-00ad56c2e8b2 --tenant-id 7e511586-66ec-4108-bc9c-a68dee0dc2aa",
+      "Arguments": "new webapi -au SingleOrg --aad-instance https://login.microsoftonline.com/ --domain fake-aad-domain.onmicrosoft.com --client-id db33c356-12cc-4953-9167-00ad56c2e8b2 --tenant-id 7e511586-66ec-4108-bc9c-a68dee0dc2aa",
       "Files": [
         "appsettings.Development.json",
         "appsettings.json",
@@ -831,7 +816,7 @@
     },
     "MinimalSingleOrgProgramMain": {
       "Template": "webapi",
-      "Arguments": "new webapi -minimal --use-program-main -au SingleOrg --aad-instance https://login.microsoftonline.com/ --domain fake-aad-domain.onmicrosoft.com --client-id db33c356-12cc-4953-9167-00ad56c2e8b2 --tenant-id 7e511586-66ec-4108-bc9c-a68dee0dc2aa",
+      "Arguments": "new webapi --use-program-main -au SingleOrg --aad-instance https://login.microsoftonline.com/ --domain fake-aad-domain.onmicrosoft.com --client-id db33c356-12cc-4953-9167-00ad56c2e8b2 --tenant-id 7e511586-66ec-4108-bc9c-a68dee0dc2aa",
       "Files": [
         "appsettings.Development.json",
         "appsettings.json",
@@ -843,7 +828,18 @@
     },
     "Minimal": {
       "Template": "webapi",
-      "Arguments": "new webapi -minimal -au None",
+      "Arguments": "new webapi -au None",
+      "Files": [
+        "appsettings.Development.json",
+        "appsettings.json",
+        "Program.cs",
+        "Properties/launchSettings.json"
+      ],
+      "AuthOption": "None"
+    },
+    "MinimalExplicit": {
+      "Template": "webapi",
+      "Arguments": "new webapi --use-minimal-apis",
       "Files": [
         "appsettings.Development.json",
         "appsettings.json",
@@ -854,7 +850,7 @@
     },
     "MinimalProgramMain": {
       "Template": "webapi",
-      "Arguments": "new webapi -minimal --use-program-main -au None",
+      "Arguments": "new webapi --use-program-main -au None",
       "Files": [
         "appsettings.Development.json",
         "appsettings.json",
@@ -866,7 +862,7 @@
     },
     "Windows": {
       "Template": "webapi",
-      "Arguments": "new webapi -au Windows",
+      "Arguments": "new webapi -controllers -au Windows",
       "Files": [
         "appsettings.Development.json",
         "appsettings.json",
@@ -879,7 +875,7 @@
     },
     "WindowsProgramMain": {
       "Template": "webapi",
-      "Arguments": "new webapi -au Windows --use-program-main",
+      "Arguments": "new webapi -controllers -au Windows --use-program-main",
       "Files": [
         "appsettings.Development.json",
         "appsettings.json",
@@ -1535,103 +1531,6 @@
         "appsettings.json",
         "Program.cs",
         "Worker.cs"
-      ]
-    }
-  },
-  "angular": {
-    "None": {
-      "Template": "angular",
-      "Arguments": "new angular",
-      "Files": [
-        "ClientApp/src/app/counter/counter.component.html",
-        "ClientApp/src/app/counter/counter.component.spec.ts",
-        "ClientApp/src/app/counter/counter.component.ts",
-        "ClientApp/src/app/fetch-data/fetch-data.component.html",
-        "ClientApp/src/app/fetch-data/fetch-data.component.ts",
-        "ClientApp/src/app/home/home.component.html",
-        "ClientApp/src/app/home/home.component.ts",
-        "ClientApp/src/app/nav-menu/nav-menu.component.css",
-        "ClientApp/src/app/nav-menu/nav-menu.component.html",
-        "ClientApp/src/app/nav-menu/nav-menu.component.ts",
-        "ClientApp/src/app/app.component.html",
-        "ClientApp/src/app/app.component.ts",
-        "ClientApp/src/app/app.module.ts",
-        "ClientApp/src/app/app.server.module.ts",
-        "ClientApp/src/assets/.gitkeep",
-        "ClientApp/src/environments/environment.prod.ts",
-        "ClientApp/src/environments/environment.ts",
-        "ClientApp/src/index.html",
-        "ClientApp/src/main.ts",
-        "ClientApp/src/polyfills.ts",
-        "ClientApp/src/styles.css",
-        "ClientApp/src/test.ts",
-        "ClientApp/.editorconfig",
-        "ClientApp/.gitignore",
-        "ClientApp/angular.json",
-        "ClientApp/aspnetcore-https.js",
-        "ClientApp/karma.conf.js",
-        "ClientApp/package-lock.json",
-        "ClientApp/package.json",
-        "ClientApp/proxy.conf.js",
-        "ClientApp/README.md",
-        "ClientApp/tsconfig.json",
-        "ClientApp/tsconfig.app.json",
-        "ClientApp/tsconfig.spec.json",
-        "WeatherForecast.cs",
-        "Controllers/WeatherForecastController.cs",
-        "Pages/_ViewImports.cshtml",
-        "Pages/Error.cshtml",
-        "Pages/Error.cshtml.cs",
-        "Properties/launchSettings.json",
-        "wwwroot/favicon.ico",
-        ".gitignore",
-        "appsettings.Development.json",
-        "appsettings.json",
-        "Program.cs"
-      ]
-    }
-  },
-  "react": {
-    "None": {
-      "Template": "react",
-      "Arguments": "new react",
-      "Files": [
-        "ClientApp/public/favicon.ico",
-        "ClientApp/public/index.html",
-        "ClientApp/public/manifest.webmanifest",
-        "ClientApp/src/components/Counter.js",
-        "ClientApp/src/components/FetchData.js",
-        "ClientApp/src/components/Home.js",
-        "ClientApp/src/components/Layout.js",
-        "ClientApp/src/components/NavMenu.css",
-        "ClientApp/src/components/NavMenu.js",
-        "ClientApp/src/custom.css",
-        "ClientApp/src/App.js",
-        "ClientApp/src/App.test.js",
-        "ClientApp/src/AppRoutes.js",
-        "ClientApp/src/index.js",
-        "ClientApp/src/reportWebVitals.js",
-        "ClientApp/src/serviceWorkerRegistration.js",
-        "ClientApp/src/service-worker.js",
-        "ClientApp/src/setupProxy.js",
-        "ClientApp/.env",
-        "ClientApp/.env.development",
-        "ClientApp/.gitignore",
-        "ClientApp/aspnetcore-https.js",
-        "ClientApp/aspnetcore-react.js",
-        "ClientApp/package-lock.json",
-        "ClientApp/package.json",
-        "ClientApp/README.md",
-        "WeatherForecast.cs",
-        "Controllers/WeatherForecastController.cs",
-        "Pages/_ViewImports.cshtml",
-        "Pages/Error.cshtml",
-        "Pages/Error.cshtml.cs",
-        "Properties/launchSettings.json",
-        ".gitignore",
-        "appsettings.Development.json",
-        "appsettings.json",
-        "Program.cs"
       ]
     }
   },

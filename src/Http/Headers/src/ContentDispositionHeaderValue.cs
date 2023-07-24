@@ -631,7 +631,7 @@ public class ContentDispositionHeaderValue
         int totalBytesConsumed = 0;
         while (totalBytesConsumed < inputBytes.Length)
         {
-            if (inputBytes[totalBytesConsumed] <= 0x7F)
+            if (Ascii.IsValid(inputBytes[totalBytesConsumed]))
             {
                 // This is an ASCII char. Let's handle it ourselves.
 

@@ -37,7 +37,7 @@
       RuntimeFrameworkVersion="${MicrosoftNETCoreAppRuntimeVersion}"
       TargetingPackVersion="${MicrosoftNETCoreAppRefVersion}" />
 
-    <PackageReference Include="Microsoft.Dotnet.ILCompiler"
+    <PackageReference Include="Microsoft.DotNet.ILCompiler"
       Condition=" '$(PublishAot)' == 'true' "
       Version="${MicrosoftNETCoreAppRuntimeVersion}" />
   </ItemGroup>
