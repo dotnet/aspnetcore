@@ -296,6 +296,7 @@ public partial class RedisCache : IDistributedCache, IDisposable
         }
         return ConnectSlowAsync(token);
     }
+
     private async ValueTask<IDatabase> ConnectSlowAsync(CancellationToken token)
     {
         await _connectionLock.WaitAsync(token).ConfigureAwait(false);
@@ -307,14 +308,7 @@ public partial class RedisCache : IDistributedCache, IDisposable
                 IConnectionMultiplexer connection;
                 if (_options.ConnectionMultiplexerFactory is null)
                 {
-                    if (_options.ConfigurationOptions is not null)
-                    {
-                        connection = await ConnectionMultiplexer.ConnectAsync(_options.ConfigurationOptions).ConfigureAwait(false);
-                    }
-                    else
-                    {
-                        connection = await ConnectionMultiplexer.ConnectAsync(_options.Configuration!).ConfigureAwait(false);
-                    }
+                    connection = await ConnectionMultiplexer.ConnectAsync(_options.GetConfiguredOptions("asp.net DC")).ConfigureAwait(false);
                 }
                 else
                 {

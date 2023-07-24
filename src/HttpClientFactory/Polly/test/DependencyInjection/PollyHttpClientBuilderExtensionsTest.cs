@@ -40,16 +40,13 @@ public class PollyHttpClientBuilderExtensionsTest
     {
         var serviceCollection = new ServiceCollection();
 
-        HttpMessageHandlerBuilder builder = null;
+        IList<DelegatingHandler> additionalHandlers = null;
 
         // Act1
         serviceCollection.AddHttpClient("example.com", c => c.BaseAddress = new Uri("http://example.com"))
             .AddPolicyHandler(RetryPolicy)
-            .ConfigureHttpMessageHandlerBuilder(b =>
-            {
-                b.PrimaryHandler = PrimaryHandler;
-                builder = b;
-            });
+            .ConfigurePrimaryHttpMessageHandler(() => PrimaryHandler)
+            .ConfigureAdditionalHttpMessageHandlers((handlers, _) => additionalHandlers = handlers);
 
         var services = serviceCollection.BuildServiceProvider();
         var factory = services.GetRequiredService<IHttpClientFactory>();
@@ -61,7 +58,7 @@ public class PollyHttpClientBuilderExtensionsTest
         Assert.NotNull(client);
 
         Assert.Collection(
-            builder.AdditionalHandlers,
+            additionalHandlers,
             h => Assert.IsType<LoggingScopeHttpMessageHandler>(h),
             h => Assert.IsType<PolicyHttpMessageHandler>(h),
             h => Assert.IsType<LoggingHttpMessageHandler>(h));
@@ -78,16 +75,13 @@ public class PollyHttpClientBuilderExtensionsTest
     {
         var serviceCollection = new ServiceCollection();
 
-        HttpMessageHandlerBuilder builder = null;
+        IList<DelegatingHandler> additionalHandlers = null;
 
         // Act1
         serviceCollection.AddHttpClient("example.com", c => c.BaseAddress = new Uri("http://example.com"))
             .AddPolicyHandler((req) => req.RequestUri.AbsolutePath == "/" ? RetryPolicy : NoOpPolicy)
-            .ConfigureHttpMessageHandlerBuilder(b =>
-            {
-                b.PrimaryHandler = PrimaryHandler;
-                builder = b;
-            });
+            .ConfigurePrimaryHttpMessageHandler(() => PrimaryHandler)
+            .ConfigureAdditionalHttpMessageHandlers((handlers, _) => additionalHandlers = handlers);
 
         var services = serviceCollection.BuildServiceProvider();
         var factory = services.GetRequiredService<IHttpClientFactory>();
@@ -99,7 +93,7 @@ public class PollyHttpClientBuilderExtensionsTest
         Assert.NotNull(client);
 
         Assert.Collection(
-            builder.AdditionalHandlers,
+            additionalHandlers,
             h => Assert.IsType<LoggingScopeHttpMessageHandler>(h),
             h => Assert.IsType<PolicyHttpMessageHandler>(h),
             h => Assert.IsType<LoggingHttpMessageHandler>(h));
@@ -119,16 +113,13 @@ public class PollyHttpClientBuilderExtensionsTest
     {
         var serviceCollection = new ServiceCollection();
 
-        HttpMessageHandlerBuilder builder = null;
+        IList<DelegatingHandler> additionalHandlers = null;
 
         // Act1
         serviceCollection.AddHttpClient("example.com", c => c.BaseAddress = new Uri("http://example.com"))
             .AddPolicyHandler((req) => req.RequestUri.AbsolutePath == "/" ? RetryPolicy : NoOpPolicy)
-            .ConfigureHttpMessageHandlerBuilder(b =>
-            {
-                b.PrimaryHandler = PrimaryHandler;
-                builder = b;
-            });
+            .ConfigurePrimaryHttpMessageHandler(() => PrimaryHandler)
+            .ConfigureAdditionalHttpMessageHandlers((handlers, _) => additionalHandlers = handlers);
 
         var services = serviceCollection.BuildServiceProvider();
         var factory = services.GetRequiredService<IHttpClientFactory>();
@@ -140,7 +131,7 @@ public class PollyHttpClientBuilderExtensionsTest
         Assert.NotNull(client);
 
         Assert.Collection(
-            builder.AdditionalHandlers,
+            additionalHandlers,
             h => Assert.IsType<LoggingScopeHttpMessageHandler>(h),
             h => Assert.IsType<PolicyHttpMessageHandler>(h),
             h => Assert.IsType<LoggingHttpMessageHandler>(h));
@@ -163,17 +154,13 @@ public class PollyHttpClientBuilderExtensionsTest
         var registry = serviceCollection.AddPolicyRegistry();
         registry.Add<IAsyncPolicy<HttpResponseMessage>>("retry", RetryPolicy);
 
-        HttpMessageHandlerBuilder builder = null;
+        IList<DelegatingHandler> additionalHandlers = null;
 
         // Act1
         serviceCollection.AddHttpClient("example.com", c => c.BaseAddress = new Uri("http://example.com"))
             .AddPolicyHandlerFromRegistry("retry")
-            .ConfigureHttpMessageHandlerBuilder(b =>
-            {
-                b.PrimaryHandler = PrimaryHandler;
-
-                builder = b;
-            });
+            .ConfigurePrimaryHttpMessageHandler(() => PrimaryHandler)
+            .ConfigureAdditionalHttpMessageHandlers((handlers, _) => additionalHandlers = handlers);
 
         var services = serviceCollection.BuildServiceProvider();
         var factory = services.GetRequiredService<IHttpClientFactory>();
@@ -185,7 +172,7 @@ public class PollyHttpClientBuilderExtensionsTest
         Assert.NotNull(client);
 
         Assert.Collection(
-            builder.AdditionalHandlers,
+            additionalHandlers,
             h => Assert.IsType<LoggingScopeHttpMessageHandler>(h),
             h => Assert.IsType<PolicyHttpMessageHandler>(h),
             h => Assert.IsType<LoggingHttpMessageHandler>(h));
@@ -206,7 +193,7 @@ public class PollyHttpClientBuilderExtensionsTest
         registry.Add<IAsyncPolicy<HttpResponseMessage>>("noop", NoOpPolicy);
         registry.Add<IAsyncPolicy<HttpResponseMessage>>("retry", RetryPolicy);
 
-        HttpMessageHandlerBuilder builder = null;
+        IList<DelegatingHandler> additionalHandlers = null;
 
         // Act1
         serviceCollection.AddHttpClient("example.com", c => c.BaseAddress = new Uri("http://example.com"))
@@ -216,11 +203,8 @@ public class PollyHttpClientBuilderExtensionsTest
                     reg.Get<IAsyncPolicy<HttpResponseMessage>>("retry") :
                     reg.Get<IAsyncPolicy<HttpResponseMessage>>("noop");
             })
-            .ConfigureHttpMessageHandlerBuilder(b =>
-            {
-                b.PrimaryHandler = PrimaryHandler;
-                builder = b;
-            });
+            .ConfigurePrimaryHttpMessageHandler(() => PrimaryHandler)
+            .ConfigureAdditionalHttpMessageHandlers((handlers, _) => additionalHandlers = handlers);
 
         var services = serviceCollection.BuildServiceProvider();
         var factory = services.GetRequiredService<IHttpClientFactory>();
@@ -232,7 +216,7 @@ public class PollyHttpClientBuilderExtensionsTest
         Assert.NotNull(client);
 
         Assert.Collection(
-            builder.AdditionalHandlers,
+            additionalHandlers,
             h => Assert.IsType<LoggingScopeHttpMessageHandler>(h),
             h => Assert.IsType<PolicyHttpMessageHandler>(h),
             h => Assert.IsType<LoggingHttpMessageHandler>(h));
@@ -267,16 +251,13 @@ public class PollyHttpClientBuilderExtensionsTest
 
         var serviceCollection = new ServiceCollection();
 
-        HttpMessageHandlerBuilder builder = null;
+        IList<DelegatingHandler> additionalHandlers = null;
 
         // Act1
         serviceCollection.AddHttpClient("example.com", c => c.BaseAddress = new Uri("http://example.com"))
             .AddTransientHttpErrorPolicy(b => b.RetryAsync(5))
-            .ConfigureHttpMessageHandlerBuilder(b =>
-            {
-                b.PrimaryHandler = handler;
-                builder = b;
-            });
+            .ConfigurePrimaryHttpMessageHandler(() => handler)
+            .ConfigureAdditionalHttpMessageHandlers((handlers, _) => additionalHandlers = handlers);
 
         var services = serviceCollection.BuildServiceProvider();
         var factory = services.GetRequiredService<IHttpClientFactory>();
@@ -288,7 +269,7 @@ public class PollyHttpClientBuilderExtensionsTest
         Assert.NotNull(client);
 
         Assert.Collection(
-            builder.AdditionalHandlers,
+            additionalHandlers,
             h => Assert.IsType<LoggingScopeHttpMessageHandler>(h),
             h => Assert.IsType<PolicyHttpMessageHandler>(h),
             h => Assert.IsType<LoggingHttpMessageHandler>(h));
@@ -315,16 +296,13 @@ public class PollyHttpClientBuilderExtensionsTest
 
         var serviceCollection = new ServiceCollection();
 
-        HttpMessageHandlerBuilder builder = null;
+        IList<DelegatingHandler> additionalHandlers = null;
 
         // Act1
         serviceCollection.AddHttpClient("example.com", c => c.BaseAddress = new Uri("http://example.com"))
             .AddTransientHttpErrorPolicy(b => b.RetryAsync(5))
-            .ConfigureHttpMessageHandlerBuilder(b =>
-            {
-                b.PrimaryHandler = handler;
-                builder = b;
-            });
+            .ConfigurePrimaryHttpMessageHandler(() => handler)
+            .ConfigureAdditionalHttpMessageHandlers((handlers, _) => additionalHandlers = handlers);
 
         var services = serviceCollection.BuildServiceProvider();
         var factory = services.GetRequiredService<IHttpClientFactory>();
@@ -336,7 +314,7 @@ public class PollyHttpClientBuilderExtensionsTest
         Assert.NotNull(client);
 
         Assert.Collection(
-            builder.AdditionalHandlers,
+            additionalHandlers,
             h => Assert.IsType<LoggingScopeHttpMessageHandler>(h),
             h => Assert.IsType<PolicyHttpMessageHandler>(h),
             h => Assert.IsType<LoggingHttpMessageHandler>(h));
@@ -353,7 +331,7 @@ public class PollyHttpClientBuilderExtensionsTest
     {
         var serviceCollection = new ServiceCollection();
         var registry = serviceCollection.AddPolicyRegistry();
-        HttpMessageHandlerBuilder builder = null;
+        IList<DelegatingHandler> additionalHandlers = null;
 
         // Act1
         serviceCollection.AddHttpClient("Service")
@@ -367,11 +345,8 @@ public class PollyHttpClientBuilderExtensionsTest
                 return r.RequestUri.Host;
             }
             )
-            .ConfigureHttpMessageHandlerBuilder(b =>
-            {
-                b.PrimaryHandler = PrimaryHandler;
-                builder = b;
-            });
+            .ConfigurePrimaryHttpMessageHandler(() => PrimaryHandler)
+            .ConfigureAdditionalHttpMessageHandlers((handlers, _) => additionalHandlers = handlers);
 
         var services = serviceCollection.BuildServiceProvider();
         var factory = services.GetRequiredService<IHttpClientFactory>();
@@ -382,7 +357,7 @@ public class PollyHttpClientBuilderExtensionsTest
         Assert.NotNull(client);
 
         Assert.Collection(
-            builder.AdditionalHandlers,
+            additionalHandlers,
             h => Assert.IsType<LoggingScopeHttpMessageHandler>(h),
             h => Assert.IsType<PolicyHttpMessageHandler>(h),
             h => Assert.IsType<LoggingHttpMessageHandler>(h));
@@ -435,17 +410,13 @@ public class PollyHttpClientBuilderExtensionsTest
             registry.Add<IAsyncPolicy<HttpResponseMessage>>(policyName, RetryPolicy);
         });
 
-        HttpMessageHandlerBuilder builder = null;
+        IList<DelegatingHandler> additionalHandlers = null;
 
         // Act1
         serviceCollection.AddHttpClient("example.com", c => c.BaseAddress = new Uri("http://example.com"))
             .AddPolicyHandlerFromRegistry(options.PolicyName)
-            .ConfigureHttpMessageHandlerBuilder(b =>
-            {
-                b.PrimaryHandler = PrimaryHandler;
-
-                builder = b;
-            });
+            .ConfigurePrimaryHttpMessageHandler(() => PrimaryHandler)
+            .ConfigureAdditionalHttpMessageHandlers((handlers, _) => additionalHandlers = handlers);
 
         var services = serviceCollection.BuildServiceProvider();
         var factory = services.GetRequiredService<IHttpClientFactory>();
@@ -457,7 +428,7 @@ public class PollyHttpClientBuilderExtensionsTest
         Assert.NotNull(client);
 
         Assert.Collection(
-            builder.AdditionalHandlers,
+            additionalHandlers,
             h => Assert.IsType<LoggingScopeHttpMessageHandler>(h),
             h => Assert.IsType<PolicyHttpMessageHandler>(h),
             h => Assert.IsType<LoggingHttpMessageHandler>(h));

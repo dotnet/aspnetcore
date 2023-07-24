@@ -336,10 +336,23 @@ internal sealed class OutputCacheMiddleware
         // Locking cache lookups by default
         // TODO: should it be part of the cache implementations or can we assume all caches would benefit from it?
         // It makes sense for caches that use IO (disk, network) or need to deserialize the state but could also be a global option
+        OutputCacheEntry? cacheEntry;
+        try
+        {
+            cacheEntry = await _outputCacheEntryDispatcher.ScheduleAsync(cacheContext.CacheKey, (Store: _store, CacheContext: cacheContext), static async (key, state) => await OutputCacheEntryFormatter.GetAsync(key, state.Store, state.CacheContext.HttpContext.RequestAborted));
+        }
+        catch (OperationCanceledException)
+        {
+            // don't report as failure
+            cacheEntry = null;
+        }
+        catch (Exception ex)
+        {
+            _logger.UnableToQueryOutputCache(ex);
+            cacheEntry = null;
+        }
 
-        var cacheEntry = await _outputCacheEntryDispatcher.ScheduleAsync(cacheContext.CacheKey, (Store: _store, CacheContext: cacheContext), static async (key, state) => await OutputCacheEntryFormatter.GetAsync(key, state.Store, state.CacheContext.HttpContext.RequestAborted));
-
-        if (await TryServeCachedResponseAsync(cacheContext, cacheEntry, policies))
+        if (cacheEntry is not null && await TryServeCachedResponseAsync(cacheContext, cacheEntry, policies))
         {
             return true;
         }
@@ -440,7 +453,7 @@ internal sealed class OutputCacheMiddleware
                 else
                 {
                     _logger.ResponseCached();
-                    await OutputCacheEntryFormatter.StoreAsync(context.CacheKey, context.CachedResponse, context.CachedResponseValidFor, _store, context.HttpContext.RequestAborted);
+                    await OutputCacheEntryFormatter.StoreAsync(context.CacheKey, context.CachedResponse, context.CachedResponseValidFor, _store, _logger, context.HttpContext.RequestAborted);
                 }
             }
             else

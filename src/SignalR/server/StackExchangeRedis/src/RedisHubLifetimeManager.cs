@@ -123,7 +123,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
         var tasks = new List<Task>();
 
         RedisLog.Unsubscribe(_logger, connectionChannel);
-        tasks.Add(_bus.UnsubscribeAsync(connectionChannel));
+        tasks.Add(_bus.UnsubscribeAsync(RedisChannel.Literal(connectionChannel)));
 
         var feature = connection.Features.GetRequiredFeature<IRedisFeature>();
         var groupNames = feature.Groups;
@@ -295,7 +295,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
     {
         await EnsureRedisServerConnection();
         RedisLog.PublishToChannel(_logger, channel);
-        return await _bus!.PublishAsync(channel, payload);
+        return await _bus!.PublishAsync(RedisChannel.Literal(channel), payload);
     }
 
     private Task AddGroupAsyncCore(HubConnectionContext connection, string groupName)
@@ -328,7 +328,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
         {
             var lifetimeManager = (RedisHubLifetimeManager<THub>)state;
             RedisLog.Unsubscribe(lifetimeManager._logger, channelName);
-            return lifetimeManager._bus!.UnsubscribeAsync(channelName);
+            return lifetimeManager._bus!.UnsubscribeAsync(RedisChannel.Literal(channelName));
         });
 
         var feature = connection.Features.GetRequiredFeature<IRedisFeature>();
@@ -361,7 +361,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
         {
             var lifetimeManager = (RedisHubLifetimeManager<THub>)state;
             RedisLog.Unsubscribe(lifetimeManager._logger, channelName);
-            return lifetimeManager._bus!.UnsubscribeAsync(channelName);
+            return lifetimeManager._bus!.UnsubscribeAsync(RedisChannel.Literal(channelName));
         });
     }
 
@@ -448,7 +448,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
     private async Task SubscribeToAll()
     {
         RedisLog.Subscribing(_logger, _channels.All);
-        var channel = await _bus!.SubscribeAsync(_channels.All);
+        var channel = await _bus!.SubscribeAsync(RedisChannel.Literal(_channels.All));
         channel.OnMessage(async channelMessage =>
         {
             try
@@ -478,7 +478,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
 
     private async Task SubscribeToGroupManagementChannel()
     {
-        var channel = await _bus!.SubscribeAsync(_channels.GroupManagement);
+        var channel = await _bus!.SubscribeAsync(RedisChannel.Literal(_channels.GroupManagement));
         channel.OnMessage(async channelMessage =>
         {
             try
@@ -515,7 +515,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
     private async Task SubscribeToAckChannel()
     {
         // Create server specific channel in order to send an ack to a single server
-        var channel = await _bus!.SubscribeAsync(_channels.Ack(_serverName));
+        var channel = await _bus!.SubscribeAsync(RedisChannel.Literal(_channels.Ack(_serverName)));
         channel.OnMessage(channelMessage =>
         {
             var ackId = RedisProtocol.ReadAck(channelMessage.Message);
@@ -529,7 +529,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
         var connectionChannel = _channels.Connection(connection.ConnectionId);
 
         RedisLog.Subscribing(_logger, connectionChannel);
-        var channel = await _bus!.SubscribeAsync(connectionChannel);
+        var channel = await _bus!.SubscribeAsync(RedisChannel.Literal(connectionChannel));
         channel.OnMessage(channelMessage =>
         {
             var invocation = RedisProtocol.ReadInvocation(channelMessage.Message);
@@ -586,7 +586,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
         return _users.AddSubscriptionAsync(userChannel, connection, async (channelName, subscriptions) =>
         {
             RedisLog.Subscribing(_logger, channelName);
-            var channel = await _bus!.SubscribeAsync(channelName);
+            var channel = await _bus!.SubscribeAsync(RedisChannel.Literal(channelName));
             channel.OnMessage(async channelMessage =>
             {
                 try
@@ -612,7 +612,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
     private async Task SubscribeToGroupAsync(string groupChannel, HubConnectionStore groupConnections)
     {
         RedisLog.Subscribing(_logger, groupChannel);
-        var channel = await _bus!.SubscribeAsync(groupChannel);
+        var channel = await _bus!.SubscribeAsync(RedisChannel.Literal(groupChannel));
         channel.OnMessage(async (channelMessage) =>
         {
             try
@@ -641,7 +641,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
 
     private async Task SubscribeToReturnResultsAsync()
     {
-        var channel = await _bus!.SubscribeAsync(_channels.ReturnResults);
+        var channel = await _bus!.SubscribeAsync(RedisChannel.Literal(_channels.ReturnResults));
         channel.OnMessage((channelMessage) =>
         {
             var completion = RedisProtocol.ReadCompletion(channelMessage.Message);

@@ -14,6 +14,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 using Microsoft.AspNetCore.Http.Features;
@@ -388,6 +389,7 @@ public static partial class RequestDelegateFactory
             {
                 // Add the Accepts metadata when reading from FORM.
                 InferFormAcceptsMetadata(factoryContext);
+                InferAntiforgeryMetadata(factoryContext);
             }
 
             PopulateBuiltInResponseTypeMetadata(methodInfo.ReturnType, factoryContext.EndpointBuilder);
@@ -1427,6 +1429,13 @@ public static partial class RequestDelegateFactory
 
             if (feature?.CanHaveBody == true)
             {
+                if (httpContext.Features.Get<IAntiforgeryValidationFeature>() is { IsValid: false } antiforgeryValidationFeature)
+                {
+                    Log.InvalidAntiforgeryToken(httpContext, parameterTypeName, parameterName, antiforgeryValidationFeature.Error!, throwOnBadRequest);
+                    httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    return (null, false);
+                }
+
                 if (!httpContext.Request.HasFormContentType)
                 {
                     Log.UnexpectedNonFormContentType(httpContext, httpContext.Request.ContentType, throwOnBadRequest);
@@ -1930,6 +1939,16 @@ public static partial class RequestDelegateFactory
         }
     }
 
+    private static void InferAntiforgeryMetadata(RequestDelegateFactoryContext factoryContext)
+    {
+        if (factoryContext.MetadataAlreadyInferred)
+        {
+            return;
+        }
+
+        factoryContext.EndpointBuilder.Metadata.Add(AntiforgeryMetadata.ValidationRequired);
+    }
+
     private static Expression BindParameterFromFormCollection(
         ParameterInfo parameter,
         RequestDelegateFactoryContext factoryContext)
@@ -1976,22 +1995,20 @@ public static partial class RequestDelegateFactory
         // var name_reader;
         // var form_dict;
         // var form_buffer;
-        // var form_max_key_length;
         var formArgument = Expression.Variable(parameter.ParameterType, $"{parameter.Name}_local");
         var formReader = Expression.Variable(typeof(FormDataReader), $"{parameter.Name}_reader");
         var formDict = Expression.Variable(typeof(IReadOnlyDictionary<FormKey, StringValues>), "form_dict");
         var formBuffer = Expression.Variable(typeof(char[]), "form_buffer");
-        var formMaxKeyLength = Expression.Variable(typeof(int), "form_max_key_length");
 
-        // ProcessForm(context.Request.Form, form_dict, form_max_key_length, form_buffer);
-        var processFormExpr = Expression.Call(ProcessFormMethod, FormExpr, formDict, formMaxKeyLength, formBuffer);
-        // name_reader = new FormDataReader(form_dict, CultureInfo.InvariantCulture, form_buffer.AsMemory(0, form_max_key_length));
+        // ProcessForm(context.Request.Form, form_dict, form_buffer);
+        var processFormExpr = Expression.Call(ProcessFormMethod, FormExpr, formDict, formBuffer);
+        // name_reader = new FormDataReader(form_dict, CultureInfo.InvariantCulture, form_buffer.AsMemory(0, FormDataMapperOptions.MaxKeyBufferSize));
         var initializeReaderExpr = Expression.Assign(
             formReader,
             Expression.New(FormDataReaderConstructor,
                 formDict,
                 Expression.Constant(CultureInfo.InvariantCulture),
-                Expression.Call(AsMemoryMethod, formBuffer, Expression.Constant(0), formMaxKeyLength)));
+                Expression.Call(AsMemoryMethod, formBuffer, Expression.Constant(0), Expression.Constant(FormDataMapperOptions.MaxKeyBufferSize))));
         // FormDataMapper.Map<string>(name_reader, FormDataMapperOptions);
         var invokeMapMethodExpr = Expression.Call(
             FormDataMapperMapMethod.MakeGenericMethod(parameter.ParameterType),
@@ -2005,7 +2022,7 @@ public static partial class RequestDelegateFactory
             Expression.Constant(false));
 
         return Expression.Block(
-            new[] { formArgument, formReader, formDict, formBuffer, formMaxKeyLength },
+            new[] { formArgument, formReader, formDict, formBuffer },
             Expression.TryFinally(
                 Expression.Block(
                     processFormExpr,
@@ -2016,20 +2033,15 @@ public static partial class RequestDelegateFactory
         );
     }
 
-    private static void ProcessForm(IFormCollection form, ref IReadOnlyDictionary<FormKey, StringValues> formDictionary, ref int maxKeyLength, ref char[] buffer)
+    private static void ProcessForm(IFormCollection form, ref IReadOnlyDictionary<FormKey, StringValues> formDictionary, ref char[] buffer)
     {
         var dictionary = new Dictionary<FormKey, StringValues>();
-        maxKeyLength = -1;
         foreach (var (key, value) in form)
         {
-            if (key.Length > maxKeyLength)
-            {
-                maxKeyLength = key.Length;
-            }
             dictionary.Add(new FormKey(key.AsMemory()), value);
         }
         formDictionary = dictionary.AsReadOnly();
-        buffer = ArrayPool<char>.Shared.Rent(maxKeyLength);
+        buffer = ArrayPool<char>.Shared.Rent(FormDataMapperOptions.MaxKeyBufferSize);
     }
 
     private static Expression BindParameterFromFormFiles(
@@ -2546,6 +2558,20 @@ public static partial class RequestDelegateFactory
 
         [LoggerMessage(RequestDelegateCreationLogging.InvalidFormRequestBodyEventId, LogLevel.Debug, RequestDelegateCreationLogging.InvalidFormRequestBodyLogMessage, EventName = RequestDelegateCreationLogging.InvalidFormRequestBodyEventName)]
         private static partial void InvalidFormRequestBody(ILogger logger, string parameterType, string parameterName, Exception exception);
+
+        public static void InvalidAntiforgeryToken(HttpContext httpContext, string parameterTypeName, string parameterName, Exception exception, bool shouldThrow)
+        {
+            if (shouldThrow)
+            {
+                var message = string.Format(CultureInfo.InvariantCulture, RequestDelegateCreationLogging.InvalidAntiforgeryTokenExceptionMessage, parameterTypeName, parameterName);
+                throw new BadHttpRequestException(message, exception);
+            }
+
+            InvalidAntiforgeryToken(GetLogger(httpContext), parameterTypeName, parameterName, exception);
+        }
+
+        [LoggerMessage(RequestDelegateCreationLogging.InvalidAntiforgeryTokenEventId, LogLevel.Debug, RequestDelegateCreationLogging.InvalidAntiforgeryTokenLogMessage, EventName = RequestDelegateCreationLogging.InvalidAntiforgeryTokenEventName)]
+        private static partial void InvalidAntiforgeryToken(ILogger logger, string parameterType, string parameterName, Exception exception);
 
         private static ILogger GetLogger(HttpContext httpContext)
         {

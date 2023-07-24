@@ -243,6 +243,11 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                 using var stringWriter = new StringWriter(CultureInfo.InvariantCulture);
                 using var codeWriter = new CodeWriter(stringWriter, baseIndent: 0);
 
+                if (hasFormBody)
+                {
+                    codeWriter.WriteLine(RequestDelegateGeneratorSources.AntiforgeryMetadataType);
+                }
+
                 if (hasFormBody || hasJsonBody || hasResponseMetadata)
                 {
                     codeWriter.WriteLine(RequestDelegateGeneratorSources.ContentTypeConstantsType);

@@ -160,7 +160,7 @@ internal static class ExpressionFormatter
             var declaringType = methodInfo.DeclaringType;
             if (declaringType is null)
             {
-                return new(IsSingleArgumentIndexer: false);
+                return new(isSingleArgumentIndexer: false);
             }
 
             // Check whether GetDefaultMembers() (if present in CoreCLR) would return a member of this type. Compiler
@@ -168,14 +168,14 @@ internal static class ExpressionFormatter
             var defaultMember = declaringType.GetCustomAttribute<DefaultMemberAttribute>(inherit: true);
             if (defaultMember is null)
             {
-                return new(IsSingleArgumentIndexer: false);
+                return new(isSingleArgumentIndexer: false);
             }
 
             // Find default property (the indexer) and confirm its getter is the method in this expression.
             var runtimeProperties = declaringType.GetRuntimeProperties();
             if (runtimeProperties is null)
             {
-                return new(IsSingleArgumentIndexer: false);
+                return new(isSingleArgumentIndexer: false);
             }
 
             foreach (var property in runtimeProperties)
@@ -183,11 +183,11 @@ internal static class ExpressionFormatter
                 if (string.Equals(defaultMember.MemberName, property.Name, StringComparison.Ordinal) &&
                     property.GetMethod == methodInfo)
                 {
-                    return new(IsSingleArgumentIndexer: true);
+                    return new(isSingleArgumentIndexer: true);
                 }
             }
 
-            return new(IsSingleArgumentIndexer: false);
+            return new(isSingleArgumentIndexer: false);
         }
     }
 
@@ -297,5 +297,13 @@ internal static class ExpressionFormatter
         }
     }
 
-    private record struct MethodInfoData(bool IsSingleArgumentIndexer);
+    private readonly struct MethodInfoData
+    {
+        public bool IsSingleArgumentIndexer { get; }
+
+        public MethodInfoData(bool isSingleArgumentIndexer)
+        {
+            IsSingleArgumentIndexer = isSingleArgumentIndexer;
+        }
+    }
 }

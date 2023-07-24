@@ -8,6 +8,8 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <!-- Required for System.Net.Quic which has a preview API in .NET 7 -->
     <EnablePreviewFeatures>true</EnablePreviewFeatures>
+    <!-- EXTEXP0003: MetricCollector is experimental -->
+    <NoWarn>$(NoWarn);EXTEXP0003</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

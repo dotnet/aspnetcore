@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Security.Claims;
 using Components.TestServer.RazorComponents;
 using Components.TestServer.RazorComponents.Pages.Forms;
+using Components.TestServer.RazorComponents.Pages.StreamingRendering;
 using Components.TestServer.Services;
 
 namespace TestServer;
@@ -21,7 +22,12 @@ public class RazorComponentEndpointsStartup<TRootComponent>
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddRazorComponents()
+        services.AddRazorComponents(options =>
+        {
+            options.MaxFormMappingErrorCount = 10;
+            options.MaxFormMappingRecursionDepth = 5;
+            options.MaxFormMappingCollectionSize = 100;
+        })
             .AddServerComponents()
             .AddWebAssemblyComponents(options =>
             {
@@ -49,6 +55,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             app.UseStaticFiles();
             app.UseRouting();
             UseFakeAuthState(app);
+            app.UseAntiforgery();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapRazorComponents<TRootComponent>()
@@ -57,6 +64,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
                 NotEnabledStreamingRenderingComponent.MapEndpoints(endpoints);
                 StreamingRenderingForm.MapEndpoints(endpoints);
+                InteractiveStreamingRenderingComponent.MapEndpoints(endpoints);
 
                 MapEnhancedNavigationEndpoints(endpoints);
             });

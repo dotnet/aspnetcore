@@ -90,4 +90,20 @@ internal static class DiagnosticDescriptors
         "Usage",
         DiagnosticSeverity.Error,
         isEnabledByDefault: true);
+
+    public static DiagnosticDescriptor TypeParametersNotSupported { get; } = new(
+        "RDG011",
+        new LocalizableResourceString(nameof(Resources.TypeParametersNotSupported_Title), Resources.ResourceManager, typeof(Resources)),
+        new LocalizableResourceString(nameof(Resources.TypeParametersNotSupported_Message), Resources.ResourceManager, typeof(Resources)),
+        "Usage",
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    public static DiagnosticDescriptor InaccessibleTypesNotSupported { get; } = new(
+        "RDG012",
+        new LocalizableResourceString(nameof(Resources.InaccessibleTypesNotSupported_Title), Resources.ResourceManager, typeof(Resources)),
+        new LocalizableResourceString(nameof(Resources.InaccessibleTypesNotSupported_Message), Resources.ResourceManager, typeof(Resources)),
+        "Usage",
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
 }

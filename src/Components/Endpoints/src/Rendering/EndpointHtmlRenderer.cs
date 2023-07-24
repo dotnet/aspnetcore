@@ -125,7 +125,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
 
     protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
     {
-        UpdateNamedEvents(in renderBatch);
+        UpdateNamedSubmitEvents(in renderBatch);
 
         if (_streamingUpdatesWriter is { } writer)
         {

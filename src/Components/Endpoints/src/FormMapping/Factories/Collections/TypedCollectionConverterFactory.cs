@@ -26,9 +26,7 @@ internal sealed class TypedCollectionConverterFactory<TCollection, TElement> : T
     public override bool CanConvert(Type _, FormDataMapperOptions options)
     {
         // Resolve the element type converter
-        var elementTypeConverter = options.ResolveConverter<TElement>();
-
-        if (elementTypeConverter == null)
+        if (!options.CanConvert(typeof(TElement)))
         {
             return false;
         }

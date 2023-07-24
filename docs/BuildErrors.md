@@ -77,7 +77,22 @@ ft.Cpp.Default.props" is correct, and that the file exists on disk. [C:\git\aspn
 V2\IISLib\IISLib.vcxproj]
 ```
 
-To resolve this issue, confirm that you've installed the required C++ components in Visual Studio by following the instructions in the [BuildFromSource](./BuildFromSource.md) document.
+To resolve this issue, confirm that you've installed the required C++ components in Visual Studio by following the instructions in the [BuildFromSource](./BuildFromSource.md) document (namely, the section about running `InstallVisualStudio.ps1`).
+
+## Error MSB4018: The "InstallDotNetCore" task failed unexpectedly.
+
+Executing `.\restore.cmd` or `.\build.cmd` may produce these errors when your development environment is not configured with the correct C++ installation:
+
+```text
+C:\.nuget\packages\microsoft.dotnet.arcade.sdk\8.0.0-beta.23364.2\tools\InstallDotNetCore.targets(15,5):
+error MSB4018: The "InstallDotNetCore" task failed unexpectedly. [C:\.nuget\packages\microsoft.dotnet.a
+rcade.sdk\8.0.0-beta.23364.2\tools\Tools.proj]
+C:\.nuget\packages\microsoft.dotnet.arcade.sdk\8.0.0-beta.23364.2\tools\InstallDotNetCore.targets(15,5):
+error MSB4018: System.MissingMethodException: Method not found: 'System.Text.Json.JsonDocument System.Text.Json.JsonDo
+cument.Parse(System.ReadOnlyMemory`1<Byte>, System.Text.Json.JsonDocumentOptions)'.
+```
+
+To resolve this issue, confirm that you've installed the required C++ components in Visual Studio by following the instructions in the [BuildFromSource](./BuildFromSource.md) document (namely, the section about running `InstallVisualStudio.ps1`).
 
 ## Error: HTTP Error 500.33 - ANCM Request Handler Load Failure
 

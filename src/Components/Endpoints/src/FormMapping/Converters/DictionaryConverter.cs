@@ -16,14 +16,16 @@ internal sealed class DictionaryConverter<TDictionary, TDictionaryPolicy, TBuffe
     where TDictionaryPolicy : IDictionaryBufferAdapter<TDictionary, TBuffer, TKey, TValue>
 {
     private readonly FormDataConverter<TValue> _valueConverter;
+    private static readonly Type _elementType = typeof(TValue);
 
     public DictionaryConverter(FormDataConverter<TValue> elementConverter)
     {
         ArgumentNullException.ThrowIfNull(elementConverter);
-
         _valueConverter = elementConverter;
     }
 
+    [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
     internal override bool TryRead(
         ref FormDataReader context,
         Type type,
@@ -57,7 +59,7 @@ internal sealed class DictionaryConverter<TDictionary, TDictionaryPolicy, TBuffe
         foreach (var key in keys)
         {
             context.PushPrefix(key.Span);
-            currentElementSuccess = _valueConverter.TryRead(ref context, typeof(TValue), options, out currentValue!, out foundCurrentValue);
+            currentElementSuccess = _valueConverter.TryRead(ref context, _elementType, options, out currentValue!, out foundCurrentValue);
             succeded &= currentElementSuccess;
             context.PopPrefix(key.Span);
 

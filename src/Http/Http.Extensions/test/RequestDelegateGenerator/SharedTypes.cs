@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.Diagnostics.Runtime.Interop;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
@@ -1014,3 +1016,17 @@ public class TodoChild : Todo
     public string? Child { get; set; }
 }
 #nullable restore
+
+public class TodoWithExplicitIParsable : IParsable<TodoWithExplicitIParsable>
+{
+    static TodoWithExplicitIParsable IParsable<TodoWithExplicitIParsable>.Parse(string s, IFormatProvider provider)
+    {
+        return new TodoWithExplicitIParsable();
+    }
+
+    static bool IParsable<TodoWithExplicitIParsable>.TryParse(string s, IFormatProvider provider, out TodoWithExplicitIParsable result)
+    {
+        result = new TodoWithExplicitIParsable();
+        return true;
+    }
+}

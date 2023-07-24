@@ -30,6 +30,7 @@
     <Compile Include="$(ComponentsSharedSourceRoot)src\ArrayBuilder.cs" LinkBase="Shared" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\RenderBatchWriter.cs" LinkBase="Shared" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\ArrayBuilderMemoryStream.cs" LinkBase="Shared" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\WebRendererId.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>

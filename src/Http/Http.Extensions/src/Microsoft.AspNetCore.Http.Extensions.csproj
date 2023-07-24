@@ -24,6 +24,7 @@
     <Compile Include="$(SharedSourceRoot)ValueStringBuilder\**\*.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)Json\JsonSerializerExtensions.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)RouteHandlers\ExecuteHandlerHelper.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)AntiforgeryMetadata.cs" LinkBase="Shared" />
     <Compile Include="$(RepoRoot)src\Components\Endpoints\src\FormMapping\**\*.cs" LinkBase="SharedFormMapping" />
     <EmbeddedResource Include="$(RepoRoot)src\Components\Endpoints\src\FormMapping\**\*.resx" LinkBase="SharedFormMapping">
       <ClassName>Microsoft.AspNetCore.Components.Endpoints.FormMapping.FormDataResources</ClassName>

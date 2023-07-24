@@ -14,7 +14,11 @@ public class RedisConnectionFixture : IDisposable
     private readonly ConnectionMultiplexer _muxer;
     public RedisConnectionFixture()
     {
-        _muxer = ConnectionMultiplexer.Connect("127.0.0.1:6379");
+        var options = new RedisCacheOptions
+        {
+            Configuration = "127.0.0.1:6379", // TODO: CI test config here
+        }.GetConfiguredOptions("CI test");
+        _muxer = ConnectionMultiplexer.Connect(options);
     }
 
     public IDatabase Database => _muxer.GetDatabase();
