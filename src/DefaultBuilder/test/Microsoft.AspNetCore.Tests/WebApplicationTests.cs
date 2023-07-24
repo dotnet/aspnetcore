@@ -2748,7 +2748,7 @@ public class WebApplicationTests
             m => Assert.Equal("Microsoft.AspNetCore.HostFiltering.HostFilteringMiddleware", m),
             m => Assert.Equal("Microsoft.AspNetCore.Routing.EndpointRoutingMiddleware", m),
             m => Assert.Equal("Microsoft.AspNetCore.Authentication.AuthenticationMiddleware", m),
-            m => Assert.Equal("Microsoft.AspNetCore.Authorization.AuthorizationMiddleware", m),
+            m => Assert.Equal("Microsoft.AspNetCore.Authorization.AuthorizationMiddlewareInternal", m),
             m => Assert.Equal(typeof(MiddlewareWithInterface).FullName, m),
             m => Assert.Equal("Microsoft.AspNetCore.Routing.EndpointMiddleware", m));
     }
