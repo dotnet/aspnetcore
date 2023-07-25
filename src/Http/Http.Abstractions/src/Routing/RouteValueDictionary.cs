@@ -902,7 +902,11 @@ internal class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDic
 
                 if (names.TryGetValue(property.Name, out var duplicate))
                 {
-                    var message = $"The type '{type.FullName}' defines properties '{property.Name}' and '{duplicate.Name}' which differ only by casing. This is not supported by {nameof(RouteValueDictionary)} which uses case-insensitive comparisons.";
+                    var message = Resources.FormatRouteValueDictionary_DuplicatePropertyName(
+                        type.FullName,
+                        property.Name,
+                        duplicate.Name,
+                        nameof(RouteValueDictionary));
                     throw new InvalidOperationException(message);
                 }
 
