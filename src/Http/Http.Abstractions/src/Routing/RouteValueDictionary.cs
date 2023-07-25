@@ -50,6 +50,7 @@ internal class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDic
     internal PropertyStorage? _propertyStorage;
     private int _count;
 
+#if !COMPONENTS
     /// <summary>
     /// Creates a new <see cref="RouteValueDictionary"/> from the provided array.
     /// The new instance will take ownership of the array, and may mutate it.
@@ -97,6 +98,7 @@ internal class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDic
             _count = start,
         };
     }
+#endif
 
     /// <summary>
     /// Creates an empty <see cref="RouteValueDictionary"/>.
@@ -106,6 +108,7 @@ internal class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDic
         _arrayStorage = Array.Empty<KeyValuePair<string, object?>>();
     }
 
+#if !COMPONENTS
     /// <summary>
     /// Creates a <see cref="RouteValueDictionary"/> initialized with the specified <paramref name="values"/>.
     /// </summary>
@@ -203,7 +206,7 @@ internal class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDic
             _arrayStorage = Array.Empty<KeyValuePair<string, object?>>();
         }
     }
-
+#endif
     [MemberNotNull(nameof(_arrayStorage))]
     private void Initialize(IEnumerable<KeyValuePair<string, string?>> stringValueEnumerable)
     {

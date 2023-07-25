@@ -1,15 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections;
 using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Routing.Constraints;
 #if COMPONENTS
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Routing;
+#else
+using System.Collections;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Internal;
 #endif
 
 #if COMPONENTS
@@ -35,6 +36,7 @@ internal static class RoutePatternFactory
     private static readonly IReadOnlyDictionary<string, IReadOnlyList<RoutePatternParameterPolicyReference>> EmptyPoliciesDictionary =
         new ReadOnlyDictionary<string, IReadOnlyList<RoutePatternParameterPolicyReference>>(new Dictionary<string, IReadOnlyList<RoutePatternParameterPolicyReference>>());
 
+#if !COMPONENTS
     /// <summary>
     /// Creates a <see cref="RoutePattern"/> from its string representation.
     /// </summary>
@@ -166,7 +168,7 @@ internal static class RoutePatternFactory
 
         return PatternCore(null, null, null, null, segments);
     }
-
+#endif
     /// <summary>
     /// Creates a new instance of <see cref="RoutePattern"/> from a collection of segments.
     /// </summary>
@@ -180,6 +182,7 @@ internal static class RoutePatternFactory
         return PatternCore(rawText, null, null, null, segments);
     }
 
+#if !COMPONENTS
     /// <summary>
     /// Creates a <see cref="RoutePattern"/> from a collection of segments along
     /// with provided default values and parameter policies.
@@ -432,6 +435,7 @@ internal static class RoutePatternFactory
 
         return PatternCore(rawText, defaults, CreateRoutePatternPolicyReferences(parameterPolicies), requiredValues: null, segments);
     }
+#endif
 
     private static RoutePattern PatternCore(
         string? rawText,
@@ -636,6 +640,7 @@ internal static class RoutePatternFactory
         }
     }
 
+#if !COMPONENTS
     /// <summary>
     /// String policy references are infered to be regex constraints. Creating them is moved here to its own method so apps can
     /// trim away the regex dependency when RoutePatternFactory.Parse(string) is used. This is the method typically used by the various Map methods.
@@ -712,6 +717,7 @@ internal static class RoutePatternFactory
     {
         return new RoutePatternPathSegment(parts);
     }
+#endif
 
     /// <summary>
     /// Creates a <see cref="RoutePatternLiteralPart"/> from the provided text
@@ -760,6 +766,7 @@ internal static class RoutePatternFactory
         return new RoutePatternSeparatorPart(content);
     }
 
+#if !COMPONENTS
     /// <summary>
     /// Creates a <see cref="RoutePatternParameterPart"/> from the provided parameter name.
     /// </summary>
@@ -931,6 +938,7 @@ internal static class RoutePatternFactory
     {
         return ParameterPartCore(parameterName, @default, parameterKind, parameterPolicies, encodeSlashes: true);
     }
+#endif
 
     private static RoutePatternParameterPart ParameterPartCore(
         string parameterName,
@@ -1040,7 +1048,7 @@ internal static class RoutePatternFactory
 
         return ParameterPolicyCore(parameterPolicy);
     }
-
+#if !COMPONENTS
     /// <summary>
     /// Creates a <see cref="RoutePattern"/> that combines the specified patterns.
     /// </summary>
@@ -1154,6 +1162,7 @@ internal static class RoutePatternFactory
 
         return combinedList;
     }
+#endif
 
     private static RoutePatternParameterPolicyReference ParameterPolicyCore(string parameterPolicy)
     {
@@ -1165,9 +1174,11 @@ internal static class RoutePatternFactory
         return new RoutePatternParameterPolicyReference(parameterPolicy);
     }
 
+#if !COMPONENTS
     [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
     private static RouteValueDictionary? Wrap(object? values)
     {
         return values is null ? null : new RouteValueDictionary(values);
     }
+#endif
 }
