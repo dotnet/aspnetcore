@@ -32,7 +32,6 @@
     <!-- Abstractions -->    
     <Compile Include="$(SharedSourceRoot)RouteValueDictionaryTrimmerWarning.cs" LinkBase="Reflection" />
     <Compile Include="$(SharedSourceRoot)UrlDecoder\UrlDecoder.cs" LinkBase="Routing" />
-    <Compile Include="$(SharedSourceRoot)PropertyHelper\**\*.cs" LinkBase="Reflection" />
 
     <!-- Infrastructure -->
     <Compile Include="$(RoutingSourceRoot)RouteValueEqualityComparer.cs" LinkBase="Routing" />
