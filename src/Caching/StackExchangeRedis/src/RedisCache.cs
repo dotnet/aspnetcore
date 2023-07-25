@@ -64,7 +64,7 @@ public partial class RedisCache : IDistributedCache, IDisposable
         ? _hashMembersAbsoluteExpirationSlidingExpirationData
         : _hashMembersAbsoluteExpirationSlidingExpiration;
 
-    private const long NotPresent = -1;
+    private const long NotPresent = 1;
     private static readonly Version ServerVersionWithExtendedSetCommand = new Version(4, 0, 0);
 
     private volatile IDatabase? _cache;
