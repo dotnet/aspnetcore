@@ -7,6 +7,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Template;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Routing.Tree;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -23,7 +24,7 @@ internal static class RouteTableFactory
     public static readonly IComparer<InboundRouteEntry> RouteOrder = Comparer<InboundRouteEntry>.Create((x, y) =>
     {
         var result = RouteComparison(x, y);
-        return result != 0 ? result : string.Compare(x.RouteTemplate.TemplateText, y.RouteTemplate.TemplateText, StringComparison.OrdinalIgnoreCase);
+        return result != 0 ? result : string.Compare(x.RoutePattern.RawText, y.RoutePattern.RawText, StringComparison.OrdinalIgnoreCase);
     });
 
     public static RouteTable Create(RouteKey routeKey, IServiceProvider serviceProvider)
@@ -108,10 +109,10 @@ internal static class RouteTableFactory
         foreach (var (type, templates) in templatesByHandler)
         {
             var allRouteParameterNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            var parsedTemplates = new (RouteTemplate, HashSet<string>)[templates.Length];
+            var parsedTemplates = new (RoutePattern, HashSet<string>)[templates.Length];
             for (var i = 0; i < templates.Length; i++)
             {
-                var parsedTemplate = TemplateParser.Parse(templates[i]);
+                var parsedTemplate = RoutePatternParser.Parse(templates[i]);
                 var parameterNames = GetParameterNames(parsedTemplate);
                 parsedTemplates[i] = (parsedTemplate, parameterNames);
 
@@ -142,8 +143,8 @@ internal static class RouteTableFactory
             for (var j = i + 1; j < builder.InboundEntries.Count; j++)
             {
                 var right = builder.InboundEntries[j];
-                var leftText = left.RouteTemplate.TemplateText!.Trim('/');
-                var rightText = right.RouteTemplate.TemplateText!.Trim('/');
+                var leftText = left.RoutePattern.RawText!.Trim('/');
+                var rightText = right.RoutePattern.RawText!.Trim('/');
                 if (left.Precedence != right.Precedence)
                 {
                     continue;
@@ -164,10 +165,10 @@ internal static class RouteTableFactory
     private static bool CompareSegments(InboundRouteEntry left, InboundRouteEntry right)
     {
         var ambiguous = true;
-        for (var k = 0; k < left.RouteTemplate.Segments.Count; k++)
+        for (var k = 0; k < left.RoutePattern.PathSegments.Count; k++)
         {
-            var leftSegment = left.RouteTemplate.Segments[k];
-            var rightSegment = right.RouteTemplate.Segments[k];
+            var leftSegment = left.RoutePattern.PathSegments[k];
+            var rightSegment = right.RoutePattern.PathSegments[k];
             if (leftSegment.Parts.Count != rightSegment.Parts.Count)
             {
                 ambiguous = false;
@@ -178,9 +179,9 @@ internal static class RouteTableFactory
             {
                 var leftPart = leftSegment.Parts[l];
                 var rightPart = rightSegment.Parts[l];
-                if (leftPart.IsLiteral &&
-                    rightPart.IsLiteral &&
-                    !string.Equals(leftPart.Text, rightPart.Text, StringComparison.OrdinalIgnoreCase))
+                if (leftPart is RoutePatternLiteralPart leftLiteral &&
+                    rightPart is RoutePatternLiteralPart rightLiteral &&
+                    !string.Equals(leftLiteral.Content, rightLiteral.Content, StringComparison.OrdinalIgnoreCase))
                 {
                     ambiguous = false;
                     break;
@@ -195,7 +196,7 @@ internal static class RouteTableFactory
         return ambiguous;
     }
 
-    private static HashSet<string> GetParameterNames(RouteTemplate routeTemplate)
+    private static HashSet<string> GetParameterNames(RoutePattern routeTemplate)
     {
         var parameterNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var parameter in routeTemplate.Parameters)
@@ -257,8 +258,8 @@ internal static class RouteTableFactory
             return 0;
         }
 
-        var xTemplate = x.RouteTemplate;
-        var yTemplate = y.RouteTemplate;
+        var xTemplate = x.RoutePattern;
+        var yTemplate = y.RoutePattern;
         var xPrecedence = RoutePrecedence.ComputeInbound(xTemplate);
         var yPrecedence = RoutePrecedence.ComputeInbound(yTemplate);
 

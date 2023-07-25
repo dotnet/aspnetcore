@@ -228,10 +228,11 @@ internal partial class TreeRouter
                             continue;
                         }
 
-                        Log.RequestMatchedRoute(_logger, entry.RouteName, entry.RouteTemplate.TemplateText);
 #if COMPONENTS
+                    Log.RequestMatchedRoute(_logger, entry.RouteName, entry.RoutePattern.RawText);
                     context.Entry = entry;
 #else
+                        Log.RequestMatchedRoute(_logger, entry.RouteName, entry.RouteTemplate.TemplateText);
                         context.RouteData.Routers.Add(entry.Handler);
                         await entry.Handler.RouteAsync(context);
                         if (context.Handler != null)

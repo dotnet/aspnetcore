@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Routing.Template;
 
 namespace Microsoft.AspNetCore.Routing.Tree;
@@ -68,11 +69,17 @@ internal class UrlMatchingTree
         //
 
         var current = Root;
+#if !COMPONENTS
         var matcher = new TemplateMatcher(entry.RouteTemplate, entry.Defaults);
-
         for (var i = 0; i < entry.RouteTemplate.Segments.Count; i++)
         {
             var segment = entry.RouteTemplate.Segments[i];
+#else
+        var matcher = new RoutePatternMatcher(entry.RoutePattern, entry.Defaults);
+        for (var i = 0; i < entry.RoutePattern.PathSegments.Count; i++)
+        {
+            var segment = entry.RoutePattern.PathSegments[i];
+#endif
             if (!segment.IsSimple)
             {
                 // Treat complex segments as a constrained parameter
@@ -87,6 +94,7 @@ internal class UrlMatchingTree
 
             Debug.Assert(segment.Parts.Count == 1);
             var part = segment.Parts[0];
+#if !COMPONENTS
             if (part.IsLiteral)
             {
                 if (!current.Literals.TryGetValue(part.Text, out var next))
@@ -94,6 +102,15 @@ internal class UrlMatchingTree
                     next = new UrlMatchingNode(length: i + 1);
                     current.Literals.Add(part.Text, next);
                 }
+#else
+            if (part is RoutePatternLiteralPart literalPart)
+            {
+                if (!current.Literals.TryGetValue(literalPart.Content, out var next))
+                {
+                    next = new UrlMatchingNode(length: i + 1);
+                    current.Literals.Add(literalPart.Content, next);
+                }
+#endif
 
                 current = next;
                 continue;
@@ -104,12 +121,18 @@ internal class UrlMatchingTree
             // to the list of matches, only if the remaining segments are optional. For example:
             // /{controller}/{action=Index}/{id} will be equivalent to /{controller}/{action}/{id}
             // for the purposes of route matching.
+#if !COMPONENTS
             if (part.IsParameter &&
                 RemainingSegmentsAreOptional(entry.RouteTemplate.Segments, i))
+#else
+            if (part.IsParameter &&
+                RemainingSegmentsAreOptional(entry.RoutePattern.PathSegments, i))
+#endif
             {
                 current.Matches.Add(new InboundMatch() { Entry = entry, TemplateMatcher = matcher });
             }
 
+#if !COMPONENTS
             if (part.IsParameter && part.InlineConstraints.Any() && !part.IsCatchAll)
             {
                 if (current.ConstrainedParameters == null)
@@ -153,6 +176,54 @@ internal class UrlMatchingTree
                 current = current.CatchAlls;
                 continue;
             }
+#else
+            if (part is RoutePatternParameterPart parameterPart)
+            {
+                if (parameterPart.ParameterPolicies.Count > 0 && !parameterPart.IsCatchAll)
+                {
+                    if (current.ConstrainedParameters == null)
+                    {
+                        current.ConstrainedParameters = new UrlMatchingNode(length: i + 1);
+                    }
+
+                    current = current.ConstrainedParameters;
+                    continue;
+                }
+
+                if (!parameterPart.IsCatchAll)
+                {
+                    if (current.Parameters == null)
+                    {
+                        current.Parameters = new UrlMatchingNode(length: i + 1);
+                    }
+
+                    current = current.Parameters;
+                    continue;
+                }
+
+                if (parameterPart.ParameterPolicies.Count > 0 && parameterPart.IsCatchAll)
+                {
+                    if (current.ConstrainedCatchAlls == null)
+                    {
+                        current.ConstrainedCatchAlls = new UrlMatchingNode(length: i + 1) { IsCatchAll = true };
+                    }
+
+                    current = current.ConstrainedCatchAlls;
+                    continue;
+                }
+
+                if (parameterPart.IsCatchAll)
+                {
+                    if (current.CatchAlls == null)
+                    {
+                        current.CatchAlls = new UrlMatchingNode(length: i + 1) { IsCatchAll = true };
+                    }
+
+                    current = current.CatchAlls;
+                    continue;
+                }
+            }
+#endif
 
             Debug.Fail("We shouldn't get here.");
         }
@@ -161,11 +232,19 @@ internal class UrlMatchingTree
         current.Matches.Sort((x, y) =>
         {
             var result = x.Entry.Precedence.CompareTo(y.Entry.Precedence);
+#if !COMPONENTS
             return result == 0 ? string.Compare(x.Entry.RouteTemplate.TemplateText, y.Entry.RouteTemplate.TemplateText, StringComparison.Ordinal) : result;
+#else
+            return result == 0 ? string.Compare(x.Entry.RoutePattern.RawText, y.Entry.RoutePattern.RawText, StringComparison.Ordinal) : result;
+#endif
         });
     }
 
+#if !COMPONENTS
     private static bool RemainingSegmentsAreOptional(IList<TemplateSegment> segments, int currentParameterIndex)
+#else
+    private static bool RemainingSegmentsAreOptional(IReadOnlyList<RoutePatternPathSegment> segments, int currentParameterIndex)
+#endif
     {
         for (var i = currentParameterIndex; i < segments.Count; i++)
         {
@@ -182,9 +261,16 @@ internal class UrlMatchingTree
                 return false;
             }
 
+#if !COMPONENTS
             var isOptionlCatchAllOrHasDefaultValue = part.IsOptional ||
                 part.IsCatchAll ||
                 part.DefaultValue != null;
+#else
+            var isOptionlCatchAllOrHasDefaultValue = part is RoutePatternParameterPart parameterPart &&
+                    (parameterPart.IsOptional ||
+                    parameterPart.IsCatchAll ||
+                    parameterPart.Default != null);
+#endif
 
             if (!isOptionlCatchAllOrHasDefaultValue)
             {

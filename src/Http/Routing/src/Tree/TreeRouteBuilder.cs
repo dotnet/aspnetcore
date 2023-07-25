@@ -7,6 +7,8 @@ using System.Linq;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Routing.Patterns;
+using System.Data;
 #if !COMPONENTS
 using Microsoft.Extensions.ObjectPool;
 #else
@@ -75,10 +77,11 @@ internal class TreeRouteBuilder
     public InboundRouteEntry MapInbound(
 #if !COMPONENTS
         IRouter handler,
+        RouteTemplate routeTemplate,
 #else
         Type handler,
+        RoutePattern routeTemplate,
 #endif
-        RouteTemplate routeTemplate,
 #if !COMPONENTS
         string routeName,
         int order)
@@ -98,33 +101,50 @@ internal class TreeRouteBuilder
             Precedence = RoutePrecedence.ComputeInbound(routeTemplate),
 #if !COMPONENTS
             RouteName = routeName,
-#endif
             RouteTemplate = routeTemplate,
-#if COMPONENTS
+#else
+            RoutePattern = routeTemplate,
             UnusedRouteParameterNames = unusedParameterNames
 #endif
         };
 
+#if !COMPONENTS
         var constraintBuilder = new RouteConstraintBuilder(_constraintResolver, routeTemplate.TemplateText);
+#else
+        var constraintBuilder = new RouteConstraintBuilder(_constraintResolver, routeTemplate.RawText);
+#endif
         foreach (var parameter in routeTemplate.Parameters)
         {
+#if !COMPONENTS
             if (parameter.InlineConstraints != null)
             {
                 if (parameter.IsOptional)
                 {
                     constraintBuilder.SetOptional(parameter.Name);
                 }
-
-                foreach (var constraint in parameter.InlineConstraints)
+                foreach (var policy in parameter.ParameterPolicies)
                 {
                     constraintBuilder.AddResolvedConstraint(parameter.Name, constraint.Constraint);
+                }
+            }
+#else
+            if (parameter.ParameterPolicies != null)
+            {
+                if (parameter.IsOptional)
+                {
+                    constraintBuilder.SetOptional(parameter.Name);
+                }
+                foreach (var policy in parameter.ParameterPolicies)
+                {
+                    constraintBuilder.AddResolvedConstraint(parameter.Name, policy.Content);
                 }
             }
         }
 
         entry.Constraints = constraintBuilder.Build();
-
         entry.Defaults = new RouteValueDictionary();
+#endif
+#if !COMPONENTS
         foreach (var parameter in entry.RouteTemplate.Parameters)
         {
             if (parameter.DefaultValue != null)
@@ -132,6 +152,15 @@ internal class TreeRouteBuilder
                 entry.Defaults.Add(parameter.Name, parameter.DefaultValue);
             }
         }
+#else
+        foreach (var parameter in entry.RoutePattern.Parameters)
+        {
+            if (parameter.Default != null)
+            {
+                entry.Defaults.Add(parameter.Name, parameter.Default);
+            }
+        }
+#endif
 
         InboundEntries.Add(entry);
         return entry;

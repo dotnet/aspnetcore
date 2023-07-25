@@ -80,6 +80,10 @@ internal class UrlMatchingNode
 
     private string DebuggerToString()
     {
+#if !COMPONENTS
         return $"Length: {Depth}, Matches: {string.Join(" | ", Matches?.Select(m => $"({m.TemplateMatcher.Template.TemplateText})"))}";
+#else
+        return $"Length: {Depth}, Matches: {string.Join(" | ", Matches?.Select(m => $"({m.TemplateMatcher.RoutePattern.RawText})"))}";
+#endif
     }
 }

@@ -5,8 +5,10 @@
 
 #if COMPONENTS
 using Microsoft.AspNetCore.Components.Routing;
-#endif
+using Microsoft.AspNetCore.Routing.Patterns;
+#else
 using Microsoft.AspNetCore.Routing.Template;
+#endif
 
 namespace Microsoft.AspNetCore.Routing.Tree;
 
@@ -60,10 +62,14 @@ internal class InboundRouteEntry
     /// </summary>
     public string RouteName { get; set; }
 
+#if !COMPONENTS
     /// <summary>
     /// Gets or sets the <see cref="RouteTemplate"/>.
     /// </summary>
     public RouteTemplate RouteTemplate { get; set; }
+#else
+    public RoutePattern RoutePattern { get; set; }
+#endif
 
 #if COMPONENTS
     public List<string> UnusedRouteParameterNames { get; set; }

@@ -23,56 +23,63 @@
     <Compile Include="$(SharedSourceRoot)QueryStringEnumerable.cs" LinkBase="Shared" />
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup Label="Routing">
     <Compile Include="$(HttpAbstractionsSourceRoot)Routing\RouteValueDictionary.cs" LinkBase="Routing" />
+    <Compile Include="$(RoutingAbstractionsSourceRoot)IRouteConstraint.cs" LinkBase="Routing" />
+    <Compile Include="$(RoutingAbstractionsSourceRoot)IParameterPolicy.cs" LinkBase="Routing" />
+    
+    <Compile Include="$(SharedSourceRoot)RouteValueDictionaryTrimmerWarning.cs" LinkBase="Reflection" />
     <Compile Include="$(SharedSourceRoot)UrlDecoder\UrlDecoder.cs" LinkBase="Routing" />
     <Compile Include="$(SharedSourceRoot)PropertyHelper\**\*.cs" LinkBase="Reflection" />
-    <Compile Include="$(SharedSourceRoot)RouteValueDictionaryTrimmerWarning.cs" LinkBase="Reflection" />
+    
+    <Compile Include="$(RoutingSourceRoot)RouteOptions.cs" LinkBase="Routing" />
     <Compile Include="$(RoutingSourceRoot)PathTokenizer.cs" LinkBase="Routing" />
     <Compile Include="$(RoutingSourceRoot)IInlineConstraintResolver.cs" LinkBase="Routing" />
     <Compile Include="$(RoutingSourceRoot)RouteValueEqualityComparer.cs" LinkBase="Routing" />
-    <Compile Include="$(RoutingAbstractionsSourceRoot)IRouteConstraint.cs" LinkBase="Routing" />
     <Compile Include="$(RoutingSourceRoot)ArrayBuilder.cs" LinkBase="Routing" />
     <Compile Include="$(RoutingSourceRoot)RouteConstraintBuilder.cs" LinkBase="Routing" />
     <Compile Include="$(RoutingSourceRoot)RouteConstraintMatcher.cs" LinkBase="Routing" />
     <Compile Include="$(RoutingSourceRoot)RouteCreationException.cs" LinkBase="Routing" />
-    <Compile Include="$(RoutingSourceRoot)Tree\TreeRouteBuilder.cs" LinkBase="Routing" />
-    <Compile Include="$(RoutingSourceRoot)Tree\TreeRouter.cs" LinkBase="Routing" />
-    <Compile Include="$(RoutingSourceRoot)Tree\TreeEnumerator.cs" LinkBase="Routing" />
-    <Compile Include="$(RoutingSourceRoot)Tree\UrlMatchingTree.cs" LinkBase="Routing" />
-    <Compile Include="$(RoutingSourceRoot)Tree\UrlMatchingNode.cs" LinkBase="Routing" />
-    <Compile Include="$(RoutingSourceRoot)Tree\InboundMatch.cs" LinkBase="Routing" />
-    <Compile Include="$(RoutingSourceRoot)Tree\InboundRouteEntry.cs" LinkBase="Routing" />
-    <Compile Include="$(RoutingSourceRoot)Template\TemplateParser.cs" LinkBase="Routing" />
-    <Compile Include="$(RoutingSourceRoot)Template\TemplateMatcher.cs" LinkBase="Routing" />
-    <Compile Include="$(RoutingSourceRoot)Template\InlineConstraint.cs" LinkBase="Routing" />
-    <Compile Include="$(RoutingSourceRoot)Template\TemplatePart.cs" LinkBase="Routing" />
-    <Compile Include="$(RoutingSourceRoot)Template\TemplateSegment.cs" LinkBase="Routing" />
-    <Compile Include="$(RoutingSourceRoot)Template\RouteTemplate.cs" LinkBase="Routing" />
-    <Compile Include="$(RoutingSourceRoot)Template\RoutePrecedence.cs" LinkBase="Routing" />
-    <Compile Include="$(RoutingSourceRoot)Patterns\RoutePatternMatcher.cs" LinkBase="Routing" />
+    <!-- Tree router for matching -->
+    <Compile Include="$(RoutingSourceRoot)Tree\TreeRouteBuilder.cs" LinkBase="Routing\Tree" />
+    <Compile Include="$(RoutingSourceRoot)Tree\TreeRouter.cs" LinkBase="Routing\Tree" />
+    <Compile Include="$(RoutingSourceRoot)Tree\TreeEnumerator.cs" LinkBase="Routing\Tree" />
+    <Compile Include="$(RoutingSourceRoot)Tree\UrlMatchingTree.cs" LinkBase="Routing\Tree" />
+    <Compile Include="$(RoutingSourceRoot)Tree\UrlMatchingNode.cs" LinkBase="Routing\Tree" />
+    <Compile Include="$(RoutingSourceRoot)Tree\InboundMatch.cs" LinkBase="Routing\Tree" />
+    <Compile Include="$(RoutingSourceRoot)Tree\InboundRouteEntry.cs" LinkBase="Routing\Tree" />
+    <!-- Template parser -->
+    <!--<Compile Include="$(RoutingSourceRoot)Template\TemplateParser.cs" LinkBase="Routing\Template" />
+    <Compile Include="$(RoutingSourceRoot)Template\TemplateMatcher.cs" LinkBase="Routing\Template" />
+    <Compile Include="$(RoutingSourceRoot)Template\InlineConstraint.cs" LinkBase="Routing\Template" />
+    <Compile Include="$(RoutingSourceRoot)Template\TemplatePart.cs" LinkBase="Routing\Template" />
+    <Compile Include="$(RoutingSourceRoot)Template\TemplateSegment.cs" LinkBase="Routing\Template" />
+    <Compile Include="$(RoutingSourceRoot)Template\RouteTemplate.cs" LinkBase="Routing\Template" />-->
+    <Compile Include="$(RoutingSourceRoot)Template\RoutePrecedence.cs" LinkBase="Routing\Template" />
+    <!-- Route patterns -->
+    <Compile Include="$(RoutingSourceRoot)Patterns\RoutePatternMatcher.cs" LinkBase="Routing\Patterns" />
     <Compile Include="$(RoutingSourceRoot)Patterns\RouteParameterParser.cs" LinkBase="Routing" />
-    <Compile Include="$(RoutingSourceRoot)Patterns\RoutePatternException.cs" LinkBase="Routing" />
-    <Compile Include="$(RoutingSourceRoot)Patterns\RoutePatternFactory.cs" LinkBase="Routing" />
-    <Compile Include="$(RoutingSourceRoot)Patterns\RoutePattern.cs" LinkBase="Routing" />
-    <Compile Include="$(RoutingSourceRoot)Patterns\RoutePatternParser.cs" LinkBase="Routing" />
-    <Compile Include="$(RoutingSourceRoot)Patterns\RoutePatternPart.cs" LinkBase="Routing" />
-    <Compile Include="$(RoutingSourceRoot)Patterns\RoutePatternPartKind.cs" LinkBase="Routing" />
-    <Compile Include="$(RoutingSourceRoot)Patterns\RoutePatternLiteralPart.cs" LinkBase="Routing" />
-    <Compile Include="$(RoutingSourceRoot)Patterns\RoutePatternSeparatorPart.cs" LinkBase="Routing" />
-    <Compile Include="$(RoutingSourceRoot)Patterns\RoutePatternParameterPart.cs" LinkBase="Routing" />
-    <Compile Include="$(RoutingSourceRoot)Patterns\RoutePatternPathSegment.cs" LinkBase="Routing" />
-    <Compile Include="$(RoutingSourceRoot)Patterns\RoutePatternParameterKind.cs" LinkBase="Routing" />
-    <Compile Include="$(RoutingSourceRoot)Patterns\RoutePatternParameterPolicyReference.cs" LinkBase="Routing" />
-    <Compile Include="$(RoutingSourceRoot)DefaultInlineConstraintResolver.cs" LinkBase="Routing" />
+    <Compile Include="$(RoutingSourceRoot)Patterns\RoutePatternException.cs" LinkBase="Routing\Patterns" />
+    <Compile Include="$(RoutingSourceRoot)Patterns\RoutePatternFactory.cs" LinkBase="Routing\Patterns" />
+    <Compile Include="$(RoutingSourceRoot)Patterns\RoutePattern.cs" LinkBase="Routing\Patterns" />
+    <Compile Include="$(RoutingSourceRoot)Patterns\RoutePatternParser.cs" LinkBase="Routing\Patterns" />
+    <Compile Include="$(RoutingSourceRoot)Patterns\RoutePatternPart.cs" LinkBase="Routing\Patterns" />
+    <Compile Include="$(RoutingSourceRoot)Patterns\RoutePatternPartKind.cs" LinkBase="Routing\Patterns" />
+    <Compile Include="$(RoutingSourceRoot)Patterns\RoutePatternLiteralPart.cs" LinkBase="Routing\Patterns" />
+    <Compile Include="$(RoutingSourceRoot)Patterns\RoutePatternSeparatorPart.cs" LinkBase="Routing\Patterns" />
+    <Compile Include="$(RoutingSourceRoot)Patterns\RoutePatternParameterPart.cs" LinkBase="Routing\Patterns" />
+    <Compile Include="$(RoutingSourceRoot)Patterns\RoutePatternPathSegment.cs" LinkBase="Routing\Patterns" />
+    <Compile Include="$(RoutingSourceRoot)Patterns\RoutePatternParameterKind.cs" LinkBase="Routing\Patterns" />
+    <Compile Include="$(RoutingSourceRoot)Patterns\RoutePatternParameterPolicyReference.cs" LinkBase="Routing\Patterns" />
+    <!-- Route constraints -->
+    <Compile Include="$(RoutingSourceRoot)DefaultInlineConstraintResolver.cs" LinkBase="Routing" />    
     <Compile Include="$(RoutingSourceRoot)Constraints\**\*.cs" LinkBase="Routing\Constraints" />
     <Compile Remove="$(RoutingSourceRoot)Constraints\HttpMethodRouteConstraint.cs" />
     <Compile Remove="$(RoutingSourceRoot)Constraints\RegexErrorStubRouteConstraint.cs" />
     <Compile Remove="$(RoutingSourceRoot)Constraints\RequiredRouteConstraint.cs" />
     <Compile Remove="$(RoutingSourceRoot)Constraints\StringRouteConstraint.cs" />
     <Compile Include="$(RoutingSourceRoot)ParameterPolicyActivator.cs" LinkBase="Routing" />
-    <Compile Include="$(RoutingAbstractionsSourceRoot)IParameterPolicy.cs" LinkBase="Routing" />
-    <Compile Include="$(RoutingSourceRoot)RouteOptions.cs" LinkBase="Routing" />
+    
   </ItemGroup>
   
   <ItemGroup>
