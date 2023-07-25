@@ -86,7 +86,7 @@ public class RoutePatternParserTests
     public void Parse_SingleCatchAllParameter(string parsedTemplate, string template)
     {
         // Arrange
-        var expected = new ExpectedTemplateBuilder().Parameter(parsedTemplate);
+        var expected = new ExpectedTemplateBuilder().Parameter(parsedTemplate, isCatchAll: true);
 
         // Act
         var actual = RoutePatternParser.Parse(template);
@@ -124,27 +124,27 @@ public class RoutePatternParserTests
     [Fact]
     public void InvalidTemplate_WithRepeatedParameter()
     {
-        var ex = Assert.Throws<InvalidOperationException>(
+        var ex = Assert.Throws<RoutePatternException>(
             () => RoutePatternParser.Parse("{p1}/literal/{p1}"));
 
-        var expectedMessage = "Invalid template '{p1}/literal/{p1}'. The parameter '{p1}' appears multiple times.";
+        var expectedMessage = "The route parameter name 'p1' appears more than one time in the route template.";
 
         Assert.Equal(expectedMessage, ex.Message);
     }
 
     [Theory]
-    [InlineData("p}", "Invalid template 'p}'. Missing '{' in parameter segment 'p}'.")]
-    [InlineData("{p", "Invalid template '{p'. Missing '}' in parameter segment '{p'.")]
-    [InlineData("Literal/p}", "Invalid template 'Literal/p}'. Missing '{' in parameter segment 'p}'.")]
-    [InlineData("Literal/{p", "Invalid template 'Literal/{p'. Missing '}' in parameter segment '{p'.")]
-    [InlineData("p}/Literal", "Invalid template 'p}/Literal'. Missing '{' in parameter segment 'p}'.")]
-    [InlineData("{p/Literal", "Invalid template '{p/Literal'. Missing '}' in parameter segment '{p'.")]
-    [InlineData("Another/p}/Literal", "Invalid template 'Another/p}/Literal'. Missing '{' in parameter segment 'p}'.")]
-    [InlineData("Another/{p/Literal", "Invalid template 'Another/{p/Literal'. Missing '}' in parameter segment '{p'.")]
+    [InlineData("p}", "There is an incomplete parameter in the route template. Check that each '{' character has a matching '}' character.")]
+    [InlineData("{p", "There is an incomplete parameter in the route template. Check that each '{' character has a matching '}' character.")]
+    [InlineData("Literal/p}", "There is an incomplete parameter in the route template. Check that each '{' character has a matching '}' character.")]
+    [InlineData("Literal/{p", "There is an incomplete parameter in the route template. Check that each '{' character has a matching '}' character.")]
+    [InlineData("p}/Literal", "There is an incomplete parameter in the route template. Check that each '{' character has a matching '}' character.")]
+    [InlineData("{p/Literal", "There is an incomplete parameter in the route template. Check that each '{' character has a matching '}' character.")]
+    [InlineData("Another/p}/Literal", "There is an incomplete parameter in the route template. Check that each '{' character has a matching '}' character.")]
+    [InlineData("Another/{p/Literal", "There is an incomplete parameter in the route template. Check that each '{' character has a matching '}' character.")]
 
     public void InvalidTemplate_WithMismatchedBraces(string template, string expectedMessage)
     {
-        var ex = Assert.Throws<InvalidOperationException>(
+        var ex = Assert.Throws<RoutePatternException>(
             () => RoutePatternParser.Parse(template));
 
         Assert.Equal(expectedMessage, ex.Message);
@@ -152,15 +152,15 @@ public class RoutePatternParserTests
 
     [Theory]
     // * is only allowed at beginning for catch-all parameters
-    [InlineData("{p*}", "Invalid template '{p*}'. The character '*' in parameter segment '{p*}' is not allowed.")]
-    [InlineData("{{}", "Invalid template '{{}'. The character '{' in parameter segment '{{}' is not allowed.")]
-    [InlineData("{}}", "Invalid template '{}}'. The character '}' in parameter segment '{}}' is not allowed.")]
-    [InlineData("{=}", "Invalid template '{=}'. The character '=' in parameter segment '{=}' is not allowed.")]
-    [InlineData("{.}", "Invalid template '{.}'. The character '.' in parameter segment '{.}' is not allowed.")]
+    [InlineData("{p*}", "The route parameter name 'p*' is invalid. Route parameter names must be non-empty and cannot contain these characters: '{', '}', '/'. The '?' character marks a parameter as optional, and can occur only at the end of the parameter. The '*' character marks a parameter as catch-all, and can occur only at the start of the parameter.")]
+    [InlineData("{{}", "There is an incomplete parameter in the route template. Check that each '{' character has a matching '}' character.")]
+    [InlineData("{}}", "There is an incomplete parameter in the route template. Check that each '{' character has a matching '}' character.")]
+    [InlineData("{=}", "The route parameter name '=' is invalid. Route parameter names must be non-empty and cannot contain these characters: '{', '}', '/'. The '?' character marks a parameter as optional, and can occur only at the end of the parameter. The '*' character marks a parameter as catch-all, and can occur only at the start of the parameter.", Skip = "{=} is allowed")]
+    [InlineData("{.}", "The route parameter name '.' is invalid. Route parameter names must be non-empty and cannot contain these characters: '{', '}', '/'. The '?' character marks a parameter as optional, and can occur only at the end of the parameter. The '*' character marks a parameter as catch-all, and can occur only at the start of the parameter.", Skip = "{.} is allowed")]
     public void ParseRouteParameter_ThrowsIf_ParameterContainsSpecialCharacters(string template, string expectedMessage)
     {
         // Act & Assert
-        var ex = Assert.Throws<InvalidOperationException>(() => RoutePatternParser.Parse(template));
+        var ex = Assert.Throws<RoutePatternException>(() => RoutePatternParser.Parse(template));
 
         Assert.Equal(expectedMessage, ex.Message);
     }
@@ -168,9 +168,9 @@ public class RoutePatternParserTests
     [Fact]
     public void InvalidTemplate_InvalidParameterNameWithEmptyNameThrows()
     {
-        var ex = Assert.Throws<InvalidOperationException>(() => RoutePatternParser.Parse("{a}/{}/{z}"));
+        var ex = Assert.Throws<RoutePatternException>(() => RoutePatternParser.Parse("{a}/{}/{z}"));
 
-        var expectedMessage = "Invalid template '{a}/{}/{z}'. Empty parameter name in segment '{}' is not allowed.";
+        var expectedMessage = "The route parameter name '' is invalid. Route parameter names must be non-empty and cannot contain these characters: '{', '}', '/'. The '?' character marks a parameter as optional, and can occur only at the end of the parameter. The '*' character marks a parameter as catch-all, and can occur only at the start of the parameter.";
 
         Assert.Equal(expectedMessage, ex.Message);
     }
@@ -178,27 +178,27 @@ public class RoutePatternParserTests
     [Fact]
     public void InvalidTemplate_ConsecutiveSeparatorsSlashSlashThrows()
     {
-        var ex = Assert.Throws<InvalidOperationException>(() => RoutePatternParser.Parse("{a}//{z}"));
+        var ex = Assert.Throws<RoutePatternException>(() => RoutePatternParser.Parse("{a}//{z}"));
 
-        var expectedMessage = "Invalid template '{a}//{z}'. Empty segments are not allowed.";
+        var expectedMessage = "The route template separator character '/' cannot appear consecutively. It must be separated by either a parameter or a literal value.";
 
         Assert.Equal(expectedMessage, ex.Message);
     }
 
-    [Fact]
+    [Fact(Skip = "It's ok to have literals after optional parameters. They just aren't optional.")]
     public void InvalidTemplate_LiteralAfterOptionalParam()
     {
-        var ex = Assert.Throws<InvalidOperationException>(() => RoutePatternParser.Parse("/test/{a?}/test"));
+        var ex = Assert.Throws<RoutePatternException>(() => RoutePatternParser.Parse("/test/{a?}/test"));
 
         var expectedMessage = "Invalid template 'test/{a?}/test'. Non-optional parameters or literal routes cannot appear after optional parameters.";
 
         Assert.Equal(expectedMessage, ex.Message);
     }
 
-    [Fact]
+    [Fact(Skip = "It's ok to have literals after optional parameters. They just aren't optional.")]
     public void InvalidTemplate_NonOptionalParamAfterOptionalParam()
     {
-        var ex = Assert.Throws<InvalidOperationException>(() => RoutePatternParser.Parse("/test/{a?}/{b}"));
+        var ex = Assert.Throws<RoutePatternException>(() => RoutePatternParser.Parse("/test/{a?}/{b}"));
 
         var expectedMessage = "Invalid template 'test/{a?}/{b}'. Non-optional parameters or literal routes cannot appear after optional parameters.";
 
@@ -206,14 +206,14 @@ public class RoutePatternParserTests
     }
 
     [Theory]
-    [InlineData("/test/{a}/{***b}")]
-    [InlineData("/test/{a}/{**b*c}")]
-    [InlineData("/test/{a}/{*b*c}")]
-    public void InvalidTemplate_CatchAllParamWithIncorrectPlacedAsterisks(string template)
+    [InlineData("/test/{a}/{***b}", "*b")]
+    [InlineData("/test/{a}/{**b*c}", "b*c")]
+    [InlineData("/test/{a}/{*b*c}", "b*c")]
+    public void InvalidTemplate_CatchAllParamWithIncorrectPlacedAsterisks(string template, string lastParameter)
     {
-        var ex = Assert.Throws<InvalidOperationException>(() => RoutePatternParser.Parse(template));
+        var ex = Assert.Throws<RoutePatternException>(() => RoutePatternParser.Parse(template));
 
-        var expectedMessage = $"Invalid template '{template}'. A catch-all parameter may only have '*' or '**' at the beginning of the segment.";
+        var expectedMessage = $"The route parameter name '{lastParameter}' is invalid. Route parameter names must be non-empty and cannot contain these characters: '{{', '}}', '/'. The '?' character marks a parameter as optional, and can occur only at the end of the parameter. The '*' character marks a parameter as catch-all, and can occur only at the start of the parameter.";
 
         Assert.Equal(expectedMessage, ex.Message);
     }
@@ -221,9 +221,9 @@ public class RoutePatternParserTests
     [Fact]
     public void InvalidTemplate_CatchAllParamNotLast()
     {
-        var ex = Assert.Throws<InvalidOperationException>(() => RoutePatternParser.Parse("/test/{*a}/{b}"));
+        var ex = Assert.Throws<RoutePatternException>(() => RoutePatternParser.Parse("/test/{*a}/{b}"));
 
-        var expectedMessage = "Invalid template 'test/{*a}/{b}'. A catch-all parameter can only appear as the last segment of the route template.";
+        var expectedMessage = "A catch-all parameter can only appear as the last segment of the route template.";
 
         Assert.Equal(expectedMessage, ex.Message);
     }
@@ -231,9 +231,9 @@ public class RoutePatternParserTests
     [Fact]
     public void InvalidTemplate_BadOptionalCharacterPosition()
     {
-        var ex = Assert.Throws<ArgumentException>(() => RoutePatternParser.Parse("/test/{a?bc}/{b}"));
+        var ex = Assert.Throws<RoutePatternException>(() => RoutePatternParser.Parse("/test/{a?bc}/{b}"));
 
-        var expectedMessage = "Malformed parameter 'a?bc' in route '/test/{a?bc}/{b}'. '?' character can only appear at the end of parameter name.";
+        var expectedMessage = "The route parameter name 'a?bc' is invalid. Route parameter names must be non-empty and cannot contain these characters: '{', '}', '/'. The '?' character marks a parameter as optional, and can occur only at the end of the parameter. The '*' character marks a parameter as catch-all, and can occur only at the start of the parameter.";
 
         Assert.Equal(expectedMessage, ex.Message);
     }
@@ -253,18 +253,29 @@ public class RoutePatternParserTests
             return this;
         }
 
-        public ExpectedTemplateBuilder Parameter(string value)
+        public ExpectedTemplateBuilder Parameter(string value, bool isCatchAll = false)
         {
-            template += "{testtemplate}/";
+            template += $"{value}/";
             Segments.Add(
                 new RoutePatternPathSegment(new List<RoutePatternPart>
                 {
-                    new RoutePatternParameterPart("testtemplate", value, RoutePatternParameterKind.Standard, Array.Empty<RoutePatternParameterPolicyReference>())
+                    new RoutePatternParameterPart(
+                        value.TrimEnd('?'),
+                        null,
+                        value.EndsWith('?') ? RoutePatternParameterKind.Optional :
+                            (isCatchAll ? RoutePatternParameterKind.CatchAll : RoutePatternParameterKind.Standard),
+                        Array.Empty<RoutePatternParameterPolicyReference>())
                 }));
             return this;
         }
 
-        public RoutePattern Build() => new RoutePattern(template, null, null, null, Segments.SelectMany(s => s.Parts.OfType<RoutePatternParameterPart>()).ToArray(), Segments.ToList());
+        public RoutePattern Build() => new RoutePattern(
+            template,
+            new Dictionary<string, object>(),
+            new Dictionary<string, IReadOnlyList<RoutePatternParameterPolicyReference>>(),
+            new Dictionary<string, object>(),
+            Segments.SelectMany(s => s.Parts.OfType<RoutePatternParameterPart>()).ToArray(),
+            Segments.ToList());
 
         public static implicit operator RoutePattern(ExpectedTemplateBuilder builder) => builder.Build();
     }
@@ -284,7 +295,7 @@ public class RoutePatternParserTests
             {
                 var xSegment = x.PathSegments[i];
                 var ySegment = y.PathSegments[i];
-                if (!xSegment.IsSimple || ySegment.IsSimple)
+                if (!xSegment.IsSimple || !ySegment.IsSimple)
                 {
                     return false;
                 }

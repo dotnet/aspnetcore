@@ -4,6 +4,8 @@
 #nullable disable
 
 #if COMPONENTS
+using System.Diagnostics.CodeAnalysis;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
 #else
@@ -38,6 +40,7 @@ internal class InboundRouteEntry
     /// </summary>
     public IRouter Handler { get; set; }
 #else
+    [DynamicallyAccessedMembers(Component)]
     public Type Handler { get; set; }
 #endif
 

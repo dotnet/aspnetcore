@@ -223,7 +223,7 @@ internal partial class TreeRouter
 #endif
                         {
 #if COMPONENTS
-                        context.RouteData.Clear();
+                        context.RouteValues.Clear();
 #endif
                             continue;
                         }
@@ -231,6 +231,7 @@ internal partial class TreeRouter
 #if COMPONENTS
                     Log.RequestMatchedRoute(_logger, entry.RouteName, entry.RoutePattern.RawText);
                     context.Entry = entry;
+                    return;
 #else
                         Log.RequestMatchedRoute(_logger, entry.RouteName, entry.RouteTemplate.TemplateText);
                         context.RouteData.Routers.Add(entry.Handler);

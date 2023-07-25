@@ -122,11 +122,12 @@ internal class TreeRouteBuilder
                 {
                     constraintBuilder.SetOptional(parameter.Name);
                 }
-                foreach (var policy in parameter.ParameterPolicies)
+                foreach (var constraint in parameter.InlineConstraints)
                 {
                     constraintBuilder.AddResolvedConstraint(parameter.Name, constraint.Constraint);
                 }
             }
+        }
 #else
             if (parameter.ParameterPolicies != null)
             {
@@ -141,9 +142,10 @@ internal class TreeRouteBuilder
             }
         }
 
+#endif
         entry.Constraints = constraintBuilder.Build();
         entry.Defaults = new RouteValueDictionary();
-#endif
+
 #if !COMPONENTS
         foreach (var parameter in entry.RouteTemplate.Parameters)
         {

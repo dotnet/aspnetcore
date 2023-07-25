@@ -199,7 +199,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 
         RefreshRouteTable();
 
-        var context = new RouteContext(locationPath);
+        var context = new RouteContext($"/{locationPath}");
         Routes.Route(context);
 
         if (context.Handler != null)

@@ -18,12 +18,10 @@ internal sealed class RouteContext
 
     public RouteValueDictionary RouteValues { get; set; } = new();
 
-    public Dictionary<string, object?> RouteData { get; set; } = new();
-
     public InboundRouteEntry? Entry { get; set; }
 
     [DynamicallyAccessedMembers(Component)]
-    public Type? Handler { get; set; }
+    public Type? Handler => Entry?.Handler;
 
-    public IReadOnlyDictionary<string, object>? Parameters { get; set; }
+    public IReadOnlyDictionary<string, object?>? Parameters => RouteValues;
 }
