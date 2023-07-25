@@ -1123,16 +1123,54 @@ public class ForwardedHeadersMiddlewareTests
     }
 
     [Theory]
-    [InlineData("", "/foo", "/foo", "/")]
-    [InlineData("", "/foo/", "/foo", "/")]
-    [InlineData("", "/foo%20bar", "/foo bar", "/")]
-    [InlineData("", "/foo?bar?", "/foo?bar?", "/")]
-    [InlineData("", "/foo%2F", "/foo%2F", "/")]
-    [InlineData("", "/foo%2F/", "/foo%2F", "/")]
+    [InlineData("/foo", "/foo")]
+    [InlineData("/foo/", "/foo/")]
+    [InlineData("/foo/bar", "/foo/bar")]
+    [InlineData("/foo%20bar", "/foo bar")]
+    [InlineData("/foo?bar?", "/foo?bar?")]
+    [InlineData("/foo%2F", "/foo%2F")]
+    [InlineData("/foo%2F/", "/foo%2F/")]
+    public async Task XForwardedPrefixReplaceEmptyPathBase(
+        string forwardedPrefix,
+        string expectedUnescapedPathBase)
+    {
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .Configure(app =>
+                {
+                    app.UseForwardedHeaders(new ForwardedHeadersOptions
+                    {
+                        ForwardedHeaders = ForwardedHeaders.XForwardedPrefix,
+                    });
+                });
+            }).Build();
+
+        await host.StartAsync();
+
+        var server = host.GetTestServer();
+
+        var context = await server.SendAsync(c =>
+        {
+            c.Request.Headers["X-Forwarded-Prefix"] = forwardedPrefix;
+        });
+
+        Assert.Equal(expectedUnescapedPathBase, context.Request.PathBase.Value);
+        // No X-Original-Prefix header set when original PathBase is empty
+        Assert.False(context.Request.Headers.ContainsKey("X-Original-Prefix"));
+        // Should have been consumed and removed
+        Assert.False(context.Request.Headers.ContainsKey("X-Forwarded-Prefix"));
+    }
+
+    [Theory]
     [InlineData("/foo", "/bar", "/bar", "/foo")]
-    [InlineData("/foo", "/", "", "/foo")]
-    [InlineData("/foo bar", "/", "", "/foo%20bar")]
-    public async Task XForwardedPrefix(
+    [InlineData("/foo", "/", "/", "/foo")]
+    [InlineData("/foo", "/foo/bar", "/foo/bar", "/foo")]
+    [InlineData("/foo/bar", "/foo", "/foo", "/foo/bar")]
+    [InlineData("/foo bar", "/", "/", "/foo%20bar")]
+    public async Task XForwardedPrefixReplaceNonEmptyPathBase(
         string pathBase,
         string forwardedPrefix,
         string expectedUnescapedPathBase,

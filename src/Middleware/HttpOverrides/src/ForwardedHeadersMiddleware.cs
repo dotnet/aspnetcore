@@ -367,9 +367,11 @@ public class ForwardedHeadersMiddleware
 
             if (checkPrefix && currentValues.Prefix != null)
             {
-                // Save the original
-                requestHeaders[_options.OriginalPrefixHeaderName] =
-                    request.PathBase.HasValue ? request.PathBase.ToString() : "/";
+                if (request.PathBase.HasValue)
+                {
+                    // Save the original
+                    requestHeaders[_options.OriginalPrefixHeaderName] = request.PathBase.ToString();
+                }
 
                 if (forwardedPrefix!.Length > entriesConsumed)
                 {
@@ -382,7 +384,7 @@ public class ForwardedHeadersMiddleware
                     requestHeaders.Remove(_options.ForwardedPrefixHeaderName);
                 }
 
-                request.PathBase = PathString.FromUriComponent(currentValues.Prefix.TrimEnd('/'));
+                request.PathBase = PathString.FromUriComponent(currentValues.Prefix);
             }
         }
     }
