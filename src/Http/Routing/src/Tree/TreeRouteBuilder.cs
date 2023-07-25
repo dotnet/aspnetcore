@@ -7,11 +7,13 @@ using System.Linq;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Routing.Patterns;
 using System.Data;
 #if !COMPONENTS
 using Microsoft.Extensions.ObjectPool;
 #else
+using System.Diagnostics.CodeAnalysis;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Components.Routing;
 #endif
 namespace Microsoft.AspNetCore.Routing.Tree;
@@ -79,7 +81,7 @@ internal class TreeRouteBuilder
         IRouter handler,
         RouteTemplate routeTemplate,
 #else
-        Type handler,
+        [DynamicallyAccessedMembers(Component)] Type handler,
         RoutePattern routeTemplate,
 #endif
 #if !COMPONENTS

@@ -2,9 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using System.Linq;
+#if COMPONENTS
 using Microsoft.AspNetCore.Routing.Patterns;
+#else
+using System.Linq;
 using Microsoft.AspNetCore.Routing.Template;
+#endif
 
 namespace Microsoft.AspNetCore.Routing.Tree;
 

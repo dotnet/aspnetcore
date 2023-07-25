@@ -99,7 +99,7 @@ public class RoutePatternParserTests
     public void Parse_MixedLiteralAndCatchAllParameter()
     {
         // Arrange
-        var expected = new ExpectedTemplateBuilder().Literal("awesome").Literal("wow").Parameter("p");
+        var expected = new ExpectedTemplateBuilder().Literal("awesome").Literal("wow").Parameter("p", isCatchAll: true);
 
         // Act
         var actual = RoutePatternParser.Parse("awesome/wow/{*p}");
@@ -112,7 +112,7 @@ public class RoutePatternParserTests
     public void Parse_MixedLiteralParameterAndCatchAllParameter()
     {
         // Arrange
-        var expected = new ExpectedTemplateBuilder().Literal("awesome").Parameter("p1").Parameter("p2");
+        var expected = new ExpectedTemplateBuilder().Literal("awesome").Parameter("p1").Parameter("p2", isCatchAll: true);
 
         // Act
         var actual = RoutePatternParser.Parse("awesome/{p1}/{*p2}");
@@ -305,7 +305,7 @@ public class RoutePatternParserTests
                     return false;
                 }
 
-                return (xSegment.Parts[0], ySegment.Parts[0]) switch
+                var matches = (xSegment.Parts[0], ySegment.Parts[0]) switch
                 {
                     (RoutePatternParameterPart xParameterPart, RoutePatternParameterPart yParameterPart) =>
                         string.Equals(xParameterPart.Name, yParameterPart.Name, StringComparison.OrdinalIgnoreCase) &&
@@ -315,6 +315,11 @@ public class RoutePatternParserTests
                         string.Equals(xLiteralPart.Content, yLiteralPart.Content, StringComparison.OrdinalIgnoreCase),
                     _ => false,
                 };
+
+                if (!matches)
+                {
+                    return false;
+                }
             }
 
             return true;
