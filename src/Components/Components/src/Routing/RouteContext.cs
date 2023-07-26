@@ -11,7 +11,7 @@ internal sealed class RouteContext
 {
     public RouteContext(string path)
     {
-        Path = path;
+        Path = Uri.UnescapeDataString(path);
     }
 
     public string Path { get; set; }
