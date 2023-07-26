@@ -2415,6 +2415,77 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
+    [Fact]
+    public async Task DisableReconnectDisallowsReplacementConnection()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var options = new HttpConnectionDispatcherOptions() { AllowAcks = true };
+            options.WebSockets.CloseTimeout = TimeSpan.FromMilliseconds(1);
+            // pretend negotiate occurred
+            var connection = manager.CreateConnection(options, negotiateVersion: 1, useAck: true);
+            connection.TransportType = HttpTransportType.WebSockets;
+
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+            var services = new ServiceCollection();
+
+            var context = MakeRequest("/foo", connection, services);
+            SetTransport(context, HttpTransportType.WebSockets);
+
+            var builder = new ConnectionBuilder(services.BuildServiceProvider());
+            builder.UseConnectionHandler<ReconnectConnectionHandler>();
+            var app = builder.Build();
+
+            var initialWebSocketTask = dispatcher.ExecuteAsync(context, options, app);
+
+            var reconnectFeature = connection.Features.Get<IReconnectFeature>();
+            Assert.NotNull(reconnectFeature);
+
+            var firstMsg = new byte[] { 1, 4, 8, 9 };
+            await connection.Application.Output.WriteAsync(firstMsg);
+
+            var websocketFeature = (TestWebSocketConnectionFeature)context.Features.Get<IHttpWebSocketFeature>();
+            await websocketFeature.Accepted.DefaultTimeout();
+            // Run the client socket
+            var webSocketMessage = await websocketFeature.Client.GetNextMessageAsync().DefaultTimeout();
+
+            Assert.Equal(firstMsg, webSocketMessage.Buffer);
+
+            var called = false;
+            var reconnectCallback = reconnectFeature.NotifyOnReconnect;
+            reconnectFeature.NotifyOnReconnect = (writer) =>
+            {
+                called = true;
+                reconnectCallback(writer);
+            };
+
+            // Disable will not allow new connection to override existing
+            reconnectFeature.DisableReconnect();
+
+            // New websocket connection with previous connection token
+            context = MakeRequest("/foo", connection, services);
+            SetTransport(context, HttpTransportType.WebSockets);
+
+            await dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
+
+            Assert.Equal(409, context.Response.StatusCode);
+
+            Assert.False(called);
+
+            // Connection still works
+            var secondMsg = new byte[] { 7, 6, 3, 2 };
+            await connection.Application.Output.WriteAsync(secondMsg);
+
+            webSocketMessage = await websocketFeature.Client.GetNextMessageAsync().DefaultTimeout();
+            Assert.Equal(secondMsg, webSocketMessage.Buffer);
+
+            connection.Abort();
+
+            await initialWebSocketTask.DefaultTimeout();
+        }
+    }
+
     private class ControllableMemoryStream : MemoryStream
     {
         private readonly SyncPoint _syncPoint;

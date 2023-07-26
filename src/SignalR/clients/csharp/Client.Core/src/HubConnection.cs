@@ -579,6 +579,11 @@ public partial class HubConnection : IAsyncDisposable
                         TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.OnlyOnFaulted,
                         TaskScheduler.Default);
                 }
+
+                if (connectionState.Connection.Features.Get<IReconnectFeature>() is IReconnectFeature feature)
+                {
+                    feature.DisableReconnect();
+                }
             }
             else
             {
@@ -1088,6 +1093,12 @@ public partial class HubConnection : IAsyncDisposable
                 {
                     Log.ReceivedCloseWithError(_logger, close.Error);
                 }
+
+                if (connectionState.Connection.Features.Get<IReconnectFeature>() is IReconnectFeature feature)
+                {
+                    feature.DisableReconnect();
+                }
+
                 return close;
             case PingMessage _:
                 Log.ReceivedPing(_logger);

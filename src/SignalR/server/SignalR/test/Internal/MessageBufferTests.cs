@@ -320,7 +320,6 @@ internal sealed class DuplexPipe : IDuplexPipe
 
     public static void UpdateConnectionPair(ref DuplexPipePair duplexPipePair, ConnectionContext connection)
     {
-        var prevPipe = duplexPipePair.Application.Input;
         var input = new Pipe();
 
         // Add new pipe for reading from and writing to transport from app code
