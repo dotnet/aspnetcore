@@ -10,17 +10,9 @@ using System.Reflection;
 using System.Reflection.Metadata;
 using System.Runtime.CompilerServices;
 
-#if !COMPONENTS
 [assembly: MetadataUpdateHandler(typeof(Microsoft.Extensions.Internal.PropertyHelper.MetadataUpdateHandler))]
-#else
-[assembly: MetadataUpdateHandler(typeof(Microsoft.AspNetCore.Components.Reflection.PropertyHelper.MetadataUpdateHandler))]
-#endif
 
-#if !COMPONENTS
 namespace Microsoft.Extensions.Internal;
-#else
-namespace Microsoft.AspNetCore.Components.Reflection;
-#endif
 
 internal sealed class PropertyHelper
 {

@@ -4,22 +4,14 @@
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Routing.Patterns;
-#if COMPONENTS
-using Microsoft.AspNetCore.Components.Routing.Patterns;
-#endif
 
 namespace Microsoft.AspNetCore.Routing.Template;
 
-#if !COMPONENTS
 /// <summary>
 /// Represents a segment of a route template.
 /// </summary>
 [DebuggerDisplay("{DebuggerToString()}")]
 public class TemplateSegment
-#else
-[DebuggerDisplay("{DebuggerToString()}")]
-internal class TemplateSegment
-#endif
 {
     /// <summary>
     /// Constructs a new <see cref="TemplateSegment"/> instance.
