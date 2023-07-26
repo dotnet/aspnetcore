@@ -175,7 +175,7 @@ internal static class RouteTableFactory
             }
         }
 
-        if (parsedTemplate != null || routeParameterNames != null)
+        if (parsedTemplate == null)
         {
             throw new InvalidOperationException($"Unable to find the provided template '{template}'");
         }
