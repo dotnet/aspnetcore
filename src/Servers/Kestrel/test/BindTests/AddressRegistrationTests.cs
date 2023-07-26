@@ -519,9 +519,7 @@ public class AddressRegistrationTests : TestApplicationErrorLoggerLoggedTest
 
             Assert.Equal(5000, host.GetPort());
 
-            Assert.Single(LogMessages, log => log.LogLevel == LogLevel.Debug &&
-                (string.Equals(CoreStrings.FormatBindingToDefaultAddress(Constants.DefaultServerAddress), log.Message, StringComparison.Ordinal)
-                    || string.Equals(CoreStrings.FormatBindingToDefaultAddress(Constants.DefaultServerAddress), log.Message, StringComparison.Ordinal)));
+            Assert.Single(LogMessages, log => log.LogLevel == LogLevel.Debug && string.Equals(CoreStrings.FormatBindingToDefaultAddress(Constants.DefaultServerAddress), log.Message, StringComparison.Ordinal));
 
             foreach (var address in addresses)
             {
