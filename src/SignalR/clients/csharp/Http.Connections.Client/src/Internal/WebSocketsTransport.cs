@@ -36,13 +36,13 @@ internal sealed partial class WebSocketsTransport : ITransport, IReconnectFeatur
     private readonly HttpConnectionOptions _httpConnectionOptions;
     private readonly HttpClient? _httpClient;
     private CancellationTokenSource _stopCts = default!;
-    private readonly bool _useAck;
+    private bool _useAck;
 
     private IDuplexPipe? _transport;
     // Used for reconnect (when enabled) to determine if the close was ungraceful or not, reconnect only happens on ungraceful disconnect
     // The assumption is that a graceful close was triggered purposefully by either the client or server and a reconnect shouldn't occur 
     private bool _gracefulClose;
-    private Action? _notifyOnReconnect;
+    private Action<PipeWriter>? _notifyOnReconnect;
 
     internal Task Running { get; private set; } = Task.CompletedTask;
 
@@ -50,7 +50,7 @@ internal sealed partial class WebSocketsTransport : ITransport, IReconnectFeatur
 
     public PipeWriter Output => _transport!.Output;
 
-    public Action NotifyOnReconnect { get => _notifyOnReconnect is not null ? _notifyOnReconnect : () => { }; set => _notifyOnReconnect = value; }
+    public Action<PipeWriter> NotifyOnReconnect { get => _notifyOnReconnect is not null ? _notifyOnReconnect : (_) => { }; set => _notifyOnReconnect = value; }
 
     public WebSocketsTransport(HttpConnectionOptions httpConnectionOptions, ILoggerFactory loggerFactory, Func<Task<string?>> accessTokenProvider, HttpClient? httpClient,
         bool useAck = false)
@@ -648,10 +648,12 @@ internal sealed partial class WebSocketsTransport : ITransport, IReconnectFeatur
         _application = applicationToTransport;
         _transport = transportToApplication;
 
-        // Close previous pipe with specific error that application code can catch to know a restart is occurring
-        prevPipe.Complete(new ConnectionResetException(""));
-
         Debug.Assert(_notifyOnReconnect is not null);
-        _notifyOnReconnect.Invoke();
+        _notifyOnReconnect.Invoke(input.Writer);
+    }
+
+    public void DisableReconnect()
+    {
+        _useAck = false;
     }
 }

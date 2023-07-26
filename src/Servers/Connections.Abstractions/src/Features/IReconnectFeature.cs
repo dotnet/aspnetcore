@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO.Pipelines;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,8 +18,10 @@ public interface IReconnectFeature
     /// <summary>
     /// 
     /// </summary>
-    public Action NotifyOnReconnect { get; set; }
+    public Action<PipeWriter> NotifyOnReconnect { get; set; }
 
-    // TODO
-    // void DisableReconnect();
+    /// <summary>
+    /// 
+    /// </summary>
+    void DisableReconnect();
 }

@@ -49,7 +49,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     private CancellationTokenSource? _sendCts;
     private bool _activeSend;
     private long _startedSendTime;
-    private readonly bool _useAcks;
+    private bool _useAcks;
     private readonly object _sendingLock = new object();
     internal CancellationToken SendingToken { get; private set; }
 
@@ -204,7 +204,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
 
     public CancellationToken ConnectionClosedRequested { get; set; }
 
-    public Action NotifyOnReconnect { get; set; } = () => { };
+    public Action<PipeWriter> NotifyOnReconnect { get; set; } = (_) => { };
 
     public override void Abort()
     {
@@ -657,7 +657,6 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
 
     private void UpdateConnectionPair()
     {
-        var prevPipe = Application.Input;
         var input = new Pipe(_options.TransportPipeOptions);
 
         // Add new pipe for reading from and writing to transport from app code
@@ -667,9 +666,12 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         Application = applicationToTransport;
         Transport = transportToApplication;
 
-        // Close previous pipe with specific error that application code can catch to know a restart is occurring
-        prevPipe.Complete(new ConnectionResetException(""));
-        Features.GetRequiredFeature<IReconnectFeature>().NotifyOnReconnect.Invoke();
+        Features.GetRequiredFeature<IReconnectFeature>().NotifyOnReconnect.Invoke(input.Writer);
+    }
+
+    public void DisableReconnect()
+    {
+        _useAcks = false;
     }
 
     private static partial class Log

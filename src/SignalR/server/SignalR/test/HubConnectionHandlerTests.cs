@@ -5211,6 +5211,110 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
         public Action NotifyOnReconnect { get; set; }
     }
 
+    [Fact]
+    public async Task IReconnectNotifyTriggersSequenceMessage()
+    {
+        using (StartVerifiableLog())
+        {
+            var state = new ConnectionLifetimeState();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(s => s.AddSingleton(state), LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ConnectionLifetimeHub>>();
+
+            using var client = new TestClient();
+            var reconnectFeature = new TestReconnectFeature();
+            client.Connection.Features.Set<IReconnectFeature>(reconnectFeature);
+
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+            UpdateConnectionPair(client.Connection);
+
+            reconnectFeature.NotifyOnReconnect(client.Connection.Transport.Output);
+
+            var seqMessage = Assert.IsType<SequenceMessage>(await client.ReadAsync().DefaultTimeout());
+            Assert.Equal(1, seqMessage.SequenceId);
+
+            await client.SendHubMessageAsync(new SequenceMessage(1)).DefaultTimeout();
+
+            await client.SendHubMessageAsync(new CloseMessage(error: null));
+
+            await connectionHandlerTask.DefaultTimeout();
+
+            Assert.Null(state.DisconnectedException);
+        }
+    }
+
+    public struct DuplexPipePair
+    {
+        public IDuplexPipe Transport { get; set; }
+        public IDuplexPipe Application { get; set; }
+
+        public DuplexPipePair(IDuplexPipe transport, IDuplexPipe application)
+        {
+            Transport = transport;
+            Application = application;
+        }
+    }
+
+    private static void UpdateConnectionPair(DefaultConnectionContext connection)
+    {
+        var prevPipe = connection.Application.Input;
+        var input = new Pipe();
+
+        // Add new pipe for reading from and writing to transport from app code
+        var transportToApplication = new DuplexPipe(connection.Transport.Input, input.Writer);
+        var applicationToTransport = new DuplexPipe(input.Reader, connection.Application.Output);
+
+        connection.Application = applicationToTransport;
+        connection.Transport = transportToApplication;
+
+        connection.Transport = connection.Transport;
+
+        // Close previous pipe with specific error that application code can catch to know a restart is occurring
+        prevPipe.Complete(new ConnectionResetException(""));
+    }
+
+    [Fact]
+    public async Task GracefulCloseDisablesReconnect()
+    {
+        using (StartVerifiableLog())
+        {
+            var state = new ConnectionLifetimeState();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(s => s.AddSingleton(state), LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ConnectionLifetimeHub>>();
+
+            using var client = new TestClient();
+
+            var reconnectFeature = new TestReconnectFeature();
+            client.Connection.Features.Set<IReconnectFeature>(reconnectFeature);
+
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+            await client.SendHubMessageAsync(new CloseMessage(error: null));
+
+            await reconnectFeature.ReconnectDisabled.DefaultTimeout();
+
+            var message = Assert.IsType<CloseMessage>(await client.ReadAsync().DefaultTimeout());
+            Assert.Null(message.Error);
+
+            await connectionHandlerTask.DefaultTimeout();
+
+            Assert.Null(state.DisconnectedException);
+        }
+    }
+
+    private class TestReconnectFeature : IReconnectFeature
+    {
+        private TaskCompletionSource _reconnectDisabled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public Task ReconnectDisabled => _reconnectDisabled.Task;
+
+        public Action<PipeWriter> NotifyOnReconnect { get; set; } = (_) => { };
+
+        public void DisableReconnect()
+        {
+            _reconnectDisabled.TrySetResult();
+        }
+    }
+
     private class CustomHubActivator<THub> : IHubActivator<THub> where THub : Hub
     {
         public int ReleaseCount;

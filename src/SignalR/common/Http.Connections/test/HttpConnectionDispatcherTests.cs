@@ -2343,6 +2343,78 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
+    [Fact]
+    public async Task ReconnectStopsPreviousConnection()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var options = new HttpConnectionDispatcherOptions() { AllowAcks = true };
+            options.WebSockets.CloseTimeout = TimeSpan.FromMilliseconds(1);
+            // pretend negotiate occurred
+            var connection = manager.CreateConnection(options, negotiateVersion: 1, useAck: true);
+            connection.TransportType = HttpTransportType.WebSockets;
+
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+            var services = new ServiceCollection();
+
+            var context = MakeRequest("/foo", connection, services);
+            SetTransport(context, HttpTransportType.WebSockets);
+
+            var builder = new ConnectionBuilder(services.BuildServiceProvider());
+            builder.UseConnectionHandler<ReconnectConnectionHandler>();
+            var app = builder.Build();
+
+            var initialWebSocketTask = dispatcher.ExecuteAsync(context, options, app);
+
+            var reconnectFeature = connection.Features.Get<IReconnectFeature>();
+            Assert.NotNull(reconnectFeature);
+
+            var firstMsg = new byte[] { 1, 4, 8, 9 };
+            await connection.Application.Output.WriteAsync(firstMsg);
+
+            var websocketFeature = (TestWebSocketConnectionFeature)context.Features.Get<IHttpWebSocketFeature>();
+            await websocketFeature.Accepted.DefaultTimeout();
+            // Run the client socket
+            var webSocketMessage = await websocketFeature.Client.GetNextMessageAsync().DefaultTimeout();
+
+            Assert.Equal(firstMsg, webSocketMessage.Buffer);
+
+            var called = false;
+            var reconnectCallback = reconnectFeature.NotifyOnReconnect;
+            reconnectFeature.NotifyOnReconnect = (writer) =>
+            {
+                called = true;
+                reconnectCallback(writer);
+            };
+
+            // New websocket connection with previous connection token
+            context = MakeRequest("/foo", connection, services);
+            SetTransport(context, HttpTransportType.WebSockets);
+
+            var newWebSocketTask = dispatcher.ExecuteAsync(context, options, app);
+
+            // New connection with same token will complete previous request
+            await initialWebSocketTask.DefaultTimeout();
+
+            Assert.True(called);
+
+            Assert.False(newWebSocketTask.IsCompleted);
+
+            var secondMsg = new byte[] { 7, 6, 3, 2 };
+            await connection.Application.Output.WriteAsync(secondMsg);
+
+            websocketFeature = (TestWebSocketConnectionFeature)context.Features.Get<IHttpWebSocketFeature>();
+            await websocketFeature.Accepted.DefaultTimeout();
+            webSocketMessage = await websocketFeature.Client.GetNextMessageAsync().DefaultTimeout();
+            Assert.Equal(secondMsg, webSocketMessage.Buffer);
+
+            connection.Abort();
+
+            await newWebSocketTask.DefaultTimeout();
+        }
+    }
+
     private class ControllableMemoryStream : MemoryStream
     {
         private readonly SyncPoint _syncPoint;
@@ -3778,6 +3850,58 @@ public class JwtConnectionHandler : ConnectionHandler
                 connection.Transport.Input.AdvanceTo(result.Buffer.End);
             }
         }
+    }
+}
+
+public class ReconnectConnectionHandler : ConnectionHandler
+{
+    private TaskCompletionSource<bool> _pause;
+
+    private PipeWriter _writer;
+
+    public override async Task OnConnectedAsync(ConnectionContext connection)
+    {
+        _writer = connection.Transport.Output;
+
+        connection.ConnectionClosed.Register(() =>
+        {
+            _pause.TrySetResult(false);
+        });
+
+        var reconnectFeature = connection.Features.Get<IReconnectFeature>();
+        Assert.NotNull(reconnectFeature);
+        reconnectFeature.NotifyOnReconnect = NotifyReconnect;
+
+        do
+        {
+            _pause = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            while (true)
+            {
+                var res = await connection.Transport.Input.ReadAsync(connection.ConnectionClosed);
+
+                try
+                {
+                    if (res.IsCompleted)
+                    {
+                        break;
+                    }
+
+                    await _writer.WriteAsync(res.Buffer.ToArray());
+                }
+                finally
+                {
+                    connection.Transport.Input.AdvanceTo(res.Buffer.End);
+                }
+            }
+        } while (await _pause.Task);
+    }
+
+    private void NotifyReconnect(PipeWriter writer)
+    {
+        _writer.Complete();
+        _writer = writer;
+        _pause.SetResult(true);
     }
 }
 
