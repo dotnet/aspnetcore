@@ -8,6 +8,7 @@ using System.Reflection.Metadata;
 using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Components.Routing;
 
@@ -46,6 +47,8 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
     [Inject] private ILoggerFactory LoggerFactory { get; set; }
 
     [Inject] IServiceProvider ServiceProvider { get; set; }
+
+    private IRoutingStateProvider? RoutingStateProvider { get; set; }
 
     /// <summary>
     /// Gets or sets the assembly that should be searched for components matching the URI.
@@ -101,6 +104,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         _baseUri = NavigationManager.BaseUri;
         _locationAbsolute = NavigationManager.Uri;
         NavigationManager.LocationChanged += OnLocationChanged;
+        RoutingStateProvider = ServiceProvider.GetService<IRoutingStateProvider>();
 
         if (HotReloadManager.Default.MetadataUpdateSupported)
         {
@@ -196,6 +200,16 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 
         var relativePath = NavigationManager.ToBaseRelativePath(_locationAbsolute);
         var locationPath = TrimQueryOrHash(relativePath);
+
+        // In order to avoid routing twice we check for RouteData
+        if (RoutingStateProvider?.RouteData is { } endpointRouteData)
+        {
+            Log.NavigatingToComponent(_logger, endpointRouteData.PageType, locationPath, _baseUri);
+
+            _renderHandle.Render(Found(endpointRouteData));
+
+            return;
+        }
 
         RefreshRouteTable();
 
