@@ -1292,4 +1292,39 @@ public class ForwardedHeadersMiddlewareTests
         Assert.True(context.Request.Headers.ContainsKey("X-Forwarded-Proto"));
         Assert.True(context.Request.Headers.ContainsKey("X-Forwarded-Prefix"));
     }
+
+    [Theory]
+    [InlineData(1, "/prefix1, /prefix2", "/prefix1")]
+    [InlineData(1, "/prefix1, /prefix2, /prefix3", "/prefix1,/prefix2")]
+    public async Task XForwardedPrefixTruncateConsumedValues(
+        int limit,
+        string forwardedPrefix,
+        string expectedforwardedPrefix)
+    {
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .Configure(app =>
+                {
+                    app.UseForwardedHeaders(new ForwardedHeadersOptions
+                    {
+                        ForwardedHeaders = ForwardedHeaders.XForwardedPrefix,
+                        ForwardLimit = limit,
+                    });
+                });
+            }).Build();
+
+        await host.StartAsync();
+
+        var server = host.GetTestServer();
+
+        var context = await server.SendAsync(c =>
+        {
+            c.Request.Headers["X-Forwarded-Prefix"] = forwardedPrefix;
+        });
+
+        Assert.Equal(expectedforwardedPrefix, context.Request.Headers["X-Forwarded-Prefix"].ToString());
+    }
 }
