@@ -376,7 +376,8 @@ public class ForwardedHeadersMiddleware
                 if (forwardedPrefix!.Length > entriesConsumed)
                 {
                     // Truncate the consumed header values
-                    requestHeaders[_options.ForwardedPrefixHeaderName] = forwardedPrefix.Take(forwardedPrefix.Length - entriesConsumed).ToArray();
+                    requestHeaders[_options.ForwardedPrefixHeaderName] =
+                        TruncateConsumedHeaderValues(forwardedPrefix, entriesConsumed);
                 }
                 else
                 {
@@ -480,5 +481,13 @@ public class ForwardedHeadersMiddleware
         }
 
         return hostText.AsSpan(offset + 1).IndexOfAnyExceptInRange('0', '9') < 0;
+    }
+
+    private static string[] TruncateConsumedHeaderValues(string[] forwarded, int entriesConsumed)
+    {
+        var newLength = forwarded.Length - entriesConsumed;
+        var remaining = new string[newLength];
+        Array.Copy(forwarded, remaining, newLength);
+        return remaining;
     }
 }
