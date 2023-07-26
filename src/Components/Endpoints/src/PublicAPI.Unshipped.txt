@@ -46,6 +46,8 @@ Microsoft.AspNetCore.Components.Endpoints.IComponentPrerenderer
 Microsoft.AspNetCore.Components.Endpoints.IComponentPrerenderer.Dispatcher.get -> Microsoft.AspNetCore.Components.Dispatcher!
 Microsoft.AspNetCore.Components.Endpoints.IComponentPrerenderer.PrerenderComponentAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext, System.Type! componentType, Microsoft.AspNetCore.Components.IComponentRenderMode! renderMode, Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Html.IHtmlAsyncContent!>
 Microsoft.AspNetCore.Components.Endpoints.IComponentPrerenderer.PrerenderPersistedStateAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext, Microsoft.AspNetCore.Components.PersistedStateSerializationMode serializationMode) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Html.IHtmlContent!>
+Microsoft.AspNetCore.Components.Endpoints.IRazorComponentEndpointInvoker
+Microsoft.AspNetCore.Components.Endpoints.IRazorComponentEndpointInvoker.Render(Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.Endpoints.IRazorComponentsBuilder
 Microsoft.AspNetCore.Components.Endpoints.IRazorComponentsBuilder.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 Microsoft.AspNetCore.Components.Endpoints.RazorComponentDataSourceOptions

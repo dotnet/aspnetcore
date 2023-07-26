@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Components.Discovery;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -62,7 +63,11 @@ internal class RazorComponentEndpointFactory
         // The display name is for debug purposes by endpoint routing.
         builder.DisplayName = $"{builder.RoutePattern.RawText} ({pageDefinition.DisplayName})";
 
-        builder.RequestDelegate = httpContext => new RazorComponentEndpointInvoker(httpContext, rootComponent, pageDefinition.Type).RenderComponent();
+        builder.RequestDelegate = httpContext =>
+        {
+            var invoker = httpContext.RequestServices.GetRequiredService<IRazorComponentEndpointInvoker>();
+            return invoker.Render(httpContext);
+        };
 
         endpoints.Add(builder.Build());
     }

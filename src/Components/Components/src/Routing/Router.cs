@@ -204,10 +204,16 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         // In order to avoid routing twice we check for RouteData
         if (RoutingStateProvider?.RouteData is { } endpointRouteData)
         {
+            // Other routers shouldn't provide RouteData, this is specific to our router component
+            // and must abide by our syntax and behaviors.
+            // Other routers must create their own abstractions to flow data from their SSR routing
+            // scheme to their interactive router.
             Log.NavigatingToComponent(_logger, endpointRouteData.PageType, locationPath, _baseUri);
-
+            // Post process the entry to add Blazor specific behaviors:
+            // - Add 'null' for unused route parameters.
+            // - Convert constrained parameters with (int, double, etc) to the target type.
+            endpointRouteData = RouteTable.ProcessParameters(endpointRouteData);
             _renderHandle.Render(Found(endpointRouteData));
-
             return;
         }
 
@@ -229,6 +235,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
             var routeData = new RouteData(
                 context.Handler,
                 context.Parameters ?? _emptyParametersDictionary);
+
             _renderHandle.Render(Found(routeData));
 
             // If you navigate to a different path, then after the next render we'll update the scroll position

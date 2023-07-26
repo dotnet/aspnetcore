@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Routing.Tree;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components;
 
@@ -86,17 +87,24 @@ internal static class RouteTableFactory
             //
             // RouteAttribute is defined as non-inherited, because inheriting a route attribute always causes an
             // ambiguity. You end up with two components (base class and derived class) with the same route.
-            var routeAttributes = componentType.GetCustomAttributes(typeof(RouteAttribute), inherit: false);
-            var templates = new string[routeAttributes.Length];
-            for (var i = 0; i < routeAttributes.Length; i++)
-            {
-                var attribute = (RouteAttribute)routeAttributes[i];
-                templates[i] = attribute.Template;
-            }
+            var templates = GetTemplates(componentType);
 
             templatesByHandler.Add(componentType, templates);
         }
         return Create(templatesByHandler, serviceProvider);
+    }
+
+    private static string[] GetTemplates(Type componentType)
+    {
+        var routeAttributes = componentType.GetCustomAttributes(typeof(RouteAttribute), inherit: false);
+        var templates = new string[routeAttributes.Length];
+        for (var i = 0; i < routeAttributes.Length; i++)
+        {
+            var attribute = (RouteAttribute)routeAttributes[i];
+            templates[i] = attribute.Template;
+        }
+
+        return templates;
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2067", Justification = "Application code does not get trimmed, and the framework does not define routable components.")]
@@ -108,19 +116,10 @@ internal static class RouteTableFactory
 
         foreach (var (type, templates) in templatesByHandler)
         {
-            var allRouteParameterNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            var parsedTemplates = new (RoutePattern, HashSet<string>)[templates.Length];
-            for (var i = 0; i < templates.Length; i++)
-            {
-                var parsedTemplate = RoutePatternParser.Parse(templates[i]);
-                var parameterNames = GetParameterNames(parsedTemplate);
-                parsedTemplates[i] = (parsedTemplate, parameterNames);
+            var result = ComputeTemplateGroupInfo(templates);
 
-                foreach (var parameterName in parameterNames)
-                {
-                    allRouteParameterNames.Add(parameterName);
-                }
-            }
+            var parsedTemplates = result.ParsedTemplates;
+            var allRouteParameterNames = result.AllRouteParameterNames;
 
             foreach (var (parsedTemplate, routeParameterNames) in parsedTemplates)
             {
@@ -131,8 +130,62 @@ internal static class RouteTableFactory
 
         DetectAmbiguousRoutes(builder);
 
-        //builder.InboundEntries.Sort(RouteOrder);
         return new RouteTable(builder.Build());
+    }
+
+    private static TemplateGroupInfo ComputeTemplateGroupInfo(string[] templates)
+    {
+        var result = new TemplateGroupInfo(templates);
+        for (var i = 0; i < templates.Length; i++)
+        {
+            var parsedTemplate = RoutePatternParser.Parse(templates[i]);
+            var parameterNames = GetParameterNames(parsedTemplate);
+            result.ParsedTemplates[i] = (parsedTemplate, parameterNames);
+
+            foreach (var parameterName in parameterNames)
+            {
+                result.AllRouteParameterNames.Add(parameterName);
+            }
+        }
+
+        return result;
+    }
+
+    private struct TemplateGroupInfo(string[] templates)
+    {
+        public HashSet<string> AllRouteParameterNames { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+        public (RoutePattern, HashSet<string>)[] ParsedTemplates { get; set; } = new (RoutePattern, HashSet<string>)[templates.Length];
+    }
+
+    internal static InboundRouteEntry CreateEntry([DynamicallyAccessedMembers(Component)] Type pageType, string template)
+    {
+        var templates = GetTemplates(pageType);
+        var result = ComputeTemplateGroupInfo(templates);
+
+        RoutePattern? parsedTemplate = null;
+        HashSet<string>? routeParameterNames = null;
+        for (var i = 0; i < result.ParsedTemplates.Length; i++)
+        {
+            var (parsed, parameters) = result.ParsedTemplates[i];
+            if (string.Equals(parsed.RawText, template, StringComparison.OrdinalIgnoreCase))
+            {
+                parsedTemplate = parsed;
+                routeParameterNames = parameters;
+                break;
+            }
+        }
+
+        if (parsedTemplate != null || routeParameterNames != null)
+        {
+            throw new InvalidOperationException($"Unable to find the provided template '{template}'");
+        }
+
+        return new InboundRouteEntry()
+        {
+            Handler = pageType,
+            RoutePattern = parsedTemplate,
+            UnusedRouteParameterNames = GetUnusedParameterNames(result.AllRouteParameterNames, routeParameterNames!),
+        };
     }
 
     private static void DetectAmbiguousRoutes(TreeRouteBuilder builder)
