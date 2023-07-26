@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Channels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Metadata;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Serialization;
 
 namespace Microsoft.AspNetCore.SignalR.Tests;
@@ -1384,6 +1385,9 @@ public class ServicesHub : TestHub
             await channelReader.ReadAsync();
         }
     }
+
+    public void KeyedService([FromKeyedServices("service1")] Service1 service)
+    { }
 }
 
 public class TooManyParamsHub : Hub
