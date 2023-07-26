@@ -178,7 +178,7 @@ internal partial class TreeRouter
 #if !COMPONENTS
             var tokenizer = new PathTokenizer(context.HttpContext.Request.Path);
 #else
-            var tokenizer = new PathTokenizer(context.Path);
+            var tokenizer = new PathTokenizer(new(context.Path));
 #endif
             var root = tree.Root;
 
@@ -202,7 +202,7 @@ internal partial class TreeRouter
                     {
                         if (!matcher.TryMatch(context.HttpContext.Request.Path, context.RouteData.Values))
 #else
-                    if (!matcher.TryMatch(context.Path, context.RouteValues))
+                    if (!matcher.TryMatch(new(context.Path), context.RouteValues))
 #endif
                         {
                             continue;

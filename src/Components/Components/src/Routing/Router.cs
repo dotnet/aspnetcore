@@ -158,12 +158,12 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         }
     }
 
-    private static string TrimQueryOrHash(string str)
+    private static ReadOnlySpan<char> TrimQueryOrHash(ReadOnlySpan<char> str)
     {
-        var firstIndex = str.AsSpan().IndexOfAny('?', '#');
+        var firstIndex = str.IndexOfAny('?', '#');
         return firstIndex < 0
             ? str
-            : str.Substring(0, firstIndex);
+            : str[0..firstIndex];
     }
 
     private void RefreshRouteTable()
@@ -198,8 +198,9 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
             return;
         }
 
-        var relativePath = NavigationManager.ToBaseRelativePath(_locationAbsolute);
-        var locationPath = TrimQueryOrHash(relativePath);
+        var relativePath = NavigationManager.ToBaseRelativePath(_locationAbsolute.AsSpan());
+        var locationPathSpan = TrimQueryOrHash(relativePath);
+        var locationPath = $"/{locationPathSpan}";
 
         // In order to avoid routing twice we check for RouteData
         if (RoutingStateProvider?.RouteData is { } endpointRouteData)
@@ -219,7 +220,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 
         RefreshRouteTable();
 
-        var context = new RouteContext($"/{locationPath}");
+        var context = new RouteContext(locationPath);
         Routes.Route(context);
 
         if (context.Handler != null)
@@ -241,7 +242,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
             // If you navigate to a different path, then after the next render we'll update the scroll position
             if (relativePath != _updateScrollPositionForHashLastLocation)
             {
-                _updateScrollPositionForHashLastLocation = relativePath;
+                _updateScrollPositionForHashLastLocation = relativePath.ToString();
                 _updateScrollPositionForHash = true;
             }
         }
