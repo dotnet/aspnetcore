@@ -320,7 +320,8 @@ public class ForwardedHeadersMiddleware
                 if (forwardedFor!.Length > entriesConsumed)
                 {
                     // Truncate the consumed header values
-                    requestHeaders[_options.ForwardedForHeaderName] = forwardedFor.Take(forwardedFor.Length - entriesConsumed).ToArray();
+                    requestHeaders[_options.ForwardedForHeaderName] =
+                        TruncateConsumedHeaderValues(forwardedFor, entriesConsumed);
                 }
                 else
                 {
@@ -338,7 +339,8 @@ public class ForwardedHeadersMiddleware
                 if (forwardedProto!.Length > entriesConsumed)
                 {
                     // Truncate the consumed header values
-                    requestHeaders[_options.ForwardedProtoHeaderName] = forwardedProto.Take(forwardedProto.Length - entriesConsumed).ToArray();
+                    requestHeaders[_options.ForwardedProtoHeaderName] =
+                        TruncateConsumedHeaderValues(forwardedProto, entriesConsumed);
                 }
                 else
                 {
@@ -355,7 +357,8 @@ public class ForwardedHeadersMiddleware
                 if (forwardedHost!.Length > entriesConsumed)
                 {
                     // Truncate the consumed header values
-                    requestHeaders[_options.ForwardedHostHeaderName] = forwardedHost.Take(forwardedHost.Length - entriesConsumed).ToArray();
+                    requestHeaders[_options.ForwardedHostHeaderName] =
+                        TruncateConsumedHeaderValues(forwardedHost, entriesConsumed);
                 }
                 else
                 {
