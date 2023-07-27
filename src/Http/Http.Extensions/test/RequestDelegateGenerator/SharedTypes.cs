@@ -1030,3 +1030,20 @@ public class TodoWithExplicitIParsable : IParsable<TodoWithExplicitIParsable>
         return true;
     }
 }
+
+#nullable enable
+public class BindableWithMismatchedNullability<T>
+{
+    public BindableWithMismatchedNullability(T? value)
+    {
+        Value = value;
+    }
+
+    public T? Value { get; }
+
+    public static async ValueTask<BindableWithMismatchedNullability<T?>> BindAsync(HttpContext httpContext, ParameterInfo parameter)
+    {
+        await Task.CompletedTask;
+        return new BindableWithMismatchedNullability<T?>(default);
+    }
+}

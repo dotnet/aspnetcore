@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                 Debug.Assert(options.EndpointBuilder.ApplicationServices != null, "ApplicationServices not found.");
                 Debug.Assert(options.EndpointBuilder.FilterFactories != null, "FilterFactories not found.");
-                var handler = Cast(del, global::System.String (global::Microsoft.AspNetCore.Http.HttpContext arg0, global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncRecord arg1) => throw null!);
+                var handler = Cast(del, global::System.String (global::Microsoft.AspNetCore.Http.HttpContext arg0, global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncRecord? arg1) => throw null!);
                 EndpointFilterDelegate? filteredInvocation = null;
                 var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
                 var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         {
                             return ValueTask.FromResult<object?>(Results.Empty);
                         }
-                        return ValueTask.FromResult<object?>(handler(ic.GetArgument<global::Microsoft.AspNetCore.Http.HttpContext>(0)!, ic.GetArgument<global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncRecord>(1)!));
+                        return ValueTask.FromResult<object?>(handler(ic.GetArgument<global::Microsoft.AspNetCore.Http.HttpContext>(0)!, ic.GetArgument<global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncRecord?>(1)!));
                     },
                     options.EndpointBuilder,
                     handler.Method);
@@ -103,17 +103,12 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var wasParamCheckFailure = false;
                     var httpContext_local = httpContext;
-                    var myBindAsyncParam_temp = await global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncRecord.BindAsync(httpContext, parameters[1]);
-                    global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncRecord myBindAsyncParam_local;
-                    if ((object?)myBindAsyncParam_temp == null)
+                    var myBindAsyncParam_local = await global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncRecord.BindAsync(httpContext, parameters[1]);
+                    if ((object?)myBindAsyncParam_local == null)
                     {
                         logOrThrowExceptionHelper.RequiredParameterNotProvided("MyBindAsyncRecord", "myBindAsyncParam", "MyBindAsyncRecord.BindAsync(HttpContext, ParameterInfo)");
                         wasParamCheckFailure = true;
                         myBindAsyncParam_local = default!;
-                    }
-                    else
-                    {
-                        myBindAsyncParam_local = (global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncRecord)myBindAsyncParam_temp;
                     }
 
                     if (wasParamCheckFailure)
@@ -121,7 +116,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         httpContext.Response.StatusCode = 400;
                         return;
                     }
-                    var result = handler(httpContext_local, myBindAsyncParam_local);
+                    var result = handler(httpContext_local, myBindAsyncParam_local!);
                     if (result is string)
                     {
                         httpContext.Response.ContentType ??= "text/plain; charset=utf-8";
@@ -137,24 +132,19 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var wasParamCheckFailure = false;
                     var httpContext_local = httpContext;
-                    var myBindAsyncParam_temp = await global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncRecord.BindAsync(httpContext, parameters[1]);
-                    global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncRecord myBindAsyncParam_local;
-                    if ((object?)myBindAsyncParam_temp == null)
+                    var myBindAsyncParam_local = await global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncRecord.BindAsync(httpContext, parameters[1]);
+                    if ((object?)myBindAsyncParam_local == null)
                     {
                         logOrThrowExceptionHelper.RequiredParameterNotProvided("MyBindAsyncRecord", "myBindAsyncParam", "MyBindAsyncRecord.BindAsync(HttpContext, ParameterInfo)");
                         wasParamCheckFailure = true;
                         myBindAsyncParam_local = default!;
-                    }
-                    else
-                    {
-                        myBindAsyncParam_local = (global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncRecord)myBindAsyncParam_temp;
                     }
 
                     if (wasParamCheckFailure)
                     {
                         httpContext.Response.StatusCode = 400;
                     }
-                    var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncRecord>(httpContext, httpContext_local, myBindAsyncParam_local));
+                    var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncRecord?>(httpContext, httpContext_local, myBindAsyncParam_local!));
                     if (result is not null)
                     {
                         await GeneratedRouteBuilderExtensionsCore.ExecuteReturnAsync(result, httpContext, objectJsonTypeInfo);
@@ -219,8 +209,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 async Task RequestHandler(HttpContext httpContext)
                 {
                     var wasParamCheckFailure = false;
-                    var myBindAsyncParam_temp = await global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncRecord.BindAsync(httpContext, parameters[0]);
-                    var myBindAsyncParam_local = (global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncRecord?)myBindAsyncParam_temp;
+                    var myBindAsyncParam_local = await global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncRecord.BindAsync(httpContext, parameters[0]);
 
                     if (wasParamCheckFailure)
                     {
@@ -242,8 +231,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 async Task RequestHandlerFiltered(HttpContext httpContext)
                 {
                     var wasParamCheckFailure = false;
-                    var myBindAsyncParam_temp = await global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncRecord.BindAsync(httpContext, parameters[0]);
-                    var myBindAsyncParam_local = (global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncRecord?)myBindAsyncParam_temp;
+                    var myBindAsyncParam_local = await global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncRecord.BindAsync(httpContext, parameters[0]);
 
                     if (wasParamCheckFailure)
                     {
@@ -315,17 +303,12 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var wasParamCheckFailure = false;
                     var httpContext_local = httpContext;
-                    var myBindAsyncParam_temp = await global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncStruct.BindAsync(httpContext, parameters[1]);
-                    global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncStruct myBindAsyncParam_local;
-                    if ((object?)myBindAsyncParam_temp == null)
+                    var myBindAsyncParam_local = await global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncStruct.BindAsync(httpContext, parameters[1]);
+                    if ((object?)myBindAsyncParam_local == null)
                     {
                         logOrThrowExceptionHelper.RequiredParameterNotProvided("MyBindAsyncStruct", "myBindAsyncParam", "MyBindAsyncStruct.BindAsync(HttpContext, ParameterInfo)");
                         wasParamCheckFailure = true;
                         myBindAsyncParam_local = default!;
-                    }
-                    else
-                    {
-                        myBindAsyncParam_local = (global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncStruct)myBindAsyncParam_temp;
                     }
 
                     if (wasParamCheckFailure)
@@ -333,7 +316,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         httpContext.Response.StatusCode = 400;
                         return;
                     }
-                    var result = handler(httpContext_local, myBindAsyncParam_local);
+                    var result = handler(httpContext_local, myBindAsyncParam_local!);
                     if (result is string)
                     {
                         httpContext.Response.ContentType ??= "text/plain; charset=utf-8";
@@ -349,24 +332,19 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var wasParamCheckFailure = false;
                     var httpContext_local = httpContext;
-                    var myBindAsyncParam_temp = await global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncStruct.BindAsync(httpContext, parameters[1]);
-                    global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncStruct myBindAsyncParam_local;
-                    if ((object?)myBindAsyncParam_temp == null)
+                    var myBindAsyncParam_local = await global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncStruct.BindAsync(httpContext, parameters[1]);
+                    if ((object?)myBindAsyncParam_local == null)
                     {
                         logOrThrowExceptionHelper.RequiredParameterNotProvided("MyBindAsyncStruct", "myBindAsyncParam", "MyBindAsyncStruct.BindAsync(HttpContext, ParameterInfo)");
                         wasParamCheckFailure = true;
                         myBindAsyncParam_local = default!;
-                    }
-                    else
-                    {
-                        myBindAsyncParam_local = (global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncStruct)myBindAsyncParam_temp;
                     }
 
                     if (wasParamCheckFailure)
                     {
                         httpContext.Response.StatusCode = 400;
                     }
-                    var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncStruct>(httpContext, httpContext_local, myBindAsyncParam_local));
+                    var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncStruct>(httpContext, httpContext_local, myBindAsyncParam_local!));
                     if (result is not null)
                     {
                         await GeneratedRouteBuilderExtensionsCore.ExecuteReturnAsync(result, httpContext, objectJsonTypeInfo);
@@ -431,8 +409,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 async Task RequestHandler(HttpContext httpContext)
                 {
                     var wasParamCheckFailure = false;
-                    var myBindAsyncParam_temp = await global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncStruct.BindAsync(httpContext, parameters[0]);
-                    var myBindAsyncParam_local = (global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncStruct?)myBindAsyncParam_temp;
+                    var myBindAsyncParam_local = await global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncStruct.BindAsync(httpContext, parameters[0]);
 
                     if (wasParamCheckFailure)
                     {
@@ -454,8 +431,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 async Task RequestHandlerFiltered(HttpContext httpContext)
                 {
                     var wasParamCheckFailure = false;
-                    var myBindAsyncParam_temp = await global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncStruct.BindAsync(httpContext, parameters[0]);
-                    var myBindAsyncParam_local = (global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncStruct?)myBindAsyncParam_temp;
+                    var myBindAsyncParam_local = await global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncStruct.BindAsync(httpContext, parameters[0]);
 
                     if (wasParamCheckFailure)
                     {
@@ -527,17 +503,12 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var wasParamCheckFailure = false;
                     var httpContext_local = httpContext;
-                    var myBindAsyncParam_temp = await global::Microsoft.AspNetCore.Http.Generators.Tests.MyNullableBindAsyncStruct.BindAsync(httpContext, parameters[1]);
-                    global::Microsoft.AspNetCore.Http.Generators.Tests.MyNullableBindAsyncStruct myBindAsyncParam_local;
-                    if ((object?)myBindAsyncParam_temp == null)
+                    var myBindAsyncParam_local = await global::Microsoft.AspNetCore.Http.Generators.Tests.MyNullableBindAsyncStruct.BindAsync(httpContext, parameters[1]);
+                    if ((object?)myBindAsyncParam_local == null)
                     {
                         logOrThrowExceptionHelper.RequiredParameterNotProvided("MyNullableBindAsyncStruct", "myBindAsyncParam", "MyNullableBindAsyncStruct.BindAsync(HttpContext, ParameterInfo)");
                         wasParamCheckFailure = true;
                         myBindAsyncParam_local = default!;
-                    }
-                    else
-                    {
-                        myBindAsyncParam_local = (global::Microsoft.AspNetCore.Http.Generators.Tests.MyNullableBindAsyncStruct)myBindAsyncParam_temp;
                     }
 
                     if (wasParamCheckFailure)
@@ -545,7 +516,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         httpContext.Response.StatusCode = 400;
                         return;
                     }
-                    var result = handler(httpContext_local, myBindAsyncParam_local);
+                    var result = handler(httpContext_local, myBindAsyncParam_local.Value);
                     if (result is string)
                     {
                         httpContext.Response.ContentType ??= "text/plain; charset=utf-8";
@@ -561,24 +532,19 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var wasParamCheckFailure = false;
                     var httpContext_local = httpContext;
-                    var myBindAsyncParam_temp = await global::Microsoft.AspNetCore.Http.Generators.Tests.MyNullableBindAsyncStruct.BindAsync(httpContext, parameters[1]);
-                    global::Microsoft.AspNetCore.Http.Generators.Tests.MyNullableBindAsyncStruct myBindAsyncParam_local;
-                    if ((object?)myBindAsyncParam_temp == null)
+                    var myBindAsyncParam_local = await global::Microsoft.AspNetCore.Http.Generators.Tests.MyNullableBindAsyncStruct.BindAsync(httpContext, parameters[1]);
+                    if ((object?)myBindAsyncParam_local == null)
                     {
                         logOrThrowExceptionHelper.RequiredParameterNotProvided("MyNullableBindAsyncStruct", "myBindAsyncParam", "MyNullableBindAsyncStruct.BindAsync(HttpContext, ParameterInfo)");
                         wasParamCheckFailure = true;
                         myBindAsyncParam_local = default!;
-                    }
-                    else
-                    {
-                        myBindAsyncParam_local = (global::Microsoft.AspNetCore.Http.Generators.Tests.MyNullableBindAsyncStruct)myBindAsyncParam_temp;
                     }
 
                     if (wasParamCheckFailure)
                     {
                         httpContext.Response.StatusCode = 400;
                     }
-                    var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.MyNullableBindAsyncStruct>(httpContext, httpContext_local, myBindAsyncParam_local));
+                    var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.MyNullableBindAsyncStruct>(httpContext, httpContext_local, myBindAsyncParam_local.Value));
                     if (result is not null)
                     {
                         await GeneratedRouteBuilderExtensionsCore.ExecuteReturnAsync(result, httpContext, objectJsonTypeInfo);
@@ -643,8 +609,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 async Task RequestHandler(HttpContext httpContext)
                 {
                     var wasParamCheckFailure = false;
-                    var myBindAsyncParam_temp = await global::Microsoft.AspNetCore.Http.Generators.Tests.MyNullableBindAsyncStruct.BindAsync(httpContext, parameters[0]);
-                    var myBindAsyncParam_local = (global::Microsoft.AspNetCore.Http.Generators.Tests.MyNullableBindAsyncStruct?)myBindAsyncParam_temp;
+                    var myBindAsyncParam_local = await global::Microsoft.AspNetCore.Http.Generators.Tests.MyNullableBindAsyncStruct.BindAsync(httpContext, parameters[0]);
 
                     if (wasParamCheckFailure)
                     {
@@ -666,8 +631,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 async Task RequestHandlerFiltered(HttpContext httpContext)
                 {
                     var wasParamCheckFailure = false;
-                    var myBindAsyncParam_temp = await global::Microsoft.AspNetCore.Http.Generators.Tests.MyNullableBindAsyncStruct.BindAsync(httpContext, parameters[0]);
-                    var myBindAsyncParam_local = (global::Microsoft.AspNetCore.Http.Generators.Tests.MyNullableBindAsyncStruct?)myBindAsyncParam_temp;
+                    var myBindAsyncParam_local = await global::Microsoft.AspNetCore.Http.Generators.Tests.MyNullableBindAsyncStruct.BindAsync(httpContext, parameters[0]);
 
                     if (wasParamCheckFailure)
                     {
@@ -739,17 +703,12 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var wasParamCheckFailure = false;
                     var httpContext_local = httpContext;
-                    var myBindAsyncParam_temp = await global::Microsoft.AspNetCore.Http.Generators.Tests.MyBothBindAsyncStruct.BindAsync(httpContext, parameters[1]);
-                    global::Microsoft.AspNetCore.Http.Generators.Tests.MyBothBindAsyncStruct myBindAsyncParam_local;
-                    if ((object?)myBindAsyncParam_temp == null)
+                    var myBindAsyncParam_local = await global::Microsoft.AspNetCore.Http.Generators.Tests.MyBothBindAsyncStruct.BindAsync(httpContext, parameters[1]);
+                    if ((object?)myBindAsyncParam_local == null)
                     {
                         logOrThrowExceptionHelper.RequiredParameterNotProvided("MyBothBindAsyncStruct", "myBindAsyncParam", "MyBothBindAsyncStruct.BindAsync(HttpContext, ParameterInfo)");
                         wasParamCheckFailure = true;
                         myBindAsyncParam_local = default!;
-                    }
-                    else
-                    {
-                        myBindAsyncParam_local = (global::Microsoft.AspNetCore.Http.Generators.Tests.MyBothBindAsyncStruct)myBindAsyncParam_temp;
                     }
 
                     if (wasParamCheckFailure)
@@ -757,7 +716,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         httpContext.Response.StatusCode = 400;
                         return;
                     }
-                    var result = handler(httpContext_local, myBindAsyncParam_local);
+                    var result = handler(httpContext_local, myBindAsyncParam_local!);
                     if (result is string)
                     {
                         httpContext.Response.ContentType ??= "text/plain; charset=utf-8";
@@ -773,24 +732,19 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var wasParamCheckFailure = false;
                     var httpContext_local = httpContext;
-                    var myBindAsyncParam_temp = await global::Microsoft.AspNetCore.Http.Generators.Tests.MyBothBindAsyncStruct.BindAsync(httpContext, parameters[1]);
-                    global::Microsoft.AspNetCore.Http.Generators.Tests.MyBothBindAsyncStruct myBindAsyncParam_local;
-                    if ((object?)myBindAsyncParam_temp == null)
+                    var myBindAsyncParam_local = await global::Microsoft.AspNetCore.Http.Generators.Tests.MyBothBindAsyncStruct.BindAsync(httpContext, parameters[1]);
+                    if ((object?)myBindAsyncParam_local == null)
                     {
                         logOrThrowExceptionHelper.RequiredParameterNotProvided("MyBothBindAsyncStruct", "myBindAsyncParam", "MyBothBindAsyncStruct.BindAsync(HttpContext, ParameterInfo)");
                         wasParamCheckFailure = true;
                         myBindAsyncParam_local = default!;
-                    }
-                    else
-                    {
-                        myBindAsyncParam_local = (global::Microsoft.AspNetCore.Http.Generators.Tests.MyBothBindAsyncStruct)myBindAsyncParam_temp;
                     }
 
                     if (wasParamCheckFailure)
                     {
                         httpContext.Response.StatusCode = 400;
                     }
-                    var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.MyBothBindAsyncStruct>(httpContext, httpContext_local, myBindAsyncParam_local));
+                    var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.MyBothBindAsyncStruct>(httpContext, httpContext_local, myBindAsyncParam_local!));
                     if (result is not null)
                     {
                         await GeneratedRouteBuilderExtensionsCore.ExecuteReturnAsync(result, httpContext, objectJsonTypeInfo);
@@ -855,8 +809,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 async Task RequestHandler(HttpContext httpContext)
                 {
                     var wasParamCheckFailure = false;
-                    var myBindAsyncParam_temp = await global::Microsoft.AspNetCore.Http.Generators.Tests.MyBothBindAsyncStruct.BindAsync(httpContext, parameters[0]);
-                    var myBindAsyncParam_local = (global::Microsoft.AspNetCore.Http.Generators.Tests.MyBothBindAsyncStruct?)myBindAsyncParam_temp;
+                    var myBindAsyncParam_local = await global::Microsoft.AspNetCore.Http.Generators.Tests.MyBothBindAsyncStruct.BindAsync(httpContext, parameters[0]);
 
                     if (wasParamCheckFailure)
                     {
@@ -878,8 +831,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 async Task RequestHandlerFiltered(HttpContext httpContext)
                 {
                     var wasParamCheckFailure = false;
-                    var myBindAsyncParam_temp = await global::Microsoft.AspNetCore.Http.Generators.Tests.MyBothBindAsyncStruct.BindAsync(httpContext, parameters[0]);
-                    var myBindAsyncParam_local = (global::Microsoft.AspNetCore.Http.Generators.Tests.MyBothBindAsyncStruct?)myBindAsyncParam_temp;
+                    var myBindAsyncParam_local = await global::Microsoft.AspNetCore.Http.Generators.Tests.MyBothBindAsyncStruct.BindAsync(httpContext, parameters[0]);
 
                     if (wasParamCheckFailure)
                     {
@@ -925,7 +877,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                 Debug.Assert(options.EndpointBuilder.ApplicationServices != null, "ApplicationServices not found.");
                 Debug.Assert(options.EndpointBuilder.FilterFactories != null, "FilterFactories not found.");
-                var handler = Cast(del, global::System.String (global::Microsoft.AspNetCore.Http.HttpContext arg0, global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncRecord arg1) => throw null!);
+                var handler = Cast(del, global::System.String (global::Microsoft.AspNetCore.Http.HttpContext arg0, global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncRecord? arg1) => throw null!);
                 EndpointFilterDelegate? filteredInvocation = null;
                 var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
                 var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
@@ -940,7 +892,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         {
                             return ValueTask.FromResult<object?>(Results.Empty);
                         }
-                        return ValueTask.FromResult<object?>(handler(ic.GetArgument<global::Microsoft.AspNetCore.Http.HttpContext>(0)!, ic.GetArgument<global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncRecord>(1)!));
+                        return ValueTask.FromResult<object?>(handler(ic.GetArgument<global::Microsoft.AspNetCore.Http.HttpContext>(0)!, ic.GetArgument<global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncRecord?>(1)!));
                     },
                     options.EndpointBuilder,
                     handler.Method);
@@ -950,17 +902,12 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var wasParamCheckFailure = false;
                     var httpContext_local = httpContext;
-                    var myBindAsyncParam_temp = await global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncRecord.BindAsync(httpContext);
-                    global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncRecord myBindAsyncParam_local;
-                    if ((object?)myBindAsyncParam_temp == null)
+                    var myBindAsyncParam_local = await global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncRecord.BindAsync(httpContext);
+                    if ((object?)myBindAsyncParam_local == null)
                     {
                         logOrThrowExceptionHelper.RequiredParameterNotProvided("MySimpleBindAsyncRecord", "myBindAsyncParam", "MySimpleBindAsyncRecord.BindAsync(HttpContext)");
                         wasParamCheckFailure = true;
                         myBindAsyncParam_local = default!;
-                    }
-                    else
-                    {
-                        myBindAsyncParam_local = (global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncRecord)myBindAsyncParam_temp;
                     }
 
                     if (wasParamCheckFailure)
@@ -968,7 +915,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         httpContext.Response.StatusCode = 400;
                         return;
                     }
-                    var result = handler(httpContext_local, myBindAsyncParam_local);
+                    var result = handler(httpContext_local, myBindAsyncParam_local!);
                     if (result is string)
                     {
                         httpContext.Response.ContentType ??= "text/plain; charset=utf-8";
@@ -984,24 +931,19 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var wasParamCheckFailure = false;
                     var httpContext_local = httpContext;
-                    var myBindAsyncParam_temp = await global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncRecord.BindAsync(httpContext);
-                    global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncRecord myBindAsyncParam_local;
-                    if ((object?)myBindAsyncParam_temp == null)
+                    var myBindAsyncParam_local = await global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncRecord.BindAsync(httpContext);
+                    if ((object?)myBindAsyncParam_local == null)
                     {
                         logOrThrowExceptionHelper.RequiredParameterNotProvided("MySimpleBindAsyncRecord", "myBindAsyncParam", "MySimpleBindAsyncRecord.BindAsync(HttpContext)");
                         wasParamCheckFailure = true;
                         myBindAsyncParam_local = default!;
-                    }
-                    else
-                    {
-                        myBindAsyncParam_local = (global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncRecord)myBindAsyncParam_temp;
                     }
 
                     if (wasParamCheckFailure)
                     {
                         httpContext.Response.StatusCode = 400;
                     }
-                    var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncRecord>(httpContext, httpContext_local, myBindAsyncParam_local));
+                    var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncRecord?>(httpContext, httpContext_local, myBindAsyncParam_local!));
                     if (result is not null)
                     {
                         await GeneratedRouteBuilderExtensionsCore.ExecuteReturnAsync(result, httpContext, objectJsonTypeInfo);
@@ -1065,8 +1007,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 async Task RequestHandler(HttpContext httpContext)
                 {
                     var wasParamCheckFailure = false;
-                    var myBindAsyncParam_temp = await global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncRecord.BindAsync(httpContext);
-                    var myBindAsyncParam_local = (global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncRecord?)myBindAsyncParam_temp;
+                    var myBindAsyncParam_local = await global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncRecord.BindAsync(httpContext);
 
                     if (wasParamCheckFailure)
                     {
@@ -1088,8 +1029,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 async Task RequestHandlerFiltered(HttpContext httpContext)
                 {
                     var wasParamCheckFailure = false;
-                    var myBindAsyncParam_temp = await global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncRecord.BindAsync(httpContext);
-                    var myBindAsyncParam_local = (global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncRecord?)myBindAsyncParam_temp;
+                    var myBindAsyncParam_local = await global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncRecord.BindAsync(httpContext);
 
                     if (wasParamCheckFailure)
                     {
@@ -1160,17 +1100,12 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var wasParamCheckFailure = false;
                     var httpContext_local = httpContext;
-                    var myBindAsyncParam_temp = await global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncStruct.BindAsync(httpContext);
-                    global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncStruct myBindAsyncParam_local;
-                    if ((object?)myBindAsyncParam_temp == null)
+                    var myBindAsyncParam_local = await global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncStruct.BindAsync(httpContext);
+                    if ((object?)myBindAsyncParam_local == null)
                     {
                         logOrThrowExceptionHelper.RequiredParameterNotProvided("MySimpleBindAsyncStruct", "myBindAsyncParam", "MySimpleBindAsyncStruct.BindAsync(HttpContext)");
                         wasParamCheckFailure = true;
                         myBindAsyncParam_local = default!;
-                    }
-                    else
-                    {
-                        myBindAsyncParam_local = (global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncStruct)myBindAsyncParam_temp;
                     }
 
                     if (wasParamCheckFailure)
@@ -1178,7 +1113,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         httpContext.Response.StatusCode = 400;
                         return;
                     }
-                    var result = handler(httpContext_local, myBindAsyncParam_local);
+                    var result = handler(httpContext_local, myBindAsyncParam_local!);
                     if (result is string)
                     {
                         httpContext.Response.ContentType ??= "text/plain; charset=utf-8";
@@ -1194,24 +1129,19 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var wasParamCheckFailure = false;
                     var httpContext_local = httpContext;
-                    var myBindAsyncParam_temp = await global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncStruct.BindAsync(httpContext);
-                    global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncStruct myBindAsyncParam_local;
-                    if ((object?)myBindAsyncParam_temp == null)
+                    var myBindAsyncParam_local = await global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncStruct.BindAsync(httpContext);
+                    if ((object?)myBindAsyncParam_local == null)
                     {
                         logOrThrowExceptionHelper.RequiredParameterNotProvided("MySimpleBindAsyncStruct", "myBindAsyncParam", "MySimpleBindAsyncStruct.BindAsync(HttpContext)");
                         wasParamCheckFailure = true;
                         myBindAsyncParam_local = default!;
-                    }
-                    else
-                    {
-                        myBindAsyncParam_local = (global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncStruct)myBindAsyncParam_temp;
                     }
 
                     if (wasParamCheckFailure)
                     {
                         httpContext.Response.StatusCode = 400;
                     }
-                    var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncStruct>(httpContext, httpContext_local, myBindAsyncParam_local));
+                    var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncStruct>(httpContext, httpContext_local, myBindAsyncParam_local!));
                     if (result is not null)
                     {
                         await GeneratedRouteBuilderExtensionsCore.ExecuteReturnAsync(result, httpContext, objectJsonTypeInfo);
@@ -1275,8 +1205,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 async Task RequestHandler(HttpContext httpContext)
                 {
                     var wasParamCheckFailure = false;
-                    var myBindAsyncParam_temp = await global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncStruct.BindAsync(httpContext);
-                    var myBindAsyncParam_local = (global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncStruct?)myBindAsyncParam_temp;
+                    var myBindAsyncParam_local = await global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncStruct.BindAsync(httpContext);
 
                     if (wasParamCheckFailure)
                     {
@@ -1298,8 +1227,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 async Task RequestHandlerFiltered(HttpContext httpContext)
                 {
                     var wasParamCheckFailure = false;
-                    var myBindAsyncParam_temp = await global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncStruct.BindAsync(httpContext);
-                    var myBindAsyncParam_local = (global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncStruct?)myBindAsyncParam_temp;
+                    var myBindAsyncParam_local = await global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncStruct.BindAsync(httpContext);
 
                     if (wasParamCheckFailure)
                     {
@@ -1371,17 +1299,12 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var wasParamCheckFailure = false;
                     var httpContext_local = httpContext;
-                    var myBindAsyncParam_temp = await BindAsync<global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromImplicitStaticAbstractInterface>(httpContext, parameters[1]);
-                    global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromImplicitStaticAbstractInterface myBindAsyncParam_local;
-                    if ((object?)myBindAsyncParam_temp == null)
+                    var myBindAsyncParam_local = await BindAsync<global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromImplicitStaticAbstractInterface>(httpContext, parameters[1]);
+                    if ((object?)myBindAsyncParam_local == null)
                     {
                         logOrThrowExceptionHelper.RequiredParameterNotProvided("BindAsyncFromImplicitStaticAbstractInterface", "myBindAsyncParam", "BindAsyncFromImplicitStaticAbstractInterface.BindAsync(HttpContext, ParameterInfo)");
                         wasParamCheckFailure = true;
                         myBindAsyncParam_local = default!;
-                    }
-                    else
-                    {
-                        myBindAsyncParam_local = (global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromImplicitStaticAbstractInterface)myBindAsyncParam_temp;
                     }
 
                     if (wasParamCheckFailure)
@@ -1389,7 +1312,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         httpContext.Response.StatusCode = 400;
                         return;
                     }
-                    var result = handler(httpContext_local, myBindAsyncParam_local);
+                    var result = handler(httpContext_local, myBindAsyncParam_local!);
                     if (result is string)
                     {
                         httpContext.Response.ContentType ??= "text/plain; charset=utf-8";
@@ -1405,24 +1328,19 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var wasParamCheckFailure = false;
                     var httpContext_local = httpContext;
-                    var myBindAsyncParam_temp = await BindAsync<global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromImplicitStaticAbstractInterface>(httpContext, parameters[1]);
-                    global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromImplicitStaticAbstractInterface myBindAsyncParam_local;
-                    if ((object?)myBindAsyncParam_temp == null)
+                    var myBindAsyncParam_local = await BindAsync<global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromImplicitStaticAbstractInterface>(httpContext, parameters[1]);
+                    if ((object?)myBindAsyncParam_local == null)
                     {
                         logOrThrowExceptionHelper.RequiredParameterNotProvided("BindAsyncFromImplicitStaticAbstractInterface", "myBindAsyncParam", "BindAsyncFromImplicitStaticAbstractInterface.BindAsync(HttpContext, ParameterInfo)");
                         wasParamCheckFailure = true;
                         myBindAsyncParam_local = default!;
-                    }
-                    else
-                    {
-                        myBindAsyncParam_local = (global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromImplicitStaticAbstractInterface)myBindAsyncParam_temp;
                     }
 
                     if (wasParamCheckFailure)
                     {
                         httpContext.Response.StatusCode = 400;
                     }
-                    var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromImplicitStaticAbstractInterface>(httpContext, httpContext_local, myBindAsyncParam_local));
+                    var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromImplicitStaticAbstractInterface>(httpContext, httpContext_local, myBindAsyncParam_local!));
                     if (result is not null)
                     {
                         await GeneratedRouteBuilderExtensionsCore.ExecuteReturnAsync(result, httpContext, objectJsonTypeInfo);
@@ -1487,8 +1405,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 async Task RequestHandler(HttpContext httpContext)
                 {
                     var wasParamCheckFailure = false;
-                    var myBindAsyncParam_temp = await BindAsync<global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromImplicitStaticAbstractInterface>(httpContext, parameters[0]);
-                    var myBindAsyncParam_local = (global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromImplicitStaticAbstractInterface?)myBindAsyncParam_temp;
+                    var myBindAsyncParam_local = await BindAsync<global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromImplicitStaticAbstractInterface>(httpContext, parameters[0]);
 
                     if (wasParamCheckFailure)
                     {
@@ -1510,8 +1427,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 async Task RequestHandlerFiltered(HttpContext httpContext)
                 {
                     var wasParamCheckFailure = false;
-                    var myBindAsyncParam_temp = await BindAsync<global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromImplicitStaticAbstractInterface>(httpContext, parameters[0]);
-                    var myBindAsyncParam_local = (global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromImplicitStaticAbstractInterface?)myBindAsyncParam_temp;
+                    var myBindAsyncParam_local = await BindAsync<global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromImplicitStaticAbstractInterface>(httpContext, parameters[0]);
 
                     if (wasParamCheckFailure)
                     {
@@ -1557,7 +1473,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                 Debug.Assert(options.EndpointBuilder.ApplicationServices != null, "ApplicationServices not found.");
                 Debug.Assert(options.EndpointBuilder.FilterFactories != null, "FilterFactories not found.");
-                var handler = Cast(del, global::System.String (global::Microsoft.AspNetCore.Http.HttpContext arg0, global::Microsoft.AspNetCore.Http.Generators.Tests.InheritBindAsync arg1) => throw null!);
+                var handler = Cast(del, global::System.String (global::Microsoft.AspNetCore.Http.HttpContext arg0, global::Microsoft.AspNetCore.Http.Generators.Tests.InheritBindAsync? arg1) => throw null!);
                 EndpointFilterDelegate? filteredInvocation = null;
                 var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
                 var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
@@ -1572,7 +1488,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         {
                             return ValueTask.FromResult<object?>(Results.Empty);
                         }
-                        return ValueTask.FromResult<object?>(handler(ic.GetArgument<global::Microsoft.AspNetCore.Http.HttpContext>(0)!, ic.GetArgument<global::Microsoft.AspNetCore.Http.Generators.Tests.InheritBindAsync>(1)!));
+                        return ValueTask.FromResult<object?>(handler(ic.GetArgument<global::Microsoft.AspNetCore.Http.HttpContext>(0)!, ic.GetArgument<global::Microsoft.AspNetCore.Http.Generators.Tests.InheritBindAsync?>(1)!));
                     },
                     options.EndpointBuilder,
                     handler.Method);
@@ -1582,17 +1498,12 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var wasParamCheckFailure = false;
                     var httpContext_local = httpContext;
-                    var myBindAsyncParam_temp = await global::Microsoft.AspNetCore.Http.Generators.Tests.InheritBindAsync.BindAsync(httpContext);
-                    global::Microsoft.AspNetCore.Http.Generators.Tests.InheritBindAsync myBindAsyncParam_local;
-                    if ((object?)myBindAsyncParam_temp == null)
+                    var myBindAsyncParam_local = await global::Microsoft.AspNetCore.Http.Generators.Tests.InheritBindAsync.BindAsync(httpContext);
+                    if ((object?)myBindAsyncParam_local == null)
                     {
                         logOrThrowExceptionHelper.RequiredParameterNotProvided("InheritBindAsync", "myBindAsyncParam", "InheritBindAsync.BindAsync(HttpContext)");
                         wasParamCheckFailure = true;
                         myBindAsyncParam_local = default!;
-                    }
-                    else
-                    {
-                        myBindAsyncParam_local = (global::Microsoft.AspNetCore.Http.Generators.Tests.InheritBindAsync)myBindAsyncParam_temp;
                     }
 
                     if (wasParamCheckFailure)
@@ -1600,7 +1511,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         httpContext.Response.StatusCode = 400;
                         return;
                     }
-                    var result = handler(httpContext_local, myBindAsyncParam_local);
+                    var result = handler(httpContext_local, myBindAsyncParam_local!);
                     if (result is string)
                     {
                         httpContext.Response.ContentType ??= "text/plain; charset=utf-8";
@@ -1616,24 +1527,19 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var wasParamCheckFailure = false;
                     var httpContext_local = httpContext;
-                    var myBindAsyncParam_temp = await global::Microsoft.AspNetCore.Http.Generators.Tests.InheritBindAsync.BindAsync(httpContext);
-                    global::Microsoft.AspNetCore.Http.Generators.Tests.InheritBindAsync myBindAsyncParam_local;
-                    if ((object?)myBindAsyncParam_temp == null)
+                    var myBindAsyncParam_local = await global::Microsoft.AspNetCore.Http.Generators.Tests.InheritBindAsync.BindAsync(httpContext);
+                    if ((object?)myBindAsyncParam_local == null)
                     {
                         logOrThrowExceptionHelper.RequiredParameterNotProvided("InheritBindAsync", "myBindAsyncParam", "InheritBindAsync.BindAsync(HttpContext)");
                         wasParamCheckFailure = true;
                         myBindAsyncParam_local = default!;
-                    }
-                    else
-                    {
-                        myBindAsyncParam_local = (global::Microsoft.AspNetCore.Http.Generators.Tests.InheritBindAsync)myBindAsyncParam_temp;
                     }
 
                     if (wasParamCheckFailure)
                     {
                         httpContext.Response.StatusCode = 400;
                     }
-                    var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.InheritBindAsync>(httpContext, httpContext_local, myBindAsyncParam_local));
+                    var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.InheritBindAsync?>(httpContext, httpContext_local, myBindAsyncParam_local!));
                     if (result is not null)
                     {
                         await GeneratedRouteBuilderExtensionsCore.ExecuteReturnAsync(result, httpContext, objectJsonTypeInfo);
@@ -1697,8 +1603,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 async Task RequestHandler(HttpContext httpContext)
                 {
                     var wasParamCheckFailure = false;
-                    var myBindAsyncParam_temp = await global::Microsoft.AspNetCore.Http.Generators.Tests.InheritBindAsync.BindAsync(httpContext);
-                    var myBindAsyncParam_local = (global::Microsoft.AspNetCore.Http.Generators.Tests.InheritBindAsync?)myBindAsyncParam_temp;
+                    var myBindAsyncParam_local = await global::Microsoft.AspNetCore.Http.Generators.Tests.InheritBindAsync.BindAsync(httpContext);
 
                     if (wasParamCheckFailure)
                     {
@@ -1720,8 +1625,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 async Task RequestHandlerFiltered(HttpContext httpContext)
                 {
                     var wasParamCheckFailure = false;
-                    var myBindAsyncParam_temp = await global::Microsoft.AspNetCore.Http.Generators.Tests.InheritBindAsync.BindAsync(httpContext);
-                    var myBindAsyncParam_local = (global::Microsoft.AspNetCore.Http.Generators.Tests.InheritBindAsync?)myBindAsyncParam_temp;
+                    var myBindAsyncParam_local = await global::Microsoft.AspNetCore.Http.Generators.Tests.InheritBindAsync.BindAsync(httpContext);
 
                     if (wasParamCheckFailure)
                     {
@@ -1793,17 +1697,12 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var wasParamCheckFailure = false;
                     var httpContext_local = httpContext;
-                    var myBindAsyncParam_temp = await BindAsync<global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromExplicitStaticAbstractInterface>(httpContext, parameters[1]);
-                    global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromExplicitStaticAbstractInterface myBindAsyncParam_local;
-                    if ((object?)myBindAsyncParam_temp == null)
+                    var myBindAsyncParam_local = await BindAsync<global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromExplicitStaticAbstractInterface>(httpContext, parameters[1]);
+                    if ((object?)myBindAsyncParam_local == null)
                     {
                         logOrThrowExceptionHelper.RequiredParameterNotProvided("BindAsyncFromExplicitStaticAbstractInterface", "myBindAsyncParam", "BindAsyncFromExplicitStaticAbstractInterface.BindAsync(HttpContext, ParameterInfo)");
                         wasParamCheckFailure = true;
                         myBindAsyncParam_local = default!;
-                    }
-                    else
-                    {
-                        myBindAsyncParam_local = (global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromExplicitStaticAbstractInterface)myBindAsyncParam_temp;
                     }
 
                     if (wasParamCheckFailure)
@@ -1811,7 +1710,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         httpContext.Response.StatusCode = 400;
                         return;
                     }
-                    var result = handler(httpContext_local, myBindAsyncParam_local);
+                    var result = handler(httpContext_local, myBindAsyncParam_local!);
                     if (result is string)
                     {
                         httpContext.Response.ContentType ??= "text/plain; charset=utf-8";
@@ -1827,24 +1726,19 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var wasParamCheckFailure = false;
                     var httpContext_local = httpContext;
-                    var myBindAsyncParam_temp = await BindAsync<global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromExplicitStaticAbstractInterface>(httpContext, parameters[1]);
-                    global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromExplicitStaticAbstractInterface myBindAsyncParam_local;
-                    if ((object?)myBindAsyncParam_temp == null)
+                    var myBindAsyncParam_local = await BindAsync<global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromExplicitStaticAbstractInterface>(httpContext, parameters[1]);
+                    if ((object?)myBindAsyncParam_local == null)
                     {
                         logOrThrowExceptionHelper.RequiredParameterNotProvided("BindAsyncFromExplicitStaticAbstractInterface", "myBindAsyncParam", "BindAsyncFromExplicitStaticAbstractInterface.BindAsync(HttpContext, ParameterInfo)");
                         wasParamCheckFailure = true;
                         myBindAsyncParam_local = default!;
-                    }
-                    else
-                    {
-                        myBindAsyncParam_local = (global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromExplicitStaticAbstractInterface)myBindAsyncParam_temp;
                     }
 
                     if (wasParamCheckFailure)
                     {
                         httpContext.Response.StatusCode = 400;
                     }
-                    var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromExplicitStaticAbstractInterface>(httpContext, httpContext_local, myBindAsyncParam_local));
+                    var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromExplicitStaticAbstractInterface>(httpContext, httpContext_local, myBindAsyncParam_local!));
                     if (result is not null)
                     {
                         await GeneratedRouteBuilderExtensionsCore.ExecuteReturnAsync(result, httpContext, objectJsonTypeInfo);
@@ -1909,8 +1803,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 async Task RequestHandler(HttpContext httpContext)
                 {
                     var wasParamCheckFailure = false;
-                    var myBindAsyncParam_temp = await BindAsync<global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromExplicitStaticAbstractInterface>(httpContext, parameters[0]);
-                    var myBindAsyncParam_local = (global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromExplicitStaticAbstractInterface?)myBindAsyncParam_temp;
+                    var myBindAsyncParam_local = await BindAsync<global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromExplicitStaticAbstractInterface>(httpContext, parameters[0]);
 
                     if (wasParamCheckFailure)
                     {
@@ -1932,8 +1825,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 async Task RequestHandlerFiltered(HttpContext httpContext)
                 {
                     var wasParamCheckFailure = false;
-                    var myBindAsyncParam_temp = await BindAsync<global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromExplicitStaticAbstractInterface>(httpContext, parameters[0]);
-                    var myBindAsyncParam_local = (global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromExplicitStaticAbstractInterface?)myBindAsyncParam_temp;
+                    var myBindAsyncParam_local = await BindAsync<global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromExplicitStaticAbstractInterface>(httpContext, parameters[0]);
 
                     if (wasParamCheckFailure)
                     {
@@ -1979,7 +1871,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                 Debug.Assert(options.EndpointBuilder.ApplicationServices != null, "ApplicationServices not found.");
                 Debug.Assert(options.EndpointBuilder.FilterFactories != null, "FilterFactories not found.");
-                var handler = Cast(del, global::System.String (global::Microsoft.AspNetCore.Http.HttpContext arg0, global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncFromInterfaceRecord arg1) => throw null!);
+                var handler = Cast(del, global::System.String (global::Microsoft.AspNetCore.Http.HttpContext arg0, global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncFromInterfaceRecord? arg1) => throw null!);
                 EndpointFilterDelegate? filteredInvocation = null;
                 var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
                 var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
@@ -1994,7 +1886,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         {
                             return ValueTask.FromResult<object?>(Results.Empty);
                         }
-                        return ValueTask.FromResult<object?>(handler(ic.GetArgument<global::Microsoft.AspNetCore.Http.HttpContext>(0)!, ic.GetArgument<global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncFromInterfaceRecord>(1)!));
+                        return ValueTask.FromResult<object?>(handler(ic.GetArgument<global::Microsoft.AspNetCore.Http.HttpContext>(0)!, ic.GetArgument<global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncFromInterfaceRecord?>(1)!));
                     },
                     options.EndpointBuilder,
                     handler.Method);
@@ -2004,17 +1896,12 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var wasParamCheckFailure = false;
                     var httpContext_local = httpContext;
-                    var myBindAsyncParam_temp = await global::Microsoft.AspNetCore.Http.Generators.Tests.IBindAsync<global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncFromInterfaceRecord>.BindAsync(httpContext);
-                    global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncFromInterfaceRecord myBindAsyncParam_local;
-                    if ((object?)myBindAsyncParam_temp == null)
+                    var myBindAsyncParam_local = await global::Microsoft.AspNetCore.Http.Generators.Tests.IBindAsync<global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncFromInterfaceRecord>.BindAsync(httpContext);
+                    if ((object?)myBindAsyncParam_local == null)
                     {
                         logOrThrowExceptionHelper.RequiredParameterNotProvided("MyBindAsyncFromInterfaceRecord", "myBindAsyncParam", "MyBindAsyncFromInterfaceRecord.BindAsync(HttpContext)");
                         wasParamCheckFailure = true;
                         myBindAsyncParam_local = default!;
-                    }
-                    else
-                    {
-                        myBindAsyncParam_local = (global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncFromInterfaceRecord)myBindAsyncParam_temp;
                     }
 
                     if (wasParamCheckFailure)
@@ -2022,7 +1909,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                         httpContext.Response.StatusCode = 400;
                         return;
                     }
-                    var result = handler(httpContext_local, myBindAsyncParam_local);
+                    var result = handler(httpContext_local, myBindAsyncParam_local!);
                     if (result is string)
                     {
                         httpContext.Response.ContentType ??= "text/plain; charset=utf-8";
@@ -2038,24 +1925,19 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var wasParamCheckFailure = false;
                     var httpContext_local = httpContext;
-                    var myBindAsyncParam_temp = await global::Microsoft.AspNetCore.Http.Generators.Tests.IBindAsync<global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncFromInterfaceRecord>.BindAsync(httpContext);
-                    global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncFromInterfaceRecord myBindAsyncParam_local;
-                    if ((object?)myBindAsyncParam_temp == null)
+                    var myBindAsyncParam_local = await global::Microsoft.AspNetCore.Http.Generators.Tests.IBindAsync<global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncFromInterfaceRecord>.BindAsync(httpContext);
+                    if ((object?)myBindAsyncParam_local == null)
                     {
                         logOrThrowExceptionHelper.RequiredParameterNotProvided("MyBindAsyncFromInterfaceRecord", "myBindAsyncParam", "MyBindAsyncFromInterfaceRecord.BindAsync(HttpContext)");
                         wasParamCheckFailure = true;
                         myBindAsyncParam_local = default!;
-                    }
-                    else
-                    {
-                        myBindAsyncParam_local = (global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncFromInterfaceRecord)myBindAsyncParam_temp;
                     }
 
                     if (wasParamCheckFailure)
                     {
                         httpContext.Response.StatusCode = 400;
                     }
-                    var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncFromInterfaceRecord>(httpContext, httpContext_local, myBindAsyncParam_local));
+                    var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::Microsoft.AspNetCore.Http.HttpContext, global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncFromInterfaceRecord?>(httpContext, httpContext_local, myBindAsyncParam_local!));
                     if (result is not null)
                     {
                         await GeneratedRouteBuilderExtensionsCore.ExecuteReturnAsync(result, httpContext, objectJsonTypeInfo);
@@ -2119,8 +2001,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 async Task RequestHandler(HttpContext httpContext)
                 {
                     var wasParamCheckFailure = false;
-                    var myBindAsyncParam_temp = await global::Microsoft.AspNetCore.Http.Generators.Tests.IBindAsync<global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncFromInterfaceRecord>.BindAsync(httpContext);
-                    var myBindAsyncParam_local = (global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncFromInterfaceRecord?)myBindAsyncParam_temp;
+                    var myBindAsyncParam_local = await global::Microsoft.AspNetCore.Http.Generators.Tests.IBindAsync<global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncFromInterfaceRecord>.BindAsync(httpContext);
 
                     if (wasParamCheckFailure)
                     {
@@ -2142,8 +2023,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 async Task RequestHandlerFiltered(HttpContext httpContext)
                 {
                     var wasParamCheckFailure = false;
-                    var myBindAsyncParam_temp = await global::Microsoft.AspNetCore.Http.Generators.Tests.IBindAsync<global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncFromInterfaceRecord>.BindAsync(httpContext);
-                    var myBindAsyncParam_local = (global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncFromInterfaceRecord?)myBindAsyncParam_temp;
+                    var myBindAsyncParam_local = await global::Microsoft.AspNetCore.Http.Generators.Tests.IBindAsync<global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncFromInterfaceRecord>.BindAsync(httpContext);
 
                     if (wasParamCheckFailure)
                     {

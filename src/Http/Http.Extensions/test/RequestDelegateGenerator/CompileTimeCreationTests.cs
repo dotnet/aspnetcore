@@ -143,6 +143,7 @@ app.MapGet("/hello", (HttpContext context) => Task.CompletedTask);
         var result = Assert.IsType<GeneratorRunResult>(generatorRunResult);
         var diagnostic = Assert.Single(result.Diagnostics);
         Assert.Equal(DiagnosticDescriptors.UnableToResolveAnonymousReturnType.Id, diagnostic.Id);
+        Assert.Equal(DiagnosticSeverity.Warning, diagnostic.Severity);
         Assert.Empty(result.GeneratedSources);
     }
 
@@ -189,7 +190,11 @@ file class Wrapper<T> { }
         // Emits diagnostic but generates no source
         var result = Assert.IsType<GeneratorRunResult>(Assert.Single(generatorRunResult.Results));
         Assert.Empty(result.GeneratedSources);
-        Assert.All(result.Diagnostics, diagnostic => Assert.Equal(DiagnosticDescriptors.TypeParametersNotSupported.Id, diagnostic.Id));
+        Assert.All(result.Diagnostics, diagnostic =>
+        {
+            Assert.Equal(DiagnosticDescriptors.TypeParametersNotSupported.Id, diagnostic.Id);
+            Assert.Equal(DiagnosticSeverity.Warning, diagnostic.Severity);
+        });
     }
 
     [Theory]
@@ -239,7 +244,11 @@ public class Wrapper<T> { }
         // Emits diagnostic but generates no source
         var result = Assert.IsType<GeneratorRunResult>(Assert.Single(generatorRunResult.Results));
         Assert.Empty(result.GeneratedSources);
-        Assert.All(result.Diagnostics, diagnostic => Assert.Equal(DiagnosticDescriptors.InaccessibleTypesNotSupported.Id, diagnostic.Id));
+        Assert.All(result.Diagnostics, diagnostic =>
+        {
+            Assert.Equal(DiagnosticDescriptors.InaccessibleTypesNotSupported.Id, diagnostic.Id);
+            Assert.Equal(DiagnosticSeverity.Warning, diagnostic.Severity);
+        });
     }
 
     [Fact]
@@ -281,7 +290,11 @@ public class Wrapper<T> { }
 
         // Emits diagnostic and generates source for all endpoints
         var result = Assert.IsType<GeneratorRunResult>(Assert.Single(generatorRunResult.Results));
-        Assert.All(result.Diagnostics, diagnostic => Assert.Equal(DiagnosticDescriptors.InaccessibleTypesNotSupported.Id, diagnostic.Id));
+        Assert.All(result.Diagnostics, diagnostic =>
+        {
+            Assert.Equal(DiagnosticDescriptors.InaccessibleTypesNotSupported.Id, diagnostic.Id);
+            Assert.Equal(DiagnosticSeverity.Warning, diagnostic.Severity);
+        });
 
         // All endpoints can be invoked
         var endpoints = GetEndpointsFromCompilation(updatedCompilation, skipGeneratedCodeCheck: true);
