@@ -211,10 +211,6 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>bcb608e3d21344a0bb7c3399f060143504bbf475</Sha>
     </Dependency>
-    <Dependency Name="System.Drawing.Common" Version="8.0.0-preview.7.23356.8">
-      <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>5d54b08d5fc40d0b1c156f430a487a94c1e34f79</Sha>
-    </Dependency>
     <Dependency Name="System.IO.Pipelines" Version="8.0.0-rc.1.23376.11">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>bcb608e3d21344a0bb7c3399f060143504bbf475</Sha>
@@ -367,6 +363,10 @@
     <Dependency Name="Microsoft.NETCore.Platforms" Version="8.0.0-rc.1.23376.11">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>bcb608e3d21344a0bb7c3399f060143504bbf475</Sha>
+    </Dependency>
+    <Dependency Name="System.Drawing.Common" Version="8.0.0-preview.7.23356.8">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>5d54b08d5fc40d0b1c156f430a487a94c1e34f79</Sha>
     </Dependency>
     <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="8.0.0-beta.23371.1">
       <Uri>https://github.com/dotnet/arcade</Uri>
