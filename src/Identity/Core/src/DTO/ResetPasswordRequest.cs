@@ -3,9 +3,9 @@
 
 namespace Microsoft.AspNetCore.Identity.DTO;
 
-internal sealed class RegisterRequest
+internal sealed class ResetPasswordRequest
 {
-    public required string Username { get; init; }
-    public required string Password { get; init; }
     public required string Email { get; init; }
+    public string? ResetCode { get; init; }
+    public string? NewPassword { get; init; }
 }

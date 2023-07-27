@@ -144,14 +144,10 @@ public static class IdentityServiceCollectionExtensions
                 compositeOptions.ForwardDefault = IdentityConstants.BearerScheme;
                 compositeOptions.ForwardAuthenticate = IdentityConstants.BearerAndApplicationScheme;
             })
-            .AddIdentityBearerToken<TUser>()
+            .AddBearerToken(IdentityConstants.BearerScheme)
             .AddIdentityCookies();
 
-        return services.AddIdentityCore<TUser>(o =>
-            {
-                o.Stores.MaxLengthForKeys = 128;
-                configure(o);
-            })
+        return services.AddIdentityCore<TUser>(configure)
             .AddApiEndpoints();
     }
 
