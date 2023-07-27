@@ -373,11 +373,6 @@
       <Sha>602351e3681015ea789b2aeaa7b2a9156a8baf38</Sha>
       <SourceBuild RepoName="arcade" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.SourceLink.GitHub" Version="8.0.0-beta.23361.2" CoherentParentDependency="Microsoft.DotNet.Arcade.Sdk">
-      <Uri>https://github.com/dotnet/sourcelink</Uri>
-      <Sha>d2e046aec870a5a7601cc51c5607f34463cc2d42</Sha>
-      <SourceBuild RepoName="sourcelink" ManagedOnly="true" />
-    </Dependency>
     <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="8.0.0-beta.23371.1">
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha>602351e3681015ea789b2aeaa7b2a9156a8baf38</Sha>
