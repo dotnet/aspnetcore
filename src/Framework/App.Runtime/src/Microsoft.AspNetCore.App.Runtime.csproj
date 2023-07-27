@@ -267,6 +267,12 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     </ItemGroup>
   </Target>
 
+  <Target Name="_RemoveUnwantedRuntimeConfigItems" BeforeTargets="GenerateBuildRuntimeConfigurationFiles">
+    <ItemGroup>
+      <RuntimeHostConfigurationOption Remove="@(RuntimeHostConfigurationOption)" Condition="'%(Identity)' != 'System.Reflection.Metadata.MetadataUpdater.IsSupported' " />
+    </ItemGroup>
+  </Target>
+
   <Target Name="_WarnAboutUnbuiltNativeDependencies"
           BeforeTargets="Build"
           Condition=" '$(UseIisNativeAssets)' == 'true' AND !$(BuildNative) AND
