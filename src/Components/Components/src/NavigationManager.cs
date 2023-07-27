@@ -259,7 +259,7 @@ public abstract class NavigationManager
             // whether the server would return the same page whether or not the
             // slash is present, but ASP.NET Core at least does by default when
             // using PathBase.
-            return uri[..(_baseUri.OriginalString.Length - 1)];
+            return uri[(_baseUri.OriginalString.Length - 1)..];
         }
 
         var message = $"The URI '{uri}' is not contained by the base URI '{_baseUri}'.";

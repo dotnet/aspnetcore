@@ -138,6 +138,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
                 }
                 else
                 {
+                    valid = true;
                     Log.MiddlewareAntiforgeryValidationSucceeded(_logger);
                 }
             }
