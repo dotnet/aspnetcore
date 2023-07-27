@@ -280,7 +280,7 @@ public static class IdentityApiEndpointRouteBuilderExtensions
                 else if (!await userManager.VerifyTwoFactorTokenAsync(user, userManager.Options.Tokens.AuthenticatorTokenProvider, tfaRequest.TwoFactorCode))
                 {
                     return CreateValidationProblem("InvalidTwoFactorCode",
-                        "The 2fa token provide by the request was invalid. A valid 2fa token is required to enable 2fa.");
+                        "The 2fa token provided by the request was invalid. A valid 2fa token is required to enable 2fa.");
                 }
 
                 await userManager.SetTwoFactorEnabledAsync(user, true);
