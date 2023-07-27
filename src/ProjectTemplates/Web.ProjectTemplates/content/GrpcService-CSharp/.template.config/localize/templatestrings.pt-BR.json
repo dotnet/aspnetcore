@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
   "name": "Serviço gRPC do ASP.NET Core",
-  "description": "Um modelo de projeto para criar um serviço gRPC usando ASP.NET Core, com suporte opcional para publicação como AOT nativo.",
+  "description": "Um modelo de projeto para criar um serviço gRPC usando ASP.NET Core, com suporte opcional para publicação como native AOT.",
   "symbols/Framework/description": "A estrutura de destino do projeto.",
   "symbols/Framework/choices/net8.0/description": "net8.0 de destino",
   "symbols/ExcludeLaunchSettings/description": "Se deve excluir launchSettings.json do modelo gerado.",
