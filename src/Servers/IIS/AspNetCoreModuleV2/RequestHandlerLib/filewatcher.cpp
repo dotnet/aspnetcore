@@ -11,11 +11,17 @@
 FILE_WATCHER::FILE_WATCHER() :
     m_hCompletionPort(NULL),
     m_hChangeNotificationThread(NULL),
-    m_fThreadExit(FALSE),
+    m_fThreadExit(false),
     m_fShadowCopyEnabled(FALSE),
     m_copied(false)
 {
     m_pDoneCopyEvent = CreateEvent(
+        nullptr,  // default security attributes
+        TRUE,     // manual reset event
+        FALSE,    // not set
+        nullptr); // name
+
+    m_pShutdownEvent = CreateEvent(
         nullptr,  // default security attributes
         TRUE,     // manual reset event
         FALSE,    // not set
@@ -30,33 +36,24 @@ FILE_WATCHER::~FILE_WATCHER()
 
 void FILE_WATCHER::WaitForMonitor(DWORD dwRetryCounter)
 {
-    if (m_hChangeNotificationThread != NULL)
+    if (m_hChangeNotificationThread == nullptr)
     {
-        DWORD dwExitCode = STILL_ACTIVE;
+        return;
+    }
 
-        while (!m_fThreadExit && dwRetryCounter > 0)
+    while (!m_fThreadExit && dwRetryCounter-- > 0)
+    {
+        // Check if the thread has exited.
+        DWORD result = WaitForSingleObject(m_hChangeNotificationThread, 0);
+        if (result == WAIT_OBJECT_0)
         {
-            if (GetExitCodeThread(m_hChangeNotificationThread, &dwExitCode))
-            {
-                if (dwExitCode == STILL_ACTIVE)
-                {
-                    // the file watcher thread will set m_fThreadExit before exit
-                    WaitForSingleObject(m_hChangeNotificationThread, 50);
-                }
-            }
-            else
-            {
-                // fail to get thread status
-                // call terminitethread
-                TerminateThread(m_hChangeNotificationThread, 1);
-                m_fThreadExit = TRUE;
-            }
-            dwRetryCounter--;
+            // The thread has exited.
+            m_fThreadExit = true;
         }
-
-        if (!m_fThreadExit)
+        else
         {
-            TerminateThread(m_hChangeNotificationThread, 1);
+            // The thread is still alive. Wait for 50ms.
+            WaitForSingleObject(m_hChangeNotificationThread, 50);
         }
     }
 }
@@ -146,36 +143,41 @@ Win32 error
 
 --*/
 {
-    FILE_WATCHER* pFileMonitor;
-    BOOL                 fSuccess = FALSE;
-    DWORD                cbCompletion = 0;
-    OVERLAPPED* pOverlapped = NULL;
-    DWORD                dwErrorStatus;
-    ULONG_PTR            completionKey;
-
+    FILE_WATCHER* pFileMonitor = (FILE_WATCHER*)pvArg;
+    
     LOG_INFO(L"Starting file watcher thread");
-    pFileMonitor = (FILE_WATCHER*)pvArg;
-    DBG_ASSERT(pFileMonitor != NULL);
+    DBG_ASSERT(pFileMonitor != nullptr);
 
-    while (TRUE)
+    HANDLE events[2] = { pFileMonitor->m_hCompletionPort, pFileMonitor->m_pShutdownEvent };
+
+    DWORD dwEvent = 0;
+    while (true)
     {
-        fSuccess = GetQueuedCompletionStatus(
+        // Wait for either a change notification or a shutdown event.
+        dwEvent = WaitForMultipleObjects(2, events, FALSE, INFINITE) - WAIT_OBJECT_0;
+
+        if (dwEvent == 1)
+        {
+            // Shutdown event.
+            break;
+        }
+
+        DWORD       cbCompletion = 0;
+        OVERLAPPED* pOverlapped = nullptr;
+        ULONG_PTR   completionKey;
+
+        BOOL success = GetQueuedCompletionStatus(
             pFileMonitor->m_hCompletionPort,
             &cbCompletion,
             &completionKey,
             &pOverlapped,
             INFINITE);
 
-        DBG_ASSERT(fSuccess);
-        dwErrorStatus = fSuccess ? ERROR_SUCCESS : GetLastError();
+        DBG_ASSERT(success);
+        (void)success;
 
-        if (completionKey == FILE_WATCHER_SHUTDOWN_KEY)
-        {
-            break;
-        }
-
-        DBG_ASSERT(pOverlapped != NULL);
-        if (pOverlapped != NULL)
+        DBG_ASSERT(pOverlapped != nullptr);
+        if (pOverlapped != nullptr)
         {
             pFileMonitor->HandleChangeCompletion(cbCompletion);
 
@@ -187,11 +189,9 @@ Win32 error
                 pFileMonitor->Monitor();
             }
         }
-        pOverlapped = NULL;
-        cbCompletion = 0;
     }
 
-    pFileMonitor->m_fThreadExit = TRUE;
+    pFileMonitor->m_fThreadExit = true;
 
     if (pFileMonitor->m_fShadowCopyEnabled)
     {
@@ -204,7 +204,6 @@ Win32 error
 
     ExitThread(0);
 }
-
 
 HRESULT
 FILE_WATCHER::HandleChangeCompletion(
@@ -276,11 +275,15 @@ HRESULT
             //
             // Look for changes to dlls when shadow copying is enabled.
             //
-            std::wstring notification(pNotificationInfo->FileName, pNotificationInfo->FileNameLength / sizeof(WCHAR));
-            std::filesystem::path notificationPath(notification);
-            if (m_fShadowCopyEnabled && notificationPath.extension().compare(L".dll") == 0)
+
+            if (m_fShadowCopyEnabled)
             {
-                fDllChanged = TRUE;
+                std::wstring notification(pNotificationInfo->FileName, pNotificationInfo->FileNameLength / sizeof(WCHAR));
+                std::filesystem::path notificationPath(notification);
+                if (notificationPath.extension().compare(L".dll") == 0)
+                {
+                    fDllChanged = TRUE;
+                }
             }
 
             //
@@ -326,8 +329,8 @@ FILE_WATCHER::TimerCallback(
     _In_ PTP_TIMER Timer
 )
 {
-    Instance;
-    Timer;
+    UNREFERENCED_PARAMETER(Instance);
+    UNREFERENCED_PARAMETER(Timer);
     CopyAndShutdown((FILE_WATCHER*)Context);
 }
 
@@ -342,7 +345,7 @@ DWORD WINAPI FILE_WATCHER::CopyAndShutdown(FILE_WATCHER* watcher)
 
     watcher->m_copied = true;
 
-    LOG_INFO(L"Starting copy on shutdown in filewatcher, creating directory.");
+    LOG_INFO(L"Starting copy on shutdown in file watcher, creating directory.");
 
     auto directoryNameInt = 0;
     auto currentShadowCopyDirectory = std::filesystem::path(watcher->m_shadowCopyPath);
@@ -441,7 +444,7 @@ FILE_WATCHER::StopMonitor()
     LOG_INFO(L"Stopping file watching.");
 
     // signal the file watch thread to exit
-    PostQueuedCompletionStatus(m_hCompletionPort, 0, FILE_WATCHER_SHUTDOWN_KEY, NULL);
+    SetEvent(m_pShutdownEvent);
     WaitForMonitor(200);
 
     if (m_fShadowCopyEnabled)

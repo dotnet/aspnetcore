@@ -59,8 +59,9 @@ private:
     HandleWrapper<NullHandleTraits>               m_hCompletionPort;
     HandleWrapper<NullHandleTraits>               m_hChangeNotificationThread;
     HandleWrapper<NullHandleTraits>               _hDirectory;
-    HandleWrapper<NullHandleTraits> m_pDoneCopyEvent;
-    volatile   BOOL      m_fThreadExit;
+    HandleWrapper<NullHandleTraits>               m_pDoneCopyEvent;
+    HandleWrapper<NullHandleTraits>               m_pShutdownEvent;
+    std::atomic<bool>       m_fThreadExit;
     STTIMER                 m_Timer;
     SRWLOCK                 m_copyLock{};
     BOOL                    m_copied;
