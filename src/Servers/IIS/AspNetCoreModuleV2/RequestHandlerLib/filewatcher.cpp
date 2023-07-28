@@ -57,6 +57,11 @@ void FILE_WATCHER::WaitForMonitor(DWORD dwRetryCounter)
             WaitForSingleObject(m_hChangeNotificationThread, 50);
         }
     }
+
+    if (!m_fThreadExit)
+    {
+        LOG_INFO(L"File watcher thread didn't seem to exit.");
+    }
 }
 
 HRESULT
@@ -247,7 +252,7 @@ HRESULT
     //
     // There could be a FCN overflow
     // Let assume the file got changed instead of checking files
-    // Othersie we have to cache the file info
+    // Otherwise we have to cache the file info
     //
     if (cbCompletion == 0)
     {
