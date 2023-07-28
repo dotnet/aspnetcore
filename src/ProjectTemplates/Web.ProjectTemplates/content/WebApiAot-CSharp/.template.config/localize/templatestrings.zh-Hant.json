@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
-  "name": "ASP.NET 核心 Web API (原生 AOT)",
-  "description": "此專案範本可用於使用發佈為原生 AOT 的 ASP.NET Core 最小 API 來建立 RESTful Web API。",
+  "name": "ASP.NET 核心 Web API (Native AOT)",
+  "description": "此專案範本可用於使用發佈為 Native AOT 的 ASP.NET Core 最小 API 來建立 RESTful Web API。",
   "symbols/ExcludeLaunchSettings/description": "Whether to exclude launchSettings.json from the generated template.",
   "symbols/kestrelHttpPort/description": "Port number to use for the HTTP endpoint in launchSettings.json.",
   "symbols/iisHttpPort/description": "Port number to use for the IIS Express HTTP endpoint in launchSettings.json.",

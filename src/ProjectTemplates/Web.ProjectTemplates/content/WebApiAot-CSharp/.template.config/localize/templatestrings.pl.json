@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
-  "name": "Internetowy interfejs API platformy ASP.NET Core (natywne drzewo obiektów aplikacji, AOT)",
-  "description": "Szablon projektu służący do tworzenia internetowego interfejsu API RESTful przy użyciu minimalnych interfejsów API platformy ASP.NET Core publikowanego jako natywne drzewo obiektów aplikacji (AOT).",
+  "name": "Internetowy interfejs API platformy ASP.NET Core (native AOT)",
+  "description": "Szablon projektu służący do tworzenia internetowego interfejsu API RESTful przy użyciu minimalnych interfejsów API platformy ASP.NET Core publikowanego jako native AOT.",
   "symbols/ExcludeLaunchSettings/description": "Whether to exclude launchSettings.json from the generated template.",
   "symbols/kestrelHttpPort/description": "Port number to use for the HTTP endpoint in launchSettings.json.",
   "symbols/iisHttpPort/description": "Port number to use for the IIS Express HTTP endpoint in launchSettings.json.",
