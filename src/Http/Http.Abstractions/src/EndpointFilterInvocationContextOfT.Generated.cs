@@ -42,7 +42,7 @@ internal sealed class EndpointFilterInvocationContext<T0> : EndpointFilterInvoca
     public override IList<object?> Arguments => this;
 
     public T0 Arg0 { get; set; }
-    
+
     public int Count => 1;
 
     public bool IsReadOnly => false;
@@ -61,7 +61,15 @@ internal sealed class EndpointFilterInvocationContext<T0> : EndpointFilterInvoca
 
     public bool Contains(object? item)
     {
-        return IndexOf(item) >= 0;
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            if (Arguments[i]?.Equals(item) == true)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public void CopyTo(object?[] array, int arrayIndex)
@@ -91,7 +99,15 @@ internal sealed class EndpointFilterInvocationContext<T0> : EndpointFilterInvoca
 
     public int IndexOf(object? item)
     {
-        return Arguments.IndexOf(item);
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            if (Arguments[i]?.Equals(item) == true)
+            {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     public void Insert(int index, object? item)
@@ -154,7 +170,7 @@ internal sealed class EndpointFilterInvocationContext<T0, T1> : EndpointFilterIn
 
     public T0 Arg0 { get; set; }
     public T1 Arg1 { get; set; }
-    
+
     public int Count => 2;
 
     public bool IsReadOnly => false;
@@ -173,7 +189,15 @@ internal sealed class EndpointFilterInvocationContext<T0, T1> : EndpointFilterIn
 
     public bool Contains(object? item)
     {
-        return IndexOf(item) >= 0;
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            if (Arguments[i]?.Equals(item) == true)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public void CopyTo(object?[] array, int arrayIndex)
@@ -204,7 +228,15 @@ internal sealed class EndpointFilterInvocationContext<T0, T1> : EndpointFilterIn
 
     public int IndexOf(object? item)
     {
-        return Arguments.IndexOf(item);
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            if (Arguments[i]?.Equals(item) == true)
+            {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     public void Insert(int index, object? item)
@@ -273,7 +305,7 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2> : EndpointFilt
     public T0 Arg0 { get; set; }
     public T1 Arg1 { get; set; }
     public T2 Arg2 { get; set; }
-    
+
     public int Count => 3;
 
     public bool IsReadOnly => false;
@@ -292,7 +324,15 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2> : EndpointFilt
 
     public bool Contains(object? item)
     {
-        return IndexOf(item) >= 0;
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            if (Arguments[i]?.Equals(item) == true)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public void CopyTo(object?[] array, int arrayIndex)
@@ -324,7 +364,15 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2> : EndpointFilt
 
     public int IndexOf(object? item)
     {
-        return Arguments.IndexOf(item);
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            if (Arguments[i]?.Equals(item) == true)
+            {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     public void Insert(int index, object? item)
@@ -399,7 +447,7 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3> : Endpoint
     public T1 Arg1 { get; set; }
     public T2 Arg2 { get; set; }
     public T3 Arg3 { get; set; }
-    
+
     public int Count => 4;
 
     public bool IsReadOnly => false;
@@ -418,7 +466,15 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3> : Endpoint
 
     public bool Contains(object? item)
     {
-        return IndexOf(item) >= 0;
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            if (Arguments[i]?.Equals(item) == true)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public void CopyTo(object?[] array, int arrayIndex)
@@ -451,7 +507,15 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3> : Endpoint
 
     public int IndexOf(object? item)
     {
-        return Arguments.IndexOf(item);
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            if (Arguments[i]?.Equals(item) == true)
+            {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     public void Insert(int index, object? item)
@@ -532,7 +596,7 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4> : Endp
     public T2 Arg2 { get; set; }
     public T3 Arg3 { get; set; }
     public T4 Arg4 { get; set; }
-    
+
     public int Count => 5;
 
     public bool IsReadOnly => false;
@@ -551,7 +615,15 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4> : Endp
 
     public bool Contains(object? item)
     {
-        return IndexOf(item) >= 0;
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            if (Arguments[i]?.Equals(item) == true)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public void CopyTo(object?[] array, int arrayIndex)
@@ -585,7 +657,15 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4> : Endp
 
     public int IndexOf(object? item)
     {
-        return Arguments.IndexOf(item);
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            if (Arguments[i]?.Equals(item) == true)
+            {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     public void Insert(int index, object? item)
@@ -672,7 +752,7 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5> : 
     public T3 Arg3 { get; set; }
     public T4 Arg4 { get; set; }
     public T5 Arg5 { get; set; }
-    
+
     public int Count => 6;
 
     public bool IsReadOnly => false;
@@ -691,7 +771,15 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5> : 
 
     public bool Contains(object? item)
     {
-        return IndexOf(item) >= 0;
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            if (Arguments[i]?.Equals(item) == true)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public void CopyTo(object?[] array, int arrayIndex)
@@ -726,7 +814,15 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5> : 
 
     public int IndexOf(object? item)
     {
-        return Arguments.IndexOf(item);
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            if (Arguments[i]?.Equals(item) == true)
+            {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     public void Insert(int index, object? item)
@@ -819,7 +915,7 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5, T6
     public T4 Arg4 { get; set; }
     public T5 Arg5 { get; set; }
     public T6 Arg6 { get; set; }
-    
+
     public int Count => 7;
 
     public bool IsReadOnly => false;
@@ -838,7 +934,15 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5, T6
 
     public bool Contains(object? item)
     {
-        return IndexOf(item) >= 0;
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            if (Arguments[i]?.Equals(item) == true)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public void CopyTo(object?[] array, int arrayIndex)
@@ -874,7 +978,15 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5, T6
 
     public int IndexOf(object? item)
     {
-        return Arguments.IndexOf(item);
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            if (Arguments[i]?.Equals(item) == true)
+            {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     public void Insert(int index, object? item)
@@ -973,7 +1085,7 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5, T6
     public T5 Arg5 { get; set; }
     public T6 Arg6 { get; set; }
     public T7 Arg7 { get; set; }
-    
+
     public int Count => 8;
 
     public bool IsReadOnly => false;
@@ -992,7 +1104,15 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5, T6
 
     public bool Contains(object? item)
     {
-        return IndexOf(item) >= 0;
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            if (Arguments[i]?.Equals(item) == true)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public void CopyTo(object?[] array, int arrayIndex)
@@ -1029,7 +1149,15 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5, T6
 
     public int IndexOf(object? item)
     {
-        return Arguments.IndexOf(item);
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            if (Arguments[i]?.Equals(item) == true)
+            {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     public void Insert(int index, object? item)
@@ -1134,7 +1262,7 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5, T6
     public T6 Arg6 { get; set; }
     public T7 Arg7 { get; set; }
     public T8 Arg8 { get; set; }
-    
+
     public int Count => 9;
 
     public bool IsReadOnly => false;
@@ -1153,7 +1281,15 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5, T6
 
     public bool Contains(object? item)
     {
-        return IndexOf(item) >= 0;
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            if (Arguments[i]?.Equals(item) == true)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public void CopyTo(object?[] array, int arrayIndex)
@@ -1191,7 +1327,15 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5, T6
 
     public int IndexOf(object? item)
     {
-        return Arguments.IndexOf(item);
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            if (Arguments[i]?.Equals(item) == true)
+            {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     public void Insert(int index, object? item)
@@ -1302,7 +1446,7 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5, T6
     public T7 Arg7 { get; set; }
     public T8 Arg8 { get; set; }
     public T9 Arg9 { get; set; }
-    
+
     public int Count => 10;
 
     public bool IsReadOnly => false;
@@ -1321,7 +1465,15 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5, T6
 
     public bool Contains(object? item)
     {
-        return IndexOf(item) >= 0;
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            if (Arguments[i]?.Equals(item) == true)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public void CopyTo(object?[] array, int arrayIndex)
@@ -1360,7 +1512,15 @@ internal sealed class EndpointFilterInvocationContext<T0, T1, T2, T3, T4, T5, T6
 
     public int IndexOf(object? item)
     {
-        return Arguments.IndexOf(item);
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            if (Arguments[i]?.Equals(item) == true)
+            {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     public void Insert(int index, object? item)
