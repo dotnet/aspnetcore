@@ -9,10 +9,10 @@
 #include <EventLog.h>
 
 FILE_WATCHER::FILE_WATCHER() :
-    m_hCompletionPort(NULL),
-    m_hChangeNotificationThread(NULL),
+    m_hCompletionPort(nullptr),
+    m_hChangeNotificationThread(nullptr),
     m_fThreadExit(false),
-    m_fShadowCopyEnabled(FALSE),
+    m_fShadowCopyEnabled(false),
     m_copied(false)
 {
     m_pDoneCopyEvent = CreateEvent(
@@ -49,6 +49,7 @@ void FILE_WATCHER::WaitForMonitor(DWORD dwRetryCounter)
         {
             // The thread has exited.
             m_fThreadExit = true;
+            break;
         }
         else
         {
@@ -71,18 +72,18 @@ FILE_WATCHER::Create(
     m_fShadowCopyEnabled = !shadowCopyPath.empty();
     m_shutdownTimeout = shutdownTimeout;
 
-    RETURN_LAST_ERROR_IF_NULL(m_hCompletionPort = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, 0));
+    RETURN_LAST_ERROR_IF_NULL(m_hCompletionPort = CreateIoCompletionPort(INVALID_HANDLE_VALUE, nullptr, 0, 0));
 
-    RETURN_LAST_ERROR_IF_NULL(m_hChangeNotificationThread = CreateThread(NULL,
+    RETURN_LAST_ERROR_IF_NULL(m_hChangeNotificationThread = CreateThread(nullptr,
         0,
         (LPTHREAD_START_ROUTINE)ChangeNotificationThread,
         this,
         0,
         NULL));
 
-    if (pszDirectoryToMonitor == NULL ||
-        pszFileNameToMonitor == NULL ||
-        pApplication == NULL)
+    if (pszDirectoryToMonitor == nullptr ||
+        pszFileNameToMonitor == nullptr ||
+        pApplication == nullptr)
     {
         DBG_ASSERT(FALSE);
         return HRESULT_FROM_WIN32(ERROR_INVALID_PARAMETER);
@@ -104,7 +105,7 @@ FILE_WATCHER::Create(
         _strDirectoryName.QueryStr(),
         FILE_LIST_DIRECTORY,
         FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-        NULL,
+        nullptr,
         OPEN_EXISTING,
         FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED,
         NULL);
@@ -154,7 +155,7 @@ Win32 error
     while (true)
     {
         // Wait for either a change notification or a shutdown event.
-        dwEvent = WaitForMultipleObjects(2, events, FALSE, INFINITE) - WAIT_OBJECT_0;
+        dwEvent = WaitForMultipleObjects(ARRAYSIZE(events), events, FALSE, INFINITE) - WAIT_OBJECT_0;
 
         if (dwEvent == 1)
         {
@@ -255,9 +256,9 @@ HRESULT
     else
     {
         auto pNotificationInfo = (FILE_NOTIFY_INFORMATION*)_buffDirectoryChanges.QueryPtr();
-        DBG_ASSERT(pNotificationInfo != NULL);
+        DBG_ASSERT(pNotificationInfo != nullptr);
 
-        while (pNotificationInfo != NULL)
+        while (pNotificationInfo != nullptr)
         {
             //
             // check whether the monitored file got changed
@@ -291,7 +292,7 @@ HRESULT
             //
             if (pNotificationInfo->NextEntryOffset == 0)
             {
-                pNotificationInfo = NULL;
+                pNotificationInfo = nullptr;
             }
             else
             {
@@ -405,9 +406,7 @@ FILE_WATCHER::RunNotificationCallback(
 HRESULT
 FILE_WATCHER::Monitor(VOID)
 {
-    HRESULT hr = S_OK;
     DWORD   cbRead;
-
     ZeroMemory(&_overlapped, sizeof(_overlapped));
 
     RETURN_LAST_ERROR_IF(!ReadDirectoryChangesW(_hDirectory,
@@ -417,7 +416,7 @@ FILE_WATCHER::Monitor(VOID)
         FILE_NOTIFY_VALID_MASK & ~FILE_NOTIFY_CHANGE_LAST_ACCESS,
         &cbRead,
         &_overlapped,
-        NULL));
+        nullptr));
 
     // Check if file exist because ReadDirectoryChangesW would not fire events for existing files
     if (GetFileAttributes(_strFullName.QueryStr()) != INVALID_FILE_ATTRIBUTES)
@@ -425,7 +424,7 @@ FILE_WATCHER::Monitor(VOID)
         PostQueuedCompletionStatus(m_hCompletionPort, 0, 0, &_overlapped);
     }
 
-    return hr;
+    return S_OK;
 }
 
 VOID
@@ -443,7 +442,7 @@ FILE_WATCHER::StopMonitor()
 
     LOG_INFO(L"Stopping file watching.");
 
-    // signal the file watch thread to exit
+    // Signal the file watcher thread to exit
     SetEvent(m_pShutdownEvent);
     WaitForMonitor(200);
 
