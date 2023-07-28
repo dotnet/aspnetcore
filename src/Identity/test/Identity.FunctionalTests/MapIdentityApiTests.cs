@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -612,7 +613,7 @@ public class MapIdentityApiTests : LoggedTest
         var keyBytes = Base32.FromBase32(sharedKey);
         var unixTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         var timestep = Convert.ToInt64(unixTimestamp / 30);
-        var twoFactorCode = Rfc6238AuthenticationService.ComputeTotp(keyBytes, (ulong)timestep, modifierBytes: null).ToString();
+        var twoFactorCode = Rfc6238AuthenticationService.ComputeTotp(keyBytes, (ulong)timestep, modifierBytes: null).ToString(CultureInfo.InvariantCulture);
 
         var enable2faResponse = await client.PostAsJsonAsync("/identity/account/2fa", new { twoFactorCode, Enable = true });
         var enable2faContent = await enable2faResponse.Content.ReadFromJsonAsync<JsonElement>();
@@ -652,7 +653,7 @@ public class MapIdentityApiTests : LoggedTest
         var keyBytes = Base32.FromBase32(sharedKey);
         var unixTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         var timestep = Convert.ToInt64(unixTimestamp / 30);
-        var twoFactorCode = Rfc6238AuthenticationService.ComputeTotp(keyBytes, (ulong)timestep, modifierBytes: null).ToString();
+        var twoFactorCode = Rfc6238AuthenticationService.ComputeTotp(keyBytes, (ulong)timestep, modifierBytes: null).ToString(CultureInfo.InvariantCulture);
 
         var enable2faResponse = await client.PostAsJsonAsync("/identity/account/2fa", new { twoFactorCode, Enable = true });
         var enable2faContent = await enable2faResponse.Content.ReadFromJsonAsync<JsonElement>();
@@ -702,7 +703,7 @@ public class MapIdentityApiTests : LoggedTest
         var keyBytes = Base32.FromBase32(sharedKey);
         var unixTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         var timestep = Convert.ToInt64(unixTimestamp / 30);
-        var twoFactorCode = Rfc6238AuthenticationService.ComputeTotp(keyBytes, (ulong)timestep, modifierBytes: null).ToString();
+        var twoFactorCode = Rfc6238AuthenticationService.ComputeTotp(keyBytes, (ulong)timestep, modifierBytes: null).ToString(CultureInfo.InvariantCulture);
 
         await AssertValidationProblemAsync(await client.PostAsJsonAsync("/identity/account/2fa", new { twoFactorCode, Enable = true, ResetSharedKey = true }),
             "CannotResetSharedKeyAndEnable");
@@ -718,7 +719,7 @@ public class MapIdentityApiTests : LoggedTest
         var resetSharedKey = resetKeyContent.GetProperty("sharedKey").GetString();
 
         var resetKeyBytes = Base32.FromBase32(sharedKey);
-        var resetTwoFactorCode = Rfc6238AuthenticationService.ComputeTotp(keyBytes, (ulong)timestep, modifierBytes: null).ToString();
+        var resetTwoFactorCode = Rfc6238AuthenticationService.ComputeTotp(keyBytes, (ulong)timestep, modifierBytes: null).ToString(CultureInfo.InvariantCulture);
 
         // The old 2fa code no longer works
         await AssertValidationProblemAsync(await client.PostAsJsonAsync("/identity/account/2fa", new { twoFactorCode, Enable = true }),
@@ -748,7 +749,7 @@ public class MapIdentityApiTests : LoggedTest
         var keyBytes = Base32.FromBase32(sharedKey);
         var unixTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         var timestep = Convert.ToInt64(unixTimestamp / 30);
-        var twoFactorCode = Rfc6238AuthenticationService.ComputeTotp(keyBytes, (ulong)timestep, modifierBytes: null).ToString();
+        var twoFactorCode = Rfc6238AuthenticationService.ComputeTotp(keyBytes, (ulong)timestep, modifierBytes: null).ToString(CultureInfo.InvariantCulture);
 
         var enable2faResponse = await client.PostAsJsonAsync("/identity/account/2fa", new { twoFactorCode, Enable = true });
         var enable2faContent = await enable2faResponse.Content.ReadFromJsonAsync<JsonElement>();
@@ -815,7 +816,7 @@ public class MapIdentityApiTests : LoggedTest
         var keyBytes = Base32.FromBase32(sharedKey);
         var unixTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         var timestep = Convert.ToInt64(unixTimestamp / 30);
-        var twoFactorCode = Rfc6238AuthenticationService.ComputeTotp(keyBytes, (ulong)timestep, modifierBytes: null).ToString();
+        var twoFactorCode = Rfc6238AuthenticationService.ComputeTotp(keyBytes, (ulong)timestep, modifierBytes: null).ToString(CultureInfo.InvariantCulture);
 
         var enable2faResponse = await client.PostAsJsonAsync("/identity/account/2fa", new { twoFactorCode, Enable = true });
         var enable2faContent = await enable2faResponse.Content.ReadFromJsonAsync<JsonElement>();
