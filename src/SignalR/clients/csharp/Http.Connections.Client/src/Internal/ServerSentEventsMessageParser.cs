@@ -168,9 +168,15 @@ internal sealed class ServerSentEventsMessageParser
 
     private static bool IsMessageEnd(ReadOnlySpan<byte> line)
     {
-        return line.Length > 1
-            ? line[0] == ByteCR && line[1] == ByteLF
-            : line[0] == ByteCR || line[0] == ByteLF;
+        if (line.Length == 2)
+        {
+            return line[0] == ByteCR && line[1] == ByteLF;
+        }
+        else if (line.Length == 1)
+        {
+            return line[0] == ByteCR || line[0] == ByteLF;
+        }
+        return false;
     }
 
     public enum ParseResult
