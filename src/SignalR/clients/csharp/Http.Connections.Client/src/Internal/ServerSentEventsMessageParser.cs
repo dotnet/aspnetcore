@@ -138,8 +138,8 @@ internal sealed class ServerSentEventsMessageParser
         // lets assume that if its not CRLF it
         // has to be one of the others
         return lineWithEnding.EndsWith(SseLineEnding)
-            ? lineWithEnding[..^2] // CRLF
-            : lineWithEnding[..^1]; // CR / LF
+            ? lineWithEnding.Slice(0, lineWithEnding.Length - 2) // CRLF
+            : lineWithEnding.Slice(0, lineWithEnding.Length - 1); // CR / LF
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -168,10 +168,9 @@ internal sealed class ServerSentEventsMessageParser
 
     private static bool IsMessageEnd(ReadOnlySpan<byte> line)
     {
-        return line
-            is [ByteCR, ByteLF]
-            or [ByteCR]
-            or [ByteLF];
+        return line.Length > 1
+            ? line[0] == ByteCR && line[1] == ByteLF
+            : line[0] == ByteCR || line[0] == ByteLF;
     }
 
     public enum ParseResult
