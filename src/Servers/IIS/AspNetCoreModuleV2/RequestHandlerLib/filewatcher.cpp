@@ -26,6 +26,17 @@ FILE_WATCHER::FILE_WATCHER() :
         TRUE,     // manual reset event
         FALSE,    // not set
         nullptr); // name
+
+    // Use of TerminateThread for the file watcher thread was eliminated in favor of an event-based
+    // approach. Out of an abundance of caution, we are temporarily adding an environment variable
+    // to allow falling back to TerminateThread usage. If all goes well, this will be removed in a
+    // future release.
+    m_fRudeThreadTermination = false;
+    auto enableThreadTerminationValue = Environment::GetEnvironmentVariableValue(L"ASPNETCORE_FILE_WATCHER_THREAD_TERMINATION");
+    if (enableThreadTerminationValue.has_value())
+    {
+        m_fRudeThreadTermination = (enableThreadTerminationValue.value() == L"1");
+    }
 }
 
 FILE_WATCHER::~FILE_WATCHER()
@@ -61,6 +72,12 @@ void FILE_WATCHER::WaitForMonitor(DWORD dwRetryCounter)
     if (!m_fThreadExit)
     {
         LOG_INFO(L"File watcher thread didn't seem to exit.");
+
+        if (m_fRudeThreadTermination)
+        {
+            LOG_INFO(L"File watcher thread was terminated.");
+            TerminateThread(m_hChangeNotificationThread, 1);
+        }
     }
 }
 

@@ -76,4 +76,5 @@ private:
     DWORD                   m_shutdownTimeout;
     OVERLAPPED              _overlapped;
     std::unique_ptr<AppOfflineTrackingApplication, IAPPLICATION_DELETER> _pApplication;
+    bool                    m_fRudeThreadTermination;
 };
