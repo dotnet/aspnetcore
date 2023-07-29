@@ -134,7 +134,7 @@ internal sealed class ServerSentEventsMessageParser
     private static ReadOnlySpan<byte> TrimEnding(ReadOnlySpan<byte> lineWithEnding)
     {
         // Up above we ensure that we will have a line ending.
-        // As that can be eíther CRLF / CR / LF
+        // As that can be either CRLF / CR / LF
         // lets assume that if its not CRLF it
         // has to be one of the others
         return lineWithEnding.EndsWith(SseLineEnding)
