@@ -34,26 +34,20 @@ internal sealed class ServerSentEventsMessageParser
 
         while (buffer.Length > 0)
         {
-            if (!(buffer.PositionOf(ByteLF) is SequencePosition lineEnd))
+            SequencePosition? potentialLineEnd;
+            // catches CRLF, CR and LF line endings
+            if ((potentialLineEnd = buffer.PositionOf(ByteLF)) == null &&
+                (potentialLineEnd = buffer.PositionOf(ByteCR)) == null)
             {
-                // For the case of data: Foo\r\n\r\<Anything except \n>
-                if (_internalParserState == InternalParseState.ReadEndOfMessage)
-                {
-                    if (ConvertBufferToSpan(buffer.Slice(start, buffer.End)).Length > 1)
-                    {
-                        throw new FormatException("Expected a \\r\\n frame ending");
-                    }
-                }
-
                 // Partial message. We need to read more.
                 return ParseResult.Incomplete;
             }
 
-            lineEnd = buffer.GetPosition(1, lineEnd);
+            var lineEnd = buffer.GetPosition(1, potentialLineEnd.Value);
             var line = ConvertBufferToSpan(buffer.Slice(start, lineEnd));
             buffer = buffer.Slice(line.Length);
 
-            if (line.Length <= 1)
+            if (line.Length == 0 || line.Length == 1 && line[0] is not ByteCR and not ByteLF)
             {
                 throw new FormatException("There was an error in the frame format");
             }
@@ -70,16 +64,6 @@ internal sealed class ServerSentEventsMessageParser
             {
                 _internalParserState = InternalParseState.ReadEndOfMessage;
             }
-
-            // To ensure that the \n was preceded by a \r
-            // since messages can't contain \n.
-            // data: foo\n\bar should be encoded as
-            // data: foo\r\n
-            // data: bar\r\n
-            else if (line[line.Length - SseLineEnding.Length] != ByteCR)
-            {
-                throw new FormatException("Unexpected '\\n' in message. A '\\n' character can only be used as part of the newline sequence '\\r\\n'");
-            }
             else
             {
                 EnsureStartsWithDataPrefix(line);
@@ -92,8 +76,9 @@ internal sealed class ServerSentEventsMessageParser
                     EnsureStartsWithDataPrefix(line);
 
                     // Slice away the 'data: '
-                    var payloadLength = line.Length - (DataPrefix.Length + SseLineEnding.Length);
-                    var newData = line.Slice(DataPrefix.Length, payloadLength).ToArray();
+                    var payloadLength = line.Length - DataPrefix.Length;
+                    var lineWithEnding = line.Slice(DataPrefix.Length, payloadLength);
+                    var newData = TrimEnding(lineWithEnding).ToArray();
                     _data.Add(newData);
 
                     start = lineEnd;
@@ -146,6 +131,17 @@ internal sealed class ServerSentEventsMessageParser
         return ParseResult.Incomplete;
     }
 
+    private static ReadOnlySpan<byte> TrimEnding(ReadOnlySpan<byte> lineWithEnding)
+    {
+        // Up above we ensure that we will have a line ending.
+        // As that can be eíther CRLF / CR / LF
+        // lets assume that if its not CRLF it
+        // has to be one of the others
+        return lineWithEnding.EndsWith(SseLineEnding)
+            ? lineWithEnding[..^2] // CRLF
+            : lineWithEnding[..^1]; // CR / LF
+    }
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static ReadOnlySpan<byte> ConvertBufferToSpan(in ReadOnlySequence<byte> buffer)
     {
@@ -172,7 +168,10 @@ internal sealed class ServerSentEventsMessageParser
 
     private static bool IsMessageEnd(ReadOnlySpan<byte> line)
     {
-        return line.Length == SseLineEnding.Length && line.SequenceEqual(SseLineEnding);
+        return line
+            is [ByteCR, ByteLF]
+            or [ByteCR]
+            or [ByteLF];
     }
 
     public enum ParseResult

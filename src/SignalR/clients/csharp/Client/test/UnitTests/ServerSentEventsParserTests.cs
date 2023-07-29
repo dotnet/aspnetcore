@@ -43,17 +43,22 @@ public class ServerSentEventsParserTests
     }
 
     [Theory]
-    [InlineData("data: T\n", "Unexpected '\\n' in message. A '\\n' character can only be used as part of the newline sequence '\\r\\n'")]
-    [InlineData("data: T\r\ndata: Hello, World\r\r\n\n", "There was an error in the frame format")]
-    [InlineData("data: T\r\ndata: Hello, World\n\n", "Unexpected '\\n' in message. A '\\n' character can only be used as part of the newline sequence '\\r\\n'")]
+    // DELETE ME: Incomplete Parsing
+    //[InlineData("data: T\n", "Unexpected '\\n' in message. A '\\n' character can only be used as part of the newline sequence '\\r\\n'")]
+    // \r\r\n\n -> Complete message + superflous \n
+    //[InlineData("data: T\r\ndata: Hello, World\r\r\n\n", "There was an error in the frame format")]
+    // Complete due to \n + \n
+    //[InlineData("data: T\r\ndata: Hello, World\n\n", "Unexpected '\\n' in message. A '\\n' character can only be used as part of the newline sequence '\\r\\n'")]
     [InlineData("data: T\r\nfoo: Hello, World\r\n\r\n", "Expected the message prefix 'data: '")]
     [InlineData("foo: T\r\ndata: Hello, World\r\n\r\n", "Expected the message prefix 'data: '")]
     [InlineData("food: T\r\ndata: Hello, World\r\n\r\n", "Expected the message prefix 'data: '")]
-    [InlineData("data: T\r\ndata: Hello, World\r\n\n", "There was an error in the frame format")]
-    [InlineData("data: T\r\ndata: Hello\n, World\r\n\r\n", "Unexpected '\\n' in message. A '\\n' character can only be used as part of the newline sequence '\\r\\n'")]
-    [InlineData("data: Hello, World\r\n\r\\", "Expected a \\r\\n frame ending")]
-    [InlineData("data: Major\r\ndata:  Key\rndata:  Alert\r\n\r\\", "Expected a \\r\\n frame ending")]
-    [InlineData("data: Major\r\ndata:  Key\r\ndata:  Alert\r\n\r\\", "Expected a \\r\\n frame ending")]
+    // DELETE ME: Complete, \r\n\n
+    //[InlineData("data: T\r\ndata: Hello, World\r\n\n", "There was an error in the frame format")]
+    [InlineData("data: T\r\ndata: Hello\n, World\r\n\r\n", "Expected the message prefix 'data: '")]
+    // DELETE ME: Leads to End Of Message, due to \r\n + \r
+    //[InlineData("data: Hello, World\r\n\r\\", "Expected a \\r\\n, \\r or \\n frame ending")]
+    //[InlineData("data: Major\r\ndata:  Key\rndata:  Alert\r\n\r\\", "Expected a \\r\\n, \\r or \\n frame ending")]
+    //[InlineData("data: Major\r\ndata:  Key\r\ndata:  Alert\r\n\r\\", "Expected a \\r\\n, \\r or \\n frame ending")]
     public void ParseSSEMessageFailureCases(string encodedMessage, string expectedExceptionMessage)
     {
         var buffer = Encoding.UTF8.GetBytes(encodedMessage);
@@ -75,8 +80,10 @@ public class ServerSentEventsParserTests
     [InlineData("data: T\r\ndata:")]
     [InlineData("data: T\r\ndata: Hello, World")]
     [InlineData("data: T\r\ndata: Hello, World\r")]
+    [InlineData("data: T\r\ndata: Hello, World\n")]
     [InlineData("data: T\r\ndata: Hello, World\r\n")]
-    [InlineData("data: T\r\ndata: Hello, World\r\n\r")]
+    // DELETE ME: Complete due to \r\n + \n
+    //[InlineData("data: T\r\ndata: Hello, World\r\n\r")]
     [InlineData("data: B\r\ndata: SGVsbG8sIFd")]
     [InlineData(":\r\ndata:")]
     [InlineData("data: T\r\n:\r\n")]
@@ -102,6 +109,10 @@ public class ServerSentEventsParserTests
     [InlineData(new[] { "data: Hello, World", "\r\n\r\n" }, "Hello, World")]
     [InlineData(new[] { "data: Hello, World\r\n", "\r\n" }, "Hello, World")]
     [InlineData(new[] { "data: ", "Hello, World\r\n\r\n" }, "Hello, World")]
+    [InlineData(new[] { "data: ", "Hello, World\r\r" }, "Hello, World")]
+    [InlineData(new[] { "data: ", "Hello, World\n\n" }, "Hello, World")]
+    [InlineData(new[] { "data: ", "Hello, World\r\n\r" }, "Hello, World")]
+    [InlineData(new[] { "data: ", "Hello, World\r\n\n" }, "Hello, World")]
     [InlineData(new[] { ":", "comment", "\r\n", "d", "ata: Hello, World\r\n\r\n" }, "Hello, World")]
     [InlineData(new[] { ":comment", "\r\n", "data: Hello, World", "\r\n\r\n" }, "Hello, World")]
     [InlineData(new[] { "data: Hello, World\r\n", ":comment\r\n", "\r\n" }, "Hello, World")]
@@ -138,16 +149,22 @@ public class ServerSentEventsParserTests
     }
 
     [Theory]
-    [InlineData("data: T", "\n", "Unexpected '\\n' in message. A '\\n' character can only be used as part of the newline sequence '\\r\\n'")]
-    [InlineData("data: T\r\n", "data: Hello, World\r\r\n\n", "There was an error in the frame format")]
-    [InlineData("data: T\r\n", "data: Hello, World\n\n", "Unexpected '\\n' in message. A '\\n' character can only be used as part of the newline sequence '\\r\\n'")]
+    // DELETE ME: Complete data: \n
+    //[InlineData("data: T", "\n", "Unexpected '\\n' in message. A '\\n' character can only be used as part of the newline sequence '\\r\\n'")]
+    // \r\r\n + \n = Complete + superfluous \n
+    //[InlineData("data: T\r\n", "data: Hello, World\r\r\n\n", "There was an error in the frame format")]
+    // Can not occur, as either \r\n, \n or \r mark EOL, thus next "data:" check should fail
+    //[InlineData("data: T\r\n", "data: Hello, World\n\n", "Unexpected '\\n' in message. A '\\n' character can only be used as part of the newline sequence '\\r\\n'")]
     [InlineData("data: T\r\nf", "oo: Hello, World\r\n\r\n", "Expected the message prefix 'data: '")]
     [InlineData("foo", ": T\r\ndata: Hello, World\r\n\r\n", "Expected the message prefix 'data: '")]
     [InlineData("food:", " T\r\ndata: Hello, World\r\n\r\n", "Expected the message prefix 'data: '")]
-    [InlineData("data: T\r\ndata: Hello, W", "orld\r\n\n", "There was an error in the frame format")]
-    [InlineData("data: T\r\nda", "ta: Hello\n, World\r\n\r\n", "Unexpected '\\n' in message. A '\\n' character can only be used as part of the newline sequence '\\r\\n'")]
-    [InlineData("data: ", "T\r\ndata: Major\r\ndata:  Key\r\ndata:  Alert\r\n\r\\", "Expected a \\r\\n frame ending")]
-    [InlineData("data: B\r\ndata: SGVs", "bG8sIFdvcmxk\r\n\n\n", "There was an error in the frame format")]
+    // DELETE ME: Complete due to \r\n\n
+    //[InlineData("data: T\r\ndata: Hello, W", "orld\r\n\n", "There was an error in the frame format")]
+    [InlineData("data: T\r\nda", "ta: Hello\n, World\r\n\r\n", "Expected the message prefix 'data: '")]
+    // DELETE ME: results in PartialMessage due to no \r|\n ending
+    //[InlineData("data: ", "T\r\ndata: Major\r\ndata:  Key\r\ndata:  Alert\r\n\r\\", "Expected a \\r\\n, \\r or \\n frame ending")]
+    // this completes parsing, due to \r\n followed by \n, thus End Of Message
+    // [InlineData("data: B\r\ndata: SGVs", "bG8sIFdvcmxk\r\n\n\n", "There was an error in the frame format")]
     public async Task ParseMessageAcrossMultipleReadsFailure(string encodedMessagePart1, string encodedMessagePart2, string expectedMessage)
     {
         var pipe = new Pipe();
