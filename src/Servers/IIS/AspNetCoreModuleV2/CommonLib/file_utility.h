@@ -40,7 +40,7 @@ private:
     HRESULT
     IsPathUnc(
         __in  LPCWSTR       pszPath,
-        __out BOOL *        pfIsUnc
+        __out bool *        pfIsUnc
     );
 };
 
