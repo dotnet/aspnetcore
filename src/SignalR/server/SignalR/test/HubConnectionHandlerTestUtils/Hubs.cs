@@ -1386,8 +1386,26 @@ public class ServicesHub : TestHub
         }
     }
 
-    public void KeyedService([FromKeyedServices("service1")] Service1 service)
-    { }
+    public int KeyedService([FromKeyedServices("service1")] Service1 service)
+    {
+        return 43;
+    }
+
+    public int KeyedServiceWithParam(int input, [FromKeyedServices("service1")] Service1 service)
+    {
+        return 13 * input;
+    }
+
+    public int KeyedServiceNonKeyedService(Service2 service2, [FromKeyedServices("service1")] Service1 service)
+    {
+        return 11;
+    }
+
+    public int MultipleKeyedServices([FromKeyedServices("service1")] Service1 service, [FromKeyedServices("service2")] Service1 service2)
+    {
+        Assert.NotEqual(service, service2);
+        return 45;
+    }
 }
 
 public class TooManyParamsHub : Hub
