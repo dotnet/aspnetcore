@@ -41,4 +41,7 @@ internal static class EndpointParameterExtensions
 
     public static ITypeSymbol? GetBindAsyncReturnType(this EndpointParameter parameter)
         => ((INamedTypeSymbol?)parameter.BindableMethodSymbol?.ReturnType)?.TypeArguments[0];
+
+    public static bool IsNullableOfT(this ITypeSymbol? typeSymbol)
+        => typeSymbol?.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T;
 }

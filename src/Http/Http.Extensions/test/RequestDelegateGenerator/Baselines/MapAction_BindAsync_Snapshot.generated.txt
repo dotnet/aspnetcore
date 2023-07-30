@@ -504,7 +504,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     var wasParamCheckFailure = false;
                     var httpContext_local = httpContext;
                     var myBindAsyncParam_local = await global::Microsoft.AspNetCore.Http.Generators.Tests.MyNullableBindAsyncStruct.BindAsync(httpContext, parameters[1]);
-                    if (myBindAsyncParam_local == null)
+                    if (!myBindAsyncParam_local.HasValue)
                     {
                         logOrThrowExceptionHelper.RequiredParameterNotProvided("MyNullableBindAsyncStruct", "myBindAsyncParam", "MyNullableBindAsyncStruct.BindAsync(HttpContext, ParameterInfo)");
                         wasParamCheckFailure = true;
@@ -533,7 +533,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     var wasParamCheckFailure = false;
                     var httpContext_local = httpContext;
                     var myBindAsyncParam_local = await global::Microsoft.AspNetCore.Http.Generators.Tests.MyNullableBindAsyncStruct.BindAsync(httpContext, parameters[1]);
-                    if (myBindAsyncParam_local == null)
+                    if (!myBindAsyncParam_local.HasValue)
                     {
                         logOrThrowExceptionHelper.RequiredParameterNotProvided("MyNullableBindAsyncStruct", "myBindAsyncParam", "MyNullableBindAsyncStruct.BindAsync(HttpContext, ParameterInfo)");
                         wasParamCheckFailure = true;

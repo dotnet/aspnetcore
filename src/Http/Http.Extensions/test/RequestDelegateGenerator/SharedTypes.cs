@@ -193,8 +193,8 @@ public class ParsableTodo : IParsable<ParsableTodo>
         }
         else
         {
-        result = null!;
-        return false;
+            result = null!;
+            return false;
         }
     }
 }

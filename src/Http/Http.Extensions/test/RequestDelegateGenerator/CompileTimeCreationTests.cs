@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
@@ -330,6 +331,7 @@ app.MapGet("/struct-with-filter", (BindableStructWithNullReturn param) => "Hello
             Assert.Equal(400, httpContext.Response.StatusCode);
         }
 
+        Assert.All(TestSink.Writes, context => Assert.Equal("RequiredParameterNotProvided", context.EventId.Name));
         await VerifyAgainstBaselineUsingFile(compilation);
     }
 }

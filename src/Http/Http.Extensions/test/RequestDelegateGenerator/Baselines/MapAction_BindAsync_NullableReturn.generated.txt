@@ -36,6 +36,7 @@ namespace Microsoft.AspNetCore.Http.Generated
     using System.Text.Json.Serialization.Metadata;
     using System.Threading.Tasks;
     using System.IO;
+    using Microsoft.AspNetCore.Antiforgery;
     using Microsoft.AspNetCore.Routing;
     using Microsoft.AspNetCore.Routing.Patterns;
     using Microsoft.AspNetCore.Builder;
@@ -209,7 +210,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var wasParamCheckFailure = false;
                     var param_local = await global::Microsoft.AspNetCore.Http.Generators.Tests.BindableStructWithNullReturn.BindAsync(httpContext, parameters[0]);
-                    if (param_local == null)
+                    if (!param_local.HasValue)
                     {
                         logOrThrowExceptionHelper.RequiredParameterNotProvided("BindableStructWithNullReturn", "param", "BindableStructWithNullReturn.BindAsync(HttpContext, ParameterInfo)");
                         wasParamCheckFailure = true;
@@ -237,7 +238,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var wasParamCheckFailure = false;
                     var param_local = await global::Microsoft.AspNetCore.Http.Generators.Tests.BindableStructWithNullReturn.BindAsync(httpContext, parameters[0]);
-                    if (param_local == null)
+                    if (!param_local.HasValue)
                     {
                         logOrThrowExceptionHelper.RequiredParameterNotProvided("BindableStructWithNullReturn", "param", "BindableStructWithNullReturn.BindAsync(HttpContext, ParameterInfo)");
                         wasParamCheckFailure = true;
