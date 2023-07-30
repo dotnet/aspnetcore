@@ -2697,7 +2697,7 @@ public class WebApplicationTests
         // 3. Generated delegate name from app.Use(...)
         Assert.Collection(debugView.Middleware,
             m => Assert.Equal(typeof(MiddlewareWithInterface).FullName, m),
-            m => Assert.Equal("Microsoft.AspNetCore.Authentication.AuthenticationMiddleware", m),
+            m => Assert.StartsWith("Microsoft.AspNetCore.Builder.AuthAppBuilderExtensions", m),
             m =>
             {
                 Assert.Contains(nameof(DebugView_UseMiddleware_HasMiddleware), m);
@@ -2747,8 +2747,8 @@ public class WebApplicationTests
         Assert.Collection(debugView.Middleware,
             m => Assert.Equal("Microsoft.AspNetCore.HostFiltering.HostFilteringMiddleware", m),
             m => Assert.Equal("Microsoft.AspNetCore.Routing.EndpointRoutingMiddleware", m),
-            m => Assert.Equal("Microsoft.AspNetCore.Authentication.AuthenticationMiddleware", m),
-            m => Assert.Equal("Microsoft.AspNetCore.Authorization.AuthorizationMiddlewareInternal", m),
+            m => Assert.StartsWith("Microsoft.AspNetCore.Builder.AuthAppBuilderExtensions", m),
+            m => Assert.StartsWith("Microsoft.AspNetCore.Builder.AuthorizationAppBuilderExtensions", m),
             m => Assert.Equal(typeof(MiddlewareWithInterface).FullName, m),
             m => Assert.Equal("Microsoft.AspNetCore.Routing.EndpointMiddleware", m));
     }
@@ -2836,6 +2836,176 @@ public class WebApplicationTests
 
         Assert.Collection(debugView.Endpoints,
             ep => Assert.Equal("/hello", ep.Metadata.GetRequiredMetadata<IRouteDiagnosticsMetadata>().Route));
+    }
+
+    [Fact]
+    public async Task ImplicitMiddlewares_RunAfterExplicitRouting_MapGet()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        builder.Services.AddAuthentication("testSchemeName")
+            .AddScheme<AuthenticationSchemeOptions, UberHandler>("testSchemeName", "testDisplayName", _ => { });
+        builder.Services.AddAuthorization();
+        await using var app = builder.Build();
+        app.UseRouting();
+        app.MapGet("/", (HttpContext context, string username) =>
+        {
+            Assert.NotNull(context.Items["__AuthorizationMiddlewareWithEndpointInvoked"]);
+            return $"Hello {username}!";
+        }).RequireAuthorization();
+
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+        var exception = await Record.ExceptionAsync(async () => await client.GetAsync("/?username=test"));
+        Assert.Null(exception);
+    }
+
+    [Fact]
+    public async Task ImplicitMiddlewares_RunBeforeImplicitRouting_TerminalMiddleware()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        builder.Services.AddAuthentication("testSchemeName")
+            .AddScheme<AuthenticationSchemeOptions, UberHandler>("testSchemeName", "testDisplayName", _ => { });
+        builder.Services.AddAuthorization();
+        await using var app = builder.Build();
+        app.Run((HttpContext context) =>
+        {
+            Assert.NotNull(context.Features.Get<IAuthenticationFeature>());
+            return context.Response.WriteAsync($"Hello {context.Request.Query["username"]}!");
+        });
+
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+        var response = await client.GetAsync("/?username=test");
+        response.EnsureSuccessStatusCode();
+        Assert.Equal("Hello test!", await response.Content.ReadAsStringAsync());
+    }
+
+    [Fact]
+    public async Task ImplicitMiddlewares_RunBeforeExplicitRouting_TerminalMiddleware()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        builder.Services.AddAuthentication("testSchemeName")
+            .AddScheme<AuthenticationSchemeOptions, UberHandler>("testSchemeName", "testDisplayName", _ => { });
+        builder.Services.AddAuthorization();
+        await using var app = builder.Build();
+
+        app.Run((HttpContext context) =>
+        {
+            Assert.NotNull(context.Features.Get<IAuthenticationFeature>());
+            return context.Response.WriteAsync($"Hello {context.Request.Query["username"]}!");
+        });
+
+        app.UseRouting();
+
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+        var response = await client.GetAsync("/?username=test");
+        response.EnsureSuccessStatusCode();
+        Assert.Equal("Hello test!", await response.Content.ReadAsStringAsync());
+    }
+
+    [Fact]
+    public async Task ImplicitMiddlewares_RunBeforeExplicitRouting_TerminalMiddleware_AfterUseRouting()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        builder.Services.AddAuthentication("testSchemeName")
+            .AddScheme<AuthenticationSchemeOptions, UberHandler>("testSchemeName", "testDisplayName", _ => { });
+        builder.Services.AddAuthorization();
+        await using var app = builder.Build();
+
+        app.UseRouting();
+
+        app.Run((HttpContext context) =>
+        {
+            Assert.NotNull(context.Features.Get<IAuthenticationFeature>());
+            return context.Response.WriteAsync($"Hello {context.Request.Query["username"]}!");
+        });
+
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+        var response = await client.GetAsync("/?username=test");
+        response.EnsureSuccessStatusCode();
+        Assert.Equal("Hello test!", await response.Content.ReadAsStringAsync());
+    }
+
+    [Fact]
+    public async Task ImplicitMiddlewares_RunBetween_ExplicitRouting_TerminalMiddlewareMapGet()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        builder.Services.AddAuthentication("testSchemeName")
+            .AddScheme<AuthenticationSchemeOptions, UberHandler>("testSchemeName", "testDisplayName", _ => { });
+        builder.Services.AddAuthorization();
+        await using var app = builder.Build();
+
+        app.UseRouting();
+
+        app.Run((HttpContext context) =>
+        {
+            Assert.NotNull(context.Features.Get<IAuthenticationFeature>());
+            return context.Response.WriteAsync($"Hello {context.Request.Query["username"]}!");
+        });
+
+        app.MapGet("/endpoint", (HttpContext context, string username) =>
+        {
+            Assert.NotNull(context.Items["__AuthorizationMiddlewareWithEndpointInvoked"]);
+            Assert.NotNull(context.Features.Get<IAuthenticationFeature>());
+            return $"Hello {username}!";
+        }).AllowAnonymous();
+
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+        var response = await client.GetAsync("/?username=test");
+        response.EnsureSuccessStatusCode();
+        Assert.Equal("Hello test!", await response.Content.ReadAsStringAsync());
+
+        var endpointResponse = await client.GetAsync("/endpoint?username=test");
+        endpointResponse.EnsureSuccessStatusCode();
+        Assert.Equal("Hello test!", await endpointResponse.Content.ReadAsStringAsync());
+    }
+
+    [Fact]
+    public async Task ImplicitMiddlewares_RunBetween_TerminalMiddlewareMapGet()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        builder.Services.AddAuthentication("testSchemeName")
+            .AddScheme<AuthenticationSchemeOptions, UberHandler>("testSchemeName", "testDisplayName", _ => { });
+        builder.Services.AddAuthorization();
+        await using var app = builder.Build();
+
+        app.Run((HttpContext context) =>
+        {
+            Assert.NotNull(context.Features.Get<IAuthenticationFeature>());
+            return context.Response.WriteAsync($"Hello {context.Request.Query["username"]}!");
+        });
+
+        app.MapGet("/endpoint", (HttpContext context, string username) =>
+        {
+            Assert.NotNull(context.Items["__AuthorizationMiddlewareWithEndpointInvoked"]);
+            Assert.NotNull(context.Features.Get<IAuthenticationFeature>());
+            return $"Hello {username}!";
+        }).AllowAnonymous();
+
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+        var response = await client.GetAsync("/?username=test");
+        response.EnsureSuccessStatusCode();
+        Assert.Equal("Hello test!", await response.Content.ReadAsStringAsync());
+
+        var endpointResponse = await client.GetAsync("/endpoint?username=test");
+        endpointResponse.EnsureSuccessStatusCode();
+        Assert.Equal("Hello test!", await endpointResponse.Content.ReadAsStringAsync());
     }
 
     private class MiddlewareWithInterface : IMiddleware

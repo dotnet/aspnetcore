@@ -3,6 +3,8 @@
 
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Antiforgery.Internal;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Builder;
 
@@ -24,6 +26,16 @@ public static class AntiforgeryApplicationBuilderExtensions
         builder.VerifyAntiforgeryServicesAreRegistered();
 
         builder.Properties[AntiforgeryMiddlewareSetKey] = true;
+
+        if (builder.Properties.TryGetValue(RerouteHelper.GlobalRouteBuilderKey, out var routeBuilder) && routeBuilder is not null)
+        {
+            return builder.Use(next =>
+            {
+                var newNext = RerouteHelper.Reroute(builder, routeBuilder, next);
+                var antiforgery = builder.ApplicationServices.GetRequiredService<IAntiforgery>();
+                return new AntiforgeryMiddleware(antiforgery, newNext).Invoke;
+            });
+        }
         builder.UseMiddleware<AntiforgeryMiddleware>();
 
         return builder;

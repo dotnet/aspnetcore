@@ -3,7 +3,9 @@
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Policy;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Builder;
 
@@ -30,6 +32,21 @@ public static class AuthorizationAppBuilderExtensions
         VerifyServicesRegistered(app);
 
         app.Properties[AuthorizationMiddlewareSetKey] = true;
+
+        if (app.Properties.TryGetValue(RerouteHelper.GlobalRouteBuilderKey, out var routeBuilder) && routeBuilder is not null)
+        {
+            return app.Use(next =>
+            {
+                var newNext = RerouteHelper.Reroute(app, routeBuilder, next);
+                var authorizationPolicyProvider = app.ApplicationServices.GetRequiredService<IAuthorizationPolicyProvider>();
+                var loggerFactory = app.ApplicationServices.GetRequiredService<ILoggerFactory>();
+                return new AuthorizationMiddlewareInternal(newNext,
+                    app.ApplicationServices,
+                    authorizationPolicyProvider,
+                    loggerFactory.CreateLogger<AuthorizationMiddleware>()).Invoke;
+            });
+        }
+
         return app.UseMiddleware<AuthorizationMiddlewareInternal>();
     }
 
