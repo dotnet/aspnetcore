@@ -307,4 +307,29 @@ public class Wrapper<T> { }
 
         await VerifyAgainstBaselineUsingFile(updatedCompilation);
     }
+
+    [Fact]
+    public async Task MapAction_BindAsync_NullableReturn()
+    {
+        var source = $$"""
+app.MapGet("/class", (BindableClassWithNullReturn param) => "Hello world!");
+app.MapGet("/class-with-filter", (BindableClassWithNullReturn param) => "Hello world!")
+     .AddEndpointFilter((c, n) => n(c));
+app.MapGet("/struct", (BindableStructWithNullReturn param) => "Hello world!");
+app.MapGet("/struct-with-filter", (BindableStructWithNullReturn param) => "Hello world!")
+    .AddEndpointFilter((c, n) => n(c));
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoints = GetEndpointsFromCompilation(compilation);
+
+        foreach (var endpoint in endpoints)
+        {
+            var httpContext = CreateHttpContext();
+            await endpoint.RequestDelegate(httpContext);
+
+            Assert.Equal(400, httpContext.Response.StatusCode);
+        }
+
+        await VerifyAgainstBaselineUsingFile(compilation);
+    }
 }

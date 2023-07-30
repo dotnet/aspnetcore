@@ -294,7 +294,7 @@ internal static class EndpointParameterEmitter
 
         if (!endpointParameter.IsOptional)
         {
-            codeWriter.WriteLine($"if ((object?){endpointParameter.EmitHandlerArgument()} == null)");
+            codeWriter.WriteLine($"if ({endpointParameter.EmitHandlerArgument()} == null)");
             codeWriter.StartBlock();
             codeWriter.WriteLine($@"logOrThrowExceptionHelper.RequiredParameterNotProvided({SymbolDisplay.FormatLiteral(endpointParameter.Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat), true)}, {SymbolDisplay.FormatLiteral(endpointParameter.SymbolName, true)}, {SymbolDisplay.FormatLiteral(endpointParameter.ToMessageString(), true)});");
             codeWriter.WriteLine("wasParamCheckFailure = true;");

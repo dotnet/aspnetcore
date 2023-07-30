@@ -43,8 +43,8 @@ internal static class EmitterExtensions
         EndpointParameterSource.BindAsync => endpointParameter.IsOptional ?
             endpointParameter.EmitHandlerArgument() :
             endpointParameter.Type.IsValueType && endpointParameter.GetBindAsyncReturnType()?.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T
-                ? $"{endpointParameter.EmitHandlerArgument()}.Value"
-                : $"{endpointParameter.EmitHandlerArgument()}!",
+                ? $"{endpointParameter.EmitHandlerArgument()}.HasValue ? {endpointParameter.EmitHandlerArgument()}.Value : default"
+                : $"{endpointParameter.EmitHandlerArgument()}",
         EndpointParameterSource.Unknown => throw new NotImplementedException("Unreachable!"),
         _ => endpointParameter.EmitHandlerArgument()
     };
