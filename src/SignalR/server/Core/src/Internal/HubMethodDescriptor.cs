@@ -156,13 +156,13 @@ internal sealed class HubMethodDescriptor
     {
         if (KeyedServiceKeys is not null)
         {
-            foreach (var items in KeyedServiceKeys)
+            foreach (var (paramIndex, key) in KeyedServiceKeys)
             {
-                if (items.Item1 == index)
+                if (paramIndex == index)
                 {
-                    return serviceProvider.GetRequiredKeyedService(parameterType, items.Item2);
+                    return serviceProvider.GetRequiredKeyedService(parameterType, key);
                 }
-                else if (items.Item1 > index)
+                else if (paramIndex > index)
                 {
                     break;
                 }
