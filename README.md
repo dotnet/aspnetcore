@@ -24,7 +24,7 @@ and make pull-requests.
 * Follow along with the development of ASP.NET Core:
     * [Community Standup](https://live.asp.net): The community standup is held every week and streamed live on YouTube. You can view past standups in the linked playlist.
     * [Roadmap](https://aka.ms/aspnet/roadmap): The schedule and milestone themes for ASP.NET Core.
-* [Build ASP.NET Core source code](./docs/BuildFromSource.md)
+* [Build ASP.NET Core source code.](./docs/BuildFromSource.md)
 * Check out the [contributing](CONTRIBUTING.md) page to see the best places to log issues and start discussions.
 
 ## Reporting security issues and bugs
