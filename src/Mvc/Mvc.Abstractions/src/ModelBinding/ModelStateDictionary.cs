@@ -823,7 +823,7 @@ public class ModelStateDictionary : IReadOnlyDictionary<string, ModelStateEntry?
         OpenBracket
     }
 
-    [DebuggerDisplay("SubKey = {SubKey.Value}, Key = {Key}, ValidationState = {ValidationState}")]
+    [DebuggerDisplay("SubKey = {SubKey}, Key = {Key}, ValidationState = {ValidationState}")]
     private sealed class ModelStateNode : ModelStateEntry
     {
         private bool _isContainerNode = true;
