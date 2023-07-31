@@ -1192,7 +1192,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
         }
 
         KestrelEventSource.Log.RequestQueuedStart(_currentHeadersStream, AspNetCore.Http.HttpProtocol.Http2);
-        _context.ServiceContext.Metrics.RequestQueuedStart(_metricsContext, AspNetCore.Http.HttpProtocol.Http2);
+        _context.ServiceContext.Metrics.RequestQueuedStart(_metricsContext, "2");
 
         // _scheduleInline is only true in tests
         if (!_scheduleInline)

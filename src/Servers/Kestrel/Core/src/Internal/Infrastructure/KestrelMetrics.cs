@@ -29,37 +29,37 @@ internal sealed class KestrelMetrics
         _meter = meterFactory.Create(MeterName);
 
         _currentConnectionsCounter = _meter.CreateUpDownCounter<long>(
-           "kestrel-current-connections",
+           "kestrel.active_connections",
             description: "Number of connections that are currently active on the server.");
 
         _connectionDuration = _meter.CreateHistogram<double>(
-            "kestrel-connection-duration",
+            "kestrel.connection.duration",
             unit: "s",
             description: "The duration of connections on the server.");
 
         _rejectedConnectionsCounter = _meter.CreateCounter<long>(
-           "kestrel-rejected-connections",
+           "kestrel.rejected_connections",
             description: "Number of connections rejected by the server. Connections are rejected when the currently active count exceeds the value configured with MaxConcurrentConnections.");
 
         _queuedConnectionsCounter = _meter.CreateUpDownCounter<long>(
-           "kestrel-queued-connections",
+           "kestrel.queued_connections",
             description: "Number of connections that are currently queued and are waiting to start.");
 
         _queuedRequestsCounter = _meter.CreateUpDownCounter<long>(
-           "kestrel-queued-requests",
+           "kestrel.queued_requests",
             description: "Number of HTTP requests on multiplexed connections (HTTP/2 and HTTP/3) that are currently queued and are waiting to start.");
 
         _currentUpgradedRequestsCounter = _meter.CreateUpDownCounter<long>(
-           "kestrel-current-upgraded-connections",
+           "kestrel.upgraded_connections",
             description: "Number of HTTP connections that are currently upgraded (WebSockets). The number only tracks HTTP/1.1 connections.");
 
         _tlsHandshakeDuration = _meter.CreateHistogram<double>(
-            "kestrel-tls-handshake-duration",
+            "kestrel.tls_handshake.duration",
             unit: "s",
             description: "The duration of TLS handshakes on the server.");
 
         _currentTlsHandshakesCounter = _meter.CreateUpDownCounter<long>(
-           "kestrel-current-tls-handshakes",
+           "kestrel.active_tls_handshakes",
             description: "Number of TLS handshakes that are currently in progress on the server.");
     }
 
@@ -103,7 +103,7 @@ internal sealed class KestrelMetrics
         {
             if (exception != null)
             {
-                tags.Add("exception-name", exception.GetType().FullName);
+                tags.Add("exception.type", exception.GetType().FullName);
             }
 
             // Add custom tags for duration.
@@ -182,7 +182,8 @@ internal sealed class KestrelMetrics
     {
         var tags = new TagList();
         InitializeConnectionTags(ref tags, metricsContext);
-        tags.Add("version", httpVersion);
+        tags.Add("network.protocol.name", "http");
+        tags.Add("network.protocol.version", httpVersion);
         _queuedRequestsCounter.Add(1, tags);
     }
 
@@ -199,7 +200,8 @@ internal sealed class KestrelMetrics
     {
         var tags = new TagList();
         InitializeConnectionTags(ref tags, metricsContext);
-        tags.Add("version", httpVersion);
+        tags.Add("network.protocol.name", "http");
+        tags.Add("network.protocol.version", httpVersion);
         _queuedRequestsCounter.Add(-1, tags);
     }
 
@@ -272,13 +274,14 @@ internal sealed class KestrelMetrics
             _currentTlsHandshakesCounter.Add(-1, tags);
         }
 
-        if (protocol != null)
+        if (TryGetHandshakeProtocol(protocol, out var protocolName, out var protocolVersion))
         {
-            tags.Add("protocol", protocol.ToString());
+            tags.Add("tls.protocol.name", protocolName);
+            tags.Add("tls.protocol.version", protocolVersion);
         }
         if (exception != null)
         {
-            tags.Add("exception-name", exception.GetType().FullName);
+            tags.Add("exception.type", exception.GetType().FullName);
         }
 
         var duration = Stopwatch.GetElapsedTime(startTimestamp, currentTimestamp);
@@ -301,5 +304,47 @@ internal sealed class KestrelMetrics
         return new ConnectionMetricsContext(connection,
             _currentConnectionsCounter.Enabled, _connectionDuration.Enabled, _queuedConnectionsCounter.Enabled,
             _queuedRequestsCounter.Enabled, _currentUpgradedRequestsCounter.Enabled, _currentTlsHandshakesCounter.Enabled);
+    }
+
+    private static bool TryGetHandshakeProtocol(SslProtocols? protocols, out string? name, out string? version)
+    {
+        if (protocols != null)
+        {
+#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable SYSLIB0039 // Type or member is obsolete
+            switch (protocols.Value)
+            {
+                case SslProtocols.Ssl2:
+                    name = "ssl";
+                    version = "2.0";
+                    return true;
+                case SslProtocols.Ssl3:
+                    name = "ssl";
+                    version = "3.0";
+                    return true;
+                case SslProtocols.Tls:
+                    name = "tls";
+                    version = "1.0";
+                    return true;
+                case SslProtocols.Tls11:
+                    name = "tls";
+                    version = "1.1";
+                    return true;
+                case SslProtocols.Tls12:
+                    name = "tls";
+                    version = "1.2";
+                    return true;
+                case SslProtocols.Tls13:
+                    name = "tls";
+                    version = "1.3";
+                    return true;
+            }
+#pragma warning restore SYSLIB0039 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
+        }
+
+        name = null;
+        version = null;
+        return false;
     }
 }
