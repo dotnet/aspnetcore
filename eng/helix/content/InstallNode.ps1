@@ -2,7 +2,7 @@
  .SYNOPSIS
      Installs Node.js from https://nodejs.org/dist on a machine
  .DESCRIPTION
-     This script installs Node.Js from https://nodejs.org/dist on a machine.
+     This script installs Node.js from https://nodejs.org/dist on a machine.
  .PARAMETER Version
      The version of Node.JS to install.
  .LINK
