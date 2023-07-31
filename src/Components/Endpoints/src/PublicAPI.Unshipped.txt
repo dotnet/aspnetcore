@@ -7,6 +7,7 @@ Microsoft.AspNetCore.Builder.RazorComponentEndpointConventionBuilder.AddServerRe
 Microsoft.AspNetCore.Builder.RazorComponentEndpointConventionBuilder.AddWebAssemblyRenderMode() -> Microsoft.AspNetCore.Builder.RazorComponentEndpointConventionBuilder!
 Microsoft.AspNetCore.Builder.RazorComponentEndpointConventionBuilder.ApplicationBuilder.get -> Microsoft.AspNetCore.Components.Discovery.ComponentApplicationBuilder!
 Microsoft.AspNetCore.Builder.RazorComponentEndpointConventionBuilder.Finally(System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder!>! finallyConvention) -> void
+Microsoft.AspNetCore.Builder.RazorComponentEndpointConventionBuilderExtensions
 Microsoft.AspNetCore.Builder.RazorComponentsEndpointRouteBuilderExtensions
 Microsoft.AspNetCore.Components.Discovery.AssemblyComponentLibraryDescriptor
 Microsoft.AspNetCore.Components.Discovery.AssemblyComponentLibraryDescriptor.AssemblyComponentLibraryDescriptor(string! name, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder!>! pages, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.Discovery.ComponentBuilder!>! components) -> void
@@ -14,12 +15,10 @@ Microsoft.AspNetCore.Components.Discovery.AssemblyComponentLibraryDescriptor.Ass
 Microsoft.AspNetCore.Components.Discovery.AssemblyComponentLibraryDescriptor.Components.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.Discovery.ComponentBuilder!>!
 Microsoft.AspNetCore.Components.Discovery.AssemblyComponentLibraryDescriptor.Pages.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder!>!
 Microsoft.AspNetCore.Components.Discovery.ComponentApplicationBuilder
-Microsoft.AspNetCore.Components.Discovery.ComponentApplicationBuilder.AddLibrary(Microsoft.AspNetCore.Components.Discovery.AssemblyComponentLibraryDescriptor! libraryBuilder) -> void
-Microsoft.AspNetCore.Components.Discovery.ComponentApplicationBuilder.Combine(Microsoft.AspNetCore.Components.Discovery.ComponentApplicationBuilder! other) -> void
+Microsoft.AspNetCore.Components.Discovery.ComponentApplicationBuilder.AddAssembly(System.Reflection.Assembly! assembly) -> Microsoft.AspNetCore.Components.Discovery.ComponentApplicationBuilder!
 Microsoft.AspNetCore.Components.Discovery.ComponentApplicationBuilder.ComponentApplicationBuilder() -> void
-Microsoft.AspNetCore.Components.Discovery.ComponentApplicationBuilder.Exclude(Microsoft.AspNetCore.Components.Discovery.ComponentApplicationBuilder! builder) -> void
 Microsoft.AspNetCore.Components.Discovery.ComponentApplicationBuilder.HasLibrary(string! assemblyName) -> bool
-Microsoft.AspNetCore.Components.Discovery.ComponentApplicationBuilder.RemoveLibrary(string! assembly) -> void
+Microsoft.AspNetCore.Components.Discovery.ComponentApplicationBuilder.RemoveAssembly(System.Reflection.Assembly! assembly) -> Microsoft.AspNetCore.Components.Discovery.ComponentApplicationBuilder!
 Microsoft.AspNetCore.Components.Discovery.ComponentBuilder
 Microsoft.AspNetCore.Components.Discovery.ComponentBuilder.AssemblyName.get -> string!
 Microsoft.AspNetCore.Components.Discovery.ComponentBuilder.AssemblyName.set -> void
@@ -103,8 +102,10 @@ override Microsoft.AspNetCore.Components.Discovery.ComponentBuilder.Equals(objec
 override Microsoft.AspNetCore.Components.Discovery.ComponentBuilder.GetHashCode() -> int
 override Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder.Equals(object? obj) -> bool
 override Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder.GetHashCode() -> int
+static Microsoft.AspNetCore.Builder.RazorComponentEndpointConventionBuilderExtensions.AddComponentAssemblies(this Microsoft.AspNetCore.Builder.RazorComponentEndpointConventionBuilder! builder, params System.Reflection.Assembly![]! assemblies) -> Microsoft.AspNetCore.Builder.RazorComponentEndpointConventionBuilder!
+static Microsoft.AspNetCore.Builder.RazorComponentEndpointConventionBuilderExtensions.ConfigureComponentAssemblies(this Microsoft.AspNetCore.Builder.RazorComponentEndpointConventionBuilder! builder, System.Action<Microsoft.AspNetCore.Components.Discovery.ComponentApplicationBuilder!>! configure) -> Microsoft.AspNetCore.Builder.RazorComponentEndpointConventionBuilder!
+static Microsoft.AspNetCore.Builder.RazorComponentEndpointConventionBuilderExtensions.RemoveComponentAssemblies(this Microsoft.AspNetCore.Builder.RazorComponentEndpointConventionBuilder! builder, params System.Reflection.Assembly![]! assemblies) -> Microsoft.AspNetCore.Builder.RazorComponentEndpointConventionBuilder!
 static Microsoft.AspNetCore.Builder.RazorComponentsEndpointRouteBuilderExtensions.MapRazorComponents<TRootComponent>(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints) -> Microsoft.AspNetCore.Builder.RazorComponentEndpointConventionBuilder!
-static Microsoft.AspNetCore.Components.Discovery.ComponentApplicationBuilder.GetBuilder<TComponent>() -> Microsoft.AspNetCore.Components.Discovery.ComponentApplicationBuilder?
 static Microsoft.Extensions.DependencyInjection.RazorComponentsServiceCollectionExtensions.AddRazorComponents(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.AspNetCore.Components.Endpoints.IRazorComponentsBuilder!
 static Microsoft.Extensions.DependencyInjection.RazorComponentsServiceCollectionExtensions.AddRazorComponents(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.Extensions.DependencyInjection.RazorComponentOptions!>! setupAction) -> Microsoft.AspNetCore.Components.Endpoints.IRazorComponentsBuilder!
 static readonly Microsoft.AspNetCore.Components.Endpoints.RazorComponentResultExecutor.DefaultContentType -> string!
