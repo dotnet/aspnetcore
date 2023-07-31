@@ -217,7 +217,7 @@ internal sealed class HostingMetrics : IDisposable
             // KnownMethods ignores case. Use the value returned by the dictionary to have a consistent case.
             return result;
         }
-        return "_UNKNOWN";
+        return "_OTHER";
     }
 
     private static bool TryGetHttpVersion(string protocol, [NotNullWhen(true)] out string? version)
