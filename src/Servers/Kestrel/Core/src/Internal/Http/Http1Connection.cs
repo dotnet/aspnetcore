@@ -626,7 +626,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
                 if (!_absoluteRequestTarget.IsDefaultPort
                     || hostText != _absoluteRequestTarget.Authority + ":" + _absoluteRequestTarget.Port.ToString(CultureInfo.InvariantCulture))
                 {
-                    if (_context.ServiceContext.ServerOptions.AllowUnsafeHostHeaderOverride)
+                    if (_context.ServiceContext.ServerOptions.AllowHostHeaderOverride)
                     {
                         hostText = _absoluteRequestTarget.Authority + ":" + _absoluteRequestTarget.Port.ToString(CultureInfo.InvariantCulture);
                         HttpRequestHeaders.HeaderHost = hostText;

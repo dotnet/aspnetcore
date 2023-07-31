@@ -52,8 +52,11 @@ public class KestrelServerOptions
     /// to true bypasses that check and unconditionally overwrites the Host header with the value
     /// from the request target.
     /// </summary>
+    /// <remarks>
+    /// This does not apply to HTTP/2 or HTTP/3 because the Host header is not sent in requests.
+    /// </remarks>
     /// <seealso href="https://datatracker.ietf.org/doc/html/rfc9112#section-3.2.2-8"/>
-    public bool AllowUnsafeHostHeaderOverride { get; set; }
+    public bool AllowHostHeaderOverride { get; set; }
 
     // The following two lists configure the endpoints that Kestrel should listen to. If both lists are empty, the "urls" config setting (e.g. UseUrls) is used.
     internal List<ListenOptions> CodeBackedListenOptions { get; } = new List<ListenOptions>();

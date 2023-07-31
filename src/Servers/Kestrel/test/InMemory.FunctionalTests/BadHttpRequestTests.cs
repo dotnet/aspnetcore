@@ -155,7 +155,7 @@ public class BadHttpRequestTests : LoggedTest
         {
             ServerOptions = new KestrelServerOptions()
             {
-                AllowUnsafeHostHeaderOverride = true,
+                AllowHostHeaderOverride = true,
             }
         });
         using var client = server.CreateConnection();
