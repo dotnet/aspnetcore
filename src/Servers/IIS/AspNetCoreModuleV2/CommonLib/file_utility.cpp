@@ -129,6 +129,7 @@ FILE_UTILITY::EnsureDirectoryPathExists(
             return S_OK;
         }
 
+        // position is >= 1 here since we started searching at position + 1
         if (struPath.QueryStr()[position - 1] == L':')
         {
             // Skip the volume case

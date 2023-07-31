@@ -22,7 +22,7 @@ public:
 
     static
     HRESULT
-    EnsureDirectoryPathExist(
+    EnsureDirectoryPathExists(
         _In_  LPCWSTR pszPath
     );
 
