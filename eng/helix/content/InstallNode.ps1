@@ -1,13 +1,13 @@
- <# 
- .SYNOPSIS 
-     Installs NodeJs from https://nodejs.org/dist on a machine
- .DESCRIPTION 
-     This script installs NodeJs from https://nodejs.org/dist on a machine. 
+ <#
+ .SYNOPSIS
+     Installs Node.Js from https://nodejs.org/dist on a machine
+ .DESCRIPTION
+     This script installs Node.Js from https://nodejs.org/dist on a machine.
  .PARAMETER Version
-     The version of NodeJS to install.
- .LINK 
+     The version of Node.JS to install.
+ .LINK
      https://nodejs.org/en/
- #> 
+ #>
 param(
     [Parameter(Mandatory = $true)]
     $Version
@@ -33,7 +33,7 @@ if (Test-Path "$InstallDir\node.exe")
 
 $nodeFile="node-v$Version-win-x64"
 $url="https://nodejs.org/dist/v$Version/$nodeFile.zip"
-Write-Host "Starting download of NodeJs ${Version} from $url"
+Write-Host "Starting download of Node.Js ${Version} from $url"
 & $PSScriptRoot\Download.ps1 $url nodejs.zip
 Write-Host "Done downloading NodeJS ${Version}"
 
@@ -53,7 +53,7 @@ else {
     [System.IO.Compression.ZipFile]::ExtractToDirectory("nodejs.zip", $tempDir)
 }
 
-Write-Host "Expanded NodeJs to $tempDir, moving $tempDir\$nodeFile to $InstallDir subdir"
+Write-Host "Expanded Node.Js to $tempDir, moving $tempDir\$nodeFile to $InstallDir subdir"
 move $tempDir\$nodeFile $InstallDir
 if (Test-Path "$InstallDir\node.exe")
 {
