@@ -87,8 +87,7 @@ dotnet_diagnostic.CA1018.severity = warning
 dotnet_diagnostic.CA1047.severity = warning
 
 # CA1305: Specify IFormatProvider
-# TODO: Renable as warning after https://github.com/dotnet/roslyn-analyzers/issues/6746 is resolved
-dotnet_diagnostic.CA1305.severity = suggestion
+dotnet_diagnostic.CA1305.severity = warning
 
 # CA1507: Use nameof to express symbol names
 dotnet_diagnostic.CA1507.severity = warning

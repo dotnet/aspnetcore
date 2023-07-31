@@ -43,9 +43,10 @@ public static class AuthenticationTokenExtensions
             tokenNames.Add(token.Name);
             properties.Items[TokenKeyPrefix + token.Name] = token.Value;
         }
+
         if (tokenNames.Count > 0)
         {
-            properties.Items[TokenNamesKey] = string.Join(";", tokenNames.ToArray());
+            properties.Items[TokenNamesKey] = string.Join(";", tokenNames);
         }
     }
 
