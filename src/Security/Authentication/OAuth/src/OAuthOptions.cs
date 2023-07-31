@@ -14,7 +14,7 @@ public class OAuthOptions : RemoteAuthenticationOptions
     /// <summary>
     /// Initializes a new instance of <see cref="OAuthOptions"/>.
     /// </summary>
-    public OAuthOptions()
+    public OAuthOptions() : base()
     {
         Events = new OAuthEvents();
     }
