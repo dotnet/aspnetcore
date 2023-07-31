@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 /// given <see cref="RazorComponentsEndpointRouteBuilderExtensions.MapRazorComponents{TRootComponent}(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder)"/>
 /// invocation.
 /// </summary>
-public class RazorComponentDataSourceOptions
+internal class RazorComponentDataSourceOptions
 {
     /// <summary>
     /// Gets or sets whether to automatically wire up the necessary endpoints
@@ -20,7 +20,7 @@ public class RazorComponentDataSourceOptions
     /// <remarks>
     /// The default value is <c>true</c>.
     /// </remarks>
-    public bool UseDeclaredRenderModes { get; set; } = true;
+    internal bool UseDeclaredRenderModes { get; set; } = true;
 
     internal IList<IComponentRenderMode> ConfiguredRenderModes { get; } = new List<IComponentRenderMode>();
 }

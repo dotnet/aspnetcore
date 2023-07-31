@@ -34,7 +34,7 @@ public class ComponentApplicationBuilder
     /// </summary>
     /// <param name="assemblyName">The name of the assembly to check.</param>
     /// <returns><c>true</c> when present; <c>false</c> otherwise.</returns>
-    public bool HasLibrary(string assemblyName)
+    public bool HasAssembly(string assemblyName)
     {
         return _assemblies.Contains(assemblyName);
     }

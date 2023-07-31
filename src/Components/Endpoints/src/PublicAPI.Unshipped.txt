@@ -1,6 +1,5 @@
 abstract Microsoft.AspNetCore.Components.Endpoints.RenderModeEndpointProvider.GetEndpointBuilders(Microsoft.AspNetCore.Components.IComponentRenderMode! renderMode, Microsoft.AspNetCore.Builder.IApplicationBuilder! applicationBuilder) -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Routing.RouteEndpointBuilder!>!
 abstract Microsoft.AspNetCore.Components.Endpoints.RenderModeEndpointProvider.Supports(Microsoft.AspNetCore.Components.IComponentRenderMode! renderMode) -> bool
-abstract Microsoft.AspNetCore.Components.Infrastructure.RazorComponentApplicationAttribute.GetBuilder() -> Microsoft.AspNetCore.Components.Discovery.ComponentApplicationBuilder!
 Microsoft.AspNetCore.Builder.RazorComponentEndpointConventionBuilder
 Microsoft.AspNetCore.Builder.RazorComponentEndpointConventionBuilder.Add(System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder!>! convention) -> void
 Microsoft.AspNetCore.Builder.RazorComponentEndpointConventionBuilder.AddServerRenderMode() -> Microsoft.AspNetCore.Builder.RazorComponentEndpointConventionBuilder!
@@ -12,7 +11,7 @@ Microsoft.AspNetCore.Builder.RazorComponentsEndpointRouteBuilderExtensions
 Microsoft.AspNetCore.Components.Discovery.ComponentApplicationBuilder
 Microsoft.AspNetCore.Components.Discovery.ComponentApplicationBuilder.AddAssembly(System.Reflection.Assembly! assembly) -> Microsoft.AspNetCore.Components.Discovery.ComponentApplicationBuilder!
 Microsoft.AspNetCore.Components.Discovery.ComponentApplicationBuilder.ComponentApplicationBuilder() -> void
-Microsoft.AspNetCore.Components.Discovery.ComponentApplicationBuilder.HasLibrary(string! assemblyName) -> bool
+Microsoft.AspNetCore.Components.Discovery.ComponentApplicationBuilder.HasAssembly(string! assemblyName) -> bool
 Microsoft.AspNetCore.Components.Discovery.ComponentApplicationBuilder.RemoveAssembly(System.Reflection.Assembly! assembly) -> Microsoft.AspNetCore.Components.Discovery.ComponentApplicationBuilder!
 Microsoft.AspNetCore.Components.Endpoints.ComponentTypeMetadata
 Microsoft.AspNetCore.Components.Endpoints.ComponentTypeMetadata.ComponentTypeMetadata(System.Type! componentType) -> void
@@ -23,10 +22,6 @@ Microsoft.AspNetCore.Components.Endpoints.IComponentPrerenderer.PrerenderCompone
 Microsoft.AspNetCore.Components.Endpoints.IComponentPrerenderer.PrerenderPersistedStateAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext, Microsoft.AspNetCore.Components.PersistedStateSerializationMode serializationMode) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Html.IHtmlContent!>
 Microsoft.AspNetCore.Components.Endpoints.IRazorComponentsBuilder
 Microsoft.AspNetCore.Components.Endpoints.IRazorComponentsBuilder.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
-Microsoft.AspNetCore.Components.Endpoints.RazorComponentDataSourceOptions
-Microsoft.AspNetCore.Components.Endpoints.RazorComponentDataSourceOptions.RazorComponentDataSourceOptions() -> void
-Microsoft.AspNetCore.Components.Endpoints.RazorComponentDataSourceOptions.UseDeclaredRenderModes.get -> bool
-Microsoft.AspNetCore.Components.Endpoints.RazorComponentDataSourceOptions.UseDeclaredRenderModes.set -> void
 Microsoft.AspNetCore.Components.Endpoints.RazorComponentResult
 Microsoft.AspNetCore.Components.Endpoints.RazorComponentResult.ComponentType.get -> System.Type!
 Microsoft.AspNetCore.Components.Endpoints.RazorComponentResult.ContentType.get -> string?
@@ -55,8 +50,6 @@ Microsoft.AspNetCore.Components.Endpoints.WebAssemblyComponentsEndpointOptions
 Microsoft.AspNetCore.Components.Endpoints.WebAssemblyComponentsEndpointOptions.PathPrefix.get -> Microsoft.AspNetCore.Http.PathString
 Microsoft.AspNetCore.Components.Endpoints.WebAssemblyComponentsEndpointOptions.PathPrefix.set -> void
 Microsoft.AspNetCore.Components.Endpoints.WebAssemblyComponentsEndpointOptions.WebAssemblyComponentsEndpointOptions() -> void
-Microsoft.AspNetCore.Components.Infrastructure.RazorComponentApplicationAttribute
-Microsoft.AspNetCore.Components.Infrastructure.RazorComponentApplicationAttribute.RazorComponentApplicationAttribute() -> void
 Microsoft.AspNetCore.Components.PersistedStateSerializationMode
 Microsoft.AspNetCore.Components.PersistedStateSerializationMode.Infer = 1 -> Microsoft.AspNetCore.Components.PersistedStateSerializationMode
 Microsoft.AspNetCore.Components.PersistedStateSerializationMode.Server = 2 -> Microsoft.AspNetCore.Components.PersistedStateSerializationMode
