@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Connections;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
 using System.Runtime.CompilerServices;
 using System.Security.Authentication;
@@ -306,7 +307,7 @@ internal sealed class KestrelMetrics
             _queuedRequestsCounter.Enabled, _currentUpgradedRequestsCounter.Enabled, _currentTlsHandshakesCounter.Enabled);
     }
 
-    private static bool TryGetHandshakeProtocol(SslProtocols? protocols, out string? name, out string? version)
+    private static bool TryGetHandshakeProtocol(SslProtocols? protocols, [NotNullWhen(true)] out string? name, [NotNullWhen(true)] out string? version)
     {
         if (protocols != null)
         {
