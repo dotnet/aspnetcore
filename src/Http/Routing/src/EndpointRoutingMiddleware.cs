@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.ShortCircuit;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -136,6 +137,8 @@ internal sealed partial class EndpointRoutingMiddleware
             // We do this during endpoint routing to ensure that successive middlewares in the pipeline
             // can access the feature with the correct value.
             SetMaxRequestBodySize(httpContext);
+            // Map IFormOptionsMetadata to IFormFeature if present on the endpoint.
+            SetFormOptions(httpContext, endpoint);
 
             var shortCircuitMetadata = endpoint.Metadata.GetMetadata<ShortCircuitMetadata>();
             if (shortCircuitMetadata is not null)
@@ -334,6 +337,45 @@ internal sealed partial class EndpointRoutingMiddleware
         }
     }
 
+    private void SetFormOptions(HttpContext context, Endpoint endpoint)
+    {
+        var features = context.Features;
+        var formFeature = features.Get<IFormFeature>();
+
+        // Request form has not been read yet, so set the limits
+        if (formFeature == null || formFeature is { Form: null })
+        {
+            var baseFormOptions = context.RequestServices.GetService<IOptions<FormOptions>>()?.Value ?? new FormOptions();
+            var finalFormOptionsMetadata = new FormOptionsMetadata();
+            var formOptionsMetadatas = endpoint.Metadata
+                .GetOrderedMetadata<IFormOptionsMetadata>();
+            foreach (var formOptionsMetadata in formOptionsMetadatas)
+            {
+                finalFormOptionsMetadata = finalFormOptionsMetadata.MergeWith(formOptionsMetadata);
+            }
+
+            var formOptions = new FormOptions
+            {
+                BufferBody = finalFormOptionsMetadata.BufferBody ?? baseFormOptions.BufferBody,
+                MemoryBufferThreshold = finalFormOptionsMetadata.MemoryBufferThreshold ?? baseFormOptions.MemoryBufferThreshold,
+                BufferBodyLengthLimit = finalFormOptionsMetadata.BufferBodyLengthLimit ?? baseFormOptions.BufferBodyLengthLimit,
+                ValueCountLimit = finalFormOptionsMetadata.ValueCountLimit ?? baseFormOptions.ValueCountLimit,
+                KeyLengthLimit = finalFormOptionsMetadata.KeyLengthLimit ?? baseFormOptions.KeyLengthLimit,
+                ValueLengthLimit = finalFormOptionsMetadata.ValueLengthLimit ?? baseFormOptions.ValueLengthLimit,
+                MultipartBoundaryLengthLimit = finalFormOptionsMetadata.MultipartBoundaryLengthLimit ?? baseFormOptions.MultipartBoundaryLengthLimit,
+                MultipartHeadersCountLimit = finalFormOptionsMetadata.MultipartHeadersCountLimit ?? baseFormOptions.MultipartHeadersCountLimit,
+                MultipartHeadersLengthLimit = finalFormOptionsMetadata.MultipartHeadersLengthLimit ?? baseFormOptions.MultipartHeadersLengthLimit,
+                MultipartBodyLengthLimit = finalFormOptionsMetadata.MultipartBodyLengthLimit ?? baseFormOptions.MultipartBodyLengthLimit
+            };
+            features.Set<IFormFeature>(new FormFeature(context.Request, formOptions));
+            Log.AppliedFormOptions(_logger);
+        }
+        else
+        {
+            Log.CannotApplyFormOptions(_logger);
+        }
+    }
+
     private static partial class Log
     {
         public static void MatchSuccess(ILogger logger, Endpoint endpoint)
@@ -377,5 +419,11 @@ internal sealed partial class EndpointRoutingMiddleware
 
         [LoggerMessage(12, LogLevel.Debug, "The maximum request body size has been disabled.", EventName = "MaxRequestBodySizeDisabled")]
         public static partial void MaxRequestBodySizeDisabled(ILogger logger);
+
+        [LoggerMessage(13, LogLevel.Warning, "Unable to apply configured form options since the request form has already been read.", EventName = "CannotApplyFormOptions")]
+        public static partial void CannotApplyFormOptions(ILogger logger);
+
+        [LoggerMessage(14, LogLevel.Debug, "Applied the configured form options on the current request.", EventName = "AppliedFormOptions")]
+        public static partial void AppliedFormOptions(ILogger logger);
     }
 }

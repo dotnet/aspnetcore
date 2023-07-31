@@ -31,7 +31,7 @@ public class RoutingMetricsTests
                 c.SetEndpoint(routeEndpointBuilder.Build());
             }),
             meterFactory: meterFactory);
-        var httpContext = new DefaultHttpContext();
+        var httpContext = CreateHttpContext();
         var meter = meterFactory.Meters.Single();
 
         using var routingMatchAttemptsCollector = new MetricCollector<long>(meterFactory, RoutingMetrics.MeterName, "aspnetcore.routing.match_attempts");
@@ -65,7 +65,7 @@ public class RoutingMetricsTests
                 c.SetEndpoint(routeEndpointBuilder.Build());
             }),
             meterFactory: meterFactory);
-        var httpContext = new DefaultHttpContext();
+        var httpContext = CreateHttpContext();
         var meter = meterFactory.Meters.Single();
 
         using var routingMatchAttemptsCollector = new MetricCollector<long>(meterFactory, RoutingMetrics.MeterName, "aspnetcore.routing.match_attempts");
@@ -92,7 +92,7 @@ public class RoutingMetricsTests
                 c.SetEndpoint(new Endpoint(c => Task.CompletedTask, EndpointMetadataCollection.Empty, "Test name"));
             }),
             meterFactory: meterFactory);
-        var httpContext = new DefaultHttpContext();
+        var httpContext = CreateHttpContext();
         var meter = meterFactory.Meters.Single();
 
         using var routingMatchAttemptsCollector = new MetricCollector<long>(meterFactory, RoutingMetrics.MeterName, "aspnetcore.routing.match_attempts");
@@ -116,7 +116,7 @@ public class RoutingMetricsTests
         var middleware = CreateMiddleware(
             matcherFactory: new TestMatcherFactory(false),
             meterFactory: meterFactory);
-        var httpContext = new DefaultHttpContext();
+        var httpContext = CreateHttpContext();
         var meter = meterFactory.Meters.Single();
 
         using var routingMatchAttemptsCollector = new MetricCollector<long>(meterFactory, RoutingMetrics.MeterName, "aspnetcore.routing.match_attempts");
@@ -170,5 +170,15 @@ public class RoutingMetricsTests
             next);
 
         return middleware;
+    }
+
+    private HttpContext CreateHttpContext()
+    {
+        var httpContext = new DefaultHttpContext
+        {
+            RequestServices = new TestServiceProvider()
+        };
+
+        return httpContext;
     }
 }
