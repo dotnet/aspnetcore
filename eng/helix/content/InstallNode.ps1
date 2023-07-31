@@ -1,12 +1,12 @@
  <# 
  .SYNOPSIS 
-     Installs NodeJs from http://nodejs.org/dist on a machine
+     Installs NodeJs from https://nodejs.org/dist on a machine
  .DESCRIPTION 
-     This script installs NodeJs from http://nodejs.org/dist on a machine. 
+     This script installs NodeJs from https://nodejs.org/dist on a machine. 
  .PARAMETER Version
      The version of NodeJS to install.
  .LINK 
-     https://nodejs.org/en/
+     httpss://nodejs.org/en/
  #> 
 param(
     [Parameter(Mandatory = $true)]
@@ -32,7 +32,7 @@ if (Test-Path "$InstallDir\node.exe")
 }
 
 $nodeFile="node-v$Version-win-x64"
-$url="http://nodejs.org/dist/v$Version/$nodeFile.zip"
+$url="https://nodejs.org/dist/v$Version/$nodeFile.zip"
 Write-Host "Starting download of NodeJs ${Version} from $url"
 & $PSScriptRoot\Download.ps1 $url nodejs.zip
 Write-Host "Done downloading NodeJS ${Version}"
