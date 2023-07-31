@@ -3,6 +3,7 @@
 
 using System.Collections.Frozen;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
 using Microsoft.AspNetCore.Http;
 
@@ -13,26 +14,21 @@ internal sealed class HostingMetrics : IDisposable
     public const string MeterName = "Microsoft.AspNetCore.Hosting";
 
     private readonly Meter _meter;
-    private readonly UpDownCounter<long> _currentRequestsCounter;
+    private readonly UpDownCounter<long> _activeRequestsCounter;
     private readonly Histogram<double> _requestDuration;
-    private readonly Counter<long> _unhandledRequestsCounter;
 
     public HostingMetrics(IMeterFactory meterFactory)
     {
         _meter = meterFactory.Create(MeterName);
 
-        _currentRequestsCounter = _meter.CreateUpDownCounter<long>(
-            "http-server-current-requests",
+        _activeRequestsCounter = _meter.CreateUpDownCounter<long>(
+            "http.server.active_requests",
             description: "Number of HTTP requests that are currently active on the server.");
 
         _requestDuration = _meter.CreateHistogram<double>(
-            "http-server-request-duration",
+            "http.server.duration",
             unit: "s",
-            description: "The duration of HTTP requests on the server.");
-
-        _unhandledRequestsCounter = _meter.CreateCounter<long>(
-            "http-server-unhandled-requests",
-            description: "Number of HTTP requests that reached the end of the middleware pipeline without being handled by application code.");
+            description: "Measures the duration of inbound HTTP requests.");
     }
 
     // Note: Calling code checks whether counter is enabled.
@@ -41,35 +37,43 @@ internal sealed class HostingMetrics : IDisposable
         // Tags must match request end.
         var tags = new TagList();
         InitializeRequestTags(ref tags, isHttps, scheme, method, host);
-        _currentRequestsCounter.Add(1, tags);
+        _activeRequestsCounter.Add(1, tags);
     }
 
-    public void RequestEnd(string protocol, bool isHttps, string scheme, string method, HostString host, string? route, int statusCode, Exception? exception, List<KeyValuePair<string, object?>>? customTags, long startTimestamp, long currentTimestamp)
+    public void RequestEnd(string protocol, bool isHttps, string scheme, string method, HostString host, string? route, int statusCode, bool unhandledRequest, Exception? exception, List<KeyValuePair<string, object?>>? customTags, long startTimestamp, long currentTimestamp)
     {
         var tags = new TagList();
         InitializeRequestTags(ref tags, isHttps, scheme, method, host);
 
         // Tags must match request start.
-        if (_currentRequestsCounter.Enabled)
+        if (_activeRequestsCounter.Enabled)
         {
-            _currentRequestsCounter.Add(-1, tags);
+            _activeRequestsCounter.Add(-1, tags);
         }
 
         if (_requestDuration.Enabled)
         {
-            tags.Add("protocol", protocol);
+            tags.Add("network.protocol.name", "http");
+            if (TryGetHttpVersion(protocol, out var httpVersion))
+            {
+                tags.Add("network.protocol.version", httpVersion);
+            }
+            if (unhandledRequest)
+            {
+                tags.Add("aspnet.request.is_unhandled", true);
+            }
 
             // Add information gathered during request.
-            tags.Add("status-code", GetBoxedStatusCode(statusCode));
+            tags.Add("http.response.status_code", GetBoxedStatusCode(statusCode));
             if (route != null)
             {
-                tags.Add("route", route);
+                tags.Add("http.route", route);
             }
             // This exception is only present if there is an unhandled exception.
-            // An exception caught by ExceptionHandlerMiddleware and DeveloperExceptionMiddleware isn't thrown to here. Instead, those middleware add exception-name to custom tags.
+            // An exception caught by ExceptionHandlerMiddleware and DeveloperExceptionMiddleware isn't thrown to here. Instead, those middleware add exception.type to custom tags.
             if (exception != null)
             {
-                tags.Add("exception-name", exception.GetType().FullName);
+                tags.Add("exception.type", exception.GetType().FullName);
             }
             if (customTags != null)
             {
@@ -84,25 +88,20 @@ internal sealed class HostingMetrics : IDisposable
         }
     }
 
-    public void UnhandledRequest()
-    {
-        _unhandledRequestsCounter.Add(1);
-    }
-
     public void Dispose()
     {
         _meter.Dispose();
     }
 
-    public bool IsEnabled() => _currentRequestsCounter.Enabled || _requestDuration.Enabled || _unhandledRequestsCounter.Enabled;
+    public bool IsEnabled() => _activeRequestsCounter.Enabled || _requestDuration.Enabled;
 
     private static void InitializeRequestTags(ref TagList tags, bool isHttps, string scheme, string method, HostString host)
     {
-        tags.Add("scheme", scheme);
-        tags.Add("method", method);
+        tags.Add("url.scheme", scheme);
+        tags.Add("http.request.method", ResolveHttpMethod(method));
         if (host.HasValue)
         {
-            tags.Add("host", host.Host);
+            tags.Add("server.address", host.Host);
 
             // Port is parsed each time it's accessed. Store part in local variable.
             if (host.Port is { } port)
@@ -110,7 +109,7 @@ internal sealed class HostingMetrics : IDisposable
                 // Add port tag when not the default value for the current scheme
                 if ((isHttps && port != 443) || (!isHttps && port != 80))
                 {
-                    tags.Add("port", port);
+                    tags.Add("server.port", port);
                 }
             }
         }
@@ -196,5 +195,61 @@ internal sealed class HostingMetrics : IDisposable
         }
 
         return statusCode;
+    }
+
+    private static readonly FrozenDictionary<string, string> KnownMethods = FrozenDictionary.ToFrozenDictionary(new[]
+    {
+        KeyValuePair.Create(HttpMethods.Connect, HttpMethods.Connect),
+        KeyValuePair.Create(HttpMethods.Delete, HttpMethods.Delete),
+        KeyValuePair.Create(HttpMethods.Get, HttpMethods.Get),
+        KeyValuePair.Create(HttpMethods.Head, HttpMethods.Head),
+        KeyValuePair.Create(HttpMethods.Options, HttpMethods.Options),
+        KeyValuePair.Create(HttpMethods.Patch, HttpMethods.Patch),
+        KeyValuePair.Create(HttpMethods.Post, HttpMethods.Post),
+        KeyValuePair.Create(HttpMethods.Put, HttpMethods.Put),
+        KeyValuePair.Create(HttpMethods.Trace, HttpMethods.Trace)
+    }, StringComparer.OrdinalIgnoreCase);
+
+    private static string ResolveHttpMethod(string method)
+    {
+        if (KnownMethods.TryGetValue(method, out var result))
+        {
+            // KnownMethods ignores case. Use the value returned by the dictionary to have a consistent case.
+            return result;
+        }
+        return "_UNKNOWN";
+    }
+
+    private static bool TryGetHttpVersion(string protocol, [NotNullWhen(true)] out string? version)
+    {
+        if (HttpProtocol.IsHttp11(protocol))
+        {
+            version = "1.1";
+            return true;
+        }
+        if (HttpProtocol.IsHttp2(protocol))
+        {
+            // HTTP/2 only has one version.
+            version = "2";
+            return true;
+        }
+        if (HttpProtocol.IsHttp3(protocol))
+        {
+            // HTTP/3 only has one version.
+            version = "3";
+            return true;
+        }
+        if (HttpProtocol.IsHttp10(protocol))
+        {
+            version = "1.0";
+            return true;
+        }
+        if (HttpProtocol.IsHttp09(protocol))
+        {
+            version = "0.9";
+            return true;
+        }
+        version = null;
+        return false;
     }
 }
