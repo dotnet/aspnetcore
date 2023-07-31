@@ -289,7 +289,7 @@ public class EndpointRoutingMiddlewareTest
         await middleware.Invoke(httpContext);
 
         // Assert
-        var write = Assert.Single(sink.Writes.Where(w => w.EventId.Name == "FeatureIsReadOnly"));
+        var write = Assert.Single(sink.Writes.Where(w => w.EventId.Name == "RequestSizeFeatureIsReadOnly"));
         Assert.Equal($"A request body size limit could not be applied. The {nameof(IHttpMaxRequestBodySizeFeature)} for the server is read-only.", write.Message);
 
         var actualRequestSizeLimit = maxRequestBodySizeFeature.MaxRequestBodySize;
@@ -318,7 +318,7 @@ public class EndpointRoutingMiddlewareTest
         await middleware.Invoke(httpContext);
 
         // Assert
-        var write = Assert.Single(sink.Writes.Where(w => w.EventId.Name == "FeatureNotFound"));
+        var write = Assert.Single(sink.Writes.Where(w => w.EventId.Name == "RequestSizeFeatureNotFound"));
         Assert.Equal($"A request body size limit could not be applied. This server does not support the {nameof(IHttpMaxRequestBodySizeFeature)}.", write.Message);
     }
 
@@ -346,7 +346,7 @@ public class EndpointRoutingMiddlewareTest
         await middleware.Invoke(httpContext);
 
         // Assert
-        var write = Assert.Single(sink.Writes.Where(w => w.EventId.Name == "MetadataNotFound"));
+        var write = Assert.Single(sink.Writes.Where(w => w.EventId.Name == "RequestSizeLimitMetadataNotFound"));
         Assert.Equal($"The endpoint does not specify the {nameof(IRequestSizeLimitMetadata)}.", write.Message);
     }
 
