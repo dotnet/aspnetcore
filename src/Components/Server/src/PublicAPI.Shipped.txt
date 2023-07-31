@@ -48,7 +48,6 @@ Microsoft.AspNetCore.Components.Server.ServerAuthenticationStateProvider.ServerA
 Microsoft.AspNetCore.Components.Server.ServerAuthenticationStateProvider.SetAuthenticationState(System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Authorization.AuthenticationState!>! authenticationStateTask) -> void
 Microsoft.Extensions.DependencyInjection.ComponentServiceCollectionExtensions
 Microsoft.Extensions.DependencyInjection.IServerSideBlazorBuilder
-Microsoft.Extensions.DependencyInjection.IServerSideBlazorBuilder.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 Microsoft.Extensions.DependencyInjection.ServerSideBlazorBuilderExtensions
 override Microsoft.AspNetCore.Components.Server.ServerAuthenticationStateProvider.GetAuthenticationStateAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Authorization.AuthenticationState!>!
 static Microsoft.AspNetCore.Builder.ComponentEndpointRouteBuilderExtensions.MapBlazorHub(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints) -> Microsoft.AspNetCore.Builder.ComponentEndpointConventionBuilder!
