@@ -4,7 +4,7 @@
  .DESCRIPTION
      This script installs Node.js from https://nodejs.org/dist on a machine.
  .PARAMETER Version
-     The version of Node.JS to install.
+     The version of Node.js to install.
  .LINK
      https://nodejs.org/en/
  #>
