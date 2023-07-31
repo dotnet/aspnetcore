@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components.Discovery;
 /// A razor component page <see cref="PageComponentBuilder"/>.
 /// </summary>
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
-public class PageComponentBuilder : IEquatable<PageComponentBuilder?>
+internal class PageComponentBuilder : IEquatable<PageComponentBuilder?>
 {
     private IReadOnlyList<string> _routeTemplates = Array.Empty<string>();
 
