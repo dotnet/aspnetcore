@@ -26,7 +26,7 @@ internal static class CommandLineApplicationExtensions
         => command.Option(
             template,
             description,
-            template.IndexOf("<", StringComparison.Ordinal) != -1
+            template.Contains('<')
                 ? template.EndsWith(">...", StringComparison.Ordinal) ? CommandOptionType.MultipleValue : CommandOptionType.SingleValue
                 : CommandOptionType.NoValue);
 
