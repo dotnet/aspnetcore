@@ -6,7 +6,7 @@
  .PARAMETER Version
      The version of NodeJS to install.
  .LINK 
-     httpss://nodejs.org/en/
+     https://nodejs.org/en/
  #> 
 param(
     [Parameter(Mandatory = $true)]
