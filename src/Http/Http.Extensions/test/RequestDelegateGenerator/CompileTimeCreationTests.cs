@@ -315,9 +315,9 @@ public class Wrapper<T> { }
         var source = $$"""
 app.MapGet("/class", (BindableClassWithNullReturn param) => "Hello world!");
 app.MapGet("/class-with-filter", (BindableClassWithNullReturn param) => "Hello world!")
-     .AddEndpointFilter((c, n) => n(c));
-app.MapGet("/struct", (BindableStructWithNullReturn param) => "Hello world!");
-app.MapGet("/struct-with-filter", (BindableStructWithNullReturn param) => "Hello world!")
+    .AddEndpointFilter((c, n) => n(c));
+app.MapGet("/null-struct", (BindableStructWithNullReturn param) => "Hello world!");
+app.MapGet("/null-struct-with-filter", (BindableStructWithNullReturn param) => "Hello world!")
     .AddEndpointFilter((c, n) => n(c));
 """;
         var (_, compilation) = await RunGeneratorAsync(source);
@@ -333,5 +333,29 @@ app.MapGet("/struct-with-filter", (BindableStructWithNullReturn param) => "Hello
 
         Assert.All(TestSink.Writes, context => Assert.Equal("RequiredParameterNotProvided", context.EventId.Name));
         await VerifyAgainstBaselineUsingFile(compilation);
+    }
+
+    [Fact]
+    public async Task MapAction_BindAsync_StructType()
+    {
+        var source = $$"""
+app.MapGet("/struct", (BindableStruct param) => $"Hello {param.Value}!");
+app.MapGet("/struct-with-filter", (BindableStruct param) => $"Hello {param.Value}!")
+     .AddEndpointFilter((c, n) => n(c));
+app.MapGet("/optional-struct", (BindableStruct? param) => $"Hello {param?.Value}!");
+app.MapGet("/optional-struct-with-filter", (BindableStruct? param) => $"Hello {param?.Value}!")
+     .AddEndpointFilter((c, n) => n(c));
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoints = GetEndpointsFromCompilation(compilation);
+
+        foreach (var endpoint in endpoints)
+        {
+            var httpContext = CreateHttpContext();
+            httpContext.Request.QueryString = QueryString.Create("value", endpoint.DisplayName);
+            await endpoint.RequestDelegate(httpContext);
+
+            await VerifyResponseBodyAsync(httpContext, $"Hello {endpoint.DisplayName}!");
+        }
     }
 }

@@ -1065,3 +1065,19 @@ public struct BindableStructWithNullReturn
         return null;
     }
 }
+
+public struct BindableStruct
+{
+    public BindableStruct(string value)
+    {
+        Value = value;
+    }
+
+    public string Value { get; }
+
+    public static async ValueTask<BindableStruct> BindAsync(HttpContext httpContext, ParameterInfo parameter)
+    {
+        await Task.CompletedTask;
+        return new BindableStruct(httpContext.Request.Query["value"].ToString());
+    }
+}

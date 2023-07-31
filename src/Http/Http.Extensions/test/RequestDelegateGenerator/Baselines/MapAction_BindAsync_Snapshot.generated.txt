@@ -304,12 +304,6 @@ namespace Microsoft.AspNetCore.Http.Generated
                     var wasParamCheckFailure = false;
                     var httpContext_local = httpContext;
                     var myBindAsyncParam_local = await global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncStruct.BindAsync(httpContext, parameters[1]);
-                    if (myBindAsyncParam_local == null)
-                    {
-                        logOrThrowExceptionHelper.RequiredParameterNotProvided("MyBindAsyncStruct", "myBindAsyncParam", "MyBindAsyncStruct.BindAsync(HttpContext, ParameterInfo)");
-                        wasParamCheckFailure = true;
-                        myBindAsyncParam_local = default!;
-                    }
 
                     if (wasParamCheckFailure)
                     {
@@ -333,12 +327,6 @@ namespace Microsoft.AspNetCore.Http.Generated
                     var wasParamCheckFailure = false;
                     var httpContext_local = httpContext;
                     var myBindAsyncParam_local = await global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncStruct.BindAsync(httpContext, parameters[1]);
-                    if (myBindAsyncParam_local == null)
-                    {
-                        logOrThrowExceptionHelper.RequiredParameterNotProvided("MyBindAsyncStruct", "myBindAsyncParam", "MyBindAsyncStruct.BindAsync(HttpContext, ParameterInfo)");
-                        wasParamCheckFailure = true;
-                        myBindAsyncParam_local = default!;
-                    }
 
                     if (wasParamCheckFailure)
                     {
@@ -704,12 +692,6 @@ namespace Microsoft.AspNetCore.Http.Generated
                     var wasParamCheckFailure = false;
                     var httpContext_local = httpContext;
                     var myBindAsyncParam_local = await global::Microsoft.AspNetCore.Http.Generators.Tests.MyBothBindAsyncStruct.BindAsync(httpContext, parameters[1]);
-                    if (myBindAsyncParam_local == null)
-                    {
-                        logOrThrowExceptionHelper.RequiredParameterNotProvided("MyBothBindAsyncStruct", "myBindAsyncParam", "MyBothBindAsyncStruct.BindAsync(HttpContext, ParameterInfo)");
-                        wasParamCheckFailure = true;
-                        myBindAsyncParam_local = default!;
-                    }
 
                     if (wasParamCheckFailure)
                     {
@@ -733,12 +715,6 @@ namespace Microsoft.AspNetCore.Http.Generated
                     var wasParamCheckFailure = false;
                     var httpContext_local = httpContext;
                     var myBindAsyncParam_local = await global::Microsoft.AspNetCore.Http.Generators.Tests.MyBothBindAsyncStruct.BindAsync(httpContext, parameters[1]);
-                    if (myBindAsyncParam_local == null)
-                    {
-                        logOrThrowExceptionHelper.RequiredParameterNotProvided("MyBothBindAsyncStruct", "myBindAsyncParam", "MyBothBindAsyncStruct.BindAsync(HttpContext, ParameterInfo)");
-                        wasParamCheckFailure = true;
-                        myBindAsyncParam_local = default!;
-                    }
 
                     if (wasParamCheckFailure)
                     {
@@ -1101,12 +1077,6 @@ namespace Microsoft.AspNetCore.Http.Generated
                     var wasParamCheckFailure = false;
                     var httpContext_local = httpContext;
                     var myBindAsyncParam_local = await global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncStruct.BindAsync(httpContext);
-                    if (myBindAsyncParam_local == null)
-                    {
-                        logOrThrowExceptionHelper.RequiredParameterNotProvided("MySimpleBindAsyncStruct", "myBindAsyncParam", "MySimpleBindAsyncStruct.BindAsync(HttpContext)");
-                        wasParamCheckFailure = true;
-                        myBindAsyncParam_local = default!;
-                    }
 
                     if (wasParamCheckFailure)
                     {
@@ -1130,12 +1100,6 @@ namespace Microsoft.AspNetCore.Http.Generated
                     var wasParamCheckFailure = false;
                     var httpContext_local = httpContext;
                     var myBindAsyncParam_local = await global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncStruct.BindAsync(httpContext);
-                    if (myBindAsyncParam_local == null)
-                    {
-                        logOrThrowExceptionHelper.RequiredParameterNotProvided("MySimpleBindAsyncStruct", "myBindAsyncParam", "MySimpleBindAsyncStruct.BindAsync(HttpContext)");
-                        wasParamCheckFailure = true;
-                        myBindAsyncParam_local = default!;
-                    }
 
                     if (wasParamCheckFailure)
                     {

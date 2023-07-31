@@ -294,6 +294,11 @@ internal static class EndpointParameterEmitter
 
         if (!endpointParameter.IsOptional)
         {
+            // Non-nullable value types can never be null so we can avoid emitting the requiredness check.
+            if (endpointParameter.Type.IsValueType && !endpointParameter.GetBindAsyncReturnType().IsNullableOfT())
+            {
+                return;
+            }
             codeWriter.WriteLine(endpointParameter.Type.IsValueType && endpointParameter.GetBindAsyncReturnType().IsNullableOfT()
                 ? $"if (!{endpointParameter.EmitHandlerArgument()}.HasValue)"
                 : $"if ({endpointParameter.EmitHandlerArgument()} == null)");
