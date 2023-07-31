@@ -23,8 +23,7 @@ internal sealed class TemplateSegment
                 Value = segment[1..];
             }
 
-            var invalidCharacterIndex = Value.IndexOf('*');
-            if (invalidCharacterIndex != -1)
+            if (Value.Contains('*'))
             {
                 throw new InvalidOperationException($"Invalid template '{template}'. A catch-all parameter may only have '*' or '**' at the beginning of the segment.");
             }
@@ -93,7 +92,7 @@ internal sealed class TemplateSegment
 
             // Moving the check for this here instead of TemplateParser so we can allow catch-all.
             // We checked for '*' up above specifically for catch-all segments, this one checks for all others
-            if (Value.IndexOf('*') != -1)
+            if (Value.Contains('*'))
             {
                 throw new InvalidOperationException($"Invalid template '{template}'. The character '*' in parameter segment '{{{segment}}}' is not allowed.");
             }

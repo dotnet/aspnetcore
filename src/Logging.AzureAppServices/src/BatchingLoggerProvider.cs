@@ -39,11 +39,15 @@ public abstract class BatchingLoggerProvider : ILoggerProvider, ISupportExternal
         var loggerOptions = options.CurrentValue;
         if (loggerOptions.BatchSize <= 0)
         {
+#pragma warning disable CA2208 // Instantiate argument exceptions correctly
             throw new ArgumentOutOfRangeException(nameof(loggerOptions.BatchSize), $"{nameof(loggerOptions.BatchSize)} must be a positive number.");
+#pragma warning restore CA2208 // Instantiate argument exceptions correctly
         }
         if (loggerOptions.FlushPeriod <= TimeSpan.Zero)
         {
+#pragma warning disable CA2208 // Instantiate argument exceptions correctly
             throw new ArgumentOutOfRangeException(nameof(loggerOptions.FlushPeriod), $"{nameof(loggerOptions.FlushPeriod)} must be longer than zero.");
+#pragma warning restore CA2208 // Instantiate argument exceptions correctly
         }
 
         _interval = loggerOptions.FlushPeriod;

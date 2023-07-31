@@ -573,10 +573,12 @@ public partial class RedisCache : IDistributedCache, IDisposable
     {
         if (options.AbsoluteExpiration.HasValue && options.AbsoluteExpiration <= creationTime)
         {
+#pragma warning disable CA2208 // Instantiate argument exceptions correctly
             throw new ArgumentOutOfRangeException(
                 nameof(DistributedCacheEntryOptions.AbsoluteExpiration),
                 options.AbsoluteExpiration.Value,
                 "The absolute expiration value must be in the future.");
+#pragma warning restore CA2208 // Instantiate argument exceptions correctly
         }
 
         if (options.AbsoluteExpirationRelativeToNow.HasValue)
