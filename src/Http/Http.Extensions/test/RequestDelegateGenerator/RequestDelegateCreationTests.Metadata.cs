@@ -467,6 +467,22 @@ app.MapPost("/", (AddsCustomParameterMetadata param1) => "Hello").WithMetadata(n
     }
 
     [Fact]
+    public async Task Create_CombinesDefaultMetadata_AndMetadataFromParameterTypesImplementingIEndpointMetadataProvider_AndNonMetadataProviderParameter()
+    {
+        // Arrange
+        var (_, compilation) = await RunGeneratorAsync("""
+app.MapPost("/", (AddsCustomParameterMetadata param1, HttpContext context) => "Hello").WithMetadata(new CustomEndpointMetadata { Source = MetadataSource.Caller });
+""");
+
+        // Act
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        // Assert
+        Assert.Contains(endpoint.Metadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Caller });
+        Assert.Contains(endpoint.Metadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Parameter });
+    }
+
+    [Fact]
     public async Task Create_FlowsRoutePattern_ToMetadataProvider()
     {
         // Arrange

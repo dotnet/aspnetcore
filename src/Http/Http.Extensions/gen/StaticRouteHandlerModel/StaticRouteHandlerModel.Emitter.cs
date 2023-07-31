@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel.Emitters;
 using Microsoft.CodeAnalysis;
 
@@ -12,7 +13,7 @@ namespace Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerM
 
 internal static class StaticRouteHandlerModelEmitter
 {
-    public static string EmitHandlerDelegateType(this Endpoint endpoint, bool considerOptionality = false)
+    public static string EmitHandlerDelegateType(this Endpoint endpoint)
     {
         // Emits a delegate type to use when casting the input that captures
         // default parameter values.
@@ -23,25 +24,20 @@ internal static class StaticRouteHandlerModelEmitter
         {
             return endpoint.Response == null || (endpoint.Response.HasNoResponse && !endpoint.Response.IsAwaitable) ? "void ()" : $"{endpoint.Response.WrappedResponseType} ()";
         }
-        var parameterTypeList = string.Join(", ", endpoint.Parameters.Select((p, i) => $"{getType(p, considerOptionality)} arg{i}{(p.HasDefaultValue ? $"= {p.DefaultValue}" : string.Empty)}"));
+        var parameterTypeList = string.Join(", ", endpoint.Parameters.Select((p, i) => $"{EmitUnwrappedParameterType(p)} arg{i}{(p.HasDefaultValue ? $"= {p.DefaultValue}" : string.Empty)}"));
 
         if (endpoint.Response == null || (endpoint.Response.HasNoResponse && !endpoint.Response.IsAwaitable))
         {
             return $"void ({parameterTypeList})";
         }
         return $"{endpoint.Response.WrappedResponseType} ({parameterTypeList})";
-
-        static string getType(EndpointParameter p, bool considerOptionality)
-        {
-            return considerOptionality
-                ? p.Type.ToDisplayString(p.IsOptional ? NullableFlowState.MaybeNull : NullableFlowState.NotNull, EmitterConstants.DisplayFormat)
-                : p.Type.ToDisplayString(EmitterConstants.DisplayFormat);
-        }
     }
 
-    public static string EmitSourceKey(this Endpoint endpoint)
+    private static string EmitUnwrappedParameterType(EndpointParameter p)
     {
-        return $@"(@""{endpoint.Location.File}"", {endpoint.Location.LineNumber})";
+        var type = p.UnwrapParameterType();
+        var isOptional = p.IsOptional || type.NullableAnnotation == NullableAnnotation.Annotated;
+        return type.ToDisplayString(isOptional ? NullableFlowState.MaybeNull : NullableFlowState.NotNull, EmitterConstants.DisplayFormat);
     }
 
     public static string EmitVerb(this Endpoint endpoint)
@@ -394,7 +390,7 @@ internal static class StaticRouteHandlerModelEmitter
             // dealing with nullable types here. We could try to do fancy things to branch the logic here depending on
             // the nullability, but at the end of the day we are going to call GetArguments(...) - at runtime the nullability
             // suppression operator doesn't come into play - so its not worth worrying about.
-            sb.Append($"ic.GetArgument<{endpoint.Parameters[i].Type.ToDisplayString(EmitterConstants.DisplayFormat)}>({i})!");
+            sb.Append($"ic.GetArgument<{EmitUnwrappedParameterType(endpoint.Parameters[i])}>({i})!");
 
             if (i < endpoint.Parameters.Length - 1)
             {
@@ -416,7 +412,7 @@ internal static class StaticRouteHandlerModelEmitter
 
         for (var i = 0; i < endpoint.Parameters.Length; i++)
         {
-            sb.Append(endpoint.Parameters[i].Type.ToDisplayString(endpoint.Parameters[i].IsOptional ? NullableFlowState.MaybeNull : NullableFlowState.NotNull, EmitterConstants.DisplayFormat));
+            sb.Append(EmitUnwrappedParameterType(endpoint.Parameters[i]));
 
             if (i < endpoint.Parameters.Length - 1)
             {
