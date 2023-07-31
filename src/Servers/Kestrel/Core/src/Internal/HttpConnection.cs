@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
-using HttpProtocol = Microsoft.AspNetCore.Http.HttpProtocol;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 
