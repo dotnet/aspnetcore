@@ -53,7 +53,7 @@ else {
     [System.IO.Compression.ZipFile]::ExtractToDirectory("nodejs.zip", $tempDir)
 }
 
-Write-Host "Expanded Node.Js to $tempDir, moving $tempDir\$nodeFile to $InstallDir subdir"
+Write-Host "Expanded Node.js to $tempDir, moving $tempDir\$nodeFile to $InstallDir subdir"
 move $tempDir\$nodeFile $InstallDir
 if (Test-Path "$InstallDir\node.exe")
 {
