@@ -917,7 +917,7 @@ public class ExceptionHandlerTest
     {
         // Arrange
         var meterFactory = new TestMeterFactory();
-        using var instrumentCollector = new MetricCollector<double>(meterFactory, "Microsoft.AspNetCore.Hosting", "http-server-request-duration");
+        using var instrumentCollector = new MetricCollector<double>(meterFactory, "Microsoft.AspNetCore.Hosting", "http.server.duration");
 
         using var host = new HostBuilder()
             .ConfigureServices(s =>
@@ -961,8 +961,8 @@ public class ExceptionHandlerTest
             m =>
             {
                 Assert.True(m.Value > 0);
-                Assert.Equal(404, (int)m.Tags.ToArray().Single(t => t.Key == "status-code").Value);
-                Assert.Equal("System.Exception", (string)m.Tags.ToArray().Single(t => t.Key == "exception-name").Value);
+                Assert.Equal(404, (int)m.Tags["http.response.status_code"]);
+                Assert.Equal("System.Exception", (string)m.Tags["exception.type"]);
             });
     }
 }

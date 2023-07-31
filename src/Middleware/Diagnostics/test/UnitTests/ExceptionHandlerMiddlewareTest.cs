@@ -211,7 +211,7 @@ public class ExceptionHandlerMiddlewareTest
         var middleware = CreateMiddleware(_ => Task.CompletedTask, optionsAccessor, exceptionHandlers, meterFactory);
         var meter = meterFactory.Meters.Single();
 
-        using var diagnosticsRequestExceptionCollector = new MetricCollector<long>(meterFactory, DiagnosticsMetrics.MeterName, "diagnostics-handler-exception");
+        using var diagnosticsRequestExceptionCollector = new MetricCollector<long>(meterFactory, DiagnosticsMetrics.MeterName, "aspnet.diagnostics_handler.exceptions");
 
         // Act
         await middleware.Invoke(httpContext);
@@ -234,7 +234,7 @@ public class ExceptionHandlerMiddlewareTest
         var middleware = CreateMiddleware(_ => throw new InvalidOperationException(), optionsAccessor, exceptionHandlers, meterFactory);
         var meter = meterFactory.Meters.Single();
 
-        using var diagnosticsRequestExceptionCollector = new MetricCollector<long>(meterFactory, DiagnosticsMetrics.MeterName, "diagnostics-handler-exception");
+        using var diagnosticsRequestExceptionCollector = new MetricCollector<long>(meterFactory, DiagnosticsMetrics.MeterName, "aspnet.diagnostics_handler.exceptions");
 
         // Act
         await middleware.Invoke(httpContext);
@@ -256,7 +256,7 @@ public class ExceptionHandlerMiddlewareTest
         var middleware = CreateMiddleware(_ => throw new InvalidOperationException(), optionsAccessor, exceptionHandlers, meterFactory);
         var meter = meterFactory.Meters.Single();
 
-        using var diagnosticsRequestExceptionCollector = new MetricCollector<long>(meterFactory, DiagnosticsMetrics.MeterName, "diagnostics-handler-exception");
+        using var diagnosticsRequestExceptionCollector = new MetricCollector<long>(meterFactory, DiagnosticsMetrics.MeterName, "aspnet.diagnostics_handler.exceptions");
 
         // Act
         await Assert.ThrowsAsync<InvalidOperationException>(() => middleware.Invoke(httpContext));
@@ -281,7 +281,7 @@ public class ExceptionHandlerMiddlewareTest
         var middleware = CreateMiddleware(_ => throw new InvalidOperationException(), optionsAccessor, meterFactory: meterFactory);
         var meter = meterFactory.Meters.Single();
 
-        using var diagnosticsRequestExceptionCollector = new MetricCollector<long>(meterFactory, DiagnosticsMetrics.MeterName, "diagnostics-handler-exception");
+        using var diagnosticsRequestExceptionCollector = new MetricCollector<long>(meterFactory, DiagnosticsMetrics.MeterName, "aspnet.diagnostics_handler.exceptions");
 
         // Act
         await middleware.Invoke(httpContext);
@@ -305,7 +305,7 @@ public class ExceptionHandlerMiddlewareTest
         var middleware = CreateMiddleware(_ => throw new InvalidOperationException(), optionsAccessor, meterFactory: meterFactory);
         var meter = meterFactory.Meters.Single();
 
-        using var diagnosticsRequestExceptionCollector = new MetricCollector<long>(meterFactory, DiagnosticsMetrics.MeterName, "diagnostics-handler-exception");
+        using var diagnosticsRequestExceptionCollector = new MetricCollector<long>(meterFactory, DiagnosticsMetrics.MeterName, "aspnet.diagnostics_handler.exceptions");
 
         // Act
         await Assert.ThrowsAsync<InvalidOperationException>(() => middleware.Invoke(httpContext));
