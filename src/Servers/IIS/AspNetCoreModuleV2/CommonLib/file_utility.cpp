@@ -11,30 +11,23 @@
 HRESULT
 FILE_UTILITY::IsPathUnc(
     __in  LPCWSTR       pszPath,
-    __out BOOL *        pfIsUnc
+    __out bool*         pfIsUnc
 )
 {
-    HRESULT hr = S_OK;
+    if (pszPath == nullptr || pfIsUnc == nullptr)
+    {
+        return E_INVALIDARG;
+    }
+
     STRU strTempPath;
-
-    if ( pszPath == NULL || pfIsUnc == NULL )
+    HRESULT hr = MakePathCanonicalizationProof(pszPath, &strTempPath );
+    if (FAILED(hr))
     {
-        hr = E_INVALIDARG;
-        goto Finished;
+        return hr;
     }
 
-    hr = MakePathCanonicalizationProof( (LPWSTR) pszPath, &strTempPath );
-    if ( FAILED(hr) )
-    {
-        goto Finished;
-    }
-
-    //
-    // MakePathCanonicalizationProof will map \\?\UNC, \\.\UNC and \\ to \\?\UNC
-    //
-    (*pfIsUnc) = ( _wcsnicmp( strTempPath.QueryStr(), L"\\\\?\\UNC\\", 8 /* sizeof \\?\UNC\ */) == 0 );
-
-Finished:
+    // MakePathCanonicalizationProof will map \\?\UNC, \\.\UNC and \\ to \\?\UNC (which is 8 characters)
+    *pfIsUnc = (_wcsnicmp(strTempPath.QueryStr(), L"\\\\?\\UNC\\", 8) == 0);
 
     return hr;
 }
@@ -103,69 +96,57 @@ Finished:
     return hr;
 }
 
+// Ensures that the specified directory path exists, creating it if necessary. If any part of the directory
+// creation fails and the directory does not already exist, it returns an error obtained from GetLastError.
+// If all directories are successfully created or already exist, it returns S_OK.
 HRESULT
-FILE_UTILITY::EnsureDirectoryPathExist(
-    _In_  LPCWSTR pszPath
+FILE_UTILITY::EnsureDirectoryPathExists(
+    _In_ const LPCWSTR pszPath
 )
 {
-    HRESULT hr = S_OK;
-    STRU    struPath;
-    DWORD   dwPosition = 0;
-    BOOL    fDone = FALSE;
-    BOOL    fUnc = FALSE;
-
+    STRU struPath;
     struPath.Copy(pszPath);
-    hr = IsPathUnc(pszPath, &fUnc);
+
+    bool isUnc = false;
+    HRESULT hr = IsPathUnc(pszPath, &isUnc);
     if (FAILED(hr))
     {
-        goto Finished;
+        return hr;
     }
-    if (fUnc)
+
+    // Initialize position based on the type of the path.
+    DWORD position = isUnc ? 8 // Skip "\\?\UNC\"
+                   : (struPath.IndexOf(L'?', 0) != -1) ? 4 // Skip "\\?\"
+                   : 0; // Skip nothing
+
+    // Traverse the path string, creating directories as we go.
+    while (true)
     {
-        // "\\?\UNC\"
-        dwPosition = 8;
-    }
-    else if (struPath.IndexOf(L'?', 0) != -1)
-    {
-        // sceanrio "\\?\"
-        dwPosition = 4;
-    }
-    while (!fDone)
-    {
-        dwPosition = struPath.IndexOf(L'\\', dwPosition + 1);
-        if (dwPosition == -1)
+        position = struPath.IndexOf(L'\\', position + 1);
+        if (position == -1)
         {
-            // not found '/'
-            fDone = TRUE;
-            goto Finished;
+            // Didn't find a path separator, so we're done.
+            return S_OK;
         }
-        else if (dwPosition ==0)
+
+        // position is >= 1 here since we started searching at position + 1
+        if (struPath.QueryStr()[position - 1] == L':')
         {
-            hr = ERROR_INTERNAL_ERROR;
-            goto Finished;
-        }
-        else if (struPath.QueryStr()[dwPosition-1] == L':')
-        {
-            //  skip volume case
+            // Skip the volume case
             continue;
         }
-        else
+
+        // Temporarily terminate the string at the current path separator
+        struPath.QueryStr()[position] = L'\0';
+        if (!CreateDirectory(struPath.QueryStr(), nullptr) && GetLastError() != ERROR_ALREADY_EXISTS)
         {
-            struPath.QueryStr()[dwPosition] = L'\0';
+            // Unable to create directory and it doesn't already exist
+            return HRESULT_FROM_WIN32(GetLastError());
         }
 
-        if (!CreateDirectory(struPath.QueryStr(), NULL) &&
-            ERROR_ALREADY_EXISTS != GetLastError())
-        {
-            hr = HRESULT_FROM_WIN32(GetLastError());
-            fDone = TRUE;
-            goto Finished;
-        }
-        struPath.QueryStr()[dwPosition] = L'\\';
+        // Restore the path separator
+        struPath.QueryStr()[position] = L'\\';
     }
-
-Finished:
-    return hr;
 }
 
 std::string FILE_UTILITY::GetHtml(HMODULE module, int page, USHORT statusCode, USHORT subStatusCode, const std::string& specificReasonPhrase, const std::string& solution)
