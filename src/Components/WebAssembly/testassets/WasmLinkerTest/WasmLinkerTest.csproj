@@ -5,6 +5,7 @@
     <SelfContained>true</SelfContained>
     <UseMonoRuntime>true</UseMonoRuntime>
     <UsingMicrosoftNETSdkBlazorWebAssembly>true</UsingMicrosoftNETSdkBlazorWebAssembly>
+    <UsingMicrosoftNETSdkWebAssembly>true</UsingMicrosoftNETSdkWebAssembly>
     <PublishTrimmed>true</PublishTrimmed>
   </PropertyGroup>
   <ItemGroup>
