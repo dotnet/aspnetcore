@@ -33,7 +33,7 @@ if (Test-Path "$InstallDir\node.exe")
 
 $nodeFile="node-v$Version-win-x64"
 $url="https://nodejs.org/dist/v$Version/$nodeFile.zip"
-Write-Host "Starting download of Node.Js ${Version} from $url"
+Write-Host "Starting download of Node.js ${Version} from $url"
 & $PSScriptRoot\Download.ps1 $url nodejs.zip
 Write-Host "Done downloading NodeJS ${Version}"
 
