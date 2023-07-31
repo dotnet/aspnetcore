@@ -241,7 +241,7 @@ public class ExceptionHandlerMiddlewareTest
 
         // Assert
         Assert.Collection(diagnosticsRequestExceptionCollector.GetMeasurementSnapshot(),
-            m => AssertRequestException(m, "System.InvalidOperationException", "Handled", typeof(TestExceptionHandler).FullName));
+            m => AssertRequestException(m, "System.InvalidOperationException", "handled", typeof(TestExceptionHandler).FullName));
     }
 
     [Fact]
@@ -263,7 +263,7 @@ public class ExceptionHandlerMiddlewareTest
 
         // Assert
         Assert.Collection(diagnosticsRequestExceptionCollector.GetMeasurementSnapshot(),
-            m => AssertRequestException(m, "System.InvalidOperationException", "Skipped"));
+            m => AssertRequestException(m, "System.InvalidOperationException", "skipped"));
     }
 
     private sealed class TestResponseFeature : HttpResponseFeature
@@ -288,7 +288,7 @@ public class ExceptionHandlerMiddlewareTest
 
         // Assert
         Assert.Collection(diagnosticsRequestExceptionCollector.GetMeasurementSnapshot(),
-            m => AssertRequestException(m, "System.InvalidOperationException", "Handled", null));
+            m => AssertRequestException(m, "System.InvalidOperationException", "handled", null));
     }
 
     [Fact]
@@ -312,13 +312,13 @@ public class ExceptionHandlerMiddlewareTest
 
         // Assert
         Assert.Collection(diagnosticsRequestExceptionCollector.GetMeasurementSnapshot(),
-            m => AssertRequestException(m, "System.InvalidOperationException", "Unhandled"));
+            m => AssertRequestException(m, "System.InvalidOperationException", "unhandled"));
     }
 
     private static void AssertRequestException(CollectedMeasurement<long> measurement, string exceptionName, string result, string handler = null)
     {
         Assert.Equal(1, measurement.Value);
-        Assert.Equal(exceptionName, (string)measurement.Tags["exception-name"]);
+        Assert.Equal(exceptionName, (string)measurement.Tags["exception.type"]);
         Assert.Equal(result, measurement.Tags["result"].ToString());
         if (handler == null)
         {
