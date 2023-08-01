@@ -100,6 +100,8 @@ internal sealed class HostingMetrics : IDisposable
         tags.Add("url.scheme", scheme);
         tags.Add("http.request.method", ResolveHttpMethod(method));
 
+        _ = isHttps;
+        _ = host;
         // TODO: Support configuration for enabling host header annotations
         /*
         if (host.HasValue)

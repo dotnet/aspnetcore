@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Telemetry.Testing.Metering;
 
@@ -98,7 +97,7 @@ public class HostingMetricsTests
             Assert.Equal(statusCode, (int)measurement.Tags["http.response.status_code"]);
             if (exceptionName == null)
             {
-                Assert.DoesNotContain(measurement.Tags.ToArray(), t => t.Key == "exception.type");
+                Assert.False(measurement.Tags.ContainsKey("exception.type"));
             }
             else
             {
@@ -110,7 +109,7 @@ public class HostingMetricsTests
             }
             else
             {
-                Assert.DoesNotContain(measurement.Tags.ToArray(), t => t.Key == "aspnet.request.is_unhandled");
+                Assert.False(measurement.Tags.ContainsKey("aspnet.request.is_unhandled"));
             }
         }
     }
