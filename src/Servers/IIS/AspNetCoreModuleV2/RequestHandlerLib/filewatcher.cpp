@@ -469,7 +469,7 @@ FILE_WATCHER::StopMonitor()
 
     // Signal the file watcher thread to exit
     SetEvent(m_pShutdownEvent);
-    WaitForWatcherThreadExit(10000);
+    WaitForWatcherThreadExit();
 
     if (m_fShadowCopyEnabled)
     {
