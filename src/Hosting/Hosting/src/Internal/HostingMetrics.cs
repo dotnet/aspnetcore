@@ -99,6 +99,9 @@ internal sealed class HostingMetrics : IDisposable
     {
         tags.Add("url.scheme", scheme);
         tags.Add("http.request.method", ResolveHttpMethod(method));
+
+        // TODO: Support configuration for enabling host header annotations
+        /*
         if (host.HasValue)
         {
             tags.Add("server.address", host.Host);
@@ -113,6 +116,7 @@ internal sealed class HostingMetrics : IDisposable
                 }
             }
         }
+        */
     }
 
     // Status Codes listed at http://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml
@@ -212,6 +216,7 @@ internal sealed class HostingMetrics : IDisposable
 
     private static string ResolveHttpMethod(string method)
     {
+        // TODO: Support configuration for configuring known methods
         if (KnownMethods.TryGetValue(method, out var result))
         {
             // KnownMethods ignores case. Use the value returned by the dictionary to have a consistent case.
