@@ -541,7 +541,7 @@ public class DeveloperExceptionPageMiddlewareTest : LoggedTest
         // Arrange
         var meterFactory = new TestMeterFactory();
         using var requestDurationCollector = new MetricCollector<double>(meterFactory, "Microsoft.AspNetCore.Hosting", "http.server.duration");
-        using var requestExceptionCollector = new MetricCollector<long>(meterFactory, DiagnosticsMetrics.MeterName, "aspnet.diagnostics_handler.exceptions");
+        using var requestExceptionCollector = new MetricCollector<long>(meterFactory, DiagnosticsMetrics.MeterName, "aspnet.diagnostics.exceptions");
 
         using var host = new HostBuilder()
             .ConfigureServices(s =>
@@ -590,14 +590,14 @@ public class DeveloperExceptionPageMiddlewareTest : LoggedTest
     {
         Assert.Equal(1, measurement.Value);
         Assert.Equal(exceptionName, (string)measurement.Tags["exception.type"]);
-        Assert.Equal(result, measurement.Tags["result"].ToString());
+        Assert.Equal(result, measurement.Tags["aspnet.diagnostics.exception.result"].ToString());
         if (handler == null)
         {
-            Assert.False(measurement.Tags.ContainsKey("handler"));
+            Assert.False(measurement.Tags.ContainsKey("aspnet.diagnostics.handler.type"));
         }
         else
         {
-            Assert.Equal(handler, (string)measurement.Tags["handler"]);
+            Assert.Equal(handler, (string)measurement.Tags["aspnet.diagnostics.handler.type"]);
         }
     }
 

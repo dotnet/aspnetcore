@@ -143,7 +143,7 @@ public class RoutingMetricsTests
         Assert.Equal(1, measurement.Value);
         Assert.Equal("success", (string)measurement.Tags["aspnet.routing.match_status"]);
         Assert.Equal(route, (string)measurement.Tags["http.route"]);
-        Assert.Equal(fallback, (bool)measurement.Tags["aspnet.routing.route.is_fallback"]);
+        Assert.Equal(fallback, (bool)measurement.Tags["aspnet.routing.is_fallback"]);
     }
 
     private EndpointRoutingMiddleware CreateMiddleware(

@@ -28,7 +28,7 @@ internal sealed class RoutingMetrics
         _matchAttemptsCounter.Add(1,
             new KeyValuePair<string, object?>("http.route", route),
             new KeyValuePair<string, object?>("aspnet.routing.match_status", "success"),
-            new KeyValuePair<string, object?>("aspnet.routing.route.is_fallback", isFallback));
+            new KeyValuePair<string, object?>("aspnet.routing.is_fallback", isFallback));
     }
 
     public void MatchFailure()
