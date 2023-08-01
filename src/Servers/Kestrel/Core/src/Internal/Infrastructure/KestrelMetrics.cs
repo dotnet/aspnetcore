@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Connections.Features;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
@@ -10,6 +8,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Security.Authentication;
+using Microsoft.AspNetCore.Connections;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
@@ -299,15 +298,12 @@ internal sealed class KestrelMetrics
         {
             tags.Add("server.socket.address", localIPEndPoint.Address.ToString());
             tags.Add("server.socket.port", localIPEndPoint.Port);
-            var socket = metricsContext.ConnectionContext.Features.Get<IConnectionSocketFeature>()?.Socket;
-            if (socket != null)
-            {
-                tags.Add("network.transport", "tcp");
-            }
-            else
-            {
-                tags.Add("network.transport", metricsContext.ConnectionContext is not MultiplexedConnectionContext ? "tcp" : "udp");
-            }
+
+            // There isn't an easy way to detect whether QUIC is the underlying transport.
+            // This code assumes that a multiplexed connection is QUIC.
+            // Improve in the future if there are additional multiplexed connection types.
+            var transport = metricsContext.ConnectionContext is not MultiplexedConnectionContext ? "tcp" : "udp";
+            tags.Add("network.transport", transport);
         }
         else if (localEndpoint is UnixDomainSocketEndPoint udsEndPoint)
         {
