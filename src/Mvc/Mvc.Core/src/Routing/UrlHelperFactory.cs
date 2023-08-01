@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.Routing;
 
@@ -46,12 +45,12 @@ public class UrlHelperFactory : IUrlHelperFactory
         {
             var services = httpContext.RequestServices;
             var linkGenerator = services.GetRequiredService<LinkGenerator>();
-            var logger = services.GetRequiredService<ILogger<EndpointRoutingUrlHelper>>();
+            var endpointDataSource = services.GetRequiredService<EndpointDataSource>();
 
             urlHelper = new EndpointRoutingUrlHelper(
                 context,
                 linkGenerator,
-                logger);
+                endpointDataSource);
         }
         else
         {
