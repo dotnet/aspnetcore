@@ -2014,7 +2014,10 @@ public static partial class RequestDelegateFactory
             FormDataMapperMapMethod.MakeGenericMethod(parameter.ParameterType),
             formReader,
             Expression.Constant(FormDataMapperOptions));
-        // ArrayPool<char>.Shared.Return(form_buffer, false);
+        // if (form_buffer != null)
+        // {
+        //   ArrayPool<char>.Shared.Return(form_buffer, false);
+        // }
         var returnBufferExpr = Expression.Call(
             Expression.Property(null, typeof(ArrayPool<char>).GetProperty(nameof(ArrayPool<char>.Shared))!),
             ArrayPoolSharedReturnMethod,
