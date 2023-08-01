@@ -125,12 +125,6 @@ internal partial class RedisOutputCacheStore : IOutputCacheStore, IOutputCacheBu
         }
     }
 
-    [LoggerMessage(1, LogLevel.Warning, "Transient error occurred executing redis output-cache GC loop.", EventName = "RedisOutputCacheGCTransientError")]
-    internal static partial void RedisOutputCacheGCTransientFault(ILogger logger, Exception exception);
-
-    [LoggerMessage(2, LogLevel.Error, "Fatal error occurred executing redis output-cache GC loop.", EventName = "RedisOutputCacheGCFatalError")]
-    internal static partial void RedisOutputCacheGCFatalError(ILogger logger, Exception exception);
-
     internal async ValueTask<long?> ExecuteGarbageCollectionAsync(long keepValuesGreaterThan, CancellationToken cancellationToken = default)
     {
         var cache = await ConnectAsync(CancellationToken.None).ConfigureAwait(false);
