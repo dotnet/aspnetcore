@@ -9,7 +9,7 @@
   "symbols/UseProgramMain/displayName": "Não use ins_truções de nível superior",
   "symbols/UseProgramMain/description": "Se deve gerar uma classe de Programa explícita e um método principal em vez de instruções de nível superior.",
   "symbols/NativeAot/displayName": "Habilitar publicação AOT _nativo",
-  "symbols/NativeAot/description": "Se o projeto deve ser habilitado para publicação como AOT nativo.",
+  "symbols/NativeAot/description": "Se o projeto deve ser habilitado para publicação como native AOT.",
   "postActions/restore/description": "Restaure os pacotes NuGet exigidos por este projeto.",
   "postActions/restore/manualInstructions/default/text": "Executar 'dotnet restore'"
 }
