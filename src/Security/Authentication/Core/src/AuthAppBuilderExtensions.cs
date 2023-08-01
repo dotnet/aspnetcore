@@ -25,6 +25,9 @@ public static class AuthAppBuilderExtensions
 
         app.Properties[AuthenticationMiddlewareSetKey] = true;
 
+        // The authentication middleware adds annotation to HttpContext.Items to indicate that it has run
+        // that will be validated by the EndpointsRoutingMiddleware later. To do this, we need to ensure
+        // that routing has run and set the endpoint feature on the HttpContext associated with the request.
         if (app.Properties.TryGetValue(RerouteHelper.GlobalRouteBuilderKey, out var routeBuilder) && routeBuilder is not null)
         {
             return app.Use(next =>

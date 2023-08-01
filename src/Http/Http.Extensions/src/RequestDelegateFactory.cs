@@ -2020,6 +2020,9 @@ public static partial class RequestDelegateFactory
             ArrayPoolSharedReturnMethod,
             formBuffer,
             Expression.Constant(false));
+        var conditionalReturnBufferExpr = Expression.IfThen(
+            Expression.NotEqual(formBuffer, Expression.Constant(null)),
+            returnBufferExpr);
 
         return Expression.Block(
             new[] { formArgument, formReader, formDict, formBuffer },
@@ -2028,7 +2031,7 @@ public static partial class RequestDelegateFactory
                     processFormExpr,
                     initializeReaderExpr,
                     Expression.Assign(formArgument, invokeMapMethodExpr)),
-                returnBufferExpr),
+                conditionalReturnBufferExpr),
             formArgument
         );
     }
