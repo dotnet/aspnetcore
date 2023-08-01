@@ -171,9 +171,9 @@ internal sealed class RateLimitingMetrics : IDisposable
     {
         return reason switch
         {
-            RequestRejectionReason.EndpointLimiter => "request_canceled",
+            RequestRejectionReason.EndpointLimiter => "endpoint_limiter",
             RequestRejectionReason.GlobalLimiter => "global_limiter",
-            RequestRejectionReason.RequestCanceled => "endpoint_limiter",
+            RequestRejectionReason.RequestCanceled => "request_canceled",
             _ => throw new InvalidOperationException("Unexpected value: " + reason)
         };
     }
