@@ -144,6 +144,21 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.Contains("microsoft.com", () => Browser.Url);
     }
 
+    [Fact]
+    public void RenderModeServerCanNavigateToAnotherPage()
+    {
+        Navigate($"{ServerPathBase}/nav");
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Render mode Server navigation")).Click();
+        Browser.Equal("Render mode Server can navigate", () => Browser.Exists(By.TagName("h1")).Text);
+
+        Browser.Exists(By.Id("navigate")).Click();
+
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+        Assert.EndsWith("/nav", Browser.Url);
+    }
+
     private long BrowserScrollY
     {
         get => Convert.ToInt64(((IJavaScriptExecutor)Browser).ExecuteScript("return window.scrollY"), CultureInfo.CurrentCulture);

@@ -115,7 +115,7 @@ function navigateToFromDotNet(uri: string, options: NavigationOptions): void {
 function navigateToCore(uri: string, options: NavigationOptions, skipLocationChangingCallback = false): void {
   const absoluteUri = toAbsoluteUri(uri);
 
-  if (!options.forceLoad && isWithinBaseUriSpace(absoluteUri)) {
+  if (!options.forceLoad && isWithinBaseUriSpace(absoluteUri) && hasInteractiveRouter()) {
     performInternalNavigation(absoluteUri, false, options.replaceHistoryEntry, options.historyEntryState, skipLocationChangingCallback);
   } else {
     // For external navigation, we work in terms of the originally-supplied uri string,

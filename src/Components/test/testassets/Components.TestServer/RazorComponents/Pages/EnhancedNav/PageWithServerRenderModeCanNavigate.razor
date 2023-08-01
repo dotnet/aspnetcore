@@ -1,0 +1,15 @@
+﻿@page "/nav/render-mode-server-can-navigate"
+@inject NavigationManager Nav
+@attribute [RenderModeServer]
+<PageTitle>Render mode Server can navigate</PageTitle>
+
+<h1>Render mode Server can navigate</h1>
+
+<button @onclick="Navigate" id="navigate">Navigate</button>
+
+@code {
+    void Navigate()
+    {
+        Nav.NavigateTo("nav");
+    }
+}
