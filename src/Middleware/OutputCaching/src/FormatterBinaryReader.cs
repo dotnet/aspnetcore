@@ -17,18 +17,18 @@ internal ref struct FormatterBinaryReader
     // additionally, we add support for reading a string with length specified by the caller (rather than handled automatically),
     // and in-place (zero-copy) BLOB reads
 
-    private readonly ReadOnlyMemory<byte> original; // used to allow us to zero-copy chunks out of the payload
-    private readonly ref byte root;
-    private readonly int length;
-    private int offset;
+    private readonly ReadOnlyMemory<byte> _original; // used to allow us to zero-copy chunks out of the payload
+    private readonly ref byte _root;
+    private readonly int _length;
+    private int _offset;
 
-    public bool IsEOF => offset >= length;
+    public bool IsEOF => _offset >= _length;
 
     public FormatterBinaryReader(ReadOnlyMemory<byte> content)
     {
-        original = content;
-        length = content.Length;
-        root = ref MemoryMarshal.GetReference(content.Span);
+        _original = content;
+        _length = content.Length;
+        _root = ref MemoryMarshal.GetReference(content.Span);
     }
 
     public byte ReadByte()
@@ -37,7 +37,7 @@ internal ref struct FormatterBinaryReader
         {
             ThrowEndOfStream();
         }
-        return Unsafe.Add(ref root, offset++);
+        return Unsafe.Add(ref _root, _offset++);
     }
 
     public int Read7BitEncodedInt()
@@ -132,7 +132,7 @@ internal ref struct FormatterBinaryReader
     {
         ArgumentOutOfRangeException.ThrowIfNegative(bytes);
 
-        if (offset > length - bytes)
+        if (_offset > _length - bytes)
         {
             ThrowEndOfStream();
         }
@@ -140,26 +140,26 @@ internal ref struct FormatterBinaryReader
         {
             return "";
         }
-        var s = Encoding.UTF8.GetString(MemoryMarshal.CreateReadOnlySpan(ref Unsafe.Add(ref root, offset), bytes));
-        offset += bytes;
+        var s = Encoding.UTF8.GetString(MemoryMarshal.CreateReadOnlySpan(ref Unsafe.Add(ref _root, _offset), bytes));
+        _offset += bytes;
         return s;
     }
 
     public void Skip(int bytes)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(bytes);
-        if (offset > length - bytes)
+        if (_offset > _length - bytes)
         {
             ThrowEndOfStream();
         }
-        offset += bytes;
+        _offset += bytes;
     }
 
     public ReadOnlySpan<byte> ReadBytesSpan(int count)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(count);
 
-        if (offset > length - count)
+        if (_offset > _length - count)
         {
             ThrowEndOfStream();
         }
@@ -167,8 +167,8 @@ internal ref struct FormatterBinaryReader
         {
             return default;
         }
-        var result = MemoryMarshal.CreateReadOnlySpan(ref Unsafe.Add(ref root, offset), count);
-        offset += count;
+        var result = MemoryMarshal.CreateReadOnlySpan(ref Unsafe.Add(ref _root, _offset), count);
+        _offset += count;
         return result;
     }
 
@@ -176,7 +176,7 @@ internal ref struct FormatterBinaryReader
     {
         ArgumentOutOfRangeException.ThrowIfNegative(count);
 
-        if (offset > length - count)
+        if (_offset > _length - count)
         {
             ThrowEndOfStream();
         }
@@ -184,8 +184,8 @@ internal ref struct FormatterBinaryReader
         {
             return default;
         }
-        var result = original.Slice(offset, count);
-        offset += count;
+        var result = _original.Slice(_offset, count);
+        _offset += count;
         return result;
     }
 
