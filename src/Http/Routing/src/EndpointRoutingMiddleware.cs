@@ -304,18 +304,18 @@ internal sealed partial class EndpointRoutingMiddleware
         var sizeLimitMetadata = context.GetEndpoint()?.Metadata?.GetMetadata<IRequestSizeLimitMetadata>();
         if (sizeLimitMetadata == null)
         {
-            Log.MetadataNotFound(_logger);
+            Log.RequestSizeLimitMetadataNotFound(_logger);
             return;
         }
 
         var maxRequestBodySizeFeature = context.Features.Get<IHttpMaxRequestBodySizeFeature>();
         if (maxRequestBodySizeFeature == null)
         {
-            Log.FeatureNotFound(_logger);
+            Log.RequestSizeFeatureNotFound(_logger);
         }
         else if (maxRequestBodySizeFeature.IsReadOnly)
         {
-            Log.FeatureIsReadOnly(_logger);
+            Log.RequestSizeFeatureIsReadOnly(_logger);
         }
         else
         {
@@ -363,14 +363,14 @@ internal sealed partial class EndpointRoutingMiddleware
         [LoggerMessage(7, LogLevel.Debug, "Matched endpoint '{EndpointName}' is a fallback endpoint.", EventName = "FallbackMatch")]
         public static partial void FallbackMatch(ILogger logger, Endpoint endpointName);
 
-        [LoggerMessage(8, LogLevel.Debug, $"The endpoint does not specify the {nameof(IRequestSizeLimitMetadata)}.", EventName = "MetadataNotFound")]
-        public static partial void MetadataNotFound(ILogger logger);
+        [LoggerMessage(8, LogLevel.Trace, $"The endpoint does not specify the {nameof(IRequestSizeLimitMetadata)}.", EventName = "RequestSizeLimitMetadataNotFound")]
+        public static partial void RequestSizeLimitMetadataNotFound(ILogger logger);
 
-        [LoggerMessage(9, LogLevel.Warning, $"A request body size limit could not be applied. This server does not support the {nameof(IHttpMaxRequestBodySizeFeature)}.", EventName = "FeatureNotFound")]
-        public static partial void FeatureNotFound(ILogger logger);
+        [LoggerMessage(9, LogLevel.Warning, $"A request body size limit could not be applied. This server does not support the {nameof(IHttpMaxRequestBodySizeFeature)}.", EventName = "RequestSizeFeatureNotFound")]
+        public static partial void RequestSizeFeatureNotFound(ILogger logger);
 
-        [LoggerMessage(10, LogLevel.Warning, $"A request body size limit could not be applied. The {nameof(IHttpMaxRequestBodySizeFeature)} for the server is read-only.", EventName = "FeatureIsReadOnly")]
-        public static partial void FeatureIsReadOnly(ILogger logger);
+        [LoggerMessage(10, LogLevel.Warning, $"A request body size limit could not be applied. The {nameof(IHttpMaxRequestBodySizeFeature)} for the server is read-only.", EventName = "RequestSizeFeatureIsReadOnly")]
+        public static partial void RequestSizeFeatureIsReadOnly(ILogger logger);
 
         [LoggerMessage(11, LogLevel.Debug, "The maximum request body size has been set to {RequestSize}.", EventName = "MaxRequestBodySizeSet")]
         public static partial void MaxRequestBodySizeSet(ILogger logger, string requestSize);

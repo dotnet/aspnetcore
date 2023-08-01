@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Mvc;
 
@@ -54,7 +55,7 @@ app.MapPost("/todo-raw", async context =>
 {
     var form = await context.Request.ReadFormAsync();
     var name = form["name"].ToString();
-    var dueDate = DateTime.Parse(form["dueDate"].ToString());
+    var dueDate = DateTime.Parse(form["dueDate"].ToString(), CultureInfo.InvariantCulture);
     var isCompleted = bool.Parse(form["isCompleted"].ToString());
     var result = Results.Ok(new Todo(name, isCompleted, dueDate));
     await result.ExecuteAsync(context);
