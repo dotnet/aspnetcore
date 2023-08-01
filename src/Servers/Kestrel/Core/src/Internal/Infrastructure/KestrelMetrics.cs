@@ -2,9 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
+using System.Net;
+using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Security.Authentication;
 
@@ -291,11 +294,35 @@ internal sealed class KestrelMetrics
 
     private static void InitializeConnectionTags(ref TagList tags, in ConnectionMetricsContext metricsContext)
     {
-        if (metricsContext.ConnectionContext.LocalEndPoint is { } localEndpoint)
+        var localEndpoint = metricsContext.ConnectionContext.LocalEndPoint;
+        if (localEndpoint is IPEndPoint localIPEndPoint)
         {
-            // TODO: Improve getting string allocation for endpoint. Currently allocates.
-            // Considering adding a way to cache on ConnectionContext.
-            tags.Add("endpoint", localEndpoint.ToString());
+            tags.Add("server.socket.address", localIPEndPoint.Address.ToString());
+            tags.Add("server.socket.port", localIPEndPoint.Port);
+            var socket = metricsContext.ConnectionContext.Features.Get<IConnectionSocketFeature>()?.Socket;
+            if (socket != null)
+            {
+                tags.Add("network.transport", "tcp");
+            }
+            else
+            {
+                tags.Add("network.transport", metricsContext.ConnectionContext is not MultiplexedConnectionContext ? "tcp" : "udp");
+            }
+        }
+        else if (localEndpoint is UnixDomainSocketEndPoint udsEndPoint)
+        {
+            tags.Add("server.socket.address", udsEndPoint.ToString());
+            tags.Add("network.transport", "unix");
+        }
+        else if (localEndpoint is NamedPipeEndPoint namedPipeEndPoint)
+        {
+            tags.Add("server.socket.address", namedPipeEndPoint.ToString());
+            tags.Add("network.transport", "pipe");
+        }
+        else if (localEndpoint != null)
+        {
+            tags.Add("server.socket.address", localEndpoint.ToString());
+            tags.Add("network.transport", localEndpoint.GetType().Name);
         }
     }
 
@@ -307,7 +334,7 @@ internal sealed class KestrelMetrics
             _queuedRequestsCounter.Enabled, _currentUpgradedRequestsCounter.Enabled, _currentTlsHandshakesCounter.Enabled);
     }
 
-    private static bool TryGetHandshakeProtocol(SslProtocols? protocols, [NotNullWhen(true)] out string? name, [NotNullWhen(true)] out string? version)
+    public static bool TryGetHandshakeProtocol(SslProtocols? protocols, [NotNullWhen(true)] out string? name, [NotNullWhen(true)] out string? version)
     {
         if (protocols != null)
         {
