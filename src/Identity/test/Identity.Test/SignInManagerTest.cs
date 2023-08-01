@@ -425,6 +425,45 @@ public class SignInManagerTest
         auth.Verify();
     }
 
+    [Fact]
+    public async Task TwoFactorAuthenticatorSignInAsyncReturnsLockedOut()
+    {
+        // Setup
+        var user = new PocoUser { UserName = "Foo" };
+        string providerName = "Authenticator";
+        const string code = "3123";
+        var manager = SetupUserManager(user);
+        var lockedout = false;
+        manager.Setup(m => m.AccessFailedAsync(user)).Returns(() =>
+        {
+            lockedout = true;
+            return Task.FromResult(IdentityResult.Success);
+        }).Verifiable();
+        manager.Setup(m => m.SupportsUserLockout).Returns(true).Verifiable();
+        manager.Setup(m => m.VerifyTwoFactorTokenAsync(user, providerName ?? TokenOptions.DefaultAuthenticatorProvider, code)).ReturnsAsync(false).Verifiable();
+        manager.Setup(m => m.IsLockedOutAsync(user)).Returns(() => Task.FromResult(lockedout));
+
+        var context = new DefaultHttpContext();
+        var auth = MockAuth(context);
+        var helper = SetupSignInManager(manager.Object, context);
+        var twoFactorInfo = new SignInManager<PocoUser>.TwoFactorAuthenticationInfo { User = user };
+        if (providerName != null)
+        {
+            helper.Options.Tokens.AuthenticatorTokenProvider = providerName;
+        }
+        var id = SignInManager<PocoUser>.StoreTwoFactorInfo(user.Id, null);
+        auth.Setup(a => a.AuthenticateAsync(context, IdentityConstants.TwoFactorUserIdScheme))
+            .ReturnsAsync(AuthenticateResult.Success(new AuthenticationTicket(id, null, IdentityConstants.TwoFactorUserIdScheme))).Verifiable();
+
+        // Act
+        var result = await helper.TwoFactorAuthenticatorSignInAsync(code, isPersistent: false, rememberClient: false);
+
+        // Assert
+        Assert.True(result.IsLockedOut);
+        manager.Verify();
+        auth.Verify();
+    }
+
     [Theory]
     [InlineData(true, true, true)]
     [InlineData(true, true, false)]
@@ -687,7 +726,7 @@ public class SignInManagerTest
         manager.Setup(m => m.SupportsUserLockout).Returns(true).Verifiable();
         manager.Setup(m => m.IsLockedOutAsync(user)).Returns(() => Task.FromResult(lockedout));
         manager.Setup(m => m.VerifyTwoFactorTokenAsync(user, provider, code)).ReturnsAsync(false).Verifiable();
-        
+
         var context = new DefaultHttpContext();
         var auth = MockAuth(context);
         var helper = SetupSignInManager(manager.Object, context);

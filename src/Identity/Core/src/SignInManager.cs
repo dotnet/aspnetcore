@@ -560,6 +560,11 @@ public class SignInManager<TUser> where TUser : class
                 // This is currently redundant, but it's here in case the code gets copied elsewhere.
                 return SignInResult.Failed;
             }
+
+            if (await UserManager.IsLockedOutAsync(user))
+            {
+                return await LockedOut(user);
+            }
         }
         return SignInResult.Failed;
     }
