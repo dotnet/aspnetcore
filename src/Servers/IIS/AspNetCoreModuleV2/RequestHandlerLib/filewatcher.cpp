@@ -42,42 +42,45 @@ FILE_WATCHER::FILE_WATCHER() :
 FILE_WATCHER::~FILE_WATCHER()
 {
     StopMonitor();
-    WaitForMonitor(20); // wait for 1 second total
+    WaitForWatcherThreadExit();
 }
 
-void FILE_WATCHER::WaitForMonitor(DWORD dwRetryCounter)
+void FILE_WATCHER::WaitForWatcherThreadExit()
 {
     if (m_hChangeNotificationThread == nullptr)
     {
         return;
     }
 
-    while (!m_fThreadExit && dwRetryCounter-- > 0)
+    if (m_fRudeThreadTermination)
     {
-        // Check if the thread has exited.
-        DWORD result = WaitForSingleObject(m_hChangeNotificationThread, 0);
-        if (result == WAIT_OBJECT_0)
+        // This is the old behavior, which is now opt-in using an environment variable. Wait for
+        // the thread to exit, but if it doesn't exit soon enough, terminate it.
+        const int totalWaitTimeMs = 10000;
+        const int waitIntervalMs = 50;
+        const int iterations = totalWaitTimeMs / waitIntervalMs;
+        for (int i = 0; i < iterations && !m_fThreadExit; i++)
         {
-            // The thread has exited.
-            m_fThreadExit = true;
-            break;
+            // Check if the thread has exited.
+            DWORD result = WaitForSingleObject(m_hChangeNotificationThread, waitIntervalMs);
+            if (result == WAIT_OBJECT_0)
+            {
+                // The thread has exited.
+                m_fThreadExit = true;
+                break;
+            }
         }
-        else
-        {
-            // The thread is still alive. Wait for 50ms.
-            WaitForSingleObject(m_hChangeNotificationThread, 50);
-        }
-    }
 
-    if (!m_fThreadExit)
-    {
-        LOG_INFO(L"File watcher thread didn't seem to exit.");
-
-        if (m_fRudeThreadTermination)
+        if (!m_fThreadExit)
         {
-            LOG_INFO(L"File watcher thread was terminated.");
+            LOG_INFO(L"File watcher thread did not exit. Forcing termination.");
             TerminateThread(m_hChangeNotificationThread, 1);
         }
+    }
+    else
+    {
+        // Wait for the thread to exit.
+        WaitForSingleObject(m_hChangeNotificationThread, INFINITE);
     }
 }
 
@@ -466,7 +469,7 @@ FILE_WATCHER::StopMonitor()
 
     // Signal the file watcher thread to exit
     SetEvent(m_pShutdownEvent);
-    WaitForMonitor(200);
+    WaitForWatcherThreadExit(10000);
 
     if (m_fShadowCopyEnabled)
     {

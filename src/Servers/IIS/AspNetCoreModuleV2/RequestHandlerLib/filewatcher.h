@@ -24,7 +24,7 @@ public:
 
     ~FILE_WATCHER();
 
-    void WaitForMonitor(DWORD dwRetryCounter);
+    void WaitForWatcherThreadExit();
 
     HRESULT Create(
         _In_ PCWSTR                  pszDirectoryToMonitor,
