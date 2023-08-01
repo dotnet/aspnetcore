@@ -53,7 +53,7 @@ public class KestrelServerOptions
     /// from the request target.
     /// </summary>
     /// <remarks>
-    /// This does not apply to HTTP/2 or HTTP/3 because the Host header is not sent in requests.
+    /// This option does not apply to HTTP/2 or HTTP/3.
     /// </remarks>
     /// <seealso href="https://datatracker.ietf.org/doc/html/rfc9112#section-3.2.2-8"/>
     public bool AllowHostHeaderOverride { get; set; }
