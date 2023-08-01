@@ -44,7 +44,9 @@ internal static class DebugProxyLauncher
         if (noProxyEnvVar is not null)
         {
             if (noProxyEnvVar.Equals("localhost") || noProxyEnvVar.Equals("127.0.0.1"))
+            {
                 return "--IgnoreProxyForLocalAddress True";
+            }
             Console.WriteLine($"Invalid value for NO_PROXY: {noProxyEnvVar} (Expected values: \"localhost\" or \"127.0.0.1\")");
         }
         return "";
