@@ -28,11 +28,23 @@ public class Http2RequestTests : LoggedTest
     {
         // Arrange
         var protocolTcs = new TaskCompletionSource<SslProtocols>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var builder = CreateHostBuilder(c =>
-        {
-            protocolTcs.SetResult(c.Features.Get<ISslStreamFeature>().SslStream.SslProtocol);
-            return Task.CompletedTask;
-        }, protocol: HttpProtocols.Http2, plaintext: false);
+        var builder = CreateHostBuilder(
+            c =>
+            {
+                protocolTcs.SetResult(c.Features.Get<ISslStreamFeature>().SslStream.SslProtocol);
+                return Task.CompletedTask;
+            },
+            configureKestrel: o =>
+            {
+                o.Listen(IPAddress.Parse("127.0.0.1"), 0, listenOptions =>
+                {
+                    listenOptions.Protocols = HttpProtocols.Http2;
+                    listenOptions.UseHttps(TestResources.GetTestCertificate(), https =>
+                    {
+                        https.SslProtocols = SslProtocols.Tls12;
+                    });
+                });
+            });
 
         using (var host = builder.Build())
         {
@@ -69,7 +81,7 @@ public class Http2RequestTests : LoggedTest
                     Assert.Equal("127.0.0.1", (string)m.Tags["server.socket.address"]);
                     Assert.Equal(host.GetPort(), (int)m.Tags["server.socket.port"]);
                     Assert.Equal("tls", (string)m.Tags["tls.protocol.name"]);
-                    Assert.Equal("1.3", (string)m.Tags["tls.protocol.version"]);
+                    Assert.Equal("1.2", (string)m.Tags["tls.protocol.version"]);
                 });
 
             await host.StopAsync();
