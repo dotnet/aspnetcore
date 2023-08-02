@@ -14,6 +14,7 @@
   <!--#if UseWebAssembly -->
 
   <ItemGroup>
+    <ProjectReference Include="..\BlazorWeb-CSharp.WebAssembly\BlazorWeb-CSharp.WebAssembly.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="${MicrosoftAspNetCoreComponentsWebAssemblyServerVersion}" />
   </ItemGroup>
   <!--#endif -->
