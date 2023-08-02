@@ -96,12 +96,11 @@ internal class FileNameRouteConstraint : IRouteConstraint
 #if !COMPONENTS
         HttpContext? httpContext,
         IRouter? route,
-#endif
         string routeKey,
-#if !COMPONENTS
         RouteValueDictionary values,
         RouteDirection routeDirection)
 #else
+        string routeKey,
         RouteValueDictionary values)
 #endif
     {

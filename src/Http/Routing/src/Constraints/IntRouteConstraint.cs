@@ -23,15 +23,13 @@ internal class IntRouteConstraint : IRouteConstraint
     /// <inheritdoc />
     public bool Match(
 #if !COMPONENTS
-
         HttpContext? httpContext,
         IRouter? route,
-#endif
         string routeKey,
-#if !COMPONENTS
         RouteValueDictionary values,
         RouteDirection routeDirection)
 #else
+        string routeKey,
         RouteValueDictionary values)
 #endif
     {
