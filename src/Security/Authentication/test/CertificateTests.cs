@@ -335,7 +335,7 @@ public class ClientCertificateAuthenticationTests
                 Events = successfulValidationEvents,
                 ChainTrustValidationMode = X509ChainTrustMode.CustomRootTrust,
                 CustomTrustStore = new X509Certificate2Collection() { Certificates.SelfSignedPrimaryRoot, Certificates.SignedSecondaryRoot },
-                CustomTrustStoreSelector = new X509Certificate2Collection() { Certificates.SignedSecondaryRoot },
+                CustomTrustStoreSelector = c => new X509Certificate2Collection() { Certificates.SignedSecondaryRoot },
                 AdditionalChainCertificates = new X509Certificate2Collection() { Certificates.SelfSignedPrimaryRoot },
                 AdditionalChainCertificatesSelector = c => new X509Certificate2Collection() { Certificates.SignedSecondaryRoot },
                 RevocationMode = X509RevocationMode.NoCheck
