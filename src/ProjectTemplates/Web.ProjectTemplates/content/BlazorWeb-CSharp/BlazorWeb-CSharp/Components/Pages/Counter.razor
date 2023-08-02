@@ -1,13 +1,5 @@
 ﻿@page "/counter"
-@*#if (UseServer && !UseWebAssembly) -->
 @attribute [RenderModeServer]
-##endif*@
-@*#if (!UseServer && UseWebAssembly) -->
-@attribute [RenderModeWebAssembly]
-##endif*@
-@*#if (UseServer && UseWebAssembly) -->
-@attribute [RenderModeAuto]
-##endif*@
 
 <PageTitle>Counter</PageTitle>
 

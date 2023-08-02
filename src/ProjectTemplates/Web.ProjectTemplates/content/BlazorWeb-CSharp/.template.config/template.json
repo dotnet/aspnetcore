@@ -87,7 +87,7 @@
           }
         },
         {
-          "condition": "(!UseServer)",
+          "condition": "!(UseServer && !UseWebAssembly)",
           "exclude": [
             "BlazorWeb-CSharp/Pages/Counter.razor"
           ]

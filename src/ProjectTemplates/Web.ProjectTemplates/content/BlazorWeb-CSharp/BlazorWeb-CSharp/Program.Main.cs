@@ -48,7 +48,15 @@ public class Program
         #endif
         app.UseStaticFiles();
 
+        #if (UseServer && UseWebAssembly)
+        app.MapRazorComponents<App>().AddServerRenderMode().AddWebAssemblyRenderMode();
+        #elif (UseServer)
+        app.MapRazorComponents<App>().AddServerRenderMode();
+        #elif (UseWebAssembly)
+        app.MapRazorComponents<App>().AddWebAssemblyRenderMode();
+        #else
         app.MapRazorComponents<App>();
+        #endif
 
         app.Run();
     }
