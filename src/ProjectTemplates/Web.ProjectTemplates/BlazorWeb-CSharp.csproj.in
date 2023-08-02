@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <NoDefaultLaunchSettingsFile Condition="'$(ExcludeLaunchSettings)' == 'True'">True</NoDefaultLaunchSettingsFile>
-    <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">ComponentsWebAssembly-CSharp.Server</RootNamespace>
+    <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">BlazorWeb-CSharp</RootNamespace>
     <AssemblyName Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">`$(AssemblyName.Replace(' ', '_'))</AssemblyName>
     <!--#if (UseWebAssembly && PWA) -->
     <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>

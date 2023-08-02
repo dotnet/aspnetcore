@@ -1,6 +1,6 @@
 {
-  "name": "Components-CSharp",
-  "short_name": "Components-CSharp",
+  "name": "BlazorWeb-CSharp",
+  "short_name": "BlazorWeb-CSharp",
   "id": "./",
   "start_url": "./",
   "display": "standalone",

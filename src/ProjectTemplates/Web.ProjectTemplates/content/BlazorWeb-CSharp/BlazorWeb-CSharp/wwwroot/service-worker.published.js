@@ -27,7 +27,7 @@ async function onInstall(event) {
 //#if(IndividualLocalAuth && Hosted)
 
     // Also cache authentication configuration
-    assetsRequests.push(new Request('_configuration/Components-CSharp.Client'));
+    assetsRequests.push(new Request('_configuration/BlazorWeb-CSharp.Client'));
 
 //#endif
     await caches.open(cacheName).then(cache => cache.addAll(assetsRequests));

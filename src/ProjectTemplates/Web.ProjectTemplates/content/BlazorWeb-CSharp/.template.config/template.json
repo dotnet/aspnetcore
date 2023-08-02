@@ -24,23 +24,23 @@
   "primaryOutputs": [
     {
       "condition": "(UseWebAssembly && (HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\"))",
-      "path": "Components-CSharp.sln"
+      "path": "BlazorWeb-CSharp.sln"
     },
     {
       "condition": "(UseWebAssembly && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
-      "path": "Components-CSharp/Components-CSharp.csproj"
+      "path": "BlazorWeb-CSharp/BlazorWeb-CSharp.csproj"
     },
     {
       "condition": "(!UseWebAssembly)",
-      "path": "Components-CSharp.csproj"
+      "path": "BlazorWeb-CSharp.csproj"
     },
     {
       "condition": "(UseWebAssembly && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
-      "path": "Components-CSharp.WebAssembly/Components-CSharp.WebAssembly.csproj"
+      "path": "BlazorWeb-CSharp.WebAssembly/BlazorWeb-CSharp.WebAssembly.csproj"
     }
   ],
   "shortName": "blazor",
-  "sourceName": "Components-CSharp",
+  "sourceName": "BlazorWeb-CSharp",
   "sources": [
     {
       "source": "./",
@@ -55,32 +55,32 @@
         {
           "condition": "(!PWA)",
           "exclude": [
-            "Components-CSharp/wwwroot/service-worker*.js",
-            "Components-CSharp/wwwroot/manifest.webmanifest",
-            "Components-CSharp/wwwroot/icon-512.png"
+            "BlazorWeb-CSharp/wwwroot/service-worker*.js",
+            "BlazorWeb-CSharp/wwwroot/manifest.webmanifest",
+            "BlazorWeb-CSharp/wwwroot/icon-512.png"
           ]
         },
         {
           "condition": "(!UseWebAssembly)",
           "exclude": [
-            "Components-CSharp/Program.Browser.Main.cs",
-            "Components-CSharp/Program.Browser.cs",
-            "Components-CSharp/wwwroot/appsettings.Development.json",
-            "Components-CSharp/wwwroot/appsettings.json"
+            "BlazorWeb-CSharp/Program.Browser.Main.cs",
+            "BlazorWeb-CSharp/Program.Browser.cs",
+            "BlazorWeb-CSharp/wwwroot/appsettings.Development.json",
+            "BlazorWeb-CSharp/wwwroot/appsettings.json"
           ]
         },
         {
           "condition": "(!UseProgramMain)",
           "exclude": [
-            "Components-CSharp/Program.Server.Main.cs",
-            "Components-CSharp/Program.Browser.Main.cs"
+            "BlazorWeb-CSharp/Program.Server.Main.cs",
+            "BlazorWeb-CSharp/Program.Browser.Main.cs"
           ]
         },
         {
           "condition": "(UseProgramMain && !UseWebAssembly)",
           "exclude": [
-            "Components-CSharp/Program.Server.cs",
-            "Components-CSharp/Program.Browser.cs"
+            "BlazorWeb-CSharp/Program.Server.cs",
+            "BlazorWeb-CSharp/Program.Browser.cs"
           ],
           "rename": {
             "Program.Server.Main.cs": "Program.cs"
@@ -89,14 +89,14 @@
         {
           "condition": "(!UseServer && !UseWebAssembly)",
           "exclude": [
-            "Components-CSharp/Pages/Counter.razor"
+            "BlazorWeb-CSharp/Pages/Counter.razor"
           ]
         },
         {
           "condition": "(UseProgramMain && UseWebAssembly)",
           "exclude": [
-            "Components-CSharp/Program.Server.cs",
-            "Components-CSharp/Program.Browser.cs"
+            "BlazorWeb-CSharp/Program.Server.cs",
+            "BlazorWeb-CSharp/Program.Browser.cs"
           ],
           "rename": {
             "Program.Server.Main.cs": "Program.Server.cs",
@@ -106,7 +106,7 @@
         {
           "condition": "(ExcludeLaunchSettings)",
           "exclude": [
-            "Components-CSharp/Properties/launchSettings.json"
+            "BlazorWeb-CSharp/Properties/launchSettings.json"
           ]
         }
       ]
