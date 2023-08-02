@@ -17,6 +17,10 @@ internal sealed class KestrelMetrics
     // Note: Dot separated instead of dash.
     public const string MeterName = "Microsoft.AspNetCore.Server.Kestrel";
 
+    public const string Http11 = "1.1";
+    public const string Http2 = "2";
+    public const string Http3 = "3";
+
     private readonly Meter _meter;
     private readonly UpDownCounter<long> _currentConnectionsCounter;
     private readonly Histogram<double> _connectionDuration;

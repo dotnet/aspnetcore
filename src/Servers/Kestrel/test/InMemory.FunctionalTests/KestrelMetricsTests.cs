@@ -79,7 +79,7 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
 
         Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
         {
-            AssertDuration(m, "127.0.0.1", localPort: 0, "tcp", "1.1");
+            AssertDuration(m, "127.0.0.1", localPort: 0, "tcp", KestrelMetrics.Http11);
             Assert.Equal("value!", (string)m.Tags["custom"]);
         });
         Assert.Collection(currentConnections.GetMeasurementSnapshot(), m => AssertCount(m, 1, "127.0.0.1", localPort: 0, "tcp"), m => AssertCount(m, -1, "127.0.0.1", localPort: 0, "tcp"));
@@ -211,7 +211,7 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
 
         Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
         {
-            AssertDuration(m, "127.0.0.1", localPort: 0, "tcp", "1.1");
+            AssertDuration(m, "127.0.0.1", localPort: 0, "tcp", KestrelMetrics.Http11);
             Assert.Equal("value!", (string)m.Tags["custom"]);
             Assert.False(m.Tags.ContainsKey("test"));
         });
@@ -303,7 +303,7 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
                 "");
         }
 
-        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => AssertDuration(m, "127.0.0.1", localPort: 0, "tcp", "1.1"));
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => AssertDuration(m, "127.0.0.1", localPort: 0, "tcp", KestrelMetrics.Http11));
         Assert.Collection(currentConnections.GetMeasurementSnapshot(), m => AssertCount(m, 1, "127.0.0.1", localPort: 0, "tcp"), m => AssertCount(m, -1, "127.0.0.1", localPort: 0, "tcp"));
         Assert.Collection(currentUpgradedRequests.GetMeasurementSnapshot(), m => Assert.Equal(1, m.Value), m => Assert.Equal(-1, m.Value));
 
@@ -391,15 +391,15 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
         Assert.NotNull(connectionId);
         Assert.Equal(2, requestsReceived);
 
-        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => AssertDuration(m, "127.0.0.1", localPort: 0, "tcp", "2", "tls", "1.2"));
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => AssertDuration(m, "127.0.0.1", localPort: 0, "tcp", KestrelMetrics.Http2, "tls", "1.2"));
         Assert.Collection(currentConnections.GetMeasurementSnapshot(), m => AssertCount(m, 1, "127.0.0.1", localPort: 0, "tcp"), m => AssertCount(m, -1, "127.0.0.1", localPort: 0, "tcp"));
         Assert.Collection(queuedConnections.GetMeasurementSnapshot(), m => AssertCount(m, 1, "127.0.0.1", localPort: 0, "tcp"), m => AssertCount(m, -1, "127.0.0.1", localPort: 0, "tcp"));
 
         Assert.Collection(queuedRequests.GetMeasurementSnapshot(),
-            m => AssertRequestCount(m, 1, "2"),
-            m => AssertRequestCount(m, -1, "2"),
-            m => AssertRequestCount(m, 1, "2"),
-            m => AssertRequestCount(m, -1, "2"));
+            m => AssertRequestCount(m, 1, KestrelMetrics.Http2),
+            m => AssertRequestCount(m, -1, KestrelMetrics.Http2),
+            m => AssertRequestCount(m, 1, KestrelMetrics.Http2),
+            m => AssertRequestCount(m, -1, KestrelMetrics.Http2));
 
         Assert.Collection(tlsHandshakeDuration.GetMeasurementSnapshot(), m =>
         {
