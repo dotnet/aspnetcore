@@ -1086,7 +1086,7 @@ SERVER_PROCESS::SetupStdHandles(
         goto Finished;
     }
 
-    hr = FILE_UTILITY::EnsureDirectoryPathExist(struPath.QueryStr());
+    hr = FILE_UTILITY::EnsureDirectoryPathExists(struPath.QueryStr());
     if (FAILED_LOG(hr))
     {
         goto Finished;

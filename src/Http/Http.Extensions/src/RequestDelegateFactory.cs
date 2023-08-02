@@ -2014,12 +2014,18 @@ public static partial class RequestDelegateFactory
             FormDataMapperMapMethod.MakeGenericMethod(parameter.ParameterType),
             formReader,
             Expression.Constant(FormDataMapperOptions));
-        // ArrayPool<char>.Shared.Return(form_buffer, false);
+        // if (form_buffer != null)
+        // {
+        //   ArrayPool<char>.Shared.Return(form_buffer, false);
+        // }
         var returnBufferExpr = Expression.Call(
             Expression.Property(null, typeof(ArrayPool<char>).GetProperty(nameof(ArrayPool<char>.Shared))!),
             ArrayPoolSharedReturnMethod,
             formBuffer,
             Expression.Constant(false));
+        var conditionalReturnBufferExpr = Expression.IfThen(
+            Expression.NotEqual(formBuffer, Expression.Constant(null)),
+            returnBufferExpr);
 
         return Expression.Block(
             new[] { formArgument, formReader, formDict, formBuffer },
@@ -2028,7 +2034,7 @@ public static partial class RequestDelegateFactory
                     processFormExpr,
                     initializeReaderExpr,
                     Expression.Assign(formArgument, invokeMapMethodExpr)),
-                returnBufferExpr),
+                conditionalReturnBufferExpr),
             formArgument
         );
     }

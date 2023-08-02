@@ -1,15 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable enable
-
 using System.Diagnostics;
+using System.Linq;
 
 namespace Microsoft.AspNetCore.Routing;
 
 /// <summary>
 /// Information about the current routing path.
 /// </summary>
+[DebuggerDisplay("Count = {Values.Count}")]
+[DebuggerTypeProxy(typeof(RouteDataDebugView))]
 public class RouteData
 {
     private RouteValueDictionary? _dataTokens;
@@ -181,6 +182,14 @@ public class RouteData
         }
 
         return snapshot;
+    }
+
+    private sealed class RouteDataDebugView(RouteData routeData)
+    {
+        private readonly RouteData _routeData = routeData;
+
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+        public KeyValuePair<string, object?>[] Items => _routeData.Values.ToArray();
     }
 
     /// <summary>

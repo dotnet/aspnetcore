@@ -357,21 +357,18 @@ DebugPrintW(
 
         OutputDebugString( strOutput.QueryStr() );
 
-        if (IsEnabled(ASPNETCORE_DEBUG_FLAG_CONSOLE) || g_logFile != INVALID_HANDLE_VALUE)
+        if (IsEnabled(ASPNETCORE_DEBUG_FLAG_CONSOLE))
         {
-            if (IsEnabled(ASPNETCORE_DEBUG_FLAG_CONSOLE))
-            {
-                WriteFileEncoded(GetConsoleOutputCP(), g_stdOutHandle, strOutput.QueryStr());
-            }
+            WriteFileEncoded(GetConsoleOutputCP(), g_stdOutHandle, strOutput.QueryStr());
+        }
 
-            if (g_logFile != INVALID_HANDLE_VALUE)
-            {
-                SRWExclusiveLock lock(g_logFileLock);
+        if (g_logFile != INVALID_HANDLE_VALUE)
+        {
+            SRWExclusiveLock lock(g_logFileLock);
 
-                SetFilePointer(g_logFile, 0, nullptr, FILE_END);
-                WriteFileEncoded(CP_UTF8, g_logFile, strOutput.QueryStr());
-                FlushFileBuffers(g_logFile);
-            }
+            SetFilePointer(g_logFile, 0, nullptr, FILE_END);
+            WriteFileEncoded(CP_UTF8, g_logFile, strOutput.QueryStr());
+            FlushFileBuffers(g_logFile);
         }
 
         if (IsEnabled(ASPNETCORE_DEBUG_FLAG_EVENTLOG))

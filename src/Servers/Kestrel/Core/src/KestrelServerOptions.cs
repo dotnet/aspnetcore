@@ -35,6 +35,29 @@ public class KestrelServerOptions
 
     private Func<string, Encoding?> _responseHeaderEncodingSelector = DefaultHeaderEncodingSelector;
 
+    /// <summary>
+    /// In HTTP/1.x, when a request target is in absolute-form (see RFC 9112 Section 3.2.2),
+    /// for example
+    /// <code>
+    /// GET http://www.example.com/path/to/index.html HTTP/1.1
+    /// </code>
+    /// the Host header is redundant.  In fact, the RFC says
+    ///
+    ///   When an origin server receives a request with an absolute-form of request-target,
+    ///   the origin server MUST ignore the received Host header field (if any) and instead
+    ///   use the host information of the request-target.
+    ///
+    /// However, it is still sensible to check whether the request target and Host header match
+    /// because a mismatch might indicate, for example, a spoofing attempt.  Setting this property
+    /// to true bypasses that check and unconditionally overwrites the Host header with the value
+    /// from the request target.
+    /// </summary>
+    /// <remarks>
+    /// This option does not apply to HTTP/2 or HTTP/3.
+    /// </remarks>
+    /// <seealso href="https://datatracker.ietf.org/doc/html/rfc9112#section-3.2.2-8"/>
+    public bool AllowHostHeaderOverride { get; set; }
+
     // The following two lists configure the endpoints that Kestrel should listen to. If both lists are empty, the "urls" config setting (e.g. UseUrls) is used.
     internal List<ListenOptions> CodeBackedListenOptions { get; } = new List<ListenOptions>();
     internal List<ListenOptions> ConfigurationBackedListenOptions { get; } = new List<ListenOptions>();

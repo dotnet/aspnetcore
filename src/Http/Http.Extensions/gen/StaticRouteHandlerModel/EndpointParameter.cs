@@ -61,7 +61,7 @@ internal class EndpointParameter
         ElementType = elementType;
         IsEndpointMetadataProvider = ImplementsIEndpointMetadataProvider(typeSymbol, wellKnownTypes);
         IsEndpointParameterMetadataProvider = ImplementsIEndpointParameterMetadataProvider(typeSymbol, wellKnownTypes);
-        endpoint.EmitterContext.HasEndpointParameterMetadataProvider = IsEndpointParameterMetadataProvider;
+        endpoint.EmitterContext.HasEndpointParameterMetadataProvider |= IsEndpointParameterMetadataProvider;
         endpoint.EmitterContext.HasEndpointMetadataProvider |= IsEndpointMetadataProvider;
     }
 

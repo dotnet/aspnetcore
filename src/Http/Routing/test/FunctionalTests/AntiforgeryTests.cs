@@ -1,5 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Text.Json;
@@ -56,7 +57,7 @@ public class AntiforgeryTests
             new KeyValuePair<string,string>("__RequestVerificationToken", tokens.RequestToken),
             new KeyValuePair<string,string>("name", "Test task"),
             new KeyValuePair<string,string>("isComplete", "false"),
-            new KeyValuePair<string,string>("dueDate", DateTime.Today.AddDays(1).ToString()),
+            new KeyValuePair<string,string>("dueDate", DateTime.Today.AddDays(1).ToString(CultureInfo.InvariantCulture)),
         };
         request.Content = new FormUrlEncodedContent(nameValueCollection);
 
@@ -88,7 +89,7 @@ public class AntiforgeryTests
                                 {
                                     Name = form["name"],
                                     IsCompleted = bool.Parse(form["isComplete"]),
-                                    DueDate = DateTime.Parse(form["dueDate"])
+                                    DueDate = DateTime.Parse(form["dueDate"], CultureInfo.InvariantCulture)
                                 };
                                 await context.Response.WriteAsJsonAsync(todo);
                             }).WithMetadata(AntiforgeryMetadata.ValidationRequired));
@@ -116,7 +117,7 @@ public class AntiforgeryTests
             new KeyValuePair<string,string>("__RequestVerificationToken", tokens.RequestToken),
             new KeyValuePair<string,string>("name", "Test task"),
             new KeyValuePair<string,string>("isComplete", "false"),
-            new KeyValuePair<string,string>("dueDate", DateTime.Today.AddDays(1).ToString()),
+            new KeyValuePair<string,string>("dueDate", DateTime.Today.AddDays(1).ToString(CultureInfo.InvariantCulture)),
         };
         request.Content = new FormUrlEncodedContent(nameValueCollection);
 
@@ -161,7 +162,7 @@ public class AntiforgeryTests
         {
             new KeyValuePair<string,string>("name", "Test task"),
             new KeyValuePair<string,string>("isComplete", "false"),
-            new KeyValuePair<string,string>("dueDate", DateTime.Today.AddDays(1).ToString()),
+            new KeyValuePair<string,string>("dueDate", DateTime.Today.AddDays(1).ToString(CultureInfo.InvariantCulture)),
         };
         request.Content = new FormUrlEncodedContent(nameValueCollection);
 
@@ -200,7 +201,7 @@ public class AntiforgeryTests
         {
             new KeyValuePair<string,string>("name", "Test task"),
             new KeyValuePair<string,string>("isComplete", "false"),
-            new KeyValuePair<string,string>("dueDate", DateTime.Today.AddDays(1).ToString()),
+            new KeyValuePair<string,string>("dueDate", DateTime.Today.AddDays(1).ToString(CultureInfo.InvariantCulture)),
         };
         request.Content = new FormUrlEncodedContent(nameValueCollection);
 
@@ -277,7 +278,7 @@ public class AntiforgeryTests
         {
             new KeyValuePair<string,string>("name", "Test task"),
             new KeyValuePair<string,string>("isComplete", "false"),
-            new KeyValuePair<string,string>("dueDate", DateTime.Today.AddDays(1).ToString()),
+            new KeyValuePair<string,string>("dueDate", DateTime.Today.AddDays(1).ToString(CultureInfo.InvariantCulture)),
         };
         request.Content = new FormUrlEncodedContent(nameValueCollection);
 
@@ -303,7 +304,7 @@ public class AntiforgeryTests
                     {
                         Name = form["name"],
                         IsCompleted = bool.Parse(form["isComplete"]),
-                        DueDate = DateTime.Parse(form["dueDate"])
+                        DueDate = DateTime.Parse(form["dueDate"], CultureInfo.InvariantCulture)
                     };
                     await context.Response.WriteAsJsonAsync(todo);
                 }),
@@ -317,7 +318,7 @@ public class AntiforgeryTests
                     {
                         Name = form["name"],
                         IsCompleted = bool.Parse(form["isComplete"]),
-                        DueDate = DateTime.Parse(form["dueDate"])
+                        DueDate = DateTime.Parse(form["dueDate"], CultureInfo.InvariantCulture)
                     };
                     await context.Response.WriteAsJsonAsync(todo);
                 }),
@@ -331,7 +332,7 @@ public class AntiforgeryTests
                     {
                         Name = form["name"],
                         IsCompleted = bool.Parse(form["isComplete"]),
-                        DueDate = DateTime.Parse(form["dueDate"])
+                        DueDate = DateTime.Parse(form["dueDate"], CultureInfo.InvariantCulture)
                     };
                     await context.Response.WriteAsJsonAsync(todo);
                 }),
@@ -373,7 +374,7 @@ public class AntiforgeryTests
         {
             new KeyValuePair<string,string>("name", "Test task"),
             new KeyValuePair<string,string>("isComplete", "false"),
-            new KeyValuePair<string,string>("dueDate", DateTime.Today.AddDays(1).ToString()),
+            new KeyValuePair<string,string>("dueDate", DateTime.Today.AddDays(1).ToString(CultureInfo.InvariantCulture)),
         };
         request.Content = new FormUrlEncodedContent(nameValueCollection);
 
@@ -430,7 +431,7 @@ public class AntiforgeryTests
             new KeyValuePair<string,string>("__RequestVerificationToken", tokens.RequestToken),
             new KeyValuePair<string,string>("name", "Test task"),
             new KeyValuePair<string,string>("isComplete", "false"),
-            new KeyValuePair<string,string>("dueDate", DateTime.Today.AddDays(1).ToString()),
+            new KeyValuePair<string,string>("dueDate", DateTime.Today.AddDays(1).ToString(CultureInfo.InvariantCulture)),
         };
         request.Content = new FormUrlEncodedContent(nameValueCollection);
 

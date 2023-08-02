@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 
@@ -58,7 +59,7 @@ internal partial class EndpointHtmlRenderer
 
         foreach (var location in locations)
         {
-            sb.Append($"\n - {GenerateComponentPath(location.ComponentId)}");
+            sb.Append(CultureInfo.InvariantCulture, $"\n - {GenerateComponentPath(location.ComponentId)}");
         }
 
         return sb.ToString();
