@@ -95,6 +95,7 @@ internal sealed class OutputCacheMiddleware
 
         // Add IOutputCacheFeature
         AddOutputCacheFeature(context);
+        bool hasException = false;
         try
         {
             foreach (var policy in policies)
@@ -109,7 +110,12 @@ internal sealed class OutputCacheMiddleware
                 if (context.AllowCacheLookup)
                 {
                     bool served = await TryServeFromCacheAsync(context, policies);
-                    context.ReleaseCachedResponse(); // release even if not served due to failing conditions
+
+                    // release even if not served due to failing conditions
+                    // (note that this is *in addition* to the finally, because execute
+                    // may update this with another valid response later; this nulls
+                    // out the value after recycle, and is fine to call multiple times)
+                    context.ReleaseCachedResponse();
 
                     if (served)
                     {
@@ -134,14 +140,12 @@ internal sealed class OutputCacheMiddleware
                         // The current request was processed, nothing more to do
                         if (executed)
                         {
-                            context.ReleaseCachedResponse();
                             return;
                         }
 
                         // If the result was processed by another request, try to serve it from cache entry (no lookup)
                         if (await TryServeCachedResponseAsync(context, cacheEntry, policies))
                         {
-                            context.ReleaseCachedResponse();
                             return;
                         }
 
@@ -149,7 +153,6 @@ internal sealed class OutputCacheMiddleware
                     }
 
                     await ExecuteResponseAsync();
-                    context.ReleaseCachedResponse();
                     return;
 
                     async Task<OutputCacheEntry?> ExecuteResponseAsync()
@@ -193,8 +196,17 @@ internal sealed class OutputCacheMiddleware
 
             await _next(httpContext);
         }
+        catch
+        {
+            // avoid recycling in unknown outcomes, especially re concurrent buffer access thru cancellation
+            hasException = true;
+        }
         finally
         {
+            if (!hasException)
+            {
+                context.ReleaseCachedResponse();
+            }
             RemoveOutputCacheFeature(httpContext);
         }
     }
