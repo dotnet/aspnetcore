@@ -48,8 +48,7 @@
         ".template.config/**"
       ],
       "copyOnly": [
-        "**/wwwroot/css/bootstrap/**",
-        "**/wwwroot/css/bootstrap-icons/**"
+        "**/wwwroot/css/bootstrap/**"
       ],
       "modifiers": [
         {
