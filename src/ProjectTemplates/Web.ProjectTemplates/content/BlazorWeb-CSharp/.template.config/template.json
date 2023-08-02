@@ -52,7 +52,7 @@
       ],
       "modifiers": [
         {
-          "condition": "(!PWA)",
+          "condition": "!UseWebAssembly || !PWA",
           "exclude": [
             "BlazorWeb-CSharp/wwwroot/service-worker*.js",
             "BlazorWeb-CSharp/wwwroot/manifest.webmanifest",
