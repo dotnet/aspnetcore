@@ -14,8 +14,6 @@
   "symbols/UseWebAssembly/description": "Pokud je zadáno, nakonfiguruje projekt tak, aby vykreslovat komponenty interaktivně v prohlížeči pomocí WebAssembly.",
   "symbols/UseServer/displayName": "_Použít interaktivní serverové komponenty",
   "symbols/UseServer/description": "Pokud je zadáno, nakonfiguruje projekt tak, aby vykresloval komponenty interaktivně na serveru.",
-  "symbols/PWA/displayName": "_Progresivní webová aplikace",
-  "symbols/PWA/description": "Pokud je tato možnost zadaná, vytvoří progresivní webovou aplikaci (PWA), která podporuje instalaci a offline použití.",
   "symbols/NoHttps/description": "Určuje, jestli se má protokol HTTPS vypnout. Tato možnost platí jenom v případě, že se pro --auth nepoužívají Individual, IndividualB2C, SingleOrg ani MultiOrg.",
   "symbols/UseProgramMain/displayName": "Nepoužívat _příkazy nejvyšší úrovně",
   "symbols/UseProgramMain/description": "Určuje, jestli se má místo příkazů nejvyšší úrovně generovat explicitní třída Program a metoda Main.",

@@ -14,8 +14,6 @@
   "symbols/UseWebAssembly/description": "Se specificato, configura il progetto per il rendering interattivo dei componenti nel browser tramite WebAssembly.",
   "symbols/UseServer/displayName": "_Usa componenti server interattivi",
   "symbols/UseServer/description": "Se specificato, configura il progetto per il rendering interattivo dei componenti nel server.",
-  "symbols/PWA/displayName": "Applicazione Web _Progressive",
-  "symbols/PWA/description": "Se specificato, produce un'applicazione Web progressiva (PWA) che supporta l'installazione e l'uso offline.",
   "symbols/NoHttps/description": "Indica se disattivare HTTPS. Questa opzione si applica solo se Individual, IndividualB2C, SingleOrg o MultiOrg non vengono usati per --auth.",
   "symbols/UseProgramMain/displayName": "Non usare_istruzioni di primo livello",
   "symbols/UseProgramMain/description": "Indica se generare una classe Program esplicita e un metodo Main anziché istruzioni di primo livello.",

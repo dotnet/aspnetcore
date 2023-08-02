@@ -14,8 +14,6 @@
   "symbols/UseWebAssembly/description": "指定した場合、WebAssembly を使用してブラウザーでコンポーネントを対話的にレンダリングするようにプロジェクトを構成します。",
   "symbols/UseServer/displayName": "_対話型サーバー コンポーネントを使用する",
   "symbols/UseServer/description": "指定した場合、サーバー上でコンポーネントを対話的にレンダリングするようにプロジェクトを構成します。",
-  "symbols/PWA/displayName": "プログレッシブ Web アプリケーション(_P)",
-  "symbols/PWA/description": "指定した場合、インストールとオフラインでの使用をサポートするプログレッシブ Web アプリケーション (PWA) が生成されます。",
   "symbols/NoHttps/description": "HTTPS をオフにするかどうか。このオプションは、Individual、IndividualB2C、SingleOrg、または MultiOrg が --auth に使用されていない場合にのみ適用されます。",
   "symbols/UseProgramMain/displayName": "最上位レベルのステートメントを使用しない(_T)",
   "symbols/UseProgramMain/description": "最上位レベルのステートメントではなく、明示的な Program クラスと Main メソッドを生成するかどうか。",

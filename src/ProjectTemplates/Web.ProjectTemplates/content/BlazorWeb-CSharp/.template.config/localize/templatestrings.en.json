@@ -14,8 +14,6 @@
   "symbols/UseWebAssembly/description": "Configures whether to support rendering components interactively in the browser using WebAssembly. The default value is false.",
   "symbols/UseServer/displayName": "_Use interactive server components",
   "symbols/UseServer/description": "Configures whether to support rendering components interactively on the server via a SignalR WebSocket connection. The default value is true.",
-  "symbols/PWA/displayName": "_Progressive Web Application",
-  "symbols/PWA/description": "If specified, produces a Progressive Web Application (PWA) supporting installation and offline use.",
   "symbols/NoHttps/description": "Whether to turn off HTTPS. This option only applies if Individual, IndividualB2C, SingleOrg, or MultiOrg aren't used for --auth.",
   "symbols/UseProgramMain/displayName": "Do not use _top-level statements",
   "symbols/UseProgramMain/description": "Whether to generate an explicit Program class and Main method instead of top-level statements.",

@@ -14,8 +14,6 @@
   "symbols/UseWebAssembly/description": "Bei Angabe dieser Option wird das Projekt so konfiguriert, dass Komponenten interaktiv mithilfe von WebAssembly im Browser gerendert werden.",
   "symbols/UseServer/displayName": "_Interaktive Serverkomponenten verwenden",
   "symbols/UseServer/description": "Bei Angabe dieser Option wird das Projekt so konfiguriert, dass Komponenten interaktiv auf dem Server gerendert werden.",
-  "symbols/PWA/displayName": "_Progressive Webanwendung",
-  "symbols/PWA/description": "Wenn angegeben, wird eine Progressive Web Application (PWA) erstellt, die die Installation und Offlineverwendung unterstützt.",
   "symbols/NoHttps/description": "Ob HTTPS deaktiviert werden soll. Diese Option gilt nur, wenn Individual, IndividualB2C, SingleOrg oder MultiOrg nicht für --auth verwendet werden.",
   "symbols/UseProgramMain/displayName": "Keine Anweisungen_der obersten Ebene verwenden",
   "symbols/UseProgramMain/description": "Gibt an, ob anstelle von Anweisungen der obersten Ebene eine explizite Programmklasse und eine Main-Methode generiert werden soll.",
