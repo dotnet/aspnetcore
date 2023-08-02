@@ -1,0 +1,18 @@
+@using BlazorWeb_CSharp.Components.Layout
+
+@*#if (UseWebAssembly) -->
+<Router AppAssembly="@typeof(App).Assembly" AdditionalAssemblies="new[] { typeof(Client.Pages.Counter).Assembly }">
+##else
+<Router AppAssembly="@typeof(App).Assembly">
+##endif*@
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+    </Found>
+    <NotFound>
+        <PageTitle>Not found</PageTitle>
+        <LayoutView Layout="@typeof(MainLayout)">
+            <p role="alert">Sorry, there's nothing at this address.</p>
+        </LayoutView>
+    </NotFound>
+</Router>

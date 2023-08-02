@@ -1,4 +1,4 @@
-using BlazorWeb_CSharp;
+using BlazorWeb_CSharp.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,13 +44,13 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 #if (UseServer && UseWebAssembly)
-app.MapRazorComponents<AppHost>().AddServerRenderMode().AddWebAssemblyRenderMode();
+app.MapRazorComponents<App>().AddServerRenderMode().AddWebAssemblyRenderMode();
 #elif (UseServer)
-app.MapRazorComponents<AppHost>().AddServerRenderMode();
+app.MapRazorComponents<App>().AddServerRenderMode();
 #elif (UseWebAssembly)
-app.MapRazorComponents<AppHost>().AddWebAssemblyRenderMode();
+app.MapRazorComponents<App>().AddWebAssemblyRenderMode();
 #else
-app.MapRazorComponents<AppHost>();
+app.MapRazorComponents<App>();
 #endif
 
 app.Run();
