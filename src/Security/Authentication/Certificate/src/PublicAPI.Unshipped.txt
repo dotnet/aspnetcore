@@ -1,1 +1,5 @@
 #nullable enable
+Microsoft.AspNetCore.Authentication.Certificate.CertificateAuthenticationOptions.AdditionalChainCertificatesSelector.get -> System.Func<System.Security.Cryptography.X509Certificates.X509Certificate2!, System.Security.Cryptography.X509Certificates.X509Certificate2Collection!>?
+Microsoft.AspNetCore.Authentication.Certificate.CertificateAuthenticationOptions.AdditionalChainCertificatesSelector.set -> void
+Microsoft.AspNetCore.Authentication.Certificate.CertificateAuthenticationOptions.CustomTrustStoreSelector.get -> System.Func<System.Security.Cryptography.X509Certificates.X509Certificate2!, System.Security.Cryptography.X509Certificates.X509Certificate2Collection!>?
+Microsoft.AspNetCore.Authentication.Certificate.CertificateAuthenticationOptions.CustomTrustStoreSelector.set -> void
