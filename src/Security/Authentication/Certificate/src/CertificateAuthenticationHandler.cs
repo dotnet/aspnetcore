@@ -226,10 +226,7 @@ internal sealed class CertificateAuthenticationHandler : AuthenticationHandler<C
         }
 
         X509Certificate2Collection? additionalChainCertificates = Options.AdditionalChainCertificatesSelector?.Invoke(certificate) ?? Options.AdditionalChainCertificates;
-        if (additionalChainCertificates != null)
-        {
-            chainPolicy.ExtraStore.AddRange(additionalChainCertificates);
-        }
+        chainPolicy.ExtraStore.AddRange(additionalChainCertificates);
 
         if (!Options.ValidateValidityPeriod)
         {
