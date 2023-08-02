@@ -74,6 +74,9 @@
           Condition=" '$(InProcessTestSite)' == 'true' AND '$(UseIisNativeAssets)' == 'true' AND '$(TargetFrameworkIdentifier)' != '.NETFramework'"
           BeforeTargets="Publish"
           DependsOnTargets="GeneratePublishDependencyFile;CopyFilesToPublishDirectory;PrepareInjectionApp">
+    <!-- Use $(PublishDir)$(ProjectDepsFileName) instead of $(PublishDepsFilePath) here until
+         https://github.com/dotnet/arcade/issues/13911 is fixed.
+    -->
     <Exec Command="$(InjectDepsApp) &quot;$(PublishDir)$(ProjectDepsFileName)&quot; $(RuntimeIdentifier) " />
   </Target>
 </Project>
