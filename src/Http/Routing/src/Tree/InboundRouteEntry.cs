@@ -72,9 +72,7 @@ internal class InboundRouteEntry
     public RouteTemplate RouteTemplate { get; set; }
 #else
     public RoutePattern RoutePattern { get; set; }
-#endif
 
-#if COMPONENTS
     public List<string> UnusedRouteParameterNames { get; set; }
 #endif
 }

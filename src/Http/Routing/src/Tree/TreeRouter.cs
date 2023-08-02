@@ -52,21 +52,21 @@ internal partial class TreeRouter
     /// <param name="constraintLogger">The <see cref="ILogger"/> instance used
     /// in <see cref="RouteConstraintMatcher"/>.</param>
     /// <param name="version">The version of this route.</param>
-#endif
     internal TreeRouter(
         UrlMatchingTree[] trees,
-#if !COMPONENTS
         IEnumerable<OutboundRouteEntry> linkGenerationEntries,
-#endif
         UrlEncoder urlEncoder,
-#if !COMPONENTS
         ObjectPool<UriBuildingContext> objectPool,
-#endif  
         ILogger routeLogger,
-#if !COMPONENTS
         ILogger constraintLogger,
-#endif
         int version)
+#else
+    internal TreeRouter(
+        UrlMatchingTree[] trees,
+        UrlEncoder urlEncoder,
+        ILogger routeLogger,
+        int version)
+#endif
     {
         ArgumentNullException.ThrowIfNull(trees);
 #if !COMPONENTS
@@ -177,18 +177,13 @@ internal partial class TreeRouter
         {
 #if !COMPONENTS
             var tokenizer = new PathTokenizer(context.HttpContext.Request.Path);
-#else
-            var tokenizer = new PathTokenizer(new(context.Path));
-#endif
             var root = tree.Root;
 
             var treeEnumerator = new TreeEnumerator(root, tokenizer);
 
-#if !COMPONENTS
             // Create a snapshot before processing the route. We'll restore this snapshot before running each
             // to restore the state. This is likely an "empty" snapshot, which doesn't allocate.
             var snapshot = context.RouteData.PushState(router: null, values: null, dataTokens: null);
-#endif
             while (treeEnumerator.MoveNext())
             {
                 var node = treeEnumerator.Current;
@@ -196,19 +191,12 @@ internal partial class TreeRouter
                 {
                     var entry = item.Entry;
                     var matcher = item.TemplateMatcher;
-
-#if !COMPONENTS
                     try
                     {
                         if (!matcher.TryMatch(context.HttpContext.Request.Path, context.RouteData.Values))
-#else
-                    if (!matcher.TryMatch(new(context.Path), context.RouteValues))
-#endif
                         {
                             continue;
                         }
-
-#if !COMPONENTS
                         if (!RouteConstraintMatcher.Match(
                             entry.Constraints,
                             context.RouteData.Values,
@@ -216,23 +204,10 @@ internal partial class TreeRouter
                             this,
                             RouteDirection.IncomingRequest,
                             _constraintLogger))
-#else
-                    if (!RouteConstraintMatcher.Match(
-                            entry.Constraints,
-                            context.RouteValues))
-#endif
                         {
-#if COMPONENTS
-                        context.RouteValues.Clear();
-#endif
                             continue;
                         }
 
-#if COMPONENTS
-                    Log.RequestMatchedRoute(_logger, entry.RouteName, entry.RoutePattern.RawText);
-                    context.Entry = entry;
-                    return;
-#else
                         Log.RequestMatchedRoute(_logger, entry.RouteName, entry.RouteTemplate.TemplateText);
                         context.RouteData.Routers.Add(entry.Handler);
                         await entry.Handler.RouteAsync(context);
@@ -249,9 +224,41 @@ internal partial class TreeRouter
                             snapshot.Restore();
                         }
                     }
-#endif
                 }
             }
+#else
+            var tokenizer = new PathTokenizer(new(context.Path));
+            var root = tree.Root;
+
+            var treeEnumerator = new TreeEnumerator(root, tokenizer);
+
+            while (treeEnumerator.MoveNext())
+            {
+                var node = treeEnumerator.Current;
+                foreach (var item in node.Matches)
+                {
+                    var entry = item.Entry;
+                    var matcher = item.TemplateMatcher;
+
+                    if (!matcher.TryMatch(new(context.Path), context.RouteValues))
+                    {
+                        continue;
+                    }
+
+                    if (!RouteConstraintMatcher.Match(
+                            entry.Constraints,
+                            context.RouteValues))
+                    {
+                        context.RouteValues.Clear();
+                        continue;
+                    }
+
+                    Log.RequestMatchedRoute(_logger, entry.RouteName, entry.RoutePattern.RawText);
+                    context.Entry = entry;
+                    return;
+                }
+            }
+#endif
         }
     }
 

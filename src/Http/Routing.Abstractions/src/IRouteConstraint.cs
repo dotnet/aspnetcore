@@ -32,17 +32,15 @@ internal interface IRouteConstraint : IParameterPolicy
     /// when an incoming request is being handled or when a URL is being generated.
     /// </param>
     /// <returns><c>true</c> if the URL parameter contains a valid value; otherwise, <c>false</c>.</returns>
-#endif
     bool Match(
-#if !COMPONENTS
         HttpContext? httpContext,
         IRouter? route,
-#endif
         string routeKey,
-#if !COMPONENTS
         RouteValueDictionary values,
         RouteDirection routeDirection);
 #else
+    bool Match(
+        string routeKey,
         RouteValueDictionary values);
 #endif
 }

@@ -78,6 +78,7 @@ internal class RouteConstraintBuilder
         return constraints;
     }
 
+#if !COMPONENTS
     /// <summary>
     /// Adds a constraint instance for the given key.
     /// </summary>
@@ -116,6 +117,7 @@ internal class RouteConstraintBuilder
 
         Add(key, constraint);
     }
+#endif
 
     /// <summary>
     /// Adds a constraint for the given key, resolved by the <see cref="IInlineConstraintResolver"/>.

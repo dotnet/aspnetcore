@@ -80,14 +80,11 @@ internal class TreeRouteBuilder
 #if !COMPONENTS
         IRouter handler,
         RouteTemplate routeTemplate,
-#else
-        [DynamicallyAccessedMembers(Component)] Type handler,
-        RoutePattern routeTemplate,
-#endif
-#if !COMPONENTS
         string routeName,
         int order)
 #else
+        [DynamicallyAccessedMembers(Component)] Type handler,
+        RoutePattern routeTemplate,
         List<string> unusedParameterNames)
 #endif
     {
@@ -129,7 +126,6 @@ internal class TreeRouteBuilder
                     constraintBuilder.AddResolvedConstraint(parameter.Name, constraint.Constraint);
                 }
             }
-        }
 #else
             if (parameter.ParameterPolicies != null)
             {
@@ -142,9 +138,9 @@ internal class TreeRouteBuilder
                     constraintBuilder.AddResolvedConstraint(parameter.Name, policy.Content);
                 }
             }
+#endif
         }
 
-#endif
         entry.Constraints = constraintBuilder.Build();
         entry.Defaults = new RouteValueDictionary();
 
@@ -232,9 +228,7 @@ internal class TreeRouteBuilder
         OutboundEntries.Add(entry);
         return entry;
     }
-#endif
 
-#if !COMPONENTS
     /// <summary>
     /// Gets the list of <see cref="InboundRouteEntry"/>.
     /// </summary>
@@ -246,9 +240,7 @@ internal class TreeRouteBuilder
     /// Gets the list of <see cref="OutboundRouteEntry"/>.
     /// </summary>
     public IList<OutboundRouteEntry> OutboundEntries { get; } = new List<OutboundRouteEntry>();
-#endif
 
-#if !COMPONENTS
     /// <summary>
     /// Builds a <see cref="TreeRouter"/> with the <see cref="InboundEntries"/>
     /// and <see cref="OutboundEntries"/> defined in this <see cref="TreeRouteBuilder"/>.
@@ -286,20 +278,22 @@ internal class TreeRouteBuilder
             tree.AddEntry(entry);
         }
 
+#if !COMPONENTS
         return new TreeRouter(
             trees.Values.OrderBy(tree => tree.Order).ToArray(),
-#if !COMPONENTS
             OutboundEntries,
-#endif
             _urlEncoder,
-#if !COMPONENTS
             _objectPool,
-#endif
             _logger,
-#if !COMPONENTS
             _constraintLogger,
-#endif
             version);
+#else
+        return new TreeRouter(
+            trees.Values.OrderBy(tree => tree.Order).ToArray(),
+            _urlEncoder,
+            _logger,
+            version);
+#endif
     }
 
 #if !COMPONENTS
