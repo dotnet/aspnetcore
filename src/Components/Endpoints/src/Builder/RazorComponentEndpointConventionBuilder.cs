@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Discovery;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Web;
@@ -38,40 +39,11 @@ public sealed class RazorComponentEndpointConventionBuilder : IEndpointConventio
     internal ComponentApplicationBuilder ApplicationBuilder => _builder;
 
     /// <summary>
-    /// Configures the <see cref="RenderMode.WebAssembly"/> for this application.
-    /// </summary>
-    /// <returns>The <see cref="RazorComponentEndpointConventionBuilder"/>.</returns>
-    public RazorComponentEndpointConventionBuilder AddWebAssemblyRenderMode()
-    {
-        for (var i = 0; i < _options.ConfiguredRenderModes.Count; i++)
-        {
-            var mode = _options.ConfiguredRenderModes[i];
-            if (mode is WebAssemblyRenderMode)
-            {
-                return this;
-            }
-        }
-
-        _options.ConfiguredRenderModes.Add(RenderMode.WebAssembly);
-
-        return this;
-    }
-
-    /// <summary>
     /// Configures the <see cref="RenderMode.Server"/> for this application.
     /// </summary>
     /// <returns>The <see cref="RazorComponentEndpointConventionBuilder"/>.</returns>
     public RazorComponentEndpointConventionBuilder AddServerRenderMode()
     {
-        for (var i = 0; i < _options.ConfiguredRenderModes.Count; i++)
-        {
-            var mode = _options.ConfiguredRenderModes[i];
-            if (mode is ServerRenderMode)
-            {
-                return this;
-            }
-        }
-
         _options.ConfiguredRenderModes.Add(RenderMode.Server);
 
         return this;
@@ -99,5 +71,14 @@ public sealed class RazorComponentEndpointConventionBuilder : IEndpointConventio
         {
             _finallyConventions.Add(finallyConvention);
         }
+    }
+
+    /// <summary>
+    /// Adds the given <paramref name="renderMode"/> to the list of configured render modes if not present.
+    /// </summary>
+    /// <param name="renderMode">The <see cref="IComponentRenderMode"/> to add.</param>
+    public void AddRenderMode(IComponentRenderMode renderMode)
+    {
+        _options.ConfiguredRenderModes.Add(renderMode);
     }
 }

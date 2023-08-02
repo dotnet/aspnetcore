@@ -44,10 +44,15 @@ public static class WebAssemblyRazorComponentsBuilderExtensions
 
         public override IEnumerable<RouteEndpointBuilder> GetEndpointBuilders(IComponentRenderMode renderMode, IApplicationBuilder applicationBuilder)
         {
-            var endpointRouteBuilder = new EndpointRouteBuilder(_services, applicationBuilder);
-            var pathPrefix = _options.PathPrefix;
+            if (renderMode is not WebAssemblyRenderModeWithOptions wasmWithOptions)
+            {
+                return Array.Empty<RouteEndpointBuilder>();
+            }
 
-            applicationBuilder.UseBlazorFrameworkFiles(pathPrefix);
+            var endpointRouteBuilder = new EndpointRouteBuilder(_services, applicationBuilder);
+            var pathPrefix = wasmWithOptions.EndpointOptions?.PathPrefix;
+
+            applicationBuilder.UseBlazorFrameworkFiles(pathPrefix ?? default);
             var app = applicationBuilder.Build();
 
             endpointRouteBuilder.Map($"{pathPrefix}/_framework/{{*path}}", context =>

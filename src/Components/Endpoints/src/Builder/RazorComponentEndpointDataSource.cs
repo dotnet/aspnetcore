@@ -96,13 +96,6 @@ internal class RazorComponentEndpointDataSource<TRootComponent> : EndpointDataSo
 
         ICollection<IComponentRenderMode> renderModes = Options.ConfiguredRenderModes;
 
-        if (Options.UseDeclaredRenderModes)
-        {
-            var componentRenderModes = context.GetDeclaredRenderModesByDiscoveredComponents();
-            componentRenderModes.UnionWith(Options.ConfiguredRenderModes);
-            renderModes = componentRenderModes;
-        }
-
         foreach (var renderMode in renderModes)
         {
             var found = false;

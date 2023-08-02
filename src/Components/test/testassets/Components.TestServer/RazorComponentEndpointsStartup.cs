@@ -7,6 +7,7 @@ using Components.TestServer.RazorComponents;
 using Components.TestServer.RazorComponents.Pages.Forms;
 using Components.TestServer.RazorComponents.Pages.StreamingRendering;
 using Components.TestServer.Services;
+using Microsoft.AspNetCore.Components.Endpoints;
 
 namespace TestServer;
 
@@ -29,10 +30,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             options.MaxFormMappingCollectionSize = 100;
         })
             .AddServerComponents()
-            .AddWebAssemblyComponents(options =>
-            {
-                options.PathPrefix = "/WasmMinimal";
-            });
+            .AddWebAssemblyComponents();
         services.AddHttpContextAccessor();
         services.AddSingleton<AsyncOperationService>();
         services.AddCascadingAuthenticationState();
@@ -60,7 +58,10 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             {
                 endpoints.MapRazorComponents<TRootComponent>()
                     .AddServerRenderMode()
-                    .AddWebAssemblyRenderMode();
+                    .AddWebAssemblyRenderMode(new WebAssemblyComponentsEndpointOptions
+                    {
+                        PathPrefix = "/WasmMinimal"
+                    });
 
                 NotEnabledStreamingRenderingComponent.MapEndpoints(endpoints);
                 StreamingRenderingForm.MapEndpoints(endpoints);

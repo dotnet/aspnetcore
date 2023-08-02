@@ -17,7 +17,7 @@ public class RazorComponentEndpointDataSourceTest
     [Fact]
     public void RegistersEndpoints()
     {
-        var endpointDataSource = CreateDataSource<App>(useDeclaredRenderModes: false);
+        var endpointDataSource = CreateDataSource<App>();
 
         var endpoints = endpointDataSource.Endpoints;
         Assert.Equal(2, endpoints.Count);
@@ -344,16 +344,13 @@ public class RazorComponentEndpointDataSourceTest
     private RazorComponentEndpointDataSource<TComponent> CreateDataSource<TComponent>(
         ComponentApplicationBuilder builder = null,
         IServiceProvider services = null,
-        IComponentRenderMode[] renderModes = null,
-        bool useDeclaredRenderModes = true)
+        IComponentRenderMode[] renderModes = null)
     {
         var result = new RazorComponentEndpointDataSource<TComponent>(
             builder ?? DefaultRazorComponentApplication<TComponent>.Instance.GetBuilder(),
             services?.GetService<IEnumerable<RenderModeEndpointProvider>>() ?? Enumerable.Empty<RenderModeEndpointProvider>(),
             new ApplicationBuilder(services ?? new ServiceCollection().BuildServiceProvider()),
             new RazorComponentEndpointFactory());
-
-        result.Options.UseDeclaredRenderModes = useDeclaredRenderModes;
 
         if (renderModes != null)
         {
