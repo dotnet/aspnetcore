@@ -161,7 +161,7 @@ async function importDotnetJs(startOptions: Partial<WebAssemblyStartOptions>): P
   // Allow overriding the URI from which the dotnet.*.js file is loaded
   if (startOptions.loadBootResource) {
     const resourceType: WebAssemblyBootResourceType = 'dotnetjs';
-    const customSrc = startOptions.loadBootResource(resourceType, 'dotnet.js', src, '');
+    const customSrc = startOptions.loadBootResource(resourceType, 'dotnet.js', src, '', 'js-module-dotnet');
     if (typeof (customSrc) === 'string') {
       src = customSrc;
     } else if (customSrc) {
@@ -197,7 +197,6 @@ function prepareRuntimeConfig(options: Partial<WebAssemblyStartOptions>): Dotnet
   };
 
   const moduleConfig = (window['Module'] || {}) as typeof Module;
-  // TODO (moduleConfig as any).preloadPlugins = []; // why do we need this ?
   const dotnetModuleConfig: DotnetModuleConfig = {
     ...moduleConfig,
     onConfigLoaded: (onConfigLoaded as (config: MonoConfig) => void | Promise<void>),

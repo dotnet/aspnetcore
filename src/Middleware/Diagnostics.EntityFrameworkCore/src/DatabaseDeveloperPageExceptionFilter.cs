@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Data.Common;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Views;
@@ -20,6 +21,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore;
 /// <remarks>
 /// This should only be enabled in the Development environment.
 /// </remarks>
+[RequiresDynamicCode("DbContext migrations operations are not supported with NativeAOT")]
 public sealed class DatabaseDeveloperPageExceptionFilter : IDeveloperPageExceptionFilter
 {
     private readonly ILogger _logger;

@@ -26,7 +26,8 @@
                     disableDomPreservation: suppressEnhancedNavigation,
                 },
                 webAssembly: {
-                    loadBootResource: function (type, name, defaultUri, integrity) {
+                    loadBootResource: function (type, name, defaultUri, integrity, behavior) {
+                        // note this is resolved to absolute URL using document.baseURI
                         return `WasmMinimal/_framework/${name}`;
                     },
                 },
