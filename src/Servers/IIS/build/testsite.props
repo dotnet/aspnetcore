@@ -74,6 +74,6 @@
           Condition=" '$(InProcessTestSite)' == 'true' AND '$(UseIisNativeAssets)' == 'true' AND '$(TargetFrameworkIdentifier)' != '.NETFramework'"
           BeforeTargets="Publish"
           DependsOnTargets="GeneratePublishDependencyFile;CopyFilesToPublishDirectory;PrepareInjectionApp">
-    <Exec Command="$(InjectDepsApp) &quot;$(PublishDepsFilePath)&quot; $(RuntimeIdentifier) " />
+    <Exec Command="$(InjectDepsApp) &quot;$(PublishDir)$(ProjectDepsFileName)&quot; $(RuntimeIdentifier) " />
   </Target>
 </Project>
