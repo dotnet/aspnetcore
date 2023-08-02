@@ -1,5 +1,5 @@
 @*#if (UseWebAssembly) -->
-<Router AppAssembly="@typeof(App).Assembly" AdditionalAssemblies="new[] { typeof(WebAssembly.Pages.Counter).Assembly }">
+<Router AppAssembly="@typeof(App).Assembly" AdditionalAssemblies="new[] { typeof(Client.Pages.Counter).Assembly }">
 ##else
 <Router AppAssembly="@typeof(App).Assembly">
 ##endif*@

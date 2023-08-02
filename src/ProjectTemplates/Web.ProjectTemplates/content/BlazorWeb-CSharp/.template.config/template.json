@@ -34,7 +34,7 @@
     },
     {
       "condition": "(UseWebAssembly && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
-      "path": "BlazorWeb-CSharp.WebAssembly/BlazorWeb-CSharp.WebAssembly.csproj"
+      "path": "BlazorWeb-CSharp.Client/BlazorWeb-CSharp.Client.csproj"
     }
   ],
   "shortName": "blazor",
@@ -55,7 +55,7 @@
           "exclude": [
             "BlazorWeb-CSharp/wwwroot/appsettings.Development.json",
             "BlazorWeb-CSharp/wwwroot/appsettings.json",
-            "BlazorWeb-CSharp.WebAssembly/**",
+            "BlazorWeb-CSharp.Client/**",
             "*.sln"
           ],
           "rename": {
