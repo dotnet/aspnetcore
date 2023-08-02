@@ -113,9 +113,10 @@ internal static class AngularCliMiddleware
                 try
                 {
                     // If we get any HTTP response, the CLI server is ready
+                    using var cts = new CancellationTokenSource(timeoutMilliseconds);
                     await client.SendAsync(
                         new HttpRequestMessage(HttpMethod.Head, cliServerUri),
-                        new CancellationTokenSource(timeoutMilliseconds).Token);
+                        cts.Token);
                     return;
                 }
                 catch (Exception)
