@@ -55,36 +55,32 @@
         {
           "condition": "(!PWA)",
           "exclude": [
-            "wwwroot/service-worker*.js",
-            "wwwroot/manifest.webmanifest",
-            "wwwroot/icon-512.png"
+            "Components-CSharp/wwwroot/service-worker*.js",
+            "Components-CSharp/wwwroot/manifest.webmanifest",
+            "Components-CSharp/wwwroot/icon-512.png"
           ]
         },
         {
           "condition": "(!UseWebAssembly)",
           "exclude": [
-            "Program.Browser.Main.cs",
-            "Program.Browser.cs",
-            "wwwroot/appsettings.Development.json",
-            "wwwroot/appsettings.json"
-          ],
-          "rename": {
-            "Program.Server.Main.cs": "Program.cs",
-            "Program.Server.cs": "Program.cs"
-          }
+            "Components-CSharp/Program.Browser.Main.cs",
+            "Components-CSharp/Program.Browser.cs",
+            "Components-CSharp/wwwroot/appsettings.Development.json",
+            "Components-CSharp/wwwroot/appsettings.json"
+          ]
         },
         {
           "condition": "(!UseProgramMain)",
           "exclude": [
-            "Program.Server.Main.cs",
-            "Program.Browser.Main.cs"
+            "Components-CSharp/Program.Server.Main.cs",
+            "Components-CSharp/Program.Browser.Main.cs"
           ]
         },
         {
           "condition": "(UseProgramMain && !UseWebAssembly)",
           "exclude": [
-            "Program.Server.cs",
-            "Program.Browser.cs"
+            "Components-CSharp/Program.Server.cs",
+            "Components-CSharp/Program.Browser.cs"
           ],
           "rename": {
             "Program.Server.Main.cs": "Program.cs"
@@ -93,14 +89,14 @@
         {
           "condition": "(!UseServer && !UseWebAssembly)",
           "exclude": [
-            "Pages/Counter.razor"
+            "Components-CSharp/Pages/Counter.razor"
           ]
         },
         {
           "condition": "(UseProgramMain && UseWebAssembly)",
           "exclude": [
-            "Program.Server.cs",
-            "Program.Browser.cs"
+            "Components-CSharp/Program.Server.cs",
+            "Components-CSharp/Program.Browser.cs"
           ],
           "rename": {
             "Program.Server.Main.cs": "Program.Server.cs",
@@ -110,7 +106,7 @@
         {
           "condition": "(ExcludeLaunchSettings)",
           "exclude": [
-            "Properties/launchSettings.json"
+            "Components-CSharp/Properties/launchSettings.json"
           ]
         }
       ]
