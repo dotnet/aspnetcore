@@ -322,7 +322,7 @@ internal sealed class KestrelMetrics
         else if (localEndpoint != null)
         {
             tags.Add("server.socket.address", localEndpoint.ToString());
-            tags.Add("network.transport", localEndpoint.GetType().Name);
+            tags.Add("network.transport", localEndpoint.AddressFamily.ToString());
         }
     }
 
