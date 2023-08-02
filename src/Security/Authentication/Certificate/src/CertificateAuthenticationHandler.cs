@@ -216,15 +216,20 @@ internal sealed class CertificateAuthenticationHandler : AuthenticationHandler<C
         }
         else
         {
-            if (Options.CustomTrustStore != null)
+            X509Certificate2Collection? customTrustStore = Options.CustomTrustStoreSelector?.Invoke(certificate) ?? Options.CustomTrustStore;
+            if (customTrustStore != null)
             {
-                chainPolicy.CustomTrustStore.AddRange(Options.CustomTrustStore);
+                chainPolicy.CustomTrustStore.AddRange(customTrustStore);
             }
 
             chainPolicy.TrustMode = Options.ChainTrustValidationMode;
         }
 
-        chainPolicy.ExtraStore.AddRange(Options.AdditionalChainCertificates);
+        X509Certificate2Collection? additionalChainCertificates = Options.AdditionalChainCertificatesSelector?.Invoke(certificate) ?? Options.AdditionalChainCertificates;
+        if (additionalChainCertificates != null)
+        {
+            chainPolicy.ExtraStore.AddRange(additionalChainCertificates);
+        }
 
         if (!Options.ValidateValidityPeriod)
         {

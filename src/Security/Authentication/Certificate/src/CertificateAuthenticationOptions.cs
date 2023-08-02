@@ -24,17 +24,29 @@ public class CertificateAuthenticationOptions : AuthenticationSchemeOptions
     public X509Certificate2Collection CustomTrustStore { get; set; } = new X509Certificate2Collection();
 
     /// <summary>
+    /// A callback that will be invoked to dynamically select the trusted X509 certificate components of the certificate chain.
+    /// This is higher priority than <see cref="CustomTrustStore"/>.
+    /// </summary>
+    public Func<X509Certificate2, X509Certificate2Collection>? CustomTrustStoreSelector { get; set; }
+
+    /// <summary>
     /// Collection of X509 certificates which are added to the X509Chain.ChainPolicy.ExtraStore of the certificate chain.
     /// </summary>
     public X509Certificate2Collection AdditionalChainCertificates { get; set; } = new X509Certificate2Collection();
 
     /// <summary>
-    /// Method used to validate certificate chains against <see cref="CustomTrustStore"/>.
+    /// A callback that will be invoked to dynamically select additional X509 certificates to be added to the X509Chain.ChainPolicy.ExtraStore of the certificate chain.
+    /// This is higher priority than <see cref="AdditionalChainCertificates"/>.
+    /// </summary>
+    public Func<X509Certificate2, X509Certificate2Collection>? AdditionalChainCertificatesSelector { get; set; }
+
+    /// <summary>
+    /// Method used to validate certificate chains against <see cref="CustomTrustStore"/> or <see cref="CustomTrustStoreSelector"/>.
     /// </summary>
     /// <value>
     /// Defaults to <see cref="X509ChainTrustMode.System"/>.
     /// </value>
-    /// <remarks>This property must be set to <see cref="X509ChainTrustMode.CustomRootTrust"/> to enable <see cref="CustomTrustStore"/> to be used in certificate chain validation.</remarks>
+    /// <remarks>This property must be set to <see cref="X509ChainTrustMode.CustomRootTrust"/> to enable <see cref="CustomTrustStore"/> or <see cref="CustomTrustStoreSelector"/> to be used in certificate chain validation.</remarks>
     public X509ChainTrustMode ChainTrustValidationMode { get; set; } = X509ChainTrustMode.System;
 
     /// <summary>
