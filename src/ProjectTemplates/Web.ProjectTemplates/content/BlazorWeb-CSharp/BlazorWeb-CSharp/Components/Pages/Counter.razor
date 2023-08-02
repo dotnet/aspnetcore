@@ -1,4 +1,11 @@
 ﻿@page "/counter"
+@*#if (UseWebAssembly) -->
+
+<!-- Temporary workaround until MapRazorComponents supports AddAdditionalAssemblies -->
+<!-- Once that is implemented, the main project won't need to include this file -->
+
+<BlazorWeb_CSharp.WebAssembly.Pages.Counter />
+##else
 @attribute [RenderModeServer]
 
 <PageTitle>Counter</PageTitle>
@@ -17,3 +24,4 @@
         currentCount++;
     }
 }
+##endif*@
