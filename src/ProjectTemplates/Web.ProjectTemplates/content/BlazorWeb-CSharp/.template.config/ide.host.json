@@ -15,11 +15,6 @@
       "persistenceScope": "templateGroup"
     },
     {
-      "id": "PWA",
-      "isVisible": false,
-      "persistenceScope": "templateGroup"
-    },
-    {
       "id": "UseProgramMain",
       "isVisible": true,
       "persistenceScope": "shared",

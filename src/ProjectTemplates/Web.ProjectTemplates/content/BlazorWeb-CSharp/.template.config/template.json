@@ -4,8 +4,7 @@
   "classifications": [
     "Web",
     "Blazor",
-    "WebAssembly",
-    "PWA"
+    "WebAssembly"
   ],
   "name": "Blazor Web App",
   "defaultName": "BlazorApp",
@@ -51,14 +50,6 @@
         "**/wwwroot/css/bootstrap/**"
       ],
       "modifiers": [
-        {
-          "condition": "!PWA",
-          "exclude": [
-            "BlazorWeb-CSharp.WebAssembly/wwwroot/service-worker*.js",
-            "BlazorWeb-CSharp.WebAssembly/wwwroot/manifest.webmanifest",
-            "BlazorWeb-CSharp.WebAssembly/wwwroot/icon-*.png"
-          ]
-        },
         {
           "condition": "(!UseWebAssembly)",
           "exclude": [
@@ -228,13 +219,6 @@
       "defaultValue": "true",
       "displayName": "_Use interactive server components",
       "description": "Configures whether to support rendering components interactively on the server via a SignalR WebSocket connection. The default value is true."
-    },
-    "PWA": {
-      "type": "parameter",
-      "datatype": "bool",
-      "defaultValue": "false",
-      "displayName": "_Progressive Web Application",
-      "description": "If specified, produces a Progressive Web Application (PWA) supporting installation and offline use."
     },
     "RequiresHttps": {
       "type": "computed",
