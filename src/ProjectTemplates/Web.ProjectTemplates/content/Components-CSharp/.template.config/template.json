@@ -23,7 +23,20 @@
   "preferNameDirectory": true,
   "primaryOutputs": [
     {
+      "condition": "(UseWebAssembly && (HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\"))",
+      "path": "Components-CSharp.sln"
+    },
+    {
+      "condition": "(UseWebAssembly && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+      "path": "Server/Components-CSharp.Server.csproj"
+    },
+    {
+      "condition": "(!UseWebAssembly)",
       "path": "Components-CSharp.csproj"
+    },
+    {
+      "condition": "(UseWebAssembly && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+      "path": "WebAssembly/Components-CSharp.WebAssembly.csproj"
     }
   ],
   "shortName": "blazor",

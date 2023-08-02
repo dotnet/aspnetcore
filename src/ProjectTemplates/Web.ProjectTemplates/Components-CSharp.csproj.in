@@ -1,11 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <!--#if UseWebAssembly -->
-    <TargetFrameworks>${DefaultNetCoreTargetFramework};${DefaultNetCoreTargetFramework}-browser</TargetFrameworks>
-    <!--#else -->
     <TargetFramework>${DefaultNetCoreTargetFramework}</TargetFramework>
-    <!--#endif -->
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <NoDefaultLaunchSettingsFile Condition="'$(ExcludeLaunchSettings)' == 'True'">True</NoDefaultLaunchSettingsFile>
@@ -17,11 +13,7 @@
   </PropertyGroup>
   <!--#if UseWebAssembly -->
 
-  <ItemGroup Condition="'$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'browser'">
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="${MicrosoftAspNetCoreComponentsWebAssemblyVersion}" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == ''">
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="${MicrosoftAspNetCoreComponentsWebAssemblyServerVersion}" />
   </ItemGroup>
   <!--#endif -->
