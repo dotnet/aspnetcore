@@ -49,13 +49,13 @@ public class Program
         app.UseStaticFiles();
 
         #if (UseServer && UseWebAssembly)
-        app.MapRazorComponents<App>().AddServerRenderMode().AddWebAssemblyRenderMode();
+        app.MapRazorComponents<AppHost>().AddServerRenderMode().AddWebAssemblyRenderMode();
         #elif (UseServer)
-        app.MapRazorComponents<App>().AddServerRenderMode();
+        app.MapRazorComponents<AppHost>().AddServerRenderMode();
         #elif (UseWebAssembly)
-        app.MapRazorComponents<App>().AddWebAssemblyRenderMode();
+        app.MapRazorComponents<AppHost>().AddWebAssemblyRenderMode();
         #else
-        app.MapRazorComponents<App>();
+        app.MapRazorComponents<AppHost>();
         #endif
 
         app.Run();

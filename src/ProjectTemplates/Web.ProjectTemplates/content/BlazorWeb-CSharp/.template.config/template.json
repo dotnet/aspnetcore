@@ -48,7 +48,8 @@
         ".template.config/**"
       ],
       "copyOnly": [
-        "**/wwwroot/css/**"
+        "**/wwwroot/css/bootstrap/**",
+        "**/wwwroot/css/bootstrap-icons/**"
       ],
       "modifiers": [
         {
@@ -89,7 +90,7 @@
         {
           "condition": "!(UseServer && !UseWebAssembly)",
           "exclude": [
-            "BlazorWeb-CSharp/Pages/Counter.razor"
+            "BlazorWeb-CSharp/Components/Pages/Counter.razor"
           ]
         },
         {
