@@ -26,6 +26,7 @@ internal static class EndpointParameterExtensions
         // If the route handler parameter type is a value type, then we use it as the return type of the BindAsync method.
         // Even if the BindAsync method returns a type with mismatched nullability, we need to be able to correctly handle
         // mapping nullable value types to non-nullable value types, as in the following example.
+        //
         // public struct NullableStruct
         // {
         //    public static ValueTask<NullableStruct?> BindAsync(HttpContext context, ParameterInfo parameter) {}
@@ -33,6 +34,17 @@ internal static class EndpointParameterExtensions
         // app.MapPost("/", (NullableStruct foo) => { })
         if (handlerParameterType.IsValueType)
         {
+            // For generic structs like Struct<T> we want to use the return type of the BindAsync method as the return type
+            // to avoid issues with mapping the generic type parameter if it contains mismatched nullability.
+            //
+            // public struct Struct<T>
+            // {
+            //    public static ValueTask<Struct<T?>> BindAsync(HttpContext context, ParameterInfo parameter) {}
+            // }
+            if (handlerParameterType is INamedTypeSymbol { IsGenericType: true, OriginalDefinition: { SpecialType: not SpecialType.System_Nullable_T } })
+            {
+                return bindAsyncReturnType;
+            }
             return handlerParameterType;
         }
 

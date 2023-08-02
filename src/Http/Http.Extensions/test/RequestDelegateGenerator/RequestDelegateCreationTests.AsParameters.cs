@@ -237,9 +237,9 @@ static void parametersListWithMetadataType([AsParameters] ParametersListWithMeta
     args.HttpContext.Items.Add("value", args.Value);
 }
 app.MapGet("/parameterListWithDefaultValue/{value}", parameterListWithDefaultValue);
-app.MapGet("/parameterListRecordStruct/{value}", parameterListRecordStruct);
-app.MapGet("/parametersListWithHttpContext", parametersListWithHttpContext);
-app.MapPost("/parametersListWithImplicitFromBody", ([AsParameters] ParametersListWithImplicitFromBody args) => args.Todo.Name ?? string.Empty);
+app.MapPost("/parameterListRecordStruct/{value}", parameterListRecordStruct);
+app.MapPut("/parametersListWithHttpContext", parametersListWithHttpContext);
+app.MapPatch("/parametersListWithImplicitFromBody", ([AsParameters] ParametersListWithImplicitFromBody args) => args.Todo.Name ?? string.Empty);
 app.MapGet("/parametersListWithMetadataType", parametersListWithMetadataType);
 """);
 
