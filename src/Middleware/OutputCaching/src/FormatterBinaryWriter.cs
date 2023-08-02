@@ -107,7 +107,7 @@ internal ref struct FormatterBinaryWriter
     private void RequestNewBuffer()
     {
         Flush();
-        var span = target.GetSpan(1024);
+        var span = target.GetSpan(1024); // fairly arbitrary non-trivial buffer; we can explore larger if useful
         if (span.IsEmpty)
         {
             Throw();
