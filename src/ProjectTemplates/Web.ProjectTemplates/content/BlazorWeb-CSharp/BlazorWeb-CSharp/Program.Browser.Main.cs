@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
-namespace Components_CSharp;
+namespace BlazorWeb_CSharp;
 
 public class Program
 {

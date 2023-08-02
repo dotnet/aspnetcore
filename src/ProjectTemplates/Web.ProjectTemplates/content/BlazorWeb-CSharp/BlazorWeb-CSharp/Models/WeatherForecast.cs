@@ -1,4 +1,4 @@
-namespace Components_CSharp;
+namespace BlazorWeb_CSharp;
 
 public class WeatherForecast
 {
