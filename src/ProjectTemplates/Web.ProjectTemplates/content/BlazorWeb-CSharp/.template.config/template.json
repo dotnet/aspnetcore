@@ -63,45 +63,35 @@
         {
           "condition": "(!UseWebAssembly)",
           "exclude": [
-            "BlazorWeb-CSharp/Program.Browser.Main.cs",
-            "BlazorWeb-CSharp/Program.Browser.cs",
             "BlazorWeb-CSharp/wwwroot/appsettings.Development.json",
-            "BlazorWeb-CSharp/wwwroot/appsettings.json"
-          ]
+            "BlazorWeb-CSharp/wwwroot/appsettings.json",
+            "BlazorWeb-CSharp.WebAssembly/**",
+            "*.sln"
+          ],
+          "rename": {
+            "BlazorWeb-CSharp/": "./"
+          }
         },
         {
           "condition": "(!UseProgramMain)",
           "exclude": [
-            "BlazorWeb-CSharp/Program.Server.Main.cs",
-            "BlazorWeb-CSharp/Program.Browser.Main.cs"
+            "BlazorWeb-CSharp/Program.Main.cs"
           ]
         },
         {
-          "condition": "(UseProgramMain && !UseWebAssembly)",
+          "condition": "(UseProgramMain)",
           "exclude": [
-            "BlazorWeb-CSharp/Program.Server.cs",
-            "BlazorWeb-CSharp/Program.Browser.cs"
+            "BlazorWeb-CSharp/Program.cs"
           ],
           "rename": {
-            "Program.Server.Main.cs": "Program.cs"
+            "Program.Main.cs": "Program.cs"
           }
         },
         {
-          "condition": "(!UseServer && !UseWebAssembly)",
+          "condition": "(!UseServer)",
           "exclude": [
             "BlazorWeb-CSharp/Pages/Counter.razor"
           ]
-        },
-        {
-          "condition": "(UseProgramMain && UseWebAssembly)",
-          "exclude": [
-            "BlazorWeb-CSharp/Program.Server.cs",
-            "BlazorWeb-CSharp/Program.Browser.cs"
-          ],
-          "rename": {
-            "Program.Server.Main.cs": "Program.Server.cs",
-            "Program.Browser.Main.cs": "Program.Browser.cs"
-          }
         },
         {
           "condition": "(ExcludeLaunchSettings)",
