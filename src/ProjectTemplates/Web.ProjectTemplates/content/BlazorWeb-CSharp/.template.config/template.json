@@ -52,11 +52,11 @@
       ],
       "modifiers": [
         {
-          "condition": "!UseWebAssembly || !PWA",
+          "condition": "!PWA",
           "exclude": [
-            "BlazorWeb-CSharp/wwwroot/service-worker*.js",
-            "BlazorWeb-CSharp/wwwroot/manifest.webmanifest",
-            "BlazorWeb-CSharp/wwwroot/icon-512.png"
+            "BlazorWeb-CSharp.WebAssembly/wwwroot/service-worker*.js",
+            "BlazorWeb-CSharp.WebAssembly/wwwroot/manifest.webmanifest",
+            "BlazorWeb-CSharp.WebAssembly/wwwroot/icon-*.png"
           ]
         },
         {

@@ -7,21 +7,12 @@
     <NoDefaultLaunchSettingsFile Condition="'$(ExcludeLaunchSettings)' == 'True'">True</NoDefaultLaunchSettingsFile>
     <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">BlazorWeb-CSharp</RootNamespace>
     <AssemblyName Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">`$(AssemblyName.Replace(' ', '_'))</AssemblyName>
-    <!--#if (UseWebAssembly && PWA) -->
-    <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
-    <!--#endif -->
   </PropertyGroup>
   <!--#if UseWebAssembly -->
 
   <ItemGroup>
     <ProjectReference Include="..\BlazorWeb-CSharp.WebAssembly\BlazorWeb-CSharp.WebAssembly.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="${MicrosoftAspNetCoreComponentsWebAssemblyServerVersion}" />
-  </ItemGroup>
-  <!--#endif -->
-  <!--#if (UseWebAssembly && PWA) -->
-
-  <ItemGroup>
-    <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
   </ItemGroup>
   <!--#endif -->
 
