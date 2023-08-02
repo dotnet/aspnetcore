@@ -15,8 +15,7 @@
   "guids": [
     "4C26868E-5E7C-458D-82E3-040509D0C71F",
     "5990939C-7E7B-4CFA-86FF-44CA5756498A",
-    "650B3CE7-2E93-4CC4-9F46-466686815EAA",
-    "0AFFA7FD-4E37-4636-AB91-3753E746DB98"
+    "650B3CE7-2E93-4CC4-9F46-466686815EAA"
   ],
   "identity": "Microsoft.Web.Blazor.CSharp.8.0",
   "thirdPartyNotices": "https://aka.ms/aspnetcore/8.0-third-party-notices",
@@ -221,14 +220,14 @@
       "datatype": "bool",
       "defaultValue": "false",
       "displayName": "_Use interactive WebAssembly components",
-      "description": "If specified, configures the project to render components interactively in the browser using WebAssembly."
+      "description": "Configures whether to support rendering components interactively in the browser using WebAssembly. The default value is false."
     },
     "UseServer": {
       "type": "parameter",
       "datatype": "bool",
-      "defaultValue": "false",
+      "defaultValue": "true",
       "displayName": "_Use interactive server components",
-      "description": "If specified, configures the project to render components interactively on the server."
+      "description": "Configures whether to support rendering components interactively on the server via a SignalR WebSocket connection. The default value is true."
     },
     "PWA": {
       "type": "parameter",

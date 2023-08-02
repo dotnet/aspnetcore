@@ -11,7 +11,7 @@
     },
     {
       "id": "UseWebAssembly",
-      "isVisible": false,
+      "isVisible": true,
       "persistenceScope": "templateGroup"
     },
     {
