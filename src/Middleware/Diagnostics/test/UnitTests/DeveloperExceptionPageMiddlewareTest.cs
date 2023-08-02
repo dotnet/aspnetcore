@@ -540,7 +540,7 @@ public class DeveloperExceptionPageMiddlewareTest : LoggedTest
     {
         // Arrange
         var meterFactory = new TestMeterFactory();
-        using var requestDurationCollector = new MetricCollector<double>(meterFactory, "Microsoft.AspNetCore.Hosting", "http.server.duration");
+        using var requestDurationCollector = new MetricCollector<double>(meterFactory, "Microsoft.AspNetCore.Hosting", "http.server.request.duration");
         using var requestExceptionCollector = new MetricCollector<long>(meterFactory, DiagnosticsMetrics.MeterName, "aspnet.diagnostics.exceptions");
 
         using var host = new HostBuilder()

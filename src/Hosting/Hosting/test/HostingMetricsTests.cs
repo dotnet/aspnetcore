@@ -25,7 +25,7 @@ public class HostingMetricsTests
         var httpContext = new DefaultHttpContext();
         var meter = meterFactory.Meters.Single();
 
-        using var requestDurationCollector = new MetricCollector<double>(meterFactory, HostingMetrics.MeterName, "http.server.duration");
+        using var requestDurationCollector = new MetricCollector<double>(meterFactory, HostingMetrics.MeterName, "http.server.request.duration");
         using var activeRequestsCollector = new MetricCollector<long>(meterFactory, HostingMetrics.MeterName, "http.server.active_requests");
 
         // Act/Assert
@@ -138,7 +138,7 @@ public class HostingMetricsTests
 
         await syncPoint.WaitForSyncPoint().DefaultTimeout();
 
-        using var requestDurationCollector = new MetricCollector<double>(meterFactory, HostingMetrics.MeterName, "http.server.duration");
+        using var requestDurationCollector = new MetricCollector<double>(meterFactory, HostingMetrics.MeterName, "http.server.request.duration");
         using var currentRequestsCollector = new MetricCollector<long>(meterFactory, HostingMetrics.MeterName, "http.server.active_requests");
         context1.HttpContext.Response.StatusCode = StatusCodes.Status200OK;
 
@@ -160,7 +160,7 @@ public class HostingMetricsTests
         var httpContext = new DefaultHttpContext();
         var meter = meterFactory.Meters.Single();
 
-        using var requestDurationCollector = new MetricCollector<double>(meterFactory, HostingMetrics.MeterName, "http.server.duration");
+        using var requestDurationCollector = new MetricCollector<double>(meterFactory, HostingMetrics.MeterName, "http.server.request.duration");
         using var currentRequestsCollector = new MetricCollector<long>(meterFactory, HostingMetrics.MeterName, "http.server.active_requests");
 
         // Act/Assert

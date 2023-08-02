@@ -26,7 +26,7 @@ internal sealed class HostingMetrics : IDisposable
             description: "Number of HTTP requests that are currently active on the server.");
 
         _requestDuration = _meter.CreateHistogram<double>(
-            "http.server.duration",
+            "http.server.request.duration",
             unit: "s",
             description: "Measures the duration of inbound HTTP requests.");
     }

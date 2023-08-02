@@ -55,8 +55,8 @@ public class HostingApplicationDiagnosticsTests
 
         using var activeRequestsCollector1 = new MetricCollector<long>(testMeterFactory1, HostingMetrics.MeterName, "http.server.active_requests");
         using var activeRequestsCollector2 = new MetricCollector<long>(testMeterFactory2, HostingMetrics.MeterName, "http.server.active_requests");
-        using var requestDurationCollector1 = new MetricCollector<double>(testMeterFactory1, HostingMetrics.MeterName, "http.server.duration");
-        using var requestDurationCollector2 = new MetricCollector<double>(testMeterFactory2, HostingMetrics.MeterName, "http.server.duration");
+        using var requestDurationCollector1 = new MetricCollector<double>(testMeterFactory1, HostingMetrics.MeterName, "http.server.request.duration");
+        using var requestDurationCollector2 = new MetricCollector<double>(testMeterFactory2, HostingMetrics.MeterName, "http.server.request.duration");
 
         // Act/Assert 1
         var context1 = hostingApplication1.CreateContext(features1);

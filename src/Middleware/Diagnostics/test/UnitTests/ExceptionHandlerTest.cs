@@ -917,7 +917,7 @@ public class ExceptionHandlerTest
     {
         // Arrange
         var meterFactory = new TestMeterFactory();
-        using var instrumentCollector = new MetricCollector<double>(meterFactory, "Microsoft.AspNetCore.Hosting", "http.server.duration");
+        using var instrumentCollector = new MetricCollector<double>(meterFactory, "Microsoft.AspNetCore.Hosting", "http.server.request.duration");
 
         using var host = new HostBuilder()
             .ConfigureServices(s =>
