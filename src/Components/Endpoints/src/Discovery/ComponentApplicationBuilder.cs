@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Components.Discovery;
 /// <summary>
 /// Builder used to configure a razor component application.
 /// </summary>
-public class ComponentApplicationBuilder
+internal class ComponentApplicationBuilder
 {
     private readonly HashSet<string> _assemblies = new();
 

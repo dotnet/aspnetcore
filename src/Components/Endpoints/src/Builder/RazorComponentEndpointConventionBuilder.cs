@@ -10,10 +10,7 @@ namespace Microsoft.AspNetCore.Builder;
 /// <summary>
 /// Builds conventions that will be used for customization of <see cref="EndpointBuilder"/> instances.
 /// </summary>
-
-// TODO: This will have APIs to add and remove entire assemblies from the list of considered endpoints
-// as well as adding/removing individual pages as endpoints.
-public class RazorComponentEndpointConventionBuilder : IEndpointConventionBuilder
+public sealed class RazorComponentEndpointConventionBuilder : IEndpointConventionBuilder
 {
     private readonly object _lock;
     private readonly ComponentApplicationBuilder _builder;
@@ -38,7 +35,7 @@ public class RazorComponentEndpointConventionBuilder : IEndpointConventionBuilde
     /// <summary>
     /// Gets the <see cref="ComponentApplicationBuilder"/> that is used to build the endpoints.
     /// </summary>
-    public ComponentApplicationBuilder ApplicationBuilder => _builder;
+    internal ComponentApplicationBuilder ApplicationBuilder => _builder;
 
     /// <summary>
     /// Configures the <see cref="RenderMode.WebAssembly"/> for this application.
