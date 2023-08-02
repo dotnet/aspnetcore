@@ -396,7 +396,6 @@ public class EndToEndTests : FunctionalTestBase
     [ConditionalFact]
     [WebSocketsSupportedCondition]
     [LogLevel(LogLevel.Trace)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/48961")]
     public async Task UnauthorizedDirectWebSocketsConnectionDoesNotConnect()
     {
         bool ExpectedErrors(WriteContext writeContext)
