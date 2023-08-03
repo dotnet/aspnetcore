@@ -95,17 +95,10 @@
             "BlazorWeb-CSharp/Components/Pages/Counter.*",
             "BlazorWeb-CSharp/Components/Pages/Weather.*",
             "BlazorWeb-CSharp/Components/Layout/NavMenu.*",
-            "BlazorWeb-CSharp/Components/Layout/MainLayout.razor.css",
             "BlazorWeb-CSharp/wwwroot/bootstrap/**",
             "BlazorWeb-CSharp/wwwroot/favicon.*",
             "BlazorWeb-CSharp.Client/Pages/**",
             "BlazorWeb-CSharp.Client/wwwroot/**"
-          ]
-        },
-        {
-          "condition": "(SampleContent)",
-          "exclude": [
-            "BlazorWeb-CSharp/Components/Pages/Home.razor.css"
           ]
         }
       ]
