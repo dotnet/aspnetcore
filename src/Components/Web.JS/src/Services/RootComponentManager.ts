@@ -2,8 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { ComponentDescriptor, ComponentMarker, descriptorToMarker } from './ComponentDescriptorDiscovery';
-import { isRendererAttached, updateRootComponents } from '../Rendering/WebRendererInteropMethods';
+import { isRendererAttached, updateRootComponents, waitForRendererAttached } from '../Rendering/WebRendererInteropMethods';
 import { WebRendererId } from '../Rendering/WebRendererId';
+import { NavigationEnhancementCallbacks, isPerformingEnhancedPageLoad } from './NavigationEnhancement';
+import { hasWebAssemblyStarted } from '../Boot.WebAssembly.Common';
 
 type RootComponentOperation = RootComponentAddOperation | RootComponentUpdateOperation | RootComponentRemoveOperation;
 
@@ -30,39 +32,58 @@ type RootComponentInfo = {
   interactiveComponentId?: number;
 }
 
-let resolveAutoMode: () => 'server' | 'webassembly' | null = () => {
-  throw new Error('No auto mode resolver has been attached');
-};
-
-export function attachAutoModeResolver(resolver: () => 'server' | 'webassembly' | null) {
-  resolveAutoMode = resolver;
-}
-
-export class RootComponentManager {
+export class RootComponentManager implements NavigationEnhancementCallbacks {
   private readonly _activeDescriptors = new Set<ComponentDescriptor>();
 
   private readonly _descriptorsPendingInteractivityById: { [id: number]: ComponentDescriptor } = {};
 
   private readonly _rootComponentInfoByDescriptor = new Map<ComponentDescriptor, RootComponentInfo>();
 
+  private _didWebAssemblyFailToLoadQuickly = false;
+
+  public constructor() {
+    this.updateAllRootComponentsAfterRendererAttached(WebRendererId.Server);
+    this.updateAllRootComponentsAfterRendererAttached(WebRendererId.WebAssembly);
+  }
+
   public registerComponentDescriptor(descriptor: ComponentDescriptor) {
     this._activeDescriptors.add(descriptor);
+  }
+
+  public notifyWebAssemblyFailedToLoadQuickly() {
+    if (!this._didWebAssemblyFailToLoadQuickly) {
+      this._didWebAssemblyFailToLoadQuickly = true;
+      this.updateAllRootComponents();
+    }
+  }
+
+  public documentUpdated() {
+    this.updateAllRootComponents();
   }
 
   private unregisterComponentDescriptor(descriptor: ComponentDescriptor) {
     this._activeDescriptors.delete(descriptor);
   }
 
-  public handleUpdatedRootComponents(addNewRootComponents: boolean) {
-    this.handleUpdatedRootComponentsCore(this._activeDescriptors, addNewRootComponents);
+  private async updateAllRootComponentsAfterRendererAttached(browserRendererId: WebRendererId) {
+    await waitForRendererAttached(browserRendererId);
+    this.updateAllRootComponents();
   }
 
-  private handleUpdatedRootComponentsCore(descriptors: Iterable<ComponentDescriptor>, addNewRootComponents: boolean) {
+  // This function should be called each time we think an SSR update
+  // should be reflected in an interactive component renderer.
+  // Examples include component descriptors updating, document content changing,
+  // or an interactive renderer attaching for the first time.
+  private updateAllRootComponents() {
+    this.updateRootComponents(this._activeDescriptors);
+  }
+
+  private updateRootComponents(descriptors: Iterable<ComponentDescriptor>) {
     const operationsByRendererId = new Map<WebRendererId, RootComponentOperation[]>();
 
     for (const descriptor of descriptors) {
       const componentInfo = this.getRootComponentInfo(descriptor);
-      const operation = this.determinePendingOperation(descriptor, componentInfo, addNewRootComponents);
+      const operation = this.determinePendingOperation(descriptor, componentInfo);
       if (!operation) {
         continue;
       }
@@ -88,7 +109,7 @@ export class RootComponentManager {
   }
 
   private getRendererIdForDescriptor(descriptor: ComponentDescriptor): WebRendererId | null {
-    const resolvedType = descriptor.type === 'auto' ? resolveAutoMode() : descriptor.type;
+    const resolvedType = descriptor.type === 'auto' ? this.getAutoRenderMode() : descriptor.type;
     switch (resolvedType) {
       case 'server':
         return WebRendererId.Server;
@@ -99,11 +120,28 @@ export class RootComponentManager {
     }
   }
 
-  private determinePendingOperation(descriptor: ComponentDescriptor, componentInfo: RootComponentInfo, addIfNewComponent?: boolean): RootComponentOperation | null {
+  private getAutoRenderMode(): 'webassembly' | 'server' | null {
+    // If the WebAssembly runtime has started, we will always use WebAssembly
+    // for auto components. Otherwise, we'll wait to activate root components
+    // until we determine whether the WebAssembly runtime can be loaded quickly.
+
+    if (hasWebAssemblyStarted()) {
+      return 'webassembly';
+    }
+
+    if (this._didWebAssemblyFailToLoadQuickly) {
+      return 'server';
+    }
+
+    return null;
+  }
+
+  private determinePendingOperation(descriptor: ComponentDescriptor, componentInfo: RootComponentInfo): RootComponentOperation | null {
     if (isDescriptorInDocument(descriptor)) {
       if (componentInfo.assignedRendererId === undefined) {
         // We haven't added this component for interactivity yet.
-        if (!addIfNewComponent) {
+        if (isPerformingEnhancedPageLoad()) {
+          // We don't add new components during enhanced page loads.
           return null;
         }
 
@@ -116,10 +154,8 @@ export class RootComponentManager {
 
         if (!isRendererAttached(rendererId)) {
           // The renderer for this descriptor is not attached, so we'll no-op.
-          // An alternative would be to asynchronously wait for the renderer to attach before
-          // continuing, but that might happen at an inconvenient point in the future. For example,
-          // 'addNewRootComponents' might have been specified as 'true', but this method could
-          // continue execution at a time when the caller would have preferred it to be 'false'.
+          // After the renderer attaches, we'll handle this descriptor again if
+          // it's still in the document.
           return null;
         }
 
@@ -178,7 +214,7 @@ export class RootComponentManager {
     // The descriptor may have changed since the last call to handleUpdatedRootComponentsCore().
     // We'll update this single descriptor so that the component receives the most up-to-date parameters
     // or gets removed if it no longer exists on the page.
-    this.handleUpdatedRootComponentsCore([descriptor], false);
+    this.updateRootComponents([descriptor]);
 
     return descriptor;
   }

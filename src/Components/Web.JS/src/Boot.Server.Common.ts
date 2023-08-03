@@ -20,6 +20,7 @@ import { WebRendererId } from './Rendering/WebRendererId';
 import { RootComponentManager } from './Services/RootComponentManager';
 
 let renderingFailed = false;
+let hasStarted = false;
 let connection: HubConnection;
 let circuit: CircuitDescriptor;
 let dispatcher: DotNet.ICallDispatcher;
@@ -33,7 +34,17 @@ export function setCircuitOptions(circuitUserOptions?: Partial<CircuitStartOptio
   userOptions = circuitUserOptions;
 }
 
+export function hasCircuitStarted() {
+  return hasStarted;
+}
+
 export async function startCircuit(components?: ServerComponentDescriptor[] | RootComponentManager): Promise<void> {
+  if (hasStarted) {
+    throw new Error('Blazor Server has already started.');
+  }
+
+  hasStarted = true;
+
   // Establish options to be used
   const options = resolveOptions(userOptions);
   const jsInitializer = await fetchAndInvokeInitializers(options);

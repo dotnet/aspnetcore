@@ -183,7 +183,6 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
     private const string AddServerPrerenderedId = "add-server-counter-prerendered-link";
     private const string AddWebAssemblyId = "add-webassembly-counter-link";
     private const string AddWebAssemblyPrerenderedId = "add-webassembly-counter-prerendered-link";
-    private const string AddAutoId = "add-auto-counter-link";
     private const string AddAutoPrerenderedId = "add-auto-counter-prerendered-link";
 
     public static readonly TheoryData<string[]> AddCounterLinkSequences = new()
@@ -433,7 +432,7 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
     }
 
     [Fact]
-    public void AutoRenderMode_UsesBlazorServer_IfWebAssemblyResourcesHaveNotLoaded()
+    public void AutoRenderMode_UsesBlazorServer_IfWebAssemblyResourcesTakeTooLongToLoad()
     {
         Navigate(ServerPathBase);
         Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
@@ -449,13 +448,12 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
     }
 
     [Fact]
-    public void AutoRenderMode_UsesBlazorWebAssembly_IfWebAssemblyResourcesHaveLoaded()
+    public void AutoRenderMode_UsesBlazorWebAssembly_AfterAddingWebAssemblyRootComponent()
     {
         Navigate($"{ServerPathBase}/streaming-interactivity");
 
         Browser.Equal("Not streaming", () => Browser.FindElement(By.Id("status")).Text);
 
-        // First add a WebAssembly counter to ensure that WebAssembly resources have loaded
         Browser.Click(By.Id(AddWebAssemblyPrerenderedId));
         Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-0")).Text);
         Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-0")).Text);
@@ -466,7 +464,7 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
     }
 
     [Fact]
-    public void AutoRenderMode_UsesBlazorWebAssembly_IfWebAssemblyResourcesLoadAfterServerWasPreviouslyUsed()
+    public void AutoRenderMode_UsesBlazorWebAssembly_WhenAddingWebAssemblyComponentAfterServerWasPreviouslyUsed()
     {
         Navigate(ServerPathBase);
         Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
@@ -487,6 +485,149 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-1")).Text);
 
         Browser.Click(By.Id(AddAutoPrerenderedId));
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-2")).Text);
+        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-2")).Text);
+    }
+
+    [Fact]
+    public void AutoRenderMode_UsesBlazorServerOnFirstLoad_ThenWebAssemblyOnSuccessiveLoads()
+    {
+        Navigate($"{ServerPathBase}/streaming-interactivity");
+
+        Browser.Equal("Not streaming", () => Browser.FindElement(By.Id("status")).Text);
+        ((IJavaScriptExecutor)Browser).ExecuteScript("localStorage.clear()");
+
+        Browser.Click(By.Id(AddAutoPrerenderedId));
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-0")).Text);
+        Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode-0")).Text);
+
+        Browser.Navigate().Refresh();
+
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-0")).Text);
+        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-0")).Text);
+
+        Browser.Navigate().Refresh();
+
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-0")).Text);
+        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-0")).Text);
+    }
+
+    [Fact]
+    public void AutoRenderMode_UsesBlazorServer_IfBootResourceHashChanges()
+    {
+        Navigate($"{ServerPathBase}/streaming-interactivity");
+
+        Browser.Equal("Not streaming", () => Browser.FindElement(By.Id("status")).Text);
+        ((IJavaScriptExecutor)Browser).ExecuteScript("localStorage.clear()");
+
+        Browser.Click(By.Id(AddAutoPrerenderedId));
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-0")).Text);
+        Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode-0")).Text);
+
+        Browser.Navigate().Refresh();
+
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-0")).Text);
+        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-0")).Text);
+
+        ((IJavaScriptExecutor)Browser).ExecuteScript($"localStorage.setItem('blazor-resource-hash:Components.WasmMinimal', 'dummy value')");
+
+        Browser.Navigate().Refresh();
+
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-0")).Text);
+        Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode-0")).Text);
+    }
+
+    [Fact]
+    public void AutoRenderMode_UsesBlazorWebAssembly_WhenAutoAndWebAssemblyComponentsAreAddedAtTheSameTime()
+    {
+        Navigate($"{ServerPathBase}/streaming-interactivity");
+
+        Browser.Equal("Not streaming", () => Browser.FindElement(By.Id("status")).Text);
+        ((IJavaScriptExecutor)Browser).ExecuteScript("localStorage.clear()");
+
+        Browser.Click(By.Id("start-streaming-link"));
+        Browser.Equal("Streaming", () => Browser.FindElement(By.Id("status")).Text);
+
+        Browser.Click(By.Id(AddAutoPrerenderedId));
+        Browser.Equal("False", () => Browser.FindElement(By.Id("is-interactive-0")).Text);
+        Browser.Equal("SSR", () => Browser.FindElement(By.Id("render-mode-0")).Text);
+
+        Browser.Click(By.Id(AddWebAssemblyPrerenderedId));
+        Browser.Equal("False", () => Browser.FindElement(By.Id("is-interactive-1")).Text);
+        Browser.Equal("SSR", () => Browser.FindElement(By.Id("render-mode-1")).Text);
+
+        Browser.Click(By.Id("stop-streaming-link"));
+
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-0")).Text);
+        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-0")).Text);
+
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-1")).Text);
+        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-1")).Text);
+    }
+
+    [Fact]
+    public void AutoRenderMode_CanUseBlazorServer_WhenMultipleAutoComponentsAreAddedAtTheSameTime()
+    {
+        Navigate($"{ServerPathBase}/streaming-interactivity");
+
+        Browser.Equal("Not streaming", () => Browser.FindElement(By.Id("status")).Text);
+        ((IJavaScriptExecutor)Browser).ExecuteScript("localStorage.clear()");
+
+        Browser.Click(By.Id("start-streaming-link"));
+        Browser.Equal("Streaming", () => Browser.FindElement(By.Id("status")).Text);
+
+        Browser.Click(By.Id(AddAutoPrerenderedId));
+        Browser.Equal("False", () => Browser.FindElement(By.Id("is-interactive-0")).Text);
+        Browser.Equal("SSR", () => Browser.FindElement(By.Id("render-mode-0")).Text);
+
+        Browser.Click(By.Id(AddAutoPrerenderedId));
+        Browser.Equal("False", () => Browser.FindElement(By.Id("is-interactive-1")).Text);
+        Browser.Equal("SSR", () => Browser.FindElement(By.Id("render-mode-1")).Text);
+
+        Browser.Click(By.Id("stop-streaming-link"));
+
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-0")).Text);
+        Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode-0")).Text);
+
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-1")).Text);
+        Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode-1")).Text);
+    }
+
+    [Fact]
+    public void AutoRenderMode_CanUseBlazorWebAssembly_WhenMultipleAutoComponentsAreAddedAtTheSameTime()
+    {
+        Navigate($"{ServerPathBase}/streaming-interactivity");
+
+        Browser.Equal("Not streaming", () => Browser.FindElement(By.Id("status")).Text);
+        ((IJavaScriptExecutor)Browser).ExecuteScript("localStorage.clear()");
+
+        // We start by adding a WebAssembly component to ensure the WebAssembly runtime
+        // will be cached after we refresh the page.
+        Browser.Click(By.Id(AddWebAssemblyPrerenderedId));
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-0")).Text);
+        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-0")).Text);
+
+        Browser.Click(By.Id($"remove-counter-link-0"));
+        Browser.DoesNotExist(By.Id("is-interactive-0"));
+
+        Browser.Navigate().Refresh();
+
+        Browser.Click(By.Id("start-streaming-link"));
+        Browser.Equal("Streaming", () => Browser.FindElement(By.Id("status")).Text);
+
+        Browser.Click(By.Id(AddAutoPrerenderedId));
+        Browser.Equal("False", () => Browser.FindElement(By.Id("is-interactive-1")).Text);
+        Browser.Equal("SSR", () => Browser.FindElement(By.Id("render-mode-1")).Text);
+
+        Browser.Click(By.Id(AddAutoPrerenderedId));
+        Browser.Equal("False", () => Browser.FindElement(By.Id("is-interactive-2")).Text);
+        Browser.Equal("SSR", () => Browser.FindElement(By.Id("render-mode-2")).Text);
+
+        Browser.Click(By.Id("stop-streaming-link"));
+
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-1")).Text);
+        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-1")).Text);
+
         Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-2")).Text);
         Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-2")).Text);
     }

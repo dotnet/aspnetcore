@@ -15,9 +15,16 @@ import { WebAssemblyComponentDescriptor, discoverPersistedState } from './Servic
 import { receiveDotNetDataStream } from './StreamingInterop';
 import { WebAssemblyComponentAttacher } from './Platform/WebAssemblyComponentAttacher';
 import { RootComponentManager } from './Services/RootComponentManager';
+import { MonoConfig } from 'dotnet';
 
 let options: Partial<WebAssemblyStartOptions> | undefined;
 let platformLoadPromise: Promise<void> | undefined;
+let hasStarted = false;
+
+let resolveBootConfigPromise: (value: MonoConfig) => void;
+const bootConfigPromise = new Promise<MonoConfig>(resolve => {
+  resolveBootConfigPromise = resolve;
+});
 
 export function setWebAssemblyOptions(webAssemblyOptions?: Partial<WebAssemblyStartOptions>) {
   if (options) {
@@ -28,6 +35,12 @@ export function setWebAssemblyOptions(webAssemblyOptions?: Partial<WebAssemblySt
 }
 
 export async function startWebAssembly(components?: WebAssemblyComponentDescriptor[] | RootComponentManager): Promise<void> {
+  if (hasStarted) {
+    throw new Error('Blazor WebAssembly has already started.');
+  }
+
+  hasStarted = true;
+
   if (inAuthRedirectIframe()) {
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     await new Promise(() => { }); // See inAuthRedirectIframe for explanation
@@ -134,8 +147,20 @@ export async function startWebAssembly(components?: WebAssemblyComponentDescript
   api.invokeLibraryInitializers('afterStarted', [Blazor]);
 }
 
+export function hasWebAssemblyStarted(): boolean {
+  return hasStarted;
+}
+
+export function hasWebAssemblyStartedLoading(): boolean {
+  return platformLoadPromise !== undefined;
+}
+
+export function waitForBootConfigLoaded(): Promise<MonoConfig> {
+  return bootConfigPromise;
+}
+
 export function loadWebAssemblyPlatform(): Promise<void> {
-  platformLoadPromise ??= monoPlatform.load(options ?? {});
+  platformLoadPromise ??= monoPlatform.load(options ?? {}, resolveBootConfigPromise);
   return platformLoadPromise;
 }
 

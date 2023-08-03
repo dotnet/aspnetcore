@@ -3,9 +3,10 @@
 
 import { MonoObject, MonoString, MonoArray } from 'dotnet/dotnet-legacy';
 import { WebAssemblyStartOptions } from './WebAssemblyStartOptions';
+import { MonoConfig } from 'dotnet';
 
 export interface Platform {
-  load(options: Partial<WebAssemblyStartOptions>): Promise<void>;
+  load(options: Partial<WebAssemblyStartOptions>, onConfigLoaded?: (loadedConfig: MonoConfig) => void): Promise<void>;
   start(): Promise<PlatformApi>;
 
   callEntryPoint(): Promise<unknown>;
