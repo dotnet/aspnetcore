@@ -47,7 +47,7 @@
         ".template.config/**"
       ],
       "copyOnly": [
-        "**/wwwroot/css/**"
+        "**/wwwroot/css/bootstrap/**"
       ],
       "modifiers": [
         {
@@ -97,8 +97,15 @@
             "BlazorWeb-CSharp/Components/Layout/NavMenu.*",
             "BlazorWeb-CSharp/Components/Layout/MainLayout.razor.css",
             "BlazorWeb-CSharp/wwwroot/css/bootstrap/**",
-            "BlazorWeb-CSharp/wwwroot/favicon.css",
-            "BlazorWeb-CSharp.Client/Pages/**"
+            "BlazorWeb-CSharp/wwwroot/favicon.*",
+            "BlazorWeb-CSharp.Client/Pages/**",
+            "BlazorWeb-CSharp.Client/wwwroot/**"
+          ]
+        },
+        {
+          "condition": "(SampleContent)",
+          "exclude": [
+            "BlazorWeb-CSharp/Components/Pages/Home.razor.css"
           ]
         }
       ]

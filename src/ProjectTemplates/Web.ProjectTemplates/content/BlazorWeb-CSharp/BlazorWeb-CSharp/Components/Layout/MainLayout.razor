@@ -1,4 +1,5 @@
 @inherits LayoutComponentBase
+@*#if (SampleContent) -->
 
 <div class="page">
     <div class="sidebar">
@@ -15,6 +16,10 @@
         </article>
     </main>
 </div>
+##else
+
+@Body
+##endif*@
 @*#if (UseServer || UseWebAssembly) -->
 
 <div id="blazor-error-ui">
