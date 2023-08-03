@@ -80,6 +80,7 @@ void FILE_WATCHER::WaitForWatcherThreadExit()
     else
     {
         // Wait for the thread to exit.
+        LOG_INFO(L"Waiting for file watcher thread to exit.");
         WaitForSingleObject(m_hChangeNotificationThread, INFINITE);
     }
 }
