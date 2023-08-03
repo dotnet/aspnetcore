@@ -5,6 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+    <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
     <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">BlazorWeb-CSharp.Client</RootNamespace>
     <AssemblyName Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">`$(AssemblyName.Replace(' ', '_'))</AssemblyName>
   </PropertyGroup>
