@@ -69,7 +69,12 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             handler: result.HandlerName,
             form: result.HandlerName != null && context.Request.HasFormContentType ? await context.Request.ReadFormAsync() : null);
 
-        await using var writer = CreateResponseWriter(context.Response.Body);
+        // Matches MVC's MemoryPoolHttpResponseStreamWriterFactory.DefaultBufferSize
+        var defaultBufferSize = 16 * 1024;
+        await using var writer = new HttpResponseStreamWriter(context.Response.Body, Encoding.UTF8, defaultBufferSize, ArrayPool<byte>.Shared, ArrayPool<char>.Shared);
+        var viewBufferScope = new MemoryPoolViewBufferScope(ArrayPool<ViewBufferValue>.Shared);
+        var viewBuffer = new MemoryPoolViewBuffer(viewBufferScope, pageComponent.FullName ?? pageComponent.Name, defaultBufferSize);
+        await using var bufferWriter = new ViewBufferTextWriter(viewBuffer, Encoding.UTF8, HtmlEncoder.Default, writer);
 
         // Note that we always use Static rendering mode for the top-level output from a RazorComponentResult,
         // because you never want to serialize the invocation of RazorComponentResultHost. Instead, that host
@@ -109,16 +114,17 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         // in between the first call to htmlContent.WriteTo and the point where we start listening for subsequent
         // streaming SSR batches (inside SendStreamingUpdatesAsync). Otherwise some other code might dispatch to the
         // renderer sync context and cause a batch that would get missed.
-        htmlContent.WriteTo(writer, HtmlEncoder.Default); // Don't use WriteToAsync, as per the comment above
+        htmlContent.WriteTo(bufferWriter, HtmlEncoder.Default); // Don't use WriteToAsync, as per the comment above
 
         if (!quiesceTask.IsCompletedSuccessfully)
         {
-            await _renderer.SendStreamingUpdatesAsync(context, quiesceTask, writer);
+            await _renderer.SendStreamingUpdatesAsync(context, quiesceTask, bufferWriter);
         }
 
         // Invoke FlushAsync to ensure any buffered content is asynchronously written to the underlying
         // response asynchronously. In the absence of this line, the buffer gets synchronously written to the
         // response as part of the Dispose which has a perf impact.
+        await bufferWriter.FlushAsync();
         await writer.FlushAsync();
     }
 
@@ -200,13 +206,6 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             }
         }
         return null;
-    }
-
-    private static HttpResponseStreamWriter CreateResponseWriter(Stream bodyStream)
-    {
-        // Matches MVC's MemoryPoolHttpResponseStreamWriterFactory.DefaultBufferSize
-        const int DefaultBufferSize = 16 * 1024;
-        return new HttpResponseStreamWriter(bodyStream, Encoding.UTF8, DefaultBufferSize, ArrayPool<byte>.Shared, ArrayPool<char>.Shared);
     }
 
     [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
