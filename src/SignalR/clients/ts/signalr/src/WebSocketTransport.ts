@@ -18,12 +18,13 @@ export class WebSocketTransport implements ITransport {
     private readonly _httpClient: HttpClient;
     private _webSocket?: WebSocket;
     private _headers: MessageHeaders;
+    private _useAcks: boolean;
 
     public onreceive: ((data: string | ArrayBuffer) => void) | null;
     public onclose: ((error?: Error) => void) | null;
 
     constructor(httpClient: HttpClient, accessTokenFactory: (() => string | Promise<string>) | undefined, logger: ILogger,
-                logMessageContent: boolean, webSocketConstructor: WebSocketConstructor, headers: MessageHeaders) {
+                logMessageContent: boolean, webSocketConstructor: WebSocketConstructor, headers: MessageHeaders, useAcks: boolean) {
         this._logger = logger;
         this._accessTokenFactory = accessTokenFactory;
         this._logMessageContent = logMessageContent;
@@ -33,6 +34,8 @@ export class WebSocketTransport implements ITransport {
         this.onreceive = null;
         this.onclose = null;
         this._headers = headers;
+
+        this._useAcks = useAcks;
     }
 
     public async connect(url: string, transferFormat: TransferFormat): Promise<void> {
@@ -110,7 +113,7 @@ export class WebSocketTransport implements ITransport {
                     try {
                         this.onreceive(message.data);
                     } catch (error) {
-                        this._close(error);
+                        this._close(error, false);
                         return;
                     }
                 }
@@ -120,7 +123,7 @@ export class WebSocketTransport implements ITransport {
                 // Don't call close handler if connection was never established
                 // We'll reject the connect call instead
                 if (opened) {
-                    this._close(event);
+                    this._close(event, false);
                 } else {
                     let error: any = null;
                     // ErrorEvent is a browser only type we need to check if the type exists before using it
@@ -153,15 +156,17 @@ export class WebSocketTransport implements ITransport {
         if (this._webSocket) {
             // Manually invoke onclose callback inline so we know the HttpConnection was closed properly before returning
             // This also solves an issue where websocket.onclose could take 18+ seconds to trigger during network disconnects
-            this._close(undefined);
+            this._close(undefined, true);
         }
 
         return Promise.resolve();
     }
 
-    private _close(event?: CloseEvent | Error | unknown): void {
+    private _close(event: CloseEvent | Error | unknown, fromStop: boolean): void {
+        let binaryType;
         // webSocket will be null if the transport did not start successfully
         if (this._webSocket) {
+            binaryType = this._webSocket.binaryType;
             // Clear websocket handlers because we are considering the socket closed now
             this._webSocket.onclose = () => {};
             this._webSocket.onmessage = () => {};
@@ -171,6 +176,18 @@ export class WebSocketTransport implements ITransport {
         }
 
         this._logger.log(LogLevel.Trace, "(WebSockets transport) socket closed.");
+
+        if (!fromStop && this._useAcks) {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            this.connect("", binaryType === undefined ? TransferFormat.Text : TransferFormat.Binary).catch(() => {
+                this._runOnClose(event);
+            });
+        } else {
+            this._runOnClose(event);
+        }
+    }
+
+    private _runOnClose(event: any) {
         if (this.onclose) {
             if (this._isCloseEvent(event) && (event.wasClean === false || event.code !== 1000)) {
                 this.onclose(new Error(`WebSocket closed with status code: ${event.code} (${event.reason || "no reason given"}).`));

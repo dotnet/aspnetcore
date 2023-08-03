@@ -73,4 +73,6 @@ export interface IHttpConnectionOptions {
      * This will not apply to Long Polling poll requests, EventSource, or WebSockets.
      */
     timeout?: number;
+
+    useAcks?: boolean;
 }

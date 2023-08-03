@@ -10,6 +10,7 @@ import { IRetryPolicy } from "./IRetryPolicy";
 import { IStreamResult } from "./Stream";
 import { Subject } from "./Subject";
 import { Arg, getErrorString, Platform } from "./Utils";
+import { MessageBuffer } from "./MessageBuffer";
 
 const DEFAULT_TIMEOUT_IN_MS: number = 30 * 1000;
 const DEFAULT_PING_INTERVAL_IN_MS: number = 15 * 1000;
@@ -41,6 +42,7 @@ export class HubConnection {
     private _callbacks: { [invocationId: string]: (invocationEvent: StreamItemMessage | CompletionMessage | null, error?: Error) => void };
     private _methods: { [name: string]: (((...args: any[]) => void) | ((...args: any[]) => any))[] };
     private _invocationId: number;
+    private _messageBuffer?: MessageBuffer;
 
     private _closedCallbacks: ((error?: Error) => void)[];
     private _reconnectingCallbacks: ((error?: Error) => void)[];
@@ -248,6 +250,11 @@ export class HubConnection {
                 throw this._stopDuringStartError;
             }
 
+            const useAck = this.connection.features.reconnect || false;
+            if (useAck) {
+                this._messageBuffer = new MessageBuffer(this._protocol, this.connection);
+            }
+
             if (!this.connection.features.inherentKeepAlive) {
                 await this._sendMessage(this._cachedPingMessage);
             }
@@ -399,7 +406,11 @@ export class HubConnection {
      * @param message The js object to serialize and send.
      */
     private _sendWithProtocol(message: any) {
-        return this._sendMessage(this._protocol.writeMessage(message));
+        if (this._messageBuffer) {
+            return this._messageBuffer._send(message);
+        } else {
+            return this._sendMessage(this._protocol.writeMessage(message));
+        }
     }
 
     /** Invokes a hub method on the server using the specified name and arguments. Does not wait for a response from the receiver.
@@ -575,6 +586,11 @@ export class HubConnection {
             const messages = this._protocol.parseMessages(data, this._logger);
 
             for (const message of messages) {
+                if (this._messageBuffer && !this._messageBuffer._shouldProcessMessage(message)) {
+                    // Don't process the message, we are either waiting for a SequenceMessage or received a duplicate message
+                    continue;
+                }
+
                 switch (message.type) {
                     case MessageType.Invocation:
                         // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -616,6 +632,16 @@ export class HubConnection {
 
                         break;
                     }
+                    case MessageType.Ack:
+                        if (this._messageBuffer) {
+                            this._messageBuffer._ack(message);
+                        }
+                        break;
+                    case MessageType.Sequence:
+                        if (this._messageBuffer) {
+                            this._messageBuffer._resetSequence(message);
+                        }
+                        break;
                     default:
                         this._logger.log(LogLevel.Warning, `Invalid message type: ${message.type}.`);
                         break;
@@ -800,6 +826,7 @@ export class HubConnection {
         if (this._connectionStarted) {
             this._connectionState = HubConnectionState.Disconnected;
             this._connectionStarted = false;
+            this._messageBuffer = undefined;
 
             if (Platform.isBrowser) {
                 window.document.removeEventListener("freeze", this._freezeEventListener);

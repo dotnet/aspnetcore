@@ -26,7 +26,7 @@ describe("WebSocketTransport", () => {
 
     it("connect waits for WebSocket to be connected", async () => {
         await VerifyLogger.run(async (logger) => {
-            const webSocket = new WebSocketTransport(new TestHttpClient(), undefined, logger, true, TestWebSocket, {});
+            const webSocket = new WebSocketTransport(new TestHttpClient(), undefined, logger, true, TestWebSocket, {}, false);
 
             let connectComplete: boolean = false;
             const connectPromise = (async () => {
@@ -48,7 +48,7 @@ describe("WebSocketTransport", () => {
     it("connect fails if there is error during connect", async () => {
         await VerifyLogger.run(async (logger) => {
             (global as any).ErrorEvent = TestErrorEvent;
-            const webSocket = new WebSocketTransport(new TestHttpClient(), undefined, logger, true, TestWebSocket, {});
+            const webSocket = new WebSocketTransport(new TestHttpClient(), undefined, logger, true, TestWebSocket, {}, false);
 
             let connectComplete: boolean = false;
             const connectPromise = (async () => {
@@ -73,7 +73,7 @@ describe("WebSocketTransport", () => {
     it("connect failure does not call onclose handler", async () => {
         await VerifyLogger.run(async (logger) => {
             (global as any).ErrorEvent = TestErrorEvent;
-            const webSocket = new WebSocketTransport(new TestHttpClient(), undefined, logger, true, TestWebSocket, {});
+            const webSocket = new WebSocketTransport(new TestHttpClient(), undefined, logger, true, TestWebSocket, {}, false);
             let closeCalled = false;
             webSocket.onclose = () => closeCalled = true;
 
@@ -326,7 +326,7 @@ describe("WebSocketTransport", () => {
     it("does not run onclose callback if Transport does not fully connect and exits", async () => {
         await VerifyLogger.run(async (logger) => {
             (global as any).ErrorEvent = TestErrorEvent;
-            const webSocket = new WebSocketTransport(new TestHttpClient(), undefined, logger, true, TestWebSocket, {});
+            const webSocket = new WebSocketTransport(new TestHttpClient(), undefined, logger, true, TestWebSocket, {}, false);
 
             const connectPromise = webSocket.connect("http://example.com", TransferFormat.Text);
 
@@ -355,7 +355,7 @@ describe("WebSocketTransport", () => {
 });
 
 async function createAndStartWebSocket(logger: ILogger, url?: string, accessTokenFactory?: (() => string | Promise<string>), format?: TransferFormat, headers?: MessageHeaders): Promise<WebSocketTransport> {
-    const webSocket = new WebSocketTransport(new TestHttpClient(), accessTokenFactory, logger, true, TestWebSocket, headers || {});
+    const webSocket = new WebSocketTransport(new TestHttpClient(), accessTokenFactory, logger, true, TestWebSocket, headers || {}, false);
 
     const connectPromise = webSocket.connect(url || "http://example.com", format || TransferFormat.Text);
 

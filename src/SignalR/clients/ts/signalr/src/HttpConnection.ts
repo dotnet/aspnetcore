@@ -31,6 +31,7 @@ export interface INegotiateResponse {
     url?: string;
     accessToken?: string;
     error?: string;
+    useAck?: boolean;
 }
 
 /** @private */
@@ -230,7 +231,7 @@ export class HttpConnection implements IConnection {
             if (this._options.skipNegotiation) {
                 if (this._options.transport === HttpTransportType.WebSockets) {
                     // No need to add a connection ID in this case
-                    this.transport = this._constructTransport(HttpTransportType.WebSockets);
+                    this.transport = this._constructTransport(HttpTransportType.WebSockets, false);
                     // We should just call connect directly in this case.
                     // No fallback or negotiate in this case.
                     await this._startTransport(url, transferFormat);
@@ -368,7 +369,7 @@ export class HttpConnection implements IConnection {
         const transports = negotiateResponse.availableTransports || [];
         let negotiate: INegotiateResponse | undefined = negotiateResponse;
         for (const endpoint of transports) {
-            const transportOrError = this._resolveTransportOrError(endpoint, requestedTransport, requestedTransferFormat);
+            const transportOrError = this._resolveTransportOrError(endpoint, requestedTransport, requestedTransferFormat, negotiate?.useAck === true);
             if (transportOrError instanceof Error) {
                 // Store the error and continue, we don't want to cause a re-negotiate in these cases
                 transportExceptions.push(`${endpoint.transport} failed:`);
@@ -407,13 +408,14 @@ export class HttpConnection implements IConnection {
         return Promise.reject(new Error("None of the transports supported by the client are supported by the server."));
     }
 
-    private _constructTransport(transport: HttpTransportType): ITransport {
+    private _constructTransport(transport: HttpTransportType, useAck: boolean): ITransport {
         switch (transport) {
             case HttpTransportType.WebSockets:
                 if (!this._options.WebSocket) {
                     throw new Error("'WebSocket' is not supported in your environment.");
                 }
-                return new WebSocketTransport(this._httpClient, this._accessTokenFactory, this._logger, this._options.logMessageContent!, this._options.WebSocket, this._options.headers || {});
+                return new WebSocketTransport(this._httpClient, this._accessTokenFactory, this._logger, this._options.logMessageContent!,
+                    this._options.WebSocket, this._options.headers || {}, useAck);
             case HttpTransportType.ServerSentEvents:
                 if (!this._options.EventSource) {
                     throw new Error("'EventSource' is not supported in your environment.");
@@ -432,7 +434,8 @@ export class HttpConnection implements IConnection {
         return this.transport!.connect(url, transferFormat);
     }
 
-    private _resolveTransportOrError(endpoint: IAvailableTransport, requestedTransport: HttpTransportType | undefined, requestedTransferFormat: TransferFormat): ITransport | Error | unknown {
+    private _resolveTransportOrError(endpoint: IAvailableTransport, requestedTransport: HttpTransportType | undefined,
+        requestedTransferFormat: TransferFormat, useAcks: boolean): ITransport | Error | unknown {
         const transport = HttpTransportType[endpoint.transport];
         if (transport === null || transport === undefined) {
             this._logger.log(LogLevel.Debug, `Skipping transport '${endpoint.transport}' because it is not supported by this client.`);
@@ -448,7 +451,8 @@ export class HttpConnection implements IConnection {
                     } else {
                         this._logger.log(LogLevel.Debug, `Selecting transport '${HttpTransportType[transport]}'.`);
                         try {
-                            return this._constructTransport(transport);
+                            this.features.reconnect = transport === HttpTransportType.WebSockets ? useAcks : undefined;
+                            return this._constructTransport(transport, transport === HttpTransportType.WebSockets ? useAcks : false);
                         } catch (ex) {
                             return ex;
                         }
@@ -555,6 +559,10 @@ export class HttpConnection implements IConnection {
         if (negotiateUrl.indexOf("negotiateVersion") === -1) {
             negotiateUrl += index === -1 ? "?" : "&";
             negotiateUrl += "negotiateVersion=" + this._negotiateVersion;
+        }
+        if (negotiateUrl.indexOf("useAck") === -1 && this._options.useAcks === true) {
+            negotiateUrl += index === -1 ? "?" : "&";
+            negotiateUrl += "useAck=true";
         }
         return negotiateUrl;
     }
