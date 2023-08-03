@@ -1,5 +1,12 @@
 <Project>
-<ItemGroup Label="Routing">
+
+  <PropertyGroup>
+    <RoutingSourceRoot>$(RepoRoot)\src\Http\Routing\src\</RoutingSourceRoot>
+    <RoutingAbstractionsSourceRoot>$(RepoRoot)\src\Http\Routing.Abstractions\src\</RoutingAbstractionsSourceRoot>
+    <HttpAbstractionsSourceRoot>$(RepoRoot)\src\Http\Http.Abstractions\src\</HttpAbstractionsSourceRoot>
+  </PropertyGroup>
+
+  <ItemGroup Label="Routing">
   <!-- Abstractions -->
   <Compile Include="$(HttpAbstractionsSourceRoot)Routing\RouteValueDictionary.cs" LinkBase="Routing" />
   <Compile Include="$(RoutingAbstractionsSourceRoot)IRouteConstraint.cs" LinkBase="Routing" />

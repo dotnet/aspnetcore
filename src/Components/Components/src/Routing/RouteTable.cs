@@ -57,7 +57,7 @@ internal sealed class RouteTable(TreeRouter treeRouter)
 
     private static void ProcessParameters(InboundRouteEntry entry, RouteValueDictionary routeValues)
     {
-        // Quirk number 1: Add null values for unused route parameters.
+        // Add null values for unused route parameters.
         if (entry.UnusedRouteParameterNames != null)
         {
             foreach (var parameter in entry.UnusedRouteParameterNames)
@@ -68,14 +68,14 @@ internal sealed class RouteTable(TreeRouter treeRouter)
 
         foreach (var parameter in entry.RoutePattern.Parameters)
         {
-            // Quick number 2: Add null values for optional route parameters that weren't provided.
+            // Add null values for optional route parameters that weren't provided.
             if (!routeValues.TryGetValue(parameter.Name, out var parameterValue))
             {
                 routeValues.Add(parameter.Name, null);
             }
             else if (parameter.ParameterPolicies.Count > 0 && !parameter.IsCatchAll)
             {
-                // Quirk number 3: If the parameter has some well-known set of route constraints, then we need to convert the value
+                // If the parameter has some well-known set of route constraints, then we need to convert the value
                 // to the target type.
                 for (var i = 0; i < parameter.ParameterPolicies.Count; i++)
                 {

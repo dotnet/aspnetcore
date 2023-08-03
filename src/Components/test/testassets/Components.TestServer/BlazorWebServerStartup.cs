@@ -22,20 +22,7 @@ public class BlazorWebServerStartup
     public void ConfigureServices(IServiceCollection services)
     {
         services.AddRazorComponents()
-            .AddServerComponents(options =>
-            {
-                options.RootComponents.MaxJSRootComponents = 5; // To make it easier to test
-                options.RootComponents.RegisterForJavaScript<BasicTestApp.DynamicallyAddedRootComponent>("my-dynamic-root-component");
-                options.RootComponents.RegisterForJavaScript<BasicTestApp.JavaScriptRootComponentParameterTypes>(
-                    "component-with-many-parameters",
-                    javaScriptInitializer: "myJsRootComponentInitializers.testInitializer");
-            });
-        services.AddSingleton<ResourceRequestLog>();
-        services.AddTransient<BasicTestApp.FormsTest.ValidationComponentDI.SaladChef>();
-
-        var circuitContextAccessor = new TestCircuitContextAccessor();
-        services.AddSingleton<CircuitHandler>(circuitContextAccessor);
-        services.AddSingleton(circuitContextAccessor);
+            .AddServerComponents();
 
         // Since tests run in parallel, we use an ephemeral key provider to avoid filesystem
         // contention issues.
@@ -45,10 +32,6 @@ public class BlazorWebServerStartup
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
     public virtual void Configure(IApplicationBuilder app, IWebHostEnvironment env, ResourceRequestLog resourceRequestLog)
     {
-        var enUs = new CultureInfo("en-US");
-        CultureInfo.DefaultThreadCurrentCulture = enUs;
-        CultureInfo.DefaultThreadCurrentUICulture = enUs;
-
         if (env.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
@@ -57,18 +40,6 @@ public class BlazorWebServerStartup
         // Mount the server-side Blazor app on /subdir
         app.Map("/subdir", app =>
         {
-            app.Use((context, next) =>
-            {
-                if (context.Request.Path.Value.EndsWith("/images/blazor_logo_1000x.png", StringComparison.Ordinal))
-                {
-                    resourceRequestLog.AddRequest(context.Request);
-                }
-
-                return next(context);
-            });
-
-            app.UseStaticFiles();
-
             app.UseRouting();
             app.UseEndpoints(endpoints =>
             {

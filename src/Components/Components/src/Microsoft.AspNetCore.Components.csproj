@@ -11,9 +11,6 @@
     <DefineConstants>$(DefineConstants);COMPONENTS</DefineConstants>
     <!-- TODO: Address Native AOT analyzer warnings https://github.com/dotnet/aspnetcore/issues/45473 -->
     <EnableAOTAnalyzer>false</EnableAOTAnalyzer>
-    <RoutingSourceRoot>$(RepoRoot)\src\Http\Routing\src\</RoutingSourceRoot>
-    <RoutingAbstractionsSourceRoot>$(RepoRoot)\src\Http\Routing.Abstractions\src\</RoutingAbstractionsSourceRoot>
-    <HttpAbstractionsSourceRoot>$(RepoRoot)\src\Http\Http.Abstractions\src\</HttpAbstractionsSourceRoot>
   </PropertyGroup>
 
   <ItemGroup>
