@@ -44,11 +44,15 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 #if (UseServer && UseWebAssembly)
-app.MapRazorComponents<App>().AddServerRenderMode().AddWebAssemblyRenderMode();
+app.MapRazorComponents<App>()
+    .AddServerRenderMode()
+    .AddWebAssemblyRenderMode();
 #elif (UseServer)
-app.MapRazorComponents<App>().AddServerRenderMode();
+app.MapRazorComponents<App>()
+    .AddServerRenderMode();
 #elif (UseWebAssembly)
-app.MapRazorComponents<App>().AddWebAssemblyRenderMode();
+app.MapRazorComponents<App>()
+    .AddWebAssemblyRenderMode();
 #else
 app.MapRazorComponents<App>();
 #endif
