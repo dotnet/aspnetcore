@@ -31,7 +31,7 @@
     <HelixAvailableTargetQueue Include="Redhat.7.Amd64.Open" Platform="Linux" />
 
     <!-- Mac -->
-    <HelixAvailableTargetQueue Include="OSX.1015.Amd64.Open" Platform="OSX" />
+    <HelixAvailableTargetQueue Include="OSX.13.Amd64.Open" Platform="OSX" />
 
     <!-- Containers -->
     <HelixAvailableTargetQueue Include="$(HelixQueueAlpine314)" Platform="Linux" />
