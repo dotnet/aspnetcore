@@ -11,6 +11,12 @@
     "UseWebAssembly": {
       "longName": "use-wasm"
     },
+    "Empty": {
+      "longName": "empty"
+    },
+    "IncludeSampleContent": {
+      "isHidden": true
+    },
     "Framework": {
       "longName": "framework"
     },

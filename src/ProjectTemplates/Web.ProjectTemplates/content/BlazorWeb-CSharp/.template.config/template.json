@@ -88,6 +88,18 @@
           "exclude": [
             "BlazorWeb-CSharp/Properties/launchSettings.json"
           ]
+        },
+        {
+          "condition": "(!SampleContent)",
+          "exclude": [
+            "BlazorWeb-CSharp/Components/Pages/Counter.*",
+            "BlazorWeb-CSharp/Components/Pages/Weather.*",
+            "BlazorWeb-CSharp/Components/Layout/NavMenu.*",
+            "BlazorWeb-CSharp/Components/Layout/MainLayout.razor.css",
+            "BlazorWeb-CSharp/wwwroot/css/bootstrap/**",
+            "BlazorWeb-CSharp/wwwroot/favicon.css",
+            "BlazorWeb-CSharp.Client/Pages/**"
+          ]
         }
       ]
     }
@@ -219,6 +231,23 @@
       "defaultValue": "true",
       "displayName": "_Use interactive server components",
       "description": "Configures whether to support rendering components interactively on the server via a SignalR WebSocket connection. The default value is true."
+    },
+    "IncludeSampleContent": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "true",
+      "displayName": "_Include sample pages",
+      "description": "Configures whether to add sample pages and styling to demonstrate basic usage patterns."
+    },
+    "Empty": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Configures whether to omit sample pages and styling that demonstrate basic usage patterns."
+    },
+    "SampleContent": {
+      "type": "computed",
+      "value": "(((IncludeSampleContent && (HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\"))) || ((!Empty && (HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\"))))"
     },
     "RequiresHttps": {
       "type": "computed",
