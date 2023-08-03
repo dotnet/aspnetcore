@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.Reflection;
 using System.Security.Claims;
 using Components.TestServer.RazorComponents;
 using Components.TestServer.RazorComponents.Pages.Forms;
@@ -57,6 +58,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapRazorComponents<TRootComponent>()
+                    .AddAssemblies(Assembly.Load("Components.WasmMinimal"))
                     .AddServerRenderMode()
                     .AddWebAssemblyRenderMode(new WebAssemblyComponentsEndpointOptions
                     {
