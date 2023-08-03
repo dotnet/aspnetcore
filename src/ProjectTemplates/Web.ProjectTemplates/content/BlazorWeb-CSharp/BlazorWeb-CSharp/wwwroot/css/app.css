@@ -1,6 +1,3 @@
-@import url("bootstrap/bootstrap.min.css");
-@import url("../BlazorWeb-CSharp.styles.css");
-
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
