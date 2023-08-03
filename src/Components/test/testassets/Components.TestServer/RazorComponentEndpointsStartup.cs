@@ -30,8 +30,9 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             options.MaxFormMappingRecursionDepth = 5;
             options.MaxFormMappingCollectionSize = 100;
         })
+            .AddWebAssemblyComponents()
             .AddServerComponents()
-            .AddWebAssemblyComponents();
+            .AddHubOptions(ho => { });
         services.AddHttpContextAccessor();
         services.AddSingleton<AsyncOperationService>();
         services.AddCascadingAuthenticationState();
