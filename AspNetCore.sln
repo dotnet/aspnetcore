@@ -1772,6 +1772,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MinimalFormSample", "src\An
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MvcFormSample", "src\Mvc\samples\MvcFormSample\MvcFormSample.csproj", "{055F86AA-FB37-40CC-B39E-C29CE7547BB7}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.OutputCaching.Microbenchmarks", "src\Middleware\OutputCaching\perf\Microbenchmarks\Microsoft.AspNetCore.OutputCaching.Microbenchmarks.csproj", "{137AD17B-066F-4ED4-80FA-8D21C7B76CA6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -10645,6 +10647,22 @@ Global
 		{055F86AA-FB37-40CC-B39E-C29CE7547BB7}.Release|x64.Build.0 = Release|Any CPU
 		{055F86AA-FB37-40CC-B39E-C29CE7547BB7}.Release|x86.ActiveCfg = Release|Any CPU
 		{055F86AA-FB37-40CC-B39E-C29CE7547BB7}.Release|x86.Build.0 = Release|Any CPU
+		{137AD17B-066F-4ED4-80FA-8D21C7B76CA6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{137AD17B-066F-4ED4-80FA-8D21C7B76CA6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{137AD17B-066F-4ED4-80FA-8D21C7B76CA6}.Debug|arm64.ActiveCfg = Debug|Any CPU
+		{137AD17B-066F-4ED4-80FA-8D21C7B76CA6}.Debug|arm64.Build.0 = Debug|Any CPU
+		{137AD17B-066F-4ED4-80FA-8D21C7B76CA6}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{137AD17B-066F-4ED4-80FA-8D21C7B76CA6}.Debug|x64.Build.0 = Debug|Any CPU
+		{137AD17B-066F-4ED4-80FA-8D21C7B76CA6}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{137AD17B-066F-4ED4-80FA-8D21C7B76CA6}.Debug|x86.Build.0 = Debug|Any CPU
+		{137AD17B-066F-4ED4-80FA-8D21C7B76CA6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{137AD17B-066F-4ED4-80FA-8D21C7B76CA6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{137AD17B-066F-4ED4-80FA-8D21C7B76CA6}.Release|arm64.ActiveCfg = Release|Any CPU
+		{137AD17B-066F-4ED4-80FA-8D21C7B76CA6}.Release|arm64.Build.0 = Release|Any CPU
+		{137AD17B-066F-4ED4-80FA-8D21C7B76CA6}.Release|x64.ActiveCfg = Release|Any CPU
+		{137AD17B-066F-4ED4-80FA-8D21C7B76CA6}.Release|x64.Build.0 = Release|Any CPU
+		{137AD17B-066F-4ED4-80FA-8D21C7B76CA6}.Release|x86.ActiveCfg = Release|Any CPU
+		{137AD17B-066F-4ED4-80FA-8D21C7B76CA6}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -11520,6 +11538,7 @@ Global
 		{87D58D50-20D1-4091-88C5-8D88DCCC2DE3} = {6126DCE4-9692-4EE2-B240-C65743572995}
 		{F7BCD3AD-31E2-4223-B215-851C3D0AB78A} = {B55A5DE1-5AF3-4B18-AF04-C1735B071DA6}
 		{055F86AA-FB37-40CC-B39E-C29CE7547BB7} = {B8825E86-B8EA-4666-B681-C443D027C95D}
+		{137AD17B-066F-4ED4-80FA-8D21C7B76CA6} = {AA5ABFBC-177C-421E-B743-005E0FD1248B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3E8720B3-DBDD-498C-B383-2CC32A054E8F}
