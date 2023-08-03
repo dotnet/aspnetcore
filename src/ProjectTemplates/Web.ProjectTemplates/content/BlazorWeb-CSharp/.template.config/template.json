@@ -47,7 +47,7 @@
         ".template.config/**"
       ],
       "copyOnly": [
-        "**/wwwroot/css/bootstrap/**"
+        "**/wwwroot/bootstrap/**"
       ],
       "modifiers": [
         {
@@ -96,7 +96,7 @@
             "BlazorWeb-CSharp/Components/Pages/Weather.*",
             "BlazorWeb-CSharp/Components/Layout/NavMenu.*",
             "BlazorWeb-CSharp/Components/Layout/MainLayout.razor.css",
-            "BlazorWeb-CSharp/wwwroot/css/bootstrap/**",
+            "BlazorWeb-CSharp/wwwroot/bootstrap/**",
             "BlazorWeb-CSharp/wwwroot/favicon.*",
             "BlazorWeb-CSharp.Client/Pages/**",
             "BlazorWeb-CSharp.Client/wwwroot/**"
