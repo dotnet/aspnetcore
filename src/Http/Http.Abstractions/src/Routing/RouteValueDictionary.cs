@@ -2,35 +2,54 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections;
-using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Reflection.Metadata;
 using System.Runtime.CompilerServices;
+#if !COMPONENTS
+using System.Collections.Concurrent;
+using System.Reflection.Metadata;
 using Microsoft.AspNetCore.Http.Abstractions;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Internal;
+using Microsoft.AspNetCore.Routing;
+#endif
 
+#if !COMPONENTS
 [assembly: MetadataUpdateHandler(typeof(RouteValueDictionary.MetadataUpdateHandler))]
+#endif
 
+#if COMPONENTS
+namespace Microsoft.AspNetCore.Components.Routing;
+#else
 namespace Microsoft.AspNetCore.Routing;
+#endif
 
+#if !COMPONENTS
 /// <summary>
 /// An <see cref="IDictionary{String, Object}"/> type for route values.
 /// </summary>
+#endif
 [DebuggerTypeProxy(typeof(RouteValueDictionaryDebugView))]
 [DebuggerDisplay("Count = {Count}")]
+#if !COMPONENTS
 public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDictionary<string, object?>
+#else
+internal class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDictionary<string, object?>
+#endif
 {
     // 4 is a good default capacity here because that leaves enough space for area/controller/action/id
     private const int DefaultCapacity = 4;
+#if !COMPONENTS
     private static readonly ConcurrentDictionary<Type, PropertyHelper[]> _propertyCache = new ConcurrentDictionary<Type, PropertyHelper[]>();
+#endif
 
     internal KeyValuePair<string, object?>[] _arrayStorage;
+#if !COMPONENTS
     internal PropertyStorage? _propertyStorage;
+#endif
     private int _count;
 
+#if !COMPONENTS
     /// <summary>
     /// Creates a new <see cref="RouteValueDictionary"/> from the provided array.
     /// The new instance will take ownership of the array, and may mutate it.
@@ -78,6 +97,7 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
             _count = start,
         };
     }
+#endif
 
     /// <summary>
     /// Creates an empty <see cref="RouteValueDictionary"/>.
@@ -87,6 +107,7 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
         _arrayStorage = Array.Empty<KeyValuePair<string, object?>>();
     }
 
+#if !COMPONENTS
     /// <summary>
     /// Creates a <see cref="RouteValueDictionary"/> initialized with the specified <paramref name="values"/>.
     /// </summary>
@@ -136,6 +157,7 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
             _arrayStorage = Array.Empty<KeyValuePair<string, object?>>();
         }
     }
+#endif
 
     /// <summary>
     /// Creates a <see cref="RouteValueDictionary"/> initialized with the specified <paramref name="values"/>.
@@ -153,6 +175,7 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
         }
     }
 
+#if !COMPONENTS
     /// <summary>
     /// Creates a <see cref="RouteValueDictionary"/> initialized with the specified <paramref name="values"/>.
     /// </summary>
@@ -184,6 +207,7 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
             _arrayStorage = Array.Empty<KeyValuePair<string, object?>>();
         }
     }
+#endif
 
     [MemberNotNull(nameof(_arrayStorage))]
     private void Initialize(IEnumerable<KeyValuePair<string, string?>> stringValueEnumerable)
@@ -210,6 +234,7 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
     [MemberNotNull(nameof(_arrayStorage))]
     private void Initialize(RouteValueDictionary dictionary)
     {
+#if !COMPONENTS
         if (dictionary._propertyStorage != null)
         {
             // PropertyStorage is immutable so we can just copy it.
@@ -218,6 +243,7 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
             _arrayStorage = Array.Empty<KeyValuePair<string, object?>>();
             return;
         }
+#endif
 
         var count = dictionary._count;
         if (count > 0)
@@ -273,6 +299,7 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
         }
     }
 
+#if !COMPONENTS
     /// <summary>
     /// Gets the comparer for this dictionary.
     /// </summary>
@@ -280,6 +307,7 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
     /// This will always be a reference to <see cref="StringComparer.OrdinalIgnoreCase"/>
     /// </remarks>
     public IEqualityComparer<string> Comparer => StringComparer.OrdinalIgnoreCase;
+#endif
 
     /// <inheritdoc />
     public int Count => _count;
@@ -345,8 +373,12 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
 
         if (ContainsKeyArray(key))
         {
+#if !COMPONENTS
             var message = Resources.FormatRouteValueDictionary_DuplicateKey(key, nameof(RouteValueDictionary));
             throw new ArgumentException(message, nameof(key));
+#else
+            throw new ArgumentException($"An element with the key '{key}' already exists in the {nameof(RouteValueDictionary)}.");
+#endif
         }
 
         _arrayStorage[_count] = new KeyValuePair<string, object?>(key, value);
@@ -361,6 +393,7 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
             return;
         }
 
+#if !COMPONENTS
         if (_propertyStorage != null)
         {
             _arrayStorage = Array.Empty<KeyValuePair<string, object?>>();
@@ -368,7 +401,7 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
             _count = 0;
             return;
         }
-
+#endif
         Array.Clear(_arrayStorage, 0, _count);
         _count = 0;
     }
@@ -393,12 +426,16 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private bool ContainsKeyCore(string key)
     {
+#if !COMPONENTS
         if (_propertyStorage == null)
         {
             return ContainsKeyArray(key);
         }
 
         return ContainsKeyProperties(key);
+#else
+        return ContainsKeyArray(key);
+#endif
     }
 
     /// <inheritdoc />
@@ -571,6 +608,9 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
             ThrowArgumentNullExceptionForKey();
         }
 
+#if COMPONENTS
+        return TryFindItem(key, out value);
+#else
         if (_propertyStorage == null)
         {
             return TryFindItem(key, out value);
@@ -599,6 +639,7 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
 
         value = default;
         return false;
+#endif
     }
 
     [DoesNotReturn]
@@ -610,10 +651,17 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void EnsureCapacity(int capacity)
     {
+#if !COMPONENTS
         if (_propertyStorage != null || _arrayStorage.Length < capacity)
         {
             EnsureCapacitySlow(capacity);
         }
+#else
+        if (_arrayStorage.Length < capacity)
+        {
+            EnsureCapacitySlow(capacity);
+        }
+#endif
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2026",
@@ -621,6 +669,7 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
         "We do not need to additionally produce an error in this method since it is shared by trimmer friendly code paths.")]
     private void EnsureCapacitySlow(int capacity)
     {
+#if !COMPONENTS
         if (_propertyStorage != null)
         {
             var storage = _propertyStorage;
@@ -640,7 +689,7 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
             _propertyStorage = null;
             return;
         }
-
+#endif
         if (_arrayStorage.Length < capacity)
         {
             capacity = _arrayStorage.Length == 0 ? DefaultCapacity : _arrayStorage.Length * 2;
@@ -717,6 +766,7 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
         return false;
     }
 
+#if !COMPONENTS
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private bool ContainsKeyProperties(string key)
     {
@@ -733,6 +783,7 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
 
         return false;
     }
+#endif
 
     /// <inheritdoc />
     public struct Enumerator : IEnumerator<KeyValuePair<string, object?>>
@@ -773,6 +824,7 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
         {
             var dictionary = _dictionary;
 
+#if !COMPONENTS
             // The uncommon case is that the propertyStorage is in use
             if (dictionary._propertyStorage == null && ((uint)_index < (uint)dictionary._count))
             {
@@ -780,6 +832,14 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
                 _index++;
                 return true;
             }
+#else
+            if (((uint)_index < (uint)dictionary._count))
+            {
+                Current = dictionary._arrayStorage[_index];
+                _index++;
+                return true;
+            }
+#endif
 
             return MoveNextRare();
         }
@@ -790,6 +850,7 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
         private bool MoveNextRare()
         {
             var dictionary = _dictionary;
+#if !COMPONENTS
             if (dictionary._propertyStorage != null && ((uint)_index < (uint)dictionary._count))
             {
                 var storage = dictionary._propertyStorage;
@@ -798,6 +859,7 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
                 _index++;
                 return true;
             }
+#endif
 
             _index = dictionary._count;
             Current = default;
@@ -812,6 +874,7 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
         }
     }
 
+#if !COMPONENTS
     [RequiresUnreferencedCode("This API is not trim safe - from PropertyHelper")]
     internal sealed class PropertyStorage
     {
@@ -865,6 +928,7 @@ public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDicti
             _propertyCache.Clear();
         }
     }
+#endif
 
     private sealed class RouteValueDictionaryDebugView(RouteValueDictionary dictionary)
     {
