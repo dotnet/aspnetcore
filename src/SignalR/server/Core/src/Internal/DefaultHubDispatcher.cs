@@ -676,7 +676,7 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
                 }
                 else if (descriptor.IsServiceArgument(parameterPointer))
                 {
-                    arguments[parameterPointer] = scope.ServiceProvider.GetRequiredService(descriptor.OriginalParameterTypes[parameterPointer]);
+                    arguments[parameterPointer] = descriptor.GetService(scope.ServiceProvider, parameterPointer, descriptor.OriginalParameterTypes[parameterPointer]);
                 }
                 else if (isStreamCall && ReflectionHelper.IsStreamingType(descriptor.OriginalParameterTypes[parameterPointer], mustBeDirectType: true))
                 {
