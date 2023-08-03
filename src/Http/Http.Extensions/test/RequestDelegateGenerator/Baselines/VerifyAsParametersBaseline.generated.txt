@@ -56,7 +56,9 @@ namespace Microsoft.AspNetCore.Http.Generated
     file static class GeneratedRouteBuilderExtensionsCore
     {
         private static readonly string[] GetVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Get };
-private static readonly string[] PostVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Post };
+        private static readonly string[] PatchVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Patch };
+        private static readonly string[] PostVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Post };
+        private static readonly string[] PutVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Put };
 
         [InterceptsLocation(@"TestMapActions.cs", 44, 5)]
         internal static RouteHandlerBuilder MapGet0(
@@ -191,7 +193,7 @@ private static readonly string[] PostVerb = new[] { global::Microsoft.AspNetCore
         }
 
         [InterceptsLocation(@"TestMapActions.cs", 45, 5)]
-        internal static RouteHandlerBuilder MapGet1(
+        internal static RouteHandlerBuilder MapPost1(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
             Delegate handler)
@@ -310,13 +312,13 @@ private static readonly string[] PostVerb = new[] { global::Microsoft.AspNetCore
                 endpoints,
                 pattern,
                 handler,
-                GetVerb,
+                PostVerb,
                 populateMetadata,
                 createRequestDelegate);
         }
 
         [InterceptsLocation(@"TestMapActions.cs", 46, 5)]
-        internal static RouteHandlerBuilder MapGet2(
+        internal static RouteHandlerBuilder MapPut2(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
             Delegate handler)
@@ -406,13 +408,13 @@ private static readonly string[] PostVerb = new[] { global::Microsoft.AspNetCore
                 endpoints,
                 pattern,
                 handler,
-                GetVerb,
+                PutVerb,
                 populateMetadata,
                 createRequestDelegate);
         }
 
         [InterceptsLocation(@"TestMapActions.cs", 47, 5)]
-        internal static RouteHandlerBuilder MapPost3(
+        internal static RouteHandlerBuilder MapPatch3(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
             Delegate handler)
@@ -521,7 +523,7 @@ private static readonly string[] PostVerb = new[] { global::Microsoft.AspNetCore
                 endpoints,
                 pattern,
                 handler,
-                PostVerb,
+                PatchVerb,
                 populateMetadata,
                 createRequestDelegate);
         }

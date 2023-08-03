@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Immutable;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis.CSharp;
@@ -587,13 +589,14 @@ namespace Microsoft.AspNetCore.Http.Generated
 
     public static string GetVerbs(ImmutableHashSet<string> verbs)
     {
-        var builder = new StringBuilder();
+        using var stringWriter = new StringWriter(CultureInfo.InvariantCulture);
+        using var codeWriter = new CodeWriter(stringWriter, baseIndent: 2);
 
         foreach (string verb in verbs.OrderBy(p => p, StringComparer.Ordinal))
         {
-            builder.AppendLine($$"""private static readonly string[] {{verb}}Verb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.{{verb}} };""");
+            codeWriter.WriteLine($$"""private static readonly string[] {{verb}}Verb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.{{verb}} };""");
         }
 
-        return builder.ToString();
+        return stringWriter.ToString();
     }
 }

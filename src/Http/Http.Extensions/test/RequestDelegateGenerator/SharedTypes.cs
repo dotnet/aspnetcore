@@ -1048,6 +1048,22 @@ public class BindableWithMismatchedNullability<T>
     }
 }
 
+public struct BindableStructWithMismatchedNullability<T>
+{
+    public BindableStructWithMismatchedNullability(T? value)
+    {
+        Value = value;
+    }
+
+    public T? Value { get; }
+
+    public static async ValueTask<BindableStructWithMismatchedNullability<T?>> BindAsync(HttpContext httpContext, ParameterInfo parameter)
+    {
+        await Task.CompletedTask;
+        return new BindableStructWithMismatchedNullability<T?>(default);
+    }
+}
+
 public class BindableClassWithNullReturn
 {
     public static async ValueTask<BindableClassWithNullReturn?> BindAsync(HttpContext httpContext, ParameterInfo parameter)
