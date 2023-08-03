@@ -29,6 +29,4 @@ internal class RazorComponentDataSourceOptions
             });
 
     internal ISet<IComponentRenderMode> ConfiguredRenderModes { get; } = new HashSet<IComponentRenderMode>(RenderModeComparer);
-
-    internal WebAssemblyComponentsEndpointOptions? WebAssemblyComponentsEnpointOptions { get; set; }
 }

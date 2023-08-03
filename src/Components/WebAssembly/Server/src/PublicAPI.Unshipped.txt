@@ -1,5 +1,9 @@
 #nullable enable
 Microsoft.AspNetCore.Builder.WebAssemblyRazorComponentEndpointConventionBuilderExtensions
+Microsoft.AspNetCore.Components.Endpoints.WebAssemblyComponentsEndpointOptions
+Microsoft.AspNetCore.Components.Endpoints.WebAssemblyComponentsEndpointOptions.PathPrefix.get -> Microsoft.AspNetCore.Http.PathString
+Microsoft.AspNetCore.Components.Endpoints.WebAssemblyComponentsEndpointOptions.PathPrefix.set -> void
+Microsoft.AspNetCore.Components.Endpoints.WebAssemblyComponentsEndpointOptions.WebAssemblyComponentsEndpointOptions() -> void
 Microsoft.AspNetCore.Components.WebAssembly.Server.TargetPickerUi.DisplayFirefox(Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task!
 Microsoft.Extensions.DependencyInjection.WebAssemblyRazorComponentsBuilderExtensions
 static Microsoft.AspNetCore.Builder.WebAssemblyRazorComponentEndpointConventionBuilderExtensions.AddWebAssemblyRenderMode(this Microsoft.AspNetCore.Builder.RazorComponentEndpointConventionBuilder! builder, Microsoft.AspNetCore.Components.Endpoints.WebAssemblyComponentsEndpointOptions? options = null) -> Microsoft.AspNetCore.Builder.RazorComponentEndpointConventionBuilder!

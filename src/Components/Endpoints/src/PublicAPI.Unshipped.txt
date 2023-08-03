@@ -50,10 +50,6 @@ Microsoft.AspNetCore.Components.Endpoints.RenderModeEndpointProvider.RenderModeE
 Microsoft.AspNetCore.Components.Endpoints.RootComponentMetadata
 Microsoft.AspNetCore.Components.Endpoints.RootComponentMetadata.RootComponentMetadata(System.Type! rootComponentType) -> void
 Microsoft.AspNetCore.Components.Endpoints.RootComponentMetadata.Type.get -> System.Type!
-Microsoft.AspNetCore.Components.Endpoints.WebAssemblyComponentsEndpointOptions
-Microsoft.AspNetCore.Components.Endpoints.WebAssemblyComponentsEndpointOptions.PathPrefix.get -> Microsoft.AspNetCore.Http.PathString
-Microsoft.AspNetCore.Components.Endpoints.WebAssemblyComponentsEndpointOptions.PathPrefix.set -> void
-Microsoft.AspNetCore.Components.Endpoints.WebAssemblyComponentsEndpointOptions.WebAssemblyComponentsEndpointOptions() -> void
 Microsoft.AspNetCore.Components.PersistedStateSerializationMode
 Microsoft.AspNetCore.Components.PersistedStateSerializationMode.Infer = 1 -> Microsoft.AspNetCore.Components.PersistedStateSerializationMode
 Microsoft.AspNetCore.Components.PersistedStateSerializationMode.Server = 2 -> Microsoft.AspNetCore.Components.PersistedStateSerializationMode

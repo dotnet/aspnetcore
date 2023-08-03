@@ -24,81 +24,6 @@ public class RazorComponentEndpointDataSourceTest
     }
 
     [Fact]
-    public void ServerModeWiresUpServerEndpoints()
-    {
-        var builder = CreateBuilder(typeof(ServerComponent));
-        var services = CreateServices(typeof(ServerEndpointProvider));
-        var endpointDataSource = CreateDataSource<App>(builder, services);
-
-        var endpoints = endpointDataSource.Endpoints;
-        var endpoint = Assert.Single(endpoints);
-
-        Assert.Equal("/server", ((RouteEndpoint)endpoint).RoutePattern.RawText);
-    }
-
-    [Fact]
-    public void ServerModeNoProviderThrows()
-    {
-
-        var builder = CreateBuilder(typeof(ServerComponent));
-        var services = CreateServices();
-        var endpointDataSource = CreateDataSource<App>(builder, services);
-
-        Assert.Throws<InvalidOperationException>(() => endpointDataSource.Endpoints);
-    }
-
-    [Fact]
-    public void WebAssemblyWiresUpWebAssemblyEndpoints()
-    {
-
-        var builder = CreateBuilder(typeof(WebAssemblyComponent));
-        var services = CreateServices(typeof(WebassemblyEndpointProvider));
-        var endpointDataSource = CreateDataSource<App>(builder, services);
-
-        var endpoints = endpointDataSource.Endpoints;
-        var endpoint = Assert.Single(endpoints);
-
-        Assert.Equal("/webassembly", ((RouteEndpoint)endpoint).RoutePattern.RawText);
-    }
-
-    [Fact]
-    public void WebAssemblyNoProviderThrows()
-    {
-
-        var builder = CreateBuilder(typeof(WebAssemblyComponent));
-        var services = CreateServices();
-        var endpointDataSource = CreateDataSource<App>(builder, services);
-
-        Assert.Throws<InvalidOperationException>(() => endpointDataSource.Endpoints);
-    }
-
-    [Fact]
-    public void AutoWiresUpServerAndWebAssemblyEndpointsWhenBothAreConfigured()
-    {
-
-        var builder = CreateBuilder(typeof(AutoComponent));
-        var services = CreateServices(typeof(ServerEndpointProvider), typeof(WebassemblyEndpointProvider));
-        var endpointDataSource = CreateDataSource<App>(builder, services);
-
-        var endpoints = endpointDataSource.Endpoints;
-
-        Assert.Collection(endpoints,
-            endpoint => Assert.Equal("/server", ((RouteEndpoint)endpoint).RoutePattern.RawText),
-            endpoint => Assert.Equal("/webassembly", ((RouteEndpoint)endpoint).RoutePattern.RawText));
-    }
-
-    [Fact]
-    public void AutoNoProviderThrows()
-    {
-
-        var builder = CreateBuilder(typeof(AutoComponent));
-        var services = CreateServices();
-        var endpointDataSource = CreateDataSource<App>(builder, services);
-
-        Assert.Throws<InvalidOperationException>(() => endpointDataSource.Endpoints);
-    }
-
-    [Fact]
     public void NoDiscoveredModesDefaultsToStatic()
     {
 
@@ -108,54 +33,6 @@ public class RazorComponentEndpointDataSourceTest
 
         var endpoints = endpointDataSource.Endpoints;
         Assert.Empty(endpoints);
-    }
-
-    [Theory]
-    [MemberData(nameof(ConfiguredAndDiscoveredRenderModes))]
-    public void RenderModesAreConfiguredCorrectly(
-        IComponentRenderMode[] renderModes,
-        Type[] providers,
-        Type[] components,
-        string[] expectedEndpoints)
-    {
-        var builder = CreateBuilder(components);
-        var services = CreateServices(providers);
-        var endpointDataSource = CreateDataSource<App>(builder, services, renderModes);
-
-        var endpoints = endpointDataSource.Endpoints;
-
-        switch (expectedEndpoints.Length)
-        {
-            case 0:
-                Assert.Empty(endpoints);
-                break;
-            case 1:
-                var endpoint = Assert.Single(endpoints);
-                Assert.Equal(expectedEndpoints[0], ((RouteEndpoint)endpoint).RoutePattern.RawText);
-                break;
-            case 2:
-                Assert.Collection(endpoints.OrderBy(e => ((RouteEndpoint)e).RoutePattern.RawText),
-                    endpoint => Assert.Equal(expectedEndpoints[0], ((RouteEndpoint)endpoint).RoutePattern.RawText),
-                    endpoint => Assert.Equal(expectedEndpoints[1], ((RouteEndpoint)endpoint).RoutePattern.RawText));
-                break;
-            default:
-                Assert.Fail("Too many endpoints specified");
-                break;
-        }
-    }
-
-    [Theory]
-    [MemberData(nameof(SetRenderModesFailures))]
-    public void ThrowsForDeclaredRenderModes_WhenMissingRenderModes(
-        IComponentRenderMode[] renderModes,
-        Type[] providers,
-        Type[] components)
-    {
-        var builder = CreateBuilder(components);
-        var services = CreateServices(providers);
-        var endpointDataSource = CreateDataSource<App>(builder, services, renderModes);
-
-        Assert.Throws<InvalidOperationException>(() => endpointDataSource.Endpoints);
     }
 
     // renderModes, providers, components, expectedEndpoints
@@ -362,8 +239,6 @@ public class RazorComponentEndpointDataSourceTest
 
         return result;
     }
-
-    private class StaticComponent : ComponentBase { }
 
     [RenderModeServer]
     private class ServerComponent : ComponentBase { }
