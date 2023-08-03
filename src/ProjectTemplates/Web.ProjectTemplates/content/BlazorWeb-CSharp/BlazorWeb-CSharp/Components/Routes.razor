@@ -1,0 +1,10 @@
+﻿@*#if (UseWebAssembly) -->
+<Router AppAssembly="@typeof(App).Assembly" AdditionalAssemblies="new[] { typeof(Client._Imports).Assembly }">
+##else
+<Router AppAssembly="@typeof(App).Assembly">
+##endif*@
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(Layout.MainLayout)" />
+        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+    </Found>
+</Router>
