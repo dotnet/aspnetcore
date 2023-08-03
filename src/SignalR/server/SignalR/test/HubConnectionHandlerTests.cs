@@ -5006,6 +5006,28 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
     }
 
     [Fact]
+    public async Task MultipleKeyedServicesWithSameNameResolved()
+    {
+        var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(provider =>
+        {
+            provider.AddSignalR(options =>
+            {
+                options.EnableDetailedErrors = true;
+            });
+
+            provider.AddKeyedScoped<Service1>("service1");
+        });
+        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ServicesHub>>();
+
+        using (var client = new TestClient())
+        {
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+            var res = await client.InvokeAsync(nameof(ServicesHub.MultipleSameKeyedServices)).DefaultTimeout();
+            Assert.Equal(445L, res.Result);
+        }
+    }
+
+    [Fact]
     public async Task KeyedServiceNotResolvedIfNotInDI()
     {
         var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(provider =>

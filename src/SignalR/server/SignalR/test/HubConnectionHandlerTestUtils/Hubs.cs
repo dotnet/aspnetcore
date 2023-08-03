@@ -1363,6 +1363,12 @@ public class ServicesHub : TestHub
         return total + value;
     }
 
+    public int MultipleSameKeyedServices([FromKeyedServices("service1")] Service1 service, [FromKeyedServices("service1")] Service1 service2)
+    {
+        Assert.Same(service, service2);
+        return 445;
+    }
+
     public int ServiceWithoutAttribute(Service1 service)
     {
         return 1;
