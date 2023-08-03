@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Reflection.Metadata;
 using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Components.HotReload;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Routing;
@@ -64,7 +65,6 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
     /// Gets or sets the content to display when no match is found for the requested route.
     /// </summary>
     [Parameter]
-    [EditorRequired]
     public RenderFragment NotFound { get; set; }
 
     /// <summary>
@@ -124,13 +124,6 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         if (Found == null)
         {
             throw new InvalidOperationException($"The {nameof(Router)} component requires a value for the parameter {nameof(Found)}.");
-        }
-
-        // NotFound content is mandatory, because even though we could display a default message like "Not found",
-        // it has to be specified explicitly so that it can also be wrapped in a specific layout
-        if (NotFound == null)
-        {
-            throw new InvalidOperationException($"The {nameof(Router)} component requires a value for the parameter {nameof(NotFound)}.");
         }
 
         if (!_onNavigateCalled)
@@ -233,7 +226,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
                 // We did not find a Component that matches the route.
                 // Only show the NotFound content if the application developer programatically got us here i.e we did not
                 // intercept the navigation. In all other cases, force a browser navigation since this could be non-Blazor content.
-                _renderHandle.Render(NotFound);
+                _renderHandle.Render(NotFound ?? DefaultNotFoundContent);
             }
             else
             {
@@ -241,6 +234,17 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
                 NavigationManager.NavigateTo(_locationAbsolute, forceLoad: true);
             }
         }
+    }
+
+    private static void DefaultNotFoundContent(RenderTreeBuilder builder)
+    {
+        // This output can't use any layout (none is specified), and it can't use any web-specific concepts
+        // such as <p role="alert">, and we can't localize the output. However none of that matters because
+        // in all cases we expect either:
+        // 1. The app to be hosted with MapRazorPages, and then it will never use any NotFound content
+        // 2. Or, the app to supply its own NotFound content
+        // ... so this is just a fallback for badly-set-up apps.
+        builder.AddContent(0, "Not found");
     }
 
     internal async ValueTask RunOnNavigateAsync(string path, bool isNavigationIntercepted)
