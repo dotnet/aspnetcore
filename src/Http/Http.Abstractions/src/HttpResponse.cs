@@ -170,7 +170,7 @@ public abstract class HttpResponse
         {
             get
             {
-                var feature = response.HttpContext.Features.Get<IHttpResponseTrailersFeature>();
+                var feature = _response.HttpContext.Features.Get<IHttpResponseTrailersFeature>();
                 return feature?.Trailers;
             }
         }
