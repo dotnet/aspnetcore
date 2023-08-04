@@ -34,7 +34,7 @@ public class RoutingMetricsTests
         var httpContext = new DefaultHttpContext();
         var meter = meterFactory.Meters.Single();
 
-        using var routingMatchAttemptsCollector = new MetricCollector<long>(meterFactory, RoutingMetrics.MeterName, "aspnet.routing.match_attempts");
+        using var routingMatchAttemptsCollector = new MetricCollector<long>(meterFactory, RoutingMetrics.MeterName, "aspnetcore.routing.match_attempts");
 
         // Act
         await middleware.Invoke(httpContext);
@@ -68,7 +68,7 @@ public class RoutingMetricsTests
         var httpContext = new DefaultHttpContext();
         var meter = meterFactory.Meters.Single();
 
-        using var routingMatchAttemptsCollector = new MetricCollector<long>(meterFactory, RoutingMetrics.MeterName, "aspnet.routing.match_attempts");
+        using var routingMatchAttemptsCollector = new MetricCollector<long>(meterFactory, RoutingMetrics.MeterName, "aspnetcore.routing.match_attempts");
 
         // Act
         await middleware.Invoke(httpContext);
@@ -95,7 +95,7 @@ public class RoutingMetricsTests
         var httpContext = new DefaultHttpContext();
         var meter = meterFactory.Meters.Single();
 
-        using var routingMatchAttemptsCollector = new MetricCollector<long>(meterFactory, RoutingMetrics.MeterName, "aspnet.routing.match_attempts");
+        using var routingMatchAttemptsCollector = new MetricCollector<long>(meterFactory, RoutingMetrics.MeterName, "aspnetcore.routing.match_attempts");
 
         // Act
         await middleware.Invoke(httpContext);
@@ -119,7 +119,7 @@ public class RoutingMetricsTests
         var httpContext = new DefaultHttpContext();
         var meter = meterFactory.Meters.Single();
 
-        using var routingMatchAttemptsCollector = new MetricCollector<long>(meterFactory, RoutingMetrics.MeterName, "aspnet.routing.match_attempts");
+        using var routingMatchAttemptsCollector = new MetricCollector<long>(meterFactory, RoutingMetrics.MeterName, "aspnetcore.routing.match_attempts");
 
         // Act
         await middleware.Invoke(httpContext);
@@ -135,15 +135,15 @@ public class RoutingMetricsTests
     private void AssertFailure(CollectedMeasurement<long> measurement)
     {
         Assert.Equal(1, measurement.Value);
-        Assert.Equal("failure", (string)measurement.Tags["aspnet.routing.match_status"]);
+        Assert.Equal("failure", (string)measurement.Tags["aspnetcore.routing.match_status"]);
     }
 
     private void AssertSuccess(CollectedMeasurement<long> measurement, string route, bool fallback)
     {
         Assert.Equal(1, measurement.Value);
-        Assert.Equal("success", (string)measurement.Tags["aspnet.routing.match_status"]);
+        Assert.Equal("success", (string)measurement.Tags["aspnetcore.routing.match_status"]);
         Assert.Equal(route, (string)measurement.Tags["http.route"]);
-        Assert.Equal(fallback, (bool)measurement.Tags["aspnet.routing.is_fallback"]);
+        Assert.Equal(fallback, (bool)measurement.Tags["aspnetcore.routing.is_fallback"]);
     }
 
     private EndpointRoutingMiddleware CreateMiddleware(
