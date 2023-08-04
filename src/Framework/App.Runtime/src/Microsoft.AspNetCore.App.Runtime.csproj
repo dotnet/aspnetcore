@@ -175,8 +175,6 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <RuntimeListFileName>RuntimeList.xml</RuntimeListFileName>
     <RuntimeListOutputPath>$(BaseIntermediateOutputPath)$(RuntimeListFileName)</RuntimeListOutputPath>
 
-    <InternalArchiveOutputFileName>$(InternalInstallerBaseName)-$(PackageVersion)-$(TargetRuntimeIdentifier)$(ArchiveExtension)</InternalArchiveOutputFileName>
-    <InternalArchiveOutputPath>$(InstallersOutputPath)$(InternalArchiveOutputFileName)</InternalArchiveOutputPath>
     <RedistArchiveOutputFileName>$(RuntimeInstallerBaseName)-$(PackageVersion)-$(TargetRuntimeIdentifier)$(ArchiveExtension)</RedistArchiveOutputFileName>
     <RedistArchiveOutputPath>$(InstallersOutputPath)$(RedistArchiveOutputFileName)</RedistArchiveOutputPath>
     <CompositeArchiveOutputFileName>$(RuntimeInstallerBaseName)-composite-$(PackageVersion)-$(TargetRuntimeIdentifier)$(ArchiveExtension)</CompositeArchiveOutputFileName>
@@ -701,21 +699,6 @@ This package is an internal implementation of the .NET Core SDK and is not meant
           DestinationFiles="@(SharedFxContent->'$(LocalInstallationOutputPath)%(FileName)%(Extension)')"
           UseHardlinksIfPossible="true" />
     <Message Importance="High" Text="$(MSbuildProjectFile) -> $(LocalInstallationOutputPath)" />
-  </Target>
-
-  <Target Name="_CreateInternalSharedFxArchive"
-          Inputs="@(SharedFxContent)"
-          Outputs="$(InternalArchiveOutputPath)">
-    <ZipDirectory
-      SourceDirectory="$(SharedFrameworkLayoutRoot)"
-      DestinationFile="$(InternalArchiveOutputPath)"
-      Overwrite="true"
-      Condition="'$(ArchiveExtension)' == '.zip'" />
-    <Exec
-      Command="tar -czf $(InternalArchiveOutputPath) ."
-      WorkingDirectory="$(SharedFrameworkLayoutRoot)"
-      Condition="'$(ArchiveExtension)' == '.tar.gz'" />
-    <Message Importance="High" Text="$(MSbuildProjectFile) -> $(InternalArchiveOutputPath)" />
   </Target>
 
   <Target Name="_CreateRedistCompositeArchive"
