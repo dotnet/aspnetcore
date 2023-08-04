@@ -49,7 +49,20 @@ internal static class HttpContextDebugFormatter
 
     public static string ContextToString(HttpContext context, string? reasonPhrase)
     {
-        var text = $"{context.Request.Method} {GetRequestUrl(context.Request, includeQueryString: false)} {context.Response.StatusCode}";
+        var text = GetRequestUrl(context.Request, includeQueryString: false);
+        if (!string.IsNullOrEmpty(context.Request.Method))
+        {
+            text = $"{context.Request.Method} {text}";
+        }
+        if (!string.IsNullOrEmpty(context.Request.Protocol))
+        {
+            text += $" {context.Request.Protocol}";
+        }
+        if (!string.IsNullOrEmpty(context.Request.ContentType))
+        {
+            text += $" {context.Request.ContentType}";
+        }
+        text += $" {context.Response.StatusCode}";
         var resolvedReasonPhrase = ResolveReasonPhrase(context.Response, reasonPhrase);
         if (!string.IsNullOrEmpty(resolvedReasonPhrase))
         {
