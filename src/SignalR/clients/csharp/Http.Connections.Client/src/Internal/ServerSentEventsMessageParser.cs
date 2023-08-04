@@ -34,23 +34,16 @@ internal sealed class ServerSentEventsMessageParser
 
         while (buffer.Length > 0)
         {
-            SequencePosition? potentialLineEnd;
-            // catches CRLF, CR and LF line endings
-            if ((potentialLineEnd = buffer.PositionOf(ByteLF)) == null &&
-                (potentialLineEnd = buffer.PositionOf(ByteCR)) == null)
+            if (!(buffer.PositionOf(ByteLF) is SequencePosition lineEnd))
             {
                 // Partial message. We need to read more.
                 return ParseResult.Incomplete;
             }
 
-            var lineEnd = buffer.GetPosition(1, potentialLineEnd.Value);
+            // buffer, and thus line should atleast contain \n at this point.
+            lineEnd = buffer.GetPosition(1, lineEnd);
             var line = ConvertBufferToSpan(buffer.Slice(start, lineEnd));
             buffer = buffer.Slice(line.Length);
-
-            if (line.Length == 0 || line.Length == 1 && line[0] is not ByteCR and not ByteLF)
-            {
-                throw new FormatException("There was an error in the frame format");
-            }
 
             // Skip comments
             if (line[0] == ByteColon)
@@ -139,7 +132,7 @@ internal sealed class ServerSentEventsMessageParser
         // has to be one of the others
         return lineWithEnding.EndsWith(SseLineEnding)
             ? lineWithEnding.Slice(0, lineWithEnding.Length - 2) // CRLF
-            : lineWithEnding.Slice(0, lineWithEnding.Length - 1); // CR / LF
+            : lineWithEnding.Slice(0, lineWithEnding.Length - 1); // LF
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -174,7 +167,7 @@ internal sealed class ServerSentEventsMessageParser
         }
         else if (line.Length == 1)
         {
-            return line[0] == ByteCR || line[0] == ByteLF;
+            return line[0] == ByteLF;
         }
         return false;
     }
