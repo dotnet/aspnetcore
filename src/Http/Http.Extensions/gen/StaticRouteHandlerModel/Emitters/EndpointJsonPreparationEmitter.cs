@@ -38,7 +38,7 @@ internal static class EndpointJsonPreparationEmitter
                 return;
             }
             var typeName = parameter.Type.ToDisplayString(EmitterConstants.DisplayFormat);
-            codeWriter.WriteLine($"var {parameter.SymbolName}_JsonTypeInfo =  (JsonTypeInfo<{typeName}>)jsonSerializerOptions.GetTypeInfo(typeof({parameter.Type.ToDisplayString(EmitterConstants.DisplayFormatWithoutNullability)}));");
+            codeWriter.WriteLine($"var {parameter.SymbolName}_JsonTypeInfo = (JsonTypeInfo<{typeName}>)jsonSerializerOptions.GetTypeInfo(typeof({parameter.Type.ToDisplayString(EmitterConstants.DisplayFormatWithoutNullability)}));");
         }
 
     }
