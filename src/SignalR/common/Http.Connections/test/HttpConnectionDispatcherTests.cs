@@ -1094,8 +1094,8 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         using (StartVerifiableLog())
         {
             var testMeterFactory = new TestMeterFactory();
-            using var connectionDuration = new MetricCollector<double>(testMeterFactory, HttpConnectionsMetrics.MeterName, "signalr_http_transport.server.connection.duration");
-            using var currentConnections = new MetricCollector<long>(testMeterFactory, HttpConnectionsMetrics.MeterName, "signalr_http_transport.server.active_connections");
+            using var connectionDuration = new MetricCollector<double>(testMeterFactory, HttpConnectionsMetrics.MeterName, "signalr.server.connection.duration");
+            using var currentConnections = new MetricCollector<long>(testMeterFactory, HttpConnectionsMetrics.MeterName, "signalr.server.active_connections");
 
             var metrics = new HttpConnectionsMetrics(testMeterFactory);
             var manager = CreateConnectionManager(LoggerFactory, metrics);
@@ -1150,8 +1150,8 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             await dispatcher.ExecuteAsync(context, new HttpConnectionDispatcherOptions(), app);
             Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
 
-            using var connectionDuration = new MetricCollector<double>(testMeterFactory, HttpConnectionsMetrics.MeterName, "signalr_http_transport.server.connection.duration");
-            using var currentConnections = new MetricCollector<long>(testMeterFactory, HttpConnectionsMetrics.MeterName, "signalr_http_transport.server.active_connections");
+            using var connectionDuration = new MetricCollector<double>(testMeterFactory, HttpConnectionsMetrics.MeterName, "signalr.server.connection.duration");
+            using var currentConnections = new MetricCollector<long>(testMeterFactory, HttpConnectionsMetrics.MeterName, "signalr.server.active_connections");
 
             await dispatcher.ExecuteAsync(context, new HttpConnectionDispatcherOptions(), app);
 
@@ -1169,14 +1169,14 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
     private static void AssertTransport(CollectedMeasurement<long> measurement, long expected, string transportType)
     {
         Assert.Equal(expected, measurement.Value);
-        Assert.Equal(transportType.ToString(), (string)measurement.Tags["signalr_http_transport.type"]);
+        Assert.Equal(transportType.ToString(), (string)measurement.Tags["signalr.transport"]);
     }
 
     private static void AssertDuration(CollectedMeasurement<double> measurement, string status, string transportType)
     {
         Assert.True(measurement.Value > 0);
-        Assert.Equal(status.ToString(), (string)measurement.Tags["signalr_http_transport.connection.status"]);
-        Assert.Equal(transportType.ToString(), (string)measurement.Tags["signalr_http_transport.type"]);
+        Assert.Equal(status.ToString(), (string)measurement.Tags["signalr.connection.status"]);
+        Assert.Equal(transportType.ToString(), (string)measurement.Tags["signalr.transport"]);
     }
 
     [Fact]
