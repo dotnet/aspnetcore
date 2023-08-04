@@ -105,11 +105,11 @@ public class HostingMetricsTests
             }
             if (unhandledRequest ?? false)
             {
-                Assert.True((bool)measurement.Tags["aspnet.request.is_unhandled"]);
+                Assert.True((bool)measurement.Tags["aspnetcore.request.is_unhandled"]);
             }
             else
             {
-                Assert.False(measurement.Tags.ContainsKey("aspnet.request.is_unhandled"));
+                Assert.False(measurement.Tags.ContainsKey("aspnetcore.request.is_unhandled"));
             }
         }
     }
