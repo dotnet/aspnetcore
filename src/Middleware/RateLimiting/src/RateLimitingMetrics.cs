@@ -23,25 +23,25 @@ internal sealed class RateLimitingMetrics : IDisposable
         _meter = meterFactory.Create(MeterName);
 
         _activeRequestLeasesCounter = _meter.CreateUpDownCounter<long>(
-            "aspnet.rate_limiting.active_request_leases",
+            "aspnetcore.rate_limiting.active_request_leases",
             description: "Number of HTTP requests that are currently active on the server that hold a rate limiting lease.");
 
         _requestLeaseDurationCounter = _meter.CreateHistogram<double>(
-            "aspnet.rate_limiting.request_lease.duration",
+            "aspnetcore.rate_limiting.request_lease.duration",
             unit: "s",
             description: "The duration of rate limiting leases held by HTTP requests on the server.");
 
         _queuedRequestsCounter = _meter.CreateUpDownCounter<long>(
-            "aspnet.rate_limiting.queued_requests",
+            "aspnetcore.rate_limiting.queued_requests",
             description: "Number of HTTP requests that are currently queued, waiting to acquire a rate limiting lease.");
 
         _queuedRequestDurationCounter = _meter.CreateHistogram<double>(
-            "aspnet.rate_limiting.request.time_in_queue",
+            "aspnetcore.rate_limiting.request.time_in_queue",
             unit: "s",
             description: "The duration of HTTP requests in a queue, waiting to acquire a rate limiting lease.");
 
         _requestsCounter = _meter.CreateCounter<long>(
-            "aspnet.rate_limiting.requests",
+            "aspnetcore.rate_limiting.requests",
             description: "Number of requests that tried to acquire a rate limiting lease. Requests could be rejected by global or endpoint rate limiting policies. Or the request could be canceled while waiting for the lease.");
     }
 
@@ -58,7 +58,7 @@ internal sealed class RateLimitingMetrics : IDisposable
     {
         var tags = new TagList();
         InitializeRateLimitingTags(ref tags, metricsContext);
-        tags.Add("aspnet.rate_limiting.result", GetResult(reason));
+        tags.Add("aspnetcore.rate_limiting.result", GetResult(reason));
         _requestsCounter.Add(1, tags);
     }
 
@@ -106,7 +106,7 @@ internal sealed class RateLimitingMetrics : IDisposable
         if (_requestsCounter.Enabled)
         {
             // This modifies the shared tags list so must be the last usage in the method.
-            tags.Add("aspnet.rate_limiting.result", "acquired");
+            tags.Add("aspnetcore.rate_limiting.result", "acquired");
             _requestsCounter.Add(1, tags);
         }
     }
@@ -148,7 +148,7 @@ internal sealed class RateLimitingMetrics : IDisposable
 
         if (_queuedRequestDurationCounter.Enabled)
         {
-            tags.Add("aspnet.rate_limiting.result", reason != null ? GetResult(reason.Value) : "acquired");
+            tags.Add("aspnetcore.rate_limiting.result", reason != null ? GetResult(reason.Value) : "acquired");
             var duration = Stopwatch.GetElapsedTime(startTimestamp, currentTimestamp);
             _queuedRequestDurationCounter.Record(duration.TotalSeconds, tags);
         }
@@ -163,7 +163,7 @@ internal sealed class RateLimitingMetrics : IDisposable
     {
         if (metricsContext.PolicyName is not null)
         {
-            tags.Add("aspnet.rate_limiting.policy", metricsContext.PolicyName);
+            tags.Add("aspnetcore.rate_limiting.policy", metricsContext.PolicyName);
         }
     }
 

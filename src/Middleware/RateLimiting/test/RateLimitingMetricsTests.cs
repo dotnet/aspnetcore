@@ -35,11 +35,11 @@ public class RateLimitingMetricsTests
 
         var context = new DefaultHttpContext();
 
-        using var leaseRequestDurationCollector = new MetricCollector<double>(meterFactory, RateLimitingMetrics.MeterName, "aspnet.rate_limiting.request_lease.duration");
-        using var currentLeaseRequestsCollector = new MetricCollector<long>(meterFactory, RateLimitingMetrics.MeterName, "aspnet.rate_limiting.active_request_leases");
-        using var currentRequestsQueuedCollector = new MetricCollector<long>(meterFactory, RateLimitingMetrics.MeterName, "aspnet.rate_limiting.queued_requests");
-        using var queuedRequestDurationCollector = new MetricCollector<double>(meterFactory, RateLimitingMetrics.MeterName, "aspnet.rate_limiting.request.time_in_queue");
-        using var rateLimitingRequestsCollector = new MetricCollector<long>(meterFactory, RateLimitingMetrics.MeterName, "aspnet.rate_limiting.requests");
+        using var leaseRequestDurationCollector = new MetricCollector<double>(meterFactory, RateLimitingMetrics.MeterName, "aspnetcore.rate_limiting.request_lease.duration");
+        using var currentLeaseRequestsCollector = new MetricCollector<long>(meterFactory, RateLimitingMetrics.MeterName, "aspnetcore.rate_limiting.active_request_leases");
+        using var currentRequestsQueuedCollector = new MetricCollector<long>(meterFactory, RateLimitingMetrics.MeterName, "aspnetcore.rate_limiting.queued_requests");
+        using var queuedRequestDurationCollector = new MetricCollector<double>(meterFactory, RateLimitingMetrics.MeterName, "aspnetcore.rate_limiting.request.time_in_queue");
+        using var rateLimitingRequestsCollector = new MetricCollector<long>(meterFactory, RateLimitingMetrics.MeterName, "aspnetcore.rate_limiting.requests");
 
         // Act
         await middleware.Invoke(context).DefaultTimeout();
@@ -55,7 +55,7 @@ public class RateLimitingMetricsTests
             m =>
             {
                 Assert.Equal(1, m.Value);
-                Assert.Equal("global_limiter", (string)m.Tags["aspnet.rate_limiting.result"]);
+                Assert.Equal("global_limiter", (string)m.Tags["aspnetcore.rate_limiting.result"]);
             });
     }
 
@@ -82,11 +82,11 @@ public class RateLimitingMetricsTests
         var context = new DefaultHttpContext();
         context.Request.Method = "GET";
 
-        using var leaseRequestDurationCollector = new MetricCollector<double>(meterFactory, RateLimitingMetrics.MeterName, "aspnet.rate_limiting.request_lease.duration");
-        using var currentLeaseRequestsCollector = new MetricCollector<long>(meterFactory, RateLimitingMetrics.MeterName, "aspnet.rate_limiting.active_request_leases");
-        using var currentRequestsQueuedCollector = new MetricCollector<long>(meterFactory, RateLimitingMetrics.MeterName, "aspnet.rate_limiting.queued_requests");
-        using var queuedRequestDurationCollector = new MetricCollector<double>(meterFactory, RateLimitingMetrics.MeterName, "aspnet.rate_limiting.request.time_in_queue");
-        using var rateLimitingRequestsCollector = new MetricCollector<long>(meterFactory, RateLimitingMetrics.MeterName, "aspnet.rate_limiting.requests");
+        using var leaseRequestDurationCollector = new MetricCollector<double>(meterFactory, RateLimitingMetrics.MeterName, "aspnetcore.rate_limiting.request_lease.duration");
+        using var currentLeaseRequestsCollector = new MetricCollector<long>(meterFactory, RateLimitingMetrics.MeterName, "aspnetcore.rate_limiting.active_request_leases");
+        using var currentRequestsQueuedCollector = new MetricCollector<long>(meterFactory, RateLimitingMetrics.MeterName, "aspnetcore.rate_limiting.queued_requests");
+        using var queuedRequestDurationCollector = new MetricCollector<double>(meterFactory, RateLimitingMetrics.MeterName, "aspnetcore.rate_limiting.request.time_in_queue");
+        using var rateLimitingRequestsCollector = new MetricCollector<long>(meterFactory, RateLimitingMetrics.MeterName, "aspnetcore.rate_limiting.requests");
 
         // Act
         var middlewareTask = middleware.Invoke(context);
@@ -114,7 +114,7 @@ public class RateLimitingMetricsTests
         Assert.Collection(rateLimitingRequestsCollector.GetMeasurementSnapshot(),
             m =>
             {
-                Assert.Equal("acquired", (string)m.Tags["aspnet.rate_limiting.result"]);
+                Assert.Equal("acquired", (string)m.Tags["aspnetcore.rate_limiting.result"]);
             });
     }
 
@@ -146,11 +146,11 @@ public class RateLimitingMetricsTests
 
         await syncPoint.WaitForSyncPoint().DefaultTimeout();
 
-        using var leaseRequestDurationCollector = new MetricCollector<double>(meterFactory, RateLimitingMetrics.MeterName, "aspnet.rate_limiting.request_lease.duration");
-        using var currentLeaseRequestsCollector = new MetricCollector<long>(meterFactory, RateLimitingMetrics.MeterName, "aspnet.rate_limiting.active_request_leases");
-        using var currentRequestsQueuedCollector = new MetricCollector<long>(meterFactory, RateLimitingMetrics.MeterName, "aspnet.rate_limiting.queued_requests");
-        using var queuedRequestDurationCollector = new MetricCollector<double>(meterFactory, RateLimitingMetrics.MeterName, "aspnet.rate_limiting.request.time_in_queue");
-        using var rateLimitingRequestsCollector = new MetricCollector<long>(meterFactory, RateLimitingMetrics.MeterName, "aspnet.rate_limiting.requests");
+        using var leaseRequestDurationCollector = new MetricCollector<double>(meterFactory, RateLimitingMetrics.MeterName, "aspnetcore.rate_limiting.request_lease.duration");
+        using var currentLeaseRequestsCollector = new MetricCollector<long>(meterFactory, RateLimitingMetrics.MeterName, "aspnetcore.rate_limiting.active_request_leases");
+        using var currentRequestsQueuedCollector = new MetricCollector<long>(meterFactory, RateLimitingMetrics.MeterName, "aspnetcore.rate_limiting.queued_requests");
+        using var queuedRequestDurationCollector = new MetricCollector<double>(meterFactory, RateLimitingMetrics.MeterName, "aspnetcore.rate_limiting.request.time_in_queue");
+        using var rateLimitingRequestsCollector = new MetricCollector<long>(meterFactory, RateLimitingMetrics.MeterName, "aspnetcore.rate_limiting.requests");
 
         syncPoint.Continue();
 
@@ -197,11 +197,11 @@ public class RateLimitingMetricsTests
         routeEndpointBuilder.Metadata.Add(new EnableRateLimitingAttribute("concurrencyPolicy"));
         var endpoint = routeEndpointBuilder.Build();
 
-        using var leaseRequestDurationCollector = new MetricCollector<double>(meterFactory, RateLimitingMetrics.MeterName, "aspnet.rate_limiting.request_lease.duration");
-        using var currentLeaseRequestsCollector = new MetricCollector<long>(meterFactory, RateLimitingMetrics.MeterName, "aspnet.rate_limiting.active_request_leases");
-        using var currentRequestsQueuedCollector = new MetricCollector<long>(meterFactory, RateLimitingMetrics.MeterName, "aspnet.rate_limiting.queued_requests");
-        using var queuedRequestDurationCollector = new MetricCollector<double>(meterFactory, RateLimitingMetrics.MeterName, "aspnet.rate_limiting.request.time_in_queue");
-        using var rateLimitingRequestsCollector = new MetricCollector<long>(meterFactory, RateLimitingMetrics.MeterName, "aspnet.rate_limiting.requests");
+        using var leaseRequestDurationCollector = new MetricCollector<double>(meterFactory, RateLimitingMetrics.MeterName, "aspnetcore.rate_limiting.request_lease.duration");
+        using var currentLeaseRequestsCollector = new MetricCollector<long>(meterFactory, RateLimitingMetrics.MeterName, "aspnetcore.rate_limiting.active_request_leases");
+        using var currentRequestsQueuedCollector = new MetricCollector<long>(meterFactory, RateLimitingMetrics.MeterName, "aspnetcore.rate_limiting.queued_requests");
+        using var queuedRequestDurationCollector = new MetricCollector<double>(meterFactory, RateLimitingMetrics.MeterName, "aspnetcore.rate_limiting.request.time_in_queue");
+        using var rateLimitingRequestsCollector = new MetricCollector<long>(meterFactory, RateLimitingMetrics.MeterName, "aspnetcore.rate_limiting.requests");
 
         // Act
         var context1 = new DefaultHttpContext();
@@ -235,7 +235,7 @@ public class RateLimitingMetricsTests
             m =>
             {
                 AssertDuration(m, "concurrencyPolicy");
-                Assert.Equal("acquired", (string)m.Tags["aspnet.rate_limiting.result"]);
+                Assert.Equal("acquired", (string)m.Tags["aspnetcore.rate_limiting.result"]);
             });
     }
 
@@ -288,11 +288,11 @@ public class RateLimitingMetricsTests
 
         // Start listening while the second request is queued.
 
-        using var leaseRequestDurationCollector = new MetricCollector<double>(meterFactory, RateLimitingMetrics.MeterName, "aspnet.rate_limiting.request_lease.duration");
-        using var currentLeaseRequestsCollector = new MetricCollector<long>(meterFactory, RateLimitingMetrics.MeterName, "aspnet.rate_limiting.active_request_leases");
-        using var currentRequestsQueuedCollector = new MetricCollector<long>(meterFactory, RateLimitingMetrics.MeterName, "aspnet.rate_limiting.queued_requests");
-        using var queuedRequestDurationCollector = new MetricCollector<double>(meterFactory, RateLimitingMetrics.MeterName, "aspnet.rate_limiting.request.time_in_queue");
-        using var rateLimitingRequestsCollector = new MetricCollector<long>(meterFactory, RateLimitingMetrics.MeterName, "aspnet.rate_limiting.requests");
+        using var leaseRequestDurationCollector = new MetricCollector<double>(meterFactory, RateLimitingMetrics.MeterName, "aspnetcore.rate_limiting.request_lease.duration");
+        using var currentLeaseRequestsCollector = new MetricCollector<long>(meterFactory, RateLimitingMetrics.MeterName, "aspnetcore.rate_limiting.active_request_leases");
+        using var currentRequestsQueuedCollector = new MetricCollector<long>(meterFactory, RateLimitingMetrics.MeterName, "aspnetcore.rate_limiting.queued_requests");
+        using var queuedRequestDurationCollector = new MetricCollector<double>(meterFactory, RateLimitingMetrics.MeterName, "aspnetcore.rate_limiting.request.time_in_queue");
+        using var rateLimitingRequestsCollector = new MetricCollector<long>(meterFactory, RateLimitingMetrics.MeterName, "aspnetcore.rate_limiting.requests");
 
         Assert.Empty(currentRequestsQueuedCollector.GetMeasurementSnapshot());
         Assert.Empty(queuedRequestDurationCollector.GetMeasurementSnapshot());
@@ -311,13 +311,13 @@ public class RateLimitingMetricsTests
     private static void AssertCounter(CollectedMeasurement<long> measurement, long value, string policy)
     {
         Assert.Equal(value, measurement.Value);
-        AssertTag(measurement.Tags, "aspnet.rate_limiting.policy", policy);
+        AssertTag(measurement.Tags, "aspnetcore.rate_limiting.policy", policy);
     }
 
     private static void AssertDuration(CollectedMeasurement<double> measurement, string policy)
     {
         Assert.True(measurement.Value > 0);
-        AssertTag(measurement.Tags, "aspnet.rate_limiting.policy", policy);
+        AssertTag(measurement.Tags, "aspnetcore.rate_limiting.policy", policy);
     }
 
     private static void AssertTag<T>(IReadOnlyDictionary<string, object> tags, string tagName, T expected)
