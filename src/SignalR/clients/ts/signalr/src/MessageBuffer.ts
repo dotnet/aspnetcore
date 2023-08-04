@@ -23,17 +23,22 @@ export class MessageBuffer {
 
     private _ackTimerHandle?: any;
 
-    // private _promise: Promise<void> = Promise.resolve();
+    // private _backPressurePromise: Promise<void> = Promise.resolve();
+    private _resendPromise: Promise<void> = Promise.resolve();
+    private _resendResolve!: (value: void) => void;
+    private _resendReject!: (value?: any) => void;
 
     constructor(protocol: IHubProtocol, connection: IConnection) {
         this._protocol = protocol;
         this._connection = connection;
     }
 
-    public _send(message: HubMessage): Promise<void> {
+    public async _send(message: HubMessage): Promise<void> {
         if (this._bufferedByteCount > this._bufferLimit) {
-            // await this._promise;
+            // await this._backPressurePromise;
         }
+
+        await this._resendPromise;
 
         const serializedMessage = this._protocol.writeMessage(message);
 
@@ -117,6 +122,39 @@ export class MessageBuffer {
         this._currentReceivingSequenceId = message.sequenceId;
     }
 
+    public _disconnected(): void {
+        this._resendPromise = new Promise((resolve, reject) => {
+            this._resendResolve = resolve;
+            this._resendReject = reject;
+        });
+    }
+
+    public async _resend(doSend: boolean): Promise<void> {
+        if (!doSend) {
+            // We need to unblock the promise in the case where we aren't able to reconnect to the server
+            this._resendReject(new Error(""));
+            return;
+        }
+
+        try {
+            let sequenceId = this._totalMessageCount + 1;
+            if (this._messages.length !== 0) {
+                sequenceId = this._messages[0].id;
+            }
+            await this._connection.send(this._protocol.writeMessage({ type: MessageType.Sequence, sequenceId: sequenceId }));
+
+            for (let index = 0; index < this._messages.length; index++) {
+                const element = this._messages[index];
+
+                await this._connection.send(element.message);
+            }
+        } catch (e) {
+            this._resendReject(e);
+        } finally {
+            this._resendResolve();
+        }
+    }
+
     private _isInvocationMessage(message: HubMessage) {
         // There is no way to check if something implements an interface.
         // We just check if the type is between 1 and 5 as those are currently the only messages worth resending right now.
@@ -140,11 +178,11 @@ export class MessageBuffer {
 }
 
 class Key {
-    constructor(message: any, id: number) {
+    constructor(message: string | ArrayBuffer, id: number) {
         this.message = message;
         this.id = id;
     }
 
-    message: any;
+    message: string | ArrayBuffer;
     id: number;
 }

@@ -253,6 +253,12 @@ export class HubConnection {
             const useAck = this.connection.features.reconnect || false;
             if (useAck) {
                 this._messageBuffer = new MessageBuffer(this._protocol, this.connection);
+                this.connection.features.disconnected = this._messageBuffer._disconnected;
+                this.connection.features.resend = (doSend: boolean) => {
+                    if (this._messageBuffer) {
+                        this._messageBuffer._resend(doSend);
+                    }
+                }
             }
 
             if (!this.connection.features.inherentKeepAlive) {

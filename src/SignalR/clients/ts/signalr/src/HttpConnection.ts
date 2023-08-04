@@ -430,7 +430,27 @@ export class HttpConnection implements IConnection {
 
     private _startTransport(url: string, transferFormat: TransferFormat): Promise<void> {
         this.transport!.onreceive = this.onreceive;
-        this.transport!.onclose = (e) => this._stopConnection(e);
+        if (this.features.reconnect) {
+            this.transport!.onclose = async (e) => {
+                let callStop = false;
+                if (this.features.resend) {
+                    try {
+                        this.features.disconnected();
+                        await this.transport!.connect(url, transferFormat);
+                        await this.features.resend(true);
+                    } catch {
+                        callStop = true;
+                    }
+                }
+
+                if (callStop) {
+                    this._stopConnection(e);
+                    this.features.resend(false);
+                }
+            };
+        } else {
+            this.transport!.onclose = (e) => this._stopConnection(e);
+        }
         return this.transport!.connect(url, transferFormat);
     }
 
