@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
@@ -357,5 +358,40 @@ app.MapGet("/optional-struct-with-filter", (BindableStruct? param) => $"Hello {p
 
             await VerifyResponseBodyAsync(httpContext, $"Hello {endpoint.DisplayName}!");
         }
+    }
+
+    [Fact]
+    public async Task MapAction_NoJsonTypeInfoResolver_Works()
+    {
+        var source = """
+app.MapGet("/", () => "Hello world!");
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var serviceProvider = CreateServiceProvider(serviceCollection =>
+        {
+            serviceCollection.ConfigureHttpJsonOptions(o => o.SerializerOptions.TypeInfoResolver = null);
+        });
+        var endpoint = GetEndpointFromCompilation(compilation, serviceProvider: serviceProvider);
+        var httpContext = CreateHttpContext(serviceProvider);
+
+        await endpoint.RequestDelegate(httpContext);
+
+        await VerifyResponseBodyAsync(httpContext, "Hello world!");
+    }
+
+    [Fact]
+    public async Task MapAction_NoJsonTypeInfoResolver_SerializableType_ThrowsExceptionAtStartup()
+    {
+        var source = """
+app.MapGet("/", (Todo todo) => "Hello world!");
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var serviceProvider = CreateServiceProvider(serviceCollection =>
+        {
+            serviceCollection.ConfigureHttpJsonOptions(o => o.SerializerOptions.TypeInfoResolver = null);
+        });
+        var exception = Assert.Throws<NotSupportedException>(() => GetEndpointFromCompilation(compilation, serviceProvider: serviceProvider));
+        Assert.Contains("Microsoft.AspNetCore.Http.Generators.Tests.Todo", exception.Message);
+        Assert.Contains("JsonSerializableAttribute", exception.Message);
     }
 }

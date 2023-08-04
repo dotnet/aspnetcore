@@ -55,6 +55,7 @@ namespace Microsoft.AspNetCore.Http.Generated
     %GENERATEDCODEATTRIBUTE%
     file static class GeneratedRouteBuilderExtensionsCore
     {
+        private static readonly JsonOptions FallbackJsonOptions = new();
         private static readonly string[] GetVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Get };
         private static readonly string[] PatchVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Patch };
         private static readonly string[] PostVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Post };
@@ -83,8 +84,11 @@ namespace Microsoft.AspNetCore.Http.Generated
                 EndpointFilterDelegate? filteredInvocation = null;
                 var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
                 var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
-                var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? new JsonOptions();
-                var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonOptions.SerializerOptions.GetTypeInfo(typeof(object));
+                var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? FallbackJsonOptions;
+                var jsonSerializerOptions = jsonOptions.SerializerOptions;
+                jsonSerializerOptions.TypeInfoResolver ??= JsonTypeInfoResolver.Combine();
+                jsonSerializerOptions.MakeReadOnly();
+                var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonSerializerOptions.GetTypeInfo(typeof(object));
 
                 if (options.EndpointBuilder.FilterFactories.Count > 0)
                 {
@@ -215,8 +219,11 @@ namespace Microsoft.AspNetCore.Http.Generated
                 EndpointFilterDelegate? filteredInvocation = null;
                 var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
                 var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
-                var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? new JsonOptions();
-                var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonOptions.SerializerOptions.GetTypeInfo(typeof(object));
+                var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? FallbackJsonOptions;
+                var jsonSerializerOptions = jsonOptions.SerializerOptions;
+                jsonSerializerOptions.TypeInfoResolver ??= JsonTypeInfoResolver.Combine();
+                jsonSerializerOptions.MakeReadOnly();
+                var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonSerializerOptions.GetTypeInfo(typeof(object));
                 var Value_RouteOrQueryResolver = GeneratedRouteBuilderExtensionsCore.ResolveFromRouteOrQuery("Value", options.RouteParameterNames);
 
                 if (options.EndpointBuilder.FilterFactories.Count > 0)
@@ -340,8 +347,11 @@ namespace Microsoft.AspNetCore.Http.Generated
                 EndpointFilterDelegate? filteredInvocation = null;
                 var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
                 var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
-                var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? new JsonOptions();
-                var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonOptions.SerializerOptions.GetTypeInfo(typeof(object));
+                var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? FallbackJsonOptions;
+                var jsonSerializerOptions = jsonOptions.SerializerOptions;
+                jsonSerializerOptions.TypeInfoResolver ??= JsonTypeInfoResolver.Combine();
+                jsonSerializerOptions.MakeReadOnly();
+                var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonSerializerOptions.GetTypeInfo(typeof(object));
 
                 if (options.EndpointBuilder.FilterFactories.Count > 0)
                 {
@@ -438,8 +448,11 @@ namespace Microsoft.AspNetCore.Http.Generated
                 EndpointFilterDelegate? filteredInvocation = null;
                 var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
                 var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
-                var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? new JsonOptions();
-                var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonOptions.SerializerOptions.GetTypeInfo(typeof(object));
+                var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? FallbackJsonOptions;
+                var jsonSerializerOptions = jsonOptions.SerializerOptions;
+                jsonSerializerOptions.TypeInfoResolver ??= JsonTypeInfoResolver.Combine();
+                jsonSerializerOptions.MakeReadOnly();
+                var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonSerializerOptions.GetTypeInfo(typeof(object));
                 var serviceProviderIsService = serviceProvider?.GetService<IServiceProviderIsService>();
                 var Todo_JsonBodyOrServiceResolver = ResolveJsonBodyOrService<global::Microsoft.AspNetCore.Http.Generators.Tests.TodoStruct>(logOrThrowExceptionHelper, "TodoStruct", "Todo", jsonOptions, serviceProviderIsService);
 
@@ -556,8 +569,11 @@ namespace Microsoft.AspNetCore.Http.Generated
                 EndpointFilterDelegate? filteredInvocation = null;
                 var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
                 var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
-                var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? new JsonOptions();
-                var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonOptions.SerializerOptions.GetTypeInfo(typeof(object));
+                var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? FallbackJsonOptions;
+                var jsonSerializerOptions = jsonOptions.SerializerOptions;
+                jsonSerializerOptions.TypeInfoResolver ??= JsonTypeInfoResolver.Combine();
+                jsonSerializerOptions.MakeReadOnly();
+                var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonSerializerOptions.GetTypeInfo(typeof(object));
                 var serviceProviderIsService = serviceProvider?.GetService<IServiceProviderIsService>();
                 var Value_JsonBodyOrServiceResolver = ResolveJsonBodyOrService<global::Microsoft.AspNetCore.Http.Generators.Tests.AddsCustomParameterMetadataAsProperty>(logOrThrowExceptionHelper, "AddsCustomParameterMetadataAsProperty", "Value", jsonOptions, serviceProviderIsService);
 

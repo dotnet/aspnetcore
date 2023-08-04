@@ -8,8 +8,11 @@ internal static class EndpointJsonPreparationEmitter
 {
     internal static void EmitJsonPreparation(this Endpoint endpoint, CodeWriter codeWriter)
     {
-        codeWriter.WriteLine("var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? new JsonOptions();");
-        codeWriter.WriteLine($"var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonOptions.SerializerOptions.GetTypeInfo(typeof(object));");
+        codeWriter.WriteLine("var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? FallbackJsonOptions;");
+        codeWriter.WriteLine("var jsonSerializerOptions = jsonOptions.SerializerOptions;");
+        codeWriter.WriteLine("jsonSerializerOptions.TypeInfoResolver ??= JsonTypeInfoResolver.Combine();");
+        codeWriter.WriteLine("jsonSerializerOptions.MakeReadOnly();");
+        codeWriter.WriteLine($"var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonSerializerOptions.GetTypeInfo(typeof(object));");
 
         if (endpoint.Response?.IsSerializableJsonResponse(out var responseType) == true)
         {

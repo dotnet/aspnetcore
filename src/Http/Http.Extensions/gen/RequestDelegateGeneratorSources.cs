@@ -506,6 +506,7 @@ namespace Microsoft.AspNetCore.Http.Generated
     {{GeneratedCodeAttribute}}
     file static class GeneratedRouteBuilderExtensionsCore
     {
+        private static readonly JsonOptions FallbackJsonOptions = new();
         {{GetVerbs(verbs)}}
         {{endpoints}}
 
