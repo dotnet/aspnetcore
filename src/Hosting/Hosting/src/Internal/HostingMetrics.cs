@@ -60,7 +60,7 @@ internal sealed class HostingMetrics : IDisposable
             }
             if (unhandledRequest)
             {
-                tags.Add("aspnet.request.is_unhandled", true);
+                tags.Add("aspnetcore.request.is_unhandled", true);
             }
 
             // Add information gathered during request.

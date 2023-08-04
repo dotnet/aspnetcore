@@ -17,7 +17,7 @@ internal sealed class RoutingMetrics
         _meter = meterFactory.Create(MeterName);
 
         _matchAttemptsCounter = _meter.CreateCounter<long>(
-           "aspnet.routing.match_attempts",
+           "aspnetcore.routing.match_attempts",
             description: "Number of requests that were attempted to be matched to an endpoint.");
     }
 
@@ -27,13 +27,13 @@ internal sealed class RoutingMetrics
     {
         _matchAttemptsCounter.Add(1,
             new KeyValuePair<string, object?>("http.route", route),
-            new KeyValuePair<string, object?>("aspnet.routing.match_status", "success"),
-            new KeyValuePair<string, object?>("aspnet.routing.is_fallback", isFallback));
+            new KeyValuePair<string, object?>("aspnetcore.routing.match_status", "success"),
+            new KeyValuePair<string, object?>("aspnetcore.routing.is_fallback", isFallback));
     }
 
     public void MatchFailure()
     {
         _matchAttemptsCounter.Add(1,
-            new KeyValuePair<string, object?>("aspnet.routing.match_status", "failure"));
+            new KeyValuePair<string, object?>("aspnetcore.routing.match_status", "failure"));
     }
 }

@@ -211,7 +211,7 @@ public class ExceptionHandlerMiddlewareTest
         var middleware = CreateMiddleware(_ => Task.CompletedTask, optionsAccessor, exceptionHandlers, meterFactory);
         var meter = meterFactory.Meters.Single();
 
-        using var diagnosticsRequestExceptionCollector = new MetricCollector<long>(meterFactory, DiagnosticsMetrics.MeterName, "aspnet.diagnostics.exceptions");
+        using var diagnosticsRequestExceptionCollector = new MetricCollector<long>(meterFactory, DiagnosticsMetrics.MeterName, "aspnetcore.diagnostics.exceptions");
 
         // Act
         await middleware.Invoke(httpContext);
@@ -234,7 +234,7 @@ public class ExceptionHandlerMiddlewareTest
         var middleware = CreateMiddleware(_ => throw new InvalidOperationException(), optionsAccessor, exceptionHandlers, meterFactory);
         var meter = meterFactory.Meters.Single();
 
-        using var diagnosticsRequestExceptionCollector = new MetricCollector<long>(meterFactory, DiagnosticsMetrics.MeterName, "aspnet.diagnostics.exceptions");
+        using var diagnosticsRequestExceptionCollector = new MetricCollector<long>(meterFactory, DiagnosticsMetrics.MeterName, "aspnetcore.diagnostics.exceptions");
 
         // Act
         await middleware.Invoke(httpContext);
@@ -256,7 +256,7 @@ public class ExceptionHandlerMiddlewareTest
         var middleware = CreateMiddleware(_ => throw new InvalidOperationException(), optionsAccessor, exceptionHandlers, meterFactory);
         var meter = meterFactory.Meters.Single();
 
-        using var diagnosticsRequestExceptionCollector = new MetricCollector<long>(meterFactory, DiagnosticsMetrics.MeterName, "aspnet.diagnostics.exceptions");
+        using var diagnosticsRequestExceptionCollector = new MetricCollector<long>(meterFactory, DiagnosticsMetrics.MeterName, "aspnetcore.diagnostics.exceptions");
 
         // Act
         await Assert.ThrowsAsync<InvalidOperationException>(() => middleware.Invoke(httpContext));
@@ -281,7 +281,7 @@ public class ExceptionHandlerMiddlewareTest
         var middleware = CreateMiddleware(_ => throw new InvalidOperationException(), optionsAccessor, meterFactory: meterFactory);
         var meter = meterFactory.Meters.Single();
 
-        using var diagnosticsRequestExceptionCollector = new MetricCollector<long>(meterFactory, DiagnosticsMetrics.MeterName, "aspnet.diagnostics.exceptions");
+        using var diagnosticsRequestExceptionCollector = new MetricCollector<long>(meterFactory, DiagnosticsMetrics.MeterName, "aspnetcore.diagnostics.exceptions");
 
         // Act
         await middleware.Invoke(httpContext);
@@ -305,7 +305,7 @@ public class ExceptionHandlerMiddlewareTest
         var middleware = CreateMiddleware(_ => throw new InvalidOperationException(), optionsAccessor, meterFactory: meterFactory);
         var meter = meterFactory.Meters.Single();
 
-        using var diagnosticsRequestExceptionCollector = new MetricCollector<long>(meterFactory, DiagnosticsMetrics.MeterName, "aspnet.diagnostics.exceptions");
+        using var diagnosticsRequestExceptionCollector = new MetricCollector<long>(meterFactory, DiagnosticsMetrics.MeterName, "aspnetcore.diagnostics.exceptions");
 
         // Act
         await Assert.ThrowsAsync<InvalidOperationException>(() => middleware.Invoke(httpContext));
@@ -319,14 +319,14 @@ public class ExceptionHandlerMiddlewareTest
     {
         Assert.Equal(1, measurement.Value);
         Assert.Equal(exceptionName, (string)measurement.Tags["exception.type"]);
-        Assert.Equal(result, measurement.Tags["aspnet.diagnostics.exception.result"].ToString());
+        Assert.Equal(result, measurement.Tags["aspnetcore.diagnostics.exception.result"].ToString());
         if (handler == null)
         {
-            Assert.False(measurement.Tags.ContainsKey("aspnet.diagnostics.handler.type"));
+            Assert.False(measurement.Tags.ContainsKey("aspnetcore.diagnostics.handler.type"));
         }
         else
         {
-            Assert.Equal(handler, (string)measurement.Tags["aspnet.diagnostics.handler.type"]);
+            Assert.Equal(handler, (string)measurement.Tags["aspnetcore.diagnostics.handler.type"]);
         }
     }
 

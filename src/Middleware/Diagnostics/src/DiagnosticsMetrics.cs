@@ -22,7 +22,7 @@ internal sealed class DiagnosticsMetrics
         _meter = meterFactory.Create(MeterName);
 
         _handlerExceptionCounter = _meter.CreateCounter<long>(
-           "aspnet.diagnostics.exceptions",
+           "aspnetcore.diagnostics.exceptions",
             description: "Number of exceptions caught by exception handling middleware.");
     }
 
@@ -39,10 +39,10 @@ internal sealed class DiagnosticsMetrics
     {
         var tags = new TagList();
         tags.Add("exception.type", exceptionName);
-        tags.Add("aspnet.diagnostics.exception.result", GetExceptionResult(result));
+        tags.Add("aspnetcore.diagnostics.exception.result", GetExceptionResult(result));
         if (handler != null)
         {
-            tags.Add("aspnet.diagnostics.handler.type", handler);
+            tags.Add("aspnetcore.diagnostics.handler.type", handler);
         }
         _handlerExceptionCounter.Add(1, tags);
     }
