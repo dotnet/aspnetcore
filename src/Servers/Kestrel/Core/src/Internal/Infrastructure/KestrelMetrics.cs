@@ -283,7 +283,10 @@ internal sealed class KestrelMetrics
 
         if (TryGetHandshakeProtocol(protocol, out var protocolName, out var protocolVersion))
         {
-            tags.Add("tls.protocol.name", protocolName);
+            if (protocolName != "tls")
+            {
+                tags.Add("tls.protocol.name", protocolName);
+            }
             tags.Add("tls.protocol.version", protocolVersion);
         }
         if (exception != null)
@@ -300,8 +303,18 @@ internal sealed class KestrelMetrics
         var localEndpoint = metricsContext.ConnectionContext.LocalEndPoint;
         if (localEndpoint is IPEndPoint localIPEndPoint)
         {
-            tags.Add("server.socket.address", localIPEndPoint.Address.ToString());
-            tags.Add("server.socket.port", localIPEndPoint.Port);
+            tags.Add("server.address", localIPEndPoint.Address.ToString());
+            tags.Add("server.port", localIPEndPoint.Port);
+
+            switch (localIPEndPoint.Address.AddressFamily)
+            {
+                case AddressFamily.InterNetwork:
+                    tags.Add("network.type", "ipv4");
+                    break;
+                case AddressFamily.InterNetworkV6:
+                    tags.Add("network.type", "ipv6");
+                    break;
+            }
 
             // There isn't an easy way to detect whether QUIC is the underlying transport.
             // This code assumes that a multiplexed connection is QUIC.
@@ -311,17 +324,17 @@ internal sealed class KestrelMetrics
         }
         else if (localEndpoint is UnixDomainSocketEndPoint udsEndPoint)
         {
-            tags.Add("server.socket.address", udsEndPoint.ToString());
+            tags.Add("server.address", udsEndPoint.ToString());
             tags.Add("network.transport", "unix");
         }
         else if (localEndpoint is NamedPipeEndPoint namedPipeEndPoint)
         {
-            tags.Add("server.socket.address", namedPipeEndPoint.ToString());
+            tags.Add("server.address", namedPipeEndPoint.ToString());
             tags.Add("network.transport", "pipe");
         }
         else if (localEndpoint != null)
         {
-            tags.Add("server.socket.address", localEndpoint.ToString());
+            tags.Add("server.address", localEndpoint.ToString());
             tags.Add("network.transport", localEndpoint.AddressFamily.ToString());
         }
     }

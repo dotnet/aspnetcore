@@ -105,12 +105,12 @@ public class Http3RequestTests : LoggedTest
                 m =>
                 {
                     Assert.True(m.Value > 0);
+                    Assert.Equal("ipv4", (string)m.Tags["network.type"]);
                     Assert.Equal("http", (string)m.Tags["network.protocol.name"]);
                     Assert.Equal("3", (string)m.Tags["network.protocol.version"]);
                     Assert.Equal("udp", (string)m.Tags["network.transport"]);
-                    Assert.Equal("127.0.0.1", (string)m.Tags["server.socket.address"]);
-                    Assert.Equal(host.GetPort(), (int)m.Tags["server.socket.port"]);
-                    Assert.Equal("tls", (string)m.Tags["tls.protocol.name"]);
+                    Assert.Equal("127.0.0.1", (string)m.Tags["server.address"]);
+                    Assert.Equal(host.GetPort(), (int)m.Tags["server.port"]);
                     Assert.Equal("1.3", (string)m.Tags["tls.protocol.version"]);
                 });
 
