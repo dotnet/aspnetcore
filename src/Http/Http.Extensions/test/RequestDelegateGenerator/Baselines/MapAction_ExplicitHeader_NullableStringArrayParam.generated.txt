@@ -84,10 +84,9 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
                 var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? FallbackJsonOptions;
                 var jsonSerializerOptions = jsonOptions.SerializerOptions;
-                jsonSerializerOptions.TypeInfoResolver ??= JsonTypeInfoResolver.Combine();
                 jsonSerializerOptions.MakeReadOnly();
                 var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonSerializerOptions.GetTypeInfo(typeof(object));
-                var responseJsonTypeInfo =  (JsonTypeInfo<global::System.Int32>)jsonOptions.SerializerOptions.GetTypeInfo(typeof(global::System.Int32));
+                var responseJsonTypeInfo =  (JsonTypeInfo<global::System.Int32>)jsonSerializerOptions.GetTypeInfo(typeof(global::System.Int32));
 
                 if (options.EndpointBuilder.FilterFactories.Count > 0)
                 {

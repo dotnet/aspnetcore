@@ -10,14 +10,13 @@ internal static class EndpointJsonPreparationEmitter
     {
         codeWriter.WriteLine("var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? FallbackJsonOptions;");
         codeWriter.WriteLine("var jsonSerializerOptions = jsonOptions.SerializerOptions;");
-        codeWriter.WriteLine("jsonSerializerOptions.TypeInfoResolver ??= JsonTypeInfoResolver.Combine();");
         codeWriter.WriteLine("jsonSerializerOptions.MakeReadOnly();");
         codeWriter.WriteLine($"var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonSerializerOptions.GetTypeInfo(typeof(object));");
 
         if (endpoint.Response?.IsSerializableJsonResponse(out var responseType) == true)
         {
             var typeName = responseType.ToDisplayString(EmitterConstants.DisplayFormatWithoutNullability);
-            codeWriter.WriteLine($"var responseJsonTypeInfo =  (JsonTypeInfo<{responseType.ToDisplayString(NullableFlowState.MaybeNull, EmitterConstants.DisplayFormat)}>)jsonOptions.SerializerOptions.GetTypeInfo(typeof({typeName}));");
+            codeWriter.WriteLine($"var responseJsonTypeInfo =  (JsonTypeInfo<{responseType.ToDisplayString(NullableFlowState.MaybeNull, EmitterConstants.DisplayFormat)}>)jsonSerializerOptions.GetTypeInfo(typeof({typeName}));");
         }
 
         foreach (var parameter in endpoint.Parameters)
@@ -39,7 +38,7 @@ internal static class EndpointJsonPreparationEmitter
                 return;
             }
             var typeName = parameter.Type.ToDisplayString(EmitterConstants.DisplayFormat);
-            codeWriter.WriteLine($"var {parameter.SymbolName}_JsonTypeInfo =  (JsonTypeInfo<{typeName}>)jsonOptions.SerializerOptions.GetTypeInfo(typeof({parameter.Type.ToDisplayString(EmitterConstants.DisplayFormatWithoutNullability)}));");
+            codeWriter.WriteLine($"var {parameter.SymbolName}_JsonTypeInfo =  (JsonTypeInfo<{typeName}>)jsonSerializerOptions.GetTypeInfo(typeof({parameter.Type.ToDisplayString(EmitterConstants.DisplayFormatWithoutNullability)}));");
         }
 
     }

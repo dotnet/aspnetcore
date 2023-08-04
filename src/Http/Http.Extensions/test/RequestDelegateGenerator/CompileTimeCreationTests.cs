@@ -361,7 +361,7 @@ app.MapGet("/optional-struct-with-filter", (BindableStruct? param) => $"Hello {p
     }
 
     [Fact]
-    public async Task MapAction_NoJsonTypeInfoResolver_Works()
+    public async Task MapAction_NoJsonTypeInfoResolver_ThrowsException()
     {
         var source = """
 app.MapGet("/", () => "Hello world!");
@@ -371,27 +371,7 @@ app.MapGet("/", () => "Hello world!");
         {
             serviceCollection.ConfigureHttpJsonOptions(o => o.SerializerOptions.TypeInfoResolver = null);
         });
-        var endpoint = GetEndpointFromCompilation(compilation, serviceProvider: serviceProvider);
-        var httpContext = CreateHttpContext(serviceProvider);
-
-        await endpoint.RequestDelegate(httpContext);
-
-        await VerifyResponseBodyAsync(httpContext, "Hello world!");
-    }
-
-    [Fact]
-    public async Task MapAction_NoJsonTypeInfoResolver_SerializableType_ThrowsExceptionAtStartup()
-    {
-        var source = """
-app.MapGet("/", (Todo todo) => "Hello world!");
-""";
-        var (_, compilation) = await RunGeneratorAsync(source);
-        var serviceProvider = CreateServiceProvider(serviceCollection =>
-        {
-            serviceCollection.ConfigureHttpJsonOptions(o => o.SerializerOptions.TypeInfoResolver = null);
-        });
-        var exception = Assert.Throws<NotSupportedException>(() => GetEndpointFromCompilation(compilation, serviceProvider: serviceProvider));
-        Assert.Contains("Microsoft.AspNetCore.Http.Generators.Tests.Todo", exception.Message);
-        Assert.Contains("JsonSerializableAttribute", exception.Message);
+        var exception = Assert.Throws<InvalidOperationException>(() => GetEndpointFromCompilation(compilation, serviceProvider: serviceProvider));
+        Assert.Equal("JsonSerializerOptions instance must specify a TypeInfoResolver setting before being marked as read-only.", exception.Message);
     }
 }

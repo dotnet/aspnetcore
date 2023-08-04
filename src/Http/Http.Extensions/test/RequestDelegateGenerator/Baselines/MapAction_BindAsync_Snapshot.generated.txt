@@ -84,7 +84,6 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
                 var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? FallbackJsonOptions;
                 var jsonSerializerOptions = jsonOptions.SerializerOptions;
-                jsonSerializerOptions.TypeInfoResolver ??= JsonTypeInfoResolver.Combine();
                 jsonSerializerOptions.MakeReadOnly();
                 var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonSerializerOptions.GetTypeInfo(typeof(object));
                 var parameters = del.Method.GetParameters();
@@ -194,7 +193,6 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
                 var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? FallbackJsonOptions;
                 var jsonSerializerOptions = jsonOptions.SerializerOptions;
-                jsonSerializerOptions.TypeInfoResolver ??= JsonTypeInfoResolver.Combine();
                 jsonSerializerOptions.MakeReadOnly();
                 var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonSerializerOptions.GetTypeInfo(typeof(object));
                 var parameters = del.Method.GetParameters();
@@ -290,7 +288,6 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
                 var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? FallbackJsonOptions;
                 var jsonSerializerOptions = jsonOptions.SerializerOptions;
-                jsonSerializerOptions.TypeInfoResolver ??= JsonTypeInfoResolver.Combine();
                 jsonSerializerOptions.MakeReadOnly();
                 var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonSerializerOptions.GetTypeInfo(typeof(object));
                 var parameters = del.Method.GetParameters();
@@ -388,7 +385,6 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
                 var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? FallbackJsonOptions;
                 var jsonSerializerOptions = jsonOptions.SerializerOptions;
-                jsonSerializerOptions.TypeInfoResolver ??= JsonTypeInfoResolver.Combine();
                 jsonSerializerOptions.MakeReadOnly();
                 var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonSerializerOptions.GetTypeInfo(typeof(object));
                 var parameters = del.Method.GetParameters();
@@ -484,7 +480,6 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
                 var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? FallbackJsonOptions;
                 var jsonSerializerOptions = jsonOptions.SerializerOptions;
-                jsonSerializerOptions.TypeInfoResolver ??= JsonTypeInfoResolver.Combine();
                 jsonSerializerOptions.MakeReadOnly();
                 var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonSerializerOptions.GetTypeInfo(typeof(object));
                 var parameters = del.Method.GetParameters();
@@ -594,7 +589,6 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
                 var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? FallbackJsonOptions;
                 var jsonSerializerOptions = jsonOptions.SerializerOptions;
-                jsonSerializerOptions.TypeInfoResolver ??= JsonTypeInfoResolver.Combine();
                 jsonSerializerOptions.MakeReadOnly();
                 var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonSerializerOptions.GetTypeInfo(typeof(object));
                 var parameters = del.Method.GetParameters();
@@ -690,7 +684,6 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
                 var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? FallbackJsonOptions;
                 var jsonSerializerOptions = jsonOptions.SerializerOptions;
-                jsonSerializerOptions.TypeInfoResolver ??= JsonTypeInfoResolver.Combine();
                 jsonSerializerOptions.MakeReadOnly();
                 var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonSerializerOptions.GetTypeInfo(typeof(object));
                 var parameters = del.Method.GetParameters();
@@ -788,7 +781,6 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
                 var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? FallbackJsonOptions;
                 var jsonSerializerOptions = jsonOptions.SerializerOptions;
-                jsonSerializerOptions.TypeInfoResolver ??= JsonTypeInfoResolver.Combine();
                 jsonSerializerOptions.MakeReadOnly();
                 var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonSerializerOptions.GetTypeInfo(typeof(object));
                 var parameters = del.Method.GetParameters();
@@ -884,7 +876,6 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
                 var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? FallbackJsonOptions;
                 var jsonSerializerOptions = jsonOptions.SerializerOptions;
-                jsonSerializerOptions.TypeInfoResolver ??= JsonTypeInfoResolver.Combine();
                 jsonSerializerOptions.MakeReadOnly();
                 var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonSerializerOptions.GetTypeInfo(typeof(object));
 
@@ -993,7 +984,6 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
                 var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? FallbackJsonOptions;
                 var jsonSerializerOptions = jsonOptions.SerializerOptions;
-                jsonSerializerOptions.TypeInfoResolver ??= JsonTypeInfoResolver.Combine();
                 jsonSerializerOptions.MakeReadOnly();
                 var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonSerializerOptions.GetTypeInfo(typeof(object));
 
@@ -1088,7 +1078,6 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
                 var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? FallbackJsonOptions;
                 var jsonSerializerOptions = jsonOptions.SerializerOptions;
-                jsonSerializerOptions.TypeInfoResolver ??= JsonTypeInfoResolver.Combine();
                 jsonSerializerOptions.MakeReadOnly();
                 var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonSerializerOptions.GetTypeInfo(typeof(object));
 
@@ -1185,7 +1174,6 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
                 var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? FallbackJsonOptions;
                 var jsonSerializerOptions = jsonOptions.SerializerOptions;
-                jsonSerializerOptions.TypeInfoResolver ??= JsonTypeInfoResolver.Combine();
                 jsonSerializerOptions.MakeReadOnly();
                 var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonSerializerOptions.GetTypeInfo(typeof(object));
 
@@ -1280,7 +1268,6 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
                 var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? FallbackJsonOptions;
                 var jsonSerializerOptions = jsonOptions.SerializerOptions;
-                jsonSerializerOptions.TypeInfoResolver ??= JsonTypeInfoResolver.Combine();
                 jsonSerializerOptions.MakeReadOnly();
                 var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonSerializerOptions.GetTypeInfo(typeof(object));
                 var parameters = del.Method.GetParameters();
@@ -1390,7 +1377,6 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
                 var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? FallbackJsonOptions;
                 var jsonSerializerOptions = jsonOptions.SerializerOptions;
-                jsonSerializerOptions.TypeInfoResolver ??= JsonTypeInfoResolver.Combine();
                 jsonSerializerOptions.MakeReadOnly();
                 var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonSerializerOptions.GetTypeInfo(typeof(object));
                 var parameters = del.Method.GetParameters();
@@ -1486,7 +1472,6 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
                 var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? FallbackJsonOptions;
                 var jsonSerializerOptions = jsonOptions.SerializerOptions;
-                jsonSerializerOptions.TypeInfoResolver ??= JsonTypeInfoResolver.Combine();
                 jsonSerializerOptions.MakeReadOnly();
                 var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonSerializerOptions.GetTypeInfo(typeof(object));
 
@@ -1595,7 +1580,6 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
                 var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? FallbackJsonOptions;
                 var jsonSerializerOptions = jsonOptions.SerializerOptions;
-                jsonSerializerOptions.TypeInfoResolver ??= JsonTypeInfoResolver.Combine();
                 jsonSerializerOptions.MakeReadOnly();
                 var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonSerializerOptions.GetTypeInfo(typeof(object));
 
@@ -1690,7 +1674,6 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
                 var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? FallbackJsonOptions;
                 var jsonSerializerOptions = jsonOptions.SerializerOptions;
-                jsonSerializerOptions.TypeInfoResolver ??= JsonTypeInfoResolver.Combine();
                 jsonSerializerOptions.MakeReadOnly();
                 var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonSerializerOptions.GetTypeInfo(typeof(object));
                 var parameters = del.Method.GetParameters();
@@ -1800,7 +1783,6 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
                 var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? FallbackJsonOptions;
                 var jsonSerializerOptions = jsonOptions.SerializerOptions;
-                jsonSerializerOptions.TypeInfoResolver ??= JsonTypeInfoResolver.Combine();
                 jsonSerializerOptions.MakeReadOnly();
                 var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonSerializerOptions.GetTypeInfo(typeof(object));
                 var parameters = del.Method.GetParameters();
@@ -1896,7 +1878,6 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
                 var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? FallbackJsonOptions;
                 var jsonSerializerOptions = jsonOptions.SerializerOptions;
-                jsonSerializerOptions.TypeInfoResolver ??= JsonTypeInfoResolver.Combine();
                 jsonSerializerOptions.MakeReadOnly();
                 var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonSerializerOptions.GetTypeInfo(typeof(object));
 
@@ -2005,7 +1986,6 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
                 var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? FallbackJsonOptions;
                 var jsonSerializerOptions = jsonOptions.SerializerOptions;
-                jsonSerializerOptions.TypeInfoResolver ??= JsonTypeInfoResolver.Combine();
                 jsonSerializerOptions.MakeReadOnly();
                 var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonSerializerOptions.GetTypeInfo(typeof(object));
 
