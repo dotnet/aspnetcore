@@ -168,7 +168,6 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
   <PropertyGroup>
     <SharedRuntimeSubPath>shared\$(SharedFxName)\$(SharedFxVersion)\</SharedRuntimeSubPath>
-    <SharedFxLayoutTargetDir>$(SharedFrameworkLayoutRoot)$(SharedRuntimeSubPath)</SharedFxLayoutTargetDir>
     <RedistLayoutTargetDir>$(RedistSharedFrameworkLayoutRoot)$(SharedRuntimeSubPath)</RedistLayoutTargetDir>
     <LocalInstallationOutputPath>$(LocalDotNetRoot)$(SharedRuntimeSubPath)</LocalInstallationOutputPath>
 
@@ -202,10 +201,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       _ResolveSharedFrameworkContent;
       _InstallFrameworkIntoLocalDotNet;
       _DownloadAndExtractDotNetRuntime;
-      _BatchCopyToSharedFrameworkLayout;
       _BatchCopyToRedistLayout;
       _BatchCopyToCompositeLayout;
-      _CreateInternalSharedFxArchive;
       _CreateRedistSharedFxArchive;
       _CreateRedistCompositeArchive;
     </CoreBuildDependsOn>
@@ -604,28 +601,6 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       <_PackageFiles Include="$(RuntimeListOutputPath)" PackagePath="$(ManifestsPackagePath)" />
       <_PackageFiles Include="@(RuntimePackContent)" />
     </ItemGroup>
-  </Target>
-
-  <!--
-    Cannot use RemoveDir task because _BatchCopyToSharedFrameworkLayout may only copy a subset of the files to the
-    layout directory. Instead, remove any files that shouldn't exist.
-  -->
-  <Target Name="_CleanLayout" BeforeTargets="_BatchCopyToSharedFrameworkLayout">
-    <ItemGroup>
-      <_ExtraLayoutFiles Include="$(SharedFxLayoutTargetDir)**\*.*"
-          Exclude="@(RefPackContent->'$(SharedFxLayoutTargetDir)%(FileName)%(Extension)')" />
-    </ItemGroup>
-    <Delete Files="@(_ExtraLayoutFiles)" />
-  </Target>
-
-  <Target Name="_BatchCopyToSharedFrameworkLayout"
-          Inputs="@(SharedFxContent)"
-          Outputs="@(SharedFxContent->'$(SharedFxLayoutTargetDir)%(FileName)%(Extension)')">
-
-    <Copy SourceFiles="@(SharedFxContent)"
-          DestinationFiles="@(SharedFxContent->'$(SharedFxLayoutTargetDir)%(FileName)%(Extension)')"
-          UseHardlinksIfPossible="true" />
-    <Message Importance="High" Text="$(MSbuildProjectFile) -> $(SharedFxLayoutTargetDir)" />
   </Target>
 
   <Target Name="_CleanRedist" BeforeTargets="_BatchCopyToRedistLayout">
