@@ -230,106 +230,6 @@ public class EditFormTest
         AssertFrame.Attribute(frame, "onsubmit");
     }
 
-    [Fact]
-    public async Task EventHandlerName_NotSetWhenNoBindingContextProvided()
-    {
-        // Arrange
-        var tracker = TrackEventNames();
-
-        var model = new TestModel();
-        var rootComponent = new TestEditFormHostComponent
-        {
-            Model = model,
-            SubmitHandler = ctx => { }
-        };
-
-        // Act
-        _ = await RenderAndGetTestEditFormComponentAsync(rootComponent);
-
-        // Assert
-        Assert.Null(tracker.EventName);
-    }
-
-    [Fact]
-    public async Task EventHandlerName_SetToBindingIdOnDefaultHandler()
-    {
-        // Arrange
-        var tracker = TrackEventNames();
-
-        var model = new TestModel();
-        var rootComponent = new TestEditFormHostComponent
-        {
-            Model = model,
-            BindingContext = new FormMappingContext("", "")
-        };
-
-        // Act
-        _ = await RenderAndGetTestEditFormComponentAsync(rootComponent);
-
-        // Assert
-        Assert.Equal("", tracker.EventName);
-    }
-
-    [Fact]
-    public async Task EventHandlerName_SetToFormNameWhenFormNameIsProvided()
-    {
-        // Arrange
-        var tracker = TrackEventNames();
-
-        var model = new TestModel();
-        var rootComponent = new TestEditFormHostComponent
-        {
-            Model = model,
-            FormName = "my-form",
-        };
-
-        // Act
-        _ = await RenderAndGetTestEditFormComponentAsync(rootComponent);
-
-        // Assert
-        Assert.Equal("my-form", tracker.EventName);
-    }
-
-    [Fact]
-    public async Task EventHandlerName_SetToFormNameWhenParentBindingContextIsDefault()
-    {
-        // Arrange
-        var tracker = TrackEventNames();
-        var model = new TestModel();
-        var rootComponent = new TestEditFormHostComponent
-        {
-            Model = model,
-            FormName = "my-form",
-            BindingContext = new FormMappingContext("", "")
-        };
-
-        // Act
-        _ = await RenderAndGetTestEditFormComponentAsync(rootComponent);
-
-        // Assert
-        Assert.Equal("my-form", tracker.EventName);
-    }
-
-    [Fact]
-    public async Task EventHandlerName_SetToCombinedNameWhenParentBindingContextIsNamed()
-    {
-        // Arrange
-        var tracker = TrackEventNames();
-        var model = new TestModel();
-        var rootComponent = new TestEditFormHostComponent
-        {
-            Model = model,
-            FormName = "my-form",
-            BindingContext = new FormMappingContext("parent-context", "path?handler=parent-context")
-        };
-
-        // Act
-        _ = await RenderAndGetTestEditFormComponentAsync(rootComponent);
-
-        // Assert
-        Assert.Equal("parent-context.my-form", tracker.EventName);
-    }
-
     private static EditForm FindEditFormComponent(CapturedBatch batch)
         => batch.ReferenceFrames
                 .Where(f => f.FrameType == RenderTreeFrameType.Component)
@@ -369,28 +269,6 @@ public class EditFormTest
             .Select(pair => pair.index)
             .Single();
         return frameIndex;
-    }
-
-    private EventHandlerNameTracker TrackEventNames()
-    {
-        var tracker = new EventHandlerNameTracker();
-        _testRenderer.TrackNamedEventHandlers = true;
-        _testRenderer.OnNamedEvent += tracker.Track;
-        return tracker;
-    }
-
-    private class EventHandlerNameTracker
-    {
-        public ulong EventHandlerId { get; private set; }
-
-        public int ComponentId { get; private set; }
-
-        public string EventName { get; private set; }
-
-        internal void Track((ulong, int, string) tuple)
-        {
-            (EventHandlerId, ComponentId, EventName) = tuple;
-        }
     }
 
     class TestModel

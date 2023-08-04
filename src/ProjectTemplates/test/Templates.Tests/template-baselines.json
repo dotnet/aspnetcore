@@ -669,7 +669,6 @@
       "Files": [
         "appsettings.Development.json",
         "appsettings.json",
-        "Todo.cs",
         "Program.cs",
         "{ProjectName}.http",
         "Properties/launchSettings.json"
@@ -682,7 +681,6 @@
       "Files": [
         "appsettings.Development.json",
         "appsettings.json",
-        "Todo.cs",
         "Program.cs",
         "{ProjectName}.http",
         "Properties/launchSettings.json"
@@ -695,7 +693,6 @@
       "Files": [
         "appsettings.Development.json",
         "appsettings.json",
-        "Todo.cs",
         "Program.cs",
         "{ProjectName}.http",
         "Properties/launchSettings.json"
@@ -708,7 +705,6 @@
       "Files": [
         "appsettings.Development.json",
         "appsettings.json",
-        "Todo.cs",
         "Program.cs",
         "{ProjectName}.http",
         "Properties/launchSettings.json"

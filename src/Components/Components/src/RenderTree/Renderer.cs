@@ -636,22 +636,6 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         _eventHandlerIdReplacements.Add(oldEventHandlerId, newEventHandlerId);
     }
 
-    /// <summary>
-    /// Tracks named events defined during rendering.
-    /// </summary>
-    /// <param name="eventHandlerId">The event handler ID associated with the named event.</param>
-    /// <param name="componentId">The component ID defining the name.</param>
-    /// <param name="eventHandlerName">The event name.</param>
-    protected internal virtual void TrackNamedEventId(ulong eventHandlerId, int componentId, string eventHandlerName)
-    {
-    }
-
-    /// <summary>
-    /// Indicates whether named event handlers should be tracked.
-    /// </summary>
-    /// <returns><c>true</c> if named event handlers should be tracked; <c>false</c> otherwise.</returns>
-    protected internal virtual bool ShouldTrackNamedEventHandlers() => false;
-
     private EventCallback GetRequiredEventCallback(ulong eventHandlerId)
     {
         if (!_eventBindings.TryGetValue(eventHandlerId, out var callback))

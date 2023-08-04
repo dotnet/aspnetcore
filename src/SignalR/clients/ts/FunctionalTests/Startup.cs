@@ -7,8 +7,10 @@ using System.Reflection;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Tokens;
@@ -94,8 +96,13 @@ public class Startup
             });
 
         // Since tests run in parallel, it's possible multiple servers will startup,
-        // we use an ephemeral key provider to avoid filesystem contention issues
+        // we use an ephemeral key provider and repository to avoid filesystem contention issues
         services.AddSingleton<IDataProtectionProvider, EphemeralDataProtectionProvider>();
+
+        services.Configure<KeyManagementOptions>(options =>
+        {
+            options.XmlRepository = new EphemeralXmlRepository();
+        });
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger)

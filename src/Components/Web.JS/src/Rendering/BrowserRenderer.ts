@@ -225,6 +225,8 @@ export class BrowserRenderer {
       case FrameType.markup:
         this.insertMarkup(batch, parent, childIndex, frame);
         return 1;
+      case FrameType.namedEvent: // Not used on the JS side
+        return 0;
       default: {
         const unknownType: never = frameType; // Compile-time verification that the switch was exhaustive
         throw new Error(`Unknown frame type: ${unknownType}`);

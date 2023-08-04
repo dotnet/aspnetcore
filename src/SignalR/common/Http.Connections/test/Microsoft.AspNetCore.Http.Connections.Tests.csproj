@@ -9,6 +9,7 @@
     <Compile Include="$(SharedSourceRoot)SyncPoint\SyncPoint.cs" />
     <Compile Include="$(SharedSourceRoot)EventSource.Testing\TestEventListener.cs" />
     <Compile Include="$(SharedSourceRoot)Metrics\TestMeterFactory.cs" LinkBase="shared" />
+    <Compile Include="$(SignalRSharedSourceRoot)EphemeralDataProtectionProvider.cs" />
   </ItemGroup>
 
   <ItemGroup>

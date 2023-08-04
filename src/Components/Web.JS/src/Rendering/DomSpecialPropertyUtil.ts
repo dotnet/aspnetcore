@@ -69,7 +69,15 @@ export function applyAnyDeferredValue(element: Element) {
     trySetSelectValueFromOptionElement(element);
   } else if (deferredValuePropname in element) {
     // Situation 2
-    setDeferredElementValue(element, element[deferredValuePropname]);
+    const deferredValue = element[deferredValuePropname];
+    setDeferredElementValue(element, deferredValue);
+
+    // Once the deferred value is accepted, stop tracking it to ensure it doesn't reappear later
+    // If the value isn't yet accepted, keep tracking it. This is relevant, e.g., for <select> in the
+    // case where we haven't yet got the corresponding <option>
+    if ((element as any).value === deferredValue) {
+      delete element[deferredValuePropname];
+    }
   }
 }
 
