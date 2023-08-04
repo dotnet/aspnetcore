@@ -36,7 +36,8 @@ public class Http2RequestTests : LoggedTest
             },
             configureKestrel: o =>
             {
-                o.Listen(IPAddress.Parse("127.0.0.1"), 0, listenOptions =>
+                // Test IPv6 endpoint with metrics.
+                o.Listen(IPAddress.IPv6Loopback, 0, listenOptions =>
                 {
                     listenOptions.Protocols = HttpProtocols.Http2;
                     listenOptions.UseHttps(TestResources.GetTestCertificate(), https =>
@@ -56,7 +57,7 @@ public class Http2RequestTests : LoggedTest
             var client = HttpHelpers.CreateClient();
 
             // Act
-            var request1 = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
+            var request1 = new HttpRequestMessage(HttpMethod.Get, $"https://[::1]:{host.GetPort()}/");
             request1.Version = HttpVersion.Version20;
             request1.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
 
@@ -78,8 +79,8 @@ public class Http2RequestTests : LoggedTest
                     Assert.Equal("http", (string)m.Tags["network.protocol.name"]);
                     Assert.Equal("2", (string)m.Tags["network.protocol.version"]);
                     Assert.Equal("tcp", (string)m.Tags["network.transport"]);
-                    Assert.Equal("ipv4", (string)m.Tags["network.type"]);
-                    Assert.Equal("127.0.0.1", (string)m.Tags["server.address"]);
+                    Assert.Equal("ipv6", (string)m.Tags["network.type"]);
+                    Assert.Equal("::1", (string)m.Tags["server.address"]);
                     Assert.Equal(host.GetPort(), (int)m.Tags["server.port"]);
                     Assert.Equal("1.2", (string)m.Tags["tls.protocol.version"]);
                 });
