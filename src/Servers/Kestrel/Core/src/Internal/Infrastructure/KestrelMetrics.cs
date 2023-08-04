@@ -22,20 +22,20 @@ internal sealed class KestrelMetrics
     public const string Http3 = "3";
 
     private readonly Meter _meter;
-    private readonly UpDownCounter<long> _currentConnectionsCounter;
+    private readonly UpDownCounter<long> _activeConnectionsCounter;
     private readonly Histogram<double> _connectionDuration;
     private readonly Counter<long> _rejectedConnectionsCounter;
     private readonly UpDownCounter<long> _queuedConnectionsCounter;
     private readonly UpDownCounter<long> _queuedRequestsCounter;
     private readonly UpDownCounter<long> _currentUpgradedRequestsCounter;
     private readonly Histogram<double> _tlsHandshakeDuration;
-    private readonly UpDownCounter<long> _currentTlsHandshakesCounter;
+    private readonly UpDownCounter<long> _activeTlsHandshakesCounter;
 
     public KestrelMetrics(IMeterFactory meterFactory)
     {
         _meter = meterFactory.Create(MeterName);
 
-        _currentConnectionsCounter = _meter.CreateUpDownCounter<long>(
+        _activeConnectionsCounter = _meter.CreateUpDownCounter<long>(
            "kestrel.active_connections",
             description: "Number of connections that are currently active on the server.");
 
@@ -65,7 +65,7 @@ internal sealed class KestrelMetrics
             unit: "s",
             description: "The duration of TLS handshakes on the server.");
 
-        _currentTlsHandshakesCounter = _meter.CreateUpDownCounter<long>(
+        _activeTlsHandshakesCounter = _meter.CreateUpDownCounter<long>(
            "kestrel.active_tls_handshakes",
             description: "Number of TLS handshakes that are currently in progress on the server.");
     }
@@ -83,7 +83,7 @@ internal sealed class KestrelMetrics
     {
         var tags = new TagList();
         InitializeConnectionTags(ref tags, metricsContext);
-        _currentConnectionsCounter.Add(1, tags);
+        _activeConnectionsCounter.Add(1, tags);
     }
 
     public void ConnectionStop(in ConnectionMetricsContext metricsContext, Exception? exception, List<KeyValuePair<string, object?>>? customTags, long startTimestamp, long currentTimestamp)
@@ -103,7 +103,7 @@ internal sealed class KestrelMetrics
         if (metricsContext.CurrentConnectionsCounterEnabled)
         {
             // Decrease in connections counter must match tags from increase. No custom tags.
-            _currentConnectionsCounter.Add(-1, tags);
+            _activeConnectionsCounter.Add(-1, tags);
         }
 
         if (metricsContext.ConnectionDurationEnabled)
@@ -258,7 +258,7 @@ internal sealed class KestrelMetrics
         // Tags must match TLS handshake end.
         var tags = new TagList();
         InitializeConnectionTags(ref tags, metricsContext);
-        _currentTlsHandshakesCounter.Add(1, tags);
+        _activeTlsHandshakesCounter.Add(1, tags);
     }
 
     public void TlsHandshakeStop(in ConnectionMetricsContext metricsContext, long startTimestamp, long currentTimestamp, SslProtocols? protocol = null, Exception? exception = null)
@@ -278,7 +278,7 @@ internal sealed class KestrelMetrics
         if (metricsContext.CurrentTlsHandshakesCounterEnabled)
         {
             // Tags must match TLS handshake start.
-            _currentTlsHandshakesCounter.Add(-1, tags);
+            _activeTlsHandshakesCounter.Add(-1, tags);
         }
 
         if (TryGetHandshakeProtocol(protocol, out var protocolName, out var protocolVersion))
@@ -343,8 +343,8 @@ internal sealed class KestrelMetrics
     {
         // Cache the state at the start of the connection so we produce consistent start/stop events.
         return new ConnectionMetricsContext(connection,
-            _currentConnectionsCounter.Enabled, _connectionDuration.Enabled, _queuedConnectionsCounter.Enabled,
-            _queuedRequestsCounter.Enabled, _currentUpgradedRequestsCounter.Enabled, _currentTlsHandshakesCounter.Enabled);
+            _activeConnectionsCounter.Enabled, _connectionDuration.Enabled, _queuedConnectionsCounter.Enabled,
+            _queuedRequestsCounter.Enabled, _currentUpgradedRequestsCounter.Enabled, _activeTlsHandshakesCounter.Enabled);
     }
 
     public static bool TryGetHandshakeProtocol(SslProtocols? protocols, [NotNullWhen(true)] out string? name, [NotNullWhen(true)] out string? version)
