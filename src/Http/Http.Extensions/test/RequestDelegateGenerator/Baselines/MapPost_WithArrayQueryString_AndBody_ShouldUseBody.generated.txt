@@ -55,6 +55,7 @@ namespace Microsoft.AspNetCore.Http.Generated
     %GENERATEDCODEATTRIBUTE%
     file static class GeneratedRouteBuilderExtensionsCore
     {
+        private static readonly JsonOptions FallbackJsonOptions = new();
         private static readonly string[] PostVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Post };
 
         [InterceptsLocation(@"TestMapActions.cs", 25, 13)]
@@ -94,8 +95,10 @@ namespace Microsoft.AspNetCore.Http.Generated
                 EndpointFilterDelegate? filteredInvocation = null;
                 var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
                 var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
-                var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? new JsonOptions();
-                var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonOptions.SerializerOptions.GetTypeInfo(typeof(object));
+                var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? FallbackJsonOptions;
+                var jsonSerializerOptions = jsonOptions.SerializerOptions;
+                jsonSerializerOptions.MakeReadOnly();
+                var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonSerializerOptions.GetTypeInfo(typeof(object));
 
                 if (options.EndpointBuilder.FilterFactories.Count > 0)
                 {
