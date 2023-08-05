@@ -17,7 +17,8 @@ internal sealed class RoutingMetrics
         _meter = meterFactory.Create(MeterName);
 
         _matchAttemptsCounter = _meter.CreateCounter<long>(
-           "aspnetcore.routing.match_attempts",
+            "aspnetcore.routing.match_attempts",
+            unit: "{match_attempt}",
             description: "Number of requests that were attempted to be matched to an endpoint.");
     }
 
