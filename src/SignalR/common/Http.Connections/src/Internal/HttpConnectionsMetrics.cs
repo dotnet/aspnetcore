@@ -37,6 +37,7 @@ internal sealed class HttpConnectionsMetrics : IDisposable
 
         _currentConnectionsCounter = _meter.CreateUpDownCounter<long>(
             "signalr.server.active_connections",
+            unit: "{connection}",
             description: "Number of connections that are currently active on the server.");
     }
 
