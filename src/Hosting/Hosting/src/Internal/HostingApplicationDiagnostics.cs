@@ -148,15 +148,11 @@ internal sealed class HostingApplicationDiagnostics
                     httpContext.Request.Host,
                     route,
                     httpContext.Response.StatusCode,
+                    reachedPipelineEnd,
                     exception,
                     customTags,
                     startTimestamp,
                     currentTimestamp);
-
-                if (reachedPipelineEnd)
-                {
-                    _metrics.UnhandledRequest();
-                }
             }
 
             if (reachedPipelineEnd)
