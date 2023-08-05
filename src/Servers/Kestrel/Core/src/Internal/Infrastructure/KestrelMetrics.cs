@@ -36,7 +36,8 @@ internal sealed class KestrelMetrics
         _meter = meterFactory.Create(MeterName);
 
         _activeConnectionsCounter = _meter.CreateUpDownCounter<long>(
-           "kestrel.active_connections",
+            "kestrel.active_connections",
+            unit: "{connection}",
             description: "Number of connections that are currently active on the server.");
 
         _connectionDuration = _meter.CreateHistogram<double>(
@@ -46,18 +47,22 @@ internal sealed class KestrelMetrics
 
         _rejectedConnectionsCounter = _meter.CreateCounter<long>(
            "kestrel.rejected_connections",
+            unit: "{connection}",
             description: "Number of connections rejected by the server. Connections are rejected when the currently active count exceeds the value configured with MaxConcurrentConnections.");
 
         _queuedConnectionsCounter = _meter.CreateUpDownCounter<long>(
            "kestrel.queued_connections",
+            unit: "{connection}",
             description: "Number of connections that are currently queued and are waiting to start.");
 
         _queuedRequestsCounter = _meter.CreateUpDownCounter<long>(
            "kestrel.queued_requests",
+            unit: "{request}",
             description: "Number of HTTP requests on multiplexed connections (HTTP/2 and HTTP/3) that are currently queued and are waiting to start.");
 
         _currentUpgradedRequestsCounter = _meter.CreateUpDownCounter<long>(
            "kestrel.upgraded_connections",
+            unit: "{connection}",
             description: "Number of HTTP connections that are currently upgraded (WebSockets). The number only tracks HTTP/1.1 connections.");
 
         _tlsHandshakeDuration = _meter.CreateHistogram<double>(
@@ -67,6 +72,7 @@ internal sealed class KestrelMetrics
 
         _activeTlsHandshakesCounter = _meter.CreateUpDownCounter<long>(
            "kestrel.active_tls_handshakes",
+            unit: "{handshake}",
             description: "Number of TLS handshakes that are currently in progress on the server.");
     }
 
@@ -281,8 +287,9 @@ internal sealed class KestrelMetrics
             _activeTlsHandshakesCounter.Add(-1, tags);
         }
 
-        if (TryGetHandshakeProtocol(protocol, out var protocolName, out var protocolVersion))
+        if (protocol != null && TryGetHandshakeProtocol(protocol.Value, out var protocolName, out var protocolVersion))
         {
+            // Protocol name should always be TLS. Have logic to a tls.protocol.name tag if not TLS just in case.
             if (protocolName != "tls")
             {
                 tags.Add("tls.protocol.name", protocolName);
@@ -347,42 +354,42 @@ internal sealed class KestrelMetrics
             _queuedRequestsCounter.Enabled, _currentUpgradedRequestsCounter.Enabled, _activeTlsHandshakesCounter.Enabled);
     }
 
-    public static bool TryGetHandshakeProtocol(SslProtocols? protocols, [NotNullWhen(true)] out string? name, [NotNullWhen(true)] out string? version)
+    public static bool TryGetHandshakeProtocol(SslProtocols protocols, [NotNullWhen(true)] out string? name, [NotNullWhen(true)] out string? version)
     {
-        if (protocols != null)
-        {
+        // Protocol should be either TLS 1.2 or 1.3. Many older SslProtocols are no longer supported.
+        // Logic for resolving older known values is still here out of an abundence of caution.
+
 #pragma warning disable CS0618 // Type or member is obsolete
 #pragma warning disable SYSLIB0039 // Type or member is obsolete
-            switch (protocols.Value)
-            {
-                case SslProtocols.Ssl2:
-                    name = "ssl";
-                    version = "2.0";
-                    return true;
-                case SslProtocols.Ssl3:
-                    name = "ssl";
-                    version = "3.0";
-                    return true;
-                case SslProtocols.Tls:
-                    name = "tls";
-                    version = "1.0";
-                    return true;
-                case SslProtocols.Tls11:
-                    name = "tls";
-                    version = "1.1";
-                    return true;
-                case SslProtocols.Tls12:
-                    name = "tls";
-                    version = "1.2";
-                    return true;
-                case SslProtocols.Tls13:
-                    name = "tls";
-                    version = "1.3";
-                    return true;
-            }
+        switch (protocols)
+        {
+            case SslProtocols.Ssl2:
+                name = "ssl";
+                version = "2.0";
+                return true;
+            case SslProtocols.Ssl3:
+                name = "ssl";
+                version = "3.0";
+                return true;
+            case SslProtocols.Tls:
+                name = "tls";
+                version = "1.0";
+                return true;
+            case SslProtocols.Tls11:
+                name = "tls";
+                version = "1.1";
+                return true;
+            case SslProtocols.Tls12:
+                name = "tls";
+                version = "1.2";
+                return true;
+            case SslProtocols.Tls13:
+                name = "tls";
+                version = "1.3";
+                return true;
+        }
 #pragma warning restore SYSLIB0039 // Type or member is obsolete
 #pragma warning restore CS0618 // Type or member is obsolete
-        }
 
         name = null;
         version = null;
