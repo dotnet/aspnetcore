@@ -24,6 +24,7 @@ internal sealed class RateLimitingMetrics : IDisposable
 
         _activeRequestLeasesCounter = _meter.CreateUpDownCounter<long>(
             "aspnetcore.rate_limiting.active_request_leases",
+            unit: "{request}",
             description: "Number of HTTP requests that are currently active on the server that hold a rate limiting lease.");
 
         _requestLeaseDurationCounter = _meter.CreateHistogram<double>(
@@ -33,6 +34,7 @@ internal sealed class RateLimitingMetrics : IDisposable
 
         _queuedRequestsCounter = _meter.CreateUpDownCounter<long>(
             "aspnetcore.rate_limiting.queued_requests",
+            unit: "{request}",
             description: "Number of HTTP requests that are currently queued, waiting to acquire a rate limiting lease.");
 
         _queuedRequestDurationCounter = _meter.CreateHistogram<double>(
@@ -42,6 +44,7 @@ internal sealed class RateLimitingMetrics : IDisposable
 
         _requestsCounter = _meter.CreateCounter<long>(
             "aspnetcore.rate_limiting.requests",
+            unit: "{request}",
             description: "Number of requests that tried to acquire a rate limiting lease. Requests could be rejected by global or endpoint rate limiting policies. Or the request could be canceled while waiting for the lease.");
     }
 
