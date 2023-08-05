@@ -262,8 +262,8 @@ public partial class SystemTextJsonOutputFormatterTest : JsonOutputFormatterTest
         var jsonOptions = new JsonOptions();
         jsonOptions.JsonSerializerOptions.TypeInfoResolver = null;
 
-        var stjOutputFormatter = SystemTextJsonOutputFormatter.CreateFormatter(jsonOptions);
-        Assert.IsAssignableFrom<IJsonTypeInfoResolver>(stjOutputFormatter.SerializerOptions.TypeInfoResolver);
+        var exception = Assert.Throws<InvalidOperationException>(() => SystemTextJsonOutputFormatter.CreateFormatter(jsonOptions));
+        Assert.Equal("JsonSerializerOptions instance must specify a TypeInfoResolver setting before being marked as read-only.", exception.Message);
     }
 
     [ConditionalTheory]
