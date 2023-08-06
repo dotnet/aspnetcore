@@ -1,9 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -19,7 +21,7 @@ public class RazorComponentResult : IResult
     /// Constructs an instance of <see cref="RazorComponentResult"/>.
     /// </summary>
     /// <param name="componentType">The type of the component to render. This must implement <see cref="IComponent"/>.</param>
-    public RazorComponentResult(Type componentType)
+    public RazorComponentResult([DynamicallyAccessedMembers(Component)] Type componentType)
         : this(componentType, null)
     {
     }
@@ -29,7 +31,7 @@ public class RazorComponentResult : IResult
     /// </summary>
     /// <param name="componentType">The type of the component to render. This must implement <see cref="IComponent"/>.</param>
     /// <param name="parameters">Parameters for the component.</param>
-    public RazorComponentResult(Type componentType, object? parameters)
+    public RazorComponentResult([DynamicallyAccessedMembers(Component)] Type componentType, object? parameters)
         : this(componentType, CoerceParametersObjectToDictionary(parameters))
     {
     }
@@ -39,7 +41,7 @@ public class RazorComponentResult : IResult
     /// </summary>
     /// <param name="componentType">The type of the component to render. This must implement <see cref="IComponent"/>.</param>
     /// <param name="parameters">Parameters for the component.</param>
-    public RazorComponentResult(Type componentType, IReadOnlyDictionary<string, object?>? parameters)
+    public RazorComponentResult([DynamicallyAccessedMembers(Component)] Type componentType, IReadOnlyDictionary<string, object?>? parameters)
     {
         // Note that the Blazor renderer will validate that componentType implements IComponent and throws a suitable
         // exception if not, so we don't need to duplicate that logic here.
@@ -57,6 +59,7 @@ public class RazorComponentResult : IResult
     /// <summary>
     /// Gets the component type.
     /// </summary>
+    [DynamicallyAccessedMembers(Component)]
     public Type ComponentType { get; }
 
     /// <summary>
