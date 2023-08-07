@@ -8,7 +8,7 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore</PackageTags>
-    <IsPackable>true</IsPackable>
+    <IsPackable>false</IsPackable>
     <GenerateFrameworkReferenceAssembly>true</GenerateFrameworkReferenceAssembly>
     <!-- This package is internal, so we don't generate a package baseline. Always build against the latest dependencies. -->
     <UseLatestPackageReferences>true</UseLatestPackageReferences>
