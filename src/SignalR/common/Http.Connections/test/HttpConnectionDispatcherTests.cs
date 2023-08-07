@@ -10,6 +10,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.WebSockets;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Security.Principal;
 using System.Text;
 using Microsoft.AspNetCore.Authentication;
@@ -1093,8 +1094,8 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         using (StartVerifiableLog())
         {
             var testMeterFactory = new TestMeterFactory();
-            using var connectionDuration = new MetricCollector<double>(testMeterFactory, HttpConnectionsMetrics.MeterName, "signalr-http-transport-connection-duration");
-            using var currentConnections = new MetricCollector<long>(testMeterFactory, HttpConnectionsMetrics.MeterName, "signalr-http-transport-current-connections");
+            using var connectionDuration = new MetricCollector<double>(testMeterFactory, HttpConnectionsMetrics.MeterName, "signalr.server.connection.duration");
+            using var currentConnections = new MetricCollector<long>(testMeterFactory, HttpConnectionsMetrics.MeterName, "signalr.server.active_connections");
 
             var metrics = new HttpConnectionsMetrics(testMeterFactory);
             var manager = CreateConnectionManager(LoggerFactory, metrics);
@@ -1121,8 +1122,8 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var exists = manager.TryGetConnection(connection.ConnectionId, out _);
             Assert.False(exists);
 
-            Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => AssertDuration(m, HttpConnectionStopStatus.NormalClosure, HttpTransportType.LongPolling));
-            Assert.Collection(currentConnections.GetMeasurementSnapshot(), m => AssertTransport(m, 1, HttpTransportType.LongPolling), m => AssertTransport(m, -1, HttpTransportType.LongPolling));
+            Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => AssertDuration(m, "normal_closure", "long_polling"));
+            Assert.Collection(currentConnections.GetMeasurementSnapshot(), m => AssertTransport(m, 1, "long_polling"), m => AssertTransport(m, -1, "long_polling"));
         }
     }
 
@@ -1149,8 +1150,8 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             await dispatcher.ExecuteAsync(context, new HttpConnectionDispatcherOptions(), app);
             Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
 
-            using var connectionDuration = new MetricCollector<double>(testMeterFactory, HttpConnectionsMetrics.MeterName, "signalr-http-transport-connection-duration");
-            using var currentConnections = new MetricCollector<long>(testMeterFactory, HttpConnectionsMetrics.MeterName, "signalr-http-transport-current-connections");
+            using var connectionDuration = new MetricCollector<double>(testMeterFactory, HttpConnectionsMetrics.MeterName, "signalr.server.connection.duration");
+            using var currentConnections = new MetricCollector<long>(testMeterFactory, HttpConnectionsMetrics.MeterName, "signalr.server.active_connections");
 
             await dispatcher.ExecuteAsync(context, new HttpConnectionDispatcherOptions(), app);
 
@@ -1165,17 +1166,17 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
-    private static void AssertTransport(CollectedMeasurement<long> measurement, long expected, HttpTransportType transportType)
+    private static void AssertTransport(CollectedMeasurement<long> measurement, long expected, string transportType)
     {
         Assert.Equal(expected, measurement.Value);
-        Assert.Equal(transportType.ToString(), (string)measurement.Tags["transport"]);
+        Assert.Equal(transportType.ToString(), (string)measurement.Tags["signalr.transport"]);
     }
 
-    private static void AssertDuration(CollectedMeasurement<double> measurement, HttpConnectionStopStatus status, HttpTransportType transportType)
+    private static void AssertDuration(CollectedMeasurement<double> measurement, string status, string transportType)
     {
         Assert.True(measurement.Value > 0);
-        Assert.Equal(status.ToString(), (string)measurement.Tags["status"]);
-        Assert.Equal(transportType.ToString(), (string)measurement.Tags["transport"]);
+        Assert.Equal(status.ToString(), (string)measurement.Tags["signalr.connection.status"]);
+        Assert.Equal(transportType.ToString(), (string)measurement.Tags["signalr.transport"]);
     }
 
     [Fact]
@@ -2989,7 +2990,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
     [InlineData(HttpTransportType.WebSockets)]
     public async Task AuthenticationExpirationSetOnAuthenticatedConnectionWithJWT(HttpTransportType transportType)
     {
-        SymmetricSecurityKey SecurityKey = new SymmetricSecurityKey(Guid.NewGuid().ToByteArray());
+        SymmetricSecurityKey SecurityKey = new SymmetricSecurityKey(SHA256.HashData(Guid.NewGuid().ToByteArray()));
         JwtSecurityTokenHandler JwtTokenHandler = new JwtSecurityTokenHandler();
 
         using var host = CreateHost(services =>
@@ -3151,7 +3152,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
     [InlineData(HttpTransportType.WebSockets)]
     public async Task AuthenticationExpirationUsesCorrectScheme(HttpTransportType transportType)
     {
-        var SecurityKey = new SymmetricSecurityKey(Guid.NewGuid().ToByteArray());
+        var SecurityKey = new SymmetricSecurityKey(SHA256.HashData(Guid.NewGuid().ToByteArray()));
         var JwtTokenHandler = new JwtSecurityTokenHandler();
 
         using var host = CreateHost(services =>

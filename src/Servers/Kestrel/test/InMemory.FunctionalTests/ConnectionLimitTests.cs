@@ -103,7 +103,7 @@ public class ConnectionLimitTests : LoggedTest
     public async Task RejectsConnectionsWhenLimitReached()
     {
         var testMeterFactory = new TestMeterFactory();
-        using var rejectedConnections = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel-rejected-connections");
+        using var rejectedConnections = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.rejected_connections");
 
         const int max = 10;
         var requestTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);

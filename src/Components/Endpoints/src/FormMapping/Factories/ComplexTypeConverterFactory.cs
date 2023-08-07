@@ -2,35 +2,47 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Components.Endpoints.FormMapping.Metadata;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 
 // This factory is registered last, which means, dictionaries and collections, have already
 // been processed by the time we get here.
-internal class ComplexTypeConverterFactory : IFormDataConverterFactory
+internal class ComplexTypeConverterFactory(FormDataMapperOptions options) : IFormDataConverterFactory
 {
-    internal static readonly ComplexTypeConverterFactory Instance = new();
+    internal FormDataMetadataFactory MetadataFactory { get; } = new FormDataMetadataFactory(options.Factories);
 
     [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
     [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
     public bool CanConvert(Type type, FormDataMapperOptions options)
     {
-        if (type.GetConstructor(Type.EmptyTypes) == null && !type.IsValueType)
-        {
-            // For right now, require a public parameterless constructor.
-            return false;
-        }
         if (type.IsGenericTypeDefinition)
         {
             return false;
         }
 
+        var constructors = type.GetConstructors();
+        if (constructors.Length > 1 || (constructors.Length == 0 && !type.IsValueType))
+        {
+            // We can't select the constructor when there are multiple of them.
+            return false;
+        }
+
+        if (MetadataFactory.HasMetadataFor(type))
+        {
+            return true;
+        }
+
+        // Create the metadata for the type. This walks the graph and creates metadata for all the types
+        // in the reference graph, detecting and identifying recursive types.
+        MetadataFactory.GetOrCreateMetadataFor(type, options);
+
         // Check that all properties have a valid converter.
         var propertyHelper = PropertyHelper.GetVisibleProperties(type);
         foreach (var helper in propertyHelper)
         {
-            if (options.ResolveConverter(helper.Property.PropertyType) == null)
+            if (!options.CanConvert(helper.Property.PropertyType))
             {
                 return false;
             }
@@ -112,7 +124,7 @@ internal class ComplexTypeConverterFactory : IFormDataConverterFactory
     [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
     public FormDataConverter CreateConverter(Type type, FormDataMapperOptions options)
     {
-        if (Activator.CreateInstance(typeof(ComplexTypeExpressionConverterFactory<>).MakeGenericType(type))
+        if (Activator.CreateInstance(typeof(ComplexTypeExpressionConverterFactory<>).MakeGenericType(type), MetadataFactory)
             is not ComplexTypeExpressionConverterFactory factory)
         {
             throw new InvalidOperationException($"Could not create a converter factory for type {type}.");

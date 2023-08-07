@@ -22,6 +22,9 @@ public class SystemClock : ISystemClock
         _timeProvider = timeProvider;
     }
 
+    /// <summary>Gets a singleton instance backed by <see cref="TimeProvider.System"/>.</summary>
+    internal static SystemClock Default { get; } = new SystemClock();
+
     /// <summary>
     /// Retrieves the current system time in UTC.
     /// </summary>

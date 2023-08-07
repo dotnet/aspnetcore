@@ -15,7 +15,18 @@ internal sealed partial class QuicStreamContext :
     IStreamAbortFeature,
     IStreamClosedFeature
 {
-    private readonly record struct OnCloseRegistration(Action<object?> Callback, object? State);
+    private readonly struct OnCloseRegistration
+    {
+        public Action<object?> Callback { get; }
+        
+        public object? State { get; }
+
+        public OnCloseRegistration(Action<object?> callback, object? state)
+        {
+            Callback = callback;
+            State = state;
+        }
+    }
 
     private IDictionary<object, object?>? _persistentState;
     private long? _error;

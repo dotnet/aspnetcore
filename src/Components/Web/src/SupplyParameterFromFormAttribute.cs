@@ -22,4 +22,7 @@ public sealed class SupplyParameterFromFormAttribute : CascadingParameterAttribu
     /// the form data and decide whether or not the value needs to be bound.
     /// </summary>
     public string? Handler { get; set; }
+
+    /// <inheritdoc />
+    internal override bool SingleDelivery => true;
 }

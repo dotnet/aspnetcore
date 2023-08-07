@@ -6,11 +6,15 @@ using System.Runtime.Serialization;
 
 namespace Microsoft.AspNetCore.Routing.Patterns;
 
+#if !COMPONENTS
 /// <summary>
 /// An exception that is thrown for error constructing a <see cref="RoutePattern"/>.
 /// </summary>
 [Serializable]
 public sealed class RoutePatternException : Exception
+#else
+internal sealed class RoutePatternException : Exception
+#endif
 {
     [Obsolete]
     private RoutePatternException(SerializationInfo info, StreamingContext context)

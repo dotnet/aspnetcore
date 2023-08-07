@@ -24,7 +24,7 @@ public:
 
     ~FILE_WATCHER();
 
-    void WaitForMonitor(DWORD dwRetryCounter);
+    void WaitForWatcherThreadExit();
 
     HRESULT Create(
         _In_ PCWSTR                  pszDirectoryToMonitor,
@@ -59,8 +59,9 @@ private:
     HandleWrapper<NullHandleTraits>               m_hCompletionPort;
     HandleWrapper<NullHandleTraits>               m_hChangeNotificationThread;
     HandleWrapper<NullHandleTraits>               _hDirectory;
-    HandleWrapper<NullHandleTraits> m_pDoneCopyEvent;
-    volatile   BOOL      m_fThreadExit;
+    HandleWrapper<NullHandleTraits>               m_pDoneCopyEvent;
+    HandleWrapper<NullHandleTraits>               m_pShutdownEvent;
+    std::atomic_bool        m_fThreadExit;
     STTIMER                 m_Timer;
     SRWLOCK                 m_copyLock{};
     BOOL                    m_copied;
@@ -75,4 +76,5 @@ private:
     DWORD                   m_shutdownTimeout;
     OVERLAPPED              _overlapped;
     std::unique_ptr<AppOfflineTrackingApplication, IAPPLICATION_DELETER> _pApplication;
+    bool                    m_fRudeThreadTermination;
 };

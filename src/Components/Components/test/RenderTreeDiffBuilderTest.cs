@@ -2237,10 +2237,9 @@ public class RenderTreeDiffBuilderTest : IDisposable
                 Assert.Equal(0, entry.ReferenceFrameIndex);
                 Assert.Equal("new element", referenceFrames[entry.ReferenceFrameIndex].ElementName);
             });
-        Assert.Collection(batch.AddedNamedEvents.Value.AsEnumerable(),
-            entry => AssertNamedEvent(entry, 123, 2, "someevent1", "added to existing element"),
-            entry => AssertNamedEvent(entry, 123, 4, "someevent2", "added with new element"));
-        Assert.False(batch.RemovedNamedEvents.HasValue);
+        Assert.Collection(batch.NamedEventChanges.Value.AsEnumerable(),
+            entry => AssertNamedEventChange(entry, NamedEventChangeType.Added, 123, 2, "someevent1", "added to existing element"),
+            entry => AssertNamedEventChange(entry, NamedEventChangeType.Added, 123, 4, "someevent2", "added with new element"));
     }
 
     [Fact]
@@ -2264,10 +2263,9 @@ public class RenderTreeDiffBuilderTest : IDisposable
         // Assert
         Assert.Collection(result.Edits,
             entry => AssertEdit(entry, RenderTreeEditType.RemoveFrame, 1));
-        Assert.False(batch.AddedNamedEvents.HasValue);
-        Assert.Collection(batch.RemovedNamedEvents.Value.AsEnumerable(),
-            entry => AssertNamedEvent(entry, 123, 2, "someevent1", "removing from retained element"),
-            entry => AssertNamedEvent(entry, 123, 4, "someevent2", "removed because element was removed"));
+        Assert.Collection(batch.NamedEventChanges.Value.AsEnumerable(),
+            entry => AssertNamedEventChange(entry, NamedEventChangeType.Removed, 123, 2, "someevent1", "removing from retained element"),
+            entry => AssertNamedEventChange(entry, NamedEventChangeType.Removed, 123, 4, "someevent2", "removed because element was removed"));
     }
 
     [Fact]
@@ -2293,10 +2291,9 @@ public class RenderTreeDiffBuilderTest : IDisposable
                 Assert.Equal(0, entry.ReferenceFrameIndex);
                 Assert.Equal("attr1", referenceFrames[entry.ReferenceFrameIndex].AttributeName);
             });
-        Assert.Collection(batch.RemovedNamedEvents.Value.AsEnumerable(),
-            entry => AssertNamedEvent(entry, 123, 1, "eventname", "assigned name"));
-        Assert.Collection(batch.AddedNamedEvents.Value.AsEnumerable(),
-            entry => AssertNamedEvent(entry, 123, 2, "eventname", "assigned name"));
+        Assert.Collection(batch.NamedEventChanges.Value.AsEnumerable(),
+            entry => AssertNamedEventChange(entry, NamedEventChangeType.Removed, 123, 1, "eventname", "assigned name"),
+            entry => AssertNamedEventChange(entry, NamedEventChangeType.Added, 123, 2, "eventname", "assigned name"));
     }
 
     [Fact]
@@ -2317,10 +2314,9 @@ public class RenderTreeDiffBuilderTest : IDisposable
 
         // Assert
         Assert.Empty(result.Edits);
-        Assert.Collection(batch.RemovedNamedEvents.Value.AsEnumerable(),
-            entry => AssertNamedEvent(entry, 123, 1, "eventname1", "original name"));
-        Assert.Collection(batch.AddedNamedEvents.Value.AsEnumerable(),
-            entry => AssertNamedEvent(entry, 123, 1, "eventname1", "changed name"));
+        Assert.Collection(batch.NamedEventChanges.Value.AsEnumerable(),
+            entry => AssertNamedEventChange(entry, NamedEventChangeType.Removed, 123, 1, "eventname1", "original name"),
+            entry => AssertNamedEventChange(entry, NamedEventChangeType.Added, 123, 1, "eventname1", "changed name"));
     }
 
     private (RenderTreeDiff, RenderTreeFrame[]) GetSingleUpdatedComponent(bool initializeFromFrames = false)
@@ -2486,13 +2482,15 @@ public class RenderTreeDiffBuilderTest : IDisposable
         Assert.Equal(toSiblingIndex, edit.MoveToSiblingIndex);
     }
 
-    private static void AssertNamedEvent(
-        NamedEvent namedEvent,
+    private static void AssertNamedEventChange(
+        NamedEventChange namedEvent,
+        NamedEventChangeType type,
         int componentId,
         int frameIndex,
         string eventType,
         string assignedName)
     {
+        Assert.Equal(type, namedEvent.ChangeType);
         Assert.Equal(componentId, namedEvent.ComponentId);
         Assert.Equal(frameIndex, namedEvent.FrameIndex);
         Assert.Equal(eventType, namedEvent.EventType);

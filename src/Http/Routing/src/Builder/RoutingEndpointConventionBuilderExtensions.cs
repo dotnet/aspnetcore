@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Builder;
@@ -121,6 +122,18 @@ public static class RoutingEndpointConventionBuilderExtensions
     public static TBuilder WithGroupName<TBuilder>(this TBuilder builder, string endpointGroupName) where TBuilder : IEndpointConventionBuilder
     {
         builder.WithMetadata(new EndpointGroupNameAttribute(endpointGroupName));
+        return builder;
+    }
+
+    /// <summary>
+    /// Disables anti-forgery token validation for all endpoints produced on
+    /// the target <see cref="IEndpointConventionBuilder"/>.
+    /// </summary>
+    /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>
+    /// <returns>The <see cref="IEndpointConventionBuilder"/>.</returns>
+    public static TBuilder DisableAntiforgery<TBuilder>(this TBuilder builder) where TBuilder : IEndpointConventionBuilder
+    {
+        builder.WithMetadata(AntiforgeryMetadata.ValidationNotRequired);
         return builder;
     }
 }

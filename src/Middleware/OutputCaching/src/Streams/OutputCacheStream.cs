@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.WriteStream;
+using System.Buffers;
 
 namespace Microsoft.AspNetCore.OutputCaching;
 
@@ -10,7 +10,7 @@ internal sealed class OutputCacheStream : Stream
     private readonly Stream _innerStream;
     private readonly long _maxBufferSize;
     private readonly int _segmentSize;
-    private readonly SegmentWriteStream _segmentWriteStream;
+    private readonly RecyclableSequenceBuilder _segmentWriteStream;
     private readonly Action _startResponseCallback;
 
     internal OutputCacheStream(Stream innerStream, long maxBufferSize, int segmentSize, Action startResponseCallback)
@@ -19,7 +19,7 @@ internal sealed class OutputCacheStream : Stream
         _maxBufferSize = maxBufferSize;
         _segmentSize = segmentSize;
         _startResponseCallback = startResponseCallback;
-        _segmentWriteStream = new SegmentWriteStream(_segmentSize);
+        _segmentWriteStream = new(_segmentSize);
     }
 
     internal bool BufferingEnabled { get; private set; } = true;
@@ -42,13 +42,13 @@ internal sealed class OutputCacheStream : Stream
         }
     }
 
-    internal CachedResponseBody GetCachedResponseBody()
+    internal ReadOnlySequence<byte> GetCachedResponseBody()
     {
         if (!BufferingEnabled)
         {
             throw new InvalidOperationException("Buffer stream cannot be retrieved since buffering is disabled.");
         }
-        return new CachedResponseBody(_segmentWriteStream.GetSegments(), _segmentWriteStream.Length);
+        return _segmentWriteStream.DetachAndReset();
     }
 
     internal void DisableBuffering()
@@ -122,7 +122,33 @@ internal sealed class OutputCacheStream : Stream
             }
             else
             {
-                _segmentWriteStream.Write(buffer, offset, count);
+                _segmentWriteStream.Write(buffer.AsSpan(offset, count));
+            }
+        }
+    }
+
+    public override void Write(ReadOnlySpan<byte> buffer)
+    {
+        try
+        {
+            _startResponseCallback();
+            _innerStream.Write(buffer);
+        }
+        catch
+        {
+            DisableBuffering();
+            throw;
+        }
+
+        if (BufferingEnabled)
+        {
+            if (_segmentWriteStream.Length + buffer.Length > _maxBufferSize)
+            {
+                DisableBuffering();
+            }
+            else
+            {
+                _segmentWriteStream.Write(buffer);
             }
         }
     }
@@ -151,7 +177,7 @@ internal sealed class OutputCacheStream : Stream
             }
             else
             {
-                await _segmentWriteStream.WriteAsync(buffer, cancellationToken);
+                _segmentWriteStream.Write(buffer.Span);
             }
         }
     }
@@ -179,6 +205,15 @@ internal sealed class OutputCacheStream : Stream
                 _segmentWriteStream.WriteByte(value);
             }
         }
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _segmentWriteStream?.Dispose();
+        }
+        base.Dispose(disposing);
     }
 
     public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)

@@ -159,6 +159,18 @@ public sealed class HealthCheckRegistration
     }
 
     /// <summary>
+    /// Gets or sets the individual delay applied to the health check after the application starts before executing
+    /// <see cref="IHealthCheckPublisher"/> instances. The delay is applied once at startup, and does
+    /// not apply to subsequent iterations.
+    /// </summary>
+    public TimeSpan? Delay { get; set; }
+
+    /// <summary>
+    /// Gets or sets the individual period used for the check.
+    /// </summary>
+    public TimeSpan? Period { get; set; }
+
+    /// <summary>
     /// Gets or sets the health check name.
     /// </summary>
     public string Name

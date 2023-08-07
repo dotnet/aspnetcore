@@ -63,7 +63,8 @@ public static partial class CSharpCodeFixVerifier<TAnalyzer, TCodeFix>
             FixedState = { Sources = { fixedSource.ReplaceLineEndings() } },
             ReferenceAssemblies = CSharpAnalyzerVerifier<TAnalyzer>.GetReferenceAssemblies(),
             NumberOfFixAllIterations = expectedIterations,
-            CodeActionEquivalenceKey = codeActionEquivalenceKey
+            CodeActionEquivalenceKey = codeActionEquivalenceKey,
+            CodeFixTestBehaviors = CodeFixTestBehaviors.SkipLocalDiagnosticCheck,
         };
 
         if (usageSource != null)

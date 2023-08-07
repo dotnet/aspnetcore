@@ -94,7 +94,7 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                 codeWriter.WriteLine(@"Debug.Assert(options.EndpointBuilder != null, ""EndpointBuilder not found."");");
                 codeWriter.WriteLine(@"Debug.Assert(options.EndpointBuilder.ApplicationServices != null, ""ApplicationServices not found."");");
                 codeWriter.WriteLine(@"Debug.Assert(options.EndpointBuilder.FilterFactories != null, ""FilterFactories not found."");");
-                codeWriter.WriteLine($"var handler = Cast(del, {endpoint.EmitHandlerDelegateType(considerOptionality: true)} => throw null!);");
+                codeWriter.WriteLine($"var handler = Cast(del, {endpoint.EmitHandlerDelegateType()} => throw null!);");
                 codeWriter.WriteLine("EndpointFilterDelegate? filteredInvocation = null;");
                 codeWriter.WriteLine("var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;");
                 endpoint.EmitLoggingPreamble(codeWriter);
@@ -242,6 +242,11 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
 
                 using var stringWriter = new StringWriter(CultureInfo.InvariantCulture);
                 using var codeWriter = new CodeWriter(stringWriter, baseIndent: 0);
+
+                if (hasFormBody)
+                {
+                    codeWriter.WriteLine(RequestDelegateGeneratorSources.AntiforgeryMetadataType);
+                }
 
                 if (hasFormBody || hasJsonBody || hasResponseMetadata)
                 {

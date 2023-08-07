@@ -82,7 +82,7 @@ public class Http3RequestTests : LoggedTest
         {
             var meterFactory = host.Services.GetRequiredService<IMeterFactory>();
 
-            using var connectionDuration = new MetricCollector<double>(meterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel-connection-duration");
+            using var connectionDuration = new MetricCollector<double>(meterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
 
             await host.StartAsync();
             var client = HttpHelpers.CreateClient();
@@ -105,9 +105,13 @@ public class Http3RequestTests : LoggedTest
                 m =>
                 {
                     Assert.True(m.Value > 0);
-                    Assert.Equal("Tls13", m.Tags["tls-protocol"]);
-                    Assert.Equal("HTTP/3", m.Tags["http-protocol"]);
-                    Assert.Equal($"127.0.0.1:{host.GetPort()}", m.Tags["endpoint"]);
+                    Assert.Equal("ipv4", (string)m.Tags["network.type"]);
+                    Assert.Equal("http", (string)m.Tags["network.protocol.name"]);
+                    Assert.Equal("3", (string)m.Tags["network.protocol.version"]);
+                    Assert.Equal("udp", (string)m.Tags["network.transport"]);
+                    Assert.Equal("127.0.0.1", (string)m.Tags["server.address"]);
+                    Assert.Equal(host.GetPort(), (int)m.Tags["server.port"]);
+                    Assert.Equal("1.3", (string)m.Tags["tls.protocol.version"]);
                 });
 
             await host.StopAsync();

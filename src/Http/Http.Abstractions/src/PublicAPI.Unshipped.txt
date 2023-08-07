@@ -1,6 +1,8 @@
 #nullable enable
 const Microsoft.AspNetCore.Http.StatusCodes.Status499ClientClosedRequest = 499 -> int
 *REMOVED*Microsoft.AspNetCore.Http.DefaultEndpointFilterInvocationContext.DefaultEndpointFilterInvocationContext(Microsoft.AspNetCore.Http.HttpContext! httpContext, params object![]! arguments) -> void
+Microsoft.AspNetCore.Antiforgery.IAntiforgeryMetadata
+Microsoft.AspNetCore.Antiforgery.IAntiforgeryMetadata.RequiresValidation.get -> bool
 Microsoft.AspNetCore.Http.DefaultEndpointFilterInvocationContext.DefaultEndpointFilterInvocationContext(Microsoft.AspNetCore.Http.HttpContext! httpContext, params object?[]! arguments) -> void
 Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult
 Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!

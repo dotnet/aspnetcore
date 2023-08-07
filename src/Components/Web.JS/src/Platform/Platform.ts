@@ -3,13 +3,12 @@
 
 import { MonoObject, MonoString, MonoArray } from 'dotnet/dotnet-legacy';
 import { WebAssemblyStartOptions } from './WebAssemblyStartOptions';
-import { WebAssemblyResourceLoader } from './WebAssemblyResourceLoader';
-import { JSInitializer } from '../JSInitializers/JSInitializers';
 
 export interface Platform {
-  start(options: Partial<WebAssemblyStartOptions>): Promise<PlatformApi>;
+  load(options: Partial<WebAssemblyStartOptions>): Promise<void>;
+  start(): Promise<PlatformApi>;
 
-  callEntryPoint(assemblyName: string): Promise<unknown>;
+  callEntryPoint(): Promise<unknown>;
 
   toUint8Array(array: System_Array<unknown>): Uint8Array;
 
@@ -30,8 +29,7 @@ export interface Platform {
 }
 
 export type PlatformApi = {
-  resourceLoader: WebAssemblyResourceLoader,
-  jsInitializer: JSInitializer
+  invokeLibraryInitializers(functionName: string, args: unknown[]): Promise<void>;
 }
 
 export interface HeapLock {

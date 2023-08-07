@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Html;
+using System.Diagnostics;
 using System.Globalization;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -13,6 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 /// Literal &lt;form&gt; elements in a view will share the default <see cref="FormContext"/> instance unless tag
 /// helpers are enabled.
 /// </remarks>
+[DebuggerDisplay("FormData = {FormData.Count}")]
 public class FormContext
 {
     private Dictionary<string, bool> _renderedFields;

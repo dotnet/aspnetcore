@@ -6,12 +6,12 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
 /// <summary>
-/// 
+/// A builder that can be used to configure Razor Components.
 /// </summary>
 public interface IRazorComponentsBuilder
 {
     /// <summary>
-    /// 
+    /// Gets the <see cref="IServiceCollection"/>.
     /// </summary>
     public IServiceCollection Services { get; }
 }

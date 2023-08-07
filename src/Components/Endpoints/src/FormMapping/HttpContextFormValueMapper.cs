@@ -4,9 +4,12 @@
 using System.Buffers;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 using Microsoft.AspNetCore.Components.Forms.Mapping;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
@@ -14,34 +17,69 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 internal sealed class HttpContextFormValueMapper : IFormValueMapper
 {
     private readonly HttpContextFormDataProvider _formData;
-    private readonly FormDataMapperOptions _options = new();
+    private readonly FormDataMapperOptions _options;
     private static readonly ConcurrentDictionary<Type, FormValueSupplier> _cache = new();
 
-    public HttpContextFormValueMapper(HttpContextFormDataProvider formData)
+    public HttpContextFormValueMapper(
+        HttpContextFormDataProvider formData,
+        IOptions<RazorComponentOptions> options)
     {
         _formData = formData;
+        _options = options.Value._formMappingOptions;
     }
 
-    public bool CanMap(Type valueType, string? formName = null)
+    public bool CanMap(Type valueType, string scopeName, string? formName)
     {
-        if (formName == null)
+        // We must always match on scope
+        if (!_formData.TryGetIncomingHandlerName(out var incomingScopeQualifiedFormName)
+            || !MatchesScope(incomingScopeQualifiedFormName, scopeName, out var incomingFormName))
         {
-            return _options.ResolveConverter(valueType) != null;
+            return false;
+        }
+
+        // Matching on formname is optional, enforced only if a nonempty form name was demanded by the receiver
+        if (formName is not null && !incomingFormName.Equals(formName, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        return _options.ResolveConverter(valueType) is not null;
+    }
+
+    private static bool MatchesScope(string incomingScopeQualifiedFormName, string currentMappingScopeName, out ReadOnlySpan<char> incomingFormName)
+    {
+        if (incomingScopeQualifiedFormName.StartsWith('['))
+        {
+            // The scope-qualified name is in the form "[scopename]formname", so validate that the [scopename]
+            // prefix matches and return the formname part
+            var incomingScopeQualifiedFormNameSpan = incomingScopeQualifiedFormName.AsSpan();
+            if (incomingScopeQualifiedFormNameSpan[1..].StartsWith(currentMappingScopeName, StringComparison.Ordinal)
+                && incomingScopeQualifiedFormName.Length >= currentMappingScopeName.Length + 2
+                && incomingScopeQualifiedFormName[currentMappingScopeName.Length + 1] == ']')
+            {
+                incomingFormName = incomingScopeQualifiedFormNameSpan[(currentMappingScopeName.Length + 2)..];
+                return true;
+            }
         }
         else
         {
-            var result = _formData.IsFormDataAvailable &&
-                string.Equals(formName, _formData.Name, StringComparison.Ordinal) &&
-                _options.ResolveConverter(valueType) != null;
-
-            return result;
+            // The scope-qualified name is in the form "formname", so validating that the scopename matches
+            // means checking that it's empty
+            if (string.IsNullOrEmpty(currentMappingScopeName))
+            {
+                incomingFormName = incomingScopeQualifiedFormName;
+                return true;
+            }
         }
+
+        incomingFormName = default;
+        return false;
     }
 
     public void Map(FormValueMappingContext context)
     {
         // This will func to a proper binder
-        if (!CanMap(context.ValueType, context.FormName))
+        if (!CanMap(context.ValueType, context.AcceptMappingScopeName, context.AcceptFormName))
         {
             context.SetResult(null);
         }
@@ -57,6 +95,8 @@ internal sealed class HttpContextFormValueMapper : IFormValueMapper
 
     internal abstract class FormValueSupplier
     {
+        [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
+        [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
         public abstract void Deserialize(
             FormValueMappingContext context,
             FormDataMapperOptions options,
@@ -65,6 +105,8 @@ internal sealed class HttpContextFormValueMapper : IFormValueMapper
 
     internal class FormValueSupplier<T> : FormValueSupplier
     {
+        [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
+        [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
         public override void Deserialize(
             FormValueMappingContext context,
             FormDataMapperOptions options,
@@ -85,14 +127,17 @@ internal sealed class HttpContextFormValueMapper : IFormValueMapper
                 }
                 buffer = ArrayPool<char>.Shared.Rent(options.MaxKeyBufferSize);
 
-                var reader = new FormDataReader(
+                using var reader = new FormDataReader(
                     dictionary,
                     options.UseCurrentCulture ? CultureInfo.CurrentCulture : CultureInfo.InvariantCulture,
                     buffer.AsMemory(0, options.MaxKeyBufferSize))
                 {
                     ErrorHandler = context.OnError,
-                    AttachInstanceToErrorsHandler = context.MapErrorToContainer
+                    AttachInstanceToErrorsHandler = context.MapErrorToContainer,
+                    MaxRecursionDepth = options.MaxRecursionDepth,
+                    MaxErrorCount = options.MaxErrorCount
                 };
+
                 reader.PushPrefix(context.ParameterName);
                 var result = FormDataMapper.Map<T>(reader, options);
                 context.SetResult(result);

@@ -112,7 +112,7 @@ public abstract class RequestDelegateCreationTestBase : LoggedTest
     internal Endpoint GetEndpointFromCompilation(Compilation compilation, bool? expectGeneratedCodeOverride = null, IServiceProvider serviceProvider = null) =>
         Assert.Single(GetEndpointsFromCompilation(compilation, expectGeneratedCodeOverride, serviceProvider));
 
-    internal Endpoint[] GetEndpointsFromCompilation(Compilation compilation, bool? expectGeneratedCodeOverride = null, IServiceProvider serviceProvider = null)
+    internal Endpoint[] GetEndpointsFromCompilation(Compilation compilation, bool? expectGeneratedCodeOverride = null, IServiceProvider serviceProvider = null, bool skipGeneratedCodeCheck = false)
     {
         var assemblyName = compilation.AssemblyName!;
         var symbolsName = Path.ChangeExtension(assemblyName, "pdb");
@@ -166,6 +166,11 @@ public abstract class RequestDelegateCreationTestBase : LoggedTest
 
         // Trigger Endpoint build by calling getter.
         var endpoints = dataSource.Endpoints.ToArray();
+
+        if (skipGeneratedCodeCheck == true)
+        {
+            return endpoints;
+        }
 
         foreach (var endpoint in endpoints)
         {

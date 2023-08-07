@@ -93,7 +93,9 @@ try {
       }
       'binskim' {
         if ($targetDirectory) {
-          $tool.Args += "`"Target < $TargetDirectory`""
+          # Binskim crashes due to specific PDBs. GitHub issue: https://github.com/microsoft/binskim/issues/924.
+          # We are excluding all `_.pdb` files from the scan.
+          $tool.Args += "`"Target < $TargetDirectory\**;-:file|$TargetDirectory\**\_.pdb`""
         }
         $tool.Args += $BinskimAdditionalRunConfigParams
       }
