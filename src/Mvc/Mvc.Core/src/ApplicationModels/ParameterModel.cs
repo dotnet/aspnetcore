@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
 /// <summary>
 /// A type that represents a parameter.
 /// </summary>
-[DebuggerDisplay("Name = {ParameterName}")]
+[DebuggerDisplay("Type = {GetType().Name}, Name = {ParameterName}")]
 public class ParameterModel : ParameterModelBase, ICommonModel
 {
     /// <summary>
