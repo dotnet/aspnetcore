@@ -55,6 +55,6 @@ internal class PageComponentInfo
 
     private string GetDebuggerDisplay()
     {
-        return $"{Type.FullName}: {DisplayName}";
+        return $"Type = {Type.FullName}, DisplayName = {DisplayName}";
     }
 }

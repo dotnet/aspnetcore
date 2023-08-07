@@ -318,7 +318,7 @@ internal sealed class UriBuildingContext
 
     private string DebuggerToString()
     {
-        return string.Format(CultureInfo.InvariantCulture, "{{Accepted: '{0}' Buffered: '{1}'}}", _path, string.Join("", _buffer));
+        return $@"Accepted = ""{_path}"", Buffered = ""{string.Join("", _buffer)}""";
     }
 
     private readonly struct BufferValue
