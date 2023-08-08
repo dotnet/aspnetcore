@@ -14,6 +14,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         void ConnectionWriteFin(string connectionId, string reason);
 
+        void ConnectionWriteRst(string connectionId, string reason);
+
         void ConnectionWrite(string connectionId, int count);
 
         void ConnectionWriteCallback(string connectionId, int status);

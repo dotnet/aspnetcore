@@ -5,11 +5,14 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Sockets;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests.TestHelpers;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
@@ -33,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             // Start primary listener
             var libuvThreadPrimary = new LibuvThread(libuv, transportContextPrimary);
             await libuvThreadPrimary.StartAsync();
-            var listenerPrimary = new ListenerPrimary(transportContextPrimary);
+            var listenerPrimary = new ListenerPrimary(transportContextPrimary, dispatchAll: false);
             await listenerPrimary.StartAsync(pipeName, pipeMessage, endpoint, libuvThreadPrimary);
             var address = GetUri(listenerPrimary.EndPoint);
 
@@ -50,6 +53,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             }
 
             var listenerCount = listenerPrimary.UvPipeCount;
+            Assert.Equal(0, listenerCount);
+
             // Add secondary listener
             var libuvThreadSecondary = new LibuvThread(libuv, transportContextSecondary);
             await libuvThreadSecondary.StartAsync();
@@ -85,6 +90,74 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             await listenerPrimary.DisposeAsync();
             await libuvThreadPrimary.StopAsync(TimeSpan.FromSeconds(5));
         }
+        [Theory]
+        [InlineData(1)]
+        [InlineData(2)]
+        [InlineData(3)]
+        public async Task ConnectionsGetRoundRobinedToSecondaryListeners_DispatchAll(int secondaryCount)
+        {
+            var libuv = new LibuvFunctions();
+
+            var endpoint = new IPEndPoint(IPAddress.Loopback, 0);
+
+            var transportContextPrimary = new TestLibuvTransportContext();
+            var transportContextSecondary = new TestLibuvTransportContext();
+
+            var pipeName = (libuv.IsWindows ? @"\\.\pipe\kestrel_" : "/tmp/kestrel_") + Guid.NewGuid().ToString("n");
+            var pipeMessage = Guid.NewGuid().ToByteArray();
+
+            // Start primary listener
+            var libuvThreadPrimary = new LibuvThread(libuv, transportContextPrimary);
+            await libuvThreadPrimary.StartAsync();
+            var listenerPrimary = new ListenerPrimary(transportContextPrimary, dispatchAll: true);
+            await listenerPrimary.StartAsync(pipeName, pipeMessage, endpoint, libuvThreadPrimary);
+            var address = GetUri(listenerPrimary.EndPoint);
+
+            Assert.Equal(0, listenerPrimary.UvPipeCount);
+
+            // Add secondary listeners
+            var listenerSecondaries = new ListenerSecondary[secondaryCount];
+            for (int i = 0; i < secondaryCount; i++)
+            {
+                var libuvThread = new LibuvThread(libuv, transportContextSecondary);
+                await libuvThread.StartAsync();
+                var listener = new ListenerSecondary(transportContextSecondary);
+                await listener.StartAsync(pipeName, pipeMessage, endpoint, libuvThread);
+                listenerSecondaries[i] = listener;
+            }
+
+            var maxWait = Task.Delay(TestConstants.DefaultTimeout);
+            // wait for ListenerPrimary.ReadCallback to add the secondary pipe
+            while (listenerPrimary.UvPipeCount < secondaryCount)
+            {
+                var completed = await Task.WhenAny(maxWait, Task.Delay(100));
+                if (ReferenceEquals(completed, maxWait))
+                {
+                    throw new TimeoutException("Timed out waiting for secondary listener to become available");
+                }
+            }
+
+            // Check that the secondaries are visited in order and that it wraps
+            // around without hitting the primary
+            for (int i = 0; i < secondaryCount + 1; i++)
+            {
+                var expectedTask = listenerSecondaries[i % secondaryCount].AcceptAsync().AsTask();
+
+                using var socket = await HttpClientSlim.GetSocket(address);
+
+                await using var connection = await expectedTask.DefaultTimeout();
+            }
+
+            foreach (var listenerSecondary in listenerSecondaries)
+            {
+                var libuvThread = listenerSecondary.Thread;
+                await listenerSecondary.DisposeAsync();
+                await libuvThread.StopAsync(TimeSpan.FromSeconds(5));
+            }
+
+            await listenerPrimary.DisposeAsync();
+            await libuvThreadPrimary.StopAsync(TimeSpan.FromSeconds(5));
+        }
 
         // https://github.com/aspnet/KestrelHttpServer/issues/1182
         [Fact]
@@ -103,7 +176,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             // Start primary listener
             var libuvThreadPrimary = new LibuvThread(libuv, transportContextPrimary);
             await libuvThreadPrimary.StartAsync();
-            var listenerPrimary = new ListenerPrimary(transportContextPrimary);
+            var listenerPrimary = new ListenerPrimary(transportContextPrimary, dispatchAll: false);
             await listenerPrimary.StartAsync(pipeName, pipeMessage, endpoint, libuvThreadPrimary);
             var address = GetUri(listenerPrimary.EndPoint);
 
@@ -181,7 +254,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             Assert.Equal(LogLevel.Debug, logMessage.LogLevel);
         }
 
-
         [Fact]
         public async Task PipeConnectionsWithWrongMessageAreLoggedAndIgnored()
         {
@@ -199,7 +271,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             // Start primary listener
             var libuvThreadPrimary = new LibuvThread(libuv, transportContextPrimary);
             await libuvThreadPrimary.StartAsync();
-            var listenerPrimary = new ListenerPrimary(transportContextPrimary);
+            var listenerPrimary = new ListenerPrimary(transportContextPrimary, dispatchAll: false);
             await listenerPrimary.StartAsync(pipeName, pipeMessage, endpoint, libuvThreadPrimary);
             var address = GetUri(listenerPrimary.EndPoint);
 
@@ -235,6 +307,108 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             Assert.Contains("Bad data", errorMessage.Exception.ToString());
         }
 
+        [Fact]
+        public async Task PipeConnectionsWithWrongMessageAreLoggedAndIgnored_DispatchAllNoneRemaining()
+        {
+            var libuv = new LibuvFunctions();
+            var endpoint = new IPEndPoint(IPAddress.Loopback, 0);
+
+            var logger = new TestApplicationErrorLogger();
+
+            var transportContextPrimary = new TestLibuvTransportContext { Log = new LibuvTrace(logger) };
+            var transportContextSecondary = new TestLibuvTransportContext();
+
+            var pipeName = (libuv.IsWindows ? @"\\.\pipe\kestrel_" : "/tmp/kestrel_") + Guid.NewGuid().ToString("n");
+            var pipeMessage = Guid.NewGuid().ToByteArray();
+
+            // Start primary listener
+            var libuvThreadPrimary = new LibuvThread(libuv, transportContextPrimary);
+            await libuvThreadPrimary.StartAsync();
+            var listenerPrimary = new ListenerPrimary(transportContextPrimary, dispatchAll: true);
+            await listenerPrimary.StartAsync(pipeName, pipeMessage, endpoint, libuvThreadPrimary);
+            var address = GetUri(listenerPrimary.EndPoint);
+
+            // Add secondary listener with wrong pipe message
+            var libuvThreadSecondary = new LibuvThread(libuv, transportContextSecondary);
+            await libuvThreadSecondary.StartAsync();
+            var listenerSecondary = new ListenerSecondary(transportContextSecondary);
+            await listenerSecondary.StartAsync(pipeName, Guid.NewGuid().ToByteArray(), endpoint, libuvThreadSecondary);
+
+            // Wait up to 10 seconds for error to be logged
+            for (var i = 0; i < 10 && logger.TotalErrorsLogged == 0; i++)
+            {
+                await Task.Delay(100);
+            }
+
+            Assert.Equal(1, logger.TotalErrorsLogged);
+
+            var badDataMessage = Assert.Single(logger.Messages.Where(m => m.LogLevel == LogLevel.Error));
+            Assert.IsType<IOException>(badDataMessage.Exception);
+            Assert.Contains("Bad data", badDataMessage.Exception.ToString());
+
+            using var socket = await HttpClientSlim.GetSocket(address);
+
+            var _ = listenerPrimary.AcceptAsync();
+
+            // Wait up to 10 seconds for error to be logged
+            for (var i = 0; i < 10 && logger.TotalErrorsLogged <= 1; i++)
+            {
+                await Task.Delay(100);
+            }
+
+            var noSecondariesMessage = logger.Messages.Last(m => m.LogLevel == LogLevel.Error);
+            Assert.Null(noSecondariesMessage.Exception);
+            Assert.Contains("listeners failed to initialize", noSecondariesMessage.Message);
+
+            Assert.Null(libuvThreadPrimary.FatalError);
+
+            await listenerSecondary.DisposeAsync();
+            await libuvThreadSecondary.StopAsync(TimeSpan.FromSeconds(5));
+
+            await listenerPrimary.DisposeAsync();
+            await libuvThreadPrimary.StopAsync(TimeSpan.FromSeconds(5));
+        }
+
+        [Fact]
+        public async Task DispatchAllConnectionBeforeSecondaries()
+        {
+            var libuv = new LibuvFunctions();
+            var endpoint = new IPEndPoint(IPAddress.Loopback, 0);
+
+            var logger = new TestApplicationErrorLogger();
+
+            var transportContextPrimary = new TestLibuvTransportContext { Log = new LibuvTrace(logger) };
+            var transportContextSecondary = new TestLibuvTransportContext();
+
+            var pipeName = (libuv.IsWindows ? @"\\.\pipe\kestrel_" : "/tmp/kestrel_") + Guid.NewGuid().ToString("n");
+            var pipeMessage = Guid.NewGuid().ToByteArray();
+
+            // Start primary listener
+            var libuvThreadPrimary = new LibuvThread(libuv, transportContextPrimary);
+            await libuvThreadPrimary.StartAsync();
+            var listenerPrimary = new ListenerPrimary(transportContextPrimary, dispatchAll: true);
+            await listenerPrimary.StartAsync(pipeName, pipeMessage, endpoint, libuvThreadPrimary);
+            var address = GetUri(listenerPrimary.EndPoint);
+
+            using var socket = await HttpClientSlim.GetSocket(address);
+
+            var _ = listenerPrimary.AcceptAsync();
+
+            // Wait up to 10 seconds for error to be logged
+            for (var i = 0; i < 10 && logger.TotalErrorsLogged <= 1; i++)
+            {
+                await Task.Delay(100);
+            }
+
+            var noSecondariesMessage = logger.Messages.Last(m => m.LogLevel == LogLevel.Error);
+            Assert.Null(noSecondariesMessage.Exception);
+            Assert.Contains("before listeners", noSecondariesMessage.Message);
+
+            Assert.Null(libuvThreadPrimary.FatalError);
+
+            await listenerPrimary.DisposeAsync();
+            await libuvThreadPrimary.StopAsync(TimeSpan.FromSeconds(5));
+        }
 
         private static async Task AssertRoundRobin(Uri address, ListenerPrimary listenerPrimary, ListenerSecondary listenerSecondary, ListenerContext currentListener, Task<LibuvConnection> expected = null, int connections = 4)
         {

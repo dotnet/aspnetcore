@@ -6,6 +6,8 @@ using System.Buffers;
 using System.IO;
 using System.IO.Pipelines;
 using System.Net;
+using System.Net.Sockets;
+using System.Reflection.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -28,6 +30,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         private readonly IDuplexPipe _originalTransport;
         private readonly CancellationTokenSource _connectionClosedTokenSource = new CancellationTokenSource();
 
+        private readonly bool _finOnError;
+
         private volatile ConnectionAbortedException _abortReason;
 
         private MemoryHandle _bufferHandle;
@@ -43,9 +47,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                                PipeOptions inputOptions = null,
                                PipeOptions outputOptions = null,
                                long? maxReadBufferSize = null,
-                               long? maxWriteBufferSize = null)
+                               long? maxWriteBufferSize = null,
+                               bool finOnError = false)
         {
             _socket = socket;
+            _finOnError = finOnError;
 
             LocalEndPoint = localEndPoint;
             RemoteEndPoint = remoteEndPoint;
@@ -124,6 +130,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 {
                     inputError ??= _abortReason ?? new ConnectionAbortedException("The libuv transport's send loop completed gracefully.");
 
+                    if (!_finOnError && _abortReason is not null)
+                    {
+                        // When shutdown isn't clean (note that we're using _abortReason, rather than inputError, to exclude that case),
+                        // we set the DontLinger socket option to cause libuv to send a RST and release any buffered response data.
+                        SetDontLingerOption(_socket);
+                    }
+
                     // Now, complete the input so that no more reads can happen
                     Input.Complete(inputError);
                     Output.Complete(outputError);
@@ -132,8 +145,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                     // on the stream handle
                     Input.CancelPendingFlush();
 
-                    // Send a FIN
-                    Log.ConnectionWriteFin(ConnectionId, inputError.Message);
+                    if (!_finOnError && _abortReason is not null)
+                    {
+                        // Send a RST
+                        Log.ConnectionWriteRst(ConnectionId, inputError.Message);
+                    }
+                    else
+                    {
+                        // Send a FIN
+                        Log.ConnectionWriteFin(ConnectionId, inputError.Message);
+                    }
 
                     // We're done with the socket now
                     _socket.Dispose();
@@ -150,6 +171,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             }
         }
 
+        /// <remarks>
+        /// This should be called on <see cref="_socket"/> before it is disposed.
+        /// Both <see cref="Abort"/> and <see cref="StartCore"/> call dispose but, rather than predict
+        /// which will do so first (which varies), we make this method idempotent and call it in both.
+        /// </remarks>
+        private static void SetDontLingerOption(UvStreamHandle socket)
+        {
+            if (!socket.IsClosed && !socket.IsInvalid)
+            {
+                var libuv = socket.Libuv;
+                var pSocket = IntPtr.Zero;
+                libuv.uv_fileno(socket, ref pSocket);
+
+                // libuv doesn't expose setsockopt, so we take advantage of the fact that
+                // Socket already has a PAL
+                using var managedHandle = new SafeSocketHandle(pSocket, ownsHandle: false);
+                using var managedSocket = new Socket(managedHandle);
+                managedSocket.LingerState = new LingerOption(enable: true, seconds: 0);
+            }
+        }
+
         public override void Abort(ConnectionAbortedException abortReason)
         {
             _abortReason = abortReason;
@@ -157,8 +199,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             // Cancel WriteOutputAsync loop after setting _abortReason.
             Output.CancelPendingRead();
 
-            // This cancels any pending I/O.
-            Thread.Post(s => s.Dispose(), _socket);
+            Thread.Post(static (self) =>
+            {
+                if (!self._finOnError)
+                {
+                    SetDontLingerOption(self._socket);
+                }
+
+                // This cancels any pending I/O.
+                self._socket.Dispose();
+            }, this);
         }
 
         public override async ValueTask DisposeAsync()

@@ -27,6 +27,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         [LoggerMessage(7, LogLevel.Debug, @"Connection id ""{ConnectionId}"" sending FIN because: ""{Reason}""", EventName = nameof(ConnectionWriteFin))]
         public partial void ConnectionWriteFin(string connectionId, string reason);
 
+        [LoggerMessage(8, LogLevel.Debug, @"Connection id ""{ConnectionId}"" sending RST because: ""{Reason}""", EventName = nameof(ConnectionWriteRst))]
+        public partial void ConnectionWriteRst(string connectionId, string reason);
+
         public void ConnectionWrite(string connectionId, int count)
         {
             // Don't log for now since this could be *too* verbose.
