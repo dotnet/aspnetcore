@@ -25,8 +25,8 @@ export class MessageBuffer {
 
     // private _backPressurePromise: Promise<void> = Promise.resolve();
     private _resendPromise: Promise<void> = Promise.resolve();
-    private _resendResolve?: (value: void) => void;
-    private _resendReject?: (value?: any) => void;
+    private _resendResolve?: (value: void) => void = undefined;
+    private _resendReject?: (value?: any) => void = undefined;
 
     constructor(protocol: IHubProtocol, connection: IConnection) {
         this._protocol = protocol;
@@ -123,6 +123,7 @@ export class MessageBuffer {
         if (message.sequenceId > this._currentReceivingSequenceId) {
             // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this._connection.stop(new Error("Sequence ID greater than amount of messages we've received."));
+            return;
         }
 
         this._currentReceivingSequenceId = message.sequenceId;

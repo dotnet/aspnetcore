@@ -1659,15 +1659,15 @@ describe("TransportSendQueue", () => {
 
     it("using acks restarts connection", async () => {
         await VerifyLogger.run(async (logger) => {
-            let o: INegotiateResponse = defaultNegotiateResponse;
-            o.useAck = true;
+            const negotiateResponse: INegotiateResponse = { ...defaultNegotiateResponse };
+            negotiateResponse.useAck = true;
 
             const options: IHttpConnectionOptions = {
                 ...commonOptions,
                 useAcks: true,
                 WebSocket: TestWebSocket,
                 httpClient: new TestHttpClient()
-                    .on("POST", () => o)
+                    .on("POST", () => negotiateResponse)
                     .on("GET", () => ""),
                 logger,
             } as IHttpConnectionOptions;
@@ -1684,7 +1684,7 @@ describe("TransportSendQueue", () => {
             // resend()
             let disconnectedCalled = false;
             let resendCalled = false;
-            let resendPromise = new PromiseSource();
+            const resendPromise = new PromiseSource();
             connection.features.disconnected = () => {
                 disconnectedCalled = true;
                 expect(resendCalled).toBe(false);
@@ -1697,7 +1697,7 @@ describe("TransportSendQueue", () => {
             };
 
             TestWebSocket.webSocketSet = new PromiseSource();
-            let startPromise = connection.start(TransferFormat.Text);
+            const startPromise = connection.start(TransferFormat.Text);
             await TestWebSocket.webSocketSet;
             await TestWebSocket.webSocket.openSet;
             TestWebSocket.webSocket.onopen(new TestEvent());
@@ -1723,21 +1723,21 @@ describe("TransportSendQueue", () => {
 
     it("using acks restarts connection and closes on error", async () => {
         await VerifyLogger.run(async (logger) => {
-            let o: INegotiateResponse = defaultNegotiateResponse;
-            o.useAck = true;
+            const negotiateResponse: INegotiateResponse = { ...defaultNegotiateResponse };
+            negotiateResponse.useAck = true;
 
             const options: IHttpConnectionOptions = {
                 ...commonOptions,
                 useAcks: true,
                 WebSocket: TestWebSocket,
                 httpClient: new TestHttpClient()
-                    .on("POST", () => o)
+                    .on("POST", () => negotiateResponse)
                     .on("GET", () => ""),
                 logger,
             } as IHttpConnectionOptions;
 
             const connection = new HttpConnection("http://tempuri.org", options);
-            let onclosePromise = new PromiseSource();
+            const onclosePromise = new PromiseSource();
             connection.onclose = (error) => {
                 onclosePromise.resolve();
             };
@@ -1759,7 +1759,7 @@ describe("TransportSendQueue", () => {
             };
 
             TestWebSocket.webSocketSet = new PromiseSource();
-            let startPromise = connection.start(TransferFormat.Text);
+            const startPromise = connection.start(TransferFormat.Text);
             await TestWebSocket.webSocketSet;
             await TestWebSocket.webSocket.openSet;
             TestWebSocket.webSocket.onopen(new TestEvent());

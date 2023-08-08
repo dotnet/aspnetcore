@@ -1823,6 +1823,355 @@ describe("HubConnection", () => {
             });
         });
     });
+
+    describe("stateful reconnect", () => {
+        it("sends sequence message on reconnect", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                // tell HubConnection we "negotiated" reconnect
+                connection.features.reconnect = true;
+
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    await hubConnection.start();
+
+                    // HubConnection should set these
+                    expect(connection.features.disconnected).toBeDefined();
+                    expect(connection.features.resend).toBeDefined();
+
+                    // Pretend TestConnection disconnected
+                    connection.features.disconnected();
+                    await connection.features.resend(true);
+
+                    expect(connection.sentData.length).toBe(3);
+                    expect(JSON.parse(connection.sentData[2])).toEqual({
+                        type: MessageType.Sequence,
+                        sequenceId: 1,
+                    });
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
+
+        it("resends sent messages on reconnect", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                // tell HubConnection we "negotiated" reconnect
+                connection.features.reconnect = true;
+
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    await hubConnection.start();
+
+                    // HubConnection should set these
+                    expect(connection.features.disconnected).toBeDefined();
+                    expect(connection.features.resend).toBeDefined();
+
+                    await hubConnection.send("test", 13);
+                    await hubConnection.send("test", 12);
+                    await hubConnection.send("test", 11);
+
+                    // Pretend TestConnection disconnected
+                    connection.features.disconnected();
+                    await connection.features.resend(true);
+
+                    expect(connection.sentData.length).toBe(9);
+                    expect(JSON.parse(connection.sentData[5])).toEqual({
+                        type: MessageType.Sequence,
+                        sequenceId: 1,
+                    });
+                    expect(JSON.parse(connection.sentData[6])).toEqual({
+                        type: MessageType.Invocation,
+                        target: "test",
+                        arguments: [13]
+                    });
+                    expect(JSON.parse(connection.sentData[7])).toEqual({
+                        type: MessageType.Invocation,
+                        target: "test",
+                        arguments: [12]
+                    });
+                    expect(JSON.parse(connection.sentData[8])).toEqual({
+                        type: MessageType.Invocation,
+                        target: "test",
+                        arguments: [11]
+                    });
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
+
+        it("resends sent messages while disconnected on reconnect", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                // tell HubConnection we "negotiated" reconnect
+                connection.features.reconnect = true;
+
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    await hubConnection.start();
+
+                    // HubConnection should set these
+                    expect(connection.features.disconnected).toBeDefined();
+                    expect(connection.features.resend).toBeDefined();
+
+                    await hubConnection.send("test", 13);
+
+                    // Pretend TestConnection disconnected
+                    connection.features.disconnected();
+
+                    // Send while disconnected, waits until resend completes
+                    const sendTask = hubConnection.send("test", 22);
+                    let sendDone = false;
+                    sendTask.finally(() => sendDone = true);
+
+                    expect(sendDone).toBeFalsy();
+
+                    await connection.features.resend(true);
+
+                    await sendTask;
+                    expect(sendDone).toBeTruthy();
+
+                    expect(connection.sentData.length).toBe(6);
+                    expect(JSON.parse(connection.sentData[3])).toEqual({
+                        type: MessageType.Sequence,
+                        sequenceId: 1,
+                    });
+                    expect(JSON.parse(connection.sentData[4])).toEqual({
+                        type: MessageType.Invocation,
+                        target: "test",
+                        arguments: [13]
+                    });
+                    expect(JSON.parse(connection.sentData[5])).toEqual({
+                        type: MessageType.Invocation,
+                        target: "test",
+                        arguments: [22]
+                    });
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
+
+        it("receiving ack removes buffered messages", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                // tell HubConnection we "negotiated" reconnect
+                connection.features.reconnect = true;
+
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    await hubConnection.start();
+
+                    // HubConnection should set these
+                    expect(connection.features.disconnected).toBeDefined();
+                    expect(connection.features.resend).toBeDefined();
+
+                    await hubConnection.send("test", 13);
+                    await hubConnection.send("test", 14);
+                    await hubConnection.send("test", 15);
+
+                    connection.receive({ type: MessageType.Ack, sequenceId: 2 });
+
+                    // Pretend TestConnection disconnected
+                    connection.features.disconnected();
+
+                    await connection.features.resend(true);
+
+                    expect(connection.sentData.length).toBe(7);
+                    expect(JSON.parse(connection.sentData[5])).toEqual({
+                        type: MessageType.Sequence,
+                        sequenceId: 3,
+                    });
+                    expect(JSON.parse(connection.sentData[6])).toEqual({
+                        type: MessageType.Invocation,
+                        target: "test",
+                        arguments: [15]
+                    });
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
+
+        it("sends ack after receiving message", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                // tell HubConnection we "negotiated" reconnect
+                connection.features.reconnect = true;
+
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    await hubConnection.start();
+
+                    connection.receive({ type: MessageType.Invocation, target: "t", arguments: [] });
+
+                    await delayUntil(2000, () => connection.sentData.length === 3);
+
+                    expect(JSON.parse(connection.sentData[2])).toEqual({
+                        type: MessageType.Ack,
+                        sequenceId: 1,
+                    });
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
+
+        it("sends ack after receiving many messages", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                // tell HubConnection we "negotiated" reconnect
+                connection.features.reconnect = true;
+
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    await hubConnection.start();
+
+                    connection.receive({ type: MessageType.Invocation, target: "t", arguments: [] });
+                    connection.receive({ type: MessageType.Invocation, target: "t", arguments: [] });
+                    connection.receive({ type: MessageType.Invocation, target: "t", arguments: [] });
+                    connection.receive({ type: MessageType.Invocation, target: "t", arguments: [] });
+
+                    await delayUntil(2000, () => connection.sentData.length === 3);
+
+                    expect(JSON.parse(connection.sentData[2])).toEqual({
+                        type: MessageType.Ack,
+                        sequenceId: 4,
+                    });
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
+
+        it("messages ignored after reconnect if already received", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                // tell HubConnection we "negotiated" reconnect
+                connection.features.reconnect = true;
+
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    let methodCalled = 0;
+                    hubConnection.on("t", () => {
+                        methodCalled++;
+                    });
+                    await hubConnection.start();
+
+                    connection.receive({ type: MessageType.Invocation, target: "t", arguments: [] });
+                    connection.receive({ type: MessageType.Invocation, target: "t", arguments: [] });
+
+                    expect(methodCalled).toBe(2);
+
+                    // HubConnection should set these
+                    expect(connection.features.disconnected).toBeDefined();
+                    expect(connection.features.resend).toBeDefined();
+
+                    // Pretend TestConnection disconnected
+                    connection.features.disconnected();
+
+                    await connection.features.resend(true);
+
+                    connection.receive({ type: MessageType.Sequence, sequenceId: 1 });
+
+                    connection.receive({ type: MessageType.Invocation, target: "t", arguments: [] });
+                    connection.receive({ type: MessageType.Invocation, target: "t", arguments: [] });
+
+                    expect(methodCalled).toBe(2);
+
+                    connection.receive({ type: MessageType.Invocation, target: "t", arguments: [] });
+                    expect(methodCalled).toBe(3);
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
+
+        it("sequence message updates what messages are ignored", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                // tell HubConnection we "negotiated" reconnect
+                connection.features.reconnect = true;
+
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    let methodCalled = 0;
+                    hubConnection.on("t", () => {
+                        methodCalled++;
+                    });
+                    await hubConnection.start();
+
+                    connection.receive({ type: MessageType.Invocation, target: "t", arguments: [] });
+                    connection.receive({ type: MessageType.Invocation, target: "t", arguments: [] });
+
+                    expect(methodCalled).toBe(2);
+
+                    // HubConnection should set these
+                    expect(connection.features.disconnected).toBeDefined();
+                    expect(connection.features.resend).toBeDefined();
+
+                    // Pretend TestConnection disconnected
+                    connection.features.disconnected();
+
+                    await connection.features.resend(true);
+
+                    connection.receive({ type: MessageType.Sequence, sequenceId: 2 });
+
+                    connection.receive({ type: MessageType.Invocation, target: "t", arguments: [] });
+                    expect(methodCalled).toBe(2);
+
+                    connection.receive({ type: MessageType.Invocation, target: "t", arguments: [] });
+
+                    expect(methodCalled).toBe(3);
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
+
+        it.only("sequence message with ID too high close connection", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                // tell HubConnection we "negotiated" reconnect
+                connection.features.reconnect = true;
+
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    let methodCalled = 0;
+                    hubConnection.on("t", () => {
+                        methodCalled++;
+                    });
+                    const closeError = new PromiseSource<Error | undefined>();
+                    hubConnection.onclose((e) => {
+                        closeError.resolve(e);
+                    });
+                    await hubConnection.start();
+
+                    connection.receive({ type: MessageType.Invocation, target: "t", arguments: [] });
+                    connection.receive({ type: MessageType.Invocation, target: "t", arguments: [] });
+
+                    expect(methodCalled).toBe(2);
+
+                    // HubConnection should set these
+                    expect(connection.features.disconnected).toBeDefined();
+                    expect(connection.features.resend).toBeDefined();
+
+                    // Pretend TestConnection disconnected
+                    connection.features.disconnected();
+
+                    await connection.features.resend(true);
+
+                    connection.receive({ type: MessageType.Sequence, sequenceId: 4 });
+
+                    expect(await closeError).toEqual(new Error("Sequence ID greater than amount of messages we've received."));
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
+    });
 });
 
 class TestProtocol implements IHubProtocol {

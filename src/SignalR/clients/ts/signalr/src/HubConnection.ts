@@ -253,11 +253,10 @@ export class HubConnection {
             const useAck = this.connection.features.reconnect || false;
             if (useAck) {
                 this._messageBuffer = new MessageBuffer(this._protocol, this.connection);
-                this.connection.features.disconnected = this._messageBuffer._disconnected;
+                this.connection.features.disconnected = this._messageBuffer._disconnected.bind(this._messageBuffer);
                 this.connection.features.resend = (doSend: boolean) => {
                     if (this._messageBuffer) {
-                        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                        this._messageBuffer._resend(doSend);
+                        return this._messageBuffer._resend(doSend);
                     }
                 }
             }

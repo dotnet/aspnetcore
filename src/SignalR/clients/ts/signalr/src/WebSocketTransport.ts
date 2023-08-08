@@ -18,13 +18,12 @@ export class WebSocketTransport implements ITransport {
     private readonly _httpClient: HttpClient;
     private _webSocket?: WebSocket;
     private _headers: MessageHeaders;
-    private _useAcks: boolean;
 
     public onreceive: ((data: string | ArrayBuffer) => void) | null;
     public onclose: ((error?: Error) => void) | null;
 
     constructor(httpClient: HttpClient, accessTokenFactory: (() => string | Promise<string>) | undefined, logger: ILogger,
-                logMessageContent: boolean, webSocketConstructor: WebSocketConstructor, headers: MessageHeaders, useAcks: boolean) {
+                logMessageContent: boolean, webSocketConstructor: WebSocketConstructor, headers: MessageHeaders) {
         this._logger = logger;
         this._accessTokenFactory = accessTokenFactory;
         this._logMessageContent = logMessageContent;
@@ -34,8 +33,6 @@ export class WebSocketTransport implements ITransport {
         this.onreceive = null;
         this.onclose = null;
         this._headers = headers;
-
-        this._useAcks = useAcks;
     }
 
     public async connect(url: string, transferFormat: TransferFormat): Promise<void> {

@@ -231,7 +231,7 @@ export class HttpConnection implements IConnection {
             if (this._options.skipNegotiation) {
                 if (this._options.transport === HttpTransportType.WebSockets) {
                     // No need to add a connection ID in this case
-                    this.transport = this._constructTransport(HttpTransportType.WebSockets, false);
+                    this.transport = this._constructTransport(HttpTransportType.WebSockets);
                     // We should just call connect directly in this case.
                     // No fallback or negotiate in this case.
                     await this._startTransport(url, transferFormat);
@@ -408,14 +408,14 @@ export class HttpConnection implements IConnection {
         return Promise.reject(new Error("None of the transports supported by the client are supported by the server."));
     }
 
-    private _constructTransport(transport: HttpTransportType, useAck: boolean): ITransport {
+    private _constructTransport(transport: HttpTransportType): ITransport {
         switch (transport) {
             case HttpTransportType.WebSockets:
                 if (!this._options.WebSocket) {
                     throw new Error("'WebSocket' is not supported in your environment.");
                 }
                 return new WebSocketTransport(this._httpClient, this._accessTokenFactory, this._logger, this._options.logMessageContent!,
-                    this._options.WebSocket, this._options.headers || {}, useAck);
+                    this._options.WebSocket, this._options.headers || {});
             case HttpTransportType.ServerSentEvents:
                 if (!this._options.EventSource) {
                     throw new Error("'EventSource' is not supported in your environment.");
@@ -473,7 +473,7 @@ export class HttpConnection implements IConnection {
                         this._logger.log(LogLevel.Debug, `Selecting transport '${HttpTransportType[transport]}'.`);
                         try {
                             this.features.reconnect = transport === HttpTransportType.WebSockets ? useAcks : undefined;
-                            return this._constructTransport(transport, transport === HttpTransportType.WebSockets ? useAcks : false);
+                            return this._constructTransport(transport);
                         } catch (ex) {
                             return ex;
                         }
