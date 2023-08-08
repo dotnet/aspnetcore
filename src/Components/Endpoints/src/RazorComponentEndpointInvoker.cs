@@ -125,7 +125,6 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         // response asynchronously. In the absence of this line, the buffer gets synchronously written to the
         // response as part of the Dispose which has a perf impact.
         await bufferWriter.FlushAsync();
-        await writer.FlushAsync();
     }
 
     private async Task<RequestValidationState> ValidateRequestAsync(HttpContext context, IAntiforgery? antiforgery)
