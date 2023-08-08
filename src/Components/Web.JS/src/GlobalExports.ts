@@ -57,7 +57,6 @@ interface IBlazor {
     attachRootComponentToElement?: (arg0: any, arg1: any, arg2: any, arg3: any) => void;
     registeredComponents?: {
       getRegisteredComponentsCount: () => number;
-      getId: (index) => number;
       getAssembly: (id) => string;
       getTypeName: (id) => string;
       getParameterDefinitions: (id) => string;

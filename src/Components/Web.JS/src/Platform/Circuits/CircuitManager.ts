@@ -45,7 +45,7 @@ export class CircuitDescriptor {
       return false;
     }
 
-    const componentsJson = JSON.stringify(this.componentManager.getFixedComponentArray().map(c => descriptorToMarker(c)));
+    const componentsJson = JSON.stringify(this.componentManager.initialComponents.map(c => descriptorToMarker(c)));
     const result = await connection.invoke<string>(
       'StartCircuit',
       navigationManagerFunctions.getBaseURI(),

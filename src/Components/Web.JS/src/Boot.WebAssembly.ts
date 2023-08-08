@@ -9,7 +9,7 @@ import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
 import { setWebAssemblyOptions, startWebAssembly } from './Boot.WebAssembly.Common';
 import { WebAssemblyComponentDescriptor, discoverComponents } from './Services/ComponentDescriptorDiscovery';
 import { DotNet } from '@microsoft/dotnet-js-interop';
-import { FixedRootComponentManager } from './Services/FixedRootComponentManager';
+import { InitialRootComponentsList } from './Services/InitialRootComponentsList';
 
 let started = false;
 
@@ -22,8 +22,8 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
   setWebAssemblyOptions(options);
 
   const webAssemblyComponents = discoverComponents(document, 'webassembly') as WebAssemblyComponentDescriptor[];
-  const rootComponentManager = new FixedRootComponentManager(webAssemblyComponents);
-  await startWebAssembly(rootComponentManager);
+  const components = new InitialRootComponentsList(webAssemblyComponents);
+  await startWebAssembly(components);
 }
 
 Blazor.start = boot;

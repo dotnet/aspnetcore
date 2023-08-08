@@ -114,7 +114,6 @@ export async function startWebAssembly(components: RootComponentManager<WebAssem
   const componentAttacher = new WebAssemblyComponentAttacher(components);
   Blazor._internal.registeredComponents = {
     getRegisteredComponentsCount: () => componentAttacher.getCount(),
-    getId: (index) => componentAttacher.getId(index),
     getAssembly: (id) => componentAttacher.getAssembly(id),
     getTypeName: (id) => componentAttacher.getTypeName(id),
     getParameterDefinitions: (id) => componentAttacher.getParameterDefinitions(id) || '',

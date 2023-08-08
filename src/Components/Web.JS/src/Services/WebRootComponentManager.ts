@@ -56,18 +56,16 @@ export class WebRootComponentManager implements DescriptorHandler, NavigationEnh
 
   private _didWebAssemblyFailToLoadQuickly = false;
 
+  // Implements RootComponentManager.
+  // An empty array becuase all root components managed
+  // by WebRootComponentManager are added and removed dynamically.
+  public readonly initialComponents: never[] = [];
+
   public constructor() {
     // After a renderer attaches, we need to activate any components that were
     // previously skipped for interactivity.
     this.refreshAllRootComponentsAfter(waitForRendererAttached(WebRendererId.Server));
     this.refreshAllRootComponentsAfter(waitForRendererAttached(WebRendererId.WebAssembly));
-  }
-
-  // Implements RootComponentManager<never>.
-  // Always returns an empty array becuase all root components managed
-  // by WebRootComponentManager can get removed dynamically.
-  public getFixedComponentArray(): never[] {
-    return [];
   }
 
   // Implements NavigationEnhancementCallbacks.

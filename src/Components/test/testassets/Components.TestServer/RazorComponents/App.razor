@@ -38,7 +38,6 @@
                 },
                 webAssembly: {
                     loadBootResource: function (type, name, defaultUri, integrity) {
-                        console.log(`${type} ${name} ${defaultUri} ${integrity}`);
                         switch (type) {
                             case 'manifest':
                             case 'dotnetjs':
@@ -49,7 +48,6 @@
                                 // The following allows us to arbitrarily delay the loading of WebAssembly resources.
                                 // This is useful for guaranteeing that auto mode components will fall back on
                                 // using Blazor server.
-                                console.log('able to block!');
                                 return fetch(`${document.baseURI}WasmMinimal/_framework/${name}?`, {
                                     method: "GET",
                                 }).then(async (response) => {

@@ -6,21 +6,10 @@ import { WebAssemblyComponentDescriptor } from '../Services/ComponentDescriptorD
 import { RootComponentManager } from '../Services/RootComponentManager';
 
 export class WebAssemblyComponentAttacher {
-  public preregisteredComponents: WebAssemblyComponentDescriptor[];
-
-  private componentsById: { [index: number]: WebAssemblyComponentDescriptor };
-
   private componentManager: RootComponentManager<WebAssemblyComponentDescriptor>;
 
   public constructor(componentManager: RootComponentManager<WebAssemblyComponentDescriptor>) {
     this.componentManager = componentManager;
-    this.componentsById = {};
-    this.preregisteredComponents = componentManager.getFixedComponentArray();
-
-    for (let index = 0; index < this.preregisteredComponents.length; index++) {
-      const component = this.preregisteredComponents[index];
-      this.componentsById[component.id] = component;
-    }
   }
 
   public resolveRegisteredElement(id: string, componentId: number): LogicalElement | undefined {
@@ -34,26 +23,22 @@ export class WebAssemblyComponentAttacher {
   }
 
   public getParameterValues(id: number): string | undefined {
-    return this.componentsById[id].parameterValues;
+    return this.componentManager.initialComponents[id].parameterValues;
   }
 
   public getParameterDefinitions(id: number): string | undefined {
-    return this.componentsById[id].parameterDefinitions;
+    return this.componentManager.initialComponents[id].parameterDefinitions;
   }
 
   public getTypeName(id: number): string {
-    return this.componentsById[id].typeName;
+    return this.componentManager.initialComponents[id].typeName;
   }
 
   public getAssembly(id: number): string {
-    return this.componentsById[id].assembly;
-  }
-
-  public getId(index: number): number {
-    return this.preregisteredComponents[index].id;
+    return this.componentManager.initialComponents[id].assembly;
   }
 
   public getCount(): number {
-    return this.preregisteredComponents.length;
+    return this.componentManager.initialComponents.length;
   }
 }

@@ -3,7 +3,7 @@
 
 import { ComponentDescriptor } from './ComponentDescriptorDiscovery';
 
-export interface RootComponentManager<FixedComponentDescriptorType> {
-  getFixedComponentArray(): FixedComponentDescriptorType[];
+export interface RootComponentManager<ComponentDescriptorType> {
+  initialComponents: ComponentDescriptorType[];
   resolveRootComponent(selectorId: number, componentId: number): ComponentDescriptor;
 }
