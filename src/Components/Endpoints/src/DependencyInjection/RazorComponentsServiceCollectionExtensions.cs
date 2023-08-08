@@ -45,6 +45,7 @@ public static class RazorComponentsServiceCollectionExtensions
         // Endpoints
         services.TryAddSingleton<RazorComponentEndpointDataSourceFactory>();
         services.TryAddSingleton<RazorComponentEndpointFactory>();
+        services.TryAddSingleton<HotReloadService>();
         services.TryAddScoped<IRazorComponentEndpointInvoker, RazorComponentEndpointInvoker>();
 
         // Common services required for components server side rendering
