@@ -560,6 +560,11 @@ public class SignInManager<TUser> where TUser : class
                 // This is currently redundant, but it's here in case the code gets copied elsewhere.
                 return SignInResult.Failed;
             }
+
+            if (await UserManager.IsLockedOutAsync(user))
+            {
+                return await LockedOut(user);
+            }
         }
         return SignInResult.Failed;
     }
@@ -601,6 +606,11 @@ public class SignInManager<TUser> where TUser : class
                 // Return the same failure we do when resetting the lockout fails after a correct two factor code.
                 // This is currently redundant, but it's here in case the code gets copied elsewhere.
                 return SignInResult.Failed;
+            }
+
+            if (await UserManager.IsLockedOutAsync(user))
+            {
+                return await LockedOut(user);
             }
         }
         return SignInResult.Failed;
