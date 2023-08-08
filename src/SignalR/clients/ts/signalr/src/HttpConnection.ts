@@ -445,6 +445,7 @@ export class HttpConnection implements IConnection {
 
                 if (callStop) {
                     this._stopConnection(e);
+                    // Unblock promise in resend if connect failed
                     this.features.resend(false);
                 }
             };

@@ -25,8 +25,8 @@ export class MessageBuffer {
 
     // private _backPressurePromise: Promise<void> = Promise.resolve();
     private _resendPromise: Promise<void> = Promise.resolve();
-    private _resendResolve!: (value: void) => void;
-    private _resendReject!: (value?: any) => void;
+    private _resendResolve?: (value: void) => void;
+    private _resendReject?: (value?: any) => void;
 
     constructor(protocol: IHubProtocol, connection: IConnection) {
         this._protocol = protocol;
@@ -38,6 +38,7 @@ export class MessageBuffer {
             // await this._backPressurePromise;
         }
 
+        // If the connection is down we want to wait for it to come back or fail to reconnect
         await this._resendPromise;
 
         const serializedMessage = this._protocol.writeMessage(message);
@@ -53,7 +54,12 @@ export class MessageBuffer {
             this._messages.push(new Key(serializedMessage, this._totalMessageCount));
         }
 
-        return this._connection.send(serializedMessage);
+        try {
+            await this._connection.send(serializedMessage);
+        } catch {
+            this._disconnected();
+            await this._resendPromise;
+        }
     }
 
     public _ack(ackMessage: AckMessage): void {
@@ -123,16 +129,18 @@ export class MessageBuffer {
     }
 
     public _disconnected(): void {
-        this._resendPromise = new Promise((resolve, reject) => {
-            this._resendResolve = resolve;
-            this._resendReject = reject;
-        });
+        if (this._resendReject === undefined) {
+            this._resendPromise = new Promise((resolve, reject) => {
+                this._resendResolve = resolve;
+                this._resendReject = reject;
+            });
+        }
     }
 
     public async _resend(doSend: boolean): Promise<void> {
         if (!doSend) {
             // We need to unblock the promise in the case where we aren't able to reconnect to the server
-            this._resendReject(new Error(""));
+            this._resendReject!(new Error("Unable to reconnect to server."));
             return;
         }
 
@@ -141,17 +149,17 @@ export class MessageBuffer {
             if (this._messages.length !== 0) {
                 sequenceId = this._messages[0].id;
             }
-            await this._connection.send(this._protocol.writeMessage({ type: MessageType.Sequence, sequenceId: sequenceId }));
+            await this._connection.send(this._protocol.writeMessage({ type: MessageType.Sequence, sequenceId }));
 
-            for (let index = 0; index < this._messages.length; index++) {
-                const element = this._messages[index];
-
+            for (const element of this._messages) {
                 await this._connection.send(element.message);
             }
         } catch (e) {
-            this._resendReject(e);
+            this._resendReject!(e);
         } finally {
-            this._resendResolve();
+            this._resendResolve!();
+            this._resendReject = undefined;
+            this._resendResolve = undefined;
         }
     }
 

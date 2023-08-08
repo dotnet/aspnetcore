@@ -1656,4 +1656,129 @@ describe("TransportSendQueue", () => {
         await queue.stop();
         await expect(queue.send("test")).rejects.toBe("Connection stopped.");
     });
+
+    it("using acks restarts connection", async () => {
+        await VerifyLogger.run(async (logger) => {
+            let o: INegotiateResponse = defaultNegotiateResponse;
+            o.useAck = true;
+
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                useAcks: true,
+                WebSocket: TestWebSocket,
+                httpClient: new TestHttpClient()
+                    .on("POST", () => o)
+                    .on("GET", () => ""),
+                logger,
+            } as IHttpConnectionOptions;
+
+            const connection = new HttpConnection("http://tempuri.org", options);
+            let oncloseCalled = false;
+            connection.onclose = (error) => {
+                oncloseCalled = true;
+            };
+
+            // Call order is:
+            // disconnected()
+            // await transport.connect()
+            // resend()
+            let disconnectedCalled = false;
+            let resendCalled = false;
+            let resendPromise = new PromiseSource();
+            connection.features.disconnected = () => {
+                disconnectedCalled = true;
+                expect(resendCalled).toBe(false);
+            };
+            connection.features.resend = (doSend: boolean) => {
+                resendCalled = true;
+                expect(disconnectedCalled).toBe(true);
+                expect(doSend).toBe(true);
+                resendPromise.resolve();
+            };
+
+            TestWebSocket.webSocketSet = new PromiseSource();
+            let startPromise = connection.start(TransferFormat.Text);
+            await TestWebSocket.webSocketSet;
+            await TestWebSocket.webSocket.openSet;
+            TestWebSocket.webSocket.onopen(new TestEvent());
+            await startPromise;
+
+            TestWebSocket.webSocketSet = new PromiseSource();
+            TestWebSocket.webSocket.close();
+
+            // transport should be trying to connect again
+            await TestWebSocket.webSocketSet;
+            await TestWebSocket.webSocket.openSet;
+            expect(disconnectedCalled).toBe(true);
+            expect(resendCalled).toBe(false);
+            // successfully connect
+            TestWebSocket.webSocket.onopen(new TestEvent());
+
+            await resendPromise;
+            expect(resendCalled).toBe(true);
+
+            expect(oncloseCalled).toBe(false);
+        });
+    });
+
+    it("using acks restarts connection and closes on error", async () => {
+        await VerifyLogger.run(async (logger) => {
+            let o: INegotiateResponse = defaultNegotiateResponse;
+            o.useAck = true;
+
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                useAcks: true,
+                WebSocket: TestWebSocket,
+                httpClient: new TestHttpClient()
+                    .on("POST", () => o)
+                    .on("GET", () => ""),
+                logger,
+            } as IHttpConnectionOptions;
+
+            const connection = new HttpConnection("http://tempuri.org", options);
+            let onclosePromise = new PromiseSource();
+            connection.onclose = (error) => {
+                onclosePromise.resolve();
+            };
+
+            // Call order is:
+            // disconnected()
+            // await transport.connect()
+            // resend()
+            let disconnectedCalled = false;
+            let resendCalled = false;
+            connection.features.disconnected = () => {
+                disconnectedCalled = true;
+                expect(resendCalled).toBe(false);
+            };
+            connection.features.resend = (doSend: boolean) => {
+                resendCalled = true;
+                expect(disconnectedCalled).toBe(true);
+                expect(doSend).toBe(false);
+            };
+
+            TestWebSocket.webSocketSet = new PromiseSource();
+            let startPromise = connection.start(TransferFormat.Text);
+            await TestWebSocket.webSocketSet;
+            await TestWebSocket.webSocket.openSet;
+            TestWebSocket.webSocket.onopen(new TestEvent());
+            await startPromise;
+
+            await connection.send("text");
+            TestWebSocket.webSocketSet = new PromiseSource();
+            TestWebSocket.webSocket.close();
+
+            // transport should be trying to connect again
+            await TestWebSocket.webSocketSet;
+            await TestWebSocket.webSocket.openSet;
+            expect(disconnectedCalled).toBe(true);
+            expect(resendCalled).toBe(false);
+            // fail to connect
+            TestWebSocket.webSocket.onclose(new TestEvent());
+
+            await onclosePromise;
+            expect(resendCalled).toBe(true);
+        });
+    });
 });

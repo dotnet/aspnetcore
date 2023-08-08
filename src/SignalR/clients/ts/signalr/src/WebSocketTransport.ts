@@ -113,7 +113,7 @@ export class WebSocketTransport implements ITransport {
                     try {
                         this.onreceive(message.data);
                     } catch (error) {
-                        this._close(error, false);
+                        this._close(error);
                         return;
                     }
                 }
@@ -123,7 +123,7 @@ export class WebSocketTransport implements ITransport {
                 // Don't call close handler if connection was never established
                 // We'll reject the connect call instead
                 if (opened) {
-                    this._close(event, false);
+                    this._close(event);
                 } else {
                     let error: any = null;
                     // ErrorEvent is a browser only type we need to check if the type exists before using it
@@ -156,17 +156,15 @@ export class WebSocketTransport implements ITransport {
         if (this._webSocket) {
             // Manually invoke onclose callback inline so we know the HttpConnection was closed properly before returning
             // This also solves an issue where websocket.onclose could take 18+ seconds to trigger during network disconnects
-            this._close(undefined, true);
+            this._close(undefined);
         }
 
         return Promise.resolve();
     }
 
-    private _close(event: CloseEvent | Error | unknown, fromStop: boolean): void {
-        let binaryType;
+    private _close(event: CloseEvent | Error | unknown): void {
         // webSocket will be null if the transport did not start successfully
         if (this._webSocket) {
-            binaryType = this._webSocket.binaryType;
             // Clear websocket handlers because we are considering the socket closed now
             this._webSocket.onclose = () => {};
             this._webSocket.onmessage = () => {};
@@ -177,17 +175,6 @@ export class WebSocketTransport implements ITransport {
 
         this._logger.log(LogLevel.Trace, "(WebSockets transport) socket closed.");
 
-        if (!fromStop && this._useAcks) {
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            this.connect("", binaryType === undefined ? TransferFormat.Text : TransferFormat.Binary).catch(() => {
-                this._runOnClose(event);
-            });
-        } else {
-            this._runOnClose(event);
-        }
-    }
-
-    private _runOnClose(event: any) {
         if (this.onclose) {
             if (this._isCloseEvent(event) && (event.wasClean === false || event.code !== 1000)) {
                 this.onclose(new Error(`WebSocket closed with status code: ${event.code} (${event.reason || "no reason given"}).`));

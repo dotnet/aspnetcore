@@ -256,6 +256,7 @@ export class HubConnection {
                 this.connection.features.disconnected = this._messageBuffer._disconnected;
                 this.connection.features.resend = (doSend: boolean) => {
                     if (this._messageBuffer) {
+                        // eslint-disable-next-line @typescript-eslint/no-floating-promises
                         this._messageBuffer._resend(doSend);
                     }
                 }
