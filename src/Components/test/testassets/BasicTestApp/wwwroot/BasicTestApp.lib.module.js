@@ -20,6 +20,9 @@ export async function beforeStart(options) {
 }
 
 export async function afterStarted() {
+    // we are using the resource list in BootResourceCachingTest and when it's too full it stops reporting correctly
+    window.performance.clearResourceTimings();
+
     if (runInitializer) {
         const end = document.createElement('p');
         end.setAttribute('id', 'initializer-end');

@@ -25,7 +25,7 @@ public class JsInitializersTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Navigate(ServerPathBase + "#initializer");
     }
 
-    [Fact]
+    [Fact(Skip = "Active Issue https://github.com/dotnet/runtime/pull/90189")]
     public void InitializersWork()
     {
         Browser.Exists(By.Id("initializer-start"));
