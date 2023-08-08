@@ -161,7 +161,8 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
     public void OnInputOrOutputCompleted()
     {
         TryClose();
-        _frameWriter.Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient));
+        var useException = _context.ServiceContext.ServerOptions.FinOnError || _clientActiveStreamCount != 0;
+        _frameWriter.Abort(useException ? new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient) : null!);
     }
 
     public void Abort(ConnectionAbortedException ex)

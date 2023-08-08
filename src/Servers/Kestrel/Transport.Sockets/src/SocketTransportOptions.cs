@@ -13,6 +13,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
 /// </summary>
 public class SocketTransportOptions
 {
+    private const string FinOnErrorSwitch = "Microsoft.AspNetCore.Server.Kestrel.FinOnError";
+    private static readonly bool _finOnError;
+
+    static SocketTransportOptions()
+    {
+        AppContext.TryGetSwitch(FinOnErrorSwitch, out _finOnError);
+    }
+
+    // Opt-out flag for back compat. Remove in 9.0 (or make public).
+    internal bool FinOnError { get; set; } = _finOnError;
+
     /// <summary>
     /// The number of I/O queues used to process requests. Set to 0 to directly schedule I/O to the ThreadPool.
     /// </summary>
