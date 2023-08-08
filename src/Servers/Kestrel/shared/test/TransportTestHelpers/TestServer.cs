@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
         }
 
-        public TestServer(RequestDelegate app, TestServiceContext context, Action<ListenOptions> configureListenOptions)
+        public TestServer(RequestDelegate app, TestServiceContext context, Action<ListenOptions> configureListenOptions, Action<IServiceCollection> configureServices = null)
             : this(app, context, options =>
             {
                 var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
@@ -57,7 +57,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 };
                 configureListenOptions(listenOptions);
                 options.CodeBackedListenOptions.Add(listenOptions);
-            }, _ => { })
+            }, s =>
+            {
+                configureServices?.Invoke(s);
+            })
         {
         }
 

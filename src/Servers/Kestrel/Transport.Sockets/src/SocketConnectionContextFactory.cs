@@ -104,7 +104,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                 setting.SocketSenderPool,
                 setting.InputOptions,
                 setting.OutputOptions,
-                waitForData: _options.WaitForDataBeforeAllocatingBuffer);
+                waitForData: _options.WaitForDataBeforeAllocatingBuffer,
+                finOnError: _options.FinOnError);
 
             connection.Start();
             return connection;

@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
                 var options = TransportContext.Options;
 #pragma warning disable CS0618
-                var connection = new LibuvConnection(socket, TransportContext.Log, Thread, remoteEndPoint, localEndPoint, InputOptions, OutputOptions, options.MaxReadBufferSize, options.MaxWriteBufferSize);
+                var connection = new LibuvConnection(socket, TransportContext.Log, Thread, remoteEndPoint, localEndPoint, InputOptions, OutputOptions, options.MaxReadBufferSize, options.MaxWriteBufferSize, options.FinOnError);
 #pragma warning restore CS0618
                 connection.Start();
 

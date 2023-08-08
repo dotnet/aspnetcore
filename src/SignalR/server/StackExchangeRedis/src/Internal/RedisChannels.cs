@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.CompilerServices;
+using StackExchange.Redis;
 
 namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
 {
@@ -71,5 +72,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
         {
             return _prefix + ":internal:ack:" + serverName;
         }
+
+        public static RedisChannel GetChannel(string channelName) => new RedisChannel(channelName, RedisChannel.PatternMode.Literal);
     }
 }

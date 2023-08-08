@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
 
             var connectionChannel = _channels.Connection(connection.ConnectionId);
             RedisLog.Unsubscribe(_logger, connectionChannel);
-            tasks.Add(_bus!.UnsubscribeAsync(connectionChannel));
+            tasks.Add(_bus!.UnsubscribeAsync(RedisChannels.GetChannel(connectionChannel)));
 
             var feature = connection.Features.Get<IRedisFeature>()!;
             var groupNames = feature.Groups;
@@ -315,7 +315,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
         {
             await EnsureRedisServerConnection();
             RedisLog.PublishToChannel(_logger, channel);
-            await _bus!.PublishAsync(channel, payload);
+            await _bus!.PublishAsync(RedisChannels.GetChannel(channel), payload);
         }
 
         private Task AddGroupAsyncCore(HubConnectionContext connection, string groupName)
@@ -347,7 +347,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
             await _groups.RemoveSubscriptionAsync(groupChannel, connection, channelName =>
             {
                 RedisLog.Unsubscribe(_logger, channelName);
-                return _bus!.UnsubscribeAsync(channelName);
+                return _bus!.UnsubscribeAsync(RedisChannels.GetChannel(channelName));
             });
 
             var feature = connection.Features.Get<IRedisFeature>()!;
@@ -379,7 +379,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
             return _users.RemoveSubscriptionAsync(userChannel, connection, channelName =>
             {
                 RedisLog.Unsubscribe(_logger, channelName);
-                return _bus!.UnsubscribeAsync(channelName);
+                return _bus!.UnsubscribeAsync(RedisChannels.GetChannel(channelName));
             });
         }
 
@@ -396,7 +396,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
         private async Task SubscribeToAll()
         {
             RedisLog.Subscribing(_logger, _channels.All);
-            var channel = await _bus!.SubscribeAsync(_channels.All);
+            var channel = await _bus!.SubscribeAsync(RedisChannels.GetChannel(_channels.All));
             channel.OnMessage(async channelMessage =>
             {
                 try
@@ -426,7 +426,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
 
         private async Task SubscribeToGroupManagementChannel()
         {
-            var channel = await _bus!.SubscribeAsync(_channels.GroupManagement);
+            var channel = await _bus!.SubscribeAsync(RedisChannels.GetChannel(_channels.GroupManagement));
             channel.OnMessage(async channelMessage =>
             {
                 try
@@ -463,7 +463,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
         private async Task SubscribeToAckChannel()
         {
             // Create server specific channel in order to send an ack to a single server
-            var channel = await _bus!.SubscribeAsync(_channels.Ack(_serverName));
+            var channel = await _bus!.SubscribeAsync(RedisChannels.GetChannel(_channels.Ack(_serverName)));
             channel.OnMessage(channelMessage =>
             {
                 var ackId = _protocol.ReadAck((byte[])channelMessage.Message);
@@ -477,7 +477,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
             var connectionChannel = _channels.Connection(connection.ConnectionId);
 
             RedisLog.Subscribing(_logger, connectionChannel);
-            var channel = await _bus!.SubscribeAsync(connectionChannel);
+            var channel = await _bus!.SubscribeAsync(RedisChannels.GetChannel(connectionChannel));
             channel.OnMessage(channelMessage =>
             {
                 var invocation = _protocol.ReadInvocation((byte[])channelMessage.Message);
@@ -492,7 +492,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
             return _users.AddSubscriptionAsync(userChannel, connection, async (channelName, subscriptions) =>
             {
                 RedisLog.Subscribing(_logger, channelName);
-                var channel = await _bus!.SubscribeAsync(channelName);
+                var channel = await _bus!.SubscribeAsync(RedisChannels.GetChannel(channelName));
                 channel.OnMessage(async channelMessage =>
                 {
                     try
@@ -518,7 +518,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
         private async Task SubscribeToGroupAsync(string groupChannel, HubConnectionStore groupConnections)
         {
             RedisLog.Subscribing(_logger, groupChannel);
-            var channel = await _bus!.SubscribeAsync(groupChannel);
+            var channel = await _bus!.SubscribeAsync(RedisChannels.GetChannel(groupChannel));
             channel.OnMessage(async (channelMessage) =>
             {
                 try

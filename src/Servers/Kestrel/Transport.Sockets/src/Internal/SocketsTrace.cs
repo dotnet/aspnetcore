@@ -43,6 +43,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             }
         }
 
+        [LoggerMessage(8, LogLevel.Debug, @"Connection id ""{ConnectionId}"" sending RST because: ""{Reason}""", EventName = "ConnectionWriteRst", SkipEnabledCheck = true)]
+        private static partial void ConnectionWriteRst(ILogger logger, string connectionId, string reason);
+
+        public void ConnectionWriteRst(SocketConnection connection, string reason)
+        {
+            if (_logger.IsEnabled(LogLevel.Debug))
+            {
+                ConnectionWriteRst(_logger, connection.ConnectionId, reason);
+            }
+        }
+
         public void ConnectionWrite(SocketConnection connection, int count)
         {
             // Don't log for now since this could be *too* verbose.
