@@ -25,15 +25,19 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
     private readonly RazorComponentEndpointFactory _factory;
 
     private List<Endpoint>? _endpoints;
-    // TODO: Implement endpoint data source updates https://github.com/dotnet/aspnetcore/issues/47026
-    private readonly CancellationTokenSource _cancellationTokenSource;
-    private readonly IChangeToken _changeToken;
+    private CancellationTokenSource _cancellationTokenSource;
+    private IChangeToken _changeToken;
+
+    // Internal for testing.
+    internal ComponentApplicationBuilder Builder => _builder;
+    internal List<Action<EndpointBuilder>> Conventions => _conventions;
 
     public RazorComponentEndpointDataSource(
         ComponentApplicationBuilder builder,
         IEnumerable<RenderModeEndpointProvider> renderModeEndpointProviders,
         IApplicationBuilder applicationBuilder,
-        RazorComponentEndpointFactory factory)
+        RazorComponentEndpointFactory factory,
+        HotReloadService hotReloadService)
     {
         _builder = builder;
         _applicationBuilder = applicationBuilder;
@@ -48,6 +52,10 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
 
         _cancellationTokenSource = new CancellationTokenSource();
         _changeToken = new CancellationChangeToken(_cancellationTokenSource.Token);
+        if (hotReloadService.MetadataUpdateSupported)
+        {
+            ChangeToken.OnChange(hotReloadService.GetChangeToken, UpdateEndpoints);
+        }
     }
 
     internal RazorComponentEndpointConventionBuilder DefaultBuilder { get; }
@@ -61,7 +69,7 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
             // The order is as follows:
             // * MapRazorComponents gets called and the data source gets created.
             // * The RazorComponentEndpointConventionBuilder is returned and the user gets a chance to call on it to add conventions.
-            // * The first request arrives and the DfaMatcherBuilder acesses the data sources to get the endpoints.
+            // * The first request arrives and the DfaMatcherBuilder accesses the data sources to get the endpoints.
             // * The endpoints get created and the conventions get applied.
             Initialize();
             Debug.Assert(_changeToken != null);
@@ -88,54 +96,64 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
 
     private void UpdateEndpoints()
     {
-        var endpoints = new List<Endpoint>();
-        var context = _builder.Build();
-
-        foreach (var definition in context.Pages)
+        lock (_lock)
         {
-            _factory.AddEndpoints(endpoints, typeof(TRootComponent), definition, _conventions, _finallyConventions);
-        }
+            var endpoints = new List<Endpoint>();
+            var context = _builder.Build();
 
-        ICollection<IComponentRenderMode> renderModes = Options.ConfiguredRenderModes;
-
-        if (Options.UseDeclaredRenderModes)
-        {
-            var componentRenderModes = context.GetDeclaredRenderModesByDiscoveredComponents();
-            componentRenderModes.UnionWith(Options.ConfiguredRenderModes);
-            renderModes = componentRenderModes;
-        }
-
-        foreach (var renderMode in renderModes)
-        {
-            var found = false;
-            foreach (var provider in _renderModeEndpointProviders)
+            foreach (var definition in context.Pages)
             {
-                if (provider.Supports(renderMode))
+                _factory.AddEndpoints(endpoints, typeof(TRootComponent), definition, _conventions, _finallyConventions);
+            }
+            var oldCancellationTokenSource = _cancellationTokenSource;
+
+            ICollection<IComponentRenderMode> renderModes = Options.ConfiguredRenderModes;
+
+            if (Options.UseDeclaredRenderModes)
+            {
+                var componentRenderModes = context.GetDeclaredRenderModesByDiscoveredComponents();
+                componentRenderModes.UnionWith(Options.ConfiguredRenderModes);
+                renderModes = componentRenderModes;
+            }
+
+            foreach (var renderMode in renderModes)
+            {
+                var found = false;
+                foreach (var provider in _renderModeEndpointProviders)
                 {
-                    found = true;
-                    RenderModeEndpointProvider.AddEndpoints(
-                        endpoints,
-                        typeof(TRootComponent),
-                        provider.GetEndpointBuilders(renderMode, _applicationBuilder.New()),
-                        renderMode,
-                        _conventions,
-                        _finallyConventions);
+                    if (provider.Supports(renderMode))
+                    {
+                        found = true;
+                        RenderModeEndpointProvider.AddEndpoints(
+                            endpoints,
+                            typeof(TRootComponent),
+                            provider.GetEndpointBuilders(renderMode, _applicationBuilder.New()),
+                            renderMode,
+                            _conventions,
+                            _finallyConventions);
+                    }
+                }
+
+                if (!found)
+                {
+                    throw new InvalidOperationException($"Unable to find a provider for the render mode: {renderMode.GetType().FullName}. This generally " +
+                        $"means that a call to 'AddWebAssemblyComponents' or 'AddServerComponents' is missing. " +
+                        $"Alternatively call 'AddWebAssemblyRenderMode', 'AddServerRenderMode' might be missing if you have set UseDeclaredRenderModes = false.");
                 }
             }
 
-            if (!found)
-            {
-                throw new InvalidOperationException($"Unable to find a provider for the render mode: {renderMode.GetType().FullName}. This generally " +
-                    $"means that a call to 'AddWebAssemblyComponents' or 'AddServerComponents' is missing. " +
-                    $"Alternatively call 'AddWebAssemblyRenderMode', 'AddServerRenderMode' might be missing if you have set UseDeclaredRenderModes = false.");
-            }
+            _endpoints = endpoints;
+            _cancellationTokenSource = new CancellationTokenSource();
+            _changeToken = new CancellationChangeToken(_cancellationTokenSource.Token);
+            oldCancellationTokenSource?.Cancel();
         }
-
-        _endpoints = endpoints;
     }
+
     public override IChangeToken GetChangeToken()
     {
-        // TODO: Handle updates if necessary (for hot reload).
+        Initialize();
+        Debug.Assert(_changeToken != null);
+        Debug.Assert(_endpoints != null);
         return _changeToken;
     }
 }

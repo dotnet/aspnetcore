@@ -351,7 +351,8 @@ public class RazorComponentEndpointDataSourceTest
             builder ?? DefaultRazorComponentApplication<TComponent>.Instance.GetBuilder(),
             services?.GetService<IEnumerable<RenderModeEndpointProvider>>() ?? Enumerable.Empty<RenderModeEndpointProvider>(),
             new ApplicationBuilder(services ?? new ServiceCollection().BuildServiceProvider()),
-            new RazorComponentEndpointFactory());
+            new RazorComponentEndpointFactory(),
+            new HotReloadService() { MetadataUpdateSupported = true });
 
         result.Options.UseDeclaredRenderModes = useDeclaredRenderModes;
 
