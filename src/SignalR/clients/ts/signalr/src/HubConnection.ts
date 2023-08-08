@@ -284,6 +284,7 @@ export class HubConnection {
     public async stop(): Promise<void> {
         // Capture the start promise before the connection might be restarted in an onclose callback.
         const startPromise = this._startPromise;
+        this.connection.features.resend = false;
 
         this._stopPromise = this._stopInternal();
         await this._stopPromise;
@@ -832,7 +833,11 @@ export class HubConnection {
         if (this._connectionStarted) {
             this._connectionState = HubConnectionState.Disconnected;
             this._connectionStarted = false;
-            this._messageBuffer = undefined;
+            if (this._messageBuffer) {
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                this._messageBuffer._resend(false, error ?? new Error("Connection closed."));
+                this._messageBuffer = undefined;
+            }
 
             if (Platform.isBrowser) {
                 window.document.removeEventListener("freeze", this._freezeEventListener);

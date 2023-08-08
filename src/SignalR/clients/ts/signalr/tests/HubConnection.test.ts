@@ -2131,7 +2131,7 @@ describe("HubConnection", () => {
             });
         });
 
-        it.only("sequence message with ID too high close connection", async () => {
+        it("sequence message with ID too high closes connection", async () => {
             await VerifyLogger.run(async (logger) => {
                 const connection = new TestConnection();
                 // tell HubConnection we "negotiated" reconnect
@@ -2166,6 +2166,129 @@ describe("HubConnection", () => {
                     connection.receive({ type: MessageType.Sequence, sequenceId: 4 });
 
                     expect(await closeError).toEqual(new Error("Sequence ID greater than amount of messages we've received."));
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
+
+        it("buffer full blocks sending, unblocks with ack", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                // tell HubConnection we "negotiated" reconnect
+                connection.features.reconnect = true;
+
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    const closeError = new PromiseSource<Error | undefined>();
+                    hubConnection.onclose((e) => {
+                        closeError.resolve(e);
+                    });
+
+                    await hubConnection.start();
+
+                    // send large message to fill buffer
+                    await hubConnection.send("t", 'x'.repeat(100_000));
+
+                    // next send will be blocked until an ack occurs
+                    const sendTask = hubConnection.send("t");
+                    let sendDone = false;
+                    sendTask.finally(() => sendDone = true);
+
+                    await delayUntil(1);
+
+                    expect(sendDone).toBeFalsy();
+
+                    connection.receive({ type: MessageType.Ack, sequenceId: 1 });
+
+                    await sendTask;
+                    expect(sendDone).toBeTruthy();
+
+                    await hubConnection.send("t");
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
+
+        it("buffer full blocks sending, unblocks with close message", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                // tell HubConnection we "negotiated" reconnect
+                connection.features.reconnect = true;
+
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    const closeError = new PromiseSource<Error | undefined>();
+                    hubConnection.onclose((e) => {
+                        closeError.resolve(e);
+                    });
+
+                    await hubConnection.start();
+
+                    // send large message to fill buffer
+                    await hubConnection.send("t", 'x'.repeat(100_000));
+
+                    // next send will be blocked until an ack occurs
+                    const sendTask = hubConnection.send("t");
+                    let sendDone = false;
+                    sendTask.finally(() => sendDone = true);
+
+                    await delayUntil(1);
+
+                    expect(sendDone).toBeFalsy();
+
+                    connection.receive({ type: MessageType.Close, error: "test" });
+
+                    try {
+                        await sendTask;
+                    } catch (error) {
+                        expect(error).toEqual(new Error("Server returned an error on close: test"));
+                    }
+
+                    expect(sendDone).toBeTruthy();
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
+
+        it("buffer full blocks sending, unblocks when calling stop", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                // tell HubConnection we "negotiated" reconnect
+                connection.features.reconnect = true;
+
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    const closeError = new PromiseSource<Error | undefined>();
+                    hubConnection.onclose((e) => {
+                        closeError.resolve(e);
+                    });
+
+                    await hubConnection.start();
+
+                    // send large message to fill buffer
+                    await hubConnection.send("t", 'x'.repeat(100_000));
+
+                    // next send will be blocked until an ack occurs
+                    const sendTask = hubConnection.send("t");
+                    let sendDone = false;
+                    sendTask.finally(() => sendDone = true);
+
+                    await delayUntil(1);
+
+                    expect(sendDone).toBeFalsy();
+
+                    await hubConnection.stop();
+
+                    try {
+                        await sendTask;
+                    } catch (error) {
+                        expect(error).toEqual(new Error("Connection closed."));
+                    }
+
+                    expect(sendDone).toBeTruthy();
                 } finally {
                     await hubConnection.stop();
                 }

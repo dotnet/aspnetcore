@@ -10,7 +10,7 @@ export class MessageBuffer {
     private readonly _protocol: IHubProtocol;
     private readonly _connection: IConnection;
 
-    private readonly _bufferLimit: number = 10_000;
+    private readonly _bufferLimit: number = 100_000;
 
     private _messages: Key[] = [];
     private _totalMessageCount: number = 0;
@@ -23,7 +23,9 @@ export class MessageBuffer {
 
     private _ackTimerHandle?: any;
 
-    // private _backPressurePromise: Promise<void> = Promise.resolve();
+    private _backPressurePromise!: Promise<void>;
+    private _backpressurePromiseResolver: (value: void) => void = () => {};
+
     private _resendPromise: Promise<void> = Promise.resolve();
     private _resendResolve?: (value: void) => void = undefined;
     private _resendReject?: (value?: any) => void = undefined;
@@ -34,8 +36,8 @@ export class MessageBuffer {
     }
 
     public async _send(message: HubMessage): Promise<void> {
-        if (this._bufferedByteCount > this._bufferLimit) {
-            // await this._backPressurePromise;
+        if (this._bufferedByteCount >= this._bufferLimit) {
+            await this._backPressurePromise;
         }
 
         // If the connection is down we want to wait for it to come back or fail to reconnect
@@ -51,6 +53,9 @@ export class MessageBuffer {
             } else {
                 this._bufferedByteCount += serializedMessage.length;
             }
+            if (this._bufferedByteCount >= this._bufferLimit) {
+                this._backPressurePromise = new Promise((resolve) => this._backpressurePromiseResolver = resolve);
+            }
             this._messages.push(new Key(serializedMessage, this._totalMessageCount));
         }
 
@@ -64,6 +69,8 @@ export class MessageBuffer {
 
     public _ack(ackMessage: AckMessage): void {
         let mostSignificantAckedMessage = -1;
+
+        const originalByteCount = this._bufferedByteCount;
 
         // Find index of newest message being acked
         for (let index = 0; index < this._messages.length; index++) {
@@ -84,7 +91,10 @@ export class MessageBuffer {
             // We're removing everything including the message pointed to, so add 1
             this._messages = this._messages.slice(mostSignificantAckedMessage + 1);
 
-            // this._promise
+            if (originalByteCount >= this._bufferLimit && this._bufferedByteCount < originalByteCount)
+            {
+                this._backpressurePromiseResolver();
+            }
         }
     }
 
@@ -138,10 +148,19 @@ export class MessageBuffer {
         }
     }
 
-    public async _resend(doSend: boolean): Promise<void> {
+    public async _resend(doSend: boolean, error?: Error): Promise<void> {
         if (!doSend) {
-            // We need to unblock the promise in the case where we aren't able to reconnect to the server
-            this._resendReject!(new Error("Unable to reconnect to server."));
+            if (this._resendReject !== undefined) {
+                // We need to unblock the promise in the case where we aren't able to reconnect to the server
+                this._resendReject!(error ?? new Error("Unable to reconnect to server."));
+            }
+
+            // Unblock backpressure if any, do this after rejecting resend promise
+            // so any backpressured sends unblock and fail on the resend promise
+            if (this._bufferedByteCount >= this._bufferLimit) {
+                this._backpressurePromiseResolver();
+            }
+
             return;
         }
 

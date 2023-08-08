@@ -16,7 +16,7 @@ import { eachEndpointUrl, eachTransport, VerifyLogger } from "./Common";
 import { TestHttpClient } from "./TestHttpClient";
 import { TestTransport } from "./TestTransport";
 import { TestEvent, TestWebSocket } from "./TestWebSocket";
-import { PromiseSource, registerUnhandledRejectionHandler, SyncPoint } from "./Utils";
+import { delayUntil, PromiseSource, registerUnhandledRejectionHandler, SyncPoint } from "./Utils";
 import { HeaderNames } from "../src/HeaderNames";
 
 const commonOptions: IHttpConnectionOptions = {
@@ -1655,6 +1655,101 @@ describe("TransportSendQueue", () => {
 
         await queue.stop();
         await expect(queue.send("test")).rejects.toBe("Connection stopped.");
+    });
+
+    it("negotiate acks works with websockets", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const negotiateResponse: INegotiateResponse = { ...defaultNegotiateResponse };
+            negotiateResponse.useAck = true;
+
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                useAcks: true,
+                WebSocket: TestWebSocket,
+                httpClient: new TestHttpClient()
+                    .on("POST", () => negotiateResponse)
+                    .on("GET", () => ""),
+                logger,
+            } as IHttpConnectionOptions;
+
+            const connection = new HttpConnection("http://tempuri.org", options);
+
+            TestWebSocket.webSocketSet = new PromiseSource();
+            const startPromise = connection.start(TransferFormat.Text);
+            await TestWebSocket.webSocketSet;
+            await TestWebSocket.webSocket.openSet;
+            TestWebSocket.webSocket.onopen(new TestEvent());
+            await startPromise;
+
+            // Set when acks used by both server and client
+            expect(connection.features.reconnect).toBeTruthy();
+
+            TestWebSocket.webSocket.close();
+        });
+    });
+
+    it("negotiate acks denied by server", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                useAcks: true,
+                WebSocket: TestWebSocket,
+                httpClient: new TestHttpClient()
+                    .on("POST", () => defaultNegotiateResponse)
+                    .on("GET", () => ""),
+                logger,
+            } as IHttpConnectionOptions;
+
+            const connection = new HttpConnection("http://tempuri.org", options);
+
+            TestWebSocket.webSocketSet = new PromiseSource();
+            const startPromise = connection.start(TransferFormat.Text);
+            await TestWebSocket.webSocketSet;
+            await TestWebSocket.webSocket.openSet;
+            TestWebSocket.webSocket.onopen(new TestEvent());
+            await startPromise;
+
+            // Set when acks used by both server and client
+            expect(connection.features.reconnect).toBeFalsy();
+
+            TestWebSocket.webSocket.close();
+        });
+    });
+
+    it("negotiate acks does not work with long polling", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const negotiateResponse: INegotiateResponse = { ...defaultNegotiateResponse };
+            negotiateResponse.useAck = true;
+
+            let firstPoll = true;
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                useAcks: true,
+                transport: HttpTransportType.LongPolling,
+                httpClient: new TestHttpClient()
+                    .on("POST", () => negotiateResponse)
+                    .on("GET", async () => {
+                        if (firstPoll) {
+                            firstPoll = false;
+                            return "";
+                        }
+                        await delayUntil(1);
+                        return new HttpResponse(200);
+                    })
+                    .on("DELETE", () => new HttpResponse(202)),
+                logger,
+            } as IHttpConnectionOptions;
+
+            const connection = new HttpConnection("http://tempuri.org", options);
+
+            const startPromise = connection.start(TransferFormat.Text);
+            await startPromise;
+
+            // Set when acks used by both server and client
+            expect(connection.features.reconnect).toBeFalsy();
+
+            await connection.stop();
+        });
     });
 
     it("using acks restarts connection", async () => {

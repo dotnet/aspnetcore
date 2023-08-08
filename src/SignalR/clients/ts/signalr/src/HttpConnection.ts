@@ -441,6 +441,9 @@ export class HttpConnection implements IConnection {
                     } catch {
                         callStop = true;
                     }
+                } else {
+                    this._stopConnection(e);
+                    return;
                 }
 
                 if (callStop) {
