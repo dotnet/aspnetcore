@@ -14,10 +14,17 @@ import { addDispatchEventMiddleware } from './Rendering/WebRendererInteropMethod
 import { WebAssemblyComponentDescriptor, discoverPersistedState } from './Services/ComponentDescriptorDiscovery';
 import { receiveDotNetDataStream } from './StreamingInterop';
 import { WebAssemblyComponentAttacher } from './Platform/WebAssemblyComponentAttacher';
+import { MonoConfig } from 'dotnet';
 import { RootComponentManager } from './Services/RootComponentManager';
 
 let options: Partial<WebAssemblyStartOptions> | undefined;
 let platformLoadPromise: Promise<void> | undefined;
+let hasStarted = false;
+
+let resolveBootConfigPromise: (value: MonoConfig) => void;
+const bootConfigPromise = new Promise<MonoConfig>(resolve => {
+  resolveBootConfigPromise = resolve;
+});
 
 export function setWebAssemblyOptions(webAssemblyOptions?: Partial<WebAssemblyStartOptions>) {
   if (options) {
@@ -27,13 +34,19 @@ export function setWebAssemblyOptions(webAssemblyOptions?: Partial<WebAssemblySt
   options = webAssemblyOptions;
 }
 
-export async function startWebAssembly(components?: WebAssemblyComponentDescriptor[] | RootComponentManager): Promise<void> {
+export async function startWebAssembly(components: RootComponentManager<WebAssemblyComponentDescriptor>): Promise<void> {
+  if (hasStarted) {
+    throw new Error('Blazor WebAssembly has already started.');
+  }
+
+  hasStarted = true;
+
   if (inAuthRedirectIframe()) {
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     await new Promise(() => { }); // See inAuthRedirectIframe for explanation
   }
 
-  const platformLoadPromise = loadWebAssemblyPlatform();
+  const platformLoadPromise = loadWebAssemblyPlatformIfNotStarted();
 
   addDispatchEventMiddleware((browserRendererId, eventHandlerId, continuation) => {
     // It's extremely unusual, but an event can be raised while we're in the middle of synchronously applying a
@@ -98,10 +111,9 @@ export async function startWebAssembly(components?: WebAssemblyComponentDescript
 
   // Leverage the time while we are loading boot.config.json from the network to discover any potentially registered component on
   // the document.
-  const componentAttacher = new WebAssemblyComponentAttacher(components || []);
+  const componentAttacher = new WebAssemblyComponentAttacher(components);
   Blazor._internal.registeredComponents = {
     getRegisteredComponentsCount: () => componentAttacher.getCount(),
-    getId: (index) => componentAttacher.getId(index),
     getAssembly: (id) => componentAttacher.getAssembly(id),
     getTypeName: (id) => componentAttacher.getTypeName(id),
     getParameterDefinitions: (id) => componentAttacher.getParameterDefinitions(id) || '',
@@ -134,8 +146,12 @@ export async function startWebAssembly(components?: WebAssemblyComponentDescript
   api.invokeLibraryInitializers('afterStarted', [Blazor]);
 }
 
-export function loadWebAssemblyPlatform(): Promise<void> {
-  platformLoadPromise ??= monoPlatform.load(options ?? {});
+export function waitForBootConfigLoaded(): Promise<MonoConfig> {
+  return bootConfigPromise;
+}
+
+export function loadWebAssemblyPlatformIfNotStarted(): Promise<void> {
+  platformLoadPromise ??= monoPlatform.load(options ?? {}, resolveBootConfigPromise);
   return platformLoadPromise;
 }
 

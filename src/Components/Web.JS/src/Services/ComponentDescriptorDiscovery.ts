@@ -48,7 +48,7 @@ function discoverServerComponents(root: Node): ServerComponentDescriptor[] {
 
 function discoverWebAssemblyComponents(node: Node): WebAssemblyComponentDescriptor[] {
   const componentComments = resolveComponentComments(node, 'webassembly') as WebAssemblyComponentDescriptor[];
-  return componentComments.sort((a, b): number => a.id - b.id);
+  return componentComments;
 }
 
 function discoverAutoComponents(node: Node): AutoComponentDescriptor[] {
@@ -176,14 +176,12 @@ function createServerComponentComment(payload: ServerComponentMarker, start: Com
   };
 }
 
-let nextWebAssemblyDescriptorId = 0;
 function createWebAssemblyComponentComment(payload: WebAssemblyComponentMarker, start: Comment, end: Comment | undefined): WebAssemblyComponentDescriptor {
   validateWebAssemblyComponentPayload(payload);
 
   return {
     ...payload,
     uniqueId: nextUniqueDescriptorId++,
-    id: nextWebAssemblyDescriptorId++,
     start,
     end,
   };
@@ -306,7 +304,6 @@ export function mergeDescriptors(target: ComponentDescriptor, source: ComponentD
     const sourceWebAssemblyData = source as WebAssemblyMarkerData;
     target.parameterDefinitions = sourceWebAssemblyData.parameterDefinitions;
     target.parameterValues = sourceWebAssemblyData.parameterValues;
-    target.id = sourceWebAssemblyData.id;
   }
 
   if (target.type === 'server' || target.type === 'auto') {
@@ -361,5 +358,4 @@ type WebAssemblyMarkerData = {
   assembly: string;
   parameterDefinitions: string;
   parameterValues: string;
-  id: number;
 } & CommonMarkerData;
