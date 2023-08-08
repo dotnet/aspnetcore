@@ -44,6 +44,60 @@ public class ShutdownTests : TestApplicationErrorLoggerLoggedTest
         };
     }
 
+    [ConditionalFact]
+    public async Task ConnectionClosedWithoutActiveRequestsOrGoAwayFIN()
+    {
+        var connectionClosed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var readFin = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var writeFin = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        TestSink.MessageLogged += context =>
+        {
+
+            if (context.EventId.Name == "Http2ConnectionClosed")
+            {
+                connectionClosed.SetResult();
+            }
+            else if (context.EventId.Name == "ConnectionReadFin")
+            {
+                readFin.SetResult();
+            }
+            else if (context.EventId.Name == "ConnectionWriteFin")
+            {
+                writeFin.SetResult();
+            }
+        };
+
+        var testContext = new TestServiceContext(LoggerFactory);
+
+        testContext.InitializeHeartbeat();
+
+        await using (var server = new TestServer(context =>
+        {
+            return context.Response.WriteAsync("hello world " + context.Request.Protocol);
+        },
+        testContext,
+        kestrelOptions =>
+        {
+            kestrelOptions.Listen(IPAddress.Loopback, 0, listenOptions =>
+            {
+                listenOptions.Protocols = HttpProtocols.Http2;
+                listenOptions.UseHttps(_x509Certificate2);
+            });
+        }))
+        {
+            var response = await Client.GetStringAsync($"https://localhost:{server.Port}/");
+            Assert.Equal("hello world HTTP/2", response);
+            Client.Dispose(); // Close the socket, no GoAway is sent.
+
+            await readFin.Task.DefaultTimeout();
+            await writeFin.Task.DefaultTimeout();
+            await connectionClosed.Task.DefaultTimeout();
+
+            await server.StopAsync();
+        }
+    }
+
     [CollectDump]
     [ConditionalFact]
     public async Task GracefulShutdownWaitsForRequestsToFinish()
