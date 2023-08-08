@@ -131,17 +131,7 @@ public class EndpointRoutingMiddlewareFormOptionsTest
         var sink = new TestSink(TestSink.EnableWithTypeName<EndpointRoutingMiddleware>);
         var loggerFactory = new TestLoggerFactory(sink, enabled: true);
         var logger = new Logger<EndpointRoutingMiddleware>(loggerFactory);
-
-        var serviceCollection = new ServiceCollection();
-        serviceCollection.Configure<FormOptions>(options =>
-        {
-            options.BufferBody = true;
-            options.ValueLengthLimit = 45;
-        });
-        var httpContext = new DefaultHttpContext
-        {
-            RequestServices = serviceCollection.BuildServiceProvider()
-        };
+        var httpContext = CreateHttpContext();
 
         var formOptionsMetadata = new FormOptionsMetadata(bufferBody: false, valueCountLimit: 54);
         var middleware = CreateMiddleware(
@@ -149,7 +139,8 @@ public class EndpointRoutingMiddlewareFormOptionsTest
             matcherFactory: new TestMatcherFactory(isHandled: true, setEndpointCallback: c =>
             {
                 c.SetEndpoint(new Endpoint(c => Task.CompletedTask, new EndpointMetadataCollection(formOptionsMetadata), "myapp"));
-            }));
+            }),
+            formOptions: new FormOptions { BufferBody = true, ValueLengthLimit = 45});
 
         // Act
         await middleware.Invoke(httpContext);
@@ -209,7 +200,8 @@ public class EndpointRoutingMiddlewareFormOptionsTest
         ILogger<EndpointRoutingMiddleware> logger = null,
         MatcherFactory matcherFactory = null,
         DiagnosticListener listener = null,
-        RequestDelegate next = null)
+        RequestDelegate next = null,
+        FormOptions formOptions = null)
     {
         next ??= c => Task.CompletedTask;
         logger ??= new Logger<EndpointRoutingMiddleware>(NullLoggerFactory.Instance);
@@ -224,6 +216,7 @@ public class EndpointRoutingMiddlewareFormOptionsTest
             new DefaultEndpointDataSource(),
             listener,
             Options.Create(new RouteOptions()),
+            Options.Create(formOptions ?? new FormOptions()),
             metrics,
             next);
 

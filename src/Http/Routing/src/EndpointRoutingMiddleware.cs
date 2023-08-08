@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.ShortCircuit;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -30,6 +29,7 @@ internal sealed partial class EndpointRoutingMiddleware
     private readonly RoutingMetrics _metrics;
     private readonly RequestDelegate _next;
     private readonly RouteOptions _routeOptions;
+    private readonly FormOptions _formOptions;
     private Task<Matcher>? _initializationTask;
 
     public EndpointRoutingMiddleware(
@@ -39,6 +39,7 @@ internal sealed partial class EndpointRoutingMiddleware
         EndpointDataSource rootCompositeEndpointDataSource,
         DiagnosticListener diagnosticListener,
         IOptions<RouteOptions> routeOptions,
+        IOptions<FormOptions> formOptions,
         RoutingMetrics metrics,
         RequestDelegate next)
     {
@@ -50,6 +51,7 @@ internal sealed partial class EndpointRoutingMiddleware
         _metrics = metrics;
         _next = next ?? throw new ArgumentNullException(nameof(next));
         _routeOptions = routeOptions.Value;
+        _formOptions = formOptions.Value;
 
         // rootCompositeEndpointDataSource is a constructor parameter only so it always gets disposed by DI. This ensures that any
         // disposable EndpointDataSources also get disposed. _endpointDataSource is a component of rootCompositeEndpointDataSource.
@@ -345,7 +347,7 @@ internal sealed partial class EndpointRoutingMiddleware
         // Request form has not been read yet, so set the limits
         if (formFeature == null || formFeature is { Form: null })
         {
-            var baseFormOptions = context.RequestServices.GetService<IOptions<FormOptions>>()?.Value ?? new FormOptions();
+            var baseFormOptions = _formOptions;
             var finalFormOptionsMetadata = new FormOptionsMetadata();
             var formOptionsMetadatas = endpoint.Metadata
                 .GetOrderedMetadata<IFormOptionsMetadata>();

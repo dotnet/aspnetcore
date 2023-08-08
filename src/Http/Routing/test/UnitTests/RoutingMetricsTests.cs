@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Routing.TestObjects;
@@ -166,6 +167,7 @@ public class RoutingMetricsTests
             new DefaultEndpointDataSource(),
             listener,
             Options.Create(new RouteOptions()),
+            Options.Create(new FormOptions()),
             metrics,
             next);
 
