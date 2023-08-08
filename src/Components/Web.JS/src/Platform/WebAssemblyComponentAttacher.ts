@@ -10,26 +10,23 @@ export class WebAssemblyComponentAttacher {
 
   private componentsById: { [index: number]: WebAssemblyComponentDescriptor };
 
-  private rootComponentManager?: RootComponentManager;
+  private componentManager: RootComponentManager<WebAssemblyComponentDescriptor>;
 
-  public constructor(components: WebAssemblyComponentDescriptor[] | RootComponentManager) {
+  public constructor(componentManager: RootComponentManager<WebAssemblyComponentDescriptor>) {
+    this.componentManager = componentManager;
     this.componentsById = {};
-    if (components instanceof RootComponentManager) {
-      this.preregisteredComponents = [];
-      this.rootComponentManager = components;
-    } else {
-      this.preregisteredComponents = components;
-      for (let index = 0; index < components.length; index++) {
-        const component = components[index];
-        this.componentsById[component.id] = component;
-      }
+    this.preregisteredComponents = componentManager.getFixedComponentArray();
+
+    for (let index = 0; index < this.preregisteredComponents.length; index++) {
+      const component = this.preregisteredComponents[index];
+      this.componentsById[component.id] = component;
     }
   }
 
   public resolveRegisteredElement(id: string, componentId: number): LogicalElement | undefined {
     const parsedId = Number.parseInt(id);
     if (!Number.isNaN(parsedId)) {
-      const component = this.rootComponentManager?.resolveRootComponent(parsedId, componentId) || this.componentsById[parsedId];
+      const component = this.componentManager.resolveRootComponent(parsedId, componentId);
       return toLogicalRootCommentElement(component);
     } else {
       return undefined;

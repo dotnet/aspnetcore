@@ -74,6 +74,7 @@ interface IBlazor {
     receiveWebAssemblyDotNetDataStream?: (streamId: number, data: any, bytesRead: number, errorMessage: string) => void;
     receiveWebViewDotNetDataStream?: (streamId: number, data: any, bytesRead: number, errorMessage: string) => void;
     attachWebRendererInterop?: typeof attachWebRendererInterop;
+    loadWebAssemblyQuicklyTimeout?: number;
 
     // JSExport APIs
     dotNetExports?: {

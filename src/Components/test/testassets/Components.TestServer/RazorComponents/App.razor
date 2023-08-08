@@ -19,8 +19,10 @@
     <script suppress-error="BL9992">
         const suppressEnhancedNavigation = sessionStorage.getItem('suppress-enhanced-navigation') === 'true';
         const blockLoadBootResource = sessionStorage.getItem('block-load-boot-resource') === 'true';
+        const useLongWebAssemblyTimeout = sessionStorage.getItem('use-long-auto-timeout') === 'true';
         sessionStorage.removeItem('suppress-enhanced-navigation');
         sessionStorage.removeItem('block-load-boot-resource');
+        sessionStorage.removeItem('use-long-auto-timeout');
 
         let loadBootResourceUnblocked = null;
         if (blockLoadBootResource) {
@@ -36,25 +38,31 @@
                 },
                 webAssembly: {
                     loadBootResource: function (type, name, defaultUri, integrity) {
+                        console.log(`${type} ${name} ${defaultUri} ${integrity}`);
                         switch (type) {
                             case 'manifest':
-                                // The following allows us to arbitrarily delay the loading of the boot manifest.
+                            case 'dotnetjs':
+                            case 'dotnetwasm':
+                                // note this is resolved to absolute URL using document.baseURI
+                                return `WasmMinimal/_framework/${name}`;
+                            default:
+                                // The following allows us to arbitrarily delay the loading of WebAssembly resources.
                                 // This is useful for guaranteeing that auto mode components will fall back on
                                 // using Blazor server.
-                                return fetch(`${document.baseURI}/WasmMinimal/_framework/${name}`, {
+                                console.log('able to block!');
+                                return fetch(`${document.baseURI}WasmMinimal/_framework/${name}?`, {
                                     method: "GET",
-                                    credentials: "include",
-                                    cache: "no-cache",
                                 }).then(async (response) => {
                                     await loadBootResourceUnblocked;
                                     return response;
                                 });
-                            default:
-                                // note this is resolved to absolute URL using document.baseURI
-                                return `WasmMinimal/_framework/${name}`;
                         }
                     },
                 },
+            }).then(() => {
+                if (useLongWebAssemblyTimeout) {
+                    Blazor._internal.loadWebAssemblyQuicklyTimeout = 10000000;
+                }
             });
         }
 

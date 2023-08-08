@@ -38,7 +38,7 @@ export function hasCircuitStarted() {
   return hasStarted;
 }
 
-export async function startCircuit(components?: ServerComponentDescriptor[] | RootComponentManager): Promise<void> {
+export async function startCircuit(components: RootComponentManager<ServerComponentDescriptor>): Promise<void> {
   if (hasStarted) {
     throw new Error('Blazor Server has already started.');
   }
@@ -73,7 +73,7 @@ export async function startCircuit(components?: ServerComponentDescriptor[] | Ro
   logger.log(LogLevel.Information, 'Starting up Blazor server-side application.');
 
   const appState = discoverPersistedState(document);
-  circuit = new CircuitDescriptor(components || [], appState || '');
+  circuit = new CircuitDescriptor(components, appState || '');
 
   // Configure navigation via SignalR
   Blazor._internal.navigationManager.listenForNavigationEvents((uri: string, state: string | undefined, intercepted: boolean): Promise<void> => {
