@@ -34,10 +34,6 @@ export function setCircuitOptions(circuitUserOptions?: Partial<CircuitStartOptio
   userOptions = circuitUserOptions;
 }
 
-export function hasCircuitStarted() {
-  return hasStarted;
-}
-
 export async function startCircuit(components: RootComponentManager<ServerComponentDescriptor>): Promise<void> {
   if (hasStarted) {
     throw new Error('Blazor Server has already started.');
