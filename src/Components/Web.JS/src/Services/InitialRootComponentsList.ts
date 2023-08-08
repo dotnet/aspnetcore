@@ -4,8 +4,8 @@
 import { ComponentDescriptor } from './ComponentDescriptorDiscovery';
 import { RootComponentManager } from './RootComponentManager';
 
-export class InitialRootComponentsList<FixedComponentDescriptorType extends ComponentDescriptor> implements RootComponentManager<FixedComponentDescriptorType> {
-  constructor(public readonly initialComponents: FixedComponentDescriptorType[]) {
+export class InitialRootComponentsList<ComponentDescriptorType extends ComponentDescriptor> implements RootComponentManager<ComponentDescriptorType> {
+  constructor(public readonly initialComponents: ComponentDescriptorType[]) {
   }
 
   resolveRootComponent(selectorId: number, _componentId: number): ComponentDescriptor {
