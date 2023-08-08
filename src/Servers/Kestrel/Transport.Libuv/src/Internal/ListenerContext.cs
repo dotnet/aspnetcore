@@ -63,7 +63,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                     }
                 }
 
-                var connection = new LibuvConnection(socket, TransportContext.Log, Thread, remoteEndPoint, localEndPoint);
+                var finOnError = TransportContext.Options.FinOnError;
+                var connection = new LibuvConnection(socket, TransportContext.Log, Thread, remoteEndPoint, localEndPoint, finOnError);
                 TransportContext.ConnectionDispatcher.OnConnection(connection);
                 _ = connection.Start();
             }

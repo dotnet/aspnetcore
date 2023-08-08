@@ -44,6 +44,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
         }
 
+        public TestServer(RequestDelegate app, TestServiceContext context, Action<ListenOptions> configureListenOptions, Action<IServiceCollection> configureServices = null)
+            : this(app, context, MakeListenOptions(configureListenOptions),
+                s =>
+            {
+                configureServices?.Invoke(s);
+            })
+        {
+        }
+
         public TestServer(RequestDelegate app, TestServiceContext context, ListenOptions listenOptions, Action<IServiceCollection> configureServices)
         {
             _app = app;
@@ -77,6 +86,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 .Build();
 
             _host.Start();
+        }
+
+        private static ListenOptions MakeListenOptions(Action<ListenOptions> configureListenOptions)
+        {
+            var options = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
+            configureListenOptions(options);
+            return options;
         }
 
         private static void RemoveDevCert(IServiceCollection services)

@@ -35,6 +35,8 @@ using Microsoft.Extensions.Primitives;
 using Moq;
 using Xunit;
 
+using static Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.FinOnErrorHelpers;
+
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
     public class ResponseTests : TestApplicationErrorLoggerLoggedTest
@@ -2907,8 +2909,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        [Fact]
-        public async Task ConnectionClosedWhenResponseDoesNotSatisfyMinimumDataRate()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task ConnectionClosedWhenResponseDoesNotSatisfyMinimumDataRate(bool fin)
         {
             using (StartLog(out var loggerFactory, "ConnClosedWhenRespDoesNotSatisfyMin"))
             {
@@ -2920,21 +2924,51 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 var responseRateTimeoutMessageLogged = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
                 var connectionStopMessageLogged = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var connectionWriteFinMessageLogged = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var connectionWriteRstMessageLogged = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
                 var requestAborted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
                 var appFuncCompleted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-                var mockKestrelTrace = new Mock<IKestrelTrace>();
-                mockKestrelTrace
-                    .Setup(trace => trace.ResponseMininumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>()))
-                    .Callback(() => responseRateTimeoutMessageLogged.SetResult(null));
-                mockKestrelTrace
-                    .Setup(trace => trace.ConnectionStop(It.IsAny<string>()))
-                    .Callback(() => connectionStopMessageLogged.SetResult(null));
+                var mockLogger = new Mock<ILogger>();
+                mockLogger
+                    .Setup(l => l.IsEnabled(It.IsAny<LogLevel>()))
+                    .Returns(true);
+                mockLogger
+                    .Setup(l => l.Log(It.IsAny<LogLevel>(), It.IsAny<EventId>(), It.IsAny<object>(), It.IsAny<Exception>(), It.IsAny<Func<object, Exception, string>>()))
+                    .Callback<LogLevel, EventId, object, Exception, Func<object, Exception, string>>((logLevel, eventId, state, exception, formatter) =>
+                    {
+                        if (eventId.Name == "ResponseMininumDataRateNotSatisfied")
+                        {
+                            responseRateTimeoutMessageLogged.TrySetResult(null);
+                        }
+                        else if (eventId.Name == "ConnectionStop")
+                        {
+                            connectionStopMessageLogged.TrySetResult(null);
+                        }
+                        else if (eventId.Name == "ConnectionWriteFin")
+                        {
+                            connectionWriteFinMessageLogged.TrySetResult(null);
+                        }
+                        else if (eventId.Name == "ConnectionWriteRst")
+                        {
+                            connectionWriteRstMessageLogged.TrySetResult(null);
+                        }
 
-                var testContext = new TestServiceContext
+                        Logger.Log(logLevel, eventId, state, exception, formatter);
+                    });
+
+                var mockLoggerFactory = new Mock<ILoggerFactory>();
+                mockLoggerFactory
+                    .Setup(factory => factory.CreateLogger(It.IsAny<string>()))
+                    .Returns(Logger);
+                mockLoggerFactory
+                    .Setup(factory => factory.CreateLogger(It.IsIn("Microsoft.AspNetCore.Server.Kestrel",
+                                                                   "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv",
+                                                                   "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets")))
+                    .Returns(mockLogger.Object);
+
+                var testContext = new TestServiceContext(mockLoggerFactory.Object)
                 {
-                    LoggerFactory = loggerFactory,
-                    Log = mockKestrelTrace.Object,
                     SystemClock = new SystemClock(),
                     ServerOptions =
                     {
@@ -2971,37 +3005,55 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     }
                 }
 
-                using (var server = new TestServer(App, testContext, listenOptions))
+                using (var server = new TestServer(App, testContext, configureListenOptions: _ => { }, services => SetFinOnError(services, fin)))
                 {
                     using (var connection = server.CreateConnection())
                     {
-                        logger.LogInformation("Sending request");
-                        await connection.Send(
-                            "GET / HTTP/1.1",
-                            "Host:",
-                            "",
-                            "");
+                        try
+                        {
+                            logger.LogInformation("Sending request");
+                            await connection.Send(
+                                "GET / HTTP/1.1",
+                                "Host:",
+                                "",
+                                "");
 
-                        logger.LogInformation("Sent request");
+                            logger.LogInformation("Sent request");
 
-                        var sw = Stopwatch.StartNew();
-                        logger.LogInformation("Waiting for connection to abort.");
+                            var sw = Stopwatch.StartNew();
+                            logger.LogInformation("Waiting for connection to abort.");
 
-                        await requestAborted.Task.DefaultTimeout();
-                        await responseRateTimeoutMessageLogged.Task.DefaultTimeout();
-                        await connectionStopMessageLogged.Task.DefaultTimeout();
-                        await appFuncCompleted.Task.DefaultTimeout();
-                        await AssertStreamAborted(connection.Reader.BaseStream, chunkSize * chunks);
+                            await requestAborted.Task.DefaultTimeout();
+                            await responseRateTimeoutMessageLogged.Task.DefaultTimeout();
+                            await connectionStopMessageLogged.Task.DefaultTimeout();
+                            if (ExpectFinOnError(fin))
+                            {
+                                await connectionWriteFinMessageLogged.Task.DefaultTimeout();
+                            }
+                            else
+                            {
+                                await connectionWriteRstMessageLogged.Task.DefaultTimeout();
+                            }
+                            await appFuncCompleted.Task.DefaultTimeout();
+                            await AssertStreamAborted(connection.Reader.BaseStream, chunkSize * chunks);
 
-                        sw.Stop();
-                        logger.LogInformation("Connection was aborted after {totalMilliseconds}ms.", sw.ElapsedMilliseconds);
+                            sw.Stop();
+                            logger.LogInformation("Connection was aborted after {totalMilliseconds}ms.", sw.ElapsedMilliseconds);
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.LogError(ex, "Unexpected exception.");
+                            throw;
+                        }
                     }
                 }
             }
         }
 
-        [Fact]
-        public async Task HttpsConnectionClosedWhenResponseDoesNotSatisfyMinimumDataRate()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task HttpsConnectionClosedWhenResponseDoesNotSatisfyMinimumDataRate(bool fin)
         {
             const int chunkSize = 1024;
             const int chunks = 256 * 1024;
@@ -3011,18 +3063,50 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             var responseRateTimeoutMessageLogged = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             var connectionStopMessageLogged = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var connectionWriteFinMessageLogged = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var connectionWriteRstMessageLogged = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             var aborted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             var appFuncCompleted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            var mockKestrelTrace = new Mock<IKestrelTrace>();
-            mockKestrelTrace
-                .Setup(trace => trace.ResponseMininumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>()))
-                .Callback(() => responseRateTimeoutMessageLogged.SetResult(null));
-            mockKestrelTrace
-                .Setup(trace => trace.ConnectionStop(It.IsAny<string>()))
-                .Callback(() => connectionStopMessageLogged.SetResult(null));
+            var mockLogger = new Mock<ILogger>();
+            mockLogger
+                .Setup(l => l.IsEnabled(It.IsAny<LogLevel>()))
+                .Returns(true);
+            mockLogger
+                .Setup(l => l.Log(It.IsAny<LogLevel>(), It.IsAny<EventId>(), It.IsAny<object>(), It.IsAny<Exception>(), It.IsAny<Func<object, Exception, string>>()))
+                .Callback<LogLevel, EventId, object, Exception, Func<object, Exception, string>>((logLevel, eventId, state, exception, formatter) =>
+                {
+                    if (eventId.Name == "ResponseMininumDataRateNotSatisfied")
+                    {
+                        responseRateTimeoutMessageLogged.TrySetResult(null);
+                    }
+                    else if (eventId.Name == "ConnectionStop")
+                    {
+                        connectionStopMessageLogged.TrySetResult(null);
+                    }
+                    else if (eventId.Name == "ConnectionWriteFin")
+                    {
+                        connectionWriteFinMessageLogged.TrySetResult(null);
+                    }
+                    else if (eventId.Name == "ConnectionWriteRst")
+                    {
+                        connectionWriteRstMessageLogged.TrySetResult(null);
+                    }
 
-            var testContext = new TestServiceContext(LoggerFactory, mockKestrelTrace.Object)
+                    Logger.Log(logLevel, eventId, state, exception, formatter);
+                });
+
+            var mockLoggerFactory = new Mock<ILoggerFactory>();
+            mockLoggerFactory
+                .Setup(factory => factory.CreateLogger(It.IsAny<string>()))
+                .Returns(Logger);
+            mockLoggerFactory
+                .Setup(factory => factory.CreateLogger(It.IsIn("Microsoft.AspNetCore.Server.Kestrel",
+                                                               "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv",
+                                                               "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets")))
+                .Returns(mockLogger.Object);
+
+            var testContext = new TestServiceContext(mockLoggerFactory.Object)
             {
                 SystemClock = new SystemClock(),
                 ServerOptions =
@@ -3034,13 +3118,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 }
             };
 
-            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+            void ConfigureListenOptions(ListenOptions listenOptions)
             {
-                ConnectionAdapters =
-                {
-                    new HttpsConnectionAdapter(new HttpsConnectionAdapterOptions { ServerCertificate = certificate })
-                }
-            };
+                listenOptions.ConnectionAdapters.Add(
+                    new HttpsConnectionAdapter(new HttpsConnectionAdapterOptions { ServerCertificate = certificate }));
+            }
 
             using (var server = new TestServer(async context =>
             {
@@ -3063,38 +3145,58 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     appFuncCompleted.SetResult(null);
                     throw;
                 }
-            }, testContext, listenOptions))
+            }, testContext, ConfigureListenOptions,
+            services => SetFinOnError(services, fin)))
             {
                 using (var connection = server.CreateConnection())
                 {
                     using (var sslStream = new SslStream(connection.Reader.BaseStream, false, (sender, cert, chain, errors) => true, null))
                     {
-                        await sslStream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false);
-
-                        var request = Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\nHost:\r\n\r\n");
-                        await sslStream.WriteAsync(request, 0, request.Length);
-
-                        await aborted.Task.DefaultTimeout();
-                        await responseRateTimeoutMessageLogged.Task.DefaultTimeout();
-                        await connectionStopMessageLogged.Task.DefaultTimeout();
-                        await appFuncCompleted.Task.DefaultTimeout();
-
-                        // Temporary workaround for a deadlock when reading from an aborted client SslStream on Mac and Linux.
-                        if (TestPlatformHelper.IsWindows)
+                        try
                         {
-                            await AssertStreamAborted(sslStream, chunkSize * chunks);
+
+                            await sslStream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false);
+
+                            var request = Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\nHost:\r\n\r\n");
+                            await sslStream.WriteAsync(request, 0, request.Length);
+
+                            await aborted.Task.DefaultTimeout();
+                            await responseRateTimeoutMessageLogged.Task.DefaultTimeout();
+                            await connectionStopMessageLogged.Task.DefaultTimeout();
+                            if (ExpectFinOnError(fin))
+                            {
+                                await connectionWriteFinMessageLogged.Task.DefaultTimeout();
+                            }
+                            else
+                            {
+                                await connectionWriteRstMessageLogged.Task.DefaultTimeout();
+                            }
+                            await appFuncCompleted.Task.DefaultTimeout();
+
+                            // Temporary workaround for a deadlock when reading from an aborted client SslStream on Mac and Linux.
+                            if (TestPlatformHelper.IsWindows)
+                            {
+                                await AssertStreamAborted(sslStream, chunkSize * chunks);
+                            }
+                            else
+                            {
+                                await AssertStreamAborted(connection.Reader.BaseStream, chunkSize * chunks);
+                            }
                         }
-                        else
+                        catch (Exception ex)
                         {
-                            await AssertStreamAborted(connection.Reader.BaseStream, chunkSize * chunks);
+                            Logger.LogError(ex, "Unexpected exception.");
+                            throw;
                         }
                     }
                 }
             }
         }
 
-        [Fact]
-        public async Task ConnectionClosedWhenBothRequestAndResponseExperienceBackPressure()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task ConnectionClosedWhenBothRequestAndResponseExperienceBackPressure(bool fin)
         {
             const int bufferSize = 65536;
             const int bufferCount = 100;
@@ -3103,21 +3205,51 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             var responseRateTimeoutMessageLogged = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             var connectionStopMessageLogged = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var connectionWriteFinMessageLogged = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var connectionWriteRstMessageLogged = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             var requestAborted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             var copyToAsyncCts = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            var mockKestrelTrace = new Mock<IKestrelTrace>();
-            mockKestrelTrace
-                .Setup(trace => trace.ResponseMininumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>()))
-                .Callback(() => responseRateTimeoutMessageLogged.SetResult(null));
-            mockKestrelTrace
-                .Setup(trace => trace.ConnectionStop(It.IsAny<string>()))
-                .Callback(() => connectionStopMessageLogged.SetResult(null));
+            var mockLogger = new Mock<ILogger>();
+            mockLogger
+                .Setup(l => l.IsEnabled(It.IsAny<LogLevel>()))
+                .Returns(true);
+            mockLogger
+                .Setup(l => l.Log(It.IsAny<LogLevel>(), It.IsAny<EventId>(), It.IsAny<object>(), It.IsAny<Exception>(), It.IsAny<Func<object, Exception, string>>()))
+                .Callback<LogLevel, EventId, object, Exception, Func<object, Exception, string>>((logLevel, eventId, state, exception, formatter) =>
+                {
+                    if (eventId.Name == "ResponseMininumDataRateNotSatisfied")
+                    {
+                        responseRateTimeoutMessageLogged.TrySetResult(null);
+                    }
+                    else if (eventId.Name == "ConnectionStop")
+                    {
+                        connectionStopMessageLogged.TrySetResult(null);
+                    }
+                    else if (eventId.Name == "ConnectionWriteFin")
+                    {
+                        connectionWriteFinMessageLogged.TrySetResult(null);
+                    }
+                    else if (eventId.Name == "ConnectionWriteRst")
+                    {
+                        connectionWriteRstMessageLogged.TrySetResult(null);
+                    }
 
-            var testContext = new TestServiceContext
+                    Logger.Log(logLevel, eventId, state, exception, formatter);
+                });
+
+            var mockLoggerFactory = new Mock<ILoggerFactory>();
+            mockLoggerFactory
+                .Setup(factory => factory.CreateLogger(It.IsAny<string>()))
+                .Returns(Logger);
+            mockLoggerFactory
+                .Setup(factory => factory.CreateLogger(It.IsIn("Microsoft.AspNetCore.Server.Kestrel",
+                                                               "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv",
+                                                               "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets")))
+                .Returns(mockLogger.Object);
+
+            var testContext = new TestServiceContext(mockLoggerFactory.Object)
             {
-                LoggerFactory = LoggerFactory,
-                Log = mockKestrelTrace.Object,
                 SystemClock = new SystemClock(),
                 ServerOptions =
                 {
@@ -3128,8 +3260,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     }
                 }
             };
-
-            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
 
             async Task App(HttpContext context)
             {
@@ -3151,34 +3281,50 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 copyToAsyncCts.SetException(new Exception("This shouldn't be reached."));
             }
 
-            using (var server = new TestServer(App, testContext, listenOptions))
+            using (var server = new TestServer(App, testContext, configureListenOptions: _ => { }, services => SetFinOnError(services, fin)))
             {
                 using (var connection = server.CreateConnection())
                 {
-                    // Close the connection with the last request so AssertStreamCompleted actually completes.
-                    await connection.Send(
-                        "POST / HTTP/1.1",
-                        "Host:",
-                        $"Content-Length: {responseSize}",
-                        "",
-                        "");
-
-                    var sendTask = Task.Run(async () =>
+                    try
                     {
-                        for (var i = 0; i < bufferCount; i++)
+                        // Close the connection with the last request so AssertStreamCompleted actually completes.
+                        await connection.Send(
+                            "POST / HTTP/1.1",
+                            "Host:",
+                            $"Content-Length: {responseSize}",
+                            "",
+                            "");
+
+                        var sendTask = Task.Run(async () =>
                         {
-                            await connection.Stream.WriteAsync(buffer, 0, buffer.Length);
-                            await Task.Delay(10);
+                            for (var i = 0; i < bufferCount; i++)
+                            {
+                                await connection.Stream.WriteAsync(buffer, 0, buffer.Length);
+                                await Task.Delay(10);
+                            }
+                        });
+
+                        await requestAborted.Task.DefaultTimeout();
+                        await responseRateTimeoutMessageLogged.Task.DefaultTimeout();
+                        await connectionStopMessageLogged.Task.DefaultTimeout();
+                        if (ExpectFinOnError(fin))
+                        {
+                            await connectionWriteFinMessageLogged.Task.DefaultTimeout();
                         }
-                    });
+                        else
+                        {
+                            await connectionWriteRstMessageLogged.Task.DefaultTimeout();
+                        }
 
-                    await requestAborted.Task.DefaultTimeout();
-                    await responseRateTimeoutMessageLogged.Task.DefaultTimeout();
-                    await connectionStopMessageLogged.Task.DefaultTimeout();
-
-                    // Expect OperationCanceledException instead of IOException because the server initiated the abort due to a response rate timeout.
-                    await Assert.ThrowsAnyAsync<OperationCanceledException>(() => copyToAsyncCts.Task).DefaultTimeout();
-                    await AssertStreamAborted(connection.Stream, responseSize);
+                        // Expect OperationCanceledException instead of IOException because the server initiated the abort due to a response rate timeout.
+                        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => copyToAsyncCts.Task).DefaultTimeout();
+                        await AssertStreamAborted(connection.Stream, responseSize);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError(ex, "Unexpected exception.");
+                        throw;
+                    }
                 }
             }
         }
