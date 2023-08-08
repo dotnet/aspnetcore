@@ -51,8 +51,8 @@ function getValueU64(ptr: number) {
 }
 
 export const monoPlatform: Platform = {
-  load: function load(options: Partial<WebAssemblyStartOptions>) {
-    return createRuntimeInstance(options);
+  load: function load(options: Partial<WebAssemblyStartOptions>, onConfigLoaded?: (loadedConfig: MonoConfig) => void) {
+    return createRuntimeInstance(options, onConfigLoaded);
   },
 
   start: function start() {
@@ -174,7 +174,7 @@ async function importDotnetJs(startOptions: Partial<WebAssemblyStartOptions>): P
   return await import(/* webpackIgnore: true */ absoluteSrc);
 }
 
-function prepareRuntimeConfig(options: Partial<WebAssemblyStartOptions>): DotnetModuleConfig {
+function prepareRuntimeConfig(options: Partial<WebAssemblyStartOptions>, onConfigLoadedCallback?: (loadedConfig: MonoConfig) => void): DotnetModuleConfig {
   const config: MonoConfig = {
     maxParallelDownloads: 1000000, // disable throttling parallel downloads
     enableDownloadRetry: false, // disable retry downloads
@@ -191,6 +191,8 @@ function prepareRuntimeConfig(options: Partial<WebAssemblyStartOptions>): Dotnet
     }
 
     Blazor._internal.getApplicationEnvironment = () => loadedConfig.applicationEnvironment!;
+
+    onConfigLoadedCallback?.(loadedConfig);
 
     const initializerArguments = [options, loadedConfig.resources?.extensions ?? {}];
     await invokeLibraryInitializers('beforeStart', initializerArguments);
@@ -210,9 +212,9 @@ function prepareRuntimeConfig(options: Partial<WebAssemblyStartOptions>): Dotnet
   return dotnetModuleConfig;
 }
 
-async function createRuntimeInstance(options: Partial<WebAssemblyStartOptions>): Promise<void> {
+async function createRuntimeInstance(options: Partial<WebAssemblyStartOptions>, onConfigLoaded?: (loadedConfig: MonoConfig) => void): Promise<void> {
   const { dotnet } = await importDotnetJs(options);
-  const moduleConfig = prepareRuntimeConfig(options);
+  const moduleConfig = prepareRuntimeConfig(options, onConfigLoaded);
 
   if (options.applicationCulture) {
     dotnet.withApplicationCulture(options.applicationCulture);

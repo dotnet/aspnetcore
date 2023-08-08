@@ -76,9 +76,9 @@ else
     @GetActionLink("add-webassembly-counter-link", "(non-prerendered)", _state.WithAddedCounter(RenderModeId.WebAssemblyNonPrerendered))
     <br />
 
-    @GetActionLink("add-auto-counter-link", "Add Auto mode counter", _state.WithAddedCounter(RenderModeId.AutoPrerendered))
+    @GetActionLink("add-auto-counter-prerendered-link", "Add Auto mode counter", _state.WithAddedCounter(RenderModeId.AutoPrerendered))
     <span> | </span>
-    @GetActionLink("add-auto-counter-non-prerendered-link", "(non-prerendered)", _state.WithAddedCounter(RenderModeId.AutoNonPrerendered))
+    @GetActionLink("add-auto-counter-link", "(non-prerendered)", _state.WithAddedCounter(RenderModeId.AutoNonPrerendered))
 </div>
 
 @code {
