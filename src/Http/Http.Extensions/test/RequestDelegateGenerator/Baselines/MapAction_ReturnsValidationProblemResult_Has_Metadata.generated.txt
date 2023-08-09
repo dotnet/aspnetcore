@@ -109,6 +109,10 @@ namespace Microsoft.AspNetCore.Http.Generated
                         return Task.CompletedTask;
                     }
                     var result = handler();
+                    if (result == null)
+                    {
+                        throw new InvalidOperationException("The IResult returned by the Delegate must not be null.");
+                    }
                     return GeneratedRouteBuilderExtensionsCore.ExecuteAsyncExplicit(result, httpContext);
                 }
 

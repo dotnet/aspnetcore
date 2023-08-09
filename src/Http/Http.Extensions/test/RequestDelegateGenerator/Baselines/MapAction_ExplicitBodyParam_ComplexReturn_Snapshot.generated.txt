@@ -120,6 +120,10 @@ namespace Microsoft.AspNetCore.Http.Generated
                         return;
                     }
                     var result = handler(todo_local!);
+                    if (result == null)
+                    {
+                        throw new InvalidOperationException("The IResult returned by the Delegate must not be null.");
+                    }
                     await GeneratedRouteBuilderExtensionsCore.ExecuteAsyncExplicit(result, httpContext);
                 }
 
@@ -220,6 +224,10 @@ namespace Microsoft.AspNetCore.Http.Generated
                         return;
                     }
                     var result = handler(todo_local);
+                    if (result == null)
+                    {
+                        throw new InvalidOperationException("The IResult returned by the Delegate must not be null.");
+                    }
                     await GeneratedRouteBuilderExtensionsCore.ExecuteAsyncExplicit(result, httpContext);
                 }
 

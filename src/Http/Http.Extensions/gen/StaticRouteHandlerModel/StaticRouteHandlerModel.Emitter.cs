@@ -84,21 +84,28 @@ internal static class StaticRouteHandlerModelEmitter
         {
             return;
         }
+        if (endpoint.Response.IsAwaitable)
+        {
+            codeWriter.WriteLine($"var task = handler({endpoint.EmitArgumentList()});");
+        }
+        if (endpoint.Response.IsAwaitable && endpoint.Response.ResponseType?.NullableAnnotation == NullableAnnotation.Annotated)
+        {
+            codeWriter.WriteLine("if (task == null)");
+            codeWriter.StartBlock();
+            codeWriter.WriteLine("""throw new InvalidOperationException("The Task returned by the Delegate must not be null.");""");
+            codeWriter.EndBlock();
+        }
         if (!endpoint.Response.HasNoResponse)
         {
             codeWriter.Write("var result = ");
         }
-        if (endpoint.Response.IsAwaitable)
-        {
-            codeWriter.Write("await ");
-        }
-        codeWriter.WriteLine($"handler({endpoint.EmitArgumentList()});");
+        codeWriter.WriteLine(endpoint.Response.IsAwaitable ? "await task;" : $"handler({endpoint.EmitArgumentList()});");
 
         endpoint.Response.EmitHttpResponseContentType(codeWriter);
 
         if (!endpoint.Response.HasNoResponse)
         {
-            codeWriter.WriteLine(endpoint.Response.EmitResponseWritingCall(endpoint.IsAwaitable));
+            endpoint.Response.EmitResponseWritingCall(codeWriter, endpoint.IsAwaitable);
         }
         else if (!endpoint.IsAwaitable)
         {
@@ -125,33 +132,37 @@ internal static class StaticRouteHandlerModelEmitter
         }
     }
 
-    private static string EmitResponseWritingCall(this EndpointResponse endpointResponse, bool isAwaitable)
+    private static void EmitResponseWritingCall(this EndpointResponse endpointResponse, CodeWriter codeWriter, bool isAwaitable)
     {
         var returnOrAwait = isAwaitable ? "await" : "return";
 
         if (endpointResponse.IsIResult)
         {
-            return $"{returnOrAwait} GeneratedRouteBuilderExtensionsCore.ExecuteAsyncExplicit(result, httpContext);";
+            codeWriter.WriteLine("if (result == null)");
+            codeWriter.StartBlock();
+            codeWriter.WriteLine("""throw new InvalidOperationException("The IResult returned by the Delegate must not be null.");""");
+            codeWriter.EndBlock();
+            codeWriter.WriteLine($"{returnOrAwait} GeneratedRouteBuilderExtensionsCore.ExecuteAsyncExplicit(result, httpContext);");
         }
         else if (endpointResponse.ResponseType?.SpecialType == SpecialType.System_String)
         {
-            return $"{returnOrAwait} httpContext.Response.WriteAsync(result);";
+            codeWriter.WriteLine($"{returnOrAwait} httpContext.Response.WriteAsync(result);");
         }
         else if (endpointResponse.ResponseType?.SpecialType == SpecialType.System_Object)
         {
-            return $"{returnOrAwait} GeneratedRouteBuilderExtensionsCore.ExecuteReturnAsync(result, httpContext, objectJsonTypeInfo);";
+            codeWriter.WriteLine($"{returnOrAwait} GeneratedRouteBuilderExtensionsCore.ExecuteReturnAsync(result, httpContext, objectJsonTypeInfo);");
         }
         else if (!endpointResponse.HasNoResponse)
         {
-            return $"{returnOrAwait} {endpointResponse.EmitJsonResponse()}";
+            codeWriter.WriteLine($"{returnOrAwait} {endpointResponse.EmitJsonResponse()}");
         }
         else if (!endpointResponse.IsAwaitable && endpointResponse.HasNoResponse)
         {
-            return $"{returnOrAwait} Task.CompletedTask;";
+            codeWriter.WriteLine($"{returnOrAwait} Task.CompletedTask;");
         }
         else
         {
-            return $"{returnOrAwait} httpContext.Response.WriteAsync(result);";
+            codeWriter.WriteLine($"{returnOrAwait} httpContext.Response.WriteAsync(result);");
         }
     }
 
@@ -366,7 +377,15 @@ internal static class StaticRouteHandlerModelEmitter
         }
         else if (endpoint.Response?.IsAwaitable == true)
         {
-            codeWriter.WriteLine($"var result = await handler({endpoint.EmitFilteredArgumentList()});");
+            codeWriter.WriteLine($"var task = handler({endpoint.EmitFilteredArgumentList()});");
+            if (endpoint.Response?.ResponseType?.NullableAnnotation == NullableAnnotation.Annotated)
+            {
+                codeWriter.WriteLine("if (task == null)");
+                codeWriter.StartBlock();
+                codeWriter.WriteLine("return (object?)Results.Empty;");
+                codeWriter.EndBlock();
+            }
+            codeWriter.WriteLine($"var result = await task;");
             codeWriter.WriteLine("return (object?)result;");
         }
         else

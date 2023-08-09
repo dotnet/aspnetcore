@@ -184,7 +184,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                         {
                             return (object?)Results.Empty;
                         }
-                        var result = await handler();
+                        var task = handler();
+                        var result = await task;
                         return (object?)result;
                     },
                     options.EndpointBuilder,
@@ -199,7 +200,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                         httpContext.Response.StatusCode = 400;
                         return;
                     }
-                    var result = await handler();
+                    var task = handler();
+                    var result = await task;
                     if (result is string)
                     {
                         httpContext.Response.ContentType ??= "text/plain; charset=utf-8";
@@ -274,7 +276,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                         {
                             return (object?)Results.Empty;
                         }
-                        var result = await handler();
+                        var task = handler();
+                        var result = await task;
                         return (object?)result;
                     },
                     options.EndpointBuilder,
@@ -289,7 +292,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                         httpContext.Response.StatusCode = 400;
                         return;
                     }
-                    var result = await handler();
+                    var task = handler();
+                    var result = await task;
                     if (result is string)
                     {
                         httpContext.Response.ContentType ??= "text/plain; charset=utf-8";
