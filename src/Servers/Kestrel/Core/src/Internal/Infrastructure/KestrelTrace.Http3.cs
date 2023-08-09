@@ -101,6 +101,6 @@ internal sealed partial class KestrelTrace : ILogger
         [LoggerMessage(53, LogLevel.Debug, @"Connection id ""{ConnectionId}"": GOAWAY stream ID {GoAwayStreamId}.", EventName = "Http3GoAwayHighestOpenedStreamId")]
         public static partial void Http3GoAwayStreamId(ILogger logger, string connectionId, long goAwayStreamId);
 
-        // Highest shared ID is 66. New consecutive IDs start at 67
+        // Highest shared ID is 66. New consecutive IDs start at 67. Please update this comment in every file in which it appears.
     }
 }
