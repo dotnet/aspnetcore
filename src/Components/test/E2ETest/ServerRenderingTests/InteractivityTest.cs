@@ -11,6 +11,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETests.ServerRenderingTests;
 
+[CollectionDefinition(nameof(InteractivityTest), DisableParallelization = true)]
 public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>>>
 {
     public InteractivityTest(
