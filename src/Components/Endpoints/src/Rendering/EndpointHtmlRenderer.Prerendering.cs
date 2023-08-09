@@ -1,10 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Components.Web.HtmlRendering;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -12,7 +14,7 @@ internal partial class EndpointHtmlRenderer
 {
     private static readonly object ComponentSequenceKey = new object();
 
-    protected override IComponent ResolveComponentForRenderMode(Type componentType, int? parentComponentId, IComponentActivator componentActivator, IComponentRenderMode renderMode)
+    protected override IComponent ResolveComponentForRenderMode([DynamicallyAccessedMembers(Component)] Type componentType, int? parentComponentId, IComponentActivator componentActivator, IComponentRenderMode renderMode)
     {
         var closestRenderModeBoundary = parentComponentId.HasValue
             ? GetClosestRenderModeBoundary(parentComponentId.Value)
@@ -50,14 +52,14 @@ internal partial class EndpointHtmlRenderer
 
     public ValueTask<IHtmlAsyncContent> PrerenderComponentAsync(
         HttpContext httpContext,
-        Type componentType,
+        [DynamicallyAccessedMembers(Component)] Type componentType,
         IComponentRenderMode prerenderMode,
         ParameterView parameters)
         => PrerenderComponentAsync(httpContext, componentType, prerenderMode, parameters, waitForQuiescence: true);
 
     public async ValueTask<IHtmlAsyncContent> PrerenderComponentAsync(
         HttpContext httpContext,
-        Type componentType,
+        [DynamicallyAccessedMembers(Component)] Type componentType,
         IComponentRenderMode? prerenderMode,
         ParameterView parameters,
         bool waitForQuiescence)
@@ -98,7 +100,7 @@ internal partial class EndpointHtmlRenderer
 
     internal async ValueTask<PrerenderedComponentHtmlContent> RenderEndpointComponent(
         HttpContext httpContext,
-        Type rootComponentType,
+        [DynamicallyAccessedMembers(Component)] Type rootComponentType,
         ParameterView parameters,
         bool waitForQuiescence)
     {

@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.Discovery;
 
@@ -35,6 +37,7 @@ public class PageComponentBuilder : IEquatable<PageComponentBuilder?>
     /// <summary>
     /// Gets or sets the page type.
     /// </summary>
+    [DynamicallyAccessedMembers(Component)]
     public required Type PageType { get; set; }
 
     /// <summary>
