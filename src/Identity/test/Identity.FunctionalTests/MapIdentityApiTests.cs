@@ -594,7 +594,7 @@ public class MapIdentityApiTests : LoggedTest
         var accessToken = loginContent.GetProperty("access_token").GetString();
         var refreshToken = loginContent.GetProperty("refresh_token").GetString();
 
-        AssertUnauthorizedAndEmpty(await client.GetAsync("/identity/account/2fa"));
+        AssertUnauthorizedAndEmpty(await client.PostAsync("/identity/account/2fa", null));
 
         client.DefaultRequestHeaders.Authorization = new("Bearer", accessToken);
 
@@ -604,11 +604,16 @@ public class MapIdentityApiTests : LoggedTest
         await AssertValidationProblemAsync(await client.PostAsJsonAsync("/identity/account/2fa", new { Enable = true, TwoFactorCode = "wrong" }),
             "InvalidTwoFactorCode");
 
-        var twoFactorKeyResponse = await client.GetFromJsonAsync<JsonElement>("/identity/account/2fa");
-        Assert.False(twoFactorKeyResponse.GetProperty("isTwoFactorEnabled").GetBoolean());
-        Assert.False(twoFactorKeyResponse.GetProperty("isMachineRemembered").GetBoolean());
+        // Even though we're now authenticated, we must send at least "{}" in the request body. An empty request fails.
+        AssertBadRequestAndEmpty(await client.PostAsync("/identity/account/2fa", null));
+        AssertBadRequestAndEmpty(await client.PostAsJsonAsync<object?>("/identity/account/2fa", null));
 
-        var sharedKey = twoFactorKeyResponse.GetProperty("sharedKey").GetString();
+        var twoFactorKeyResponse = await client.PostAsJsonAsync("/identity/account/2fa", new object());
+        var twoFactorKeyContent = await twoFactorKeyResponse.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.False(twoFactorKeyContent.GetProperty("isTwoFactorEnabled").GetBoolean());
+        Assert.False(twoFactorKeyContent.GetProperty("isMachineRemembered").GetBoolean());
+
+        var sharedKey = twoFactorKeyContent.GetProperty("sharedKey").GetString();
 
         var keyBytes = Base32.FromBase32(sharedKey);
         var unixTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
@@ -647,8 +652,9 @@ public class MapIdentityApiTests : LoggedTest
         var accessToken = loginContent.GetProperty("access_token").GetString();
         client.DefaultRequestHeaders.Authorization = new("Bearer", accessToken);
 
-        var twoFactorKeyResponse = await client.GetFromJsonAsync<JsonElement>("/identity/account/2fa");
-        var sharedKey = twoFactorKeyResponse.GetProperty("sharedKey").GetString();
+        var twoFactorKeyResponse = await client.PostAsJsonAsync("/identity/account/2fa", new object());
+        var twoFactorKeyContent = await twoFactorKeyResponse.Content.ReadFromJsonAsync<JsonElement>();
+        var sharedKey = twoFactorKeyContent.GetProperty("sharedKey").GetString();
 
         var keyBytes = Base32.FromBase32(sharedKey);
         var unixTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
@@ -697,8 +703,9 @@ public class MapIdentityApiTests : LoggedTest
         var accessToken = loginContent.GetProperty("access_token").GetString();
         client.DefaultRequestHeaders.Authorization = new("Bearer", accessToken);
 
-        var twoFactorKeyResponse = await client.GetFromJsonAsync<JsonElement>("/identity/account/2fa");
-        var sharedKey = twoFactorKeyResponse.GetProperty("sharedKey").GetString();
+        var twoFactorKeyResponse = await client.PostAsJsonAsync("/identity/account/2fa", new object());
+        var twoFactorKeyContent = await twoFactorKeyResponse.Content.ReadFromJsonAsync<JsonElement>();
+        var sharedKey = twoFactorKeyContent.GetProperty("sharedKey").GetString();
 
         var keyBytes = Base32.FromBase32(sharedKey);
         var unixTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
@@ -743,8 +750,9 @@ public class MapIdentityApiTests : LoggedTest
         var accessToken = loginContent.GetProperty("access_token").GetString();
         client.DefaultRequestHeaders.Authorization = new("Bearer", accessToken);
 
-        var twoFactorKeyResponse = await client.GetFromJsonAsync<JsonElement>("/identity/account/2fa");
-        var sharedKey = twoFactorKeyResponse.GetProperty("sharedKey").GetString();
+        var twoFactorKeyResponse = await client.PostAsJsonAsync("/identity/account/2fa", new object());
+        var twoFactorKeyContent = await twoFactorKeyResponse.Content.ReadFromJsonAsync<JsonElement>();
+        var sharedKey = twoFactorKeyContent.GetProperty("sharedKey").GetString();
 
         var keyBytes = Base32.FromBase32(sharedKey);
         var unixTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
@@ -774,7 +782,8 @@ public class MapIdentityApiTests : LoggedTest
 
         client.DefaultRequestHeaders.Authorization = new("Bearer", recoveryAccessToken);
 
-        var updated2faContent = await client.GetFromJsonAsync<JsonElement>("/identity/account/2fa");
+        var updated2faResponse = await client.PostAsJsonAsync("/identity/account/2fa", new object());
+        var updated2faContent = await updated2faResponse.Content.ReadFromJsonAsync<JsonElement>();;
         Assert.Equal(8, updated2faContent.GetProperty("recoveryCodesLeft").GetInt32());
         Assert.Null(updated2faContent.GetProperty("recoveryCodes").GetString());
 
@@ -807,11 +816,12 @@ public class MapIdentityApiTests : LoggedTest
         var loginResponse = await client.PostAsJsonAsync("/identity/login?cookieMode=true", new { Email, Password });
         ApplyCookies(client, loginResponse);
 
-        var twoFactorKeyResponse = await client.GetFromJsonAsync<JsonElement>("/identity/account/2fa");
-        Assert.False(twoFactorKeyResponse.GetProperty("isTwoFactorEnabled").GetBoolean());
-        Assert.False(twoFactorKeyResponse.GetProperty("isMachineRemembered").GetBoolean());
+        var twoFactorKeyResponse = await client.PostAsJsonAsync("/identity/account/2fa", new object());
+        var twoFactorKeyContent = await twoFactorKeyResponse.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.False(twoFactorKeyContent.GetProperty("isTwoFactorEnabled").GetBoolean());
+        Assert.False(twoFactorKeyContent.GetProperty("isMachineRemembered").GetBoolean());
 
-        var sharedKey = twoFactorKeyResponse.GetProperty("sharedKey").GetString();
+        var sharedKey = twoFactorKeyContent.GetProperty("sharedKey").GetString();
 
         var keyBytes = Base32.FromBase32(sharedKey);
         var unixTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
@@ -829,16 +839,18 @@ public class MapIdentityApiTests : LoggedTest
         var twoFactorLoginResponse = await client.PostAsJsonAsync("/identity/login?cookieMode=true&persistCookies=false", new { Email, Password, twoFactorCode });
         ApplyCookies(client, twoFactorLoginResponse);
 
-        var cookie2faResponse = await client.GetFromJsonAsync<JsonElement>("/identity/account/2fa");
-        Assert.True(cookie2faResponse.GetProperty("isTwoFactorEnabled").GetBoolean());
-        Assert.False(cookie2faResponse.GetProperty("isMachineRemembered").GetBoolean());
+        var cookie2faResponse = await client.PostAsJsonAsync("/identity/account/2fa", new object());
+        var cookie2faContent = await cookie2faResponse.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.True(cookie2faContent.GetProperty("isTwoFactorEnabled").GetBoolean());
+        Assert.False(cookie2faContent.GetProperty("isMachineRemembered").GetBoolean());
 
         var persistentLoginResponse = await client.PostAsJsonAsync("/identity/login?cookieMode=true", new { Email, Password, twoFactorCode });
         ApplyCookies(client, persistentLoginResponse);
 
-        var persistent2faResponse = await client.GetFromJsonAsync<JsonElement>("/identity/account/2fa");
-        Assert.True(persistent2faResponse.GetProperty("isTwoFactorEnabled").GetBoolean());
-        Assert.True(persistent2faResponse.GetProperty("isMachineRemembered").GetBoolean());
+        var persistent2faResponse = await client.PostAsJsonAsync("/identity/account/2fa", new object());
+        var persistent2faContent = await persistent2faResponse.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.True(persistent2faContent.GetProperty("isTwoFactorEnabled").GetBoolean());
+        Assert.True(persistent2faContent.GetProperty("isMachineRemembered").GetBoolean());
     }
 
     [Fact]

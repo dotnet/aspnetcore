@@ -249,18 +249,6 @@ public static class IdentityApiEndpointRouteBuilderExtensions
 
         var accountGroup = routeGroup.MapGroup("/account").RequireAuthorization();
 
-        accountGroup.MapGet("/2fa", async Task<Results<Ok<TwoFactorResponse>, NotFound>>
-            (ClaimsPrincipal claimsPrincipal, [FromServices] IServiceProvider sp) =>
-        {
-            var signInManager = sp.GetRequiredService<SignInManager<TUser>>();
-            if (await signInManager.UserManager.GetUserAsync(claimsPrincipal) is not { } user)
-            {
-                return TypedResults.NotFound();
-            }
-
-            return TypedResults.Ok(await CreateTwoFactorResponseAsync(user, signInManager));
-        });
-
         accountGroup.MapPost("/2fa", async Task<Results<Ok<TwoFactorResponse>, ValidationProblem, NotFound>>
             (ClaimsPrincipal claimsPrincipal, [FromBody] TwoFactorRequest tfaRequest, [FromServices] IServiceProvider sp) =>
         {
@@ -313,7 +301,28 @@ public static class IdentityApiEndpointRouteBuilderExtensions
                 await signInManager.ForgetTwoFactorClientAsync();
             }
 
-            return TypedResults.Ok(await CreateTwoFactorResponseAsync(user, signInManager, recoveryCodes));
+            var key = await userManager.GetAuthenticatorKeyAsync(user);
+            if (string.IsNullOrEmpty(key))
+            {
+                await userManager.ResetAuthenticatorKeyAsync(user);
+                key = await userManager.GetAuthenticatorKeyAsync(user);
+
+                if (string.IsNullOrEmpty(key))
+                {
+                    throw new NotSupportedException("The user manager must produce an authenticator key after reset.");
+                }
+            }
+
+            TwoFactorResponse twoFactorResponse = new()
+            {
+                SharedKey = key,
+                RecoveryCodes = recoveryCodes,
+                RecoveryCodesLeft = recoveryCodes?.Length ?? await userManager.CountRecoveryCodesAsync(user),
+                IsTwoFactorEnabled = await userManager.GetTwoFactorEnabledAsync(user),
+                IsMachineRemembered = await signInManager.IsTwoFactorClientRememberedAsync(user),
+            };
+
+            return TypedResults.Ok(twoFactorResponse);
         });
 
         accountGroup.MapGet("/info", async Task<Results<Ok<InfoResponse>, ValidationProblem, NotFound>>
@@ -432,33 +441,6 @@ public static class IdentityApiEndpointRouteBuilderExtensions
         }
 
         return TypedResults.ValidationProblem(errorDictionary);
-    }
-
-    private static async Task<TwoFactorResponse> CreateTwoFactorResponseAsync<TUser>(TUser user, SignInManager<TUser> signInManager, string[]? recoveryCodes = null)
-        where TUser : class
-    {
-        var userManager = signInManager.UserManager;
-
-        var key = await userManager.GetAuthenticatorKeyAsync(user);
-        if (string.IsNullOrEmpty(key))
-        {
-            await userManager.ResetAuthenticatorKeyAsync(user);
-            key = await userManager.GetAuthenticatorKeyAsync(user);
-
-            if (string.IsNullOrEmpty(key))
-            {
-                throw new NotSupportedException("The user manager must produce an authenticator key after reset.");
-            }
-        }
-
-        return new()
-        {
-            SharedKey = key,
-            RecoveryCodes = recoveryCodes,
-            RecoveryCodesLeft = recoveryCodes?.Length ?? await userManager.CountRecoveryCodesAsync(user),
-            IsTwoFactorEnabled = await userManager.GetTwoFactorEnabledAsync(user),
-            IsMachineRemembered = await signInManager.IsTwoFactorClientRememberedAsync(user),
-        };
     }
 
     private static async Task<InfoResponse> CreateInfoResponseAsync<TUser>(TUser user, ClaimsPrincipal claimsPrincipal, UserManager<TUser> userManager)
