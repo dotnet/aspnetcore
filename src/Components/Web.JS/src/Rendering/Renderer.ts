@@ -24,7 +24,7 @@ export function attachRootComponentToLogicalElement(browserRendererId: number, l
   browserRenderer.attachRootComponentToLogicalElement(componentId, logicalElement, appendContent);
 }
 
-export function attachRootComponentToElement(elementSelector: string, componentId: number, browserRendererId?: number): void {
+export function attachRootComponentToElement(elementSelector: string, componentId: number, browserRendererId: number): void {
   const afterElementSelector = '::after';
   const beforeElementSelector = '::before';
   let appendContent = false;
