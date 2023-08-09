@@ -23,4 +23,10 @@ internal sealed class HubConnectionOptions
     /// Configures KeepAliveInterval for the <see cref="HubConnection" />.
     /// </summary>
     public TimeSpan? KeepAliveInterval { get; set; }
+
+    public const int DefaultMessageBufferSize = 100_000;
+
+    // Used for Stateful reconnect feature.
+    public long MessageBufferSize { get; set; } = DefaultMessageBufferSize;
+
 }

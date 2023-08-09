@@ -1899,7 +1899,8 @@ public partial class HubConnection : IAsyncDisposable
 
             if (Connection.Features.Get<IReconnectFeature>() is IReconnectFeature feature)
             {
-                _messageBuffer = new MessageBuffer(connection, hubConnection._protocol);
+                _messageBuffer = new MessageBuffer(connection, hubConnection._protocol,
+                    _hubConnection._serviceProvider.GetService<IOptions<HubConnectionOptions>>()?.Value.MessageBufferSize ?? HubConnectionOptions.DefaultMessageBufferSize);
 
                 feature.NotifyOnReconnect = _messageBuffer.Resend;
             }
