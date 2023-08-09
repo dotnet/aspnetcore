@@ -52,6 +52,9 @@
   <!-- Completely disable default targets for copying to output. -->
   <Target Name="CopyFilesToOutputDirectory" />
 
+  <!-- Need to manually bypass Helix target since this is build by BuildAfterTargetingPack.csproj instead of directly -->
+  <Target Name="CreateHelixPayload" />
+
   <!-- This target finds the reference assemblies & .xml files. -->
   <Target Name="_ResolveApiDocsTransportContent"
           Returns="@(_ApiDocsContent)"
