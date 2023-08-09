@@ -3,6 +3,8 @@
 
 using System.Collections;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Testing;
+using Microsoft.DotNet.RemoteExecutor;
 
 namespace Microsoft.AspNetCore.Components;
 
@@ -596,6 +598,32 @@ public partial class ParameterViewTest
         // Assert
         Assert.Equal(0, target.IntProp);
         Assert.Null(target.StringProp);
+    }
+
+    [ConditionalFact]
+    [RemoteExecutionSupported]
+    public void WorksWhenDynamicCodeNotSupported()
+    {
+        var options = new RemoteInvokeOptions();
+        options.RuntimeConfigurationOptions.Add("System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported", "false");
+
+        using var remoteHandle = RemoteExecutor.Invoke(static () =>
+        {
+            // Arrange
+            var parameters = new ParameterViewBuilder
+            {
+                { nameof(HasInstanceProperties.IntProp), 5 },
+                { nameof(HasInstanceProperties.StringProp), "Hello" },
+            }.Build();
+            var target = new HasInstanceProperties();
+
+            // Act
+            parameters.SetParameterProperties(target);
+
+            // Assert
+            Assert.Equal(5, target.IntProp);
+            Assert.Equal("Hello", target.StringProp);
+        }, options);
     }
 
     class HasInstanceProperties
