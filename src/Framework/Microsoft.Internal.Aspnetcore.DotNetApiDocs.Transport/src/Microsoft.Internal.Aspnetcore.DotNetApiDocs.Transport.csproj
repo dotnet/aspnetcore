@@ -11,6 +11,7 @@
     <IncludeSymbols>false</IncludeSymbols>
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <RefAssemblyPackagePath>ref/$(TargetFramework)/</RefAssemblyPackagePath>
+    <RequiresDelayedBuild>true</RequiresDelayedBuild>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,15 +19,13 @@
 
     <!-- This project does not produce a .dll -->
     <Reference Remove="Microsoft.Extensions.ApiDescription.Server" />
-
-    <!-- Enforce build order -->
-    <ProjectReference Include="..\..\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj"
-      Private="false"
-      ReferenceOutputAssembly="false"
-      SkipGetTargetFrameworkProperties="true" />
   </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <EnablePackageValidation>false</EnablePackageValidation>
+  </PropertyGroup>
 
   <Target Name="_RemoveUnwantedAspNetFrameworkReference" BeforeTargets="ResolveFrameworkReferences" >
     <ItemGroup>
@@ -47,9 +46,6 @@
 
   <!-- This project doesn't compile anything. -->
   <Target Name="CoreCompile" />
-
-  <!-- We don't need to restore anything in this project -->
-  <Target Name="Restore" />
 
   <!-- Completely disable default targets for copying to output. -->
   <Target Name="CopyFilesToOutputDirectory" />
