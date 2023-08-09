@@ -31,7 +31,9 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
                                      IConnectionInherentKeepAliveFeature,
                                      IConnectionLifetimeFeature,
                                      IConnectionLifetimeNotificationFeature,
+#pragma warning disable CA2252 // This API requires opting into preview features
                                      IReconnectFeature
+#pragma warning restore CA2252 // This API requires opting into preview features
 {
     private readonly HttpConnectionDispatcherOptions _options;
 
@@ -96,7 +98,9 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
 
         if (useAcks)
         {
+#pragma warning disable CA2252 // This API requires opting into preview features
             Features.Set<IReconnectFeature>(this);
+#pragma warning restore CA2252 // This API requires opting into preview features
         }
 
         _connectionClosedTokenSource = new CancellationTokenSource();
@@ -204,7 +208,9 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
 
     public CancellationToken ConnectionClosedRequested { get; set; }
 
+#pragma warning disable CA2252 // This API requires opting into preview features
     public Action<PipeWriter> NotifyOnReconnect { get; set; } = (_) => { };
+#pragma warning restore CA2252 // This API requires opting into preview features
 
     public override void Abort()
     {
@@ -666,10 +672,14 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         Application = applicationToTransport;
         Transport = transportToApplication;
 
+#pragma warning disable CA2252 // This API requires opting into preview features
         Features.GetRequiredFeature<IReconnectFeature>().NotifyOnReconnect.Invoke(input.Writer);
+#pragma warning restore CA2252 // This API requires opting into preview features
     }
 
+#pragma warning disable CA2252 // This API requires opting into preview features
     public void DisableReconnect()
+#pragma warning restore CA2252 // This API requires opting into preview features
     {
         _useAcks = false;
     }

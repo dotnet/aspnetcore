@@ -533,7 +533,9 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
 
         if (useAck && _transport is IReconnectFeature reconnectFeature)
         {
+#pragma warning disable CA2252 // This API requires opting into preview features
             Features.Set(reconnectFeature);
+#pragma warning restore CA2252 // This API requires opting into preview features
         }
 
         Log.TransportStarted(_logger, transportType);

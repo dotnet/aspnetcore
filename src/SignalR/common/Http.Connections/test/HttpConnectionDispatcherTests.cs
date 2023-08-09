@@ -2285,7 +2285,9 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             Assert.False(negotiateResponse.TryGetValue("useAck", out _));
 
             Assert.True(manager.TryGetConnection(negotiateResponse["connectionToken"].ToString(), out var connection));
+#pragma warning disable CA2252 // This API requires opting into preview features
             Assert.Null(connection.Features.Get<IReconnectFeature>());
+#pragma warning restore CA2252 // This API requires opting into preview features
         }
     }
 
@@ -2312,7 +2314,9 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             Assert.False(negotiateResponse.TryGetValue("useAck", out _));
 
             Assert.True(manager.TryGetConnection(negotiateResponse["connectionToken"].ToString(), out var connection));
+#pragma warning disable CA2252 // This API requires opting into preview features
             Assert.Null(connection.Features.Get<IReconnectFeature>());
+#pragma warning restore CA2252 // This API requires opting into preview features
         }
     }
 
@@ -2339,7 +2343,9 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             Assert.True((bool)negotiateResponse["useAck"]);
 
             Assert.True(manager.TryGetConnection(negotiateResponse["connectionToken"].ToString(), out var connection));
+#pragma warning disable CA2252 // This API requires opting into preview features
             Assert.NotNull(connection.Features.Get<IReconnectFeature>());
+#pragma warning restore CA2252 // This API requires opting into preview features
         }
     }
 
@@ -2367,7 +2373,9 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
 
             var initialWebSocketTask = dispatcher.ExecuteAsync(context, options, app);
 
+#pragma warning disable CA2252 // This API requires opting into preview features
             var reconnectFeature = connection.Features.Get<IReconnectFeature>();
+#pragma warning restore CA2252 // This API requires opting into preview features
             Assert.NotNull(reconnectFeature);
 
             var firstMsg = new byte[] { 1, 4, 8, 9 };
@@ -2381,12 +2389,16 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             Assert.Equal(firstMsg, webSocketMessage.Buffer);
 
             var called = false;
+#pragma warning disable CA2252 // This API requires opting into preview features
             var reconnectCallback = reconnectFeature.NotifyOnReconnect;
+#pragma warning restore CA2252 // This API requires opting into preview features
+#pragma warning disable CA2252 // This API requires opting into preview features
             reconnectFeature.NotifyOnReconnect = (writer) =>
             {
                 called = true;
                 reconnectCallback(writer);
             };
+#pragma warning restore CA2252 // This API requires opting into preview features
 
             // New websocket connection with previous connection token
             context = MakeRequest("/foo", connection, services);
@@ -2439,7 +2451,9 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
 
             var initialWebSocketTask = dispatcher.ExecuteAsync(context, options, app);
 
+#pragma warning disable CA2252 // This API requires opting into preview features
             var reconnectFeature = connection.Features.Get<IReconnectFeature>();
+#pragma warning restore CA2252 // This API requires opting into preview features
             Assert.NotNull(reconnectFeature);
 
             var firstMsg = new byte[] { 1, 4, 8, 9 };
@@ -2453,15 +2467,21 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             Assert.Equal(firstMsg, webSocketMessage.Buffer);
 
             var called = false;
+#pragma warning disable CA2252 // This API requires opting into preview features
             var reconnectCallback = reconnectFeature.NotifyOnReconnect;
+#pragma warning restore CA2252 // This API requires opting into preview features
+#pragma warning disable CA2252 // This API requires opting into preview features
             reconnectFeature.NotifyOnReconnect = (writer) =>
             {
                 called = true;
                 reconnectCallback(writer);
             };
+#pragma warning restore CA2252 // This API requires opting into preview features
 
             // Disable will not allow new connection to override existing
+#pragma warning disable CA2252 // This API requires opting into preview features
             reconnectFeature.DisableReconnect();
+#pragma warning restore CA2252 // This API requires opting into preview features
 
             // New websocket connection with previous connection token
             context = MakeRequest("/foo", connection, services);
@@ -3939,9 +3959,13 @@ public class ReconnectConnectionHandler : ConnectionHandler
             _pause.TrySetResult(false);
         });
 
+#pragma warning disable CA2252 // This API requires opting into preview features
         var reconnectFeature = connection.Features.Get<IReconnectFeature>();
+#pragma warning restore CA2252 // This API requires opting into preview features
         Assert.NotNull(reconnectFeature);
+#pragma warning disable CA2252 // This API requires opting into preview features
         reconnectFeature.NotifyOnReconnect = NotifyReconnect;
+#pragma warning restore CA2252 // This API requires opting into preview features
 
         do
         {

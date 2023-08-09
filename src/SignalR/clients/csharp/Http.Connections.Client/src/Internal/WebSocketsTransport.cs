@@ -25,7 +25,9 @@ using static System.IO.Pipelines.DuplexPipe;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client.Internal;
 
+#pragma warning disable CA2252 // This API requires opting into preview features
 internal sealed partial class WebSocketsTransport : ITransport, IReconnectFeature
+#pragma warning restore CA2252 // This API requires opting into preview features
 {
     private WebSocket? _webSocket;
     private IDuplexPipe? _application;
@@ -50,7 +52,9 @@ internal sealed partial class WebSocketsTransport : ITransport, IReconnectFeatur
 
     public PipeWriter Output => _transport!.Output;
 
+#pragma warning disable CA2252 // This API requires opting into preview features
     public Action<PipeWriter> NotifyOnReconnect { get => _notifyOnReconnect is not null ? _notifyOnReconnect : (_) => { }; set => _notifyOnReconnect = value; }
+#pragma warning restore CA2252 // This API requires opting into preview features
 
     public WebSocketsTransport(HttpConnectionOptions httpConnectionOptions, ILoggerFactory loggerFactory, Func<Task<string?>> accessTokenProvider, HttpClient? httpClient,
         bool useAck = false)
@@ -652,7 +656,9 @@ internal sealed partial class WebSocketsTransport : ITransport, IReconnectFeatur
         _notifyOnReconnect.Invoke(input.Writer);
     }
 
+#pragma warning disable CA2252 // This API requires opting into preview features
     public void DisableReconnect()
+#pragma warning restore CA2252 // This API requires opting into preview features
     {
         _useAck = false;
     }
