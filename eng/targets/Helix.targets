@@ -169,12 +169,8 @@
       <_HelixFriendlyNameTargetQueue Condition="$(HelixTargetQueue.Contains('@'))">$(HelixTargetQueue.Substring(1, $([MSBuild]::Subtract($(HelixTargetQueue.LastIndexOf(')')), 1))))</_HelixFriendlyNameTargetQueue>
     </PropertyGroup>
 
-    <Message Text="Running publish on $(MSBuildProjectFullPath)" Importance="High" />
-
     <!-- Important: If HelixTargetQueue is not removed here, then Publish will occur for every single queue type. And since Publish shouldn't depend on the queue we can just publish once -->
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish" RemoveProperties="HelixTargetQueue;TestRunId" />
-
-    <Message Text="Done Running publish on $(MSBuildProjectFullPath)" Importance="High" />
 
     <!-- Isolate Helix tests from whatever happens to be in a parent directory. -->
     <Copy SourceFiles="$(RepoRoot)eng\helix\content\Directory.Build.empty.in"
