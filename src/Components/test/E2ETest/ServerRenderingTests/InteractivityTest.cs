@@ -506,6 +506,17 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-0")).Text);
         Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode-0")).Text);
 
+        UnblockWebAssemblyResourceLoad();
+
+        // Add a WebAssembly component to ensure the WebAssembly runtime
+        // will be cached after we refresh the page.
+        Browser.Click(By.Id(AddWebAssemblyPrerenderedId));
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-1")).Text);
+        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-1")).Text);
+
+        Browser.Click(By.Id($"remove-counter-link-1"));
+        Browser.DoesNotExist(By.Id("is-interactive-1"));
+
         Browser.Navigate().Refresh();
 
         Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-0")).Text);
