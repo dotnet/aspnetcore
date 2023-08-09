@@ -13,6 +13,7 @@
     <RefAssemblyPackagePath>ref/$(TargetFramework)/</RefAssemblyPackagePath>
     <RequiresDelayedBuild>true</RequiresDelayedBuild>
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
+    <BuildHelixPayload>false</BuildHelixPayload>
   </PropertyGroup>
 
   <ItemGroup>
