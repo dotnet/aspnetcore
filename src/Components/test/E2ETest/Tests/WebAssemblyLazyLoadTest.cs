@@ -207,6 +207,7 @@ public class WebAssemblyLazyLoadTest : ServerTestBase<ToggleExecutionModeServerF
                     const deletionPromises = cachedRequests.map(async cachedRequest => {
                         return cache.delete(cachedRequest);
                     });
+                    Promise.all(deletionPromises).then(()=>completedCallback());
                 }).apply(null, arguments)";
         ((IJavaScriptExecutor)Browser).ExecuteAsyncScript(js, CacheName);
     }
