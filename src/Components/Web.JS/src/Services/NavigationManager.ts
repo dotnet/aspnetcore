@@ -4,7 +4,7 @@
 import '@microsoft/dotnet-js-interop';
 import { resetScrollAfterNextBatch } from '../Rendering/Renderer';
 import { EventDelegator } from '../Rendering/Events/EventDelegator';
-import { handleClickForNavigationInterception, hasInteractiveRouter, isWithinBaseUriSpace, setHasInteractiveRouter, toAbsoluteUri } from './NavigationUtils';
+import { handleClickForNavigationInterception, hasInteractiveRouter, isWithinBaseUriSpace, performProgrammaticEnhancedNavigation, setHasInteractiveRouter, toAbsoluteUri } from './NavigationUtils';
 
 let hasRegisteredNavigationEventListeners = false;
 let hasLocationChangingEventListeners = false;
@@ -115,8 +115,12 @@ function navigateToFromDotNet(uri: string, options: NavigationOptions): void {
 function navigateToCore(uri: string, options: NavigationOptions, skipLocationChangingCallback = false): void {
   const absoluteUri = toAbsoluteUri(uri);
 
-  if (!options.forceLoad && isWithinBaseUriSpace(absoluteUri) && hasInteractiveRouter()) {
-    performInternalNavigation(absoluteUri, false, options.replaceHistoryEntry, options.historyEntryState, skipLocationChangingCallback);
+  if (!options.forceLoad && isWithinBaseUriSpace(absoluteUri)) {
+    if (hasInteractiveRouter()) {
+      performInternalNavigation(absoluteUri, false, options.replaceHistoryEntry, options.historyEntryState, skipLocationChangingCallback);
+    } else {
+      performProgrammaticEnhancedNavigation(absoluteUri, options.replaceHistoryEntry);
+    }
   } else {
     // For external navigation, we work in terms of the originally-supplied uri string,
     // not the computed absoluteUri. This is in case there are some special URI formats
@@ -255,7 +259,7 @@ async function notifyLocationChanged(interceptedLink: boolean) {
 }
 
 async function onPopState(state: PopStateEvent) {
-  if (popStateCallback) {
+  if (popStateCallback && hasInteractiveRouter()) {
     await popStateCallback(state);
   }
 
