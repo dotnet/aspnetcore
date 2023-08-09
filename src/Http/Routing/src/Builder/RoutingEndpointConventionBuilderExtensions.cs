@@ -139,6 +139,10 @@ public static class RoutingEndpointConventionBuilderExtensions
             {
                 routeEndpointBuilder.Order = order;
             }
+            else
+            {
+                throw new InvalidOperationException("This endpoint does not support Order.");
+            }
         });
         return builder;
     }
