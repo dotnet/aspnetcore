@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Text.Json;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -16,7 +17,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 namespace Microsoft.AspNetCore.Routing.FunctionalTests;
 
-public class AntiforgeryTests
+public class MinimalFormTests
 {
     private static readonly JsonSerializerOptions SerializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web);
 
@@ -450,6 +451,206 @@ public class AntiforgeryTests
             Assert.False(result.IsCompleted);
             Assert.Equal(DateTime.Today.AddDays(1), result.DueDate);
         }
+    }
+
+    [Fact]
+    public async Task MapPost_WithForm_AndFormMapperOptions_ValidToken_Works()
+    {
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .Configure(app =>
+                    {
+                        app.UseRouting();
+                        app.UseAntiforgery();
+                        app.UseEndpoints(b =>
+                            b.MapPost("/todo", ([FromForm] Dictionary<string, string> todo) => todo)
+                                .WithFormMappingOptions(maxCollectionSize: 2));
+                    })
+                    .UseTestServer();
+            })
+            .ConfigureServices(services =>
+            {
+                services.AddRouting();
+                services.AddAntiforgery();
+            })
+            .Build();
+
+        using var server = host.GetTestServer();
+        await host.StartAsync();
+        var client = server.CreateClient();
+
+        var antiforgery = host.Services.GetRequiredService<IAntiforgery>();
+        var antiforgeryOptions = host.Services.GetRequiredService<IOptions<AntiforgeryOptions>>();
+        var tokens = antiforgery.GetAndStoreTokens(new DefaultHttpContext());
+        var request = new HttpRequestMessage(HttpMethod.Post, "todo");
+        request.Headers.Add("Cookie", antiforgeryOptions.Value.Cookie.Name + "=" + tokens.CookieToken);
+        var nameValueCollection = new List<KeyValuePair<string, string>>
+        {
+            new KeyValuePair<string,string>("__RequestVerificationToken", tokens.RequestToken),
+            new KeyValuePair<string,string>("[name]", "Test task"),
+            new KeyValuePair<string,string>("[name1]", "Test task"),
+            new KeyValuePair<string,string>("[isComplete]", "false"),
+            new KeyValuePair<string,string>("[isComplete1]", "false"),
+            new KeyValuePair<string,string>("[dueDate]", DateTime.Today.AddDays(1).ToString(CultureInfo.InvariantCulture)),
+            new KeyValuePair<string,string>("[dueDate1]", DateTime.Today.AddDays(1).ToString(CultureInfo.InvariantCulture)),
+        };
+        request.Content = new FormUrlEncodedContent(nameValueCollection);
+
+        var exception = await Record.ExceptionAsync(async () => await client.SendAsync(request));
+        Assert.NotNull(exception);
+        Assert.Contains("An error occurred while trying to map a value from form data.", exception.Message);
+    }
+
+    [Fact]
+    public async Task SupportsMergingFormMappingOptionsFromGroupAndEndpoint()
+    {
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .Configure(app =>
+                    {
+                        app.UseRouting();
+                        app.UseAntiforgery();
+                        app.UseEndpoints(b =>
+                        {
+                            var g = b.MapGroup("/todos").WithFormMappingOptions(maxCollectionSize: 2);
+                            g.MapPost("/1", ([FromForm] Dictionary<string, string> todo) => todo)
+                                .WithFormMappingOptions(maxCollectionSize: 7);
+                        });
+                    })
+                    .UseTestServer();
+            })
+            .ConfigureServices(services =>
+            {
+                services.AddRouting();
+                services.AddAntiforgery();
+            })
+            .Build();
+
+        using var server = host.GetTestServer();
+        await host.StartAsync();
+        var client = server.CreateClient();
+
+        var antiforgery = host.Services.GetRequiredService<IAntiforgery>();
+        var antiforgeryOptions = host.Services.GetRequiredService<IOptions<AntiforgeryOptions>>();
+        var tokens = antiforgery.GetAndStoreTokens(new DefaultHttpContext());
+        var request = new HttpRequestMessage(HttpMethod.Post, "/todos/1");
+        request.Headers.Add("Cookie", antiforgeryOptions.Value.Cookie.Name + "=" + tokens.CookieToken);
+        var nameValueCollection = new List<KeyValuePair<string, string>>
+        {
+            new KeyValuePair<string,string>("__RequestVerificationToken", tokens.RequestToken),
+            new KeyValuePair<string,string>("[name]", "Test task"),
+            new KeyValuePair<string,string>("[name1]", "Test task"),
+            new KeyValuePair<string,string>("[isComplete]", "false"),
+            new KeyValuePair<string,string>("[isComplete1]", "false"),
+            new KeyValuePair<string,string>("[dueDate]", DateTime.Today.AddDays(1).ToString(CultureInfo.InvariantCulture)),
+            new KeyValuePair<string,string>("[dueDate1]", DateTime.Today.AddDays(1).ToString(CultureInfo.InvariantCulture)),
+        };
+        request.Content = new FormUrlEncodedContent(nameValueCollection);
+
+        var response = await client.SendAsync(request);
+        response.EnsureSuccessStatusCode();
+    }
+
+    [Fact]
+    public async Task SupportsMergingFormOptionsFromGroupAndEndpoint()
+    {
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .Configure(app =>
+                    {
+                        app.UseRouting();
+                        app.UseAntiforgery();
+                        app.UseEndpoints(b =>
+                        {
+                            var g = b.MapGroup("/todos").WithFormOptions(valueCountLimit: 7);
+                            g.MapPost("/1", ([FromForm] Dictionary<string, string> todo) => todo)
+                                .WithFormOptions(valueCountLimit: 2);
+                        });
+                    })
+                    .UseTestServer();
+            })
+            .ConfigureServices(services =>
+            {
+                services.AddRouting();
+                services.AddAntiforgery();
+            })
+            .Build();
+
+        using var server = host.GetTestServer();
+        await host.StartAsync();
+        var client = server.CreateClient();
+
+        var antiforgery = host.Services.GetRequiredService<IAntiforgery>();
+        var antiforgeryOptions = host.Services.GetRequiredService<IOptions<AntiforgeryOptions>>();
+        var tokens = antiforgery.GetAndStoreTokens(new DefaultHttpContext());
+        var request = new HttpRequestMessage(HttpMethod.Post, "/todos/1");
+        request.Headers.Add("Cookie", antiforgeryOptions.Value.Cookie.Name + "=" + tokens.CookieToken);
+        var nameValueCollection = new List<KeyValuePair<string, string>>
+        {
+            new KeyValuePair<string,string>("__RequestVerificationToken", tokens.RequestToken),
+            new KeyValuePair<string,string>("[name]", "Test task"),
+            new KeyValuePair<string,string>("[name1]", "Test task"),
+            new KeyValuePair<string,string>("[isComplete]", "false"),
+            new KeyValuePair<string,string>("[isComplete1]", "false"),
+            new KeyValuePair<string,string>("[dueDate]", DateTime.Today.AddDays(1).ToString(CultureInfo.InvariantCulture)),
+            new KeyValuePair<string,string>("[dueDate1]", DateTime.Today.AddDays(1).ToString(CultureInfo.InvariantCulture)),
+        };
+        request.Content = new FormUrlEncodedContent(nameValueCollection);
+
+        var response = await client.SendAsync(request);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task MapPost_WithForm_AndRequestLimits_ValidToken_Works()
+    {
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .Configure(app =>
+                    {
+                        app.UseRouting();
+                        app.UseAntiforgery();
+                        app.UseEndpoints(b =>
+                            b.MapPost("/todo", ([FromForm] Todo todo) => todo)
+                                .WithFormOptions(keyLengthLimit: 8));
+                    })
+                    .UseTestServer();
+            })
+            .ConfigureServices(services =>
+            {
+                services.AddRouting();
+                services.AddAntiforgery();
+            })
+            .Build();
+
+        using var server = host.GetTestServer();
+        await host.StartAsync();
+        var client = server.CreateClient();
+
+        var antiforgery = host.Services.GetRequiredService<IAntiforgery>();
+        var antiforgeryOptions = host.Services.GetRequiredService<IOptions<AntiforgeryOptions>>();
+        var tokens = antiforgery.GetAndStoreTokens(new DefaultHttpContext());
+        var request = new HttpRequestMessage(HttpMethod.Post, "todo");
+        request.Headers.Add("Cookie", antiforgeryOptions.Value.Cookie.Name + "=" + tokens.CookieToken);
+        var nameValueCollection = new List<KeyValuePair<string, string>>
+        {
+            new KeyValuePair<string,string>("__RequestVerificationToken", tokens.RequestToken),
+            new KeyValuePair<string,string>("name", "Test task"),
+            new KeyValuePair<string,string>("isComplete", "false"),
+            new KeyValuePair<string,string>("dueDate", DateTime.Today.AddDays(1).ToString(CultureInfo.InvariantCulture)),
+        };
+        request.Content = new FormUrlEncodedContent(nameValueCollection);
+
+        var response = await client.SendAsync(request);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     class Todo
