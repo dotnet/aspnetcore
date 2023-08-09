@@ -12,6 +12,7 @@
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <RefAssemblyPackagePath>ref/$(TargetFramework)/</RefAssemblyPackagePath>
     <RequiresDelayedBuild>true</RequiresDelayedBuild>
+    <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
   </PropertyGroup>
 
   <ItemGroup>
