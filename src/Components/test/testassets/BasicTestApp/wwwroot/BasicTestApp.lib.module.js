@@ -1,5 +1,9 @@
 let runInitializer = false;
 let resourceRequests = [];
+
+// we are using the resource list in BootResourceCachingTest and when it's too full it stops reporting correctly
+window.performance.setResourceTimingBufferSize(1000);
+
 export async function beforeStart(options) {
     const url = new URL(document.URL);
     runInitializer = url.hash.indexOf('initializer') !== -1;
@@ -20,9 +24,6 @@ export async function beforeStart(options) {
 }
 
 export async function afterStarted() {
-    // we are using the resource list in BootResourceCachingTest and when it's too full it stops reporting correctly
-    window.performance.clearResourceTimings();
-
     if (runInitializer) {
         const end = document.createElement('p');
         end.setAttribute('id', 'initializer-end');
