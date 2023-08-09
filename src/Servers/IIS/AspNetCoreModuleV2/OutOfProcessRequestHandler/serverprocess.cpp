@@ -565,7 +565,7 @@ SERVER_PROCESS::PostStartCheck(
     }
 
     //
-    // NsiAPI(GetExtendedTcpTable) is supported. we should check whether processIds matche
+    // NsiAPI(GetExtendedTcpTable) is supported. we should check whether processIds match
     //
     if (dwActualProcessId == m_dwProcessId)
     {
