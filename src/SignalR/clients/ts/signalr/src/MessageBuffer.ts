@@ -140,6 +140,7 @@ export class MessageBuffer {
     }
 
     public _disconnected(): void {
+        this._waitForSequenceMessage = true;
         if (this._resendReject === undefined) {
             this._resendPromise = new Promise((resolve, reject) => {
                 this._resendResolve = resolve;

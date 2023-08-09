@@ -2089,6 +2089,44 @@ describe("HubConnection", () => {
             });
         });
 
+        it("messages ignored after reconnect if sequence message not received", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                // tell HubConnection we "negotiated" reconnect
+                connection.features.reconnect = true;
+
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    let methodCalled = 0;
+                    hubConnection.on("t", () => {
+                        methodCalled++;
+                    });
+                    await hubConnection.start();
+
+                    // HubConnection should set these
+                    expect(connection.features.disconnected).toBeDefined();
+                    expect(connection.features.resend).toBeDefined();
+
+                    // Pretend TestConnection disconnected
+                    connection.features.disconnected();
+
+                    await connection.features.resend(true);
+
+                    connection.receive({ type: MessageType.Invocation, target: "t", arguments: [] });
+                    connection.receive({ type: MessageType.Invocation, target: "t", arguments: [] });
+
+                    expect(methodCalled).toBe(0);
+
+                    connection.receive({ type: MessageType.Sequence, sequenceId: 1 });
+                    connection.receive({ type: MessageType.Invocation, target: "t", arguments: [] });
+
+                    expect(methodCalled).toBe(1);
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
+
         it("sequence message updates what messages are ignored", async () => {
             await VerifyLogger.run(async (logger) => {
                 const connection = new TestConnection();
