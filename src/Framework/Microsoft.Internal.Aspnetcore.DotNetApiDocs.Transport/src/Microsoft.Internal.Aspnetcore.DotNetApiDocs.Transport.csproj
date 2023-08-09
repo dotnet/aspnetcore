@@ -48,6 +48,9 @@
   <!-- This project doesn't compile anything. -->
   <Target Name="CoreCompile" />
 
+  <!-- We don't need to restore anything in this project -->
+  <Target Name="Restore" />
+
   <!-- Completely disable default targets for copying to output. -->
   <Target Name="CopyFilesToOutputDirectory" />
 
