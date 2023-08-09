@@ -9,7 +9,7 @@
   ],
   "name": "Blazor WebAssembly App",
   "defaultName": "BlazorApp",
-  "description": "A project template for creating a Blazor app that runs on WebAssembly and is optionally hosted by an ASP.NET Core app. This template can be used for web apps with rich dynamic user interfaces (UIs).",
+  "description": "A project template for creating a Blazor app that runs on WebAssembly. This template can be used for web apps with rich dynamic user interfaces (UIs).",
   "groupIdentity": "Microsoft.Web.Blazor.Wasm",
   "precedence": "9800",
   "guids": [
@@ -118,7 +118,6 @@
           },
           "exclude": [
             "Pages/CallWebApi.razor",
-            "Shared/NavMenu.CallsMicrosoftGraph.razor",
             "Shared/NavMenu.CallsWebApi.razor"
           ]
         },
@@ -128,8 +127,7 @@
             "Shared/NavMenu.CallsWebApi.razor": "Shared/NavMenu.razor"
           },
           "exclude": [
-            "Shared/NavMenu.NoApi.razor",
-            "Shared/NavMenu.CallsMicrosoftGraph.razor"
+            "Shared/NavMenu.NoApi.razor"
           ]
         },
         {
@@ -432,12 +430,6 @@
       "replaces": "[WebApiUrl]",
       "defaultValue": "https://graph.microsoft.com/v1.0",
       "description": "URL of the API to call from the web app. This option only applies if --auth SingleOrg, --auth MultiOrg or --auth IndividualB2C without and ASP.NET Core host is specified."
-    },
-    "CallsMicrosoftGraph": {
-      "type": "parameter",
-      "datatype": "bool",
-      "defaultValue": "false",
-      "description": "Specifies if the web app calls Microsoft Graph. This option only applies if --auth SingleOrg or --auth MultiOrg is specified."
     },
     "CalledApiScopes": {
       "type": "parameter",

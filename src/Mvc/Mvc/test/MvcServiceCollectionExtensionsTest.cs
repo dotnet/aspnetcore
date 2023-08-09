@@ -558,6 +558,7 @@ public class MvcServiceCollectionExtensionsTest
                             typeof(TempDataApplicationModelProvider),
                             typeof(ViewDataAttributeApplicationModelProvider),
                             typeof(ApiBehaviorApplicationModelProvider),
+                            typeof(AntiforgeryApplicationModelProvider)
                         }
                     },
                     {

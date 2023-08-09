@@ -41,8 +41,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <!-- Pack .ni.r2rmap files in symbols package (native symbols for Linux) -->
     <AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder>$(AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder);.r2rmap</AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder>
 
-    <!-- Optimize the framework using the crossgen2 tool. Crossgen2 is not currently supported on s390x or ppc64le or armv6. -->
-    <CrossgenOutput Condition=" '$(TargetArchitecture)' == 's390x' OR '$(TargetArchitecture)' == 'armv6' OR '$(TargetArchitecture)' == 'ppc64le' ">false</CrossgenOutput>
+    <!-- Optimize the framework using the crossgen2 tool. Crossgen2 is not currently supported on s390x or ppc64le or armv6 or loongarch64. -->
+    <CrossgenOutput Condition=" '$(TargetArchitecture)' == 's390x' OR '$(TargetArchitecture)' == 'armv6' OR '$(TargetArchitecture)' == 'ppc64le' OR '$(TargetArchitecture)' == 'loongarch64' ">false</CrossgenOutput>
     <CrossgenOutput Condition=" '$(CrossgenOutput)' == '' AND '$(Configuration)' != 'Debug' ">true</CrossgenOutput>
 
     <!-- Produce crossgen2 profiling symbols (.ni.pdb or .r2rmap files). -->
@@ -175,8 +175,6 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <RuntimeListFileName>RuntimeList.xml</RuntimeListFileName>
     <RuntimeListOutputPath>$(BaseIntermediateOutputPath)$(RuntimeListFileName)</RuntimeListOutputPath>
 
-    <InternalArchiveOutputFileName>$(InternalInstallerBaseName)-$(PackageVersion)-$(TargetRuntimeIdentifier)$(ArchiveExtension)</InternalArchiveOutputFileName>
-    <InternalArchiveOutputPath>$(InstallersOutputPath)$(InternalArchiveOutputFileName)</InternalArchiveOutputPath>
     <RedistArchiveOutputFileName>$(RuntimeInstallerBaseName)-$(PackageVersion)-$(TargetRuntimeIdentifier)$(ArchiveExtension)</RedistArchiveOutputFileName>
     <RedistArchiveOutputPath>$(InstallersOutputPath)$(RedistArchiveOutputFileName)</RedistArchiveOutputPath>
     <CompositeArchiveOutputFileName>$(RuntimeInstallerBaseName)-composite-$(PackageVersion)-$(TargetRuntimeIdentifier)$(ArchiveExtension)</CompositeArchiveOutputFileName>
@@ -207,7 +205,6 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       _BatchCopyToSharedFrameworkLayout;
       _BatchCopyToRedistLayout;
       _BatchCopyToCompositeLayout;
-      _CreateInternalSharedFxArchive;
       _CreateRedistSharedFxArchive;
       _CreateRedistCompositeArchive;
     </CoreBuildDependsOn>
@@ -264,6 +261,12 @@ This package is an internal implementation of the .NET Core SDK and is not meant
         See https://github.com/dotnet/aspnetcore/issues/45033 for more detail.
       -->
       <ReferenceCopyLocalPaths Remove="@(RuntimePackageFiles)" MatchOnMetadata="FileName"/>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_RemoveUnwantedRuntimeConfigItems" BeforeTargets="GenerateBuildRuntimeConfigurationFiles">
+    <ItemGroup>
+      <RuntimeHostConfigurationOption Remove="@(RuntimeHostConfigurationOption)" Condition="'%(Identity)' != 'System.Reflection.Metadata.MetadataUpdater.IsSupported' " />
     </ItemGroup>
   </Target>
 
@@ -701,21 +704,6 @@ This package is an internal implementation of the .NET Core SDK and is not meant
           DestinationFiles="@(SharedFxContent->'$(LocalInstallationOutputPath)%(FileName)%(Extension)')"
           UseHardlinksIfPossible="true" />
     <Message Importance="High" Text="$(MSbuildProjectFile) -> $(LocalInstallationOutputPath)" />
-  </Target>
-
-  <Target Name="_CreateInternalSharedFxArchive"
-          Inputs="@(SharedFxContent)"
-          Outputs="$(InternalArchiveOutputPath)">
-    <ZipDirectory
-      SourceDirectory="$(SharedFrameworkLayoutRoot)"
-      DestinationFile="$(InternalArchiveOutputPath)"
-      Overwrite="true"
-      Condition="'$(ArchiveExtension)' == '.zip'" />
-    <Exec
-      Command="tar -czf $(InternalArchiveOutputPath) ."
-      WorkingDirectory="$(SharedFrameworkLayoutRoot)"
-      Condition="'$(ArchiveExtension)' == '.tar.gz'" />
-    <Message Importance="High" Text="$(MSbuildProjectFile) -> $(InternalArchiveOutputPath)" />
   </Target>
 
   <Target Name="_CreateRedistCompositeArchive"

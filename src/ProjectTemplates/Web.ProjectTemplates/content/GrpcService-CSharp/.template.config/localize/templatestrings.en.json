@@ -1,7 +1,7 @@
 {
   "author": "Microsoft",
   "name": "ASP.NET Core gRPC Service",
-  "description": "A project template for creating a gRPC ASP.NET Core service.",
+  "description": "A project template for creating a gRPC service using ASP.NET Core, with optional support for publishing as native AOT.",
   "symbols/Framework/description": "The target framework for the project.",
   "symbols/Framework/choices/net8.0/description": "Target net8.0",
   "_symbols/Framework/choices/net8.0/description.comment": "{Locked='net8.0'}",

@@ -15,18 +15,10 @@ public class CachedResponseBodyTests
     public void GetSegments()
     {
         var segments = new List<byte[]>();
-        var body = new CachedResponseBody(segments, 0);
+        var body = RecyclableReadOnlySequenceSegment.CreateSequence(segments);
 
-        Assert.Same(segments, body.Segments);
-    }
-
-    [Fact]
-    public void GetLength()
-    {
-        var segments = new List<byte[]>();
-        var body = new CachedResponseBody(segments, 42);
-
-        Assert.Equal(42, body.Length);
+        Assert.True(body.IsEmpty);
+        RecyclableReadOnlySequenceSegment.RecycleChain(body);
     }
 
     [Fact]
@@ -34,17 +26,18 @@ public class CachedResponseBodyTests
     {
         var segments = new List<byte[]>();
         var receivedSegments = new List<byte[]>();
-        var body = new CachedResponseBody(segments, 0);
+        var body = RecyclableReadOnlySequenceSegment.CreateSequence(segments);
 
         var pipe = new Pipe();
         using var cts = new CancellationTokenSource(_timeout);
 
         var receiverTask = ReceiveDataAsync(pipe.Reader, receivedSegments, cts.Token);
-        var copyTask = body.CopyToAsync(pipe.Writer, cts.Token).ContinueWith(_ => pipe.Writer.CompleteAsync());
+        var copyTask = RecyclableReadOnlySequenceSegment.CopyToAsync(body, pipe.Writer, cts.Token).AsTask().ContinueWith(t => pipe.Writer.CompleteAsync(t.Exception));
 
         await Task.WhenAll(receiverTask, copyTask);
 
         Assert.Empty(receivedSegments);
+        RecyclableReadOnlySequenceSegment.RecycleChain(body);
     }
 
     [Fact]
@@ -55,7 +48,7 @@ public class CachedResponseBodyTests
                 new byte[] { 1 }
             };
         var receivedSegments = new List<byte[]>();
-        var body = new CachedResponseBody(segments, 0);
+        var body = RecyclableReadOnlySequenceSegment.CreateSequence(segments);
 
         var pipe = new Pipe();
 
@@ -67,6 +60,7 @@ public class CachedResponseBodyTests
         await Task.WhenAll(receiverTask, copyTask);
 
         Assert.Equal(segments, receivedSegments);
+        RecyclableReadOnlySequenceSegment.RecycleChain(body);
     }
 
     [Fact]
@@ -78,7 +72,7 @@ public class CachedResponseBodyTests
                 new byte[] { 2, 3 }
             };
         var receivedSegments = new List<byte[]>();
-        var body = new CachedResponseBody(segments, 0);
+        var body = RecyclableReadOnlySequenceSegment.CreateSequence(segments);
 
         var pipe = new Pipe();
 
@@ -90,11 +84,12 @@ public class CachedResponseBodyTests
         await Task.WhenAll(receiverTask, copyTask);
 
         Assert.Equal(new byte[] { 1, 2, 3 }, receivedSegments.SelectMany(x => x).ToArray());
+        RecyclableReadOnlySequenceSegment.RecycleChain(body);
     }
 
-    static async Task CopyDataAsync(CachedResponseBody body, PipeWriter writer, CancellationToken cancellationToken)
+    static async Task CopyDataAsync(ReadOnlySequence<byte> body, PipeWriter writer, CancellationToken cancellationToken)
     {
-        await body.CopyToAsync(writer, cancellationToken);
+        await RecyclableReadOnlySequenceSegment.CopyToAsync(body, writer, cancellationToken);
         await writer.CompleteAsync();
     }
 

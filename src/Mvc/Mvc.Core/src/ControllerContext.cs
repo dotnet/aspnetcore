@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Core;
@@ -12,6 +13,7 @@ namespace Microsoft.AspNetCore.Mvc;
 /// <summary>
 /// The context associated with the current request for a controller.
 /// </summary>
+[DebuggerDisplay("{DebuggerToString(),nq}")]
 public class ControllerContext : ActionContext
 {
     private IList<IValueProviderFactory>? _valueProviderFactories;
@@ -33,7 +35,7 @@ public class ControllerContext : ActionContext
     public ControllerContext(ActionContext context)
         : base(context)
     {
-        if (!(context.ActionDescriptor is ControllerActionDescriptor))
+        if (context.ActionDescriptor is not ControllerActionDescriptor)
         {
             throw new ArgumentException(Resources.FormatActionDescriptorMustBeBasedOnControllerAction(
                 typeof(ControllerActionDescriptor)),
@@ -85,4 +87,6 @@ public class ControllerContext : ActionContext
             _valueProviderFactories = value;
         }
     }
+
+    private string DebuggerToString() => ActionDescriptor?.DisplayName ?? $"{{{GetType().FullName}}}";
 }

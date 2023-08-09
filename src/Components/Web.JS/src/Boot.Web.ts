@@ -9,56 +9,42 @@
 //    of interactive components
 
 import { DotNet } from '@microsoft/dotnet-js-interop';
-import { startCircuit } from './Boot.Server.Common';
-import { startWebAssembly } from './Boot.WebAssembly.Common';
+import { setCircuitOptions } from './Boot.Server.Common';
+import { setWebAssemblyOptions } from './Boot.WebAssembly.Common';
 import { shouldAutoStart } from './BootCommon';
 import { Blazor } from './GlobalExports';
 import { WebStartOptions } from './Platform/WebStartOptions';
 import { attachStreamingRenderingListener } from './Rendering/StreamingRendering';
-import { attachProgressivelyEnhancedNavigationListener, detachProgressivelyEnhancedNavigationListener } from './Services/NavigationEnhancement';
-import { WebAssemblyComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
-import { ServerComponentDescriptor, discoverComponents } from './Services/ComponentDescriptorDiscovery';
+import { attachProgressivelyEnhancedNavigationListener } from './Services/NavigationEnhancement';
+import { WebRootComponentManager } from './Services/WebRootComponentManager';
+import { attachComponentDescriptorHandler, registerAllComponentDescriptors } from './Rendering/DomMerging/DomSync';
 
 let started = false;
-let webStartOptions: Partial<WebStartOptions> | undefined;
+const rootComponentManager = new WebRootComponentManager();
 
-async function boot(options?: Partial<WebStartOptions>): Promise<void> {
+function boot(options?: Partial<WebStartOptions>) : Promise<void> {
   if (started) {
     throw new Error('Blazor has already started.');
   }
-  started = true;
-  webStartOptions = options;
 
-  attachStreamingRenderingListener(options?.ssr);
+  started = true;
+
+  Blazor._internal.loadWebAssemblyQuicklyTimeout = 3000;
+
+  setCircuitOptions(options?.circuit);
+  setWebAssemblyOptions(options?.webAssembly);
+
+  attachComponentDescriptorHandler(rootComponentManager);
+  attachStreamingRenderingListener(options?.ssr, rootComponentManager);
 
   if (!options?.ssr?.disableDomPreservation) {
-    attachProgressivelyEnhancedNavigationListener(activateInteractiveComponents);
+    attachProgressivelyEnhancedNavigationListener(rootComponentManager);
   }
 
-  await activateInteractiveComponents();
-}
+  registerAllComponentDescriptors(document);
+  rootComponentManager.documentUpdated();
 
-async function activateInteractiveComponents() {
-  const serverComponents = discoverComponents(document, 'server') as ServerComponentDescriptor[];
-  const webAssemblyComponents = discoverComponents(document, 'webassembly') as WebAssemblyComponentDescriptor[];
-
-  if (serverComponents.length) {
-    // TEMPORARY until https://github.com/dotnet/aspnetcore/issues/48763 is implemented
-    // As soon we we see you have interactive components, we'll stop doing enhanced nav even if you don't have an interactive router
-    // This is because, otherwise, we would need a way to add new interactive root components to an existing circuit and that's #48763
-    detachProgressivelyEnhancedNavigationListener();
-
-    await startCircuit(webStartOptions?.circuit, serverComponents);
-  }
-
-  if (webAssemblyComponents.length) {
-    // TEMPORARY until https://github.com/dotnet/aspnetcore/issues/48763 is implemented
-    // As soon we we see you have interactive components, we'll stop doing enhanced nav even if you don't have an interactive router
-    // This is because, otherwise, we would need a way to add new interactive root components to an existing WebAssembly runtime and that's #48763
-    detachProgressivelyEnhancedNavigationListener();
-
-    await startWebAssembly(webStartOptions?.webAssembly, webAssemblyComponents);
-  }
+  return Promise.resolve();
 }
 
 Blazor.start = boot;

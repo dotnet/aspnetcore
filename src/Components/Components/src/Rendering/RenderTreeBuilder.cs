@@ -27,11 +27,8 @@ public sealed class RenderTreeBuilder : IDisposable
     private RenderTreeFrameType? _lastNonAttributeFrameType;
     private bool _hasSeenAddMultipleAttributes;
     private Dictionary<string, int>? _seenAttributeNames;
-    private Dictionary<string, int>? _seenEventHandlerNames;
     private IComponentRenderMode? _pendingComponentCallSiteRenderMode; // TODO: Remove when Razor compiler supports call-site @rendermode
-
-    // Configure the render tree builder to capture the event handler names.
-    internal bool TrackNamedEventHandlers { get; set; }
+    private (int Sequence, string AssignedName)? _pendingNamedSubmitEvent; // TODO: Remove when Razor compiler supports @formname
 
     /// <summary>
     /// The reserved parameter name used for supplying child content.
@@ -48,6 +45,8 @@ public sealed class RenderTreeBuilder : IDisposable
     /// <param name="elementName">A value representing the type of the element.</param>
     public void OpenElement(int sequence, string elementName)
     {
+        CompletePendingNamedSubmitEvent();
+
         // We are entering a new scope, since we track the "duplicate attributes" per
         // element/component we might need to clean them up now.
         if (_hasSeenAddMultipleAttributes)
@@ -67,6 +66,8 @@ public sealed class RenderTreeBuilder : IDisposable
     /// </summary>
     public void CloseElement()
     {
+        CompletePendingNamedSubmitEvent();
+
         var indexOfEntryBeingClosed = _openElementIndices.Pop();
 
         // We might be closing an element with only attributes, run the duplicate cleanup pass
@@ -77,6 +78,16 @@ public sealed class RenderTreeBuilder : IDisposable
         }
 
         _entries.Buffer[indexOfEntryBeingClosed].ElementSubtreeLengthField = _entries.Count - indexOfEntryBeingClosed;
+    }
+
+    // TODO: Remove this once Razor supports @formname
+    private void CompletePendingNamedSubmitEvent()
+    {
+        if (_pendingNamedSubmitEvent is { } pendingNamedSubmitEvent)
+        {
+            AddNamedEvent(pendingNamedSubmitEvent.Sequence, "onsubmit", pendingNamedSubmitEvent.AssignedName);
+            _pendingNamedSubmitEvent = default;
+        }
     }
 
     /// <summary>
@@ -226,7 +237,16 @@ public sealed class RenderTreeBuilder : IDisposable
         AssertCanAddAttribute();
         if (value != null || _lastNonAttributeFrameType == RenderTreeFrameType.Component)
         {
-            _entries.AppendAttribute(sequence, name, value);
+            // TODO: Remove this once the Razor compiler is updated to support @formname
+            // That should compile directly as a call to AddNamedEvent.
+            if (string.Equals(name, "@formname", StringComparison.Ordinal) && _lastNonAttributeFrameType == RenderTreeFrameType.Element)
+            {
+                _pendingNamedSubmitEvent = (sequence, value!);
+            }
+            else
+            {
+                _entries.AppendAttribute(sequence, name, value);
+            }
         }
         else
         {
@@ -488,42 +508,6 @@ public sealed class RenderTreeBuilder : IDisposable
     }
 
     /// <summary>
-    /// <para>
-    /// Indicates that the preceding attribute represents a named event handler
-    /// with the given <paramref name="eventHandlerName"/>.
-    /// </para>
-    /// <para>
-    /// This information is used by the rendering system to support dispatching
-    /// external events by name.
-    /// </para>
-    /// </summary>
-    /// <param name="eventHandlerName">The name associated with this event handler.</param>
-    public void SetEventHandlerName(string eventHandlerName)
-    {
-        if (!TrackNamedEventHandlers)
-        {
-            return;
-        }
-
-        if (_entries.Count == 0)
-        {
-            throw new InvalidOperationException("No preceding attribute frame exists.");
-        }
-
-        ref var prevFrame = ref _entries.Buffer[_entries.Count - 1];
-        if (prevFrame.FrameTypeField != RenderTreeFrameType.Attribute && !(prevFrame.AttributeValue is MulticastDelegate or IEventCallback))
-        {
-            throw new InvalidOperationException($"The previous attribute is not an event handler.");
-        }
-
-        _seenEventHandlerNames ??= new();
-        if (!_seenEventHandlerNames.TryAdd(eventHandlerName, _entries.Count - 1))
-        {
-            throw new InvalidOperationException($"An event handler '{eventHandlerName}' is already defined in this component.");
-        }
-    }
-
-    /// <summary>
     /// Appends a frame representing a child component.
     /// </summary>
     /// <typeparam name="TComponent">The type of the child component.</typeparam>
@@ -616,6 +600,8 @@ public sealed class RenderTreeBuilder : IDisposable
 
     private void OpenComponentUnchecked(int sequence, [DynamicallyAccessedMembers(Component)] Type componentType)
     {
+        CompletePendingNamedSubmitEvent();
+
         // We are entering a new scope, since we track the "duplicate attributes" per
         // element/component we might need to clean them up now.
         if (_hasSeenAddMultipleAttributes)
@@ -728,6 +714,30 @@ public sealed class RenderTreeBuilder : IDisposable
     }
 
     /// <summary>
+    /// Assigns a name to an event in the enclosing element.
+    /// </summary>
+    /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
+    /// <param name="eventType">The event type, e.g., 'onsubmit'.</param>
+    /// <param name="assignedName">The application-assigned name.</param>
+    public void AddNamedEvent(int sequence, string eventType, string assignedName)
+    {
+        ArgumentNullException.ThrowIfNull(eventType);
+        ArgumentException.ThrowIfNullOrEmpty(assignedName);
+
+        // Note that we could trivially extend this to a generic concept of "named values" that exist within the rendertree
+        // and are tracked when added, removed, or updated. Currently we don't need that generality, but if we ever do, we
+        // can replace RenderTreeFrameType.NamedEvent with RenderTreeFrameType.NamedValue and use it to implement named events.
+
+        if (GetCurrentParentFrameType() != RenderTreeFrameType.Element)
+        {
+            throw new InvalidOperationException($"Named events may only be added as children of frames of type {RenderTreeFrameType.Element}");
+        }
+
+        _entries.AppendNamedEvent(sequence, eventType, assignedName);
+        _lastNonAttributeFrameType = RenderTreeFrameType.NamedEvent;
+    }
+
+    /// <summary>
     /// Appends a frame representing a region of frames.
     /// </summary>
     /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
@@ -794,8 +804,6 @@ public sealed class RenderTreeBuilder : IDisposable
         _lastNonAttributeFrameType = null;
         _hasSeenAddMultipleAttributes = false;
         _seenAttributeNames?.Clear();
-        _seenEventHandlerNames?.Clear();
-        TrackNamedEventHandlers = false;
     }
 
     // internal because this should only be used during the post-event tree patching logic
@@ -931,10 +939,5 @@ public sealed class RenderTreeBuilder : IDisposable
     public void Dispose()
     {
         _entries.Dispose();
-    }
-
-    internal Dictionary<string, int>? GetNamedEvents()
-    {
-        return _seenEventHandlerNames;
     }
 }

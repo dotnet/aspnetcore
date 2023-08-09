@@ -38,7 +38,7 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
 
   <PropertyGroup>
-    <PackageFileName>$(InternalInstallerBaseName)-$(PackageVersion)-win-$(Platform)$(TargetExt)</PackageFileName>
+    <PackageFileName>$(RuntimeInstallerBaseName)-internal-$(PackageVersion)-win-$(Platform)$(TargetExt)</PackageFileName>
   </PropertyGroup>
 
   <!-- Overwrite the wix package drop creation target to create a lit

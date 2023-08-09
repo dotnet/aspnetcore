@@ -288,11 +288,14 @@ public class WsFederationTest
                     .AddCookie()
                     .AddWsFederation(options =>
                     {
+                        options.UseSecurityTokenHandlers = true;
                         options.Wtrealm = "http://Automation1";
                         options.MetadataAddress = "https://login.windows.net/4afbc689-805b-48cf-a24c-d4aa3248a248/federationmetadata/2007-06/federationmetadata.xml";
                         options.BackchannelHttpHandler = new WaadMetadataDocumentHandler();
                         options.StateDataFormat = new CustomStateDataFormat();
+#pragma warning disable CS0618 // Type or member is obsolete
                         options.SecurityTokenHandlers = new List<ISecurityTokenValidator>() { new TestSecurityTokenValidator() };
+#pragma warning restore CS0618 // Type or member is obsolete
                         options.UseTokenLifetime = false;
                         options.AllowUnsolicitedLogins = allowUnsolicited;
                         options.Events = new WsFederationEvents()

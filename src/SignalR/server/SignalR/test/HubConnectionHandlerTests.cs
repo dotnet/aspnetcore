@@ -4916,6 +4916,138 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
     }
 
     [Fact]
+    public async Task KeyedServiceResolvedIfInDI()
+    {
+        var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(provider =>
+        {
+            provider.AddSignalR(options =>
+            {
+                options.EnableDetailedErrors = true;
+            });
+
+            provider.AddKeyedScoped<Service1>("service1");
+        });
+        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ServicesHub>>();
+
+        using (var client = new TestClient())
+        {
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+            var res = await client.InvokeAsync(nameof(ServicesHub.KeyedService)).DefaultTimeout();
+            Assert.Equal(43L, res.Result);
+        }
+    }
+
+    [Fact]
+    public async Task HubMethodCanInjectKeyedServiceWithOtherParameters()
+    {
+        var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(provider =>
+        {
+            provider.AddSignalR(options =>
+            {
+                options.EnableDetailedErrors = true;
+            });
+
+            provider.AddKeyedScoped<Service1>("service1");
+        });
+        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ServicesHub>>();
+
+        using (var client = new TestClient())
+        {
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+            var res = await client.InvokeAsync(nameof(ServicesHub.KeyedServiceWithParam), 91).DefaultTimeout();
+            Assert.Equal(1183L, res.Result);
+        }
+    }
+
+    [Fact]
+    public async Task HubMethodCanInjectKeyedServiceWithNonKeyedService()
+    {
+        var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(provider =>
+        {
+            provider.AddSignalR(options =>
+            {
+                options.EnableDetailedErrors = true;
+            });
+
+            provider.AddKeyedScoped<Service1>("service1");
+            provider.AddScoped<Service2>();
+        });
+        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ServicesHub>>();
+
+        using (var client = new TestClient())
+        {
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+            var res = await client.InvokeAsync(nameof(ServicesHub.KeyedServiceNonKeyedService)).DefaultTimeout();
+            Assert.Equal(11L, res.Result);
+        }
+    }
+
+    [Fact]
+    public async Task MultipleKeyedServicesResolved()
+    {
+        var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(provider =>
+        {
+            provider.AddSignalR(options =>
+            {
+                options.EnableDetailedErrors = true;
+            });
+
+            provider.AddKeyedScoped<Service1>("service1");
+            provider.AddKeyedScoped<Service1>("service2");
+        });
+        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ServicesHub>>();
+
+        using (var client = new TestClient())
+        {
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+            var res = await client.InvokeAsync(nameof(ServicesHub.MultipleKeyedServices)).DefaultTimeout();
+            Assert.Equal(45L, res.Result);
+        }
+    }
+
+    [Fact]
+    public async Task MultipleKeyedServicesWithSameNameResolved()
+    {
+        var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(provider =>
+        {
+            provider.AddSignalR(options =>
+            {
+                options.EnableDetailedErrors = true;
+            });
+
+            provider.AddKeyedScoped<Service1>("service1");
+        });
+        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ServicesHub>>();
+
+        using (var client = new TestClient())
+        {
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+            var res = await client.InvokeAsync(nameof(ServicesHub.MultipleSameKeyedServices)).DefaultTimeout();
+            Assert.Equal(445L, res.Result);
+        }
+    }
+
+    [Fact]
+    public async Task KeyedServiceNotResolvedIfNotInDI()
+    {
+        var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(provider =>
+        {
+            provider.AddSignalR(options =>
+            {
+                options.EnableDetailedErrors = true;
+            });
+        });
+        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ServicesHub>>();
+
+        using (var client = new TestClient())
+        {
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+            var res = await client.InvokeAsync(nameof(ServicesHub.KeyedService)).DefaultTimeout();
+            Assert.Equal("Failed to invoke 'KeyedService' due to an error on the server. InvalidDataException: Invocation provides 0 argument(s) but target expects 1.", res.Error);
+        }
+    }
+
+    [Fact]
     public void TooManyParametersWithServiceThrows()
     {
         var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(provider =>

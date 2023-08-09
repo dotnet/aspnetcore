@@ -4,7 +4,11 @@
 #nullable disable
 
 using System.Diagnostics;
+#if !COMPONENTS
 using Microsoft.AspNetCore.Http;
+#else
+using Microsoft.AspNetCore.Components.Routing;
+#endif
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.Primitives;
 

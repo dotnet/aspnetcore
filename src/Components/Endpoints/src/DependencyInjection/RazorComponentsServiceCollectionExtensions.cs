@@ -3,10 +3,11 @@
 
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Binding;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Endpoints.DependencyInjection;
+using Microsoft.AspNetCore.Components.Endpoints.Forms;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.Forms.Mapping;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
@@ -26,10 +27,15 @@ public static class RazorComponentsServiceCollectionExtensions
     /// Registers services required for server-side rendering of Razor Components.
     /// </summary>
     /// <param name="services">The service collection.</param>
-    /// <returns>A builder for configuring the Razor Components endpoints.</returns>
+    /// <returns>An <see cref="IRazorComponentsBuilder"/> that can be used to further configure the Razor component services.</returns>
     [RequiresUnreferencedCode("Razor Components does not currently support native AOT.", Url = "https://aka.ms/aspnet/nativeaot")]
     public static IRazorComponentsBuilder AddRazorComponents(this IServiceCollection services)
     {
+        ArgumentNullException.ThrowIfNull(services);
+
+        // Dependencies
+        services.AddAntiforgery();
+
         services.TryAddSingleton<RazorComponentsMarkerService>();
 
         // Results
@@ -38,6 +44,7 @@ public static class RazorComponentsServiceCollectionExtensions
         // Endpoints
         services.TryAddSingleton<RazorComponentEndpointDataSourceFactory>();
         services.TryAddSingleton<RazorComponentEndpointFactory>();
+        services.TryAddScoped<IRazorComponentEndpointInvoker, RazorComponentEndpointInvoker>();
 
         // Common services required for components server side rendering
         services.TryAddSingleton<ServerComponentSerializer>(services => new ServerComponentSerializer(services.GetRequiredService<IDataProtectionProvider>()));
@@ -54,23 +61,39 @@ public static class RazorComponentsServiceCollectionExtensions
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<RazorComponentsEndpointsOptions>, RazorComponentsEndpointsDetailedErrorsConfiguration>());
         services.TryAddScoped<EndpointRoutingStateProvider>();
         services.TryAddScoped<IRoutingStateProvider>(sp => sp.GetRequiredService<EndpointRoutingStateProvider>());
+        services.AddSupplyValueFromQueryProvider();
 
         // Form handling
-        services.TryAddScoped<FormDataProvider, HttpContextFormDataProvider>();
-        services.TryAddScoped<IFormValueSupplier, DefaultFormValuesSupplier>();
-        services.TryAddEnumerable(ServiceDescriptor.Scoped<CascadingModelBindingProvider, CascadingQueryModelBindingProvider>());
-        services.TryAddEnumerable(ServiceDescriptor.Scoped<CascadingModelBindingProvider, CascadingFormModelBindingProvider>());
+        services.AddSupplyValueFromFormProvider();
+        services.TryAddScoped<AntiforgeryStateProvider, EndpointAntiforgeryStateProvider>();
+        services.TryAddScoped<HttpContextFormDataProvider>();
+        services.TryAddScoped<IFormValueMapper, HttpContextFormValueMapper>();
 
         return new DefaultRazorComponentsBuilder(services);
     }
 
-    private sealed class DefaultRazorComponentsBuilder : IRazorComponentsBuilder
+    /// <summary>
+    /// Registers services required for server-side rendering of Razor Components.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="setupAction">An <see cref="Action{RazorComponentOptions}"/> to configure the provided <see cref="RazorComponentOptions"/>.</param>
+    /// <returns>An <see cref="IRazorComponentsBuilder"/> that can be used to further configure the Razor component services.</returns>
+    public static IRazorComponentsBuilder AddRazorComponents(
+        this IServiceCollection services,
+        Action<RazorComponentOptions> setupAction
+        )
     {
-        public DefaultRazorComponentsBuilder(IServiceCollection services)
-        {
-            Services = services;
-        }
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(setupAction);
 
-        public IServiceCollection Services { get; }
+        var builder = services.AddRazorComponents();
+        services.Configure(setupAction);
+
+        return builder;
+    }
+
+    private sealed class DefaultRazorComponentsBuilder(IServiceCollection services) : IRazorComponentsBuilder
+    {
+        public IServiceCollection Services { get; } = services;
     }
 }

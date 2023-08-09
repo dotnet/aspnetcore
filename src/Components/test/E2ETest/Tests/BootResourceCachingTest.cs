@@ -35,6 +35,7 @@ public class BootResourceCachingTest
         return base.InitializeAsync(Guid.NewGuid().ToString());
     }
 
+    /* Active Issue https://github.com/dotnet/runtime/issues/89883
     [Fact]
     public void CachesResourcesAfterFirstLoad()
     {
@@ -97,6 +98,7 @@ public class BootResourceCachingTest
         Assert.Contains(cacheEntryForDotNetWasm, cacheEntryUrls3);
         Assert.DoesNotContain(cacheEntryForDotNetWasmWithChangedHash, cacheEntryUrls3);
     }
+    */
 
     private IReadOnlyCollection<string> GetCacheEntryUrls()
     {

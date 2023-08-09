@@ -7,13 +7,11 @@ using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
-using System.Drawing;
 using System.Globalization;
-using System.Xml.Linq;
-using Microsoft.Diagnostics.Runtime;
+using System.Runtime.Serialization;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNetCore.Components.Endpoints.Binding;
+namespace Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 
 public class FormDataMapperTests
 {
@@ -29,6 +27,46 @@ public class FormDataMapperTests
 
         // Act
         var result = CallDeserialize(reader, options, type);
+
+        // Assert
+        Assert.Equal(expected, result);
+    }
+
+    [Theory]
+    [InlineData("Red", Colors.Red)]
+    [InlineData("RED", Colors.Red)]
+    [InlineData("BlUe", Colors.Blue)]
+    [InlineData("green", Colors.Green)]
+    public void CanDeserialize_EnumTypes(string value, Colors expected)
+    {
+        // Arrange
+        var collection = new Dictionary<string, StringValues>() { ["value"] = new StringValues(value) };
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
+        reader.PushPrefix("value");
+        var options = new FormDataMapperOptions();
+
+        // Act
+        var result = CallDeserialize(reader, options, typeof(Colors));
+
+        // Assert
+        Assert.Equal(expected, result);
+    }
+
+    [Theory]
+    [InlineData("Red", Colors.Red)]
+    [InlineData("RED", Colors.Red)]
+    [InlineData("BlUe", Colors.Blue)]
+    [InlineData("green", Colors.Green)]
+    public void CanDeserialize_NullableEnumTypes(string value, Colors expected)
+    {
+        // Arrange
+        var collection = new Dictionary<string, StringValues>() { ["value"] = new StringValues(value) };
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
+        reader.PushPrefix("value");
+        var options = new FormDataMapperOptions();
+
+        // Act
+        var result = CallDeserialize(reader, options, typeof(Colors?));
 
         // Assert
         Assert.Equal(expected, result);
@@ -1083,6 +1121,254 @@ public class FormDataMapperTests
     }
 
     [Fact]
+    public void CanDeserialize_ComplexRecursiveTypes_RecursiveList()
+    {
+        // Arrange
+        var expected = new RecursiveList()
+        {
+            Head = 10,
+            Tail = null
+        };
+
+        for (var i = 10 - 1; i >= 0; i--)
+        {
+            expected = new RecursiveList()
+            {
+                Head = i,
+                Tail = expected
+            };
+        }
+
+        var data = new Dictionary<string, StringValues>()
+        {
+            ["Head"] = "0",
+            ["Tail.Head"] = "1",
+            ["Tail.Tail.Head"] = "2",
+            ["Tail.Tail.Tail.Head"] = "3",
+            ["Tail.Tail.Tail.Tail.Head"] = "4",
+            ["Tail.Tail.Tail.Tail.Tail.Head"] = "5",
+            ["Tail.Tail.Tail.Tail.Tail.Tail.Head"] = "6",
+            ["Tail.Tail.Tail.Tail.Tail.Tail.Tail.Head"] = "7",
+            ["Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Head"] = "8",
+            ["Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Head"] = "9",
+            ["Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Head"] = "10",
+        };
+
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
+        var options = new FormDataMapperOptions();
+
+        // Act
+        var result = FormDataMapper.Map<RecursiveList>(reader, options);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Multiple(() =>
+        {
+            Assert.Equal(expected.Head, result.Head);
+            Assert.Equal(expected.Tail.Head, result.Tail.Head);
+            Assert.Equal(expected.Tail.Tail.Head, result.Tail.Tail.Head);
+            Assert.Equal(expected.Tail.Tail.Tail.Head, result.Tail.Tail.Tail.Head);
+            Assert.Equal(expected.Tail.Tail.Tail.Tail.Head, result.Tail.Tail.Tail.Tail.Head);
+            Assert.Equal(expected.Tail.Tail.Tail.Tail.Tail.Head, result.Tail.Tail.Tail.Tail.Tail.Head);
+            Assert.Equal(expected.Tail.Tail.Tail.Tail.Tail.Tail.Head, result.Tail.Tail.Tail.Tail.Tail.Tail.Head);
+            Assert.Equal(expected.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Head, result.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Head);
+            Assert.Equal(expected.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Head, result.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Head);
+            Assert.Equal(expected.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Head, result.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Head);
+            Assert.Equal(expected.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Head, result.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Head);
+            Assert.Null(result.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail);
+        });
+    }
+
+    [Fact]
+    public void CanDeserialize_ComplexRecursiveTypes_ThrowsWhenMaxRecursionDepthExceeded()
+    {
+        // Arrange
+        var expected = new RecursiveList()
+        {
+            Head = 5,
+            Tail = null
+        };
+
+        for (var i = 5 - 1; i >= 0; i--)
+        {
+            expected = new RecursiveList()
+            {
+                Head = i,
+                Tail = expected
+            };
+        }
+
+        var data = new Dictionary<string, StringValues>()
+        {
+            ["Head"] = "0",
+            ["Tail.Head"] = "1",
+            ["Tail.Tail.Head"] = "2",
+            ["Tail.Tail.Tail.Head"] = "3",
+            ["Tail.Tail.Tail.Tail.Head"] = "4",
+            ["Tail.Tail.Tail.Tail.Tail.Head"] = "5",
+            ["Tail.Tail.Tail.Tail.Tail.Tail.Head"] = "6",
+            ["Tail.Tail.Tail.Tail.Tail.Tail.Tail.Head"] = "7",
+            ["Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Head"] = "8",
+            ["Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Head"] = "9",
+            ["Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Tail.Head"] = "10",
+        };
+
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
+        reader.MaxRecursionDepth = 5;
+        var errors = new List<FormDataMappingError>();
+        reader.ErrorHandler = (key, message, exception) =>
+        {
+            errors.Add(new FormDataMappingError(key, message, exception));
+        };
+
+        var options = new FormDataMapperOptions();
+
+        // Act
+        var result = FormDataMapper.Map<RecursiveList>(reader, options);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Multiple(() =>
+        {
+            Assert.Equal(expected.Head, result.Head);
+            Assert.Equal(expected.Tail.Head, result.Tail.Head);
+            Assert.Equal(expected.Tail.Tail.Head, result.Tail.Tail.Head);
+            Assert.Equal(expected.Tail.Tail.Tail.Head, result.Tail.Tail.Tail.Head);
+            Assert.Equal(expected.Tail.Tail.Tail.Tail.Head, result.Tail.Tail.Tail.Tail.Head);
+            Assert.Null(result.Tail.Tail.Tail.Tail.Tail);
+        });
+        Assert.Collection(errors,
+            e =>
+            {
+                Assert.Equal("Tail.Tail.Tail.Tail.Tail", e.Key);
+                Assert.Equal("The maximum recursion depth of '5' was exceeded for 'Tail.Tail.Tail.Tail.Tail.Head'.", e.Message.ToString(CultureInfo.InvariantCulture));
+            },
+            e =>
+            {
+                Assert.Equal("Tail.Tail.Tail.Tail.Tail", e.Key);
+                Assert.Equal("The maximum recursion depth of '5' was exceeded for 'Tail.Tail.Tail.Tail.Tail.Tail'.", e.Message.ToString(CultureInfo.InvariantCulture));
+            });
+    }
+
+    [Fact]
+    public void CanDeserialize_ComplexRecursiveCollectionTypes_RecursiveTree()
+    {
+        // Arrange
+        var expected = new RecursiveTree()
+        {
+            Value = 10,
+            Children = null
+        };
+
+        for (var i = 10 - 1; i >= 0; i--)
+        {
+            expected = new RecursiveTree()
+            {
+                Value = i,
+                Children = new List<RecursiveTree>() { expected }
+            };
+        }
+
+        var data = new Dictionary<string, StringValues>()
+        {
+            ["Value"] = "0",
+            ["Children[0].Value"] = "1",
+            ["Children[0].Children[0].Value"] = "2",
+            ["Children[0].Children[0].Children[0].Value"] = "3",
+            ["Children[0].Children[0].Children[0].Children[0].Value"] = "4",
+            ["Children[0].Children[0].Children[0].Children[0].Children[0].Value"] = "5",
+            ["Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value"] = "6",
+            ["Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value"] = "7",
+            ["Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value"] = "8",
+            ["Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value"] = "9",
+            ["Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value"] = "10",
+        };
+
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
+        var options = new FormDataMapperOptions();
+
+        // Act
+        var result = FormDataMapper.Map<RecursiveTree>(reader, options);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Multiple(() =>
+        {
+            Assert.Equal(expected.Value, result.Value);
+            Assert.Equal(expected.Children[0].Value, result.Children[0].Value);
+            Assert.Equal(expected.Children[0].Children[0].Value, result.Children[0].Children[0].Value);
+            Assert.Equal(expected.Children[0].Children[0].Children[0].Value, result.Children[0].Children[0].Children[0].Value);
+            Assert.Equal(expected.Children[0].Children[0].Children[0].Children[0].Value, result.Children[0].Children[0].Children[0].Children[0].Value);
+            Assert.Equal(expected.Children[0].Children[0].Children[0].Children[0].Children[0].Value, result.Children[0].Children[0].Children[0].Children[0].Children[0].Value);
+            Assert.Equal(expected.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value, result.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value);
+            Assert.Equal(expected.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value, result.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value);
+            Assert.Equal(expected.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value, result.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value);
+            Assert.Equal(expected.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value, result.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value);
+            Assert.Equal(expected.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value, result.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value);
+            Assert.Null(result.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children);
+        });
+    }
+
+    [Fact]
+    public void CanDeserialize_ComplexRecursiveCollectionTypes_RecursiveDictionaryTree()
+    {
+        // Arrange
+        var expected = new RecursiveDictionaryTree()
+        {
+            Value = 10,
+            Children = null
+        };
+
+        for (var i = 10 - 1; i >= 0; i--)
+        {
+            expected = new RecursiveDictionaryTree()
+            {
+                Value = i,
+                Children = new Dictionary<int, RecursiveDictionaryTree>() { [0] = expected }
+            };
+        }
+
+        var data = new Dictionary<string, StringValues>()
+        {
+            ["Value"] = "0",
+            ["Children[0].Value"] = "1",
+            ["Children[0].Children[0].Value"] = "2",
+            ["Children[0].Children[0].Children[0].Value"] = "3",
+            ["Children[0].Children[0].Children[0].Children[0].Value"] = "4",
+            ["Children[0].Children[0].Children[0].Children[0].Children[0].Value"] = "5",
+            ["Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value"] = "6",
+            ["Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value"] = "7",
+            ["Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value"] = "8",
+            ["Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value"] = "9",
+            ["Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value"] = "10",
+        };
+
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
+        var options = new FormDataMapperOptions();
+
+        // Act
+        var result = FormDataMapper.Map<RecursiveTree>(reader, options);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Multiple(() =>
+        {
+            Assert.Equal(expected.Value, result.Value);
+            Assert.Equal(expected.Children[0].Value, result.Children[0].Value);
+            Assert.Equal(expected.Children[0].Children[0].Value, result.Children[0].Children[0].Value);
+            Assert.Equal(expected.Children[0].Children[0].Children[0].Value, result.Children[0].Children[0].Children[0].Value);
+            Assert.Equal(expected.Children[0].Children[0].Children[0].Children[0].Value, result.Children[0].Children[0].Children[0].Children[0].Value);
+            Assert.Equal(expected.Children[0].Children[0].Children[0].Children[0].Children[0].Value, result.Children[0].Children[0].Children[0].Children[0].Children[0].Value);
+            Assert.Equal(expected.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value, result.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value);
+            Assert.Equal(expected.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value, result.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value);
+            Assert.Equal(expected.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value, result.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value);
+            Assert.Equal(expected.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value, result.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value);
+            Assert.Equal(expected.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value, result.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Value);
+            Assert.Null(result.Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children[0].Children);
+        });
+    }
+
+    [Fact]
     public void Deserialize_ComplexType_ContinuesMappingAfterPropertyError()
     {
         // Arrange
@@ -1150,6 +1436,180 @@ public class FormDataMapperTests
         Assert.Equal(expected.TotalVisits, result.TotalVisits);
         Assert.Equal(expected.PreferredStore, result.PreferredStore);
         Assert.Equal(expected.MonthlyFrequency, result.MonthlyFrequency);
+    }
+
+    [Fact]
+    public void CanDeserialize_ComplexTypeWithConstructorParameters_KeyValuePair()
+    {
+        // Arrange
+        var expected = new KeyValuePair<string, int>("Age", 20);
+        var data = new Dictionary<string, StringValues>()
+        {
+            ["Key"] = "Age",
+            ["Value"] = "20",
+        };
+
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
+        var options = new FormDataMapperOptions();
+
+        // Act
+        var result = FormDataMapper.Map<KeyValuePair<string, int>>(reader, options);
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void CanDeserialize_ComplexType_RecordType()
+    {
+        // Arrange
+        var expected = new ClassRecordType("Age", 20);
+        var data = new Dictionary<string, StringValues>()
+        {
+            ["Key"] = "Age",
+            ["Value"] = "20",
+        };
+
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
+        var options = new FormDataMapperOptions();
+
+        // Act
+        var result = FormDataMapper.Map<ClassRecordType>(reader, options);
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void CanDeserialize_ComplexType_StructRecordType()
+    {
+        // Arrange
+        var expected = new StructRecordType("Age", 20);
+        var data = new Dictionary<string, StringValues>()
+        {
+            ["Key"] = "Age",
+            ["Value"] = "20",
+        };
+
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
+        var options = new FormDataMapperOptions();
+
+        // Act
+        var result = FormDataMapper.Map<StructRecordType>(reader, options);
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void CanDeserialize_ComplexType_AppliesDataMemberRelatedAttributes()
+    {
+        // Arrange
+        var expected = new DataMemberAttributesType { Key = "Age", Value = 20 };
+        var data = new Dictionary<string, StringValues>()
+        {
+            ["mycustomkey"] = "Age",
+            ["mycustomvalue"] = "20",
+            ["Ignored"] = "This should be ignored",
+        };
+
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
+        var options = new FormDataMapperOptions();
+
+        // Act
+        var result = FormDataMapper.Map<DataMemberAttributesType>(reader, options);
+        Assert.Equal(expected.Key, result.Key);
+        Assert.Equal(expected.Value, result.Value);
+        Assert.Null(result.Ignored);
+    }
+
+    [Fact]
+    public void CanDeserialize_ComplexType_AppliesDataMemberRelatedAttributes_FromMatchingConstructorParameters()
+    {
+        // Arrange
+        var expected = new DataMemberAttributesConstructorType("Age", 20);
+        var data = new Dictionary<string, StringValues>()
+        {
+            ["mycustomkey"] = "Age",
+            ["mycustomvalue"] = "20",
+            ["Ignored"] = "This should be ignored",
+        };
+
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
+        var options = new FormDataMapperOptions();
+
+        // Act
+        var result = FormDataMapper.Map<DataMemberAttributesConstructorType>(reader, options);
+        Assert.Equal(expected.Key, result.Key);
+        Assert.Equal(expected.Value, result.Value);
+        Assert.Null(result.Ignored);
+    }
+
+    [Fact]
+    public void CanDeserialize_ComplexType_DoesNotRegisterMissingRequiredParametersIfNoValueFound()
+    {
+        // Arrange
+        var expected = new ThrowsWithMissingParameterValue("Age");
+        var data = new Dictionary<string, StringValues>() { };
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
+        var errors = new List<FormDataMappingError>();
+        reader.ErrorHandler = (key, message, attemptedValue) =>
+        {
+            errors.Add(new FormDataMappingError(key, message, attemptedValue));
+        };
+
+        var options = new FormDataMapperOptions();
+
+        // Act
+        var result = FormDataMapper.Map<ThrowsWithMissingParameterValue>(reader, options);
+
+        // Assert
+        Assert.Null(result);
+        Assert.Empty(errors);
+    }
+
+    [Fact]
+    public void CanDeserialize_ComplexType_ThrowsFromConstructor()
+    {
+        // Arrange
+        var expected = new ThrowsWithMissingParameterValue("Age");
+        var data = new Dictionary<string, StringValues>() { ["value"] = "20" };
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
+        var errors = new List<FormDataMappingError>();
+        reader.ErrorHandler = (key, message, attemptedValue) =>
+        {
+            errors.Add(new FormDataMappingError(key, message, attemptedValue));
+        };
+
+        var options = new FormDataMapperOptions();
+
+        // Act
+        var result = FormDataMapper.Map<ThrowsWithMissingParameterValue>(reader, options);
+
+        // Assert
+        Assert.Null(result);
+        Assert.Equal(2, errors.Count);
+        var error = errors[0];
+        Assert.Equal("key", error.Key);
+        Assert.Equal("Missing required value for constructor parameter 'key'.", error.Message.ToString(CultureInfo.InvariantCulture));
+
+        var constructorError = errors[1];
+        Assert.Equal("", constructorError.Key);
+        Assert.Equal("Value cannot be null. (Parameter 'key')", constructorError.Message.ToString(CultureInfo.InvariantCulture));
+    }
+
+    [Fact]
+    public void RecursiveTypes_Comparer_SortsValues_Correctly()
+    {
+        // Arrange
+        var data = new Dictionary<string, StringValues>()
+        {
+            ["customerId"] = "20",
+            ["customer[Id]"] = "20",
+            ["customer.Id"] = "20"
+        };
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
+        reader.PushPrefix("customer");
+
+        // Act
+        var result = reader.CurrentPrefixExists();
+
+        // Assert
+        Assert.True(result);
     }
 
     public static TheoryData<string, Type, object> NullableBasicTypes
@@ -1434,6 +1894,13 @@ internal abstract class TestArrayPoolBufferAdapter
     }
 }
 
+public enum Colors
+{
+    Red,
+    Green,
+    Blue
+}
+
 internal struct Address
 {
     public string Street { get; set; }
@@ -1459,7 +1926,7 @@ internal class FrequentCustomer : Customer
     public double MonthlyFrequency { get; set; }
 }
 
-// Implements ICollection<T> delegating to List<T> _inner;
+// Implements ICollection<TEnum> delegating to List<TEnum> _inner;
 internal class CustomCollection<T> : ICollection<T>
 {
     private readonly List<T> _inner = new();
@@ -1473,4 +1940,70 @@ internal class CustomCollection<T> : ICollection<T>
     public IEnumerator<T> GetEnumerator() => _inner.GetEnumerator();
     IEnumerator IEnumerable.GetEnumerator() => _inner.GetEnumerator();
     public void CopyTo(T[] array, int arrayIndex) => _inner.CopyTo(array, arrayIndex);
+}
+
+internal class RecursiveList
+{
+    public int Head { get; set; }
+    public RecursiveList Tail { get; set; }
+}
+
+internal class RecursiveTree
+{
+    public int Value { get; set; }
+    public List<RecursiveTree> Children { get; set; }
+}
+
+internal class RecursiveDictionaryTree
+{
+    public int Value { get; set; }
+
+    public Dictionary<int, RecursiveDictionaryTree> Children { get; set; }
+}
+
+internal record ClassRecordType(string Key, int Value);
+
+internal record struct StructRecordType(string Key, int Value);
+
+internal class DataMemberAttributesType
+{
+    [DataMember(Name = "mycustomkey")]
+    public string Key { get; set; }
+
+    [DataMember(Name = "mycustomvalue")]
+    public int Value { get; set; }
+
+    [IgnoreDataMember]
+    public string Ignored { get; set; }
+}
+
+internal class DataMemberAttributesConstructorType
+{
+    public DataMemberAttributesConstructorType(string key, int value)
+    {
+        Key = key;
+        Value = value;
+    }
+
+    [DataMember(Name = "mycustomkey")]
+    public string Key { get; set; }
+
+    [DataMember(Name = "mycustomvalue")]
+    public int Value { get; set; }
+
+    [IgnoreDataMember]
+    public string Ignored { get; set; }
+}
+
+public class ThrowsWithMissingParameterValue
+{
+    public ThrowsWithMissingParameterValue(string key)
+    {
+        ArgumentNullException.ThrowIfNull(key);
+        Key = key;
+    }
+
+    public string Key { get; set; }
+
+    public int Value { get; set; }
 }

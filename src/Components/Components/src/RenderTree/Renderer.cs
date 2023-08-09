@@ -5,6 +5,7 @@
 
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -87,7 +88,13 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         // logger name in here as a string literal.
         _logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Components.RenderTree.Renderer");
         _componentFactory = new ComponentFactory(componentActivator, this);
+
+        ServiceProviderCascadingValueSuppliers = serviceProvider.GetService<ICascadingValueSupplier>() is null
+            ? Array.Empty<ICascadingValueSupplier>()
+            : serviceProvider.GetServices<ICascadingValueSupplier>().ToArray();
     }
+
+    internal ICascadingValueSupplier[] ServiceProviderCascadingValueSuppliers { get; }
 
     internal HotReloadManager HotReloadManager { get; set; } = HotReloadManager.Default;
 
@@ -373,7 +380,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     /// </returns>
     public virtual Task DispatchEventAsync(ulong eventHandlerId, EventFieldInfo? fieldInfo, EventArgs eventArgs)
     {
-        return DispatchEventAsync(eventHandlerId, fieldInfo, eventArgs, quiesce: false);
+        return DispatchEventAsync(eventHandlerId, fieldInfo, eventArgs, waitForQuiescence: false);
     }
 
     /// <summary>
@@ -382,14 +389,19 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     /// <param name="eventHandlerId">The <see cref="RenderTreeFrame.AttributeEventHandlerId"/> value from the original event attribute.</param>
     /// <param name="eventArgs">Arguments to be passed to the event handler.</param>
     /// <param name="fieldInfo">Information that the renderer can use to update the state of the existing render tree to match the UI.</param>
-    /// <param name="quiesce">Whether to wait for quiescence or not.</param>
+    /// <param name="waitForQuiescence">A flag indicating whether to wait for quiescence.</param>
     /// <returns>
     /// A <see cref="Task"/> which will complete once all asynchronous processing related to the event
     /// has completed.
     /// </returns>
-    public virtual Task DispatchEventAsync(ulong eventHandlerId, EventFieldInfo? fieldInfo, EventArgs eventArgs, bool quiesce)
+    public virtual Task DispatchEventAsync(ulong eventHandlerId, EventFieldInfo? fieldInfo, EventArgs eventArgs, bool waitForQuiescence)
     {
         Dispatcher.AssertAccess();
+
+        if (waitForQuiescence)
+        {
+            _pendingTasks ??= new();
+        }
 
         var callback = GetRequiredEventCallback(eventHandlerId);
         Log.HandlingEvent(_logger, eventHandlerId, eventArgs);
@@ -418,22 +430,9 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             _isBatchInProgress = true;
 
             task = callback.InvokeAsync(eventArgs);
-            if (quiesce)
-            {
-                // If we are waiting for quiescence, the quiescence task will capture any async exception.
-                // If the exception is thrown synchronously, we just want it to flow to the callers, and
-                // not go through the ErrorBoundary.
-                _pendingTasks ??= new();
-                AddPendingTask(receiverComponentState, task);
-            }
         }
         catch (Exception e)
         {
-            if (quiesce)
-            {
-                // Exception filters are not AoT friendly.
-                throw;
-            }
             HandleExceptionViaErrorBoundary(e, receiverComponentState);
             return Task.CompletedTask;
         }
@@ -446,15 +445,19 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             ProcessPendingRender();
         }
 
-        if (quiesce)
-        {
-            return WaitForQuiescence();
-        }
-
         // Task completed synchronously or is still running. We already processed all of the rendering
         // work that was queued so let our error handler deal with it.
-        var result = GetErrorHandledTask(task, receiverComponentState);
-        return result;
+        var errorHandledTask = GetErrorHandledTask(task, receiverComponentState);
+
+        if (waitForQuiescence)
+        {
+            AddPendingTask(receiverComponentState, errorHandledTask);
+            return WaitForQuiescence();
+        }
+        else
+        {
+            return errorHandledTask;
+        }
     }
 
     /// <summary>
@@ -628,22 +631,6 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         // for tree patching to work in an async environment.
         _eventHandlerIdReplacements.Add(oldEventHandlerId, newEventHandlerId);
     }
-
-    /// <summary>
-    /// Tracks named events defined during rendering.
-    /// </summary>
-    /// <param name="eventHandlerId">The event handler ID associated with the named event.</param>
-    /// <param name="componentId">The component ID defining the name.</param>
-    /// <param name="eventHandlerName">The event name.</param>
-    protected internal virtual void TrackNamedEventId(ulong eventHandlerId, int componentId, string eventHandlerName)
-    {
-    }
-
-    /// <summary>
-    /// Indicates whether named event handlers should be tracked.
-    /// </summary>
-    /// <returns><c>true</c> if named event handlers should be tracked; <c>false</c> otherwise.</returns>
-    protected internal virtual bool ShouldTrackNamedEventHandlers() => false;
 
     private EventCallback GetRequiredEventCallback(ulong eventHandlerId)
     {

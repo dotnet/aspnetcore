@@ -2491,7 +2491,7 @@
           {
             "name": "addMilestone",
             "parameters": {
-              "milestoneName": "8.0-preview7"
+              "milestoneName": "8.0-rc1"
             }
           }
         ],
@@ -3236,7 +3236,7 @@
           {
             "name": "addMilestone",
             "parameters": {
-              "milestoneName": "6.0.19"
+              "milestoneName": "6.0.22"
             }
           }
         ]
@@ -3280,7 +3280,7 @@
           {
             "name": "addMilestone",
             "parameters": {
-              "milestoneName": "7.0.8"
+              "milestoneName": "7.0.11"
             }
           }
         ]
@@ -3304,7 +3304,7 @@
             {
               "name": "prTargetsBranch",
               "parameters": {
-                "branchName": "release/8.0-preview6"
+                "branchName": "release/8.0-preview7"
               }
             }
           ]
@@ -3315,7 +3315,7 @@
           "issues",
           "project_card"
         ],
-        "taskName": "[Milestone Assignments] Assign Milestone to PRs merged to release/8.0-preview6 branch",
+        "taskName": "[Milestone Assignments] Assign Milestone to PRs merged to release/8.0-preview7 branch",
         "actions": [
           {
             "name": "removeMilestone",
@@ -3324,7 +3324,7 @@
           {
             "name": "addMilestone",
             "parameters": {
-              "milestoneName": "8.0-preview6"
+              "milestoneName": "8.0-preview7"
             }
           }
         ]
@@ -3461,7 +3461,7 @@
           {
             "name": "addReply",
             "parameters": {
-              "comment": "Looks like this PR hasn't been active for some time and the codebase could have been changed in the meantime.\nTo make sure no breaking changes are introduced, please leave an `/azp run` comment here to rerun the CI pipeline and confirm success before merging the change."
+              "comment": "Looks like this PR hasn't been active for some time and the codebase could have been changed in the meantime.\nTo make sure no conflicting changes have occurred, please rerun validation before merging. You can do this by leaving an `/azp run` comment here (requires commit rights), or by simply closing and reopening."
             }
           },
           {

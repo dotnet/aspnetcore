@@ -36,13 +36,16 @@
     <Compile Include="$(ComponentsSharedSourceRoot)src\JsonSerializerOptionsProvider.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\ElementReferenceJsonConverter.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\ComponentParametersTypeCache.cs" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\RootComponentOperation.cs" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\RootComponentOperationType.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\RootComponentTypeCache.cs" />
-    <Compile Include="$(ComponentsSharedSourceRoot)src\DefaultFormDataProvider.cs" LinkBase="Shared" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\WebRendererId.cs" />
+    <Compile Include="$(SharedSourceRoot)Components\ComponentMarker.cs" Link="Prerendering/ComponentMarker.cs" />
     <Compile Include="$(SharedSourceRoot)Components\WebAssemblyComponentSerializationSettings.cs" Link="Prerendering/WebAssemblyComponentSerializationSettings.cs" />
-    <Compile Include="$(SharedSourceRoot)Components\WebAssemblyComponentMarker.cs" Link="Prerendering/WebAssemblyComponentMarker.cs" />
     <Compile Include="$(SharedSourceRoot)Components\ComponentParameter.cs" Link="Prerendering/ComponentParameter.cs" />
     <Compile Include="$(SharedSourceRoot)Components\PrerenderComponentApplicationStore.cs" />
     <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\DefaultAntiforgeryStateProvider.cs" LinkBase="Forms" />
   </ItemGroup>
 
   <ItemGroup>

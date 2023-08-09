@@ -2,11 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.Security.Claims;
 using Components.TestServer.RazorComponents;
-using Components.TestServer.RazorComponents.Pages;
 using Components.TestServer.RazorComponents.Pages.Forms;
+using Components.TestServer.RazorComponents.Pages.StreamingRendering;
 using Components.TestServer.Services;
-using Microsoft.AspNetCore.Components;
 
 namespace TestServer;
 
@@ -22,7 +22,12 @@ public class RazorComponentEndpointsStartup<TRootComponent>
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddRazorComponents()
+        services.AddRazorComponents(options =>
+        {
+            options.MaxFormMappingErrorCount = 10;
+            options.MaxFormMappingRecursionDepth = 5;
+            options.MaxFormMappingCollectionSize = 100;
+        })
             .AddServerComponents()
             .AddWebAssemblyComponents(options =>
             {
@@ -30,6 +35,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             });
         services.AddHttpContextAccessor();
         services.AddSingleton<AsyncOperationService>();
+        services.AddCascadingAuthenticationState();
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -48,6 +54,8 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         {
             app.UseStaticFiles();
             app.UseRouting();
+            UseFakeAuthState(app);
+            app.UseAntiforgery();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapRazorComponents<TRootComponent>()
@@ -56,9 +64,48 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
                 NotEnabledStreamingRenderingComponent.MapEndpoints(endpoints);
                 StreamingRenderingForm.MapEndpoints(endpoints);
+                InteractiveStreamingRenderingComponent.MapEndpoints(endpoints);
 
                 MapEnhancedNavigationEndpoints(endpoints);
             });
+        });
+    }
+
+    private static void UseFakeAuthState(IApplicationBuilder app)
+    {
+        app.Use((HttpContext context, Func<Task> next) =>
+        {
+            // Completely insecure fake auth system with no password for tests. Do not do anything like this in real apps.
+            // It accepts a query parameter 'username' and then sets or deletes a cookie to hold that, and supplies a principal
+            // using this username (taken either from the cookie or query param).
+            const string cookieKey = "fake_username";
+            context.Request.Cookies.TryGetValue(cookieKey, out var username);
+            if (context.Request.Query.TryGetValue("username", out var usernameFromQuery))
+            {
+                username = usernameFromQuery;
+                if (string.IsNullOrEmpty(username))
+                {
+                    context.Response.Cookies.Delete(cookieKey);
+                }
+                else
+                {
+                    // Expires when browser is closed, so tests won't interfere with each other
+                    context.Response.Cookies.Append(cookieKey, username);
+                }
+            }
+
+            if (!string.IsNullOrEmpty(username))
+            {
+                var claims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.Name, username),
+                    new Claim("test-claim", "Test claim value"),
+                };
+
+                context.User = new ClaimsPrincipal(new ClaimsIdentity(claims, "FakeAuthenticationType"));
+            }
+
+            return next();
         });
     }
 

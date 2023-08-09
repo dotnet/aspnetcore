@@ -11,8 +11,18 @@ namespace Microsoft.AspNetCore.Components;
 public sealed class SupplyParameterFromFormAttribute : CascadingParameterAttributeBase
 {
     /// <summary>
-    /// Gets or sets the name for the parameter. The name is used to match
-    /// the form data and decide whether or not the value needs to be bound.
+    /// Gets or sets the name for the parameter. The name is used to determine
+    /// the prefix to use to match the form data and decide whether or not the
+    /// value needs to be bound.
     /// </summary>
     public override string? Name { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name for the handler. The name is used to match
+    /// the form data and decide whether or not the value needs to be bound.
+    /// </summary>
+    public string? Handler { get; set; }
+
+    /// <inheritdoc />
+    internal override bool SingleDelivery => true;
 }

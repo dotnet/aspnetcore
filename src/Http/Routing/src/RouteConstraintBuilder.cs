@@ -2,9 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Routing.Constraints;
+#if COMPONENTS
+using Microsoft.AspNetCore.Components.Routing;
+#endif
 
 namespace Microsoft.AspNetCore.Routing;
 
+#if !COMPONENTS
 /// <summary>
 /// A builder for produding a mapping of keys to see <see cref="IRouteConstraint"/>.
 /// </summary>
@@ -13,6 +17,9 @@ namespace Microsoft.AspNetCore.Routing;
 /// merge multiple entries for the same key.
 /// </remarks>
 public class RouteConstraintBuilder
+#else
+internal class RouteConstraintBuilder
+#endif
 {
     private readonly IInlineConstraintResolver _inlineConstraintResolver;
     private readonly string _displayName;
@@ -71,6 +78,7 @@ public class RouteConstraintBuilder
         return constraints;
     }
 
+#if !COMPONENTS
     /// <summary>
     /// Adds a constraint instance for the given key.
     /// </summary>
@@ -109,6 +117,7 @@ public class RouteConstraintBuilder
 
         Add(key, constraint);
     }
+#endif
 
     /// <summary>
     /// Adds a constraint for the given key, resolved by the <see cref="IInlineConstraintResolver"/>.

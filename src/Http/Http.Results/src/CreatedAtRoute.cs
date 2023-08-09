@@ -108,6 +108,6 @@ public sealed class CreatedAtRoute : IResult, IEndpointMetadataProvider, IStatus
         ArgumentNullException.ThrowIfNull(method);
         ArgumentNullException.ThrowIfNull(builder);
 
-        builder.Metadata.Add(new ProducesResponseTypeMetadata(StatusCodes.Status201Created));
+        builder.Metadata.Add(new ProducesResponseTypeMetadata(StatusCodes.Status201Created, typeof(void)));
     }
 }

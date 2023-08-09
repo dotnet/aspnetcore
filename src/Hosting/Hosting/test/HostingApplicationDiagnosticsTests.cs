@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using System.Diagnostics.Tracing;
 using System.Reflection;
 using Microsoft.AspNetCore.Http;
@@ -52,10 +53,10 @@ public class HostingApplicationDiagnosticsTests
         var hostingApplication1 = CreateApplication(out var features1, eventSource: hostingEventSource, meterFactory: testMeterFactory1);
         var hostingApplication2 = CreateApplication(out var features2, eventSource: hostingEventSource, meterFactory: testMeterFactory2);
 
-        using var currentRequestsRecorder1 = new MetricCollector<long>(testMeterFactory1, HostingMetrics.MeterName, "http-server-current-requests");
-        using var currentRequestsRecorder2 = new MetricCollector<long>(testMeterFactory2, HostingMetrics.MeterName, "http-server-current-requests");
-        using var requestDurationRecorder1 = new MetricCollector<double>(testMeterFactory1, HostingMetrics.MeterName, "http-server-request-duration");
-        using var requestDurationRecorder2 = new MetricCollector<double>(testMeterFactory2, HostingMetrics.MeterName, "http-server-request-duration");
+        using var activeRequestsCollector1 = new MetricCollector<long>(testMeterFactory1, HostingMetrics.MeterName, "http.server.active_requests");
+        using var activeRequestsCollector2 = new MetricCollector<long>(testMeterFactory2, HostingMetrics.MeterName, "http.server.active_requests");
+        using var requestDurationCollector1 = new MetricCollector<double>(testMeterFactory1, HostingMetrics.MeterName, "http.server.request.duration");
+        using var requestDurationCollector2 = new MetricCollector<double>(testMeterFactory2, HostingMetrics.MeterName, "http.server.request.duration");
 
         // Act/Assert 1
         var context1 = hostingApplication1.CreateContext(features1);
@@ -74,15 +75,15 @@ public class HostingApplicationDiagnosticsTests
         Assert.Equal(0, await currentRequestValues.FirstOrDefault(v => v == 0));
         Assert.Equal(0, await failedRequestValues.FirstOrDefault(v => v == 0));
 
-        Assert.Collection(currentRequestsRecorder1.GetMeasurementSnapshot(),
+        Assert.Collection(activeRequestsCollector1.GetMeasurementSnapshot(),
             m => Assert.Equal(1, m.Value),
             m => Assert.Equal(-1, m.Value));
-        Assert.Collection(currentRequestsRecorder2.GetMeasurementSnapshot(),
+        Assert.Collection(activeRequestsCollector2.GetMeasurementSnapshot(),
             m => Assert.Equal(1, m.Value),
             m => Assert.Equal(-1, m.Value));
-        Assert.Collection(requestDurationRecorder1.GetMeasurementSnapshot(),
+        Assert.Collection(requestDurationCollector1.GetMeasurementSnapshot(),
             m => Assert.True(m.Value > 0));
-        Assert.Collection(requestDurationRecorder2.GetMeasurementSnapshot(),
+        Assert.Collection(requestDurationCollector2.GetMeasurementSnapshot(),
             m => Assert.True(m.Value > 0));
 
         // Act/Assert 2
@@ -105,20 +106,20 @@ public class HostingApplicationDiagnosticsTests
         Assert.Equal(0, await currentRequestValues.FirstOrDefault(v => v == 0));
         Assert.Equal(2, await failedRequestValues.FirstOrDefault(v => v == 2));
 
-        Assert.Collection(currentRequestsRecorder1.GetMeasurementSnapshot(),
+        Assert.Collection(activeRequestsCollector1.GetMeasurementSnapshot(),
             m => Assert.Equal(1, m.Value),
             m => Assert.Equal(-1, m.Value),
             m => Assert.Equal(1, m.Value),
             m => Assert.Equal(-1, m.Value));
-        Assert.Collection(currentRequestsRecorder2.GetMeasurementSnapshot(),
+        Assert.Collection(activeRequestsCollector2.GetMeasurementSnapshot(),
             m => Assert.Equal(1, m.Value),
             m => Assert.Equal(-1, m.Value),
             m => Assert.Equal(1, m.Value),
             m => Assert.Equal(-1, m.Value));
-        Assert.Collection(requestDurationRecorder1.GetMeasurementSnapshot(),
+        Assert.Collection(requestDurationCollector1.GetMeasurementSnapshot(),
             m => Assert.True(m.Value > 0),
             m => Assert.True(m.Value > 0));
-        Assert.Collection(requestDurationRecorder2.GetMeasurementSnapshot(),
+        Assert.Collection(requestDurationCollector2.GetMeasurementSnapshot(),
             m => Assert.True(m.Value > 0),
             m => Assert.True(m.Value > 0));
     }
@@ -702,7 +703,7 @@ public class HostingApplicationDiagnosticsTests
         var endLog = testSink.Writes.Single(w => w.EventId == LoggerEventIds.RequestFinished);
 
         Assert.Equal("Request starting 1.1 POST http://localhost/hello - text/plain 1024", startLog.Message);
-        Assert.Equal("Request reached the end of the middleware pipeline without being handled by application code. Request path: POST http://localhost/hello, Response status code: 404", unhandedLog.Message);        
+        Assert.Equal("Request reached the end of the middleware pipeline without being handled by application code. Request path: POST http://localhost/hello, Response status code: 404", unhandedLog.Message);
         Assert.StartsWith("Request finished 1.1 POST http://localhost/hello - 404", endLog.Message);
     }
 

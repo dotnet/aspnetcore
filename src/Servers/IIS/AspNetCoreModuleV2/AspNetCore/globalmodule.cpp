@@ -63,7 +63,7 @@ ASPNET_CORE_GLOBAL_MODULE::OnGlobalConfigurationChange(
         // We need this duplicate setting because the global module is unable to read the app settings disallowRotationOnConfigChange value.
         if (m_pApplicationManager && m_pApplicationManager->ShouldRecycleOnConfigChange())
         {
-            m_pApplicationManager->RecycleApplicationFromManager(pwszChangePath);   
+            m_pApplicationManager->RecycleApplicationFromManager(pwszChangePath);
         }
     }
 

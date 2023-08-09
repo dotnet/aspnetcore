@@ -95,7 +95,7 @@ public class EndpointRoutingApplicationBuilderExtensionsTest
         });
 
         var appFunc = app.Build();
-        var httpContext = new DefaultHttpContext();
+        var httpContext = new DefaultHttpContext { RequestServices = services };
 
         // Act
         await appFunc(httpContext);

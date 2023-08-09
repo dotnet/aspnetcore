@@ -2,7 +2,7 @@
   "author": "Microsoft",
   "classifications": [
     "Web",
-    "WebAPI"
+    "Web API"
   ],
   "name": "ASP.NET Core Web API",
   "generatorVersions": "[1.0.0.0-*)",

@@ -30,6 +30,12 @@ public class ForwardedHeadersOptions
     public string ForwardedProtoHeaderName { get; set; } = ForwardedHeadersDefaults.XForwardedProtoHeaderName;
 
     /// <summary>
+    /// Gets or sets the header used to retrieve the value for the path base.
+    /// Defaults to the value specified by <see cref="ForwardedHeadersDefaults.XForwardedPrefixHeaderName"/>
+    /// </summary>
+    public string ForwardedPrefixHeaderName { get; set; } = ForwardedHeadersDefaults.XForwardedPrefixHeaderName;
+
+    /// <summary>
     /// Gets or sets the header used to store the original value of client IP before applying forwarded headers.
     /// Defaults to the value specified by <see cref="ForwardedHeadersDefaults.XOriginalForHeaderName"/>
     /// </summary>
@@ -49,6 +55,13 @@ public class ForwardedHeadersOptions
     /// </summary>
     /// <seealso cref="ForwardedHeadersDefaults"/>
     public string OriginalProtoHeaderName { get; set; } = ForwardedHeadersDefaults.XOriginalProtoHeaderName;
+
+    /// <summary>
+    /// Gets or sets the header used to store the original path base before applying forwarded headers.
+    /// Defaults to the value specified by <see cref="ForwardedHeadersDefaults.XOriginalPrefixHeaderName"/>
+    /// </summary>
+    /// <seealso cref="ForwardedHeadersDefaults"/>
+    public string OriginalPrefixHeaderName { get; set; } = ForwardedHeadersDefaults.XOriginalPrefixHeaderName;
 
     /// <summary>
     /// Identifies which forwarders should be processed.

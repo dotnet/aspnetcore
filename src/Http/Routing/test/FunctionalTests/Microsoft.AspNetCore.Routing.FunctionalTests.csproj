@@ -11,9 +11,15 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Authorization.Policy" />
+    <Reference Include="Microsoft.AspNetCore.Antiforgery" />
     <Reference Include="Microsoft.AspNetCore.Cors" />
     <Reference Include="Microsoft.AspNetCore.Routing" />
     <Reference Include="Microsoft.AspNetCore.TestHost" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)AntiforgeryMetadata.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)SizeLimitedStream.cs" LinkBase="Shared" />
   </ItemGroup>
 
 </Project>

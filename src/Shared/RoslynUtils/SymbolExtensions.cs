@@ -30,7 +30,7 @@ internal static class SymbolExtensions
         }
 
         // If it is nullable, unwrap it.
-        if (unwrapNullable && unwrappedTypeSymbol!.ConstructedFrom.SpecialType == SpecialType.System_Nullable_T)
+        if (unwrapNullable && unwrappedTypeSymbol?.ConstructedFrom.SpecialType == SpecialType.System_Nullable_T)
         {
             unwrappedTypeSymbol = unwrappedTypeSymbol.TypeArguments[0] as INamedTypeSymbol;
         }

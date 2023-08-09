@@ -17,8 +17,10 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
+using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames;
 
 namespace Microsoft.AspNetCore.Authentication.OpenIdConnect;
 
@@ -649,7 +651,17 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
             if (!string.IsNullOrEmpty(authorizationResponse.IdToken))
             {
                 Logger.ReceivedIdToken();
-                user = ValidateToken(authorizationResponse.IdToken, properties, validationParameters, out jwt);
+
+                if (!Options.UseSecurityTokenValidator)
+                {
+                    var tokenValidationResult = await ValidateTokenUsingHandlerAsync(authorizationResponse.IdToken, properties, validationParameters);
+                    user = new ClaimsPrincipal(tokenValidationResult.ClaimsIdentity);
+                    jwt = JwtSecurityTokenConverter.Convert(tokenValidationResult.SecurityToken as JsonWebToken);
+                }
+                else
+                {
+                    user = ValidateToken(authorizationResponse.IdToken, properties, validationParameters, out jwt);
+                }
 
                 nonce = jwt.Payload.Nonce;
                 if (!string.IsNullOrEmpty(nonce))
@@ -717,7 +729,19 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
 
                 // At least a cursory validation is required on the new IdToken, even if we've already validated the one from the authorization response.
                 // And we'll want to validate the new JWT in ValidateTokenResponse.
-                var tokenEndpointUser = ValidateToken(tokenEndpointResponse.IdToken, properties, validationParameters, out var tokenEndpointJwt);
+                ClaimsPrincipal tokenEndpointUser;
+                JwtSecurityToken tokenEndpointJwt;
+
+                if (!Options.UseSecurityTokenValidator)
+                {
+                    var tokenValidationResult = await ValidateTokenUsingHandlerAsync(tokenEndpointResponse.IdToken, properties, validationParameters);
+                    tokenEndpointUser = new ClaimsPrincipal(tokenValidationResult.ClaimsIdentity);
+                    tokenEndpointJwt = JwtSecurityTokenConverter.Convert(tokenValidationResult.SecurityToken as JsonWebToken);
+                }
+                else
+                {
+                    tokenEndpointUser = ValidateToken(tokenEndpointResponse.IdToken, properties, validationParameters, out tokenEndpointJwt);
+                }
 
                 // Avoid reading & deleting the nonce cookie, running the event, etc, if it was already done as part of the authorization response validation.
                 if (user == null)
@@ -1244,11 +1268,13 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
     // Note this modifies properties if Options.UseTokenLifetime
     private ClaimsPrincipal ValidateToken(string idToken, AuthenticationProperties properties, TokenValidationParameters validationParameters, out JwtSecurityToken jwt)
     {
+#pragma warning disable CS0618 // Type or member is obsolete
         if (!Options.SecurityTokenValidator.CanReadToken(idToken))
         {
             Logger.UnableToReadIdToken(idToken);
             throw new SecurityTokenException(string.Format(CultureInfo.InvariantCulture, Resources.UnableToValidateToken, idToken));
         }
+#pragma warning restore CS0618 // Type or member is obsolete
 
         if (_configuration != null)
         {
@@ -1259,7 +1285,9 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
                 ?? _configuration.SigningKeys;
         }
 
+#pragma warning disable CS0618 // Type or member is obsolete
         var principal = Options.SecurityTokenValidator.ValidateToken(idToken, validationParameters, out SecurityToken validatedToken);
+#pragma warning restore CS0618 // Type or member is obsolete
         if (validatedToken is JwtSecurityToken validatedJwt)
         {
             jwt = validatedJwt;
@@ -1292,6 +1320,61 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
         }
 
         return principal;
+    }
+
+    // Note this modifies properties if Options.UseTokenLifetime
+    private async Task<TokenValidationResult> ValidateTokenUsingHandlerAsync(string idToken, AuthenticationProperties properties, TokenValidationParameters validationParameters)
+    {
+        if (Options.ConfigurationManager is BaseConfigurationManager baseConfigurationManager)
+        {
+            validationParameters.ConfigurationManager = baseConfigurationManager;
+        }
+        else if (_configuration != null)
+        {
+            var issuer = new[] { _configuration.Issuer };
+            validationParameters.ValidIssuers = validationParameters.ValidIssuers?.Concat(issuer) ?? issuer;
+
+            validationParameters.IssuerSigningKeys = validationParameters.IssuerSigningKeys?.Concat(_configuration.SigningKeys)
+                ?? _configuration.SigningKeys;
+        }
+
+        var validationResult = await Options.TokenHandler.ValidateTokenAsync(idToken, validationParameters);
+
+        if (validationResult.Exception != null)
+        {
+            throw validationResult.Exception;
+        }
+
+        var validatedToken = validationResult.SecurityToken;
+
+        if (!validationResult.IsValid || validatedToken == null)
+        {
+            Logger.UnableToValidateIdTokenFromHandler(idToken);
+            throw new SecurityTokenException(string.Format(CultureInfo.InvariantCulture, Resources.UnableToValidateTokenFromHandler, idToken));
+        }
+
+        if (validatedToken is not JsonWebToken)
+        {
+            Logger.InvalidSecurityTokenTypeFromHandler(validatedToken?.GetType());
+            throw new SecurityTokenException(string.Format(CultureInfo.InvariantCulture, Resources.ValidatedSecurityTokenNotJsonWebToken, validatedToken?.GetType()));
+        }
+
+        if (Options.UseTokenLifetime)
+        {
+            var issued = validatedToken.ValidFrom;
+            if (issued != DateTime.MinValue)
+            {
+                properties.IssuedUtc = issued;
+            }
+
+            var expires = validatedToken.ValidTo;
+            if (expires != DateTime.MinValue)
+            {
+                properties.ExpiresUtc = expires;
+            }
+        }
+
+        return validationResult;
     }
 
     /// <summary>
