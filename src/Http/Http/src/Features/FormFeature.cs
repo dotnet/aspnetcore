@@ -56,6 +56,9 @@ public class FormFeature : IFormFeature
         _options = options;
     }
 
+    // Internal for testing.
+    internal FormOptions FormOptions => _options;
+
     private MediaTypeHeaderValue? ContentType
     {
         get

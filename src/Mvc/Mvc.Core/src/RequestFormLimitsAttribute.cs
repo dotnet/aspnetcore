@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -12,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc;
 /// Sets the specified limits to the <see cref="HttpRequest.Form"/>.
 /// </summary>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
-public class RequestFormLimitsAttribute : Attribute, IFilterFactory, IOrderedFilter
+public class RequestFormLimitsAttribute : Attribute, IFilterFactory, IOrderedFilter, IFormOptionsMetadata
 {
     /// <summary>
     /// Gets the order value for determining the order of execution of filters. Filters execute in
@@ -48,6 +49,8 @@ public class RequestFormLimitsAttribute : Attribute, IFilterFactory, IOrderedFil
         set => FormOptions.BufferBody = value;
     }
 
+    bool? IFormOptionsMetadata.BufferBody => BufferBody;
+
     /// <summary>
     /// If <see cref="BufferBody"/> is enabled, this many bytes of the body will be buffered in memory.
     /// If this threshold is exceeded then the buffer will be moved to a temp file on disk instead.
@@ -59,6 +62,8 @@ public class RequestFormLimitsAttribute : Attribute, IFilterFactory, IOrderedFil
         set => FormOptions.MemoryBufferThreshold = value;
     }
 
+    int? IFormOptionsMetadata.MemoryBufferThreshold => MemoryBufferThreshold;
+
     /// <summary>
     /// If <see cref="BufferBody"/> is enabled, this is the limit for the total number of bytes that will
     /// be buffered. Forms that exceed this limit will throw an <see cref="InvalidDataException"/> when parsed.
@@ -68,6 +73,8 @@ public class RequestFormLimitsAttribute : Attribute, IFilterFactory, IOrderedFil
         get => FormOptions.BufferBodyLengthLimit;
         set => FormOptions.BufferBodyLengthLimit = value;
     }
+
+    long? IFormOptionsMetadata.BufferBodyLengthLimit => BufferBodyLengthLimit;
 
     /// <summary>
     /// A limit for the number of form entries to allow.
@@ -79,6 +86,8 @@ public class RequestFormLimitsAttribute : Attribute, IFilterFactory, IOrderedFil
         set => FormOptions.ValueCountLimit = value;
     }
 
+    int? IFormOptionsMetadata.ValueCountLimit => ValueCountLimit;
+
     /// <summary>
     /// A limit on the length of individual keys. Forms containing keys that exceed this limit will
     /// throw an <see cref="InvalidDataException"/> when parsed.
@@ -88,6 +97,8 @@ public class RequestFormLimitsAttribute : Attribute, IFilterFactory, IOrderedFil
         get => FormOptions.KeyLengthLimit;
         set => FormOptions.KeyLengthLimit = value;
     }
+
+    int? IFormOptionsMetadata.KeyLengthLimit => KeyLengthLimit;
 
     /// <summary>
     /// A limit on the length of individual form values. Forms containing values that exceed this
@@ -99,6 +110,8 @@ public class RequestFormLimitsAttribute : Attribute, IFilterFactory, IOrderedFil
         set => FormOptions.ValueLengthLimit = value;
     }
 
+    int? IFormOptionsMetadata.ValueLengthLimit => ValueLengthLimit;
+
     /// <summary>
     /// A limit for the length of the boundary identifier. Forms with boundaries that exceed this
     /// limit will throw an <see cref="InvalidDataException"/> when parsed.
@@ -108,6 +121,8 @@ public class RequestFormLimitsAttribute : Attribute, IFilterFactory, IOrderedFil
         get => FormOptions.MultipartBoundaryLengthLimit;
         set => FormOptions.MultipartBoundaryLengthLimit = value;
     }
+
+    int? IFormOptionsMetadata.MultipartBoundaryLengthLimit => MultipartBoundaryLengthLimit;
 
     /// <summary>
     /// A limit for the number of headers to allow in each multipart section. Headers with the same name will
@@ -120,6 +135,8 @@ public class RequestFormLimitsAttribute : Attribute, IFilterFactory, IOrderedFil
         set => FormOptions.MultipartHeadersCountLimit = value;
     }
 
+    int? IFormOptionsMetadata.MultipartHeadersCountLimit => MultipartHeadersCountLimit;
+
     /// <summary>
     /// A limit for the total length of the header keys and values in each multipart section.
     /// Form sections that exceed this limit will throw an <see cref="InvalidDataException"/> when parsed.
@@ -130,6 +147,8 @@ public class RequestFormLimitsAttribute : Attribute, IFilterFactory, IOrderedFil
         set => FormOptions.MultipartHeadersLengthLimit = value;
     }
 
+    int? IFormOptionsMetadata.MultipartHeadersLengthLimit => MultipartHeadersLengthLimit;
+
     /// <summary>
     /// A limit for the length of each multipart body. Forms sections that exceed this limit will throw an
     /// <see cref="InvalidDataException"/> when parsed.
@@ -139,6 +158,8 @@ public class RequestFormLimitsAttribute : Attribute, IFilterFactory, IOrderedFil
         get => FormOptions.MultipartBodyLengthLimit;
         set => FormOptions.MultipartBodyLengthLimit = value;
     }
+
+    long? IFormOptionsMetadata.MultipartBodyLengthLimit => MultipartBodyLengthLimit;
 
     /// <inheritdoc />
     public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)

@@ -3,6 +3,7 @@
 
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
@@ -10,6 +11,7 @@ using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -21,6 +23,7 @@ internal class SSRRenderModeBoundary : IComponent
 {
     private static readonly ConcurrentDictionary<Type, string> _componentTypeNameHashCache = new();
 
+    [DynamicallyAccessedMembers(Component)]
     private readonly Type _componentType;
     private readonly IComponentRenderMode _renderMode;
     private readonly bool _prerender;
@@ -28,7 +31,7 @@ internal class SSRRenderModeBoundary : IComponent
     private IReadOnlyDictionary<string, object?>? _latestParameters;
     private string? _markerKey;
 
-    public SSRRenderModeBoundary(Type componentType, IComponentRenderMode renderMode)
+    public SSRRenderModeBoundary([DynamicallyAccessedMembers(Component)] Type componentType, IComponentRenderMode renderMode)
     {
         _componentType = componentType;
         _renderMode = renderMode;

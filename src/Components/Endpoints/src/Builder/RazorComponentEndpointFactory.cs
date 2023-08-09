@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components.Discovery;
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -19,7 +21,7 @@ internal class RazorComponentEndpointFactory
     internal void AddEndpoints(
 #pragma warning restore CA1822 // It's a singleton
         List<Endpoint> endpoints,
-        Type rootComponent,
+        [DynamicallyAccessedMembers(Component)] Type rootComponent,
         PageComponentInfo pageDefinition,
         IReadOnlyList<Action<EndpointBuilder>> conventions,
         IReadOnlyList<Action<EndpointBuilder>> finallyConventions)
