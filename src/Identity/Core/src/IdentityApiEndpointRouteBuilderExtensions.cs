@@ -6,12 +6,10 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Authentication.BearerToken.DTO;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Identity;
@@ -68,7 +66,7 @@ public static class IdentityApiEndpointRouteBuilderExtensions
             var emailStore = (IUserEmailStore<TUser>)userStore;
 
             var user = new TUser();
-            await userStore.SetUserNameAsync(user, registration.Username, CancellationToken.None);
+            await userStore.SetUserNameAsync(user, registration.Email, CancellationToken.None);
             await emailStore.SetEmailAsync(user, registration.Email, CancellationToken.None);
             var result = await userManager.CreateAsync(user, registration.Password);
 
@@ -89,7 +87,7 @@ public static class IdentityApiEndpointRouteBuilderExtensions
             signInManager.PrimaryAuthenticationScheme = cookieMode == true ? IdentityConstants.ApplicationScheme : IdentityConstants.BearerScheme;
             var isPersistent = persistCookies ?? true;
 
-            var result = await signInManager.PasswordSignInAsync(login.Username, login.Password, isPersistent, lockoutOnFailure: true);
+            var result = await signInManager.PasswordSignInAsync(login.Email, login.Password, isPersistent, lockoutOnFailure: true);
 
             if (result.RequiresTwoFactor)
             {
@@ -146,18 +144,26 @@ public static class IdentityApiEndpointRouteBuilderExtensions
             try
             {
                 code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
-                if (string.IsNullOrEmpty(changedEmail))
-                {
-                    result = await userManager.ConfirmEmailAsync(user, code);
-                }
-                else
-                {
-                    result = await userManager.ChangeEmailAsync(user, changedEmail, code);
-                }
             }
             catch (FormatException)
             {
                 return TypedResults.Unauthorized();
+            }
+
+            if (string.IsNullOrEmpty(changedEmail))
+            {
+                result = await userManager.ConfirmEmailAsync(user, code);
+            }
+            else
+            {
+                // As with Identity UI, email and user name are one and the same. S1o when we update the email,
+                // we need to update the user name.
+                result = await userManager.ChangeEmailAsync(user, changedEmail, code);
+
+                if (result.Succeeded)
+                {
+                    result = await userManager.SetUserNameAsync(user, changedEmail);
+                }
             }
 
             if (!result.Succeeded)
@@ -323,24 +329,27 @@ public static class IdentityApiEndpointRouteBuilderExtensions
         });
 
         accountGroup.MapPost("/info", async Task<Results<Ok<InfoResponse>, ValidationProblem, NotFound>>
-            (HttpContext httpContext, [FromBody] InfoRequest infoRequest, [FromServices] IServiceProvider sp) =>
+            (ClaimsPrincipal claimsPrincipal, [FromBody] InfoRequest infoRequest, [FromServices] IServiceProvider sp) =>
         {
             var signInManager = sp.GetRequiredService<SignInManager<TUser>>();
             var userManager = signInManager.UserManager;
-            if (await userManager.GetUserAsync(httpContext.User) is not { } user)
+            if (await userManager.GetUserAsync(claimsPrincipal) is not { } user)
             {
                 return TypedResults.NotFound();
             }
 
-            List<IdentityResult>? failedResults = null;
-
-            if (!string.IsNullOrEmpty(infoRequest.NewUsername))
+            if (!string.IsNullOrEmpty(infoRequest.NewPassword))
             {
-                var userName = await userManager.GetUserNameAsync(user);
-
-                if (userName != infoRequest.NewUsername)
+                if (string.IsNullOrEmpty(infoRequest.OldPassword))
                 {
-                    AddIfFailed(ref failedResults, await userManager.SetUserNameAsync(user, infoRequest.NewUsername));
+                    return CreateValidationProblem("OldPasswordRequired",
+                        "The old password is required to set a new password. If the old password is forgotten, use /resetPassword.");
+                }
+
+                var changePasswordResult = await userManager.ChangePasswordAsync(user, infoRequest.OldPassword, infoRequest.NewPassword);
+                if (!changePasswordResult.Succeeded)
+                {
+                    return CreateValidationProblem(changePasswordResult);
                 }
             }
 
@@ -354,38 +363,7 @@ public static class IdentityApiEndpointRouteBuilderExtensions
                 }
             }
 
-            if (!string.IsNullOrEmpty(infoRequest.NewPassword))
-            {
-                if (string.IsNullOrEmpty(infoRequest.OldPassword))
-                {
-                    AddIfFailed(ref failedResults, IdentityResult.Failed(new IdentityError
-                    {
-                        Code = "OldPasswordRequired",
-                        Description = "The old password is required to set a new password. If the old password is forgotten, use /resetPassword.",
-                    }));
-                }
-                else
-                {
-                    AddIfFailed(ref failedResults, await userManager.ChangePasswordAsync(user, infoRequest.OldPassword, infoRequest.NewPassword));
-                }
-            }
-
-            // Update cookie if the user is authenticated that way.
-            // Currently, the user will have to log in again with bearer tokens to see updated claims.
-            var authFeature = httpContext.Features.GetRequiredFeature<IAuthenticateResultFeature>();
-            if (authFeature.AuthenticateResult?.Ticket?.AuthenticationScheme == IdentityConstants.ApplicationScheme)
-            {
-                await signInManager.RefreshSignInAsync(user);
-            }
-
-            if (failedResults is not null)
-            {
-                return CreateValidationProblem(failedResults);
-            }
-            else
-            {
-                return TypedResults.Ok(await CreateInfoResponseAsync(user, httpContext.User, userManager));
-            }
+            return TypedResults.Ok(await CreateInfoResponseAsync(user, claimsPrincipal, userManager));
         });
 
         async Task SendConfirmationEmailAsync(TUser user, UserManager<TUser> userManager, string email, bool isChange = false)
@@ -423,17 +401,6 @@ public static class IdentityApiEndpointRouteBuilderExtensions
         return new IdentityEndpointsConventionBuilder(routeGroup);
     }
 
-    private static void AddIfFailed(ref List<IdentityResult>? results, IdentityResult result)
-    {
-        if (result.Succeeded)
-        {
-            return;
-        }
-
-        results ??= new();
-        results.Add(result);
-    }
-
     private static ValidationProblem CreateValidationProblem(string errorCode, string errorDescription) =>
         TypedResults.ValidationProblem(new Dictionary<string, string[]> {
             { errorCode, new[] { errorDescription } }
@@ -441,28 +408,11 @@ public static class IdentityApiEndpointRouteBuilderExtensions
 
     private static ValidationProblem CreateValidationProblem(IdentityResult result)
     {
-        var errorDictionary = new Dictionary<string, string[]>(1);
-        AddErrorsToDictionary(errorDictionary, result);
-        return TypedResults.ValidationProblem(errorDictionary);
-    }
-
-    private static ValidationProblem CreateValidationProblem(List<IdentityResult> results)
-    {
-        var errorDictionary = new Dictionary<string, string[]>(results.Count);
-
-        foreach (var result in results)
-        {
-            AddErrorsToDictionary(errorDictionary, result);
-        }
-
-        return TypedResults.ValidationProblem(errorDictionary);
-    }
-
-    private static void AddErrorsToDictionary(Dictionary<string, string[]> errorDictionary, IdentityResult result)
-    {
         // We expect a single error code and description in the normal case.
         // This could be golfed with GroupBy and ToDictionary, but perf! :P
         Debug.Assert(!result.Succeeded);
+        var errorDictionary = new Dictionary<string, string[]>(1);
+
         foreach (var error in result.Errors)
         {
             string[] newDescriptions;
@@ -480,6 +430,8 @@ public static class IdentityApiEndpointRouteBuilderExtensions
 
             errorDictionary[error.Code] = newDescriptions;
         }
+
+        return TypedResults.ValidationProblem(errorDictionary);
     }
 
     private static async Task<TwoFactorResponse> CreateTwoFactorResponseAsync<TUser>(TUser user, SignInManager<TUser> signInManager, string[]? recoveryCodes = null)
@@ -514,8 +466,8 @@ public static class IdentityApiEndpointRouteBuilderExtensions
     {
         return new()
         {
-            Username = await userManager.GetUserNameAsync(user) ?? throw new NotSupportedException("Users must have a user name."),
             Email = await userManager.GetEmailAsync(user) ?? throw new NotSupportedException("Users must have an email."),
+            IsEmailConfirmed = await userManager.IsEmailConfirmedAsync(user),
             Claims = claimsPrincipal.Claims.ToDictionary(c => c.Type, c => c.Value),
         };
     }
