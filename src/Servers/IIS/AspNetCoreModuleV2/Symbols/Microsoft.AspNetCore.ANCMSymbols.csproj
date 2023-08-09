@@ -12,7 +12,6 @@
     <RuntimeIdentifier>$(TargetRuntimeIdentifier)</RuntimeIdentifier>
     <DebugType>none</DebugType>
     <CopyBuildOutputToOutputDirectory>false</CopyBuildOutputToOutputDirectory>
-    <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
     <TargetsForTfmSpecificBuildOutput>
       $(TargetsForTfmSpecificBuildOutput);

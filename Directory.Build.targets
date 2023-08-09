@@ -52,8 +52,8 @@
       CS1591: Missing XML comment for publicly visible type or member 'Type_or_Member'
       CS1712: Type parameter 'type_parameter' has no matching typeparam tag in the XML comment on 'type_or_member' (but other type parameters do)
     -->
-    <GenerateDocumentationFile>True</GenerateDocumentationFile>
-    <NoWarn Condition=" '$(IsShipping)' != 'true'">$(NoWarn),1573,1591,1712</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn Condition=" '$(IsShipping)' != 'true'">$(NoWarn);CS1573;CS1591;CS1712</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(MSBuildProjectExtension)' == '.csproj' ">

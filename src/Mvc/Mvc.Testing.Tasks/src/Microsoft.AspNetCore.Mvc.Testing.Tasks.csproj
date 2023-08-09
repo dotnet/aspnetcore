@@ -2,8 +2,6 @@
   <PropertyGroup>
     <Description>Build tasks for functional tests.</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
-
-    <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
     <IsPackable>false</IsPackable>
     <IsShipping>false</IsShipping>
