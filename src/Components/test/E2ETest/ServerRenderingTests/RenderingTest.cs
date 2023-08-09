@@ -25,7 +25,7 @@ public class RenderingTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorC
     public override Task InitializeAsync()
         => InitializeAsync(BrowserFixture.StreamingContext);
 
-    [QuarantinedTest(https://github.com/dotnet/aspnetcore/issues/49975)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/49975")]
     public void CanRenderLargeComponentsWithServerRenderMode()
     {
         Navigate($"{ServerPathBase}/large-html-server");
