@@ -558,7 +558,7 @@ public class CertificatePathWatcherTests : LoggedTest
 
     private static void Touch(string filePath)
     {
-        File.Create(filePath).Dispose();
+        File.WriteAllBytes(filePath, Array.Empty<byte>());
     }
 
     private static IDictionary<string, object> GetLogMessageProperties(ITestSink testSink, string eventName)
