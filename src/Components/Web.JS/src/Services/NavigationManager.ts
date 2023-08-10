@@ -4,7 +4,7 @@
 import '@microsoft/dotnet-js-interop';
 import { resetScrollAfterNextBatch } from '../Rendering/Renderer';
 import { EventDelegator } from '../Rendering/Events/EventDelegator';
-import { handleClickForNavigationInterception, hasInteractiveRouter, isWithinBaseUriSpace, performProgrammaticEnhancedNavigation, setHasInteractiveRouter, toAbsoluteUri } from './NavigationUtils';
+import { handleClickForNavigationInterception, hasInteractiveRouter, hasProgrammaticEnhancedNavigationHandler, isWithinBaseUriSpace, performProgrammaticEnhancedNavigation, setHasInteractiveRouter, toAbsoluteUri } from './NavigationUtils';
 
 let hasRegisteredNavigationEventListeners = false;
 let hasLocationChangingEventListeners = false;
@@ -116,7 +116,7 @@ function navigateToCore(uri: string, options: NavigationOptions, skipLocationCha
   const absoluteUri = toAbsoluteUri(uri);
 
   if (!options.forceLoad && isWithinBaseUriSpace(absoluteUri)) {
-    if (hasInteractiveRouter()) {
+    if (shouldUseClientSideRouting()) {
       performInternalNavigation(absoluteUri, false, options.replaceHistoryEntry, options.historyEntryState, skipLocationChangingCallback);
     } else {
       performProgrammaticEnhancedNavigation(absoluteUri, options.replaceHistoryEntry);
@@ -259,11 +259,15 @@ async function notifyLocationChanged(interceptedLink: boolean) {
 }
 
 async function onPopState(state: PopStateEvent) {
-  if (popStateCallback && hasInteractiveRouter()) {
+  if (popStateCallback && shouldUseClientSideRouting()) {
     await popStateCallback(state);
   }
 
   currentHistoryIndex = history.state?._index ?? 0;
+}
+
+function shouldUseClientSideRouting() {
+  return hasInteractiveRouter() || !hasProgrammaticEnhancedNavigationHandler();
 }
 
 // Keep in sync with Components/src/NavigationOptions.cs

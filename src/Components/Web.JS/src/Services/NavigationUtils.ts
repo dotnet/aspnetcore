@@ -44,6 +44,10 @@ export function isWithinBaseUriSpace(href: string) {
   && (nextChar === '' || nextChar === '/' || nextChar === '?' || nextChar === '#');
 }
 
+export function hasProgrammaticEnhancedNavigationHandler(): boolean {
+  return programmaticEnhancedNavigationHandler !== undefined;
+}
+
 export function attachProgrammaticEnhancedNavigationHandler(handler: typeof programmaticEnhancedNavigationHandler) {
   programmaticEnhancedNavigationHandler = handler;
 }
