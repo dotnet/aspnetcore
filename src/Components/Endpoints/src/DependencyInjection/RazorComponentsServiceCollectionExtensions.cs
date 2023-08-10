@@ -28,7 +28,7 @@ public static class RazorComponentsServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The service collection.</param>
     /// <returns>An <see cref="IRazorComponentsBuilder"/> that can be used to further configure the Razor component services.</returns>
-    [RequiresUnreferencedCode("Razor Components does not currently support native AOT.", Url = "https://aka.ms/aspnet/nativeaot")]
+    [RequiresUnreferencedCode("Razor Components does not currently support trimming or native AOT.", Url = "https://aka.ms/aspnet/trimming")]
     public static IRazorComponentsBuilder AddRazorComponents(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
