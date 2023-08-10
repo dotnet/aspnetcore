@@ -14,6 +14,7 @@
     <RequiresDelayedBuild>true</RequiresDelayedBuild>
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
     <BuildHelixPayload>false</BuildHelixPayload>
+    <EnablePackageValidation>false</EnablePackageValidation>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,10 +25,6 @@
   </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
-
-  <PropertyGroup>
-    <EnablePackageValidation>false</EnablePackageValidation>
-  </PropertyGroup>
 
   <Target Name="_RemoveUnwantedAspNetFrameworkReference" BeforeTargets="ResolveFrameworkReferences" >
     <ItemGroup>
