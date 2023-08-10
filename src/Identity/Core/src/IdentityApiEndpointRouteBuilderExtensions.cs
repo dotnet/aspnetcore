@@ -140,7 +140,6 @@ public static class IdentityApiEndpointRouteBuilderExtensions
                 return TypedResults.Unauthorized();
             }
 
-            IdentityResult result;
             try
             {
                 code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
@@ -149,6 +148,8 @@ public static class IdentityApiEndpointRouteBuilderExtensions
             {
                 return TypedResults.Unauthorized();
             }
+
+            IdentityResult result;
 
             if (string.IsNullOrEmpty(changedEmail))
             {
@@ -194,28 +195,13 @@ public static class IdentityApiEndpointRouteBuilderExtensions
             return TypedResults.Ok();
         });
 
-        routeGroup.MapPost("/resetPassword", async Task<Results<Ok, ValidationProblem>>
-            ([FromBody] ResetPasswordRequest resetRequest, [FromServices] IServiceProvider sp) =>
+        routeGroup.MapPost("/forgotPassword", async Task<Results<Ok, ValidationProblem>>
+            ([FromBody] ForgotPasswordRequest resetRequest, [FromServices] IServiceProvider sp) =>
         {
             var userManager = sp.GetRequiredService<UserManager<TUser>>();
-
-            if (!string.IsNullOrEmpty(resetRequest.ResetCode) && string.IsNullOrEmpty(resetRequest.NewPassword))
-            {
-                return CreateValidationProblem("MissingNewPassword", "A password reset code was provided without a new password.");
-            }
-
             var user = await userManager.FindByEmailAsync(resetRequest.Email);
 
-            if (user is null || !(await userManager.IsEmailConfirmedAsync(user)))
-            {
-                // Don't reveal that the user does not exist or is not confirmed, so don't return a 200 if we would have
-                // returned a 400 for an invalid code given a valid user email.
-                if (!string.IsNullOrEmpty(resetRequest.ResetCode))
-                {
-                    return CreateValidationProblem(IdentityResult.Failed(userManager.ErrorDescriber.InvalidToken()));
-                }
-            }
-            else if (string.IsNullOrEmpty(resetRequest.ResetCode))
+            if (user is not null && await userManager.IsEmailConfirmedAsync(user))
             {
                 var code = await userManager.GeneratePasswordResetTokenAsync(user);
                 code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
@@ -223,25 +209,40 @@ public static class IdentityApiEndpointRouteBuilderExtensions
                 await emailSender.SendEmailAsync(resetRequest.Email, "Reset your password",
                     $"Reset your password using the following code: {HtmlEncoder.Default.Encode(code)}");
             }
-            else
+
+            // Don't reveal that the user does not exist or is not confirmed, so don't return a 200 if we would have
+            // returned a 400 for an invalid code given a valid user email.
+            return TypedResults.Ok();
+        });
+
+        routeGroup.MapPost("/resetPassword", async Task<Results<Ok, ValidationProblem>>
+            ([FromBody] ResetPasswordRequest resetRequest, [FromServices] IServiceProvider sp) =>
+        {
+            var userManager = sp.GetRequiredService<UserManager<TUser>>();
+
+            var user = await userManager.FindByEmailAsync(resetRequest.Email);
+
+            if (user is null || !(await userManager.IsEmailConfirmedAsync(user)))
             {
-                Debug.Assert(!string.IsNullOrEmpty(resetRequest.NewPassword));
+                // Don't reveal that the user does not exist or is not confirmed, so don't return a 200 if we would have
+                // returned a 400 for an invalid code given a valid user email.
+                return CreateValidationProblem(IdentityResult.Failed(userManager.ErrorDescriber.InvalidToken()));
+            }
 
-                IdentityResult result;
-                try
-                {
-                    var code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(resetRequest.ResetCode));
-                    result = await userManager.ResetPasswordAsync(user, code, resetRequest.NewPassword);
-                }
-                catch (FormatException)
-                {
-                    result = IdentityResult.Failed(userManager.ErrorDescriber.InvalidToken());
-                }
+            IdentityResult result;
+            try
+            {
+                var code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(resetRequest.ResetCode));
+                result = await userManager.ResetPasswordAsync(user, code, resetRequest.NewPassword);
+            }
+            catch (FormatException)
+            {
+                result = IdentityResult.Failed(userManager.ErrorDescriber.InvalidToken());
+            }
 
-                if (!result.Succeeded)
-                {
-                    return CreateValidationProblem(result);
-                }
+            if (!result.Succeeded)
+            {
+                return CreateValidationProblem(result);
             }
 
             return TypedResults.Ok();
@@ -340,8 +341,7 @@ public static class IdentityApiEndpointRouteBuilderExtensions
         accountGroup.MapPost("/info", async Task<Results<Ok<InfoResponse>, ValidationProblem, NotFound>>
             (ClaimsPrincipal claimsPrincipal, [FromBody] InfoRequest infoRequest, [FromServices] IServiceProvider sp) =>
         {
-            var signInManager = sp.GetRequiredService<SignInManager<TUser>>();
-            var userManager = signInManager.UserManager;
+            var userManager = sp.GetRequiredService<UserManager<TUser>>();
             if (await userManager.GetUserAsync(claimsPrincipal) is not { } user)
             {
                 return TypedResults.NotFound();

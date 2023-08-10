@@ -881,9 +881,9 @@ public class MapIdentityApiTests : LoggedTest
         Assert.Equal(2, emailSender.Emails.Count);
 
         // Returns 200 status for invalid email addresses
-        AssertOkAndEmpty(await client.PostAsJsonAsync("/identity/resetPassword", new { Email = confirmedEmail }));
-        AssertOkAndEmpty(await client.PostAsJsonAsync("/identity/resetPassword", new { Email = unconfirmedEmail }));
-        AssertOkAndEmpty(await client.PostAsJsonAsync("/identity/resetPassword", new { Email = "wrong" }));
+        AssertOkAndEmpty(await client.PostAsJsonAsync("/identity/forgotPassword", new { Email = confirmedEmail }));
+        AssertOkAndEmpty(await client.PostAsJsonAsync("/identity/forgotPassword", new { Email = unconfirmedEmail }));
+        AssertOkAndEmpty(await client.PostAsJsonAsync("/identity/forgotPassword", new { Email = "wrong" }));
 
         // But only one email was sent for the confirmed address
         Assert.Equal(3, emailSender.Emails.Count);
@@ -896,12 +896,9 @@ public class MapIdentityApiTests : LoggedTest
         var newPassword = $"{Password}!";
 
         // The same validation errors are returned even for invalid emails
-        await AssertValidationProblemAsync(await client.PostAsJsonAsync("/identity/resetPassword", new { Email = confirmedEmail, resetCode }),
-            "MissingNewPassword");
-        await AssertValidationProblemAsync(await client.PostAsJsonAsync("/identity/resetPassword", new { Email = unconfirmedEmail, resetCode }),
-            "MissingNewPassword");
-        await AssertValidationProblemAsync(await client.PostAsJsonAsync("/identity/resetPassword", new { Email = "wrong", resetCode }),
-            "MissingNewPassword");
+        AssertBadRequestAndEmpty(await client.PostAsJsonAsync("/identity/resetPassword", new { Email = confirmedEmail, resetCode }));
+        AssertBadRequestAndEmpty(await client.PostAsJsonAsync("/identity/resetPassword", new { Email = unconfirmedEmail, resetCode }));
+        AssertBadRequestAndEmpty(await client.PostAsJsonAsync("/identity/resetPassword", new { Email = "wrong", resetCode }));
 
         await AssertValidationProblemAsync(await client.PostAsJsonAsync("/identity/resetPassword", new { Email = confirmedEmail, ResetCode = "wrong", newPassword }),
             "InvalidToken");
@@ -909,6 +906,12 @@ public class MapIdentityApiTests : LoggedTest
             "InvalidToken");
         await AssertValidationProblemAsync(await client.PostAsJsonAsync("/identity/resetPassword", new { Email = "wrong", ResetCode = "wrong", newPassword }),
             "InvalidToken");
+
+        // Only with a valid reset code is it possible to get more problem details
+        await AssertValidationProblemAsync(await client.PostAsJsonAsync("/identity/resetPassword", new { Email = confirmedEmail, ResetCode = "wrong", NewPassword = "" }),
+            "InvalidToken");
+        await AssertProblemAsync(await client.PostAsJsonAsync("/identity/resetPassword", new { Email = confirmedEmail, resetCode, NewPassword = "" }),
+            detail: null, title: "One or more validation errors occurred.", status: HttpStatusCode.BadRequest);
 
         AssertOkAndEmpty(await client.PostAsJsonAsync("/identity/resetPassword", new { Email = confirmedEmail, resetCode, newPassword }));
 
@@ -1353,18 +1356,20 @@ public class MapIdentityApiTests : LoggedTest
         Assert.Equal(0, response.Content.Headers.ContentLength);
     }
 
-    private static async Task AssertProblemAsync(HttpResponseMessage response, string detail, HttpStatusCode status = HttpStatusCode.Unauthorized)
+    private static async Task AssertProblemAsync(HttpResponseMessage response, string? detail, string? title = null, HttpStatusCode status = HttpStatusCode.Unauthorized)
     {
         Assert.Equal(status, response.StatusCode);
+        Assert.Equal("application/problem+json", response.Content.Headers.ContentType?.ToString());
         var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>();
         Assert.NotNull(problem);
-        Assert.Equal(ReasonPhrases.GetReasonPhrase((int)status), problem.Title);
+        Assert.Equal(title ?? ReasonPhrases.GetReasonPhrase((int)status), problem.Title);
         Assert.Equal(detail, problem.Detail);
     }
 
     private static async Task AssertValidationProblemAsync(HttpResponseMessage response, string error)
     {
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal("application/problem+json", response.Content.Headers.ContentType?.ToString());
         var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>();
         Assert.NotNull(problem);
         var errorEntry = Assert.Single(problem.Errors);
