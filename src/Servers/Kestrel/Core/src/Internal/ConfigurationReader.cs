@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Security.Authentication;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
@@ -388,6 +389,8 @@ internal sealed class CertificateConfig
     public IConfigurationSection? ConfigSection { get; }
 
     // File
+
+    [MemberNotNullWhen(true, nameof(Path))]
     public bool IsFileCert => !string.IsNullOrEmpty(Path);
 
     public string? Path { get; init; }
@@ -403,6 +406,7 @@ internal sealed class CertificateConfig
 
     // Cert store
 
+    [MemberNotNullWhen(true, nameof(Subject))]
     public bool IsStoreCert => !string.IsNullOrEmpty(Subject);
 
     public string? Subject { get; init; }

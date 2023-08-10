@@ -12,6 +12,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
 public class CertificatePathWatcherTests : LoggedTest
 {
+    private static readonly TimeSpan FileChangeTimeout = TimeSpan.FromSeconds(10);
+
     [Theory]
     [InlineData(true, true)]
     [InlineData(true, false)]
@@ -186,7 +188,7 @@ public class CertificatePathWatcherTests : LoggedTest
 
             Touch(filePath);
 
-            await signalTcs.Task.DefaultTimeout();
+            await signalTcs.Task.TimeoutAfter(FileChangeTimeout);
 
             var newChangeToken = watcher.GetChangeToken();
 
@@ -433,7 +435,7 @@ public class CertificatePathWatcherTests : LoggedTest
 
             try
             {
-                await logTcs.Task.DefaultTimeout();
+                await logTcs.Task.TimeoutAfter(FileChangeTimeout);
             }
             catch (TimeoutException)
             {
@@ -463,7 +465,7 @@ public class CertificatePathWatcherTests : LoggedTest
 
             Touch(filePath); // In some scenarios, renaming the file back doesn't change the last modified time
 
-            await changeTcs.Task.DefaultTimeout();
+            await changeTcs.Task.TimeoutAfter(FileChangeTimeout);
         }
         finally
         {

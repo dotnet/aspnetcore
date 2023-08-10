@@ -91,7 +91,7 @@ internal sealed partial class CertificatePathWatcher : IDisposable
     {
         Debug.Assert(certificateConfig.IsFileCert, "AddWatch called on non-file cert");
 
-        var path = Path.Combine(_contentRootDir, certificateConfig.Path!);
+        var path = Path.Combine(_contentRootDir, certificateConfig.Path);
         var dir = Path.GetDirectoryName(path)!;
 
         if (!_metadataForDirectory.TryGetValue(dir, out var dirMetadata))
@@ -226,7 +226,7 @@ internal sealed partial class CertificatePathWatcher : IDisposable
     {
         Debug.Assert(certificateConfig.IsFileCert, "RemoveWatch called on non-file cert");
 
-        var path = Path.Combine(_contentRootDir, certificateConfig.Path!);
+        var path = Path.Combine(_contentRootDir, certificateConfig.Path);
         var dir = Path.GetDirectoryName(path)!;
 
         if (!_metadataForFile.TryGetValue(path, out var fileMetadata))
