@@ -245,6 +245,7 @@ internal sealed partial class CertificatePathWatcher : IDisposable
 
         _logger.RemovedObserver(path);
 
+        // If we found fileMetadata, there must be a containing/corresponding dirMetadata
         var dirMetadata = _metadataForDirectory[dir];
 
         if (configs.Count == 0)
