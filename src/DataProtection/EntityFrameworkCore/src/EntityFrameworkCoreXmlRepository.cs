@@ -92,7 +92,7 @@ public class EntityFrameworkCoreXmlRepository<TContextService, TContextImplement
     private readonly ILogger _logger;
 
     /// <summary>
-    /// Creates a new instance of the <see cref="EntityFrameworkCoreXmlRepository{TContext}"/>.
+    /// Creates a new instance of the <see cref="EntityFrameworkCoreXmlRepository{TContextService, TContextImplementation}"/>.
     /// </summary>
     /// <param name="services"></param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
