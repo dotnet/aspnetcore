@@ -324,16 +324,14 @@ public static class IdentityApiEndpointRouteBuilderExtensions
                 }
             }
 
-            TwoFactorResponse twoFactorResponse = new()
+            return TypedResults.Ok(new TwoFactorResponse
             {
                 SharedKey = key,
                 RecoveryCodes = recoveryCodes,
                 RecoveryCodesLeft = recoveryCodes?.Length ?? await userManager.CountRecoveryCodesAsync(user),
                 IsTwoFactorEnabled = await userManager.GetTwoFactorEnabledAsync(user),
                 IsMachineRemembered = await signInManager.IsTwoFactorClientRememberedAsync(user),
-            };
-
-            return TypedResults.Ok(twoFactorResponse);
+            });
         });
 
         accountGroup.MapGet("/info", async Task<Results<Ok<InfoResponse>, ValidationProblem, NotFound>>
