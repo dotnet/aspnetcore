@@ -51,7 +51,7 @@ public class CertificatePathWatcherTests : LoggedTest
 
             IDictionary<string, object> messageProps;
 
-            watcher.AddWatch(certificateConfig);
+            watcher.AddWatchUnsynchronized(certificateConfig);
 
             messageProps = GetLogMessageProperties(TestSink, "CreatedDirectoryWatcher");
             Assert.Equal(dir, messageProps["dir"]);
@@ -59,11 +59,11 @@ public class CertificatePathWatcherTests : LoggedTest
             messageProps = GetLogMessageProperties(TestSink, "CreatedFileWatcher");
             Assert.Equal(filePath, messageProps["path"]);
 
-            Assert.Equal(1, watcher.TestGetDirectoryWatchCount());
-            Assert.Equal(1, watcher.TestGetFileWatchCount(dir));
-            Assert.Equal(1, watcher.TestGetObserverCount(filePath));
+            Assert.Equal(1, watcher.TestGetDirectoryWatchCountUnsynchronized());
+            Assert.Equal(1, watcher.TestGetFileWatchCountUnsynchronized(dir));
+            Assert.Equal(1, watcher.TestGetObserverCountUnsynchronized(filePath));
 
-            watcher.RemoveWatch(certificateConfig);
+            watcher.RemoveWatchUnsynchronized(certificateConfig);
 
             messageProps = GetLogMessageProperties(TestSink, "RemovedFileWatcher");
             Assert.Equal(filePath, messageProps["path"]);
@@ -71,9 +71,9 @@ public class CertificatePathWatcherTests : LoggedTest
             messageProps = GetLogMessageProperties(TestSink, "RemovedDirectoryWatcher");
             Assert.Equal(dir, messageProps["dir"]);
 
-            Assert.Equal(0, watcher.TestGetDirectoryWatchCount());
-            Assert.Equal(0, watcher.TestGetFileWatchCount(dir));
-            Assert.Equal(0, watcher.TestGetObserverCount(filePath));
+            Assert.Equal(0, watcher.TestGetDirectoryWatchCountUnsynchronized());
+            Assert.Equal(0, watcher.TestGetFileWatchCountUnsynchronized(dir));
+            Assert.Equal(0, watcher.TestGetObserverCountUnsynchronized(filePath));
 
             Assert.Same(changeToken, watcher.GetChangeToken());
             Assert.False(changeToken.HasChanged);
@@ -122,22 +122,22 @@ public class CertificatePathWatcherTests : LoggedTest
 
             foreach (var certificateConfig in certificateConfigs)
             {
-                watcher.AddWatch(certificateConfig);
+                watcher.AddWatchUnsynchronized(certificateConfig);
             }
 
-            Assert.Equal(Math.Min(dirCount, fileCount), watcher.TestGetDirectoryWatchCount());
+            Assert.Equal(Math.Min(dirCount, fileCount), watcher.TestGetDirectoryWatchCountUnsynchronized());
 
             for (int i = 0; i < dirCount; i++)
             {
-                Assert.Equal(filesInDir[i], watcher.TestGetFileWatchCount(dirs[i]));
+                Assert.Equal(filesInDir[i], watcher.TestGetFileWatchCountUnsynchronized(dirs[i]));
             }
 
             foreach (var certificateConfig in certificateConfigs)
             {
-                watcher.RemoveWatch(certificateConfig);
+                watcher.RemoveWatchUnsynchronized(certificateConfig);
             }
 
-            Assert.Equal(0, watcher.TestGetDirectoryWatchCount());
+            Assert.Equal(0, watcher.TestGetDirectoryWatchCountUnsynchronized());
         }
         finally
         {
@@ -179,12 +179,12 @@ public class CertificatePathWatcherTests : LoggedTest
                     Path = filePath,
                 };
 
-                watcher.AddWatch(certificateConfigs[i]);
+                watcher.AddWatchUnsynchronized(certificateConfigs[i]);
             }
 
-            Assert.Equal(1, watcher.TestGetDirectoryWatchCount());
-            Assert.Equal(1, watcher.TestGetFileWatchCount(dir));
-            Assert.Equal(observerCount, watcher.TestGetObserverCount(filePath));
+            Assert.Equal(1, watcher.TestGetDirectoryWatchCountUnsynchronized());
+            Assert.Equal(1, watcher.TestGetFileWatchCountUnsynchronized(dir));
+            Assert.Equal(observerCount, watcher.TestGetObserverCountUnsynchronized(filePath));
 
             Touch(filePath);
 
@@ -223,12 +223,12 @@ public class CertificatePathWatcherTests : LoggedTest
             Path = Path.Combine(dir, "test.pfx"),
         };
 
-        watcher.AddWatch(certificateConfig);
+        watcher.AddWatchUnsynchronized(certificateConfig);
 
         var messageProps = GetLogMessageProperties(TestSink, "DirectoryDoesNotExist");
         Assert.Equal(dir, messageProps["dir"]);
 
-        Assert.Equal(0, watcher.TestGetDirectoryWatchCount());
+        Assert.Equal(0, watcher.TestGetDirectoryWatchCountUnsynchronized());
     }
 
     [Theory]
@@ -259,18 +259,18 @@ public class CertificatePathWatcherTests : LoggedTest
 
             if (previouslyAdded)
             {
-                watcher.AddWatch(certificateConfig);
-                watcher.RemoveWatch(certificateConfig);
+                watcher.AddWatchUnsynchronized(certificateConfig);
+                watcher.RemoveWatchUnsynchronized(certificateConfig);
             }
 
-            Assert.Equal(0, watcher.TestGetObserverCount(filePath));
+            Assert.Equal(0, watcher.TestGetObserverCountUnsynchronized(filePath));
 
-            watcher.RemoveWatch(certificateConfig);
+            watcher.RemoveWatchUnsynchronized(certificateConfig);
 
             var messageProps = GetLogMessageProperties(TestSink, "UnknownFile");
             Assert.Equal(filePath, messageProps["path"]);
 
-            Assert.Equal(0, watcher.TestGetObserverCount(filePath));
+            Assert.Equal(0, watcher.TestGetObserverCountUnsynchronized(filePath));
         }
         finally
         {
@@ -309,22 +309,22 @@ public class CertificatePathWatcherTests : LoggedTest
                 Path = filePath,
             };
 
-            watcher.AddWatch(certificateConfig1);
+            watcher.AddWatchUnsynchronized(certificateConfig1);
 
             if (previouslyAdded)
             {
-                watcher.AddWatch(certificateConfig2);
-                watcher.RemoveWatch(certificateConfig2);
+                watcher.AddWatchUnsynchronized(certificateConfig2);
+                watcher.RemoveWatchUnsynchronized(certificateConfig2);
             }
 
-            Assert.Equal(1, watcher.TestGetObserverCount(filePath));
+            Assert.Equal(1, watcher.TestGetObserverCountUnsynchronized(filePath));
 
-            watcher.RemoveWatch(certificateConfig2);
+            watcher.RemoveWatchUnsynchronized(certificateConfig2);
 
             var messageProps = GetLogMessageProperties(TestSink, "UnknownObserver");
             Assert.Equal(filePath, messageProps["path"]);
 
-            Assert.Equal(1, watcher.TestGetObserverCount(filePath));
+            Assert.Equal(1, watcher.TestGetObserverCountUnsynchronized(filePath));
         }
         finally
         {
@@ -357,16 +357,16 @@ public class CertificatePathWatcherTests : LoggedTest
                 Path = filePath,
             };
 
-            watcher.AddWatch(certificateConfig);
+            watcher.AddWatchUnsynchronized(certificateConfig);
 
-            Assert.Equal(1, watcher.TestGetObserverCount(filePath));
+            Assert.Equal(1, watcher.TestGetObserverCountUnsynchronized(filePath));
 
-            watcher.AddWatch(certificateConfig);
+            watcher.AddWatchUnsynchronized(certificateConfig);
 
             var messageProps = GetLogMessageProperties(TestSink, "ReusedObserver");
             Assert.Equal(filePath, messageProps["path"]);
 
-            Assert.Equal(1, watcher.TestGetObserverCount(filePath));
+            Assert.Equal(1, watcher.TestGetObserverCountUnsynchronized(filePath));
         }
         finally
         {
@@ -401,11 +401,11 @@ public class CertificatePathWatcherTests : LoggedTest
                 Path = filePath,
             };
 
-            watcher.AddWatch(certificateConfig);
+            watcher.AddWatchUnsynchronized(certificateConfig);
 
-            Assert.Equal(1, watcher.TestGetDirectoryWatchCount());
-            Assert.Equal(1, watcher.TestGetFileWatchCount(dir));
-            Assert.Equal(1, watcher.TestGetObserverCount(filePath));
+            Assert.Equal(1, watcher.TestGetDirectoryWatchCountUnsynchronized());
+            Assert.Equal(1, watcher.TestGetFileWatchCountUnsynchronized(dir));
+            Assert.Equal(1, watcher.TestGetObserverCountUnsynchronized(filePath));
 
             var changeTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -445,9 +445,9 @@ public class CertificatePathWatcherTests : LoggedTest
                 Assert.True(deleteDirectory);
             }
 
-            Assert.Equal(1, watcher.TestGetDirectoryWatchCount());
-            Assert.Equal(1, watcher.TestGetFileWatchCount(dir));
-            Assert.Equal(1, watcher.TestGetObserverCount(filePath));
+            Assert.Equal(1, watcher.TestGetDirectoryWatchCountUnsynchronized());
+            Assert.Equal(1, watcher.TestGetFileWatchCountUnsynchronized(dir));
+            Assert.Equal(1, watcher.TestGetObserverCountUnsynchronized(filePath));
 
             Assert.False(changeTcs.Task.IsCompleted);
 
@@ -510,23 +510,23 @@ public class CertificatePathWatcherTests : LoggedTest
             // Add certificateConfig1
             watcher.UpdateWatches(new List<CertificateConfig> { }, new List<CertificateConfig> { certificateConfig1 });
 
-            Assert.Equal(1, watcher.TestGetDirectoryWatchCount());
-            Assert.Equal(1, watcher.TestGetFileWatchCount(dir));
-            Assert.Equal(1, watcher.TestGetObserverCount(filePath));
+            Assert.Equal(1, watcher.TestGetDirectoryWatchCountUnsynchronized());
+            Assert.Equal(1, watcher.TestGetFileWatchCountUnsynchronized(dir));
+            Assert.Equal(1, watcher.TestGetObserverCountUnsynchronized(filePath));
 
             // Remove certificateConfig1
             watcher.UpdateWatches(new List<CertificateConfig> { certificateConfig1 }, new List<CertificateConfig> { });
 
-            Assert.Equal(0, watcher.TestGetDirectoryWatchCount());
-            Assert.Equal(0, watcher.TestGetFileWatchCount(dir));
-            Assert.Equal(0, watcher.TestGetObserverCount(filePath));
+            Assert.Equal(0, watcher.TestGetDirectoryWatchCountUnsynchronized());
+            Assert.Equal(0, watcher.TestGetFileWatchCountUnsynchronized(dir));
+            Assert.Equal(0, watcher.TestGetObserverCountUnsynchronized(filePath));
 
             // Re-add certificateConfig1
             watcher.UpdateWatches(new List<CertificateConfig> { }, new List<CertificateConfig> { certificateConfig1 });
 
-            Assert.Equal(1, watcher.TestGetDirectoryWatchCount());
-            Assert.Equal(1, watcher.TestGetFileWatchCount(dir));
-            Assert.Equal(1, watcher.TestGetObserverCount(filePath));
+            Assert.Equal(1, watcher.TestGetDirectoryWatchCountUnsynchronized());
+            Assert.Equal(1, watcher.TestGetFileWatchCountUnsynchronized(dir));
+            Assert.Equal(1, watcher.TestGetObserverCountUnsynchronized(filePath));
 
             watcher.UpdateWatches(
                 new List<CertificateConfig>
@@ -546,9 +546,9 @@ public class CertificatePathWatcherTests : LoggedTest
                     certificateConfig3, // Add it again
                 });
 
-            Assert.Equal(1, watcher.TestGetDirectoryWatchCount());
-            Assert.Equal(1, watcher.TestGetFileWatchCount(dir));
-            Assert.Equal(3, watcher.TestGetObserverCount(filePath));
+            Assert.Equal(1, watcher.TestGetDirectoryWatchCountUnsynchronized());
+            Assert.Equal(1, watcher.TestGetFileWatchCountUnsynchronized(dir));
+            Assert.Equal(3, watcher.TestGetObserverCountUnsynchronized(filePath));
         }
         finally
         {

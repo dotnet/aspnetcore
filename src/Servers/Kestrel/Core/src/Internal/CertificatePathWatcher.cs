@@ -47,7 +47,7 @@ internal sealed partial class CertificatePathWatcher : IDisposable
     /// If a given <see cref="CertificateConfig"/> appears in both lists, it is first removed and then added.
     /// </summary>
     /// <remarks>
-    /// Does not look consider targets when watching files that are symlinks.
+    /// Does not consider targets when watching files that are symlinks.
     /// </remarks>
     public void UpdateWatches(List<CertificateConfig> certificateConfigsToRemove, List<CertificateConfig> certificateConfigsToAdd)
     {
@@ -70,12 +70,12 @@ internal sealed partial class CertificatePathWatcher : IDisposable
             // Since removeSet doesn't contain any of these configs, this won't change the semantics.
             foreach (var certificateConfig in addSet)
             {
-                AddWatch(certificateConfig);
+                AddWatchUnsynchronized(certificateConfig);
             }
 
             foreach (var certificateConfig in removeSet)
             {
-                RemoveWatch(certificateConfig);
+                RemoveWatchUnsynchronized(certificateConfig);
             }
         }
     }
@@ -87,7 +87,7 @@ internal sealed partial class CertificatePathWatcher : IDisposable
     /// <remarks>
     /// Internal for testing.
     /// </remarks>
-    internal void AddWatch(CertificateConfig certificateConfig)
+    internal void AddWatchUnsynchronized(CertificateConfig certificateConfig)
     {
         Debug.Assert(certificateConfig.IsFileCert, "AddWatch called on non-file cert");
 
@@ -216,13 +216,13 @@ internal sealed partial class CertificatePathWatcher : IDisposable
     }
 
     /// <summary>
-    /// Stop watching a certificate's file path for changes (previously started by <see cref="AddWatch"/>.
+    /// Stop watching a certificate's file path for changes (previously started by <see cref="AddWatchUnsynchronized"/>.
     /// <paramref name="certificateConfig"/> must have <see cref="CertificateConfig.IsFileCert"/> set to <code>true</code>.
     /// </summary>
     /// <remarks>
     /// Internal for testing.
     /// </remarks>
-    internal void RemoveWatch(CertificateConfig certificateConfig)
+    internal void RemoveWatchUnsynchronized(CertificateConfig certificateConfig)
     {
         Debug.Assert(certificateConfig.IsFileCert, "RemoveWatch called on non-file cert");
 
@@ -269,13 +269,13 @@ internal sealed partial class CertificatePathWatcher : IDisposable
     }
 
     /// <remarks>Test hook</remarks>
-    internal int TestGetDirectoryWatchCount() => _metadataForDirectory.Count;
+    internal int TestGetDirectoryWatchCountUnsynchronized() => _metadataForDirectory.Count;
 
     /// <remarks>Test hook</remarks>
-    internal int TestGetFileWatchCount(string dir) => _metadataForDirectory.TryGetValue(dir, out var metadata) ? metadata.FileWatchCount : 0;
+    internal int TestGetFileWatchCountUnsynchronized(string dir) => _metadataForDirectory.TryGetValue(dir, out var metadata) ? metadata.FileWatchCount : 0;
 
     /// <remarks>Test hook</remarks>
-    internal int TestGetObserverCount(string path) => _metadataForFile.TryGetValue(path, out var metadata) ? metadata.Configs.Count : 0;
+    internal int TestGetObserverCountUnsynchronized(string path) => _metadataForFile.TryGetValue(path, out var metadata) ? metadata.Configs.Count : 0;
 
     void IDisposable.Dispose()
     {
