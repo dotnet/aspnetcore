@@ -167,7 +167,7 @@ public static class IdentityApiEndpointRouteBuilderExtensions
             }
             else
             {
-                // As with Identity UI, email and user name are one and the same. S1o when we update the email,
+                // As with Identity UI, email and user name are one and the same. So when we update the email,
                 // we need to update the user name.
                 result = await userManager.ChangeEmailAsync(user, changedEmail, code);
 
