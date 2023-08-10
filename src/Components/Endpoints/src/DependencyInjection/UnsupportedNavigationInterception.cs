@@ -12,4 +12,7 @@ internal sealed class UnsupportedNavigationInterception : INavigationInterceptio
         throw new InvalidOperationException("Navigation interception calls cannot be issued during server-side static rendering, because the page has not yet loaded in the browser. " +
             "Statically rendered components must wrap any navigation interception calls in conditional logic to ensure those interop calls are not attempted during static rendering.");
     }
+
+    public Task DisableNavigationInterceptionAsync()
+        => Task.CompletedTask;
 }

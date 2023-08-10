@@ -9,7 +9,9 @@ internal interface IInternalJSImportMethods
 
     string GetApplicationEnvironment();
 
-    void NavigationManager_EnableNavigationInterception();
+    void NavigationManager_EnableNavigationInterception(string uri);
+
+    void NavigationManager_DisableNavigationInterception();
 
     void NavigationManager_ScrollToElement(string id);
 

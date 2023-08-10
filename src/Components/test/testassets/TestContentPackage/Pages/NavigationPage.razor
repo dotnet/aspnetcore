@@ -1,0 +1,37 @@
+﻿@page "/routing/interactive/navigation"
+@inject NavigationManager Navigation
+
+<h3>Hello from navigation page!</h3>
+
+<button id="normal-refresh" @onclick="NormalRefresh">Normal refresh</button>
+<button id="enhanced-refresh" @onclick="EnhancedRefresh">Enhanced refresh</button>
+<button id="enhanced-refresh-fallback" @onclick="EnhancedRefreshWithFallback">Enhanced refresh with fallback</button>
+
+@code {
+    private void NormalRefresh()
+    {
+        Navigation.NavigateTo(Navigation.Uri, new NavigationOptions()
+        {
+            ReplaceHistoryEntry = true,
+        });
+    }
+
+    private void EnhancedRefresh()
+    {
+        Navigation.NavigateTo(Navigation.Uri, new NavigationOptions()
+        {
+            ReplaceHistoryEntry = true,
+            PreferEnhancedNavigation = true,
+        });
+    }
+
+    private void EnhancedRefreshWithFallback()
+    {
+        Navigation.NavigateTo(Navigation.Uri, new NavigationOptions()
+        {
+            ReplaceHistoryEntry = true,
+            PreferEnhancedNavigation = true,
+            ForceLoad = true,
+        });
+    }
+}

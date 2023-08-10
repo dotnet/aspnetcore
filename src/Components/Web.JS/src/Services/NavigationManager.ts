@@ -21,7 +21,8 @@ let resolveCurrentNavigation: ((shouldContinueNavigation: boolean) => void) | nu
 // These are the functions we're making available for invocation from .NET
 export const internalFunctions = {
   listenForNavigationEvents,
-  enableNavigationInterception: setHasInteractiveRouter,
+  enableNavigationInterception,
+  disableNavigationInterception,
   setHasLocationChangingListeners,
   endLocationChanging,
   navigateTo: navigateToFromDotNet,
@@ -44,6 +45,20 @@ function listenForNavigationEvents(
   hasRegisteredNavigationEventListeners = true;
   window.addEventListener('popstate', onPopState);
   currentHistoryIndex = history.state?._index ?? 0;
+}
+
+async function enableNavigationInterception(uriInDotNet?: string) {
+  setHasInteractiveRouter(true);
+  if (uriInDotNet && location.href !== uriInDotNet) {
+    // The location known by .NET is out of sync with the actual browser location.
+    // Therefore, we should notify .NET that the location has changed so that any
+    // interactive router can react accordingly.
+    await notifyLocationChanged(false);
+  }
+}
+
+function disableNavigationInterception() {
+  setHasInteractiveRouter(false);
 }
 
 function setHasLocationChangingListeners(hasListeners: boolean) {
@@ -101,7 +116,7 @@ export function navigateTo(uri: string, forceLoadOrOptions: NavigationOptions | 
   // Normalize the parameters to the newer overload (i.e., using NavigationOptions)
   const options: NavigationOptions = forceLoadOrOptions instanceof Object
     ? forceLoadOrOptions
-    : { forceLoad: forceLoadOrOptions, replaceHistoryEntry: replaceIfUsingOldOverload };
+    : { forceLoad: forceLoadOrOptions, preferEnhancedNavigation: false, replaceHistoryEntry: replaceIfUsingOldOverload };
 
   navigateToCore(uri, options);
 }
@@ -115,7 +130,9 @@ function navigateToFromDotNet(uri: string, options: NavigationOptions): void {
 function navigateToCore(uri: string, options: NavigationOptions, skipLocationChangingCallback = false): void {
   const absoluteUri = toAbsoluteUri(uri);
 
-  if (!options.forceLoad && isWithinBaseUriSpace(absoluteUri)) {
+  if (options.preferEnhancedNavigation && hasProgrammaticEnhancedNavigationHandler() && isWithinBaseUriSpace(absoluteUri)) {
+    performProgrammaticEnhancedNavigation(absoluteUri, options.replaceHistoryEntry);
+  } else if (!options.forceLoad && isWithinBaseUriSpace(absoluteUri)) {
     if (shouldUseClientSideRouting()) {
       performInternalNavigation(absoluteUri, false, options.replaceHistoryEntry, options.historyEntryState, skipLocationChangingCallback);
     } else {
@@ -273,6 +290,7 @@ function shouldUseClientSideRouting() {
 // Keep in sync with Components/src/NavigationOptions.cs
 export interface NavigationOptions {
   forceLoad: boolean;
+  preferEnhancedNavigation: boolean;
   replaceHistoryEntry: boolean;
   historyEntryState?: string;
 }

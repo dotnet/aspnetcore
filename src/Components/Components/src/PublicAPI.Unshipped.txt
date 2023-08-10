@@ -19,6 +19,8 @@ Microsoft.AspNetCore.Components.CascadingValueSource<TValue>.NotifyChangedAsync(
 Microsoft.AspNetCore.Components.ComponentBase.DispatchExceptionAsync(System.Exception! exception) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.IComponentRenderMode
 Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.PersistStateAsync(Microsoft.AspNetCore.Components.IPersistentComponentStateStore! store, Microsoft.AspNetCore.Components.Dispatcher! dispatcher) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.NavigationOptions.PreferEnhancedNavigation.get -> bool
+Microsoft.AspNetCore.Components.NavigationOptions.PreferEnhancedNavigation.init -> void
 Microsoft.AspNetCore.Components.ParameterView.ToDictionary() -> System.Collections.Generic.IReadOnlyDictionary<string!, object?>!
 *REMOVED*Microsoft.AspNetCore.Components.ParameterView.ToDictionary() -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>!
 Microsoft.AspNetCore.Components.RenderHandle.DispatchExceptionAsync(System.Exception! exception) -> System.Threading.Tasks.Task!
@@ -51,6 +53,7 @@ Microsoft.AspNetCore.Components.RouteData.RouteData(System.Type! pageType, Syste
 Microsoft.AspNetCore.Components.RouteData.RouteValues.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object?>!
 Microsoft.AspNetCore.Components.RouteData.Template.get -> string?
 Microsoft.AspNetCore.Components.RouteData.Template.set -> void
+Microsoft.AspNetCore.Components.Routing.INavigationInterception.DisableNavigationInterceptionAsync() -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.Routing.IRoutingStateProvider
 Microsoft.AspNetCore.Components.Routing.IRoutingStateProvider.RouteData.get -> Microsoft.AspNetCore.Components.RouteData?
 Microsoft.AspNetCore.Components.RenderModeAttribute

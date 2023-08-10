@@ -57,10 +57,6 @@ export function detachProgressivelyEnhancedNavigationListener() {
 }
 
 function performProgrammaticEnhancedNavigation(absoluteInternalHref: string, replace: boolean) {
-  if (hasInteractiveRouter()) {
-    return;
-  }
-
   if (replace) {
     history.replaceState(null, /* ignored title */ '', absoluteInternalHref);
   } else {

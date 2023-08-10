@@ -10,6 +10,8 @@ internal static class BrowserNavigationManagerInterop
 
     public const string EnableNavigationInterception = Prefix + "enableNavigationInterception";
 
+    public const string DisableNavigationInterception = Prefix + "disableNavigationInterception";
+
     public const string GetLocationHref = Prefix + "getLocationHref";
 
     public const string GetBaseUri = Prefix + "getBaseURI";

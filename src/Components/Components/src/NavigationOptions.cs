@@ -14,6 +14,12 @@ public readonly struct NavigationOptions
     public bool ForceLoad { get; init; }
 
     /// <summary>
+    /// If true, uses enhanced navigation even if an interactive router is present.
+    /// If enhanced navigation is not available, this option is ignored.
+    /// </summary>
+    public bool PreferEnhancedNavigation { get; init; }
+
+    /// <summary>
     /// If true, replaces the currently entry in the history stack.
     /// If false, appends the new entry to the history stack.
     /// </summary>

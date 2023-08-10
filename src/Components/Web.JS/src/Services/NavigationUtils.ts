@@ -117,6 +117,6 @@ export function hasInteractiveRouter(): boolean {
   return hasInteractiveRouterValue;
 }
 
-export function setHasInteractiveRouter() {
-  hasInteractiveRouterValue = true;
+export function setHasInteractiveRouter(hasInteractiveRouter: boolean) {
+  hasInteractiveRouterValue = hasInteractiveRouter;
 }

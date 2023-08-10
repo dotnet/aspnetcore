@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Components.Routing;
 /// <summary>
 /// A component that supplies route data corresponding to the current navigation state.
 /// </summary>
-public partial class Router : IComponent, IHandleAfterRender, IDisposable
+public partial class Router : IComponent, IHandleAfterRender, IDisposable, IAsyncDisposable
 {
     // Dictionary is intentionally used instead of ReadOnlyDictionary to reduce Blazor size
     static readonly IReadOnlyDictionary<string, object> _emptyParametersDictionary
@@ -144,10 +144,21 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
     /// <inheritdoc />
     public void Dispose()
     {
+        _ = ((IAsyncDisposable)this).DisposeAsync().Preserve();
+    }
+
+    /// <inheritdoc />
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
         NavigationManager.LocationChanged -= OnLocationChanged;
         if (HotReloadManager.Default.MetadataUpdateSupported)
         {
             HotReloadManager.Default.OnDeltaApplied -= ClearRouteCaches;
+        }
+
+        if (_navigationInterceptionEnabled)
+        {
+            await NavigationInterception.DisableNavigationInterceptionAsync();
         }
     }
 

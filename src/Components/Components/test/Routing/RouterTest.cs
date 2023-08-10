@@ -285,6 +285,11 @@ public class RouterTest
         {
             return Task.CompletedTask;
         }
+
+        public Task DisableNavigationInterceptionAsync()
+        {
+            return Task.CompletedTask;
+        }
     }
 
     internal sealed class TestScrollToLocationHash : IScrollToLocationHash
