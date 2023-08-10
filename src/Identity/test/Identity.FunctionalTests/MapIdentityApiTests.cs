@@ -53,6 +53,29 @@ public class MapIdentityApiTests : LoggedTest
         AssertBadRequestAndEmpty(await client.PostAsJsonAsync("/identity/register", new { Password }));
     }
 
+    [Theory]
+    [MemberData(nameof(AddIdentityModes))]
+    public async Task RegisterFailsGivenInvalidEmail(string addIdentityMode)
+    {
+        await using var app = await CreateAppAsync(AddIdentityActions[addIdentityMode]);
+        using var client = app.GetTestClient();
+
+        await AssertValidationProblemAsync(await client.PostAsJsonAsync("/identity/register", new { Email = "invalid", Password }),
+            "InvalidEmail");
+    }
+
+    [Theory]
+    [MemberData(nameof(AddIdentityModes))]
+    public async Task RegisterFailsGivenDuplicateEmail(string addIdentityMode)
+    {
+        await using var app = await CreateAppAsync(AddIdentityActions[addIdentityMode]);
+        using var client = app.GetTestClient();
+
+        AssertOkAndEmpty(await client.PostAsJsonAsync("/identity/register", new { Email, Password }));
+        await AssertValidationProblemAsync(await client.PostAsJsonAsync("/identity/register", new { Email, Password }),
+            "DuplicateUserName");
+    }
+
     [Fact]
     public async Task LoginFailsGivenUnregisteredUser()
     {
@@ -975,6 +998,10 @@ public class MapIdentityApiTests : LoggedTest
 
         var originalNameIdentifier = infoResponse.GetProperty("claims").GetProperty(ClaimTypes.NameIdentifier).GetString();
         var newEmail = $"New-{Email}";
+
+        // The email must pass DataAnnotations validation by EmailAddressAttribute.
+        await AssertValidationProblemAsync(await client.PostAsJsonAsync("/identity/account/info", new { NewEmail = "invalid" }),
+            "InvalidEmail");
 
         var infoPostResponse = await client.PostAsJsonAsync("/identity/account/info", new { newEmail });
         var infoPostContent = await infoPostResponse.Content.ReadFromJsonAsync<JsonElement>();

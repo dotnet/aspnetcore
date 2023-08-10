@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Linq;
 using System.Security.Claims;
@@ -26,6 +27,9 @@ namespace Microsoft.AspNetCore.Routing;
 /// </summary>
 public static class IdentityApiEndpointRouteBuilderExtensions
 {
+    // Validate the email address using DataAnnotations like the UserValidator does when RequireUniqueEmail = true.
+    private static readonly EmailAddressAttribute _emailAddressAttribute = new();
+
     /// <summary>
     /// Add endpoints for registering, logging in, and logging out using ASP.NET Core Identity.
     /// </summary>
@@ -64,19 +68,25 @@ public static class IdentityApiEndpointRouteBuilderExtensions
 
             var userStore = sp.GetRequiredService<IUserStore<TUser>>();
             var emailStore = (IUserEmailStore<TUser>)userStore;
+            var email = registration.Email;
 
-            var user = new TUser();
-            await userStore.SetUserNameAsync(user, registration.Email, CancellationToken.None);
-            await emailStore.SetEmailAsync(user, registration.Email, CancellationToken.None);
-            var result = await userManager.CreateAsync(user, registration.Password);
-
-            if (result.Succeeded)
+            if (string.IsNullOrEmpty(email) || !_emailAddressAttribute.IsValid(email))
             {
-                await SendConfirmationEmailAsync(user, userManager, registration.Email);
-                return TypedResults.Ok();
+                return CreateValidationProblem(IdentityResult.Failed(userManager.ErrorDescriber.InvalidEmail(email)));
             }
 
-            return CreateValidationProblem(result);
+            var user = new TUser();
+            await userStore.SetUserNameAsync(user, email, CancellationToken.None);
+            await emailStore.SetEmailAsync(user, email, CancellationToken.None);
+            var result = await userManager.CreateAsync(user, registration.Password);
+
+            if (!result.Succeeded)
+            {
+                return CreateValidationProblem(result);
+            }
+
+            await SendConfirmationEmailAsync(user, userManager, email);
+            return TypedResults.Ok();
         });
 
         routeGroup.MapPost("/login", async Task<Results<Ok<AccessTokenResponse>, EmptyHttpResult, ProblemHttpResult>>
@@ -101,13 +111,13 @@ public static class IdentityApiEndpointRouteBuilderExtensions
                 }
             }
 
-            if (result.Succeeded)
+            if (!result.Succeeded)
             {
-                // The signInManager already produced the needed response in the form of a cookie or bearer token.
-                return TypedResults.Empty;
+                return TypedResults.Problem(result.ToString(), statusCode: StatusCodes.Status401Unauthorized);
             }
 
-            return TypedResults.Problem(result.ToString(), statusCode: StatusCodes.Status401Unauthorized);
+            // The signInManager already produced the needed response in the form of a cookie or bearer token.
+            return TypedResults.Empty;
         });
 
         routeGroup.MapPost("/refresh", async Task<Results<Ok<AccessTokenResponse>, UnauthorizedHttpResult, SignInHttpResult, ChallengeHttpResult>>
@@ -345,6 +355,11 @@ public static class IdentityApiEndpointRouteBuilderExtensions
             if (await userManager.GetUserAsync(claimsPrincipal) is not { } user)
             {
                 return TypedResults.NotFound();
+            }
+
+            if (!string.IsNullOrEmpty(infoRequest.NewEmail) && !_emailAddressAttribute.IsValid(infoRequest.NewEmail))
+            {
+                return CreateValidationProblem(IdentityResult.Failed(userManager.ErrorDescriber.InvalidEmail(infoRequest.NewEmail)));
             }
 
             if (!string.IsNullOrEmpty(infoRequest.NewPassword))
