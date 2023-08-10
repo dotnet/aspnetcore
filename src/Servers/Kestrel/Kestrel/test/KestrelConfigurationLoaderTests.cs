@@ -840,6 +840,87 @@ public class KestrelConfigurationLoaderTests
         Assert.Null(end1.EndpointConfig.SslProtocols);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CertificateChangedOnDisk(bool reloadOnChange)
+    {
+        var certificatePath = GetCertificatePath();
+
+        try
+        {
+            var serverOptions = CreateServerOptions();
+
+            var certificatePassword = "1234";
+
+            var oldCertificate = new X509Certificate2(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword", X509KeyStorageFlags.Exportable);
+            var oldCertificateBytes = oldCertificate.Export(X509ContentType.Pkcs12, certificatePassword);
+
+            var newCertificate = new X509Certificate2(TestResources.TestCertificatePath, "testPassword", X509KeyStorageFlags.Exportable);
+            var newCertificateBytes = newCertificate.Export(X509ContentType.Pkcs12, certificatePassword);
+
+            Directory.CreateDirectory(Path.GetDirectoryName(certificatePath));
+            File.WriteAllBytes(certificatePath, oldCertificateBytes);
+
+            var endpointConfigurationCallCount = 0;
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                    new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
+                    new KeyValuePair<string, string>("Endpoints:End1:Certificate:Path", certificatePath),
+                    new KeyValuePair<string, string>("Endpoints:End1:Certificate:Password", certificatePassword),
+                }).Build();
+
+            var configLoader = serverOptions
+                .Configure(config, reloadOnChange)
+                .Endpoint("End1", opt =>
+                {
+                    Assert.True(opt.IsHttps);
+                    var expectedSerialNumber = endpointConfigurationCallCount == 0
+                        ? oldCertificate.SerialNumber
+                        : newCertificate.SerialNumber;
+                    Assert.Equal(opt.HttpsOptions.ServerCertificate.SerialNumber, expectedSerialNumber);
+                    endpointConfigurationCallCount++;
+                });
+
+            configLoader.Load();
+
+            var fileTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            if (reloadOnChange) // There's no reload token if !reloadOnChange
+            {
+                configLoader.GetReloadToken().RegisterChangeCallback(_ => fileTcs.SetResult(), state: null);
+            }
+            File.WriteAllBytes(certificatePath, newCertificateBytes);
+
+            try
+            {
+                await fileTcs.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
+                Assert.True(reloadOnChange, "Received an unexpected change event");
+            }
+            catch (TimeoutException)
+            {
+                Assert.False(reloadOnChange, "Timed out even though responding to file changes was enabled");
+            }
+
+            Assert.Equal(1, endpointConfigurationCallCount);
+
+            if (reloadOnChange)
+            {
+                configLoader.Reload();
+
+                Assert.Equal(2, endpointConfigurationCallCount);
+            }
+        }
+        finally
+        {
+            if (File.Exists(certificatePath))
+            {
+                // Note: the watcher will see this event, but we ignore deletions, so it shouldn't matter
+                File.Delete(certificatePath);
+            }
+        }
+    }
+
     [ConditionalTheory]
     [InlineData("http1", HttpProtocols.Http1)]
     // [InlineData("http2", HttpProtocols.Http2)] // Not supported due to missing ALPN support. https://github.com/dotnet/corefx/issues/33016

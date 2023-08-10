@@ -28,7 +28,7 @@ public class KestrelServerOptions
 {
     internal const string DisableHttp1LineFeedTerminatorsSwitchKey = "Microsoft.AspNetCore.Server.Kestrel.DisableHttp1LineFeedTerminators";
     private const string FinOnErrorSwitch = "Microsoft.AspNetCore.Server.Kestrel.FinOnError";
-    private const string CertificateFileWatchingSwitch = "Microsoft.AspNetCore.Server.Kestrel.DisableCertificateFileWatching";
+    internal const string CertificateFileWatchingSwitch = "Microsoft.AspNetCore.Server.Kestrel.DisableCertificateFileWatching";
     private static readonly bool _finOnError;
     private static readonly bool _disableCertificateFileWatching;
 
