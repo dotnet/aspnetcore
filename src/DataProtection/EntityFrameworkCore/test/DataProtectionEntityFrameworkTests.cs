@@ -19,6 +19,12 @@ public class DataProtectionEntityFrameworkTests
     }
 
     [Fact]
+    public void CreateRepository_ThrowsIf_ContextIsNull_WithContextService()
+    {
+        Assert.Throws<ArgumentNullException>(() => new EntityFrameworkCoreXmlRepository<IDataProtectionKeyContext, DataProtectionKeyContext>(null, null));
+    }
+
+    [Fact]
     public void StoreElement_PersistsData()
     {
         var element = XElement.Parse("<Element1/>");
@@ -31,6 +37,26 @@ public class DataProtectionEntityFrameworkTests
 
         // Use a separate instance of the context to verify correct data was saved to database
         using (var context = services.CreateScope().ServiceProvider.GetRequiredService<DataProtectionKeyContext>())
+        {
+            Assert.Equal(1, context.DataProtectionKeys.Count());
+            Assert.Equal(key.FriendlyName, context.DataProtectionKeys.Single()?.FriendlyName);
+            Assert.Equal(key.Xml, context.DataProtectionKeys.Single()?.Xml);
+        }
+    }
+
+    [Fact]
+    public void StoreElement_PersistsData_WithContextService()
+    {
+        var element = XElement.Parse("<Element1/>");
+        var friendlyName = "Element1";
+        var key = new DataProtectionKey() { FriendlyName = friendlyName, Xml = element.ToString() };
+
+        var services = GetServices_WithContextService(nameof(StoreElement_PersistsData_WithContextService));
+        var service = new EntityFrameworkCoreXmlRepository<IDataProtectionKeyContext, DataProtectionKeyContext>(services, NullLoggerFactory.Instance);
+        service.StoreElement(element, friendlyName);
+
+        // Use a separate instance of the context to verify correct data was saved to database
+        using (var context = services.CreateScope().ServiceProvider.GetRequiredService<IDataProtectionKeyContext>())
         {
             Assert.Equal(1, context.DataProtectionKeys.Count());
             Assert.Equal(key.FriendlyName, context.DataProtectionKeys.Single()?.FriendlyName);
@@ -55,11 +81,36 @@ public class DataProtectionEntityFrameworkTests
         Assert.Equal(2, elements.Count);
     }
 
+    [Fact]
+    public void GetAllElements_ReturnsAllElements_WithContextService()
+    {
+        var element1 = XElement.Parse("<Element1/>");
+        var element2 = XElement.Parse("<Element2/>");
+
+        var services = GetServices_WithContextService(nameof(GetAllElements_ReturnsAllElements_WithContextService));
+        var service1 = CreateRepo_WithContextService(services);
+        service1.StoreElement(element1, "element1");
+        service1.StoreElement(element2, "element2");
+
+        // Use a separate instance of the context to verify correct data was saved to database
+        var service2 = CreateRepo(services);
+        var elements = service2.GetAllElements();
+        Assert.Equal(2, elements.Count);
+    }
+
     private EntityFrameworkCoreXmlRepository<DataProtectionKeyContext> CreateRepo(IServiceProvider services)
         => new EntityFrameworkCoreXmlRepository<DataProtectionKeyContext>(services, NullLoggerFactory.Instance);
+
+    private EntityFrameworkCoreXmlRepository<IDataProtectionKeyContext, DataProtectionKeyContext> CreateRepo_WithContextService(IServiceProvider services)
+        => new EntityFrameworkCoreXmlRepository<IDataProtectionKeyContext, DataProtectionKeyContext>(services, NullLoggerFactory.Instance);
 
     private IServiceProvider GetServices(string dbName)
         => new ServiceCollection()
             .AddDbContext<DataProtectionKeyContext>(o => o.UseInMemoryDatabase(dbName))
+            .BuildServiceProvider(validateScopes: true);
+
+    private IServiceProvider GetServices_WithContextService(string dbName)
+        => new ServiceCollection()
+            .AddDbContext<IDataProtectionKeyContext, DataProtectionKeyContext>(o => o.UseInMemoryDatabase(dbName))
             .BuildServiceProvider(validateScopes: true);
 }
