@@ -44,7 +44,7 @@ public class CertificatePathWatcherTests : LoggedTest
 
             if (fileExists)
             {
-                Touch(filePath);
+                ChangeFile(filePath);
             }
 
             Assert.Equal(fileExists, File.Exists(filePath));
@@ -155,10 +155,10 @@ public class CertificatePathWatcherTests : LoggedTest
         try
         {
             var dir = dirInfo.FullName;
-            var fileName = $"{nameof(FileChanged)}-{observerCount}.pfx";
+            var fileName = Path.GetRandomFileName();
             var filePath = Path.Combine(dir, fileName);
 
-            Touch(filePath);
+            ChangeFile(filePath);
 
             var hostEnvironment = new Mock<IHostEnvironment>();
             hostEnvironment.SetupGet(h => h.ContentRootPath).Returns(dir);
@@ -187,7 +187,7 @@ public class CertificatePathWatcherTests : LoggedTest
             Assert.Equal(1, watcher.TestGetFileWatchCountUnsynchronized(dir));
             Assert.Equal(observerCount, watcher.TestGetObserverCountUnsynchronized(filePath));
 
-            Touch(filePath);
+            ChangeFile(filePath);
 
             await signalTcs.Task.TimeoutAfter(FileChangeTimeout);
 
@@ -244,7 +244,7 @@ public class CertificatePathWatcherTests : LoggedTest
             var fileName = Path.GetRandomFileName();
             var filePath = Path.Combine(dir, fileName);
 
-            Touch(filePath);
+            ChangeFile(filePath);
 
             var hostEnvironment = new Mock<IHostEnvironment>();
             hostEnvironment.SetupGet(h => h.ContentRootPath).Returns(dir);
@@ -291,7 +291,7 @@ public class CertificatePathWatcherTests : LoggedTest
             var fileName = Path.GetRandomFileName();
             var filePath = Path.Combine(dir, fileName);
 
-            Touch(filePath);
+            ChangeFile(filePath);
 
             var hostEnvironment = new Mock<IHostEnvironment>();
             hostEnvironment.SetupGet(h => h.ContentRootPath).Returns(dir);
@@ -344,7 +344,7 @@ public class CertificatePathWatcherTests : LoggedTest
             var fileName = Path.GetRandomFileName();
             var filePath = Path.Combine(dir, fileName);
 
-            Touch(filePath);
+            ChangeFile(filePath);
 
             var hostEnvironment = new Mock<IHostEnvironment>();
             hostEnvironment.SetupGet(h => h.ContentRootPath).Returns(dir);
@@ -385,10 +385,10 @@ public class CertificatePathWatcherTests : LoggedTest
         try
         {
             var dir = dirInfo.FullName;
-            var fileName = $"{nameof(IgnoreDeletion)}-{deleteDirectory}.pfx";
+            var fileName = Path.GetRandomFileName();
             var filePath = Path.Combine(dir, fileName);
 
-            Touch(filePath);
+            ChangeFile(filePath);
 
             var hostEnvironment = new Mock<IHostEnvironment>();
             hostEnvironment.SetupGet(h => h.ContentRootPath).Returns(dir);
@@ -464,7 +464,7 @@ public class CertificatePathWatcherTests : LoggedTest
 
             Assert.True(File.Exists(filePath));
 
-            Touch(filePath); // In some scenarios, renaming the file back doesn't change the last modified time
+            ChangeFile(filePath); // In some scenarios, renaming the file back doesn't change the last modified time
 
             await changeTcs.Task.TimeoutAfter(FileChangeTimeout);
         }
@@ -557,9 +557,10 @@ public class CertificatePathWatcherTests : LoggedTest
         }
     }
 
-    private static void Touch(string filePath)
+    private static void ChangeFile(string filePath)
     {
-        File.WriteAllBytes(filePath, Array.Empty<byte>());
+        File.WriteAllText(filePath, DateTime.UtcNow.ToLongTimeString());
+        File.SetLastWriteTimeUtc(filePath, DateTime.UtcNow);
     }
 
     private static IDictionary<string, object> GetLogMessageProperties(ITestSink testSink, string eventName)
