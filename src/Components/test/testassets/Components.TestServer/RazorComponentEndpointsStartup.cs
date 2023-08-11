@@ -6,9 +6,8 @@ using System.Reflection;
 using System.Security.Claims;
 using Components.TestServer.RazorComponents;
 using Components.TestServer.RazorComponents.Pages.Forms;
-using Components.TestServer.RazorComponents.Pages.StreamingRendering;
 using Components.TestServer.Services;
-using Microsoft.AspNetCore.Components.Endpoints;
+using Microsoft.AspNetCore.Components.WebAssembly.Server;
 
 namespace TestServer;
 
@@ -59,7 +58,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapRazorComponents<TRootComponent>()
-                    .AddAssemblies(Assembly.Load("Components.WasmMinimal"))
+                    .AddAdditionalAssemblies(Assembly.Load("Components.WasmMinimal"))
                     .AddServerRenderMode()
                     .AddWebAssemblyRenderMode(new WebAssemblyComponentsEndpointOptions
                     {

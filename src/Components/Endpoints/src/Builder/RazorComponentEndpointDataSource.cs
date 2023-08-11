@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components.Discovery;
+using Microsoft.AspNetCore.Components.Endpoints.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Primitives;
@@ -39,7 +40,7 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
         _applicationBuilder = applicationBuilder;
         _renderModeEndpointProviders = renderModeEndpointProviders.ToArray();
         _factory = factory;
-        DefaultBuilder = new RazorComponentEndpointConventionBuilder(
+        DefaultBuilder = new RazorComponentsEndpointConventionBuilder(
             _lock,
             builder,
             _options,
@@ -50,7 +51,7 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
         _changeToken = new CancellationChangeToken(_cancellationTokenSource.Token);
     }
 
-    internal RazorComponentEndpointConventionBuilder DefaultBuilder { get; }
+    internal RazorComponentsEndpointConventionBuilder DefaultBuilder { get; }
 
     public override IReadOnlyList<Endpoint> Endpoints
     {

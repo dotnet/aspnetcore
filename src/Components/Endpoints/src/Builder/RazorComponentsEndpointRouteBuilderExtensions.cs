@@ -24,8 +24,8 @@ public static class RazorComponentsEndpointRouteBuilderExtensions
     /// and renders the component specified by <typeparamref name="TRootComponent"/> when the route matches.
     /// </summary>
     /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/>.</param>
-    /// <returns>An <see cref="RazorComponentEndpointConventionBuilder"/> that can be used to further configure the API.</returns>
-    public static RazorComponentEndpointConventionBuilder MapRazorComponents<[DynamicallyAccessedMembers(Component)] TRootComponent>(this IEndpointRouteBuilder endpoints)
+    /// <returns>An <see cref="RazorComponentsEndpointConventionBuilder"/> that can be used to further configure the API.</returns>
+    public static RazorComponentsEndpointConventionBuilder MapRazorComponents<[DynamicallyAccessedMembers(Component)] TRootComponent>(this IEndpointRouteBuilder endpoints)
     {
         ArgumentNullException.ThrowIfNull(endpoints);
 

@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 /// <summary>
 /// Provides options for configuring server-side rendering of Razor Components.
 /// </summary>
-public class RazorComponentsOptions
+public sealed class RazorComponentsOptions
 {
     internal readonly FormDataMapperOptions _formMappingOptions = new();
 

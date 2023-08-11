@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Builder;
 /// <summary>
 /// Builds conventions that will be used for customization of <see cref="EndpointBuilder"/> instances.
 /// </summary>
-public sealed class RazorComponentEndpointConventionBuilder : IEndpointConventionBuilder
+public sealed class RazorComponentsEndpointConventionBuilder : IEndpointConventionBuilder
 {
     private readonly object _lock;
     private readonly ComponentApplicationBuilder _builder;
@@ -19,7 +19,7 @@ public sealed class RazorComponentEndpointConventionBuilder : IEndpointConventio
     private readonly List<Action<EndpointBuilder>> _conventions;
     private readonly List<Action<EndpointBuilder>> _finallyConventions;
 
-    internal RazorComponentEndpointConventionBuilder(
+    internal RazorComponentsEndpointConventionBuilder(
         object @lock,
         ComponentApplicationBuilder builder,
         RazorComponentDataSourceOptions options,
@@ -41,8 +41,8 @@ public sealed class RazorComponentEndpointConventionBuilder : IEndpointConventio
     /// <summary>
     /// Configures the <see cref="RenderMode.Server"/> for this application.
     /// </summary>
-    /// <returns>The <see cref="RazorComponentEndpointConventionBuilder"/>.</returns>
-    public RazorComponentEndpointConventionBuilder AddServerRenderMode()
+    /// <returns>The <see cref="RazorComponentsEndpointConventionBuilder"/>.</returns>
+    public RazorComponentsEndpointConventionBuilder AddServerRenderMode()
     {
         _options.ConfiguredRenderModes.Add(RenderMode.Server);
 
