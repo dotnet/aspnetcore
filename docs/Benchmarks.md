@@ -78,6 +78,9 @@ Where:
 - *Profile* is the environment where the application will run on.
 - *Component* is the ASP.NET project under test that will be built and contains your changes.
 
+> [!IMPORTANT]  
+> Any changes outside of the "component" projects will not be benchmarked.
+
 Create a new comment with the correct benchmarks, profiles, and components to build. For instance:
 
 ```console
