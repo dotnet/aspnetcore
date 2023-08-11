@@ -147,6 +147,7 @@ public class CertificatePathWatcherTests : LoggedTest
 
     [Theory]
     [InlineData(1)]
+    [InlineData(2)]
     [InlineData(4)]
     public async Task FileChanged(int observerCount)
     {
@@ -154,7 +155,7 @@ public class CertificatePathWatcherTests : LoggedTest
         try
         {
             var dir = dirInfo.FullName;
-            var fileName = Path.GetRandomFileName();
+            var fileName = $"{nameof(FileChanged)}-{observerCount}.pfx";
             var filePath = Path.Combine(dir, fileName);
 
             Touch(filePath);
@@ -384,7 +385,7 @@ public class CertificatePathWatcherTests : LoggedTest
         try
         {
             var dir = dirInfo.FullName;
-            var fileName = Path.GetRandomFileName();
+            var fileName = $"{nameof(IgnoreDeletion)}-{deleteDirectory}.pfx";
             var filePath = Path.Combine(dir, fileName);
 
             Touch(filePath);
