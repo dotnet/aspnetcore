@@ -54,7 +54,7 @@ public class CertificatePathWatcherTests : LoggedTest
             watcher.AddWatchUnsynchronized(certificateConfig);
 
             messageProps = GetLogMessageProperties(TestSink, "CreatedDirectoryWatcher");
-            Assert.Equal(dir, messageProps["Dir"]);
+            Assert.Equal(dir, messageProps["Directory"]);
 
             messageProps = GetLogMessageProperties(TestSink, "CreatedFileWatcher");
             Assert.Equal(filePath, messageProps["Path"]);
@@ -69,7 +69,7 @@ public class CertificatePathWatcherTests : LoggedTest
             Assert.Equal(filePath, messageProps["Path"]);
 
             messageProps = GetLogMessageProperties(TestSink, "RemovedDirectoryWatcher");
-            Assert.Equal(dir, messageProps["Dir"]);
+            Assert.Equal(dir, messageProps["Directory"]);
 
             Assert.Equal(0, watcher.TestGetDirectoryWatchCountUnsynchronized());
             Assert.Equal(0, watcher.TestGetFileWatchCountUnsynchronized(dir));
@@ -227,7 +227,7 @@ public class CertificatePathWatcherTests : LoggedTest
         watcher.AddWatchUnsynchronized(certificateConfig);
 
         var messageProps = GetLogMessageProperties(TestSink, "DirectoryDoesNotExist");
-        Assert.Equal(dir, messageProps["Dir"]);
+        Assert.Equal(dir, messageProps["Directory"]);
 
         Assert.Equal(0, watcher.TestGetDirectoryWatchCountUnsynchronized());
     }
