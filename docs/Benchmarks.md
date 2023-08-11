@@ -13,7 +13,7 @@ The Crank dotnet tool is required to start benchmarks remotely on the available 
 
 Install Crank with the following command:
 
-```
+```console
 dotnet tool install Microsoft.Crank.Controller --version "0.2.0-*" --global
 ```
 
@@ -33,7 +33,7 @@ Using the same Crank command line you can also test the impact of local changes.
 - Add `--application.options.outputFiles c:\build\release` and replace the folder by the one containing your changes.
 - Run the updated Crank command line
 
-## Benchmarking local changes
+## Benchmarking pull-requests
 
 Use this technique when you want to benchmark a community contributed PR or when you don't have the changes available locally.
 
@@ -70,9 +70,14 @@ Arguments: any additional arguments to pass through to crank, e.g. `--variable n
 
 ---
 
-Create a new comment with the benchmark to execute, and the components to build. For instance:
+Where:
+- *Benchmark* is the application that will be stressed.
+- *Profile* is the environment where the application will run on.
+- *Component* is the ASP.NET project under test that will be built and contains your changes.
 
-```
+Create a new comment with the correct benchmarks, profiles, and components to build. For instance:
+
+```console
 /benchmark json aspnet-citrine-lin kestrel
 ```
 
