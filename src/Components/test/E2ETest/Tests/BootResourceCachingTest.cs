@@ -91,11 +91,11 @@ public class BootResourceCachingTest
             requestedDll => Assert.Contains("/Microsoft.AspNetCore.Components.wasm", requestedDll),
             requestedDll => Assert.Contains("/dotnet.native.wasm", requestedDll));
 
-        var cacheEntryUrls3=GetCacheEntryUrls();
+        var cacheEntryUrls3 = GetCacheEntryUrls();
         // wait until the cache was cleaned, max 500ms
-        for(int i=0; i<5; i++)
+        for (var i = 0; i < 5; i++)
         {
-            if(!cacheEntryUrls3.Contains(cacheEntryForDotNetWasmWithChangedHash))
+            if (!cacheEntryUrls3.Contains(cacheEntryForDotNetWasmWithChangedHash))
             {
                 break;
             }
