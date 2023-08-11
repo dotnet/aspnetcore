@@ -3,9 +3,7 @@
 
 namespace Microsoft.AspNetCore.Identity.DTO;
 
-internal sealed class InfoRequest
+internal sealed class ForgotPasswordRequest
 {
-    public string? NewEmail { get; init; }
-    public string? NewPassword { get; init; }
-    public string? OldPassword { get; init; }
+    public required string Email { get; init; }
 }

@@ -14,8 +14,6 @@ namespace Microsoft.AspNetCore.Authentication.BearerToken;
 internal sealed class BearerTokenHandler(IOptionsMonitor<BearerTokenOptions> optionsMonitor, ILoggerFactory loggerFactory, UrlEncoder urlEncoder)
     : SignInAuthenticationHandler<BearerTokenOptions>(optionsMonitor, loggerFactory, urlEncoder)
 {
-    private static readonly long OneSecondTicks = TimeSpan.FromSeconds(1).Ticks;
-
     private static readonly AuthenticateResult FailedUnprotectingToken = AuthenticateResult.Fail("Unprotected token failed");
     private static readonly AuthenticateResult TokenExpired = AuthenticateResult.Fail("Token expired");
 
@@ -23,7 +21,7 @@ internal sealed class BearerTokenHandler(IOptionsMonitor<BearerTokenOptions> opt
 
     protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
     {
-        // Give application opportunity to find from a different location, adjust, or reject token
+        // Give application opportunity to find from a different location, adjust, or reject token.
         var messageReceivedContext = new MessageReceivedContext(Context, Scheme, Options);
 
         await Events.MessageReceivedAsync(messageReceivedContext);
@@ -66,12 +64,12 @@ internal sealed class BearerTokenHandler(IOptionsMonitor<BearerTokenOptions> opt
         var utcNow = TimeProvider.GetUtcNow();
 
         properties ??= new();
-        properties.ExpiresUtc ??= utcNow + Options.BearerTokenExpiration;
+        properties.ExpiresUtc = utcNow + Options.BearerTokenExpiration;
 
         var response = new AccessTokenResponse
         {
             AccessToken = Options.BearerTokenProtector.Protect(CreateBearerTicket(user, properties)),
-            ExpiresInSeconds = CalculateExpiresInSeconds(utcNow, properties.ExpiresUtc),
+            ExpiresInSeconds = (long)Options.BearerTokenExpiration.TotalSeconds,
             RefreshToken = Options.RefreshTokenProtector.Protect(CreateRefreshTicket(user, utcNow)),
         };
 
@@ -90,24 +88,6 @@ internal sealed class BearerTokenHandler(IOptionsMonitor<BearerTokenOptions> opt
         return authorization.StartsWith("Bearer ", StringComparison.Ordinal)
             ? authorization["Bearer ".Length..]
             : null;
-    }
-
-    private long CalculateExpiresInSeconds(DateTimeOffset utcNow, DateTimeOffset? expiresUtc)
-    {
-        static DateTimeOffset FloorSeconds(DateTimeOffset dateTimeOffset)
-            => new(dateTimeOffset.Ticks / OneSecondTicks * OneSecondTicks, dateTimeOffset.Offset);
-
-        // AuthenticationProperties floors ExpiresUtc. If this remains unchanged, we'll use BearerTokenExpiration directly
-        // to produce a consistent ExpiresInTotalSeconds values. If ExpiresUtc was overridden, we just calculate the
-        // the difference from utcNow and round even though this will likely result in unstable values.
-        var expiresTimeSpan = Options.BearerTokenExpiration;
-        var expectedExpiresUtc = FloorSeconds(utcNow + expiresTimeSpan);
-        return (long)(expiresUtc switch
-        {
-            DateTimeOffset d when d == expectedExpiresUtc => expiresTimeSpan.TotalSeconds,
-            DateTimeOffset d => (d - utcNow).TotalSeconds,
-            _ => expiresTimeSpan.TotalSeconds,
-        });
     }
 
     private AuthenticationTicket CreateBearerTicket(ClaimsPrincipal user, AuthenticationProperties properties)
