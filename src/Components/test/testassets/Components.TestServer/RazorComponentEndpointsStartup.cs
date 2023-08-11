@@ -30,8 +30,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             options.MaxFormMappingCollectionSize = 100;
         })
             .AddWebAssemblyComponents()
-            .AddServerComponents()
-            .AddHubOptions(ho => { });
+            .AddServerComponents();
         services.AddHttpContextAccessor();
         services.AddSingleton<AsyncOperationService>();
         services.AddCascadingAuthenticationState();
