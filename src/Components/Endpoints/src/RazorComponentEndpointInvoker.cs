@@ -10,74 +10,83 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
-internal class RazorComponentEndpointInvoker
+internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointInvoker
 {
-    private readonly HttpContext _context;
     private readonly EndpointHtmlRenderer _renderer;
-    private readonly Type _rootComponentType;
-    private readonly Type _componentType;
+    private readonly ILogger<RazorComponentEndpointInvoker> _logger;
 
-    public RazorComponentEndpointInvoker(HttpContext context, Type rootComponentType, Type componentType)
+    public RazorComponentEndpointInvoker(EndpointHtmlRenderer renderer, ILogger<RazorComponentEndpointInvoker> logger)
     {
-        _context = context;
-        _renderer = _context.RequestServices.GetRequiredService<EndpointHtmlRenderer>();
-        _rootComponentType = rootComponentType;
-        _componentType = componentType;
+        _renderer = renderer;
+        _logger = logger;
     }
 
-    public Task RenderComponent()
+    public Task Render(HttpContext context)
     {
-        return _renderer.Dispatcher.InvokeAsync(RenderComponentCore);
+        return _renderer.Dispatcher.InvokeAsync(() => RenderComponentCore(context));
     }
 
-    private async Task RenderComponentCore()
+    private async Task RenderComponentCore(HttpContext context)
     {
-        _context.Response.ContentType = RazorComponentResultExecutor.DefaultContentType;
-        _renderer.InitializeStreamingRenderingFraming(_context);
+        context.Response.ContentType = RazorComponentResultExecutor.DefaultContentType;
+        _renderer.InitializeStreamingRenderingFraming(context);
+
+        var endpoint = context.GetEndpoint() ?? throw new InvalidOperationException($"An endpoint must be set on the '{nameof(HttpContext)}'.");
+
+        var rootComponent = endpoint.Metadata.GetRequiredMetadata<RootComponentMetadata>().Type;
+        var pageComponent = endpoint.Metadata.GetRequiredMetadata<ComponentTypeMetadata>().Type;
+
+        Log.BeginRenderComponent(_logger, rootComponent.Name, pageComponent.Name);
 
         // Metadata controls whether we require antiforgery protection for this endpoint or we should skip it.
         // The default for razor component endpoints is to require the metadata, but it can be overriden by
         // the developer.
-        var antiforgeryMetadata = _context.GetEndpoint()!.Metadata.GetMetadata<IAntiforgeryMetadata>();
-        var antiforgery = _context.RequestServices.GetRequiredService<IAntiforgery>();
-        var (valid, isPost, handler) = await ValidateRequestAsync(antiforgeryMetadata?.RequiresValidation == true ? antiforgery : null);
-        if (!valid)
+        var antiforgeryMetadata = endpoint.Metadata.GetMetadata<IAntiforgeryMetadata>();
+        var antiforgery = context.RequestServices.GetRequiredService<IAntiforgery>();
+        var result = await ValidateRequestAsync(context, antiforgeryMetadata?.RequiresValidation == true ? antiforgery : null);
+        if (!result.IsValid)
         {
             // If the request is not valid we've already set the response to a 400 or similar
             // and we can just exit early.
             return;
         }
 
-        _context.Response.OnStarting(() =>
+        context.Response.OnStarting(() =>
         {
             // Generate the antiforgery tokens before we start streaming the response, as it needs
             // to set the cookie header.
-            antiforgery!.GetAndStoreTokens(_context);
+            antiforgery!.GetAndStoreTokens(context);
             return Task.CompletedTask;
         });
 
         await EndpointHtmlRenderer.InitializeStandardComponentServicesAsync(
-            _context,
-            componentType: _componentType,
-            handler: handler,
-            form: handler != null && _context.Request.HasFormContentType ? await _context.Request.ReadFormAsync() : null);
+            context,
+            componentType: pageComponent,
+            handler: result.HandlerName,
+            form: result.HandlerName != null && context.Request.HasFormContentType ? await context.Request.ReadFormAsync() : null);
 
-        await using var writer = CreateResponseWriter(_context.Response.Body);
+        // Matches MVC's MemoryPoolHttpResponseStreamWriterFactory.DefaultBufferSize
+        var defaultBufferSize = 16 * 1024;
+        await using var writer = new HttpResponseStreamWriter(context.Response.Body, Encoding.UTF8, defaultBufferSize, ArrayPool<byte>.Shared, ArrayPool<char>.Shared);
+        var viewBufferScope = new MemoryPoolViewBufferScope(ArrayPool<ViewBufferValue>.Shared);
+        var viewBuffer = new MemoryPoolViewBuffer(viewBufferScope, pageComponent.FullName ?? pageComponent.Name, defaultBufferSize);
+        await using var bufferWriter = new ViewBufferTextWriter(viewBuffer, Encoding.UTF8, HtmlEncoder.Default, writer);
 
         // Note that we always use Static rendering mode for the top-level output from a RazorComponentResult,
         // because you never want to serialize the invocation of RazorComponentResultHost. Instead, that host
         // component takes care of switching into your desired render mode when it produces its own output.
         var htmlContent = await _renderer.RenderEndpointComponent(
-            _context,
-            _rootComponentType,
+            context,
+            rootComponent,
             ParameterView.Empty,
-            waitForQuiescence: isPost);
+            waitForQuiescence: result.IsPost);
 
         Task quiesceTask;
-        if (!isPost)
+        if (!result.IsPost)
         {
             quiesceTask = htmlContent.QuiescenceTask;
         }
@@ -86,7 +95,7 @@ internal class RazorComponentEndpointInvoker
             try
             {
                 var isBadRequest = false;
-                quiesceTask = _renderer.DispatchSubmitEventAsync(handler, out isBadRequest);
+                quiesceTask = _renderer.DispatchSubmitEventAsync(result.HandlerName, out isBadRequest);
                 if (isBadRequest)
                 {
                     return;
@@ -96,7 +105,7 @@ internal class RazorComponentEndpointInvoker
             }
             catch (NavigationException ex)
             {
-                await EndpointHtmlRenderer.HandleNavigationException(_context, ex);
+                await EndpointHtmlRenderer.HandleNavigationException(context, ex);
                 quiesceTask = Task.CompletedTask;
             }
         }
@@ -105,55 +114,89 @@ internal class RazorComponentEndpointInvoker
         // in between the first call to htmlContent.WriteTo and the point where we start listening for subsequent
         // streaming SSR batches (inside SendStreamingUpdatesAsync). Otherwise some other code might dispatch to the
         // renderer sync context and cause a batch that would get missed.
-        htmlContent.WriteTo(writer, HtmlEncoder.Default); // Don't use WriteToAsync, as per the comment above
+        htmlContent.WriteTo(bufferWriter, HtmlEncoder.Default); // Don't use WriteToAsync, as per the comment above
 
         if (!quiesceTask.IsCompletedSuccessfully)
         {
-            await _renderer.SendStreamingUpdatesAsync(_context, quiesceTask, writer);
+            await _renderer.SendStreamingUpdatesAsync(context, quiesceTask, bufferWriter);
         }
 
         // Invoke FlushAsync to ensure any buffered content is asynchronously written to the underlying
         // response asynchronously. In the absence of this line, the buffer gets synchronously written to the
         // response as part of the Dispose which has a perf impact.
-        await writer.FlushAsync();
+        await bufferWriter.FlushAsync();
     }
 
-    private async Task<RequestValidationState> ValidateRequestAsync(IAntiforgery? antiforgery)
+    private async Task<RequestValidationState> ValidateRequestAsync(HttpContext context, IAntiforgery? antiforgery)
     {
-        var isPost = HttpMethods.IsPost(_context.Request.Method);
+        var isPost = HttpMethods.IsPost(context.Request.Method);
         if (isPost)
         {
+            var valid = false;
             // Respect the token validation done by the middleware _if_ it has been set, otherwise
             // run the validation here.
-            var valid = _context.Features.Get<IAntiforgeryValidationFeature>() is {} antiForgeryValidationFeature
-                ? antiForgeryValidationFeature.IsValid
-                : antiforgery == null || await antiforgery.IsRequestValidAsync(_context);
+            if (context.Features.Get<IAntiforgeryValidationFeature>() is { } antiForgeryValidationFeature)
+            {
+                if (!antiForgeryValidationFeature.IsValid)
+                {
+                    Log.MiddlewareAntiforgeryValidationFailed(_logger);
+                }
+                else
+                {
+                    valid = true;
+                    Log.MiddlewareAntiforgeryValidationSucceeded(_logger);
+                }
+            }
+            else
+            {
+                if (antiforgery == null)
+                {
+                    valid = true;
+                    Log.EndpointAntiforgeryValidationDisabled(_logger);
+                }
+                else
+                {
+                    valid = await antiforgery.IsRequestValidAsync(context);
+                    if (valid)
+                    {
+                        Log.EndpointAntiforgeryValidationSucceeded(_logger);
+                    }
+                    else
+                    {
+                        Log.EndpointAntiforgeryValidationFailed(_logger);
+                    }
+                }
+            }
+
             if (!valid)
             {
-                _context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                context.Response.StatusCode = StatusCodes.Status400BadRequest;
 
-                if (_context.RequestServices.GetService<IHostEnvironment>()?.IsDevelopment() == true)
+                if (context.RequestServices.GetService<IHostEnvironment>()?.IsDevelopment() == true)
                 {
-                    await _context.Response.WriteAsync("A valid antiforgery token was not provided with the request. Add an antiforgery token, or disable antiforgery validation for this endpoint.");
+                    await context.Response.WriteAsync("A valid antiforgery token was not provided with the request. Add an antiforgery token, or disable antiforgery validation for this endpoint.");
                 }
                 return RequestValidationState.InvalidPostRequest;
             }
 
-            var handler = GetFormHandler(out var isBadRequest);
+            // Read the form asynchronously to ensure Request.Form has been populated.
+            await context.Request.ReadFormAsync();
+
+            var handler = GetFormHandler(context, out var isBadRequest);
             return new(valid && !isBadRequest, isPost, handler);
         }
 
         return RequestValidationState.ValidNonPostRequest;
     }
 
-    private string? GetFormHandler(out bool isBadRequest)
+    private static string? GetFormHandler(HttpContext context, out bool isBadRequest)
     {
         isBadRequest = false;
-        if (_context.Request.Form.TryGetValue("_handler", out var value))
+        if (context.Request.Form.TryGetValue("_handler", out var value))
         {
             if (value.Count != 1)
             {
-                _context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                context.Response.StatusCode = StatusCodes.Status400BadRequest;
                 isBadRequest = true;
             }
             else
@@ -162,13 +205,6 @@ internal class RazorComponentEndpointInvoker
             }
         }
         return null;
-    }
-
-    private static TextWriter CreateResponseWriter(Stream bodyStream)
-    {
-        // Matches MVC's MemoryPoolHttpResponseStreamWriterFactory.DefaultBufferSize
-        const int DefaultBufferSize = 16 * 1024;
-        return new HttpResponseStreamWriter(bodyStream, Encoding.UTF8, DefaultBufferSize, ArrayPool<byte>.Shared, ArrayPool<char>.Shared);
     }
 
     [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
@@ -187,12 +223,26 @@ internal class RazorComponentEndpointInvoker
         {
             return $"{nameof(RequestValidationState)}: {IsValid} {IsPost} {HandlerName}";
         }
+    }
 
-        public void Deconstruct(out bool isValid, out bool isPost, out string? handlerName)
-        {
-            isValid = IsValid;
-            isPost = IsPost;
-            handlerName = HandlerName;
-        }
+    public static partial class Log
+    {
+        [LoggerMessage(1, LogLevel.Debug, "Begin render root component '{componentType}' with page '{pageType}'.", EventName = "BeginRenderRootComponent")]
+        public static partial void BeginRenderComponent(ILogger<RazorComponentEndpointInvoker> logger, string componentType, string pageType);
+
+        [LoggerMessage(2, LogLevel.Debug, "The antiforgery middleware already failed to validate the current token.", EventName = "MiddlewareAntiforgeryValidationFailed")]
+        public static partial void MiddlewareAntiforgeryValidationFailed(ILogger<RazorComponentEndpointInvoker> logger);
+
+        [LoggerMessage(3, LogLevel.Debug, "The antiforgery middleware already succeeded to validate the current token.", EventName = "MiddlewareAntiforgeryValidationSucceeded")]
+        public static partial void MiddlewareAntiforgeryValidationSucceeded(ILogger<RazorComponentEndpointInvoker> logger);
+
+        [LoggerMessage(4, LogLevel.Debug, "The endpoint disabled antiforgery token validation.", EventName = "EndpointAntiforgeryValidationDisabled")]
+        public static partial void EndpointAntiforgeryValidationDisabled(ILogger<RazorComponentEndpointInvoker> logger);
+
+        [LoggerMessage(5, LogLevel.Information, "Antiforgery token validation failed for the current request.", EventName = "EndpointAntiforgeryValidationFailed")]
+        public static partial void EndpointAntiforgeryValidationFailed(ILogger<RazorComponentEndpointInvoker> logger);
+
+        [LoggerMessage(6, LogLevel.Debug, "Antiforgery token validation succeeded for the current request.", EventName = "EndpointAntiforgeryValidationSucceeded")]
+        public static partial void EndpointAntiforgeryValidationSucceeded(ILogger<RazorComponentEndpointInvoker> logger);
     }
 }

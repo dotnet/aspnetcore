@@ -12,6 +12,7 @@ using System.Globalization;
 
 namespace Microsoft.AspNetCore.Components.E2ETests.ServerRenderingTests;
 
+[CollectionDefinition(nameof(EnhancedNavigationTest), DisableParallelization = true)]
 public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>>>
 {
     public EnhancedNavigationTest(
@@ -144,9 +145,127 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.Contains("microsoft.com", () => Browser.Url);
     }
 
+    [Theory]
+    [InlineData("server")]
+    [InlineData("webassembly")]
+    public void CanPerformProgrammaticEnhancedNavigation(string renderMode)
+    {
+        Navigate($"{ServerPathBase}/nav");
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+
+        // Normally, you shouldn't store references to elements because they could become stale references
+        // after the page re-renders. However, we want to explicitly test that the element persists across
+        // renders to ensure that enhanced navigation occurs instead of a full page reload.
+        // Here, we pick an element that we know will persist across navigations so we can check
+        // for its staleness.
+        var elementForStalenessCheck = Browser.Exists(By.TagName("html"));
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText($"Interactive component navigation ({renderMode})")).Click();
+        Browser.Equal("Page with interactive components that navigate", () => Browser.Exists(By.TagName("h1")).Text);
+        Browser.False(() => IsElementStale(elementForStalenessCheck));
+
+        Browser.Exists(By.Id("navigate-to-another-page")).Click();
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+        Assert.EndsWith("/nav", Browser.Url);
+        Browser.False(() => IsElementStale(elementForStalenessCheck));
+
+        // Ensure that the history stack was correctly updated
+        Browser.Navigate().Back();
+        Browser.Equal("Page with interactive components that navigate", () => Browser.Exists(By.TagName("h1")).Text);
+        Browser.False(() => IsElementStale(elementForStalenessCheck));
+
+        Browser.Navigate().Back();
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+        Assert.EndsWith("/nav", Browser.Url);
+        Browser.False(() => IsElementStale(elementForStalenessCheck));
+    }
+
+    [Theory]
+    [InlineData("server")]
+    [InlineData("webassembly")]
+    public void CanPerformProgrammaticEnhancedRefresh(string renderMode)
+    {
+        Navigate($"{ServerPathBase}/nav");
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText($"Interactive component navigation ({renderMode})")).Click();
+        Browser.Equal("Page with interactive components that navigate", () => Browser.Exists(By.TagName("h1")).Text);
+
+        // Normally, you shouldn't store references to elements because they could become stale references
+        // after the page re-renders. However, we want to explicitly test that the element persists across
+        // renders to ensure that enhanced navigation occurs instead of a full page reload.
+        var renderIdElement = Browser.Exists(By.Id("render-id"));
+        var initialRenderId = -1;
+        Browser.True(() => int.TryParse(renderIdElement.Text, out initialRenderId));
+        Assert.NotEqual(-1, initialRenderId);
+
+        Browser.Exists(By.Id("perform-enhanced-refresh")).Click();
+        Browser.True(() =>
+        {
+            if (IsElementStale(renderIdElement) || !int.TryParse(renderIdElement.Text, out var newRenderId))
+            {
+                return false;
+            }
+
+            return newRenderId > initialRenderId;
+        });
+
+        // Ensure that the history stack was correctly updated
+        Browser.Navigate().Back();
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+        Assert.EndsWith("/nav", Browser.Url);
+    }
+
+    [Theory]
+    [InlineData("server")]
+    [InlineData("webassembly")]
+    public void NavigateToCanFallBackOnFullPageReload(string renderMode)
+    {
+        Navigate($"{ServerPathBase}/nav");
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText($"Interactive component navigation ({renderMode})")).Click();
+        Browser.Equal("Page with interactive components that navigate", () => Browser.Exists(By.TagName("h1")).Text);
+
+        // Normally, you shouldn't store references to elements because they could become stale references
+        // after the page re-renders. However, we want to explicitly test that the element becomes stale
+        // across renders to ensure that a full page reload occurs.
+        var initialRenderIdElement = Browser.Exists(By.Id("render-id"));
+        var initialRenderId = -1;
+        Browser.True(() => int.TryParse(initialRenderIdElement.Text, out initialRenderId));
+        Assert.NotEqual(-1, initialRenderId);
+
+        Browser.Exists(By.Id("perform-page-reload")).Click();
+        Browser.True(() => IsElementStale(initialRenderIdElement));
+
+        var finalRenderIdElement = Browser.Exists(By.Id("render-id"));
+        var finalRenderId = -1;
+        Browser.True(() => int.TryParse(finalRenderIdElement.Text, out finalRenderId));
+        Assert.NotEqual(-1, initialRenderId);
+        Assert.True(finalRenderId > initialRenderId);
+
+        // Ensure that the history stack was correctly updated
+        Browser.Navigate().Back();
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+        Assert.EndsWith("/nav", Browser.Url);
+    }
+
     private long BrowserScrollY
     {
         get => Convert.ToInt64(((IJavaScriptExecutor)Browser).ExecuteScript("return window.scrollY"), CultureInfo.CurrentCulture);
         set => ((IJavaScriptExecutor)Browser).ExecuteScript($"window.scrollTo(0, {value})");
+    }
+
+    private static bool IsElementStale(IWebElement element)
+    {
+        try
+        {
+            _ = element.Enabled;
+            return false;
+        }
+        catch (StaleElementReferenceException)
+        {
+            return true;
+        }
     }
 }

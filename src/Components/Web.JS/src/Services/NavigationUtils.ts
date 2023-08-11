@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 let hasInteractiveRouterValue = false;
+let programmaticEnhancedNavigationHandler: typeof performProgrammaticEnhancedNavigation | undefined;
 
 /**
  * Checks if a click event corresponds to an <a> tag referencing a URL within the base href, and that interception
@@ -41,6 +42,22 @@ export function isWithinBaseUriSpace(href: string) {
 
   return href.startsWith(baseUriWithoutTrailingSlash)
   && (nextChar === '' || nextChar === '/' || nextChar === '?' || nextChar === '#');
+}
+
+export function hasProgrammaticEnhancedNavigationHandler(): boolean {
+  return programmaticEnhancedNavigationHandler !== undefined;
+}
+
+export function attachProgrammaticEnhancedNavigationHandler(handler: typeof programmaticEnhancedNavigationHandler) {
+  programmaticEnhancedNavigationHandler = handler;
+}
+
+export function performProgrammaticEnhancedNavigation(absoluteInternalHref: string, replace: boolean): void {
+  if (!programmaticEnhancedNavigationHandler) {
+    throw new Error('No enhanced programmatic navigation handler has been attached');
+  }
+
+  programmaticEnhancedNavigationHandler(absoluteInternalHref, replace);
 }
 
 function toBaseUriWithoutTrailingSlash(baseUri: string) {

@@ -35,7 +35,6 @@ public class BootResourceCachingTest
         return base.InitializeAsync(Guid.NewGuid().ToString());
     }
 
-    /* Active Issue https://github.com/dotnet/runtime/issues/89883
     [Fact]
     public void CachesResourcesAfterFirstLoad()
     {
@@ -62,7 +61,7 @@ public class BootResourceCachingTest
     }
 
     [Fact]
-    public void IncrementallyUpdatesCache()
+    public async Task IncrementallyUpdatesCache()
     {
         // Perform a first load to populate the cache
         Navigate("/");
@@ -93,12 +92,12 @@ public class BootResourceCachingTest
             requestedDll => Assert.Contains("/dotnet.native.wasm", requestedDll));
 
         // We also update the cache (add new items, remove unnecessary items)
+        await Task.Delay(10500); // wait for cache purge, which is 10 seconds delayed after app start
         var cacheEntryUrls3 = GetCacheEntryUrls();
         Assert.Contains(cacheEntryForComponentsDll, cacheEntryUrls3);
         Assert.Contains(cacheEntryForDotNetWasm, cacheEntryUrls3);
         Assert.DoesNotContain(cacheEntryForDotNetWasmWithChangedHash, cacheEntryUrls3);
     }
-    */
 
     private IReadOnlyCollection<string> GetCacheEntryUrls()
     {

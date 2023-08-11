@@ -22,7 +22,7 @@ public class RequestHeaderTests
 
         var requestStructure = new HttpApiTypes.HTTP_REQUEST();
         SetHostAndContentTypeHeaders(nativeMemory, ref requestStructure);
-        MemoryMarshal.Write(nativeMemory, ref requestStructure);
+        MemoryMarshal.Write(nativeMemory, in requestStructure);
 
         var requestHeaders = new RequestHeaders(nativeContext);
         nativeContext.ReleasePins();
@@ -43,7 +43,7 @@ public class RequestHeaderTests
 
         var requestStructure = new HttpApiTypes.HTTP_REQUEST();
         SetHostAndContentTypeHeaders(nativeMemory, ref requestStructure);
-        MemoryMarshal.Write(nativeMemory, ref requestStructure);
+        MemoryMarshal.Write(nativeMemory, in requestStructure);
 
         var nativeContext = new NativeRequestContext((HttpApiTypes.HTTP_REQUEST*)handle.Pointer, false);
         var requestHeaders = new RequestHeaders(nativeContext);
@@ -63,7 +63,7 @@ public class RequestHeaderTests
 
         var requestStructure = new HttpApiTypes.HTTP_REQUEST();
         SetUnknownHeaders(nativeMemory, ref requestStructure, new[] { (CustomHeader1, "1"), (CustomHeader2, null) });
-        MemoryMarshal.Write(nativeMemory, ref requestStructure);
+        MemoryMarshal.Write(nativeMemory, in requestStructure);
 
         var requestHeaders = new RequestHeaders(nativeContext);
         nativeContext.ReleasePins();
@@ -84,7 +84,7 @@ public class RequestHeaderTests
 
         var requestStructure = new HttpApiTypes.HTTP_REQUEST();
         SetUnknownHeaders(nativeMemory, ref requestStructure, new[] { (CustomHeader1, "1"), (CustomHeader2, null) });
-        MemoryMarshal.Write(nativeMemory, ref requestStructure);
+        MemoryMarshal.Write(nativeMemory, in requestStructure);
 
         var nativeContext = new NativeRequestContext((HttpApiTypes.HTTP_REQUEST*)handle.Pointer, false);
         var requestHeaders = new RequestHeaders(nativeContext);
@@ -104,7 +104,7 @@ public class RequestHeaderTests
 
         var requestStructure = new HttpApiTypes.HTTP_REQUEST();
         SetInvalidHostHeader(nativeMemory, ref requestStructure);
-        MemoryMarshal.Write(nativeMemory, ref requestStructure);
+        MemoryMarshal.Write(nativeMemory, in requestStructure);
 
         var requestHeaders = new RequestHeaders(nativeContext);
         nativeContext.ReleasePins();
@@ -123,7 +123,7 @@ public class RequestHeaderTests
 
         var requestStructure = new HttpApiTypes.HTTP_REQUEST();
         SetInvalidUnknownHeaders(nativeMemory, ref requestStructure, new[] { CustomHeader1 });
-        MemoryMarshal.Write(nativeMemory, ref requestStructure);
+        MemoryMarshal.Write(nativeMemory, in requestStructure);
 
         var requestHeaders = new RequestHeaders(nativeContext);
         nativeContext.ReleasePins();
@@ -143,7 +143,7 @@ public class RequestHeaderTests
         var requestStructure = new HttpApiTypes.HTTP_REQUEST();
         var remainingMemory = SetUnknownHeaders(nativeMemory, ref requestStructure, new[] { (CustomHeader1, "1"), (CustomHeader2, null) });
         SetHostAndContentTypeHeaders(remainingMemory, ref requestStructure);
-        MemoryMarshal.Write(nativeMemory, ref requestStructure);
+        MemoryMarshal.Write(nativeMemory, in requestStructure);
 
         var requestHeaders = new RequestHeaders(nativeContext);
         nativeContext.ReleasePins();
@@ -167,7 +167,7 @@ public class RequestHeaderTests
         var requestStructure = new HttpApiTypes.HTTP_REQUEST();
         var remainingMemory = SetUnknownHeaders(nativeMemory, ref requestStructure, new[] { (CustomHeader1, "1"), (CustomHeader2, null) });
         SetHostAndContentTypeHeaders(remainingMemory, ref requestStructure);
-        MemoryMarshal.Write(nativeMemory, ref requestStructure);
+        MemoryMarshal.Write(nativeMemory, in requestStructure);
 
         var nativeContext = new NativeRequestContext((HttpApiTypes.HTTP_REQUEST*)handle.Pointer, false);
         var requestHeaders = new RequestHeaders(nativeContext);
@@ -189,7 +189,7 @@ public class RequestHeaderTests
 
         var requestStructure = new HttpApiTypes.HTTP_REQUEST();
         SetUnknownHeaders(nativeMemory, ref requestStructure, new[] { (CustomHeader1, "1"), (CustomHeader2, null) });
-        MemoryMarshal.Write(nativeMemory, ref requestStructure);
+        MemoryMarshal.Write(nativeMemory, in requestStructure);
 
         var requestHeaders = new RequestHeaders(nativeContext);
         nativeContext.ReleasePins();
@@ -211,7 +211,7 @@ public class RequestHeaderTests
 
         var requestStructure = new HttpApiTypes.HTTP_REQUEST();
         SetUnknownHeaders(nativeMemory, ref requestStructure, new[] { (CustomHeader1, "1") });
-        MemoryMarshal.Write(nativeMemory, ref requestStructure);
+        MemoryMarshal.Write(nativeMemory, in requestStructure);
 
         var requestHeaders = new RequestHeaders(nativeContext);
         nativeContext.ReleasePins();
@@ -233,7 +233,7 @@ public class RequestHeaderTests
 
         var requestStructure = new HttpApiTypes.HTTP_REQUEST();
         SetUnknownHeaders(nativeMemory, ref requestStructure, new[] { (CustomHeader1, "1"), (CustomHeader2, null) });
-        MemoryMarshal.Write(nativeMemory, ref requestStructure);
+        MemoryMarshal.Write(nativeMemory, in requestStructure);
 
         var requestHeaders = new RequestHeaders(nativeContext);
         nativeContext.ReleasePins();
@@ -254,7 +254,7 @@ public class RequestHeaderTests
 
         var requestStructure = new HttpApiTypes.HTTP_REQUEST();
         SetUnknownHeaders(nativeMemory, ref requestStructure, new[] { (CustomHeader1, "1") });
-        MemoryMarshal.Write(nativeMemory, ref requestStructure);
+        MemoryMarshal.Write(nativeMemory, in requestStructure);
 
         var requestHeaders = new RequestHeaders(nativeContext);
         nativeContext.ReleasePins();
@@ -274,7 +274,7 @@ public class RequestHeaderTests
 
         var requestStructure = new HttpApiTypes.HTTP_REQUEST();
         SetHostAndContentTypeHeaders(nativeMemory, ref requestStructure);
-        MemoryMarshal.Write(nativeMemory, ref requestStructure);
+        MemoryMarshal.Write(nativeMemory, in requestStructure);
 
         var requestHeaders = new RequestHeaders(nativeContext);
         nativeContext.ReleasePins();
@@ -296,7 +296,7 @@ public class RequestHeaderTests
 
         var requestStructure = new HttpApiTypes.HTTP_REQUEST();
         SetHostAndContentTypeHeaders(nativeMemory, ref requestStructure);
-        MemoryMarshal.Write(nativeMemory, ref requestStructure);
+        MemoryMarshal.Write(nativeMemory, in requestStructure);
 
         var requestHeaders = new RequestHeaders(nativeContext);
         nativeContext.ReleasePins();
@@ -318,7 +318,7 @@ public class RequestHeaderTests
 
         var requestStructure = new HttpApiTypes.HTTP_REQUEST();
         SetHostAndContentTypeHeaders(nativeMemory, ref requestStructure);
-        MemoryMarshal.Write(nativeMemory, ref requestStructure);
+        MemoryMarshal.Write(nativeMemory, in requestStructure);
 
         var requestHeaders = new RequestHeaders(nativeContext);
         nativeContext.ReleasePins();
@@ -339,7 +339,7 @@ public class RequestHeaderTests
 
         var requestStructure = new HttpApiTypes.HTTP_REQUEST();
         SetHostAndContentTypeHeaders(nativeMemory, ref requestStructure);
-        MemoryMarshal.Write(nativeMemory, ref requestStructure);
+        MemoryMarshal.Write(nativeMemory, in requestStructure);
 
         var requestHeaders = new RequestHeaders(nativeContext);
         nativeContext.ReleasePins();
@@ -427,7 +427,7 @@ public class RequestHeaderTests
                 }
                 dataDestination = dataDestination.Slice(nameLength);
             }
-            MemoryMarshal.Write(unknownHeaderStructureDestination, ref unknownHeaderStructure);
+            MemoryMarshal.Write(unknownHeaderStructureDestination, in unknownHeaderStructure);
             unknownHeaderStructureDestination = unknownHeaderStructureDestination.Slice(unknownHeadersSize);
         }
         return dataDestination;
@@ -459,7 +459,7 @@ public class RequestHeaderTests
             }
             dataDestination = dataDestination.Slice(nameLength);
 
-            MemoryMarshal.Write(unknownHeaderStructureDestination, ref unknownHeaderStructure);
+            MemoryMarshal.Write(unknownHeaderStructureDestination, in unknownHeaderStructure);
             unknownHeaderStructureDestination = unknownHeaderStructureDestination.Slice(unknownHeadersSize);
         }
         return dataDestination;

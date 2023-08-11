@@ -538,8 +538,15 @@ public class ShutdownTests : IISFunctionalTestBase
             var response = await deploymentResult.HttpClient.GetAsync("/Abort").TimeoutAfter(TimeoutExtensions.DefaultTimeoutValue);
 
             Assert.Equal(HttpStatusCode.BadGateway, response.StatusCode);
+
+#if NEWSHIM_FUNCTIONALS
+            // In-proc SocketConnection isn't used and there's no abort
             // 0x80072f78 ERROR_HTTP_INVALID_SERVER_RESPONSE The server returned an invalid or unrecognized response
             Assert.Contains("0x80072f78", await response.Content.ReadAsStringAsync());
+#else
+            // 0x80072efe ERROR_INTERNET_CONNECTION_ABORTED The connection with the server was terminated abnormally
+            Assert.Contains("0x80072efe", await response.Content.ReadAsStringAsync());
+#endif
         }
         catch (HttpRequestException)
         {

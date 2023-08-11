@@ -55,6 +55,7 @@ namespace Microsoft.AspNetCore.Http.Generated
     %GENERATEDCODEATTRIBUTE%
     file static class GeneratedRouteBuilderExtensionsCore
     {
+        private static readonly JsonOptions FallbackJsonOptions = new();
         private static readonly string[] PostVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Post };
 
         [InterceptsLocation(@"TestMapActions.cs", 25, 13)]
@@ -97,10 +98,12 @@ namespace Microsoft.AspNetCore.Http.Generated
                 EndpointFilterDelegate? filteredInvocation = null;
                 var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
                 var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
-                var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? new JsonOptions();
-                var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonOptions.SerializerOptions.GetTypeInfo(typeof(object));
+                var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? FallbackJsonOptions;
+                var jsonSerializerOptions = jsonOptions.SerializerOptions;
+                jsonSerializerOptions.MakeReadOnly();
+                var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonSerializerOptions.GetTypeInfo(typeof(object));
                 var serviceProviderIsService = serviceProvider?.GetService<IServiceProviderIsService>();
-                var x_JsonBodyOrServiceResolver = ResolveJsonBodyOrService<global::Microsoft.AspNetCore.Http.Generators.Tests.CustomMetadataEmitter>(logOrThrowExceptionHelper, "CustomMetadataEmitter", "x", jsonOptions, serviceProviderIsService);
+                var x_JsonBodyOrServiceResolver = ResolveJsonBodyOrService<global::Microsoft.AspNetCore.Http.Generators.Tests.CustomMetadataEmitter>(logOrThrowExceptionHelper, "CustomMetadataEmitter", "x", jsonSerializerOptions, serviceProviderIsService);
 
                 if (options.EndpointBuilder.FilterFactories.Count > 0)
                 {
@@ -298,7 +301,7 @@ namespace Microsoft.AspNetCore.Http.Generated
 
             return (true, bodyValue);
         }
-        private static Func<HttpContext, bool, ValueTask<(bool, T?)>> ResolveJsonBodyOrService<T>(LogOrThrowExceptionHelper logOrThrowExceptionHelper, string parameterTypeName, string parameterName, JsonOptions jsonOptions, IServiceProviderIsService? serviceProviderIsService = null)
+        private static Func<HttpContext, bool, ValueTask<(bool, T?)>> ResolveJsonBodyOrService<T>(LogOrThrowExceptionHelper logOrThrowExceptionHelper, string parameterTypeName, string parameterName, JsonSerializerOptions jsonSerializerOptions, IServiceProviderIsService? serviceProviderIsService = null)
         {
             if (serviceProviderIsService is not null)
             {
@@ -307,7 +310,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     return static (httpContext, isOptional) => new ValueTask<(bool, T?)>((true, httpContext.RequestServices.GetService<T>()));
                 }
             }
-            var jsonTypeInfo = (JsonTypeInfo<T>)jsonOptions.SerializerOptions.GetTypeInfo(typeof(T));
+            var jsonTypeInfo = (JsonTypeInfo<T>)jsonSerializerOptions.GetTypeInfo(typeof(T));
             return (httpContext, isOptional) => TryResolveBodyAsync<T>(httpContext, logOrThrowExceptionHelper, isOptional, parameterTypeName, parameterName, jsonTypeInfo, isInferred: true);
         }
         private static void PopulateMetadataForEndpoint<T>(MethodInfo method, EndpointBuilder builder)

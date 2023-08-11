@@ -6,30 +6,16 @@ import { WebAssemblyComponentDescriptor } from '../Services/ComponentDescriptorD
 import { RootComponentManager } from '../Services/RootComponentManager';
 
 export class WebAssemblyComponentAttacher {
-  public preregisteredComponents: WebAssemblyComponentDescriptor[];
+  private componentManager: RootComponentManager<WebAssemblyComponentDescriptor>;
 
-  private componentsById: { [index: number]: WebAssemblyComponentDescriptor };
-
-  private rootComponentManager?: RootComponentManager;
-
-  public constructor(components: WebAssemblyComponentDescriptor[] | RootComponentManager) {
-    this.componentsById = {};
-    if (components instanceof RootComponentManager) {
-      this.preregisteredComponents = [];
-      this.rootComponentManager = components;
-    } else {
-      this.preregisteredComponents = components;
-      for (let index = 0; index < components.length; index++) {
-        const component = components[index];
-        this.componentsById[component.id] = component;
-      }
-    }
+  public constructor(componentManager: RootComponentManager<WebAssemblyComponentDescriptor>) {
+    this.componentManager = componentManager;
   }
 
   public resolveRegisteredElement(id: string, componentId: number): LogicalElement | undefined {
     const parsedId = Number.parseInt(id);
     if (!Number.isNaN(parsedId)) {
-      const component = this.rootComponentManager?.resolveRootComponent(parsedId, componentId) || this.componentsById[parsedId];
+      const component = this.componentManager.resolveRootComponent(parsedId, componentId);
       return toLogicalRootCommentElement(component);
     } else {
       return undefined;
@@ -37,26 +23,22 @@ export class WebAssemblyComponentAttacher {
   }
 
   public getParameterValues(id: number): string | undefined {
-    return this.componentsById[id].parameterValues;
+    return this.componentManager.initialComponents[id].parameterValues;
   }
 
   public getParameterDefinitions(id: number): string | undefined {
-    return this.componentsById[id].parameterDefinitions;
+    return this.componentManager.initialComponents[id].parameterDefinitions;
   }
 
   public getTypeName(id: number): string {
-    return this.componentsById[id].typeName;
+    return this.componentManager.initialComponents[id].typeName;
   }
 
   public getAssembly(id: number): string {
-    return this.componentsById[id].assembly;
-  }
-
-  public getId(index: number): number {
-    return this.preregisteredComponents[index].id;
+    return this.componentManager.initialComponents[id].assembly;
   }
 
   public getCount(): number {
-    return this.preregisteredComponents.length;
+    return this.componentManager.initialComponents.length;
   }
 }

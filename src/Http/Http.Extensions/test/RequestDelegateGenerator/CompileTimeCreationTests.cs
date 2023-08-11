@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
@@ -357,5 +358,51 @@ app.MapGet("/optional-struct-with-filter", (BindableStruct? param) => $"Hello {p
 
             await VerifyResponseBodyAsync(httpContext, $"Hello {endpoint.DisplayName}!");
         }
+    }
+
+    [Fact]
+    public async Task MapAction_NoJsonTypeInfoResolver_ThrowsException()
+    {
+        var source = """
+app.MapGet("/", () => "Hello world!");
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var serviceProvider = CreateServiceProvider(serviceCollection =>
+        {
+            serviceCollection.ConfigureHttpJsonOptions(o => o.SerializerOptions.TypeInfoResolver = null);
+        });
+        var exception = Assert.Throws<InvalidOperationException>(() => GetEndpointFromCompilation(compilation, serviceProvider: serviceProvider));
+        Assert.Equal("JsonSerializerOptions instance must specify a TypeInfoResolver setting before being marked as read-only.", exception.Message);
+    }
+
+    public static IEnumerable<object[]> NullResult
+    {
+        get
+        {
+            return new List<object[]>
+            {
+                new object[] { "IResult? () => null", "The IResult returned by the Delegate must not be null." },
+                new object[] { "Task<IResult?>? () => null", "The Task returned by the Delegate must not be null." },
+                new object[] { "Task<bool?>? () => null", "The Task returned by the Delegate must not be null." },
+                new object[] { "Task<IResult?> () => Task.FromResult<IResult?>(null)", "The IResult returned by the Delegate must not be null." },
+                new object[] { "ValueTask<IResult?> () => ValueTask.FromResult<IResult?>(null)", "The IResult returned by the Delegate must not be null." },
+            };
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(NullResult))]
+    public async Task RequestDelegateThrowsInvalidOperationExceptionOnNullDelegate(string innerSource, string message)
+    {
+        var source = $"""
+app.MapGet("/", {innerSource});
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await endpoint.RequestDelegate(httpContext));
+
+        Assert.Equal(message, exception.Message);
     }
 }

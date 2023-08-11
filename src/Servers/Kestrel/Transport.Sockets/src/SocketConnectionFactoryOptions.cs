@@ -23,7 +23,11 @@ public class SocketConnectionFactoryOptions
         MaxWriteBufferSize = transportOptions.MaxWriteBufferSize;
         UnsafePreferInlineScheduling = transportOptions.UnsafePreferInlineScheduling;
         MemoryPoolFactory = transportOptions.MemoryPoolFactory;
+        FinOnError = transportOptions.FinOnError;
     }
+
+    // Opt-out flag for back compat. Remove in 9.0 (or make public).
+    internal bool FinOnError { get; set; }
 
     /// <summary>
     /// The number of I/O queues used to process requests. Set to 0 to directly schedule I/O to the ThreadPool.

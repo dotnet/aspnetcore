@@ -14,7 +14,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
-[DebuggerDisplay("Count = {Count}")]
+[DebuggerDisplay("{DebuggerToString(),nq}")]
 [DebuggerTypeProxy(typeof(HttpHeadersDebugView))]
 internal abstract partial class HttpHeaders : IHeaderDictionary
 {
@@ -261,6 +261,16 @@ internal abstract partial class HttpHeaders : IHeaderDictionary
     bool IDictionary<string, StringValues>.TryGetValue(string key, out StringValues value)
     {
         return TryGetValueFast(key, out value);
+    }
+
+    internal string DebuggerToString()
+    {
+        var debugText = $"Count = {Count}";
+        if (_isReadOnly)
+        {
+            debugText += ", IsReadOnly = true";
+        }
+        return debugText;
     }
 
     public static void ValidateHeaderValueCharacters(string headerName, StringValues headerValues, Func<string, Encoding?> encodingSelector)

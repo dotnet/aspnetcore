@@ -7,9 +7,6 @@
 #include "EventLog.h"
 #include "file_utility.h"
 #include "exceptions.h"
-//#include <share.h>
-
-//extern BOOL g_fNsiApiNotSupported;
 
 #define STARTUP_TIME_LIMIT_INCREMENT_IN_MILLISECONDS 5000
 
@@ -114,33 +111,21 @@ SERVER_PROCESS::GetRandomPort
     DWORD   dwActualProcessId = 0;
 
     std::uniform_int_distribution<> dist(MIN_PORT_RANDOM, MAX_PORT);
-
-    if (g_fNsiApiNotSupported)
+    DWORD cRetry = 0;
+    do
     {
         //
-        // the default value for optional parameter dwExcludedPort is 0 which is reserved
-        // a random number between MIN_PORT_RANDOM and MAX_PORT
+        // ignore dwActualProcessId because here we are
+        // determing whether the randomly generated port is
+        // in use by any other process.
         //
         while ((*pdwPickedPort = dist(m_randomGenerator)) == dwExcludedPort);
-    }
-    else
-    {
-        DWORD cRetry = 0;
-        do
-        {
-            //
-            // ignore dwActualProcessId because here we are
-            // determing whether the randomly generated port is
-            // in use by any other process.
-            //
-            while ((*pdwPickedPort = dist(m_randomGenerator)) == dwExcludedPort);
-            hr = CheckIfServerIsUp(*pdwPickedPort, &dwActualProcessId, &fPortInUse);
-        } while (fPortInUse && ++cRetry < MAX_RETRY);
+        hr = CheckIfServerIsUp(*pdwPickedPort, &dwActualProcessId, &fPortInUse);
+    } while (fPortInUse && ++cRetry < MAX_RETRY);
 
-        if (cRetry >= MAX_RETRY)
-        {
-            hr = HRESULT_FROM_WIN32(ERROR_PORT_NOT_SET);
-        }
+    if (cRetry >= MAX_RETRY)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_PORT_NOT_SET);
     }
 
     return hr;
@@ -579,71 +564,68 @@ SERVER_PROCESS::PostStartCheck(
         fDebuggerAttached = FALSE;
     }
 
-    if (!g_fNsiApiNotSupported)
+    //
+    // NsiAPI(GetExtendedTcpTable) is supported. we should check whether processIds match
+    //
+    if (dwActualProcessId == m_dwProcessId)
     {
-        //
-        // NsiAPI(GetExtendedTcpTable) is supported. we should check whether processIds matche
-        //
-        if (dwActualProcessId == m_dwProcessId)
+        m_dwListeningProcessId = m_dwProcessId;
+        fProcessMatch = TRUE;
+    }
+
+    if (!fProcessMatch)
+    {
+        // could be the scenario that backend creates child process
+        if (FAILED_LOG(hr = GetChildProcessHandles()))
         {
-            m_dwListeningProcessId = m_dwProcessId;
-            fProcessMatch = TRUE;
-        }
-
-        if (!fProcessMatch)
-        {
-            // could be the scenario that backend creates child process
-            if (FAILED_LOG(hr = GetChildProcessHandles()))
-            {
-                goto Finished;
-            }
-
-            for (DWORD i = 0; i < m_cChildProcess; ++i)
-            {
-                // a child process listen on the assigned port
-                if (dwActualProcessId == m_dwChildProcessIds[i])
-                {
-                    m_dwListeningProcessId = m_dwChildProcessIds[i];
-                    fProcessMatch = TRUE;
-
-                    if (m_hChildProcessHandles[i] != NULL)
-                    {
-                        if (fDebuggerAttached == FALSE &&
-                            CheckRemoteDebuggerPresent(m_hChildProcessHandles[i], &fDebuggerAttached) == 0)
-                        {
-                            // some error occurred  - assume debugger is not attached;
-                            fDebuggerAttached = FALSE;
-                        }
-
-                        if (FAILED_LOG(hr = RegisterProcessWait(&m_hChildProcessWaitHandles[i],
-                            m_hChildProcessHandles[i])))
-                        {
-                            goto Finished;
-                        }
-                        iChildProcessIndex = i;
-                    }
-                    break;
-                }
-            }
-        }
-
-        if(!fProcessMatch)
-        {
-            //
-            // process that we created is not listening
-            // on the port we specified.
-            //
-            fReady = FALSE;
-            hr = HRESULT_FROM_WIN32(ERROR_CREATE_FAILED);
-            strEventMsg.SafeSnwprintf(
-                ASPNETCORE_EVENT_PROCESS_START_WRONGPORT_ERROR_MSG,
-                m_struAppFullPath.QueryStr(),
-                m_struPhysicalPath.QueryStr(),
-                m_struCommandLine.QueryStr(),
-                m_dwPort,
-                hr);
             goto Finished;
         }
+
+        for (DWORD i = 0; i < m_cChildProcess; ++i)
+        {
+            // a child process listen on the assigned port
+            if (dwActualProcessId == m_dwChildProcessIds[i])
+            {
+                m_dwListeningProcessId = m_dwChildProcessIds[i];
+                fProcessMatch = TRUE;
+
+                if (m_hChildProcessHandles[i] != NULL)
+                {
+                    if (fDebuggerAttached == FALSE &&
+                        CheckRemoteDebuggerPresent(m_hChildProcessHandles[i], &fDebuggerAttached) == 0)
+                    {
+                        // some error occurred  - assume debugger is not attached;
+                        fDebuggerAttached = FALSE;
+                    }
+
+                    if (FAILED_LOG(hr = RegisterProcessWait(&m_hChildProcessWaitHandles[i],
+                        m_hChildProcessHandles[i])))
+                    {
+                        goto Finished;
+                    }
+                    iChildProcessIndex = i;
+                }
+                break;
+            }
+        }
+    }
+
+    if (!fProcessMatch)
+    {
+        //
+        // process that we created is not listening
+        // on the port we specified.
+        //
+        fReady = FALSE;
+        hr = HRESULT_FROM_WIN32(ERROR_CREATE_FAILED);
+        strEventMsg.SafeSnwprintf(
+            ASPNETCORE_EVENT_PROCESS_START_WRONGPORT_ERROR_MSG,
+            m_struAppFullPath.QueryStr(),
+            m_struPhysicalPath.QueryStr(),
+            m_struCommandLine.QueryStr(),
+            m_dwPort,
+            hr);
+        goto Finished;
     }
 
     if (!fReady)
@@ -709,12 +691,9 @@ SERVER_PROCESS::PostStartCheck(
         }
     }
 
-    if (!g_fNsiApiNotSupported)
-    {
-        m_hListeningProcessHandle = OpenProcess(SYNCHRONIZE | PROCESS_TERMINATE | PROCESS_DUP_HANDLE,
-                                                FALSE,
-                                                m_dwListeningProcessId);
-    }
+    m_hListeningProcessHandle = OpenProcess(SYNCHRONIZE | PROCESS_TERMINATE | PROCESS_DUP_HANDLE,
+                                            FALSE,
+                                            m_dwListeningProcessId);
 
     //
     // mark server process as Ready
@@ -1200,7 +1179,6 @@ SERVER_PROCESS::CheckIfServerIsUp(
     MIB_TCPROW_OWNER_PID   *pOwner = NULL;
     DWORD                   dwSize = 1000; // Initial size for pTCPInfo buffer
     int                     iResult = 0;
-    SOCKADDR_IN             sockAddr;
     SOCKET                  socketCheck = INVALID_SOCKET;
 
     DBG_ASSERT(pfReady);
@@ -1212,93 +1190,48 @@ SERVER_PROCESS::CheckIfServerIsUp(
     //
     *pdwProcessId = 0;
 
-    if (!g_fNsiApiNotSupported)
+    while (dwResult == ERROR_INSUFFICIENT_BUFFER)
     {
-        while (dwResult == ERROR_INSUFFICIENT_BUFFER)
+        // Increase the buffer size with additional space, MIB_TCPROW 20 bytes
+        // New entries may be added by other processes before calling GetExtendedTcpTable
+        dwSize += 200;
+
+        if (pTCPInfo != NULL)
         {
-            // Increase the buffer size with additional space, MIB_TCPROW 20 bytes
-            // New entries may be added by other processes before calling GetExtendedTcpTable
-            dwSize += 200;
-
-            if (pTCPInfo != NULL)
-            {
-                HeapFree(GetProcessHeap(), 0, pTCPInfo);
-            }
-
-            pTCPInfo = (MIB_TCPTABLE_OWNER_PID*)HeapAlloc(GetProcessHeap(), 0, dwSize);
-            if (pTCPInfo == NULL)
-            {
-                hr = E_OUTOFMEMORY;
-                goto Finished;
-            }
-
-            dwResult = GetExtendedTcpTable(pTCPInfo,
-                &dwSize,
-                FALSE,
-                AF_INET,
-                TCP_TABLE_OWNER_PID_LISTENER,
-                0);
-
-            if (dwResult != NO_ERROR && dwResult != ERROR_INSUFFICIENT_BUFFER)
-            {
-                hr = HRESULT_FROM_WIN32(dwResult);
-                goto Finished;
-            }
+            HeapFree(GetProcessHeap(), 0, pTCPInfo);
         }
 
-        // iterate pTcpInfo struct to find PID/PORT entry
-        for (DWORD dwLoop = 0; dwLoop < pTCPInfo->dwNumEntries; dwLoop++)
+        pTCPInfo = (MIB_TCPTABLE_OWNER_PID*)HeapAlloc(GetProcessHeap(), 0, dwSize);
+        if (pTCPInfo == NULL)
         {
-            pOwner = &pTCPInfo->table[dwLoop];
-            if (ntohs((USHORT)pOwner->dwLocalPort) == dwPort)
-            {
-                *pdwProcessId = pOwner->dwOwningPid;
-                *pfReady = TRUE;
-                break;
-            }
+            hr = E_OUTOFMEMORY;
+            goto Finished;
+        }
+
+        dwResult = GetExtendedTcpTable(pTCPInfo,
+            &dwSize,
+            FALSE,
+            AF_INET,
+            TCP_TABLE_OWNER_PID_LISTENER,
+            0);
+
+        if (dwResult != NO_ERROR && dwResult != ERROR_INSUFFICIENT_BUFFER)
+        {
+            hr = HRESULT_FROM_WIN32(dwResult);
+            goto Finished;
         }
     }
-    else
+
+    // iterate pTcpInfo struct to find PID/PORT entry
+    for (DWORD dwLoop = 0; dwLoop < pTCPInfo->dwNumEntries; dwLoop++)
     {
-        //
-        // We have to open socket to ping the service
-        //
-        socketCheck = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-
-        if (socketCheck == INVALID_SOCKET)
+        pOwner = &pTCPInfo->table[dwLoop];
+        if (ntohs((USHORT)pOwner->dwLocalPort) == dwPort)
         {
-            hr = HRESULT_FROM_WIN32(WSAGetLastError());
-            goto Finished;
+            *pdwProcessId = pOwner->dwOwningPid;
+            *pfReady = TRUE;
+            break;
         }
-
-        sockAddr.sin_family = AF_INET;
-        if (!inet_pton(AF_INET, LOCALHOST, &(sockAddr.sin_addr)))
-        {
-            hr = HRESULT_FROM_WIN32(WSAGetLastError());
-            goto Finished;
-        }
-
-        //sockAddr.sin_addr.s_addr = inet_addr( LOCALHOST );
-        sockAddr.sin_port = htons((u_short)dwPort);
-
-        //
-        // Connect to server.
-        // if connection fails, socket is not closed, we reuse the same socket
-        // while retrying
-        //
-        iResult = connect(socketCheck, (SOCKADDR *)&sockAddr, sizeof(sockAddr));
-        if (iResult == SOCKET_ERROR)
-        {
-            hr = HRESULT_FROM_WIN32(WSAGetLastError());
-            if (hr == HRESULT_FROM_WIN32(WSAECONNREFUSED))
-            {
-                // WSAECONNREFUSED means no application listen on the given port.
-                // This is not a failure. Reset the hresult to S_OK and return fReady to false
-                hr = S_OK;
-            }
-            goto Finished;
-        }
-        *pfReady = TRUE;
     }
 
 Finished:

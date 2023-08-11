@@ -29,7 +29,7 @@ public static class ComponentServiceCollectionExtensions
     /// <param name="services">The <see cref="IServiceCollection"/>.</param>
     /// <param name="configure">A callback to configure <see cref="CircuitOptions"/>.</param>
     /// <returns>An <see cref="IServerSideBlazorBuilder"/> that can be used to further customize the configuration.</returns>
-    [RequiresUnreferencedCode("Server-side Blazor does not currently support native AOT.", Url = "https://aka.ms/aspnet/nativeaot")]
+    [RequiresUnreferencedCode("Server-side Blazor does not currently support trimming or native AOT.", Url = "https://aka.ms/aspnet/trimming")]
     public static IServerSideBlazorBuilder AddServerSideBlazor(this IServiceCollection services, Action<CircuitOptions>? configure = null)
     {
         var builder = new DefaultServerSideBlazorBuilder(services);

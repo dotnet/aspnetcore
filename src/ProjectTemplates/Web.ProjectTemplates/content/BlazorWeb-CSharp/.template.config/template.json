@@ -1,0 +1,304 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Microsoft",
+  "classifications": [
+    "Web",
+    "Blazor",
+    "WebAssembly"
+  ],
+  "name": "Blazor Web App",
+  "defaultName": "BlazorApp",
+  "description": "A project template for creating a Blazor web app that supports both server-side rendering and client interactivity. This template can be used for web apps with rich dynamic user interfaces (UIs).",
+  "groupIdentity": "Microsoft.Web.Blazor",
+  "precedence": "9800",
+  "guids": [
+    "4C26868E-5E7C-458D-82E3-040509D0C71F",
+    "5990939C-7E7B-4CFA-86FF-44CA5756498A",
+    "650B3CE7-2E93-4CC4-9F46-466686815EAA"
+  ],
+  "identity": "Microsoft.Web.Blazor.CSharp.8.0",
+  "thirdPartyNotices": "https://aka.ms/aspnetcore/8.0-third-party-notices",
+  "preferNameDirectory": true,
+  "primaryOutputs": [
+    {
+      "condition": "(UseWebAssembly && (HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\"))",
+      "path": "BlazorWeb-CSharp.sln"
+    },
+    {
+      "condition": "(UseWebAssembly && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+      "path": "BlazorWeb-CSharp/BlazorWeb-CSharp.csproj"
+    },
+    {
+      "condition": "(!UseWebAssembly)",
+      "path": "BlazorWeb-CSharp.csproj"
+    },
+    {
+      "condition": "(UseWebAssembly && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+      "path": "BlazorWeb-CSharp.Client/BlazorWeb-CSharp.Client.csproj"
+    }
+  ],
+  "shortName": "blazor",
+  "sourceName": "BlazorWeb-CSharp",
+  "sources": [
+    {
+      "source": "./",
+      "target": "./",
+      "exclude": [
+        ".template.config/**"
+      ],
+      "copyOnly": [
+        "**/wwwroot/bootstrap/**"
+      ],
+      "modifiers": [
+        {
+          "condition": "(!UseWebAssembly)",
+          "exclude": [
+            "BlazorWeb-CSharp/wwwroot/appsettings.Development.json",
+            "BlazorWeb-CSharp/wwwroot/appsettings.json",
+            "BlazorWeb-CSharp.Client/**",
+            "*.sln"
+          ],
+          "rename": {
+            "BlazorWeb-CSharp/": "./"
+          }
+        },
+        {
+          "condition": "(!UseProgramMain)",
+          "exclude": [
+            "BlazorWeb-CSharp/Program.Main.cs"
+          ]
+        },
+        {
+          "condition": "(UseProgramMain)",
+          "exclude": [
+            "BlazorWeb-CSharp/Program.cs"
+          ],
+          "rename": {
+            "Program.Main.cs": "Program.cs"
+          }
+        },
+        {
+          "condition": "!(UseServer || UseWebAssembly)",
+          "exclude": [
+            "BlazorWeb-CSharp/Components/Pages/Counter.razor"
+          ]
+        },
+        {
+          "condition": "(ExcludeLaunchSettings)",
+          "exclude": [
+            "BlazorWeb-CSharp/Properties/launchSettings.json"
+          ]
+        },
+        {
+          "condition": "(!SampleContent)",
+          "exclude": [
+            "BlazorWeb-CSharp/Components/Pages/Counter.*",
+            "BlazorWeb-CSharp/Components/Pages/Weather.*",
+            "BlazorWeb-CSharp/Components/Layout/NavMenu.*",
+            "BlazorWeb-CSharp/wwwroot/bootstrap/**",
+            "BlazorWeb-CSharp/wwwroot/favicon.*",
+            "BlazorWeb-CSharp.Client/Pages/**",
+            "BlazorWeb-CSharp.Client/wwwroot/**"
+          ]
+        }
+      ]
+    }
+  ],
+  "symbols": {
+    "Framework": {
+      "type": "parameter",
+      "description": "The target framework for the project.",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "net8.0",
+          "description": "Target net8.0"
+        }
+      ],
+      "replaces": "net8.0",
+      "defaultValue": "net8.0"
+    },
+    "HostIdentifier": {
+      "type": "bind",
+      "binding": "HostIdentifier"
+    },
+    "skipRestore": {
+      "type": "parameter",
+      "datatype": "bool",
+      "description": "If specified, skips the automatic restore of the project on create.",
+      "defaultValue": "false"
+    },
+    "ExcludeLaunchSettings": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Whether to exclude launchSettings.json from the generated template."
+    },
+    "kestrelHttpPort": {
+      "type": "parameter",
+      "datatype": "integer",
+      "description": "Port number to use for the HTTP endpoint in launchSettings.json."
+    },
+    "kestrelHttpPortGenerated": {
+      "type": "generated",
+      "generator": "port",
+      "parameters": {
+        "low": 5000,
+        "high": 5300
+      }
+    },
+    "kestrelHttpPortReplacer": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "kestrelHttpPort",
+        "fallbackVariableName": "kestrelHttpPortGenerated"
+      },
+      "replaces": "5000"
+    },
+    "kestrelHttpsPort": {
+      "type": "parameter",
+      "datatype": "integer",
+      "description": "Port number to use for the HTTPS endpoint in launchSettings.json. This option is only applicable when the parameter no-https is not used (no-https will be ignored if either IndividualAuth or OrganizationalAuth is used)."
+    },
+    "kestrelHttpsPortGenerated": {
+      "type": "generated",
+      "generator": "port",
+      "parameters": {
+        "low": 7000,
+        "high": 7300
+      }
+    },
+    "kestrelHttpsPortReplacer": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "kestrelHttpsPort",
+        "fallbackVariableName": "kestrelHttpsPortGenerated"
+      },
+      "replaces": "5001"
+    },
+    "iisHttpPort": {
+      "type": "parameter",
+      "datatype": "integer",
+      "description": "Port number to use for the IIS Express HTTP endpoint in launchSettings.json."
+    },
+    "iisHttpPortGenerated": {
+      "type": "generated",
+      "generator": "port"
+    },
+    "iisHttpPortReplacer": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "iisHttpPort",
+        "fallbackVariableName": "iisHttpPortGenerated"
+      },
+      "replaces": "8080"
+    },
+    "iisHttpsPort": {
+      "type": "parameter",
+      "datatype": "integer",
+      "description": "Port number to use for the IIS Express HTTPS endpoint in launchSettings.json. This option is only applicable when the parameter no-https is not used (no-https will be ignored if either IndividualAuth or OrganizationalAuth is used)."
+    },
+    "iisHttpsPortGenerated": {
+      "type": "generated",
+      "generator": "port",
+      "parameters": {
+        "low": 44300,
+        "high": 44399
+      }
+    },
+    "iisHttpsPortReplacer": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "iisHttpsPort",
+        "fallbackVariableName": "iisHttpsPortGenerated"
+      },
+      "replaces": "44300"
+    },
+    "UseWebAssembly": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "displayName": "_Use interactive WebAssembly components",
+      "description": "Configures whether to support rendering components interactively in the browser using WebAssembly. The default value is false."
+    },
+    "UseServer": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "true",
+      "displayName": "_Use interactive server components",
+      "description": "Configures whether to support rendering components interactively on the server via a SignalR WebSocket connection. The default value is true."
+    },
+    "IncludeSampleContent": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "true",
+      "displayName": "_Include sample pages",
+      "description": "Configures whether to add sample pages and styling to demonstrate basic usage patterns."
+    },
+    "Empty": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Configures whether to omit sample pages and styling that demonstrate basic usage patterns."
+    },
+    "SampleContent": {
+      "type": "computed",
+      "value": "(((IncludeSampleContent && (HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\"))) || ((!Empty && (HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\"))))"
+    },
+    "RequiresHttps": {
+      "type": "computed",
+      "value": "(OrganizationalAuth || IndividualAuth)"
+    },
+    "HasHttpProfile": {
+      "type": "computed",
+      "value": "(!RequiresHttps)"
+    },
+    "HasHttpsProfile": {
+      "type": "computed",
+      "value": "(RequiresHttps || !NoHttps)"
+    },
+    "NoHttps": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Whether to turn off HTTPS. This option only applies if Individual, IndividualB2C, SingleOrg, or MultiOrg aren't used for --auth."
+    },
+    "copyrightYear": {
+      "type": "generated",
+      "generator": "now",
+      "replaces": "copyrightYear",
+      "parameters": {
+        "format": "yyyy"
+      }
+    },
+    "UseProgramMain": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "displayName": "Do not use _top-level statements",
+      "description": "Whether to generate an explicit Program class and Main method instead of top-level statements."
+    }
+  },
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "postActions": [
+    {
+      "id": "restore",
+      "condition": "(!skipRestore)",
+      "description": "Restore NuGet packages required by this project.",
+      "manualInstructions": [
+        {
+          "text": "Run 'dotnet restore'"
+        }
+      ],
+      "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
+      "continueOnError": true
+    }
+  ]
+}

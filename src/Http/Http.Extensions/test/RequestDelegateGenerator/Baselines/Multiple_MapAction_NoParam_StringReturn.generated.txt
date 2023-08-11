@@ -55,6 +55,7 @@ namespace Microsoft.AspNetCore.Http.Generated
     %GENERATEDCODEATTRIBUTE%
     file static class GeneratedRouteBuilderExtensionsCore
     {
+        private static readonly JsonOptions FallbackJsonOptions = new();
         private static readonly string[] GetVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Get };
 
         [InterceptsLocation(@"TestMapActions.cs", 25, 13)]
@@ -81,8 +82,10 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var handler = Cast(del, global::System.String () => throw null!);
                 EndpointFilterDelegate? filteredInvocation = null;
                 var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
-                var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? new JsonOptions();
-                var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonOptions.SerializerOptions.GetTypeInfo(typeof(object));
+                var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? FallbackJsonOptions;
+                var jsonSerializerOptions = jsonOptions.SerializerOptions;
+                jsonSerializerOptions.MakeReadOnly();
+                var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonSerializerOptions.GetTypeInfo(typeof(object));
 
                 if (options.EndpointBuilder.FilterFactories.Count > 0)
                 {
@@ -168,8 +171,10 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var handler = Cast(del, global::System.Threading.Tasks.Task<global::System.String> () => throw null!);
                 EndpointFilterDelegate? filteredInvocation = null;
                 var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
-                var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? new JsonOptions();
-                var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonOptions.SerializerOptions.GetTypeInfo(typeof(object));
+                var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? FallbackJsonOptions;
+                var jsonSerializerOptions = jsonOptions.SerializerOptions;
+                jsonSerializerOptions.MakeReadOnly();
+                var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonSerializerOptions.GetTypeInfo(typeof(object));
 
                 if (options.EndpointBuilder.FilterFactories.Count > 0)
                 {
@@ -179,7 +184,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                         {
                             return (object?)Results.Empty;
                         }
-                        var result = await handler();
+                        var task = handler();
+                        var result = await task;
                         return (object?)result;
                     },
                     options.EndpointBuilder,
@@ -194,7 +200,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                         httpContext.Response.StatusCode = 400;
                         return;
                     }
-                    var result = await handler();
+                    var task = handler();
+                    var result = await task;
                     if (result is string)
                     {
                         httpContext.Response.ContentType ??= "text/plain; charset=utf-8";
@@ -256,8 +263,10 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var handler = Cast(del, global::System.Threading.Tasks.ValueTask<global::System.String> () => throw null!);
                 EndpointFilterDelegate? filteredInvocation = null;
                 var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
-                var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? new JsonOptions();
-                var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonOptions.SerializerOptions.GetTypeInfo(typeof(object));
+                var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? FallbackJsonOptions;
+                var jsonSerializerOptions = jsonOptions.SerializerOptions;
+                jsonSerializerOptions.MakeReadOnly();
+                var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonSerializerOptions.GetTypeInfo(typeof(object));
 
                 if (options.EndpointBuilder.FilterFactories.Count > 0)
                 {
@@ -267,7 +276,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                         {
                             return (object?)Results.Empty;
                         }
-                        var result = await handler();
+                        var task = handler();
+                        var result = await task;
                         return (object?)result;
                     },
                     options.EndpointBuilder,
@@ -282,7 +292,8 @@ namespace Microsoft.AspNetCore.Http.Generated
                         httpContext.Response.StatusCode = 400;
                         return;
                     }
-                    var result = await handler();
+                    var task = handler();
+                    var result = await task;
                     if (result is string)
                     {
                         httpContext.Response.ContentType ??= "text/plain; charset=utf-8";
