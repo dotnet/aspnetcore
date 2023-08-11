@@ -8,6 +8,7 @@ using static Microsoft.AspNetCore.Http.Results;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+builder.Services.AddAntiforgery();
 
 var app = builder.Build();
 

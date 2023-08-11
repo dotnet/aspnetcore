@@ -1,9 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -31,7 +33,7 @@ public abstract class RenderModeEndpointProvider
 
     internal static void AddEndpoints(
         List<Endpoint> endpoints,
-        Type rootComponent,
+        [DynamicallyAccessedMembers(Component)] Type rootComponent,
         IEnumerable<RouteEndpointBuilder> renderModeEndpoints,
         IComponentRenderMode renderMode,
         List<Action<EndpointBuilder>> conventions,

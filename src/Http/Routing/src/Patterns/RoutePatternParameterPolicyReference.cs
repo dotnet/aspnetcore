@@ -10,7 +10,11 @@ namespace Microsoft.AspNetCore.Routing.Patterns;
 /// of <see cref="RoutePatternParameterPolicyReference"/> are immutable.
 /// </summary>
 [DebuggerDisplay("{DebuggerToString()}")]
+#if !COMPONENTS
 public sealed class RoutePatternParameterPolicyReference
+#else
+internal sealed class RoutePatternParameterPolicyReference
+#endif
 {
     internal RoutePatternParameterPolicyReference(string content)
     {

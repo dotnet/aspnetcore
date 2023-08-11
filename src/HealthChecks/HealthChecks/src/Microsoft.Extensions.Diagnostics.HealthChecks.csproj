@@ -35,7 +35,7 @@ Microsoft.Extensions.Diagnostics.HealthChecks.IHealthChecksBuilder
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
 
     <!-- See: https://github.com/dotnet/aspnetcore/issues/46683 -->
-    <Reference Include="Microsoft.Bcl.AsyncInterfaces" Condition="'$(TargetFramework)' == 'netstandard2.0'" />
+    <Reference Include="Microsoft.Bcl.AsyncInterfaces" Condition="'$(TargetFramework)' != '$(DefaultNetCoreTargetFramework)'" />
   </ItemGroup>
 
 </Project>

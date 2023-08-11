@@ -17,11 +17,13 @@ Typically, we will update the Major Version before updating the TFM. This is bec
   4. Change `PreReleaseBrandingLabel` to `Alpha $(PreReleaseVersionIteration)`.
 * In [src/Framework/test/TestData.cs](/src/Framework/test/TestData.cs), update `ListedTargetingPackAssemblies` by incrementing the AssemblyVersion of all aspnetcore assemblies by 1 major version. Once dotnet/runtime updates their AssemblyVersions, we also need to update those in this file. They typically make that change at the same time as their TFM update, but we change our AssemblyVersions as soon as we update branding.
 * Add entries to [NuGet.config](/NuGet.config) for the new Major Version's feed. This just means copying the current feeds (e.g. `dotnet8` and `dotnet8-transport`) and adding entries for the new feeds (`dotnet9` and `dotnet9-transport`). Make an effort to remove old feeds here at the same time.
-* In [src/ProjectTemplates/Shared/TemplatePackageInstaller.cs](/src/ProjectTemplates/Shared/TemplatePackageInstaller.cs), add entries to `_templatePackages ` for `Microsoft.DotNet.Web.ProjectTemplates` and `Microsoft.DotNet.Web.Spa.ProjectTemplates` matching the new version.
+* In [src/ProjectTemplates/Shared/TemplatePackageInstaller.cs](/src/ProjectTemplates/Shared/TemplatePackageInstaller.cs), add an entry to `_templatePackages` for `Microsoft.DotNet.Web.ProjectTemplates` matching the new version.
 * In [eng/targets/CSharp.Common.props](/eng/targets/CSharp.Common.props) for the previous release branch, modify the `<LangVersion>` to be a hardcoded version instead of `preview`. (e.g. If main is being updated to 8.0.0 modify the `<LangVersion>` in the release/7.0 branch). See https://learn.microsoft.com/dotnet/csharp/language-reference/configure-language-version#defaults to find what language version to use.
 * Mark APIs from the previous release as Shipped by running `.\eng\scripts\mark-shipped.cmd`. **Note that it's best to do this as early as possible after the API surface is finalized from the previous release** - make sure to be careful that any new API in `main` that isn't shipped as part of the previous release, stays in `PublicAPI.Unshipped.txt` files.
   * One way to ensure this is to check out the release branch shipping the previous release (**after API surface area has been finalized**), run `.\eng\scripts\mark-shipped.cmd` there, copy over all of the `PublicAPI.Unshipped.txt` and `PublicAPI.Shipped.txt` files into a new branch based off of `main`, and build the repo. Any failures there will tell you whether or not there are new APIs in main that need to be put back into the `PublicAPI.Unshipped.txt` files.
     * The result of `.\eng\scripts\mark-shipped.cmd` should be checked in to the release branch as well, as part of the RTM release.
+* Update `.\eng\Baseline.xml` to reflect the set of RTM packages that were just shipped. Then, `dotnet run` `.\eng\tools\BaselineGenerator\BaselineGenerator.csproj`, which will update `.\eng\Baseline.Designer.props`. If RTM hasn't shipped yet, do this in a separate PR once it has.
+* Update `.\eng\PlatformManifest.txt` and `.\eng\PackageOverrides.txt`. Download the just released RTM version of the `Microsoft.AspNetCore.App.Ref` package, and copy over the files from the `data` folder. This can be done in the same PR as the one updating `.\eng\Baseline.xml` and `.\eng\Baseline.Designer.props` (see https://github.com/dotnet/aspnetcore/pull/49269).
 
 ### Validation
 
@@ -43,20 +45,14 @@ Once dotnet/runtime has updated their TFM, we update ours in the dependency upda
   2. Add entries in [eng/Versions.props](/eng/Versions.props) similar to [these](https://github.com/dotnet/aspnetcore/blob/216c92b78bce31d5e81a70b589707ec2ae5ab21a/eng/Versions.props#L224-L226) - the version should be from the latest released build of .Net.
   3. Add entries in [eng/Dependencies.props](/eng/Dependencies.props) similar to [these](https://github.com/dotnet/aspnetcore/blob/a47c0a58d7002b9a530c67532366b9db96d73cc6/eng/Dependencies.props#L119-L120).
 * Update AssemblyVersions for dotnet/runtime assemblies in [src/Framework/test/TestData.cs](/src/Framework/test/TestData.cs).
-* Update dotnet/spa-templates
-  1. Create a `release/{n}.0` branch in dotnet/spa-template based off of `main`, where `n` is the MajorVersion we are updating from (not the one we are updating to).
-  2. Create a PR like [this one](https://github.com/dotnet/aspnetcore/pull/36932) updating the current release branch in `aspnetcore` to reference the new release branch you just created in dotnet/spa-templates.
-  3. Create a PR like [this one](https://github.com/dotnet/spa-templates/pull/21) updating the branding & TFM in the `main` branch of dotnet/spa-templates.
-    * Do not merge this until the PR from the previous step is merged.
 * Update template precedence
-  1. Create & merge a PR like [this one](https://github.com/dotnet/spa-templates/pull/105) in dotnet/spa-templates updating `precedence` and `identity` elements in all template.json files, as well as replacing any references to the previous TFM with the new on in templatestrings.json files.
-      * Going forward, Precedence values should be (9000 + (Major Version) * 100) for 8.0 and 9.0, and (Major Version * 1000) after that.
+  1. Create a PR like [this one](https://github.com/dotnet/aspnetcore/pull/39783) in dotnet/aspnetcore that updates the `precedence`, `identity`, and (if it exists) `thirdPartyNotices` elements in all template.json files.
+      * Make sure to update _all_ template.json files, including project templates and item templates.
+      * Going forward, Precedence values should be (9000 + (Major Version) * 100) for 8.0 and 9.0, and (Major Version \* 1000) after that.
         * This means 8.0's Precedence should be 9800, 9.0's should be 9900, 10.0's should be 10000, 11.0's should be 11000, and so on.
         * If we need to release a Minor version of any of these, use the first zero digit after the Major version to represent that (e.g. 9810 for 8.1, 10100 for 10.1).
-  2. Create a PR like [this one](https://github.com/dotnet/aspnetcore/pull/39783) in dotnet/aspnetcore that updates the spa-templates submodule, and updates the `precedence`, `identity`, and (if it exists) `thirdPartyNotices` elements in all template.json files.
-      * Make sure to update _all_ template.json files, including project templates and item templates.
-      * Use the same precedence scheme as above.
-  3. Make sure the new aka.ms link you're referencing in `thirdPartyNotices` exists.
+
+  2. Make sure the new aka.ms link you're referencing in `thirdPartyNotices` exists.
 * In [src/Framework/AspNetCoreAnalyzers/test/Verifiers/CSharpRouteHandlerCodeFixVerifier.cs](/src/Framework/AspNetCoreAnalyzers/test/Verifiers/CSharpRouteHandlerCodeFixVerifier.cs), update the references to `ReferenceAssemblies.Net.Netx0` with the latest version.
 
 ### Validation

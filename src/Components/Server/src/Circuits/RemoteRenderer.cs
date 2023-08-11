@@ -3,7 +3,9 @@
 
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
+using System.Text.Json;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.SignalR;
@@ -21,6 +23,7 @@ internal partial class RemoteRenderer : WebRenderer
 
     private readonly CircuitClientProxy _client;
     private readonly CircuitOptions _options;
+    private readonly IServerComponentDeserializer _serverComponentDeserializer;
     private readonly ILogger _logger;
     internal readonly ConcurrentQueue<UnacknowledgedRenderBatch> _unacknowledgedRenderBatches = new ConcurrentQueue<UnacknowledgedRenderBatch>();
     private long _nextRenderId = 1;
@@ -39,6 +42,7 @@ internal partial class RemoteRenderer : WebRenderer
         ILoggerFactory loggerFactory,
         CircuitOptions options,
         CircuitClientProxy client,
+        IServerComponentDeserializer serverComponentDeserializer,
         ILogger logger,
         RemoteJSRuntime jsRuntime,
         CircuitJSComponentInterop jsComponentInterop)
@@ -46,6 +50,7 @@ internal partial class RemoteRenderer : WebRenderer
     {
         _client = client;
         _options = options;
+        _serverComponentDeserializer = serverComponentDeserializer;
         _logger = logger;
 
         ElementReferenceContext = jsRuntime.ElementReferenceContext;
@@ -59,10 +64,100 @@ internal partial class RemoteRenderer : WebRenderer
         return RenderRootComponentAsync(componentId, parameters);
     }
 
+    protected override int GetWebRendererId() => (int)WebRendererId.Server;
+
     protected override void AttachRootComponentToBrowser(int componentId, string domElementSelector)
     {
         var attachComponentTask = _client.SendAsync("JS.AttachComponent", componentId, domElementSelector);
         _ = CaptureAsyncExceptions(attachComponentTask);
+    }
+
+    protected override void UpdateRootComponents(string operationsJson)
+    {
+        var operations = JsonSerializer.Deserialize<IEnumerable<RootComponentOperation>>(
+            operationsJson,
+            ServerComponentSerializationSettings.JsonSerializationOptions);
+
+        foreach (var operation in operations)
+        {
+            switch (operation.Type)
+            {
+                case RootComponentOperationType.Add:
+                    AddRootComponent(operation);
+                    break;
+                case RootComponentOperationType.Update:
+                    UpdateRootComponent(operation);
+                    break;
+                case RootComponentOperationType.Remove:
+                    RemoveRootComponent(operation);
+                    break;
+            }
+        }
+
+        return;
+
+        void AddRootComponent(RootComponentOperation operation)
+        {
+            if (operation.SelectorId is not { } selectorId)
+            {
+                Log.InvalidRootComponentOperation(_logger, operation.Type, message: "Missing selector ID.");
+                return;
+            }
+
+            if (operation.Marker is not { } marker)
+            {
+                Log.InvalidRootComponentOperation(_logger, operation.Type, message: "Missing marker.");
+                return;
+            }
+
+            if (!_serverComponentDeserializer.TryDeserializeSingleComponentDescriptor(marker, out var descriptor))
+            {
+                throw new InvalidOperationException("Failed to deserialize a component descriptor when adding a new root component.");
+            }
+
+            _ = AddComponentAsync(descriptor.ComponentType, descriptor.Parameters, selectorId.ToString(CultureInfo.InvariantCulture));
+        }
+
+        void UpdateRootComponent(RootComponentOperation operation)
+        {
+            if (operation.ComponentId is not { } componentId)
+            {
+                Log.InvalidRootComponentOperation(_logger, operation.Type, message: "Missing component ID.");
+                return;
+            }
+
+            if (operation.Marker is not { } marker)
+            {
+                Log.InvalidRootComponentOperation(_logger, operation.Type, message: "Missing marker.");
+                return;
+            }
+
+            var componentState = GetComponentState(componentId);
+
+            if (!_serverComponentDeserializer.TryDeserializeSingleComponentDescriptor(marker, out var descriptor))
+            {
+                throw new InvalidOperationException("Failed to deserialize a component descriptor when updating an existing root component.");
+            }
+
+            if (descriptor.ComponentType != componentState.Component.GetType())
+            {
+                Log.InvalidRootComponentOperation(_logger, operation.Type, message: "Component type mismatch.");
+                return;
+            }
+
+            _ = RenderRootComponentAsync(componentId, descriptor.Parameters);
+        }
+
+        void RemoveRootComponent(RootComponentOperation operation)
+        {
+            if (operation.ComponentId is not { } componentId)
+            {
+                Log.InvalidRootComponentOperation(_logger, operation.Type, message: "Missing component ID.");
+                return;
+            }
+
+            this.RemoveRootComponent(componentId);
+        }
     }
 
     protected override void ProcessPendingRender()
@@ -288,11 +383,11 @@ internal partial class RemoteRenderer : WebRenderer
         }
     }
 
-    protected override IComponent ResolveComponentForRenderMode([DynamicallyAccessedMembers(Component)] Type componentType, int? parentComponentId, IComponentActivator componentActivator, IComponentRenderMode componentTypeRenderMode)
-        => componentTypeRenderMode switch
+    protected override IComponent ResolveComponentForRenderMode([DynamicallyAccessedMembers(Component)] Type componentType, int? parentComponentId, IComponentActivator componentActivator, IComponentRenderMode renderMode)
+        => renderMode switch
         {
             ServerRenderMode or AutoRenderMode => componentActivator.CreateInstance(componentType),
-            _ => throw new NotSupportedException($"Cannot create a component of type '{componentType}' because its render mode '{componentTypeRenderMode}' is not supported by interactive server-side rendering."),
+            _ => throw new NotSupportedException($"Cannot create a component of type '{componentType}' because its render mode '{renderMode}' is not supported by interactive server-side rendering."),
         };
 
     private void ProcessPendingBatch(string? errorMessageOrNull, UnacknowledgedRenderBatch entry)
@@ -388,6 +483,9 @@ internal partial class RemoteRenderer : WebRenderer
 
         [LoggerMessage(107, LogLevel.Debug, "The queue of unacknowledged render batches is full.", EventName = "FullUnacknowledgedRenderBatchesQueue")]
         public static partial void FullUnacknowledgedRenderBatchesQueue(ILogger logger);
+
+        [LoggerMessage(108, LogLevel.Debug, "The root component operation of type '{OperationType}' was invalid: {Message}", EventName = "InvalidRootComponentOperation")]
+        public static partial void InvalidRootComponentOperation(ILogger logger, RootComponentOperationType operationType, string message);
     }
 }
 

@@ -226,7 +226,7 @@ internal abstract class Http1MessageBody : MessageBody
         // so we call OnInputOrOutputCompleted() now to prevent a race in our tests where a 400
         // response is written after observing the unexpected end of request content instead of just
         // closing the connection without a response as expected.
-        _context.OnInputOrOutputCompleted();
+        ((IHttpOutputAborter)_context).OnInputOrOutputCompleted();
 
         KestrelBadHttpRequestException.Throw(RequestRejectionReason.UnexpectedEndOfRequestContent);
     }

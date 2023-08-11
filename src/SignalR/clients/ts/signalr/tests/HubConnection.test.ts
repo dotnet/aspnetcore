@@ -171,6 +171,26 @@ describe("HubConnection", () => {
                 }
             });
         });
+
+        it("sends close message", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    await hubConnection.start();
+
+                    await hubConnection.stop();
+
+                    // Handshake, Ping, Close
+                    expect(connection.sentData.length).toBe(3);
+                    expect(JSON.parse(connection.sentData[2])).toEqual({
+                        type: MessageType.Close,
+                    });
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
     });
 
     describe("send", () => {
@@ -850,10 +870,10 @@ describe("HubConnection", () => {
                 const connection = new TestConnection();
                 const hubConnection = createHubConnection(connection, logger);
                 try {
-                    let isClosed = false;
+                    const p = new PromiseSource<void>();
                     let closeError: Error | undefined;
                     hubConnection.onclose((e) => {
-                        isClosed = true;
+                        p.resolve();
                         closeError = e;
                     });
 
@@ -863,7 +883,7 @@ describe("HubConnection", () => {
                         type: MessageType.Close,
                     });
 
-                    expect(isClosed).toEqual(true);
+                    await p;
                     expect(closeError).toBeUndefined();
                 } finally {
                     await hubConnection.stop();
@@ -1827,8 +1847,10 @@ class TestProtocol implements IHubProtocol {
     }
 
     public writeMessage(message: HubMessage): any {
-        if (message.type === 6) {
-            return "{\"type\": 6}" + TextMessageFormat.RecordSeparator;
+        if (message.type === 6 || message.type === 7) {
+            return `{"type": ${message.type}}` + TextMessageFormat.RecordSeparator;
+        } else {
+            throw new Error(`update TestProtocol to write message type ${message.type}`);
         }
     }
 }

@@ -266,7 +266,7 @@ public class Startup
                     // Persist the new acess token
                     props.UpdateTokenValue("access_token", payload.RootElement.GetString("access_token"));
                     props.UpdateTokenValue("refresh_token", payload.RootElement.GetString("refresh_token"));
-                    if (payload.RootElement.TryGetProperty("expires_in", out var property) && property.TryGetInt32(out var seconds))
+                    if (payload.RootElement.TryGetProperty("expires_in", out var property) && int.TryParse(property.GetString(), out var seconds))
                     {
                         var expiresAt = DateTimeOffset.UtcNow + TimeSpan.FromSeconds(seconds);
                         props.UpdateTokenValue("expires_at", expiresAt.ToString("o", CultureInfo.InvariantCulture));
@@ -283,7 +283,7 @@ public class Startup
                         await WriteTableHeader(res, new string[] { "Token Type", "Value" }, props.GetTokens().Select(token => new string[] { token.Name, token.Value }));
 
                         await res.WriteAsync("<h2>Payload:</h2>");
-                        await res.WriteAsync(HtmlEncoder.Default.Encode(payload.ToString()).Replace(",", ",<br>") + "<br>");
+                        await res.WriteAsync(HtmlEncoder.Default.Encode(payload.RootElement.ToString()).Replace(",", ",<br>") + "<br>");
                     });
                 }
 

@@ -1,7 +1,21 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-export function attachStreamingRenderingListener() {
+import { SsrStartOptions } from '../Platform/SsrStartOptions';
+import { NavigationEnhancementCallbacks, performEnhancedPageLoad, replaceDocumentWithPlainText } from '../Services/NavigationEnhancement';
+import { isWithinBaseUriSpace } from '../Services/NavigationUtils';
+import { synchronizeDomContent } from './DomMerging/DomSync';
+
+let enableDomPreservation = true;
+let navigationEnhancementCallbacks: NavigationEnhancementCallbacks;
+
+export function attachStreamingRenderingListener(options: SsrStartOptions | undefined, callbacks: NavigationEnhancementCallbacks) {
+  navigationEnhancementCallbacks = callbacks;
+
+  if (options?.disableDomPreservation) {
+    enableDomPreservation = false;
+  }
+
   customElements.define('blazor-ssr', BlazorStreamingUpdate);
 }
 
@@ -25,6 +39,24 @@ class BlazorStreamingUpdate extends HTMLElement {
           const componentId = node.getAttribute('blazor-component-id');
           if (componentId) {
             insertStreamingContentIntoDocument(componentId, node.content);
+          } else {
+            switch (node.getAttribute('type')) {
+              case 'redirection':
+                // We use 'replace' here because it's closest to the non-progressively-enhanced behavior, and will make the most sense
+                // if the async delay was very short, as the user would not perceive having been on the intermediate page.
+                const destinationUrl = node.content.textContent!;
+                if (isWithinBaseUriSpace(destinationUrl)) {
+                  history.replaceState(null, '', destinationUrl);
+                  performEnhancedPageLoad(destinationUrl);
+                } else {
+                  location.replace(destinationUrl);
+                }
+                break;
+              case 'error':
+                // This is kind of brutal but matches what happens without progressive enhancement
+                replaceDocumentWithPlainText(node.content.textContent || 'Error');
+                break;
+            }
           }
         }
       });
@@ -36,16 +68,22 @@ function insertStreamingContentIntoDocument(componentIdAsString: string, docFrag
   const markers = findStreamingMarkers(componentIdAsString);
   if (markers) {
     const { startMarker, endMarker } = markers;
+    if (enableDomPreservation) {
+      synchronizeDomContent({ startExclusive: startMarker, endExclusive: endMarker }, docFrag);
+    } else {
+      // In this mode we completely delete the old content before inserting the new content
+      const destinationRoot = endMarker.parentNode!;
+      const existingContent = new Range();
+      existingContent.setStart(startMarker, startMarker.textContent!.length);
+      existingContent.setEnd(endMarker, 0);
+      existingContent.deleteContents();
 
-    // Using Range for this is a bit weird, but this logic will go away anyway once we implement https://github.com/dotnet/aspnetcore/issues/47258
-    const existingContent = new Range();
-    existingContent.setStart(startMarker, startMarker.textContent!.length);
-    existingContent.setEnd(endMarker, 0);
-    existingContent.deleteContents();
-
-    while (docFrag.childNodes[0]) {
-      endMarker.parentNode!.insertBefore(docFrag.childNodes[0], endMarker);
+      while (docFrag.childNodes[0]) {
+        destinationRoot.insertBefore(docFrag.childNodes[0], endMarker);
+      }
     }
+
+    navigationEnhancementCallbacks.documentUpdated();
   }
 }
 

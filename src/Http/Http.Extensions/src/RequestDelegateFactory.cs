@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -13,7 +14,9 @@ using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Http.Json;
@@ -112,6 +115,12 @@ public static partial class RequestDelegateFactory
     private static readonly MemberExpression FilterContextHttpContextResponseExpr = Expression.Property(FilterContextHttpContextExpr, typeof(HttpContext).GetProperty(nameof(HttpContext.Response))!);
     private static readonly MemberExpression FilterContextHttpContextStatusCodeExpr = Expression.Property(FilterContextHttpContextResponseExpr, typeof(HttpResponse).GetProperty(nameof(HttpResponse.StatusCode))!);
     private static readonly ParameterExpression InvokedFilterContextExpr = Expression.Parameter(typeof(EndpointFilterInvocationContext), "filterContext");
+
+    private static readonly ConstructorInfo FormDataReaderConstructor = typeof(FormDataReader).GetConstructor(new[] { typeof(IReadOnlyDictionary<FormKey, StringValues>), typeof(CultureInfo), typeof(Memory<char>) })!;
+    private static readonly MethodInfo ProcessFormMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ProcessForm), BindingFlags.Static | BindingFlags.NonPublic)!;
+    private static readonly MethodInfo FormDataMapperMapMethod = typeof(FormDataMapper).GetMethod(nameof(FormDataMapper.Map))!;
+    private static readonly MethodInfo AsMemoryMethod = new Func<char[]?, int, int, Memory<char>>(MemoryExtensions.AsMemory).Method;
+    private static readonly MethodInfo ArrayPoolSharedReturnMethod = typeof(ArrayPool<char>).GetMethod(nameof(ArrayPool<char>.Shared.Return))!;
 
     private static readonly string[] DefaultAcceptsAndProducesContentType = new[] { JsonConstants.JsonContentType };
     private static readonly string[] FormFileContentType = new[] { "multipart/form-data" };
@@ -323,6 +332,11 @@ public static partial class RequestDelegateFactory
         // inference is skipped internally if necessary.
         factoryContext.ArgumentExpressions ??= CreateArgumentsAndInferMetadata(methodInfo, factoryContext);
 
+        // Although we can re-use the cached argument expressions for most cases, parameters that are bound
+        // using the new form mapping logic are a special exception because we need to account for the `FormOptionsMetadata`
+        // added to the builder _during_ the construction of the parameter binding.
+        UpdateFormBindingArgumentExpressions(factoryContext);
+
         factoryContext.MethodCall = CreateMethodCall(methodInfo, targetExpression, factoryContext.ArgumentExpressions);
         EndpointFilterDelegate? filterPipeline = null;
         var returnType = methodInfo.ReturnType;
@@ -379,6 +393,7 @@ public static partial class RequestDelegateFactory
             {
                 // Add the Accepts metadata when reading from FORM.
                 InferFormAcceptsMetadata(factoryContext);
+                InferAntiforgeryMetadata(factoryContext);
             }
 
             PopulateBuiltInResponseTypeMetadata(methodInfo.ReturnType, factoryContext.EndpointBuilder);
@@ -741,8 +756,19 @@ public static partial class RequestDelegateFactory
                 }
                 return BindParameterFromFormCollection(parameter, factoryContext);
             }
-
-            return BindParameterFromFormItem(parameter, formAttribute.Name ?? parameter.Name, factoryContext);
+            // Continue to use the simple binding support that exists in RDF/RDG for currently
+            // supported scenarios to maintain compatible semantics between versions of RDG.
+            // For complex types, leverage the shared form binding infrastructure. For example,
+            // shared form binding does not currently only supports types that implement IParsable
+            // while RDF's binding implementation supports all TryParse implementations.
+            var useSimpleBinding = parameter.ParameterType == typeof(string) ||
+                parameter.ParameterType == typeof(StringValues) ||
+                parameter.ParameterType == typeof(StringValues?) ||
+                ParameterBindingMethodCache.HasTryParseMethod(parameter.ParameterType) ||
+                (parameter.ParameterType.IsArray && ParameterBindingMethodCache.HasTryParseMethod(parameter.ParameterType.GetElementType()!));
+            return useSimpleBinding
+                ? BindParameterFromFormItem(parameter, formAttribute.Name ?? parameter.Name, factoryContext)
+                : BindComplexParameterFromFormItem(parameter, string.IsNullOrEmpty(formAttribute.Name) ? parameter.Name : formAttribute.Name, factoryContext);
         }
         else if (parameter.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType)))
         {
@@ -1431,6 +1457,13 @@ public static partial class RequestDelegateFactory
 
             if (feature?.CanHaveBody == true)
             {
+                if (httpContext.Features.Get<IAntiforgeryValidationFeature>() is { IsValid: false } antiforgeryValidationFeature)
+                {
+                    Log.InvalidAntiforgeryToken(httpContext, parameterTypeName, parameterName, antiforgeryValidationFeature.Error!, throwOnBadRequest);
+                    httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    return (null, false);
+                }
+
                 if (!httpContext.Request.HasFormContentType)
                 {
                     Log.UnexpectedNonFormContentType(httpContext, httpContext.Request.ContentType, throwOnBadRequest);
@@ -1919,7 +1952,7 @@ public static partial class RequestDelegateFactory
             return;
         }
 
-        factoryContext.EndpointBuilder.Metadata.Add(new AcceptsMetadata(type, factoryContext.AllowEmptyRequestBody, contentTypes));
+        factoryContext.EndpointBuilder.Metadata.Add(new AcceptsMetadata(contentTypes, type, factoryContext.AllowEmptyRequestBody));
     }
 
     private static void InferFormAcceptsMetadata(RequestDelegateFactoryContext factoryContext)
@@ -1932,6 +1965,16 @@ public static partial class RequestDelegateFactory
         {
             AddInferredAcceptsMetadata(factoryContext, factoryContext.FirstFormRequestBodyParameter!.ParameterType, FormContentType);
         }
+    }
+
+    private static void InferAntiforgeryMetadata(RequestDelegateFactoryContext factoryContext)
+    {
+        if (factoryContext.MetadataAlreadyInferred)
+        {
+            return;
+        }
+
+        factoryContext.EndpointBuilder.Metadata.Add(AntiforgeryMetadata.ValidationRequired);
     }
 
     private static Expression BindParameterFromFormCollection(
@@ -1965,6 +2008,105 @@ public static partial class RequestDelegateFactory
             valueExpression,
             factoryContext,
             "form");
+    }
+
+    private static void UpdateFormBindingArgumentExpressions(RequestDelegateFactoryContext factoryContext)
+    {
+        if (factoryContext.ArgumentExpressions == null || factoryContext.ArgumentExpressions.Length == 0)
+        {
+            return;
+        }
+
+        for (var i = 0; i < factoryContext.ArgumentExpressions.Length; i++)
+        {
+            var parameter = factoryContext.Parameters[i];
+            var key = parameter.Name!;
+            if (factoryContext.TrackedParameters.TryGetValue(key, out var trackedParameter) && trackedParameter == RequestDelegateFactoryConstants.FormBindingAttribute)
+            {
+                factoryContext.ArgumentExpressions[i] = BindComplexParameterFromFormItem(parameter, key, factoryContext);
+            }
+        }
+    }
+
+    private static Expression BindComplexParameterFromFormItem(
+        ParameterInfo parameter,
+        string key,
+        RequestDelegateFactoryContext factoryContext)
+    {
+        factoryContext.FirstFormRequestBodyParameter ??= parameter;
+        factoryContext.TrackedParameters.TryAdd(key, RequestDelegateFactoryConstants.FormBindingAttribute);
+        factoryContext.ReadForm = true;
+        var formDataMapperOptions = new FormDataMapperOptions();
+        var formMappingOptionsMetadatas = factoryContext.EndpointBuilder.Metadata.OfType<FormMappingOptionsMetadata>();
+        foreach (var formMappingOptionsMetadata in formMappingOptionsMetadatas)
+        {
+            formDataMapperOptions.MaxRecursionDepth = formMappingOptionsMetadata.MaxRecursionDepth ?? formDataMapperOptions.MaxRecursionDepth;
+            formDataMapperOptions.MaxCollectionSize = formMappingOptionsMetadata.MaxCollectionSize ?? formDataMapperOptions.MaxCollectionSize;
+            formDataMapperOptions.MaxKeyBufferSize = formMappingOptionsMetadata.MaxKeySize ?? formDataMapperOptions.MaxKeyBufferSize;
+        }
+
+        // var name_local;
+        // var name_reader;
+        // var form_dict;
+        // var form_buffer;
+        var formArgument = Expression.Variable(parameter.ParameterType, $"{parameter.Name}_local");
+        var formReader = Expression.Variable(typeof(FormDataReader), $"{parameter.Name}_reader");
+        var formDict = Expression.Variable(typeof(IReadOnlyDictionary<FormKey, StringValues>), "form_dict");
+        var formBuffer = Expression.Variable(typeof(char[]), "form_buffer");
+
+        // ProcessForm(context.Request.Form, form_dict, form_buffer);
+        var processFormExpr = Expression.Call(ProcessFormMethod, FormExpr, Expression.Constant(formDataMapperOptions.MaxKeyBufferSize), formDict, formBuffer);
+        // name_reader = new FormDataReader(form_dict, CultureInfo.InvariantCulture, form_buffer.AsMemory(0, FormDataMapperOptions.MaxKeyBufferSize));
+        var initializeReaderExpr = Expression.Assign(
+            formReader,
+            Expression.New(FormDataReaderConstructor,
+                formDict,
+                Expression.Constant(CultureInfo.InvariantCulture),
+                Expression.Call(AsMemoryMethod, formBuffer, Expression.Constant(0), Expression.Constant(formDataMapperOptions.MaxKeyBufferSize))));
+        // name_reader.MaxRecursionDepth = formDataMapperOptions.MaxRecursionDepth;
+        var setMaxRecursionDepthExpr = Expression.Assign(
+            Expression.Property(formReader, nameof(FormDataReader.MaxRecursionDepth)),
+            Expression.Constant(formDataMapperOptions.MaxRecursionDepth));
+        // FormDataMapper.Map<string>(name_reader, FormDataMapperOptions);
+        var invokeMapMethodExpr = Expression.Call(
+            FormDataMapperMapMethod.MakeGenericMethod(parameter.ParameterType),
+            formReader,
+            Expression.Constant(formDataMapperOptions));
+        // if (form_buffer != null)
+        // {
+        //   ArrayPool<char>.Shared.Return(form_buffer, false);
+        // }
+        var returnBufferExpr = Expression.Call(
+            Expression.Property(null, typeof(ArrayPool<char>).GetProperty(nameof(ArrayPool<char>.Shared))!),
+            ArrayPoolSharedReturnMethod,
+            formBuffer,
+            Expression.Constant(false));
+        var conditionalReturnBufferExpr = Expression.IfThen(
+            Expression.NotEqual(formBuffer, Expression.Constant(null)),
+            returnBufferExpr);
+
+        return Expression.Block(
+            new[] { formArgument, formReader, formDict, formBuffer },
+            Expression.TryFinally(
+                Expression.Block(
+                    processFormExpr,
+                    initializeReaderExpr,
+                    setMaxRecursionDepthExpr,
+                    Expression.Assign(formArgument, invokeMapMethodExpr)),
+                conditionalReturnBufferExpr),
+            formArgument
+        );
+    }
+
+    private static void ProcessForm(IFormCollection form, int maxKeyBufferSize, ref IReadOnlyDictionary<FormKey, StringValues> formDictionary, ref char[] buffer)
+    {
+        var dictionary = new Dictionary<FormKey, StringValues>();
+        foreach (var (key, value) in form)
+        {
+            dictionary.Add(new FormKey(key.AsMemory()), value);
+        }
+        formDictionary = dictionary.AsReadOnly();
+        buffer = ArrayPool<char>.Shared.Rent(maxKeyBufferSize);
     }
 
     private static Expression BindParameterFromFormFiles(
@@ -2364,6 +2506,7 @@ public static partial class RequestDelegateFactory
         public const string ServiceAttribute = "Service (Attribute)";
         public const string FormFileAttribute = "Form File (Attribute)";
         public const string FormAttribute = "Form (Attribute)";
+        public const string FormBindingAttribute = "Form Binding (Attribute)";
         public const string RouteParameter = "Route (Inferred)";
         public const string QueryStringParameter = "Query String (Inferred)";
         public const string ServiceParameter = "Services (Inferred)";
@@ -2481,6 +2624,20 @@ public static partial class RequestDelegateFactory
 
         [LoggerMessage(RequestDelegateCreationLogging.InvalidFormRequestBodyEventId, LogLevel.Debug, RequestDelegateCreationLogging.InvalidFormRequestBodyLogMessage, EventName = RequestDelegateCreationLogging.InvalidFormRequestBodyEventName)]
         private static partial void InvalidFormRequestBody(ILogger logger, string parameterType, string parameterName, Exception exception);
+
+        public static void InvalidAntiforgeryToken(HttpContext httpContext, string parameterTypeName, string parameterName, Exception exception, bool shouldThrow)
+        {
+            if (shouldThrow)
+            {
+                var message = string.Format(CultureInfo.InvariantCulture, RequestDelegateCreationLogging.InvalidAntiforgeryTokenExceptionMessage, parameterTypeName, parameterName);
+                throw new BadHttpRequestException(message, exception);
+            }
+
+            InvalidAntiforgeryToken(GetLogger(httpContext), parameterTypeName, parameterName, exception);
+        }
+
+        [LoggerMessage(RequestDelegateCreationLogging.InvalidAntiforgeryTokenEventId, LogLevel.Debug, RequestDelegateCreationLogging.InvalidAntiforgeryTokenLogMessage, EventName = RequestDelegateCreationLogging.InvalidAntiforgeryTokenEventName)]
+        private static partial void InvalidAntiforgeryToken(ILogger logger, string parameterType, string parameterName, Exception exception);
 
         private static ILogger GetLogger(HttpContext httpContext)
         {

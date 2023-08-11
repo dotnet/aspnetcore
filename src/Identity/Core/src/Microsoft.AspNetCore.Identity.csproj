@@ -9,6 +9,7 @@
     <IsPackable>false</IsPackable>
     <IsTrimmable>true</IsTrimmable>
     <EnableRequestDelegateGenerator>true</EnableRequestDelegateGenerator>
+    <Features>$(Features);InterceptorsPreview</Features>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,6 +19,7 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Authentication.Cookies" />
     <Reference Include="Microsoft.AspNetCore.Authentication.BearerToken" />
+    <Reference Include="Microsoft.AspNetCore.Authorization.Policy" />
     <Reference Include="Microsoft.AspNetCore.Http.Results" />
     <Reference Include="Microsoft.Extensions.Identity.Core" />
   </ItemGroup>

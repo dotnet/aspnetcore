@@ -548,7 +548,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         InitializeConnectionWithoutPreface(application, addKestrelFeatures);
 
         // Lose xUnit's AsyncTestSyncContext so middleware always runs inline for better determinism.
-        await ThreadPoolAwaitable.Instance;
+        await Task.CompletedTask.ConfigureAwait(ConfigureAwaitOptions.ForceYielding);
 
         await SendPreambleAsync();
         await SendSettingsAsync();

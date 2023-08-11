@@ -25,14 +25,24 @@ public static class RazorComponentsBuilderExtensions
     /// <param name="configure">A callback to configure <see cref="CircuitOptions"/>.</param>
     /// <returns>An <see cref="IRazorComponentsBuilder"/> that can be used to further customize the configuration.</returns>
     [RequiresUnreferencedCode("Server-side Blazor does not currently support native AOT.", Url = "https://aka.ms/aspnet/nativeaot")]
-    public static IRazorComponentsBuilder AddServerComponents(this IRazorComponentsBuilder builder, Action<CircuitOptions>? configure = null)
+    public static IServerSideBlazorBuilder AddServerComponents(this IRazorComponentsBuilder builder, Action<CircuitOptions>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(builder, nameof(builder));
 
         builder.Services.AddServerSideBlazor(configure);
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<RenderModeEndpointProvider, CircuitEndpointProvider>());
 
-        return builder;
+        return new DefaultServerSideBlazorBuilder(builder.Services);
+    }
+
+    private sealed class DefaultServerSideBlazorBuilder : IServerSideBlazorBuilder
+    {
+        public DefaultServerSideBlazorBuilder(IServiceCollection services)
+        {
+            Services = services;
+        }
+
+        public IServiceCollection Services { get; }
     }
 
     private class CircuitEndpointProvider : RenderModeEndpointProvider

@@ -15,7 +15,7 @@ public class ServerAuthenticationStateProvider : AuthenticationStateProvider, IH
     /// <inheritdoc />
     public override Task<AuthenticationState> GetAuthenticationStateAsync()
         => _authenticationStateTask
-        ?? throw new InvalidOperationException($"{nameof(GetAuthenticationStateAsync)} was called before {nameof(SetAuthenticationState)}.");
+        ?? throw new InvalidOperationException($"Do not call {nameof(GetAuthenticationStateAsync)} outside of the DI scope for a Razor component. Typically, this means you can call it only within a Razor component or inside another DI service that is resolved for a Razor component.");
 
     /// <inheritdoc />
     public void SetAuthenticationState(Task<AuthenticationState> authenticationStateTask)

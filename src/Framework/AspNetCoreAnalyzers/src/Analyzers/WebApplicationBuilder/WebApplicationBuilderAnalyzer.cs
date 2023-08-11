@@ -328,6 +328,11 @@ public sealed class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
             return false;
         }
 
+        if (!HasInvocationInBody(disallowedMethodName, invocation))
+        {
+            return false;
+        }
+
         return true;
 
         static bool IsDisallowedMethod(
@@ -352,5 +357,31 @@ public sealed class WebApplicationBuilderAnalyzer : DiagnosticAnalyzer
 
             return false;
         }
+    }
+
+    private static bool HasInvocationInBody(string disallowedMethodName, IInvocationOperation invocation)
+    {
+        if (string.Equals(disallowedMethodName, "UseEndpoints", StringComparison.Ordinal))
+        {
+            foreach (var argument in invocation.Arguments)
+            {
+                var arguments = argument?.Syntax as ArgumentSyntax;
+                var lambdaExpression = arguments?.Expression as SimpleLambdaExpressionSyntax;
+
+                if (lambdaExpression?.Body is BlockSyntax block)
+                {
+                    foreach (var statement in block.Statements)
+                    {
+                        if (statement is ExpressionStatementSyntax expressionStatement && expressionStatement.Expression is InvocationExpressionSyntax)
+                        {
+                            return true; // Method invocation found, so the diagnostic should be triggered
+                        }
+                    }
+                    return false; // Empty block, no method invocation, so the diagnostic should not be triggered
+                }
+            }
+        }
+
+        return true;
     }
 }

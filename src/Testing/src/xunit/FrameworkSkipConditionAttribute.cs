@@ -32,13 +32,13 @@ public class FrameworkSkipConditionAttribute : Attribute, ITestCondition
             return true;
         }
 
-#if NETFRAMEWORK
         if (excludedFrameworks.HasFlag(RuntimeFrameworks.Mono) &&
             TestPlatformHelper.IsMono)
         {
             return false;
         }
 
+#if NETFRAMEWORK
         if (excludedFrameworks.HasFlag(RuntimeFrameworks.CLR))
         {
             return false;

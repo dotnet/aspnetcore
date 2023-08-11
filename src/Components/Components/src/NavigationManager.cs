@@ -240,6 +240,32 @@ public abstract class NavigationManager
         throw new ArgumentException(message);
     }
 
+    internal ReadOnlySpan<char> ToBaseRelativePath(ReadOnlySpan<char> uri)
+    {
+        if (MemoryExtensions.StartsWith(uri, _baseUri!.OriginalString.AsSpan(), StringComparison.Ordinal))
+        {
+            // The absolute URI must be of the form "{baseUri}something" (where
+            // baseUri ends with a slash), and from that we return "something"
+            return uri[_baseUri.OriginalString.Length..];
+        }
+
+        var pathEndIndex = uri.IndexOfAny('#', '?');
+        var uriPathOnly = pathEndIndex < 0 ? uri : uri[..pathEndIndex];
+        if (_baseUri.OriginalString.EndsWith('/') && MemoryExtensions.Equals(uriPathOnly, _baseUri.OriginalString.AsSpan(0, _baseUri.OriginalString.Length - 1), StringComparison.Ordinal))
+        {
+            // Special case: for the base URI "/something/", if you're at
+            // "/something" then treat it as if you were at "/something/" (i.e.,
+            // with the trailing slash). It's a bit ambiguous because we don't know
+            // whether the server would return the same page whether or not the
+            // slash is present, but ASP.NET Core at least does by default when
+            // using PathBase.
+            return uri[(_baseUri.OriginalString.Length - 1)..];
+        }
+
+        var message = $"The URI '{uri}' is not contained by the base URI '{_baseUri}'.";
+        throw new ArgumentException(message);
+    }
+
     internal static string NormalizeBaseUri(string baseUri)
     {
         var lastSlashIndex = baseUri.LastIndexOf('/');

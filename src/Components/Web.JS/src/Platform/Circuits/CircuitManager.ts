@@ -3,21 +3,22 @@
 
 import { internalFunctions as navigationManagerFunctions } from '../../Services/NavigationManager';
 import { toLogicalRootCommentElement, LogicalElement, toLogicalElement } from '../../Rendering/LogicalElements';
-import { ServerComponentDescriptor } from '../../Services/ComponentDescriptorDiscovery';
+import { ServerComponentDescriptor, descriptorToMarker } from '../../Services/ComponentDescriptorDiscovery';
 import { HubConnectionState } from '@microsoft/signalr';
 import { getAndRemovePendingRootComponentContainer } from '../../Rendering/JSRootComponents';
+import { RootComponentManager } from '../../Services/RootComponentManager';
 
 export class CircuitDescriptor {
   public circuitId?: string;
 
-  public components: ServerComponentDescriptor[];
+  public componentManager: RootComponentManager<ServerComponentDescriptor>;
 
   public applicationState: string;
 
-  public constructor(components: ServerComponentDescriptor[], appState: string) {
+  public constructor(componentManager: RootComponentManager<ServerComponentDescriptor>, appState: string) {
     this.circuitId = undefined;
-    this.components = components;
     this.applicationState = appState;
+    this.componentManager = componentManager;
   }
 
   public reconnect(reconnection: signalR.HubConnection): Promise<boolean> {
@@ -43,11 +44,13 @@ export class CircuitDescriptor {
     if (connection.state !== HubConnectionState.Connected) {
       return false;
     }
+
+    const componentsJson = JSON.stringify(this.componentManager.initialComponents.map(c => descriptorToMarker(c)));
     const result = await connection.invoke<string>(
       'StartCircuit',
       navigationManagerFunctions.getBaseURI(),
       navigationManagerFunctions.getLocationHref(),
-      JSON.stringify(this.components.map(c => c.toRecord())),
+      componentsJson,
       this.applicationState || ''
     );
 
@@ -59,7 +62,7 @@ export class CircuitDescriptor {
     }
   }
 
-  public resolveElement(sequenceOrIdentifier: string): LogicalElement {
+  public resolveElement(sequenceOrIdentifier: string, componentId: number): LogicalElement {
     // It may be a root component added by JS
     const jsAddedComponentContainer = getAndRemovePendingRootComponentContainer(sequenceOrIdentifier);
     if (jsAddedComponentContainer) {
@@ -69,7 +72,8 @@ export class CircuitDescriptor {
     // ... or it may be a root component added by .NET
     const parsedSequence = Number.parseInt(sequenceOrIdentifier);
     if (!Number.isNaN(parsedSequence)) {
-      return toLogicalRootCommentElement(this.components[parsedSequence].start as Comment, this.components[parsedSequence].end as Comment);
+      const descriptor = this.componentManager.resolveRootComponent(parsedSequence, componentId);
+      return toLogicalRootCommentElement(descriptor);
     }
 
     throw new Error(`Invalid sequence number or identifier '${sequenceOrIdentifier}'.`);

@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor;
 /// Default implementation for <see cref="IView"/> that executes one or more <see cref="IRazorPage"/>
 /// as parts of its execution.
 /// </summary>
+[DebuggerDisplay("{Path,nq}")]
 public class RazorView : IView
 {
     private readonly IRazorViewEngine _viewEngine;

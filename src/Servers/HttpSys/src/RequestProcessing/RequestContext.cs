@@ -8,7 +8,6 @@ using System.Security.Principal;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Logging;
-using static Microsoft.AspNetCore.HttpSys.Internal.UnsafeNclNativeMethods;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
@@ -228,25 +227,28 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
 
     internal unsafe HttpApiTypes.HTTP_REQUEST_PROPERTY_SNI GetClientSni()
     {
+        if (HttpApi.HttpGetRequestProperty != null)
+        {
             var buffer = new byte[HttpApiTypes.SniPropertySizeInBytes];
             fixed (byte* pBuffer = buffer)
             {
-                var statusCode = HttpApi.HttpQueryRequestProperty(
+                var statusCode = HttpApi.HttpGetRequestProperty(
                     Server.RequestQueue.Handle,
                     RequestId,
                     HttpApiTypes.HTTP_REQUEST_PROPERTY.HttpRequestPropertySni,
                     qualifier: null,
                     qualifierSize: 0,
                     (void*)pBuffer,
-                    (ulong)buffer.Length,
+                    (uint)buffer.Length,
                     bytesReturned: null,
                     IntPtr.Zero);
 
-                if (statusCode == ErrorCodes.ERROR_SUCCESS)
+                if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
                 {
                     return Marshal.PtrToStructure<HttpApiTypes.HTTP_REQUEST_PROPERTY_SNI>((IntPtr)pBuffer);
                 }
             }
+        }
 
         return default;
     }

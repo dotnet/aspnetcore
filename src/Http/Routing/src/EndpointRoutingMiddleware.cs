@@ -3,10 +3,13 @@
 
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.ShortCircuit;
@@ -26,6 +29,7 @@ internal sealed partial class EndpointRoutingMiddleware
     private readonly RoutingMetrics _metrics;
     private readonly RequestDelegate _next;
     private readonly RouteOptions _routeOptions;
+    private readonly FormOptions _formOptions;
     private Task<Matcher>? _initializationTask;
 
     public EndpointRoutingMiddleware(
@@ -35,6 +39,7 @@ internal sealed partial class EndpointRoutingMiddleware
         EndpointDataSource rootCompositeEndpointDataSource,
         DiagnosticListener diagnosticListener,
         IOptions<RouteOptions> routeOptions,
+        IOptions<FormOptions> formOptions,
         RoutingMetrics metrics,
         RequestDelegate next)
     {
@@ -46,6 +51,7 @@ internal sealed partial class EndpointRoutingMiddleware
         _metrics = metrics;
         _next = next ?? throw new ArgumentNullException(nameof(next));
         _routeOptions = routeOptions.Value;
+        _formOptions = formOptions.Value;
 
         // rootCompositeEndpointDataSource is a constructor parameter only so it always gets disposed by DI. This ensures that any
         // disposable EndpointDataSources also get disposed. _endpointDataSource is a component of rootCompositeEndpointDataSource.
@@ -129,6 +135,13 @@ internal sealed partial class EndpointRoutingMiddleware
                 _metrics.MatchSuccess(route, isFallback);
             }
 
+            // Map RequestSizeLimitMetadata to IHttpMaxRequestBodySizeFeature if present on the endpoint.
+            // We do this during endpoint routing to ensure that successive middlewares in the pipeline
+            // can access the feature with the correct value.
+            SetMaxRequestBodySize(httpContext);
+            // Map IFormOptionsMetadata to IFormFeature if present on the endpoint.
+            SetFormOptions(httpContext, endpoint);
+
             var shortCircuitMetadata = endpoint.Metadata.GetMetadata<ShortCircuitMetadata>();
             if (shortCircuitMetadata is not null)
             {
@@ -160,6 +173,13 @@ internal sealed partial class EndpointRoutingMiddleware
             if (endpoint.Metadata.GetMetadata<ICorsMetadata>() is not null)
             {
                 ThrowCannotShortCircuitACorsRouteException(endpoint);
+            }
+
+            if (endpoint.Metadata.GetMetadata<IAntiforgeryMetadata>() is { RequiresValidation: true } &&
+                httpContext.Request.Method is {} method &&
+                HttpMethodExtensions.IsValidHttpMethodForForm(method))
+            {
+                ThrowCannotShortCircuitAnAntiforgeryRouteException(endpoint);
             }
         }
 
@@ -278,6 +298,86 @@ internal sealed partial class EndpointRoutingMiddleware
             "but this endpoint is marked with short circuit and it will execute on Routing Middleware.");
     }
 
+    private static void ThrowCannotShortCircuitAnAntiforgeryRouteException(Endpoint endpoint)
+    {
+        throw new InvalidOperationException($"Endpoint {endpoint.DisplayName} contains anti-forgery metadata, " +
+            "but this endpoint is marked with short circuit and it will execute on Routing Middleware.");
+    }
+
+    private void SetMaxRequestBodySize(HttpContext context)
+    {
+        var sizeLimitMetadata = context.GetEndpoint()?.Metadata?.GetMetadata<IRequestSizeLimitMetadata>();
+        if (sizeLimitMetadata == null)
+        {
+            Log.RequestSizeLimitMetadataNotFound(_logger);
+            return;
+        }
+
+        var maxRequestBodySizeFeature = context.Features.Get<IHttpMaxRequestBodySizeFeature>();
+        if (maxRequestBodySizeFeature == null)
+        {
+            Log.RequestSizeFeatureNotFound(_logger);
+        }
+        else if (maxRequestBodySizeFeature.IsReadOnly)
+        {
+            Log.RequestSizeFeatureIsReadOnly(_logger);
+        }
+        else
+        {
+            var maxRequestBodySize = sizeLimitMetadata.MaxRequestBodySize;
+            maxRequestBodySizeFeature.MaxRequestBodySize = maxRequestBodySize;
+
+            if (maxRequestBodySize.HasValue)
+            {
+                Log.MaxRequestBodySizeSet(_logger,
+                    maxRequestBodySize.Value.ToString(CultureInfo.InvariantCulture));
+            }
+            else
+            {
+                Log.MaxRequestBodySizeDisabled(_logger);
+            }
+        }
+    }
+
+    private void SetFormOptions(HttpContext context, Endpoint endpoint)
+    {
+        var features = context.Features;
+        var formFeature = features.Get<IFormFeature>();
+
+        // Request form has not been read yet, so set the limits
+        if (formFeature == null || formFeature is { Form: null })
+        {
+            var baseFormOptions = _formOptions;
+            var finalFormOptionsMetadata = new FormOptionsMetadata();
+            var formOptionsMetadatas = endpoint.Metadata
+                .GetOrderedMetadata<IFormOptionsMetadata>();
+            foreach (var formOptionsMetadata in formOptionsMetadatas)
+            {
+                finalFormOptionsMetadata = finalFormOptionsMetadata.MergeWith(formOptionsMetadata);
+            }
+
+            var formOptions = new FormOptions
+            {
+                BufferBody = finalFormOptionsMetadata.BufferBody ?? baseFormOptions.BufferBody,
+                MemoryBufferThreshold = finalFormOptionsMetadata.MemoryBufferThreshold ?? baseFormOptions.MemoryBufferThreshold,
+                BufferBodyLengthLimit = finalFormOptionsMetadata.BufferBodyLengthLimit ?? baseFormOptions.BufferBodyLengthLimit,
+                ValueCountLimit = finalFormOptionsMetadata.ValueCountLimit ?? baseFormOptions.ValueCountLimit,
+                KeyLengthLimit = finalFormOptionsMetadata.KeyLengthLimit ?? baseFormOptions.KeyLengthLimit,
+                ValueLengthLimit = finalFormOptionsMetadata.ValueLengthLimit ?? baseFormOptions.ValueLengthLimit,
+                MultipartBoundaryLengthLimit = finalFormOptionsMetadata.MultipartBoundaryLengthLimit ?? baseFormOptions.MultipartBoundaryLengthLimit,
+                MultipartHeadersCountLimit = finalFormOptionsMetadata.MultipartHeadersCountLimit ?? baseFormOptions.MultipartHeadersCountLimit,
+                MultipartHeadersLengthLimit = finalFormOptionsMetadata.MultipartHeadersLengthLimit ?? baseFormOptions.MultipartHeadersLengthLimit,
+                MultipartBodyLengthLimit = finalFormOptionsMetadata.MultipartBodyLengthLimit ?? baseFormOptions.MultipartBodyLengthLimit
+            };
+            features.Set<IFormFeature>(new FormFeature(context.Request, formOptions));
+            Log.AppliedFormOptions(_logger);
+        }
+        else
+        {
+            Log.CannotApplyFormOptions(_logger);
+        }
+    }
+
     private static partial class Log
     {
         public static void MatchSuccess(ILogger logger, Endpoint endpoint)
@@ -306,5 +406,26 @@ internal sealed partial class EndpointRoutingMiddleware
 
         [LoggerMessage(7, LogLevel.Debug, "Matched endpoint '{EndpointName}' is a fallback endpoint.", EventName = "FallbackMatch")]
         public static partial void FallbackMatch(ILogger logger, Endpoint endpointName);
+
+        [LoggerMessage(8, LogLevel.Trace, $"The endpoint does not specify the {nameof(IRequestSizeLimitMetadata)}.", EventName = "RequestSizeLimitMetadataNotFound")]
+        public static partial void RequestSizeLimitMetadataNotFound(ILogger logger);
+
+        [LoggerMessage(9, LogLevel.Warning, $"A request body size limit could not be applied. This server does not support the {nameof(IHttpMaxRequestBodySizeFeature)}.", EventName = "RequestSizeFeatureNotFound")]
+        public static partial void RequestSizeFeatureNotFound(ILogger logger);
+
+        [LoggerMessage(10, LogLevel.Warning, $"A request body size limit could not be applied. The {nameof(IHttpMaxRequestBodySizeFeature)} for the server is read-only.", EventName = "RequestSizeFeatureIsReadOnly")]
+        public static partial void RequestSizeFeatureIsReadOnly(ILogger logger);
+
+        [LoggerMessage(11, LogLevel.Debug, "The maximum request body size has been set to {RequestSize}.", EventName = "MaxRequestBodySizeSet")]
+        public static partial void MaxRequestBodySizeSet(ILogger logger, string requestSize);
+
+        [LoggerMessage(12, LogLevel.Debug, "The maximum request body size has been disabled.", EventName = "MaxRequestBodySizeDisabled")]
+        public static partial void MaxRequestBodySizeDisabled(ILogger logger);
+
+        [LoggerMessage(13, LogLevel.Warning, "Unable to apply configured form options since the request form has already been read.", EventName = "CannotApplyFormOptions")]
+        public static partial void CannotApplyFormOptions(ILogger logger);
+
+        [LoggerMessage(14, LogLevel.Debug, "Applied the configured form options on the current request.", EventName = "AppliedFormOptions")]
+        public static partial void AppliedFormOptions(ILogger logger);
     }
 }

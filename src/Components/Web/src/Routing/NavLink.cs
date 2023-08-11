@@ -187,13 +187,26 @@ public class NavLink : ComponentBase, IDisposable
                     // Example: "/abc" is treated as a prefix of "/abc/def" but not "/abcdef"
                     // Example: "/abc/" is treated as a prefix of "/abc/def" but not "/abcdef"
                     prefixLength == 0
-                    || !char.IsLetterOrDigit(prefix[prefixLength - 1])
-                    || !char.IsLetterOrDigit(value[prefixLength])
+                    || !IsUnreservedCharacter(prefix[prefixLength - 1])
+                    || !IsUnreservedCharacter(value[prefixLength])
                 );
         }
         else
         {
             return false;
         }
+    }
+
+    private static bool IsUnreservedCharacter(char c)
+    {
+        // Checks whether it is an unreserved character according to 
+        // https://datatracker.ietf.org/doc/html/rfc3986#section-2.3
+        // Those are characters that are allowed in a URI but do not have a reserved
+        // purpose (e.g. they do not separate the components of the URI)
+        return char.IsLetterOrDigit(c) ||
+                c == '-' ||
+                c == '.' ||
+                c == '_' ||
+                c == '~';
     }
 }

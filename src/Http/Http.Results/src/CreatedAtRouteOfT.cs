@@ -125,6 +125,6 @@ public sealed class CreatedAtRoute<TValue> : IResult, IEndpointMetadataProvider,
         ArgumentNullException.ThrowIfNull(method);
         ArgumentNullException.ThrowIfNull(builder);
 
-        builder.Metadata.Add(new ProducesResponseTypeMetadata(typeof(TValue), StatusCodes.Status201Created, "application/json"));
+        builder.Metadata.Add(new ProducesResponseTypeMetadata(StatusCodes.Status201Created, typeof(TValue), new[] { "application/json" }));
     }
 }

@@ -4,10 +4,6 @@
     "UseLocalDB": {
       "longName": "use-local-db"
     },
-    "UseMinimalAPIs": {
-      "longName": "use-minimal-apis",
-      "shortName": "minimal"
-    },
     "AADInstance": {
       "longName": "aad-instance",
       "shortName": ""
@@ -89,6 +85,15 @@
     "UseProgramMain": {
       "longName": "use-program-main",
       "shortName": ""
+    },
+    "UseMinimalAPIs": {
+      "longName": "use-minimal-apis",
+      "shortName": "minimal",
+      "isHidden": true
+    },
+    "UseControllers": {
+      "longName": "use-controllers",
+      "shortName": "controllers"
     }
   },
   "usageExamples": [

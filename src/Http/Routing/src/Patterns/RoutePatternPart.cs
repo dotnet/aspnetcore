@@ -6,7 +6,11 @@ namespace Microsoft.AspNetCore.Routing.Patterns;
 /// <summary>
 /// Represents a part of a route pattern.
 /// </summary>
+#if !COMPONENTS
 public abstract class RoutePatternPart
+#else
+internal abstract class RoutePatternPart
+#endif
 {
     // This class is **not** an extensibility point - every part of the routing system
     // needs to be aware of what kind of parts we support.

@@ -34,6 +34,7 @@ internal class TestCircuitHost : CircuitHost
         serviceProvider
             .Setup(services => services.GetService(typeof(IJSRuntime)))
             .Returns(jsRuntime);
+        var serverComponentDeserializer = Mock.Of<IServerComponentDeserializer>();
 
         if (remoteRenderer == null)
         {
@@ -42,6 +43,7 @@ internal class TestCircuitHost : CircuitHost
                 NullLoggerFactory.Instance,
                 new CircuitOptions(),
                 clientProxy,
+                serverComponentDeserializer,
                 NullLogger.Instance,
                 jsRuntime,
                 new CircuitJSComponentInterop(new CircuitOptions()));

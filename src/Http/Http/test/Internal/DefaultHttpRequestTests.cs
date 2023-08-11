@@ -4,6 +4,7 @@
 using System.Globalization;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Http;
@@ -244,6 +245,97 @@ public class DefaultHttpRequestTests
         var context = new DefaultHttpContext();
         var bodyPipe = context.Request.BodyReader;
         Assert.NotNull(bodyPipe);
+    }
+
+    [Fact]
+    public void DebuggerToString_EmptyRequest()
+    {
+        var context = new DefaultHttpContext();
+
+        var debugText = HttpContextDebugFormatter.RequestToString(context.Request);
+        Assert.Equal("(unspecified)", debugText);
+    }
+
+    [Fact]
+    public void DebuggerToString_HasMethod()
+    {
+        var context = new DefaultHttpContext();
+        context.Request.Method = "GET";
+
+        var debugText = HttpContextDebugFormatter.RequestToString(context.Request);
+        Assert.Equal("GET (unspecified)", debugText);
+    }
+
+    [Fact]
+    public void DebuggerToString_HasProtocol()
+    {
+        var context = new DefaultHttpContext();
+        context.Request.Protocol = "HTTP/2";
+
+        var debugText = HttpContextDebugFormatter.RequestToString(context.Request);
+        Assert.Equal("(unspecified) HTTP/2", debugText);
+    }
+
+    [Fact]
+    public void DebuggerToString_HasContentType()
+    {
+        var context = new DefaultHttpContext();
+        context.Request.ContentType = "application/json";
+
+        var debugText = HttpContextDebugFormatter.RequestToString(context.Request);
+        Assert.Equal("(unspecified) application/json", debugText);
+    }
+
+    [Fact]
+    public void DebuggerToString_HasQueryString()
+    {
+        var context = new DefaultHttpContext();
+        context.Request.QueryString = new QueryString("?query=true");
+
+        var debugText = HttpContextDebugFormatter.RequestToString(context.Request);
+        Assert.Equal("(unspecified)://(unspecified)?query=true", debugText);
+    }
+
+    [Fact]
+    public void DebuggerToString_HasCompleteRequestUri()
+    {
+        var context = new DefaultHttpContext();
+        context.Request.Scheme = "http";
+        context.Request.Host = new HostString("localhost", 8080);
+        context.Request.Path = "/Path";
+        context.Request.PathBase = "/PathBase";
+        context.Request.QueryString = new QueryString("?test=true");
+
+        var debugText = HttpContextDebugFormatter.RequestToString(context.Request);
+        Assert.Equal("http://localhost:8080/PathBase/Path?test=true", debugText);
+    }
+
+    [Fact]
+    public void DebuggerToString_HasPartialRequestUri()
+    {
+        var context = new DefaultHttpContext();
+        context.Request.Scheme = "http";
+        context.Request.Host = new HostString("localhost");
+
+        var debugText = HttpContextDebugFormatter.RequestToString(context.Request);
+        Assert.Equal("http://localhost", debugText);
+    }
+
+    [Fact]
+    public void DebuggerToString_HasEverything()
+    {
+        var context = new DefaultHttpContext();
+        context.Request.Method = "GET";
+        context.Request.Protocol = "HTTP/2";
+        context.Request.ContentType = "application/json";
+        context.Request.Scheme = "http";
+        context.Request.Host = new HostString("localhost", 8080);
+        context.Request.Path = "/Path";
+        context.Request.PathBase = "/PathBase";
+        context.Request.QueryString = new QueryString("?test=true");
+
+        var debugText = HttpContextDebugFormatter.RequestToString(context.Request);
+        Assert.Equal("GET http://localhost:8080/PathBase/Path?test=true HTTP/2 application/json", debugText);
     }
 
     private class CustomRouteValuesFeature : IRouteValuesFeature

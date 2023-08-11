@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <EnableRequestDelegateGenerator>true</EnableRequestDelegateGenerator>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>
 
   <ItemGroup>

@@ -1,0 +1,48 @@
+﻿@using Microsoft.JSInterop;
+@implements IAsyncDisposable
+@inject IJSRuntime JSRuntime
+
+<p>Increment amount: <span id=increment-amount-@IdSuffix>@IncrementAmount</span></p>
+<p>Interactive: <span id="is-interactive-@IdSuffix">@_isInteractive</span></p>
+<p>Render mode: <span id="render-mode-@IdSuffix">@_renderMode</span></p>
+<p>Current count: <span id="count-@IdSuffix">@_currentCount</span></p>
+
+<button id="increment-@IdSuffix" @onclick="IncrementCount">Click me</button>
+
+@code {
+    private int _currentCount = 0;
+    private bool _isInteractive = false;
+    private string _renderMode = "SSR";
+
+    [Parameter, EditorRequired]
+    public int IncrementAmount { get; set; }
+
+    [Parameter, EditorRequired]
+    public string IdSuffix { get; set; }
+
+    [Parameter]
+    public string DisposeBrowserConsoleMessage { get; set; }
+
+    private void IncrementCount()
+    {
+        _currentCount += IncrementAmount;
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _isInteractive = true;
+            _renderMode = OperatingSystem.IsBrowser() ? "WebAssembly" : "Server";
+            StateHasChanged();
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_isInteractive && DisposeBrowserConsoleMessage is not null)
+        {
+            await JSRuntime.InvokeVoidAsync("console.log", DisposeBrowserConsoleMessage);
+        }
+    }
+}

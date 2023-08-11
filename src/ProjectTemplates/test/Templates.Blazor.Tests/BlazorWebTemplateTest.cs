@@ -30,24 +30,14 @@ public class BlazorWebTemplateTest : LoggedTest
 
     [ConditionalTheory]
     [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
-    [InlineData(true, false)]
-    [InlineData(true, true)]
-    [InlineData(false, false)]
-    [InlineData(false, true)]
-    public async Task BlazorWebTemplate_NoAuth(bool useProgramMain, bool noHttps)
+    [MemberData(nameof(ArgsData))]
+    public async Task BlazorWebTemplate_NoAuth(string[] args)
     {
         var project = await ProjectFactory.CreateProject(Output);
 
-        var args = useProgramMain
-            ? noHttps
-                ? new[] { ArgConstants.UseProgramMain, ArgConstants.NoHttps }
-                : new[] { ArgConstants.UseProgramMain }
-            : noHttps
-                ? new[] { ArgConstants.NoHttps }
-                : null;
         await project.RunDotNetNewAsync("blazor", args: args);
 
-        var expectedLaunchProfileNames = noHttps
+        var expectedLaunchProfileNames = args.Contains(ArgConstants.NoHttps)
             ? new[] { "http", "IIS Express" }
             : new[] { "http", "https", "IIS Express" };
         await project.VerifyLaunchSettings(expectedLaunchProfileNames);
@@ -75,9 +65,17 @@ public class BlazorWebTemplateTest : LoggedTest
             },
             new Page
             {
-                Url = BlazorTemplatePages.FetchData,
+                Url = BlazorTemplatePages.Weather,
             }
         };
+
+        if (args.Contains(ArgConstants.UseServer))
+        {
+            pages.Add(new Page
+            {
+                Url = BlazorTemplatePages.Counter,
+            });
+        }
 
         using (var aspNetProcess = project.StartBuiltProjectAsync())
         {
@@ -98,6 +96,18 @@ public class BlazorWebTemplateTest : LoggedTest
         }
     }
 
+    public static TheoryData<string[]> ArgsData() => new TheoryData<string[]>
+    {
+        new string[0],
+        new[] { ArgConstants.UseProgramMain },
+        new[] { ArgConstants.NoHttps },
+        new[] { ArgConstants.UseProgramMain, ArgConstants.NoHttps },
+        new[] { ArgConstants.UseServer },
+        new[] { ArgConstants.UseServer, ArgConstants.UseProgramMain },
+        new[] { ArgConstants.UseServer, ArgConstants.NoHttps },
+        new[] { ArgConstants.UseServer, ArgConstants.UseProgramMain, ArgConstants.NoHttps }
+    };
+
     private string ReadFile(string basePath, string path)
     {
         var fullPath = Path.Combine(basePath, path);
@@ -110,6 +120,7 @@ public class BlazorWebTemplateTest : LoggedTest
     private class BlazorTemplatePages
     {
         internal static readonly string Index = "";
-        internal static readonly string FetchData = "showdata";
-    }
+        internal static readonly string Weather = "weather";
+        internal static readonly string Counter = "counter";
+    }   
 }

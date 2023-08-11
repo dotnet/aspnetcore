@@ -106,6 +106,8 @@ public partial class HubConnectionContext
 
     internal Exception? CloseException { get; private set; }
 
+    internal CloseMessage? CloseMessage { get; set; }
+
     internal ChannelBasedSemaphore ActiveInvocationLimit { get; }
 
     /// <summary>
@@ -676,7 +678,7 @@ public partial class HubConnectionContext
 
     private void CheckClientTimeout()
     {
-        if (Debugger.IsAttached)
+        if (Debugger.IsAttached || _connectionAborted)
         {
             return;
         }
@@ -689,6 +691,7 @@ public partial class HubConnectionContext
 
                 if (_receivedMessageElapsed >= _clientTimeoutInterval)
                 {
+                    CloseException ??= new OperationCanceledException($"Client hasn't sent a message/ping within the configured {nameof(HubConnectionContextOptions.ClientTimeoutInterval)}.");
                     Log.ClientTimeout(_logger, _clientTimeoutInterval);
                     AbortAllowReconnect();
                 }

@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.InteropServices;
+using System.Text.Encodings.Web;
+using System.Text.Json;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -13,8 +15,25 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal partial class EndpointHtmlRenderer
 {
+    private const string _progressivelyEnhancedNavRequestHeaderName = "blazor-enhanced-nav";
+    private const string _streamingRenderingFramingHeaderName = "ssr-framing";
     private TextWriter? _streamingUpdatesWriter;
     private HashSet<int>? _visitedComponentIdsInCurrentStreamingBatch;
+    private string? _ssrFramingCommentMarkup;
+
+    public void InitializeStreamingRenderingFraming(HttpContext httpContext)
+    {
+        if (httpContext.Request.Headers.ContainsKey(_progressivelyEnhancedNavRequestHeaderName))
+        {
+            var id = Guid.NewGuid().ToString();
+            httpContext.Response.Headers.Add(_streamingRenderingFramingHeaderName, id);
+            _ssrFramingCommentMarkup = $"<!--{id}-->";
+        }
+        else
+        {
+            _ssrFramingCommentMarkup = string.Empty;
+        }
+    }
 
     public async Task SendStreamingUpdatesAsync(HttpContext httpContext, Task untilTaskCompleted, TextWriter writer)
     {
@@ -26,10 +45,16 @@ internal partial class EndpointHtmlRenderer
             throw new InvalidOperationException($"{nameof(SendStreamingUpdatesAsync)} can only be called once.");
         }
 
+        if (_ssrFramingCommentMarkup is null)
+        {
+            throw new InvalidOperationException("Cannot begin streaming rendering because no framing header was set.");
+        }
+
         _streamingUpdatesWriter = writer;
 
         try
         {
+            await writer.WriteAsync(_ssrFramingCommentMarkup);
             await writer.FlushAsync(); // Make sure the initial HTML was sent
             await untilTaskCompleted;
         }
@@ -39,10 +64,12 @@ internal partial class EndpointHtmlRenderer
         }
         catch (Exception ex)
         {
+            // Theoretically it might be possible to let the error middleware run, capture the output,
+            // then emit it in a special format so the JS code can display the error page. However
+            // for now we're not going to support that and will simply emit a message.
             HandleExceptionAfterResponseStarted(_httpContext, writer, ex);
-
-            // The rest of the pipeline can treat this as a regular unhandled exception
-            // TODO: Is this really right? I think we'll terminate the response in an invalid way.
+            await writer.FlushAsync(); // Important otherwise the client won't receive the error message, as we're about to fail the pipeline
+            await _httpContext.Response.CompleteAsync();
             throw;
         }
     }
@@ -115,6 +142,7 @@ internal partial class EndpointHtmlRenderer
             }
 
             writer.Write("</blazor-ssr>");
+            writer.Write(_ssrFramingCommentMarkup);
         }
     }
 
@@ -143,52 +171,51 @@ internal partial class EndpointHtmlRenderer
             ? exception.ToString()
             : "There was an unhandled exception on the current request. For more details turn on detailed exceptions by setting 'DetailedErrors: true' in 'appSettings.Development.json'";
 
-        writer.Write("<template blazor-type=\"exception\">");
-        writer.Write(message);
-        writer.Write("</template>");
+        writer.Write("<blazor-ssr><template type=\"error\">");
+        writer.Write(HtmlEncoder.Default.Encode(message));
+        writer.Write("</template></blazor-ssr>");
     }
 
     private static void HandleNavigationAfterResponseStarted(TextWriter writer, string destinationUrl)
     {
-        writer.Write("<template blazor-type=\"redirection\">");
-        writer.Write(destinationUrl);
-        writer.Write("</template>");
+        writer.Write("<blazor-ssr><template type=\"redirection\">");
+        writer.Write(HtmlEncoder.Default.Encode(destinationUrl));
+        writer.Write("</template></blazor-ssr>");
     }
 
     protected override void WriteComponentHtml(int componentId, TextWriter output)
         => WriteComponentHtml(componentId, output, allowBoundaryMarkers: true);
 
-    private void WriteComponentHtml(int componentId, TextWriter output, bool allowBoundaryMarkers)
+    protected override void RenderChildComponent(TextWriter output, ref RenderTreeFrame componentFrame)
+    {
+        var componentId = componentFrame.ComponentId;
+        var sequenceAndKey = new SequenceAndKey(componentFrame.Sequence, componentFrame.ComponentKey);
+        WriteComponentHtml(componentId, output, allowBoundaryMarkers: true, sequenceAndKey);
+    }
+
+    private void WriteComponentHtml(int componentId, TextWriter output, bool allowBoundaryMarkers, SequenceAndKey sequenceAndKey = default)
     {
         _visitedComponentIdsInCurrentStreamingBatch?.Add(componentId);
 
         var componentState = (EndpointComponentState)GetComponentState(componentId);
         var renderBoundaryMarkers = allowBoundaryMarkers && componentState.StreamRendering;
 
-        // TODO: It's not clear that we actually want to emit the interactive component markers using this
-        // HTML-comment syntax that we've used historically, plus we likely want some way to coalesce both
-        // marker types into a single thing for auto mode (the code below emits both separately for auto).
-        // It may be better to use a custom element like <blazor-component ...>[prerendered]<blazor-component>
-        // so it's easier for the JS code to react automatically whenever this gets inserted or updated during
-        // streaming SSR or progressively-enhanced navigation.
+        ComponentEndMarker? endMarkerOrNull = default;
 
-        var (serverMarker, webAssemblyMarker) = componentState.Component is SSRRenderModeBoundary boundary
-            ? boundary.ToMarkers(_httpContext)
-            : default;
-
-        if (serverMarker.HasValue)
+        if (componentState.Component is SSRRenderModeBoundary boundary)
         {
-            if (!_httpContext.Response.HasStarted)
+            var marker = boundary.ToMarker(_httpContext, sequenceAndKey.Sequence, sequenceAndKey.Key);
+            endMarkerOrNull = marker.ToEndMarker();
+
+            if (!_httpContext.Response.HasStarted && marker.Type is ComponentMarker.ServerMarkerType or ComponentMarker.AutoMarkerType)
             {
                 _httpContext.Response.Headers.CacheControl = "no-cache, no-store, max-age=0";
             }
 
-            ServerComponentSerializer.AppendPreamble(output, serverMarker.Value);
-        }
-
-        if (webAssemblyMarker.HasValue)
-        {
-            WebAssemblyComponentSerializer.AppendPreamble(output, webAssemblyMarker.Value);
+            var serializedStartRecord = JsonSerializer.Serialize(marker, ServerComponentSerializationSettings.JsonSerializationOptions);
+            output.Write("<!--Blazor:");
+            output.Write(serializedStartRecord);
+            output.Write("-->");
         }
 
         if (renderBoundaryMarkers)
@@ -207,16 +234,38 @@ internal partial class EndpointHtmlRenderer
             output.Write("-->");
         }
 
-        if (webAssemblyMarker.HasValue && webAssemblyMarker.Value.PrerenderId is not null)
+        if (endMarkerOrNull is { } endMarker)
         {
-            WebAssemblyComponentSerializer.AppendEpilogue(output, webAssemblyMarker.Value);
-        }
-
-        if (serverMarker.HasValue && serverMarker.Value.PrerenderId is not null)
-        {
-            ServerComponentSerializer.AppendEpilogue(output, serverMarker.Value);
+            var serializedEndRecord = JsonSerializer.Serialize(endMarker, ServerComponentSerializationSettings.JsonSerializationOptions);
+            output.Write("<!--Blazor:");
+            output.Write(serializedEndRecord);
+            output.Write("-->");
         }
     }
 
-    private readonly record struct ComponentIdAndDepth(int ComponentId, int Depth);
+    private readonly struct ComponentIdAndDepth
+    {
+        public int ComponentId { get; }
+
+        public int Depth { get; }
+
+        public ComponentIdAndDepth(int componentId, int depth)
+        {
+            ComponentId = componentId;
+            Depth = depth;
+        }
+    }
+
+    private readonly struct SequenceAndKey
+    {
+        public int Sequence { get; }
+
+        public object? Key { get; }
+
+        public SequenceAndKey(int sequence, object? key)
+        {
+            Sequence = sequence;
+            Key = key;
+        }
+    }
 }

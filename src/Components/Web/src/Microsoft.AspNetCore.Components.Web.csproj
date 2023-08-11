@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -13,6 +13,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="$(ComponentsSharedSourceRoot)src\ExpressionFormatting\**\*.cs" LinkBase="Forms\ExpressionFommatting" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\DefaultAntiforgeryStateProvider.cs" LinkBase="Forms" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components" />
     <Reference Include="Microsoft.AspNetCore.Components.Forms" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
@@ -22,6 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Endpoints.Tests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Server.Tests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Web.Tests" />
   </ItemGroup>

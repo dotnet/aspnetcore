@@ -14,6 +14,7 @@ using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
+using Microsoft.Extensions.Telemetry.Testing.Metering;
 
 namespace Microsoft.AspNetCore.Diagnostics;
 
@@ -915,15 +916,8 @@ public class ExceptionHandlerTest
     public async Task UnhandledError_ExceptionNameTagAdded()
     {
         // Arrange
-        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-
         var meterFactory = new TestMeterFactory();
-        using var instrumentRecorder = new InstrumentRecorder<double>(meterFactory, "Microsoft.AspNetCore.Hosting", "request-duration");
-        using var measurementReporter = new MeasurementReporter<double>(meterFactory, "Microsoft.AspNetCore.Hosting", "request-duration");
-        measurementReporter.Register(m =>
-        {
-            tcs.SetResult();
-        });
+        using var instrumentCollector = new MetricCollector<double>(meterFactory, "Microsoft.AspNetCore.Hosting", "http.server.request.duration");
 
         using var host = new HostBuilder()
             .ConfigureServices(s =>
@@ -959,16 +953,16 @@ public class ExceptionHandlerTest
         var response = await server.CreateClient().GetAsync("/path");
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
 
-        await tcs.Task.DefaultTimeout();
+        await instrumentCollector.WaitForMeasurementsAsync(minCount: 1).DefaultTimeout();
 
         // Assert
         Assert.Collection(
-            instrumentRecorder.GetMeasurements(),
+            instrumentCollector.GetMeasurementSnapshot(),
             m =>
             {
                 Assert.True(m.Value > 0);
-                Assert.Equal(404, (int)m.Tags.ToArray().Single(t => t.Key == "status-code").Value);
-                Assert.Equal("System.Exception", (string)m.Tags.ToArray().Single(t => t.Key == "exception-name").Value);
+                Assert.Equal(404, (int)m.Tags["http.response.status_code"]);
+                Assert.Equal("System.Exception", (string)m.Tags["exception.type"]);
             });
     }
 }

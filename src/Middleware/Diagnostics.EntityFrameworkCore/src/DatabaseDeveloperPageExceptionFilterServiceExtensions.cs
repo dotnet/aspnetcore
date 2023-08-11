@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -21,6 +22,7 @@ public static class DatabaseDeveloperPageExceptionFilterServiceExtensions
     /// <remarks>
     /// This should only be enabled in the Development environment.
     /// </remarks>
+    [RequiresDynamicCode("DbContext migrations operations are not supported with NativeAOT")]
     public static IServiceCollection AddDatabaseDeveloperPageExceptionFilter(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
