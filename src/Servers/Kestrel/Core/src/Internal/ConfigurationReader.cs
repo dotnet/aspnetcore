@@ -401,6 +401,7 @@ internal sealed class CertificateConfig
 
     /// <remarks>
     /// Vacuously false if this isn't a file cert.
+    /// Used for change tracking - not actually part of configuring the certificate.
     /// </remarks>
     public bool FileHasChanged { get; internal set; }
 

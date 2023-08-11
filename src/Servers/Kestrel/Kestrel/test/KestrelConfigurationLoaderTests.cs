@@ -841,8 +841,8 @@ public class KestrelConfigurationLoaderTests
     }
 
     [Theory]
-    [InlineData(true)] // This might be flaky
-    [InlineData(false)] // This will be slow (5 seconds)
+    [InlineData(true)] // This might be flaky, since it depends on file system events (or polling)
+    [InlineData(false)] // This will be slow (1 seconds)
     public async Task CertificateChangedOnDisk(bool reloadOnChange)
     {
         var certificatePath = GetCertificatePath();
@@ -899,7 +899,7 @@ public class KestrelConfigurationLoaderTests
             else
             {
                 // We can't just check immediately that the callback hasn't fired - we might preempt it
-                await Task.Delay(Testing.TaskExtensions.DefaultTimeoutDuration);
+                await Task.Delay(TimeSpan.FromSeconds(1));
                 Assert.False(fileTcs.Task.IsCompleted);
             }
 

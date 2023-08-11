@@ -307,8 +307,6 @@ internal sealed partial class CertificatePathWatcher : IDisposable
         {
             fileMetadata.Dispose();
         }
-
-        GC.SuppressFinalize(this);
     }
 
     private sealed class DirectoryWatchMetadata(IFileProvider fileProvider) : IDisposable

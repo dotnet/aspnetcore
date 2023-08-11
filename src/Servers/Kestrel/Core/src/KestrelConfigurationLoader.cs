@@ -47,7 +47,7 @@ public class KestrelConfigurationLoader
 
         _httpsConfigurationService = httpsConfigurationService;
         _certificatePathWatcher = certificatePathWatcher;
-        Debug.Assert(!!reloadOnChange || (certificatePathWatcher is null), "If reloadOnChange is false, then certificatePathWatcher should be null");
+        Debug.Assert(reloadOnChange || (certificatePathWatcher is null), "If reloadOnChange is false, then certificatePathWatcher should be null");
     }
 
     /// <summary>
