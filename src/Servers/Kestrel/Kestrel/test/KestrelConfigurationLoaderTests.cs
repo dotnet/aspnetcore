@@ -841,8 +841,8 @@ public class KestrelConfigurationLoaderTests
     }
 
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
+    [InlineData(true)] // This might be flaky
+    [InlineData(false)] // This will be slow (5 seconds)
     public async Task CertificateChangedOnDisk(bool reloadOnChange)
     {
         var certificatePath = GetCertificatePath();
@@ -892,14 +892,15 @@ public class KestrelConfigurationLoaderTests
             }
             File.WriteAllBytes(certificatePath, newCertificateBytes);
 
-            try
+            if (reloadOnChange)
             {
-                await fileTcs.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
-                Assert.True(reloadOnChange, "Received an unexpected change event");
+                await fileTcs.Task.DefaultTimeout();
             }
-            catch (TimeoutException)
+            else
             {
-                Assert.False(reloadOnChange, "Timed out even though responding to file changes was enabled");
+                // We can't just check immediately that the callback hasn't fired - we might preempt it
+                await Task.Delay(Testing.TaskExtensions.DefaultTimeoutDuration);
+                Assert.False(fileTcs.Task.IsCompleted);
             }
 
             Assert.Equal(1, endpointConfigurationCallCount);
