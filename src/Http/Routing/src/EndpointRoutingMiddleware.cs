@@ -139,8 +139,14 @@ internal sealed partial class EndpointRoutingMiddleware
             // We do this during endpoint routing to ensure that successive middlewares in the pipeline
             // can access the feature with the correct value.
             SetMaxRequestBodySize(httpContext);
-            // Map IFormOptionsMetadata to IFormFeature if present on the endpoint.
-            SetFormOptions(httpContext, endpoint);
+            // Map IFormOptionsMetadata to IFormFeature if present on the endpoint if the
+            // request being processed is a form request. Note: we do a manual check for the
+            // form content-types here to avoid prematurely accessing the form feature.
+            if (HttpExtensions.IsValidHttpMethodForForm(httpContext.Request.Method) &&
+                HttpExtensions.IsValidContentTypeForForm(httpContext.Request.ContentType))
+            {
+                SetFormOptions(httpContext, endpoint);
+            }
 
             var shortCircuitMetadata = endpoint.Metadata.GetMetadata<ShortCircuitMetadata>();
             if (shortCircuitMetadata is not null)
@@ -177,7 +183,7 @@ internal sealed partial class EndpointRoutingMiddleware
 
             if (endpoint.Metadata.GetMetadata<IAntiforgeryMetadata>() is { RequiresValidation: true } &&
                 httpContext.Request.Method is {} method &&
-                HttpMethodExtensions.IsValidHttpMethodForForm(method))
+                HttpExtensions.IsValidHttpMethodForForm(method))
             {
                 ThrowCannotShortCircuitAnAntiforgeryRouteException(endpoint);
             }
