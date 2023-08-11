@@ -93,7 +93,7 @@ public class DataProtectionEntityFrameworkTests
         service1.StoreElement(element2, "element2");
 
         // Use a separate instance of the context to verify correct data was saved to database
-        var service2 = CreateRepo(services);
+        var service2 = CreateRepo_WithContextService(services);
         var elements = service2.GetAllElements();
         Assert.Equal(2, elements.Count);
     }
