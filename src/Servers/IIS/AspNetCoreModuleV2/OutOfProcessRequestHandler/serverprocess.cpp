@@ -98,10 +98,7 @@ SERVER_PROCESS::GetRandomPort
     DWORD  dwExcludedPort = 0
 )
 {
-    if (pdwPickedPort == nullptr)
-    {
-        return E_POINTER;
-    }
+    DBG_ASSERT(pdwPickedPort);
 
     std::uniform_int_distribution<> dist(MIN_PORT_RANDOM, MAX_PORT);
 
