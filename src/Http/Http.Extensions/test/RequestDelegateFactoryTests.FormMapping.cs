@@ -167,6 +167,122 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
         // Assert - 2
         Assert.Equal("Specified argument was out of the range of valid values.", anotherException.Message);
+    }
 
+    [Fact]
+    public async Task SupportsFormMappingWithRecordTypes()
+    {
+        TodoRecord capturedTodo = default;
+        void TestAction([FromForm] TodoRecord args) { capturedTodo = args; };
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Form = new FormCollection(new Dictionary<string, StringValues>
+        {
+            {
+                "id", "1"
+            },
+            {
+                "name", "Write tests"
+            },
+            {
+                "isCompleted", "false"
+            }
+        });
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(StatusCodes.Status200OK, httpContext.Response.StatusCode);
+        Assert.Equal(1, capturedTodo.Id);
+        Assert.Equal("Write tests", capturedTodo.Name);
+        Assert.False(capturedTodo.IsCompleted);
+    }
+
+    [Fact]
+    public async Task SupportsRecursiveProperties()
+    {
+        Employee capturedEmployee = default;
+        void TestAction([FromForm] Employee args) { capturedEmployee = args; };
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Form = new FormCollection(new Dictionary<string, StringValues>
+        {
+            {
+                "Name", "A"
+            },
+            {
+                "Manager.Name", "B"
+            },
+            {
+                "Manager.Manager.Name", "C"
+            },
+            {
+                "Manager.Manager.Manager.Name", "D"
+            }
+        });
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(StatusCodes.Status200OK, httpContext.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task SupportsRecursivePropertiesWithRecursionLimit()
+    {
+        Employee capturedEmployee = default;
+        var options = new RequestDelegateFactoryOptions
+        {
+            EndpointBuilder = CreateEndpointBuilder(new List<object>()
+            {
+                new FormMappingOptionsMetadata(maxRecursionDepth: 3)
+            }),
+        };
+        var metadataResult = new RequestDelegateMetadataResult { EndpointMetadata = new List<object>() };
+        void TestAction([FromForm] Employee args) { capturedEmployee = args; };
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Form = new FormCollection(new Dictionary<string, StringValues>
+        {
+            {
+                "Name", "A"
+            },
+            {
+                "Manager.Name", "B"
+            },
+            {
+                "Manager.Manager.Name", "C"
+            },
+            {
+                "Manager.Manager.Manager.Name", "D"
+            },
+            {
+                "Manager.Manager.Manager.Manager.Name", "E"
+            },
+            {
+                "Manager.Manager.Manager.Manager.Manager.Name", "F"
+            },
+            {
+                "Manager.Manager.Manager.Manager.Manager.Manager.Name", "G"
+            }
+        });
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction, options, metadataResult);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        var exception = await Assert.ThrowsAsync<FormDataMappingException>(async () => await requestDelegate(httpContext));
+
+        Assert.Equal("Manager.Manager.Manager", exception.Error.Key);
+        Assert.Equal("The maximum recursion depth of '3' was exceeded for 'Manager.Manager.Manager.Name'.", exception.Error.Message.ToString(CultureInfo.InvariantCulture));
+
+    }
+
+    private record TodoRecord(int Id, string Name, bool IsCompleted);
+
+    private class Employee
+    {
+        public string Name { get; set; }
+        public Employee Manager { get; set; }
     }
 }
