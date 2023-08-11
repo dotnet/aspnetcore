@@ -10,8 +10,13 @@ Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey.Xml.se
 Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.EntityFrameworkCoreXmlRepository<TContext>
 Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.EntityFrameworkCoreXmlRepository<TContext>.EntityFrameworkCoreXmlRepository(System.IServiceProvider! services, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
 Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.EntityFrameworkCoreXmlRepository<TContext>.StoreElement(System.Xml.Linq.XElement! element, string! friendlyName) -> void
+Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.EntityFrameworkCoreXmlRepository<TContextService, TContextImplementation>
+Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.EntityFrameworkCoreXmlRepository<TContextService, TContextImplementation>.EntityFrameworkCoreXmlRepository(System.IServiceProvider! services, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
+Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.EntityFrameworkCoreXmlRepository<TContextService, TContextImplementation>.StoreElement(System.Xml.Linq.XElement! element, string! friendlyName) -> void
 Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.IDataProtectionKeyContext
 Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.IDataProtectionKeyContext.DataProtectionKeys.get -> Microsoft.EntityFrameworkCore.DbSet<Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey!>!
 Microsoft.AspNetCore.DataProtection.EntityFrameworkCoreDataProtectionExtensions
 static Microsoft.AspNetCore.DataProtection.EntityFrameworkCoreDataProtectionExtensions.PersistKeysToDbContext<TContext>(this Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder! builder) -> Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder!
 virtual Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.EntityFrameworkCoreXmlRepository<TContext>.GetAllElements() -> System.Collections.Generic.IReadOnlyCollection<System.Xml.Linq.XElement!>!
+static Microsoft.AspNetCore.DataProtection.EntityFrameworkCoreDataProtectionExtensions.PersistKeysToDbContext<TContextService, TContextImplementation>(this Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder! builder) -> Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder!
+virtual Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.EntityFrameworkCoreXmlRepository<TContextService, TContextImplementation>.GetAllElements() -> System.Collections.Generic.IReadOnlyCollection<System.Xml.Linq.XElement!>!
