@@ -63,8 +63,11 @@ Profiles:
 - `aspnet-citrine-amd`: AMD/Linux 48 Cores
 
 Components:
-- `kestrel`
-- `mvc`
+- `kestrel` (Microsoft.AspNetCore.Server.Kestrel `src\Servers\Kestrel\build.cmd`)
+- `mvc` (Microsoft.AspNetCore.Mvc `src\Mvc\build.cmd`)
+- `routing` (Microsoft.AspNetCore.Routing `src\Http\build.cmd`)
+
+See [prbenchmarks.aspnetcore.config.yml](https://github.com/aspnet/Benchmarks/blob/2bddb9b43ffbc8cfdb4a2c3777d4e5213bc42332/build/prbenchmarks.aspnetcore.config.yml) for more details.
 
 Arguments: any additional arguments to pass through to crank, e.g. `--variable name=value`
 
