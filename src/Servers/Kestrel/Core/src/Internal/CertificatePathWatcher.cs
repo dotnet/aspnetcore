@@ -13,6 +13,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 
 internal sealed partial class CertificatePathWatcher : IDisposable
 {
+    private readonly Func<string, IFileProvider?> _fileProviderFactory;
     private readonly string _contentRootDir;
     private readonly ILogger<CertificatePathWatcher> _logger;
 
@@ -27,9 +28,21 @@ internal sealed partial class CertificatePathWatcher : IDisposable
     private bool _disposed;
 
     public CertificatePathWatcher(IHostEnvironment hostEnvironment, ILogger<CertificatePathWatcher> logger)
+        : this(
+              hostEnvironment.ContentRootPath,
+              logger,
+              dir => Directory.Exists(dir) ? new PhysicalFileProvider(dir, ExclusionFilters.None) : null)
     {
-        _contentRootDir = hostEnvironment.ContentRootPath;
+    }
+
+    /// <remarks>
+    /// For testing.
+    /// </remarks>
+    internal CertificatePathWatcher(string contentRootPath, ILogger<CertificatePathWatcher> logger, Func<string, IFileProvider?> fileProviderFactory)
+    {
+        _contentRootDir = contentRootPath;
         _logger = logger;
+        _fileProviderFactory = fileProviderFactory;
     }
 
     /// <summary>
@@ -96,16 +109,16 @@ internal sealed partial class CertificatePathWatcher : IDisposable
 
         if (!_metadataForDirectory.TryGetValue(dir, out var dirMetadata))
         {
-            if (!Directory.Exists(dir))
+            // If we wanted to detected deletions of this whole directory (which we don't since we ignore deletions),
+            // we'd probably need to watch the whole directory hierarchy
+
+            var fileProvider = _fileProviderFactory(dir);
+            if (fileProvider is null)
             {
                 _logger.DirectoryDoesNotExist(dir, path);
                 return;
             }
 
-            // If we wanted to detected deletions of this whole directory (which we don't since we ignore deletions),
-            // we'd probably need to watch the whole directory hierarchy
-
-            var fileProvider = new PhysicalFileProvider(dir, ExclusionFilters.None);
             dirMetadata = new DirectoryWatchMetadata(fileProvider);
             _metadataForDirectory.Add(dir, dirMetadata);
 
@@ -126,7 +139,7 @@ internal sealed partial class CertificatePathWatcher : IDisposable
             dirMetadata.FileWatchCount++;
 
             // We actually don't care if the file doesn't exist - we'll watch in case it is created
-            fileMetadata.LastModifiedTime = GetLastModifiedTimeOrMinimum(path);
+            fileMetadata.LastModifiedTime = GetLastModifiedTimeOrMinimum(path, dirMetadata.FileProvider);
 
             _logger.CreatedFileWatcher(path);
         }
@@ -143,22 +156,18 @@ internal sealed partial class CertificatePathWatcher : IDisposable
         _logger.FileCount(dir, dirMetadata.FileWatchCount);
     }
 
-    private DateTime GetLastModifiedTimeOrMinimum(string path)
+    private DateTimeOffset GetLastModifiedTimeOrMinimum(string path, IFileProvider fileProvider)
     {
         try
         {
-            var fileInfo = new FileInfo(path);
-            if (fileInfo.Exists)
-            {
-                return fileInfo.LastWriteTimeUtc;
-            }
+            return fileProvider.GetFileInfo(Path.GetFileName(path)).LastModified;
         }
         catch (Exception e)
         {
             _logger.LastModifiedTimeError(path, e);
         }
 
-        return DateTime.MinValue;
+        return DateTimeOffset.MinValue;
     }
 
     private void OnChange(string path)
@@ -172,6 +181,9 @@ internal sealed partial class CertificatePathWatcher : IDisposable
                 return;
             }
 
+            // Existence implied by the fact that we're tracking the file
+            var dirMetadata = _metadataForDirectory[Path.GetDirectoryName(path)!];
+
             // We ignore file changes that don't advance the last modified time.
             // For example, if we lose access to the network share the file is
             // stored on, we don't notify our listeners because no one wants
@@ -180,14 +192,14 @@ internal sealed partial class CertificatePathWatcher : IDisposable
             // before a new cert is introduced with the old name.
             // This also helps us in scenarios where the underlying file system
             // reports more than one change for a single logical operation.
-            var lastModifiedTime = GetLastModifiedTimeOrMinimum(path);
+            var lastModifiedTime = GetLastModifiedTimeOrMinimum(path, dirMetadata.FileProvider);
             if (lastModifiedTime > fileMetadata.LastModifiedTime)
             {
                 fileMetadata.LastModifiedTime = lastModifiedTime;
             }
             else
             {
-                if (lastModifiedTime == DateTime.MinValue)
+                if (lastModifiedTime == DateTimeOffset.MinValue)
                 {
                     _logger.EventWithoutLastModifiedTime(path);
                 }
@@ -299,19 +311,19 @@ internal sealed partial class CertificatePathWatcher : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    private sealed class DirectoryWatchMetadata(PhysicalFileProvider fileProvider) : IDisposable
+    private sealed class DirectoryWatchMetadata(IFileProvider fileProvider) : IDisposable
     {
-        public readonly PhysicalFileProvider FileProvider = fileProvider;
+        public readonly IFileProvider FileProvider = fileProvider;
         public int FileWatchCount;
 
-        public void Dispose() => FileProvider.Dispose();
+        public void Dispose() => (FileProvider as IDisposable)?.Dispose();
     }
 
     private sealed class FileWatchMetadata(IDisposable disposable) : IDisposable
     {
         public readonly IDisposable Disposable = disposable;
         public readonly HashSet<CertificateConfig> Configs = new(ReferenceEqualityComparer.Instance);
-        public DateTime LastModifiedTime = DateTime.MinValue;
+        public DateTimeOffset LastModifiedTime = DateTimeOffset.MinValue;
 
         public void Dispose() => Disposable.Dispose();
     }

@@ -3,85 +3,64 @@
 
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
-using Moq;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
 public class CertificatePathWatcherTests : LoggedTest
 {
-    private static readonly TimeSpan FileChangeTimeout = TimeSpan.FromSeconds(10);
-
     [Theory]
-    [InlineData(true, true)]
-    [InlineData(true, false)]
-    [InlineData(false, true)]
-    [InlineData(false, false)]
-    public void AddAndRemoveWatch(bool fileExists, bool absoluteFilePath)
+    [InlineData(true)]
+    [InlineData(false)]
+    public void AddAndRemoveWatch(bool absoluteFilePath)
     {
-        var dirInfo = Directory.CreateTempSubdirectory();
-        try
+        var dir = Directory.GetCurrentDirectory();
+        var fileName = Path.GetRandomFileName();
+        var filePath = Path.Combine(dir, fileName);
+
+        var logger = LoggerFactory.CreateLogger<CertificatePathWatcher>();
+
+        using var watcher = new CertificatePathWatcher(dir, logger, _ => NoChangeFileProvider.Instance);
+
+        var changeToken = watcher.GetChangeToken();
+
+        var certificateConfig = new CertificateConfig
         {
-            var dir = dirInfo.FullName;
-            var fileName = Path.GetRandomFileName();
-            var filePath = Path.Combine(dir, fileName);
+            Path = absoluteFilePath ? filePath : fileName,
+        };
 
-            var hostEnvironment = new Mock<IHostEnvironment>();
-            hostEnvironment.SetupGet(h => h.ContentRootPath).Returns(dir);
+        IDictionary<string, object> messageProps;
 
-            var logger = LoggerFactory.CreateLogger<CertificatePathWatcher>();
+        watcher.AddWatchUnsynchronized(certificateConfig);
 
-            using var watcher = new CertificatePathWatcher(hostEnvironment.Object, logger);
+        messageProps = GetLogMessageProperties(TestSink, "CreatedDirectoryWatcher");
+        Assert.Equal(dir, messageProps["Directory"]);
 
-            var changeToken = watcher.GetChangeToken();
+        messageProps = GetLogMessageProperties(TestSink, "CreatedFileWatcher");
+        Assert.Equal(filePath, messageProps["Path"]);
 
-            var certificateConfig = new CertificateConfig
-            {
-                Path = absoluteFilePath ? filePath : fileName,
-            };
+        Assert.Equal(1, watcher.TestGetDirectoryWatchCountUnsynchronized());
+        Assert.Equal(1, watcher.TestGetFileWatchCountUnsynchronized(dir));
+        Assert.Equal(1, watcher.TestGetObserverCountUnsynchronized(filePath));
 
-            if (fileExists)
-            {
-                ChangeFile(filePath);
-            }
+        watcher.RemoveWatchUnsynchronized(certificateConfig);
 
-            Assert.Equal(fileExists, File.Exists(filePath));
+        messageProps = GetLogMessageProperties(TestSink, "RemovedFileWatcher");
+        Assert.Equal(filePath, messageProps["Path"]);
 
-            IDictionary<string, object> messageProps;
+        messageProps = GetLogMessageProperties(TestSink, "RemovedDirectoryWatcher");
+        Assert.Equal(dir, messageProps["Directory"]);
 
-            watcher.AddWatchUnsynchronized(certificateConfig);
+        Assert.Equal(0, watcher.TestGetDirectoryWatchCountUnsynchronized());
+        Assert.Equal(0, watcher.TestGetFileWatchCountUnsynchronized(dir));
+        Assert.Equal(0, watcher.TestGetObserverCountUnsynchronized(filePath));
 
-            messageProps = GetLogMessageProperties(TestSink, "CreatedDirectoryWatcher");
-            Assert.Equal(dir, messageProps["Directory"]);
-
-            messageProps = GetLogMessageProperties(TestSink, "CreatedFileWatcher");
-            Assert.Equal(filePath, messageProps["Path"]);
-
-            Assert.Equal(1, watcher.TestGetDirectoryWatchCountUnsynchronized());
-            Assert.Equal(1, watcher.TestGetFileWatchCountUnsynchronized(dir));
-            Assert.Equal(1, watcher.TestGetObserverCountUnsynchronized(filePath));
-
-            watcher.RemoveWatchUnsynchronized(certificateConfig);
-
-            messageProps = GetLogMessageProperties(TestSink, "RemovedFileWatcher");
-            Assert.Equal(filePath, messageProps["Path"]);
-
-            messageProps = GetLogMessageProperties(TestSink, "RemovedDirectoryWatcher");
-            Assert.Equal(dir, messageProps["Directory"]);
-
-            Assert.Equal(0, watcher.TestGetDirectoryWatchCountUnsynchronized());
-            Assert.Equal(0, watcher.TestGetFileWatchCountUnsynchronized(dir));
-            Assert.Equal(0, watcher.TestGetObserverCountUnsynchronized(filePath));
-
-            Assert.Same(changeToken, watcher.GetChangeToken());
-            Assert.False(changeToken.HasChanged);
-        }
-        finally
-        {
-            dirInfo.Delete(recursive: true);
-        }
+        Assert.Same(changeToken, watcher.GetChangeToken());
+        Assert.False(changeToken.HasChanged);
     }
 
     [Theory]
@@ -90,59 +69,47 @@ public class CertificatePathWatcherTests : LoggedTest
     [InlineData(5, 13)]
     public void WatchMultipleDirectories(int dirCount, int fileCount)
     {
-        var rootDirInfo = Directory.CreateTempSubdirectory();
-        try
+        var rootDir = Directory.GetCurrentDirectory();
+        var dirs = new string[dirCount];
+
+        var logger = LoggerFactory.CreateLogger<CertificatePathWatcher>();
+
+        for (int i = 0; i < dirCount; i++)
         {
-            var rootDir = rootDirInfo.FullName;
-            var dirs = new string[dirCount];
-
-            var hostEnvironment = new Mock<IHostEnvironment>();
-            hostEnvironment.SetupGet(h => h.ContentRootPath).Returns(rootDir);
-
-            var logger = LoggerFactory.CreateLogger<CertificatePathWatcher>();
-
-            for (int i = 0; i < dirCount; i++)
-            {
-                dirs[i] = Path.Combine(rootDir, $"dir{i}");
-                Directory.CreateDirectory(dirs[i]);
-            }
-
-            using var watcher = new CertificatePathWatcher(hostEnvironment.Object, logger);
-
-            var certificateConfigs = new CertificateConfig[fileCount];
-            var filesInDir = new int[dirCount];
-            for (int i = 0; i < fileCount; i++)
-            {
-                certificateConfigs[i] = new CertificateConfig
-                {
-                    Path = $"dir{i % dirCount}/file{i % fileCount}",
-                };
-                filesInDir[i % dirCount]++;
-            }
-
-            foreach (var certificateConfig in certificateConfigs)
-            {
-                watcher.AddWatchUnsynchronized(certificateConfig);
-            }
-
-            Assert.Equal(Math.Min(dirCount, fileCount), watcher.TestGetDirectoryWatchCountUnsynchronized());
-
-            for (int i = 0; i < dirCount; i++)
-            {
-                Assert.Equal(filesInDir[i], watcher.TestGetFileWatchCountUnsynchronized(dirs[i]));
-            }
-
-            foreach (var certificateConfig in certificateConfigs)
-            {
-                watcher.RemoveWatchUnsynchronized(certificateConfig);
-            }
-
-            Assert.Equal(0, watcher.TestGetDirectoryWatchCountUnsynchronized());
+            dirs[i] = Path.Combine(rootDir, $"dir{i}");
         }
-        finally
+
+        using var watcher = new CertificatePathWatcher(rootDir, logger, _ => NoChangeFileProvider.Instance);
+
+        var certificateConfigs = new CertificateConfig[fileCount];
+        var filesInDir = new int[dirCount];
+        for (int i = 0; i < fileCount; i++)
         {
-            rootDirInfo.Delete(recursive: true);
+            certificateConfigs[i] = new CertificateConfig
+            {
+                Path = $"dir{i % dirCount}/file{i % fileCount}",
+            };
+            filesInDir[i % dirCount]++;
         }
+
+        foreach (var certificateConfig in certificateConfigs)
+        {
+            watcher.AddWatchUnsynchronized(certificateConfig);
+        }
+
+        Assert.Equal(Math.Min(dirCount, fileCount), watcher.TestGetDirectoryWatchCountUnsynchronized());
+
+        for (int i = 0; i < dirCount; i++)
+        {
+            Assert.Equal(filesInDir[i], watcher.TestGetFileWatchCountUnsynchronized(dirs[i]));
+        }
+
+        foreach (var certificateConfig in certificateConfigs)
+        {
+            watcher.RemoveWatchUnsynchronized(certificateConfig);
+        }
+
+        Assert.Equal(0, watcher.TestGetDirectoryWatchCountUnsynchronized());
     }
 
     [Theory]
@@ -151,58 +118,98 @@ public class CertificatePathWatcherTests : LoggedTest
     [InlineData(4)]
     public async Task FileChanged(int observerCount)
     {
-        var dirInfo = Directory.CreateTempSubdirectory();
-        try
+        var dir = Directory.GetCurrentDirectory();
+        var fileName = Path.GetRandomFileName();
+        var filePath = Path.Combine(dir, fileName);
+
+        var logger = LoggerFactory.CreateLogger<CertificatePathWatcher>();
+
+        var fileProvider = new MockFileProvider();
+        var fileLastModifiedTime = DateTimeOffset.UtcNow;
+        fileProvider.SetLastModifiedTime(fileName, fileLastModifiedTime);
+
+        using var watcher = new CertificatePathWatcher(dir, logger, _ => fileProvider);
+
+        var signalTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var oldChangeToken = watcher.GetChangeToken();
+        oldChangeToken.RegisterChangeCallback(_ => signalTcs.SetResult(), state: null);
+
+        var certificateConfigs = new CertificateConfig[observerCount];
+        for (int i = 0; i < observerCount; i++)
         {
-            var dir = dirInfo.FullName;
-            var fileName = Path.GetRandomFileName();
-            var filePath = Path.Combine(dir, fileName);
-
-            ChangeFile(filePath);
-
-            var hostEnvironment = new Mock<IHostEnvironment>();
-            hostEnvironment.SetupGet(h => h.ContentRootPath).Returns(dir);
-
-            var logger = LoggerFactory.CreateLogger<CertificatePathWatcher>();
-
-            using var watcher = new CertificatePathWatcher(hostEnvironment.Object, logger);
-
-            var signalTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-
-            var oldChangeToken = watcher.GetChangeToken();
-            oldChangeToken.RegisterChangeCallback(_ => signalTcs.SetResult(), state: null);
-
-            var certificateConfigs = new CertificateConfig[observerCount];
-            for (int i = 0; i < observerCount; i++)
+            certificateConfigs[i] = new CertificateConfig
             {
-                certificateConfigs[i] = new CertificateConfig
-                {
-                    Path = filePath,
-                };
+                Path = filePath,
+            };
 
-                watcher.AddWatchUnsynchronized(certificateConfigs[i]);
-            }
-
-            Assert.Equal(1, watcher.TestGetDirectoryWatchCountUnsynchronized());
-            Assert.Equal(1, watcher.TestGetFileWatchCountUnsynchronized(dir));
-            Assert.Equal(observerCount, watcher.TestGetObserverCountUnsynchronized(filePath));
-
-            ChangeFile(filePath);
-
-            await signalTcs.Task.TimeoutAfter(FileChangeTimeout);
-
-            var newChangeToken = watcher.GetChangeToken();
-
-            Assert.NotSame(oldChangeToken, newChangeToken);
-            Assert.True(oldChangeToken.HasChanged);
-            Assert.False(newChangeToken.HasChanged);
-
-            Assert.All(certificateConfigs, cc => Assert.True(cc.FileHasChanged));
+            watcher.AddWatchUnsynchronized(certificateConfigs[i]);
         }
-        finally
+
+        Assert.Equal(1, watcher.TestGetDirectoryWatchCountUnsynchronized());
+        Assert.Equal(1, watcher.TestGetFileWatchCountUnsynchronized(dir));
+        Assert.Equal(observerCount, watcher.TestGetObserverCountUnsynchronized(filePath));
+
+        // Simulate file change on disk
+        fileProvider.SetLastModifiedTime(fileName, fileLastModifiedTime.AddSeconds(1));
+        fileProvider.FireChangeToken(fileName);
+
+        await signalTcs.Task.DefaultTimeout();
+
+        var newChangeToken = watcher.GetChangeToken();
+
+        Assert.NotSame(oldChangeToken, newChangeToken);
+        Assert.True(oldChangeToken.HasChanged);
+        Assert.False(newChangeToken.HasChanged);
+
+        Assert.All(certificateConfigs, cc => Assert.True(cc.FileHasChanged));
+    }
+
+    [Fact]
+    public async Task OutOfOrderLastModifiedTime()
+    {
+        var dir = Directory.GetCurrentDirectory();
+        var fileName = Path.GetRandomFileName();
+        var filePath = Path.Combine(dir, fileName);
+
+        var logger = LoggerFactory.CreateLogger<CertificatePathWatcher>();
+
+        var fileProvider = new MockFileProvider();
+        var fileLastModifiedTime = DateTimeOffset.UtcNow;
+        fileProvider.SetLastModifiedTime(fileName, fileLastModifiedTime);
+
+        using var watcher = new CertificatePathWatcher(dir, logger, _ => fileProvider);
+
+        var certificateConfig = new CertificateConfig
         {
-            dirInfo.Delete(recursive: true);
-        }
+            Path = filePath,
+        };
+
+        watcher.AddWatchUnsynchronized(certificateConfig);
+
+        var logTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        TestSink.MessageLogged += writeContext =>
+        {
+            if (writeContext.EventId.Name == "OutOfOrderEvent")
+            {
+                logTcs.SetResult();
+            }
+        };
+
+        var oldChangeToken = watcher.GetChangeToken();
+
+        Assert.Equal(1, watcher.TestGetDirectoryWatchCountUnsynchronized());
+        Assert.Equal(1, watcher.TestGetFileWatchCountUnsynchronized(dir));
+        Assert.Equal(1, watcher.TestGetObserverCountUnsynchronized(filePath));
+
+        // Simulate file change on disk
+        fileProvider.SetLastModifiedTime(fileName, fileLastModifiedTime.AddSeconds(-1));
+        fileProvider.FireChangeToken(fileName);
+
+        await logTcs.Task.DefaultTimeout();
+
+        Assert.False(oldChangeToken.HasChanged);
     }
 
     [Fact]
@@ -212,12 +219,10 @@ public class CertificatePathWatcherTests : LoggedTest
 
         Assert.False(Directory.Exists(dir));
 
-        var hostEnvironment = new Mock<IHostEnvironment>();
-        hostEnvironment.SetupGet(h => h.ContentRootPath).Returns(dir);
-
         var logger = LoggerFactory.CreateLogger<CertificatePathWatcher>();
 
-        using var watcher = new CertificatePathWatcher(hostEnvironment.Object, logger);
+        // Returning null indicates that the directory does not exist
+        using var watcher = new CertificatePathWatcher(dir, logger, _ => null);
 
         var certificateConfig = new CertificateConfig
         {
@@ -237,46 +242,33 @@ public class CertificatePathWatcherTests : LoggedTest
     [InlineData(false)]
     public void RemoveUnknownFileWatch(bool previouslyAdded)
     {
-        var dirInfo = Directory.CreateTempSubdirectory();
-        try
+        var dir = Directory.GetCurrentDirectory();
+        var fileName = Path.GetRandomFileName();
+        var filePath = Path.Combine(dir, fileName);
+
+        var logger = LoggerFactory.CreateLogger<CertificatePathWatcher>();
+
+        using var watcher = new CertificatePathWatcher(dir, logger, _ => NoChangeFileProvider.Instance);
+
+        var certificateConfig = new CertificateConfig
         {
-            var dir = dirInfo.FullName;
-            var fileName = Path.GetRandomFileName();
-            var filePath = Path.Combine(dir, fileName);
+            Path = filePath,
+        };
 
-            ChangeFile(filePath);
-
-            var hostEnvironment = new Mock<IHostEnvironment>();
-            hostEnvironment.SetupGet(h => h.ContentRootPath).Returns(dir);
-
-            var logger = LoggerFactory.CreateLogger<CertificatePathWatcher>();
-
-            using var watcher = new CertificatePathWatcher(hostEnvironment.Object, logger);
-
-            var certificateConfig = new CertificateConfig
-            {
-                Path = filePath,
-            };
-
-            if (previouslyAdded)
-            {
-                watcher.AddWatchUnsynchronized(certificateConfig);
-                watcher.RemoveWatchUnsynchronized(certificateConfig);
-            }
-
-            Assert.Equal(0, watcher.TestGetObserverCountUnsynchronized(filePath));
-
+        if (previouslyAdded)
+        {
+            watcher.AddWatchUnsynchronized(certificateConfig);
             watcher.RemoveWatchUnsynchronized(certificateConfig);
-
-            var messageProps = GetLogMessageProperties(TestSink, "UnknownFile");
-            Assert.Equal(filePath, messageProps["Path"]);
-
-            Assert.Equal(0, watcher.TestGetObserverCountUnsynchronized(filePath));
         }
-        finally
-        {
-            dirInfo.Delete(recursive: true);
-        }
+
+        Assert.Equal(0, watcher.TestGetObserverCountUnsynchronized(filePath));
+
+        watcher.RemoveWatchUnsynchronized(certificateConfig);
+
+        var messageProps = GetLogMessageProperties(TestSink, "UnknownFile");
+        Assert.Equal(filePath, messageProps["Path"]);
+
+        Assert.Equal(0, watcher.TestGetObserverCountUnsynchronized(filePath));
     }
 
     [Theory]
@@ -284,283 +276,224 @@ public class CertificatePathWatcherTests : LoggedTest
     [InlineData(false)]
     public void RemoveUnknownFileObserver(bool previouslyAdded)
     {
-        var dirInfo = Directory.CreateTempSubdirectory();
-        try
+        var dir = Directory.GetCurrentDirectory();
+        var fileName = Path.GetRandomFileName();
+        var filePath = Path.Combine(dir, fileName);
+
+        var logger = LoggerFactory.CreateLogger<CertificatePathWatcher>();
+
+        using var watcher = new CertificatePathWatcher(dir, logger, _ => NoChangeFileProvider.Instance);
+
+        var certificateConfig1 = new CertificateConfig
         {
-            var dir = dirInfo.FullName;
-            var fileName = Path.GetRandomFileName();
-            var filePath = Path.Combine(dir, fileName);
+            Path = filePath,
+        };
 
-            ChangeFile(filePath);
+        var certificateConfig2 = new CertificateConfig
+        {
+            Path = filePath,
+        };
 
-            var hostEnvironment = new Mock<IHostEnvironment>();
-            hostEnvironment.SetupGet(h => h.ContentRootPath).Returns(dir);
+        watcher.AddWatchUnsynchronized(certificateConfig1);
 
-            var logger = LoggerFactory.CreateLogger<CertificatePathWatcher>();
-
-            using var watcher = new CertificatePathWatcher(hostEnvironment.Object, logger);
-
-            var certificateConfig1 = new CertificateConfig
-            {
-                Path = filePath,
-            };
-
-            var certificateConfig2 = new CertificateConfig
-            {
-                Path = filePath,
-            };
-
-            watcher.AddWatchUnsynchronized(certificateConfig1);
-
-            if (previouslyAdded)
-            {
-                watcher.AddWatchUnsynchronized(certificateConfig2);
-                watcher.RemoveWatchUnsynchronized(certificateConfig2);
-            }
-
-            Assert.Equal(1, watcher.TestGetObserverCountUnsynchronized(filePath));
-
+        if (previouslyAdded)
+        {
+            watcher.AddWatchUnsynchronized(certificateConfig2);
             watcher.RemoveWatchUnsynchronized(certificateConfig2);
-
-            var messageProps = GetLogMessageProperties(TestSink, "UnknownObserver");
-            Assert.Equal(filePath, messageProps["Path"]);
-
-            Assert.Equal(1, watcher.TestGetObserverCountUnsynchronized(filePath));
         }
-        finally
-        {
-            dirInfo.Delete(recursive: true);
-        }
+
+        Assert.Equal(1, watcher.TestGetObserverCountUnsynchronized(filePath));
+
+        watcher.RemoveWatchUnsynchronized(certificateConfig2);
+
+        var messageProps = GetLogMessageProperties(TestSink, "UnknownObserver");
+        Assert.Equal(filePath, messageProps["Path"]);
+
+        Assert.Equal(1, watcher.TestGetObserverCountUnsynchronized(filePath));
     }
 
     [Fact]
     [LogLevel(LogLevel.Trace)]
     public void ReuseFileObserver()
     {
-        var dirInfo = Directory.CreateTempSubdirectory();
-        try
+        var dir = Directory.GetCurrentDirectory();
+        var fileName = Path.GetRandomFileName();
+        var filePath = Path.Combine(dir, fileName);
+
+        var logger = LoggerFactory.CreateLogger<CertificatePathWatcher>();
+
+        using var watcher = new CertificatePathWatcher(dir, logger, _ => NoChangeFileProvider.Instance);
+
+        var certificateConfig = new CertificateConfig
         {
-            var dir = dirInfo.FullName;
-            var fileName = Path.GetRandomFileName();
-            var filePath = Path.Combine(dir, fileName);
+            Path = filePath,
+        };
 
-            ChangeFile(filePath);
+        watcher.AddWatchUnsynchronized(certificateConfig);
 
-            var hostEnvironment = new Mock<IHostEnvironment>();
-            hostEnvironment.SetupGet(h => h.ContentRootPath).Returns(dir);
+        Assert.Equal(1, watcher.TestGetObserverCountUnsynchronized(filePath));
 
-            var logger = LoggerFactory.CreateLogger<CertificatePathWatcher>();
+        watcher.AddWatchUnsynchronized(certificateConfig);
 
-            using var watcher = new CertificatePathWatcher(hostEnvironment.Object, logger);
+        var messageProps = GetLogMessageProperties(TestSink, "ReusedObserver");
+        Assert.Equal(filePath, messageProps["Path"]);
 
-            var certificateConfig = new CertificateConfig
-            {
-                Path = filePath,
-            };
-
-            watcher.AddWatchUnsynchronized(certificateConfig);
-
-            Assert.Equal(1, watcher.TestGetObserverCountUnsynchronized(filePath));
-
-            watcher.AddWatchUnsynchronized(certificateConfig);
-
-            var messageProps = GetLogMessageProperties(TestSink, "ReusedObserver");
-            Assert.Equal(filePath, messageProps["Path"]);
-
-            Assert.Equal(1, watcher.TestGetObserverCountUnsynchronized(filePath));
-        }
-        finally
-        {
-            dirInfo.Delete(recursive: true);
-        }
+        Assert.Equal(1, watcher.TestGetObserverCountUnsynchronized(filePath));
     }
 
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(false, false)]
     [LogLevel(LogLevel.Trace)]
-    public async Task IgnoreDeletion(bool deleteDirectory)
+    public async Task IgnoreDeletion(bool seeChangeForDeletion, bool restoredWithNewerLastModifiedTime)
     {
-        var dirInfo = Directory.CreateTempSubdirectory();
-        try
+        var dir = Directory.GetCurrentDirectory();
+        var fileName = Path.GetRandomFileName();
+        var filePath = Path.Combine(dir, fileName);
+
+        var logger = LoggerFactory.CreateLogger<CertificatePathWatcher>();
+
+        var fileProvider = new MockFileProvider();
+        var fileLastModifiedTime = DateTimeOffset.UtcNow;
+        fileProvider.SetLastModifiedTime(fileName, fileLastModifiedTime);
+
+        using var watcher = new CertificatePathWatcher(dir, logger, _ => fileProvider);
+
+        var certificateConfig = new CertificateConfig
         {
-            var dir = dirInfo.FullName;
-            var fileName = Path.GetRandomFileName();
-            var filePath = Path.Combine(dir, fileName);
+            Path = filePath,
+        };
 
-            ChangeFile(filePath);
+        watcher.AddWatchUnsynchronized(certificateConfig);
 
-            var hostEnvironment = new Mock<IHostEnvironment>();
-            hostEnvironment.SetupGet(h => h.ContentRootPath).Returns(dir);
+        Assert.Equal(1, watcher.TestGetDirectoryWatchCountUnsynchronized());
+        Assert.Equal(1, watcher.TestGetFileWatchCountUnsynchronized(dir));
+        Assert.Equal(1, watcher.TestGetObserverCountUnsynchronized(filePath));
 
-            var logger = LoggerFactory.CreateLogger<CertificatePathWatcher>();
+        var changeTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            using var watcher = new CertificatePathWatcher(hostEnvironment.Object, logger);
+        watcher.GetChangeToken().RegisterChangeCallback(_ => changeTcs.SetResult(), state: null);
 
-            var certificateConfig = new CertificateConfig
+        var logNoLastModifiedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var logSameLastModifiedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        TestSink.MessageLogged += writeContext =>
+        {
+            if (writeContext.EventId.Name == "EventWithoutLastModifiedTime")
             {
-                Path = filePath,
-            };
-
-            watcher.AddWatchUnsynchronized(certificateConfig);
-
-            Assert.Equal(1, watcher.TestGetDirectoryWatchCountUnsynchronized());
-            Assert.Equal(1, watcher.TestGetFileWatchCountUnsynchronized(dir));
-            Assert.Equal(1, watcher.TestGetObserverCountUnsynchronized(filePath));
-
-            var changeTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-
-            watcher.GetChangeToken().RegisterChangeCallback(_ => changeTcs.SetResult(), state: null);
-
-            var logTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-
-            TestSink.MessageLogged += writeContext =>
-            {
-                if (writeContext.EventId.Name == "EventWithoutLastModifiedTime")
-                {
-                    logTcs.SetResult();
-                }
-            };
-
-            // "Delete" the file or directory
-            if (deleteDirectory)
-            {
-                dirInfo.MoveTo(dir + ".bak");
+                logNoLastModifiedTcs.SetResult();
             }
-            else
+            else if (writeContext.EventId.Name == "RedundantEvent")
             {
-                File.Move(filePath, filePath + ".bak");
+                logSameLastModifiedTcs.SetResult();
             }
+        };
 
-            Assert.False(File.Exists(filePath));
+        // Simulate file deletion
+        fileProvider.SetLastModifiedTime(fileName, null);
 
-            try
-            {
-                await logTcs.Task.TimeoutAfter(FileChangeTimeout);
-            }
-            catch (TimeoutException)
-            {
-                // In some scenarios, the directory deletion won't trigger an event.
-                // For example, a `FileSystemWatcher` on Windows won't fire one,
-                // whereas the polling watcher will.
-                Assert.True(deleteDirectory);
-            }
+        // In some file systems and watch modes, there's no event when (e.g.) the directory containing the watched file is deleted
+        if (seeChangeForDeletion)
+        {
+            fileProvider.FireChangeToken(fileName);
 
-            Assert.Equal(1, watcher.TestGetDirectoryWatchCountUnsynchronized());
-            Assert.Equal(1, watcher.TestGetFileWatchCountUnsynchronized(dir));
-            Assert.Equal(1, watcher.TestGetObserverCountUnsynchronized(filePath));
-
-            Assert.False(changeTcs.Task.IsCompleted);
-
-            // Restore the file or directory
-            if (deleteDirectory)
-            {
-                dirInfo.MoveTo(dir);
-            }
-            else
-            {
-                File.Move(filePath + ".bak", filePath);
-            }
-
-            Assert.True(File.Exists(filePath));
-
-            ChangeFile(filePath); // In some scenarios, renaming the file back doesn't change the last modified time
-
-            await changeTcs.Task.TimeoutAfter(FileChangeTimeout);
+            await logNoLastModifiedTcs.Task.DefaultTimeout();
         }
-        finally
+
+        Assert.Equal(1, watcher.TestGetDirectoryWatchCountUnsynchronized());
+        Assert.Equal(1, watcher.TestGetFileWatchCountUnsynchronized(dir));
+        Assert.Equal(1, watcher.TestGetObserverCountUnsynchronized(filePath));
+
+        Assert.False(changeTcs.Task.IsCompleted);
+
+        // Restore the file
+        fileProvider.SetLastModifiedTime(fileName, restoredWithNewerLastModifiedTime ? fileLastModifiedTime.AddSeconds(1) : fileLastModifiedTime);
+        fileProvider.FireChangeToken(fileName);
+
+        if (restoredWithNewerLastModifiedTime)
         {
-            dirInfo.Delete(recursive: true);
+            await changeTcs.Task.DefaultTimeout();
+            Assert.False(logSameLastModifiedTcs.Task.IsCompleted);
+        }
+        else
+        {
+            await logSameLastModifiedTcs.Task.DefaultTimeout();
+            Assert.False(changeTcs.Task.IsCompleted);
         }
     }
 
     [Fact]
     public void UpdateWatches()
     {
-        var dirInfo = Directory.CreateTempSubdirectory();
-        try
+        var dir = Directory.GetCurrentDirectory();
+        var fileName = Path.GetRandomFileName();
+        var filePath = Path.Combine(dir, fileName);
+
+        var logger = LoggerFactory.CreateLogger<CertificatePathWatcher>();
+
+        using var watcher = new CertificatePathWatcher(dir, logger, _ => NoChangeFileProvider.Instance);
+
+        var changeToken = watcher.GetChangeToken();
+
+        var certificateConfig1 = new CertificateConfig
         {
-            var dir = dirInfo.FullName;
-            var fileName = Path.GetRandomFileName();
-            var filePath = Path.Combine(dir, fileName);
+            Path = filePath,
+        };
 
-            var hostEnvironment = new Mock<IHostEnvironment>();
-            hostEnvironment.SetupGet(h => h.ContentRootPath).Returns(dir);
-
-            var logger = LoggerFactory.CreateLogger<CertificatePathWatcher>();
-
-            using var watcher = new CertificatePathWatcher(hostEnvironment.Object, logger);
-
-            var changeToken = watcher.GetChangeToken();
-
-            var certificateConfig1 = new CertificateConfig
-            {
-                Path = filePath,
-            };
-
-            var certificateConfig2 = new CertificateConfig
-            {
-                Path = filePath,
-            };
-
-            var certificateConfig3 = new CertificateConfig
-            {
-                Path = filePath,
-            };
-
-            // Add certificateConfig1
-            watcher.UpdateWatches(new List<CertificateConfig> { }, new List<CertificateConfig> { certificateConfig1 });
-
-            Assert.Equal(1, watcher.TestGetDirectoryWatchCountUnsynchronized());
-            Assert.Equal(1, watcher.TestGetFileWatchCountUnsynchronized(dir));
-            Assert.Equal(1, watcher.TestGetObserverCountUnsynchronized(filePath));
-
-            // Remove certificateConfig1
-            watcher.UpdateWatches(new List<CertificateConfig> { certificateConfig1 }, new List<CertificateConfig> { });
-
-            Assert.Equal(0, watcher.TestGetDirectoryWatchCountUnsynchronized());
-            Assert.Equal(0, watcher.TestGetFileWatchCountUnsynchronized(dir));
-            Assert.Equal(0, watcher.TestGetObserverCountUnsynchronized(filePath));
-
-            // Re-add certificateConfig1
-            watcher.UpdateWatches(new List<CertificateConfig> { }, new List<CertificateConfig> { certificateConfig1 });
-
-            Assert.Equal(1, watcher.TestGetDirectoryWatchCountUnsynchronized());
-            Assert.Equal(1, watcher.TestGetFileWatchCountUnsynchronized(dir));
-            Assert.Equal(1, watcher.TestGetObserverCountUnsynchronized(filePath));
-
-            watcher.UpdateWatches(
-                new List<CertificateConfig>
-                {
-                    certificateConfig1, // Delete something present
-                    certificateConfig1, // Delete it again
-                    certificateConfig2, // Delete something never added
-                    certificateConfig2, // Delete it again
-                },
-                new List<CertificateConfig>
-                {
-                    certificateConfig1, // Re-add something removed above
-                    certificateConfig1, // Re-add it again
-                    certificateConfig2, // Add something vacuously removed above
-                    certificateConfig2, // Add it again
-                    certificateConfig3, // Add something new
-                    certificateConfig3, // Add it again
-                });
-
-            Assert.Equal(1, watcher.TestGetDirectoryWatchCountUnsynchronized());
-            Assert.Equal(1, watcher.TestGetFileWatchCountUnsynchronized(dir));
-            Assert.Equal(3, watcher.TestGetObserverCountUnsynchronized(filePath));
-        }
-        finally
+        var certificateConfig2 = new CertificateConfig
         {
-            dirInfo.Delete(recursive: true);
-        }
-    }
+            Path = filePath,
+        };
 
-    private static void ChangeFile(string filePath)
-    {
-        File.WriteAllText(filePath, DateTime.UtcNow.ToLongTimeString());
-        File.SetLastWriteTimeUtc(filePath, DateTime.UtcNow);
+        var certificateConfig3 = new CertificateConfig
+        {
+            Path = filePath,
+        };
+
+        // Add certificateConfig1
+        watcher.UpdateWatches(new List<CertificateConfig> { }, new List<CertificateConfig> { certificateConfig1 });
+
+        Assert.Equal(1, watcher.TestGetDirectoryWatchCountUnsynchronized());
+        Assert.Equal(1, watcher.TestGetFileWatchCountUnsynchronized(dir));
+        Assert.Equal(1, watcher.TestGetObserverCountUnsynchronized(filePath));
+
+        // Remove certificateConfig1
+        watcher.UpdateWatches(new List<CertificateConfig> { certificateConfig1 }, new List<CertificateConfig> { });
+
+        Assert.Equal(0, watcher.TestGetDirectoryWatchCountUnsynchronized());
+        Assert.Equal(0, watcher.TestGetFileWatchCountUnsynchronized(dir));
+        Assert.Equal(0, watcher.TestGetObserverCountUnsynchronized(filePath));
+
+        // Re-add certificateConfig1
+        watcher.UpdateWatches(new List<CertificateConfig> { }, new List<CertificateConfig> { certificateConfig1 });
+
+        Assert.Equal(1, watcher.TestGetDirectoryWatchCountUnsynchronized());
+        Assert.Equal(1, watcher.TestGetFileWatchCountUnsynchronized(dir));
+        Assert.Equal(1, watcher.TestGetObserverCountUnsynchronized(filePath));
+
+        watcher.UpdateWatches(
+            new List<CertificateConfig>
+            {
+                certificateConfig1, // Delete something present
+                certificateConfig1, // Delete it again
+                certificateConfig2, // Delete something never added
+                certificateConfig2, // Delete it again
+            },
+            new List<CertificateConfig>
+            {
+                certificateConfig1, // Re-add something removed above
+                certificateConfig1, // Re-add it again
+                certificateConfig2, // Add something vacuously removed above
+                certificateConfig2, // Add it again
+                certificateConfig3, // Add something new
+                certificateConfig3, // Add it again
+            });
+
+        Assert.Equal(1, watcher.TestGetDirectoryWatchCountUnsynchronized());
+        Assert.Equal(1, watcher.TestGetFileWatchCountUnsynchronized(dir));
+        Assert.Equal(3, watcher.TestGetObserverCountUnsynchronized(filePath));
     }
 
     private static IDictionary<string, object> GetLogMessageProperties(ITestSink testSink, string eventName)
@@ -569,5 +502,101 @@ public class CertificatePathWatcherTests : LoggedTest
         var pairs = (IReadOnlyList<KeyValuePair<string, object>>)writeContext.State;
         var dict = new Dictionary<string, object>(pairs);
         return dict;
+    }
+
+    private sealed class NoChangeFileProvider : IFileProvider
+    {
+        public static readonly IFileProvider Instance = new NoChangeFileProvider();
+
+        private NoChangeFileProvider()
+        {
+        }
+
+        IDirectoryContents IFileProvider.GetDirectoryContents(string subpath) => throw new NotSupportedException();
+        IFileInfo IFileProvider.GetFileInfo(string subpath) => throw new NotSupportedException();
+        IChangeToken IFileProvider.Watch(string filter) => NoChangeChangeToken.Instance;
+
+        private sealed class NoChangeChangeToken : IChangeToken
+        {
+            public static readonly IChangeToken Instance = new NoChangeChangeToken();
+
+            private NoChangeChangeToken()
+            {
+            }
+
+            bool IChangeToken.HasChanged => false;
+            bool IChangeToken.ActiveChangeCallbacks => true;
+            IDisposable IChangeToken.RegisterChangeCallback(Action<object> callback, object state) => DummyDisposable.Instance;
+        }
+    }
+
+    private sealed class DummyDisposable : IDisposable
+    {
+        public static readonly IDisposable Instance = new DummyDisposable();
+
+        private DummyDisposable()
+        {
+        }
+
+        void IDisposable.Dispose()
+        {
+        }
+    }
+
+    private sealed class MockFileProvider : IFileProvider
+    {
+        private readonly Dictionary<string, ConfigurationReloadToken> _changeTokens = new();
+        private readonly Dictionary<string, DateTimeOffset?> _lastModifiedTimes = new();
+
+        public void FireChangeToken(string path)
+        {
+            var oldChangeToken = _changeTokens[path];
+            _changeTokens[path] = new ConfigurationReloadToken();
+            oldChangeToken.OnReload();
+        }
+
+        public void SetLastModifiedTime(string path, DateTimeOffset? lastModifiedTime)
+        {
+            _lastModifiedTimes[path] = lastModifiedTime;
+        }
+
+        IDirectoryContents IFileProvider.GetDirectoryContents(string subpath)
+        {
+            throw new NotSupportedException();
+        }
+
+        IFileInfo IFileProvider.GetFileInfo(string subpath)
+        {
+            return new MockFileInfo(_lastModifiedTimes[subpath]);
+        }
+
+        IChangeToken IFileProvider.Watch(string path)
+        {
+            if (!_changeTokens.TryGetValue(path, out var changeToken))
+            {
+                _changeTokens[path] = changeToken = new ConfigurationReloadToken();
+            }
+
+            return changeToken;
+        }
+
+        private sealed class MockFileInfo : IFileInfo
+        {
+            private readonly DateTimeOffset? _lastModifiedTime;
+
+            public MockFileInfo(DateTimeOffset? lastModifiedTime)
+            {
+                _lastModifiedTime = lastModifiedTime;
+            }
+
+            bool IFileInfo.Exists => _lastModifiedTime.HasValue;
+            DateTimeOffset IFileInfo.LastModified => _lastModifiedTime.GetValueOrDefault();
+
+            long IFileInfo.Length => throw new NotSupportedException();
+            string IFileInfo.PhysicalPath => throw new NotSupportedException();
+            string IFileInfo.Name => throw new NotSupportedException();
+            bool IFileInfo.IsDirectory => throw new NotSupportedException();
+            Stream IFileInfo.CreateReadStream() => throw new NotSupportedException();
+        }
     }
 }
