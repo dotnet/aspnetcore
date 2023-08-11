@@ -21,7 +21,7 @@ public class DataProtectionEntityFrameworkTests
     [Fact]
     public void CreateRepository_ThrowsIf_ContextIsNull_WithContextService()
     {
-        Assert.Throws<ArgumentNullException>(() => new EntityFrameworkCoreXmlRepository<IDataProtectionKeyContext, DataProtectionKeyContext>(null, null));
+        Assert.Throws<ArgumentNullException>(() => new EntityFrameworkCoreXmlRepository<IDataProtectionKeyContextService, DataProtectionKeyContextImplementation>(null, null));
     }
 
     [Fact]
@@ -52,11 +52,11 @@ public class DataProtectionEntityFrameworkTests
         var key = new DataProtectionKey() { FriendlyName = friendlyName, Xml = element.ToString() };
 
         var services = GetServices_WithContextService(nameof(StoreElement_PersistsData_WithContextService));
-        var service = new EntityFrameworkCoreXmlRepository<IDataProtectionKeyContext, DataProtectionKeyContext>(services, NullLoggerFactory.Instance);
+        var service = new EntityFrameworkCoreXmlRepository<IDataProtectionKeyContextService, DataProtectionKeyContextImplementation>(services, NullLoggerFactory.Instance);
         service.StoreElement(element, friendlyName);
 
         // Use a separate instance of the context to verify correct data was saved to database
-        using (var context = services.CreateScope().ServiceProvider.GetRequiredService<IDataProtectionKeyContext>())
+        using (var context = services.CreateScope().ServiceProvider.GetRequiredService<IDataProtectionKeyContextService>())
         {
             Assert.Equal(1, context.DataProtectionKeys.Count());
             Assert.Equal(key.FriendlyName, context.DataProtectionKeys.Single()?.FriendlyName);
@@ -101,8 +101,8 @@ public class DataProtectionEntityFrameworkTests
     private EntityFrameworkCoreXmlRepository<DataProtectionKeyContext> CreateRepo(IServiceProvider services)
         => new EntityFrameworkCoreXmlRepository<DataProtectionKeyContext>(services, NullLoggerFactory.Instance);
 
-    private EntityFrameworkCoreXmlRepository<IDataProtectionKeyContext, DataProtectionKeyContext> CreateRepo_WithContextService(IServiceProvider services)
-        => new EntityFrameworkCoreXmlRepository<IDataProtectionKeyContext, DataProtectionKeyContext>(services, NullLoggerFactory.Instance);
+    private EntityFrameworkCoreXmlRepository<IDataProtectionKeyContextService, DataProtectionKeyContextImplementation> CreateRepo_WithContextService(IServiceProvider services)
+        => new EntityFrameworkCoreXmlRepository<IDataProtectionKeyContextService, DataProtectionKeyContextImplementation>(services, NullLoggerFactory.Instance);
 
     private IServiceProvider GetServices(string dbName)
         => new ServiceCollection()
@@ -111,6 +111,6 @@ public class DataProtectionEntityFrameworkTests
 
     private IServiceProvider GetServices_WithContextService(string dbName)
         => new ServiceCollection()
-            .AddDbContext<IDataProtectionKeyContext, DataProtectionKeyContext>(o => o.UseInMemoryDatabase(dbName))
+            .AddDbContext<IDataProtectionKeyContextService, DataProtectionKeyContextImplementation>(o => o.UseInMemoryDatabase(dbName))
             .BuildServiceProvider(validateScopes: true);
 }

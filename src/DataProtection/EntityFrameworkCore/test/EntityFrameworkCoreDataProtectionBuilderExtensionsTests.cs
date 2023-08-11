@@ -21,4 +21,17 @@ public class EntityFrameworkCoreDataProtectionBuilderExtensionsTests
         var keyManagementOptions = serviceProvider.GetRequiredService<IOptions<KeyManagementOptions>>();
         Assert.IsType<EntityFrameworkCoreXmlRepository<DataProtectionKeyContext>>(keyManagementOptions.Value.XmlRepository);
     }
+
+    [Fact]
+    public void PersistKeysToEntityFrameworkCore_UsesEntityFrameworkCoreXmlRepository_WithContextSerivce()
+    {
+        var serviceCollection = new ServiceCollection();
+        serviceCollection
+            .AddDbContext<DataProtectionKeyContext>()
+            .AddDataProtection()
+            .PersistKeysToDbContext<IDataProtectionKeyContextService, DataProtectionKeyContextImplementation>();
+        var serviceProvider = serviceCollection.BuildServiceProvider(validateScopes: true);
+        var keyManagementOptions = serviceProvider.GetRequiredService<IOptions<KeyManagementOptions>>();
+        Assert.IsType<EntityFrameworkCoreXmlRepository<IDataProtectionKeyContextService, DataProtectionKeyContextImplementation>>(keyManagementOptions.Value.XmlRepository);
+    }
 }
