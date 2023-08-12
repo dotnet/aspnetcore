@@ -4,8 +4,8 @@ using Microsoft.AspNetCore.Http;
 
 internal static class HttpExtensions
 {
-    internal static string UrlEncodedFormContentType = "application/x-www-form-urlencoded";
-    internal static string MultipartFormContentType = "multipart/form-data";
+    internal const string UrlEncodedFormContentType = "application/x-www-form-urlencoded";
+    internal const string MultipartFormContentType = "multipart/form-data";
 
     internal static bool IsValidHttpMethodForForm(string method) =>
         HttpMethods.IsPost(method) || HttpMethods.IsPut(method) || HttpMethods.IsPatch(method);
@@ -19,7 +19,7 @@ internal static class HttpExtensions
 
         // Abort early if this doesn't look like it could be a form-related content-type
 
-        if (contentType.Length < 19)
+        if (contentType.Length < MultipartFormContentType.Length)
         {
             return false;
         }
