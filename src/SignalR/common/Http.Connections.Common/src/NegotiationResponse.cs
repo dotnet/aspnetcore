@@ -52,5 +52,5 @@ public class NegotiationResponse
     /// It should also set <see cref="IReconnectFeature"/> on the <see cref="BaseConnectionContext.Features"/> collection so other layers of the
     /// application (like SignalR) can react.
     /// </summary>
-    public bool UseAcking { get; set; }
+    public bool UseStatefulReconnect { get; set; }
 }
