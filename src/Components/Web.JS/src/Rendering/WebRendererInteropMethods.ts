@@ -6,11 +6,13 @@ import { EventDescriptor } from './Events/EventDelegator';
 import { enableJSRootComponents, JSComponentParametersByIdentifier, JSComponentIdentifiersByInitializer } from './JSRootComponents';
 
 const interopMethodsByRenderer = new Map<number, DotNet.DotNetObject>();
+const resolveAttachedPromiseByRenderer = new Map<number, () => void>();
+const attachedPromisesByRenderer = new Map<number, Promise<void>>();
 
-let resolveRendererAttached : () => void;
+let resolveFirstRendererAttached : () => void;
 
-export const rendererAttached = new Promise<void>((resolve) => {
-  resolveRendererAttached = resolve;
+export const firstRendererAttached = new Promise<void>((resolve) => {
+  resolveFirstRendererAttached = resolve;
 });
 
 export function attachWebRendererInterop(
@@ -30,7 +32,37 @@ export function attachWebRendererInterop(
     enableJSRootComponents(manager, jsComponentParameters, jsComponentInitializers);
   }
 
-  resolveRendererAttached();
+  resolveFirstRendererAttached();
+  resolveRendererAttached(rendererId);
+}
+
+export function isRendererAttached(browserRendererId: number): boolean {
+  return interopMethodsByRenderer.has(browserRendererId);
+}
+
+export function waitForRendererAttached(browserRendererId: number): Promise<void> {
+  if (isRendererAttached(browserRendererId)) {
+    return Promise.resolve();
+  }
+
+  let attachedPromise = attachedPromisesByRenderer.get(browserRendererId);
+  if (!attachedPromise) {
+    attachedPromise = new Promise<void>((resolve) => {
+      resolveAttachedPromiseByRenderer.set(browserRendererId, resolve);
+    });
+    attachedPromisesByRenderer.set(browserRendererId, attachedPromise);
+  }
+
+  return attachedPromise;
+}
+
+function resolveRendererAttached(browserRendererId: number): void {
+  const resolveRendererAttached = resolveAttachedPromiseByRenderer.get(browserRendererId);
+  if (resolveRendererAttached) {
+    resolveAttachedPromiseByRenderer.delete(browserRendererId);
+    attachedPromisesByRenderer.delete(browserRendererId);
+    resolveRendererAttached();
+  }
 }
 
 export function dispatchEvent(browserRendererId: number, eventDescriptor: EventDescriptor, eventArgs: any): void {
@@ -38,6 +70,11 @@ export function dispatchEvent(browserRendererId: number, eventDescriptor: EventD
     const interopMethods = getInteropMethods(browserRendererId);
     return interopMethods.invokeMethodAsync('DispatchEventAsync', eventDescriptor, eventArgs);
   });
+}
+
+export function updateRootComponents(browserRendererId: number, operationsJson: string): Promise<void> {
+  const interopMethods = getInteropMethods(browserRendererId);
+  return interopMethods.invokeMethodAsync('UpdateRootComponents', operationsJson);
 }
 
 function getInteropMethods(rendererId: number): DotNet.DotNetObject {
@@ -51,7 +88,11 @@ function getInteropMethods(rendererId: number): DotNet.DotNetObject {
 
 // On some hosting platforms, we may need to defer the event dispatch, so they can register this middleware to do so
 type DispatchEventMiddlware = (browserRendererId: number, eventHandlerId: number, continuation: () => void) => void;
+
 let dispatchEventMiddleware: DispatchEventMiddlware = (browserRendererId, eventHandlerId, continuation) => continuation();
-export function setDispatchEventMiddleware(middleware: DispatchEventMiddlware): void {
-  dispatchEventMiddleware = middleware;
+export function addDispatchEventMiddleware(middleware: DispatchEventMiddlware): void {
+  const next = dispatchEventMiddleware;
+  dispatchEventMiddleware = (browserRendererId, eventHandlerId, continuation) => {
+    middleware(browserRendererId, eventHandlerId, () => next(browserRendererId, eventHandlerId, continuation));
+  };
 }

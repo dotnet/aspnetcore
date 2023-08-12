@@ -17,6 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import ch.qos.logback.classic.spi.ILoggingEvent;
@@ -4021,5 +4022,23 @@ class HubConnectionTest {
 
             assertEquals(1, count);
         }
+    }
+
+    // https://github.com/dotnet/aspnetcore/issues/49043
+    @Test
+    public void sendsCloseMessageOnStop() throws InterruptedException {
+        MockTransport mockTransport = new MockTransport(true, true);
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
+
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
+
+        hubConnection.stop().timeout(30, TimeUnit.SECONDS).blockingAwait();
+
+        ByteBuffer[] messages = mockTransport.getSentMessages();
+
+        // handshake, close
+        assertEquals(2, messages.length);
+        String message = TestUtils.byteBufferToString(messages[1]);
+        assertEquals("{\"type\":7,\"allowReconnect\":false}" + RECORD_SEPARATOR, message);
     }
 }

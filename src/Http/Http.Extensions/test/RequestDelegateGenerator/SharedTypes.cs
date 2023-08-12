@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.Diagnostics.Runtime.Interop;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
@@ -46,7 +48,14 @@ public class CustomMetadataEmitter : IEndpointMetadataProvider, IEndpointParamet
     }
 }
 
-public class Todo
+public interface ITodo
+{
+    public int Id { get; }
+    public string? Name { get; }
+    public bool IsComplete { get; }
+}
+
+public class Todo : ITodo
 {
     public int Id { get; set; }
     public string? Name { get; set; } = "Todo";
@@ -109,14 +118,6 @@ public enum TodoStatus
     Done,
     InProgress,
     NotDone
-}
-
-public interface ITodo
-{
-    public int Id { get; }
-    public string? Name { get; }
-    public bool IsComplete { get; }
-    public TodoStatus Status { get; }
 }
 
 public class PrecedenceCheckTodo
@@ -184,17 +185,30 @@ public class ParsableTodo : IParsable<ParsableTodo>
         {
             result = new ParsableTodo
             {
-            Id = 1,
-            Name = "Knit kitten mittens.",
-            IsComplete = false
+                Id = 1,
+                Name = "Knit kitten mittens.",
+                IsComplete = false
             };
             return true;
         }
         else
         {
-        result = null!;
-        return false;
+            result = null!;
+            return false;
         }
+    }
+}
+
+public class CustomTodo : Todo
+{
+    public static async ValueTask<CustomTodo?> BindAsync(HttpContext context, ParameterInfo parameter)
+    {
+        Assert.Equal(typeof(CustomTodo), parameter.ParameterType);
+        Assert.Equal("customTodo", parameter.Name);
+
+        var body = await context.Request.ReadFromJsonAsync<CustomTodo>();
+        context.Request.Body.Position = 0;
+        return body;
     }
 }
 
@@ -206,8 +220,7 @@ public record MyBindAsyncRecord(Uri Uri)
         {
             throw new UnreachableException($"Unexpected parameter type: {parameter.ParameterType}");
         }
-        if (parameter.Name?.StartsWith("myBindAsyncParam", StringComparison.OrdinalIgnoreCase
-        ) == false)
+        if (parameter.Name?.StartsWith("myBindAsyncParam", StringComparison.OrdinalIgnoreCase) == false)
         {
             throw new UnreachableException("Unexpected parameter name");
         }
@@ -954,5 +967,133 @@ public class Status410Result : IResult
         httpContext.Response.StatusCode = StatusCodes.Status410Gone;
         httpContext.Response.WriteAsync("Already gone!");
         return Task.CompletedTask;
+    }
+}
+
+public class TodoJsonConverter : JsonConverter<ITodo>
+{
+    public override ITodo Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        var todo = new Todo();
+        while (reader.Read())
+        {
+            if (reader.TokenType == JsonTokenType.EndObject)
+            {
+                break;
+            }
+
+            var property = reader.GetString()!;
+            reader.Read();
+
+            switch (property.ToLowerInvariant())
+            {
+                case "id":
+                    todo.Id = reader.GetInt32();
+                    break;
+                case "name":
+                    todo.Name = reader.GetString();
+                    break;
+                case "iscomplete":
+                    todo.IsComplete = reader.GetBoolean();
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        return todo;
+    }
+
+    public override void Write(Utf8JsonWriter writer, ITodo value, JsonSerializerOptions options)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+#nullable enable
+public class TodoChild : Todo
+{
+    public string? Child { get; set; }
+}
+#nullable restore
+
+public class TodoWithExplicitIParsable : IParsable<TodoWithExplicitIParsable>
+{
+    static TodoWithExplicitIParsable IParsable<TodoWithExplicitIParsable>.Parse(string s, IFormatProvider provider)
+    {
+        return new TodoWithExplicitIParsable();
+    }
+
+    static bool IParsable<TodoWithExplicitIParsable>.TryParse(string s, IFormatProvider provider, out TodoWithExplicitIParsable result)
+    {
+        result = new TodoWithExplicitIParsable();
+        return true;
+    }
+}
+
+#nullable enable
+public class BindableWithMismatchedNullability<T>
+{
+    public BindableWithMismatchedNullability(T? value)
+    {
+        Value = value;
+    }
+
+    public T? Value { get; }
+
+    public static async ValueTask<BindableWithMismatchedNullability<T?>> BindAsync(HttpContext httpContext, ParameterInfo parameter)
+    {
+        await Task.CompletedTask;
+        return new BindableWithMismatchedNullability<T?>(default);
+    }
+}
+
+public struct BindableStructWithMismatchedNullability<T>
+{
+    public BindableStructWithMismatchedNullability(T? value)
+    {
+        Value = value;
+    }
+
+    public T? Value { get; }
+
+    public static async ValueTask<BindableStructWithMismatchedNullability<T?>> BindAsync(HttpContext httpContext, ParameterInfo parameter)
+    {
+        await Task.CompletedTask;
+        return new BindableStructWithMismatchedNullability<T?>(default);
+    }
+}
+
+public class BindableClassWithNullReturn
+{
+    public static async ValueTask<BindableClassWithNullReturn?> BindAsync(HttpContext httpContext, ParameterInfo parameter)
+    {
+        await Task.CompletedTask;
+        return null;
+    }
+}
+
+public struct BindableStructWithNullReturn
+{
+    public static async ValueTask<BindableStructWithNullReturn?> BindAsync(HttpContext httpContext, ParameterInfo parameter)
+    {
+        await Task.CompletedTask;
+        return null;
+    }
+}
+
+public struct BindableStruct
+{
+    public BindableStruct(string value)
+    {
+        Value = value;
+    }
+
+    public string Value { get; }
+
+    public static async ValueTask<BindableStruct> BindAsync(HttpContext httpContext, ParameterInfo parameter)
+    {
+        await Task.CompletedTask;
+        return new BindableStruct(httpContext.Request.Query["value"].ToString());
     }
 }

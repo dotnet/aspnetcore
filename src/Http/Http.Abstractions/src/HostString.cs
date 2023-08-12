@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
+using System.Diagnostics;
 using System.Globalization;
 using Microsoft.AspNetCore.Http.Abstractions;
 using Microsoft.Extensions.Primitives;
@@ -11,8 +13,18 @@ namespace Microsoft.AspNetCore.Http;
 /// Represents the host portion of a URI can be used to construct URI's properly formatted and encoded for use in
 /// HTTP headers.
 /// </summary>
+[DebuggerDisplay("{Value}")]
 public readonly struct HostString : IEquatable<HostString>
 {
+    // Allowed Characters:
+    // A-Z, a-z, 0-9, .,
+    // -, %, [, ], :
+    // Above for IPV6
+    private static readonly SearchValues<char> s_safeHostStringChars =
+        SearchValues.Create("%-.0123456789:ABCDEFGHIJKLMNOPQRSTUVWXYZ[]abcdefghijklmnopqrstuvwxyz");
+
+    private static readonly IdnMapping s_idnMapping = new();
+
     private readonly string _value;
 
     /// <summary>
@@ -119,33 +131,23 @@ public readonly struct HostString : IEquatable<HostString>
     /// <returns>The <see cref="HostString"/> value formated for use in a URI or HTTP header.</returns>
     public string ToUriComponent()
     {
-        if (string.IsNullOrEmpty(_value))
+        if (!HasValue)
         {
             return string.Empty;
         }
 
-        int i;
-        for (i = 0; i < _value.Length; ++i)
+        if (!_value.AsSpan().ContainsAnyExcept(s_safeHostStringChars))
         {
-            if (!HostStringHelper.IsSafeHostStringChar(_value[i]))
-            {
-                break;
-            }
+            return _value;
         }
 
-        if (i != _value.Length)
-        {
-            GetParts(_value, out var host, out var port);
+        GetParts(_value, out var host, out var port);
 
-            var mapping = new IdnMapping();
-            var encoded = mapping.GetAscii(host.Buffer!, host.Offset, host.Length);
+        var encoded = s_idnMapping.GetAscii(host.Buffer!, host.Offset, host.Length);
 
-            return StringSegment.IsNullOrEmpty(port)
-                ? encoded
-                : string.Concat(encoded, ":", port.ToString());
-        }
-
-        return _value;
+        return StringSegment.IsNullOrEmpty(port)
+            ? encoded
+            : string.Concat(encoded, ":", port.AsSpan());
     }
 
     /// <summary>
@@ -175,14 +177,12 @@ public readonly struct HostString : IEquatable<HostString>
                 if (index >= 0)
                 {
                     // Has a port
-                    string port = uriComponent.Substring(index);
-                    var mapping = new IdnMapping();
-                    uriComponent = mapping.GetUnicode(uriComponent, 0, index) + port;
+                    var port = uriComponent.AsSpan(index);
+                    uriComponent = string.Concat(s_idnMapping.GetUnicode(uriComponent, 0, index), port);
                 }
                 else
                 {
-                    var mapping = new IdnMapping();
-                    uriComponent = mapping.GetUnicode(uriComponent);
+                    uriComponent = s_idnMapping.GetUnicode(uriComponent);
                 }
             }
         }

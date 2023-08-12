@@ -10,6 +10,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.WebSockets;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Security.Principal;
 using System.Text;
 using Microsoft.AspNetCore.Authentication;
@@ -18,8 +19,10 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Abstractions;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
@@ -36,9 +39,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
-using Microsoft.Extensions.Metrics;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Extensions.Telemetry.Testing.Metering;
 using Microsoft.IdentityModel.Tokens;
 using Moq;
 using Newtonsoft.Json;
@@ -1091,9 +1094,8 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         using (StartVerifiableLog())
         {
             var testMeterFactory = new TestMeterFactory();
-            using var connectionDuration = new InstrumentRecorder<double>(new TestMeterRegistry(testMeterFactory.Meters), HttpConnectionsMetrics.MeterName, "connection-duration");
-            using var currentConnections = new InstrumentRecorder<long>(new TestMeterRegistry(testMeterFactory.Meters), HttpConnectionsMetrics.MeterName, "current-connections");
-            using var currentTransports = new InstrumentRecorder<long>(new TestMeterRegistry(testMeterFactory.Meters), HttpConnectionsMetrics.MeterName, "current-transports");
+            using var connectionDuration = new MetricCollector<double>(testMeterFactory, HttpConnectionsMetrics.MeterName, "signalr.server.connection.duration");
+            using var currentConnections = new MetricCollector<long>(testMeterFactory, HttpConnectionsMetrics.MeterName, "signalr.server.active_connections");
 
             var metrics = new HttpConnectionsMetrics(testMeterFactory);
             var manager = CreateConnectionManager(LoggerFactory, metrics);
@@ -1120,23 +1122,61 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var exists = manager.TryGetConnection(connection.ConnectionId, out _);
             Assert.False(exists);
 
-            Assert.Collection(currentConnections.GetMeasurements(), m => Assert.Equal(1, m.Value), m => Assert.Equal(-1, m.Value));
-            Assert.Collection(connectionDuration.GetMeasurements(), m => AssertDuration(m, HttpConnectionStopStatus.NormalClosure, HttpTransportType.LongPolling));
-            Assert.Collection(currentTransports.GetMeasurements(), m => AssertTransport(m, 1, HttpTransportType.LongPolling), m => AssertTransport(m, -1, HttpTransportType.LongPolling));
+            Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => AssertDuration(m, "normal_closure", "long_polling"));
+            Assert.Collection(currentConnections.GetMeasurementSnapshot(), m => AssertTransport(m, 1, "long_polling"), m => AssertTransport(m, -1, "long_polling"));
         }
+    }
 
-        static void AssertTransport(Measurement<long> measurement, long expected, HttpTransportType transportType)
+    [Fact]
+    public async Task Metrics_ListenStartAfterConnection_Empty()
+    {
+        using (StartVerifiableLog())
         {
-            Assert.Equal(expected, measurement.Value);
-            Assert.Equal(transportType.ToString(), (string)measurement.Tags.ToArray().Single(t => t.Key == "transport").Value);
-        }
+            var testMeterFactory = new TestMeterFactory();
+            var metrics = new HttpConnectionsMetrics(testMeterFactory);
+            var manager = CreateConnectionManager(LoggerFactory, metrics);
+            var connection = manager.CreateConnection();
 
-        static void AssertDuration(Measurement<double> measurement, HttpConnectionStopStatus status, HttpTransportType transportType)
-        {
-            Assert.True(measurement.Value > 0);
-            Assert.Equal(status.ToString(), (string)measurement.Tags.ToArray().Single(t => t.Key == "status").Value);
-            Assert.Equal(transportType.ToString(), (string)measurement.Tags.ToArray().Single(t => t.Key == "transport").Value);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory, metrics);
+
+            var services = new ServiceCollection();
+            services.AddSingleton<ImmediatelyCompleteConnectionHandler>();
+            var context = MakeRequest("/foo", connection, services);
+
+            var builder = new ConnectionBuilder(services.BuildServiceProvider());
+            builder.UseConnectionHandler<ImmediatelyCompleteConnectionHandler>();
+            var app = builder.Build();
+            // First poll will 200
+            await dispatcher.ExecuteAsync(context, new HttpConnectionDispatcherOptions(), app);
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+
+            using var connectionDuration = new MetricCollector<double>(testMeterFactory, HttpConnectionsMetrics.MeterName, "signalr.server.connection.duration");
+            using var currentConnections = new MetricCollector<long>(testMeterFactory, HttpConnectionsMetrics.MeterName, "signalr.server.active_connections");
+
+            await dispatcher.ExecuteAsync(context, new HttpConnectionDispatcherOptions(), app);
+
+            Assert.Equal(StatusCodes.Status204NoContent, context.Response.StatusCode);
+            AssertResponseHasCacheHeaders(context.Response);
+
+            var exists = manager.TryGetConnection(connection.ConnectionId, out _);
+            Assert.False(exists);
+
+            Assert.Empty(currentConnections.GetMeasurementSnapshot());
+            Assert.Empty(connectionDuration.GetMeasurementSnapshot());
         }
+    }
+
+    private static void AssertTransport(CollectedMeasurement<long> measurement, long expected, string transportType)
+    {
+        Assert.Equal(expected, measurement.Value);
+        Assert.Equal(transportType.ToString(), (string)measurement.Tags["signalr.transport"]);
+    }
+
+    private static void AssertDuration(CollectedMeasurement<double> measurement, string status, string transportType)
+    {
+        Assert.True(measurement.Value > 0);
+        Assert.Equal(status.ToString(), (string)measurement.Tags["signalr.connection.status"]);
+        Assert.Equal(transportType.ToString(), (string)measurement.Tags["signalr.transport"]);
     }
 
     [Fact]
@@ -1392,7 +1432,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var options = new HttpConnectionDispatcherOptions();
             var request1 = dispatcher.ExecuteAsync(context1, options, app);
 
-            await dispatcher.ExecuteAsync(context2, options, app);
+            await dispatcher.ExecuteAsync(context2, options, app).DefaultTimeout();
 
             Assert.Equal(StatusCodes.Status409Conflict, context2.Response.StatusCode);
 
@@ -2222,6 +2262,87 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
+    [Fact]
+    public async Task NegotiateDoesNotReturnUseAckWhenNotEnabledOnServer()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+            var context = new DefaultHttpContext();
+            context.Features.Set<IHttpResponseFeature>(new ResponseFeature());
+            var services = new ServiceCollection();
+            services.AddSingleton<TestConnectionHandler>();
+            services.AddOptions();
+            var ms = new MemoryStream();
+            context.Request.Path = "/foo";
+            context.Request.Method = "POST";
+            context.Response.Body = ms;
+            context.Request.QueryString = new QueryString("?negotiateVersion=1&UseAck=true");
+            await dispatcher.ExecuteNegotiateAsync(context, new HttpConnectionDispatcherOptions { AllowAcks = false });
+
+            var negotiateResponse = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(ms.ToArray()));
+            Assert.False(negotiateResponse.TryGetValue("useAck", out _));
+
+            Assert.True(manager.TryGetConnection(negotiateResponse["connectionToken"].ToString(), out var connection));
+            Assert.Null(connection.Features.Get<IReconnectFeature>());
+        }
+    }
+
+    [Fact]
+    public async Task NegotiateDoesNotReturnUseAckWhenEnabledOnServerButNotRequestedByClient()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+            var context = new DefaultHttpContext();
+            context.Features.Set<IHttpResponseFeature>(new ResponseFeature());
+            var services = new ServiceCollection();
+            services.AddSingleton<TestConnectionHandler>();
+            services.AddOptions();
+            var ms = new MemoryStream();
+            context.Request.Path = "/foo";
+            context.Request.Method = "POST";
+            context.Response.Body = ms;
+            context.Request.QueryString = new QueryString("?negotiateVersion=1");
+            await dispatcher.ExecuteNegotiateAsync(context, new HttpConnectionDispatcherOptions { AllowAcks = true });
+
+            var negotiateResponse = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(ms.ToArray()));
+            Assert.False(negotiateResponse.TryGetValue("useAck", out _));
+
+            Assert.True(manager.TryGetConnection(negotiateResponse["connectionToken"].ToString(), out var connection));
+            Assert.Null(connection.Features.Get<IReconnectFeature>());
+        }
+    }
+
+    [Fact]
+    public async Task NegotiateReturnsUseAckWhenEnabledOnServerAndRequestedByClient()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+            var context = new DefaultHttpContext();
+            context.Features.Set<IHttpResponseFeature>(new ResponseFeature());
+            var services = new ServiceCollection();
+            services.AddSingleton<TestConnectionHandler>();
+            services.AddOptions();
+            var ms = new MemoryStream();
+            context.Request.Path = "/foo";
+            context.Request.Method = "POST";
+            context.Response.Body = ms;
+            context.Request.QueryString = new QueryString("?negotiateVersion=1&UseAck=true");
+            await dispatcher.ExecuteNegotiateAsync(context, new HttpConnectionDispatcherOptions { AllowAcks = true });
+
+            var negotiateResponse = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(ms.ToArray()));
+            Assert.True((bool)negotiateResponse["useAck"]);
+
+            Assert.True(manager.TryGetConnection(negotiateResponse["connectionToken"].ToString(), out var connection));
+            Assert.NotNull(connection.Features.Get<IReconnectFeature>());
+        }
+    }
+
     private class ControllableMemoryStream : MemoryStream
     {
         private readonly SyncPoint _syncPoint;
@@ -2869,7 +2990,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
     [InlineData(HttpTransportType.WebSockets)]
     public async Task AuthenticationExpirationSetOnAuthenticatedConnectionWithJWT(HttpTransportType transportType)
     {
-        SymmetricSecurityKey SecurityKey = new SymmetricSecurityKey(Guid.NewGuid().ToByteArray());
+        SymmetricSecurityKey SecurityKey = new SymmetricSecurityKey(SHA256.HashData(Guid.NewGuid().ToByteArray()));
         JwtSecurityTokenHandler JwtTokenHandler = new JwtSecurityTokenHandler();
 
         using var host = CreateHost(services =>
@@ -3031,7 +3152,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
     [InlineData(HttpTransportType.WebSockets)]
     public async Task AuthenticationExpirationUsesCorrectScheme(HttpTransportType transportType)
     {
-        var SecurityKey = new SymmetricSecurityKey(Guid.NewGuid().ToByteArray());
+        var SecurityKey = new SymmetricSecurityKey(SHA256.HashData(Guid.NewGuid().ToByteArray()));
         var JwtTokenHandler = new JwtSecurityTokenHandler();
 
         using var host = CreateHost(services =>
@@ -3184,8 +3305,13 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
                     services.AddConnections();
 
                     // Since tests run in parallel, it's possible multiple servers will startup,
-                    // we use an ephemeral key provider to avoid filesystem contention issues
+                    // we use an ephemeral key provider and repository to avoid filesystem contention issues
                     services.AddSingleton<IDataProtectionProvider, EphemeralDataProtectionProvider>();
+
+                    services.Configure<KeyManagementOptions>(options =>
+                    {
+                        options.XmlRepository = new EphemeralXmlRepository();
+                    });
                 })
                 .Configure(app =>
                 {
@@ -3329,8 +3455,13 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
                     services.AddAuthorization();
 
                     // Since tests run in parallel, it's possible multiple servers will startup,
-                    // we use an ephemeral key provider to avoid filesystem contention issues
+                    // we use an ephemeral key provider and repository to avoid filesystem contention issues
                     services.AddSingleton<IDataProtectionProvider, EphemeralDataProtectionProvider>();
+
+                    services.Configure<KeyManagementOptions>(options =>
+                    {
+                        options.XmlRepository = new EphemeralXmlRepository();
+                    });
                 })
                 .Configure(app =>
                 {

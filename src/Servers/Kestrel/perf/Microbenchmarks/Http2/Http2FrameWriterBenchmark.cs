@@ -32,7 +32,7 @@ public class Http2FrameWriterBenchmark
         var serviceContext = TestContextFactory.CreateServiceContext(
             serverOptions: new KestrelServerOptions(),
             httpParser: new HttpParser<Http1ParsingHandler>(),
-            dateHeaderValueManager: new DateHeaderValueManager());
+            dateHeaderValueManager: new DateHeaderValueManager(TimeProvider.System));
 
         _frameWriter = new Http2FrameWriter(
             new NullPipeWriter(),

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -98,6 +99,7 @@ public static class ExceptionHandlerExtensions
                 var loggerFactory = app.ApplicationServices.GetRequiredService<ILoggerFactory>();
                 var diagnosticListener = app.ApplicationServices.GetRequiredService<DiagnosticListener>();
                 var exceptionHandlers = app.ApplicationServices.GetRequiredService<IEnumerable<IExceptionHandler>>();
+                var meterFactory = app.ApplicationServices.GetRequiredService<IMeterFactory>();
 
                 if (options is null)
                 {
@@ -111,7 +113,7 @@ public static class ExceptionHandlerExtensions
                     options.Value.ExceptionHandler = newNext;
                 }
 
-                return new ExceptionHandlerMiddlewareImpl(next, loggerFactory, options, diagnosticListener, exceptionHandlers, problemDetailsService).Invoke;
+                return new ExceptionHandlerMiddlewareImpl(next, loggerFactory, options, diagnosticListener, exceptionHandlers, meterFactory, problemDetailsService).Invoke;
             });
         }
 

@@ -16,7 +16,7 @@ public readonly struct ParameterView
 {
     private static readonly RenderTreeFrame[] _emptyFrames = new RenderTreeFrame[]
     {
-            RenderTreeFrame.Element(0, string.Empty).WithComponentSubtreeLength(1)
+        RenderTreeFrame.Element(0, string.Empty).WithComponentSubtreeLength(1)
     };
 
     private static readonly ParameterView _empty = new ParameterView(ParameterViewLifetime.Unbound, _emptyFrames, 0, Array.Empty<CascadingParameterState>());
@@ -130,6 +130,20 @@ public readonly struct ParameterView
 
     internal ParameterView WithCascadingParameters(IReadOnlyList<CascadingParameterState> cascadingParameters)
         => new ParameterView(_lifetime, _frames, _ownerIndex, cascadingParameters);
+
+    internal bool HasDirectParameter(string parameterName)
+    {
+        var directParameterEnumerator = new RenderTreeFrameParameterEnumerator(_frames, _ownerIndex);
+        while (directParameterEnumerator.MoveNext())
+        {
+            if (string.Equals(directParameterEnumerator.Current.Name, parameterName, StringComparison.Ordinal))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     // It's internal because there isn't a known use case for user code comparing
     // ParameterView instances, and even if there was, it's unlikely it should
@@ -423,7 +437,8 @@ public readonly struct ParameterView
                 _currentIndex = nextIndex;
 
                 var state = _cascadingParameters[_currentIndex];
-                _current = new ParameterValue(state.LocalValueName, state.ValueSupplier.CurrentValue!, true);
+                var currentValue = state.ValueSupplier.GetCurrentValue(state.ParameterInfo);
+                _current = new ParameterValue(state.ParameterInfo.PropertyName, currentValue!, true);
                 return true;
             }
             else

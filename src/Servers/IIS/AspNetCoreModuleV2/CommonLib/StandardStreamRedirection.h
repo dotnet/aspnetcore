@@ -9,9 +9,15 @@
 
 class StandardStreamRedirection : NonCopyable
 {
-    // Timeout to be used if a thread never exits
-    #define PIPE_OUTPUT_THREAD_TIMEOUT 2000
-    #define PIPE_READ_SIZE 4096
+    // Default timeout for the redirection thread to exit before it is forcefully terminated
+    // This can be overridden with ASPNETCORE_OUTPUT_REDIRECTION_TERMINATION_TIMEOUT_MS
+    static constexpr int PIPE_OUTPUT_THREAD_TIMEOUT_MS_DEFAULT = 2000;
+
+    // Maximum allowed timeout value
+    static constexpr int PIPE_OUTPUT_THREAD_TIMEOUT_MS_MAX = 1800000; // 30 minutes
+
+    // Size of the buffer used to read from the pipe
+    static constexpr int PIPE_READ_SIZE = 4096;
 
 public:
     StandardStreamRedirection(RedirectionOutput& output, bool commandLineLaunch);
@@ -63,4 +69,5 @@ private:
     std::unique_ptr<StdWrapper> stdoutWrapper;
     std::unique_ptr<StdWrapper> stderrWrapper;
     RedirectionOutput& m_output;
+    int m_terminationTimeoutMs = PIPE_OUTPUT_THREAD_TIMEOUT_MS_DEFAULT;
 };

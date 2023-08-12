@@ -60,6 +60,10 @@ internal abstract class MessagePackHubProtocolWorker
                 return PingMessage.Instance;
             case HubProtocolConstants.CloseMessageType:
                 return CreateCloseMessage(ref reader, itemCount);
+            case HubProtocolConstants.AckMessageType:
+                return CreateAckMessage(ref reader);
+            case HubProtocolConstants.SequenceMessageType:
+                return CreateSequenceMessage(ref reader);
             default:
                 // Future protocol changes can add message types, old clients can ignore them
                 return null;
@@ -279,6 +283,16 @@ internal abstract class MessagePackHubProtocolWorker
         return streams?.ToArray();
     }
 
+    private static AckMessage CreateAckMessage(ref MessagePackReader reader)
+    {
+        return new AckMessage(ReadInt64(ref reader, "sequenceId"));
+    }
+
+    private static SequenceMessage CreateSequenceMessage(ref MessagePackReader reader)
+    {
+        return new SequenceMessage(ReadInt64(ref reader, "sequenceId"));
+    }
+
     private object?[] BindArguments(ref MessagePackReader reader, IReadOnlyList<Type> parameterTypes)
     {
         var argumentCount = ReadArrayLength(ref reader, "arguments");
@@ -394,6 +408,12 @@ internal abstract class MessagePackHubProtocolWorker
                 break;
             case CloseMessage closeMessage:
                 WriteCloseMessage(closeMessage, ref writer);
+                break;
+            case AckMessage ackMessage:
+                WriteAckMessage(ackMessage, ref writer);
+                break;
+            case SequenceMessage sequenceMessage:
+                WriteSequenceMessage(sequenceMessage, ref writer);
                 break;
             default:
                 throw new InvalidDataException($"Unexpected message type: {message.GetType().Name}");
@@ -555,6 +575,20 @@ internal abstract class MessagePackHubProtocolWorker
         writer.Write(HubProtocolConstants.PingMessageType);
     }
 
+    private static void WriteAckMessage(AckMessage message, ref MessagePackWriter writer)
+    {
+        writer.WriteArrayHeader(2);
+        writer.Write(HubProtocolConstants.AckMessageType);
+        writer.Write(message.SequenceId);
+    }
+
+    private static void WriteSequenceMessage(SequenceMessage message, ref MessagePackWriter writer)
+    {
+        writer.WriteArrayHeader(2);
+        writer.Write(HubProtocolConstants.SequenceMessageType);
+        writer.Write(message.SequenceId);
+    }
+
     private static void PackHeaders(IDictionary<string, string>? headers, ref MessagePackWriter writer)
     {
         if (headers != null)
@@ -599,6 +633,18 @@ internal abstract class MessagePackHubProtocolWorker
         catch (Exception ex)
         {
             throw new InvalidDataException($"Reading '{field}' as Int32 failed.", ex);
+        }
+    }
+
+    private static long ReadInt64(ref MessagePackReader reader, string field)
+    {
+        try
+        {
+            return reader.ReadInt64();
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidDataException($"Reading '{field}' as Int64 failed.", ex);
         }
     }
 

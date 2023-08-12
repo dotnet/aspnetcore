@@ -142,7 +142,7 @@ public class RoutePatternCompletionProvider : CompletionProvider
 
             if (change.NewPosition != null)
             {
-                properties.Add(NewPositionKey, change.NewPosition.ToString());
+                properties.Add(NewPositionKey, change.NewPosition.Value.ToString(CultureInfo.InvariantCulture));
             }
 
             // Keep everything sorted in the order we just produced the items in.
@@ -163,7 +163,7 @@ public class RoutePatternCompletionProvider : CompletionProvider
         context.IsExclusive = true;
     }
 
-    private void ProvideCompletions(EmbeddedCompletionContext context)
+    private static void ProvideCompletions(EmbeddedCompletionContext context)
     {
         var result = GetCurrentToken(context);
         if (result == null)
@@ -216,7 +216,7 @@ public class RoutePatternCompletionProvider : CompletionProvider
         }
     }
 
-    private (RoutePatternNode Parent, RoutePatternToken Token)? GetCurrentToken(EmbeddedCompletionContext context)
+    private static (RoutePatternNode Parent, RoutePatternToken Token)? GetCurrentToken(EmbeddedCompletionContext context)
     {
         var previousVirtualCharOpt = context.RouteUsage.RoutePattern.Text.Find(context.Position - 1);
         if (previousVirtualCharOpt == null)
@@ -279,7 +279,7 @@ If there are two arguments then the string length must be greater than, or equal
         }
     }
 
-    private (RoutePatternNode Parent, RoutePatternToken Token)? FindToken(RoutePatternNode parent, VirtualChar ch)
+    private static (RoutePatternNode Parent, RoutePatternToken Token)? FindToken(RoutePatternNode parent, VirtualChar ch)
     {
         foreach (var child in parent)
         {

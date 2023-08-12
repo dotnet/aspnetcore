@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 using System.Runtime.InteropServices;
@@ -184,6 +185,12 @@ public class HttpsTests
 
             var keyExchangeStrength = result.GetProperty("keyExchangeStrength").GetInt32();
             Assert.True(keyExchangeStrength >= 0, "KeyExchangeStrength: " + keyExchangeStrength);
+
+            if (Environment.OSVersion.Version > new Version(10, 0, 19043, 0))
+            {
+                var hostName = result.GetProperty("hostName").ToString();
+                Assert.Equal("localhost", hostName);
+            }
         }
     }
 
@@ -215,6 +222,36 @@ public class HttpsTests
                 Assert.Equal(tlsFeature.HashStrength, (int)tlsCopy.HashStrength);
                 Assert.Equal(tlsFeature.KeyExchangeAlgorithm, tlsCopy.KeyExchangeType);
                 Assert.Equal(tlsFeature.KeyExchangeStrength, (int)tlsCopy.KeyExchangeStrength);
+            }
+            catch (Exception ex)
+            {
+                await httpContext.Response.WriteAsync(ex.ToString());
+            }
+        }))
+        {
+            string response = await SendRequestAsync(address);
+            Assert.Equal(string.Empty, response);
+        }
+    }
+
+    [ConditionalFact]
+    [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2)]
+    public async Task Https_SetsIHttpSysRequestTimingFeature()
+    {
+        using (Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
+        {
+            try
+            {
+                var requestTimingFeature = httpContext.Features.Get<IHttpSysRequestTimingFeature>();
+                Assert.NotNull(requestTimingFeature);
+                Assert.True(requestTimingFeature.Timestamps.Length > (int)HttpSysRequestTimingType.Http3HeaderDecodeEnd);
+                Assert.True(requestTimingFeature.TryGetTimestamp(HttpSysRequestTimingType.RequestHeaderParseStart, out var headerStart));
+                Assert.True(requestTimingFeature.TryGetTimestamp(HttpSysRequestTimingType.RequestHeaderParseEnd, out var headerEnd));
+                Assert.True(requestTimingFeature.TryGetElapsedTime(HttpSysRequestTimingType.RequestHeaderParseStart, HttpSysRequestTimingType.RequestHeaderParseEnd, out var elapsed));
+                Assert.Equal(Stopwatch.GetElapsedTime(headerStart, headerEnd), elapsed);
+                Assert.False(requestTimingFeature.TryGetTimestamp(HttpSysRequestTimingType.Http3StreamStart, out var streamStart));
+                Assert.False(requestTimingFeature.TryGetTimestamp((HttpSysRequestTimingType)int.MaxValue, out var invalid));
+                Assert.False(requestTimingFeature.TryGetElapsedTime(HttpSysRequestTimingType.Http3StreamStart, HttpSysRequestTimingType.RequestHeaderParseStart, out elapsed));
             }
             catch (Exception ex)
             {

@@ -31,7 +31,7 @@ internal sealed class SpaHostingStartup : IHostingStartup
         });
 
         [UnconditionalSuppressMessageAttribute("Trimming", "IL2026", Justification = "Configuration object's public properties are preserved.")]
-        static void ConfigureOptions<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] T>(IServiceCollection services, IConfigurationSection section)
+        static void ConfigureOptions<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(IServiceCollection services, IConfigurationSection section)
             where T : class
         {
             services.Configure<T>(section);

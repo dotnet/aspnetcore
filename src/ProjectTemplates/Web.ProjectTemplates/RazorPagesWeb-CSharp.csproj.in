@@ -27,8 +27,9 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Negotiate" Version="${MicrosoftAspNetCoreAuthenticationNegotiateVersion}" Condition="'$(WindowsAuth)' == 'True'" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="${MicrosoftAspNetCoreAuthenticationOpenIdConnectVersion}" Condition=" '$(IndividualB2CAuth)' == 'True' OR '$(OrganizationalAuth)' == 'True'" NoWarn="NU1605" />
     <PackageReference Include="Microsoft.Identity.Web" Version="${MicrosoftIdentityWebVersion}" Condition=" '$(IndividualB2CAuth)' == 'True' OR '$(OrganizationalAuth)' == 'True'" />
-    <PackageReference Include="Microsoft.Identity.Web.MicrosoftGraph" Version="${MicrosoftIdentityWebMicrosoftGraphVersion}" Condition=" '$(GenerateGraph)' == 'True' " />
+    <PackageReference Include="Microsoft.Identity.Web.GraphServiceClient" Version="${MicrosoftIdentityWebGraphServiceClientVersion}" Condition=" '$(GenerateGraph)' == 'True' " />
     <PackageReference Include="Microsoft.Identity.Web.UI" Version="${MicrosoftIdentityWebUIVersion}" Condition=" '$(IndividualB2CAuth)' == 'True' OR '$(OrganizationalAuth)' == 'True'" />
+    <PackageReference Include="Microsoft.Identity.Web.DownstreamApi" Version="${MicrosoftIdentityWebDownstreamApiVersion}" Condition=" '$(IndividualB2CAuth)' == 'True' OR '$(OrganizationalAuth)' == 'True'" />
   </ItemGroup>
 
   <!--#endif -->

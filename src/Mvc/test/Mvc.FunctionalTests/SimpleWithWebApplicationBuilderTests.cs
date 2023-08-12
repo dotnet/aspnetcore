@@ -3,10 +3,15 @@
 
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
@@ -249,10 +254,33 @@ public class SimpleWithWebApplicationBuilderTests : IClassFixture<MvcTestFixture
     }
 
     [Fact]
-    public async Task FileUpload_Works()
+    public async Task FileUpload_Works_WithAntiforgeryToken()
     {
         // Arrange
         var expected = "42";
+        var content = new MultipartFormDataContent();
+        content.Add(new StringContent(new string('a', 42)), "file", "file.txt");
+
+        using var client = _fixture.CreateDefaultClient();
+        var antiforgery = _fixture.Services.GetRequiredService<IAntiforgery>();
+        var antiforgeryOptions = _fixture.Services.GetRequiredService<IOptions<AntiforgeryOptions>>();
+        var tokens = antiforgery.GetAndStoreTokens(new DefaultHttpContext());
+        client.DefaultRequestHeaders.Add("Cookie", new CookieHeaderValue(antiforgeryOptions.Value.Cookie.Name, tokens.CookieToken).ToString());
+        client.DefaultRequestHeaders.Add(tokens.HeaderName, tokens.RequestToken);
+
+        // Act
+        var response = await client.PostAsync("/fileupload", content);
+
+        // Assert
+        await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+        var actual = await response.Content.ReadAsStringAsync();
+        Assert.Equal(expected, actual);
+    }
+
+    [Fact]
+    public async Task FileUpload_Fails_WithoutAntiforgeryToken()
+    {
+        // Arrange
         var content = new MultipartFormDataContent();
         content.Add(new StringContent(new string('a', 42)), "file", "file.txt");
 
@@ -262,8 +290,6 @@ public class SimpleWithWebApplicationBuilderTests : IClassFixture<MvcTestFixture
         var response = await client.PostAsync("/fileupload", content);
 
         // Assert
-        await response.AssertStatusCodeAsync(HttpStatusCode.OK);
-        var actual = await response.Content.ReadAsStringAsync();
-        Assert.Equal(expected, actual);
+        await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
     }
 }

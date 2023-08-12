@@ -31,8 +31,6 @@ internal sealed partial class Request
     private AspNetCore.HttpSys.Internal.SocketAddress? _localEndPoint;
     private AspNetCore.HttpSys.Internal.SocketAddress? _remoteEndPoint;
 
-    private IReadOnlyDictionary<int, ReadOnlyMemory<byte>>? _requestInfo;
-
     private bool _isDisposed;
 
     internal Request(RequestContext requestContext)
@@ -167,6 +165,7 @@ internal sealed partial class Request
 
         User = RequestContext.GetUser();
 
+        SniHostName = string.Empty;
         if (IsHttps)
         {
             GetTlsHandshakeResults();
@@ -325,6 +324,8 @@ internal sealed partial class Request
 
     internal WindowsPrincipal User { get; }
 
+    public string SniHostName { get; private set; }
+
     public SslProtocols Protocol { get; private set; }
 
     public CipherAlgorithmType CipherAlgorithm { get; private set; }
@@ -339,62 +340,19 @@ internal sealed partial class Request
 
     public int KeyExchangeStrength { get; private set; }
 
-    public IReadOnlyDictionary<int, ReadOnlyMemory<byte>> RequestInfo
-    {
-        get
-        {
-            if (_requestInfo == null)
-            {
-                _requestInfo = RequestContext.GetRequestInfo();
-            }
-            return _requestInfo;
-        }
-    }
-
     private void GetTlsHandshakeResults()
     {
         var handshake = RequestContext.GetTlsHandshake();
-
         Protocol = handshake.Protocol;
-        // The OS considers client and server TLS as different enum values. SslProtocols choose to combine those for some reason.
-        // We need to fill in the client bits so the enum shows the expected protocol.
-        // https://learn.microsoft.com/windows/desktop/api/schannel/ns-schannel-_secpkgcontext_connectioninfo
-        // Compare to https://referencesource.microsoft.com/#System/net/System/Net/SecureProtocols/_SslState.cs,8905d1bf17729de3
-#pragma warning disable CS0618 // Type or member is obsolete
-        if ((Protocol & SslProtocols.Ssl2) != 0)
-        {
-            Protocol |= SslProtocols.Ssl2;
-        }
-        if ((Protocol & SslProtocols.Ssl3) != 0)
-        {
-            Protocol |= SslProtocols.Ssl3;
-        }
-#pragma warning restore CS0618 // Type or Prmember is obsolete
-#pragma warning disable SYSLIB0039 // TLS 1.0 and 1.1 are obsolete
-        if ((Protocol & SslProtocols.Tls) != 0)
-        {
-            Protocol |= SslProtocols.Tls;
-        }
-        if ((Protocol & SslProtocols.Tls11) != 0)
-        {
-            Protocol |= SslProtocols.Tls11;
-        }
-#pragma warning restore SYSLIB0039
-        if ((Protocol & SslProtocols.Tls12) != 0)
-        {
-            Protocol |= SslProtocols.Tls12;
-        }
-        if ((Protocol & SslProtocols.Tls13) != 0)
-        {
-            Protocol |= SslProtocols.Tls13;
-        }
-
         CipherAlgorithm = handshake.CipherType;
         CipherStrength = (int)handshake.CipherStrength;
         HashAlgorithm = handshake.HashType;
         HashStrength = (int)handshake.HashStrength;
         KeyExchangeAlgorithm = handshake.KeyExchangeType;
         KeyExchangeStrength = (int)handshake.KeyExchangeStrength;
+
+        var sni = RequestContext.GetClientSni();
+        SniHostName = sni.Hostname;
     }
 
     public X509Certificate2? ClientCertificate

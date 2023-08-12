@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Testing;
 
@@ -15,10 +16,7 @@ public class SkipOnHelixAttribute : Attribute, ITestCondition
 {
     public SkipOnHelixAttribute(string issueUrl)
     {
-        if (string.IsNullOrEmpty(issueUrl))
-        {
-            throw new ArgumentNullException(nameof(issueUrl));
-        }
+        ArgumentThrowHelper.ThrowIfNullOrEmpty(issueUrl);
         IssueUrl = issueUrl;
     }
 
@@ -62,7 +60,7 @@ public class SkipOnHelixAttribute : Attribute, ITestCondition
         {
             return true;
         }
-        
+
         if (Queues.Contains("All.Linux") && RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
         {
             return true;

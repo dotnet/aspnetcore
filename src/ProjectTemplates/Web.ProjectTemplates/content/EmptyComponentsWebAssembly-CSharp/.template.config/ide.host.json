@@ -5,11 +5,6 @@
   "disableHttpsSymbol": "NoHttps",
   "symbolInfo": [
     {
-      "id": "Hosted",
-      "isVisible": "true",
-      "persistenceScope": "templateGroup"
-    },
-    {
       "id": "PWA",
       "isVisible": "true",
       "persistenceScope": "templateGroup"

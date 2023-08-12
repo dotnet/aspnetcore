@@ -37,7 +37,7 @@
       RuntimeFrameworkVersion="${MicrosoftNETCoreAppRuntimeVersion}"
       TargetingPackVersion="${MicrosoftNETCoreAppRefVersion}" />
 
-    <PackageReference Include="Microsoft.Dotnet.ILCompiler"
+    <PackageReference Include="Microsoft.DotNet.ILCompiler"
       Condition=" '$(PublishAot)' == 'true' "
       Version="${MicrosoftNETCoreAppRuntimeVersion}" />
   </ItemGroup>
@@ -74,6 +74,11 @@
         Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftNETCoreAppRuntimeVersion}</LatestRuntimeFrameworkVersion>
       <AppHostRuntimeIdentifiers Condition=" '$(PortableBuild)' == 'false' ">$(TargetRuntimeIdentifier)</AppHostRuntimeIdentifiers>
     </KnownRuntimePack>
+
+    <KnownWebAssemblySdkPack Update="Microsoft.NET.Sdk.WebAssembly.Pack">
+      <WebAssemblySdkPackVersion
+        Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftNETCoreAppRuntimeVersion}</WebAssemblySdkPackVersion>
+    </KnownWebAssemblySdkPack>
 
     <KnownCrossgen2Pack Update="Microsoft.NETCore.App.Crossgen2" Condition=" '$(PortableBuild)' == 'false' ">
       <Crossgen2PackVersion
@@ -134,7 +139,7 @@
           BeforeTargets="ProcessFrameworkReferences">
     <ItemGroup>
       <KnownILLinkPack Include="@(KnownILLinkPack)"
-                       Condition="'%(TargetFramework)' == '${DefaultNetCoreTargetFramework}'"
+                       Condition="'%(TargetFramework)' == 'net7.0'"
                        TargetFramework="netstandard2.1"
                        ILLinkPackVersion="%(KnownILLinkPack.ILLinkPackVersion)" />
     </ItemGroup>

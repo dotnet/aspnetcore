@@ -7,10 +7,12 @@ using System.IO.Pipelines;
 using System.Security.Claims;
 using System.Security.Principal;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Abstractions;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Connections.Features;
 using Microsoft.AspNetCore.Http.Connections.Internal.Transports;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Timeouts;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -28,7 +30,8 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
                                      IHttpTransportFeature,
                                      IConnectionInherentKeepAliveFeature,
                                      IConnectionLifetimeFeature,
-                                     IConnectionLifetimeNotificationFeature
+                                     IConnectionLifetimeNotificationFeature,
+                                     IReconnectFeature
 {
     private readonly HttpConnectionDispatcherOptions _options;
 
@@ -46,6 +49,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     private CancellationTokenSource? _sendCts;
     private bool _activeSend;
     private long _startedSendTime;
+    private readonly bool _useAcks;
     private readonly object _sendingLock = new object();
     internal CancellationToken SendingToken { get; private set; }
 
@@ -57,7 +61,8 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     /// Creates the DefaultConnectionContext without Pipes to avoid upfront allocations.
     /// The caller is expected to set the <see cref="Transport"/> and <see cref="Application"/> pipes manually.
     /// </summary>
-    public HttpConnectionContext(string connectionId, string connectionToken, ILogger logger, IDuplexPipe transport, IDuplexPipe application, HttpConnectionDispatcherOptions options)
+    public HttpConnectionContext(string connectionId, string connectionToken, ILogger logger, MetricsContext metricsContext,
+        IDuplexPipe transport, IDuplexPipe application, HttpConnectionDispatcherOptions options, bool useAcks)
     {
         Transport = transport;
         _applicationStream = new PipeWriterStream(application.Output);
@@ -73,6 +78,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         ActiveFormat = TransferFormat.Text;
 
         _logger = logger ?? NullLogger.Instance;
+        MetricsContext = metricsContext;
 
         // PERF: This type could just implement IFeatureCollection
         Features = new FeatureCollection();
@@ -88,17 +94,27 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         Features.Set<IConnectionLifetimeFeature>(this);
         Features.Set<IConnectionLifetimeNotificationFeature>(this);
 
+        if (useAcks)
+        {
+            Features.Set<IReconnectFeature>(this);
+        }
+
         _connectionClosedTokenSource = new CancellationTokenSource();
         ConnectionClosed = _connectionClosedTokenSource.Token;
 
         _connectionCloseRequested = new CancellationTokenSource();
         ConnectionClosedRequested = _connectionCloseRequested.Token;
         AuthenticationExpiration = DateTimeOffset.MaxValue;
+        _useAcks = useAcks;
     }
+
+    public bool UseAcks => _useAcks;
 
     public CancellationTokenSource? Cancellation { get; set; }
 
     public HttpTransportType TransportType { get; set; }
+
+    internal long StartTimestamp { get; set; }
 
     public SemaphoreSlim WriteLock { get; } = new SemaphoreSlim(1, 1);
 
@@ -112,7 +128,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
 
     internal bool IsAuthenticationExpirationEnabled => _options.CloseOnAuthenticationExpiration;
 
-    public Task? TransportTask { get; set; }
+    public Task<bool>? TransportTask { get; set; }
 
     public Task PreviousPollTask { get; set; } = Task.CompletedTask;
 
@@ -134,6 +150,8 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     public HttpConnectionStatus Status { get; set; } = HttpConnectionStatus.Inactive;
 
     public override string ConnectionId { get; set; }
+
+    public MetricsContext MetricsContext { get; }
 
     internal string ConnectionToken { get; set; }
 
@@ -185,6 +203,8 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     public override CancellationToken ConnectionClosed { get; set; }
 
     public CancellationToken ConnectionClosedRequested { get; set; }
+
+    public Action NotifyOnReconnect { get; set; } = () => { };
 
     public override void Abort()
     {
@@ -381,6 +401,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     internal bool TryActivatePersistentConnection(
         ConnectionDelegate connectionDelegate,
         IHttpTransport transport,
+        Task currentRequestTask,
         HttpContext context,
         ILogger dispatcherLogger)
     {
@@ -390,11 +411,15 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
             {
                 Status = HttpConnectionStatus.Active;
 
+                PreviousPollTask = currentRequestTask;
+
                 // Call into the end point passing the connection
-                ApplicationTask = ExecuteApplication(connectionDelegate);
+                ApplicationTask ??= ExecuteApplication(connectionDelegate);
 
                 // Start the transport
                 TransportTask = transport.ProcessRequestAsync(context, context.RequestAborted);
+
+                context.Features.Get<IHttpRequestTimeoutFeature>()?.DisableTimeout();
 
                 return true;
             }
@@ -437,7 +462,12 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
 
                     // On the first poll, we flush the response immediately to mark the poll as "initialized" so future
                     // requests can be made safely
-                    TransportTask = nonClonedContext.Response.Body.FlushAsync();
+                    TransportTask = Func();
+                    async Task<bool> Func()
+                    {
+                        await nonClonedContext.Response.Body.FlushAsync();
+                        return false;
+                    };
                 }
                 else
                 {
@@ -516,6 +546,14 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         {
             // Cancel the previous request
             cts?.Cancel();
+
+            // TODO: remove transport check once other transports support acks
+            if (UseAcks && TransportType == HttpTransportType.WebSockets)
+            {
+                // Break transport send loop in case it's still waiting on reading from the application
+                Application.Input.CancelPendingRead();
+                UpdateConnectionPair();
+            }
 
             try
             {
@@ -615,6 +653,23 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     public void RequestClose()
     {
         ThreadPool.UnsafeQueueUserWorkItem(static cts => ((CancellationTokenSource)cts!).Cancel(), _connectionCloseRequested);
+    }
+
+    private void UpdateConnectionPair()
+    {
+        var prevPipe = Application.Input;
+        var input = new Pipe(_options.TransportPipeOptions);
+
+        // Add new pipe for reading from and writing to transport from app code
+        var transportToApplication = new DuplexPipe(Transport.Input, input.Writer);
+        var applicationToTransport = new DuplexPipe(input.Reader, Application.Output);
+
+        Application = applicationToTransport;
+        Transport = transportToApplication;
+
+        // Close previous pipe with specific error that application code can catch to know a restart is occurring
+        prevPipe.Complete(new ConnectionResetException(""));
+        Features.GetRequiredFeature<IReconnectFeature>().NotifyOnReconnect.Invoke();
     }
 
     private static partial class Log

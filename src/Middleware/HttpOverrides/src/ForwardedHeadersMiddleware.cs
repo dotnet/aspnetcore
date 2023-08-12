@@ -53,9 +53,11 @@ public class ForwardedHeadersMiddleware
         EnsureOptionNotNullorWhitespace(options.Value.ForwardedForHeaderName, nameof(options.Value.ForwardedForHeaderName));
         EnsureOptionNotNullorWhitespace(options.Value.ForwardedHostHeaderName, nameof(options.Value.ForwardedHostHeaderName));
         EnsureOptionNotNullorWhitespace(options.Value.ForwardedProtoHeaderName, nameof(options.Value.ForwardedProtoHeaderName));
+        EnsureOptionNotNullorWhitespace(options.Value.ForwardedPrefixHeaderName, nameof(options.Value.ForwardedPrefixHeaderName));
         EnsureOptionNotNullorWhitespace(options.Value.OriginalForHeaderName, nameof(options.Value.OriginalForHeaderName));
         EnsureOptionNotNullorWhitespace(options.Value.OriginalHostHeaderName, nameof(options.Value.OriginalHostHeaderName));
         EnsureOptionNotNullorWhitespace(options.Value.OriginalProtoHeaderName, nameof(options.Value.OriginalProtoHeaderName));
+        EnsureOptionNotNullorWhitespace(options.Value.OriginalPrefixHeaderName, nameof(options.Value.OriginalPrefixHeaderName));
 
         _options = options.Value;
         _logger = loggerFactory.CreateLogger<ForwardedHeadersMiddleware>();
@@ -126,8 +128,8 @@ public class ForwardedHeadersMiddleware
     public void ApplyForwarders(HttpContext context)
     {
         // Gather expected headers.
-        string[]? forwardedFor = null, forwardedProto = null, forwardedHost = null;
-        bool checkFor = false, checkProto = false, checkHost = false;
+        string[]? forwardedFor = null, forwardedProto = null, forwardedHost = null, forwardedPrefix = null;
+        bool checkFor = false, checkProto = false, checkHost = false, checkPrefix = false;
         int entryCount = 0;
 
         var request = context.Request;
@@ -165,6 +167,21 @@ public class ForwardedHeadersMiddleware
             entryCount = Math.Max(forwardedHost.Length, entryCount);
         }
 
+        if (_options.ForwardedHeaders.HasFlag(ForwardedHeaders.XForwardedPrefix))
+        {
+            checkPrefix = true;
+            forwardedPrefix = requestHeaders.GetCommaSeparatedValues(_options.ForwardedPrefixHeaderName);
+            if (_options.RequireHeaderSymmetry
+                && ((checkFor && forwardedFor!.Length != forwardedPrefix.Length)
+                    || (checkProto && forwardedProto!.Length != forwardedPrefix.Length)
+                    || (checkHost && forwardedHost!.Length != forwardedPrefix.Length)))
+            {
+                _logger.LogWarning(1, "Parameter count mismatch between X-Forwarded-Prefix and X-Forwarded-Host and X-Forwarded-For or X-Forwarded-Proto.");
+                return;
+            }
+            entryCount = Math.Max(forwardedPrefix.Length, entryCount);
+        }
+
         // Apply ForwardLimit, if any
         if (_options.ForwardLimit.HasValue && entryCount > _options.ForwardLimit)
         {
@@ -188,6 +205,10 @@ public class ForwardedHeadersMiddleware
             if (checkHost && i < forwardedHost!.Length)
             {
                 set.Host = forwardedHost[forwardedHost.Length - i - 1];
+            }
+            if (checkPrefix && i < forwardedPrefix!.Length)
+            {
+                set.Prefix = forwardedPrefix[forwardedPrefix.Length - i - 1];
             }
             sets[i] = set;
         }
@@ -271,6 +292,20 @@ public class ForwardedHeadersMiddleware
                     return;
                 }
             }
+
+            if (checkPrefix)
+            {
+                if (!string.IsNullOrEmpty(set.Prefix) && set.Prefix[0] == '/')
+                {
+                    applyChanges = true;
+                    currentValues.Prefix = set.Prefix;
+                }
+                else if (_options.RequireHeaderSymmetry)
+                {
+                    _logger.LogWarning(5, $"Incorrect number of x-forwarded-prefix header values, see {nameof(_options.RequireHeaderSymmetry)}");
+                    return;
+                }
+            }
         }
 
         if (applyChanges)
@@ -285,7 +320,8 @@ public class ForwardedHeadersMiddleware
                 if (forwardedFor!.Length > entriesConsumed)
                 {
                     // Truncate the consumed header values
-                    requestHeaders[_options.ForwardedForHeaderName] = forwardedFor.Take(forwardedFor.Length - entriesConsumed).ToArray();
+                    requestHeaders[_options.ForwardedForHeaderName] =
+                        TruncateConsumedHeaderValues(forwardedFor, entriesConsumed);
                 }
                 else
                 {
@@ -303,7 +339,8 @@ public class ForwardedHeadersMiddleware
                 if (forwardedProto!.Length > entriesConsumed)
                 {
                     // Truncate the consumed header values
-                    requestHeaders[_options.ForwardedProtoHeaderName] = forwardedProto.Take(forwardedProto.Length - entriesConsumed).ToArray();
+                    requestHeaders[_options.ForwardedProtoHeaderName] =
+                        TruncateConsumedHeaderValues(forwardedProto, entriesConsumed);
                 }
                 else
                 {
@@ -320,7 +357,8 @@ public class ForwardedHeadersMiddleware
                 if (forwardedHost!.Length > entriesConsumed)
                 {
                     // Truncate the consumed header values
-                    requestHeaders[_options.ForwardedHostHeaderName] = forwardedHost.Take(forwardedHost.Length - entriesConsumed).ToArray();
+                    requestHeaders[_options.ForwardedHostHeaderName] =
+                        TruncateConsumedHeaderValues(forwardedHost, entriesConsumed);
                 }
                 else
                 {
@@ -328,6 +366,29 @@ public class ForwardedHeadersMiddleware
                     requestHeaders.Remove(_options.ForwardedHostHeaderName);
                 }
                 request.Host = HostString.FromUriComponent(currentValues.Host);
+            }
+
+            if (checkPrefix && currentValues.Prefix != null)
+            {
+                if (request.PathBase.HasValue)
+                {
+                    // Save the original
+                    requestHeaders[_options.OriginalPrefixHeaderName] = request.PathBase.ToString();
+                }
+
+                if (forwardedPrefix!.Length > entriesConsumed)
+                {
+                    // Truncate the consumed header values
+                    requestHeaders[_options.ForwardedPrefixHeaderName] =
+                        TruncateConsumedHeaderValues(forwardedPrefix, entriesConsumed);
+                }
+                else
+                {
+                    // All values were consumed
+                    requestHeaders.Remove(_options.ForwardedPrefixHeaderName);
+                }
+
+                request.PathBase = PathString.FromUriComponent(currentValues.Prefix);
             }
         }
     }
@@ -362,6 +423,7 @@ public class ForwardedHeadersMiddleware
         public IPEndPoint? RemoteIpAndPort;
         public string Host;
         public string Scheme;
+        public string Prefix;
     }
 
     // Empty was checked for by the caller
@@ -422,5 +484,13 @@ public class ForwardedHeadersMiddleware
         }
 
         return hostText.AsSpan(offset + 1).IndexOfAnyExceptInRange('0', '9') < 0;
+    }
+
+    private static string[] TruncateConsumedHeaderValues(string[] forwarded, int entriesConsumed)
+    {
+        var newLength = forwarded.Length - entriesConsumed;
+        var remaining = new string[newLength];
+        Array.Copy(forwarded, remaining, newLength);
+        return remaining;
     }
 }

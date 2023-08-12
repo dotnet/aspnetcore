@@ -7,5 +7,6 @@ public enum RuntimeArchitecture
 {
     arm64,
     x64,
-    x86
+    x86,
+    ppc64le //Power Architecture
 }

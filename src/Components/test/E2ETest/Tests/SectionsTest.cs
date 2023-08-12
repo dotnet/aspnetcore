@@ -31,7 +31,7 @@ public class SectionsTest : ServerTestBase<ToggleExecutionModeServerFixture<Prog
     }
 
     [Fact]
-    public void RenderTwoSectionOutletsWithSameSectionId_TrowsException()
+    public void RenderTwoSectionOutletsWithSameSectionId_ThrowsException()
     {
         _appElement.FindElement(By.Id("section-outlet-same-id")).Click();
 
@@ -43,7 +43,7 @@ public class SectionsTest : ServerTestBase<ToggleExecutionModeServerFixture<Prog
     }
 
     [Fact]
-    public void RenderTwoSectionOutletsWithSameSectionName_TrowsException()
+    public void RenderTwoSectionOutletsWithSameSectionName_ThrowsException()
     {
         _appElement.FindElement(By.Id("section-outlet-same-name")).Click();
 
@@ -55,7 +55,7 @@ public class SectionsTest : ServerTestBase<ToggleExecutionModeServerFixture<Prog
     }
 
     [Fact]
-    public void RenderTwoSectionOutletsWithEqualSectionNameToSectionId_TrowsException()
+    public void RenderTwoSectionOutletsWithEqualSectionNameToSectionId_ThrowsException()
     {
         _appElement.FindElement(By.Id("section-outlet-equal-name-id")).Click();
 
@@ -67,7 +67,7 @@ public class SectionsTest : ServerTestBase<ToggleExecutionModeServerFixture<Prog
     }
 
     [Fact]
-    public void RenderSectionOutletWithSectionNameAndSectionId_TrowsException()
+    public void RenderSectionOutletWithSectionNameAndSectionId_ThrowsException()
     {
         _appElement.FindElement(By.Id("section-outlet-with-name-id")).Click();
 
@@ -79,7 +79,7 @@ public class SectionsTest : ServerTestBase<ToggleExecutionModeServerFixture<Prog
     }
 
     [Fact]
-    public void RenderSectionOutletWithoutSectionNameAndSectionId_TrowsException()
+    public void RenderSectionOutletWithoutSectionNameAndSectionId_ThrowsException()
     {
         _appElement.FindElement(By.Id("section-outlet-without-name-id")).Click();
 
@@ -156,7 +156,7 @@ public class SectionsTest : ServerTestBase<ToggleExecutionModeServerFixture<Prog
     }
 
     [Fact]
-    public void SectionOutletWithSectionNameGetsDisposed_ContentDissapears()
+    public void SectionOutletWithSectionNameGetsDisposed_ContentDisappears()
     {
         // Render Counter and change its id so the content is rendered in second SectionOutlet
         _appElement.FindElement(By.Id("counter-render-section-content")).Click();

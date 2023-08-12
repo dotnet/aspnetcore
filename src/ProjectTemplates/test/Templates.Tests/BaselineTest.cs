@@ -82,16 +82,13 @@ public class BaselineTest : LoggedTest
             AssertFileExists(Project.TemplateOutputDir, file, shouldExist: true);
         }
 
-        var filesInFolder = Directory.EnumerateFiles(Project.TemplateOutputDir, "*", SearchOption.AllDirectories);
+        var filesInFolder = Directory.EnumerateFiles(Project.TemplateOutputDir, "*", SearchOption.AllDirectories).ToArray();
         foreach (var file in filesInFolder)
         {
             var relativePath = file.Replace(Project.TemplateOutputDir, "").Replace("\\", "/").Trim('/');
             if (relativePath.EndsWith(".csproj", StringComparison.Ordinal) ||
                 relativePath.EndsWith(".fsproj", StringComparison.Ordinal) ||
                 relativePath.EndsWith(".props", StringComparison.Ordinal) ||
-                relativePath.EndsWith(".targets", StringComparison.Ordinal) ||
-                relativePath.StartsWith("bin/", StringComparison.Ordinal) ||
-                relativePath.StartsWith("obj/", StringComparison.Ordinal) ||
                 relativePath.EndsWith(".sln", StringComparison.Ordinal) ||
                 relativePath.EndsWith(".targets", StringComparison.Ordinal) ||
                 relativePath.StartsWith("bin/", StringComparison.Ordinal) ||

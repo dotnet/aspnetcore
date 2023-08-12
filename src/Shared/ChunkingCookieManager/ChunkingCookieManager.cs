@@ -243,11 +243,11 @@ internal sealed class ChunkingCookieManager
         Func<string, bool> predicate = value => keys.Any(k => value.StartsWith(k, StringComparison.OrdinalIgnoreCase));
         if (domainHasValue)
         {
-            rejectPredicate = value => predicate(value) && value.IndexOf("domain=" + options.Domain, StringComparison.OrdinalIgnoreCase) != -1;
+            rejectPredicate = value => predicate(value) && value.Contains("domain=" + options.Domain, StringComparison.OrdinalIgnoreCase);
         }
         else if (pathHasValue)
         {
-            rejectPredicate = value => predicate(value) && value.IndexOf("path=" + options.Path, StringComparison.OrdinalIgnoreCase) != -1;
+            rejectPredicate = value => predicate(value) && value.Contains("path=" + options.Path, StringComparison.OrdinalIgnoreCase);
         }
         else
         {

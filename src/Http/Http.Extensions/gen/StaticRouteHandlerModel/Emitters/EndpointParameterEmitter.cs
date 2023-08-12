@@ -75,7 +75,7 @@ internal static class EndpointParameterEmitter
         }
 
         codeWriter.WriteLine($"var {endpointParameter.EmitAssigningCodeResult()} = {endpointParameter.AssigningCode};");
-        if (!endpointParameter.IsOptional)
+        if (!endpointParameter.IsOptional && !endpointParameter.IsArray)
         {
             codeWriter.WriteLine($"if ({endpointParameter.EmitAssigningCodeResult()} == null)");
             codeWriter.StartBlock();
@@ -190,7 +190,7 @@ internal static class EndpointParameterEmitter
         // Invoke TryResolveBody method to parse JSON and set
         // status codes on exceptions.
         var shortParameterTypeName = endpointParameter.Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat);
-        var assigningCode = $"await GeneratedRouteBuilderExtensionsCore.TryResolveBodyAsync<{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)}>(httpContext, logOrThrowExceptionHelper, {(endpointParameter.IsOptional ? "true" : "false")}, {SymbolDisplay.FormatLiteral(shortParameterTypeName, true)}, {SymbolDisplay.FormatLiteral(endpointParameter.SymbolName, true)})";
+        var assigningCode = $"await GeneratedRouteBuilderExtensionsCore.TryResolveBodyAsync<{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)}>(httpContext, logOrThrowExceptionHelper, {(endpointParameter.IsOptional ? "true" : "false")}, {SymbolDisplay.FormatLiteral(shortParameterTypeName, true)}, {SymbolDisplay.FormatLiteral(endpointParameter.SymbolName, true)}, {endpointParameter.SymbolName}_JsonTypeInfo)";
         var resolveBodyResult = $"{endpointParameter.SymbolName}_resolveBodyResult";
         codeWriter.WriteLine($"var {resolveBodyResult} = {assigningCode};");
         codeWriter.WriteLine($"var {endpointParameter.EmitHandlerArgument()} = {resolveBodyResult}.Item2;");
@@ -225,10 +225,54 @@ internal static class EndpointParameterEmitter
         codeWriter.EndBlock();
     }
 
+    internal static void EmitJsonBodyOrQueryParameterPreparationString(this EndpointParameter endpointParameter, CodeWriter codeWriter)
+    {
+        // Preamble for diagnostics purposes.
+        codeWriter.WriteLine(endpointParameter.EmitParameterDiagnosticComment());
+
+        // Declare handler variable up front.
+        codeWriter.WriteLine($"{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)} {endpointParameter.EmitHandlerArgument()} = null!;");
+        codeWriter.WriteLine("if (options.DisableInferBodyFromParameters)");
+        codeWriter.StartBlock();
+        codeWriter.WriteLine($"""var {endpointParameter.EmitAssigningCodeResult()} = httpContext.Request.Query["{endpointParameter.LookupName}"];""");
+        codeWriter.WriteLine($"""{endpointParameter.EmitHandlerArgument()} = {endpointParameter.EmitAssigningCodeResult()}!;""");
+        codeWriter.EndBlock();
+        codeWriter.WriteLine("else");
+        codeWriter.StartBlock();
+
+        // This code is adapted from the EmitJsonBodyParameterPreparationString method with some modifications
+        // because the handler argument is emitted before the containing if block (which makes it awkward to
+        // simply reuse that emission code) - opted for duplication (with tweaks) over complexity.
+        var shortParameterTypeName = endpointParameter.Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat);
+        var assigningCode = $"await GeneratedRouteBuilderExtensionsCore.TryResolveBodyAsync<{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)}>(httpContext, logOrThrowExceptionHelper, {(endpointParameter.IsOptional ? "true" : "false")}, {SymbolDisplay.FormatLiteral(shortParameterTypeName, true)}, {SymbolDisplay.FormatLiteral(endpointParameter.SymbolName, true)}, {endpointParameter.SymbolName}_JsonTypeInfo)";
+        var resolveBodyResult = $"{endpointParameter.SymbolName}_resolveBodyResult";
+        codeWriter.WriteLine($"var {endpointParameter.SymbolName}_JsonTypeInfo = (JsonTypeInfo<{endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormat)}>)jsonOptions.SerializerOptions.GetTypeInfo(typeof({endpointParameter.Type.ToDisplayString(EmitterConstants.DisplayFormatWithoutNullability)}));");
+        codeWriter.WriteLine($"var {resolveBodyResult} = {assigningCode};");
+        codeWriter.WriteLine($"{endpointParameter.EmitHandlerArgument()} = {resolveBodyResult}.Item2!;");
+
+        // If binding from the JSON body fails, we exit early. Don't
+        // set the status code here because assume it has been set by the
+        // TryResolveBody method.
+        codeWriter.WriteLine($"if (!{resolveBodyResult}.Item1)");
+        codeWriter.StartBlock();
+        codeWriter.WriteLine("return;");
+        codeWriter.EndBlock();
+
+        codeWriter.EndBlock();
+    }
+
     internal static void EmitBindAsyncPreparation(this EndpointParameter endpointParameter, CodeWriter codeWriter)
     {
-        var unwrappedType = endpointParameter.Type.UnwrapTypeSymbol(unwrapNullable: true);
-        var unwrappedTypeString = unwrappedType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        // Invoke the `BindAsync` method on an interface if it is the target receiver.
+        var receiverType = endpointParameter.BindableMethodSymbol?.ReceiverType is { TypeKind: TypeKind.Interface } targetType
+            ? targetType
+            : endpointParameter.Type;
+        var bindMethodReceiverType = receiverType?.UnwrapTypeSymbol(unwrapNullable: true);
+        var bindMethodReceiverTypeString = bindMethodReceiverType?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+
+        var unwrappedType = endpointParameter.UnwrapParameterType();
+        var unwrappedTypeString = unwrappedType?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+
         var resolveParameterInfo = endpointParameter.IsProperty
             ? endpointParameter.PropertyAsParameterInfoConstruction
             : $"parameters[{endpointParameter.Ordinal}]";
@@ -236,35 +280,32 @@ internal static class EndpointParameterEmitter
         switch (endpointParameter.BindMethod)
         {
             case BindabilityMethod.IBindableFromHttpContext:
-                codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = await BindAsync<{unwrappedTypeString}>(httpContext, {resolveParameterInfo});");
+                codeWriter.WriteLine($"var {endpointParameter.EmitHandlerArgument()} = await BindAsync<{unwrappedTypeString}>(httpContext, {resolveParameterInfo});");
                 break;
             case BindabilityMethod.BindAsyncWithParameter:
-                codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = await {unwrappedTypeString}.BindAsync(httpContext, {resolveParameterInfo});");
+                codeWriter.WriteLine($"var {endpointParameter.EmitHandlerArgument()} = await {bindMethodReceiverTypeString}.BindAsync(httpContext, {resolveParameterInfo});");
                 break;
             case BindabilityMethod.BindAsync:
-                codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = await {unwrappedTypeString}.BindAsync(httpContext);");
+                codeWriter.WriteLine($"var {endpointParameter.EmitHandlerArgument()} = await {bindMethodReceiverTypeString}.BindAsync(httpContext);");
                 break;
             default:
                 throw new NotImplementedException($"Unreachable! Unexpected {nameof(BindabilityMethod)}: {endpointParameter.BindMethod}");
         }
 
-        // TODO: Generate more compact code if the type is a reference type and/or the BindAsync return nullability matches the handler parameter type.
-        if (endpointParameter.IsOptional)
+        if (!endpointParameter.IsOptional)
         {
-            codeWriter.WriteLine($"var {endpointParameter.EmitHandlerArgument()} = ({unwrappedTypeString}?){endpointParameter.EmitTempArgument()};");
-        }
-        else
-        {
-            codeWriter.WriteLine($"{unwrappedTypeString} {endpointParameter.EmitHandlerArgument()};");
-            codeWriter.WriteLine($"if ((object?){endpointParameter.EmitTempArgument()} == null)");
+            // Non-nullable value types can never be null so we can avoid emitting the requiredness check.
+            if (endpointParameter.Type.IsValueType && !endpointParameter.GetBindAsyncReturnType().IsNullableOfT())
+            {
+                return;
+            }
+            codeWriter.WriteLine(endpointParameter.Type.IsValueType && endpointParameter.GetBindAsyncReturnType().IsNullableOfT()
+                ? $"if (!{endpointParameter.EmitHandlerArgument()}.HasValue)"
+                : $"if ({endpointParameter.EmitHandlerArgument()} == null)");
             codeWriter.StartBlock();
             codeWriter.WriteLine($@"logOrThrowExceptionHelper.RequiredParameterNotProvided({SymbolDisplay.FormatLiteral(endpointParameter.Type.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat), true)}, {SymbolDisplay.FormatLiteral(endpointParameter.SymbolName, true)}, {SymbolDisplay.FormatLiteral(endpointParameter.ToMessageString(), true)});");
             codeWriter.WriteLine("wasParamCheckFailure = true;");
             codeWriter.WriteLine($"{endpointParameter.EmitHandlerArgument()} = default!;");
-            codeWriter.EndBlock();
-            codeWriter.WriteLine("else");
-            codeWriter.StartBlock();
-            codeWriter.WriteLine($"{endpointParameter.EmitHandlerArgument()} = ({unwrappedTypeString}){endpointParameter.EmitTempArgument()};");
             codeWriter.EndBlock();
         }
     }

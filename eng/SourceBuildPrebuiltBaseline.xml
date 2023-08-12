@@ -1,13 +1,24 @@
+<!-- Whenever altering this or other Source Build files, please include @dotnet/source-build-internal as a reviewer. -->
+<!-- See aka.ms/dotnet/prebuilts for guidance on what pre-builts are and how to eliminate them. -->
+
 <UsageData>
   <IgnorePatterns>
     <UsagePattern IdentityGlob="Microsoft.SourceBuild.Intermediate.*/*" />
 
     <!-- These are used in-build for repo-tasks and should come from previously source built -->
-    <UsagePattern IdentityGlob="NuGet.Common/*6.2.2*" />
-    <UsagePattern IdentityGlob="NuGet.Configuration/*6.2.2*" />
-    <UsagePattern IdentityGlob="NuGet.Frameworks/*6.2.2*" />
-    <UsagePattern IdentityGlob="NuGet.Packaging/*6.2.2*" />
-    <UsagePattern IdentityGlob="NuGet.Versioning/*6.2.2*" />
+    <UsagePattern IdentityGlob="NuGet.Common/*6.2.4*" />
+    <UsagePattern IdentityGlob="NuGet.Configuration/*6.2.4*" />
+    <UsagePattern IdentityGlob="NuGet.Frameworks/*6.2.4*" />
+    <UsagePattern IdentityGlob="NuGet.Packaging/*6.2.4*" />
+    <UsagePattern IdentityGlob="NuGet.Versioning/*6.2.4*" />
+
+    <!-- Only used by the ASP.NET Core CI, not needed for source build -->
+    <UsagePattern IdentityGlob="System.Composition/6.0.0*" />
+    <UsagePattern IdentityGlob="System.Composition.AttributedModel/*7.0.0*" />
+    <UsagePattern IdentityGlob="System.Composition.Convention/*7.0.0*" />
+    <UsagePattern IdentityGlob="System.Composition.Hosting/*7.0.0*" />
+    <UsagePattern IdentityGlob="System.Composition.Runtime/*7.0.0*" />
+    <UsagePattern IdentityGlob="System.Composition.TypedParts/*7.0.0*" />
 
     <!-- These are what the analyzers are built against. They are overridden in full source build.
          It may be possible to generate SBRPs -->
@@ -17,7 +28,7 @@
     <UsagePattern IdentityGlob="Microsoft.CodeAnalysis.CSharp/*3.3.1*" />
     <UsagePattern IdentityGlob="Microsoft.CodeAnalysis.CSharp.Workspaces/*3.3.1*" />
     <UsagePattern IdentityGlob="Microsoft.CodeAnalysis.Workspaces.Common/*3.3.1*" />
-    <UsagePattern IdentityGlob="System.Composition/*1.0.31*" />
+    <UsagePattern IdentityGlob="System.Composition/*7.0.0*" />
     <UsagePattern IdentityGlob="System.Threading.Tasks.Extensions/*4.5.3*" />
 
     <!-- Added to unblock dependency flow, needs review. -->
@@ -26,5 +37,9 @@
     <!-- These are coming in via runtime but the source-build infra isn't able to automatically pick up the right intermediate. -->
     <UsagePattern IdentityGlob="Microsoft.NET.ILLink.Tasks/*8.0.*" />
     <UsagePattern IdentityGlob="Microsoft.NETCore.App.Crossgen2.linux-x64/*8.0.*" />
+
+    <!-- Transivite dependency of Microsoft.CodeAnalysis.ExternalAccess.AspNetCore -> Microsoft.CodeAnalysis.Features.
+         In product build the dependency is bumped to latest, which also bumps the version of DiaSymReader  -->
+    <UsagePattern IdentityGlob="Microsoft.DiaSymReader/*1.4.0*" />
   </IgnorePatterns>
 </UsageData>

@@ -5,7 +5,11 @@
 
 using System.Collections;
 using System.Diagnostics;
+#if !COMPONENTS
 using Microsoft.AspNetCore.Http;
+#else
+using Microsoft.AspNetCore.Components.Routing;
+#endif
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Routing;

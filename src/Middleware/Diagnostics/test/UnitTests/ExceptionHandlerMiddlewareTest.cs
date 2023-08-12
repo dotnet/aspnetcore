@@ -2,19 +2,24 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Net.Http;
 using System.Text.Json;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Telemetry.Testing.Metering;
 using Moq;
 
 namespace Microsoft.AspNetCore.Diagnostics;
@@ -45,7 +50,7 @@ public class ExceptionHandlerMiddlewareTest
                 .UseTestServer()
                 .Configure(app =>
                 {
-                    app.UseDeveloperExceptionPage();
+                    app.UseExceptionHandler();
                     app.Run(context =>
                     {
                         throw new Exception("Test exception");
@@ -195,6 +200,136 @@ public class ExceptionHandlerMiddlewareTest
         Assert.True(httpContext.Items.ContainsKey("ExceptionHandler"));
     }
 
+    [Fact]
+    public async Task Metrics_NoExceptionThrown()
+    {
+        // Arrange
+        var httpContext = CreateHttpContext();
+        var optionsAccessor = CreateOptionsAccessor();
+        var meterFactory = new TestMeterFactory();
+        var exceptionHandlers = new List<IExceptionHandler> { new TestExceptionHandler(true, "1") };
+        var middleware = CreateMiddleware(_ => Task.CompletedTask, optionsAccessor, exceptionHandlers, meterFactory);
+        var meter = meterFactory.Meters.Single();
+
+        using var diagnosticsRequestExceptionCollector = new MetricCollector<long>(meterFactory, DiagnosticsMetrics.MeterName, "aspnetcore.diagnostics.exceptions");
+
+        // Act
+        await middleware.Invoke(httpContext);
+
+        // Assert
+        Assert.Equal(DiagnosticsMetrics.MeterName, meter.Name);
+        Assert.Null(meter.Version);
+
+        Assert.Empty(diagnosticsRequestExceptionCollector.GetMeasurementSnapshot());
+    }
+
+    [Fact]
+    public async Task Metrics_ExceptionThrown_Handled_Reported()
+    {
+        // Arrange
+        var httpContext = CreateHttpContext();
+        var optionsAccessor = CreateOptionsAccessor();
+        var meterFactory = new TestMeterFactory();
+        var exceptionHandlers = new List<IExceptionHandler> { new TestExceptionHandler(true, "1") };
+        var middleware = CreateMiddleware(_ => throw new InvalidOperationException(), optionsAccessor, exceptionHandlers, meterFactory);
+        var meter = meterFactory.Meters.Single();
+
+        using var diagnosticsRequestExceptionCollector = new MetricCollector<long>(meterFactory, DiagnosticsMetrics.MeterName, "aspnetcore.diagnostics.exceptions");
+
+        // Act
+        await middleware.Invoke(httpContext);
+
+        // Assert
+        Assert.Collection(diagnosticsRequestExceptionCollector.GetMeasurementSnapshot(),
+            m => AssertRequestException(m, "System.InvalidOperationException", "handled", typeof(TestExceptionHandler).FullName));
+    }
+
+    [Fact]
+    public async Task Metrics_ExceptionThrown_ResponseStarted_Skipped()
+    {
+        // Arrange
+        var httpContext = CreateHttpContext();
+        httpContext.Features.Set<IHttpResponseFeature>(new TestResponseFeature());
+        var optionsAccessor = CreateOptionsAccessor();
+        var meterFactory = new TestMeterFactory();
+        var exceptionHandlers = new List<IExceptionHandler> { new TestExceptionHandler(true, "1") };
+        var middleware = CreateMiddleware(_ => throw new InvalidOperationException(), optionsAccessor, exceptionHandlers, meterFactory);
+        var meter = meterFactory.Meters.Single();
+
+        using var diagnosticsRequestExceptionCollector = new MetricCollector<long>(meterFactory, DiagnosticsMetrics.MeterName, "aspnetcore.diagnostics.exceptions");
+
+        // Act
+        await Assert.ThrowsAsync<InvalidOperationException>(() => middleware.Invoke(httpContext));
+
+        // Assert
+        Assert.Collection(diagnosticsRequestExceptionCollector.GetMeasurementSnapshot(),
+            m => AssertRequestException(m, "System.InvalidOperationException", "skipped"));
+    }
+
+    private sealed class TestResponseFeature : HttpResponseFeature
+    {
+        public override bool HasStarted => true;
+    }
+
+    [Fact]
+    public async Task Metrics_ExceptionThrown_DefaultSettings_Handled_Reported()
+    {
+        // Arrange
+        var httpContext = CreateHttpContext();
+        var optionsAccessor = CreateOptionsAccessor();
+        var meterFactory = new TestMeterFactory();
+        var middleware = CreateMiddleware(_ => throw new InvalidOperationException(), optionsAccessor, meterFactory: meterFactory);
+        var meter = meterFactory.Meters.Single();
+
+        using var diagnosticsRequestExceptionCollector = new MetricCollector<long>(meterFactory, DiagnosticsMetrics.MeterName, "aspnetcore.diagnostics.exceptions");
+
+        // Act
+        await middleware.Invoke(httpContext);
+
+        // Assert
+        Assert.Collection(diagnosticsRequestExceptionCollector.GetMeasurementSnapshot(),
+            m => AssertRequestException(m, "System.InvalidOperationException", "handled", null));
+    }
+
+    [Fact]
+    public async Task Metrics_ExceptionThrown_Unhandled_Reported()
+    {
+        // Arrange
+        var httpContext = CreateHttpContext();
+        var optionsAccessor = CreateOptionsAccessor(exceptionHandler: c =>
+        {
+            c.Response.StatusCode = 404;
+            return Task.CompletedTask;
+        });
+        var meterFactory = new TestMeterFactory();
+        var middleware = CreateMiddleware(_ => throw new InvalidOperationException(), optionsAccessor, meterFactory: meterFactory);
+        var meter = meterFactory.Meters.Single();
+
+        using var diagnosticsRequestExceptionCollector = new MetricCollector<long>(meterFactory, DiagnosticsMetrics.MeterName, "aspnetcore.diagnostics.exceptions");
+
+        // Act
+        await Assert.ThrowsAsync<InvalidOperationException>(() => middleware.Invoke(httpContext));
+
+        // Assert
+        Assert.Collection(diagnosticsRequestExceptionCollector.GetMeasurementSnapshot(),
+            m => AssertRequestException(m, "System.InvalidOperationException", "unhandled"));
+    }
+
+    private static void AssertRequestException(CollectedMeasurement<long> measurement, string exceptionName, string result, string handler = null)
+    {
+        Assert.Equal(1, measurement.Value);
+        Assert.Equal(exceptionName, (string)measurement.Tags["exception.type"]);
+        Assert.Equal(result, measurement.Tags["aspnetcore.diagnostics.exception.result"].ToString());
+        if (handler == null)
+        {
+            Assert.False(measurement.Tags.ContainsKey("aspnetcore.diagnostics.handler.type"));
+        }
+        else
+        {
+            Assert.Equal(handler, (string)measurement.Tags["aspnetcore.diagnostics.handler.type"]);
+        }
+    }
+
     private class TestExceptionHandler : IExceptionHandler
     {
         private readonly bool _handle;
@@ -240,7 +375,8 @@ public class ExceptionHandlerMiddlewareTest
     private ExceptionHandlerMiddlewareImpl CreateMiddleware(
         RequestDelegate next,
         IOptions<ExceptionHandlerOptions> options,
-        IEnumerable<IExceptionHandler> exceptionHandlers = null)
+        IEnumerable<IExceptionHandler> exceptionHandlers = null,
+        IMeterFactory meterFactory = null)
     {
         next ??= c => Task.CompletedTask;
         var listener = new DiagnosticListener("Microsoft.AspNetCore");
@@ -250,7 +386,8 @@ public class ExceptionHandlerMiddlewareTest
             NullLoggerFactory.Instance,
             options,
             listener,
-            exceptionHandlers ?? Enumerable.Empty<IExceptionHandler>());
+            exceptionHandlers ?? Enumerable.Empty<IExceptionHandler>(),
+            meterFactory ?? new TestMeterFactory());
 
         return middleware;
     }

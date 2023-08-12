@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
@@ -14,8 +16,12 @@ namespace Microsoft.AspNetCore.Http;
 /// Provides correct escaping for Path and PathBase values when needed to reconstruct a request or redirect URI string
 /// </summary>
 [TypeConverter(typeof(PathStringConverter))]
+[DebuggerDisplay("{Value}")]
 public readonly struct PathString : IEquatable<PathString>
 {
+    private static readonly SearchValues<char> s_validPathChars =
+        SearchValues.Create("!$&'()*+,-./0123456789:;=@ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz~");
+
     internal const int StackAllocThreshold = 128;
 
     /// <summary>
@@ -66,27 +72,18 @@ public readonly struct PathString : IEquatable<PathString>
     /// <returns>The escaped path value</returns>
     public string ToUriComponent()
     {
-        if (!HasValue)
+        var value = Value;
+
+        if (string.IsNullOrEmpty(value))
         {
             return string.Empty;
         }
 
-        var value = Value;
-        var i = 0;
-        for (; i < value.Length; i++)
-        {
-            if (!PathStringHelper.IsValidPathChar(value[i]) || PathStringHelper.IsPercentEncodedChar(value, i))
-            {
-                break;
-            }
-        }
+        var indexOfInvalidChar = value.AsSpan().IndexOfAnyExcept(s_validPathChars);
 
-        if (i < value.Length)
-        {
-            return ToEscapedUriComponent(value, i);
-        }
-
-        return value;
+        return indexOfInvalidChar < 0
+            ? value
+            : ToEscapedUriComponent(value, indexOfInvalidChar);
     }
 
     private static string ToEscapedUriComponent(string value, int i)
@@ -97,10 +94,10 @@ public readonly struct PathString : IEquatable<PathString>
         var count = i;
         var requiresEscaping = false;
 
-        while (i < value.Length)
+        while ((uint)i < (uint)value.Length)
         {
-            var isPercentEncodedChar = PathStringHelper.IsPercentEncodedChar(value, i);
-            if (PathStringHelper.IsValidPathChar(value[i]) || isPercentEncodedChar)
+            var isPercentEncodedChar = false;
+            if (s_validPathChars.Contains(value[i]) || (isPercentEncodedChar = Uri.IsHexEncoding(value, i)))
             {
                 if (requiresEscaping)
                 {
@@ -120,8 +117,18 @@ public readonly struct PathString : IEquatable<PathString>
                 }
                 else
                 {
-                    count++;
-                    i++;
+                    // We just saw a character we don't want to escape. It's likely there are more, do a vectorized search.
+                    var charsToSkip = value.AsSpan(i).IndexOfAnyExcept(s_validPathChars);
+
+                    if (charsToSkip < 0)
+                    {
+                        // Only valid characters remain
+                        count += value.Length - i;
+                        break;
+                    }
+
+                    count += charsToSkip;
+                    i += charsToSkip;
                 }
             }
             else
@@ -148,21 +155,19 @@ public readonly struct PathString : IEquatable<PathString>
         }
         else
         {
-            if (count > 0)
-            {
-                buffer ??= new StringBuilder(value.Length * 3);
+            Debug.Assert(count > 0);
+            Debug.Assert(buffer is not null);
 
-                if (requiresEscaping)
-                {
-                    buffer.Append(Uri.EscapeDataString(value.Substring(start, count)));
-                }
-                else
-                {
-                    buffer.Append(value, start, count);
-                }
+            if (requiresEscaping)
+            {
+                buffer.Append(Uri.EscapeDataString(value.Substring(start, count)));
+            }
+            else
+            {
+                buffer.Append(value, start, count);
             }
 
-            return buffer?.ToString() ?? string.Empty;
+            return buffer.ToString();
         }
     }
 

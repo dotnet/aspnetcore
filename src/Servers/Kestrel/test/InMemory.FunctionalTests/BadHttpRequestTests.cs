@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
 using Moq;
 using Xunit;
 using BadHttpRequestException = Microsoft.AspNetCore.Http.BadHttpRequestException;
@@ -138,6 +139,32 @@ public class BadHttpRequestTests : LoggedTest
             $"{requestTarget} HTTP/1.1\r\nHost: {host}\r\n\r\n",
             "400 Bad Request",
             CoreStrings.FormatBadRequest_InvalidHostHeader_Detail(host.Trim()));
+    }
+
+    [Theory]
+    [InlineData("Host: www.foo.comConnection: keep-alive")] // Corrupted - missing line-break
+    [InlineData("Host: www.notfoo.com")] // Syntactically correct but not matching
+    public async Task CanOptOutOfBadRequestIfHostHeaderDoesNotMatchRequestTarget(string hostHeader)
+    {
+        var receivedHost = StringValues.Empty;
+        await using var server = new TestServer(context =>
+        {
+            receivedHost = context.Request.Headers.Host;
+            return Task.CompletedTask;
+        }, new TestServiceContext(LoggerFactory)
+        {
+            ServerOptions = new KestrelServerOptions()
+            {
+                AllowHostHeaderOverride = true,
+            }
+        });
+        using var client = server.CreateConnection();
+
+        await client.SendAll($"GET http://www.foo.com/api/data HTTP/1.1\r\n{hostHeader}\r\n\r\n");
+
+        await client.Receive("HTTP/1.1 200 OK");
+
+        Assert.Equal("www.foo.com:80", receivedHost);
     }
 
     [Fact]

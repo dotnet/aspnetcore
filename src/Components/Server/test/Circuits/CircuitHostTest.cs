@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.SignalR;
@@ -441,6 +442,7 @@ public class CircuitHostTest
                   NullLoggerFactory.Instance,
                   new CircuitOptions(),
                   new CircuitClientProxy(client, "connection"),
+                  new TestServerComponentDeserializer(),
                   NullLogger.Instance,
                   CreateJSRuntime(new CircuitOptions()),
                   new CircuitJSComponentInterop(new CircuitOptions()))
@@ -567,6 +569,21 @@ public class CircuitHostTest
                 ExceptionDuringDisposeAsync = ex;
                 throw;
             }
+        }
+    }
+
+    private class TestServerComponentDeserializer : IServerComponentDeserializer
+    {
+        public bool TryDeserializeComponentDescriptorCollection(string serializedComponentRecords, out List<ComponentDescriptor> descriptors)
+        {
+            descriptors = default;
+            return true;
+        }
+
+        public bool TryDeserializeSingleComponentDescriptor(ComponentMarker record, [NotNullWhen(true)] out ComponentDescriptor result)
+        {
+            result = default;
+            return true;
         }
     }
 }

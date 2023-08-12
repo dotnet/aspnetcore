@@ -1,4 +1,4 @@
-﻿#if (GenerateApiOrGraph)
+#if (GenerateApiOrGraph)
 using System.Net;
 #endif
 using Microsoft.AspNetCore.Mvc;
@@ -8,6 +8,7 @@ using Microsoft.Graph;
 #endif
 #if (GenerateApiOrGraph)
 using Microsoft.Identity.Web;
+using Microsoft.Identity.Abstractions;
 #endif
 
 namespace Company.WebApplication1.Pages;
@@ -20,18 +21,18 @@ public class IndexModel : PageModel
     private readonly ILogger<IndexModel> _logger;
 
 #if (GenerateApi)
-    private readonly IDownstreamWebApi _downstreamWebApi;
+    private readonly IDownstreamApi _downstreamApi;
 
     public IndexModel(ILogger<IndexModel> logger,
-                        IDownstreamWebApi downstreamWebApi)
+                        IDownstreamApi downstreamApi)
     {
             _logger = logger;
-        _downstreamWebApi = downstreamWebApi;
+        _downstreamApi = downstreamApi;
     }
 
     public async Task OnGet()
     {
-        using var response = await _downstreamWebApi.CallWebApiForUserAsync("DownstreamApi").ConfigureAwait(false);
+        using var response = await _downstreamApi.CallApiForUserAsync("DownstreamApi").ConfigureAwait(false);
         if (response.StatusCode == System.Net.HttpStatusCode.OK)
         {
             var apiResult = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
@@ -55,9 +56,9 @@ public class IndexModel : PageModel
 
     public async Task OnGet()
     {
-        var user = await _graphServiceClient.Me.Request().GetAsync();
+        var user = await _graphServiceClient.Me.GetAsync();
 
-        ViewData["ApiResult"] = user.DisplayName;
+        ViewData["ApiResult"] = user?.DisplayName;
     }
 #else
     public IndexModel(ILogger<IndexModel> logger)

@@ -5,6 +5,7 @@
 
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -87,7 +88,13 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         // logger name in here as a string literal.
         _logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Components.RenderTree.Renderer");
         _componentFactory = new ComponentFactory(componentActivator, this);
+
+        ServiceProviderCascadingValueSuppliers = serviceProvider.GetService<ICascadingValueSupplier>() is null
+            ? Array.Empty<ICascadingValueSupplier>()
+            : serviceProvider.GetServices<ICascadingValueSupplier>().ToArray();
     }
+
+    internal ICascadingValueSupplier[] ServiceProviderCascadingValueSuppliers { get; }
 
     internal HotReloadManager HotReloadManager { get; set; } = HotReloadManager.Default;
 
@@ -126,12 +133,14 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     protected ComponentState GetComponentState(int componentId)
         => GetRequiredComponentState(componentId);
 
+    internal ComponentState GetComponentState(IComponent component)
+        => _componentStateByComponent.GetValueOrDefault(component);
+
     private async void RenderRootComponentsOnHotReload()
     {
         // Before re-rendering the root component, also clear any well-known caches in the framework
         ComponentFactory.ClearCache();
         ComponentProperties.ClearCache();
-        Routing.QueryParameterValueSupplier.ClearCache();
 
         await Dispatcher.InvokeAsync(() =>
         {
@@ -162,7 +171,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     /// <param name="componentType">The type of the component to instantiate.</param>
     /// <returns>The component instance.</returns>
     protected IComponent InstantiateComponent([DynamicallyAccessedMembers(Component)] Type componentType)
-        => _componentFactory.InstantiateComponent(_serviceProvider, componentType, null);
+        => _componentFactory.InstantiateComponent(_serviceProvider, componentType, null, null);
 
     /// <summary>
     /// Associates the <see cref="IComponent"/> with the <see cref="Renderer"/>, assigning
@@ -371,7 +380,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     /// </returns>
     public virtual Task DispatchEventAsync(ulong eventHandlerId, EventFieldInfo? fieldInfo, EventArgs eventArgs)
     {
-        return DispatchEventAsync(eventHandlerId, fieldInfo, eventArgs, quiesce: false);
+        return DispatchEventAsync(eventHandlerId, fieldInfo, eventArgs, waitForQuiescence: false);
     }
 
     /// <summary>
@@ -380,14 +389,19 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     /// <param name="eventHandlerId">The <see cref="RenderTreeFrame.AttributeEventHandlerId"/> value from the original event attribute.</param>
     /// <param name="eventArgs">Arguments to be passed to the event handler.</param>
     /// <param name="fieldInfo">Information that the renderer can use to update the state of the existing render tree to match the UI.</param>
-    /// <param name="quiesce">Whether to wait for quiescence or not.</param>
+    /// <param name="waitForQuiescence">A flag indicating whether to wait for quiescence.</param>
     /// <returns>
     /// A <see cref="Task"/> which will complete once all asynchronous processing related to the event
     /// has completed.
     /// </returns>
-    public virtual Task DispatchEventAsync(ulong eventHandlerId, EventFieldInfo? fieldInfo, EventArgs eventArgs, bool quiesce)
+    public virtual Task DispatchEventAsync(ulong eventHandlerId, EventFieldInfo? fieldInfo, EventArgs eventArgs, bool waitForQuiescence)
     {
         Dispatcher.AssertAccess();
+
+        if (waitForQuiescence)
+        {
+            _pendingTasks ??= new();
+        }
 
         var callback = GetRequiredEventCallback(eventHandlerId);
         Log.HandlingEvent(_logger, eventHandlerId, eventArgs);
@@ -416,22 +430,9 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             _isBatchInProgress = true;
 
             task = callback.InvokeAsync(eventArgs);
-            if (quiesce)
-            {
-                // If we are waiting for quiescence, the quiescence task will capture any async exception.
-                // If the exception is thrown synchronously, we just want it to flow to the callers, and
-                // not go through the ErrorBoundary.
-                _pendingTasks ??= new();
-                AddPendingTask(receiverComponentState, task);
-            }
         }
         catch (Exception e)
         {
-            if (quiesce)
-            {
-                // Exception filters are not AoT friendly.
-                throw;
-            }
             HandleExceptionViaErrorBoundary(e, receiverComponentState);
             return Task.CompletedTask;
         }
@@ -444,15 +445,19 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             ProcessPendingRender();
         }
 
-        if (quiesce)
-        {
-            return WaitForQuiescence();
-        }
-
         // Task completed synchronously or is still running. We already processed all of the rendering
         // work that was queued so let our error handler deal with it.
-        var result = GetErrorHandledTask(task, receiverComponentState);
-        return result;
+        var errorHandledTask = GetErrorHandledTask(task, receiverComponentState);
+
+        if (waitForQuiescence)
+        {
+            AddPendingTask(receiverComponentState, errorHandledTask);
+            return WaitForQuiescence();
+        }
+        else
+        {
+            return errorHandledTask;
+        }
     }
 
     /// <summary>
@@ -473,24 +478,53 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             : EventArgsTypeCache.GetEventArgsType(methodInfo);
     }
 
-    internal ComponentState InstantiateChildComponentOnFrame(ref RenderTreeFrame frame, int parentComponentId)
+    internal ComponentState InstantiateChildComponentOnFrame(RenderTreeFrame[] frames, int frameIndex, int parentComponentId)
     {
+        ref var frame = ref frames[frameIndex];
         if (frame.FrameTypeField != RenderTreeFrameType.Component)
         {
-            throw new ArgumentException($"The frame's {nameof(RenderTreeFrame.FrameType)} property must equal {RenderTreeFrameType.Component}", nameof(frame));
+            throw new ArgumentException($"The frame's {nameof(RenderTreeFrame.FrameType)} property must equal {RenderTreeFrameType.Component}", nameof(frameIndex));
         }
 
         if (frame.ComponentStateField != null)
         {
-            throw new ArgumentException($"The frame already has a non-null component instance", nameof(frame));
+            throw new ArgumentException($"The frame already has a non-null component instance", nameof(frameIndex));
         }
 
-        var newComponent = _componentFactory.InstantiateComponent(_serviceProvider, frame.ComponentTypeField, parentComponentId);
+        var callerSpecifiedRenderMode = frame.ComponentFrameFlags.HasFlag(ComponentFrameFlags.HasCallerSpecifiedRenderMode)
+            ? FindCallerSpecifiedRenderMode(frames, frameIndex)
+            : null;
+
+        var newComponent = _componentFactory.InstantiateComponent(_serviceProvider, frame.ComponentTypeField, callerSpecifiedRenderMode, parentComponentId);
         var newComponentState = AttachAndInitComponent(newComponent, parentComponentId);
         frame.ComponentStateField = newComponentState;
         frame.ComponentIdField = newComponentState.ComponentId;
 
         return newComponentState;
+    }
+
+    private static IComponentRenderMode? FindCallerSpecifiedRenderMode(RenderTreeFrame[] frames, int componentFrameIndex)
+    {
+        // ComponentRenderMode frames are immediate children of Component frames. So, they have to appear after any parameter
+        // attributes (since attributes must always immediately follow Component frames), but before anything that would
+        // represent a different child node, such as text/element or another component. It's OK to do this linear scan
+        // because we consider it uncommon to specify a rendermode, and none of this happens if you don't.
+        var endIndex = componentFrameIndex + frames[componentFrameIndex].ComponentSubtreeLengthField;
+        for (var index = componentFrameIndex + 1; index <= endIndex; index++)
+        {
+            ref var frame = ref frames[index];
+            switch (frame.FrameType)
+            {
+                case RenderTreeFrameType.Attribute:
+                    continue;
+                case RenderTreeFrameType.ComponentRenderMode:
+                    return frame.ComponentRenderMode;
+                default:
+                    break;
+            }
+        }
+
+        return null;
     }
 
     internal void AddToPendingTasksWithErrorHandling(Task task, ComponentState? owningComponentState)
@@ -597,22 +631,6 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         // for tree patching to work in an async environment.
         _eventHandlerIdReplacements.Add(oldEventHandlerId, newEventHandlerId);
     }
-
-    /// <summary>
-    /// Tracks named events defined during rendering.
-    /// </summary>
-    /// <param name="eventHandlerId">The event handler ID associated with the named event.</param>
-    /// <param name="componentId">The component ID defining the name.</param>
-    /// <param name="eventHandlerName">The event name.</param>
-    protected internal virtual void TrackNamedEventId(ulong eventHandlerId, int componentId, string eventHandlerName)
-    {
-    }
-
-    /// <summary>
-    /// Indicates whether named event handlers should be tracked.
-    /// </summary>
-    /// <returns><c>true</c> if named event handlers should be tracked; <c>false</c> otherwise.</returns>
-    protected internal virtual bool ShouldTrackNamedEventHandlers() => false;
 
     private EventCallback GetRequiredEventCallback(ulong eventHandlerId)
     {
@@ -876,28 +894,20 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             var disposeComponentId = _batchBuilder.ComponentDisposalQueue.Dequeue();
             var disposeComponentState = GetRequiredComponentState(disposeComponentId);
             Log.DisposingComponent(_logger, disposeComponentState);
-            if (!(disposeComponentState.Component is IAsyncDisposable))
+
+            try
             {
-                if (!disposeComponentState.TryDisposeInBatch(_batchBuilder, out var exception))
+                var disposalTask = disposeComponentState.DisposeInBatchAsync(_batchBuilder);
+                if (disposalTask.IsCompletedSuccessfully)
                 {
-                    exceptions ??= new List<Exception>();
-                    exceptions.Add(exception);
-                }
-            }
-            else
-            {
-                var result = disposeComponentState.DisposeInBatchAsync(_batchBuilder);
-                if (result.IsCompleted)
-                {
-                    if (!result.IsCompletedSuccessfully)
-                    {
-                        exceptions ??= new List<Exception>();
-                        exceptions.Add(result.Exception);
-                    }
+                    // If it's a IValueTaskSource backed ValueTask,
+                    // inform it its result has been read so it can reset
+                    disposalTask.GetAwaiter().GetResult();
                 }
                 else
                 {
                     // We set owningComponentState to null because we don't want exceptions during disposal to be recoverable
+                    var result = disposalTask.AsTask();
                     AddToPendingTasksWithErrorHandling(GetHandledAsynchronousDisposalErrorsTask(result), owningComponentState: null);
 
                     async Task GetHandledAsynchronousDisposalErrorsTask(Task result)
@@ -912,6 +922,11 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
                         }
                     }
                 }
+            }
+            catch (Exception exception)
+            {
+                exceptions ??= new List<Exception>();
+                exceptions.Add(exception);
             }
 
             _componentStateById.Remove(disposeComponentId);
@@ -1042,7 +1057,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
                 return; // Handled successfully
             }
 
-            candidate = candidate.ParentComponentState;
+            candidate = candidate.LogicalParentComponentState;
         }
 
         // It's unhandled, so treat as fatal
@@ -1080,39 +1095,25 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         {
             Log.DisposingComponent(_logger, componentState);
 
-            // Components shouldn't need to implement IAsyncDisposable and IDisposable simultaneously,
-            // but in case they do, we prefer the async overload since we understand the sync overload
-            // is implemented for more "constrained" scenarios.
-            // Component authors are responsible for their IAsyncDisposable implementations not taking
-            // forever.
-            if (componentState.Component is IAsyncDisposable asyncDisposable)
+            try
             {
-                try
+                var task = componentState.DisposeAsync();
+                if (task.IsCompletedSuccessfully)
                 {
-                    var task = asyncDisposable.DisposeAsync();
-                    if (!task.IsCompletedSuccessfully)
-                    {
-                        asyncDisposables ??= new();
-                        asyncDisposables.Add(task.AsTask());
-                    }
+                    // If it's a IValueTaskSource backed ValueTask,
+                    // inform it its result has been read so it can reset
+                    task.GetAwaiter().GetResult();
                 }
-                catch (Exception exception)
+                else
                 {
-                    exceptions ??= new List<Exception>();
-                    exceptions.Add(exception);
+                    asyncDisposables ??= new();
+                    asyncDisposables.Add(task.AsTask());
                 }
             }
-            else if (componentState.Component is IDisposable disposable)
+            catch (Exception exception)
             {
-                try
-                {
-                    componentState.Dispose();
-                }
-                catch (Exception exception)
-                {
-                    exceptions ??= new List<Exception>();
-                    exceptions.Add(exception);
-                }
+                exceptions ??= new List<Exception>();
+                exceptions.Add(exception);
             }
         }
 
@@ -1161,23 +1162,24 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
 
     /// <summary>
     /// Determines how to handle an <see cref="IComponentRenderMode"/> when obtaining a component instance.
-    /// This is only called for components that have specified a render mode. Subclasses may override this
-    /// method to return a component of a different type, or throw, depending on whether the renderer
+    /// This is only called when a render mode is specified either at the call site or on the component type.
+    /// 
+    /// Subclasses may override this method to return a component of a different type, or throw, depending on whether the renderer
     /// supports the render mode and how it implements that support.
     /// </summary>
     /// <param name="componentType">The type of component that was requested.</param>
     /// <param name="parentComponentId">The parent component ID, or null if it is a root component.</param>
     /// <param name="componentActivator">An <see cref="IComponentActivator"/> that should be used when instantiating component objects.</param>
-    /// <param name="componentTypeRenderMode">The <see cref="IComponentRenderMode"/> declared on <paramref name="componentType"/>.</param>
+    /// <param name="renderMode">The <see cref="IComponentRenderMode"/> declared on <paramref name="componentType"/> or at the call site (for example, by the parent component).</param>
     /// <returns>An <see cref="IComponent"/> instance.</returns>
     protected internal virtual IComponent ResolveComponentForRenderMode(
         [DynamicallyAccessedMembers(Component)] Type componentType,
         int? parentComponentId,
         IComponentActivator componentActivator,
-        IComponentRenderMode componentTypeRenderMode)
+        IComponentRenderMode renderMode)
     {
         // Nothing is supported by default. Subclasses must override this to opt into supporting specific render modes.
-        throw new NotSupportedException($"Cannot supply a component of type '{componentType}' because the current platform does not support the render mode '{componentTypeRenderMode}'.");
+        throw new NotSupportedException($"Cannot supply a component of type '{componentType}' because the current platform does not support the render mode '{renderMode}'.");
     }
 
     /// <summary>

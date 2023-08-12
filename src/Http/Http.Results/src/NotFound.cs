@@ -50,6 +50,6 @@ public sealed class NotFound : IResult, IEndpointMetadataProvider, IStatusCodeHt
         ArgumentNullException.ThrowIfNull(method);
         ArgumentNullException.ThrowIfNull(builder);
 
-        builder.Metadata.Add(new ProducesResponseTypeMetadata(StatusCodes.Status404NotFound));
+        builder.Metadata.Add(new ProducesResponseTypeMetadata(StatusCodes.Status404NotFound, typeof(void)));
     }
 }

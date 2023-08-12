@@ -36,7 +36,7 @@ public class AuthorizeRouteViewTest
         var services = serviceCollection.BuildServiceProvider();
         _renderer = new TestRenderer(services);
         var componentFactory = new ComponentFactory(new DefaultComponentActivator(), _renderer);
-        _authorizeRouteViewComponent = (AuthorizeRouteView)componentFactory.InstantiateComponent(services, typeof(AuthorizeRouteView), null);
+        _authorizeRouteViewComponent = (AuthorizeRouteView)componentFactory.InstantiateComponent(services, typeof(AuthorizeRouteView), null, null);
         _authorizeRouteViewComponentId = _renderer.AssignRootComponentId(_authorizeRouteViewComponent);
     }
 
@@ -65,25 +65,9 @@ public class AuthorizeRouteViewTest
             edit =>
             {
                 Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
-                AssertFrame.Component<CascadingModelBinder>(batch.ReferenceFrames[edit.ReferenceFrameIndex]);
+                AssertFrame.Component<TestPageRequiringAuthorization>(batch.ReferenceFrames[edit.ReferenceFrameIndex]);
             },
             edit => AssertPrependText(batch, edit, "Layout ends here"));
-
-        var cascadingModelBinderDiff = batch.GetComponentDiffs<CascadingModelBinder>().Single();
-        Assert.Collection(cascadingModelBinderDiff.Edits,
-            edit =>
-            {
-                Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
-                AssertFrame.Component<CascadingValue<ModelBindingContext>>(batch.ReferenceFrames[edit.ReferenceFrameIndex]);
-            });
-
-        var cascadingValueDiff = batch.GetComponentDiffs<CascadingValue<ModelBindingContext>>().Single();
-        Assert.Collection(cascadingValueDiff.Edits,
-            edit =>
-            {
-                Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
-                AssertFrame.Component<TestPageRequiringAuthorization>(batch.ReferenceFrames[edit.ReferenceFrameIndex]);
-            });
 
         // Assert: renders page
         var pageDiff = batch.GetComponentDiffs<TestPageRequiringAuthorization>().Single();
@@ -118,25 +102,9 @@ public class AuthorizeRouteViewTest
             edit =>
             {
                 Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
-                AssertFrame.Component<CascadingModelBinder>(batch.ReferenceFrames[edit.ReferenceFrameIndex]);
+                AssertFrame.Component<TestPageRequiringAuthorization>(batch.ReferenceFrames[edit.ReferenceFrameIndex]);
             },
             edit => AssertPrependText(batch, edit, "Layout ends here"));
-
-        var cascadingModelBinderDiff = batch.GetComponentDiffs<CascadingModelBinder>().Single();
-        Assert.Collection(cascadingModelBinderDiff.Edits,
-            edit =>
-            {
-                Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
-                AssertFrame.Component<CascadingValue<ModelBindingContext>>(batch.ReferenceFrames[edit.ReferenceFrameIndex]);
-            });
-
-        var cascadingValueDiff = batch.GetComponentDiffs<CascadingValue<ModelBindingContext>>().Single();
-        Assert.Collection(cascadingValueDiff.Edits,
-            edit =>
-            {
-                Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
-                AssertFrame.Component<TestPageRequiringAuthorization>(batch.ReferenceFrames[edit.ReferenceFrameIndex]);
-            });
 
         // Assert: renders page
         var pageDiff = batch.GetComponentDiffs<TestPageRequiringAuthorization>().Single();
@@ -325,8 +293,6 @@ public class AuthorizeRouteViewTest
             component => Assert.IsType<CascadingValue<Task<AuthenticationState>>>(component),
             component => Assert.IsAssignableFrom<AuthorizeViewCore>(component),
             component => Assert.IsType<LayoutView>(component),
-            component => Assert.IsType<CascadingModelBinder>(component),
-            component => Assert.IsType<CascadingValue<ModelBindingContext>>(component),
             component => Assert.IsType<TestPageWithNoAuthorization>(component));
     }
 
@@ -358,8 +324,6 @@ public class AuthorizeRouteViewTest
             // further CascadingAuthenticationState
             component => Assert.IsAssignableFrom<AuthorizeViewCore>(component),
             component => Assert.IsType<LayoutView>(component),
-            component => Assert.IsType<CascadingModelBinder>(component),
-            component => Assert.IsType<CascadingValue<ModelBindingContext>>(component),
             component => Assert.IsType<TestPageWithNoAuthorization>(component));
     }
 

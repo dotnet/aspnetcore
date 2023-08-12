@@ -54,7 +54,7 @@ internal static class TaskToApm
             return task.GetAwaiter().GetResult();
         }
 
-        throw new ArgumentNullException(nameof(asyncResult));
+        throw new ArgumentException($"{nameof(asyncResult)} must be a TaskAsyncResult wrapping a Task returning a {typeof(TResult).Name}.", nameof(asyncResult));
     }
 
     /// <summary>Provides a simple IAsyncResult that wraps a Task.</summary>

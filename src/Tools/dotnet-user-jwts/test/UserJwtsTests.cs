@@ -1,23 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Text;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Configuration.UserSecrets;
 using Microsoft.Extensions.Tools.Internal;
-using Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
-using Xunit;
 using Xunit.Abstractions;
 using System.Text.RegularExpressions;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.IdentityModel.Tokens.Jwt;
-using System.Reflection;
-using System.Numerics;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools.Tests;
 
@@ -78,6 +69,25 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         app.Run(new[] { "create", "--project", project });
         Assert.Contains("New JWT saved", _console.GetOutput());
         Assert.Contains("dotnet-user-jwts", File.ReadAllText(appsettings));
+    }
+
+    [Fact]
+    public void Create_CanModifyExistingScheme()
+    {
+        var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
+        var appsettings = Path.Combine(Path.GetDirectoryName(project), "appsettings.Development.json");
+        var app = new Program(_console);
+
+        app.Run(new[] { "create", "--project", project });
+        Assert.Contains("New JWT saved", _console.GetOutput());
+        var matches = Regex.Matches(_console.GetOutput(), "New JWT saved with ID '(.*?)'");
+        var id = matches.SingleOrDefault().Groups[1].Value;
+
+        var appSettings = JsonSerializer.Deserialize<JsonObject>(File.ReadAllText(appsettings));
+        Assert.Equal("dotnet-user-jwts", appSettings["Authentication"]["Schemes"]["Bearer"]["ValidIssuer"].GetValue<string>());
+        app.Run(new[] { "create", "--project", project, "--issuer", "new-issuer"  });
+        appSettings = JsonSerializer.Deserialize<JsonObject>(File.ReadAllText(appsettings));
+        Assert.Equal("new-issuer", appSettings["Authentication"]["Schemes"]["Bearer"]["ValidIssuer"].GetValue<string>());
     }
 
     [Fact]
@@ -594,7 +604,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         var app = new Program(_console);
         app.Run(new[] { "create" });
 
-        Assert.Contains("No project found at `-p|--project` path or current directory.", _console.GetOutput());
+        Assert.Contains($"Could not find a MSBuild project file in '{Directory.GetCurrentDirectory()}'. Specify which project to use with the --project option.", _console.GetOutput());
         Assert.DoesNotContain(Resources.CreateCommand_NoAudience_Error, _console.GetOutput());
     }
 
@@ -607,7 +617,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         var app = new Program(_console);
         app.Run(new[] { "remove", "some-id" });
 
-        Assert.Contains("No project found at `-p|--project` path or current directory.", _console.GetOutput());
+        Assert.Contains($"Could not find a MSBuild project file in '{Directory.GetCurrentDirectory()}'. Specify which project to use with the --project option.", _console.GetOutput());
     }
 
     [Fact]
@@ -619,7 +629,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         var app = new Program(_console);
         app.Run(new[] { "clear" });
 
-        Assert.Contains("No project found at `-p|--project` path or current directory.", _console.GetOutput());
+        Assert.Contains($"Could not find a MSBuild project file in '{Directory.GetCurrentDirectory()}'. Specify which project to use with the --project option.", _console.GetOutput());
     }
 
     [Fact]
@@ -631,7 +641,19 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         var app = new Program(_console);
         app.Run(new[] { "list" });
 
-        Assert.Contains("No project found at `-p|--project` path or current directory.", _console.GetOutput());
+        Assert.Contains($"Could not find a MSBuild project file in '{Directory.GetCurrentDirectory()}'. Specify which project to use with the --project option.", _console.GetOutput());
+    }
+
+    [Fact]
+    public void List_CanHandleProjectOptionAsPath()
+    {
+        var projectPath = _fixture.CreateProject();
+        var project = Path.Combine(projectPath, "TestProject.csproj");
+
+        var app = new Program(_console);
+        app.Run(new[] { "list", "--project", projectPath });
+
+        Assert.Contains(Path.Combine(projectPath, project), _console.GetOutput());
     }
 
     [ConditionalFact]

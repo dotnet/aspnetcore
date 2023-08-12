@@ -1,0 +1,24 @@
+﻿@inject NavigationManager Navigation
+
+<button type="button" id="navigate-to-another-page" @onclick="NavigateToAnotherPage">Navigate to another page</button>
+<br />
+<button type="button" id="perform-enhanced-refresh" @onclick="PerformEnhancedRefresh">Perform enhanced refresh</button>
+<br />
+<button type="button" id="perform-page-reload" @onclick="PerformPageReload">Perform page reload</button>
+
+@code {
+    private void NavigateToAnotherPage()
+    {
+        Navigation.NavigateTo("nav");
+    }
+
+    private void PerformEnhancedRefresh()
+    {
+        Navigation.NavigateTo(Navigation.Uri, replace: true);
+    }
+
+    private void PerformPageReload()
+    {
+        Navigation.NavigateTo(Navigation.Uri, forceLoad: true, replace: true);
+    }
+}

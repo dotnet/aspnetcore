@@ -1,14 +1,19 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Http;
 
 /// <summary>
 /// Represents the outgoing side of an individual HTTP request.
 /// </summary>
+[DebuggerDisplay("{DebuggerToString(),nq}")]
+[DebuggerTypeProxy(typeof(HttpResponseDebugView))]
 public abstract class HttpResponse
 {
     private static readonly Func<object, Task> _callbackDelegate = callback => ((Func<Task>)callback)();
@@ -149,4 +154,28 @@ public abstract class HttpResponse
     /// </summary>
     /// <returns></returns>
     public virtual Task CompleteAsync() { throw new NotImplementedException(); }
+
+    internal string DebuggerToString()
+    {
+        return HttpContextDebugFormatter.ResponseToString(this, reasonPhrase: null);
+    }
+
+    private sealed class HttpResponseDebugView(HttpResponse response)
+    {
+        private readonly HttpResponse _response = response;
+
+        public int StatusCode => _response.StatusCode;
+        public IHeaderDictionary Headers => _response.Headers;
+        public IHeaderDictionary? Trailers
+        {
+            get
+            {
+                var feature = _response.HttpContext.Features.Get<IHttpResponseTrailersFeature>();
+                return feature?.Trailers;
+            }
+        }
+        public long? ContentLength => _response.ContentLength;
+        public string? ContentType => _response.ContentType;
+        public bool HasStarted => _response.HasStarted;
+    }
 }

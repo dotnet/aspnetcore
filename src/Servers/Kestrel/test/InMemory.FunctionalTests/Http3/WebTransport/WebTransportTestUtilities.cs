@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.WebTransport;
 using Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport;
 using Microsoft.AspNetCore.Testing;
@@ -78,6 +79,7 @@ internal class WebTransportTestUtilities
         features.Set<IStreamDirectionFeature>(new DefaultStreamDirectionFeature(type != WebTransportStreamType.Output, type != WebTransportStreamType.Input));
         features.Set(Mock.Of<IConnectionItemsFeature>());
         features.Set(Mock.Of<IProtocolErrorCodeFeature>());
+        features.Set(Mock.Of<IConnectionMetricsContextFeature>());
 
         var writer = new HttpResponsePipeWriter(new StreamWriterControl(memory));
         writer.StartAcceptingWrites();

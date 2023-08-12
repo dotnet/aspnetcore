@@ -3,6 +3,7 @@
 
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Reflection;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
@@ -44,9 +45,9 @@ internal static class ComponentProperties
                     ThrowForUnknownIncomingParameterName(targetType, parameterName);
                     throw null; // Unreachable
                 }
-                else if (writer.Cascading && !parameter.Cascading)
+                else if (!writer.AcceptsDirectParameters && !parameter.Cascading)
                 {
-                    // We don't allow you to set a cascading parameter with a non-cascading value. Put another way:
+                    // We don't allow you to set a cascading parameter with a non-cascading (direct) value. Put another way:
                     // cascading parameters are not part of the public API of a component, so it's not reasonable
                     // for someone to set it directly.
                     //
@@ -55,12 +56,22 @@ internal static class ComponentProperties
                     ThrowForSettingCascadingParameterWithNonCascadingValue(targetType, parameterName);
                     throw null; // Unreachable
                 }
-                else if (!writer.Cascading && parameter.Cascading)
+                else if (!writer.AcceptsCascadingParameters && parameter.Cascading)
                 {
                     // We're giving a more specific error here because trying to set a non-cascading parameter
                     // with a cascading value is likely deliberate (but not supported), or is a bug in our code.
                     ThrowForSettingParameterWithCascadingValue(targetType, parameterName);
                     throw null; // Unreachable
+                }
+                else if (parameter.Cascading && writer.AcceptsDirectParameters && writer.AcceptsCascadingParameters)
+                {
+                    // Today, the only case where this is possible is when a property is annotated with both
+                    // ParameterAttribute and SupplyParameterFromQueryAttribute. If that happens, we want to
+                    // prefer the directly supplied value over the cascading value.
+                    if (parameters.HasDirectParameter(parameterName))
+                    {
+                        continue;
+                    }
                 }
 
                 SetProperty(target, writer, parameterName, parameter.Value);
@@ -81,7 +92,7 @@ internal static class ComponentProperties
 
                 if (writers.TryGetValue(parameterName, out var writer))
                 {
-                    if (!writer.Cascading && parameter.Cascading)
+                    if (!writer.AcceptsCascadingParameters && parameter.Cascading)
                     {
                         // Don't allow an "extra" cascading value to be collected - or don't allow a non-cascading
                         // parameter to be set with a cascading value.
@@ -90,7 +101,7 @@ internal static class ComponentProperties
                         ThrowForSettingParameterWithCascadingValue(targetType, parameterName);
                         throw null; // Unreachable
                     }
-                    else if (writer.Cascading && !parameter.Cascading)
+                    else if (writer.AcceptsCascadingParameters && !parameter.Cascading)
                     {
                         // Allow unmatched parameters to collide with the names of cascading parameters. This is
                         // valid because cascading parameter names are not part of the public API. There's no
@@ -168,11 +179,13 @@ internal static class ComponentProperties
         var propertyInfo = targetType.GetProperty(parameterName, BindablePropertyFlags);
         if (propertyInfo != null)
         {
-            if (!propertyInfo.IsDefined(typeof(ParameterAttribute)) && !propertyInfo.IsDefined(typeof(CascadingParameterAttribute)))
+            if (!propertyInfo.IsDefined(typeof(ParameterAttribute)) &&
+                !propertyInfo.GetCustomAttributes().OfType<CascadingParameterAttributeBase>().Any())
             {
                 throw new InvalidOperationException(
                     $"Object of type '{targetType.FullName}' has a property matching the name '{parameterName}', " +
-                    $"but it does not have [{nameof(ParameterAttribute)}] or [{nameof(CascadingParameterAttribute)}] applied.");
+                    $"but it does not have [{nameof(ParameterAttribute)}], [{nameof(CascadingParameterAttribute)}] or " +
+                    $"[SupplyParameterFromFormAttribute] applied.");
             }
             else
             {
@@ -193,8 +206,8 @@ internal static class ComponentProperties
     private static void ThrowForSettingCascadingParameterWithNonCascadingValue(Type targetType, string parameterName)
     {
         throw new InvalidOperationException(
-            $"Object of type '{targetType.FullName}' has a property matching the name '{parameterName}', " +
-            $"but it does not have [{nameof(ParameterAttribute)}] applied.");
+            $"The property '{parameterName}' on component type '{targetType.FullName}' cannot be set " +
+            $"explicitly because it only accepts cascading values.");
     }
 
     [DoesNotReturn]
@@ -257,10 +270,31 @@ internal static class ComponentProperties
 
             foreach (var propertyInfo in GetCandidateBindableProperties(targetType))
             {
-                var parameterAttribute = propertyInfo.GetCustomAttribute<ParameterAttribute>();
-                var cascadingParameterAttribute = propertyInfo.GetCustomAttribute<CascadingParameterAttribute>();
-                var isParameter = parameterAttribute != null || cascadingParameterAttribute != null;
-                if (!isParameter)
+                ParameterAttribute? parameterAttribute = null;
+                CascadingParameterAttributeBase? cascadingParameterAttribute = null;
+
+                var attributes = propertyInfo.GetCustomAttributes();
+                foreach (var attribute in attributes)
+                {
+                    switch (attribute)
+                    {
+                        case ParameterAttribute parameter:
+                            parameterAttribute = parameter;
+                            break;
+                        case CascadingParameterAttributeBase cascadingParameter:
+                            cascadingParameterAttribute = cascadingParameter;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
+                // A property cannot accept direct parameters if it's annotated with a cascading value attribute, unless it's a
+                // SupplyParameterFromQueryAttribute. This is to retain backwards compatibility with previous versions of the
+                // SupplyParameterFromQuery feature that did not utilize cascading values, and thus did not have this limitation.
+                var acceptsDirectParameters = parameterAttribute is not null && cascadingParameterAttribute is null or SupplyParameterFromQueryAttribute;
+                var acceptsCascadingParameters = cascadingParameterAttribute is not null;
+                if (!acceptsDirectParameters && !acceptsCascadingParameters)
                 {
                     continue;
                 }
@@ -274,7 +308,8 @@ internal static class ComponentProperties
 
                 var propertySetter = new PropertySetter(targetType, propertyInfo)
                 {
-                    Cascading = cascadingParameterAttribute != null,
+                    AcceptsDirectParameters = acceptsDirectParameters,
+                    AcceptsCascadingParameters = acceptsCascadingParameters,
                 };
 
                 if (_underlyingWriters.ContainsKey(propertyName))

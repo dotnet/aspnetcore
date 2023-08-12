@@ -4,8 +4,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.InteropServices.JavaScript;
-using System.Runtime.Loader;
-using System.Runtime.Versioning;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
@@ -71,16 +69,7 @@ internal partial class WebAssemblyCultureProvider
             return;
         }
 
-        await WebAssemblyCultureProviderInterop.LoadSatelliteAssemblies(culturesToLoad, LoadSatelliteAssembly);
-    }
-
-    [SupportedOSPlatform("browser")]
-    private void LoadSatelliteAssembly(JSObject wrapper)
-    {
-        var dllBytes = wrapper.GetPropertyAsByteArray("dll")!;
-        using var stream = new MemoryStream(dllBytes);
-        AssemblyLoadContext.Default.LoadFromStream(stream);
-        wrapper.Dispose();
+        await WebAssemblyCultureProviderInterop.LoadSatelliteAssemblies(culturesToLoad);
     }
 
     internal static string[] GetCultures(CultureInfo cultureInfo)
@@ -109,8 +98,7 @@ internal partial class WebAssemblyCultureProvider
 
     private partial class WebAssemblyCultureProviderInterop
     {
-        [JSImport("Blazor._internal.loadSatelliteAssemblies", "blazor-internal")]
-        public static partial Task<JSObject> LoadSatelliteAssemblies(string[] culturesToLoad,
-        [JSMarshalAs<JSType.Function<JSType.Object>>] Action<JSObject> assemblyLoader);
+        [JSImport("INTERNAL.loadSatelliteAssemblies")]
+        public static partial Task LoadSatelliteAssemblies(string[] culturesToLoad);
     }
 }

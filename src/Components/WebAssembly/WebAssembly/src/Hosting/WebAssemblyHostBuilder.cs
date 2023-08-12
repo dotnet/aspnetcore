@@ -4,7 +4,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text.Json;
-using Microsoft.AspNetCore.Components.Binding;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -100,21 +99,26 @@ public sealed class WebAssemblyHostBuilder
             return;
         }
 
-        var registeredComponents = new WebAssemblyComponentMarker[componentsCount];
+        var registeredComponents = new ComponentMarker[componentsCount];
         for (var i = 0; i < componentsCount; i++)
         {
-            var id = jsMethods.RegisteredComponents_GetId(i);
-            var assembly = jsMethods.RegisteredComponents_GetAssembly(id);
-            var typeName = jsMethods.RegisteredComponents_GetTypeName(id);
-            var serializedParameterDefinitions = jsMethods.RegisteredComponents_GetParameterDefinitions(id);
-            var serializedParameterValues = jsMethods.RegisteredComponents_GetParameterValues(id);
-            registeredComponents[i] = new WebAssemblyComponentMarker(WebAssemblyComponentMarker.ClientMarkerType, assembly, typeName, serializedParameterDefinitions, serializedParameterValues, id.ToString(CultureInfo.InvariantCulture));
+            var assembly = jsMethods.RegisteredComponents_GetAssembly(i);
+            var typeName = jsMethods.RegisteredComponents_GetTypeName(i);
+            var serializedParameterDefinitions = jsMethods.RegisteredComponents_GetParameterDefinitions(i);
+            var serializedParameterValues = jsMethods.RegisteredComponents_GetParameterValues(i);
+            registeredComponents[i] = ComponentMarker.Create(ComponentMarker.WebAssemblyMarkerType, false, null);
+            registeredComponents[i].WriteWebAssemblyData(
+                assembly,
+                typeName,
+                serializedParameterDefinitions,
+                serializedParameterValues);
+            registeredComponents[i].PrerenderId = i.ToString(CultureInfo.InvariantCulture);
         }
 
+        _rootComponentCache = new RootComponentTypeCache();
         var componentDeserializer = WebAssemblyComponentParameterDeserializer.Instance;
         foreach (var registeredComponent in registeredComponents)
         {
-            _rootComponentCache = new RootComponentTypeCache();
             var componentType = _rootComponentCache.GetRootComponent(registeredComponent.Assembly!, registeredComponent.TypeName!);
             if (componentType is null)
             {
@@ -159,9 +163,10 @@ public sealed class WebAssemblyHostBuilder
 
         foreach (var configFile in configFiles)
         {
-            var appSettingsJson = jsMethods.GetConfig(configFile);
-            if (appSettingsJson != null)
+            if (File.Exists(configFile))
             {
+                var appSettingsJson = File.ReadAllBytes(configFile);
+
                 // Perf: Using this over AddJsonStream. This allows the linker to trim out the "File"-specific APIs and assemblies
                 // for Configuration, of where there are several.
                 Configuration.Add<JsonStreamConfigurationSource>(s => s.Stream = new MemoryStream(appSettingsJson));
@@ -253,13 +258,15 @@ public sealed class WebAssemblyHostBuilder
         Services.AddSingleton<INavigationInterception>(WebAssemblyNavigationInterception.Instance);
         Services.AddSingleton<IScrollToLocationHash>(WebAssemblyScrollToLocationHash.Instance);
         Services.AddSingleton(new LazyAssemblyLoader(DefaultWebAssemblyJSRuntime.Instance));
+        Services.AddSingleton<RootComponentTypeCache>(_ => _rootComponentCache ?? new());
         Services.AddSingleton<ComponentStatePersistenceManager>();
         Services.AddSingleton<PersistentComponentState>(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
+        Services.AddSingleton<AntiforgeryStateProvider, DefaultAntiforgeryStateProvider>();
         Services.AddSingleton<IErrorBoundaryLogger, WebAssemblyErrorBoundaryLogger>();
         Services.AddLogging(builder =>
         {
             builder.AddProvider(new WebAssemblyConsoleLoggerProvider(DefaultWebAssemblyJSRuntime.Instance));
         });
-        Services.AddSingleton<FormDataProvider, DefaultFormDataProvider>();
+        Services.AddSupplyValueFromQueryProvider();
     }
 }

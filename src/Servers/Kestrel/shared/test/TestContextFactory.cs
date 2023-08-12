@@ -1,13 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -19,7 +15,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Metrics;
 
 namespace Microsoft.AspNetCore.Testing;
 
@@ -29,7 +24,7 @@ internal static class TestContextFactory
         KestrelServerOptions serverOptions,
         IHttpParser<Http1ParsingHandler> httpParser = null,
         PipeScheduler scheduler = null,
-        ISystemClock systemClock = null,
+        TimeProvider timeProvider = null,
         DateHeaderValueManager dateHeaderValueManager = null,
         ConnectionManager connectionManager = null,
         Heartbeat heartbeat = null)
@@ -39,7 +34,7 @@ internal static class TestContextFactory
             Log = new KestrelTrace(NullLoggerFactory.Instance),
             Scheduler = scheduler,
             HttpParser = httpParser,
-            SystemClock = systemClock,
+            TimeProvider = timeProvider,
             DateHeaderValueManager = dateHeaderValueManager,
             ConnectionManager = connectionManager,
             Heartbeat = heartbeat,
@@ -69,7 +64,8 @@ internal static class TestContextFactory
             connectionFeatures,
             memoryPool ?? MemoryPool<byte>.Shared,
             localEndPoint,
-            remoteEndPoint);
+            remoteEndPoint,
+            CreateMetricsContext(connectionContext));
         context.TimeoutControl = timeoutControl;
         context.Transport = transport;
 
@@ -147,12 +143,13 @@ internal static class TestContextFactory
         InputFlowControl connectionInputFlowControl = null,
         ITimeoutControl timeoutControl = null)
     {
+        var connectionContext = new DefaultConnectionContext();
         var context = new Http2StreamContext
         (
             connectionId: connectionId ?? "TestConnectionId",
             protocols: HttpProtocols.Http2,
             altSvcHeader: null,
-            connectionContext: new DefaultConnectionContext(),
+            connectionContext: connectionContext,
             serviceContext: serviceContext ?? CreateServiceContext(new KestrelServerOptions()),
             connectionFeatures: connectionFeatures ?? new FeatureCollection(),
             memoryPool: memoryPool ?? MemoryPool<byte>.Shared,
@@ -163,7 +160,8 @@ internal static class TestContextFactory
             clientPeerSettings: clientPeerSettings ?? new Http2PeerSettings(),
             serverPeerSettings: serverPeerSettings ?? new Http2PeerSettings(),
             frameWriter: frameWriter,
-            connectionInputFlowControl: connectionInputFlowControl
+            connectionInputFlowControl: connectionInputFlowControl,
+            metricsContext: CreateMetricsContext(connectionContext)
         );
         context.TimeoutControl = timeoutControl;
 
@@ -183,7 +181,7 @@ internal static class TestContextFactory
         IHttp3StreamLifetimeHandler streamLifetimeHandler = null)
     {
         var http3ConnectionContext = CreateHttp3ConnectionContext(
-            null,
+            new TestMultiplexedConnectionContext(),
             serviceContext,
             connectionFeatures,
             memoryPool,
@@ -214,6 +212,13 @@ internal static class TestContextFactory
             TimeoutControl = timeoutControl,
             Transport = transport,
         };
+    }
+
+    public static ConnectionMetricsContext CreateMetricsContext(ConnectionContext connectionContext)
+    {
+        return new ConnectionMetricsContext(connectionContext,
+            currentConnectionsCounterEnabled: false, connectionDurationEnabled: false, queuedConnectionsCounterEnabled: false,
+            queuedRequestsCounterEnabled: false, currentUpgradedRequestsCounterEnabled: false, currentTlsHandshakesCounterEnabled: false);
     }
 
     private class TestHttp2StreamLifetimeHandler : IHttp2StreamLifetimeHandler

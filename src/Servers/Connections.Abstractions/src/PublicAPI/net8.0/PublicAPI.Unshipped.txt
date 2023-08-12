@@ -1,8 +1,12 @@
 #nullable enable
+Microsoft.AspNetCore.Connections.Abstractions.IReconnectFeature
+Microsoft.AspNetCore.Connections.Abstractions.IReconnectFeature.NotifyOnReconnect.get -> System.Action!
+Microsoft.AspNetCore.Connections.Abstractions.IReconnectFeature.NotifyOnReconnect.set -> void
 Microsoft.AspNetCore.Connections.Features.IConnectionMetricsTagsFeature
 Microsoft.AspNetCore.Connections.Features.IConnectionMetricsTagsFeature.Tags.get -> System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<string!, object?>>!
 Microsoft.AspNetCore.Connections.Features.IConnectionNamedPipeFeature
 Microsoft.AspNetCore.Connections.Features.IConnectionNamedPipeFeature.NamedPipe.get -> System.IO.Pipes.NamedPipeServerStream!
+Microsoft.AspNetCore.Connections.Features.ITlsHandshakeFeature.HostName.get -> string!
 Microsoft.AspNetCore.Connections.Features.ITlsHandshakeFeature.NegotiatedCipherSuite.get -> System.Net.Security.TlsCipherSuite?
 Microsoft.AspNetCore.Connections.IConnectionListenerFactorySelector
 Microsoft.AspNetCore.Connections.IConnectionListenerFactorySelector.CanBind(System.Net.EndPoint! endpoint) -> bool

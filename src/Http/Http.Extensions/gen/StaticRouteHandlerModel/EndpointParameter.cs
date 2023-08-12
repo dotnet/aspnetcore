@@ -10,6 +10,7 @@ using System.Text;
 using Microsoft.AspNetCore.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
+using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel.Emitters;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using WellKnownType = Microsoft.AspNetCore.App.Analyzers.Infrastructure.WellKnownTypeData.WellKnownType;
@@ -22,6 +23,7 @@ internal class EndpointParameter
     {
         Ordinal = parameter.Ordinal;
         IsOptional = parameter.IsOptional();
+        HasDefaultValue = parameter.HasExplicitDefaultValue;
         DefaultValue = parameter.GetDefaultValueString();
         ProcessEndpointParameterSource(endpoint, parameter, parameter.GetAttributes(), wellKnownTypes);
     }
@@ -31,6 +33,7 @@ internal class EndpointParameter
         Ordinal = parameter?.Ordinal ?? 0;
         IsProperty = true;
         IsOptional = property.IsOptional() || parameter?.IsOptional() == true;
+        HasDefaultValue = parameter?.HasExplicitDefaultValue ?? false;
         DefaultValue = parameter?.GetDefaultValueString() ?? "null";
         // Coalesce attributes on the property and attributes on the matching parameter
         var attributeBuilder = ImmutableArray.CreateBuilder<AttributeData>();
@@ -58,7 +61,7 @@ internal class EndpointParameter
         ElementType = elementType;
         IsEndpointMetadataProvider = ImplementsIEndpointMetadataProvider(typeSymbol, wellKnownTypes);
         IsEndpointParameterMetadataProvider = ImplementsIEndpointParameterMetadataProvider(typeSymbol, wellKnownTypes);
-        endpoint.EmitterContext.HasEndpointParameterMetadataProvider = IsEndpointParameterMetadataProvider;
+        endpoint.EmitterContext.HasEndpointParameterMetadataProvider |= IsEndpointParameterMetadataProvider;
         endpoint.EmitterContext.HasEndpointMetadataProvider |= IsEndpointMetadataProvider;
     }
 
@@ -106,7 +109,9 @@ internal class EndpointParameter
             }
             else
             {
-                AssigningCode = $"(string?)httpContext.Request.Form[{SymbolDisplay.FormatLiteral(LookupName, true)}]";
+                AssigningCode = !IsArray
+                    ? $"(string?)httpContext.Request.Form[{SymbolDisplay.FormatLiteral(LookupName, true)}]"
+                    : $"httpContext.Request.Form[{SymbolDisplay.FormatLiteral(LookupName, true)}].ToArray()";
                 IsParsable = TryGetParsability(Type, wellKnownTypes, out var parsingBlockEmitter);
                 ParsingBlockEmitter = parsingBlockEmitter;
             }
@@ -190,22 +195,24 @@ internal class EndpointParameter
             LookupName = symbol.Name;
             AssigningCode = "httpContext.Request.Form";
         }
-        else if (HasBindAsync(Type, wellKnownTypes, out var bindMethod))
+        else if (HasBindAsync(Type, wellKnownTypes, out var bindMethod, out var bindMethodSymbol))
         {
             endpoint.IsAwaitable = true;
             endpoint.EmitterContext.RequiresPropertyAsParameterInfo = IsProperty && bindMethod is BindabilityMethod.BindAsyncWithParameter or BindabilityMethod.IBindableFromHttpContext;
             Source = EndpointParameterSource.BindAsync;
             BindMethod = bindMethod;
+            BindableMethodSymbol = bindMethodSymbol;
         }
         else if (Type.SpecialType == SpecialType.System_String)
         {
             Source = EndpointParameterSource.RouteOrQuery;
         }
-        else if (ShouldDisableInferredBodyParameters(endpoint.HttpMethod) && IsArray && ElementType.SpecialType == SpecialType.System_String)
+        else if (IsArray && ElementType.SpecialType == SpecialType.System_String)
         {
-            Source = EndpointParameterSource.Query;
+            endpoint.IsAwaitable = true;
+            Source = EndpointParameterSource.JsonBodyOrQuery;
         }
-        else if (ShouldDisableInferredBodyParameters(endpoint.HttpMethod) && SymbolEqualityComparer.Default.Equals(Type, wellKnownTypes.Get(WellKnownType.Microsoft_Extensions_Primitives_StringValues)))
+        else if (SymbolEqualityComparer.Default.Equals(Type, wellKnownTypes.Get(WellKnownType.Microsoft_Extensions_Primitives_StringValues)))
         {
             Source = EndpointParameterSource.Query;
             IsStringValues = true;
@@ -227,6 +234,7 @@ internal class EndpointParameter
         endpoint.EmitterContext.HasFormBody |= Source == EndpointParameterSource.FormBody;
         endpoint.EmitterContext.HasJsonBody |= Source == EndpointParameterSource.JsonBody;
         endpoint.EmitterContext.HasJsonBodyOrService |= Source == EndpointParameterSource.JsonBodyOrService;
+        endpoint.EmitterContext.HasJsonBodyOrQuery |= Source == EndpointParameterSource.JsonBodyOrQuery;
     }
 
     private static bool ImplementsIEndpointMetadataProvider(ITypeSymbol type, WellKnownTypes wellKnownTypes)
@@ -234,17 +242,6 @@ internal class EndpointParameter
 
     private static bool ImplementsIEndpointParameterMetadataProvider(ITypeSymbol type, WellKnownTypes wellKnownTypes)
         => type.Implements(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IEndpointParameterMetadataProvider));
-
-    private static bool ShouldDisableInferredBodyParameters(string httpMethod)
-    {
-        switch (httpMethod)
-        {
-            case "MapPut" or "MapPatch" or "MapPost":
-                return false;
-            default:
-                return true;
-        }
-    }
 
     public ITypeSymbol Type { get; }
     public ITypeSymbol ElementType { get; }
@@ -256,6 +253,7 @@ internal class EndpointParameter
     public bool IsOptional { get; set; }
     public bool IsArray { get; set; }
     public string DefaultValue { get; set; } = "null";
+    public bool HasDefaultValue { get; set; }
     [MemberNotNullWhen(true, nameof(PropertyAsParameterInfoConstruction))]
     public bool IsProperty { get; set; }
     public EndpointParameterSource Source { get; set; }
@@ -273,11 +271,12 @@ internal class EndpointParameter
     public bool IsStringValues { get; set; }
 
     public BindabilityMethod? BindMethod { get; set; }
+    public IMethodSymbol? BindableMethodSymbol { get; set; }
 
-    private static bool HasBindAsync(ITypeSymbol typeSymbol, WellKnownTypes wellKnownTypes, [NotNullWhen(true)] out BindabilityMethod? bindMethod)
+    private static bool HasBindAsync(ITypeSymbol typeSymbol, WellKnownTypes wellKnownTypes, [NotNullWhen(true)] out BindabilityMethod? bindMethod, [NotNullWhen(true)] out IMethodSymbol? bindMethodSymbol)
     {
         var parameterType = typeSymbol.UnwrapTypeSymbol(unwrapArray: true, unwrapNullable: true);
-        return ParsabilityHelper.GetBindability(parameterType, wellKnownTypes, out bindMethod) == Bindability.Bindable;
+        return ParsabilityHelper.GetBindability(parameterType, wellKnownTypes, out bindMethod, out bindMethodSymbol) == Bindability.Bindable;
     }
 
     private static bool TryGetArrayElementType(ITypeSymbol type, [NotNullWhen(true)]out ITypeSymbol elementType)
@@ -352,7 +351,7 @@ internal class EndpointParameter
         {
             parsingBlockEmitter = (writer, inputArgument, outputArgument) =>
             {
-                writer.WriteLine($"""{typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)} {outputArgument} = default;""");
+                writer.WriteLine($"""{typeSymbol.ToDisplayString(EmitterConstants.DisplayFormat)} {outputArgument} = default;""");
                 writer.WriteLine($$"""if ({{preferredTryParseInvocation(inputArgument, $"{inputArgument}_parsed_non_nullable")}})""");
                 writer.StartBlock();
                 writer.WriteLine($$"""{{outputArgument}} = {{$"{inputArgument}_parsed_non_nullable"}};""");
@@ -614,17 +613,17 @@ internal class EndpointParameter
         other.SymbolName == SymbolName &&
         other.Ordinal == Ordinal &&
         other.IsOptional == IsOptional &&
-        SymbolEqualityComparer.Default.Equals(other.Type, Type);
+        SymbolEqualityComparer.IncludeNullability.Equals(other.Type, Type);
 
     public bool SignatureEquals(object obj) =>
         obj is EndpointParameter other &&
-        SymbolEqualityComparer.Default.Equals(other.Type, Type);
+        SymbolEqualityComparer.IncludeNullability.Equals(other.Type, Type);
 
     public override int GetHashCode()
     {
         var hashCode = new HashCode();
         hashCode.Add(SymbolName);
-        hashCode.Add(Type, SymbolEqualityComparer.Default);
+        hashCode.Add(Type, SymbolEqualityComparer.IncludeNullability);
         return hashCode.ToHashCode();
     }
 }

@@ -1,37 +1,32 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { WebAssemblyResourceLoader } from '../WebAssemblyResourceLoader';
+import { MonoConfig } from 'dotnet';
 
 const navigatorUA = navigator as MonoNavigatorUserAgent;
 const brands = navigatorUA.userAgentData && navigatorUA.userAgentData.brands;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const currentBrowserIsChromeOrEdge = brands
+const currentBrowserIsChromeOrEdge = brands && brands.length > 0
   ? brands.some(b => b.brand === 'Google Chrome' || b.brand === 'Microsoft Edge' || b.brand === 'Chromium')
   : (window as any).chrome;
 const platform = navigatorUA.userAgentData?.platform ?? navigator.platform;
 
-let hasReferencedPdbs = false;
-let debugBuild = false;
-
-export function hasDebuggingEnabled(): boolean {
-  return (hasReferencedPdbs || debugBuild) && (currentBrowserIsChromeOrEdge || navigator.userAgent.includes('Firefox'));
+function hasDebuggingEnabled(config: MonoConfig): boolean {
+  return config.debugLevel !== 0 && (currentBrowserIsChromeOrEdge || navigator.userAgent.includes('Firefox'));
 }
 
-export function attachDebuggerHotkey(resourceLoader: WebAssemblyResourceLoader): void {
-  hasReferencedPdbs = !!resourceLoader.bootConfig.resources.pdb;
-  debugBuild = resourceLoader.bootConfig.debugBuild;
+export function attachDebuggerHotkey(config: MonoConfig): void {
   // Use the combination shift+alt+D because it isn't used by the major browsers
   // for anything else by default
   const altKeyName = platform.match(/^Mac/i) ? 'Cmd' : 'Alt';
-  if (hasDebuggingEnabled()) {
+  if (hasDebuggingEnabled(config)) {
     console.info(`Debugging hotkey: Shift+${altKeyName}+D (when application has focus)`);
   }
 
   // Even if debugging isn't enabled, we register the hotkey so we can report why it's not enabled
   document.addEventListener('keydown', evt => {
     if (evt.shiftKey && (evt.metaKey || evt.altKey) && evt.code === 'KeyD') {
-      if (!debugBuild && !hasReferencedPdbs) {
+      if (!hasDebuggingEnabled(config)) {
         console.error('Cannot start debugging, because the application was not compiled with debugging enabled.');
       } else if (navigator.userAgent.includes('Firefox')) {
         launchFirefoxDebugger();

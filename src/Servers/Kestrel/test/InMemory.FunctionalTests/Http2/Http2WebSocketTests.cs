@@ -152,10 +152,8 @@ public class Http2WebSocketTests : Http2TestBase
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/42133")]
     public async Task HEADERS_Received_SecondRequest_Accepted()
     {
-        // Add stream to Http2Connection._completedStreams inline with SetResult().
         var appDelegateTcs = new TaskCompletionSource();
         await InitializeConnectionAsync(async context =>
         {
@@ -180,6 +178,19 @@ public class Http2WebSocketTests : Http2TestBase
             await stream.WriteAsync(new byte[] { 0x01 });
             await appDelegateTcs.Task;
         });
+
+        var originalHandler = _connection._streamLifetimeHandler;
+        var tcs = new TaskCompletionSource();
+        var streamLifetimeHandler = new Mock<IHttp2StreamLifetimeHandler>();
+        streamLifetimeHandler.Setup(o => o.OnStreamCompleted(It.IsAny<Http2Stream>())).Callback((Http2Stream stream) =>
+        {
+            // Add stream to Http2Connection._completedStreams.
+            originalHandler.OnStreamCompleted(stream);
+
+            // Unblock test code that will call TriggerTick and return the stream to the pool
+            tcs.TrySetResult();
+        });
+        _connection._streamLifetimeHandler = streamLifetimeHandler.Object;
 
         // HEADERS + END_HEADERS
         // :method = CONNECT
@@ -224,6 +235,7 @@ public class Http2WebSocketTests : Http2TestBase
         Assert.Equal(0x01, dataFrame.Payload.Span[0]);
 
         appDelegateTcs.TrySetResult();
+        await tcs.Task.DefaultTimeout();
 
         dataFrame = await ExpectAsync(Http2FrameType.DATA,
             withLength: 0,
@@ -338,7 +350,7 @@ public class Http2WebSocketTests : Http2TestBase
         await SendHeadersAsync(1, Http2HeadersFrameFlags.END_HEADERS, headers);
 
         // Don't send any more data and advance just to and then past the grace period.
-        AdvanceClock(limits.MinRequestBodyDataRate.GracePeriod + TimeSpan.FromTicks(1));
+        AdvanceTime(limits.MinRequestBodyDataRate.GracePeriod + TimeSpan.FromTicks(1));
 
         _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
 
@@ -595,8 +607,23 @@ public class Http2WebSocketTests : Http2TestBase
                 // We've done the test. Now just return the normal echo server behavior.
                 await _echoApplication(context);
             }
-
         });
+
+        var originalHandler = _connection._streamLifetimeHandler;
+        var tcs = new TaskCompletionSource();
+        var streamLifetimeHandler = new Mock<IHttp2StreamLifetimeHandler>();
+        streamLifetimeHandler.Setup(o => o.OnStreamCompleted(It.IsAny<Http2Stream>())).Callback((Http2Stream stream) =>
+        {
+            // Add stream to Http2Connection._completedStreams.
+            originalHandler.OnStreamCompleted(stream);
+
+            if (requestCount == 1)
+            {
+                // Unblock test code that will call TriggerTick and return the stream to the pool
+                tcs.TrySetResult();
+            }
+        });
+        _connection._streamLifetimeHandler = streamLifetimeHandler.Object;
 
         // HEADERS + END_HEADERS
         // :method = CONNECT
@@ -636,6 +663,8 @@ public class Http2WebSocketTests : Http2TestBase
         Assert.Equal(0x01, dataFrame.Payload.Span[0]);
 
         appDelegateTcs.TrySetResult();
+        await tcs.Task.DefaultTimeout();
+
         dataFrame = await ExpectAsync(Http2FrameType.DATA,
             withLength: 0,
             withFlags: (byte)Http2DataFrameFlags.END_STREAM,

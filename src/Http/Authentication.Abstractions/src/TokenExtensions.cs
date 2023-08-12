@@ -36,16 +36,17 @@ public static class AuthenticationTokenExtensions
         {
             if (token.Name is null)
             {
-                throw new ArgumentNullException(nameof(tokens), "Token name cannot be null.");
+                throw new ArgumentException("Token name cannot be null for any token.", nameof(tokens));
             }
 
             // REVIEW: should probably check that there are no ; in the token name and throw or encode
             tokenNames.Add(token.Name);
             properties.Items[TokenKeyPrefix + token.Name] = token.Value;
         }
+
         if (tokenNames.Count > 0)
         {
-            properties.Items[TokenNamesKey] = string.Join(";", tokenNames.ToArray());
+            properties.Items[TokenNamesKey] = string.Join(";", tokenNames);
         }
     }
 

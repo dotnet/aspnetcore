@@ -19,9 +19,6 @@ internal partial class InternalJSImportMethods : IInternalJSImportMethods
     public string GetApplicationEnvironment()
         => GetApplicationEnvironmentCore();
 
-    public byte[]? GetConfig(string configFile)
-        => GetConfigCore(configFile);
-
     public void NavigationManager_EnableNavigationInterception()
         => NavigationManager_EnableNavigationInterceptionCore();
 
@@ -39,9 +36,6 @@ internal partial class InternalJSImportMethods : IInternalJSImportMethods
 
     public int RegisteredComponents_GetRegisteredComponentsCount()
         => RegisteredComponents_GetRegisteredComponentsCountCore();
-
-    public int RegisteredComponents_GetId(int index)
-        => RegisteredComponents_GetIdCore(index);
 
     public string RegisteredComponents_GetAssembly(int id)
         => RegisteredComponents_GetAssemblyCore(id);
@@ -61,9 +55,6 @@ internal partial class InternalJSImportMethods : IInternalJSImportMethods
     [JSImport("Blazor._internal.getApplicationEnvironment", "blazor-internal")]
     private static partial string GetApplicationEnvironmentCore();
 
-    [JSImport("Blazor._internal.getConfig", "blazor-internal")]
-    private static partial byte[] GetConfigCore(string configFile);
-
     [JSImport(BrowserNavigationManagerInterop.EnableNavigationInterception, "blazor-internal")]
     private static partial void NavigationManager_EnableNavigationInterceptionCore();
 
@@ -81,9 +72,6 @@ internal partial class InternalJSImportMethods : IInternalJSImportMethods
 
     [JSImport(RegisteredComponentsInterop.GetRegisteredComponentsCount, "blazor-internal")]
     private static partial int RegisteredComponents_GetRegisteredComponentsCountCore();
-
-    [JSImport(RegisteredComponentsInterop.GetId, "blazor-internal")]
-    private static partial int RegisteredComponents_GetIdCore(int index);
 
     [JSImport(RegisteredComponentsInterop.GetAssembly, "blazor-internal")]
     private static partial string RegisteredComponents_GetAssemblyCore(int id);

@@ -17,9 +17,6 @@ internal sealed class TestInternalJSImportMethods : IInternalJSImportMethods
     public string GetApplicationEnvironment()
         => _environment;
 
-    public byte[] GetConfig(string configFile)
-        => null;
-
     public string GetPersistedState()
         => null;
 
@@ -35,21 +32,18 @@ internal sealed class TestInternalJSImportMethods : IInternalJSImportMethods
 
     public void NavigationManager_SetHasLocationChangingListeners(bool value) { }
 
-    public string RegisteredComponents_GetAssembly(int id)
+    public string RegisteredComponents_GetAssembly(int index)
         => string.Empty;
 
-    public int RegisteredComponents_GetId(int index)
-        => 0;
-
-    public string RegisteredComponents_GetParameterDefinitions(int id)
+    public string RegisteredComponents_GetParameterDefinitions(int index)
         => string.Empty;
 
-    public string RegisteredComponents_GetParameterValues(int id)
+    public string RegisteredComponents_GetParameterValues(int index)
         => string.Empty;
 
     public int RegisteredComponents_GetRegisteredComponentsCount()
         => 0;
 
-    public string RegisteredComponents_GetTypeName(int id)
+    public string RegisteredComponents_GetTypeName(int index)
         => string.Empty;
 }

@@ -1,6 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+using System.Collections.Immutable;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Text;
 using Microsoft.CodeAnalysis.CSharp;
 namespace Microsoft.AspNetCore.Http.RequestDelegateGenerator;
 
@@ -18,9 +24,11 @@ internal static class RequestDelegateGeneratorSources
 #nullable enable
 """;
 
-    public static string GeneratedCodeAttribute => $@"[System.CodeDom.Compiler.GeneratedCodeAttribute(""{typeof(RequestDelegateGeneratorSources).Assembly.FullName}"", ""{typeof(RequestDelegateGeneratorSources).Assembly.GetName().Version}"")]";
+    public static string GeneratedCodeConstructor => $@"System.CodeDom.Compiler.GeneratedCodeAttribute(""{typeof(RequestDelegateGeneratorSources).Assembly.FullName}"", ""{typeof(RequestDelegateGeneratorSources).Assembly.GetName().Version}"")";
+    public static string GeneratedCodeAttribute => $"[{GeneratedCodeConstructor}]";
 
-    public static string ContentTypeConstantsType => """
+    public static string ContentTypeConstantsType => $$"""
+    {{GeneratedCodeAttribute}}
     file static class GeneratedMetadataConstants
     {
         public static readonly string[] JsonContentType = new [] { "application/json" };
@@ -29,53 +37,6 @@ internal static class RequestDelegateGeneratorSources
         public static readonly string[] FormContentType = new[] { "multipart/form-data", "application/x-www-form-urlencoded" };
     }
 
-""";
-
-    public static string ProducesResponseTypeMetadataType => """
-    file sealed class GeneratedProducesResponseTypeMetadata : IProducesResponseTypeMetadata
-    {
-        public GeneratedProducesResponseTypeMetadata(Type? type, int statusCode, string[] contentTypes)
-        {
-            Type = type;
-            StatusCode = statusCode;
-            ContentTypes = contentTypes;
-        }
-
-        public Type? Type { get; }
-
-        public int StatusCode { get; }
-
-        public IEnumerable<string> ContentTypes { get; }
-    }
-
-""";
-
-    public static string AcceptsMetadataType => """
-    file sealed class GeneratedAcceptsMetadata : IAcceptsMetadata
-    {
-        public GeneratedAcceptsMetadata(string[] contentTypes)
-        {
-            ArgumentNullException.ThrowIfNull(contentTypes);
-
-            ContentTypes = contentTypes;
-        }
-
-        public GeneratedAcceptsMetadata(Type? type, bool isOptional, string[] contentTypes)
-        {
-            ArgumentNullException.ThrowIfNull(type);
-            ArgumentNullException.ThrowIfNull(contentTypes);
-
-            RequestType = type;
-            ContentTypes = contentTypes;
-            IsOptional = isOptional;
-        }
-
-        public IReadOnlyList<string> ContentTypes { get; }
-
-        public Type? RequestType { get; }
-
-        public bool IsOptional { get; }
-    }
 """;
 
     public static string PopulateEndpointMetadataMethod => """
@@ -95,9 +56,11 @@ internal static class RequestDelegateGeneratorSources
 """;
 
     public static string TryResolveBodyAsyncMethod => """
-        private static async ValueTask<(bool, T?)> TryResolveBodyAsync<T>(HttpContext httpContext, LogOrThrowExceptionHelper logOrThrowExceptionHelper, bool allowEmpty, string parameterTypeName, string parameterName, bool isInferred = false)
+        private static async ValueTask<(bool, T?)> TryResolveBodyAsync<T>(HttpContext httpContext, LogOrThrowExceptionHelper logOrThrowExceptionHelper, bool allowEmpty, string parameterTypeName, string parameterName, JsonTypeInfo<T> jsonTypeInfo, bool isInferred = false)
         {
             var feature = httpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpRequestBodyDetectionFeature>();
+            T? bodyValue = default;
+            var bodyValueSet = false;
 
             if (feature?.CanHaveBody == true)
             {
@@ -109,21 +72,8 @@ internal static class RequestDelegateGeneratorSources
                 }
                 try
                 {
-                    var bodyValue = await httpContext.Request.ReadFromJsonAsync<T>();
-                    if (!allowEmpty && bodyValue == null)
-                    {
-                        if (!isInferred)
-                        {
-                            logOrThrowExceptionHelper.RequiredParameterNotProvided(parameterTypeName, parameterName, "body");
-                        }
-                        else
-                        {
-                            logOrThrowExceptionHelper.ImplicitBodyNotProvided(parameterName);
-                        }
-                        httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
-                        return (false, bodyValue);
-                    }
-                    return (true, bodyValue);
+                    bodyValue = await httpContext.Request.ReadFromJsonAsync(jsonTypeInfo);
+                    bodyValueSet = bodyValue != null;
                 }
                 catch (BadHttpRequestException badHttpRequestException)
                 {
@@ -144,12 +94,22 @@ internal static class RequestDelegateGeneratorSources
                     return (false, default);
                 }
             }
-            else if (!allowEmpty)
+
+            if (!allowEmpty && !bodyValueSet)
             {
+                if (!isInferred)
+                {
+                    logOrThrowExceptionHelper.RequiredParameterNotProvided(parameterTypeName, parameterName, "body");
+                }
+                else
+                {
+                    logOrThrowExceptionHelper.ImplicitBodyNotProvided(parameterName);
+                }
                 httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                return (false, bodyValue);
             }
 
-            return (allowEmpty, default);
+            return (true, bodyValue);
         }
 """;
 
@@ -227,24 +187,8 @@ internal static class RequestDelegateGeneratorSources
         }
 """;
 
-    public static string WriteToResponseAsyncMethod => """
-        [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode",
-            Justification = "The 'JsonSerializer.IsReflectionEnabledByDefault' feature switch, which is set to false by default for trimmed ASP.NET apps, ensures the JsonSerializer doesn't use Reflection.")]
-        [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode", Justification = "See above.")]
-        private static Task WriteToResponseAsync<T>(T? value, HttpContext httpContext, JsonTypeInfo<T> jsonTypeInfo)
-        {
-            var runtimeType = value?.GetType();
-            if (runtimeType is null || jsonTypeInfo.Type == runtimeType || jsonTypeInfo.PolymorphismOptions is not null)
-            {
-                return httpContext.Response.WriteAsJsonAsync(value!, jsonTypeInfo);
-            }
-
-            return httpContext.Response.WriteAsJsonAsync<object?>(value, jsonTypeInfo.Options);
-        }
-""";
-
     public static string ResolveJsonBodyOrServiceMethod => """
-        private static Func<HttpContext, bool, ValueTask<(bool, T?)>> ResolveJsonBodyOrService<T>(LogOrThrowExceptionHelper logOrThrowExceptionHelper, string parameterTypeName, string parameterName, IServiceProviderIsService? serviceProviderIsService = null)
+        private static Func<HttpContext, bool, ValueTask<(bool, T?)>> ResolveJsonBodyOrService<T>(LogOrThrowExceptionHelper logOrThrowExceptionHelper, string parameterTypeName, string parameterName, JsonSerializerOptions jsonSerializerOptions, IServiceProviderIsService? serviceProviderIsService = null)
         {
             if (serviceProviderIsService is not null)
             {
@@ -253,11 +197,13 @@ internal static class RequestDelegateGeneratorSources
                     return static (httpContext, isOptional) => new ValueTask<(bool, T?)>((true, httpContext.RequestServices.GetService<T>()));
                 }
             }
-            return (httpContext, isOptional) => TryResolveBodyAsync<T>(httpContext, logOrThrowExceptionHelper, isOptional, parameterTypeName, parameterName, isInferred: true);
+            var jsonTypeInfo = (JsonTypeInfo<T>)jsonSerializerOptions.GetTypeInfo(typeof(T));
+            return (httpContext, isOptional) => TryResolveBodyAsync<T>(httpContext, logOrThrowExceptionHelper, isOptional, parameterTypeName, parameterName, jsonTypeInfo, isInferred: true);
         }
 """;
 
     public static string LogOrThrowExceptionHelperClass => $$"""
+    {{GeneratedCodeAttribute}}
     file sealed class LogOrThrowExceptionHelper
     {
         private readonly ILogger? _rdgLogger;
@@ -402,7 +348,8 @@ internal static class RequestDelegateGeneratorSources
     }
 """;
 
-    public static string PropertyAsParameterInfoClass = """
+    public static string PropertyAsParameterInfoClass = $$"""
+    {{GeneratedCodeAttribute}}
     file sealed class PropertyAsParameterInfo : ParameterInfo
     {
         private readonly PropertyInfo _underlyingProperty;
@@ -496,25 +443,32 @@ internal static class RequestDelegateGeneratorSources
     }
 """;
 
-    public static string GetGeneratedRouteBuilderExtensionsSource(string genericThunks, string thunks, string endpoints, string helperMethods, string helperTypes) => $$"""
-{{SourceHeader}}
-
-namespace Microsoft.AspNetCore.Builder
+    public static string AntiforgeryMetadataType = """
+file sealed class AntiforgeryMetadata : IAntiforgeryMetadata
 {
-    {{GeneratedCodeAttribute}}
-    internal sealed class SourceKey
-    {
-        public string Path { get; init; }
-        public int Line { get; init; }
+    public static readonly IAntiforgeryMetadata ValidationRequired = new AntiforgeryMetadata(true);
 
-        public SourceKey(string path, int line)
-        {
-            Path = path;
-            Line = line;
-        }
+    public AntiforgeryMetadata(bool requiresValidation)
+    {
+        RequiresValidation = requiresValidation;
     }
 
-{{GetEndpoints(endpoints)}}
+    public bool RequiresValidation { get; }
+}
+""";
+    public static string GetGeneratedRouteBuilderExtensionsSource(string endpoints, string helperMethods, string helperTypes, ImmutableHashSet<string> verbs) => $$"""
+{{SourceHeader}}
+
+namespace System.Runtime.CompilerServices
+{
+    {{GeneratedCodeAttribute}}
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
+    file sealed class InterceptsLocationAttribute : Attribute
+    {
+        public InterceptsLocationAttribute(string filePath, int line, int column)
+        {
+        }
+    }
 }
 
 namespace Microsoft.AspNetCore.Http.Generated
@@ -528,10 +482,12 @@ namespace Microsoft.AspNetCore.Http.Generated
     using System.Globalization;
     using System.Linq;
     using System.Reflection;
+    using System.Runtime.CompilerServices;
     using System.Text.Json;
     using System.Text.Json.Serialization.Metadata;
     using System.Threading.Tasks;
     using System.IO;
+    using Microsoft.AspNetCore.Antiforgery;
     using Microsoft.AspNetCore.Routing;
     using Microsoft.AspNetCore.Routing.Patterns;
     using Microsoft.AspNetCore.Builder;
@@ -547,10 +503,28 @@ namespace Microsoft.AspNetCore.Http.Generated
     using MetadataPopulator = System.Func<System.Reflection.MethodInfo, Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions?, Microsoft.AspNetCore.Http.RequestDelegateMetadataResult>;
     using RequestDelegateFactoryFunc = System.Func<System.Delegate, Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions, Microsoft.AspNetCore.Http.RequestDelegateMetadataResult?, Microsoft.AspNetCore.Http.RequestDelegateResult>;
 
+    {{GeneratedCodeAttribute}}
     file static class GeneratedRouteBuilderExtensionsCore
     {
-{{GetGenericThunks(genericThunks)}}
-{{GetThunks(thunks)}}
+        private static readonly JsonOptions FallbackJsonOptions = new();
+        {{GetVerbs(verbs)}}
+        {{endpoints}}
+
+        internal static RouteHandlerBuilder MapCore(
+            this IEndpointRouteBuilder routes,
+            string pattern,
+            Delegate handler,
+            IEnumerable<string>? httpMethods,
+            MetadataPopulator populateMetadata,
+            RequestDelegateFactoryFunc createRequestDelegate)
+        {
+            return RouteHandlerServices.Map(routes, pattern, handler, httpMethods, populateMetadata, createRequestDelegate);
+        }
+
+        private static T Cast<T>(Delegate d, T _) where T : Delegate
+        {
+            return (T)d;
+        }
 
         private static EndpointFilterDelegate BuildFilterDelegate(EndpointFilterDelegate filteredInvocation, EndpointBuilder builder, MethodInfo mi)
         {
@@ -569,10 +543,7 @@ namespace Microsoft.AspNetCore.Http.Generated
             return filteredInvocation;
         }
 
-        [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode",
-            Justification = "The 'JsonSerializer.IsReflectionEnabledByDefault' feature switch, which is set to false by default for trimmed ASP.NET apps, ensures the JsonSerializer doesn't use Reflection.")]
-        [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode", Justification = "See above.")]
-        private static Task ExecuteObjectResult(object? obj, HttpContext httpContext)
+        private static Task ExecuteReturnAsync(object? obj, HttpContext httpContext, JsonTypeInfo<object?> jsonTypeInfo)
         {
             if (obj is IResult r)
             {
@@ -584,9 +555,30 @@ namespace Microsoft.AspNetCore.Http.Generated
             }
             else
             {
-                return httpContext.Response.WriteAsJsonAsync(obj);
+                return WriteJsonResponseAsync(httpContext.Response, obj, jsonTypeInfo);
             }
         }
+
+        [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode",
+            Justification = "The 'JsonSerializer.IsReflectionEnabledByDefault' feature switch, which is set to false by default for trimmed ASP.NET apps, ensures the JsonSerializer doesn't use Reflection.")]
+        [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode", Justification = "See above.")]
+        private static Task WriteJsonResponseAsync<T>(HttpResponse response, T? value, JsonTypeInfo<T?> jsonTypeInfo)
+        {
+            var runtimeType = value?.GetType();
+
+            if (jsonTypeInfo.ShouldUseWith(runtimeType))
+            {
+                return HttpResponseJsonExtensions.WriteAsJsonAsync(response, value, jsonTypeInfo, default);
+            }
+
+            return response.WriteAsJsonAsync<object?>(value, jsonTypeInfo.Options);
+        }
+
+        private static bool HasKnownPolymorphism(this JsonTypeInfo jsonTypeInfo)
+            => jsonTypeInfo.Type.IsSealed || jsonTypeInfo.Type.IsValueType || jsonTypeInfo.PolymorphismOptions is not null;
+
+        private static bool ShouldUseWith(this JsonTypeInfo jsonTypeInfo, [NotNullWhen(false)] Type? runtimeType)
+            => runtimeType is null || jsonTypeInfo.Type == runtimeType || jsonTypeInfo.HasKnownPolymorphism();
 
 {{helperMethods}}
     }
@@ -595,63 +587,17 @@ namespace Microsoft.AspNetCore.Http.Generated
 {{LogOrThrowExceptionHelperClass}}
 }
 """;
-    private static string GetGenericThunks(string genericThunks) => genericThunks != string.Empty ? $$"""
-        private static class GenericThunks<T>
-        {
-            public static readonly Dictionary<(string, int), (MetadataPopulator, RequestDelegateFactoryFunc)> map = new()
-            {
-                {{genericThunks}}
-            };
-        }
 
-        internal static RouteHandlerBuilder MapCore<T>(
-            this IEndpointRouteBuilder routes,
-            string pattern,
-            Delegate handler,
-            IEnumerable<string> httpMethods,
-            string filePath,
-            int lineNumber)
-        {
-            var (populateMetadata, createRequestDelegate) = GenericThunks<T>.map[(filePath, lineNumber)];
-            return RouteHandlerServices.Map(routes, pattern, handler, httpMethods, populateMetadata, createRequestDelegate);
-        }
-""" : string.Empty;
-
-    private static string GetThunks(string thunks) => thunks != string.Empty ? $$"""
-        private static readonly Dictionary<(string, int), (MetadataPopulator, RequestDelegateFactoryFunc)> map = new()
-        {
-{{thunks}}
-        };
-
-        internal static RouteHandlerBuilder MapCore(
-            this IEndpointRouteBuilder routes,
-            string pattern,
-            Delegate handler,
-            IEnumerable<string>? httpMethods,
-            string filePath,
-            int lineNumber)
-        {
-            var (populateMetadata, createRequestDelegate) = map[(filePath, lineNumber)];
-            return RouteHandlerServices.Map(routes, pattern, handler, httpMethods, populateMetadata, createRequestDelegate);
-        }
-""" : string.Empty;
-
-    private static string GetEndpoints(string endpoints) => endpoints != string.Empty ? $$"""
-    // This class needs to be internal so that the compiled application
-    // has access to the strongly-typed endpoint definitions that are
-    // generated by the compiler so that they will be favored by
-    // overload resolution and opt the runtime in to the code generated
-    // implementation produced here.
-    {{GeneratedCodeAttribute}}
-    internal static class GenerateRouteBuilderEndpoints
+    public static string GetVerbs(ImmutableHashSet<string> verbs)
     {
-        private static readonly string[] GetVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Get };
-        private static readonly string[] PostVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Post };
-        private static readonly string[] PutVerb = new[]  { global::Microsoft.AspNetCore.Http.HttpMethods.Put };
-        private static readonly string[] DeleteVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Delete };
-        private static readonly string[] PatchVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Patch };
+        using var stringWriter = new StringWriter(CultureInfo.InvariantCulture);
+        using var codeWriter = new CodeWriter(stringWriter, baseIndent: 2);
 
-        {{endpoints}}
+        foreach (string verb in verbs.OrderBy(p => p, StringComparer.Ordinal))
+        {
+            codeWriter.WriteLine($$"""private static readonly string[] {{verb}}Verb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.{{verb}} };""");
+        }
+
+        return stringWriter.ToString();
     }
-""" : string.Empty;
 }

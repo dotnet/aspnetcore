@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
@@ -10,7 +11,6 @@ namespace Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerM
 
 internal static class InvocationOperationExtensions
 {
-    private const int RoutePatternArgumentOrdinal = 1;
     public static readonly string[] KnownMethods =
     {
         "MapGet",
@@ -22,6 +22,20 @@ internal static class InvocationOperationExtensions
         "MapMethods",
         "MapFallback"
     };
+
+    public static bool IsValidOperation(this IOperation? operation, WellKnownTypes wellKnownTypes, [NotNullWhen(true)] out IInvocationOperation? invocationOperation)
+    {
+        invocationOperation = null;
+        if (operation is IInvocationOperation targetOperation &&
+            targetOperation.TryGetRouteHandlerArgument(out var routeHandlerParameter) &&
+            routeHandlerParameter is { Parameter.Type: {} delegateType } &&
+            SymbolEqualityComparer.Default.Equals(delegateType, wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_Delegate)))
+        {
+            invocationOperation = targetOperation;
+            return true;
+        }
+        return false;
+    }
 
     public static bool TryGetRouteHandlerMethod(this IInvocationOperation invocation, SemanticModel semanticModel, [NotNullWhen(true)] out IMethodSymbol? method)
     {
@@ -60,33 +74,6 @@ internal static class InvocationOperationExtensions
         {
             methodName = method;
             return true;
-        }
-        return false;
-    }
-
-    public static bool TryGetRouteHandlerPattern(this IInvocationOperation invocation, [NotNullWhen(true)] out string? token)
-    {
-        token = default;
-        if (invocation.Syntax.TryGetMapMethodName(out var methodName))
-        {
-            if (methodName == "MapFallback" && invocation.Arguments.Length == 2)
-            {
-                token = "{*path:nonfile}";
-                return true;
-            }
-            foreach (var argument in invocation.Arguments)
-            {
-                if (argument.Parameter?.Ordinal == RoutePatternArgumentOrdinal)
-                {
-                    if (argument?.Syntax is not ArgumentSyntax routePatternArgumentSyntax ||
-                        routePatternArgumentSyntax.Expression is not LiteralExpressionSyntax routePatternArgumentLiteralSyntax)
-                    {
-                        return false;
-                    }
-                    token = routePatternArgumentLiteralSyntax.Token.ValueText;
-                    return true;
-                }
-            }
         }
         return false;
     }

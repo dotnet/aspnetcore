@@ -11,8 +11,13 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests;
 
+// the tests share same browser Cache API, which is shared
+[CollectionDefinition(nameof(WebAssemblyLazyLoadTest), DisableParallelization = true)]
 public class WebAssemblyLazyLoadTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
 {
+    // The cache name is derived from the application's base href value (in this case, '/subdir/')
+    private const string CacheName = "dotnet-resources-/subdir/";
+
     public WebAssemblyLazyLoadTest(
         BrowserFixture browserFixture,
         ToggleExecutionModeServerFixture<Program> serverFixture,
@@ -29,6 +34,8 @@ public class WebAssemblyLazyLoadTest : ServerTestBase<ToggleExecutionModeServerF
 
         var errorUi = Browser.Exists(By.Id("blazor-error-ui"));
         Assert.Equal("none", errorUi.GetCssValue("display"));
+        RemoveCacheEntries();
+        CleanPerfEntries();
     }
 
     [Fact]
@@ -39,7 +46,9 @@ public class WebAssemblyLazyLoadTest : ServerTestBase<ToggleExecutionModeServerF
         var app = Browser.MountTestComponent<TestRouterWithLazyAssembly>();
 
         // Ensure that we haven't requested the lazy loaded assembly
-        Assert.False(HasLoadedAssembly("Newtonsoft.Json.dll"));
+        Assert.False(HasLoadedAssembly("Newtonsoft.Json.wasm"));
+
+        CleanPerfEntries();
 
         // Visit the route for the lazy-loaded assembly
         SetUrlViaPushState("/WithLazyAssembly");
@@ -47,7 +56,7 @@ public class WebAssemblyLazyLoadTest : ServerTestBase<ToggleExecutionModeServerF
         var button = Browser.Exists(By.Id("use-package-button"));
 
         // Now we should have requested the DLL
-        Assert.True(HasLoadedAssembly("Newtonsoft.Json.dll"));
+        Assert.True(HasLoadedAssembly("Newtonsoft.Json.wasm"));
 
         button.Click();
 
@@ -66,7 +75,7 @@ public class WebAssemblyLazyLoadTest : ServerTestBase<ToggleExecutionModeServerF
         var button = Browser.Exists(By.Id("use-package-button"));
 
         // We should have requested the DLL
-        Assert.True(HasLoadedAssembly("Newtonsoft.Json.dll"));
+        Assert.True(HasLoadedAssembly("Newtonsoft.Json.wasm"));
 
         button.Click();
 
@@ -82,8 +91,10 @@ public class WebAssemblyLazyLoadTest : ServerTestBase<ToggleExecutionModeServerF
         var app = Browser.MountTestComponent<TestRouterWithLazyAssembly>();
 
         // Ensure that we haven't requested the lazy loaded assembly or its PDB
-        Assert.False(HasLoadedAssembly("LazyTestContentPackage.dll"));
+        Assert.False(HasLoadedAssembly("LazyTestContentPackage.wasm"));
         Assert.False(HasLoadedAssembly("LazyTestContentPackage.pdb"));
+
+        CleanPerfEntries();
 
         // Navigate to the designated route
         SetUrlViaPushState("/WithLazyLoadedRoutes");
@@ -92,7 +103,7 @@ public class WebAssemblyLazyLoadTest : ServerTestBase<ToggleExecutionModeServerF
         Browser.Exists(By.Id("lazy-load-msg"));
 
         // Now the assembly has been loaded
-        Assert.True(HasLoadedAssembly("LazyTestContentPackage.dll"));
+        Assert.True(HasLoadedAssembly("LazyTestContentPackage.wasm"));
 
         var button = Browser.Exists(By.Id("go-to-lazy-route"));
         button.Click();
@@ -116,7 +127,7 @@ public class WebAssemblyLazyLoadTest : ServerTestBase<ToggleExecutionModeServerF
         var errorUiElem = Browser.Exists(By.Id("blazor-error-ui"), TimeSpan.FromSeconds(10));
         Assert.NotNull(errorUiElem);
 
-        AssertLogContainsCriticalMessages("DoesNotExist.dll must be marked with 'BlazorWebAssemblyLazyLoad' item group in your project file to allow lazy-loading.");
+        AssertLogContainsCriticalMessages("DoesNotExist.wasm must be marked with 'BlazorWebAssemblyLazyLoad' item group in your project file to allow lazy-loading.");
     }
 
     [Fact]
@@ -127,21 +138,23 @@ public class WebAssemblyLazyLoadTest : ServerTestBase<ToggleExecutionModeServerF
         var app = Browser.MountTestComponent<TestRouterWithLazyAssembly>();
 
         // We start off with no lazy assemblies loaded
-        Assert.False(HasLoadedAssembly("LazyTestContentPackage.dll"));
-        Assert.False(HasLoadedAssembly("Newtonsoft.Json.dll"));
+        Assert.False(HasLoadedAssembly("LazyTestContentPackage.wasm"));
+        Assert.False(HasLoadedAssembly("Newtonsoft.Json.wasm"));
+
+        CleanPerfEntries();
 
         // Click the first link and verify that it worked as expected
         var lazyAssemblyLink = Browser.Exists(By.Id("with-lazy-assembly"));
         lazyAssemblyLink.Click();
         var pkgButton = Browser.Exists(By.Id("use-package-button"));
-        Assert.True(HasLoadedAssembly("Newtonsoft.Json.dll"));
+        Assert.True(HasLoadedAssembly("Newtonsoft.Json.wasm"));
         pkgButton.Click();
 
         // Navigate to the next page and verify that it loaded its assembly
         var lazyRoutesLink = Browser.Exists(By.Id("with-lazy-routes"));
         lazyRoutesLink.Click();
         Browser.Exists(By.Id("lazy-load-msg"));
-        Assert.True(HasLoadedAssembly("LazyTestContentPackage.dll"));
+        Assert.True(HasLoadedAssembly("LazyTestContentPackage.wasm"));
 
         // Interact with that assembly to ensure it was loaded properly
         var button = Browser.Exists(By.Id("go-to-lazy-route"));
@@ -172,6 +185,31 @@ public class WebAssemblyLazyLoadTest : ServerTestBase<ToggleExecutionModeServerF
             return (bool)nameRequested;
         }
         return false;
+    }
+
+    // it could happen that there are too many entries before we start measuring the interesting part, rather clean it before
+    private void CleanPerfEntries()
+    {
+        var checkScript = $"window.performance.clearResourceTimings();";
+        var jsExecutor = (IJavaScriptExecutor)Browser;
+        jsExecutor.ExecuteScript(checkScript);
+    }
+
+    // clean the cache in the dotnet loader
+    // otherwise we may have cached assemblies bleeding between individual tests
+    // and we would not see the HTTP fetch of it in `performance.getEntriesByType('resource')`
+    private void RemoveCacheEntries()
+    {
+        var js = @"
+                (async function(cacheName, completedCallback) {
+                    const cache = await caches.open(cacheName);
+                    const cachedRequests = await cache.keys();
+                    const deletionPromises = cachedRequests.map(async cachedRequest => {
+                        return cache.delete(cachedRequest);
+                    });
+                    Promise.all(deletionPromises).then(()=>completedCallback());
+                }).apply(null, arguments)";
+        ((IJavaScriptExecutor)Browser).ExecuteAsyncScript(js, CacheName);
     }
 
     private void AssertLogDoesNotContainCriticalMessages(params string[] messages)

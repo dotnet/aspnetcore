@@ -3,6 +3,8 @@
 
 using System.Globalization;
 using System.Text;
+using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.Forms.Mapping;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Sections;
 using Microsoft.AspNetCore.Components.Web;
@@ -983,6 +985,106 @@ public class HtmlRendererTest
         });
     }
 
+    [Fact]
+    public async Task RenderComponentAsync_IgnoresNamedEvents()
+    {
+        // Arrange
+        var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
+        {
+            rtb.OpenElement(0, "div");
+            rtb.AddNamedEvent(1, "someevent", "somename");
+            rtb.CloseElement();
+        })).BuildServiceProvider();
+
+        var htmlRenderer = GetHtmlRenderer(serviceProvider);
+        await htmlRenderer.Dispatcher.InvokeAsync(async () =>
+        {
+            // Act
+            var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
+
+            // Assert
+            Assert.Equal("<div></div>", result.ToHtmlString());
+        });
+    }
+
+    [Fact]
+    public async Task RenderComponentAsync_DoesNotAddHiddenInputForNamedSubmitEvents_WithoutFormMappingScope()
+    {
+        // Arrange
+        var formValueMapper = new TestFormValueMapper();
+        var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
+        {
+            rtb.OpenElement(0, "form");
+            rtb.AddNamedEvent(1, "onsubmit", "somename");
+            rtb.CloseElement();
+        })).BuildServiceProvider();
+
+        var htmlRenderer = GetHtmlRenderer(serviceProvider);
+        await htmlRenderer.Dispatcher.InvokeAsync(async () =>
+        {
+            // Act
+            var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
+
+            // Assert
+            Assert.Equal("<form></form>", result.ToHtmlString());
+        });
+    }
+
+    [Fact]
+    public async Task RenderComponentAsync_AddsHiddenInputForNamedSubmitEvents_WithDefaultFormMappingContext()
+    {
+        // Arrange
+        var formValueMapper = new TestFormValueMapper();
+        var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
+        {
+            rtb.OpenElement(0, "form");
+            rtb.AddNamedEvent(1, "onsubmit", "some <name>");
+            rtb.CloseElement();
+        }))
+            .AddSingleton<ICascadingValueSupplier>(new SupplyParameterFromFormValueProvider(formValueMapper, ""))
+            .AddSingleton<IFormValueMapper>(formValueMapper).BuildServiceProvider();
+
+        var htmlRenderer = GetHtmlRenderer(serviceProvider);
+        await htmlRenderer.Dispatcher.InvokeAsync(async () =>
+        {
+            // Act
+            var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
+
+            // Assert
+            Assert.Equal("<form><input type=\"hidden\" name=\"_handler\" value=\"some &lt;name&gt;\" /></form>", result.ToHtmlString());
+        });
+    }
+
+    [Fact]
+    public async Task RenderComponentAsync_AddsHiddenInputForNamedSubmitEvents_InsideNamedFormMappingScope()
+    {
+        // Arrange
+        var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
+        {
+            rtb.OpenComponent<FormMappingScope>(0);
+            rtb.AddComponentParameter(1, nameof(FormMappingScope.Name), "myscope");
+            rtb.AddComponentParameter(1, nameof(FormMappingScope.ChildContent), (RenderFragment<FormMappingContext>)(ctx => rtb =>
+            {
+                rtb.OpenElement(0, "form");
+                rtb.AddNamedEvent(1, "onsubmit", "somename");
+                rtb.CloseElement();
+            }));
+            rtb.CloseComponent();
+        })).AddSingleton<IFormValueMapper, TestFormValueMapper>().BuildServiceProvider();
+
+        var htmlRenderer = GetHtmlRenderer(serviceProvider);
+        await htmlRenderer.Dispatcher.InvokeAsync(async () =>
+        {
+            // Act
+            var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
+
+            // Assert
+            Assert.Equal("<form><input type=\"hidden\" name=\"_handler\" value=\"[myscope]somename\" /></form>", result.ToHtmlString());
+        });
+    }
+
+    // TODO: As above, but inside a FormMappingScope, showing its name also shows up
+
     void AssertHtmlContentEquals(IEnumerable<string> expected, HtmlRootComponent actual)
         => AssertHtmlContentEquals(string.Join(string.Empty, expected), actual);
 
@@ -1156,5 +1258,14 @@ public class HtmlRendererTest
         }
 
         return new HtmlRenderer(serviceProvider, NullLoggerFactory.Instance);
+    }
+
+    class TestFormValueMapper : IFormValueMapper
+    {
+        public bool CanMap(Type valueType, string mappingScopeName, string formName)
+            => throw new NotImplementedException();
+
+        public void Map(FormValueMappingContext context)
+            => throw new NotImplementedException();
     }
 }

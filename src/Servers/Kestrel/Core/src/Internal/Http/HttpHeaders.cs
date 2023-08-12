@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -13,6 +14,8 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
+[DebuggerDisplay("{DebuggerToString(),nq}")]
+[DebuggerTypeProxy(typeof(HttpHeadersDebugView))]
 internal abstract partial class HttpHeaders : IHeaderDictionary
 {
     protected long _bits;
@@ -258,6 +261,16 @@ internal abstract partial class HttpHeaders : IHeaderDictionary
     bool IDictionary<string, StringValues>.TryGetValue(string key, out StringValues value)
     {
         return TryGetValueFast(key, out value);
+    }
+
+    internal string DebuggerToString()
+    {
+        var debugText = $"Count = {Count}";
+        if (_isReadOnly)
+        {
+            debugText += ", IsReadOnly = true";
+        }
+        return debugText;
     }
 
     public static void ValidateHeaderValueCharacters(string headerName, StringValues headerValues, Func<string, Encoding?> encodingSelector)
@@ -675,5 +688,13 @@ internal abstract partial class HttpHeaders : IHeaderDictionary
     private static void ThrowInvalidEmptyHeaderName()
     {
         throw new InvalidOperationException(CoreStrings.InvalidEmptyHeaderName);
+    }
+
+    private sealed class HttpHeadersDebugView(HttpHeaders headers)
+    {
+        private readonly HttpHeaders _headers = headers;
+
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+        public KeyValuePair<string, string>[] Items => _headers.Select(pair => new KeyValuePair<string, string>(pair.Key, pair.Value.ToString())).ToArray();
     }
 }

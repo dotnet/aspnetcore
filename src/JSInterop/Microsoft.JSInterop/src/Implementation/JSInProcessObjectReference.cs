@@ -15,7 +15,7 @@ public partial class JSInProcessObjectReference : JSObjectReference, IJSInProces
     private readonly JSInProcessRuntime _jsRuntime;
 
     /// <summary>
-    /// Inititializes a new <see cref="JSInProcessObjectReference"/> instance.
+    /// Initializes a new <see cref="JSInProcessObjectReference"/> instance.
     /// </summary>
     /// <param name="jsRuntime">The <see cref="JSInProcessRuntime"/> used for invoking JS interop calls.</param>
     /// <param name="id">The unique identifier.</param>
@@ -44,6 +44,6 @@ public partial class JSInProcessObjectReference : JSObjectReference, IJSInProces
         }
     }
 
-    [JSImport("DotNet.jsCallDispatcher.disposeJSObjectReferenceById", "blazor-internal")]
+    [JSImport("globalThis.DotNet.disposeJSObjectReferenceById")]
     private static partial void DisposeJSObjectReferenceById([JSMarshalAs<JSType.Number>] long id);
 }

@@ -21,7 +21,7 @@ public abstract partial class RequestDelegateCreationTests
 
             return new[]
             {
-                //// string is not technically "TryParsable", but it's the special case.
+                // string is not technically "TryParsable", but it's the special case.
                 new object[] { "string", "plain string", "plain string" },
                 new object[] { "int", "-42", -42 },
                 new object[] { "uint", "42", 42U },
@@ -37,6 +37,8 @@ public abstract partial class RequestDelegateCreationTests
                 new object[] { "Half", "0.5", (Half)0.5f },
                 new object[] { "decimal", "0.5", 0.5m },
                 new object[] { "Uri", "https://example.org", new Uri("https://example.org") },
+                new object[] { "Uri?", "https://example.org", new Uri("https://example.org") },
+                new object[] { "Uri?", null, null },
                 new object[] { "DateTime", now.ToString("o"), now.ToUniversalTime() },
                 new object[] { "DateTimeOffset", "1970-01-01T00:00:00.0000000+00:00", DateTimeOffset.UnixEpoch },
                 new object[] { "TimeSpan", "00:00:42", TimeSpan.FromSeconds(42) },
@@ -53,7 +55,7 @@ public abstract partial class RequestDelegateCreationTests
                 new object[] { "MyEnum", "ValueB", MyEnum.ValueB },
                 new object[] { "MyTryParseRecord", "https://example.org", new MyTryParseRecord(new Uri("https://example.org")) },
                 new object[] { "int?", "42", 42 },
-                new object[] { "int?", null, null },
+                new object[] { "int?", null, null }
             };
         }
     }
@@ -161,7 +163,6 @@ app.MapGet("/hello", ([FromQuery]{{parameterType}} p) => p.MagicValue);
 
         VerifyStaticEndpointModel(results, (endpointModel) =>
         {
-            Assert.Equal("/hello", endpointModel.RoutePattern);
             Assert.Equal("MapGet", endpointModel.HttpMethod);
             var p = Assert.Single(endpointModel.Parameters);
             Assert.Equal(EndpointParameterSource.Query, p.Source);
@@ -185,7 +186,6 @@ app.MapGet("/hello", ([FromQuery]TryParseTodo p) => p.Name!);
 
         VerifyStaticEndpointModel(results, endpointModel =>
         {
-            Assert.Equal("/hello", endpointModel.RoutePattern);
             Assert.Equal("MapGet", endpointModel.HttpMethod);
             var p = Assert.Single(endpointModel.Parameters);
             Assert.Equal(EndpointParameterSource.Query, p.Source);
@@ -201,6 +201,23 @@ app.MapGet("/hello", ([FromQuery]TryParseTodo p) => p.Name!);
     }
 
     [Fact]
+    public async Task MapAction_ExplicitIParsable()
+    {
+        var (results, compilation) = await RunGeneratorAsync("""
+app.MapGet("/hello", ([FromQuery]TodoWithExplicitIParsable p, HttpContext context) => context.Items["p"] = p);
+""");
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.QueryString = new QueryString("?p=1");
+
+        await endpoint.RequestDelegate(httpContext);
+        var p = httpContext.Items["p"];
+
+        Assert.NotNull(p);
+    }
+
+    [Fact]
     public async Task MapAction_SingleEnumParam_StringReturn()
     {
         var (results, compilation) = await RunGeneratorAsync("""
@@ -210,7 +227,6 @@ app.MapGet("/hello", ([FromQuery]TodoStatus p) => p.ToString());
 
         VerifyStaticEndpointModel(results, endpointModel =>
         {
-            Assert.Equal("/hello", endpointModel.RoutePattern);
             Assert.Equal("MapGet", endpointModel.HttpMethod);
             var p = Assert.Single(endpointModel.Parameters);
             Assert.Equal(EndpointParameterSource.Query, p.Source);
@@ -244,5 +260,26 @@ app.MapGet("/hello/{tryParsable}", (HttpContext context, {{typeName}} tryParsabl
         await requestDelegate(httpContext);
 
         Assert.Equal(expectedParameterValue, httpContext.Items["tryParsable"]);
+    }
+
+    [Theory]
+    [InlineData("void TestAction(HttpContext httpContext, [FromRoute] MyBindAsyncRecord myBindAsyncRecord) { }")]
+    [InlineData("void TestAction(HttpContext httpContext, [FromQuery] MyBindAsyncRecord myBindAsyncRecord) { }")]
+    public async Task RequestDelegateUsesTryParseOverBindAsyncGivenExplicitAttribute(string source)
+    {
+        var (_, compilation) = await RunGeneratorAsync($$"""
+{{source}}
+app.MapGet("/{myBindAsyncRecord}", TestAction);
+""");
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.RouteValues["myBindAsyncRecord"] = "foo";
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["myBindAsyncRecord"] = "foo"
+        });
+
+        await Assert.ThrowsAsync<NotImplementedException>(async () => await endpoint.RequestDelegate(httpContext));
     }
 }

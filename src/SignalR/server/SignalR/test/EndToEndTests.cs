@@ -72,6 +72,7 @@ public class EndToEndTests : FunctionalTestBase
     [Theory]
     [MemberData(nameof(TransportTypes))]
     [LogLevel(LogLevel.Trace)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/49315")]
     public async Task CanStartAndStopConnectionUsingGivenTransport(HttpTransportType transportType)
     {
         await using (var server = await StartServer<Startup>())
@@ -341,7 +342,7 @@ public class EndToEndTests : FunctionalTestBase
                 {
                     logger.LogInformation("Receiving message");
                     // Big timeout here because it can take a while to receive all the bytes
-                    var receivedData = await connection.Transport.Input.ReadAsync(bytes.Length).DefaultTimeout(TimeSpan.FromMinutes(2));
+                    var receivedData = await connection.Transport.Input.ReadAsync(bytes.Length).DefaultTimeout();
                     Assert.Equal(message, Encoding.UTF8.GetString(receivedData));
                     logger.LogInformation("Completed receive");
                 }
@@ -685,7 +686,7 @@ public class EndToEndTests : FunctionalTestBase
     {
         private ITransport _transport;
 
-        public ITransport CreateTransport(HttpTransportType availableServerTransports)
+        public ITransport CreateTransport(HttpTransportType availableServerTransports, bool useAck)
         {
             if (_transport == null)
             {

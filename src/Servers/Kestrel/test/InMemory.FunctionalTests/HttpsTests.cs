@@ -1,14 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Net.Security;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -24,10 +20,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Metrics;
-using Microsoft.Extensions.Options;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
 
@@ -64,14 +57,18 @@ public class HttpsTests : LoggedTest
 
         Assert.False(serverOptions.IsDevelopmentCertificateLoaded);
 
+        var ranUseHttpsAction = false;
         serverOptions.ListenLocalhost(5001, options =>
         {
             options.UseHttps(opt =>
             {
                 // The default cert is applied after UseHttps.
                 Assert.Null(opt.ServerCertificate);
+                ranUseHttpsAction = true;
             });
         });
+
+        Assert.True(ranUseHttpsAction);
         Assert.False(serverOptions.IsDevelopmentCertificateLoaded);
     }
 
@@ -117,14 +114,19 @@ public class HttpsTests : LoggedTest
             options.ServerCertificate = _x509Certificate2;
             options.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
         });
+        var ranUseHttpsAction = false;
         serverOptions.ListenLocalhost(5000, options =>
         {
             options.UseHttps(opt =>
             {
                 Assert.Equal(_x509Certificate2, opt.ServerCertificate);
                 Assert.Equal(ClientCertificateMode.RequireCertificate, opt.ClientCertificateMode);
+                ranUseHttpsAction = true;
             });
         });
+
+        Assert.True(ranUseHttpsAction);
+
         // Never lazy loaded
         Assert.False(serverOptions.IsDevelopmentCertificateLoaded);
         Assert.Null(serverOptions.DevelopmentCertificate);
@@ -144,6 +146,7 @@ public class HttpsTests : LoggedTest
             };
             options.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
         });
+        var ranUseHttpsAction = false;
         serverOptions.ListenLocalhost(5000, options =>
         {
             options.UseHttps(opt =>
@@ -151,8 +154,12 @@ public class HttpsTests : LoggedTest
                 Assert.Null(opt.ServerCertificate);
                 Assert.NotNull(opt.ServerCertificateSelector);
                 Assert.Equal(ClientCertificateMode.RequireCertificate, opt.ClientCertificateMode);
+                ranUseHttpsAction = true;
             });
         });
+
+        Assert.True(ranUseHttpsAction);
+
         // Never lazy loaded
         Assert.False(serverOptions.IsDevelopmentCertificateLoaded);
         Assert.Null(serverOptions.DevelopmentCertificate);

@@ -1,23 +1,28 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Builder;
 
 /// <summary>
 /// Default implementation for <see cref="IApplicationBuilder"/>.
 /// </summary>
+[DebuggerDisplay("Middleware = {MiddlewareCount}")]
+[DebuggerTypeProxy(typeof(ApplicationBuilderDebugView))]
 public partial class ApplicationBuilder : IApplicationBuilder
 {
     private const string ServerFeaturesKey = "server.Features";
     private const string ApplicationServicesKey = "application.Services";
+    private const string MiddlewareDescriptionsKey = "__MiddlewareDescriptions";
+    private const string RequestUnhandledKey = "__RequestUnhandled";
 
     private readonly List<Func<RequestDelegate, RequestDelegate>> _components = new();
+    private readonly List<string>? _descriptions;
+    private readonly IDebugger _debugger;
 
     /// <summary>
     /// Initializes a new instance of <see cref="ApplicationBuilder"/>.
@@ -26,6 +31,8 @@ public partial class ApplicationBuilder : IApplicationBuilder
     public ApplicationBuilder(IServiceProvider serviceProvider) : this(serviceProvider, new FeatureCollection())
     {
     }
+
+    private int MiddlewareCount => _components.Count;
 
     /// <summary>
     /// Initializes a new instance of <see cref="ApplicationBuilder"/>.
@@ -38,11 +45,27 @@ public partial class ApplicationBuilder : IApplicationBuilder
         ApplicationServices = serviceProvider;
 
         SetProperty(ServerFeaturesKey, server);
+
+        // IDebugger service can optionally be added by tests to simulate the debugger being attached.
+        _debugger = (IDebugger?)serviceProvider?.GetService(typeof(IDebugger)) ?? DebuggerWrapper.Instance;
+
+        if (_debugger.IsAttached)
+        {
+            _descriptions = new();
+            // Add component descriptions collection to properties so debugging tools can display
+            // a list of configured middleware for an application.
+            SetProperty(MiddlewareDescriptionsKey, _descriptions);
+        }
     }
 
     private ApplicationBuilder(ApplicationBuilder builder)
     {
         Properties = new CopyOnWriteDictionary<string, object?>(builder.Properties, StringComparer.Ordinal);
+        _debugger = builder._debugger;
+        if (_debugger.IsAttached)
+        {
+            _descriptions = new();
+        }
     }
 
     /// <summary>
@@ -97,7 +120,28 @@ public partial class ApplicationBuilder : IApplicationBuilder
     public IApplicationBuilder Use(Func<RequestDelegate, RequestDelegate> middleware)
     {
         _components.Add(middleware);
+        _descriptions?.Add(CreateMiddlewareDescription(middleware));
+
         return this;
+    }
+
+    private static string CreateMiddlewareDescription(Func<RequestDelegate, RequestDelegate> middleware)
+    {
+        if (middleware.Target != null)
+        {
+            // To IApplicationBuilder, middleware is just a func. Getting a good description is hard.
+            // Inspect the incoming func and attempt to resolve it back to a middleware type if possible.
+            // UseMiddlewareExtensions adds middleware via a method with the name CreateMiddleware.
+            // If this pattern is matched, then ToString on the target returns the middleware type name.
+            if (middleware.Method.Name == "CreateMiddleware")
+            {
+                return middleware.Target.ToString()!;
+            }
+
+            return middleware.Target.GetType().FullName + "." + middleware.Method.Name;
+        }
+
+        return middleware.Method.Name.ToString();
     }
 
     /// <summary>
@@ -119,9 +163,6 @@ public partial class ApplicationBuilder : IApplicationBuilder
     /// <returns>The <see cref="RequestDelegate"/>.</returns>
     public RequestDelegate Build()
     {
-        var loggerFactory = ApplicationServices?.GetService<ILoggerFactory>();
-        var logger = loggerFactory?.CreateLogger<ApplicationBuilder>();
-
         RequestDelegate app = context =>
         {
             // If we reach the end of the pipeline, but we have an endpoint, then something unexpected has happened.
@@ -145,16 +186,8 @@ public partial class ApplicationBuilder : IApplicationBuilder
                 context.Response.StatusCode = StatusCodes.Status404NotFound;
             }
 
-            if (logger != null && logger.IsEnabled(LogLevel.Information))
-            {
-                Log.RequestPipelineEnd(logger,
-                    context.Request.Method,
-                    context.Request.Scheme,
-                    context.Request.Host.Value,
-                    context.Request.PathBase.Value,
-                    context.Request.Path.Value,
-                    context.Response.StatusCode);
-            }
+            // Communicates to higher layers that the request wasn't handled by the app pipeline.
+            context.Items[RequestUnhandledKey] = true;
 
             return Task.CompletedTask;
         };
@@ -167,11 +200,25 @@ public partial class ApplicationBuilder : IApplicationBuilder
         return app;
     }
 
-    private static partial class Log
+    private sealed class ApplicationBuilderDebugView(ApplicationBuilder applicationBuilder)
     {
-        [LoggerMessage(1, LogLevel.Information,
-            "Request reached the end of the middleware pipeline without being handled by application code. Request path: {Method} {Scheme}://{Host}{PathBase}{Path}, Response status code: {StatusCode}",
-            SkipEnabledCheck = true)]
-        public static partial void RequestPipelineEnd(ILogger logger, string method, string scheme, string host, string? pathBase, string? path, int statusCode);
+        private readonly ApplicationBuilder _applicationBuilder = applicationBuilder;
+
+        public IServiceProvider ApplicationServices => _applicationBuilder.ApplicationServices;
+        public IDictionary<string, object?> Properties => _applicationBuilder.Properties;
+        public IFeatureCollection ServerFeatures => _applicationBuilder.ServerFeatures;
+        public IList<string>? Middleware
+        {
+            get
+            {
+                if (_applicationBuilder.Properties.TryGetValue("__MiddlewareDescriptions", out var value) &&
+                    value is IList<string> descriptions)
+                {
+                    return descriptions;
+                }
+
+                throw new NotSupportedException("Unable to get configured middleware.");
+            }
+        }
     }
 }

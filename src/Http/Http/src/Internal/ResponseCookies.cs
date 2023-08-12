@@ -122,20 +122,20 @@ internal sealed partial class ResponseCookies : IResponseCookies
         {
             rejectPredicate = (value, encKeyPlusEquals, opts) =>
                 value.StartsWith(encKeyPlusEquals, StringComparison.OrdinalIgnoreCase) &&
-                    value.IndexOf($"domain={opts.Domain}", StringComparison.OrdinalIgnoreCase) != -1 &&
-                    value.IndexOf($"path={opts.Path}", StringComparison.OrdinalIgnoreCase) != -1;
+                    value.Contains($"domain={opts.Domain}", StringComparison.OrdinalIgnoreCase) &&
+                    value.Contains($"path={opts.Path}", StringComparison.OrdinalIgnoreCase);
         }
         else if (domainHasValue)
         {
             rejectPredicate = (value, encKeyPlusEquals, opts) =>
                 value.StartsWith(encKeyPlusEquals, StringComparison.OrdinalIgnoreCase) &&
-                    value.IndexOf($"domain={opts.Domain}", StringComparison.OrdinalIgnoreCase) != -1;
+                    value.Contains($"domain={opts.Domain}", StringComparison.OrdinalIgnoreCase);
         }
         else if (pathHasValue)
         {
             rejectPredicate = (value, encKeyPlusEquals, opts) =>
                 value.StartsWith(encKeyPlusEquals, StringComparison.OrdinalIgnoreCase) &&
-                    value.IndexOf($"path={opts.Path}", StringComparison.OrdinalIgnoreCase) != -1;
+                    value.Contains($"path={opts.Path}", StringComparison.OrdinalIgnoreCase);
         }
         else
         {

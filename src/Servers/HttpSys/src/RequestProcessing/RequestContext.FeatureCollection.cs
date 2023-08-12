@@ -32,6 +32,7 @@ internal partial class RequestContext :
     IHttpMaxRequestBodySizeFeature,
     IHttpBodyControlFeature,
     IHttpSysRequestInfoFeature,
+    IHttpSysRequestTimingFeature,
     IHttpResponseTrailersFeature,
     IHttpResetFeature,
     IHttpSysRequestDelegationFeature,
@@ -586,7 +587,7 @@ internal partial class RequestContext :
 
     int ITlsHandshakeFeature.KeyExchangeStrength => Request.KeyExchangeStrength;
 
-    IReadOnlyDictionary<int, ReadOnlyMemory<byte>> IHttpSysRequestInfoFeature.RequestInfo => Request.RequestInfo;
+    string ITlsHandshakeFeature.HostName => Request.SniHostName;
 
     IHeaderDictionary IHttpResponseTrailersFeature.Trailers
     {

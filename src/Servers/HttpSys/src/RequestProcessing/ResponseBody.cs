@@ -39,6 +39,8 @@ internal sealed partial class ResponseBody : Stream
 
     internal bool ThrowWriteExceptions => RequestContext.Server.Options.ThrowWriteExceptions;
 
+    internal bool EnableKernelResponseBuffering => RequestContext.Server.Options.EnableKernelResponseBuffering;
+
     internal bool IsDisposed => _disposed;
 
     public override bool CanSeek
@@ -496,6 +498,13 @@ internal sealed partial class ResponseBody : Stream
         {
             flags |= HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA;
         }
+        if (EnableKernelResponseBuffering)
+        {
+            // "When this flag is set, it should also be used consistently in calls to the HttpSendResponseEntityBody function."
+            // so: make sure we add it in *all* scenarios where it applies - our "close" could be at the end of a bunch
+            // of buffered chunks
+            flags |= HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_BUFFER_DATA;
+        }
 
         // Update _leftToWrite now so we can queue up additional async writes.
         if (_leftToWrite > 0)
@@ -599,10 +608,7 @@ internal sealed partial class ResponseBody : Stream
         // It's too expensive to validate the file attributes before opening the file. Open the file and then check the lengths.
         // This all happens inside of ResponseStreamAsyncResult.
         // TODO: Verbose log parameters
-        if (string.IsNullOrWhiteSpace(fileName))
-        {
-            throw new ArgumentNullException(nameof(fileName));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(fileName);
         CheckDisposed();
 
         CheckWriteCount(count);

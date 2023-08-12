@@ -19,6 +19,7 @@
     <Compile Include="..\..\Shared\CookieHeaderParserShared.cs" Link="Internal\CookieHeaderParserShared.cs" />
     <Compile Include="$(SharedSourceRoot)HttpRuleParser.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)HttpParseResult.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)Debugger\HttpContextDebugFormatter.cs" LinkBase="Shared" />
     <Compile Include="..\..\WebUtilities\src\AspNetCoreTempDirectory.cs" LinkBase="Internal" />
     <Compile Include="..\..\..\Shared\Dictionary\AdaptiveCapacityDictionary.cs" LinkBase="Internal" />
   </ItemGroup>
@@ -34,8 +35,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Tests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.Tests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Hosting.Tests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.MicroBenchmarks" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Routing.Tests" />
   </ItemGroup>
 </Project>

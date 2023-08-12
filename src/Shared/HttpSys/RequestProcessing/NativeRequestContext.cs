@@ -1,18 +1,19 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
+using Microsoft.AspNetCore.Server.HttpSys;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.HttpSys.Internal;
@@ -31,6 +32,7 @@ internal unsafe class NativeRequestContext : IDisposable
     private readonly int _bufferAlignment;
     private readonly bool _permanentlyPinned;
     private bool _disposed;
+    private IReadOnlyDictionary<int, ReadOnlyMemory<byte>>? _requestInfo;
 
     [MemberNotNullWhen(false, nameof(_backingBuffer))]
     private bool PermanentlyPinned => _permanentlyPinned;
@@ -73,6 +75,39 @@ internal unsafe class NativeRequestContext : IDisposable
         _nativeRequest = request;
         _bufferAlignment = 0;
         _permanentlyPinned = true;
+    }
+
+    public IReadOnlyDictionary<int, ReadOnlyMemory<byte>> RequestInfo => _requestInfo ??= GetRequestInfo();
+
+    public ReadOnlySpan<long> Timestamps
+    {
+        get
+        {
+            /*
+                Below is the definition of the timing info structure we are accessing the memory for.
+                ULONG is 32-bit and maps to int. ULONGLONG is 64-bit and maps to long.
+
+                typedef struct _HTTP_REQUEST_TIMING_INFO
+                {
+                    ULONG RequestTimingCount;
+                    ULONGLONG RequestTiming[HttpRequestTimingTypeMax];
+
+                } HTTP_REQUEST_TIMING_INFO, *PHTTP_REQUEST_TIMING_INFO;
+            */
+
+            if (!RequestInfo.TryGetValue((int)HttpApiTypes.HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeRequestTiming, out var timingInfo))
+            {
+                return ReadOnlySpan<long>.Empty;
+            }
+
+            var timingCount = MemoryMarshal.Read<int>(timingInfo.Span);
+
+            // Note that even though RequestTimingCount is an int, the compiler enforces alignment of data in the struct which causes 4 bytes
+            // of padding to be added after RequestTimingCount, so we need to skip 64-bits before we get to the start of the RequestTiming array
+            return MemoryMarshal.CreateReadOnlySpan(
+                ref Unsafe.As<byte, long>(ref MemoryMarshal.GetReference(timingInfo.Span.Slice(sizeof(long)))),
+                timingCount);
+        }
     }
 
     internal HttpApiTypes.HTTP_REQUEST* NativeRequest
@@ -142,6 +177,32 @@ internal unsafe class NativeRequestContext : IDisposable
         _memoryHandle.Dispose();
         _memoryHandle = default;
         _nativeRequest = null;
+    }
+
+    public bool TryGetTimestamp(HttpSysRequestTimingType timestampType, out long timestamp)
+    {
+        var index = (int)timestampType;
+        var timestamps = Timestamps;
+        if (index < timestamps.Length && timestamps[index] > 0)
+        {
+            timestamp = timestamps[index];
+            return true;
+        }
+
+        timestamp = default;
+        return false;
+    }
+
+    public bool TryGetElapsedTime(HttpSysRequestTimingType startingTimestampType, HttpSysRequestTimingType endingTimestampType, out TimeSpan elapsed)
+    {
+        if (TryGetTimestamp(startingTimestampType, out long startTimestamp) && TryGetTimestamp(endingTimestampType, out long endTimestamp))
+        {
+            elapsed = Stopwatch.GetElapsedTime(startTimestamp, endTimestamp);
+            return true;
+        }
+
+        elapsed = default;
+        return false;
     }
 
     public virtual void Dispose()
@@ -280,12 +341,52 @@ internal unsafe class NativeRequestContext : IDisposable
             if (info != null
                 && info->InfoType == HttpApiTypes.HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeSslProtocol)
             {
-                var authInfo = (HttpApiTypes.HTTP_SSL_PROTOCOL_INFO*)info->pInfo;
-                return *authInfo;
+                var authInfo = *((HttpApiTypes.HTTP_SSL_PROTOCOL_INFO*)info->pInfo);
+                SetSslProtocol(&authInfo);
+                return authInfo;
             }
         }
 
         return default;
+    }
+
+    private static void SetSslProtocol(HttpApiTypes.HTTP_SSL_PROTOCOL_INFO* protocolInfo)
+    {
+        var protocol = protocolInfo->Protocol;
+        // The OS considers client and server TLS as different enum values. SslProtocols choose to combine those for some reason.
+        // We need to fill in the client bits so the enum shows the expected protocol.
+        // https://learn.microsoft.com/windows/desktop/api/schannel/ns-schannel-_secpkgcontext_connectioninfo
+        // Compare to https://referencesource.microsoft.com/#System/net/System/Net/SecureProtocols/_SslState.cs,8905d1bf17729de3
+#pragma warning disable CS0618 // Type or member is obsolete
+        if ((protocol & SslProtocols.Ssl2) != 0)
+        {
+            protocol |= SslProtocols.Ssl2;
+        }
+        if ((protocol & SslProtocols.Ssl3) != 0)
+        {
+            protocol |= SslProtocols.Ssl3;
+        }
+#pragma warning restore CS0618 // Type or Prmember is obsolete
+#pragma warning disable SYSLIB0039 // TLS 1.0 and 1.1 are obsolete
+        if ((protocol & SslProtocols.Tls) != 0)
+        {
+            protocol |= SslProtocols.Tls;
+        }
+        if ((protocol & SslProtocols.Tls11) != 0)
+        {
+            protocol |= SslProtocols.Tls11;
+        }
+#pragma warning restore SYSLIB0039
+        if ((protocol & SslProtocols.Tls12) != 0)
+        {
+            protocol |= SslProtocols.Tls12;
+        }
+        if ((protocol & SslProtocols.Tls13) != 0)
+        {
+            protocol |= SslProtocols.Tls13;
+        }
+
+        protocolInfo->Protocol = protocol;
     }
 
     private static string GetAuthTypeFromRequest(HttpApiTypes.HTTP_REQUEST_AUTH_TYPE input)
@@ -649,7 +750,6 @@ internal unsafe class NativeRequestContext : IDisposable
         }
     }
 
-    // Assumes memory isn't pinned. Will fail if called by IIS.
     private IReadOnlyDictionary<int, ReadOnlyMemory<byte>> GetRequestInfo(IntPtr baseAddress, HttpApiTypes.HTTP_REQUEST_V2* nativeRequest)
     {
         var count = nativeRequest->RequestInfoCount;
@@ -663,10 +763,12 @@ internal unsafe class NativeRequestContext : IDisposable
         for (var i = 0; i < count; i++)
         {
             var requestInfo = nativeRequest->pRequestInfo[i];
-            var offset = (long)requestInfo.pInfo - (long)baseAddress;
-            info.Add(
-                (int)requestInfo.InfoType,
-                _backingBuffer!.Memory.Slice((int)offset, (int)requestInfo.InfoLength));
+
+            var memory = PermanentlyPinned
+                ? new PointerMemoryManager<byte>((byte*)requestInfo.pInfo, (int)requestInfo.InfoLength).Memory
+                : _backingBuffer.Memory.Slice((int)((long)requestInfo.pInfo - (long)baseAddress), (int)requestInfo.InfoLength);
+
+            info.Add((int)requestInfo.InfoType, memory);
         }
 
         return new ReadOnlyDictionary<int, ReadOnlyMemory<byte>>(info);
@@ -714,5 +816,36 @@ internal unsafe class NativeRequestContext : IDisposable
         byte[] certEncoded = new byte[clientCertInfo->CertEncodedSize];
         Marshal.Copy((IntPtr)clientCert, certEncoded, 0, certEncoded.Length);
         return new X509Certificate2(certEncoded);
+    }
+
+    // Copied from https://github.com/dotnet/runtime/blob/main/src/libraries/Common/src/System/Memory/PointerMemoryManager.cs
+    private sealed unsafe class PointerMemoryManager<T> : MemoryManager<T> where T : struct
+    {
+        private readonly void* _pointer;
+        private readonly int _length;
+
+        internal PointerMemoryManager(void* pointer, int length)
+        {
+            _pointer = pointer;
+            _length = length;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+        }
+
+        public override Span<T> GetSpan()
+        {
+            return new Span<T>(_pointer, _length);
+        }
+
+        public override MemoryHandle Pin(int elementIndex = 0)
+        {
+            throw new NotSupportedException();
+        }
+
+        public override void Unpin()
+        {
+        }
     }
 }

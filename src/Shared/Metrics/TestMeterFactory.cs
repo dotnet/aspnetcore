@@ -2,43 +2,28 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.Metrics;
+using Microsoft.Extensions.Diagnostics.Metrics;
 
-namespace Microsoft.Extensions.Metrics;
+namespace Microsoft.AspNetCore.Testing;
 
-// TODO: Remove when Metrics DI intergration package is available https://github.com/dotnet/aspnetcore/issues/47618
-internal class TestMeterFactory : IMeterFactory
+internal sealed class TestMeterFactory : IMeterFactory
 {
     public List<Meter> Meters { get; } = new List<Meter>();
 
-    public Meter CreateMeter(string name)
+    public Meter Create(MeterOptions options)
     {
-        var meter = new Meter(name);
+        var meter = new Meter(options.Name, options.Version, Array.Empty<KeyValuePair<string, object>>(), scope: this);
         Meters.Add(meter);
         return meter;
     }
 
-    public Meter CreateMeter(MeterOptions options)
+    public void Dispose()
     {
-        var meter = new Meter(options.Name, options.Version);
-        Meters.Add(meter);
-        return meter;
+        foreach (var meter in Meters)
+        {
+            meter.Dispose();
+        }
+
+        Meters.Clear();
     }
-}
-
-internal class TestMeterRegistry : IMeterRegistry
-{
-    private readonly List<Meter> _meters;
-
-    public TestMeterRegistry() : this(new List<Meter>())
-    {
-    }
-
-    public TestMeterRegistry(List<Meter> meters)
-    {
-        _meters = meters;
-    }
-
-    public void Add(Meter meter) => _meters.Add(meter);
-
-    public bool Contains(Meter meter) => _meters.Contains(meter);
 }

@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Globalization;
-using System.Net;
 using System.Net.Http;
 using System.Net.Security;
 using System.Security.Authentication;
@@ -24,7 +22,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Metrics;
 using Moq;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
@@ -82,7 +79,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
 
         var options = CreateServerOptions();
 
-        var loader = new KestrelConfigurationLoader(options, configuration, options.ApplicationServices.GetRequiredService<IHttpsConfigurationService>(), reloadOnChange: false);
+        var loader = new KestrelConfigurationLoader(options, configuration, options.ApplicationServices.GetRequiredService<IHttpsConfigurationService>(), certificatePathWatcher: null, reloadOnChange: false);
         options.ConfigurationLoader = loader; // Since we're constructing it explicitly, we have to hook it up explicitly
         loader.Load();
 
@@ -129,15 +126,25 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
     [Fact]
     public async Task HandshakeDetailsAreAvailable()
     {
+        string expectedHostname = null;
         void ConfigureListenOptions(ListenOptions listenOptions)
         {
-            listenOptions.UseHttps(new HttpsConnectionAdapterOptions { ServerCertificate = _x509Certificate2 });
+            listenOptions.UseHttps(
+                new HttpsConnectionAdapterOptions
+                {
+                    ServerCertificateSelector = (connection, name) =>
+                    {
+                        expectedHostname = name;
+                        return _x509Certificate2;
+                    }
+                });
         };
 
         await using (var server = new TestServer(context =>
         {
             var tlsFeature = context.Features.Get<ITlsHandshakeFeature>();
             Assert.NotNull(tlsFeature);
+            Assert.Equal(expectedHostname, tlsFeature.HostName);
             Assert.True(tlsFeature.Protocol > SslProtocols.None, "Protocol");
             Assert.True(tlsFeature.NegotiatedCipherSuite >= TlsCipherSuite.TLS_NULL_WITH_NULL_NULL, "NegotiatedCipherSuite");
             Assert.True(tlsFeature.CipherAlgorithm > CipherAlgorithmType.Null, "Cipher");
@@ -264,7 +271,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
     [Fact]
     public void ThrowsWhenNoServerCertificateIsProvided()
     {
-        Assert.Throws<ArgumentException>(() => CreateMiddleware(new HttpsConnectionAdapterOptions()));
+        Assert.Throws<ArgumentException>(() => CreateMiddleware(new HttpsConnectionAdapterOptions(), ListenOptions.DefaultHttpProtocols));
     }
 
     [Fact]
@@ -1318,7 +1325,8 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         CreateMiddleware(new HttpsConnectionAdapterOptions
         {
             ServerCertificate = cert,
-        });
+        },
+        ListenOptions.DefaultHttpProtocols);
     }
 
     [Theory]
@@ -1337,7 +1345,8 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
             CreateMiddleware(new HttpsConnectionAdapterOptions
             {
                 ServerCertificate = cert,
-            }));
+            },
+            ListenOptions.DefaultHttpProtocols));
 
         Assert.Equal(CoreStrings.FormatInvalidServerCertificateEku(cert.Thumbprint), ex.Message);
     }
@@ -1357,6 +1366,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
             {
                 ServerCertificate = cert,
             },
+            ListenOptions.DefaultHttpProtocols,
             testLogger);
 
         Assert.Single(testLogger.Messages.Where(log => log.EventId == 9));
@@ -1404,11 +1414,10 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         var httpConnectionAdapterOptions = new HttpsConnectionAdapterOptions
         {
             ServerCertificate = _x509Certificate2,
-            HttpProtocols = HttpProtocols.Http1AndHttp2
         };
-        CreateMiddleware(httpConnectionAdapterOptions);
+        var middleware = CreateMiddleware(httpConnectionAdapterOptions, HttpProtocols.Http1AndHttp2);
 
-        Assert.Equal(HttpProtocols.Http1, httpConnectionAdapterOptions.HttpProtocols);
+        Assert.Equal(HttpProtocols.Http1, middleware._httpProtocols);
     }
 
     [ConditionalFact]
@@ -1419,11 +1428,10 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         var httpConnectionAdapterOptions = new HttpsConnectionAdapterOptions
         {
             ServerCertificate = _x509Certificate2,
-            HttpProtocols = HttpProtocols.Http1AndHttp2
         };
-        CreateMiddleware(httpConnectionAdapterOptions);
+        var middleware = CreateMiddleware(httpConnectionAdapterOptions, HttpProtocols.Http1AndHttp2);
 
-        Assert.Equal(HttpProtocols.Http1AndHttp2, httpConnectionAdapterOptions.HttpProtocols);
+        Assert.Equal(HttpProtocols.Http1AndHttp2, middleware._httpProtocols);
     }
 
     [ConditionalFact]
@@ -1434,10 +1442,9 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         var httpConnectionAdapterOptions = new HttpsConnectionAdapterOptions
         {
             ServerCertificate = _x509Certificate2,
-            HttpProtocols = HttpProtocols.Http2
         };
 
-        Assert.Throws<NotSupportedException>(() => CreateMiddleware(httpConnectionAdapterOptions));
+        Assert.Throws<NotSupportedException>(() => CreateMiddleware(httpConnectionAdapterOptions, HttpProtocols.Http2));
     }
 
     [ConditionalFact]
@@ -1448,11 +1455,10 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         var httpConnectionAdapterOptions = new HttpsConnectionAdapterOptions
         {
             ServerCertificate = _x509Certificate2,
-            HttpProtocols = HttpProtocols.Http2
         };
 
         // Does not throw
-        CreateMiddleware(httpConnectionAdapterOptions);
+        CreateMiddleware(httpConnectionAdapterOptions, HttpProtocols.Http2);
     }
 
     private static HttpsConnectionMiddleware CreateMiddleware(X509Certificate2 serverCertificate)
@@ -1460,18 +1466,19 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         return CreateMiddleware(new HttpsConnectionAdapterOptions
         {
             ServerCertificate = serverCertificate,
-        });
+        },
+        ListenOptions.DefaultHttpProtocols);
     }
 
-    private static HttpsConnectionMiddleware CreateMiddleware(HttpsConnectionAdapterOptions options, TestApplicationErrorLogger testLogger = null)
+    private static HttpsConnectionMiddleware CreateMiddleware(HttpsConnectionAdapterOptions options, HttpProtocols httpProtocols, TestApplicationErrorLogger testLogger = null)
     {
         var loggerFactory = testLogger is null ? (ILoggerFactory)NullLoggerFactory.Instance : new LoggerFactory(new[] { new KestrelTestLoggerProvider(testLogger) });
-        return new HttpsConnectionMiddleware(context => Task.CompletedTask, options, loggerFactory, new KestrelMetrics(new TestMeterFactory()));
+        return new HttpsConnectionMiddleware(context => Task.CompletedTask, options, httpProtocols, loggerFactory, new KestrelMetrics(new TestMeterFactory()));
     }
 
-    private static HttpsConnectionMiddleware CreateMiddleware(HttpsConnectionAdapterOptions options)
+    private static HttpsConnectionMiddleware CreateMiddleware(HttpsConnectionAdapterOptions options, HttpProtocols httpProtocols)
     {
-        return new HttpsConnectionMiddleware(context => Task.CompletedTask, options, new KestrelMetrics(new TestMeterFactory()));
+        return new HttpsConnectionMiddleware(context => Task.CompletedTask, options, httpProtocols, new KestrelMetrics(new TestMeterFactory()));
     }
 
     private static async Task App(HttpContext httpContext)
