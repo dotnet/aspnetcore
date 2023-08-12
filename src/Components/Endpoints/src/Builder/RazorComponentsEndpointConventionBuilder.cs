@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Discovery;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Web;
@@ -10,10 +11,7 @@ namespace Microsoft.AspNetCore.Builder;
 /// <summary>
 /// Builds conventions that will be used for customization of <see cref="EndpointBuilder"/> instances.
 /// </summary>
-
-// TODO: This will have APIs to add and remove entire assemblies from the list of considered endpoints
-// as well as adding/removing individual pages as endpoints.
-public class RazorComponentEndpointConventionBuilder : IEndpointConventionBuilder
+public sealed class RazorComponentsEndpointConventionBuilder : IEndpointConventionBuilder
 {
     private readonly object _lock;
     private readonly ComponentApplicationBuilder _builder;
@@ -21,7 +19,7 @@ public class RazorComponentEndpointConventionBuilder : IEndpointConventionBuilde
     private readonly List<Action<EndpointBuilder>> _conventions;
     private readonly List<Action<EndpointBuilder>> _finallyConventions;
 
-    internal RazorComponentEndpointConventionBuilder(
+    internal RazorComponentsEndpointConventionBuilder(
         object @lock,
         ComponentApplicationBuilder builder,
         RazorComponentDataSourceOptions options,
@@ -38,43 +36,14 @@ public class RazorComponentEndpointConventionBuilder : IEndpointConventionBuilde
     /// <summary>
     /// Gets the <see cref="ComponentApplicationBuilder"/> that is used to build the endpoints.
     /// </summary>
-    public ComponentApplicationBuilder ApplicationBuilder => _builder;
-
-    /// <summary>
-    /// Configures the <see cref="RenderMode.WebAssembly"/> for this application.
-    /// </summary>
-    /// <returns>The <see cref="RazorComponentEndpointConventionBuilder"/>.</returns>
-    public RazorComponentEndpointConventionBuilder AddWebAssemblyRenderMode()
-    {
-        for (var i = 0; i < _options.ConfiguredRenderModes.Count; i++)
-        {
-            var mode = _options.ConfiguredRenderModes[i];
-            if (mode is WebAssemblyRenderMode)
-            {
-                return this;
-            }
-        }
-
-        _options.ConfiguredRenderModes.Add(RenderMode.WebAssembly);
-
-        return this;
-    }
+    internal ComponentApplicationBuilder ApplicationBuilder => _builder;
 
     /// <summary>
     /// Configures the <see cref="RenderMode.Server"/> for this application.
     /// </summary>
-    /// <returns>The <see cref="RazorComponentEndpointConventionBuilder"/>.</returns>
-    public RazorComponentEndpointConventionBuilder AddServerRenderMode()
+    /// <returns>The <see cref="RazorComponentsEndpointConventionBuilder"/>.</returns>
+    public RazorComponentsEndpointConventionBuilder AddServerRenderMode()
     {
-        for (var i = 0; i < _options.ConfiguredRenderModes.Count; i++)
-        {
-            var mode = _options.ConfiguredRenderModes[i];
-            if (mode is ServerRenderMode)
-            {
-                return this;
-            }
-        }
-
         _options.ConfiguredRenderModes.Add(RenderMode.Server);
 
         return this;
@@ -102,5 +71,14 @@ public class RazorComponentEndpointConventionBuilder : IEndpointConventionBuilde
         {
             _finallyConventions.Add(finallyConvention);
         }
+    }
+
+    /// <summary>
+    /// Adds the given <paramref name="renderMode"/> to the list of configured render modes if not present.
+    /// </summary>
+    /// <param name="renderMode">The <see cref="IComponentRenderMode"/> to add.</param>
+    public void AddRenderMode(IComponentRenderMode renderMode)
+    {
+        _options.ConfiguredRenderModes.Add(renderMode);
     }
 }

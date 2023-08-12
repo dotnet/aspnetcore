@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
-namespace Microsoft.AspNetCore.Components.Endpoints;
+namespace Microsoft.AspNetCore.Components.Endpoints.Infrastructure;
 
 /// <summary>
 /// A provider that can register endpoints to support a specific <see cref="IComponentRenderMode"/>.
