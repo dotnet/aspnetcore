@@ -77,8 +77,7 @@ public readonly struct FieldIdentifier : IEquatable<FieldIdentifier>
     /// <inheritdoc />
     public bool Equals(FieldIdentifier otherIdentifier)
     {
-        return
-            ReferenceEquals(otherIdentifier.Model, Model) &&
+        return ReferenceEquals(otherIdentifier.Model, Model) &&
             string.Equals(otherIdentifier.FieldName, FieldName, StringComparison.Ordinal);
     }
 
@@ -94,42 +93,65 @@ public readonly struct FieldIdentifier : IEquatable<FieldIdentifier>
             accessorBody = unaryExpression.Operand;
         }
 
-        if (!(accessorBody is MemberExpression memberExpression))
+        switch (accessorBody)
         {
-            throw new ArgumentException($"The provided expression contains a {accessorBody.GetType().Name} which is not supported. {nameof(FieldIdentifier)} only supports simple member accessors (fields, properties) of an object.");
+            case MemberExpression memberExpression:
+                // Identify the field name. We don't mind whether it's a property or field, or even something else.
+                fieldName = memberExpression.Member.Name;
+                // Get a reference to the model object
+                // i.e., given a value like "(something).MemberName", determine the runtime value of "(something)",
+                if (memberExpression.Expression is ConstantExpression constantExpression)
+                {
+                    if (constantExpression.Value is null)
+                    {
+                        throw new ArgumentException("The provided expression must evaluate to a non-null value.");
+                    }
+                    model = constantExpression.Value;
+                }
+                else if (memberExpression.Expression != null)
+                {
+                    // It would be great to cache this somehow, but it's unclear there's a reasonable way to do
+                    // so, given that it embeds captured values such as "this". We could consider special-casing
+                    // for "() => something.Member" and building a cache keyed by "something.GetType()" with values
+                    // of type Func<object, object> so we can cheaply map from "something" to "something.Member".
+                    var modelLambda = Expression.Lambda(memberExpression.Expression);
+                    var modelLambdaCompiled = (Func<object?>)modelLambda.Compile();
+                    var result = modelLambdaCompiled();
+                    if (result is null)
+                    {
+                        throw new ArgumentException("The provided expression must evaluate to a non-null value.");
+                    }
+                    model = result;
+                }
+                else
+                {
+                    throw new ArgumentException($"The provided expression contains a {accessorBody.GetType().Name} which is not supported. {nameof(FieldIdentifier)} only supports simple member accessors (fields, properties) of an object.");
+                }
+                break;
+            case MethodCallExpression methodCallExpression when ExpressionFormatter.IsSingleArgumentIndexer(accessorBody):
+                fieldName = ExpressionFormatter.FormatIndexArgument(methodCallExpression.Arguments[0]);
+                model = GetModelFromIndexer(methodCallExpression.Object!);
+                break;
+            case BinaryExpression binaryExpression when binaryExpression.NodeType == ExpressionType.ArrayIndex:
+                fieldName = ExpressionFormatter.FormatIndexArgument(binaryExpression.Right);
+                model = GetModelFromIndexer(binaryExpression.Left);
+                break;
+            default:
+                throw new ArgumentException($"The provided expression contains a {accessorBody.GetType().Name} which is not supported. {nameof(FieldIdentifier)} only supports simple member accessors (fields, properties) of an object.");
         }
+    }
 
-        // Identify the field name. We don't mind whether it's a property or field, or even something else.
-        fieldName = memberExpression.Member.Name;
-
-        // Get a reference to the model object
-        // i.e., given a value like "(something).MemberName", determine the runtime value of "(something)",
-        if (memberExpression.Expression is ConstantExpression constantExpression)
+    private static object GetModelFromIndexer(Expression methodCallExpression)
+    {
+        object model;
+        var methodCallObjectLambda = Expression.Lambda(methodCallExpression!);
+        var methodCallObjectLambdaCompiled = (Func<object?>)methodCallObjectLambda.Compile();
+        var result = methodCallObjectLambdaCompiled();
+        if (result is null)
         {
-            if (constantExpression.Value is null)
-            {
-                throw new ArgumentException("The provided expression must evaluate to a non-null value.");
-            }
-            model = constantExpression.Value;
+            throw new ArgumentException("The provided expression must evaluate to a non-null value.");
         }
-        else if (memberExpression.Expression != null)
-        {
-            // It would be great to cache this somehow, but it's unclear there's a reasonable way to do
-            // so, given that it embeds captured values such as "this". We could consider special-casing
-            // for "() => something.Member" and building a cache keyed by "something.GetType()" with values
-            // of type Func<object, object> so we can cheaply map from "something" to "something.Member".
-            var modelLambda = Expression.Lambda(memberExpression.Expression);
-            var modelLambdaCompiled = (Func<object?>)modelLambda.Compile();
-            var result = modelLambdaCompiled();
-            if (result is null)
-            {
-                throw new ArgumentException("The provided expression must evaluate to a non-null value.");
-            }
-            model = result;
-        }
-        else
-        {
-            throw new ArgumentException($"The provided expression contains a {accessorBody.GetType().Name} which is not supported. {nameof(FieldIdentifier)} only supports simple member accessors (fields, properties) of an object.");
-        }
+        model = result;
+        return model;
     }
 }

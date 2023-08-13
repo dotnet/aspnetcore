@@ -2,13 +2,16 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.JavaScript;
+using System.Text.Json;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
@@ -21,11 +24,13 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering;
 /// </summary>
 internal sealed partial class WebAssemblyRenderer : WebRenderer
 {
+    private readonly RootComponentTypeCache _rootComponentCache;
     private readonly ILogger _logger;
 
     public WebAssemblyRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, JSComponentInterop jsComponentInterop)
         : base(serviceProvider, loggerFactory, DefaultWebAssemblyJSRuntime.Instance.ReadJsonSerializerOptions(), jsComponentInterop)
     {
+        _rootComponentCache = serviceProvider.GetRequiredService<RootComponentTypeCache>();
         _logger = loggerFactory.CreateLogger<WebAssemblyRenderer>();
 
         ElementReferenceContext = DefaultWebAssemblyJSRuntime.Instance.ElementReferenceContext;
@@ -39,6 +44,8 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
         return RenderRootComponentAsync(componentId, parameters);
     }
 
+    protected override int GetWebRendererId() => (int)WebRendererId.WebAssembly;
+
     protected override void AttachRootComponentToBrowser(int componentId, string domElementSelector)
     {
         DefaultWebAssemblyJSRuntime.Instance.InvokeVoid(
@@ -46,6 +53,89 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
             domElementSelector,
             componentId,
             RendererId);
+    }
+
+    [DynamicDependency(JsonSerialized, typeof(RootComponentOperation))]
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "The correct members will be preserved by the above DynamicDependency")]
+    protected override void UpdateRootComponents(string operationsJson)
+    {
+        var operations = JsonSerializer.Deserialize<IEnumerable<RootComponentOperation>>(
+            operationsJson,
+            WebAssemblyComponentSerializationSettings.JsonSerializationOptions)!;
+
+        foreach (var operation in operations)
+        {
+            switch (operation.Type)
+            {
+                case RootComponentOperationType.Add:
+                    AddRootComponent(operation);
+                    break;
+                case RootComponentOperationType.Update:
+                    UpdateRootComponent(operation);
+                    break;
+                case RootComponentOperationType.Remove:
+                    RemoveRootComponent(operation);
+                    break;
+            }
+        }
+
+        return;
+
+        [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "Root components are expected to be defined in assemblies that do not get trimmed.")]
+        void AddRootComponent(RootComponentOperation operation)
+        {
+            if (operation.SelectorId is not { } selectorId)
+            {
+                throw new InvalidOperationException($"The component operation of type '{operation.Type}' requires a '{nameof(operation.SelectorId)}' to be specified.");
+            }
+
+            if (operation.Marker is not { } marker)
+            {
+                throw new InvalidOperationException($"The component operation of type '{operation.Type}' requires a '{nameof(operation.Marker)}' to be specified.");
+            }
+
+            var componentType = _rootComponentCache.GetRootComponent(marker.Assembly!, marker.TypeName!)
+                ?? throw new InvalidOperationException($"Root component type '{marker.TypeName}' could not be found in the assembly '{marker.Assembly}'.");
+
+            var parameters = DeserializeComponentParameters(marker);
+            _ = AddComponentAsync(componentType, parameters, selectorId.ToString(CultureInfo.InvariantCulture));
+        }
+
+        void UpdateRootComponent(RootComponentOperation operation)
+        {
+            if (operation.ComponentId is not { } componentId)
+            {
+                throw new InvalidOperationException($"The component operation of type '{operation.Type}' requires a '{nameof(operation.ComponentId)}' to be specified.");
+            }
+
+            if (operation.Marker is not { } marker)
+            {
+                throw new InvalidOperationException($"The component operation of type '{operation.Type}' requires a '{nameof(operation.Marker)}' to be specified.");
+            }
+
+            var parameters = DeserializeComponentParameters(marker);
+            _ = RenderRootComponentAsync(componentId, parameters);
+        }
+
+        void RemoveRootComponent(RootComponentOperation operation)
+        {
+            if (operation.ComponentId is not { } componentId)
+            {
+                throw new InvalidOperationException($"The component operation of type '{operation.Type}' requires a '{nameof(operation.ComponentId)}' to be specified.");
+            }
+
+            this.RemoveRootComponent(componentId);
+        }
+
+        static ParameterView DeserializeComponentParameters(ComponentMarker marker)
+        {
+            var definitions = WebAssemblyComponentParameterDeserializer.GetParameterDefinitions(marker.ParameterDefinitions!);
+            var values = WebAssemblyComponentParameterDeserializer.GetParameterValues(marker.ParameterValues!);
+            var componentDeserializer = WebAssemblyComponentParameterDeserializer.Instance;
+            var parameters = componentDeserializer.DeserializeParameters(definitions, values);
+
+            return parameters;
+        }
     }
 
     /// <inheritdoc />
@@ -130,11 +220,11 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
         }
     }
 
-    protected override IComponent ResolveComponentForRenderMode([DynamicallyAccessedMembers(Component)] Type componentType, int? parentComponentId, IComponentActivator componentActivator, IComponentRenderMode componentTypeRenderMode)
-        => componentTypeRenderMode switch
+    protected override IComponent ResolveComponentForRenderMode([DynamicallyAccessedMembers(Component)] Type componentType, int? parentComponentId, IComponentActivator componentActivator, IComponentRenderMode renderMode)
+        => renderMode switch
         {
             WebAssemblyRenderMode or AutoRenderMode => componentActivator.CreateInstance(componentType),
-            _ => throw new NotSupportedException($"Cannot create a component of type '{componentType}' because its render mode '{componentTypeRenderMode}' is not supported by WebAssembly rendering."),
+            _ => throw new NotSupportedException($"Cannot create a component of type '{componentType}' because its render mode '{renderMode}' is not supported by WebAssembly rendering."),
         };
 
     private static partial class Log

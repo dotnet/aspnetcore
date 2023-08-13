@@ -10,7 +10,7 @@
     <FrameworkReference Update="Microsoft.NETCore.App"
                         RuntimeFrameworkVersion="$(MicrosoftNETCoreAppRuntimeVersion)" />
 
-    <PackageReference Include="Microsoft.Dotnet.ILCompiler"
+    <PackageReference Include="Microsoft.DotNet.ILCompiler"
                       Version="$(MicrosoftNETCoreAppRuntimeVersion)" />
   </ItemGroup>
 

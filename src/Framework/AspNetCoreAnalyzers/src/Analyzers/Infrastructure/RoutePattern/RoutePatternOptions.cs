@@ -29,6 +29,8 @@ internal sealed class RoutePatternOptions
 
     public static readonly RoutePatternOptions ComponentsRoute = new RoutePatternOptions
     {
-        AdditionalInvalidParameterCharacters = new[] { '{', '}', '=', '.' }
+        SupportComplexSegments = true,
+        SupportDefaultValues = true,
+        SupportTwoAsteriskCatchAll = true,
     };
 }

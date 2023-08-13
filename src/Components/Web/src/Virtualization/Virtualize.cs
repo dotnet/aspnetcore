@@ -47,6 +47,10 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     private RenderFragment<PlaceholderContext>? _placeholder;
 
+    private RenderFragment? _emptyContent;
+
+    private bool _loading;
+
     [Inject]
     private IJSRuntime JSRuntime { get; set; } = default!;
 
@@ -67,6 +71,13 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     /// </summary>
     [Parameter]
     public RenderFragment<PlaceholderContext>? Placeholder { get; set; }
+
+    /// <summary>
+    /// Gets or sets the content to show when <see cref="Items"/> is empty
+    /// or when the <see cref="ItemsProviderResult&lt;TItem&gt;.TotalItemCount"/> is zero.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? EmptyContent { get; set; }
 
     /// <summary>
     /// Gets the size of each item in pixels. Defaults to 50px.
@@ -167,6 +178,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
         _itemTemplate = ItemContent ?? ChildContent;
         _placeholder = Placeholder ?? DefaultPlaceholder;
+        _emptyContent = EmptyContent;
     }
 
     /// <inheritdoc />
@@ -213,15 +225,19 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
         _lastRenderedItemCount = 0;
 
-        // Render the loaded items.
-        if (_loadedItems != null && _itemTemplate != null)
+        if (_loadedItems != null && !_loading && _itemCount == 0 && _emptyContent != null)
+        {
+            builder.AddContent(4, _emptyContent);
+        }
+        else if (_loadedItems != null && _itemTemplate != null)
         {
             var itemsToShow = _loadedItems
                 .Skip(_itemsBefore - _loadedItemsStartIndex)
                 .Take(lastItemIndex - _loadedItemsStartIndex);
 
-            builder.OpenRegion(4);
+            builder.OpenRegion(5);
 
+            // Render the loaded items.
             foreach (var item in itemsToShow)
             {
                 _itemTemplate(item)(builder);
@@ -235,7 +251,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
         _lastRenderedPlaceholderCount = Math.Max(0, lastItemIndex - _itemsBefore - _lastRenderedItemCount);
 
-        builder.OpenRegion(5);
+        builder.OpenRegion(6);
 
         // Render the placeholders after the loaded items.
         for (; renderIndex < lastItemIndex; renderIndex++)
@@ -247,9 +263,9 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
         var itemsAfter = Math.Max(0, _itemCount - _visibleItemCapacity - _itemsBefore);
 
-        builder.OpenElement(6, SpacerElement);
-        builder.AddAttribute(7, "style", GetSpacerStyle(itemsAfter));
-        builder.AddElementReferenceCapture(8, elementReference => _spacerAfter = elementReference);
+        builder.OpenElement(7, SpacerElement);
+        builder.AddAttribute(8, "style", GetSpacerStyle(itemsAfter));
+        builder.AddElementReferenceCapture(9, elementReference => _spacerAfter = elementReference);
 
         builder.CloseElement();
     }
@@ -354,6 +370,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         {
             _refreshCts = new CancellationTokenSource();
             cancellationToken = _refreshCts.Token;
+            _loading = true;
         }
 
         var request = new ItemsProviderRequest(_itemsBefore, _visibleItemCapacity, cancellationToken);
@@ -368,6 +385,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                 _itemCount = result.TotalItemCount;
                 _loadedItems = result.Items;
                 _loadedItemsStartIndex = request.StartIndex;
+                _loading = false;
 
                 if (renderOnSuccess)
                 {

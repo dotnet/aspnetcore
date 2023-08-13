@@ -45,7 +45,7 @@ public static class DbUtil
 
         foreach (var property in context.Model.GetEntityTypes().Single(e => e.GetTableName() == table).GetProperties())
         {
-            if (!columns.Contains(property.GetColumnName(StoreObjectIdentifier.Table(table, property.DeclaringEntityType.GetSchema()))))
+            if (!columns.Contains(property.GetColumnName(StoreObjectIdentifier.Table(table, property.DeclaringType.GetSchema()))))
             {
                 continue;
             }

@@ -23,11 +23,10 @@ Sample PR of final result: https://github.com/dotnet/aspnetcore/pull/41945
       <InternalsVisibleTo Include="Microsoft.AspNetCore.My.TestProject" />
     ```
 
-
 ## Adding to the rest of the repo
 1. VS should have already registered your `.csproj` in the corresponding solution ([`.sln`](https://github.com/dotnet/aspnetcore/blob/586ccc8c895862b65645c4b0f979db1eecd29626/AspNetCore.sln)) and solution filter ([`.slnf`](https://github.com/dotnet/aspnetcore/blob/586ccc8c895862b65645c4b0f979db1eecd29626/src/Middleware/Middleware.slnf#L107-L109)) files.
   - If VS has not already modified these files, open the `.slnf` you want to add the project to. Create a solution folder for your project if doesn't exist already. Then right click solution folder -> Add -> Existing Project... -> follow the wizard.
-2. Run the `eng/scripts/GenerateProjectList.ps1` file to regenerate a number of `eng/*.props` files e.g. ProjectReferences.props.
+1. Run the `eng/scripts/GenerateProjectList.ps1` file to regenerate a number of `eng/*.props` files e.g. ProjectReferences.props.
 
 **Note:** If you are adding a new project to the root `src` directory, you will also need to add a reference in both of the `DotNetProjects` lists of the `eng/Build.props` file. The first list (the one with condition `'$(BuildMainlyReferenceProviders)' != 'true'"`) has items in the format of:
   ```XML

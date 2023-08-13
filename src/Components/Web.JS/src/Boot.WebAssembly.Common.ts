@@ -8,20 +8,45 @@ import * as Environment from './Environment';
 import { BINDING, monoPlatform, dispatcher } from './Platform/Mono/MonoPlatform';
 import { renderBatch, getRendererer, attachRootComponentToElement, attachRootComponentToLogicalElement } from './Rendering/Renderer';
 import { SharedMemoryRenderBatch } from './Rendering/RenderBatch/SharedMemoryRenderBatch';
-import { WebAssemblyResourceLoader } from './Platform/WebAssemblyResourceLoader';
-import { Pointer } from './Platform/Platform';
+import { PlatformApi, Pointer } from './Platform/Platform';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
 import { addDispatchEventMiddleware } from './Rendering/WebRendererInteropMethods';
-import { JSInitializer } from './JSInitializers/JSInitializers';
 import { WebAssemblyComponentDescriptor, discoverPersistedState } from './Services/ComponentDescriptorDiscovery';
 import { receiveDotNetDataStream } from './StreamingInterop';
 import { WebAssemblyComponentAttacher } from './Platform/WebAssemblyComponentAttacher';
+import { MonoConfig } from 'dotnet';
+import { RootComponentManager } from './Services/RootComponentManager';
 
-export async function startWebAssembly(options?: Partial<WebAssemblyStartOptions>, components?: WebAssemblyComponentDescriptor[]): Promise<void> {
+let options: Partial<WebAssemblyStartOptions> | undefined;
+let platformLoadPromise: Promise<void> | undefined;
+let hasStarted = false;
+
+let resolveBootConfigPromise: (value: MonoConfig) => void;
+const bootConfigPromise = new Promise<MonoConfig>(resolve => {
+  resolveBootConfigPromise = resolve;
+});
+
+export function setWebAssemblyOptions(webAssemblyOptions?: Partial<WebAssemblyStartOptions>) {
+  if (options) {
+    throw new Error('WebAssembly options have already been configured.');
+  }
+
+  options = webAssemblyOptions;
+}
+
+export async function startWebAssembly(components: RootComponentManager<WebAssemblyComponentDescriptor>): Promise<void> {
+  if (hasStarted) {
+    throw new Error('Blazor WebAssembly has already started.');
+  }
+
+  hasStarted = true;
+
   if (inAuthRedirectIframe()) {
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     await new Promise(() => { }); // See inAuthRedirectIframe for explanation
   }
+
+  const platformLoadPromise = loadWebAssemblyPlatformIfNotStarted();
 
   addDispatchEventMiddleware((browserRendererId, eventHandlerId, continuation) => {
     // It's extremely unusual, but an event can be raised while we're in the middle of synchronously applying a
@@ -86,10 +111,9 @@ export async function startWebAssembly(options?: Partial<WebAssemblyStartOptions
 
   // Leverage the time while we are loading boot.config.json from the network to discover any potentially registered component on
   // the document.
-  const componentAttacher = new WebAssemblyComponentAttacher(components || []);
+  const componentAttacher = new WebAssemblyComponentAttacher(components);
   Blazor._internal.registeredComponents = {
     getRegisteredComponentsCount: () => componentAttacher.getCount(),
-    getId: (index) => componentAttacher.getId(index),
     getAssembly: (id) => componentAttacher.getAssembly(id),
     getTypeName: (id) => componentAttacher.getTypeName(id),
     getParameterDefinitions: (id) => componentAttacher.getParameterDefinitions(id) || '',
@@ -99,7 +123,7 @@ export async function startWebAssembly(options?: Partial<WebAssemblyStartOptions
   Blazor._internal.getPersistedState = () => discoverPersistedState(document) || '';
 
   Blazor._internal.attachRootComponentToElement = (selector, componentId, rendererId: any) => {
-    const element = componentAttacher.resolveRegisteredElement(selector);
+    const element = componentAttacher.resolveRegisteredElement(selector, componentId);
     if (!element) {
       attachRootComponentToElement(selector, componentId, rendererId);
     } else {
@@ -107,21 +131,28 @@ export async function startWebAssembly(options?: Partial<WebAssemblyStartOptions
     }
   };
 
-  let resourceLoader: WebAssemblyResourceLoader;
-  let jsInitializer: JSInitializer;
+  let api: PlatformApi;
   try {
-    const api = await platform.start(options ?? {});
-    resourceLoader = api.resourceLoader;
-    jsInitializer = api.jsInitializer;
+    await platformLoadPromise;
+    api = await platform.start();
   } catch (ex) {
     throw new Error(`Failed to start platform. Reason: ${ex}`);
   }
 
   // Start up the application
-  platform.callEntryPoint(resourceLoader.bootConfig.entryAssembly);
+  platform.callEntryPoint();
   // At this point .NET has been initialized (and has yielded), we can't await the promise becasue it will
   // only end when the app finishes running
-  jsInitializer.invokeAfterStartedCallbacks(Blazor);
+  api.invokeLibraryInitializers('afterStarted', [Blazor]);
+}
+
+export function waitForBootConfigLoaded(): Promise<MonoConfig> {
+  return bootConfigPromise;
+}
+
+export function loadWebAssemblyPlatformIfNotStarted(): Promise<void> {
+  platformLoadPromise ??= monoPlatform.load(options ?? {}, resolveBootConfigPromise);
+  return platformLoadPromise;
 }
 
 // obsolete, legacy, don't use for new code!

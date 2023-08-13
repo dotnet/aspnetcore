@@ -1,10 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Components.Web.HtmlRendering;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -12,7 +14,7 @@ internal partial class EndpointHtmlRenderer
 {
     private static readonly object ComponentSequenceKey = new object();
 
-    protected override IComponent ResolveComponentForRenderMode(Type componentType, int? parentComponentId, IComponentActivator componentActivator, IComponentRenderMode componentTypeRenderMode)
+    protected override IComponent ResolveComponentForRenderMode([DynamicallyAccessedMembers(Component)] Type componentType, int? parentComponentId, IComponentActivator componentActivator, IComponentRenderMode renderMode)
     {
         var closestRenderModeBoundary = parentComponentId.HasValue
             ? GetClosestRenderModeBoundary(parentComponentId.Value)
@@ -27,7 +29,7 @@ internal partial class EndpointHtmlRenderer
         else
         {
             // This component is the start of a subtree with a rendermode, so introduce a new rendermode boundary here
-            return new SSRRenderModeBoundary(componentType, componentTypeRenderMode);
+            return new SSRRenderModeBoundary(componentType, renderMode);
         }
     }
 
@@ -50,14 +52,14 @@ internal partial class EndpointHtmlRenderer
 
     public ValueTask<IHtmlAsyncContent> PrerenderComponentAsync(
         HttpContext httpContext,
-        Type componentType,
+        [DynamicallyAccessedMembers(Component)] Type componentType,
         IComponentRenderMode prerenderMode,
         ParameterView parameters)
         => PrerenderComponentAsync(httpContext, componentType, prerenderMode, parameters, waitForQuiescence: true);
 
     public async ValueTask<IHtmlAsyncContent> PrerenderComponentAsync(
         HttpContext httpContext,
-        Type componentType,
+        [DynamicallyAccessedMembers(Component)] Type componentType,
         IComponentRenderMode? prerenderMode,
         ParameterView parameters,
         bool waitForQuiescence)
@@ -98,7 +100,7 @@ internal partial class EndpointHtmlRenderer
 
     internal async ValueTask<PrerenderedComponentHtmlContent> RenderEndpointComponent(
         HttpContext httpContext,
-        Type rootComponentType,
+        [DynamicallyAccessedMembers(Component)] Type rootComponentType,
         ParameterView parameters,
         bool waitForQuiescence)
     {
@@ -133,7 +135,7 @@ internal partial class EndpointHtmlRenderer
         }
     }
 
-    private static ValueTask<PrerenderedComponentHtmlContent> HandleNavigationException(HttpContext httpContext, NavigationException navigationException)
+    public static ValueTask<PrerenderedComponentHtmlContent> HandleNavigationException(HttpContext httpContext, NavigationException navigationException)
     {
         if (httpContext.Response.HasStarted)
         {
@@ -147,11 +149,31 @@ internal partial class EndpointHtmlRenderer
                 "Navigation commands can not be issued during server-side prerendering after the response from the server has started. Applications must buffer the" +
                 "response and avoid using features like FlushAsync() before all components on the page have been rendered to prevent failed navigation commands.");
         }
+        else if (IsPossibleExternalDestination(httpContext.Request, navigationException.Location) && httpContext.Request.Headers.ContainsKey("blazor-enhanced-nav"))
+        {
+            // It's unsafe to do a 301/302/etc to an external destination when this was requested via fetch, because
+            // assuming it doesn't expose CORS headers, we won't be allowed to follow the redirection nor will
+            // we even find out what the destination URL would have been. But since it's our own JS code making this
+            // fetch request, we can have a custom protocol for describing the URL we wanted to redirect to.
+            httpContext.Response.Headers.Add("blazor-enhanced-nav-redirect-location", navigationException.Location);
+            return new ValueTask<PrerenderedComponentHtmlContent>(PrerenderedComponentHtmlContent.Empty);
+        }
         else
         {
             httpContext.Response.Redirect(navigationException.Location);
             return new ValueTask<PrerenderedComponentHtmlContent>(PrerenderedComponentHtmlContent.Empty);
         }
+    }
+
+    private static bool IsPossibleExternalDestination(HttpRequest request, string destinationUrl)
+    {
+        if (!Uri.TryCreate(destinationUrl, UriKind.Absolute, out var absoluteUri))
+        {
+            return false;
+        }
+
+        return absoluteUri.Scheme != request.Scheme
+            || absoluteUri.Authority != request.Host.Value;
     }
 
     internal static ServerComponentInvocationSequence GetOrCreateInvocationId(HttpContext httpContext)

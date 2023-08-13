@@ -70,7 +70,7 @@ internal sealed class RegisterConfirmationModel<TUser> : RegisterConfirmationMod
 
         Email = email;
         // If the email sender is a no-op, display the confirm link in the page
-        DisplayConfirmAccountLink = _sender is EmailSender;
+        DisplayConfirmAccountLink = _sender is NoOpEmailSender;
         if (DisplayConfirmAccountLink)
         {
             var userId = await _userManager.GetUserIdAsync(user);

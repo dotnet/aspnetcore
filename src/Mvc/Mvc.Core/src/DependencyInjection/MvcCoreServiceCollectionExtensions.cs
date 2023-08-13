@@ -183,7 +183,7 @@ public static class MvcCoreServiceCollectionExtensions
         //
         // Action Invoker
         //
-        // The IActionInvokerFactory is cachable
+        // The IActionInvokerFactory is cacheable
         services.TryAddSingleton<IActionInvokerFactory, ActionInvokerFactory>();
         services.TryAddEnumerable(
             ServiceDescriptor.Transient<IActionInvokerProvider, ControllerActionInvokerProvider>());

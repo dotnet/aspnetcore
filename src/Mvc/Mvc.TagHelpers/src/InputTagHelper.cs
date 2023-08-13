@@ -117,6 +117,15 @@ public class InputTagHelper : TagHelper
     public string InputTypeName { get; set; }
 
     /// <summary>
+    /// The name of the associated form
+    /// </summary>
+    /// <remarks>
+    /// Used to associate a hidden checkbox tag to the respecting form when <see cref="CheckBoxHiddenInputRenderMode"/> is not <see cref="CheckBoxHiddenInputRenderMode.None"/>.
+    /// </remarks>
+    [HtmlAttributeName("form")]
+    public string FormName { get; set; }
+
+    /// <summary>
     /// The name of the &lt;input&gt; element.
     /// </summary>
     /// <remarks>
@@ -159,6 +168,11 @@ public class InputTagHelper : TagHelper
         if (Value != null)
         {
             output.CopyHtmlAttribute(nameof(Value), context);
+        }
+
+        if (FormName != null)
+        {
+            output.CopyHtmlAttribute("form", context);
         }
 
         // Note null or empty For.Name is allowed because TemplateInfo.HtmlFieldPrefix may be sufficient.
@@ -326,6 +340,16 @@ public class InputTagHelper : TagHelper
                     // match if both are present because both have a generated value. Reach here in the special case
                     // where user provided a non-empty fallback name.
                     hiddenForCheckboxTag.MergeAttribute("name", Name);
+                }
+
+                if (output.Attributes.TryGetAttribute("form", out var formAttribute))
+                {
+                    // If the original checkbox has a form attribute, the hidden field should respect it and the
+                    // attribute should be passed on
+                    if (formAttribute.Value is string formAttributeString)
+                    {
+                        hiddenForCheckboxTag.MergeAttribute("form", formAttributeString);
+                    }
                 }
 
                 if (ViewContext.CheckBoxHiddenInputRenderMode == CheckBoxHiddenInputRenderMode.EndOfForm && ViewContext.FormContext.CanRenderAtEndOfForm)

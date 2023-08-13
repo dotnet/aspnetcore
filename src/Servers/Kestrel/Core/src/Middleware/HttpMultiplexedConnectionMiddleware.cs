@@ -41,6 +41,12 @@ internal sealed class HttpMultiplexedConnectionMiddleware<TContext> where TConte
             localEndPoint,
             connectionContext.RemoteEndPoint as IPEndPoint);
 
+        if (connectionContext.Features.Get<IConnectionMetricsTagsFeature>() is { } metricsTags)
+        {
+            // HTTP/3 is always TLS 1.3. If multiple versions are support in the future then this value will need to be detected.
+            metricsTags.Tags.Add(new KeyValuePair<string, object?>("tls.protocol.version", "1.3"));
+        }
+
         var connection = new HttpConnection(httpConnectionContext);
 
         return connection.ProcessRequestsAsync(_application);

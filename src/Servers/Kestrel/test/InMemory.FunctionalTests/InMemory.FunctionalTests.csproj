@@ -5,6 +5,8 @@
     <TestGroupName>InMemory.FunctionalTests</TestGroupName>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DefineConstants>$(DefineConstants);IS_TESTS</DefineConstants>
+    <!-- EXTEXP0003: MetricCollector is experimental -->
+    <NoWarn>$(NoWarn);EXTEXP0003</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -36,6 +38,7 @@
     <Reference Include="System.Threading.Channels" />
     <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
+    <Reference Include="Microsoft.Extensions.Telemetry.Testing" />
     <Reference Include="Newtonsoft.Json" />
   </ItemGroup>
 

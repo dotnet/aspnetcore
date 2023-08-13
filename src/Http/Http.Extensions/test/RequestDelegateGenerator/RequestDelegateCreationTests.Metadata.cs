@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
 using System;
+using System.CodeDom.Compiler;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
@@ -466,6 +467,22 @@ app.MapPost("/", (AddsCustomParameterMetadata param1) => "Hello").WithMetadata(n
     }
 
     [Fact]
+    public async Task Create_CombinesDefaultMetadata_AndMetadataFromParameterTypesImplementingIEndpointMetadataProvider_AndNonMetadataProviderParameter()
+    {
+        // Arrange
+        var (_, compilation) = await RunGeneratorAsync("""
+app.MapPost("/", (AddsCustomParameterMetadata param1, HttpContext context) => "Hello").WithMetadata(new CustomEndpointMetadata { Source = MetadataSource.Caller });
+""");
+
+        // Act
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        // Assert
+        Assert.Contains(endpoint.Metadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Caller });
+        Assert.Contains(endpoint.Metadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Parameter });
+    }
+
+    [Fact]
     public async Task Create_FlowsRoutePattern_ToMetadataProvider()
     {
         // Arrange
@@ -499,7 +516,7 @@ app.MapPost("/test/pattern", [Attribute1, Attribute2] (AddsCustomParameterMetada
         //       of this test from RDF.
         var filteredMetadata = endpoint.Metadata.Where(
             m => m.GetType().Name != "NullableContextAttribute" &&
-            m.GetType().Name != "SourceKey" &&
+            m is not GeneratedCodeAttribute &&
             m is not MethodInfo &&
             m is not HttpMethodMetadata &&
             m is not Attribute1 &&
@@ -519,5 +536,24 @@ app.MapPost("/test/pattern", [Attribute1, Attribute2] (AddsCustomParameterMetada
             m => Assert.True(m is MetadataCountMetadata),
             // Entry-specific metadata added after a call to InferMetadata
             m => Assert.True(m is CustomEndpointMetadata { Source: MetadataSource.Caller }));
+    }
+
+    [Fact]
+    public async Task Create_CombinesPropertiesAsParameterMetadata_AndTopLevelParameter()
+    {
+        // Arrange
+        var (_, compilation) = await RunGeneratorAsync("""
+app.MapPost("/test/pattern", ([AsParameters] AddsCustomParameterMetadata param1) => new CountsDefaultEndpointMetadataPoco())
+   .WithMetadata(new CustomEndpointMetadata { Source = MetadataSource.Caller });
+""");
+
+        // Act
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        // Assert
+        Assert.Contains(endpoint.Metadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Parameter });
+        Assert.Contains(endpoint.Metadata, m => m is ParameterNameMetadata { Name: "param1" });
+        Assert.Contains(endpoint.Metadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Property });
+        Assert.Contains(endpoint.Metadata, m => m is ParameterNameMetadata { Name: nameof(AddsCustomParameterMetadata.Data) });
     }
 }

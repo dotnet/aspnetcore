@@ -204,6 +204,11 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
                 connection.ResetSequence(sequenceMessage);
                 break;
 
+            case CloseMessage closeMessage:
+                connection.CloseMessage = closeMessage;
+                connection.Abort();
+                break;
+
             // Other kind of message we weren't expecting
             default:
                 Log.UnsupportedMessageReceived(_logger, hubMessage.GetType().FullName!);
@@ -671,7 +676,7 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
                 }
                 else if (descriptor.IsServiceArgument(parameterPointer))
                 {
-                    arguments[parameterPointer] = scope.ServiceProvider.GetRequiredService(descriptor.OriginalParameterTypes[parameterPointer]);
+                    arguments[parameterPointer] = descriptor.GetService(scope.ServiceProvider, parameterPointer, descriptor.OriginalParameterTypes[parameterPointer]);
                 }
                 else if (isStreamCall && ReflectionHelper.IsStreamingType(descriptor.OriginalParameterTypes[parameterPointer], mustBeDirectType: true))
                 {

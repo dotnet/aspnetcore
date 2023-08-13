@@ -3639,7 +3639,7 @@ public class RendererTest
         // Act
         renderer.AssignRootComponentId(component);
         await component.ExternalExceptionDispatch(exception);
-        
+
         // Assert
         Assert.Same(exception, Assert.Single(renderer.HandledExceptions).GetBaseException());
     }
@@ -4978,244 +4978,6 @@ public class RendererTest
     }
 
     [Fact]
-    public void DoesNotTrackNamedEventHandlersWhenNotEnabled()
-    {
-        // Arrange
-        var renderer = new TestRenderer();
-        var namedEvents = new List<(ulong eventHandlerId, int componentId, string eventHandlerName)>();
-        renderer.OnNamedEvent = namedEvents.Add;
-
-        var component = new TestComponent(builder =>
-        {
-            builder.OpenElement(0, "form");
-            builder.AddAttribute(1, "onsubmit", () => { });
-            builder.SetEventHandlerName("MyFormSubmit");
-            builder.CloseElement();
-        });
-
-        // Act
-        var componentId = renderer.AssignRootComponentId(component);
-        component.TriggerRender();
-
-        // Assert
-        var batch = renderer.Batches.Single();
-        var diff = batch.DiffsByComponentId[componentId].Single();
-        Assert.Collection(diff.Edits,
-            edit =>
-            {
-                Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
-                Assert.Equal(0, edit.ReferenceFrameIndex);
-            });
-        AssertFrame.Element(batch.ReferenceFrames[0], "form", 2);
-        AssertFrame.Attribute(batch.ReferenceFrames[1], "onsubmit");
-
-        Assert.Empty(namedEvents);
-    }
-
-    [Fact]
-    public void CanCreateNamedEventHandlers()
-    {
-        // Arrange
-        var renderer = new TestRenderer
-        {
-            TrackNamedEventHandlers = true
-        };
-        var namedEvents = new List<(ulong eventHandlerId, int componentId, string eventHandlerName)>();
-        renderer.OnNamedEvent = namedEvents.Add;
-
-        var component = new TestComponent(builder =>
-        {
-            builder.OpenElement(0, "form");
-            builder.AddAttribute(1, "onsubmit", () => { });
-            builder.SetEventHandlerName("MyFormSubmit");
-            builder.CloseElement();
-        });
-
-        // Act
-        var componentId = renderer.AssignRootComponentId(component);
-        component.TriggerRender();
-
-        // Assert
-        var batch = renderer.Batches.Single();
-        var diff = batch.DiffsByComponentId[componentId].Single();
-        var evt = Assert.Single(namedEvents);
-        Assert.Collection(diff.Edits,
-            edit =>
-            {
-                Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
-                Assert.Equal(0, edit.ReferenceFrameIndex);
-            });
-        AssertFrame.Element(batch.ReferenceFrames[0], "form", 2);
-        AssertFrame.Attribute(batch.ReferenceFrames[1], "onsubmit");
-        Assert.Equal(batch.ReferenceFrames[1].AttributeEventHandlerId, evt.eventHandlerId);
-        Assert.Equal("MyFormSubmit", evt.eventHandlerName);
-        Assert.Equal(componentId, evt.componentId);
-    }
-
-    [Fact]
-    public void CanCreateMultipleNamedEventHandlersPerComponent()
-    {
-        // Arrange
-        var renderer = new TestRenderer
-        {
-            TrackNamedEventHandlers = true
-        };
-        var namedEvents = new List<(ulong eventHandlerId, int componentId, string eventHandlerName)>();
-        renderer.OnNamedEvent = namedEvents.Add;
-
-        var component = new TestComponent(builder =>
-        {
-            builder.OpenElement(0, "form");
-            builder.AddAttribute(1, "onsubmit", () => { });
-            builder.SetEventHandlerName("MyFormSubmit");
-            builder.CloseElement();
-            builder.OpenElement(2, "form");
-            builder.AddAttribute(3, "onsubmit", () => { });
-            builder.SetEventHandlerName("MyOtherFormSubmit");
-            builder.CloseElement();
-        });
-
-        // Act
-        var componentId = renderer.AssignRootComponentId(component);
-        component.TriggerRender();
-
-        // Assert
-        var batch = renderer.Batches.Single();
-        var diff = batch.DiffsByComponentId[componentId].Single();
-        Assert.Equal(2, namedEvents.Count);
-        Assert.Collection(diff.Edits,
-            edit =>
-            {
-                Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
-                Assert.Equal(0, edit.ReferenceFrameIndex);
-            },
-            edit =>
-            {
-                Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
-                Assert.Equal(2, edit.ReferenceFrameIndex);
-            });
-
-        AssertFrame.Element(batch.ReferenceFrames[0], "form", 2);
-        AssertFrame.Attribute(batch.ReferenceFrames[1], "onsubmit");
-        Assert.Equal(batch.ReferenceFrames[1].AttributeEventHandlerId, namedEvents[0].eventHandlerId);
-        Assert.Equal("MyFormSubmit", namedEvents[0].eventHandlerName);
-        Assert.Equal(componentId, namedEvents[0].componentId);
-
-        AssertFrame.Element(batch.ReferenceFrames[2], "form", 2);
-        AssertFrame.Attribute(batch.ReferenceFrames[3], "onsubmit");
-        Assert.Equal(batch.ReferenceFrames[3].AttributeEventHandlerId, namedEvents[1].eventHandlerId);
-        Assert.Equal("MyOtherFormSubmit", namedEvents[1].eventHandlerName);
-        Assert.Equal(componentId, namedEvents[1].componentId);
-    }
-
-    [Fact]
-    public void CanCreateMultipleNamedEventHandlersPerElement()
-    {
-        // Arrange
-        var renderer = new TestRenderer
-        {
-            TrackNamedEventHandlers = true
-        };
-        var namedEvents = new List<(ulong eventHandlerId, int componentId, string eventHandlerName)>();
-        renderer.OnNamedEvent = namedEvents.Add;
-
-        var component = new TestComponent(builder =>
-        {
-            builder.OpenElement(0, "form");
-            builder.AddAttribute(1, "onsubmit", () => { });
-            builder.SetEventHandlerName("MyFormSubmit");
-            builder.AddAttribute(2, "onclick", () => { });
-            builder.SetEventHandlerName("MyFormClick");
-            builder.CloseElement();
-        });
-
-        // Act
-        var componentId = renderer.AssignRootComponentId(component);
-        component.TriggerRender();
-
-        // Assert
-        var batch = renderer.Batches.Single();
-        var diff = batch.DiffsByComponentId[componentId].Single();
-        Assert.Equal(2, namedEvents.Count);
-        Assert.Collection(diff.Edits,
-            edit =>
-            {
-                Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
-                Assert.Equal(0, edit.ReferenceFrameIndex);
-            });
-        AssertFrame.Element(batch.ReferenceFrames[0], "form", 3);
-        AssertFrame.Attribute(batch.ReferenceFrames[1], "onsubmit");
-        AssertFrame.Attribute(batch.ReferenceFrames[2], "onclick");
-
-        Assert.Equal(batch.ReferenceFrames[1].AttributeEventHandlerId, namedEvents[0].eventHandlerId);
-        Assert.Equal("MyFormSubmit", namedEvents[0].eventHandlerName);
-        Assert.Equal(componentId, namedEvents[0].componentId);
-
-        Assert.Equal(batch.ReferenceFrames[2].AttributeEventHandlerId, namedEvents[1].eventHandlerId);
-        Assert.Equal("MyFormClick", namedEvents[1].eventHandlerName);
-        Assert.Equal(componentId, namedEvents[1].componentId);
-    }
-
-    [Fact]
-    public void DuplicateNamedEventHandlersOnComponentThrows()
-    {
-        // Arrange
-        var renderer = new TestRenderer
-        {
-            TrackNamedEventHandlers = true
-        };
-        var namedEvents = new List<(ulong eventHandlerId, int componentId, string eventHandlerName)>();
-        renderer.OnNamedEvent = namedEvents.Add;
-
-        var component = new TestComponent(builder =>
-        {
-            builder.OpenElement(0, "form");
-            builder.AddAttribute(1, "onsubmit", () => { });
-            builder.SetEventHandlerName("MyFormSubmit");
-            builder.CloseElement();
-            builder.OpenElement(2, "form");
-            builder.AddAttribute(3, "onsubmit", () => { });
-            builder.SetEventHandlerName("MyFormSubmit");
-            builder.CloseElement();
-        });
-
-        // Act
-        var componentId = renderer.AssignRootComponentId(component);
-
-        var exception = Assert.Throws<InvalidOperationException>(component.TriggerRender);
-        Assert.Equal("An event handler 'MyFormSubmit' is already defined in this component.", exception.Message);
-    }
-
-    [Fact]
-    public void DuplicateNamedEventHandlersOnElementThrows()
-    {
-        // Arrange
-        var renderer = new TestRenderer
-        {
-            TrackNamedEventHandlers = true
-        };
-        var namedEvents = new List<(ulong eventHandlerId, int componentId, string eventHandlerName)>();
-        renderer.OnNamedEvent = namedEvents.Add;
-
-        var component = new TestComponent(builder =>
-        {
-            builder.OpenElement(0, "form");
-            builder.AddAttribute(1, "onsubmit", () => { });
-            builder.SetEventHandlerName("MyFormSubmit");
-            builder.AddAttribute(2, "onclick", () => { });
-            builder.SetEventHandlerName("MyFormSubmit");
-            builder.CloseElement();
-        });
-
-        // Act
-        var componentId = renderer.AssignRootComponentId(component);
-
-        // Assert
-        var exception = Assert.Throws<InvalidOperationException>(component.TriggerRender);
-        Assert.Equal("An event handler 'MyFormSubmit' is already defined in this component.", exception.Message);
-    }
-
-    [Fact]
     public void ThrowsForUnknownRenderMode_OnComponentType()
     {
         // Arrange
@@ -5233,6 +4995,24 @@ public class RendererTest
     }
 
     [Fact]
+    public void ThrowsForUnknownRenderMode_AtCallSite()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        var component = new TestComponent(builder =>
+        {
+            builder.OpenComponent<TestComponent>(0);
+            builder.AddComponentRenderMode(1, new ComponentWithUnknownRenderMode.UnknownRenderMode());
+            builder.CloseComponent();
+        });
+
+        // Act
+        var componentId = renderer.AssignRootComponentId(component);
+        var ex = Assert.Throws<NotSupportedException>(component.TriggerRender);
+        Assert.Contains($"Cannot supply a component of type '{typeof(TestComponent)}' because the current platform does not support the render mode '{typeof(ComponentWithUnknownRenderMode.UnknownRenderMode)}'.", ex.Message);
+    }
+
+    [Fact]
     public void RenderModeResolverCanSupplyComponent_WithComponentTypeRenderMode()
     {
         // Arrange
@@ -5242,6 +5022,31 @@ public class RendererTest
         {
             builder.OpenComponent<ComponentWithRenderMode>(0);
             builder.AddComponentParameter(1, nameof(MessageComponent.Message), "Some message");
+            builder.CloseComponent();
+        });
+
+        // Act
+        var componentId = renderer.AssignRootComponentId(component);
+        component.TriggerRender();
+
+        // Assert
+        var batch = renderer.Batches.Single();
+        var componentFrames = batch.GetComponentFrames<MessageComponent>();
+        var resolvedComponent = (MessageComponent)componentFrames.Single().Component;
+        Assert.Equal("Some message", resolvedComponent.Message);
+    }
+
+    [Fact]
+    public void RenderModeResolverCanSupplyComponent_CallSiteRenderMode()
+    {
+        // Arrange
+        var renderer = new RendererWithRenderModeResolver();
+
+        var component = new TestComponent(builder =>
+        {
+            builder.OpenComponent<TestComponent>(0);
+            builder.AddComponentParameter(1, nameof(MessageComponent.Message), "Some message");
+            builder.AddComponentRenderMode(2, new SubstituteComponentRenderMode());
             builder.CloseComponent();
         });
 
@@ -5284,9 +5089,9 @@ public class RendererTest
 
     private class RendererWithRenderModeResolver : TestRenderer
     {
-        protected internal override IComponent ResolveComponentForRenderMode(Type componentType, int? parentComponentId, IComponentActivator componentActivator, IComponentRenderMode componentTypeRenderMode)
+        protected internal override IComponent ResolveComponentForRenderMode(Type componentType, int? parentComponentId, IComponentActivator componentActivator, IComponentRenderMode renderMode)
         {
-            return componentTypeRenderMode switch
+            return renderMode switch
             {
                 SubstituteComponentRenderMode => componentActivator.CreateInstance(typeof(MessageComponent)),
                 var other => throw new NotSupportedException($"{nameof(RendererWithRenderModeResolver)} should not have received rendermode {other}"),

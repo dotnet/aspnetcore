@@ -202,6 +202,18 @@ internal sealed class HttpsConnectionMiddleware
 
         _logger.HttpsConnectionEstablished(context.ConnectionId, sslStream.SslProtocol);
 
+        if (context.Features.Get<IConnectionMetricsTagsFeature>() is { } metricsTags)
+        {
+            if (KestrelMetrics.TryGetHandshakeProtocol(sslStream.SslProtocol, out var protocolName, out var protocolVersion))
+            {
+                if (protocolName != "tls")
+                {
+                    metricsTags.Tags.Add(new KeyValuePair<string, object?>("tls.protocol.name", protocolName));
+                }
+                metricsTags.Tags.Add(new KeyValuePair<string, object?>("tls.protocol.version", protocolVersion));
+            }
+        }
+
         var originalTransport = context.Transport;
 
         try
@@ -313,7 +325,7 @@ internal sealed class HttpsConnectionMiddleware
         {
             selector = (sender, name) =>
             {
-                feature.HostName = name;
+                feature.HostName = name ?? string.Empty;
                 var cert = _serverCertificateSelector(context, name);
                 if (cert != null)
                 {

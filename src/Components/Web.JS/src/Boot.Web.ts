@@ -9,38 +9,42 @@
 //    of interactive components
 
 import { DotNet } from '@microsoft/dotnet-js-interop';
-import { startCircuit } from './Boot.Server.Common';
-import { startWebAssembly } from './Boot.WebAssembly.Common';
+import { setCircuitOptions } from './Boot.Server.Common';
+import { setWebAssemblyOptions } from './Boot.WebAssembly.Common';
 import { shouldAutoStart } from './BootCommon';
 import { Blazor } from './GlobalExports';
 import { WebStartOptions } from './Platform/WebStartOptions';
 import { attachStreamingRenderingListener } from './Rendering/StreamingRendering';
-import { WebAssemblyComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
-import { ServerComponentDescriptor, discoverComponents } from './Services/ComponentDescriptorDiscovery';
+import { attachProgressivelyEnhancedNavigationListener } from './Services/NavigationEnhancement';
+import { WebRootComponentManager } from './Services/WebRootComponentManager';
+import { attachComponentDescriptorHandler, registerAllComponentDescriptors } from './Rendering/DomMerging/DomSync';
 
 let started = false;
+const rootComponentManager = new WebRootComponentManager();
 
-async function boot(options?: Partial<WebStartOptions>): Promise<void> {
+function boot(options?: Partial<WebStartOptions>) : Promise<void> {
   if (started) {
     throw new Error('Blazor has already started.');
   }
+
   started = true;
-  await activateInteractiveComponents(options);
 
-  attachStreamingRenderingListener();
-}
+  Blazor._internal.loadWebAssemblyQuicklyTimeout = 3000;
 
-async function activateInteractiveComponents(options?: Partial<WebStartOptions>) {
-  const serverComponents = discoverComponents(document, 'server') as ServerComponentDescriptor[];
-  const webAssemblyComponents = discoverComponents(document, 'webassembly') as WebAssemblyComponentDescriptor[];
+  setCircuitOptions(options?.circuit);
+  setWebAssemblyOptions(options?.webAssembly);
 
-  if (serverComponents.length) {
-    await startCircuit(options?.circuit, serverComponents);
+  attachComponentDescriptorHandler(rootComponentManager);
+  attachStreamingRenderingListener(options?.ssr, rootComponentManager);
+
+  if (!options?.ssr?.disableDomPreservation) {
+    attachProgressivelyEnhancedNavigationListener(rootComponentManager);
   }
 
-  if (webAssemblyComponents.length) {
-    await startWebAssembly(options?.webAssembly, webAssemblyComponents);
-  }
+  registerAllComponentDescriptors(document);
+  rootComponentManager.documentUpdated();
+
+  return Promise.resolve();
 }
 
 Blazor.start = boot;

@@ -525,7 +525,7 @@ public class DefaultApiDescriptionProviderTest
     {
         // Arrange
         var action = CreateActionDescriptor(methodName);
-        action.EndpointMetadata = new List<object>() { new ProducesResponseTypeMetadata(typeof(Product), 200) };
+        action.EndpointMetadata = new List<object>() { new ProducesResponseTypeMetadata(200, typeof(Product)) };
 
         // Act
         var descriptions = GetApiDescriptions(action);
@@ -544,7 +544,7 @@ public class DefaultApiDescriptionProviderTest
     {
         // Arrange
         var action = CreateActionDescriptor(methodName);
-        action.EndpointMetadata = new List<object>() { new ProducesResponseTypeMetadata(typeof(Product), 200) };
+        action.EndpointMetadata = new List<object>() { new ProducesResponseTypeMetadata(200, typeof(Product)) };
         action.FilterDescriptors = new List<FilterDescriptor>{
             new FilterDescriptor(new ProducesResponseTypeAttribute(typeof(Customer), 200), FilterScope.Action)
         };

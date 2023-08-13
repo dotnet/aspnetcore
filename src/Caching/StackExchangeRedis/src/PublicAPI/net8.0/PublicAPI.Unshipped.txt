@@ -1,0 +1,2 @@
+#nullable enable
+static Microsoft.Extensions.DependencyInjection.StackExchangeRedisCacheServiceCollectionExtensions.AddStackExchangeRedisOutputCache(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.Extensions.Caching.StackExchangeRedis.RedisCacheOptions!>! setupAction) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

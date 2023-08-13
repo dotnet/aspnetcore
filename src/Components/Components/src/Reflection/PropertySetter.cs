@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace Microsoft.AspNetCore.Components.Reflection;
 
@@ -26,17 +27,26 @@ internal sealed class PropertySetter
                 "has no setter.");
         }
 
-        var setMethod = property.SetMethod;
+        if (RuntimeFeature.IsDynamicCodeSupported)
+        {
+            var setMethod = property.SetMethod;
 
-        var propertySetterAsAction =
-            setMethod.CreateDelegate(typeof(Action<,>).MakeGenericType(targetType, property.PropertyType));
-        var callPropertySetterClosedGenericMethod =
-            CallPropertySetterOpenGenericMethod.MakeGenericMethod(targetType, property.PropertyType);
-        _setterDelegate = (Action<object, object>)
-            callPropertySetterClosedGenericMethod.CreateDelegate(typeof(Action<object, object>), propertySetterAsAction);
+            var propertySetterAsAction =
+                setMethod.CreateDelegate(typeof(Action<,>).MakeGenericType(targetType, property.PropertyType));
+            var callPropertySetterClosedGenericMethod =
+                CallPropertySetterOpenGenericMethod.MakeGenericMethod(targetType, property.PropertyType);
+            _setterDelegate = (Action<object, object>)
+                callPropertySetterClosedGenericMethod.CreateDelegate(typeof(Action<object, object>), propertySetterAsAction);
+        }
+        else
+        {
+            _setterDelegate = property.SetValue;
+        }
     }
 
-    public bool Cascading { get; init; }
+    public bool AcceptsDirectParameters { get; init; }
+
+    public bool AcceptsCascadingParameters { get; init; }
 
     public void SetValue(object target, object value) => _setterDelegate(target, value);
 

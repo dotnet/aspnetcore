@@ -3,8 +3,10 @@
 
 import { WebAssemblyStartOptions } from './WebAssemblyStartOptions';
 import { CircuitStartOptions } from './Circuits/CircuitStartOptions';
+import { SsrStartOptions } from './SsrStartOptions';
 
 export interface WebStartOptions {
   circuit: CircuitStartOptions;
   webAssembly: WebAssemblyStartOptions;
+  ssr: SsrStartOptions;
 }

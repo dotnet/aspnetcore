@@ -18,7 +18,7 @@ public static class SessionServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
-    [RequiresUnreferencedCode("Session State middleware does not currently support native AOT.", Url = "https://aka.ms/aspnet/nativeaot")]
+    [RequiresUnreferencedCode("Session State middleware does not currently support trimming or native AOT.", Url = "https://aka.ms/aspnet/trimming")]
     public static IServiceCollection AddSession(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
@@ -34,7 +34,7 @@ public static class SessionServiceCollectionExtensions
     /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
     /// <param name="configure">The session options to configure the middleware with.</param>
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
-    [RequiresUnreferencedCode("Session State middleware does not currently support native AOT.", Url = "https://aka.ms/aspnet/nativeaot")]
+    [RequiresUnreferencedCode("Session State middleware does not currently support trimming or native AOT.", Url = "https://aka.ms/aspnet/trimming")]
     public static IServiceCollection AddSession(this IServiceCollection services, Action<SessionOptions> configure)
     {
         ArgumentNullException.ThrowIfNull(services);

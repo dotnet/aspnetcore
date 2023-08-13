@@ -1,10 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms.Mapping;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -83,6 +81,11 @@ public class RazorComponentsServiceCollectionExtensionsTest
         {
             return new Dictionary<Type, Type[]>()
             {
+                [typeof(ICascadingValueSupplier)] = new[]
+                {
+                    typeof(SupplyParameterFromFormValueProvider),
+                    typeof(SupplyParameterFromQueryProviderServiceCollectionExtensions.SupplyValueFromQueryValueProvider),
+                }
             };
         }
     }

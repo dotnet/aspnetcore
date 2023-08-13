@@ -587,12 +587,12 @@ internal static class ILEmitTrieFactory
         public MethodInfo GetReference { get; }
 
         /// <summary>
-        /// <see cref="Unsafe.ReadUnaligned{T}(ref byte)"/> - ReadUnaligned[ulong]
+        /// <see cref="Unsafe.ReadUnaligned{T}(ref readonly byte)"/> - ReadUnaligned[ulong]
         /// </summary>
         public MethodInfo ReadUnalignedUInt64 { get; }
 
         /// <summary>
-        /// <see cref="Unsafe.ReadUnaligned{T}(ref byte)"/> - ReadUnaligned[ushort]
+        /// <see cref="Unsafe.ReadUnaligned{T}(ref readonly byte)"/> - ReadUnaligned[ushort]
         /// </summary>
         public MethodInfo ReadUnalignedUInt16 { get; }
     }

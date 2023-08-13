@@ -4,7 +4,7 @@
 import { HandshakeProtocol, HandshakeRequestMessage, HandshakeResponseMessage } from "./HandshakeProtocol";
 import { IConnection } from "./IConnection";
 import { AbortError } from "./Errors";
-import { CancelInvocationMessage, CompletionMessage, IHubProtocol, InvocationMessage, MessageType, StreamInvocationMessage, StreamItemMessage } from "./IHubProtocol";
+import { CancelInvocationMessage, CloseMessage, CompletionMessage, IHubProtocol, InvocationMessage, MessageType, StreamInvocationMessage, StreamItemMessage } from "./IHubProtocol";
 import { ILogger, LogLevel } from "./ILogger";
 import { IRetryPolicy } from "./IRetryPolicy";
 import { IStreamResult } from "./Stream";
@@ -294,6 +294,7 @@ export class HubConnection {
             return this._stopPromise!;
         }
 
+        const state = this._connectionState;
         this._connectionState = HubConnectionState.Disconnecting;
 
         this._logger.log(LogLevel.Debug, "Stopping HubConnection.");
@@ -311,6 +312,11 @@ export class HubConnection {
             return Promise.resolve();
         }
 
+        if (state === HubConnectionState.Connected) {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            this._sendCloseMessage();
+        }
+
         this._cleanupTimeout();
         this._cleanupPingTimer();
         this._stopDuringStartError = error || new AbortError("The connection was stopped before the hub handshake could complete.");
@@ -319,6 +325,14 @@ export class HubConnection {
         // or the onclose callback is invoked. The onclose callback will transition the HubConnection
         // to the disconnected state if need be before HttpConnection.stop() completes.
         return this.connection.stop(error);
+    }
+
+    private async _sendCloseMessage() {
+        try {
+            await this._sendWithProtocol(this._createCloseMessage());
+        } catch {
+            // Ignore, this is a best effort attempt to let the server know the client closed gracefully.
+        }
     }
 
     /** Invokes a streaming hub method on the server using the specified name and arguments.
@@ -1076,5 +1090,9 @@ export class HubConnection {
             result,
             type: MessageType.Completion,
         };
+    }
+
+    private _createCloseMessage(): CloseMessage {
+        return { type: MessageType.Close };
     }
 }

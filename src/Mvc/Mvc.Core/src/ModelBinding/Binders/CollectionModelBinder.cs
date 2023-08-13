@@ -409,9 +409,16 @@ public partial class CollectionModelBinder<TElement> : ICollectionModelBinder
     }
 
     // Internal for testing.
-    internal sealed record CollectionResult(IEnumerable<TElement?> Model)
+    internal sealed class CollectionResult
     {
+        public IEnumerable<TElement?> Model { get; }
+        
         public IValidationStrategy? ValidationStrategy { get; init; }
+
+        public CollectionResult(IEnumerable<TElement?> model)
+        {
+            Model = model;
+        }
     }
 
     /// <summary>

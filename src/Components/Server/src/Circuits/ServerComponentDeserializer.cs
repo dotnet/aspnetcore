@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.DataProtection;
@@ -60,6 +61,13 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
     private readonly RootComponentTypeCache _rootComponentTypeCache;
     private readonly ComponentParameterDeserializer _parametersDeserializer;
 
+    // The following fields are only used in TryDeserializeSingleComponentDescriptor.
+    // The TryDeserializeComponentDescriptorCollection method uses a stateless
+    // approach to efficiently detect invalid component records.
+    private readonly HashSet<Guid> _expiredInvocationIds = new();
+    private readonly HashSet<int> _seenSequenceNumbersForCurrentInvocation = new();
+    private Guid? _currentInvocationId;
+
     public ServerComponentDeserializer(
         IDataProtectionProvider dataProtectionProvider,
         ILogger<ServerComponentDeserializer> logger,
@@ -84,23 +92,16 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
 
     public bool TryDeserializeComponentDescriptorCollection(string serializedComponentRecords, out List<ComponentDescriptor> descriptors)
     {
-        var markers = JsonSerializer.Deserialize<IEnumerable<ServerComponentMarker>>(serializedComponentRecords, ServerComponentSerializationSettings.JsonSerializationOptions);
+        var markers = JsonSerializer.Deserialize<IEnumerable<ComponentMarker>>(serializedComponentRecords, ServerComponentSerializationSettings.JsonSerializationOptions);
         descriptors = new List<ComponentDescriptor>();
         int lastSequence = -1;
 
         var previousInstance = new ServerComponent();
         foreach (var marker in markers)
         {
-            if (marker.Type != ServerComponentMarker.ServerMarkerType)
+            if (!IsWellFormedServerComponent(marker))
             {
-                Log.InvalidMarkerType(_logger, marker.Type);
-                descriptors.Clear();
-                return false;
-            }
-
-            if (marker.Descriptor == null)
-            {
-                Log.MissingMarkerDescriptor(_logger);
+                // The client sent us a marker with missing or obviously incorrect info.
                 descriptors.Clear();
                 return false;
             }
@@ -147,7 +148,76 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
         return true;
     }
 
-    private (ComponentDescriptor, ServerComponent) DeserializeServerComponent(ServerComponentMarker record)
+    public bool TryDeserializeSingleComponentDescriptor(ComponentMarker record, [NotNullWhen(true)] out ComponentDescriptor? result)
+    {
+        result = default;
+
+        if (!IsWellFormedServerComponent(record))
+        {
+            // The client sent us a marker with missing or obviously incorrect info.
+            return false;
+        }
+
+        var (descriptor, serverComponent) = DeserializeServerComponent(record);
+        if (descriptor is null)
+        {
+            // We failed to deserialize the component descriptor for some reason.
+            return false;
+        }
+
+        // We're seeing a different invocation ID than we did the last time we processed a component.
+        // There are two possibilities:
+        // [1] A new invocation has started, in which case we should stop accepting components from the previous one.
+        // [2] The client is attempting to use an already-expired invocation ID. We should reject the component in
+        //     this case because we only want to accept components from the current invocation.
+        if (serverComponent.InvocationId != _currentInvocationId)
+        {
+            if (_expiredInvocationIds.Contains(serverComponent.InvocationId))
+            {
+                Log.ExpiredInvocationId(_logger, serverComponent.InvocationId.ToString("N"));
+                return false;
+            }
+
+            if (_currentInvocationId.HasValue)
+            {
+                _expiredInvocationIds.Add(_currentInvocationId.Value);
+            }
+
+            _currentInvocationId = serverComponent.InvocationId;
+            _seenSequenceNumbersForCurrentInvocation.Clear();
+        }
+
+        // We've already seen this sequence number for this invocation. We fail to avoid processing the same
+        // component twice.
+        if (_seenSequenceNumbersForCurrentInvocation.Contains(serverComponent.Sequence))
+        {
+            Log.ReusedDescriptorSequence(_logger, serverComponent.Sequence, serverComponent.InvocationId.ToString("N"));
+            return false;
+        }
+
+        _seenSequenceNumbersForCurrentInvocation.Add(serverComponent.Sequence);
+        result = descriptor;
+        return true;
+    }
+
+    private bool IsWellFormedServerComponent(ComponentMarker record)
+    {
+        if (record.Type is not (ComponentMarker.ServerMarkerType or ComponentMarker.AutoMarkerType))
+        {
+            Log.InvalidMarkerType(_logger, record.Type);
+            return false;
+        }
+
+        if (record.Descriptor == null)
+        {
+            Log.MissingMarkerDescriptor(_logger);
+            return false;
+        }
+
+        return true;
+    }
+
+    private (ComponentDescriptor, ServerComponent) DeserializeServerComponent(ComponentMarker record)
     {
         string unprotected;
         try
@@ -225,5 +295,11 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
 
         [LoggerMessage(8, LogLevel.Debug, "The descriptor sequence '{sequence}' is an invalid start sequence.", EventName = "DescriptorSequenceMustStartAtZero")]
         public static partial void DescriptorSequenceMustStartAtZero(ILogger<ServerComponentDeserializer> logger, int sequence);
+
+        [LoggerMessage(9, LogLevel.Debug, "The descriptor invocationId '{invocationId}' has expired.", EventName = "ExpiredInvocationId")]
+        public static partial void ExpiredInvocationId(ILogger<ServerComponentDeserializer> logger, string invocationId);
+
+        [LoggerMessage(10, LogLevel.Debug, "The descriptor with sequence '{sequence}' was already used for the current invocationId '{invocationId}'.", EventName = "ReusedDescriptorSequence")]
+        public static partial void ReusedDescriptorSequence(ILogger<ServerComponentDeserializer> logger, int sequence, string invocationId);
     }
 }

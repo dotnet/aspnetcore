@@ -16,5 +16,6 @@ public class BearerTokenEvents
     /// <summary>
     /// Invoked when a protocol message is first received.
     /// </summary>
-    public virtual Task MessageReceived(MessageReceivedContext context) => OnMessageReceived(context);
+    /// <param name="context">The <see cref="MessageReceivedContext"/>.</param>
+    public virtual Task MessageReceivedAsync(MessageReceivedContext context) => OnMessageReceived(context);
 }
