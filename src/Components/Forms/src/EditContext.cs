@@ -200,7 +200,7 @@ public sealed class EditContext
     /// </summary>
     /// <returns>True if the field has no associated validation messages after validation; otherwise false.</returns>
     public bool IsValid(in FieldIdentifier fieldIdentifier)
-        => GetValidationMessages(fieldIdentifier).Any();
+        => !GetValidationMessages(fieldIdentifier).Any();
 
     /// <summary>
     /// Determines whether the specified fields in this <see cref="EditContext"/> has no associated validation messages.
