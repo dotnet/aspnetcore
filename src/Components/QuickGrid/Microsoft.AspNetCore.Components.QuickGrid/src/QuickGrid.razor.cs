@@ -5,6 +5,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Components.QuickGrid.Infrastructure;
 using Microsoft.AspNetCore.Components.Web.Virtualization;
 using Microsoft.JSInterop;
+using Microsoft.AspNetCore.Components.Forms;
 
 namespace Microsoft.AspNetCore.Components.QuickGrid;
 
