@@ -2,8 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.FileProviders.Physical;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 
 internal sealed partial class CertificatePathWatcher : IDisposable
 {
-    private readonly Func<string, IFileProvider?> _fileProviderFactory;
+    private readonly Func<string, IFileProviderWithLinkInfo?> _fileProviderFactory;
     private readonly string _contentRootDir;
     private readonly ILogger<CertificatePathWatcher> _logger;
 
@@ -31,14 +31,14 @@ internal sealed partial class CertificatePathWatcher : IDisposable
         : this(
               hostEnvironment.ContentRootPath,
               logger,
-              dir => Directory.Exists(dir) ? new PhysicalFileProvider(dir, ExclusionFilters.None) : null)
+              dir => Directory.Exists(dir) ? new PhysicalFileProviderWithLinkInfo(dir, ExclusionFilters.None) : null)
     {
     }
 
     /// <remarks>
     /// For testing.
     /// </remarks>
-    internal CertificatePathWatcher(string contentRootPath, ILogger<CertificatePathWatcher> logger, Func<string, IFileProvider?> fileProviderFactory)
+    internal CertificatePathWatcher(string contentRootPath, ILogger<CertificatePathWatcher> logger, Func<string, IFileProviderWithLinkInfo?> fileProviderFactory)
     {
         _contentRootDir = contentRootPath;
         _logger = logger;
@@ -102,9 +102,18 @@ internal sealed partial class CertificatePathWatcher : IDisposable
     /// </remarks>
     internal void AddWatchUnsynchronized(CertificateConfig certificateConfig)
     {
-        Debug.Assert(certificateConfig.IsFileCert, "AddWatch called on non-file cert");
+        Debug.Assert(certificateConfig.IsFileCert, $"{nameof(AddWatchUnsynchronized)} called on non-file cert");
 
         var path = Path.Combine(_contentRootDir, certificateConfig.Path);
+
+        AddWatchWorkerUnsynchronized(certificateConfig, path, logSummary: true);
+    }
+
+    /// <remarks>
+    /// The patch of <paramref name="certificateConfig"/> may not match <paramref name="path"/> (e.g. in the presence of symlinks).
+    /// </remarks>
+    private void AddWatchWorkerUnsynchronized(CertificateConfig certificateConfig, string path, bool logSummary)
+    {
         var dir = Path.GetDirectoryName(path)!;
 
         if (!_metadataForDirectory.TryGetValue(dir, out var dirMetadata))
@@ -131,93 +140,76 @@ internal sealed partial class CertificatePathWatcher : IDisposable
 
             var disposable = ChangeToken.OnChange(
                 () => dirMetadata.FileProvider.Watch(Path.GetFileName(path)),
-                static tuple => tuple.Item1.OnChange(tuple.Item2),
-                ValueTuple.Create(this, path));
+                static tuple => tuple.Item1.OnChange(tuple.Item2, tuple.Item3),
+                ValueTuple.Create(this, certificateConfig, path));
 
             fileMetadata = new FileWatchMetadata(disposable);
             _metadataForFile.Add(path, fileMetadata);
             dirMetadata.FileWatchCount++;
 
             // We actually don't care if the file doesn't exist - we'll watch in case it is created
-            fileMetadata.LastModifiedTime = GetLastModifiedTimeOrMinimum(path, dirMetadata.FileProvider);
+            fileMetadata.LastModifiedTime = GetLastModifiedTimeAndLinkTargetPath(path, dirMetadata.FileProvider, out fileMetadata.LinkTargetPath);
 
             _logger.CreatedFileWatcher(path);
         }
 
         if (!fileMetadata.Configs.Add(certificateConfig))
         {
+            // Note: this also prevents us from getting stuck in symlink cycles
             _logger.ReusedObserver(path);
             return;
         }
 
         _logger.AddedObserver(path);
 
-        _logger.ObserverCount(path, fileMetadata.Configs.Count);
-        _logger.FileCount(dir, dirMetadata.FileWatchCount);
+        // If the directory itself is a link, resolve the link and recurse
+        // (Note that this will cover the case where the file is also a link)
+        if (dirMetadata.FileProvider.ResolveLinkTarget(returnFinalTarget: false) is IFileInfoWithLinkInfo dirLinkTarget)
+        {
+            if (dirLinkTarget.PhysicalPath is string dirLinkTargetPath)
+            {
+                // It may not exist, but we'll let AddSymlinkWatch deal with that and log something sensible
+                var linkTargetPath = Path.Combine(dirLinkTargetPath, Path.GetFileName(path));
+                AddWatchWorkerUnsynchronized(certificateConfig, linkTargetPath, logSummary: false);
+            }
+        }
+        // Otherwise, if the file is a link, resolve the link and recurse
+        else if (fileMetadata.LinkTargetPath is string linkTargetPath)
+        {
+            AddWatchWorkerUnsynchronized(certificateConfig, linkTargetPath, logSummary: false);
+        }
+
+        if (logSummary)
+        {
+            _logger.ObserverCount(path, fileMetadata.Configs.Count);
+            _logger.FileCount(dir, dirMetadata.FileWatchCount);
+        }
     }
 
-    private DateTimeOffset GetLastModifiedTimeOrMinimum(string path, IFileProvider fileProvider)
+    /// <remarks>
+    /// Returns <see cref="DateTimeOffset.MinValue"/> if no last modified time is available (e.g. because the file doesn't exist).
+    /// </remarks>
+    private static DateTimeOffset GetLastModifiedTimeAndLinkTargetPath(string path, IFileProviderWithLinkInfo fileProvider, out string? linkTargetPath)
     {
-        try
+        var fileInfo = fileProvider.GetFileInfo(Path.GetFileName(path));
+        if (!fileInfo.Exists)
         {
-            return fileProvider.GetFileInfo(Path.GetFileName(path)).LastModified;
-        }
-        catch (Exception e)
-        {
-            _logger.LastModifiedTimeError(path, e);
+            linkTargetPath = null;
+            return DateTimeOffset.MinValue;
         }
 
-        return DateTimeOffset.MinValue;
+        linkTargetPath = fileInfo.ResolveLinkTarget(returnFinalTarget: false)?.PhysicalPath; // We need to add a watch at every link in the chain
+        return fileInfo.LastModified;
     }
 
-    private void OnChange(string path)
+    private void OnChange(CertificateConfig certificateConfig, string path)
     {
         // Block until any in-progress updates are complete
         lock (_metadataLock)
         {
-            if (!_metadataForFile.TryGetValue(path, out var fileMetadata))
+            if (!ShouldFireChangeUnsynchronized(certificateConfig, path))
             {
-                _logger.UntrackedFileEvent(path);
                 return;
-            }
-
-            // Existence implied by the fact that we're tracking the file
-            var dirMetadata = _metadataForDirectory[Path.GetDirectoryName(path)!];
-
-            // We ignore file changes that don't advance the last modified time.
-            // For example, if we lose access to the network share the file is
-            // stored on, we don't notify our listeners because no one wants
-            // their endpoint/server to shutdown when that happens.
-            // We also anticipate that a cert file might be renamed to cert.bak
-            // before a new cert is introduced with the old name.
-            // This also helps us in scenarios where the underlying file system
-            // reports more than one change for a single logical operation.
-            var lastModifiedTime = GetLastModifiedTimeOrMinimum(path, dirMetadata.FileProvider);
-            if (lastModifiedTime > fileMetadata.LastModifiedTime)
-            {
-                fileMetadata.LastModifiedTime = lastModifiedTime;
-            }
-            else
-            {
-                if (lastModifiedTime == DateTimeOffset.MinValue)
-                {
-                    _logger.EventWithoutLastModifiedTime(path);
-                }
-                else if (lastModifiedTime == fileMetadata.LastModifiedTime)
-                {
-                    _logger.RedundantEvent(path);
-                }
-                else
-                {
-                    _logger.OutOfOrderEvent(path);
-                }
-                return;
-            }
-
-            var configs = fileMetadata.Configs;
-            foreach (var config in configs)
-            {
-                config.FileHasChanged = true;
             }
         }
 
@@ -225,6 +217,98 @@ internal sealed partial class CertificatePathWatcher : IDisposable
         // It does however need to be synchronized, since there could be multiple concurrent events.
         var previousToken = Interlocked.Exchange(ref _reloadToken, new());
         previousToken.OnReload();
+    }
+
+    private bool ShouldFireChangeUnsynchronized(CertificateConfig certificateConfig, string path)
+    {
+        if (!_metadataForFile.TryGetValue(path, out var fileMetadata))
+        {
+            _logger.UntrackedFileEvent(path);
+            return false;
+        }
+
+        // Existence implied by the fact that we're tracking the file
+        var dirMetadata = _metadataForDirectory[Path.GetDirectoryName(path)!];
+
+        // We ignore file changes that don't advance the last modified time.
+        // For example, if we lose access to the network share the file is
+        // stored on, we don't notify our listeners because no one wants
+        // their endpoint/server to shutdown when that happens.
+        // We also anticipate that a cert file might be renamed to cert.bak
+        // before a new cert is introduced with the old name.
+        // This also helps us in scenarios where the underlying file system
+        // reports more than one change for a single logical operation.
+        var lastModifiedTime = GetLastModifiedTimeAndLinkTargetPath(path, dirMetadata.FileProvider, out var newLinkTargetPath);
+        if (lastModifiedTime > fileMetadata.LastModifiedTime)
+        {
+            fileMetadata.LastModifiedTime = lastModifiedTime;
+        }
+        else
+        {
+            if (lastModifiedTime == DateTimeOffset.MinValue)
+            {
+                _logger.EventWithoutLastModifiedTime(path);
+            }
+            else if (lastModifiedTime == fileMetadata.LastModifiedTime)
+            {
+                Debug.Assert(newLinkTargetPath == fileMetadata.LinkTargetPath, "Link target changed without timestamp changing");
+
+                _logger.RedundantEvent(path);
+            }
+            else
+            {
+                _logger.OutOfOrderEvent(path);
+            }
+
+            return false;
+        }
+
+        var configs = fileMetadata.Configs;
+        foreach (var config in configs)
+        {
+            config.FileHasChanged = true;
+        }
+
+        if (newLinkTargetPath != fileMetadata.LinkTargetPath)
+        {
+            // For correctness, we need to do the removal first, even though that might
+            // cause us to tear down some nodes that we will immediately re-add.
+            // For example, suppose you had a file A pointing to a file B, pointing to a file C:
+            //   A -> B -> C
+            // If file A were updated to point to a new file D, which also pointed to C:
+            //   A -> B -> C
+            //     -> D ->
+            // Then adding a watch on D would no-op on recursively adding a watch on C, since its
+            // already monitored for A's CertificateConfig.
+            // Then removing a watch on B would tear down both B and C, even though D should still
+            // be keeping C alive.
+            //   A -> D -> ??
+            // Doing the removal first produces the correct result:
+            //   A -> D -> C
+            // But it requires creating a watcher for C that is the same as the one that was removed
+            // (possibly including deleting and re-creating the directory watcher).  Hopefully,
+            // such diamonds will be rare, in practice.
+
+            // Also note that these updates are almost certainly redundant, since the change event
+            // we're about to fire will cause everything linked to, directly or indirectly, from
+            // certificateConfig.path to be updated in the next call to UpdateWatches.  However,
+            // baking in the assumption as part of the contract for consuming this type would be
+            // unreasonable - it should make sense in its own right.
+
+            if (fileMetadata.LinkTargetPath is string oldLinkTargetPath)
+            {
+                // We already have a rooted path, so call the worker
+                RemoveWatchWorkerUnsynchronized(certificateConfig, oldLinkTargetPath, logSummary: false);
+            }
+
+            if (newLinkTargetPath is not null)
+            {
+                // We already have a rooted path, so call the worker
+                AddWatchWorkerUnsynchronized(certificateConfig, newLinkTargetPath, logSummary: false);
+            }
+        }
+
+        return true;
     }
 
     /// <summary>
@@ -236,9 +320,17 @@ internal sealed partial class CertificatePathWatcher : IDisposable
     /// </remarks>
     internal void RemoveWatchUnsynchronized(CertificateConfig certificateConfig)
     {
-        Debug.Assert(certificateConfig.IsFileCert, "RemoveWatch called on non-file cert");
-
+        Debug.Assert(certificateConfig.IsFileCert, $"{nameof(RemoveWatchUnsynchronized)} called on non-file cert");
         var path = Path.Combine(_contentRootDir, certificateConfig.Path);
+
+        RemoveWatchWorkerUnsynchronized(certificateConfig, path, logSummary: true);
+    }
+
+    /// <remarks>
+    /// The patch of <paramref name="certificateConfig"/> may not match <paramref name="path"/> (e.g. in the presence of symlinks).
+    /// </remarks>
+    private void RemoveWatchWorkerUnsynchronized(CertificateConfig certificateConfig, string path, bool logSummary)
+    {
         var dir = Path.GetDirectoryName(path)!;
 
         if (!_metadataForFile.TryGetValue(path, out var fileMetadata))
@@ -256,6 +348,13 @@ internal sealed partial class CertificatePathWatcher : IDisposable
         }
 
         _logger.RemovedObserver(path);
+
+        if (fileMetadata.LinkTargetPath is string linkTargetPath)
+        {
+            // We built this graph, so we already know there are no cycles
+            // Never log summary messages from recursive calls
+            RemoveWatchWorkerUnsynchronized(certificateConfig, linkTargetPath, logSummary: false);
+        }
 
         // If we found fileMetadata, there must be a containing/corresponding dirMetadata
         var dirMetadata = _metadataForDirectory[dir];
@@ -277,8 +376,11 @@ internal sealed partial class CertificatePathWatcher : IDisposable
             }
         }
 
-        _logger.ObserverCount(path, configs.Count);
-        _logger.FileCount(dir, dirMetadata.FileWatchCount);
+        if (logSummary)
+        {
+            _logger.ObserverCount(path, configs.Count);
+            _logger.FileCount(dir, dirMetadata.FileWatchCount);
+        }
     }
 
     /// <remarks>Test hook</remarks>
@@ -309,9 +411,9 @@ internal sealed partial class CertificatePathWatcher : IDisposable
         }
     }
 
-    private sealed class DirectoryWatchMetadata(IFileProvider fileProvider) : IDisposable
+    private sealed class DirectoryWatchMetadata(IFileProviderWithLinkInfo fileProvider) : IDisposable
     {
-        public readonly IFileProvider FileProvider = fileProvider;
+        public readonly IFileProviderWithLinkInfo FileProvider = fileProvider;
         public int FileWatchCount;
 
         public void Dispose() => (FileProvider as IDisposable)?.Dispose();
@@ -322,6 +424,7 @@ internal sealed partial class CertificatePathWatcher : IDisposable
         public readonly IDisposable Disposable = disposable;
         public readonly HashSet<CertificateConfig> Configs = new(ReferenceEqualityComparer.Instance);
         public DateTimeOffset LastModifiedTime = DateTimeOffset.MinValue;
+        public string? LinkTargetPath;
 
         public void Dispose() => Disposable.Dispose();
     }

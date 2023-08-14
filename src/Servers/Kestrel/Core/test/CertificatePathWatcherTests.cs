@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.IO;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.FileProviders;
@@ -124,7 +126,7 @@ public class CertificatePathWatcherTests : LoggedTest
 
         var logger = LoggerFactory.CreateLogger<CertificatePathWatcher>();
 
-        var fileProvider = new MockFileProvider();
+        var fileProvider = new MockFileProvider(dir);
         var fileLastModifiedTime = DateTimeOffset.UtcNow;
         fileProvider.SetLastModifiedTime(fileName, fileLastModifiedTime);
 
@@ -166,6 +168,258 @@ public class CertificatePathWatcherTests : LoggedTest
     }
 
     [Fact]
+    public async Task FileReplacedWithLink()
+    {
+        var dir = Directory.GetCurrentDirectory();
+
+        var fileName = Path.GetRandomFileName();
+        var filePath = Path.Combine(dir, fileName);
+
+        var linkTargetName = Path.GetRandomFileName();
+        var linkTargetPath = Path.Combine(dir, linkTargetName);
+
+        var logger = LoggerFactory.CreateLogger<CertificatePathWatcher>();
+
+        var fileProvider = new MockFileProvider(dir);
+        var fileLastModifiedTime = DateTimeOffset.UtcNow;
+        var linkTargetLastModifiedTime = fileLastModifiedTime.AddSeconds(-1); // target is *older* than original file
+
+        fileProvider.SetLastModifiedTime(fileName, fileLastModifiedTime);
+        fileProvider.SetLastModifiedTime(linkTargetName, linkTargetLastModifiedTime);
+
+        using var watcher = new CertificatePathWatcher(dir, logger, _ => fileProvider);
+
+        var signalTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var oldChangeToken = watcher.GetChangeToken();
+        oldChangeToken.RegisterChangeCallback(_ => signalTcs.SetResult(), state: null);
+
+        var certificateConfig = new CertificateConfig
+        {
+            Path = filePath,
+        };
+
+        watcher.AddWatchUnsynchronized(certificateConfig);
+
+        Assert.Equal(1, watcher.TestGetDirectoryWatchCountUnsynchronized());
+        Assert.Equal(1, watcher.TestGetFileWatchCountUnsynchronized(dir));
+        Assert.Equal(1, watcher.TestGetObserverCountUnsynchronized(filePath));
+        Assert.Equal(0, watcher.TestGetObserverCountUnsynchronized(linkTargetPath));
+
+        // Simulate file change on disk
+        fileProvider.SetLastModifiedTime(fileName, fileLastModifiedTime.AddSeconds(1));
+        fileProvider.SetLinkTarget(fileName, linkTargetName, fileProvider);
+        fileProvider.FireChangeToken(fileName);
+
+        await signalTcs.Task.DefaultTimeout();
+
+        Assert.Equal(1, watcher.TestGetDirectoryWatchCountUnsynchronized());
+        Assert.Equal(2, watcher.TestGetFileWatchCountUnsynchronized(dir));
+        Assert.Equal(1, watcher.TestGetObserverCountUnsynchronized(filePath));
+        Assert.Equal(1, watcher.TestGetObserverCountUnsynchronized(linkTargetPath));
+
+        var newChangeToken = watcher.GetChangeToken();
+
+        Assert.NotSame(oldChangeToken, newChangeToken);
+        Assert.True(oldChangeToken.HasChanged);
+        Assert.False(newChangeToken.HasChanged);
+
+        Assert.True(certificateConfig.FileHasChanged);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task FileLinkChanged(bool updatedFileIsLink)
+    {
+        var dir = Directory.GetCurrentDirectory();
+
+        var fileName = Path.GetRandomFileName();
+        var filePath = Path.Combine(dir, fileName);
+
+        var oldLinkTargetName = Path.GetRandomFileName();
+        var oldLinkTargetPath = Path.Combine(dir, oldLinkTargetName);
+
+        var newLinkTargetName = Path.GetRandomFileName();
+        var newLinkTargetPath = Path.Combine(dir, newLinkTargetName);
+
+        var logger = LoggerFactory.CreateLogger<CertificatePathWatcher>();
+
+        var fileProvider = new MockFileProvider(dir);
+        var fileLastModifiedTime = DateTimeOffset.UtcNow;
+
+        fileProvider.SetLastModifiedTime(fileName, fileLastModifiedTime);
+        fileProvider.SetLastModifiedTime(oldLinkTargetName, fileLastModifiedTime);
+        fileProvider.SetLastModifiedTime(newLinkTargetName, fileLastModifiedTime);
+
+        fileProvider.SetLinkTarget(fileName, oldLinkTargetName, fileProvider);
+
+        using var watcher = new CertificatePathWatcher(dir, logger, _ => fileProvider);
+
+        var signalTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var oldChangeToken = watcher.GetChangeToken();
+        oldChangeToken.RegisterChangeCallback(_ => signalTcs.SetResult(), state: null);
+
+        var certificateConfig = new CertificateConfig
+        {
+            Path = filePath,
+        };
+
+        watcher.AddWatchUnsynchronized(certificateConfig);
+
+        Assert.Equal(1, watcher.TestGetDirectoryWatchCountUnsynchronized());
+        Assert.Equal(2, watcher.TestGetFileWatchCountUnsynchronized(dir));
+        Assert.Equal(1, watcher.TestGetObserverCountUnsynchronized(filePath));
+        Assert.Equal(1, watcher.TestGetObserverCountUnsynchronized(oldLinkTargetPath));
+        Assert.Equal(0, watcher.TestGetObserverCountUnsynchronized(newLinkTargetPath));
+
+        // Simulate file change on disk
+        fileProvider.SetLastModifiedTime(fileName, fileLastModifiedTime.AddSeconds(1));
+        if (updatedFileIsLink)
+        {
+            fileProvider.SetLinkTarget(fileName, newLinkTargetName, fileProvider);
+        }
+        else
+        {
+            fileProvider.RemoveLinkTarget(fileName);
+        }
+        fileProvider.FireChangeToken(fileName);
+
+        await signalTcs.Task.DefaultTimeout();
+
+        var newChangeToken = watcher.GetChangeToken();
+
+        Assert.Equal(1, watcher.TestGetDirectoryWatchCountUnsynchronized());
+        Assert.Equal(updatedFileIsLink ? 2 : 1, watcher.TestGetFileWatchCountUnsynchronized(dir));
+        Assert.Equal(1, watcher.TestGetObserverCountUnsynchronized(filePath));
+        Assert.Equal(0, watcher.TestGetObserverCountUnsynchronized(oldLinkTargetPath));
+        Assert.Equal(updatedFileIsLink ? 1 : 0, watcher.TestGetObserverCountUnsynchronized(newLinkTargetPath));
+
+        Assert.NotSame(oldChangeToken, newChangeToken);
+        Assert.True(oldChangeToken.HasChanged);
+        Assert.False(newChangeToken.HasChanged);
+
+        Assert.True(certificateConfig.FileHasChanged);
+    }
+
+    [Fact]
+    public async Task FileLinkTargetChanged()
+    {
+        var dir = Directory.GetCurrentDirectory();
+
+        var fileName = Path.GetRandomFileName();
+        var filePath = Path.Combine(dir, fileName);
+
+        var linkTargetName = Path.GetRandomFileName();
+        var linkTargetPath = Path.Combine(dir, linkTargetName);
+
+        var logger = LoggerFactory.CreateLogger<CertificatePathWatcher>();
+
+        var fileProvider = new MockFileProvider(dir);
+        var fileLastModifiedTime = DateTimeOffset.UtcNow;
+
+        fileProvider.SetLastModifiedTime(fileName, fileLastModifiedTime);
+        fileProvider.SetLastModifiedTime(linkTargetName, fileLastModifiedTime);
+
+        fileProvider.SetLinkTarget(fileName, linkTargetName, fileProvider);
+
+        using var watcher = new CertificatePathWatcher(dir, logger, _ => fileProvider);
+
+        var signalTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var oldChangeToken = watcher.GetChangeToken();
+        oldChangeToken.RegisterChangeCallback(_ => signalTcs.SetResult(), state: null);
+
+        var certificateConfig = new CertificateConfig
+        {
+            Path = filePath,
+        };
+
+        watcher.AddWatchUnsynchronized(certificateConfig);
+
+        Assert.Equal(1, watcher.TestGetDirectoryWatchCountUnsynchronized());
+        Assert.Equal(2, watcher.TestGetFileWatchCountUnsynchronized(dir));
+        Assert.Equal(1, watcher.TestGetObserverCountUnsynchronized(filePath));
+        Assert.Equal(1, watcher.TestGetObserverCountUnsynchronized(linkTargetPath));
+
+        // Simulate file change on disk
+        fileProvider.SetLastModifiedTime(fileName, fileLastModifiedTime.AddSeconds(1));
+        fileProvider.SetLinkTarget(fileName, linkTargetName, fileProvider);
+        fileProvider.FireChangeToken(fileName);
+
+        await signalTcs.Task.DefaultTimeout();
+
+        var newChangeToken = watcher.GetChangeToken();
+
+        Assert.Equal(1, watcher.TestGetDirectoryWatchCountUnsynchronized());
+        Assert.Equal(2, watcher.TestGetFileWatchCountUnsynchronized(dir));
+        Assert.Equal(1, watcher.TestGetObserverCountUnsynchronized(filePath));
+        Assert.Equal(1, watcher.TestGetObserverCountUnsynchronized(linkTargetPath));
+
+        Assert.NotSame(oldChangeToken, newChangeToken);
+        Assert.True(oldChangeToken.HasChanged);
+        Assert.False(newChangeToken.HasChanged);
+
+        Assert.True(certificateConfig.FileHasChanged);
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(5)]
+    [LogLevel(LogLevel.Trace)]
+    public void FileLinkCycle(int cycleLength)
+    {
+        var dir = Directory.GetCurrentDirectory();
+
+        var fileNames = new string[cycleLength];
+        var filePaths = new string[cycleLength];
+
+        var logger = LoggerFactory.CreateLogger<CertificatePathWatcher>();
+
+        var fileProvider = new MockFileProvider(dir);
+        var fileLastModifiedTime = DateTimeOffset.UtcNow;
+
+        for (int i = 0; i < cycleLength; i++)
+        {
+            fileNames[i] = Path.GetRandomFileName();
+            filePaths[i] = Path.Combine(dir, fileNames[i]);
+            fileProvider.SetLastModifiedTime(fileNames[i], fileLastModifiedTime);
+        }
+
+        for (int i = 0; i < cycleLength; i++)
+        {
+            fileProvider.SetLinkTarget(fileNames[i], fileNames[(i + 1) % cycleLength], fileProvider);
+        }
+
+        using var watcher = new CertificatePathWatcher(dir, logger, _ => fileProvider);
+
+        var logTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        TestSink.MessageLogged += writeContext =>
+        {
+            if (writeContext.EventId.Name == "ReusedObserver")
+            {
+                logTcs.SetResult();
+            }
+        };
+
+        var certificateConfig = new CertificateConfig
+        {
+            Path = filePaths[0],
+        };
+
+        watcher.AddWatchUnsynchronized(certificateConfig);
+
+        Assert.Equal(1, watcher.TestGetDirectoryWatchCountUnsynchronized());
+        Assert.Equal(cycleLength, watcher.TestGetFileWatchCountUnsynchronized(dir));
+        Assert.All(filePaths, filePath => Assert.Equal(1, watcher.TestGetObserverCountUnsynchronized(filePath)));
+
+        Assert.True(logTcs.Task.IsCompleted);
+    }
+
+    [Fact]
     public async Task OutOfOrderLastModifiedTime()
     {
         var dir = Directory.GetCurrentDirectory();
@@ -174,7 +428,7 @@ public class CertificatePathWatcherTests : LoggedTest
 
         var logger = LoggerFactory.CreateLogger<CertificatePathWatcher>();
 
-        var fileProvider = new MockFileProvider();
+        var fileProvider = new MockFileProvider(dir);
         var fileLastModifiedTime = DateTimeOffset.UtcNow;
         fileProvider.SetLastModifiedTime(fileName, fileLastModifiedTime);
 
@@ -355,7 +609,7 @@ public class CertificatePathWatcherTests : LoggedTest
 
         var logger = LoggerFactory.CreateLogger<CertificatePathWatcher>();
 
-        var fileProvider = new MockFileProvider();
+        var fileProvider = new MockFileProvider(dir);
         var fileLastModifiedTime = DateTimeOffset.UtcNow;
         fileProvider.SetLastModifiedTime(fileName, fileLastModifiedTime);
 
@@ -504,17 +758,20 @@ public class CertificatePathWatcherTests : LoggedTest
         return dict;
     }
 
-    private sealed class NoChangeFileProvider : IFileProvider
+    private sealed class NoChangeFileProvider : IFileProviderWithLinkInfo
     {
-        public static readonly IFileProvider Instance = new NoChangeFileProvider();
+        public static readonly IFileProviderWithLinkInfo Instance = new NoChangeFileProvider();
 
         private NoChangeFileProvider()
         {
         }
 
         IDirectoryContents IFileProvider.GetDirectoryContents(string subpath) => throw new NotSupportedException();
-        IFileInfo IFileProvider.GetFileInfo(string subpath) => throw new NotSupportedException();
+        IFileInfo IFileProvider.GetFileInfo(string subpath) => FixedTimeFileInfoWithLinkInfo.Instance;
         IChangeToken IFileProvider.Watch(string filter) => NoChangeChangeToken.Instance;
+
+        IFileInfoWithLinkInfo IFileProviderWithLinkInfo.GetFileInfo(string subpath) => FixedTimeFileInfoWithLinkInfo.Instance;
+        IFileInfoWithLinkInfo IFileProviderWithLinkInfo.ResolveLinkTarget(bool returnFinalTarget) => null;
 
         private sealed class NoChangeChangeToken : IChangeToken
         {
@@ -527,6 +784,28 @@ public class CertificatePathWatcherTests : LoggedTest
             bool IChangeToken.HasChanged => false;
             bool IChangeToken.ActiveChangeCallbacks => true;
             IDisposable IChangeToken.RegisterChangeCallback(Action<object> callback, object state) => DummyDisposable.Instance;
+        }
+
+        private sealed class FixedTimeFileInfoWithLinkInfo : IFileInfoWithLinkInfo
+        {
+            public static readonly IFileInfoWithLinkInfo Instance = new FixedTimeFileInfoWithLinkInfo();
+
+            private readonly DateTimeOffset _lastModified = DateTimeOffset.UtcNow;
+
+            private FixedTimeFileInfoWithLinkInfo()
+            {
+            }
+
+            DateTimeOffset IFileInfo.LastModified => _lastModified;
+            bool IFileInfo.Exists => true;
+            bool IFileInfo.IsDirectory => false;
+
+            long IFileInfo.Length => throw new NotSupportedException();
+            string IFileInfo.PhysicalPath => throw new NotSupportedException();
+            string IFileInfo.Name => throw new NotSupportedException();
+            Stream IFileInfo.CreateReadStream() => throw new NotSupportedException();
+
+            IFileInfoWithLinkInfo IFileInfoWithLinkInfo.ResolveLinkTarget(bool returnFinalTarget) => null;
         }
     }
 
@@ -543,21 +822,40 @@ public class CertificatePathWatcherTests : LoggedTest
         }
     }
 
-    private sealed class MockFileProvider : IFileProvider
+    private sealed class MockFileProvider : IFileProviderWithLinkInfo
     {
         private readonly Dictionary<string, ConfigurationReloadToken> _changeTokens = new();
         private readonly Dictionary<string, DateTimeOffset?> _lastModifiedTimes = new();
+        private readonly Dictionary<string, IFileInfoWithLinkInfo> _linkTargets = new();
 
-        public void FireChangeToken(string path)
+        private readonly string _rootPath;
+
+        public MockFileProvider(string rootPath)
         {
-            var oldChangeToken = _changeTokens[path];
-            _changeTokens[path] = new ConfigurationReloadToken();
+            _rootPath = rootPath;
+        }
+
+        public void FireChangeToken(string fileName)
+        {
+            var oldChangeToken = _changeTokens[fileName];
+            _changeTokens[fileName] = new ConfigurationReloadToken();
             oldChangeToken.OnReload();
         }
 
-        public void SetLastModifiedTime(string path, DateTimeOffset? lastModifiedTime)
+        public void SetLastModifiedTime(string fileName, DateTimeOffset? lastModifiedTime)
         {
-            _lastModifiedTimes[path] = lastModifiedTime;
+            _lastModifiedTimes[fileName] = lastModifiedTime;
+        }
+
+        public void RemoveLinkTarget(string fileName)
+        {
+            _linkTargets.Remove(fileName);
+        }
+
+        public void SetLinkTarget(string fileName, string linkTargetName, IFileProviderWithLinkInfo linkTargetFileProvider)
+        {
+            var targetInfo = linkTargetFileProvider.GetFileInfo(linkTargetName);
+            _linkTargets[fileName] = targetInfo;
         }
 
         IDirectoryContents IFileProvider.GetDirectoryContents(string subpath)
@@ -565,38 +863,71 @@ public class CertificatePathWatcherTests : LoggedTest
             throw new NotSupportedException();
         }
 
-        IFileInfo IFileProvider.GetFileInfo(string subpath)
+        IChangeToken IFileProvider.Watch(string fileName)
         {
-            return new MockFileInfo(_lastModifiedTimes[subpath]);
-        }
-
-        IChangeToken IFileProvider.Watch(string path)
-        {
-            if (!_changeTokens.TryGetValue(path, out var changeToken))
+            if (!_changeTokens.TryGetValue(fileName, out var changeToken))
             {
-                _changeTokens[path] = changeToken = new ConfigurationReloadToken();
+                _changeTokens[fileName] = changeToken = new ConfigurationReloadToken();
             }
 
             return changeToken;
         }
 
-        private sealed class MockFileInfo : IFileInfo
+        IFileInfo IFileProvider.GetFileInfo(string fileName)
         {
-            private readonly DateTimeOffset? _lastModifiedTime;
-
-            public MockFileInfo(DateTimeOffset? lastModifiedTime)
-            {
-                _lastModifiedTime = lastModifiedTime;
-            }
-
-            bool IFileInfo.Exists => _lastModifiedTime.HasValue;
-            DateTimeOffset IFileInfo.LastModified => _lastModifiedTime.GetValueOrDefault();
-
-            long IFileInfo.Length => throw new NotSupportedException();
-            string IFileInfo.PhysicalPath => throw new NotSupportedException();
-            string IFileInfo.Name => throw new NotSupportedException();
-            bool IFileInfo.IsDirectory => throw new NotSupportedException();
-            Stream IFileInfo.CreateReadStream() => throw new NotSupportedException();
+            return ((IFileProviderWithLinkInfo)this).GetFileInfo(fileName);
         }
+
+        IFileInfoWithLinkInfo IFileProviderWithLinkInfo.GetFileInfo(string fileName)
+        {
+            return new MockFileInfoWithLinkInfo(Path.Combine(_rootPath, fileName), _lastModifiedTimes[fileName], _linkTargets.TryGetValue(fileName, out var target) ? target : null);
+        }
+
+        IFileInfoWithLinkInfo IFileProviderWithLinkInfo.ResolveLinkTarget(bool returnFinalTarget)
+        {
+            return null;
+        }
+    }
+
+    private sealed class MockFileInfoWithLinkInfo : IFileInfoWithLinkInfo
+    {
+        private readonly string _path;
+        private readonly DateTimeOffset? _lastModifiedTime;
+        private readonly IFileInfoWithLinkInfo _linkTarget;
+
+        public MockFileInfoWithLinkInfo(string path, DateTimeOffset? lastModifiedTime, IFileInfoWithLinkInfo linkTarget)
+        {
+            _path = path;
+            _lastModifiedTime = lastModifiedTime;
+            _linkTarget = linkTarget;
+        }
+
+        bool IFileInfo.Exists => _lastModifiedTime.HasValue;
+        DateTimeOffset IFileInfo.LastModified => _lastModifiedTime.GetValueOrDefault();
+        string IFileInfo.PhysicalPath => _path;
+
+        long IFileInfo.Length => throw new NotSupportedException();
+        string IFileInfo.Name => throw new NotSupportedException();
+        bool IFileInfo.IsDirectory => throw new NotSupportedException();
+        Stream IFileInfo.CreateReadStream() => throw new NotSupportedException();
+
+        IFileInfoWithLinkInfo IFileInfoWithLinkInfo.ResolveLinkTarget(bool returnFinalTarget) => _linkTarget;
+    }
+
+    private sealed class MockLinkFileProvider : IFileProviderWithLinkInfo
+    {
+        private readonly IFileInfoWithLinkInfo _linkTarget;
+
+        public MockLinkFileProvider(IFileInfoWithLinkInfo linkTarget)
+        {
+            _linkTarget = linkTarget;
+        }
+
+        IChangeToken IFileProvider.Watch(string filter) => throw new NotSupportedException();
+        IDirectoryContents IFileProvider.GetDirectoryContents(string subpath) => throw new NotSupportedException();
+        IFileInfo IFileProvider.GetFileInfo(string subpath) => throw new NotSupportedException();
+        IFileInfoWithLinkInfo IFileProviderWithLinkInfo.GetFileInfo(string subpath) => throw new NotSupportedException();
+
+        IFileInfoWithLinkInfo IFileProviderWithLinkInfo.ResolveLinkTarget(bool returnFinalTarget) => _linkTarget;
     }
 }

@@ -28,6 +28,7 @@ internal static partial class CertificatePathWatcherLoggerExtensions
     [LoggerMessage(7, LogLevel.Debug, "Removed file watcher for '{Path}'.", EventName = "RemovedFileWatcher")]
     public static partial void RemovedFileWatcher(this ILogger<CertificatePathWatcher> logger, string path);
 
+    [Obsolete("This event will no longer be reported")]
     [LoggerMessage(8, LogLevel.Debug, "Error retrieving last modified time for '{Path}'.", EventName = "LastModifiedTimeError")]
     public static partial void LastModifiedTimeError(this ILogger<CertificatePathWatcher> logger, string path, Exception e);
 
