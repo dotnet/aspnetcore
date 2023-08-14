@@ -258,7 +258,7 @@ public static class IdentityApiEndpointRouteBuilderExtensions
             return TypedResults.Ok();
         });
 
-        var accountGroup = routeGroup.MapGroup("/account").RequireAuthorization();
+        var accountGroup = routeGroup.MapGroup("/manage").RequireAuthorization();
 
         accountGroup.MapPost("/2fa", async Task<Results<Ok<TwoFactorResponse>, ValidationProblem, NotFound>>
             (ClaimsPrincipal claimsPrincipal, [FromBody] TwoFactorRequest tfaRequest, [FromServices] IServiceProvider sp) =>
