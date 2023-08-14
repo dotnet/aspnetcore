@@ -19,6 +19,6 @@ internal readonly struct RenderQueueEntry
 
     private string GetDebuggerDisplay()
     {
-        return $"{ComponentState.ComponentId} - {ComponentState.Component.GetType().Name}";
+        return $"ComponentId = {ComponentState.ComponentId}, Type = {ComponentState.Component.GetType().Name}";
     }
 }

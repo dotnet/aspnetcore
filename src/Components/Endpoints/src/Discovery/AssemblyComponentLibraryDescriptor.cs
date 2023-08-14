@@ -47,6 +47,6 @@ internal class AssemblyComponentLibraryDescriptor
 
     private string GetDebuggerDisplay()
     {
-        return $"{AssemblyName}: Pages = {Pages.Count} Components = {Components.Count}";
+        return $"Assembly = {AssemblyName}, Pages = {Pages.Count}, Components = {Components.Count}";
     }
 }

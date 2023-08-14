@@ -62,6 +62,6 @@ internal class RazorComponentApplication
 
     private string GetDebuggerDisplay()
     {
-        return $"Pages: {Pages.Count}, Components: {Components.Count}";
+        return $"Pages = {Pages.Count}, Components = {Components.Count}";
     }
 }

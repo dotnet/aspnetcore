@@ -88,6 +88,6 @@ internal class PageComponentBuilder : IEquatable<PageComponentBuilder?>
 
     private string GetDebuggerDisplay()
     {
-        return $"{PageType.FullName}{string.Join(", ", RouteTemplates ?? Enumerable.Empty<string>())}";
+        return $"Type = {PageType.FullName}, RouteTemplates = {string.Join(", ", RouteTemplates ?? Enumerable.Empty<string>())}";
     }
 }

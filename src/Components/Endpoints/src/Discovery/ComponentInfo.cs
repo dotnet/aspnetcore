@@ -46,7 +46,7 @@ internal class ComponentInfo
     {
         var renderMode = GetRenderMode();
 
-        return $"{ComponentType.FullName}{renderMode}";
+        return $"Type = {ComponentType.FullName}, {renderMode}";
     }
 
     private string GetRenderMode()
@@ -54,19 +54,19 @@ internal class ComponentInfo
         if (RenderMode is ServerRenderMode { Prerender: var server })
         {
             var size = (nameof(ServerRenderMode).Length - "RenderModeComparer".Length);
-            return $" RenderModeComparer: {nameof(ServerRenderMode)[0..size]}, Prerendered: {server}";
+            return $"RenderModeComparer = {nameof(ServerRenderMode)[0..size]}, Prerendered = {server}";
         }
         if (RenderMode is WebAssemblyRenderMode { Prerender: var wasm })
         {
             var size = (nameof(WebAssemblyRenderMode).Length - "RenderModeComparer".Length);
-            return $" RenderModeComparer: {nameof(WebAssemblyRenderMode)[0..size]}, Prerendered: {wasm}";
+            return $"RenderModeComparer = {nameof(WebAssemblyRenderMode)[0..size]}, Prerendered = {wasm}";
         }
         if (RenderMode is AutoRenderMode { Prerender: var auto })
         {
             var size = (nameof(AutoRenderMode).Length - "RenderModeComparer".Length);
-            return $" RenderModeComparer: {nameof(AutoRenderMode)[0..size]}, Prerendered: {auto}";
+            return $"RenderModeComparer = {nameof(AutoRenderMode)[0..size]}, Prerendered = {auto}";
         }
 
-        return " RenderModeComparer: Unknown, Prerendered: Unknown";
+        return "RenderModeComparer = Unknown, Prerendered = Unknown";
     }
 }
