@@ -14,6 +14,7 @@ import { MessageBuffer } from "./MessageBuffer";
 
 const DEFAULT_TIMEOUT_IN_MS: number = 30 * 1000;
 const DEFAULT_PING_INTERVAL_IN_MS: number = 15 * 1000;
+const DEFAULT_STATEFUL_RECONNECT_BUFFER_SIZE = 100_000;
 
 /** Describes the current state of the {@link HubConnection} to the server. */
 export enum HubConnectionState {
@@ -37,6 +38,7 @@ export class HubConnection {
     private readonly connection: IConnection;
     private readonly _logger: ILogger;
     private readonly _reconnectPolicy?: IRetryPolicy;
+    private readonly _statefulReconnectBufferSize: number;
     private _protocol: IHubProtocol;
     private _handshakeProtocol: HandshakeProtocol;
     private _callbacks: { [invocationId: string]: (invocationEvent: StreamItemMessage | CompletionMessage | null, error?: Error) => void };
@@ -100,8 +102,10 @@ export class HubConnection {
         protocol: IHubProtocol,
         reconnectPolicy?: IRetryPolicy,
         serverTimeoutInMilliseconds?: number,
-        keepAliveIntervalInMilliseconds?: number): HubConnection {
-        return new HubConnection(connection, logger, protocol, reconnectPolicy, serverTimeoutInMilliseconds, keepAliveIntervalInMilliseconds);
+        keepAliveIntervalInMilliseconds?: number,
+        statefulReconnectBufferSize?: number): HubConnection {
+        return new HubConnection(connection, logger, protocol, reconnectPolicy,
+            serverTimeoutInMilliseconds, keepAliveIntervalInMilliseconds, statefulReconnectBufferSize);
     }
 
     private constructor(
@@ -110,13 +114,16 @@ export class HubConnection {
         protocol: IHubProtocol,
         reconnectPolicy?: IRetryPolicy,
         serverTimeoutInMilliseconds?: number,
-        keepAliveIntervalInMilliseconds?: number) {
+        keepAliveIntervalInMilliseconds?: number,
+        statefulReconnectBufferSize?: number) {
         Arg.isRequired(connection, "connection");
         Arg.isRequired(logger, "logger");
         Arg.isRequired(protocol, "protocol");
 
         this.serverTimeoutInMilliseconds = serverTimeoutInMilliseconds ?? DEFAULT_TIMEOUT_IN_MS;
         this.keepAliveIntervalInMilliseconds = keepAliveIntervalInMilliseconds ?? DEFAULT_PING_INTERVAL_IN_MS;
+
+        this._statefulReconnectBufferSize = statefulReconnectBufferSize ?? DEFAULT_STATEFUL_RECONNECT_BUFFER_SIZE;
 
         this._logger = logger;
         this._protocol = protocol;
@@ -252,7 +259,7 @@ export class HubConnection {
 
             const useAck = this.connection.features.reconnect || false;
             if (useAck) {
-                this._messageBuffer = new MessageBuffer(this._protocol, this.connection);
+                this._messageBuffer = new MessageBuffer(this._protocol, this.connection, this._statefulReconnectBufferSize);
                 this.connection.features.disconnected = this._messageBuffer._disconnected.bind(this._messageBuffer);
                 this.connection.features.resend = (doSend: boolean) => {
                     if (this._messageBuffer) {

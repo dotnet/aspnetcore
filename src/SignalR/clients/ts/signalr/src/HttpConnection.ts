@@ -572,23 +572,26 @@ export class HttpConnection implements IConnection {
     }
 
     private _resolveNegotiateUrl(url: string): string {
-        const index = url.indexOf("?");
-        let negotiateUrl = url.substring(0, index === -1 ? url.length : index);
-        if (negotiateUrl[negotiateUrl.length - 1] !== "/") {
-            negotiateUrl += "/";
-        }
-        negotiateUrl += "negotiate";
-        negotiateUrl += index === -1 ? "" : url.substring(index);
+        const negotiateUrl = new URL(url);
 
-        if (negotiateUrl.indexOf("negotiateVersion") === -1) {
-            negotiateUrl += index === -1 ? "?" : "&";
-            negotiateUrl += "negotiateVersion=" + this._negotiateVersion;
+        if (negotiateUrl.pathname.endsWith('/')) {
+            negotiateUrl.pathname += "negotiate";
+        } else {
+            negotiateUrl.pathname += "/negotiate";
         }
-        if (negotiateUrl.indexOf("useAck") === -1 && this._options.useAcks === true) {
-            negotiateUrl += index === -1 ? "?" : "&";
-            negotiateUrl += "useAck=true";
+        const searchParams = new URLSearchParams(negotiateUrl.searchParams);
+
+        if (!searchParams.has("negotiateVersion")) {
+            searchParams.append("negotiateVersion", this._negotiateVersion.toString());
         }
-        return negotiateUrl;
+
+        if (this._options._useStatefulReconnect === true && !searchParams.has("useAck")) {
+            searchParams.append("useAck", "true");
+        }
+
+        negotiateUrl.search = searchParams.toString();
+
+        return negotiateUrl.toString();
     }
 }
 

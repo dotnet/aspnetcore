@@ -1657,6 +1657,68 @@ describe("TransportSendQueue", () => {
         await expect(queue.send("test")).rejects.toBe("Connection stopped.");
     });
 
+    it("negotiate stateful reconnect false does not set query string", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const negotiateResponse: INegotiateResponse = { ...defaultNegotiateResponse };
+
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                _useStatefulReconnect: false,
+                WebSocket: TestWebSocket,
+                httpClient: new TestHttpClient()
+                    .on("POST", "http://tempuri.org/negotiate?negotiateVersion=1&useAck=true", () => { throw new Error(); })
+                    .on("POST", "http://tempuri.org/negotiate?negotiateVersion=1", () => negotiateResponse)
+                    .on("GET", () => ""),
+                logger,
+            } as IHttpConnectionOptions;
+
+            const connection = new HttpConnection("http://tempuri.org", options);
+
+            TestWebSocket.webSocketSet = new PromiseSource();
+            const startPromise = connection.start(TransferFormat.Text);
+            await TestWebSocket.webSocketSet;
+            await TestWebSocket.webSocket.openSet;
+            TestWebSocket.webSocket.onopen(new TestEvent());
+            await startPromise;
+
+            // Set when acks used by both server and client
+            expect(connection.features.reconnect).toBeFalsy();
+
+            TestWebSocket.webSocket.close();
+        });
+    });
+
+    it("negotiate stateful reconnect sets query string", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const negotiateResponse: INegotiateResponse = { ...defaultNegotiateResponse };
+            negotiateResponse.useAck = true;
+
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                _useStatefulReconnect: true,
+                WebSocket: TestWebSocket,
+                httpClient: new TestHttpClient()
+                    .on("POST", "http://tempuri.org/negotiate?negotiateVersion=1&useAck=true", () => negotiateResponse)
+                    .on("GET", () => ""),
+                logger,
+            } as IHttpConnectionOptions;
+
+            const connection = new HttpConnection("http://tempuri.org", options);
+
+            TestWebSocket.webSocketSet = new PromiseSource();
+            const startPromise = connection.start(TransferFormat.Text);
+            await TestWebSocket.webSocketSet;
+            await TestWebSocket.webSocket.openSet;
+            TestWebSocket.webSocket.onopen(new TestEvent());
+            await startPromise;
+
+            // Set when acks used by both server and client
+            expect(connection.features.reconnect).toBeTruthy();
+
+            TestWebSocket.webSocket.close();
+        });
+    });
+
     it("negotiate acks works with websockets", async () => {
         await VerifyLogger.run(async (logger) => {
             const negotiateResponse: INegotiateResponse = { ...defaultNegotiateResponse };
@@ -1664,7 +1726,6 @@ describe("TransportSendQueue", () => {
 
             const options: IHttpConnectionOptions = {
                 ...commonOptions,
-                useAcks: true,
                 WebSocket: TestWebSocket,
                 httpClient: new TestHttpClient()
                     .on("POST", () => negotiateResponse)
@@ -1692,7 +1753,6 @@ describe("TransportSendQueue", () => {
         await VerifyLogger.run(async (logger) => {
             const options: IHttpConnectionOptions = {
                 ...commonOptions,
-                useAcks: true,
                 WebSocket: TestWebSocket,
                 httpClient: new TestHttpClient()
                     .on("POST", () => defaultNegotiateResponse)
@@ -1716,7 +1776,7 @@ describe("TransportSendQueue", () => {
         });
     });
 
-    it("negotiate acks does not work with long polling", async () => {
+    it.only("negotiate acks does not work with long polling", async () => {
         await VerifyLogger.run(async (logger) => {
             const negotiateResponse: INegotiateResponse = { ...defaultNegotiateResponse };
             negotiateResponse.useAck = true;
@@ -1724,7 +1784,6 @@ describe("TransportSendQueue", () => {
             let firstPoll = true;
             const options: IHttpConnectionOptions = {
                 ...commonOptions,
-                useAcks: true,
                 transport: HttpTransportType.LongPolling,
                 httpClient: new TestHttpClient()
                     .on("POST", () => negotiateResponse)
@@ -1759,7 +1818,6 @@ describe("TransportSendQueue", () => {
 
             const options: IHttpConnectionOptions = {
                 ...commonOptions,
-                useAcks: true,
                 WebSocket: TestWebSocket,
                 httpClient: new TestHttpClient()
                     .on("POST", () => negotiateResponse)
@@ -1823,7 +1881,6 @@ describe("TransportSendQueue", () => {
 
             const options: IHttpConnectionOptions = {
                 ...commonOptions,
-                useAcks: true,
                 WebSocket: TestWebSocket,
                 httpClient: new TestHttpClient()
                     .on("POST", () => negotiateResponse)

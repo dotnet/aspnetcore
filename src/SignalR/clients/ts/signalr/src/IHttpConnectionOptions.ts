@@ -74,5 +74,10 @@ export interface IHttpConnectionOptions {
      */
     timeout?: number;
 
-    useAcks?: boolean;
+    // Internal, should be set by {@link @microsoft/signalr.HubConnectionBuilder.withStatefulReconnect}
+    /** Specifies that the client should use Stateful Reconnect. It will try to reconnect with the same connection token.
+     *
+     * @internal
+     */
+    _useStatefulReconnect?: boolean;
 }

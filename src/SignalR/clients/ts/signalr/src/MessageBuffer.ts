@@ -10,7 +10,7 @@ export class MessageBuffer {
     private readonly _protocol: IHubProtocol;
     private readonly _connection: IConnection;
 
-    private readonly _bufferLimit: number = 100_000;
+    private readonly _bufferSize: number = 100_000;
 
     private _messages: Key[] = [];
     private _totalMessageCount: number = 0;
@@ -30,13 +30,14 @@ export class MessageBuffer {
     private _resendResolve?: (value: void) => void = undefined;
     private _resendReject?: (value?: any) => void = undefined;
 
-    constructor(protocol: IHubProtocol, connection: IConnection) {
+    constructor(protocol: IHubProtocol, connection: IConnection, bufferSize: number) {
         this._protocol = protocol;
         this._connection = connection;
+        this._bufferSize = bufferSize;
     }
 
     public async _send(message: HubMessage): Promise<void> {
-        if (this._bufferedByteCount >= this._bufferLimit) {
+        if (this._bufferedByteCount >= this._bufferSize) {
             await this._backPressurePromise;
         }
 
@@ -53,7 +54,7 @@ export class MessageBuffer {
             } else {
                 this._bufferedByteCount += serializedMessage.length;
             }
-            if (this._bufferedByteCount >= this._bufferLimit) {
+            if (this._bufferedByteCount >= this._bufferSize) {
                 this._backPressurePromise = new Promise((resolve) => this._backpressurePromiseResolver = resolve);
             }
             this._messages.push(new Key(serializedMessage, this._totalMessageCount));
@@ -91,7 +92,7 @@ export class MessageBuffer {
             // We're removing everything including the message pointed to, so add 1
             this._messages = this._messages.slice(mostSignificantAckedMessage + 1);
 
-            if (originalByteCount >= this._bufferLimit && this._bufferedByteCount < originalByteCount)
+            if (originalByteCount >= this._bufferSize && this._bufferedByteCount < originalByteCount)
             {
                 this._backpressurePromiseResolver();
             }
@@ -158,7 +159,7 @@ export class MessageBuffer {
 
             // Unblock backpressure if any, do this after rejecting resend promise
             // so any backpressured sends unblock and fail on the resend promise
-            if (this._bufferedByteCount >= this._bufferLimit) {
+            if (this._bufferedByteCount >= this._bufferSize) {
                 this._backpressurePromiseResolver();
             }
 
