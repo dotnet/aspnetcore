@@ -466,7 +466,7 @@ app.MapGet("/camera/archive/{cameraId}/chunk/{chunkName}", ({{sourceAttribute}}s
     }
 
     [Fact]
-    public async Task SupportsHandlersWithSameSignatureButDifferentParameterNamesFromJInferredsonBody()
+    public async Task SupportsHandlersWithSameSignatureButDifferentParameterNamesFromInferredJsonBody()
     {
         // Arrange
         var source = """
