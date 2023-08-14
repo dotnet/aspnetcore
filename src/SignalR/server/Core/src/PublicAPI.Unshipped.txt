@@ -1,5 +1,3 @@
 #nullable enable
-Microsoft.AspNetCore.SignalR.HubConnectionContextOptions.MessageBufferSize.get -> long
-Microsoft.AspNetCore.SignalR.HubConnectionContextOptions.MessageBufferSize.set -> void
-Microsoft.AspNetCore.SignalR.HubOptions.MessageBufferSize.get -> long
-Microsoft.AspNetCore.SignalR.HubOptions.MessageBufferSize.set -> void
+Microsoft.AspNetCore.SignalR.HubOptions.StatefulReconnectBufferSize.get -> long
+Microsoft.AspNetCore.SignalR.HubOptions.StatefulReconnectBufferSize.set -> void
