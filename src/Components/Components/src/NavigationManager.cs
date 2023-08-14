@@ -167,6 +167,13 @@ public abstract class NavigationManager
         throw new NotImplementedException($"The type {GetType().FullName} does not support supplying {nameof(NavigationOptions)}. To add support, that type should override {nameof(NavigateToCore)}(string uri, {nameof(NavigationOptions)} options).");
 
     /// <summary>
+    /// Refreshes the current page via request to the server.
+    /// If possible, statically-rendered content will be replaced without performing a full page reload.
+    /// </summary>
+    public virtual void Refresh()
+        => throw new NotImplementedException($"The type {GetType().FullName} does not implement the {nameof(Refresh)} method.");
+
+    /// <summary>
     /// Called to initialize BaseURI and current URI before these values are used for the first time.
     /// Override <see cref="EnsureInitialized" /> and call this method to dynamically calculate these values.
     /// </summary>

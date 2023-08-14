@@ -84,6 +84,12 @@ internal sealed partial class WebViewNavigationManager : NavigationManager
         }
     }
 
+    /// <inheritdoc />
+    public override void Refresh()
+    {
+        _ipcSender.Refresh();
+    }
+
     protected override void HandleLocationChangingHandlerException(Exception ex, LocationChangingContext context)
     {
         Log.NavigationFailed(_logger, context.TargetLocation, ex);
