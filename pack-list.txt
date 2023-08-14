@@ -49,7 +49,4 @@ Microsoft.AspNetCore.SignalR.Common.csproj
 Microsoft.AspNetCore.SignalR.Core.csproj
 Microsoft.AspNetCore.SignalR.csproj
 Microsoft.AspNetCore.Websockets.csproj
-Microsoft.AspNetCore.Mvc.ApiExplorer.csproj
-Microsoft.AspNetCore.Mvc.Abstractions.csproj
-Microsoft.AspNetCore.Mvc.Core.csproj
 Microsoft.AspNetCore.ResponseCaching.Abstractions.csproj
