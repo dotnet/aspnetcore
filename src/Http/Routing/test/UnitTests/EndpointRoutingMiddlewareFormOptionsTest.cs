@@ -186,11 +186,42 @@ public class EndpointRoutingMiddlewareFormOptionsTest
         Assert.Equal(FormOptions.DefaultMemoryBufferThreshold, formOptions.MemoryBufferThreshold);
     }
 
+    [Fact]
+    public async Task OptionsNotSetForNonFormRequests()
+    {
+        var sink = new TestSink(TestSink.EnableWithTypeName<EndpointRoutingMiddleware>);
+        var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+        var logger = new Logger<EndpointRoutingMiddleware>(loggerFactory);
+        var httpContext = new DefaultHttpContext();
+        var endpointMetadata = new FormOptionsMetadata(bufferBody: true, valueCountLimit: 70);
+        var endpoint = new Endpoint(c => Task.CompletedTask, new EndpointMetadataCollection(endpointMetadata), "myapp");
+
+        var formOptionsMetadata = new FormOptionsMetadata(bufferBody: false, valueCountLimit: 54);
+        var middleware = CreateMiddleware(
+            logger: logger,
+            matcherFactory: new TestMatcherFactory(isHandled: true, setEndpointCallback: c =>
+            {
+                c.SetEndpoint(new Endpoint(c => Task.CompletedTask, new EndpointMetadataCollection(formOptionsMetadata), "myapp"));
+            }));
+
+        // Act
+        await middleware.Invoke(httpContext);
+        httpContext.SetEndpoint(endpoint);
+
+        var formFeature = httpContext.Features.Get<IFormFeature>();
+        Assert.Null(formFeature);
+    }
+
     private HttpContext CreateHttpContext()
     {
         var httpContext = new DefaultHttpContext
         {
-            RequestServices = new TestServiceProvider()
+            RequestServices = new TestServiceProvider(),
+            Request =
+            {
+                ContentType = "multipart/form-data; boundary=----WebKitFormBoundarymx2fSWqWSd0OxQqq",
+                Method = "POST",
+            }
         };
 
         return httpContext;

@@ -23,7 +23,7 @@ internal sealed class AntiforgeryMiddleware(IAntiforgery antiforgery, RequestDel
         }
 
         var method = context.Request.Method;
-        if (!HttpMethodExtensions.IsValidHttpMethodForForm(method))
+        if (!HttpExtensions.IsValidHttpMethodForForm(method))
         {
             return _next(context);
         }
