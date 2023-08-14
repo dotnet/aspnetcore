@@ -2,9 +2,11 @@
 
 <button type="button" id="navigate-to-another-page" @onclick="NavigateToAnotherPage">Navigate to another page</button>
 <br />
-<button type="button" id="perform-enhanced-refresh" @onclick="PerformEnhancedRefresh">Perform enhanced refresh</button>
+<button type="button" id="refresh-with-navigate-to" @onclick="RefreshWithNavigateTo">Perform enhanced refresh</button>
 <br />
-<button type="button" id="perform-page-reload" @onclick="PerformPageReload">Perform page reload</button>
+<button type="button" id="refresh-with-navigate-to-force-load" @onclick="RefreshWithNavigateTo_ForceLoad">Perform page reload</button>
+<br />
+<button type="button" id="refresh-with-refresh" @onclick="RefreshWithRefresh">Perform page refresh</button>
 
 @code {
     private void NavigateToAnotherPage()
@@ -12,13 +14,18 @@
         Navigation.NavigateTo("nav");
     }
 
-    private void PerformEnhancedRefresh()
+    private void RefreshWithNavigateTo()
     {
         Navigation.NavigateTo(Navigation.Uri, replace: true);
     }
 
-    private void PerformPageReload()
+    private void RefreshWithNavigateTo_ForceLoad()
     {
         Navigation.NavigateTo(Navigation.Uri, forceLoad: true, replace: true);
+    }
+
+    private void RefreshWithRefresh()
+    {
+        Navigation.Refresh();
     }
 }
