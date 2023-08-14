@@ -206,7 +206,7 @@ public class MapIdentityApiTests : LoggedTest
         using var client = app.GetTestClient();
 
         await RegisterAsync(client);
-        var loginResponse = await client.PostAsJsonAsync("/identity/login?cookieMode=true", new { Email, Password });
+        var loginResponse = await client.PostAsJsonAsync("/identity/login?useCookies=true", new { Email, Password });
 
         AssertOkAndEmpty(loginResponse);
         Assert.True(loginResponse.Headers.TryGetValues(HeaderNames.SetCookie, out var setCookieHeaders));
@@ -231,7 +231,7 @@ public class MapIdentityApiTests : LoggedTest
         await RegisterAsync(client);
 
         await Assert.ThrowsAsync<InvalidOperationException>(()
-            => client.PostAsJsonAsync("/identity/login?cookieMode=true", new { Email, Password }));
+            => client.PostAsJsonAsync("/identity/login?useCookies=true", new { Email, Password }));
     }
 
     [Fact]
@@ -869,7 +869,7 @@ public class MapIdentityApiTests : LoggedTest
         using var client = app.GetTestClient();
 
         await RegisterAsync(client);
-        var loginResponse = await client.PostAsJsonAsync("/identity/login?cookieMode=true", new { Email, Password });
+        var loginResponse = await client.PostAsJsonAsync("/identity/login?useCookies=true", new { Email, Password });
         ApplyCookies(client, loginResponse);
 
         var twoFactorKeyResponse = await client.PostAsJsonAsync("/identity/manage/2fa", new object());
@@ -892,15 +892,26 @@ public class MapIdentityApiTests : LoggedTest
         await AssertProblemAsync(await client.PostAsJsonAsync("/identity/login", new { Email, Password }),
             "RequiresTwoFactor");
 
-        var twoFactorLoginResponse = await client.PostAsJsonAsync("/identity/login?cookieMode=true&persistCookies=false", new { Email, Password, twoFactorCode });
-        ApplyCookies(client, twoFactorLoginResponse);
+        // The machine will not be remembered if useSessionCookies=true
+        var sessionLoginResponse = await client.PostAsJsonAsync("/identity/login?useSessionCookies=true", new { Email, Password, twoFactorCode });
+        ApplyCookies(client, sessionLoginResponse);
 
-        var cookie2faResponse = await client.PostAsJsonAsync("/identity/manage/2fa", new object());
-        var cookie2faContent = await cookie2faResponse.Content.ReadFromJsonAsync<JsonElement>();
-        Assert.True(cookie2faContent.GetProperty("isTwoFactorEnabled").GetBoolean());
-        Assert.False(cookie2faContent.GetProperty("isMachineRemembered").GetBoolean());
+        var session2faResponse = await client.PostAsJsonAsync("/identity/manage/2fa", new object());
+        var session2faContent = await session2faResponse.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.True(session2faContent.GetProperty("isTwoFactorEnabled").GetBoolean());
+        Assert.False(session2faContent.GetProperty("isMachineRemembered").GetBoolean());
 
-        var persistentLoginResponse = await client.PostAsJsonAsync("/identity/login?cookieMode=true", new { Email, Password, twoFactorCode });
+        // Even if useCookies=true also
+        var sessionLoginResponse2 = await client.PostAsJsonAsync("/identity/login?useCookies=true&useSessionCookies=true", new { Email, Password, twoFactorCode });
+        ApplyCookies(client, sessionLoginResponse2);
+
+        var session2faResponse2 = await client.PostAsJsonAsync("/identity/manage/2fa", new object());
+        var session2faContent2 = await session2faResponse2.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.True(session2faContent2.GetProperty("isTwoFactorEnabled").GetBoolean());
+        Assert.False(session2faContent2.GetProperty("isMachineRemembered").GetBoolean());
+
+        // But the machine will be remembered if just useCookies=true and not useSessionCookies=true
+        var persistentLoginResponse = await client.PostAsJsonAsync("/identity/login?useCookies=true", new { Email, Password, twoFactorCode });
         ApplyCookies(client, persistentLoginResponse);
 
         var persistent2faResponse = await client.PostAsJsonAsync("/identity/manage/2fa", new object());
@@ -1113,7 +1124,7 @@ public class MapIdentityApiTests : LoggedTest
 
         // Clear bearer token. We just used the common login email for convenient email verification.
         client.DefaultRequestHeaders.Clear();
-        var loginResponse = await client.PostAsJsonAsync("/identity/login?cookieMode=true", new { Email, Password });
+        var loginResponse = await client.PostAsJsonAsync("/identity/login?useCookies=true", new { Email, Password });
         ApplyCookies(client, loginResponse);
 
         var infoResponse = await client.GetFromJsonAsync<JsonElement>("/identity/manage/info");
@@ -1162,7 +1173,7 @@ public class MapIdentityApiTests : LoggedTest
         Assert.Equal(originalNameIdentifier, infoClaims.GetProperty(ClaimTypes.NameIdentifier).GetString());
 
         // We will finally see all the claims updated after logging in again.
-        var secondLoginResponse = await client.PostAsJsonAsync("/identity/login?cookieMode=true", new { Email = newEmail, Password });
+        var secondLoginResponse = await client.PostAsJsonAsync("/identity/login?useCookies=true", new { Email = newEmail, Password });
         ApplyCookies(client, secondLoginResponse);
 
         var infoAfterFinalLogin = await client.GetFromJsonAsync<JsonElement>("/identity/manage/info");
