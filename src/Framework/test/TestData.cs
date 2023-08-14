@@ -271,6 +271,7 @@ public static class TestData
                 { "Microsoft.Extensions.DependencyInjection.Abstractions" },
                 { "Microsoft.Extensions.DependencyInjection" },
                 { "Microsoft.Extensions.Diagnostics" },
+                { "Microsoft.Extensions.Diagnostics.Abstractions" },
                 { "Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" },
                 { "Microsoft.Extensions.Diagnostics.HealthChecks" },
                 { "Microsoft.Extensions.Features" },
