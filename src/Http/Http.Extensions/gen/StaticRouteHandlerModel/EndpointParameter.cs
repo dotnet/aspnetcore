@@ -617,7 +617,11 @@ internal class EndpointParameter
 
     public bool SignatureEquals(object obj) =>
         obj is EndpointParameter other &&
-        SymbolEqualityComparer.IncludeNullability.Equals(other.Type, Type);
+        SymbolEqualityComparer.IncludeNullability.Equals(other.Type, Type) &&
+        // The name of the parameter matters when we are querying for a specific parameter using
+        // an indexer, like `context.Request.RouteValues["id"]` or `context.Request.Query["id"]`
+        // and when generating log messages for required bodies or services.
+        other.SymbolName == SymbolName;
 
     public override int GetHashCode()
     {

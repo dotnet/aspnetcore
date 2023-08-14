@@ -405,4 +405,103 @@ app.MapGet("/", {innerSource});
 
         Assert.Equal(message, exception.Message);
     }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("[FromRoute]")]
+    [InlineData("[FromQuery]")]
+    [InlineData("[FromHeader]")]
+    public async Task SupportsHandlersWithSameSignatureButDifferentParameterNames(string sourceAttribute)
+    {
+        // Arrange
+        var source = $$"""
+app.MapGet("/camera/archive/{cameraId}/{indexName}", ({{sourceAttribute}}string? cameraId, {{sourceAttribute}}string? indexName) =>
+{
+    return "Your id: " + cameraId + " and index name: " + indexName;
+});
+
+app.MapGet("/camera/archive/{cameraId}/chunk/{chunkName}", ({{sourceAttribute}}string? cameraId, {{sourceAttribute}}string? chunkName) =>
+{
+    return "Your id: " + cameraId + " and chunk name: " + chunkName;
+});
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoints = GetEndpointsFromCompilation(compilation);
+
+        // Act - 1
+        var httpContext1 = CreateHttpContext();
+        PopulateHttpContext(httpContext1, sourceAttribute, "cameraId");
+        PopulateHttpContext(httpContext1, sourceAttribute, "indexName");
+        var endpoint1 = endpoints[0];
+        await endpoint1.RequestDelegate(httpContext1);
+
+        // Act - 2
+        var httpContext2 = CreateHttpContext();
+        PopulateHttpContext(httpContext2, sourceAttribute, "cameraId");
+        PopulateHttpContext(httpContext2, sourceAttribute, "chunkName");
+        var endpoint2 = endpoints[1];
+        await endpoint2.RequestDelegate(httpContext2);
+
+        // Assert - 1
+        await VerifyResponseBodyAsync(httpContext1, "Your id: cameraId and index name: indexName");
+
+        // Assert - 2
+        await VerifyResponseBodyAsync(httpContext2, "Your id: cameraId and chunk name: chunkName");
+
+        void PopulateHttpContext(HttpContext httpContext, string sourceAttribute, string value)
+        {
+            switch (sourceAttribute)
+            {
+                case "[FromQuery]":
+                    httpContext.Request.QueryString = httpContext.Request.QueryString.Add(QueryString.Create(value, value));
+                    break;
+                case "[FromHeader]":
+                    httpContext.Request.Headers[value] = value;
+                    break;
+                default:
+                    httpContext.Request.RouteValues[value] = value;
+                    break;
+            }
+        }
+    }
+
+    [Fact]
+    public async Task SupportsHandlersWithSameSignatureButDifferentParameterNamesFromInferredJsonBody()
+    {
+        // Arrange
+        var source = """
+app.MapPost("/todo", (Todo todo) => todo.Id.ToString());
+app.MapPost("/todo1", (Todo todo1) => todo1.Id.ToString());
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoints = GetEndpointsFromCompilation(compilation);
+
+        // Act - 1
+        var httpContext1 = CreateHttpContext();
+        var endpoint1 = endpoints[0];
+        await endpoint1.RequestDelegate(httpContext1);
+
+        // Act - 2
+        var httpContext2 = CreateHttpContext();
+        var endpoint2 = endpoints[1];
+        await endpoint2.RequestDelegate(httpContext2);
+
+        var logs = TestSink.Writes.ToArray();
+
+        // Assert - 1
+        Assert.Equal(400, httpContext1.Response.StatusCode);
+        var log1 = logs.FirstOrDefault();
+        Assert.NotNull(log1);
+        Assert.Equal(LogLevel.Debug, log1.LogLevel);
+        Assert.Equal(new EventId(5, "ImplicitBodyNotProvided"), log1.EventId);
+        Assert.Equal(@"Implicit body inferred for parameter ""todo"" but no body was provided. Did you mean to use a Service instead?", log1.Message);
+
+        // Assert - 2
+        Assert.Equal(400, httpContext2.Response.StatusCode);
+        var log2 = logs.LastOrDefault();
+        Assert.NotNull(log2);
+        Assert.Equal(LogLevel.Debug, log2.LogLevel);
+        Assert.Equal(new EventId(5, "ImplicitBodyNotProvided"), log2.EventId);
+        Assert.Equal(@"Implicit body inferred for parameter ""todo1"" but no body was provided. Did you mean to use a Service instead?", log2.Message);
+    }
 }
