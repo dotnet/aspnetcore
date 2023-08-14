@@ -120,6 +120,7 @@ public static class TestData
                 "Microsoft.Extensions.DependencyInjection",
                 "Microsoft.Extensions.DependencyInjection.Abstractions",
                 "Microsoft.Extensions.Diagnostics",
+                "Microsoft.Extensions.Diagnostics.Abstractions",
                 "Microsoft.Extensions.Diagnostics.HealthChecks",
                 "Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions",
                 "Microsoft.Extensions.FileProviders.Abstractions",
