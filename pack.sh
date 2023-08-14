@@ -2,6 +2,8 @@
 
 set -eo pipefail
 
+export DOTNET_CLI_TELEMETRY_OPTOUT="true"
+
 configuration=Release
 #arch=x64,arm,arm64
 
