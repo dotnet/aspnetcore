@@ -111,9 +111,42 @@ public class MapIdentityApiTests : LoggedTest
         Assert.False(loginResponse.Headers.Contains(HeaderNames.SetCookie));
 
         var loginContent = await loginResponse.Content.ReadFromJsonAsync<JsonElement>();
+        var tokenType = loginContent.GetProperty("tokenType").GetString();
+        var accessToken = loginContent.GetProperty("accessToken").GetString();
+        var expiresIn = loginContent.GetProperty("expiresIn").GetDouble();
+        Assert.True(loginContent.TryGetProperty("refreshToken", out _));
+
+        Assert.Equal("Bearer", tokenType);
+        Assert.Equal(3600, expiresIn);
+
+        client.DefaultRequestHeaders.Authorization = new("Bearer", accessToken);
+        Assert.Equal($"Hello, {Email}!", await client.GetStringAsync("/auth/hello"));
+    }
+
+    [Theory]
+    [MemberData(nameof(AddIdentityModes))]
+    public async Task CanChangeAccessTokenResponseJsonOptions(string addIdentityMode)
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            AddIdentityActions[addIdentityMode](services);
+            services.ConfigureHttpJsonOptions(options =>
+            {
+                options.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower;
+            });
+        });
+        using var client = app.GetTestClient();
+
+        await RegisterAsync(client);
+        var loginResponse = await client.PostAsJsonAsync("/identity/login", new { Email, Password });
+
+        loginResponse.EnsureSuccessStatusCode();
+
+        var loginContent = await loginResponse.Content.ReadFromJsonAsync<JsonElement>();
         var tokenType = loginContent.GetProperty("token_type").GetString();
         var accessToken = loginContent.GetProperty("access_token").GetString();
         var expiresIn = loginContent.GetProperty("expires_in").GetDouble();
+        Assert.True(loginContent.TryGetProperty("refresh_token", out _));
 
         Assert.Equal("Bearer", tokenType);
         Assert.Equal(3600, expiresIn);
@@ -145,8 +178,8 @@ public class MapIdentityApiTests : LoggedTest
         var loginResponse = await client.PostAsJsonAsync("/identity/login", new { Email, Password });
 
         var loginContent = await loginResponse.Content.ReadFromJsonAsync<JsonElement>();
-        var accessToken = loginContent.GetProperty("access_token").GetString();
-        var expiresIn = loginContent.GetProperty("expires_in").GetDouble();
+        var accessToken = loginContent.GetProperty("accessToken").GetString();
+        var expiresIn = loginContent.GetProperty("expiresIn").GetDouble();
 
         Assert.Equal(expireTimeSpan.TotalSeconds, expiresIn);
 
@@ -212,7 +245,7 @@ public class MapIdentityApiTests : LoggedTest
             {
                 options.Events.OnMessageReceived = context =>
                 {
-                    context.Token = (string?)context.Request.Query["access_token"];
+                    context.Token = (string?)context.Request.Query["accessToken"];
                     return Task.CompletedTask;
                 };
             });
@@ -224,9 +257,9 @@ public class MapIdentityApiTests : LoggedTest
         var loginResponse = await client.PostAsJsonAsync("/identity/login", new { Email, Password });
 
         var loginContent = await loginResponse.Content.ReadFromJsonAsync<JsonElement>();
-        var accessToken = loginContent.GetProperty("access_token").GetString();
+        var accessToken = loginContent.GetProperty("accessToken").GetString();
 
-        Assert.Equal($"Hello, {Email}!", await client.GetStringAsync($"/auth/hello?access_token={accessToken}"));
+        Assert.Equal($"Hello, {Email}!", await client.GetStringAsync($"/auth/hello?accessToken={accessToken}"));
 
         // The normal header still works
         client.DefaultRequestHeaders.Authorization = new("Bearer", accessToken);
@@ -259,11 +292,11 @@ public class MapIdentityApiTests : LoggedTest
         await RegisterAsync(client);
         var loginResponse = await client.PostAsJsonAsync("/identity/login", new { Email, Password });
         var loginContent = await loginResponse.Content.ReadFromJsonAsync<JsonElement>();
-        var refreshToken = loginContent.GetProperty("refresh_token").GetString();
+        var refreshToken = loginContent.GetProperty("refreshToken").GetString();
 
         var refreshResponse = await client.PostAsJsonAsync("/identity/refresh", new { refreshToken });
         var refreshContent = await refreshResponse.Content.ReadFromJsonAsync<JsonElement>();
-        var accessToken = refreshContent.GetProperty("access_token").GetString();
+        var accessToken = refreshContent.GetProperty("accessToken").GetString();
 
         client.DefaultRequestHeaders.Authorization = new("Bearer", accessToken);
         Assert.Equal($"Hello, {Email}!", await client.GetStringAsync("/auth/hello"));
@@ -305,8 +338,8 @@ public class MapIdentityApiTests : LoggedTest
         var loginResponse = await client.PostAsJsonAsync("/identity/login", new { Email, Password });
 
         var loginContent = await loginResponse.Content.ReadFromJsonAsync<JsonElement>();
-        var refreshToken = loginContent.GetProperty("refresh_token").GetString();
-        var accessToken = loginContent.GetProperty("refresh_token").GetString();
+        var refreshToken = loginContent.GetProperty("refreshToken").GetString();
+        var accessToken = loginContent.GetProperty("refreshToken").GetString();
 
         // Works without time passing.
         var refreshResponse = await client.PostAsJsonAsync("/identity/refresh", new { refreshToken });
@@ -327,13 +360,13 @@ public class MapIdentityApiTests : LoggedTest
         // Fails the second the RefreshTokenExpiration elapses.
         AssertUnauthorizedAndEmpty(await client.PostAsJsonAsync("/identity/refresh", new { refreshToken }));
 
-        // But the last refresh_token from the successful /refresh only a second ago has not expired.
+        // But the last refreshToken from the successful /refresh only a second ago has not expired.
         var refreshContent = await refreshResponse.Content.ReadFromJsonAsync<JsonElement>();
-        refreshToken = refreshContent.GetProperty("refresh_token").GetString();
+        refreshToken = refreshContent.GetProperty("refreshToken").GetString();
 
         refreshResponse = await client.PostAsJsonAsync("/identity/refresh", new { refreshToken });
         refreshContent = await refreshResponse.Content.ReadFromJsonAsync<JsonElement>();
-        accessToken = refreshContent.GetProperty("access_token").GetString();
+        accessToken = refreshContent.GetProperty("accessToken").GetString();
 
         client.DefaultRequestHeaders.Authorization = new("Bearer", accessToken);
         Assert.Equal($"Hello, {Email}!", await client.GetStringAsync("/auth/hello"));
@@ -378,7 +411,7 @@ public class MapIdentityApiTests : LoggedTest
 
         var refreshResponse = await client.PostAsJsonAsync("/identity/refresh", new { refreshToken });
         var refreshContent = await refreshResponse.Content.ReadFromJsonAsync<JsonElement>();
-        var accessToken = refreshContent.GetProperty("access_token").GetString();
+        var accessToken = refreshContent.GetProperty("accessToken").GetString();
 
         client.DefaultRequestHeaders.Authorization = new("Bearer", accessToken);
         Assert.Equal($"Hello, {newUsername}!", await client.GetStringAsync("/auth/hello"));
@@ -614,8 +647,8 @@ public class MapIdentityApiTests : LoggedTest
         var loginResponse = await client.PostAsJsonAsync("/identity/login", new { Email, Password });
 
         var loginContent = await loginResponse.Content.ReadFromJsonAsync<JsonElement>();
-        var accessToken = loginContent.GetProperty("access_token").GetString();
-        var refreshToken = loginContent.GetProperty("refresh_token").GetString();
+        var accessToken = loginContent.GetProperty("accessToken").GetString();
+        var refreshToken = loginContent.GetProperty("refreshToken").GetString();
 
         AssertUnauthorizedAndEmpty(await client.PostAsync("/identity/account/2fa", null));
 
@@ -672,7 +705,7 @@ public class MapIdentityApiTests : LoggedTest
         var loginResponse = await client.PostAsJsonAsync("/identity/login", new { Email, Password });
 
         var loginContent = await loginResponse.Content.ReadFromJsonAsync<JsonElement>();
-        var accessToken = loginContent.GetProperty("access_token").GetString();
+        var accessToken = loginContent.GetProperty("accessToken").GetString();
         client.DefaultRequestHeaders.Authorization = new("Bearer", accessToken);
 
         var twoFactorKeyResponse = await client.PostAsJsonAsync("/identity/account/2fa", new object());
@@ -699,7 +732,7 @@ public class MapIdentityApiTests : LoggedTest
         var recoveryLoginResponse = await client.PostAsJsonAsync("/identity/login", new { Email, Password, TwoFactorRecoveryCode = recoveryCodes[0] });
 
         var recoveryLoginContent = await recoveryLoginResponse.Content.ReadFromJsonAsync<JsonElement>();
-        var recoveryAccessToken = recoveryLoginContent.GetProperty("access_token").GetString();
+        var recoveryAccessToken = recoveryLoginContent.GetProperty("accessToken").GetString();
         Assert.NotEqual(accessToken, recoveryAccessToken);
 
         client.DefaultRequestHeaders.Authorization = new("Bearer", recoveryAccessToken);
@@ -723,7 +756,7 @@ public class MapIdentityApiTests : LoggedTest
         var loginResponse = await client.PostAsJsonAsync("/identity/login", new { Email, Password });
 
         var loginContent = await loginResponse.Content.ReadFromJsonAsync<JsonElement>();
-        var accessToken = loginContent.GetProperty("access_token").GetString();
+        var accessToken = loginContent.GetProperty("accessToken").GetString();
         client.DefaultRequestHeaders.Authorization = new("Bearer", accessToken);
 
         var twoFactorKeyResponse = await client.PostAsJsonAsync("/identity/account/2fa", new object());
@@ -770,7 +803,7 @@ public class MapIdentityApiTests : LoggedTest
         var loginResponse = await client.PostAsJsonAsync("/identity/login", new { Email, Password });
 
         var loginContent = await loginResponse.Content.ReadFromJsonAsync<JsonElement>();
-        var accessToken = loginContent.GetProperty("access_token").GetString();
+        var accessToken = loginContent.GetProperty("accessToken").GetString();
         client.DefaultRequestHeaders.Authorization = new("Bearer", accessToken);
 
         var twoFactorKeyResponse = await client.PostAsJsonAsync("/identity/account/2fa", new object());
@@ -800,7 +833,7 @@ public class MapIdentityApiTests : LoggedTest
 
         var recoveryLoginResponse = await client.PostAsJsonAsync("/identity/login", new { Email, Password, TwoFactorRecoveryCode = recoveryCodes[1] });
         var recoveryLoginContent = await recoveryLoginResponse.Content.ReadFromJsonAsync<JsonElement>();
-        var recoveryAccessToken = recoveryLoginContent.GetProperty("access_token").GetString();
+        var recoveryAccessToken = recoveryLoginContent.GetProperty("accessToken").GetString();
         Assert.NotEqual(accessToken, recoveryAccessToken);
 
         client.DefaultRequestHeaders.Authorization = new("Bearer", recoveryAccessToken);
@@ -1333,8 +1366,8 @@ public class MapIdentityApiTests : LoggedTest
         await client.PostAsJsonAsync($"{groupPrefix}/login", new { email, Password });
         var loginResponse = await client.PostAsJsonAsync("/identity/login", new { email, Password });
         var loginContent = await loginResponse.Content.ReadFromJsonAsync<JsonElement>();
-        var accessToken = loginContent.GetProperty("access_token").GetString();
-        var refreshToken = loginContent.GetProperty("refresh_token").GetString();
+        var accessToken = loginContent.GetProperty("accessToken").GetString();
+        var refreshToken = loginContent.GetProperty("refreshToken").GetString();
         Assert.NotNull(accessToken);
         Assert.NotNull(refreshToken);
         client.DefaultRequestHeaders.Authorization = new("Bearer", accessToken);
