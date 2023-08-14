@@ -1,6 +1,7 @@
 # Benchmarks
 
-This document explains how to benchmark ASP.NET Core changes. It is intended for Microsoft employees.
+This document explains how to benchmark ASP.NET Core changes in the ASP.NET Core perf lab. Currently, only members of the .NET team have the permissions necessary to trigger performance runs on the official infrastructure.
+
 It describes how to trigger benchmarks using the Crank CLI and the Pull-Request bot.
 
 ## Benchmarking local changes
@@ -16,6 +17,8 @@ Install Crank with the following command:
 ```console
 dotnet tool install Microsoft.Crank.Controller --version "0.2.0-*" --global
 ```
+
+For more information about Crank please refer to the [Crank GitHub repository](https://github.com/dotnet/crank).
 
 ### Choose which benchmark to run
 
@@ -38,6 +41,8 @@ Using the same Crank command line you can also test the impact of local changes.
 Use this technique when you want to benchmark a community contributed PR or when you don't have the changes available locally.
 
 ### Display all available benchmarks
+
+[Here is an example](https://github.com/dotnet/aspnetcore/pull/50016#issuecomment-1677395856) of a PR that was benchmarked using this bot.
 
 - In the pull-request, add `/benchmark` in the comments.
 - A text similar to this will be displayed (it might take up to 10 minutes):
@@ -78,7 +83,7 @@ Where:
 - *Profile* is the environment where the application will run on.
 - *Component* is the ASP.NET project under test that will be built and contains your changes.
 
-> [!IMPORTANT]  
+> [!IMPORTANT]
 > Any changes outside of the "component" projects will not be benchmarked.
 
 Create a new comment with the correct benchmarks, profiles, and components to build. For instance:
@@ -87,7 +92,7 @@ Create a new comment with the correct benchmarks, profiles, and components to bu
 /benchmark json aspnet-citrine-lin kestrel
 ```
 
-After up to 10 minutes a link should be displayed. Currently the results are not added to the PR anymore, you will need to follow the link and copy the results when the benchmark is finished.
+Once the benchmark has started (can take up to 10 minutes) the bot adds a comment to the PR. Then, when the benchmark is finished the results are added in a separate comment for both your changes and the source branch so you can compare the metrics your care about.
 
 ## Other scenarios
 
