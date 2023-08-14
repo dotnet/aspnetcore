@@ -2718,6 +2718,50 @@ public class HubConnectionTests : FunctionalTestBase
         }
     }
 
+    [Fact]
+    public async Task CanSetMessageBufferSizeOnClient()
+    {
+        var protocol = HubProtocols["json"];
+        await using (var server = await StartServer<Startup>())
+        {
+            const string originalMessage = "SignalR";
+            var connectionBuilder = new HubConnectionBuilder()
+                .WithLoggerFactory(LoggerFactory)
+                .WithUrl(server.Url + "/default", HttpTransportType.WebSockets, o =>
+                {
+                    o.UseAcks = true;
+                });
+            connectionBuilder.Services.Configure<HubConnectionOptions>(o => o.StatefulReconnectBufferSize = 500);
+            connectionBuilder.Services.AddSingleton(protocol);
+            var connection = connectionBuilder.Build();
+
+            try
+            {
+                await connection.StartAsync().DefaultTimeout();
+                var originalConnectionId = connection.ConnectionId;
+
+                var result = await connection.InvokeAsync<string>(nameof(TestHub.Echo), new string('x', 500)).DefaultTimeout();
+
+                var resultTask = connection.InvokeAsync<string>(nameof(TestHub.Echo), originalMessage).DefaultTimeout();
+                // Waiting for buffer to be unblocked by ack from server
+                Assert.False(resultTask.IsCompleted);
+
+                result = await resultTask;
+
+                Assert.Equal(originalMessage, result);
+            }
+            catch (Exception ex)
+            {
+                LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                throw;
+            }
+            finally
+            {
+                await connection.DisposeAsync().DefaultTimeout();
+            }
+        }
+    }
+
     private class OneAtATimeSynchronizationContext : SynchronizationContext, IAsyncDisposable
     {
         private readonly Channel<(SendOrPostCallback, object)> _taskQueue = Channel.CreateUnbounded<(SendOrPostCallback, object)>();
