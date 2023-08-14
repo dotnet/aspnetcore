@@ -56,6 +56,9 @@ public partial class HubConnection : IAsyncDisposable
     /// </summary>
     public static readonly TimeSpan DefaultKeepAliveInterval = TimeSpan.FromSeconds(15);
 
+    // Default amount of bytes we'll buffer when using Stateful Reconnect until applying backpressure to sends from the client.
+    internal const long DefaultStatefulReconnectBufferSize = 100_000;
+
     // The receive loop has a single reader and single writer at a time so optimize the channel for that
     private static readonly UnboundedChannelOptions _receiveLoopOptions = new UnboundedChannelOptions
     {
@@ -1900,7 +1903,8 @@ public partial class HubConnection : IAsyncDisposable
             if (Connection.Features.Get<IReconnectFeature>() is IReconnectFeature feature)
             {
                 _messageBuffer = new MessageBuffer(connection, hubConnection._protocol,
-                    _hubConnection._serviceProvider.GetService<IOptions<HubConnectionOptions>>()?.Value.MessageBufferSize ?? HubConnectionOptions.DefaultMessageBufferSize);
+                    _hubConnection._serviceProvider.GetService<IOptions<HubConnectionOptions>>()?.Value.StatefulReconnectBufferSize
+                    ?? DefaultStatefulReconnectBufferSize);
 
                 feature.NotifyOnReconnect = _messageBuffer.Resend;
             }

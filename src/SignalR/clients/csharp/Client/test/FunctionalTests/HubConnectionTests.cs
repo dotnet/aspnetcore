@@ -2727,11 +2727,11 @@ public class HubConnectionTests : FunctionalTestBase
             const string originalMessage = "SignalR";
             var connectionBuilder = new HubConnectionBuilder()
                 .WithLoggerFactory(LoggerFactory)
-                .WithMessageBufferSize(500)
                 .WithUrl(server.Url + "/default", HttpTransportType.WebSockets, o =>
                 {
                     o.UseAcks = true;
                 });
+            connectionBuilder.Services.Configure<HubConnectionOptions>(o => o.StatefulReconnectBufferSize = 500);
             connectionBuilder.Services.AddSingleton(protocol);
             var connection = connectionBuilder.Build();
 

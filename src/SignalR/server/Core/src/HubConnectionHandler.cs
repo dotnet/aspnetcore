@@ -28,7 +28,7 @@ public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
     private readonly bool _enableDetailedErrors;
     private readonly long? _maximumMessageSize;
     private readonly int _maxParallelInvokes;
-    private readonly long _messageBufferSize;
+    private readonly long _statefulReconnectBufferSize;
 
     // Internal for testing
     internal TimeProvider TimeProvider { get; set; } = TimeProvider.System;
@@ -71,7 +71,7 @@ public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
             _enableDetailedErrors = _hubOptions.EnableDetailedErrors ?? _enableDetailedErrors;
             _maxParallelInvokes = _hubOptions.MaximumParallelInvocationsPerClient;
             disableImplicitFromServiceParameters = _hubOptions.DisableImplicitFromServicesParameters;
-            _messageBufferSize = _hubOptions.MessageBufferSize;
+            _statefulReconnectBufferSize = _hubOptions.StatefulReconnectBufferSize;
 
             if (_hubOptions.HubFilters != null)
             {
@@ -84,7 +84,7 @@ public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
             _enableDetailedErrors = _globalHubOptions.EnableDetailedErrors ?? _enableDetailedErrors;
             _maxParallelInvokes = _globalHubOptions.MaximumParallelInvocationsPerClient;
             disableImplicitFromServiceParameters = _globalHubOptions.DisableImplicitFromServicesParameters;
-            _messageBufferSize = _globalHubOptions.MessageBufferSize;
+            _statefulReconnectBufferSize = _globalHubOptions.StatefulReconnectBufferSize;
 
             if (_globalHubOptions.HubFilters != null)
             {
@@ -126,7 +126,7 @@ public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
             MaximumReceiveMessageSize = _maximumMessageSize,
             TimeProvider = TimeProvider,
             MaximumParallelInvocations = _maxParallelInvokes,
-            MessageBufferSize = _messageBufferSize,
+            StatefulReconnectBufferSize = _statefulReconnectBufferSize,
         };
 
         Log.ConnectedStarting(_logger);

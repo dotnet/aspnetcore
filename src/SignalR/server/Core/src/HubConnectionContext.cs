@@ -46,7 +46,7 @@ public partial class HubConnectionContext
     private volatile bool _allowReconnect = true;
     private readonly int _streamBufferCapacity;
     private readonly long? _maxMessageSize;
-    private readonly long _messageBufferSize;
+    private readonly long _statefulReconnectBufferSize;
     private bool _receivedMessageTimeoutEnabled;
     private TimeSpan _receivedMessageElapsed;
     private long _receivedMessageTick;
@@ -69,7 +69,7 @@ public partial class HubConnectionContext
         _clientTimeoutInterval = contextOptions.ClientTimeoutInterval;
         _streamBufferCapacity = contextOptions.StreamBufferCapacity;
         _maxMessageSize = contextOptions.MaximumReceiveMessageSize;
-        _messageBufferSize = contextOptions.MessageBufferSize;
+        _statefulReconnectBufferSize = contextOptions.StatefulReconnectBufferSize;
 
         _connectionContext = connectionContext;
         _logger = loggerFactory.CreateLogger<HubConnectionContext>();
@@ -579,7 +579,7 @@ public partial class HubConnectionContext
                                 if (_connectionContext.Features.Get<IReconnectFeature>() is IReconnectFeature feature)
                                 {
                                     _useAcks = true;
-                                    _messageBuffer = new MessageBuffer(_connectionContext, Protocol, _messageBufferSize);
+                                    _messageBuffer = new MessageBuffer(_connectionContext, Protocol, _statefulReconnectBufferSize);
                                     feature.NotifyOnReconnect = _messageBuffer.Resend;
                                 }
                                 return true;

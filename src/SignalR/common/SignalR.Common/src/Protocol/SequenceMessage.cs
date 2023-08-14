@@ -11,7 +11,7 @@ public sealed class SequenceMessage : HubMessage
     /// <summary>
     /// Initializes a new instance of the <see cref="SequenceMessage"/> class.
     /// </summary>
-    /// <param name="sequenceId">Specifies the ID messages being received from now on should start at.</param>
+    /// <param name="sequenceId">Specifies the starting ID for messages that will be received from this point onward.</param>
     public SequenceMessage(long sequenceId)
     {
         SequenceId = sequenceId;

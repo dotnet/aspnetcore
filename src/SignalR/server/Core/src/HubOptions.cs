@@ -84,5 +84,5 @@ public class HubOptions
     /// Gets or sets the maximum bytes to buffer per connection when using stateful reconnect.
     /// </summary>
     /// <remarks>Defaults to 100,000 bytes.</remarks>
-    public long MessageBufferSize { get; set; } = 100_000;
+    public long StatefulReconnectBufferSize { get; set; } = 100_000;
 }

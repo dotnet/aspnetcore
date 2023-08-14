@@ -87,17 +87,4 @@ public static class HubConnectionBuilderExtensions
         hubConnectionBuilder.Services.Configure<HubConnectionOptions>(o => o.KeepAliveInterval = interval);
         return hubConnectionBuilder;
     }
-
-    /// <summary>
-    /// Configures the message buffer size in bytes for the <see cref="HubConnection" />.
-    /// Only applies when using stateful reconnect.
-    /// </summary>
-    /// <param name="hubConnectionBuilder">The <see cref="IHubConnectionBuilder" /> to configure.</param>
-    /// <param name="messageBufferSize">Number of bytes to buffer before before sending messages is blocked waiting for the server to ack.</param>
-    /// <returns></returns>
-    public static IHubConnectionBuilder WithMessageBufferSize(this IHubConnectionBuilder hubConnectionBuilder, long messageBufferSize)
-    {
-        hubConnectionBuilder.Services.Configure<HubConnectionOptions>(o => o.MessageBufferSize = messageBufferSize);
-        return hubConnectionBuilder;
-    }
 }

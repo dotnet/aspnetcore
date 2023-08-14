@@ -5179,7 +5179,7 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
             provider.AddSignalR(options =>
             {
                 options.EnableDetailedErrors = true;
-                options.MessageBufferSize = 500;
+                options.StatefulReconnectBufferSize = 500;
             });
         });
         var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
