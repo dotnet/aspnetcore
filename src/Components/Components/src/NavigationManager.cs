@@ -171,7 +171,7 @@ public abstract class NavigationManager
     /// If possible, statically-rendered content will be replaced without performing a full page reload.
     /// </summary>
     public virtual void Refresh()
-        => throw new NotImplementedException($"The type {GetType().FullName} does not implement the {nameof(Refresh)} method.");
+        => NavigateTo(Uri, forceLoad: true, replace: true);
 
     /// <summary>
     /// Called to initialize BaseURI and current URI before these values are used for the first time.
