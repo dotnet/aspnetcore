@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Http.Generated
         private static readonly JsonOptions FallbackJsonOptions = new();
         private static readonly string[] GetVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Get };
 
-        [InterceptsLocation(@"TestMapActions.cs", 25, 13)]
+        [InterceptsLocation(@"TestMapActions.cs", 26, 13)]
         internal static RouteHandlerBuilder MapGet0(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
@@ -167,7 +167,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 createRequestDelegate);
         }
 
-        [InterceptsLocation(@"TestMapActions.cs", 26, 5)]
+        [InterceptsLocation(@"TestMapActions.cs", 27, 5)]
         internal static RouteHandlerBuilder MapGet1(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
@@ -262,7 +262,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 createRequestDelegate);
         }
 
-        [InterceptsLocation(@"TestMapActions.cs", 27, 5)]
+        [InterceptsLocation(@"TestMapActions.cs", 28, 5)]
         internal static RouteHandlerBuilder MapGet2(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
@@ -359,7 +359,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 createRequestDelegate);
         }
 
-        [InterceptsLocation(@"TestMapActions.cs", 28, 5)]
+        [InterceptsLocation(@"TestMapActions.cs", 29, 5)]
         internal static RouteHandlerBuilder MapGet3(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
@@ -454,7 +454,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 createRequestDelegate);
         }
 
-        [InterceptsLocation(@"TestMapActions.cs", 29, 5)]
+        [InterceptsLocation(@"TestMapActions.cs", 30, 5)]
         internal static RouteHandlerBuilder MapGet4(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
@@ -563,7 +563,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 createRequestDelegate);
         }
 
-        [InterceptsLocation(@"TestMapActions.cs", 30, 5)]
+        [InterceptsLocation(@"TestMapActions.cs", 31, 5)]
         internal static RouteHandlerBuilder MapGet5(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
@@ -658,7 +658,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 createRequestDelegate);
         }
 
-        [InterceptsLocation(@"TestMapActions.cs", 31, 5)]
+        [InterceptsLocation(@"TestMapActions.cs", 32, 5)]
         internal static RouteHandlerBuilder MapGet6(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
@@ -755,7 +755,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 createRequestDelegate);
         }
 
-        [InterceptsLocation(@"TestMapActions.cs", 32, 5)]
+        [InterceptsLocation(@"TestMapActions.cs", 33, 5)]
         internal static RouteHandlerBuilder MapGet7(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
@@ -850,7 +850,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 createRequestDelegate);
         }
 
-        [InterceptsLocation(@"TestMapActions.cs", 33, 5)]
+        [InterceptsLocation(@"TestMapActions.cs", 34, 5)]
         internal static RouteHandlerBuilder MapGet8(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
@@ -958,7 +958,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 createRequestDelegate);
         }
 
-        [InterceptsLocation(@"TestMapActions.cs", 34, 5)]
+        [InterceptsLocation(@"TestMapActions.cs", 35, 5)]
         internal static RouteHandlerBuilder MapGet9(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
@@ -1052,7 +1052,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 createRequestDelegate);
         }
 
-        [InterceptsLocation(@"TestMapActions.cs", 35, 5)]
+        [InterceptsLocation(@"TestMapActions.cs", 36, 5)]
         internal static RouteHandlerBuilder MapGet10(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
@@ -1148,7 +1148,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 createRequestDelegate);
         }
 
-        [InterceptsLocation(@"TestMapActions.cs", 36, 5)]
+        [InterceptsLocation(@"TestMapActions.cs", 37, 5)]
         internal static RouteHandlerBuilder MapGet11(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
@@ -1242,7 +1242,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 createRequestDelegate);
         }
 
-        [InterceptsLocation(@"TestMapActions.cs", 37, 5)]
+        [InterceptsLocation(@"TestMapActions.cs", 38, 5)]
         internal static RouteHandlerBuilder MapGet12(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
@@ -1351,7 +1351,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 createRequestDelegate);
         }
 
-        [InterceptsLocation(@"TestMapActions.cs", 38, 5)]
+        [InterceptsLocation(@"TestMapActions.cs", 39, 5)]
         internal static RouteHandlerBuilder MapGet13(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
@@ -1446,7 +1446,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 createRequestDelegate);
         }
 
-        [InterceptsLocation(@"TestMapActions.cs", 39, 5)]
+        [InterceptsLocation(@"TestMapActions.cs", 40, 5)]
         internal static RouteHandlerBuilder MapGet14(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
@@ -1554,7 +1554,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 createRequestDelegate);
         }
 
-        [InterceptsLocation(@"TestMapActions.cs", 40, 5)]
+        [InterceptsLocation(@"TestMapActions.cs", 41, 5)]
         internal static RouteHandlerBuilder MapGet15(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
@@ -1648,7 +1648,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 createRequestDelegate);
         }
 
-        [InterceptsLocation(@"TestMapActions.cs", 41, 5)]
+        [InterceptsLocation(@"TestMapActions.cs", 42, 5)]
         internal static RouteHandlerBuilder MapGet16(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
@@ -1757,7 +1757,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 createRequestDelegate);
         }
 
-        [InterceptsLocation(@"TestMapActions.cs", 42, 5)]
+        [InterceptsLocation(@"TestMapActions.cs", 43, 5)]
         internal static RouteHandlerBuilder MapGet17(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
@@ -1852,7 +1852,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 createRequestDelegate);
         }
 
-        [InterceptsLocation(@"TestMapActions.cs", 43, 5)]
+        [InterceptsLocation(@"TestMapActions.cs", 44, 5)]
         internal static RouteHandlerBuilder MapGet18(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
@@ -1960,7 +1960,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 createRequestDelegate);
         }
 
-        [InterceptsLocation(@"TestMapActions.cs", 44, 5)]
+        [InterceptsLocation(@"TestMapActions.cs", 45, 5)]
         internal static RouteHandlerBuilder MapGet19(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
