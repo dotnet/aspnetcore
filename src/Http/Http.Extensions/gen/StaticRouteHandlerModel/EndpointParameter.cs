@@ -139,6 +139,12 @@ internal class EndpointParameter
         {
             Source = EndpointParameterSource.Service;
         }
+        else if (attributes.TryGetAttribute(wellKnownTypes.Get(WellKnownType.Microsoft_Extensions_DependencyInjection_FromKeyedServicesAttribute), out var keyedServicesAttribute))
+        {
+            Source = EndpointParameterSource.KeyedService;
+            var constructorArgument = keyedServicesAttribute.ConstructorArguments.FirstOrDefault();
+            AssigningCode = constructorArgument.IsNull ? string.Empty : SymbolDisplay.FormatPrimitive(constructorArgument.Value!, true, true);
+        }
         else if (attributes.HasAttribute(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_AsParametersAttribute)))
         {
             Source = EndpointParameterSource.AsParameters;
