@@ -115,6 +115,8 @@ Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.Theme.get -> stri
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.Theme.set -> void
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.Virtualize.get -> bool
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.Virtualize.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.AdditionalAttributes.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>?
+Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.AdditionalAttributes.set -> void
 Microsoft.AspNetCore.Components.QuickGrid.SortDirection
 Microsoft.AspNetCore.Components.QuickGrid.SortDirection.Ascending = 1 -> Microsoft.AspNetCore.Components.QuickGrid.SortDirection
 Microsoft.AspNetCore.Components.QuickGrid.SortDirection.Auto = 0 -> Microsoft.AspNetCore.Components.QuickGrid.SortDirection

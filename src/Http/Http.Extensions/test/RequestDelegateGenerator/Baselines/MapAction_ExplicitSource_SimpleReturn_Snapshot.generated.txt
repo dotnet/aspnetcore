@@ -59,10 +59,6 @@ namespace Microsoft.AspNetCore.Http.Generated
         private static readonly string[] GetVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Get };
 
         [InterceptsLocation(@"TestMapActions.cs", 25, 13)]
-        [InterceptsLocation(@"TestMapActions.cs", 26, 5)]
-        [InterceptsLocation(@"TestMapActions.cs", 27, 5)]
-        [InterceptsLocation(@"TestMapActions.cs", 28, 5)]
-        [InterceptsLocation(@"TestMapActions.cs", 29, 5)]
         internal static RouteHandlerBuilder MapGet0(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
@@ -172,6 +168,346 @@ namespace Microsoft.AspNetCore.Http.Generated
                 createRequestDelegate);
         }
 
+        [InterceptsLocation(@"TestMapActions.cs", 26, 5)]
+        internal static RouteHandlerBuilder MapGet1(
+            this IEndpointRouteBuilder endpoints,
+            [StringSyntax("Route")] string pattern,
+            Delegate handler)
+        {
+            MetadataPopulator populateMetadata = (methodInfo, options) =>
+            {
+                Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
+                Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
+                options.EndpointBuilder.Metadata.Add(new System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.Http.RequestDelegateGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42"));
+                options.EndpointBuilder.Metadata.Add(new ProducesResponseTypeMetadata(statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
+                return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
+            };
+            RequestDelegateFactoryFunc createRequestDelegate = (del, options, inferredMetadataResult) =>
+            {
+                Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
+                Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
+                Debug.Assert(options.EndpointBuilder.ApplicationServices != null, "ApplicationServices not found.");
+                Debug.Assert(options.EndpointBuilder.FilterFactories != null, "FilterFactories not found.");
+                var handler = Cast(del, global::System.String (global::System.String arg0) => throw null!);
+                EndpointFilterDelegate? filteredInvocation = null;
+                var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
+                var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
+                var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? FallbackJsonOptions;
+                var jsonSerializerOptions = jsonOptions.SerializerOptions;
+                jsonSerializerOptions.MakeReadOnly();
+                var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonSerializerOptions.GetTypeInfo(typeof(object));
+
+                if (options.EndpointBuilder.FilterFactories.Count > 0)
+                {
+                    filteredInvocation = GeneratedRouteBuilderExtensionsCore.BuildFilterDelegate(ic =>
+                    {
+                        if (ic.HttpContext.Response.StatusCode == 400)
+                        {
+                            return ValueTask.FromResult<object?>(Results.Empty);
+                        }
+                        return ValueTask.FromResult<object?>(handler(ic.GetArgument<global::System.String>(0)!));
+                    },
+                    options.EndpointBuilder,
+                    handler.Method);
+                }
+
+                Task RequestHandler(HttpContext httpContext)
+                {
+                    var wasParamCheckFailure = false;
+                    // Endpoint Parameter: headerValue (Type = string, IsOptional = False, IsParsable = False, IsArray = False, Source = Header)
+                    var headerValue_raw = httpContext.Request.Headers["headerValue"];
+                    if (StringValues.IsNullOrEmpty(headerValue_raw))
+                    {
+                        wasParamCheckFailure = true;
+                        logOrThrowExceptionHelper.RequiredParameterNotProvided("string", "headerValue", "header");
+                    }
+                    var headerValue_temp = (string?)headerValue_raw;
+                    string headerValue_local = headerValue_temp!;
+
+                    if (wasParamCheckFailure)
+                    {
+                        httpContext.Response.StatusCode = 400;
+                        return Task.CompletedTask;
+                    }
+                    var result = handler(headerValue_local);
+                    if (result is string)
+                    {
+                        httpContext.Response.ContentType ??= "text/plain; charset=utf-8";
+                    }
+                    else
+                    {
+                        httpContext.Response.ContentType ??= "application/json; charset=utf-8";
+                    }
+                    return httpContext.Response.WriteAsync(result);
+                }
+
+                async Task RequestHandlerFiltered(HttpContext httpContext)
+                {
+                    var wasParamCheckFailure = false;
+                    // Endpoint Parameter: headerValue (Type = string, IsOptional = False, IsParsable = False, IsArray = False, Source = Header)
+                    var headerValue_raw = httpContext.Request.Headers["headerValue"];
+                    if (StringValues.IsNullOrEmpty(headerValue_raw))
+                    {
+                        wasParamCheckFailure = true;
+                        logOrThrowExceptionHelper.RequiredParameterNotProvided("string", "headerValue", "header");
+                    }
+                    var headerValue_temp = (string?)headerValue_raw;
+                    string headerValue_local = headerValue_temp!;
+
+                    if (wasParamCheckFailure)
+                    {
+                        httpContext.Response.StatusCode = 400;
+                    }
+                    var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::System.String>(httpContext, headerValue_local));
+                    if (result is not null)
+                    {
+                        await GeneratedRouteBuilderExtensionsCore.ExecuteReturnAsync(result, httpContext, objectJsonTypeInfo);
+                    }
+                }
+
+                RequestDelegate targetDelegate = filteredInvocation is null ? RequestHandler : RequestHandlerFiltered;
+                var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
+                return new RequestDelegateResult(targetDelegate, metadata);
+            };
+            return MapCore(
+                endpoints,
+                pattern,
+                handler,
+                GetVerb,
+                populateMetadata,
+                createRequestDelegate);
+        }
+
+        [InterceptsLocation(@"TestMapActions.cs", 27, 5)]
+        internal static RouteHandlerBuilder MapGet2(
+            this IEndpointRouteBuilder endpoints,
+            [StringSyntax("Route")] string pattern,
+            Delegate handler)
+        {
+            MetadataPopulator populateMetadata = (methodInfo, options) =>
+            {
+                Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
+                Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
+                options.EndpointBuilder.Metadata.Add(new System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.Http.RequestDelegateGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42"));
+                options.EndpointBuilder.Metadata.Add(new ProducesResponseTypeMetadata(statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
+                return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
+            };
+            RequestDelegateFactoryFunc createRequestDelegate = (del, options, inferredMetadataResult) =>
+            {
+                Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
+                Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
+                Debug.Assert(options.EndpointBuilder.ApplicationServices != null, "ApplicationServices not found.");
+                Debug.Assert(options.EndpointBuilder.FilterFactories != null, "FilterFactories not found.");
+                var handler = Cast(del, global::System.String (global::System.String arg0) => throw null!);
+                EndpointFilterDelegate? filteredInvocation = null;
+                var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
+                var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
+                var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? FallbackJsonOptions;
+                var jsonSerializerOptions = jsonOptions.SerializerOptions;
+                jsonSerializerOptions.MakeReadOnly();
+                var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonSerializerOptions.GetTypeInfo(typeof(object));
+
+                if (options.EndpointBuilder.FilterFactories.Count > 0)
+                {
+                    filteredInvocation = GeneratedRouteBuilderExtensionsCore.BuildFilterDelegate(ic =>
+                    {
+                        if (ic.HttpContext.Response.StatusCode == 400)
+                        {
+                            return ValueTask.FromResult<object?>(Results.Empty);
+                        }
+                        return ValueTask.FromResult<object?>(handler(ic.GetArgument<global::System.String>(0)!));
+                    },
+                    options.EndpointBuilder,
+                    handler.Method);
+                }
+
+                Task RequestHandler(HttpContext httpContext)
+                {
+                    var wasParamCheckFailure = false;
+                    // Endpoint Parameter: routeValue (Type = string, IsOptional = False, IsParsable = False, IsArray = False, Source = Route)
+                    if (options?.RouteParameterNames?.Contains("routeValue", StringComparer.OrdinalIgnoreCase) != true)
+                    {
+                        throw new InvalidOperationException($"'routeValue' is not a route parameter.");
+                    }
+                    var routeValue_raw = (string?)httpContext.Request.RouteValues["routeValue"];
+                    if (routeValue_raw == null)
+                    {
+                        wasParamCheckFailure = true;
+                        logOrThrowExceptionHelper.RequiredParameterNotProvided("string", "routeValue", "route");
+                    }
+                    var routeValue_temp = (string?)routeValue_raw;
+                    string routeValue_local = routeValue_temp!;
+
+                    if (wasParamCheckFailure)
+                    {
+                        httpContext.Response.StatusCode = 400;
+                        return Task.CompletedTask;
+                    }
+                    var result = handler(routeValue_local!);
+                    if (result is string)
+                    {
+                        httpContext.Response.ContentType ??= "text/plain; charset=utf-8";
+                    }
+                    else
+                    {
+                        httpContext.Response.ContentType ??= "application/json; charset=utf-8";
+                    }
+                    return httpContext.Response.WriteAsync(result);
+                }
+
+                async Task RequestHandlerFiltered(HttpContext httpContext)
+                {
+                    var wasParamCheckFailure = false;
+                    // Endpoint Parameter: routeValue (Type = string, IsOptional = False, IsParsable = False, IsArray = False, Source = Route)
+                    if (options?.RouteParameterNames?.Contains("routeValue", StringComparer.OrdinalIgnoreCase) != true)
+                    {
+                        throw new InvalidOperationException($"'routeValue' is not a route parameter.");
+                    }
+                    var routeValue_raw = (string?)httpContext.Request.RouteValues["routeValue"];
+                    if (routeValue_raw == null)
+                    {
+                        wasParamCheckFailure = true;
+                        logOrThrowExceptionHelper.RequiredParameterNotProvided("string", "routeValue", "route");
+                    }
+                    var routeValue_temp = (string?)routeValue_raw;
+                    string routeValue_local = routeValue_temp!;
+
+                    if (wasParamCheckFailure)
+                    {
+                        httpContext.Response.StatusCode = 400;
+                    }
+                    var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::System.String>(httpContext, routeValue_local!));
+                    if (result is not null)
+                    {
+                        await GeneratedRouteBuilderExtensionsCore.ExecuteReturnAsync(result, httpContext, objectJsonTypeInfo);
+                    }
+                }
+
+                RequestDelegate targetDelegate = filteredInvocation is null ? RequestHandler : RequestHandlerFiltered;
+                var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
+                return new RequestDelegateResult(targetDelegate, metadata);
+            };
+            return MapCore(
+                endpoints,
+                pattern,
+                handler,
+                GetVerb,
+                populateMetadata,
+                createRequestDelegate);
+        }
+
+        [InterceptsLocation(@"TestMapActions.cs", 28, 5)]
+        [InterceptsLocation(@"TestMapActions.cs", 29, 5)]
+        internal static RouteHandlerBuilder MapGet3(
+            this IEndpointRouteBuilder endpoints,
+            [StringSyntax("Route")] string pattern,
+            Delegate handler)
+        {
+            MetadataPopulator populateMetadata = (methodInfo, options) =>
+            {
+                Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
+                Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
+                options.EndpointBuilder.Metadata.Add(new System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.Http.RequestDelegateGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42"));
+                options.EndpointBuilder.Metadata.Add(new ProducesResponseTypeMetadata(statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
+                return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
+            };
+            RequestDelegateFactoryFunc createRequestDelegate = (del, options, inferredMetadataResult) =>
+            {
+                Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
+                Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
+                Debug.Assert(options.EndpointBuilder.ApplicationServices != null, "ApplicationServices not found.");
+                Debug.Assert(options.EndpointBuilder.FilterFactories != null, "FilterFactories not found.");
+                var handler = Cast(del, global::System.String (global::System.String arg0) => throw null!);
+                EndpointFilterDelegate? filteredInvocation = null;
+                var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
+                var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
+                var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? FallbackJsonOptions;
+                var jsonSerializerOptions = jsonOptions.SerializerOptions;
+                jsonSerializerOptions.MakeReadOnly();
+                var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonSerializerOptions.GetTypeInfo(typeof(object));
+                var value_RouteOrQueryResolver = GeneratedRouteBuilderExtensionsCore.ResolveFromRouteOrQuery("value", options.RouteParameterNames);
+
+                if (options.EndpointBuilder.FilterFactories.Count > 0)
+                {
+                    filteredInvocation = GeneratedRouteBuilderExtensionsCore.BuildFilterDelegate(ic =>
+                    {
+                        if (ic.HttpContext.Response.StatusCode == 400)
+                        {
+                            return ValueTask.FromResult<object?>(Results.Empty);
+                        }
+                        return ValueTask.FromResult<object?>(handler(ic.GetArgument<global::System.String>(0)!));
+                    },
+                    options.EndpointBuilder,
+                    handler.Method);
+                }
+
+                Task RequestHandler(HttpContext httpContext)
+                {
+                    var wasParamCheckFailure = false;
+                    // Endpoint Parameter: value (Type = string, IsOptional = False, IsParsable = False, IsArray = False, Source = RouteOrQuery)
+                    var value_raw = value_RouteOrQueryResolver(httpContext);
+                    if (value_raw is StringValues { Count: 0 })
+                    {
+                        wasParamCheckFailure = true;
+                        logOrThrowExceptionHelper.RequiredParameterNotProvided("string", "value", "route or query string");
+                    }
+                    var value_temp = (string?)value_raw;
+                    string value_local = value_temp!;
+
+                    if (wasParamCheckFailure)
+                    {
+                        httpContext.Response.StatusCode = 400;
+                        return Task.CompletedTask;
+                    }
+                    var result = handler(value_local!);
+                    if (result is string)
+                    {
+                        httpContext.Response.ContentType ??= "text/plain; charset=utf-8";
+                    }
+                    else
+                    {
+                        httpContext.Response.ContentType ??= "application/json; charset=utf-8";
+                    }
+                    return httpContext.Response.WriteAsync(result);
+                }
+
+                async Task RequestHandlerFiltered(HttpContext httpContext)
+                {
+                    var wasParamCheckFailure = false;
+                    // Endpoint Parameter: value (Type = string, IsOptional = False, IsParsable = False, IsArray = False, Source = RouteOrQuery)
+                    var value_raw = value_RouteOrQueryResolver(httpContext);
+                    if (value_raw is StringValues { Count: 0 })
+                    {
+                        wasParamCheckFailure = true;
+                        logOrThrowExceptionHelper.RequiredParameterNotProvided("string", "value", "route or query string");
+                    }
+                    var value_temp = (string?)value_raw;
+                    string value_local = value_temp!;
+
+                    if (wasParamCheckFailure)
+                    {
+                        httpContext.Response.StatusCode = 400;
+                    }
+                    var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::System.String>(httpContext, value_local!));
+                    if (result is not null)
+                    {
+                        await GeneratedRouteBuilderExtensionsCore.ExecuteReturnAsync(result, httpContext, objectJsonTypeInfo);
+                    }
+                }
+
+                RequestDelegate targetDelegate = filteredInvocation is null ? RequestHandler : RequestHandlerFiltered;
+                var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
+                return new RequestDelegateResult(targetDelegate, metadata);
+            };
+            return MapCore(
+                endpoints,
+                pattern,
+                handler,
+                GetVerb,
+                populateMetadata,
+                createRequestDelegate);
+        }
+
 
 
         internal static RouteHandlerBuilder MapCore(
@@ -244,6 +580,12 @@ namespace Microsoft.AspNetCore.Http.Generated
         private static bool ShouldUseWith(this JsonTypeInfo jsonTypeInfo, [NotNullWhen(false)] Type? runtimeType)
             => runtimeType is null || jsonTypeInfo.Type == runtimeType || jsonTypeInfo.HasKnownPolymorphism();
 
+        private static Func<HttpContext, StringValues> ResolveFromRouteOrQuery(string parameterName, IEnumerable<string>? routeParameterNames)
+        {
+            return routeParameterNames?.Contains(parameterName, StringComparer.OrdinalIgnoreCase) == true
+                ? (httpContext) => new StringValues((string?)httpContext.Request.RouteValues[parameterName])
+                : (httpContext) => httpContext.Request.Query[parameterName];
+        }
 
     }
 

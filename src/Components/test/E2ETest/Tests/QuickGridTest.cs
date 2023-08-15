@@ -113,4 +113,12 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
         Assert.Equal("1", currentPageNumber);
         Assert.Equal("5", totalPageNumber);
     }
+
+    [Fact]
+    public void AdditionalAttributesApplied()
+    {
+        var grid = app.FindElement(By.CssSelector("#grid > table"));
+        Assert.Equal("somevalue", grid.GetAttribute("custom-attrib"));
+        Assert.Contains("custom-class-attrib", grid.GetAttribute("class")?.Split(" "));
+    }
 }

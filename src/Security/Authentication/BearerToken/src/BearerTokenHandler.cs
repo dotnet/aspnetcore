@@ -3,8 +3,11 @@
 
 using System.Security.Claims;
 using System.Text.Encodings.Web;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Authentication.BearerToken.DTO;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Json;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
@@ -69,13 +72,21 @@ internal sealed class BearerTokenHandler(IOptionsMonitor<BearerTokenOptions> opt
         var response = new AccessTokenResponse
         {
             AccessToken = Options.BearerTokenProtector.Protect(CreateBearerTicket(user, properties)),
-            ExpiresInSeconds = (long)Options.BearerTokenExpiration.TotalSeconds,
+            ExpiresIn = (long)Options.BearerTokenExpiration.TotalSeconds,
             RefreshToken = Options.RefreshTokenProtector.Protect(CreateRefreshTicket(user, utcNow)),
         };
 
         Logger.AuthenticationSchemeSignedIn(Scheme.Name);
 
-        await Context.Response.WriteAsJsonAsync(response, BearerTokenJsonSerializerContext.Default.AccessTokenResponse);
+        await Context.Response.WriteAsJsonAsync(response, ResolveAccessTokenJsonTypeInfo(Context));
+    }
+
+    private static JsonTypeInfo<AccessTokenResponse> ResolveAccessTokenJsonTypeInfo(HttpContext httpContext)
+    {
+        // Attempt to resolve options from DI then fall back to static options
+        var typeInfo = httpContext.RequestServices.GetService<IOptions<JsonOptions>>()
+            ?.Value?.SerializerOptions?.GetTypeInfo(typeof(AccessTokenResponse)) as JsonTypeInfo<AccessTokenResponse>;
+        return typeInfo ?? BearerTokenJsonSerializerContext.Default.AccessTokenResponse;
     }
 
     // No-op to avoid interfering with any mass sign-out logic.
