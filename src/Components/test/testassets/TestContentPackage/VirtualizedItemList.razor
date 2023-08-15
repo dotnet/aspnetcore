@@ -1,0 +1,12 @@
+﻿@using Microsoft.AspNetCore.Components.Web.Virtualization
+
+<div style="height: 200px; overflow-y: scroll;">
+    <Virtualize Items="Items">
+        <p>@context</p>
+    </Virtualize>
+</div>
+
+@code {
+    [Parameter]
+    public string[] Items { get; set; }
+}

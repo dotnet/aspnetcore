@@ -3,7 +3,7 @@
 
 import { DotNet } from '@microsoft/dotnet-js-interop';
 import { Blazor } from './GlobalExports';
-import { HubConnectionBuilder, HubConnection, HttpTransportType } from '@microsoft/signalr';
+import { HubConnectionBuilder, HubConnection, HttpTransportType, HubConnectionState } from '@microsoft/signalr';
 import { MessagePackHubProtocol } from '@microsoft/signalr-protocol-msgpack';
 import { showErrorNotification } from './BootErrors';
 import { RenderQueue } from './Platform/Circuits/RenderQueue';
@@ -18,13 +18,17 @@ import { sendJSDataStream } from './Platform/Circuits/CircuitStreamingInterop';
 import { fetchAndInvokeInitializers } from './JSInitializers/JSInitializers.Server';
 import { WebRendererId } from './Rendering/WebRendererId';
 import { RootComponentManager } from './Services/RootComponentManager';
+import { detachWebRendererInterop } from './Rendering/WebRendererInteropMethods';
 
 let renderingFailed = false;
-let hasStarted = false;
+let started = false;
+let circuitActive = false;
 let connection: HubConnection;
 let circuit: CircuitDescriptor;
 let dispatcher: DotNet.ICallDispatcher;
 let userOptions: Partial<CircuitStartOptions> | undefined;
+let logger: ConsoleLogger;
+let afterRenderCallback: (() => void) | undefined;
 
 export function setCircuitOptions(circuitUserOptions?: Partial<CircuitStartOptions>) {
   if (userOptions) {
@@ -34,18 +38,18 @@ export function setCircuitOptions(circuitUserOptions?: Partial<CircuitStartOptio
   userOptions = circuitUserOptions;
 }
 
-export async function startCircuit(components: RootComponentManager<ServerComponentDescriptor>): Promise<void> {
-  if (hasStarted) {
+export async function startServer(components: RootComponentManager<ServerComponentDescriptor>): Promise<void> {
+  if (started) {
     throw new Error('Blazor Server has already started.');
   }
 
-  hasStarted = true;
+  started = true;
 
   // Establish options to be used
   const options = resolveOptions(userOptions);
   const jsInitializer = await fetchAndInvokeInitializers(options);
 
-  const logger = new ConsoleLogger(options.logLevel);
+  logger = new ConsoleLogger(options.logLevel);
 
   Blazor.reconnect = async (existingConnection?: HubConnection): Promise<boolean> => {
     if (renderingFailed) {
@@ -68,9 +72,6 @@ export async function startCircuit(components: RootComponentManager<ServerCompon
   options.reconnectionHandler = options.reconnectionHandler || Blazor.defaultReconnectionHandler;
   logger.log(LogLevel.Information, 'Starting up Blazor server-side application.');
 
-  const appState = discoverPersistedState(document);
-  circuit = new CircuitDescriptor(components, appState || '');
-
   // Configure navigation via SignalR
   Blazor._internal.navigationManager.listenForNavigationEvents((uri: string, state: string | undefined, intercepted: boolean): Promise<void> => {
     return connection.send('OnLocationChanged', uri, state, intercepted);
@@ -81,22 +82,8 @@ export async function startCircuit(components: RootComponentManager<ServerCompon
   Blazor._internal.forceCloseConnection = () => connection.stop();
   Blazor._internal.sendJSDataStream = (data: ArrayBufferView | Blob, streamId: number, chunkSize: number) => sendJSDataStream(connection, data, streamId, chunkSize);
 
-  dispatcher = DotNet.attachDispatcher({
-    beginInvokeDotNetFromJS: (callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson): void => {
-      connection.send('BeginInvokeDotNetFromJS', callId ? callId.toString() : null, assemblyName, methodIdentifier, dotNetObjectId || 0, argsJson);
-    },
-    endInvokeJSFromDotNet: (asyncHandle, succeeded, argsJson): void => {
-      connection.send('EndInvokeJSFromDotNet', asyncHandle, succeeded, argsJson);
-    },
-    sendByteArray: (id: number, data: Uint8Array): void => {
-      connection.send('ReceiveByteArray', id, data);
-    },
-  });
-
-  const initialConnection = await initializeConnection(options, logger, circuit);
-  const circuitStarted = await circuit.startCircuit(initialConnection);
-  if (!circuitStarted) {
-    logger.log(LogLevel.Error, 'Failed to start the circuit.');
+  const didCircuitStart = await startCircuit(components);
+  if (!didCircuitStart) {
     return;
   }
 
@@ -117,6 +104,75 @@ export async function startCircuit(components: RootComponentManager<ServerCompon
   logger.log(LogLevel.Information, 'Blazor server-side application started.');
 
   jsInitializer.invokeAfterStartedCallbacks(Blazor);
+}
+
+export async function startCircuit(components: RootComponentManager<ServerComponentDescriptor>): Promise<boolean> {
+  if (!started) {
+    throw new Error('Cannot start the circuit until Blazor Server has started.');
+  }
+
+  if (circuitActive) {
+    return false;
+  }
+
+  circuitActive = true;
+
+  if (connection && connection.state !== HubConnectionState.Disconnected) {
+    return false;
+  }
+
+  const options = resolveOptions(userOptions);
+  const appState = discoverPersistedState(document);
+  circuit = new CircuitDescriptor(components, appState || '');
+
+  dispatcher = DotNet.attachDispatcher({
+    beginInvokeDotNetFromJS: (callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson): void => {
+      connection.send('BeginInvokeDotNetFromJS', callId ? callId.toString() : null, assemblyName, methodIdentifier, dotNetObjectId || 0, argsJson);
+    },
+    endInvokeJSFromDotNet: (asyncHandle, succeeded, argsJson): void => {
+      connection.send('EndInvokeJSFromDotNet', asyncHandle, succeeded, argsJson);
+    },
+    sendByteArray: (id: number, data: Uint8Array): void => {
+      connection.send('ReceiveByteArray', id, data);
+    },
+  });
+
+  const initialConnection = await initializeConnection(options, logger, circuit);
+  const circuitStarted = await circuit.startCircuit(initialConnection);
+  if (!circuitStarted) {
+    logger.log(LogLevel.Error, 'Failed to start the circuit.');
+    return false;
+  }
+
+  return true;
+}
+
+export function hasStartedServer(): boolean {
+  return started;
+}
+
+export function isCircuitActive(): boolean {
+  return circuitActive;
+}
+
+export function attachCircuitAfterRenderCallback(callback: typeof afterRenderCallback) {
+  if (afterRenderCallback) {
+    throw new Error('A Blazor Server after render batch callback was already attached.');
+  }
+
+  afterRenderCallback = callback;
+}
+
+export function disposeCircuit() {
+  if (!circuitActive) {
+    return;
+  }
+
+  circuitActive = false;
+
+  connection.stop();
+
+  detachWebRendererInterop(WebRendererId.Server);
 }
 
 async function initializeConnection(options: CircuitStartOptions, logger: Logger, circuit: CircuitDescriptor): Promise<HubConnection> {
@@ -150,10 +206,11 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
     dispatcher.supplyDotNetStream(streamId, readableStream);
   });
 
-  const renderQueue = RenderQueue.getOrCreate(logger);
-  newConnection.on('JS.RenderBatch', (batchId: number, batchData: Uint8Array) => {
+  const renderQueue = new RenderQueue(logger);
+  newConnection.on('JS.RenderBatch', async (batchId: number, batchData: Uint8Array) => {
     logger.log(LogLevel.Debug, `Received render batch with id ${batchId} and ${batchData.byteLength} bytes.`);
-    renderQueue.processBatch(batchId, batchData, newConnection);
+    await renderQueue.processBatch(batchId, batchData, newConnection);
+    afterRenderCallback?.();
   });
 
   newConnection.on('JS.EndLocationChanging', Blazor._internal.navigationManager.endLocationChanging);
