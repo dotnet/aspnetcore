@@ -7,7 +7,7 @@ import { IHttpConnectionOptions } from "../src/IHttpConnectionOptions";
 import { HttpTransportType, ITransport, TransferFormat } from "../src/ITransport";
 import { getUserAgentHeader } from "../src/Utils";
 
-import { AbortError, HttpError } from "../src/Errors";
+import { AbortError, FailedToNegotiateWithServerError, HttpError } from "../src/Errors";
 import { ILogger, LogLevel } from "../src/ILogger";
 import { NullLogger } from "../src/Loggers";
 import { EventSourceConstructor, WebSocketConstructor } from "../src/Polyfills";
@@ -1688,7 +1688,7 @@ describe("TransportSendQueue", () => {
         });
     });
 
-    it("negotiate stateful reconnect sets query string", async () => {
+    it("negotiate Stateful Reconnect sets query string", async () => {
         await VerifyLogger.run(async (logger) => {
             const negotiateResponse: INegotiateResponse = { ...defaultNegotiateResponse };
             negotiateResponse.useAck = true;
@@ -1719,13 +1719,71 @@ describe("TransportSendQueue", () => {
         });
     });
 
-    it("negotiate acks works with websockets", async () => {
+    it("negotiate Stateful Reconnect with query string present", async () => {
         await VerifyLogger.run(async (logger) => {
             const negotiateResponse: INegotiateResponse = { ...defaultNegotiateResponse };
             negotiateResponse.useAck = true;
 
             const options: IHttpConnectionOptions = {
                 ...commonOptions,
+                _useStatefulReconnect: false,
+                WebSocket: TestWebSocket,
+                httpClient: new TestHttpClient()
+                    .on("POST", "http://tempuri.org/negotiate?useAck=true&negotiateVersion=1", () => negotiateResponse)
+                    .on("GET", () => ""),
+                logger,
+            } as IHttpConnectionOptions;
+
+            const connection = new HttpConnection("http://tempuri.org?useAck=true", options);
+
+            TestWebSocket.webSocketSet = new PromiseSource();
+            const startPromise = connection.start(TransferFormat.Text);
+            await TestWebSocket.webSocketSet;
+            await TestWebSocket.webSocket.openSet;
+            TestWebSocket.webSocket.onopen(new TestEvent());
+            await startPromise;
+
+            // Set when acks used by both server and client
+            expect(connection.features.reconnect).toBeTruthy();
+
+            TestWebSocket.webSocket.close();
+        });
+    });
+
+    it("negotiate Stateful Reconnect with query string set to false", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const negotiateResponse: INegotiateResponse = { ...defaultNegotiateResponse };
+            // client didn't request the feature, we should error
+            negotiateResponse.useAck = true;
+
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                WebSocket: TestWebSocket,
+                httpClient: new TestHttpClient()
+                    .on("POST", "http://tempuri.org/negotiate?useAck=false&negotiateVersion=1", () => negotiateResponse)
+                    .on("GET", () => ""),
+                logger,
+            } as IHttpConnectionOptions;
+
+            const connection = new HttpConnection("http://tempuri.org?useAck=false", options);
+
+            await expect(connection.start(TransferFormat.Text))
+                .rejects
+                .toThrow(new FailedToNegotiateWithServerError("Client didn't negotiate Stateful Reconnect but the server did."));
+
+            // Set when acks used by both server and client
+            expect(connection.features.reconnect).toBeFalsy();
+        }, "Failed to start the connection: Error: Client didn't negotiate Stateful Reconnect but the server did.");
+    });
+
+    it("negotiate Stateful Reconnect works with websockets", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const negotiateResponse: INegotiateResponse = { ...defaultNegotiateResponse };
+            negotiateResponse.useAck = true;
+
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                _useStatefulReconnect: true,
                 WebSocket: TestWebSocket,
                 httpClient: new TestHttpClient()
                     .on("POST", () => negotiateResponse)
@@ -1749,10 +1807,11 @@ describe("TransportSendQueue", () => {
         });
     });
 
-    it("negotiate acks denied by server", async () => {
+    it("negotiate Stateful Reconnect denied by server", async () => {
         await VerifyLogger.run(async (logger) => {
             const options: IHttpConnectionOptions = {
                 ...commonOptions,
+                _useStatefulReconnect: true,
                 WebSocket: TestWebSocket,
                 httpClient: new TestHttpClient()
                     .on("POST", () => defaultNegotiateResponse)
@@ -1776,7 +1835,7 @@ describe("TransportSendQueue", () => {
         });
     });
 
-    it.only("negotiate acks does not work with long polling", async () => {
+    it("negotiate Stateful Reconnect does not work with long polling", async () => {
         await VerifyLogger.run(async (logger) => {
             const negotiateResponse: INegotiateResponse = { ...defaultNegotiateResponse };
             negotiateResponse.useAck = true;
@@ -1784,6 +1843,7 @@ describe("TransportSendQueue", () => {
             let firstPoll = true;
             const options: IHttpConnectionOptions = {
                 ...commonOptions,
+                _useStatefulReconnect: true,
                 transport: HttpTransportType.LongPolling,
                 httpClient: new TestHttpClient()
                     .on("POST", () => negotiateResponse)
@@ -1811,13 +1871,14 @@ describe("TransportSendQueue", () => {
         });
     });
 
-    it("using acks restarts connection", async () => {
+    it("using Stateful Reconnect restarts connection", async () => {
         await VerifyLogger.run(async (logger) => {
             const negotiateResponse: INegotiateResponse = { ...defaultNegotiateResponse };
             negotiateResponse.useAck = true;
 
             const options: IHttpConnectionOptions = {
                 ...commonOptions,
+                _useStatefulReconnect: true,
                 WebSocket: TestWebSocket,
                 httpClient: new TestHttpClient()
                     .on("POST", () => negotiateResponse)
@@ -1874,13 +1935,14 @@ describe("TransportSendQueue", () => {
         });
     });
 
-    it("using acks restarts connection and closes on error", async () => {
+    it("using Stateful Reconnect restarts connection and closes on error", async () => {
         await VerifyLogger.run(async (logger) => {
             const negotiateResponse: INegotiateResponse = { ...defaultNegotiateResponse };
             negotiateResponse.useAck = true;
 
             const options: IHttpConnectionOptions = {
                 ...commonOptions,
+                _useStatefulReconnect: true,
                 WebSocket: TestWebSocket,
                 httpClient: new TestHttpClient()
                     .on("POST", () => negotiateResponse)

@@ -332,6 +332,11 @@ export class HttpConnection implements IConnection {
                 // So we set it equal to connectionId so all our logic can use connectionToken without being aware of the negotiate version
                 negotiateResponse.connectionToken = negotiateResponse.connectionId;
             }
+
+            if (negotiateResponse.useAck && this._options._useStatefulReconnect !== true) {
+                return Promise.reject(new FailedToNegotiateWithServerError("Client didn't negotiate Stateful Reconnect but the server did."));
+            }
+
             return negotiateResponse;
         } catch (e) {
             let errorMessage = "Failed to complete negotiation with the server: " + e;
@@ -585,7 +590,11 @@ export class HttpConnection implements IConnection {
             searchParams.append("negotiateVersion", this._negotiateVersion.toString());
         }
 
-        if (this._options._useStatefulReconnect === true && !searchParams.has("useAck")) {
+        if (searchParams.has("useAck")) {
+            if (searchParams.get("useAck") === "true") {
+                this._options._useStatefulReconnect = true;
+            }
+        } else if (this._options._useStatefulReconnect === true) {
             searchParams.append("useAck", "true");
         }
 
