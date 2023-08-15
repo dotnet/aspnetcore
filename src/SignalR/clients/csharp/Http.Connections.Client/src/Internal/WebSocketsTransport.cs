@@ -26,7 +26,7 @@ using static System.IO.Pipelines.DuplexPipe;
 namespace Microsoft.AspNetCore.Http.Connections.Client.Internal;
 
 #pragma warning disable CA2252 // This API requires opting into preview features
-internal sealed partial class WebSocketsTransport : ITransport, IReconnectFeature
+internal sealed partial class WebSocketsTransport : ITransport, IStatefulReconnectFeature
 #pragma warning restore CA2252 // This API requires opting into preview features
 {
     private WebSocket? _webSocket;
@@ -44,7 +44,7 @@ internal sealed partial class WebSocketsTransport : ITransport, IReconnectFeatur
     // Used for reconnect (when enabled) to determine if the close was ungraceful or not, reconnect only happens on ungraceful disconnect
     // The assumption is that a graceful close was triggered purposefully by either the client or server and a reconnect shouldn't occur 
     private bool _gracefulClose;
-    private Action<PipeWriter>? _notifyOnReconnect;
+    private Func<PipeWriter, Task>? _notifyOnReconnect;
 
     internal Task Running { get; private set; } = Task.CompletedTask;
 
@@ -53,7 +53,23 @@ internal sealed partial class WebSocketsTransport : ITransport, IReconnectFeatur
     public PipeWriter Output => _transport!.Output;
 
 #pragma warning disable CA2252 // This API requires opting into preview features
-    public Action<PipeWriter> NotifyOnReconnect { get => _notifyOnReconnect is not null ? _notifyOnReconnect : (_) => { }; set => _notifyOnReconnect = value; }
+    public void OnReconnected(Func<PipeWriter, Task> notifyOnReconnect)
+    {
+        if (_notifyOnReconnect is null)
+        {
+            _notifyOnReconnect = notifyOnReconnect;
+        }
+        else
+        {
+            var localNotifyOnReconnect = _notifyOnReconnect;
+            _notifyOnReconnect = async writer =>
+            {
+                await localNotifyOnReconnect(writer).ConfigureAwait(false);
+                await notifyOnReconnect(writer).ConfigureAwait(false);
+            };
+        }
+    }
+    //public Action<PipeWriter> NotifyOnReconnect { get => _notifyOnReconnect is not null ? _notifyOnReconnect : (_) => { }; set => _notifyOnReconnect = value; }
 #pragma warning restore CA2252 // This API requires opting into preview features
 
     public WebSocketsTransport(HttpConnectionOptions httpConnectionOptions, ILoggerFactory loggerFactory, Func<Task<string?>> accessTokenProvider, HttpClient? httpClient,
@@ -299,7 +315,7 @@ internal sealed partial class WebSocketsTransport : ITransport, IReconnectFeatur
 
         _stopCts = new CancellationTokenSource();
 
-        var ignoreFirstCanceled = false;
+        var isReconnect = false;
 
         if (_transport is null)
         {
@@ -311,15 +327,15 @@ internal sealed partial class WebSocketsTransport : ITransport, IReconnectFeatur
         }
         else
         {
-            ignoreFirstCanceled = true;
+            isReconnect = true;
         }
 
         // TODO: Handle TCP connection errors
         // https://github.com/SignalR/SignalR/blob/1fba14fa3437e24c204dfaf8a18db3fce8acad3c/src/Microsoft.AspNet.SignalR.Core/Owin/WebSockets/WebSocketHandler.cs#L248-L251
-        Running = ProcessSocketAsync(_webSocket, url, ignoreFirstCanceled);
+        Running = ProcessSocketAsync(_webSocket, url, isReconnect);
     }
 
-    private async Task ProcessSocketAsync(WebSocket socket, Uri url, bool ignoreFirstCanceled)
+    private async Task ProcessSocketAsync(WebSocket socket, Uri url, bool isReconnect)
     {
         Debug.Assert(_application != null);
 
@@ -327,7 +343,13 @@ internal sealed partial class WebSocketsTransport : ITransport, IReconnectFeatur
         {
             // Begin sending and receiving.
             var receiving = StartReceiving(socket);
-            var sending = StartSending(socket, ignoreFirstCanceled);
+            var sending = StartSending(socket, ignoreFirstCanceled: isReconnect);
+
+            if (isReconnect)
+            {
+                Debug.Assert(_notifyOnReconnect is not null);
+                await _notifyOnReconnect.Invoke(_transport!.Output).ConfigureAwait(false);
+            }
 
             // Wait for send or receive to complete
             var trigger = await Task.WhenAny(receiving, sending).ConfigureAwait(false);
@@ -375,7 +397,8 @@ internal sealed partial class WebSocketsTransport : ITransport, IReconnectFeatur
         if (_useAck && !_gracefulClose)
         {
             UpdateConnectionPair();
-            await StartAsync(url, _webSocketMessageType == WebSocketMessageType.Binary ? TransferFormat.Binary : TransferFormat.Text, default).ConfigureAwait(false);
+            await StartAsync(url, _webSocketMessageType == WebSocketMessageType.Binary ? TransferFormat.Binary : TransferFormat.Text,
+                cancellationToken: default).ConfigureAwait(false);
         }
     }
 
@@ -642,7 +665,6 @@ internal sealed partial class WebSocketsTransport : ITransport, IReconnectFeatur
 
     private void UpdateConnectionPair()
     {
-        var prevPipe = _application!.Input;
         var input = new Pipe(_httpConnectionOptions.TransportPipeOptions);
 
         // Add new pipe for reading from and writing to transport from app code
@@ -651,9 +673,6 @@ internal sealed partial class WebSocketsTransport : ITransport, IReconnectFeatur
 
         _application = applicationToTransport;
         _transport = transportToApplication;
-
-        Debug.Assert(_notifyOnReconnect is not null);
-        _notifyOnReconnect.Invoke(input.Writer);
     }
 
 #pragma warning disable CA2252 // This API requires opting into preview features

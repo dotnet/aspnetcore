@@ -455,7 +455,7 @@ public partial class HubConnectionContext
     public virtual void Abort()
     {
 #pragma warning disable CA2252 // This API requires opting into preview features
-        if (_useAcks && _connectionContext.Features.Get<IReconnectFeature>() is IReconnectFeature feature)
+        if (_useAcks && _connectionContext.Features.Get<IStatefulReconnectFeature>() is IStatefulReconnectFeature feature)
         {
             feature.DisableReconnect();
         }
@@ -584,11 +584,11 @@ public partial class HubConnectionContext
                                 await WriteHandshakeResponseAsync(HandshakeResponseMessage.Empty);
 
 #pragma warning disable CA2252 // This API requires opting into preview features
-                                if (_connectionContext.Features.Get<IReconnectFeature>() is IReconnectFeature feature)
+                                if (_connectionContext.Features.Get<IStatefulReconnectFeature>() is IStatefulReconnectFeature feature)
                                 {
                                     _useAcks = true;
                                     _messageBuffer = new MessageBuffer(_connectionContext, Protocol, _statefulReconnectBufferSize);
-                                    feature.NotifyOnReconnect = _messageBuffer.Resend;
+                                    feature.OnReconnected(_messageBuffer.Resend);
                                 }
 #pragma warning restore CA2252 // This API requires opting into preview features
                                 return true;

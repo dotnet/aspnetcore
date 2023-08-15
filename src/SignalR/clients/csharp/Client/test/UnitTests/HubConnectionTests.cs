@@ -886,7 +886,7 @@ public partial class HubConnectionTests : VerifiableLoggedTest
         var innerConnection = new TestConnection();
         var reconnectFeature = new TestReconnectFeature();
 #pragma warning disable CA2252 // This API requires opting into preview features
-        innerConnection.Features.Set<IReconnectFeature>(reconnectFeature);
+        innerConnection.Features.Set<IStatefulReconnectFeature>(reconnectFeature);
 #pragma warning restore CA2252 // This API requires opting into preview features
 
         var delegateConnectionFactory = new DelegateConnectionFactory(
@@ -918,7 +918,7 @@ public partial class HubConnectionTests : VerifiableLoggedTest
         var innerConnection = new TestConnection();
         var reconnectFeature = new TestReconnectFeature();
 #pragma warning disable CA2252 // This API requires opting into preview features
-        innerConnection.Features.Set<IReconnectFeature>(reconnectFeature);
+        innerConnection.Features.Set<IStatefulReconnectFeature>(reconnectFeature);
 #pragma warning restore CA2252 // This API requires opting into preview features
 
         var delegateConnectionFactory = new DelegateConnectionFactory(
@@ -1029,7 +1029,7 @@ public partial class HubConnectionTests : VerifiableLoggedTest
     }
 
 #pragma warning disable CA2252 // This API requires opting into preview features
-    private sealed class TestReconnectFeature : IReconnectFeature
+    private sealed class TestReconnectFeature : IStatefulReconnectFeature
 #pragma warning restore CA2252 // This API requires opting into preview features
     {
         private TaskCompletionSource _disableReconnect = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -1037,7 +1037,7 @@ public partial class HubConnectionTests : VerifiableLoggedTest
         public Task DisableReconnectCalled => _disableReconnect.Task;
 
 #pragma warning disable CA2252 // This API requires opting into preview features
-        public Action<PipeWriter> NotifyOnReconnect { get; set; }
+        public void OnReconnected(Func<PipeWriter, Task> notifyOnReconnected) { }
 #pragma warning restore CA2252 // This API requires opting into preview features
 
 #pragma warning disable CA2252 // This API requires opting into preview features

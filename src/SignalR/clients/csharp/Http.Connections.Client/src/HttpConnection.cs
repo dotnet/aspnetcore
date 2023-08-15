@@ -531,7 +531,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
         // We successfully started, set the transport properties (we don't want to set these until the transport is definitely running).
         _transport = transport;
 
-        if (useAck && _transport is IReconnectFeature reconnectFeature)
+        if (useAck && _transport is IStatefulReconnectFeature reconnectFeature)
         {
 #pragma warning disable CA2252 // This API requires opting into preview features
             Features.Set(reconnectFeature);

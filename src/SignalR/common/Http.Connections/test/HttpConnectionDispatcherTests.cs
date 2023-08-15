@@ -2286,7 +2286,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
 
             Assert.True(manager.TryGetConnection(negotiateResponse["connectionToken"].ToString(), out var connection));
 #pragma warning disable CA2252 // This API requires opting into preview features
-            Assert.Null(connection.Features.Get<IReconnectFeature>());
+            Assert.Null(connection.Features.Get<IStatefulReconnectFeature>());
 #pragma warning restore CA2252 // This API requires opting into preview features
         }
     }
@@ -2315,7 +2315,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
 
             Assert.True(manager.TryGetConnection(negotiateResponse["connectionToken"].ToString(), out var connection));
 #pragma warning disable CA2252 // This API requires opting into preview features
-            Assert.Null(connection.Features.Get<IReconnectFeature>());
+            Assert.Null(connection.Features.Get<IStatefulReconnectFeature>());
 #pragma warning restore CA2252 // This API requires opting into preview features
         }
     }
@@ -2344,7 +2344,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
 
             Assert.True(manager.TryGetConnection(negotiateResponse["connectionToken"].ToString(), out var connection));
 #pragma warning disable CA2252 // This API requires opting into preview features
-            Assert.NotNull(connection.Features.Get<IReconnectFeature>());
+            Assert.NotNull(connection.Features.Get<IStatefulReconnectFeature>());
 #pragma warning restore CA2252 // This API requires opting into preview features
         }
     }
@@ -2374,7 +2374,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var initialWebSocketTask = dispatcher.ExecuteAsync(context, options, app);
 
 #pragma warning disable CA2252 // This API requires opting into preview features
-            var reconnectFeature = connection.Features.Get<IReconnectFeature>();
+            var reconnectFeature = connection.Features.Get<IStatefulReconnectFeature>();
 #pragma warning restore CA2252 // This API requires opting into preview features
             Assert.NotNull(reconnectFeature);
 
@@ -2388,16 +2388,13 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
 
             Assert.Equal(firstMsg, webSocketMessage.Buffer);
 
-            var called = false;
+            var calledOnReconnectedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 #pragma warning disable CA2252 // This API requires opting into preview features
-            var reconnectCallback = reconnectFeature.NotifyOnReconnect;
-#pragma warning restore CA2252 // This API requires opting into preview features
-#pragma warning disable CA2252 // This API requires opting into preview features
-            reconnectFeature.NotifyOnReconnect = (writer) =>
+            reconnectFeature.OnReconnected((writer) =>
             {
-                called = true;
-                reconnectCallback(writer);
-            };
+                calledOnReconnectedTcs.SetResult();
+                return Task.CompletedTask;
+            });
 #pragma warning restore CA2252 // This API requires opting into preview features
 
             // New websocket connection with previous connection token
@@ -2409,7 +2406,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             // New connection with same token will complete previous request
             await initialWebSocketTask.DefaultTimeout();
 
-            Assert.True(called);
+            await calledOnReconnectedTcs.Task.DefaultTimeout();
 
             Assert.False(newWebSocketTask.IsCompleted);
 
@@ -2452,7 +2449,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var initialWebSocketTask = dispatcher.ExecuteAsync(context, options, app);
 
 #pragma warning disable CA2252 // This API requires opting into preview features
-            var reconnectFeature = connection.Features.Get<IReconnectFeature>();
+            var reconnectFeature = connection.Features.Get<IStatefulReconnectFeature>();
 #pragma warning restore CA2252 // This API requires opting into preview features
             Assert.NotNull(reconnectFeature);
 
@@ -2468,14 +2465,11 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
 
             var called = false;
 #pragma warning disable CA2252 // This API requires opting into preview features
-            var reconnectCallback = reconnectFeature.NotifyOnReconnect;
-#pragma warning restore CA2252 // This API requires opting into preview features
-#pragma warning disable CA2252 // This API requires opting into preview features
-            reconnectFeature.NotifyOnReconnect = (writer) =>
+            reconnectFeature.OnReconnected((writer) =>
             {
                 called = true;
-                reconnectCallback(writer);
-            };
+                return Task.CompletedTask;
+            });
 #pragma warning restore CA2252 // This API requires opting into preview features
 
             // Disable will not allow new connection to override existing
@@ -3960,11 +3954,11 @@ public class ReconnectConnectionHandler : ConnectionHandler
         });
 
 #pragma warning disable CA2252 // This API requires opting into preview features
-        var reconnectFeature = connection.Features.Get<IReconnectFeature>();
+        var reconnectFeature = connection.Features.Get<IStatefulReconnectFeature>();
 #pragma warning restore CA2252 // This API requires opting into preview features
         Assert.NotNull(reconnectFeature);
 #pragma warning disable CA2252 // This API requires opting into preview features
-        reconnectFeature.NotifyOnReconnect = NotifyReconnect;
+        reconnectFeature.OnReconnected(NotifyReconnect);
 #pragma warning restore CA2252 // This API requires opting into preview features
 
         do
@@ -3992,11 +3986,12 @@ public class ReconnectConnectionHandler : ConnectionHandler
         } while (await _pause.Task);
     }
 
-    private void NotifyReconnect(PipeWriter writer)
+    private Task NotifyReconnect(PipeWriter writer)
     {
         _writer.Complete();
         _writer = writer;
         _pause.SetResult(true);
+        return Task.CompletedTask;
     }
 }
 

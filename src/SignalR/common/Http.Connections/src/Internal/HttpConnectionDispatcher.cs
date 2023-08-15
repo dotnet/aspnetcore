@@ -206,10 +206,27 @@ internal sealed partial class HttpConnectionDispatcher
                 case HttpTransportType.None:
                     break;
                 case HttpTransportType.WebSockets:
+                    var isReconnect = connection.ApplicationTask is not null;
                     var ws = new WebSocketsServerTransport(options.WebSockets, connection.Application, connection, _loggerFactory);
                     if (!connection.TryActivatePersistentConnection(connectionDelegate, ws, currentRequestTcs.Task, context, _logger))
                     {
                         return;
+                    }
+
+                    if (connection.UseAcks && isReconnect)
+                    {
+                        // Should call this after the transport has started, otherwise we'll be writing to a Pipe that isn't being read from
+                        try
+                        {
+                            var reconnectTask = connection.NotifyOnReconnect?.Invoke(connection.Transport.Output) ?? Task.CompletedTask;
+                            await reconnectTask;
+                        }
+                        catch (Exception ex)
+                        {
+                            // MessageBuffer shouldn't throw from the callback
+                            // But users can technically add a callback, we don't want to trust them not to throw
+                            Log.NotifyOnReconnectError(_logger, ex);
+                        }
                     }
                     break;
                 case HttpTransportType.LongPolling:

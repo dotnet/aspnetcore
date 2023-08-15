@@ -581,7 +581,7 @@ public partial class HubConnection : IAsyncDisposable
                 }
 
 #pragma warning disable CA2252 // This API requires opting into preview features
-                if (connectionState.Connection.Features.Get<IReconnectFeature>() is IReconnectFeature feature)
+                if (connectionState.Connection.Features.Get<IStatefulReconnectFeature>() is IStatefulReconnectFeature feature)
                 {
                     feature.DisableReconnect();
                 }
@@ -1097,7 +1097,7 @@ public partial class HubConnection : IAsyncDisposable
                 }
 
 #pragma warning disable CA2252 // This API requires opting into preview features
-                if (connectionState.Connection.Features.Get<IReconnectFeature>() is IReconnectFeature feature)
+                if (connectionState.Connection.Features.Get<IStatefulReconnectFeature>() is IStatefulReconnectFeature feature)
                 {
                     feature.DisableReconnect();
                 }
@@ -1916,13 +1916,13 @@ public partial class HubConnection : IAsyncDisposable
             _hasInherentKeepAlive = connection.Features.Get<IConnectionInherentKeepAliveFeature>()?.HasInherentKeepAlive ?? false;
 
 #pragma warning disable CA2252 // This API requires opting into preview features
-            if (Connection.Features.Get<IReconnectFeature>() is IReconnectFeature feature)
+            if (Connection.Features.Get<IStatefulReconnectFeature>() is IStatefulReconnectFeature feature)
             {
                 _messageBuffer = new MessageBuffer(connection, hubConnection._protocol,
                     _hubConnection._serviceProvider.GetService<IOptions<HubConnectionOptions>>()?.Value.StatefulReconnectBufferSize
                     ?? DefaultStatefulReconnectBufferSize);
 
-                feature.NotifyOnReconnect = _messageBuffer.Resend;
+                feature.OnReconnected(_messageBuffer.Resend);
             }
 #pragma warning restore CA2252 // This API requires opting into preview features
         }

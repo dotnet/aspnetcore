@@ -32,7 +32,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
                                      IConnectionLifetimeFeature,
                                      IConnectionLifetimeNotificationFeature,
 #pragma warning disable CA2252 // This API requires opting into preview features
-                                     IReconnectFeature
+                                     IStatefulReconnectFeature
 #pragma warning restore CA2252 // This API requires opting into preview features
 {
     private readonly HttpConnectionDispatcherOptions _options;
@@ -58,6 +58,8 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     // This tcs exists so that multiple calls to DisposeAsync all wait asynchronously
     // on the same task
     private readonly TaskCompletionSource _disposeTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+    internal Func<PipeWriter, Task>? NotifyOnReconnect { get; set; }
 
     /// <summary>
     /// Creates the DefaultConnectionContext without Pipes to avoid upfront allocations.
@@ -99,7 +101,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         if (useAcks)
         {
 #pragma warning disable CA2252 // This API requires opting into preview features
-            Features.Set<IReconnectFeature>(this);
+            Features.Set<IStatefulReconnectFeature>(this);
 #pragma warning restore CA2252 // This API requires opting into preview features
         }
 
@@ -209,7 +211,6 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     public CancellationToken ConnectionClosedRequested { get; set; }
 
 #pragma warning disable CA2252 // This API requires opting into preview features
-    public Action<PipeWriter> NotifyOnReconnect { get; set; } = (_) => { };
 #pragma warning restore CA2252 // This API requires opting into preview features
 
     public override void Abort()
@@ -671,10 +672,6 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
 
         Application = applicationToTransport;
         Transport = transportToApplication;
-
-#pragma warning disable CA2252 // This API requires opting into preview features
-        Features.GetRequiredFeature<IReconnectFeature>().NotifyOnReconnect.Invoke(input.Writer);
-#pragma warning restore CA2252 // This API requires opting into preview features
     }
 
 #pragma warning disable CA2252 // This API requires opting into preview features
@@ -682,6 +679,25 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
 #pragma warning restore CA2252 // This API requires opting into preview features
     {
         _useAcks = false;
+    }
+
+#pragma warning disable CA2252 // This API requires opting into preview features
+    public void OnReconnected(Func<PipeWriter, Task> notifyOnReconnect)
+#pragma warning restore CA2252 // This API requires opting into preview features
+    {
+        if (NotifyOnReconnect is null)
+        {
+            NotifyOnReconnect = notifyOnReconnect;
+        }
+        else
+        {
+            var localOnReconnect = NotifyOnReconnect;
+            NotifyOnReconnect = async (writer) =>
+            {
+                await localOnReconnect(writer);
+                await notifyOnReconnect(writer);
+            };
+        }
     }
 
     private static partial class Log
