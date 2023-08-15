@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Components.Discovery;
 /// This API is meant to be consumed in a source generation context.
 /// </remarks>
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
-public class AssemblyComponentLibraryDescriptor
+internal class AssemblyComponentLibraryDescriptor
 {
     /// <summary>
     /// Initializes a new instance of <see cref="AssemblyComponentLibraryDescriptor"/>.</summary>
@@ -47,6 +47,6 @@ public class AssemblyComponentLibraryDescriptor
 
     private string GetDebuggerDisplay()
     {
-        return $"{AssemblyName}: Pages = {Pages.Count} Components = {Components.Count}";
+        return $"Assembly = {AssemblyName}, Pages = {Pages.Count}, Components = {Components.Count}";
     }
 }

@@ -3,12 +3,12 @@
 
 using Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 
-namespace Microsoft.Extensions.DependencyInjection;
+namespace Microsoft.AspNetCore.Components.Endpoints;
 
 /// <summary>
 /// Provides options for configuring server-side rendering of Razor Components.
 /// </summary>
-public class RazorComponentOptions
+public sealed class RazorComponentsOptions
 {
     internal readonly FormDataMapperOptions _formMappingOptions = new();
 
@@ -57,14 +57,5 @@ public class RazorComponentOptions
     {
         get => _formMappingOptions.MaxKeyBufferSize;
         set => _formMappingOptions.MaxKeyBufferSize = value;
-    }
-
-    /// <summary>
-    /// Gets or sets a value that determines whether the current culture should be used when mapping form data.
-    /// </summary>
-    public bool FormMappingUseCurrentCulture
-    {
-        get => _formMappingOptions.UseCurrentCulture;
-        set => _formMappingOptions.UseCurrentCulture = value;
     }
 }

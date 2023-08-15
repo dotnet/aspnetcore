@@ -1,12 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Buffers;
 using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -34,7 +36,7 @@ public class RazorComponentResultExecutor
         {
             response.StatusCode = result.StatusCode.Value;
         }
-        
+
         return RenderComponentToResponse(
             httpContext,
             result.ComponentType,
@@ -44,7 +46,7 @@ public class RazorComponentResultExecutor
 
     internal static Task RenderComponentToResponse(
         HttpContext httpContext,
-        Type componentType,
+        [DynamicallyAccessedMembers(Component)] Type componentType,
         IReadOnlyDictionary<string, object?>? componentParameters,
         bool preventStreamingRendering)
     {

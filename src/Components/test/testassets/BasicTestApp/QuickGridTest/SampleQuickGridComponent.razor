@@ -3,7 +3,7 @@
 <h3>Sample QuickGrid Component</h3>
 
 <div id="grid">
-    <QuickGrid Items="@FilteredPeople" Pagination="@pagination">
+    <QuickGrid Items="@FilteredPeople" Pagination="@pagination" custom-attrib="somevalue" class="custom-class-attrib">
         <PropertyColumn Property="@(p => p.PersonId)" Sortable="true" />
         <PropertyColumn Property="@(p => p.firstName)" Sortable="true">
                 <ColumnOptions>

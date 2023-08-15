@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
@@ -760,6 +761,7 @@ public class KestrelServerTests
         TaskCompletionSource changeCallbackRegisteredTcs = null;
 
         var mockChangeToken = new Mock<IChangeToken>();
+        mockChangeToken.Setup(t => t.ActiveChangeCallbacks).Returns(true);
         mockChangeToken.Setup(t => t.RegisterChangeCallback(It.IsAny<Action<object>>(), It.IsAny<object>())).Returns<Action<object>, object>((callback, state) =>
         {
             changeCallbackRegisteredTcs?.SetResult();
@@ -786,6 +788,7 @@ public class KestrelServerTests
         serviceCollection.AddSingleton(Mock.Of<IHostEnvironment>());
         serviceCollection.AddSingleton(Mock.Of<ILogger<KestrelServer>>());
         serviceCollection.AddSingleton(Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+        serviceCollection.AddSingleton(Mock.Of<ILogger<CertificatePathWatcher>>());
         serviceCollection.AddSingleton(Mock.Of<IHttpsConfigurationService>());
 
         var options = new KestrelServerOptions

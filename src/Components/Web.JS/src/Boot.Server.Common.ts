@@ -20,6 +20,7 @@ import { WebRendererId } from './Rendering/WebRendererId';
 import { RootComponentManager } from './Services/RootComponentManager';
 
 let renderingFailed = false;
+let hasStarted = false;
 let connection: HubConnection;
 let circuit: CircuitDescriptor;
 let dispatcher: DotNet.ICallDispatcher;
@@ -33,7 +34,13 @@ export function setCircuitOptions(circuitUserOptions?: Partial<CircuitStartOptio
   userOptions = circuitUserOptions;
 }
 
-export async function startCircuit(components?: ServerComponentDescriptor[] | RootComponentManager): Promise<void> {
+export async function startCircuit(components: RootComponentManager<ServerComponentDescriptor>): Promise<void> {
+  if (hasStarted) {
+    throw new Error('Blazor Server has already started.');
+  }
+
+  hasStarted = true;
+
   // Establish options to be used
   const options = resolveOptions(userOptions);
   const jsInitializer = await fetchAndInvokeInitializers(options);
@@ -62,7 +69,7 @@ export async function startCircuit(components?: ServerComponentDescriptor[] | Ro
   logger.log(LogLevel.Information, 'Starting up Blazor server-side application.');
 
   const appState = discoverPersistedState(document);
-  circuit = new CircuitDescriptor(components || [], appState || '');
+  circuit = new CircuitDescriptor(components, appState || '');
 
   // Configure navigation via SignalR
   Blazor._internal.navigationManager.listenForNavigationEvents((uri: string, state: string | undefined, intercepted: boolean): Promise<void> => {

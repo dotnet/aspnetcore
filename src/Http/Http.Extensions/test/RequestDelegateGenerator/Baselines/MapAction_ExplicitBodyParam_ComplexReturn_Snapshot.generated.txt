@@ -120,6 +120,10 @@ namespace Microsoft.AspNetCore.Http.Generated
                         return;
                     }
                     var result = handler(todo_local!);
+                    if (result == null)
+                    {
+                        throw new InvalidOperationException("The IResult returned by the Delegate must not be null.");
+                    }
                     await GeneratedRouteBuilderExtensionsCore.ExecuteAsyncExplicit(result, httpContext);
                 }
 
@@ -158,7 +162,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 createRequestDelegate);
         }
 
-        [InterceptsLocation(@"TestMapActions.cs", 27, 5)]
+        [InterceptsLocation(@"TestMapActions.cs", 26, 5)]
         internal static RouteHandlerBuilder MapPost1(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
@@ -220,6 +224,10 @@ namespace Microsoft.AspNetCore.Http.Generated
                         return;
                     }
                     var result = handler(todo_local);
+                    if (result == null)
+                    {
+                        throw new InvalidOperationException("The IResult returned by the Delegate must not be null.");
+                    }
                     await GeneratedRouteBuilderExtensionsCore.ExecuteAsyncExplicit(result, httpContext);
                 }
 

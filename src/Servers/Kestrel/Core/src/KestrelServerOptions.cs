@@ -27,9 +27,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core;
 public class KestrelServerOptions
 {
     internal const string DisableHttp1LineFeedTerminatorsSwitchKey = "Microsoft.AspNetCore.Server.Kestrel.DisableHttp1LineFeedTerminators";
+    private const string FinOnErrorSwitch = "Microsoft.AspNetCore.Server.Kestrel.FinOnError";
+    internal const string CertificateFileWatchingSwitch = "Microsoft.AspNetCore.Server.Kestrel.DisableCertificateFileWatching";
+    private static readonly bool _finOnError;
+    private static readonly bool _disableCertificateFileWatching;
+
+    static KestrelServerOptions()
+    {
+        AppContext.TryGetSwitch(FinOnErrorSwitch, out _finOnError);
+        AppContext.TryGetSwitch(CertificateFileWatchingSwitch, out _disableCertificateFileWatching);
+    }
 
     // internal to fast-path header decoding when RequestHeaderEncodingSelector is unchanged.
     internal static readonly Func<string, Encoding?> DefaultHeaderEncodingSelector = _ => null;
+
+    // Opt-out flag for back compat. Remove in 9.0 (or make public).
+    internal bool FinOnError { get; set; } = _finOnError;
 
     private Func<string, Encoding?> _requestHeaderEncodingSelector = DefaultHeaderEncodingSelector;
 
@@ -433,7 +446,12 @@ public class KestrelServerOptions
         }
 
         var httpsConfigurationService = ApplicationServices.GetRequiredService<IHttpsConfigurationService>();
-        var loader = new KestrelConfigurationLoader(this, config, httpsConfigurationService, reloadOnChange);
+        var certificatePathWatcher = reloadOnChange && !_disableCertificateFileWatching
+            ? new CertificatePathWatcher(
+                ApplicationServices.GetRequiredService<IHostEnvironment>(),
+                ApplicationServices.GetRequiredService<ILogger<CertificatePathWatcher>>())
+            : null;
+        var loader = new KestrelConfigurationLoader(this, config, httpsConfigurationService, certificatePathWatcher, reloadOnChange);
         ConfigurationLoader = loader;
         return loader;
     }

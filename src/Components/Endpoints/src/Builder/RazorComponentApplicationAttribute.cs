@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components.Infrastructure;
 /// application.
 /// </summary>
 [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = false)]
-public abstract class RazorComponentApplicationAttribute : Attribute, IRazorComponentApplication
+internal abstract class RazorComponentApplicationAttribute : Attribute, IRazorComponentApplication
 {
     /// <summary>
     /// Creates a builder that can be used to customize the definition of the application.

@@ -73,6 +73,13 @@ internal struct FormDataReader : IDisposable
     {
         ArgumentNullException.ThrowIfNull(exception);
 
+        // Avoid re-wrapping the exception if it is already a FormDataMappingException
+        // and we don't have an ErrorHandler configured.
+        if (exception is FormDataMappingException && ErrorHandler == null)
+        {
+            throw exception;
+        }
+
         var errorMessage = FormattableStringFactory.Create(exception.Message);
         AddMappingError(errorMessage, attemptedValue);
     }
@@ -183,7 +190,7 @@ internal struct FormDataReader : IDisposable
         _currentDepth--;
         Debug.Assert(_currentDepth >= 0);
         var keyLength = key.Length;
-        // If keyLength is bigger than the current scope keyLength typically means there is a 
+        // If keyLength is bigger than the current scope keyLength typically means there is a
         // bug where some part of the code has not popped the scope appropriately.
         Debug.Assert(_currentPrefixBuffer.Length >= keyLength);
         if (_currentPrefixBuffer.Length == keyLength || _currentPrefixBuffer.Span[^(keyLength + 1)] != '.')

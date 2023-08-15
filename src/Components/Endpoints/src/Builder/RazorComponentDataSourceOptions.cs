@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -10,17 +11,22 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 /// given <see cref="RazorComponentsEndpointRouteBuilderExtensions.MapRazorComponents{TRootComponent}(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder)"/>
 /// invocation.
 /// </summary>
-public class RazorComponentDataSourceOptions
+internal class RazorComponentDataSourceOptions
 {
-    /// <summary>
-    /// Gets or sets whether to automatically wire up the necessary endpoints
-    /// based on the declared render modes of the components that are
-    /// part of this set of endpoints.
-    /// </summary>
-    /// <remarks>
-    /// The default value is <c>true</c>.
-    /// </remarks>
-    public bool UseDeclaredRenderModes { get; set; } = true;
+    internal static readonly EqualityComparer<IComponentRenderMode> RenderModeComparer = EqualityComparer<IComponentRenderMode>
+        .Create(
+            equals: (x, y) => (x,y) switch
+            {
+                (ServerRenderMode, ServerRenderMode) => true,
+                (WebAssemblyRenderMode, WebAssemblyRenderMode) => true,
+                _ => false,
+            },
+            getHashCode: obj => obj switch
+            {
+                ServerRenderMode => 1,
+                WebAssemblyRenderMode => 2,
+                _ => throw new InvalidOperationException($"Unknown render mode: {obj}"),
+            });
 
-    internal IList<IComponentRenderMode> ConfiguredRenderModes { get; } = new List<IComponentRenderMode>();
+    internal ISet<IComponentRenderMode> ConfiguredRenderModes { get; } = new HashSet<IComponentRenderMode>(RenderModeComparer);
 }

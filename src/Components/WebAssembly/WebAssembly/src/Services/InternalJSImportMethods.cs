@@ -37,9 +37,6 @@ internal partial class InternalJSImportMethods : IInternalJSImportMethods
     public int RegisteredComponents_GetRegisteredComponentsCount()
         => RegisteredComponents_GetRegisteredComponentsCountCore();
 
-    public int RegisteredComponents_GetId(int index)
-        => RegisteredComponents_GetIdCore(index);
-
     public string RegisteredComponents_GetAssembly(int id)
         => RegisteredComponents_GetAssemblyCore(id);
 
@@ -75,9 +72,6 @@ internal partial class InternalJSImportMethods : IInternalJSImportMethods
 
     [JSImport(RegisteredComponentsInterop.GetRegisteredComponentsCount, "blazor-internal")]
     private static partial int RegisteredComponents_GetRegisteredComponentsCountCore();
-
-    [JSImport(RegisteredComponentsInterop.GetId, "blazor-internal")]
-    private static partial int RegisteredComponents_GetIdCore(int index);
 
     [JSImport(RegisteredComponentsInterop.GetAssembly, "blazor-internal")]
     private static partial string RegisteredComponents_GetAssemblyCore(int id);
