@@ -1,5 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+using Microsoft.AspNetCore.Http.Metadata;
+using Microsoft.AspNetCore.Http.RequestDelegateGenerator;
 using Microsoft.Extensions.DependencyInjection;
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
@@ -20,6 +22,55 @@ app.MapGet("/", (HttpContext context, [FromKeyedServices("service1")] TestServic
         await endpoint.RequestDelegate(httpContext);
 
         Assert.Same(myOriginalService, httpContext.Items["arg"]);
+    }
+
+    [Fact]
+    public async Task ThrowsIfKeyedAndNonKeyedAttributesOnSameParameter()
+    {
+        var source = """
+app.MapGet("/", (HttpContext context, [FromKeyedServices("service1")] [FromServices] TestService arg) => context.Items["arg"] = arg);
+""";
+        var myOriginalService = new TestService();
+        var serviceProvider = CreateServiceProvider((serviceCollection) => serviceCollection.AddKeyedSingleton("service1", myOriginalService));
+
+        var (result, compilation) = await RunGeneratorAsync(source);
+
+        // When the generator is enabled, you'll get a compile-time warning in addition to the exception thrown at
+        // runtime.
+        if (IsGeneratorEnabled)
+        {
+            Assert.Contains(result.Value.Diagnostics, diagnostic => diagnostic.Id == DiagnosticDescriptors.KeyedAndNotKeyedServiceAttributesNotSupported.Id);
+        }
+
+        // Throw during endpoint construction
+        var exception = Assert.Throws<NotSupportedException>(() => GetEndpointFromCompilation(compilation, serviceProvider: serviceProvider));
+        Assert.Equal($"The {nameof(FromKeyedServicesAttribute)} is not supported on parameters that are also annotated with {nameof(IFromServiceMetadata)}.", exception.Message);
+    }
+
+    [Fact]
+    public async Task SupportsKeyedServicesWithNullAndStringEmptyKeys()
+    {
+        var source = """
+app.MapGet("/string-empty", (HttpContext context, [FromKeyedServices("")] TestService arg1) => context.Items["arg1"] = arg1);
+app.MapGet("/null", (HttpContext context, [FromKeyedServices(null!)] TestService arg2) => context.Items["arg2"] = arg2);
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var myOriginalService1 = new TestService();
+        var myOriginalService2 = new TestService();
+        var serviceProvider = CreateServiceProvider((serviceCollection) =>
+        {
+            serviceCollection.AddKeyedSingleton("", myOriginalService1);
+            serviceCollection.AddSingleton(myOriginalService2);
+        });
+        var endpoints = GetEndpointsFromCompilation(compilation, serviceProvider: serviceProvider);
+
+        var httpContext1 = CreateHttpContext(serviceProvider);
+        await endpoints[0].RequestDelegate(httpContext1);
+        var httpContext2 = CreateHttpContext(serviceProvider);
+        await endpoints[1].RequestDelegate(httpContext2);
+
+        Assert.Same(myOriginalService1, httpContext1.Items["arg1"]);
+        Assert.Same(myOriginalService2, httpContext2.Items["arg2"]);
     }
 
     [Fact]

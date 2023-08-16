@@ -106,4 +106,12 @@ internal static class DiagnosticDescriptors
         "Usage",
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true);
+
+    public static DiagnosticDescriptor KeyedAndNotKeyedServiceAttributesNotSupported { get; } = new(
+        "RDG013",
+        new LocalizableResourceString(nameof(Resources.KeyedAndNotKeyedServiceAttributesNotSupported_Title), Resources.ResourceManager, typeof(Resources)),
+        new LocalizableResourceString(nameof(Resources.KeyedAndNotKeyedServiceAttributesNotSupported_Message), Resources.ResourceManager, typeof(Resources)),
+        "Usage",
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
 }

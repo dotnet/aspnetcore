@@ -138,12 +138,17 @@ internal class EndpointParameter
         else if (attributes.HasAttributeImplementingInterface(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromServiceMetadata)))
         {
             Source = EndpointParameterSource.Service;
+            if (attributes.TryGetAttribute(wellKnownTypes.Get(WellKnownType.Microsoft_Extensions_DependencyInjection_FromKeyedServicesAttribute), out var keyedServicesAttribute))
+            {
+                var location = endpoint.Operation.Syntax.GetLocation();
+                endpoint.Diagnostics.Add(Diagnostic.Create(DiagnosticDescriptors.KeyedAndNotKeyedServiceAttributesNotSupported, location));
+            }
         }
         else if (attributes.TryGetAttribute(wellKnownTypes.Get(WellKnownType.Microsoft_Extensions_DependencyInjection_FromKeyedServicesAttribute), out var keyedServicesAttribute))
         {
             Source = EndpointParameterSource.KeyedService;
             var constructorArgument = keyedServicesAttribute.ConstructorArguments.FirstOrDefault();
-            AssigningCode = constructorArgument.IsNull ? string.Empty : SymbolDisplay.FormatPrimitive(constructorArgument.Value!, true, true);
+            AssigningCode = SymbolDisplay.FormatPrimitive(constructorArgument.Value!, true, true);
         }
         else if (attributes.HasAttribute(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_AsParametersAttribute)))
         {
