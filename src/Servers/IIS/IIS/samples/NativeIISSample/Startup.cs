@@ -96,11 +96,25 @@ public class Startup
             }
 
             await context.Response.WriteAsync(Environment.NewLine);
-            var addresses = context.RequestServices.GetService<IServer>().Features.Get<IServerAddressesFeature>();
+            var server = context.RequestServices.GetService<IServer>();
+
+            var addresses = server.Features.Get<IServerAddressesFeature>();
             foreach (var key in addresses.Addresses)
             {
                 await context.Response.WriteAsync(key + Environment.NewLine);
             }
+
+            var envFeature = server.Features.Get<IIISEnvironmentFeature>();
+            await context.Response.WriteAsync(Environment.NewLine);
+            await context.Response.WriteAsync("IIS Environment Information:" + Environment.NewLine);
+            await context.Response.WriteAsync("IIS Version: " + envFeature.IISVersion + Environment.NewLine);
+            await context.Response.WriteAsync("ApplicationId: " + envFeature.ApplicationId + Environment.NewLine);
+            await context.Response.WriteAsync("Application Path: " + envFeature.ApplicationPath + Environment.NewLine);
+            await context.Response.WriteAsync("Application Virtual Path: " + envFeature.ApplicationVirtualPath + Environment.NewLine);
+            await context.Response.WriteAsync("AppPool Config: " + envFeature.AppPoolConfig + Environment.NewLine);
+            await context.Response.WriteAsync("AppPool ID: " + envFeature.AppPoolId + Environment.NewLine);
+            await context.Response.WriteAsync("Site ID: " + envFeature.SiteId + Environment.NewLine);
+            await context.Response.WriteAsync("Site Name: " + envFeature.SiteName + Environment.NewLine);
         });
     }
 
