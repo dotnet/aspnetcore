@@ -329,8 +329,8 @@ internal static class EndpointParameterEmitter
         codeWriter.WriteLine(endpointParameter.EmitParameterDiagnosticComment());
 
         var assigningCode = endpointParameter.IsOptional ?
-            $"httpContext.RequestServices.GetKeyedService<{endpointParameter.Type}>({endpointParameter.AssigningCode});" :
-            $"httpContext.RequestServices.GetRequiredKeyedService<{endpointParameter.Type}>({endpointParameter.AssigningCode})";
+            $"httpContext.RequestServices.GetKeyedService<{endpointParameter.Type}>({endpointParameter.KeyedServiceKey});" :
+            $"httpContext.RequestServices.GetRequiredKeyedService<{endpointParameter.Type}>({endpointParameter.KeyedServiceKey})";
         codeWriter.WriteLine($"var {endpointParameter.EmitHandlerArgument()} = {assigningCode};");
     }
 

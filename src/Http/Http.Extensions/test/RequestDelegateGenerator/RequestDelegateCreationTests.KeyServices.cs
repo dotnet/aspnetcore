@@ -51,8 +51,8 @@ app.MapGet("/", (HttpContext context, [FromKeyedServices("service1")] [FromServi
     public async Task SupportsKeyedServicesWithNullAndStringEmptyKeys()
     {
         var source = """
-app.MapGet("/string-empty", (HttpContext context, [FromKeyedServices("")] TestService arg1) => context.Items["arg1"] = arg1);
-app.MapGet("/null", (HttpContext context, [FromKeyedServices(null!)] TestService arg2) => context.Items["arg2"] = arg2);
+app.MapGet("/string-empty", (HttpContext context, [FromKeyedServices("")] TestService arg) => context.Items["arg"] = arg);
+app.MapGet("/null", (HttpContext context, [FromKeyedServices(null!)] TestService arg) => context.Items["arg"] = arg);
 """;
         var (_, compilation) = await RunGeneratorAsync(source);
         var myOriginalService1 = new TestService();
@@ -69,8 +69,8 @@ app.MapGet("/null", (HttpContext context, [FromKeyedServices(null!)] TestService
         var httpContext2 = CreateHttpContext(serviceProvider);
         await endpoints[1].RequestDelegate(httpContext2);
 
-        Assert.Same(myOriginalService1, httpContext1.Items["arg1"]);
-        Assert.Same(myOriginalService2, httpContext2.Items["arg2"]);
+        Assert.Same(myOriginalService1, httpContext1.Items["arg"]);
+        Assert.Same(myOriginalService2, httpContext2.Items["arg"]);
     }
 
     [Fact]
