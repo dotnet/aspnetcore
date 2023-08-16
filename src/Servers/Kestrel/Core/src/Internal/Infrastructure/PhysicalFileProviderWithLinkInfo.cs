@@ -29,18 +29,18 @@ internal sealed class PhysicalFileProviderWithLinkInfo : IFileProviderWithLinkIn
 
     IFileInfoWithLinkInfo IFileProviderWithLinkInfo.GetFileInfo(string subpath)
     {
-        return new FileInfoWithLinkInfo(_inner.GetFileInfo(subpath));
-    }
-
-    IFileInfoWithLinkInfo? IFileProviderWithLinkInfo.ResolveLinkTarget(bool returnFinalTarget)
-    {
-        IFileInfoWithLinkInfo dirInfo = new DirectoryInfoWithLinkInfo(new DirectoryInfo(_inner.Root));
-        return dirInfo.ResolveLinkTarget(returnFinalTarget);
+        var fileInfo = _inner.GetFileInfo(subpath);
+        if (!fileInfo.Exists && Directory.Exists(fileInfo.PhysicalPath))
+        {
+            // https://github.com/dotnet/runtime/issues/36575
+            fileInfo = new PhysicalDirectoryInfo(new DirectoryInfo(fileInfo.PhysicalPath));
+        }
+        return new FileInfoWithLinkInfo(fileInfo);
     }
 
     private sealed class FileInfoWithLinkInfo : IFileInfoWithLinkInfo
     {
-        private readonly IFileInfo _inner;
+        private readonly IFileInfo _inner; // Could be either a file or a directory
 
         public FileInfoWithLinkInfo(IFileInfo inner)
         {
@@ -69,52 +69,21 @@ internal sealed class PhysicalFileProviderWithLinkInfo : IFileProviderWithLinkIn
                 return null;
             }
 
-            var fileInfo = new FileInfo(path);
+            var fileSystemInfo = _inner.IsDirectory ? (FileSystemInfo)new DirectoryInfo(path) : new FileInfo(path);
 
-            var linkFileSystemInfo = fileInfo.ResolveLinkTarget(returnFinalTarget);
+            var linkFileSystemInfo = fileSystemInfo.ResolveLinkTarget(returnFinalTarget);
 
-            if (linkFileSystemInfo is not FileInfo linkInfo)
+            if (linkFileSystemInfo is FileInfo linkFileInfo)
             {
-                return null;
+                return new FileInfoWithLinkInfo(new PhysicalFileInfo(linkFileInfo));
             }
 
-            return new FileInfoWithLinkInfo(new PhysicalFileInfo(linkInfo));
-        }
-    }
-    private sealed class DirectoryInfoWithLinkInfo : IFileInfoWithLinkInfo
-    {
-        private readonly DirectoryInfo _directoryInfo;
-
-        public DirectoryInfoWithLinkInfo(DirectoryInfo directoryInfo)
-        {
-            _directoryInfo = directoryInfo;
-        }
-
-        bool IFileInfo.IsDirectory => true;
-
-        bool IFileInfo.Exists => _directoryInfo.Exists;
-        DateTimeOffset IFileInfo.LastModified => _directoryInfo.LastWriteTimeUtc;
-        string IFileInfo.Name => _directoryInfo.Name;
-        string? IFileInfo.PhysicalPath => _directoryInfo.FullName;
-
-        long IFileInfo.Length => throw new NotSupportedException(); // We could probably just return 0, though that's not strictly accurate
-        Stream IFileInfo.CreateReadStream() => throw new NotSupportedException();
-
-        IFileInfoWithLinkInfo? IFileInfoWithLinkInfo.ResolveLinkTarget(bool returnFinalTarget)
-        {
-            if (!_directoryInfo.Exists)
+            if (linkFileSystemInfo is DirectoryInfo linkDirInfo)
             {
-                return null;
+                return new FileInfoWithLinkInfo(new PhysicalDirectoryInfo(linkDirInfo));
             }
 
-            var linkFileSystemInfo = _directoryInfo.ResolveLinkTarget(returnFinalTarget);
-
-            if (linkFileSystemInfo is not DirectoryInfo linkInfo)
-            {
-                return null;
-            }
-
-            return new DirectoryInfoWithLinkInfo(linkInfo);
+            return null;
         }
     }
 }

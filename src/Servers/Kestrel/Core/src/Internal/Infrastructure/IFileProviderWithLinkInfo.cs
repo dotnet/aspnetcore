@@ -10,13 +10,5 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 /// </summary>
 internal interface IFileProviderWithLinkInfo : IFileProvider
 {
-    /// <summary>
-    /// Returns the link target of the <see cref="IFileProvider"/>'s root directory.
-    /// </summary>
-    /// <remarks>
-    /// Effectively <see cref="FileSystemInfo.ResolveLinkTarget"/>.
-    /// </remarks>
-    IFileInfoWithLinkInfo? ResolveLinkTarget(bool returnFinalTarget);
-
     public new IFileInfoWithLinkInfo GetFileInfo(string subpath);
 }

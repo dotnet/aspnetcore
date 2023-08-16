@@ -61,4 +61,7 @@ internal static partial class CertificatePathWatcherLoggerExtensions
 
     [LoggerMessage(18, LogLevel.Trace, "Flagged {Count} observers of '{Path}' as changed.", EventName = "FlaggedObservers")]
     public static partial void FlaggedObservers(this ILogger<CertificatePathWatcher> logger, string path, int count);
+
+    [LoggerMessage(19, LogLevel.Trace, "Saw change event for '{OriginalPath}' (as '{Path}').", EventName = "FileEventReceived")]
+    public static partial void FileEventReceived(this ILogger<CertificatePathWatcher> logger, string path, string originalPath);
 }

@@ -20,19 +20,21 @@ public class CertificatePathWatcherTests : LoggedTest
     [InlineData(false)]
     public void AddAndRemoveWatch(bool absoluteFilePath)
     {
-        var dir = Directory.GetCurrentDirectory();
-        var fileName = Path.GetRandomFileName();
-        var filePath = Path.Combine(dir, fileName);
+        var rootDir = Directory.GetCurrentDirectory();
+        var dirName = Path.GetRandomFileName();
+        var dir = Path.Combine(rootDir, dirName);
+        var fileSubpath = Path.Combine(dirName, Path.GetRandomFileName());
+        var filePath = Path.Combine(rootDir, fileSubpath);
 
         var logger = LoggerFactory.CreateLogger<CertificatePathWatcher>();
 
-        using var watcher = new CertificatePathWatcher(dir, logger, _ => NoChangeFileProvider.Instance);
+        using var watcher = new CertificatePathWatcher(rootDir, logger, _ => NoChangeFileProvider.Instance);
 
         var changeToken = watcher.GetChangeToken();
 
         var certificateConfig = new CertificateConfig
         {
-            Path = absoluteFilePath ? filePath : fileName,
+            Path = absoluteFilePath ? filePath : fileSubpath,
         };
 
         IDictionary<string, object> messageProps;
@@ -120,15 +122,18 @@ public class CertificatePathWatcherTests : LoggedTest
     [InlineData(4)]
     public async Task FileChanged(int observerCount)
     {
-        var dir = Directory.GetCurrentDirectory();
-        var fileName = Path.GetRandomFileName();
-        var filePath = Path.Combine(dir, fileName);
+        var rootDir = Directory.GetCurrentDirectory();
+        var dirName = Path.GetRandomFileName();
+        var dir = Path.Combine(rootDir, dirName);
+        var fileSubpath = Path.Combine(dirName, Path.GetRandomFileName());
+        var filePath = Path.Combine(rootDir, fileSubpath);
 
         var logger = LoggerFactory.CreateLogger<CertificatePathWatcher>();
 
-        var fileProvider = new MockFileProvider(dir);
+        var fileProvider = new MockFileProvider(rootDir);
         var fileLastModifiedTime = DateTimeOffset.UtcNow;
-        fileProvider.SetLastModifiedTime(fileName, fileLastModifiedTime);
+        fileProvider.SetLastModifiedTime(dirName, fileLastModifiedTime);
+        fileProvider.SetLastModifiedTime(fileSubpath, fileLastModifiedTime);
 
         using var watcher = new CertificatePathWatcher(dir, logger, _ => fileProvider);
 
@@ -153,8 +158,8 @@ public class CertificatePathWatcherTests : LoggedTest
         Assert.Equal(observerCount, watcher.TestGetObserverCountUnsynchronized(filePath));
 
         // Simulate file change on disk
-        fileProvider.SetLastModifiedTime(fileName, fileLastModifiedTime.AddSeconds(1));
-        fileProvider.FireChangeToken(fileName);
+        fileProvider.SetLastModifiedTime(fileSubpath, fileLastModifiedTime.AddSeconds(1));
+        fileProvider.FireChangeToken(fileSubpath);
 
         await signalTcs.Task.DefaultTimeout();
 
@@ -170,22 +175,25 @@ public class CertificatePathWatcherTests : LoggedTest
     [Fact]
     public async Task FileReplacedWithLink()
     {
-        var dir = Directory.GetCurrentDirectory();
+        var rootDir = Directory.GetCurrentDirectory();
+        var dirName = Path.GetRandomFileName();
+        var dir = Path.Combine(rootDir, dirName);
 
-        var fileName = Path.GetRandomFileName();
-        var filePath = Path.Combine(dir, fileName);
+        var fileSubpath = Path.Combine(dirName, Path.GetRandomFileName());
+        var filePath = Path.Combine(rootDir, fileSubpath);
 
-        var linkTargetName = Path.GetRandomFileName();
-        var linkTargetPath = Path.Combine(dir, linkTargetName);
+        var linkTargetSubpath = Path.Combine(dirName, Path.GetRandomFileName());
+        var linkTargetPath = Path.Combine(rootDir, linkTargetSubpath);
 
         var logger = LoggerFactory.CreateLogger<CertificatePathWatcher>();
 
-        var fileProvider = new MockFileProvider(dir);
+        var fileProvider = new MockFileProvider(rootDir);
         var fileLastModifiedTime = DateTimeOffset.UtcNow;
         var linkTargetLastModifiedTime = fileLastModifiedTime.AddSeconds(-1); // target is *older* than original file
 
-        fileProvider.SetLastModifiedTime(fileName, fileLastModifiedTime);
-        fileProvider.SetLastModifiedTime(linkTargetName, linkTargetLastModifiedTime);
+        fileProvider.SetLastModifiedTime(dirName, fileLastModifiedTime);
+        fileProvider.SetLastModifiedTime(fileSubpath, fileLastModifiedTime);
+        fileProvider.SetLastModifiedTime(linkTargetSubpath, linkTargetLastModifiedTime);
 
         using var watcher = new CertificatePathWatcher(dir, logger, _ => fileProvider);
 
@@ -207,9 +215,9 @@ public class CertificatePathWatcherTests : LoggedTest
         Assert.Equal(0, watcher.TestGetObserverCountUnsynchronized(linkTargetPath));
 
         // Simulate file change on disk
-        fileProvider.SetLastModifiedTime(fileName, fileLastModifiedTime.AddSeconds(1));
-        fileProvider.SetLinkTarget(fileName, linkTargetName, fileProvider);
-        fileProvider.FireChangeToken(fileName);
+        fileProvider.SetLastModifiedTime(fileSubpath, fileLastModifiedTime.AddSeconds(1));
+        fileProvider.SetLinkTarget(fileSubpath, linkTargetSubpath, fileProvider);
+        fileProvider.FireChangeToken(fileSubpath);
 
         await signalTcs.Task.DefaultTimeout();
 
@@ -232,27 +240,30 @@ public class CertificatePathWatcherTests : LoggedTest
     [InlineData(false)]
     public async Task FileLinkChanged(bool updatedFileIsLink)
     {
-        var dir = Directory.GetCurrentDirectory();
+        var rootDir = Directory.GetCurrentDirectory();
+        var dirName = Path.GetRandomFileName();
+        var dir = Path.Combine(rootDir, dirName);
 
-        var fileName = Path.GetRandomFileName();
-        var filePath = Path.Combine(dir, fileName);
+        var fileSubpath = Path.Combine(dirName, Path.GetRandomFileName());
+        var filePath = Path.Combine(rootDir, fileSubpath);
 
-        var oldLinkTargetName = Path.GetRandomFileName();
-        var oldLinkTargetPath = Path.Combine(dir, oldLinkTargetName);
+        var oldLinkTargetSubpath = Path.Combine(dirName, Path.GetRandomFileName());
+        var oldLinkTargetPath = Path.Combine(rootDir, oldLinkTargetSubpath);
 
-        var newLinkTargetName = Path.GetRandomFileName();
-        var newLinkTargetPath = Path.Combine(dir, newLinkTargetName);
+        var newLinkTargetSubpath = Path.Combine(dirName, Path.GetRandomFileName());
+        var newLinkTargetPath = Path.Combine(rootDir, newLinkTargetSubpath);
 
         var logger = LoggerFactory.CreateLogger<CertificatePathWatcher>();
 
-        var fileProvider = new MockFileProvider(dir);
+        var fileProvider = new MockFileProvider(rootDir);
         var fileLastModifiedTime = DateTimeOffset.UtcNow;
 
-        fileProvider.SetLastModifiedTime(fileName, fileLastModifiedTime);
-        fileProvider.SetLastModifiedTime(oldLinkTargetName, fileLastModifiedTime);
-        fileProvider.SetLastModifiedTime(newLinkTargetName, fileLastModifiedTime);
+        fileProvider.SetLastModifiedTime(dirName, fileLastModifiedTime);
+        fileProvider.SetLastModifiedTime(fileSubpath, fileLastModifiedTime);
+        fileProvider.SetLastModifiedTime(oldLinkTargetSubpath, fileLastModifiedTime);
+        fileProvider.SetLastModifiedTime(newLinkTargetSubpath, fileLastModifiedTime);
 
-        fileProvider.SetLinkTarget(fileName, oldLinkTargetName, fileProvider);
+        fileProvider.SetLinkTarget(fileSubpath, oldLinkTargetSubpath, fileProvider);
 
         using var watcher = new CertificatePathWatcher(dir, logger, _ => fileProvider);
 
@@ -275,16 +286,16 @@ public class CertificatePathWatcherTests : LoggedTest
         Assert.Equal(0, watcher.TestGetObserverCountUnsynchronized(newLinkTargetPath));
 
         // Simulate file change on disk
-        fileProvider.SetLastModifiedTime(fileName, fileLastModifiedTime.AddSeconds(1));
+        fileProvider.SetLastModifiedTime(fileSubpath, fileLastModifiedTime.AddSeconds(1));
         if (updatedFileIsLink)
         {
-            fileProvider.SetLinkTarget(fileName, newLinkTargetName, fileProvider);
+            fileProvider.SetLinkTarget(fileSubpath, newLinkTargetSubpath, fileProvider);
         }
         else
         {
-            fileProvider.RemoveLinkTarget(fileName);
+            fileProvider.RemoveLinkTarget(fileSubpath);
         }
-        fileProvider.FireChangeToken(fileName);
+        fileProvider.FireChangeToken(fileSubpath);
 
         await signalTcs.Task.DefaultTimeout();
 
@@ -306,23 +317,26 @@ public class CertificatePathWatcherTests : LoggedTest
     [Fact]
     public async Task FileLinkTargetChanged()
     {
-        var dir = Directory.GetCurrentDirectory();
+        var rootDir = Directory.GetCurrentDirectory();
+        var dirName = Path.GetRandomFileName();
+        var dir = Path.Combine(rootDir, dirName);
 
-        var fileName = Path.GetRandomFileName();
-        var filePath = Path.Combine(dir, fileName);
+        var fileSubpath = Path.Combine(dirName, Path.GetRandomFileName());
+        var filePath = Path.Combine(rootDir, fileSubpath);
 
-        var linkTargetName = Path.GetRandomFileName();
-        var linkTargetPath = Path.Combine(dir, linkTargetName);
+        var linkTargetSubpath = Path.Combine(dirName, Path.GetRandomFileName());
+        var linkTargetPath = Path.Combine(rootDir, linkTargetSubpath);
 
         var logger = LoggerFactory.CreateLogger<CertificatePathWatcher>();
 
-        var fileProvider = new MockFileProvider(dir);
+        var fileProvider = new MockFileProvider(rootDir);
         var fileLastModifiedTime = DateTimeOffset.UtcNow;
 
-        fileProvider.SetLastModifiedTime(fileName, fileLastModifiedTime);
-        fileProvider.SetLastModifiedTime(linkTargetName, fileLastModifiedTime);
+        fileProvider.SetLastModifiedTime(dirName, fileLastModifiedTime);
+        fileProvider.SetLastModifiedTime(fileSubpath, fileLastModifiedTime);
+        fileProvider.SetLastModifiedTime(linkTargetSubpath, fileLastModifiedTime);
 
-        fileProvider.SetLinkTarget(fileName, linkTargetName, fileProvider);
+        fileProvider.SetLinkTarget(fileSubpath, linkTargetSubpath, fileProvider);
 
         using var watcher = new CertificatePathWatcher(dir, logger, _ => fileProvider);
 
@@ -344,9 +358,9 @@ public class CertificatePathWatcherTests : LoggedTest
         Assert.Equal(1, watcher.TestGetObserverCountUnsynchronized(linkTargetPath));
 
         // Simulate file change on disk
-        fileProvider.SetLastModifiedTime(fileName, fileLastModifiedTime.AddSeconds(1));
-        fileProvider.SetLinkTarget(fileName, linkTargetName, fileProvider);
-        fileProvider.FireChangeToken(fileName);
+        fileProvider.SetLastModifiedTime(fileSubpath, fileLastModifiedTime.AddSeconds(1));
+        fileProvider.SetLinkTarget(fileSubpath, linkTargetSubpath, fileProvider);
+        fileProvider.FireChangeToken(fileSubpath);
 
         await signalTcs.Task.DefaultTimeout();
 
@@ -371,26 +385,30 @@ public class CertificatePathWatcherTests : LoggedTest
     [LogLevel(LogLevel.Trace)]
     public void FileLinkCycle(int cycleLength)
     {
-        var dir = Directory.GetCurrentDirectory();
+        var rootDir = Directory.GetCurrentDirectory();
+        var dirName = Path.GetRandomFileName();
+        var dir = Path.Combine(rootDir, dirName);
 
-        var fileNames = new string[cycleLength];
+        var fileSubpaths = new string[cycleLength];
         var filePaths = new string[cycleLength];
 
         var logger = LoggerFactory.CreateLogger<CertificatePathWatcher>();
 
-        var fileProvider = new MockFileProvider(dir);
+        var fileProvider = new MockFileProvider(rootDir);
         var fileLastModifiedTime = DateTimeOffset.UtcNow;
+
+        fileProvider.SetLastModifiedTime(dirName, fileLastModifiedTime);
 
         for (int i = 0; i < cycleLength; i++)
         {
-            fileNames[i] = Path.GetRandomFileName();
-            filePaths[i] = Path.Combine(dir, fileNames[i]);
-            fileProvider.SetLastModifiedTime(fileNames[i], fileLastModifiedTime);
+            fileSubpaths[i] = Path.Combine(dirName, Path.GetRandomFileName());
+            filePaths[i] = Path.Combine(rootDir, fileSubpaths[i]);
+            fileProvider.SetLastModifiedTime(fileSubpaths[i], fileLastModifiedTime);
         }
 
         for (int i = 0; i < cycleLength; i++)
         {
-            fileProvider.SetLinkTarget(fileNames[i], fileNames[(i + 1) % cycleLength], fileProvider);
+            fileProvider.SetLinkTarget(fileSubpaths[i], fileSubpaths[(i + 1) % cycleLength], fileProvider);
         }
 
         using var watcher = new CertificatePathWatcher(dir, logger, _ => fileProvider);
@@ -422,15 +440,19 @@ public class CertificatePathWatcherTests : LoggedTest
     [Fact]
     public async Task OutOfOrderLastModifiedTime()
     {
-        var dir = Directory.GetCurrentDirectory();
-        var fileName = Path.GetRandomFileName();
-        var filePath = Path.Combine(dir, fileName);
+        var rootDir = Directory.GetCurrentDirectory();
+        var dirName = Path.GetRandomFileName();
+        var dir = Path.Combine(rootDir, dirName);
+        var fileSubpath = Path.Combine(dirName, Path.GetRandomFileName());
+        var filePath = Path.Combine(rootDir, fileSubpath);
 
         var logger = LoggerFactory.CreateLogger<CertificatePathWatcher>();
 
-        var fileProvider = new MockFileProvider(dir);
+        var fileProvider = new MockFileProvider(rootDir);
         var fileLastModifiedTime = DateTimeOffset.UtcNow;
-        fileProvider.SetLastModifiedTime(fileName, fileLastModifiedTime);
+
+        fileProvider.SetLastModifiedTime(dirName, fileLastModifiedTime);
+        fileProvider.SetLastModifiedTime(fileSubpath, fileLastModifiedTime);
 
         using var watcher = new CertificatePathWatcher(dir, logger, _ => fileProvider);
 
@@ -458,8 +480,8 @@ public class CertificatePathWatcherTests : LoggedTest
         Assert.Equal(1, watcher.TestGetObserverCountUnsynchronized(filePath));
 
         // Simulate file change on disk
-        fileProvider.SetLastModifiedTime(fileName, fileLastModifiedTime.AddSeconds(-1));
-        fileProvider.FireChangeToken(fileName);
+        fileProvider.SetLastModifiedTime(fileSubpath, fileLastModifiedTime.AddSeconds(-1));
+        fileProvider.FireChangeToken(fileSubpath);
 
         await logTcs.Task.DefaultTimeout();
 
@@ -496,9 +518,11 @@ public class CertificatePathWatcherTests : LoggedTest
     [InlineData(false)]
     public void RemoveUnknownFileWatch(bool previouslyAdded)
     {
-        var dir = Directory.GetCurrentDirectory();
-        var fileName = Path.GetRandomFileName();
-        var filePath = Path.Combine(dir, fileName);
+        var rootDir = Directory.GetCurrentDirectory();
+        var dirName = Path.GetRandomFileName();
+        var dir = Path.Combine(rootDir, dirName);
+        var fileSubpath = Path.Combine(dirName, Path.GetRandomFileName());
+        var filePath = Path.Combine(rootDir, fileSubpath);
 
         var logger = LoggerFactory.CreateLogger<CertificatePathWatcher>();
 
@@ -530,9 +554,11 @@ public class CertificatePathWatcherTests : LoggedTest
     [InlineData(false)]
     public void RemoveUnknownFileObserver(bool previouslyAdded)
     {
-        var dir = Directory.GetCurrentDirectory();
-        var fileName = Path.GetRandomFileName();
-        var filePath = Path.Combine(dir, fileName);
+        var rootDir = Directory.GetCurrentDirectory();
+        var dirName = Path.GetRandomFileName();
+        var dir = Path.Combine(rootDir, dirName);
+        var fileSubpath = Path.Combine(dirName, Path.GetRandomFileName());
+        var filePath = Path.Combine(rootDir, fileSubpath);
 
         var logger = LoggerFactory.CreateLogger<CertificatePathWatcher>();
 
@@ -570,9 +596,11 @@ public class CertificatePathWatcherTests : LoggedTest
     [LogLevel(LogLevel.Trace)]
     public void ReuseFileObserver()
     {
-        var dir = Directory.GetCurrentDirectory();
-        var fileName = Path.GetRandomFileName();
-        var filePath = Path.Combine(dir, fileName);
+        var rootDir = Directory.GetCurrentDirectory();
+        var dirName = Path.GetRandomFileName();
+        var dir = Path.Combine(rootDir, dirName);
+        var fileSubpath = Path.Combine(dirName, Path.GetRandomFileName());
+        var filePath = Path.Combine(rootDir, fileSubpath);
 
         var logger = LoggerFactory.CreateLogger<CertificatePathWatcher>();
 
@@ -603,15 +631,19 @@ public class CertificatePathWatcherTests : LoggedTest
     [LogLevel(LogLevel.Trace)]
     public async Task IgnoreDeletion(bool seeChangeForDeletion, bool restoredWithNewerLastModifiedTime)
     {
-        var dir = Directory.GetCurrentDirectory();
-        var fileName = Path.GetRandomFileName();
-        var filePath = Path.Combine(dir, fileName);
+        var rootDir = Directory.GetCurrentDirectory();
+        var dirName = Path.GetRandomFileName();
+        var dir = Path.Combine(rootDir, dirName);
+        var fileSubpath = Path.Combine(dirName, Path.GetRandomFileName());
+        var filePath = Path.Combine(rootDir, fileSubpath);
 
         var logger = LoggerFactory.CreateLogger<CertificatePathWatcher>();
 
-        var fileProvider = new MockFileProvider(dir);
+        var fileProvider = new MockFileProvider(rootDir);
         var fileLastModifiedTime = DateTimeOffset.UtcNow;
-        fileProvider.SetLastModifiedTime(fileName, fileLastModifiedTime);
+
+        fileProvider.SetLastModifiedTime(dirName, fileLastModifiedTime);
+        fileProvider.SetLastModifiedTime(fileSubpath, fileLastModifiedTime);
 
         using var watcher = new CertificatePathWatcher(dir, logger, _ => fileProvider);
 
@@ -646,12 +678,12 @@ public class CertificatePathWatcherTests : LoggedTest
         };
 
         // Simulate file deletion
-        fileProvider.SetLastModifiedTime(fileName, null);
+        fileProvider.SetLastModifiedTime(fileSubpath, null);
 
         // In some file systems and watch modes, there's no event when (e.g.) the directory containing the watched file is deleted
         if (seeChangeForDeletion)
         {
-            fileProvider.FireChangeToken(fileName);
+            fileProvider.FireChangeToken(fileSubpath);
 
             await logNoLastModifiedTcs.Task.DefaultTimeout();
         }
@@ -663,8 +695,8 @@ public class CertificatePathWatcherTests : LoggedTest
         Assert.False(changeTcs.Task.IsCompleted);
 
         // Restore the file
-        fileProvider.SetLastModifiedTime(fileName, restoredWithNewerLastModifiedTime ? fileLastModifiedTime.AddSeconds(1) : fileLastModifiedTime);
-        fileProvider.FireChangeToken(fileName);
+        fileProvider.SetLastModifiedTime(fileSubpath, restoredWithNewerLastModifiedTime ? fileLastModifiedTime.AddSeconds(1) : fileLastModifiedTime);
+        fileProvider.FireChangeToken(fileSubpath);
 
         if (restoredWithNewerLastModifiedTime)
         {
@@ -681,9 +713,11 @@ public class CertificatePathWatcherTests : LoggedTest
     [Fact]
     public void UpdateWatches()
     {
-        var dir = Directory.GetCurrentDirectory();
-        var fileName = Path.GetRandomFileName();
-        var filePath = Path.Combine(dir, fileName);
+        var rootDir = Directory.GetCurrentDirectory();
+        var dirName = Path.GetRandomFileName();
+        var dir = Path.Combine(rootDir, dirName);
+        var fileSubpath = Path.Combine(dirName, Path.GetRandomFileName());
+        var filePath = Path.Combine(rootDir, fileSubpath);
 
         var logger = LoggerFactory.CreateLogger<CertificatePathWatcher>();
 
@@ -771,7 +805,6 @@ public class CertificatePathWatcherTests : LoggedTest
         IChangeToken IFileProvider.Watch(string filter) => NoChangeChangeToken.Instance;
 
         IFileInfoWithLinkInfo IFileProviderWithLinkInfo.GetFileInfo(string subpath) => FixedTimeFileInfoWithLinkInfo.Instance;
-        IFileInfoWithLinkInfo IFileProviderWithLinkInfo.ResolveLinkTarget(bool returnFinalTarget) => null;
 
         private sealed class NoChangeChangeToken : IChangeToken
         {
@@ -835,27 +868,27 @@ public class CertificatePathWatcherTests : LoggedTest
             _rootPath = rootPath;
         }
 
-        public void FireChangeToken(string fileName)
+        public void FireChangeToken(string subpath)
         {
-            var oldChangeToken = _changeTokens[fileName];
-            _changeTokens[fileName] = new ConfigurationReloadToken();
+            var oldChangeToken = _changeTokens[subpath];
+            _changeTokens[subpath] = new ConfigurationReloadToken();
             oldChangeToken.OnReload();
         }
 
-        public void SetLastModifiedTime(string fileName, DateTimeOffset? lastModifiedTime)
+        public void SetLastModifiedTime(string subpath, DateTimeOffset? lastModifiedTime)
         {
-            _lastModifiedTimes[fileName] = lastModifiedTime;
+            _lastModifiedTimes[subpath] = lastModifiedTime;
         }
 
-        public void RemoveLinkTarget(string fileName)
+        public void RemoveLinkTarget(string subpath)
         {
-            _linkTargets.Remove(fileName);
+            _linkTargets.Remove(subpath);
         }
 
-        public void SetLinkTarget(string fileName, string linkTargetName, IFileProviderWithLinkInfo linkTargetFileProvider)
+        public void SetLinkTarget(string fileSubpath, string linkTargetSubpath, IFileProviderWithLinkInfo linkTargetFileProvider)
         {
-            var targetInfo = linkTargetFileProvider.GetFileInfo(linkTargetName);
-            _linkTargets[fileName] = targetInfo;
+            var targetInfo = linkTargetFileProvider.GetFileInfo(linkTargetSubpath);
+            _linkTargets[fileSubpath] = targetInfo;
         }
 
         IDirectoryContents IFileProvider.GetDirectoryContents(string subpath)
@@ -863,29 +896,24 @@ public class CertificatePathWatcherTests : LoggedTest
             throw new NotSupportedException();
         }
 
-        IChangeToken IFileProvider.Watch(string fileName)
+        IChangeToken IFileProvider.Watch(string subpath)
         {
-            if (!_changeTokens.TryGetValue(fileName, out var changeToken))
+            if (!_changeTokens.TryGetValue(subpath, out var changeToken))
             {
-                _changeTokens[fileName] = changeToken = new ConfigurationReloadToken();
+                _changeTokens[subpath] = changeToken = new ConfigurationReloadToken();
             }
 
             return changeToken;
         }
 
-        IFileInfo IFileProvider.GetFileInfo(string fileName)
+        IFileInfo IFileProvider.GetFileInfo(string subpath)
         {
-            return ((IFileProviderWithLinkInfo)this).GetFileInfo(fileName);
+            return ((IFileProviderWithLinkInfo)this).GetFileInfo(subpath);
         }
 
-        IFileInfoWithLinkInfo IFileProviderWithLinkInfo.GetFileInfo(string fileName)
+        IFileInfoWithLinkInfo IFileProviderWithLinkInfo.GetFileInfo(string subpath)
         {
-            return new MockFileInfoWithLinkInfo(Path.Combine(_rootPath, fileName), _lastModifiedTimes[fileName], _linkTargets.TryGetValue(fileName, out var target) ? target : null);
-        }
-
-        IFileInfoWithLinkInfo IFileProviderWithLinkInfo.ResolveLinkTarget(bool returnFinalTarget)
-        {
-            return null;
+            return new MockFileInfoWithLinkInfo(Path.Combine(_rootPath, subpath), _lastModifiedTimes[subpath], _linkTargets.TryGetValue(subpath, out var target) ? target : null);
         }
     }
 
@@ -912,22 +940,5 @@ public class CertificatePathWatcherTests : LoggedTest
         Stream IFileInfo.CreateReadStream() => throw new NotSupportedException();
 
         IFileInfoWithLinkInfo IFileInfoWithLinkInfo.ResolveLinkTarget(bool returnFinalTarget) => _linkTarget;
-    }
-
-    private sealed class MockLinkFileProvider : IFileProviderWithLinkInfo
-    {
-        private readonly IFileInfoWithLinkInfo _linkTarget;
-
-        public MockLinkFileProvider(IFileInfoWithLinkInfo linkTarget)
-        {
-            _linkTarget = linkTarget;
-        }
-
-        IChangeToken IFileProvider.Watch(string filter) => throw new NotSupportedException();
-        IDirectoryContents IFileProvider.GetDirectoryContents(string subpath) => throw new NotSupportedException();
-        IFileInfo IFileProvider.GetFileInfo(string subpath) => throw new NotSupportedException();
-        IFileInfoWithLinkInfo IFileProviderWithLinkInfo.GetFileInfo(string subpath) => throw new NotSupportedException();
-
-        IFileInfoWithLinkInfo IFileProviderWithLinkInfo.ResolveLinkTarget(bool returnFinalTarget) => _linkTarget;
     }
 }
