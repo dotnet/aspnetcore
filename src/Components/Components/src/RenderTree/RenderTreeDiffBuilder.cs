@@ -18,8 +18,6 @@ internal static class RenderTreeDiffBuilder
     // hit the "old < new" code path during diffing so we only have to check for it in one place.
     public const int SystemAddedAttributeSequenceNumber = int.MinValue;
 
-    private static readonly RenderTreeFrame NoSuchAttributeFrame = RenderTreeFrame.Attribute(int.MaxValue, null, null);
-
     public static RenderTreeDiff ComputeDiff(
         Renderer renderer,
         RenderBatchBuilder batchBuilder,
@@ -431,10 +429,12 @@ internal static class RenderTreeDiffBuilder
 
         while (hasMoreOld || hasMoreNew)
         {
-            ref var oldAttributeFrame = ref (hasMoreOld ? ref oldTree[oldStartIndex] : ref NoSuchAttributeFrame);
-            ref var newAttributeFrame = ref (hasMoreNew ? ref newTree[newStartIndex] : ref NoSuchAttributeFrame);
-            var (oldSeq, oldAttributeName) = (oldAttributeFrame.Sequence, oldAttributeFrame.AttributeName);
-            var (newSeq, newAttributeName) = (newAttributeFrame.Sequence, newAttributeFrame.AttributeName);
+            var (oldSeq, oldAttributeName) = hasMoreOld
+                ? (oldTree[oldStartIndex].SequenceField, oldTree[oldStartIndex].AttributeNameField)
+                : (int.MaxValue, null);
+            var (newSeq, newAttributeName) = hasMoreNew
+                ? (newTree[newStartIndex].SequenceField, newTree[newStartIndex].AttributeNameField)
+                : (int.MaxValue, null);
 
             if (oldSeq == newSeq &&
                 string.Equals(oldAttributeName, newAttributeName, StringComparison.Ordinal))
