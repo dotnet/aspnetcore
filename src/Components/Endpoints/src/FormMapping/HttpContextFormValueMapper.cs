@@ -8,7 +8,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 using Microsoft.AspNetCore.Components.Forms.Mapping;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
@@ -22,7 +21,7 @@ internal sealed class HttpContextFormValueMapper : IFormValueMapper
 
     public HttpContextFormValueMapper(
         HttpContextFormDataProvider formData,
-        IOptions<RazorComponentOptions> options)
+        IOptions<RazorComponentsOptions> options)
     {
         _formData = formData;
         _options = options.Value._formMappingOptions;

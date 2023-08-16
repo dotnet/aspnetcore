@@ -122,9 +122,7 @@ app.MapPost("/", postTodoWithDefault){withFilter}
         };
         var source = $"""
 app.MapPost("/fromBodyRequired", ([FromBody] Todo todo) => TypedResults.Ok(todo));
-#pragma warning disable CS8622
 app.MapPost("/fromBodyOptional", ([FromBody] Todo? todo) => TypedResults.Ok(todo));
-#pragma warning restore CS8622
 """;
         var (_, compilation) = await RunGeneratorAsync(source);
 

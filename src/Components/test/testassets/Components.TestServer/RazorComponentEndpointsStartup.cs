@@ -2,11 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.Reflection;
 using System.Security.Claims;
 using Components.TestServer.RazorComponents;
 using Components.TestServer.RazorComponents.Pages.Forms;
-using Components.TestServer.RazorComponents.Pages.StreamingRendering;
 using Components.TestServer.Services;
+using Microsoft.AspNetCore.Components.WebAssembly.Server;
 
 namespace TestServer;
 
@@ -28,11 +29,8 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             options.MaxFormMappingRecursionDepth = 5;
             options.MaxFormMappingCollectionSize = 100;
         })
-            .AddServerComponents()
-            .AddWebAssemblyComponents(options =>
-            {
-                options.PathPrefix = "/WasmMinimal";
-            });
+            .AddWebAssemblyComponents()
+            .AddServerComponents();
         services.AddHttpContextAccessor();
         services.AddSingleton<AsyncOperationService>();
         services.AddCascadingAuthenticationState();
@@ -59,8 +57,12 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapRazorComponents<TRootComponent>()
+                    .AddAdditionalAssemblies(Assembly.Load("Components.WasmMinimal"))
                     .AddServerRenderMode()
-                    .AddWebAssemblyRenderMode();
+                    .AddWebAssemblyRenderMode(new WebAssemblyComponentsEndpointOptions
+                    {
+                        PathPrefix = "/WasmMinimal"
+                    });
 
                 NotEnabledStreamingRenderingComponent.MapEndpoints(endpoints);
                 StreamingRenderingForm.MapEndpoints(endpoints);

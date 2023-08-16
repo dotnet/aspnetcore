@@ -1,17 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Authentication.BearerToken.DTO;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Identity;
@@ -28,6 +27,9 @@ namespace Microsoft.AspNetCore.Routing;
 /// </summary>
 public static class IdentityApiEndpointRouteBuilderExtensions
 {
+    // Validate the email address using DataAnnotations like the UserValidator does when RequireUniqueEmail = true.
+    private static readonly EmailAddressAttribute _emailAddressAttribute = new();
+
     /// <summary>
     /// Add endpoints for registering, logging in, and logging out using ASP.NET Core Identity.
     /// </summary>
@@ -66,30 +68,37 @@ public static class IdentityApiEndpointRouteBuilderExtensions
 
             var userStore = sp.GetRequiredService<IUserStore<TUser>>();
             var emailStore = (IUserEmailStore<TUser>)userStore;
+            var email = registration.Email;
 
-            var user = new TUser();
-            await userStore.SetUserNameAsync(user, registration.Username, CancellationToken.None);
-            await emailStore.SetEmailAsync(user, registration.Email, CancellationToken.None);
-            var result = await userManager.CreateAsync(user, registration.Password);
-
-            if (result.Succeeded)
+            if (string.IsNullOrEmpty(email) || !_emailAddressAttribute.IsValid(email))
             {
-                await SendConfirmationEmailAsync(user, userManager, registration.Email);
-                return TypedResults.Ok();
+                return CreateValidationProblem(IdentityResult.Failed(userManager.ErrorDescriber.InvalidEmail(email)));
             }
 
-            return CreateValidationProblem(result);
+            var user = new TUser();
+            await userStore.SetUserNameAsync(user, email, CancellationToken.None);
+            await emailStore.SetEmailAsync(user, email, CancellationToken.None);
+            var result = await userManager.CreateAsync(user, registration.Password);
+
+            if (!result.Succeeded)
+            {
+                return CreateValidationProblem(result);
+            }
+
+            await SendConfirmationEmailAsync(user, userManager, email);
+            return TypedResults.Ok();
         });
 
         routeGroup.MapPost("/login", async Task<Results<Ok<AccessTokenResponse>, EmptyHttpResult, ProblemHttpResult>>
-            ([FromBody] LoginRequest login, [FromQuery] bool? cookieMode, [FromQuery] bool? persistCookies, [FromServices] IServiceProvider sp) =>
+            ([FromBody] LoginRequest login, [FromQuery] bool? useCookies, [FromQuery] bool? useSessionCookies, [FromServices] IServiceProvider sp) =>
         {
             var signInManager = sp.GetRequiredService<SignInManager<TUser>>();
 
-            signInManager.PrimaryAuthenticationScheme = cookieMode == true ? IdentityConstants.ApplicationScheme : IdentityConstants.BearerScheme;
-            var isPersistent = persistCookies ?? true;
+            var useCookieScheme = (useCookies == true) || (useSessionCookies == true);
+            var isPersistent = (useCookies == true) && (useSessionCookies != true);
+            signInManager.PrimaryAuthenticationScheme = useCookieScheme ? IdentityConstants.ApplicationScheme : IdentityConstants.BearerScheme;
 
-            var result = await signInManager.PasswordSignInAsync(login.Username, login.Password, isPersistent, lockoutOnFailure: true);
+            var result = await signInManager.PasswordSignInAsync(login.Email, login.Password, isPersistent, lockoutOnFailure: true);
 
             if (result.RequiresTwoFactor)
             {
@@ -103,13 +112,13 @@ public static class IdentityApiEndpointRouteBuilderExtensions
                 }
             }
 
-            if (result.Succeeded)
+            if (!result.Succeeded)
             {
-                // The signInManager already produced the needed response in the form of a cookie or bearer token.
-                return TypedResults.Empty;
+                return TypedResults.Problem(result.ToString(), statusCode: StatusCodes.Status401Unauthorized);
             }
 
-            return TypedResults.Problem(result.ToString(), statusCode: StatusCodes.Status401Unauthorized);
+            // The signInManager already produced the needed response in the form of a cookie or bearer token.
+            return TypedResults.Empty;
         });
 
         routeGroup.MapPost("/refresh", async Task<Results<Ok<AccessTokenResponse>, UnauthorizedHttpResult, SignInHttpResult, ChallengeHttpResult>>
@@ -142,22 +151,31 @@ public static class IdentityApiEndpointRouteBuilderExtensions
                 return TypedResults.Unauthorized();
             }
 
-            IdentityResult result;
             try
             {
                 code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
-                if (string.IsNullOrEmpty(changedEmail))
-                {
-                    result = await userManager.ConfirmEmailAsync(user, code);
-                }
-                else
-                {
-                    result = await userManager.ChangeEmailAsync(user, changedEmail, code);
-                }
             }
             catch (FormatException)
             {
                 return TypedResults.Unauthorized();
+            }
+
+            IdentityResult result;
+
+            if (string.IsNullOrEmpty(changedEmail))
+            {
+                result = await userManager.ConfirmEmailAsync(user, code);
+            }
+            else
+            {
+                // As with Identity UI, email and user name are one and the same. So when we update the email,
+                // we need to update the user name.
+                result = await userManager.ChangeEmailAsync(user, changedEmail, code);
+
+                if (result.Succeeded)
+                {
+                    result = await userManager.SetUserNameAsync(user, changedEmail);
+                }
             }
 
             if (!result.Succeeded)
@@ -188,28 +206,13 @@ public static class IdentityApiEndpointRouteBuilderExtensions
             return TypedResults.Ok();
         });
 
-        routeGroup.MapPost("/resetPassword", async Task<Results<Ok, ValidationProblem>>
-            ([FromBody] ResetPasswordRequest resetRequest, [FromServices] IServiceProvider sp) =>
+        routeGroup.MapPost("/forgotPassword", async Task<Results<Ok, ValidationProblem>>
+            ([FromBody] ForgotPasswordRequest resetRequest, [FromServices] IServiceProvider sp) =>
         {
             var userManager = sp.GetRequiredService<UserManager<TUser>>();
-
-            if (!string.IsNullOrEmpty(resetRequest.ResetCode) && string.IsNullOrEmpty(resetRequest.NewPassword))
-            {
-                return CreateValidationProblem("MissingNewPassword", "A password reset code was provided without a new password.");
-            }
-
             var user = await userManager.FindByEmailAsync(resetRequest.Email);
 
-            if (user is null || !(await userManager.IsEmailConfirmedAsync(user)))
-            {
-                // Don't reveal that the user does not exist or is not confirmed, so don't return a 200 if we would have
-                // returned a 400 for an invalid code given a valid user email.
-                if (!string.IsNullOrEmpty(resetRequest.ResetCode))
-                {
-                    return CreateValidationProblem(IdentityResult.Failed(userManager.ErrorDescriber.InvalidToken()));
-                }
-            }
-            else if (string.IsNullOrEmpty(resetRequest.ResetCode))
+            if (user is not null && await userManager.IsEmailConfirmedAsync(user))
             {
                 var code = await userManager.GeneratePasswordResetTokenAsync(user);
                 code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
@@ -217,43 +220,46 @@ public static class IdentityApiEndpointRouteBuilderExtensions
                 await emailSender.SendEmailAsync(resetRequest.Email, "Reset your password",
                     $"Reset your password using the following code: {HtmlEncoder.Default.Encode(code)}");
             }
-            else
+
+            // Don't reveal that the user does not exist or is not confirmed, so don't return a 200 if we would have
+            // returned a 400 for an invalid code given a valid user email.
+            return TypedResults.Ok();
+        });
+
+        routeGroup.MapPost("/resetPassword", async Task<Results<Ok, ValidationProblem>>
+            ([FromBody] ResetPasswordRequest resetRequest, [FromServices] IServiceProvider sp) =>
+        {
+            var userManager = sp.GetRequiredService<UserManager<TUser>>();
+
+            var user = await userManager.FindByEmailAsync(resetRequest.Email);
+
+            if (user is null || !(await userManager.IsEmailConfirmedAsync(user)))
             {
-                Debug.Assert(!string.IsNullOrEmpty(resetRequest.NewPassword));
+                // Don't reveal that the user does not exist or is not confirmed, so don't return a 200 if we would have
+                // returned a 400 for an invalid code given a valid user email.
+                return CreateValidationProblem(IdentityResult.Failed(userManager.ErrorDescriber.InvalidToken()));
+            }
 
-                IdentityResult result;
-                try
-                {
-                    var code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(resetRequest.ResetCode));
-                    result = await userManager.ResetPasswordAsync(user, code, resetRequest.NewPassword);
-                }
-                catch (FormatException)
-                {
-                    result = IdentityResult.Failed(userManager.ErrorDescriber.InvalidToken());
-                }
+            IdentityResult result;
+            try
+            {
+                var code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(resetRequest.ResetCode));
+                result = await userManager.ResetPasswordAsync(user, code, resetRequest.NewPassword);
+            }
+            catch (FormatException)
+            {
+                result = IdentityResult.Failed(userManager.ErrorDescriber.InvalidToken());
+            }
 
-                if (!result.Succeeded)
-                {
-                    return CreateValidationProblem(result);
-                }
+            if (!result.Succeeded)
+            {
+                return CreateValidationProblem(result);
             }
 
             return TypedResults.Ok();
         });
 
-        var accountGroup = routeGroup.MapGroup("/account").RequireAuthorization();
-
-        accountGroup.MapGet("/2fa", async Task<Results<Ok<TwoFactorResponse>, NotFound>>
-            (ClaimsPrincipal claimsPrincipal, [FromServices] IServiceProvider sp) =>
-        {
-            var signInManager = sp.GetRequiredService<SignInManager<TUser>>();
-            if (await signInManager.UserManager.GetUserAsync(claimsPrincipal) is not { } user)
-            {
-                return TypedResults.NotFound();
-            }
-
-            return TypedResults.Ok(await CreateTwoFactorResponseAsync(user, signInManager));
-        });
+        var accountGroup = routeGroup.MapGroup("/manage").RequireAuthorization();
 
         accountGroup.MapPost("/2fa", async Task<Results<Ok<TwoFactorResponse>, ValidationProblem, NotFound>>
             (ClaimsPrincipal claimsPrincipal, [FromBody] TwoFactorRequest tfaRequest, [FromServices] IServiceProvider sp) =>
@@ -307,7 +313,26 @@ public static class IdentityApiEndpointRouteBuilderExtensions
                 await signInManager.ForgetTwoFactorClientAsync();
             }
 
-            return TypedResults.Ok(await CreateTwoFactorResponseAsync(user, signInManager, recoveryCodes));
+            var key = await userManager.GetAuthenticatorKeyAsync(user);
+            if (string.IsNullOrEmpty(key))
+            {
+                await userManager.ResetAuthenticatorKeyAsync(user);
+                key = await userManager.GetAuthenticatorKeyAsync(user);
+
+                if (string.IsNullOrEmpty(key))
+                {
+                    throw new NotSupportedException("The user manager must produce an authenticator key after reset.");
+                }
+            }
+
+            return TypedResults.Ok(new TwoFactorResponse
+            {
+                SharedKey = key,
+                RecoveryCodes = recoveryCodes,
+                RecoveryCodesLeft = recoveryCodes?.Length ?? await userManager.CountRecoveryCodesAsync(user),
+                IsTwoFactorEnabled = await userManager.GetTwoFactorEnabledAsync(user),
+                IsMachineRemembered = await signInManager.IsTwoFactorClientRememberedAsync(user),
+            });
         });
 
         accountGroup.MapGet("/info", async Task<Results<Ok<InfoResponse>, ValidationProblem, NotFound>>
@@ -323,24 +348,31 @@ public static class IdentityApiEndpointRouteBuilderExtensions
         });
 
         accountGroup.MapPost("/info", async Task<Results<Ok<InfoResponse>, ValidationProblem, NotFound>>
-            (HttpContext httpContext, [FromBody] InfoRequest infoRequest, [FromServices] IServiceProvider sp) =>
+            (ClaimsPrincipal claimsPrincipal, [FromBody] InfoRequest infoRequest, [FromServices] IServiceProvider sp) =>
         {
-            var signInManager = sp.GetRequiredService<SignInManager<TUser>>();
-            var userManager = signInManager.UserManager;
-            if (await userManager.GetUserAsync(httpContext.User) is not { } user)
+            var userManager = sp.GetRequiredService<UserManager<TUser>>();
+            if (await userManager.GetUserAsync(claimsPrincipal) is not { } user)
             {
                 return TypedResults.NotFound();
             }
 
-            List<IdentityResult>? failedResults = null;
-
-            if (!string.IsNullOrEmpty(infoRequest.NewUsername))
+            if (!string.IsNullOrEmpty(infoRequest.NewEmail) && !_emailAddressAttribute.IsValid(infoRequest.NewEmail))
             {
-                var userName = await userManager.GetUserNameAsync(user);
+                return CreateValidationProblem(IdentityResult.Failed(userManager.ErrorDescriber.InvalidEmail(infoRequest.NewEmail)));
+            }
 
-                if (userName != infoRequest.NewUsername)
+            if (!string.IsNullOrEmpty(infoRequest.NewPassword))
+            {
+                if (string.IsNullOrEmpty(infoRequest.OldPassword))
                 {
-                    AddIfFailed(ref failedResults, await userManager.SetUserNameAsync(user, infoRequest.NewUsername));
+                    return CreateValidationProblem("OldPasswordRequired",
+                        "The old password is required to set a new password. If the old password is forgotten, use /resetPassword.");
+                }
+
+                var changePasswordResult = await userManager.ChangePasswordAsync(user, infoRequest.OldPassword, infoRequest.NewPassword);
+                if (!changePasswordResult.Succeeded)
+                {
+                    return CreateValidationProblem(changePasswordResult);
                 }
             }
 
@@ -354,38 +386,7 @@ public static class IdentityApiEndpointRouteBuilderExtensions
                 }
             }
 
-            if (!string.IsNullOrEmpty(infoRequest.NewPassword))
-            {
-                if (string.IsNullOrEmpty(infoRequest.OldPassword))
-                {
-                    AddIfFailed(ref failedResults, IdentityResult.Failed(new IdentityError
-                    {
-                        Code = "OldPasswordRequired",
-                        Description = "The old password is required to set a new password. If the old password is forgotten, use /resetPassword.",
-                    }));
-                }
-                else
-                {
-                    AddIfFailed(ref failedResults, await userManager.ChangePasswordAsync(user, infoRequest.OldPassword, infoRequest.NewPassword));
-                }
-            }
-
-            // Update cookie if the user is authenticated that way.
-            // Currently, the user will have to log in again with bearer tokens to see updated claims.
-            var authFeature = httpContext.Features.GetRequiredFeature<IAuthenticateResultFeature>();
-            if (authFeature.AuthenticateResult?.Ticket?.AuthenticationScheme == IdentityConstants.ApplicationScheme)
-            {
-                await signInManager.RefreshSignInAsync(user);
-            }
-
-            if (failedResults is not null)
-            {
-                return CreateValidationProblem(failedResults);
-            }
-            else
-            {
-                return TypedResults.Ok(await CreateInfoResponseAsync(user, httpContext.User, userManager));
-            }
+            return TypedResults.Ok(await CreateInfoResponseAsync(user, claimsPrincipal, userManager));
         });
 
         async Task SendConfirmationEmailAsync(TUser user, UserManager<TUser> userManager, string email, bool isChange = false)
@@ -423,17 +424,6 @@ public static class IdentityApiEndpointRouteBuilderExtensions
         return new IdentityEndpointsConventionBuilder(routeGroup);
     }
 
-    private static void AddIfFailed(ref List<IdentityResult>? results, IdentityResult result)
-    {
-        if (result.Succeeded)
-        {
-            return;
-        }
-
-        results ??= new();
-        results.Add(result);
-    }
-
     private static ValidationProblem CreateValidationProblem(string errorCode, string errorDescription) =>
         TypedResults.ValidationProblem(new Dictionary<string, string[]> {
             { errorCode, new[] { errorDescription } }
@@ -441,28 +431,11 @@ public static class IdentityApiEndpointRouteBuilderExtensions
 
     private static ValidationProblem CreateValidationProblem(IdentityResult result)
     {
-        var errorDictionary = new Dictionary<string, string[]>(1);
-        AddErrorsToDictionary(errorDictionary, result);
-        return TypedResults.ValidationProblem(errorDictionary);
-    }
-
-    private static ValidationProblem CreateValidationProblem(List<IdentityResult> results)
-    {
-        var errorDictionary = new Dictionary<string, string[]>(results.Count);
-
-        foreach (var result in results)
-        {
-            AddErrorsToDictionary(errorDictionary, result);
-        }
-
-        return TypedResults.ValidationProblem(errorDictionary);
-    }
-
-    private static void AddErrorsToDictionary(Dictionary<string, string[]> errorDictionary, IdentityResult result)
-    {
         // We expect a single error code and description in the normal case.
         // This could be golfed with GroupBy and ToDictionary, but perf! :P
         Debug.Assert(!result.Succeeded);
+        var errorDictionary = new Dictionary<string, string[]>(1);
+
         foreach (var error in result.Errors)
         {
             string[] newDescriptions;
@@ -480,33 +453,8 @@ public static class IdentityApiEndpointRouteBuilderExtensions
 
             errorDictionary[error.Code] = newDescriptions;
         }
-    }
 
-    private static async Task<TwoFactorResponse> CreateTwoFactorResponseAsync<TUser>(TUser user, SignInManager<TUser> signInManager, string[]? recoveryCodes = null)
-        where TUser : class
-    {
-        var userManager = signInManager.UserManager;
-
-        var key = await userManager.GetAuthenticatorKeyAsync(user);
-        if (string.IsNullOrEmpty(key))
-        {
-            await userManager.ResetAuthenticatorKeyAsync(user);
-            key = await userManager.GetAuthenticatorKeyAsync(user);
-
-            if (string.IsNullOrEmpty(key))
-            {
-                throw new NotSupportedException("The user manager must produce an authenticator key after reset.");
-            }
-        }
-
-        return new()
-        {
-            SharedKey = key,
-            RecoveryCodes = recoveryCodes,
-            RecoveryCodesLeft = recoveryCodes?.Length ?? await userManager.CountRecoveryCodesAsync(user),
-            IsTwoFactorEnabled = await userManager.GetTwoFactorEnabledAsync(user),
-            IsMachineRemembered = await signInManager.IsTwoFactorClientRememberedAsync(user),
-        };
+        return TypedResults.ValidationProblem(errorDictionary);
     }
 
     private static async Task<InfoResponse> CreateInfoResponseAsync<TUser>(TUser user, ClaimsPrincipal claimsPrincipal, UserManager<TUser> userManager)
@@ -514,8 +462,8 @@ public static class IdentityApiEndpointRouteBuilderExtensions
     {
         return new()
         {
-            Username = await userManager.GetUserNameAsync(user) ?? throw new NotSupportedException("Users must have a user name."),
             Email = await userManager.GetEmailAsync(user) ?? throw new NotSupportedException("Users must have an email."),
+            IsEmailConfirmed = await userManager.IsEmailConfirmedAsync(user),
             Claims = claimsPrincipal.Claims.ToDictionary(c => c.Type, c => c.Value),
         };
     }

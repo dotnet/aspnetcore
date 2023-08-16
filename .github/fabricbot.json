@@ -2491,7 +2491,7 @@
           {
             "name": "addMilestone",
             "parameters": {
-              "milestoneName": "8.0-rc1"
+              "milestoneName": "9.0-preview1"
             }
           }
         ],
@@ -3304,7 +3304,7 @@
             {
               "name": "prTargetsBranch",
               "parameters": {
-                "branchName": "release/8.0-preview7"
+                "branchName": "release/8.0-rc1"
               }
             }
           ]
@@ -3315,7 +3315,7 @@
           "issues",
           "project_card"
         ],
-        "taskName": "[Milestone Assignments] Assign Milestone to PRs merged to release/8.0-preview7 branch",
+        "taskName": "[Milestone Assignments] Assign Milestone to PRs merged to release/8.0-rc1 branch",
         "actions": [
           {
             "name": "removeMilestone",
@@ -3324,7 +3324,51 @@
           {
             "name": "addMilestone",
             "parameters": {
-              "milestoneName": "8.0-preview7"
+              "milestoneName": "8.0-rc1"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskType": "trigger",
+      "capabilityId": "IssueResponder",
+      "subCapability": "PullRequestResponder",
+      "version": "1.0",
+      "config": {
+        "conditions": {
+          "operator": "and",
+          "operands": [
+            {
+              "name": "isAction",
+              "parameters": {
+                "action": "merged"
+              }
+            },
+            {
+              "name": "prTargetsBranch",
+              "parameters": {
+                "branchName": "release/8.0"
+              }
+            }
+          ]
+        },
+        "eventType": "pull_request",
+        "eventNames": [
+          "pull_request",
+          "issues",
+          "project_card"
+        ],
+        "taskName": "[Milestone Assignments] Assign Milestone to PRs merged to release/8.0 branch",
+        "actions": [
+          {
+            "name": "removeMilestone",
+            "parameters": {}
+          },
+          {
+            "name": "addMilestone",
+            "parameters": {
+              "milestoneName": "8.0-rc2"
             }
           }
         ]

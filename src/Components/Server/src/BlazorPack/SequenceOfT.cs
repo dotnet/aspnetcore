@@ -97,7 +97,7 @@ internal sealed class Sequence<T> : IBufferWriter<T>, IDisposable
     /// <summary>
     /// Gets the value to display in a debugger datatip.
     /// </summary>
-    private string DebuggerDisplay => $"Length: {AsReadOnlySequence.Length}";
+    private string DebuggerDisplay => $"Length = {AsReadOnlySequence.Length}";
 
     /// <summary>
     /// Expresses this sequence as a <see cref="ReadOnlySequence{T}"/>.

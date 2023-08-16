@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
-internal class RazorComponentsEndpointsOptions
+internal class RazorComponentsEndpointOptions
 {
     public bool DetailedErrors { get; set; }
 }

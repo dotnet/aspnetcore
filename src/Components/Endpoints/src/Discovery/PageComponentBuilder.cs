@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Components.Discovery;
 /// A razor component page <see cref="PageComponentBuilder"/>.
 /// </summary>
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
-public class PageComponentBuilder : IEquatable<PageComponentBuilder?>
+internal class PageComponentBuilder : IEquatable<PageComponentBuilder?>
 {
     private IReadOnlyList<string> _routeTemplates = Array.Empty<string>();
 
@@ -88,6 +88,6 @@ public class PageComponentBuilder : IEquatable<PageComponentBuilder?>
 
     private string GetDebuggerDisplay()
     {
-        return $"{PageType.FullName}{string.Join(", ", RouteTemplates ?? Enumerable.Empty<string>())}";
+        return $"Type = {PageType.FullName}, RouteTemplates = {string.Join(", ", RouteTemplates ?? Enumerable.Empty<string>())}";
     }
 }

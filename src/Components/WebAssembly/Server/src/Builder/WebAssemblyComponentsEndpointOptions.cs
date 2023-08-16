@@ -3,7 +3,7 @@
 
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Components.Endpoints;
+namespace Microsoft.AspNetCore.Components.WebAssembly.Server;
 
 /// <summary>
 /// Options to configure interactive WebAssembly components.

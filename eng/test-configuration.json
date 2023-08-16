@@ -21,6 +21,7 @@
     {"testName": {"contains": "InjectedStartup_DefaultApplicationNameIsEntryAssembly"}},
     {"testName": {"contains": "HEADERS_Received_SecondRequest_ConnectProtocolReset"}},
     {"testName": {"contains": "ClientUsingOldCallWithNewProtocol"}},
+    {"testName": {"contains": "CertificateChangedOnDisk"}},
     {"testAssembly": {"contains": "IIS"}},
     {"testAssembly": {"contains": "Template"}},
     {"failureMessage": {"contains":"(Site is started but no worker process found)"}},

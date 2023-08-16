@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 /// <summary>
 /// Metadata that represents the component associated with an endpoint.
 /// </summary>
-public class ComponentTypeMetadata
+public sealed class ComponentTypeMetadata
 {
     /// <summary>
     /// Initializes a new instance of <see cref="ComponentTypeMetadata"/>.

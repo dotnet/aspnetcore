@@ -1,44 +1,12 @@
-abstract Microsoft.AspNetCore.Components.Endpoints.RenderModeEndpointProvider.GetEndpointBuilders(Microsoft.AspNetCore.Components.IComponentRenderMode! renderMode, Microsoft.AspNetCore.Builder.IApplicationBuilder! applicationBuilder) -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Routing.RouteEndpointBuilder!>!
-abstract Microsoft.AspNetCore.Components.Endpoints.RenderModeEndpointProvider.Supports(Microsoft.AspNetCore.Components.IComponentRenderMode! renderMode) -> bool
-abstract Microsoft.AspNetCore.Components.Infrastructure.RazorComponentApplicationAttribute.GetBuilder() -> Microsoft.AspNetCore.Components.Discovery.ComponentApplicationBuilder!
-Microsoft.AspNetCore.Builder.RazorComponentEndpointConventionBuilder
-Microsoft.AspNetCore.Builder.RazorComponentEndpointConventionBuilder.Add(System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder!>! convention) -> void
-Microsoft.AspNetCore.Builder.RazorComponentEndpointConventionBuilder.AddServerRenderMode() -> Microsoft.AspNetCore.Builder.RazorComponentEndpointConventionBuilder!
-Microsoft.AspNetCore.Builder.RazorComponentEndpointConventionBuilder.AddWebAssemblyRenderMode() -> Microsoft.AspNetCore.Builder.RazorComponentEndpointConventionBuilder!
-Microsoft.AspNetCore.Builder.RazorComponentEndpointConventionBuilder.ApplicationBuilder.get -> Microsoft.AspNetCore.Components.Discovery.ComponentApplicationBuilder!
-Microsoft.AspNetCore.Builder.RazorComponentEndpointConventionBuilder.Finally(System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder!>! finallyConvention) -> void
+abstract Microsoft.AspNetCore.Components.Endpoints.Infrastructure.RenderModeEndpointProvider.GetEndpointBuilders(Microsoft.AspNetCore.Components.IComponentRenderMode! renderMode, Microsoft.AspNetCore.Builder.IApplicationBuilder! applicationBuilder) -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Routing.RouteEndpointBuilder!>!
+abstract Microsoft.AspNetCore.Components.Endpoints.Infrastructure.RenderModeEndpointProvider.Supports(Microsoft.AspNetCore.Components.IComponentRenderMode! renderMode) -> bool
+Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder
+Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder.Add(System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder!>! convention) -> void
+Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder.AddRenderMode(Microsoft.AspNetCore.Components.IComponentRenderMode! renderMode) -> void
+Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder.AddServerRenderMode() -> Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder!
+Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder.Finally(System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder!>! finallyConvention) -> void
+Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilderExtensions
 Microsoft.AspNetCore.Builder.RazorComponentsEndpointRouteBuilderExtensions
-Microsoft.AspNetCore.Components.Discovery.AssemblyComponentLibraryDescriptor
-Microsoft.AspNetCore.Components.Discovery.AssemblyComponentLibraryDescriptor.AssemblyComponentLibraryDescriptor(string! name, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder!>! pages, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.Discovery.ComponentBuilder!>! components) -> void
-Microsoft.AspNetCore.Components.Discovery.AssemblyComponentLibraryDescriptor.AssemblyName.get -> string!
-Microsoft.AspNetCore.Components.Discovery.AssemblyComponentLibraryDescriptor.Components.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.Discovery.ComponentBuilder!>!
-Microsoft.AspNetCore.Components.Discovery.AssemblyComponentLibraryDescriptor.Pages.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder!>!
-Microsoft.AspNetCore.Components.Discovery.ComponentApplicationBuilder
-Microsoft.AspNetCore.Components.Discovery.ComponentApplicationBuilder.AddLibrary(Microsoft.AspNetCore.Components.Discovery.AssemblyComponentLibraryDescriptor! libraryBuilder) -> void
-Microsoft.AspNetCore.Components.Discovery.ComponentApplicationBuilder.Combine(Microsoft.AspNetCore.Components.Discovery.ComponentApplicationBuilder! other) -> void
-Microsoft.AspNetCore.Components.Discovery.ComponentApplicationBuilder.ComponentApplicationBuilder() -> void
-Microsoft.AspNetCore.Components.Discovery.ComponentApplicationBuilder.Exclude(Microsoft.AspNetCore.Components.Discovery.ComponentApplicationBuilder! builder) -> void
-Microsoft.AspNetCore.Components.Discovery.ComponentApplicationBuilder.HasLibrary(string! assemblyName) -> bool
-Microsoft.AspNetCore.Components.Discovery.ComponentApplicationBuilder.RemoveLibrary(string! assembly) -> void
-Microsoft.AspNetCore.Components.Discovery.ComponentBuilder
-Microsoft.AspNetCore.Components.Discovery.ComponentBuilder.AssemblyName.get -> string!
-Microsoft.AspNetCore.Components.Discovery.ComponentBuilder.AssemblyName.set -> void
-Microsoft.AspNetCore.Components.Discovery.ComponentBuilder.ComponentBuilder() -> void
-Microsoft.AspNetCore.Components.Discovery.ComponentBuilder.ComponentType.get -> System.Type!
-Microsoft.AspNetCore.Components.Discovery.ComponentBuilder.ComponentType.set -> void
-Microsoft.AspNetCore.Components.Discovery.ComponentBuilder.Equals(Microsoft.AspNetCore.Components.Discovery.ComponentBuilder? other) -> bool
-Microsoft.AspNetCore.Components.Discovery.ComponentBuilder.RenderMode.get -> Microsoft.AspNetCore.Components.RenderModeAttribute?
-Microsoft.AspNetCore.Components.Discovery.ComponentBuilder.RenderMode.set -> void
-Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder
-Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder.AssemblyName.get -> string!
-Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder.AssemblyName.set -> void
-Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder.Equals(Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder? other) -> bool
-Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder.HasSource(string! source) -> bool
-Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder.PageComponentBuilder() -> void
-Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder.PageType.get -> System.Type!
-Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder.PageType.set -> void
-Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder.RouteTemplates.get -> System.Collections.Generic.IReadOnlyList<string!>!
-Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder.RouteTemplates.set -> void
 Microsoft.AspNetCore.Components.Endpoints.ComponentTypeMetadata
 Microsoft.AspNetCore.Components.Endpoints.ComponentTypeMetadata.ComponentTypeMetadata(System.Type! componentType) -> void
 Microsoft.AspNetCore.Components.Endpoints.ComponentTypeMetadata.Type.get -> System.Type!
@@ -46,14 +14,10 @@ Microsoft.AspNetCore.Components.Endpoints.IComponentPrerenderer
 Microsoft.AspNetCore.Components.Endpoints.IComponentPrerenderer.Dispatcher.get -> Microsoft.AspNetCore.Components.Dispatcher!
 Microsoft.AspNetCore.Components.Endpoints.IComponentPrerenderer.PrerenderComponentAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext, System.Type! componentType, Microsoft.AspNetCore.Components.IComponentRenderMode! renderMode, Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Html.IHtmlAsyncContent!>
 Microsoft.AspNetCore.Components.Endpoints.IComponentPrerenderer.PrerenderPersistedStateAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext, Microsoft.AspNetCore.Components.PersistedStateSerializationMode serializationMode) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Html.IHtmlContent!>
+Microsoft.AspNetCore.Components.Endpoints.Infrastructure.RenderModeEndpointProvider
+Microsoft.AspNetCore.Components.Endpoints.Infrastructure.RenderModeEndpointProvider.RenderModeEndpointProvider() -> void
 Microsoft.AspNetCore.Components.Endpoints.IRazorComponentEndpointInvoker
 Microsoft.AspNetCore.Components.Endpoints.IRazorComponentEndpointInvoker.Render(Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.Components.Endpoints.IRazorComponentsBuilder
-Microsoft.AspNetCore.Components.Endpoints.IRazorComponentsBuilder.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
-Microsoft.AspNetCore.Components.Endpoints.RazorComponentDataSourceOptions
-Microsoft.AspNetCore.Components.Endpoints.RazorComponentDataSourceOptions.RazorComponentDataSourceOptions() -> void
-Microsoft.AspNetCore.Components.Endpoints.RazorComponentDataSourceOptions.UseDeclaredRenderModes.get -> bool
-Microsoft.AspNetCore.Components.Endpoints.RazorComponentDataSourceOptions.UseDeclaredRenderModes.set -> void
 Microsoft.AspNetCore.Components.Endpoints.RazorComponentResult
 Microsoft.AspNetCore.Components.Endpoints.RazorComponentResult.ComponentType.get -> System.Type!
 Microsoft.AspNetCore.Components.Endpoints.RazorComponentResult.ContentType.get -> string?
@@ -73,41 +37,28 @@ Microsoft.AspNetCore.Components.Endpoints.RazorComponentResult<TComponent>.Razor
 Microsoft.AspNetCore.Components.Endpoints.RazorComponentResult<TComponent>.RazorComponentResult(System.Collections.Generic.IReadOnlyDictionary<string!, object?>! parameters) -> void
 Microsoft.AspNetCore.Components.Endpoints.RazorComponentResultExecutor
 Microsoft.AspNetCore.Components.Endpoints.RazorComponentResultExecutor.RazorComponentResultExecutor() -> void
-Microsoft.AspNetCore.Components.Endpoints.RenderModeEndpointProvider
-Microsoft.AspNetCore.Components.Endpoints.RenderModeEndpointProvider.RenderModeEndpointProvider() -> void
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentsOptions
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentsOptions.MaxFormMappingCollectionSize.get -> int
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentsOptions.MaxFormMappingCollectionSize.set -> void
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentsOptions.MaxFormMappingErrorCount.get -> int
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentsOptions.MaxFormMappingErrorCount.set -> void
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentsOptions.MaxFormMappingKeySize.get -> int
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentsOptions.MaxFormMappingKeySize.set -> void
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentsOptions.MaxFormMappingRecursionDepth.get -> int
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentsOptions.MaxFormMappingRecursionDepth.set -> void
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentsOptions.RazorComponentsOptions() -> void
 Microsoft.AspNetCore.Components.Endpoints.RootComponentMetadata
 Microsoft.AspNetCore.Components.Endpoints.RootComponentMetadata.RootComponentMetadata(System.Type! rootComponentType) -> void
 Microsoft.AspNetCore.Components.Endpoints.RootComponentMetadata.Type.get -> System.Type!
-Microsoft.AspNetCore.Components.Endpoints.WebAssemblyComponentsEndpointOptions
-Microsoft.AspNetCore.Components.Endpoints.WebAssemblyComponentsEndpointOptions.PathPrefix.get -> Microsoft.AspNetCore.Http.PathString
-Microsoft.AspNetCore.Components.Endpoints.WebAssemblyComponentsEndpointOptions.PathPrefix.set -> void
-Microsoft.AspNetCore.Components.Endpoints.WebAssemblyComponentsEndpointOptions.WebAssemblyComponentsEndpointOptions() -> void
-Microsoft.AspNetCore.Components.Infrastructure.RazorComponentApplicationAttribute
-Microsoft.AspNetCore.Components.Infrastructure.RazorComponentApplicationAttribute.RazorComponentApplicationAttribute() -> void
 Microsoft.AspNetCore.Components.PersistedStateSerializationMode
 Microsoft.AspNetCore.Components.PersistedStateSerializationMode.Infer = 1 -> Microsoft.AspNetCore.Components.PersistedStateSerializationMode
 Microsoft.AspNetCore.Components.PersistedStateSerializationMode.Server = 2 -> Microsoft.AspNetCore.Components.PersistedStateSerializationMode
 Microsoft.AspNetCore.Components.PersistedStateSerializationMode.WebAssembly = 3 -> Microsoft.AspNetCore.Components.PersistedStateSerializationMode
-Microsoft.Extensions.DependencyInjection.RazorComponentOptions
-Microsoft.Extensions.DependencyInjection.RazorComponentOptions.FormMappingUseCurrentCulture.get -> bool
-Microsoft.Extensions.DependencyInjection.RazorComponentOptions.FormMappingUseCurrentCulture.set -> void
-Microsoft.Extensions.DependencyInjection.RazorComponentOptions.MaxFormMappingCollectionSize.get -> int
-Microsoft.Extensions.DependencyInjection.RazorComponentOptions.MaxFormMappingCollectionSize.set -> void
-Microsoft.Extensions.DependencyInjection.RazorComponentOptions.MaxFormMappingErrorCount.get -> int
-Microsoft.Extensions.DependencyInjection.RazorComponentOptions.MaxFormMappingErrorCount.set -> void
-Microsoft.Extensions.DependencyInjection.RazorComponentOptions.MaxFormMappingKeySize.get -> int
-Microsoft.Extensions.DependencyInjection.RazorComponentOptions.MaxFormMappingKeySize.set -> void
-Microsoft.Extensions.DependencyInjection.RazorComponentOptions.MaxFormMappingRecursionDepth.get -> int
-Microsoft.Extensions.DependencyInjection.RazorComponentOptions.MaxFormMappingRecursionDepth.set -> void
-Microsoft.Extensions.DependencyInjection.RazorComponentOptions.RazorComponentOptions() -> void
+Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder
+Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 Microsoft.Extensions.DependencyInjection.RazorComponentsServiceCollectionExtensions
-override Microsoft.AspNetCore.Components.Discovery.ComponentBuilder.Equals(object? obj) -> bool
-override Microsoft.AspNetCore.Components.Discovery.ComponentBuilder.GetHashCode() -> int
-override Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder.Equals(object? obj) -> bool
-override Microsoft.AspNetCore.Components.Discovery.PageComponentBuilder.GetHashCode() -> int
-static Microsoft.AspNetCore.Builder.RazorComponentsEndpointRouteBuilderExtensions.MapRazorComponents<TRootComponent>(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints) -> Microsoft.AspNetCore.Builder.RazorComponentEndpointConventionBuilder!
-static Microsoft.AspNetCore.Components.Discovery.ComponentApplicationBuilder.GetBuilder<TComponent>() -> Microsoft.AspNetCore.Components.Discovery.ComponentApplicationBuilder?
-static Microsoft.Extensions.DependencyInjection.RazorComponentsServiceCollectionExtensions.AddRazorComponents(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.AspNetCore.Components.Endpoints.IRazorComponentsBuilder!
-static Microsoft.Extensions.DependencyInjection.RazorComponentsServiceCollectionExtensions.AddRazorComponents(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.Extensions.DependencyInjection.RazorComponentOptions!>! setupAction) -> Microsoft.AspNetCore.Components.Endpoints.IRazorComponentsBuilder!
+static Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilderExtensions.AddAdditionalAssemblies(this Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder! builder, params System.Reflection.Assembly![]! assemblies) -> Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder!
+static Microsoft.AspNetCore.Builder.RazorComponentsEndpointRouteBuilderExtensions.MapRazorComponents<TRootComponent>(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints) -> Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder!
+static Microsoft.Extensions.DependencyInjection.RazorComponentsServiceCollectionExtensions.AddRazorComponents(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Components.Endpoints.RazorComponentsOptions!>? configure = null) -> Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder!
 static readonly Microsoft.AspNetCore.Components.Endpoints.RazorComponentResultExecutor.DefaultContentType -> string!
 virtual Microsoft.AspNetCore.Components.Endpoints.RazorComponentResultExecutor.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext, Microsoft.AspNetCore.Components.Endpoints.RazorComponentResult! result) -> System.Threading.Tasks.Task!

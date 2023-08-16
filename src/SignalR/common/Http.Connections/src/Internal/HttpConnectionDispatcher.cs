@@ -606,6 +606,17 @@ internal sealed partial class HttpConnectionDispatcher
             connection.HttpContext = context;
         }
 
+        if (connection.User is not null)
+        {
+            var originalName = connection.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var newName = connection.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (originalName != newName)
+            {
+                // Log warning, different user
+                Log.UserNameChanged(_logger, originalName, newName);
+            }
+        }
+
         // Setup the connection state from the http context
         connection.User = connection.HttpContext?.User;
 
