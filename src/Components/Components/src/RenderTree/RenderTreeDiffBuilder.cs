@@ -18,7 +18,7 @@ internal static class RenderTreeDiffBuilder
     // hit the "old < new" code path during diffing so we only have to check for it in one place.
     public const int SystemAddedAttributeSequenceNumber = int.MinValue;
 
-    private static RenderTreeFrame NoSuchAttributeFrame = RenderTreeFrame.Attribute(int.MaxValue, null, null);
+    private static readonly RenderTreeFrame NoSuchAttributeFrame = RenderTreeFrame.Attribute(int.MaxValue, null, null);
 
     public static RenderTreeDiff ComputeDiff(
         Renderer renderer,
