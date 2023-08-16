@@ -63,6 +63,12 @@ BOOL WINAPI DllMain(HMODULE hModule,
     return TRUE;
 }
 
+DWORD dwIISServerVersion;
+
+DWORD __stdcall GetIISVersion() {
+    return dwIISServerVersion;
+}
+
 HRESULT
 __stdcall
 RegisterModule(
@@ -90,7 +96,7 @@ HRESULT
 
 --*/
 {
-    UNREFERENCED_PARAMETER(dwServerVersion);
+    dwIISServerVersion = dwServerVersion;
 
     if (pHttpServer->IsCommandLineLaunch())
     {

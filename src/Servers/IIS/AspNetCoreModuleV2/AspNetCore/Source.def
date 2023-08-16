@@ -2,3 +2,4 @@ LIBRARY aspnetcorev2
 
 EXPORTS
     RegisterModule
+    GetIISVersion
