@@ -118,7 +118,7 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
     }
 
     /// <inheritdoc />
-    public override void Refresh()
+    public override void Refresh(bool forceReload = false)
     {
         _ = RefreshAsync();
 
@@ -126,7 +126,7 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
         {
             try
             {
-                await _jsRuntime.InvokeVoidAsync(Interop.Refresh);
+                await _jsRuntime.InvokeVoidAsync(Interop.Refresh, forceReload);
             }
             catch (Exception ex)
             {

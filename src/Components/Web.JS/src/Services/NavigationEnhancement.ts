@@ -68,7 +68,6 @@ function performProgrammaticEnhancedNavigation(absoluteInternalHref: string, rep
   performEnhancedPageLoad(absoluteInternalHref);
 }
 
-
 function onDocumentClick(event: MouseEvent) {
   if (hasInteractiveRouter()) {
     return;

@@ -39,9 +39,9 @@ internal sealed class IpcSender
         DispatchMessageWithErrorHandling(IpcCommon.Serialize(IpcCommon.OutgoingMessageType.Navigate, uri, options));
     }
 
-    public void Refresh()
+    public void Refresh(bool forceReload)
     {
-        DispatchMessageWithErrorHandling(IpcCommon.Serialize(IpcCommon.OutgoingMessageType.Refresh));
+        DispatchMessageWithErrorHandling(IpcCommon.Serialize(IpcCommon.OutgoingMessageType.Refresh, forceReload));
     }
 
     public void AttachToDocument(int componentId, string selector)

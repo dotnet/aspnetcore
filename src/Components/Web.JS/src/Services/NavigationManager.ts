@@ -94,8 +94,8 @@ function performScrollToElementOnTheSamePage(absoluteHref : string, replace: boo
   scrollToElement(identifier);
 }
 
-function refresh(): void {
-  if (hasProgrammaticEnhancedNavigationHandler()) {
+function refresh(forceReload: boolean): void {
+  if (!forceReload && hasProgrammaticEnhancedNavigationHandler()) {
     performProgrammaticEnhancedNavigation(location.href, /* replace */ true);
   } else {
     location.reload();

@@ -80,9 +80,9 @@ internal sealed partial class WebAssemblyNavigationManager : NavigationManager
     }
 
     /// <inheritdoc />
-    public override void Refresh()
+    public override void Refresh(bool forceReload = false)
     {
-        DefaultWebAssemblyJSRuntime.Instance.InvokeVoid(Interop.Refresh);
+        DefaultWebAssemblyJSRuntime.Instance.InvokeVoid(Interop.Refresh, forceReload);
     }
 
     protected override void HandleLocationChangingHandlerException(Exception ex, LocationChangingContext context)
