@@ -26,7 +26,7 @@ a {
 html {
   font-size: 14px;
 }
-@media (min-width: 768px) {
+@media (min-width: 576px) {
   html {
     font-size: 16px;
   }
@@ -48,18 +48,27 @@ button.accept-policy {
   line-height: inherit;
 }
 
-html {
-  position: relative;
-  min-height: 100%;
+.header {
+    background-color: var(--bs-body-bg);
 }
 
-body {
-  margin-bottom: 60px;
-}
 .footer {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  white-space: nowrap;
-  line-height: 60px;
+    background-color: var(--bs-body-bg);
+    white-space: nowrap;
+    line-height: 45px;
+}
+
+@media (min-width: 576px) {
+
+    body {
+        margin-bottom: 45px;
+    }
+
+    .footer {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        z-index: 9;
+    }
+
 }

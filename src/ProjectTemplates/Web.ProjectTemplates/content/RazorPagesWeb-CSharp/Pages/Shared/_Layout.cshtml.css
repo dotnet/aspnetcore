@@ -39,10 +39,27 @@ button.accept-policy {
   line-height: inherit;
 }
 
+.header {
+  background-color: var(--bs-body-bg);
+}
+
 .footer {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
+  background-color: var(--bs-body-bg);
   white-space: nowrap;
-  line-height: 60px;
+  line-height: 45px;
+}
+
+@media (min-width: 576px) {
+
+  body {
+    margin-bottom: 45px;
+  }
+
+  .footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    z-index: 9;
+  }
+
 }
