@@ -147,7 +147,7 @@ internal static class ObjectMethodExecutorFSharpSupport
             _ => default
         };
 
-        return (nonGenericAwaitableType, coercerExpression) is not (null, null);
+        return (nonGenericAwaitableType, coercerExpression) is ({ }, { });
 
         static Expression MakeTaskOfUnitToTaskExpression(Type type)
         {
