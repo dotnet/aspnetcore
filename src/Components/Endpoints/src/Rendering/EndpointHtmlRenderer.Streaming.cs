@@ -165,7 +165,7 @@ internal partial class EndpointHtmlRenderer
         // We already started the response so we have no choice but to return a 200 with HTML and will
         // have to communicate the error information within that
         var env = httpContext.RequestServices.GetRequiredService<IWebHostEnvironment>();
-        var options = httpContext.RequestServices.GetRequiredService<IOptions<RazorComponentsEndpointsOptions>>();
+        var options = httpContext.RequestServices.GetRequiredService<IOptions<RazorComponentsEndpointOptions>>();
         var showDetailedErrors = env.IsDevelopment() || options.Value.DetailedErrors;
         var message = showDetailedErrors
             ? exception.ToString()

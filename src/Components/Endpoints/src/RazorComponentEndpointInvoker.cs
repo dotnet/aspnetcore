@@ -221,7 +221,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
 
         private string GetDebuggerDisplay()
         {
-            return $"{nameof(RequestValidationState)}: {IsValid} {IsPost} {HandlerName}";
+            return $"IsValid = {IsValid}, IsPost = {IsPost}, HandlerName = {HandlerName}";
         }
     }
 

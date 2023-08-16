@@ -73,7 +73,7 @@ public sealed class ProducesResponseTypeMetadata : IProducesResponseTypeMetadata
     /// </summary>
     public IEnumerable<string> ContentTypes { get; private set; }
 
-    /// <inheritdoc/>>
+    /// <inheritdoc/>
     public override string ToString()
     {
         return DebuggerHelpers.GetDebugText(nameof(StatusCode), StatusCode, nameof(ContentTypes), ContentTypes, nameof(Type), Type, includeNullValues: false, prefix: "Produces");

@@ -1,74 +1,77 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Endpoints;
+using Microsoft.AspNetCore.Components.Endpoints.Infrastructure;
+using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
-/// Extension methods to configure an <see cref="IServiceCollection"/> for WebAssembly components.
+/// Extension methods to configure an <see cref="IServiceCollection"/> for components.
 /// </summary>
-public static class RazorComponentsBuilderExtensions
+public static class ServerRazorComponentsBuilderExtensions
 {
     /// <summary>
-    /// Adds services to support rendering interactive WebAssembly components.
+    /// Adds services to support rendering interactive server components in a razor components
+    /// application.
     /// </summary>
     /// <param name="builder">The <see cref="IRazorComponentsBuilder"/>.</param>
-    /// <param name="configure">A callback to configure <see cref="WebAssemblyComponentsEndpointOptions"/>.</param>
+    /// <param name="configure">A callback to configure <see cref="CircuitOptions"/>.</param>
     /// <returns>An <see cref="IRazorComponentsBuilder"/> that can be used to further customize the configuration.</returns>
-    public static IRazorComponentsBuilder AddWebAssemblyComponents(this IRazorComponentsBuilder builder, Action<WebAssemblyComponentsEndpointOptions>? configure = null)
+    [RequiresUnreferencedCode("Server-side Blazor does not currently support native AOT.", Url = "https://aka.ms/aspnet/nativeaot")]
+    public static IServerSideBlazorBuilder AddServerComponents(this IRazorComponentsBuilder builder, Action<CircuitOptions>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(builder, nameof(builder));
 
-        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<RenderModeEndpointProvider, WebAssemblyEndpointProvider>());
+        builder.Services.AddServerSideBlazor(configure);
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<RenderModeEndpointProvider, CircuitEndpointProvider>());
 
-        if (configure is not null)
-        {
-            builder.Services.Configure(configure);
-        }
-
-        return builder;
+        return new DefaultServerSideBlazorBuilder(builder.Services);
     }
 
-    private class WebAssemblyEndpointProvider : RenderModeEndpointProvider
+    private sealed class DefaultServerSideBlazorBuilder : IServerSideBlazorBuilder
     {
-        private readonly IServiceProvider _services;
-        private readonly WebAssemblyComponentsEndpointOptions _options;
-
-        public WebAssemblyEndpointProvider(IServiceProvider services, IOptions<WebAssemblyComponentsEndpointOptions> options)
+        public DefaultServerSideBlazorBuilder(IServiceCollection services)
         {
-            _services = services;
-            _options = options.Value;
+            Services = services;
         }
 
-        public override IEnumerable<RouteEndpointBuilder> GetEndpointBuilders(IComponentRenderMode renderMode, IApplicationBuilder applicationBuilder)
+        public IServiceCollection Services { get; }
+    }
+
+    private class CircuitEndpointProvider : RenderModeEndpointProvider
+    {
+        public CircuitEndpointProvider(IServiceProvider services)
         {
-            var endpointRouteBuilder = new EndpointRouteBuilder(_services, applicationBuilder);
-            var pathPrefix = _options.PathPrefix;
+            Services = services;
+        }
 
-            applicationBuilder.UseBlazorFrameworkFiles(pathPrefix);
-            var app = applicationBuilder.Build();
+        public IServiceProvider Services { get; }
 
-            endpointRouteBuilder.Map($"{pathPrefix}/_framework/{{*path}}", context =>
-            {
-                // Set endpoint to null so the static files middleware will handle the request.
-                context.SetEndpoint(null);
-
-                return app(context);
-            });
+        public override IEnumerable<RouteEndpointBuilder> GetEndpointBuilders(
+            IComponentRenderMode renderMode,
+            IApplicationBuilder applicationBuilder)
+        {
+            var endpointRouteBuilder = new EndpointRouteBuilder(Services, applicationBuilder);
+            endpointRouteBuilder.MapBlazorHub();
 
             return endpointRouteBuilder.GetEndpoints();
         }
 
         public override bool Supports(IComponentRenderMode renderMode)
-            => renderMode is WebAssemblyRenderMode or AutoRenderMode;
+        {
+            return renderMode switch
+            {
+                ServerRenderMode _ or AutoRenderMode _ => true,
+                _ => false,
+            };
+        }
 
         private class EndpointRouteBuilder : IEndpointRouteBuilder
         {

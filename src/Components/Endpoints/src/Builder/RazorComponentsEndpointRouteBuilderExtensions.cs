@@ -15,16 +15,17 @@ using static Microsoft.AspNetCore.Internal.LinkerFlags;
 namespace Microsoft.AspNetCore.Builder;
 
 /// <summary>
-///
+/// Extensions to <see cref="IEndpointRouteBuilder"/> for razor component applications.
 /// </summary>
 public static class RazorComponentsEndpointRouteBuilderExtensions
 {
     /// <summary>
-    ///
+    /// Maps the page components defined in the specified <typeparamref name="TRootComponent"/> to the given assembly
+    /// and renders the component specified by <typeparamref name="TRootComponent"/> when the route matches.
     /// </summary>
-    /// <param name="endpoints"></param>
-    /// <returns></returns>
-    public static RazorComponentEndpointConventionBuilder MapRazorComponents<[DynamicallyAccessedMembers(Component)] TRootComponent>(this IEndpointRouteBuilder endpoints)
+    /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/>.</param>
+    /// <returns>An <see cref="RazorComponentsEndpointConventionBuilder"/> that can be used to further configure the API.</returns>
+    public static RazorComponentsEndpointConventionBuilder MapRazorComponents<[DynamicallyAccessedMembers(Component)] TRootComponent>(this IEndpointRouteBuilder endpoints)
     {
         ArgumentNullException.ThrowIfNull(endpoints);
 

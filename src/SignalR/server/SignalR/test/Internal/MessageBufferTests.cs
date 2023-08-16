@@ -19,7 +19,7 @@ public class MessageBufferTests
         var connection = new TestConnectionContext();
         var pipes = DuplexPipe.CreateConnectionPair(new PipeOptions(), new PipeOptions());
         connection.Transport = pipes.Transport;
-        using var messageBuffer = new MessageBuffer(connection, protocol);
+        using var messageBuffer = new MessageBuffer(connection, protocol, bufferLimit: 1);
 
         for (var i = 0; i < 100; i++)
         {
@@ -47,7 +47,7 @@ public class MessageBufferTests
         var connection = new TestConnectionContext();
         var pipes = DuplexPipe.CreateConnectionPair(new PipeOptions(), new PipeOptions(pauseWriterThreshold: 200000, resumeWriterThreshold: 100000));
         connection.Transport = pipes.Transport;
-        using var messageBuffer = new MessageBuffer(connection, protocol);
+        using var messageBuffer = new MessageBuffer(connection, protocol, bufferLimit: 100_000);
 
         await messageBuffer.WriteAsync(new SerializedHubMessage(new InvocationMessage("t", new object[] { new byte[100000] })), default);
 
@@ -84,7 +84,7 @@ public class MessageBufferTests
         var connection = new TestConnectionContext();
         var pipes = DuplexPipe.CreateConnectionPair(new PipeOptions(), new PipeOptions());
         connection.Transport = pipes.Transport;
-        using var messageBuffer = new MessageBuffer(connection, protocol);
+        using var messageBuffer = new MessageBuffer(connection, protocol, bufferLimit: 1000);
 
         await messageBuffer.WriteAsync(new SerializedHubMessage(new StreamItemMessage("id", null)), default);
 
@@ -134,7 +134,7 @@ public class MessageBufferTests
         var connection = new TestConnectionContext();
         var pipes = DuplexPipe.CreateConnectionPair(new PipeOptions(), new PipeOptions());
         connection.Transport = pipes.Transport;
-        using var messageBuffer = new MessageBuffer(connection, protocol);
+        using var messageBuffer = new MessageBuffer(connection, protocol, bufferLimit: 1000);
 
         await messageBuffer.WriteAsync(new SerializedHubMessage(new StreamItemMessage("id", null)), default);
 
@@ -178,7 +178,7 @@ public class MessageBufferTests
         var connection = new TestConnectionContext();
         var pipes = DuplexPipe.CreateConnectionPair(new PipeOptions(), new PipeOptions());
         connection.Transport = pipes.Transport;
-        using var messageBuffer = new MessageBuffer(connection, protocol);
+        using var messageBuffer = new MessageBuffer(connection, protocol, bufferLimit: 1000);
 
         DuplexPipe.UpdateConnectionPair(ref pipes, connection);
         messageBuffer.Resend();
@@ -202,11 +202,11 @@ public class MessageBufferTests
         var connection = new TestConnectionContext();
         var pipes = DuplexPipe.CreateConnectionPair(new PipeOptions(), new PipeOptions());
         connection.Transport = pipes.Transport;
-        using var messageBuffer = new MessageBuffer(connection, protocol);
+        using var messageBuffer = new MessageBuffer(connection, protocol, bufferLimit: 100_000);
 
         for (var i = 0; i < 1000; i++)
         {
-            await messageBuffer.WriteAsync(new SerializedHubMessage(new StreamItemMessage("1", null)), default);
+            await messageBuffer.WriteAsync(new SerializedHubMessage(new StreamItemMessage("1", null)), default).DefaultTimeout();
         }
 
         var ackNum = Random.Shared.Next(0, 1000);
@@ -234,6 +234,43 @@ public class MessageBufferTests
 
             pipes.Application.Input.AdvanceTo(buffer.Start);
         }
+    }
+
+    [Fact]
+    public async Task MessageBufferLimitCanBeModified()
+    {
+        var protocol = new JsonHubProtocol();
+        var connection = new TestConnectionContext();
+        var pipes = DuplexPipe.CreateConnectionPair(new PipeOptions(), new PipeOptions());
+        connection.Transport = pipes.Transport;
+        using var messageBuffer = new MessageBuffer(connection, protocol, bufferLimit: 1);
+
+        await messageBuffer.WriteAsync(new SerializedHubMessage(new InvocationMessage("t", new object[] { 1 })), default);
+
+        var writeTask = messageBuffer.WriteAsync(new SerializedHubMessage(new StreamItemMessage("id", null)), default);
+        Assert.False(writeTask.IsCompleted);
+
+        var res = await pipes.Application.Input.ReadAsync();
+
+        var buffer = res.Buffer;
+        Assert.True(protocol.TryParseMessage(ref buffer, new TestBinder(), out var message));
+        Assert.IsType<InvocationMessage>(message);
+
+        pipes.Application.Input.AdvanceTo(buffer.Start);
+
+        // Write not unblocked by read, only unblocked after ack received
+        Assert.False(writeTask.IsCompleted);
+
+        messageBuffer.Ack(new AckMessage(1));
+        await writeTask.DefaultTimeout();
+
+        res = await pipes.Application.Input.ReadAsync().DefaultTimeout();
+
+        buffer = res.Buffer;
+        Assert.True(protocol.TryParseMessage(ref buffer, new TestBinder(), out message));
+        Assert.IsType<StreamItemMessage>(message);
+
+        pipes.Application.Input.AdvanceTo(buffer.Start);
     }
 }
 

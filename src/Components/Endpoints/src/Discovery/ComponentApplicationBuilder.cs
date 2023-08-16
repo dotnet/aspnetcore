@@ -9,31 +9,13 @@ namespace Microsoft.AspNetCore.Components.Discovery;
 /// <summary>
 /// Builder used to configure a razor component application.
 /// </summary>
-public class ComponentApplicationBuilder
+internal class ComponentApplicationBuilder
 {
     private readonly HashSet<string> _assemblies = new();
 
     internal PageCollectionBuilder Pages { get; } = new PageCollectionBuilder();
 
     internal ComponentCollectionBuilder Components { get; } = new ComponentCollectionBuilder();
-
-    /// <summary>
-    /// Adds a given assembly and associated pages and components to the build.
-    /// </summary>
-    /// <param name="libraryBuilder">The assembly with the pages and components.</param>
-    /// <exception cref="InvalidOperationException">When the assembly has already been added
-    /// to this component application builder.
-    /// </exception>
-    public void AddLibrary(AssemblyComponentLibraryDescriptor libraryBuilder)
-    {
-        if (_assemblies.Contains(libraryBuilder.AssemblyName))
-        {
-            throw new InvalidOperationException("Assembly already defined.");
-        }
-        _assemblies.Add(libraryBuilder.AssemblyName);
-        Pages.AddFromLibraryInfo(libraryBuilder.AssemblyName, libraryBuilder.Pages);
-        Components.AddFromLibraryInfo(libraryBuilder.AssemblyName, libraryBuilder.Components);
-    }
 
     /// <summary>
     /// Builds the component application definition.
@@ -52,16 +34,58 @@ public class ComponentApplicationBuilder
     /// </summary>
     /// <param name="assemblyName">The name of the assembly to check.</param>
     /// <returns><c>true</c> when present; <c>false</c> otherwise.</returns>
-    public bool HasLibrary(string assemblyName)
+    public bool HasAssembly(string assemblyName)
     {
         return _assemblies.Contains(assemblyName);
+    }
+
+    /// <summary>
+    /// Scans the given assembly for pages and adds them to the current set of pages.
+    /// </summary>
+    /// <param name="assembly">The <see cref="Assembly"/> to scan for pages.</param>
+    /// <returns>The <see cref="ComponentApplicationBuilder"/>.</returns>
+    public ComponentApplicationBuilder AddAssembly(Assembly assembly)
+    {
+        var builder = IRazorComponentApplication.GetBuilderForAssembly(this, assembly);
+        this.Combine(builder);
+
+        return this;
+    }
+
+    /// <summary>
+    /// Removes all the discovered pages that are part of the given assembly.
+    /// </summary>
+    /// <param name="assembly">The <see cref="Assembly"/> to remove.</param>
+    /// <returns>The <see cref="ComponentApplicationBuilder"/>.</returns>
+    public ComponentApplicationBuilder RemoveAssembly(Assembly assembly)
+    {
+        this.RemoveLibrary(assembly.GetName().Name!);
+        return this;
+    }
+
+    /// <summary>
+    /// Adds a given assembly and associated pages and components to the build.
+    /// </summary>
+    /// <param name="libraryBuilder">The assembly with the pages and components.</param>
+    /// <exception cref="InvalidOperationException">When the assembly has already been added
+    /// to this component application builder.
+    /// </exception>
+    internal void AddLibrary(AssemblyComponentLibraryDescriptor libraryBuilder)
+    {
+        if (_assemblies.Contains(libraryBuilder.AssemblyName))
+        {
+            throw new InvalidOperationException("Assembly already defined.");
+        }
+        _assemblies.Add(libraryBuilder.AssemblyName);
+        Pages.AddFromLibraryInfo(libraryBuilder.AssemblyName, libraryBuilder.Pages);
+        Components.AddFromLibraryInfo(libraryBuilder.AssemblyName, libraryBuilder.Components);
     }
 
     /// <summary>
     /// Combines the two <see cref="ComponentApplicationBuilder"/> instances.
     /// </summary>
     /// <param name="other">The <see cref="ComponentApplicationBuilder"/> to merge.</param>
-    public void Combine(ComponentApplicationBuilder other)
+    internal void Combine(ComponentApplicationBuilder other)
     {
         _assemblies.UnionWith(other._assemblies);
         Pages.Combine(other.Pages);
@@ -73,7 +97,7 @@ public class ComponentApplicationBuilder
     /// current <see cref="ComponentApplicationBuilder"/>.
     /// </summary>
     /// <param name="builder"></param>
-    public void Exclude(ComponentApplicationBuilder builder)
+    internal void Exclude(ComponentApplicationBuilder builder)
     {
         _assemblies.ExceptWith(builder._assemblies);
         Pages.Exclude(builder.Pages);
@@ -85,7 +109,7 @@ public class ComponentApplicationBuilder
     /// the current <see cref="ComponentApplicationBuilder"/>.
     /// </summary>
     /// <param name="assembly">The assembly name.</param>
-    public void RemoveLibrary(string assembly)
+    internal void RemoveLibrary(string assembly)
     {
         _assemblies.Remove(assembly);
         Pages.RemoveFromAssembly(assembly);
@@ -97,7 +121,7 @@ public class ComponentApplicationBuilder
     /// </summary>
     /// <typeparam name="TComponent">A component inside the assembly.</typeparam>
     /// <returns></returns>
-    public static ComponentApplicationBuilder? GetBuilder<TComponent>()
+    internal static ComponentApplicationBuilder? GetBuilder<TComponent>()
     {
         var assembly = typeof(TComponent).Assembly;
         var attribute = assembly.GetCustomAttribute<RazorComponentApplicationAttribute>();

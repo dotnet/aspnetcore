@@ -13,6 +13,7 @@ using MessagePack.Formatters;
 using MessagePack.Resolvers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Abstractions;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Connections.Features;
@@ -5168,6 +5169,46 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
 
             Assert.Equal("test", completionMessage.Result);
         }
+    }
+
+    [Fact]
+    public async Task CanSetMessageBufferSizeOnServer()
+    {
+        var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(provider =>
+        {
+            provider.AddSignalR(options =>
+            {
+                options.EnableDetailedErrors = true;
+                options.StatefulReconnectBufferSize = 500;
+            });
+        });
+        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+        using (var client = new TestClient())
+        {
+            client.Connection.Features.Set<IReconnectFeature>(new EmptyReconnectFeature());
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+
+            await client.InvokeAsync(nameof(MethodHub.Echo), new object[] { new string('x', 500) }).DefaultTimeout();
+
+            // Previous message filled buffer, this message will not send to client until buffer is reduced via Ack
+            await client.SendInvocationAsync(nameof(MethodHub.Echo), new object[] { "t" }).DefaultTimeout();
+
+            var readTask = client.ReadAsync();
+            Assert.False(readTask.IsCompleted);
+
+            // Remove large message from buffer
+            await client.SendHubMessageAsync(new AckMessage(1)).DefaultTimeout();
+
+            var completionMessage = Assert.IsType<CompletionMessage>(await readTask);
+
+            Assert.Equal("t", completionMessage.Result);
+        }
+    }
+
+    private class EmptyReconnectFeature : IReconnectFeature
+    {
+        public Action NotifyOnReconnect { get; set; }
     }
 
     private class CustomHubActivator<THub> : IHubActivator<THub> where THub : Hub

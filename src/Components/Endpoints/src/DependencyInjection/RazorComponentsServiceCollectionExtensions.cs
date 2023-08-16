@@ -27,9 +27,10 @@ public static class RazorComponentsServiceCollectionExtensions
     /// Registers services required for server-side rendering of Razor Components.
     /// </summary>
     /// <param name="services">The service collection.</param>
+    /// <param name="configure">An <see cref="Action{RazorComponentOptions}"/> to configure the provided <see cref="RazorComponentsOptions"/>.</param>
     /// <returns>An <see cref="IRazorComponentsBuilder"/> that can be used to further configure the Razor component services.</returns>
-    [RequiresUnreferencedCode("Razor Components does not currently support trimming or native AOT.", Url = "https://aka.ms/aspnet/trimming")]
-    public static IRazorComponentsBuilder AddRazorComponents(this IServiceCollection services)
+    [RequiresUnreferencedCode("Razor Components does not currently support trimming or native AOT.", Url = "https://aka.ms/aspnet/nativeaot")]
+    public static IRazorComponentsBuilder AddRazorComponents(this IServiceCollection services, Action<RazorComponentsOptions>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(services);
 
@@ -58,7 +59,7 @@ public static class RazorComponentsServiceCollectionExtensions
         services.TryAddScoped<ComponentStatePersistenceManager>();
         services.TryAddScoped<PersistentComponentState>(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
         services.TryAddScoped<IErrorBoundaryLogger, PrerenderingErrorBoundaryLogger>();
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<RazorComponentsEndpointsOptions>, RazorComponentsEndpointsDetailedErrorsConfiguration>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<RazorComponentsEndpointOptions>, RazorComponentsEndpointsDetailedErrorsConfiguration>());
         services.TryAddScoped<EndpointRoutingStateProvider>();
         services.TryAddScoped<IRoutingStateProvider>(sp => sp.GetRequiredService<EndpointRoutingStateProvider>());
         services.AddSupplyValueFromQueryProvider();
@@ -69,27 +70,12 @@ public static class RazorComponentsServiceCollectionExtensions
         services.TryAddScoped<HttpContextFormDataProvider>();
         services.TryAddScoped<IFormValueMapper, HttpContextFormValueMapper>();
 
+        if (configure != null)
+        {
+            services.Configure(configure);
+        }
+
         return new DefaultRazorComponentsBuilder(services);
-    }
-
-    /// <summary>
-    /// Registers services required for server-side rendering of Razor Components.
-    /// </summary>
-    /// <param name="services">The service collection.</param>
-    /// <param name="setupAction">An <see cref="Action{RazorComponentOptions}"/> to configure the provided <see cref="RazorComponentOptions"/>.</param>
-    /// <returns>An <see cref="IRazorComponentsBuilder"/> that can be used to further configure the Razor component services.</returns>
-    public static IRazorComponentsBuilder AddRazorComponents(
-        this IServiceCollection services,
-        Action<RazorComponentOptions> setupAction
-        )
-    {
-        ArgumentNullException.ThrowIfNull(services);
-        ArgumentNullException.ThrowIfNull(setupAction);
-
-        var builder = services.AddRazorComponents();
-        services.Configure(setupAction);
-
-        return builder;
     }
 
     private sealed class DefaultRazorComponentsBuilder(IServiceCollection services) : IRazorComponentsBuilder

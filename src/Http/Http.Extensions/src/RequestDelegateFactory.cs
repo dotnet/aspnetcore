@@ -2039,6 +2039,10 @@ public static partial class RequestDelegateFactory
                 formDict,
                 Expression.Constant(CultureInfo.InvariantCulture),
                 Expression.Call(AsMemoryMethod, formBuffer, Expression.Constant(0), Expression.Constant(formDataMapperOptions.MaxKeyBufferSize))));
+        // name_reader.MaxRecursionDepth = formDataMapperOptions.MaxRecursionDepth;
+        var setMaxRecursionDepthExpr = Expression.Assign(
+            Expression.Property(formReader, nameof(FormDataReader.MaxRecursionDepth)),
+            Expression.Constant(formDataMapperOptions.MaxRecursionDepth));
         // FormDataMapper.Map<string>(name_reader, FormDataMapperOptions);
         var invokeMapMethodExpr = Expression.Call(
             FormDataMapperMapMethod.MakeGenericMethod(parameter.ParameterType),
@@ -2063,6 +2067,7 @@ public static partial class RequestDelegateFactory
                 Expression.Block(
                     processFormExpr,
                     initializeReaderExpr,
+                    setMaxRecursionDepthExpr,
                     Expression.Assign(formArgument, invokeMapMethodExpr)),
                 conditionalReturnBufferExpr),
             formArgument

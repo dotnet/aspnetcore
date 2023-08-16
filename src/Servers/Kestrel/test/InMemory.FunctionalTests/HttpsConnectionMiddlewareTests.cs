@@ -79,7 +79,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
 
         var options = CreateServerOptions();
 
-        var loader = new KestrelConfigurationLoader(options, configuration, options.ApplicationServices.GetRequiredService<IHttpsConfigurationService>(), reloadOnChange: false);
+        var loader = new KestrelConfigurationLoader(options, configuration, options.ApplicationServices.GetRequiredService<IHttpsConfigurationService>(), certificatePathWatcher: null, reloadOnChange: false);
         options.ConfigurationLoader = loader; // Since we're constructing it explicitly, we have to hook it up explicitly
         loader.Load();
 

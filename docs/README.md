@@ -29,3 +29,4 @@ The table below outlines the different docs in this folder and what they are hel
 | [Assembly trimming guide](Trimming.md)| Guidance on adding trimming support to an ASP.NET Core assembly     | Repo developers who want to help add support for trimming to ASP.NET Core  |
 | [Adding new Projects to the Repo](AddingNewProjects.md) | Outlines the process of adding new projects (i.e. `.csproj` files) to the repo | Anyone who finds themselves trying to add a new project and including it in the build.
 | [Using WebTransport in Kestrel](WebTransport.md) | Outlines how to setup Kestrel to use WebTransport | Anyone looking to support WebTransport |
+| [Benchmarking](Benchmarks.md) | Instructions on how to benchmark PRs and local changes | .NET team |

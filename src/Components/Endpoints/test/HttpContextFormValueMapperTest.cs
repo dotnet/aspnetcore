@@ -36,7 +36,7 @@ public class HttpContextFormValueMapperTest
         var formData = new HttpContextFormDataProvider();
         formData.SetFormData(incomingFormName, new Dictionary<string, StringValues>());
 
-        var mapper = new HttpContextFormValueMapper(formData, Options.Create<RazorComponentOptions>(new()));
+        var mapper = new HttpContextFormValueMapper(formData, Options.Create<RazorComponentsOptions>(new()));
 
         var canMap = mapper.CanMap(typeof(string), scopeName, formNameOrNull);
         Assert.Equal(expectedResult, canMap);

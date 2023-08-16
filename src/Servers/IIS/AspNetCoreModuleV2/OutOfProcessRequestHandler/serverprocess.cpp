@@ -8,15 +8,13 @@
 #include "file_utility.h"
 #include "exceptions.h"
 
-#define STARTUP_TIME_LIMIT_INCREMENT_IN_MILLISECONDS 5000
-
 HRESULT
 SERVER_PROCESS::Initialize(
     PROCESS_MANAGER      *pProcessManager,
     STRU                 *pszProcessExePath,
     STRU                 *pszArguments,
     DWORD                 dwStartupTimeLimitInMS,
-    DWORD                 dwShtudownTimeLimitInMS,
+    DWORD                 dwShutdownTimeLimitInMS,
     BOOL                  fWindowsAuthEnabled,
     BOOL                  fBasicAuthEnabled,
     BOOL                  fAnonymousAuthEnabled,
@@ -31,11 +29,9 @@ SERVER_PROCESS::Initialize(
     STRU                  *pszHttpsPort
 )
 {
-    HRESULT hr = S_OK;
-
     m_pProcessManager = pProcessManager;
     m_dwStartupTimeLimitInMS = dwStartupTimeLimitInMS;
-    m_dwShutdownTimeLimitInMS = dwShtudownTimeLimitInMS;
+    m_dwShutdownTimeLimitInMS = dwShutdownTimeLimitInMS;
     m_fStdoutLogEnabled = fStdoutLogEnabled;
     m_fWebSocketSupported = fWebSocketSupported;
     m_fWindowsAuthEnabled = fWindowsAuthEnabled;
@@ -45,6 +41,7 @@ SERVER_PROCESS::Initialize(
     m_pProcessManager->ReferenceProcessManager();
     m_fDebuggerAttached = FALSE;
 
+    HRESULT hr;
     if (FAILED_LOG(hr = m_ProcessPath.Copy(*pszProcessExePath)) ||
         FAILED_LOG(hr = m_struLogFile.Copy(*pstruStdoutLogFile))||
         FAILED_LOG(hr = m_struPhysicalPath.Copy(*pszAppPhysicalPath))||
@@ -54,49 +51,44 @@ SERVER_PROCESS::Initialize(
         FAILED_LOG(hr = m_struHttpsPort.Copy(*pszHttpsPort)) ||
         FAILED_LOG(hr = SetupJobObject()))
     {
-        goto Finished;
+        return hr;
     }
 
     m_pEnvironmentVarTable = pEnvironmentVariables;
 
-Finished:
-    return hr;
+    return S_OK;
 }
 
 HRESULT
 SERVER_PROCESS::SetupJobObject(VOID)
 {
-    HRESULT                                 hr = S_OK;
-    JOBOBJECT_EXTENDED_LIMIT_INFORMATION    jobInfo = { 0 };
-
-    if (m_hJobObject == NULL)
+    if (m_hJobObject != nullptr)
     {
-        m_hJobObject = CreateJobObject(NULL,   // LPSECURITY_ATTRIBUTES
-            NULL); // LPCTSTR lpName
-#pragma warning( disable : 4312)
-        // 0xdeadbeef is used by Antares
-        if (m_hJobObject == NULL || m_hJobObject == (HANDLE)0xdeadbeef)
-        {
-            m_hJobObject = NULL;
-            // ignore job object creation error.
-        }
-#pragma warning( error : 4312)
-        if (m_hJobObject != NULL)
-        {
-            jobInfo.BasicLimitInformation.LimitFlags =
-                JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
-
-            if (!SetInformationJobObject(m_hJobObject,
-                JobObjectExtendedLimitInformation,
-                &jobInfo,
-                sizeof jobInfo))
-            {
-                hr = HRESULT_FROM_WIN32(GetLastError());
-            }
-        }
+        return S_OK;
     }
 
-    return hr;
+    m_hJobObject = CreateJobObject(nullptr /* lpJobAttributes */, nullptr /* lpName */);
+
+    // 0xdeadbeef is used by Antares
+    constexpr size_t magicAntaresNumber = 0xdeadbeef;
+    if (m_hJobObject == nullptr || m_hJobObject == reinterpret_cast<HANDLE>(magicAntaresNumber))
+    {
+        m_hJobObject = nullptr;
+
+        // ignore job object creation error.
+        return S_OK;
+    }
+
+    // Created a job object successfully. Set the job object limit.
+    JOBOBJECT_EXTENDED_LIMIT_INFORMATION jobInfo = { 0 };
+    jobInfo.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
+
+    if (!SetInformationJobObject(m_hJobObject, JobObjectExtendedLimitInformation, &jobInfo, sizeof jobInfo))
+    {
+        return HRESULT_FROM_WIN32(GetLastError());
+    }
+
+    return S_OK;
 }
 
 HRESULT
@@ -106,29 +98,34 @@ SERVER_PROCESS::GetRandomPort
     DWORD  dwExcludedPort = 0
 )
 {
-    HRESULT hr = S_OK;
-    BOOL    fPortInUse = FALSE;
-    DWORD   dwActualProcessId = 0;
+    DBG_ASSERT(pdwPickedPort);
 
     std::uniform_int_distribution<> dist(MIN_PORT_RANDOM, MAX_PORT);
-    DWORD cRetry = 0;
-    do
-    {
-        //
-        // ignore dwActualProcessId because here we are
-        // determing whether the randomly generated port is
-        // in use by any other process.
-        //
-        while ((*pdwPickedPort = dist(m_randomGenerator)) == dwExcludedPort);
-        hr = CheckIfServerIsUp(*pdwPickedPort, &dwActualProcessId, &fPortInUse);
-    } while (fPortInUse && ++cRetry < MAX_RETRY);
 
-    if (cRetry >= MAX_RETRY)
+    BOOL fPortInUse;
+    DWORD dwActualProcessId; // Ignored, but required for the function call.
+    constexpr int maxRetries = 10;
+    for (int retry = 0; retry < maxRetries; ++retry)
     {
-        hr = HRESULT_FROM_WIN32(ERROR_PORT_NOT_SET);
+        do
+        {
+            *pdwPickedPort = dist(m_randomGenerator);
+        } while (*pdwPickedPort == dwExcludedPort); // Keep generating until a valid port is found.
+
+        HRESULT hr = CheckIfServerIsUp(*pdwPickedPort, &dwActualProcessId, &fPortInUse);
+        if (FAILED(hr))
+        {
+            return hr;
+        }
+
+        if (!fPortInUse)
+        {
+            return S_OK; // Port found and is not in use, success!
+        }
     }
 
-    return hr;
+    // All retries failed, return error.
+    return HRESULT_FROM_WIN32(ERROR_PORT_NOT_SET);
 }
 
 HRESULT
@@ -219,40 +216,32 @@ Finished:
 
 HRESULT
 SERVER_PROCESS::SetupAppPath(
-    ENVIRONMENT_VAR_HASH*    pEnvironmentVarTable
+    ENVIRONMENT_VAR_HASH* pEnvironmentVarTable
 )
 {
-    HRESULT      hr = S_OK;
-    ENVIRONMENT_VAR_ENTRY*  pEntry = NULL;
-
+    ENVIRONMENT_VAR_ENTRY*  pEntry = nullptr;
     pEnvironmentVarTable->FindKey(ASPNETCORE_APP_PATH_ENV_STR, &pEntry);
-    if (pEntry != NULL)
+    if (pEntry != nullptr)
     {
         // user should not set this environment variable in configuration
         pEnvironmentVarTable->DeleteKey(ASPNETCORE_APP_PATH_ENV_STR);
         pEntry->Dereference();
-        pEntry = NULL;
+        pEntry = nullptr;
     }
 
     pEntry = new ENVIRONMENT_VAR_ENTRY();
-    if (pEntry == NULL)
+    if (pEntry == nullptr)
     {
-        hr = E_OUTOFMEMORY;
-        goto Finished;
+        return E_OUTOFMEMORY;
     }
 
-    if (FAILED_LOG(hr = pEntry->Initialize(ASPNETCORE_APP_PATH_ENV_STR, m_struAppVirtualPath.QueryStr())) ||
-        FAILED_LOG(hr = pEnvironmentVarTable->InsertRecord(pEntry)))
+    HRESULT hr = S_OK;
+    if (SUCCEEDED_LOG(hr = pEntry->Initialize(ASPNETCORE_APP_PATH_ENV_STR, m_struAppVirtualPath.QueryStr())))
     {
-        goto Finished;
+        LOG_IF_FAILED(hr = pEnvironmentVarTable->InsertRecord(pEntry));
     }
 
-Finished:
-    if (pEntry != NULL)
-    {
-        pEntry->Dereference();
-        pEntry = NULL;
-    }
+    pEntry->Dereference();
     return hr;
 }
 

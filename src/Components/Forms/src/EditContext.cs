@@ -196,6 +196,21 @@ public sealed class EditContext
         => IsModified(FieldIdentifier.Create(accessor));
 
     /// <summary>
+    /// Determines whether the specified fields in this <see cref="EditContext"/> has no associated validation messages.
+    /// </summary>
+    /// <returns>True if the field has no associated validation messages after validation; otherwise false.</returns>
+    public bool IsValid(in FieldIdentifier fieldIdentifier)
+        => !GetValidationMessages(fieldIdentifier).Any();
+
+    /// <summary>
+    /// Determines whether the specified fields in this <see cref="EditContext"/> has no associated validation messages.
+    /// </summary>
+    /// <param name="accessor">Identifies the field whose current validation messages should be returned.</param>
+    /// <returns>True if the field has no associated validation messages after validation; otherwise false.</returns>
+    public bool IsValid(Expression<Func<object>> accessor)
+        => IsValid(FieldIdentifier.Create(accessor));
+
+    /// <summary>
     /// Validates this <see cref="EditContext"/>.
     /// </summary>
     /// <returns>True if there are no validation messages after validation; otherwise false.</returns>
