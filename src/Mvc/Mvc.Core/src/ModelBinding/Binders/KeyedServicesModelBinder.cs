@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
@@ -8,31 +8,29 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 
-/// <summary>
-/// An <see cref="IModelBinder"/> which binds models from the request services when a model
-/// has the binding source <see cref="BindingSource.KeyedServices"/>.
-/// </summary>
-public class KeyedServicesModelBinder : IModelBinder
+internal class KeyedServicesModelBinder : IModelBinder
 {
-    internal bool IsOptional { get; set; }
+    private readonly object _key;
+    private readonly bool _isOptional;
 
-    internal object? Key { get; set; }
+    public KeyedServicesModelBinder(object key, bool isOptional)
+    {
+        _key = key ?? throw new ArgumentNullException(nameof(key));
+        _isOptional = isOptional;
+    }
 
-    /// <inheritdoc />
     public Task BindModelAsync(ModelBindingContext bindingContext)
     {
-        ArgumentNullException.ThrowIfNull(bindingContext);
-
-        var requestServices = bindingContext.HttpContext.RequestServices as IKeyedServiceProvider;
-        if (requestServices == null)
+        var keyedServices = bindingContext.HttpContext.RequestServices as IKeyedServiceProvider;
+        if (keyedServices == null)
         {
             bindingContext.Result = ModelBindingResult.Failed();
             return Task.CompletedTask;
         }
 
-        var model = IsOptional ?
-            requestServices.GetKeyedService(bindingContext.ModelType, Key) :
-            requestServices.GetRequiredKeyedService(bindingContext.ModelType, Key);
+        var model = _isOptional ?
+            keyedServices.GetKeyedService(bindingContext.ModelType, _key) :
+            keyedServices.GetRequiredKeyedService(bindingContext.ModelType, _key);
 
         if (model != null)
         {

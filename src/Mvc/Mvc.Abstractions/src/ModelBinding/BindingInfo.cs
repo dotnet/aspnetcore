@@ -38,6 +38,7 @@ public class BindingInfo
         PropertyFilterProvider = other.PropertyFilterProvider;
         RequestPredicate = other.RequestPredicate;
         EmptyBodyBehavior = other.EmptyBodyBehavior;
+        ServiceKey = other.ServiceKey;
     }
 
     /// <summary>
@@ -91,6 +92,11 @@ public class BindingInfo
     /// Gets or sets the value which decides if empty bodies are treated as valid inputs.
     /// </summary>
     public EmptyBodyBehavior EmptyBodyBehavior { get; set; }
+
+    /// <summary>
+    /// Get or sets the value used as the key when looking for a keyed service
+    /// </summary>
+    public object? ServiceKey { get; set; }
 
     /// <summary>
     /// Constructs a new instance of <see cref="BindingInfo"/> from the given <paramref name="attributes"/>.
@@ -181,10 +187,11 @@ public class BindingInfo
                     $"The {nameof(FromKeyedServicesAttribute)} is not supported on parameters that are also annotated with {nameof(IFromServiceMetadata)}.");
             }
         }
-        if (attributes.OfType<FromKeyedServicesAttribute>().Any())
+        if (attributes.OfType<FromKeyedServicesAttribute>().FirstOrDefault() is { } fromKeydServicesAttribute)
         {
             isBindingInfoPresent = true;
-            bindingInfo.BindingSource = BindingSource.KeyedServices;
+            bindingInfo.BindingSource = BindingSource.Services;
+            bindingInfo.ServiceKey = fromKeydServicesAttribute.Key;
         }
 
         return isBindingInfoPresent ? bindingInfo : null;

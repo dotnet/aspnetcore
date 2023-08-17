@@ -183,7 +183,4 @@
   <data name="ModelStateDictionary_MaxModelStateDepth" xml:space="preserve">
     <value>The specified key exceeded the maximum ModelState depth: {0}</value>
   </data>
-  <data name="BindingSource_KeyedServices" xml:space="preserve">
-    <value>KeyedServices</value>
-  </data>
 </root>

@@ -292,9 +292,10 @@ public class BindingInfoTest
     public void GetBindingInfo_WithFromKeyedServicesAttribute()
     {
         // Arrange
+        var key = new object();
         var attributes = new object[]
         {
-                new FromKeyedServicesAttribute(new object()),
+                new FromKeyedServicesAttribute(key),
         };
         var modelType = typeof(Guid);
         var provider = new TestModelMetadataProvider();
@@ -305,7 +306,8 @@ public class BindingInfoTest
 
         // Assert
         Assert.NotNull(bindingInfo);
-        Assert.Same(BindingSource.KeyedServices, bindingInfo.BindingSource);
+        Assert.Same(BindingSource.Services, bindingInfo.BindingSource);
+        Assert.Same(key, bindingInfo.ServiceKey);
     }
 
     [Fact]
