@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Connections.Abstractions;
 /// </summary>
 /// <remarks>This feature is experimental.</remarks>
 #if NET8_0_OR_GREATER
-[RequiresPreviewFeatures("IReconnectFeature is a preview interface")]
+[RequiresPreviewFeatures("IStatefulReconnectFeature is a preview interface")]
 #endif
 public interface IStatefulReconnectFeature
 {

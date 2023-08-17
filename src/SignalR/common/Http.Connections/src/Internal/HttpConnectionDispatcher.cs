@@ -189,7 +189,7 @@ internal sealed partial class HttpConnectionDispatcher
                 return;
             }
 
-            if (connection.TransportType != HttpTransportType.WebSockets || connection.UseAcks)
+            if (connection.TransportType != HttpTransportType.WebSockets || connection.UseStatefulReconnect)
             {
                 if (!await connection.CancelPreviousPoll(context))
                 {
@@ -200,6 +200,8 @@ internal sealed partial class HttpConnectionDispatcher
 
             // Create a new Tcs every poll to keep track of the poll finishing, so we can properly wait on previous polls
             var currentRequestTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            var reconnectTask = Task.CompletedTask;
 
             switch (transport)
             {
@@ -213,20 +215,10 @@ internal sealed partial class HttpConnectionDispatcher
                         return;
                     }
 
-                    if (connection.UseAcks && isReconnect)
+                    if (connection.UseStatefulReconnect && isReconnect)
                     {
                         // Should call this after the transport has started, otherwise we'll be writing to a Pipe that isn't being read from
-                        try
-                        {
-                            var reconnectTask = connection.NotifyOnReconnect?.Invoke(connection.Transport.Output) ?? Task.CompletedTask;
-                            await reconnectTask;
-                        }
-                        catch (Exception ex)
-                        {
-                            // MessageBuffer shouldn't throw from the callback
-                            // But users can technically add a callback, we don't want to trust them not to throw
-                            Log.NotifyOnReconnectError(_logger, ex);
-                        }
+                        reconnectTask = connection.NotifyOnReconnect?.Invoke(connection.Transport.Output) ?? Task.CompletedTask;
                     }
                     break;
                 case HttpTransportType.LongPolling:
@@ -242,6 +234,18 @@ internal sealed partial class HttpConnectionDispatcher
             }
 
             context.Features.Get<IHttpRequestTimeoutFeature>()?.DisableTimeout();
+
+            try
+            {
+                await reconnectTask;
+            }
+            catch (Exception ex)
+            {
+                // MessageBuffer shouldn't throw from the callback
+                // But users can technically add a callback, we don't want to trust them not to throw
+                Log.NotifyOnReconnectError(_logger, ex);
+            }
+
             var resultTask = await Task.WhenAny(connection.ApplicationTask!, connection.TransportTask!);
 
             try

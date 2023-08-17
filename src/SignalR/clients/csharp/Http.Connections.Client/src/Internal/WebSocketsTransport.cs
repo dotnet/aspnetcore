@@ -69,7 +69,6 @@ internal sealed partial class WebSocketsTransport : ITransport, IStatefulReconne
             };
         }
     }
-    //public Action<PipeWriter> NotifyOnReconnect { get => _notifyOnReconnect is not null ? _notifyOnReconnect : (_) => { }; set => _notifyOnReconnect = value; }
 #pragma warning restore CA2252 // This API requires opting into preview features
 
     public WebSocketsTransport(HttpConnectionOptions httpConnectionOptions, ILoggerFactory loggerFactory, Func<Task<string?>> accessTokenProvider, HttpClient? httpClient,
@@ -396,7 +395,11 @@ internal sealed partial class WebSocketsTransport : ITransport, IStatefulReconne
 
         if (_useAck && !_gracefulClose)
         {
-            UpdateConnectionPair();
+            if (!UpdateConnectionPair())
+            {
+                return;
+            }
+
             await StartAsync(url, _webSocketMessageType == WebSocketMessageType.Binary ? TransferFormat.Binary : TransferFormat.Text,
                 cancellationToken: default).ConfigureAwait(false);
         }
@@ -663,22 +666,39 @@ internal sealed partial class WebSocketsTransport : ITransport, IStatefulReconne
         Log.TransportStopped(_logger, null);
     }
 
-    private void UpdateConnectionPair()
+    private bool UpdateConnectionPair()
     {
-        var input = new Pipe(_httpConnectionOptions.TransportPipeOptions);
+        lock (this)
+        {
+            // Lock and check _useAck, we want to swap the Pipe completely before DisableReconnect returns if there is contention there.
+            // The calling code will start completing the transport after DisableReconnect
+            // so we want to avoid any possibility of the new Pipe staying alive or even worse a new WebSocket connection being open when the transport
+            // might think it's closed.
+            if (_useAck == false)
+            {
+                return false;
+            }
 
-        // Add new pipe for reading from and writing to transport from app code
-        var transportToApplication = new DuplexPipe(_transport!.Input, input.Writer);
-        var applicationToTransport = new DuplexPipe(input.Reader, _application!.Output);
+            var input = new Pipe(_httpConnectionOptions.TransportPipeOptions);
 
-        _application = applicationToTransport;
-        _transport = transportToApplication;
+            // Add new pipe for reading from and writing to transport from app code
+            var transportToApplication = new DuplexPipe(_transport!.Input, input.Writer);
+            var applicationToTransport = new DuplexPipe(input.Reader, _application!.Output);
+
+            _application = applicationToTransport;
+            _transport = transportToApplication;
+        }
+
+        return true;
     }
 
 #pragma warning disable CA2252 // This API requires opting into preview features
     public void DisableReconnect()
 #pragma warning restore CA2252 // This API requires opting into preview features
     {
-        _useAck = false;
+        lock (this)
+        {
+            _useAck = false;
+        }
     }
 }

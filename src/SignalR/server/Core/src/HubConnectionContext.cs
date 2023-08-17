@@ -588,7 +588,7 @@ public partial class HubConnectionContext
                                 {
                                     _useAcks = true;
                                     _messageBuffer = new MessageBuffer(_connectionContext, Protocol, _statefulReconnectBufferSize);
-                                    feature.OnReconnected(_messageBuffer.Resend);
+                                    feature.OnReconnected(_messageBuffer.ResendAsync);
                                 }
 #pragma warning restore CA2252 // This API requires opting into preview features
                                 return true;

@@ -1922,7 +1922,7 @@ public partial class HubConnection : IAsyncDisposable
                     _hubConnection._serviceProvider.GetService<IOptions<HubConnectionOptions>>()?.Value.StatefulReconnectBufferSize
                     ?? DefaultStatefulReconnectBufferSize);
 
-                feature.OnReconnected(_messageBuffer.Resend);
+                feature.OnReconnected(_messageBuffer.ResendAsync);
             }
 #pragma warning restore CA2252 // This API requires opting into preview features
         }

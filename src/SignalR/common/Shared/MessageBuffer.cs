@@ -226,18 +226,13 @@ internal sealed class MessageBuffer : IDisposable
         _currentReceivingSequenceId = sequenceMessage.SequenceId;
     }
 
-    internal Task Resend(PipeWriter writer)
+    internal async Task ResendAsync(PipeWriter writer)
     {
         _waitForSequenceMessage = true;
 
         var tcs = new TaskCompletionSource<FlushResult>(TaskCreationOptions.RunContinuationsAsynchronously);
         _resend = tcs;
 
-        return DoResendAsync(tcs, writer);
-    }
-
-    private async Task DoResendAsync(TaskCompletionSource<FlushResult> tcs, PipeWriter writer)
-    {
         FlushResult finalResult = new();
         await _writeLock.WaitAsync().ConfigureAwait(false);
         try
