@@ -12,7 +12,7 @@ export class MessageBuffer {
 
     private readonly _bufferSize: number = 100_000;
 
-    private _messages: Key[] = [];
+    private _messages: BufferedItem[] = [];
     private _totalMessageCount: number = 0;
     private _waitForSequenceMessage: boolean = false;
 
@@ -22,9 +22,6 @@ export class MessageBuffer {
     private _bufferedByteCount: number = 0;
 
     private _ackTimerHandle?: any;
-
-    private _backPressurePromise!: Promise<void>;
-    private _backpressurePromiseResolver: (value: void) => void = () => {};
 
     private _resendPromise: Promise<void> = Promise.resolve();
     private _resendResolve?: (value: void) => void = undefined;
@@ -37,31 +34,37 @@ export class MessageBuffer {
     }
 
     public async _send(message: HubMessage): Promise<void> {
-        if (this._bufferedByteCount >= this._bufferSize) {
-            await this._backPressurePromise;
-        }
-
-        // If the connection is down we want to wait for it to come back or fail to reconnect
-        await this._resendPromise;
-
         const serializedMessage = this._protocol.writeMessage(message);
+
+        let backpressurePromise: Promise<void> = Promise.resolve();
 
         // Only count invocation messages. Acks, pings, etc. don't need to be resent on reconnect
         if (this._isInvocationMessage(message)) {
             this._totalMessageCount++;
+            let backpressurePromiseResolver: (value: void) => void = () => {};
+
             if (isArrayBuffer(serializedMessage)) {
                 this._bufferedByteCount += serializedMessage.byteLength;
             } else {
                 this._bufferedByteCount += serializedMessage.length;
             }
+
             if (this._bufferedByteCount >= this._bufferSize) {
-                this._backPressurePromise = new Promise((resolve) => this._backpressurePromiseResolver = resolve);
+                backpressurePromise = new Promise((resolve) => backpressurePromiseResolver = resolve);
             }
-            this._messages.push(new Key(serializedMessage, this._totalMessageCount));
+
+            this._messages.push(new BufferedItem(serializedMessage, this._totalMessageCount, backpressurePromiseResolver));
         }
 
         try {
-            await this._connection.send(serializedMessage);
+            // If this is set it means we are reconnecting or resending
+            // We don't want to send on a disconnected connection
+            // And we don't want to send if resend is running since that would mean sending
+            // this message twice
+            if (this._resendReject === undefined) {
+                await this._connection.send(serializedMessage);
+            }
+            await backpressurePromise;
         } catch {
             this._disconnected();
             await this._resendPromise;
@@ -69,33 +72,31 @@ export class MessageBuffer {
     }
 
     public _ack(ackMessage: AckMessage): void {
-        let mostSignificantAckedMessage = -1;
-
-        const originalByteCount = this._bufferedByteCount;
+        let newestAckedMessage = -1;
 
         // Find index of newest message being acked
         for (let index = 0; index < this._messages.length; index++) {
             const element = this._messages[index];
-            if (element.id <= ackMessage.sequenceId) {
-                mostSignificantAckedMessage = index;
-                if (isArrayBuffer(element.message)) {
-                    this._bufferedByteCount -= element.message.byteLength;
+            if (element._id <= ackMessage.sequenceId) {
+                newestAckedMessage = index;
+                if (isArrayBuffer(element._message)) {
+                    this._bufferedByteCount -= element._message.byteLength;
                 } else {
-                    this._bufferedByteCount -= element.message.length;
+                    this._bufferedByteCount -= element._message.length;
                 }
+                // resolve items that have already been sent and acked
+                element._resolver();
+            } else if (this._bufferedByteCount < this._bufferSize) {
+                // resolve items that now fall under the buffer limit but haven't been acked
+                element._resolver();
             } else {
                 break;
             }
         }
 
-        if (mostSignificantAckedMessage !== -1) {
+        if (newestAckedMessage !== -1) {
             // We're removing everything including the message pointed to, so add 1
-            this._messages = this._messages.slice(mostSignificantAckedMessage + 1);
-
-            if (originalByteCount >= this._bufferSize && this._bufferedByteCount < originalByteCount)
-            {
-                this._backpressurePromiseResolver();
-            }
+            this._messages = this._messages.slice(newestAckedMessage + 1);
         }
     }
 
@@ -157,10 +158,9 @@ export class MessageBuffer {
                 this._resendReject!(error ?? new Error("Unable to reconnect to server."));
             }
 
-            // Unblock backpressure if any, do this after rejecting resend promise
-            // so any backpressured sends unblock and fail on the resend promise
-            if (this._bufferedByteCount >= this._bufferSize) {
-                this._backpressurePromiseResolver();
+            // Unblock backpressure if any
+            for (const element of this._messages) {
+                element._resolver();
             }
 
             return;
@@ -169,12 +169,15 @@ export class MessageBuffer {
         try {
             let sequenceId = this._totalMessageCount + 1;
             if (this._messages.length !== 0) {
-                sequenceId = this._messages[0].id;
+                sequenceId = this._messages[0]._id;
             }
             await this._connection.send(this._protocol.writeMessage({ type: MessageType.Sequence, sequenceId }));
 
-            for (const element of this._messages) {
-                await this._connection.send(element.message);
+            // Get a local variable to the _messages, just in case messages are acked while resending
+            // Which would slice the _messages array (which creates a new copy)
+            const messages = this._messages;
+            for (const element of messages) {
+                await this._connection.send(element._message);
             }
         } catch (e) {
             this._resendReject!(e);
@@ -185,10 +188,25 @@ export class MessageBuffer {
         }
     }
 
-    private _isInvocationMessage(message: HubMessage) {
+    private _isInvocationMessage(message: HubMessage): boolean {
         // There is no way to check if something implements an interface.
-        // We just check if the type is between 1 and 5 as those are currently the only messages worth resending right now.
-        return message.type >= MessageType.Invocation && message.type <= MessageType.CancelInvocation;
+        // So we individually check the messages in a switch statement.
+        // To make sure we don't miss any message types we rely on the compiler
+        // seeing the function returns a value and it will do the
+        // exhaustive check for us on the switch statement, since we don't use 'case default'
+        switch (message.type) {
+            case MessageType.Invocation:
+            case MessageType.StreamItem:
+            case MessageType.Completion:
+            case MessageType.StreamInvocation:
+            case MessageType.CancelInvocation:
+                return true;
+            case MessageType.Close:
+            case MessageType.Sequence:
+            case MessageType.Ping:
+            case MessageType.Ack:
+                return false;
+        }
     }
 
     private _ackTimer(): void {
@@ -207,12 +225,14 @@ export class MessageBuffer {
     }
 }
 
-class Key {
-    constructor(message: string | ArrayBuffer, id: number) {
-        this.message = message;
-        this.id = id;
+class BufferedItem {
+    constructor(message: string | ArrayBuffer, id: number, resolver: (value: void) => void) {
+        this._message = message;
+        this._id = id;
+        this._resolver = resolver;
     }
 
-    message: string | ArrayBuffer;
-    id: number;
+    _message: string | ArrayBuffer;
+    _id: number;
+    _resolver: (value: void) => void;
 }

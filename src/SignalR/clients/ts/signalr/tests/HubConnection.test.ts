@@ -2225,11 +2225,8 @@ describe("HubConnection", () => {
 
                     await hubConnection.start();
 
-                    // send large message to fill buffer
-                    await hubConnection.send("t", 'x'.repeat(100_000));
-
-                    // next send will be blocked until an ack occurs
-                    const sendTask = hubConnection.send("t");
+                    // send large message to fill buffer, will be waiting until an ack occurs
+                    const sendTask = hubConnection.send("t", 'x'.repeat(100_000));
                     let sendDone = false;
                     sendTask.finally(() => sendDone = true);
 
@@ -2241,8 +2238,6 @@ describe("HubConnection", () => {
 
                     await sendTask;
                     expect(sendDone).toBeTruthy();
-
-                    await hubConnection.send("t");
                 } finally {
                     await hubConnection.stop();
                 }
@@ -2264,11 +2259,8 @@ describe("HubConnection", () => {
 
                     await hubConnection.start();
 
-                    // send large message to fill buffer
-                    await hubConnection.send("t", 'x'.repeat(100_000));
-
-                    // next send will be blocked until an ack occurs
-                    const sendTask = hubConnection.send("t");
+                    // send large message to fill buffer, will be waiting until an ack occurs
+                    const sendTask = hubConnection.send("t", 'x'.repeat(100_000));
                     let sendDone = false;
                     sendTask.finally(() => sendDone = true);
 
@@ -2278,12 +2270,7 @@ describe("HubConnection", () => {
 
                     connection.receive({ type: MessageType.Close, error: "test" });
 
-                    try {
-                        await sendTask;
-                    } catch (error) {
-                        expect(error).toEqual(new Error("Server returned an error on close: test"));
-                    }
-
+                    await sendTask;
                     expect(sendDone).toBeTruthy();
                 } finally {
                     await hubConnection.stop();
@@ -2306,11 +2293,8 @@ describe("HubConnection", () => {
 
                     await hubConnection.start();
 
-                    // send large message to fill buffer
-                    await hubConnection.send("t", 'x'.repeat(100_000));
-
-                    // next send will be blocked until an ack occurs
-                    const sendTask = hubConnection.send("t");
+                    // send large message to fill buffer, will be waiting until an ack occurs
+                    const sendTask = hubConnection.send("t", 'x'.repeat(100_000));
                     let sendDone = false;
                     sendTask.finally(() => sendDone = true);
 
@@ -2320,13 +2304,63 @@ describe("HubConnection", () => {
 
                     await hubConnection.stop();
 
-                    try {
-                        await sendTask;
-                    } catch (error) {
-                        expect(error).toEqual(new Error("Connection closed."));
-                    }
+                    await sendTask;
 
                     expect(sendDone).toBeTruthy();
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
+
+        it("buffer full blocks sending, other sends also block promise but still send over connection", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                // tell HubConnection we "negotiated" reconnect
+                connection.features.reconnect = true;
+
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    const closeError = new PromiseSource<Error | undefined>();
+                    hubConnection.onclose((e) => {
+                        closeError.resolve(e);
+                    });
+
+                    await hubConnection.start();
+
+                    // send large message to fill buffer, will be waiting until an ack occurs
+                    const sendTask = hubConnection.send("t", 'x'.repeat(100_000));
+                    let sendDone = false;
+                    sendTask.finally(() => sendDone = true);
+
+                    await delayUntil(1);
+
+                    expect(sendDone).toBeFalsy();
+
+                    // send large message to fill buffer, will be waiting until an ack occurs
+                    const sendTask2 = hubConnection.send("t", 'x');
+                    let sendDone2 = false;
+                    sendTask2.finally(() => sendDone2 = true);
+
+                    await delayUntil(1);
+
+                    expect(sendDone2).toBeFalsy();
+
+                    expect(connection.sentData.length).toBe(4);
+                    expect(JSON.parse(connection.sentData[3])).toEqual({
+                        type: MessageType.Invocation,
+                        arguments: ['x'],
+                        target: 't'
+                    });
+
+                    connection.receive({ type: MessageType.Ack, sequenceId: 1 });
+
+                    await sendTask;
+                    expect(sendDone).toBeTruthy();
+
+                    // Second send is also unblocked because it is under the buffer limit once the large message is acked
+                    await sendTask2;
+                    expect(sendDone2).toBeTruthy();
                 } finally {
                     await hubConnection.stop();
                 }
