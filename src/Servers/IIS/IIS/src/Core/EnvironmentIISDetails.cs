@@ -2,41 +2,40 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.CompilerServices;
+using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core;
 
 internal sealed class EnvironmentIISDetails : IIISEnvironmentFeature
 {
-    public static IIISEnvironmentFeature? Create() => new EnvironmentIISDetails() is { IsAvailable: true } feature ? feature : null;
+    public bool IsAvailable => IISVersion is not null;
 
-    private bool IsAvailable => IISVersion is not null;
-
-    private EnvironmentIISDetails()
+    public EnvironmentIISDetails()
     {
-        if (Version.TryParse(Get(nameof(IISVersion)), out var version))
+        if (Version.TryParse(Get("ANCM_IIS_VERSION"), out var version))
         {
             IISVersion = version;
         }
 
-        if (uint.TryParse(Get(nameof(SiteId)), out var siteId))
+        if (uint.TryParse(Get("ANCM_SITE_ID"), out var siteId))
         {
             SiteId = siteId;
         }
 
-        AppPoolName = Get(nameof(AppPoolName));
-        AppPoolConfigFile = Get(nameof(AppPoolConfigFile));
-        AppConfigPath = Get(nameof(AppConfigPath));
-        ApplicationPhysicalPath = Get(nameof(ApplicationPhysicalPath));
-        ApplicationVirtualPath = Get(nameof(ApplicationVirtualPath));
-        ApplicationId = Get(nameof(ApplicationId));
-        SiteName = Get(nameof(SiteName));
+        AppPoolId = Get("APP_POOL_ID");
+        AppPoolConfigFile = Get("APP_POOL_CONFIG");
+        AppConfigPath = Get("ANCM_APP_CONFIG_PATH");
+        ApplicationPhysicalPath = Get("ANCM_APPLICATION_PHYSICAL_PATH");
+        ApplicationVirtualPath = Get("ANCM_APPLICATION_VIRTUAL_PATH");
+        ApplicationId = Get("ANCM_APPLICATION_VIRTUAL_PATH");
+        SiteName = Get("ANCM_SITE_NAME");
     }
 
-    private static string Get([CallerMemberName] string? name = null!) => Environment.GetEnvironmentVariable($"ANCM_{name}") ?? string.Empty;
+    private static string Get(string name) => Environment.GetEnvironmentVariable(name) ?? string.Empty;
 
     public Version IISVersion { get; } = null!;
 
-    public string AppPoolName { get; }
+    public string AppPoolId { get; }
 
     public string AppPoolConfigFile { get; }
 

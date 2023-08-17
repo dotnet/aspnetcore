@@ -73,7 +73,7 @@ APPLICATION_INFO::CreateHandler(
 HRESULT
 APPLICATION_INFO::CreateApplication(IHttpContext& pHttpContext)
 {
-    SetApplicationEnvironmentVariables(&m_pServer, &pHttpContext);
+    SetApplicationEnvironmentVariables(&pHttpContext);
 
     auto& pHttpApplication = *pHttpContext.GetApplication();
     if (AppOfflineApplication::ShouldBeStarted(pHttpApplication))

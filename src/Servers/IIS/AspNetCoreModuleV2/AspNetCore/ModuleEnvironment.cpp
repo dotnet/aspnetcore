@@ -32,18 +32,16 @@ static std::wstring ToVirtualPath(const std::wstring& configurationPath) {
     return L"/";
 }
 
-void SetApplicationEnvironmentVariables(_In_ IHttpServer* pServer, _In_ IHttpContext* pHttpContext) {
-    SetEnvironmentVariable(L"ANCM_IISVersion", GetIISVersion().c_str());
-    SetEnvironmentVariable(L"ANCM_AppPoolName", pServer->GetAppPoolName());
-    SetEnvironmentVariable(L"ANCM_AppPoolConfigFile", ((IHttpServer2*)pServer)->GetAppPoolConfigFile());
+void SetApplicationEnvironmentVariables(_In_ IHttpContext* pHttpContext) {
+    SetEnvironmentVariable(L"ANCM_IIS_VERSION", GetIISVersion().c_str());
 
     auto site = pHttpContext->GetSite();
-    SetEnvironmentVariable(L"ANCM_SiteName", site->GetSiteName());
-    SetEnvironmentVariable(L"ANCM_SiteId", std::to_wstring(site->GetSiteId()).c_str());
+    SetEnvironmentVariable(L"ANCM_SITE_NAME", site->GetSiteName());
+    SetEnvironmentVariable(L"ANCM_SITE_ID", std::to_wstring(site->GetSiteId()).c_str());
 
     auto app = pHttpContext->GetApplication();
-    SetEnvironmentVariable(L"ANCM_AppConfigPath", app->GetAppConfigPath());
-    SetEnvironmentVariable(L"ANCM_ApplicationId", app->GetApplicationId());
-    SetEnvironmentVariable(L"ANCM_ApplicationPhysicalPath", app->GetApplicationPhysicalPath());
-    SetEnvironmentVariable(L"ANCM_ApplicationVirtualPath", ToVirtualPath(app->GetAppConfigPath()).c_str());
+    SetEnvironmentVariable(L"ANCM_APP_CONFIG_PATH", app->GetAppConfigPath());
+    SetEnvironmentVariable(L"ANCM_APPLICATION_ID", app->GetApplicationId());
+    SetEnvironmentVariable(L"ANCM_APPLICATION_PHYSICAL_PATH", app->GetApplicationPhysicalPath());
+    SetEnvironmentVariable(L"ANCM_APPPLICATION_VIRTUAL_PATH", ToVirtualPath(app->GetAppConfigPath()).c_str());
 }
