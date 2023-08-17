@@ -48,6 +48,8 @@ export function attachProgressivelyEnhancedNavigationListener(callbacks: Navigat
   document.addEventListener('click', onDocumentClick);
   document.addEventListener('submit', onDocumentSubmit);
   window.addEventListener('popstate', onPopState);
+
+  attachProgrammaticEnhancedNavigationHandler(performProgrammaticEnhancedNavigation);
 }
 
 export function detachProgressivelyEnhancedNavigationListener() {
@@ -57,10 +59,6 @@ export function detachProgressivelyEnhancedNavigationListener() {
 }
 
 function performProgrammaticEnhancedNavigation(absoluteInternalHref: string, replace: boolean) {
-  if (hasInteractiveRouter()) {
-    return;
-  }
-
   if (replace) {
     history.replaceState(null, /* ignored title */ '', absoluteInternalHref);
   } else {
@@ -69,8 +67,6 @@ function performProgrammaticEnhancedNavigation(absoluteInternalHref: string, rep
 
   performEnhancedPageLoad(absoluteInternalHref);
 }
-
-attachProgrammaticEnhancedNavigationHandler(performProgrammaticEnhancedNavigation);
 
 function onDocumentClick(event: MouseEvent) {
   if (hasInteractiveRouter()) {
