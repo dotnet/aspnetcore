@@ -65,10 +65,6 @@ BOOL WINAPI DllMain(HMODULE hModule,
 
 DWORD dwIISServerVersion;
 
-DWORD __stdcall GetIISVersion() {
-    return dwIISServerVersion;
-}
-
 HRESULT
 __stdcall
 RegisterModule(

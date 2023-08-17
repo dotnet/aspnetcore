@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Server.IIS.Core;
 
 namespace Microsoft.AspNetCore.Server.IIS;
 
@@ -15,12 +16,5 @@ public static class IISUtility
     /// If possible, prefer <see cref="IServer.Features"/> to access this value.
     /// </summary>
     public static IIISEnvironmentFeature? GetEnvironmentFeature()
-    {
-        if (NativeMethods.IsAspNetCoreModuleLoaded())
-        {
-            return NativeMethods.HttpGetApplicationProperties();
-        }
-
-        return null;
-    }
+         => new EnvironmentIISDetails() is { IsAvailable: true } details ? details : null;
 }

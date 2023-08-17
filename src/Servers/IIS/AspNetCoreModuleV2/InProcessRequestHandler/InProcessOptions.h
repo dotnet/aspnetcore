@@ -13,30 +13,6 @@ class InProcessOptions: NonCopyable
 {
 public:
     const std::wstring&
-    QueryAppPoolConfig() const
-    {
-        return m_appPoolConfig;
-    }
-
-    const std::wstring&
-    QueryAppPoolId() const
-    {
-        return m_appPoolId;
-    }
-
-    const std::wstring&
-    QuerySiteName() const
-    {
-        return m_strSiteName;
-    }
-
-    const DWORD
-    QuerySiteId() const
-    {
-        return m_dwSiteId;
-    }
-
-    const std::wstring&
     QueryProcessPath() const
     {
         return m_strProcessPath;
@@ -148,7 +124,7 @@ public:
         return m_fSuppressRecycleOnStartupTimeout;
     }
 
-    InProcessOptions(const ConfigurationSource &configurationSource, IHttpServer* server, IHttpSite* pSite);
+    InProcessOptions(const ConfigurationSource &configurationSource, IHttpSite* pSite);
 
     static
     HRESULT InProcessOptions::Create(
@@ -160,11 +136,8 @@ public:
 private:
     std::wstring                   m_strArguments;
     std::wstring                   m_strProcessPath;
-    std::wstring                   m_strSiteName;
     std::wstring                   m_struStdoutLogFile;
     std::wstring                   m_strStackSize;
-    std::wstring                   m_appPoolId;
-    std::wstring                   m_appPoolConfig;
     bool                           m_fStdoutLogEnabled;
     bool                           m_fDisableStartUpErrorPage;
     bool                           m_fSetCurrentDirectory;
@@ -173,7 +146,6 @@ private:
     bool                           m_fBasicAuthEnabled;
     bool                           m_fAnonymousAuthEnabled;
     bool                           m_fSuppressRecycleOnStartupTimeout;
-    DWORD                          m_dwSiteId;
     DWORD                          m_dwStartupTimeLimitInMS;
     DWORD                          m_dwShutdownTimeLimitInMS;
     DWORD                          m_dwMaxRequestBodySize;

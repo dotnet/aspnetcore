@@ -109,10 +109,10 @@ public class Startup
             await context.Response.WriteAsync("IIS Environment Information:" + Environment.NewLine);
             await context.Response.WriteAsync("IIS Version: " + envFeature.IISVersion + Environment.NewLine);
             await context.Response.WriteAsync("ApplicationId: " + envFeature.ApplicationId + Environment.NewLine);
-            await context.Response.WriteAsync("Application Path: " + envFeature.ApplicationPath + Environment.NewLine);
+            await context.Response.WriteAsync("Application Path: " + envFeature.ApplicationPhysicalPath + Environment.NewLine);
             await context.Response.WriteAsync("Application Virtual Path: " + envFeature.ApplicationVirtualPath + Environment.NewLine);
-            await context.Response.WriteAsync("AppPool Config: " + envFeature.AppPoolConfig + Environment.NewLine);
-            await context.Response.WriteAsync("AppPool ID: " + envFeature.AppPoolId + Environment.NewLine);
+            await context.Response.WriteAsync("Application Config Path: " + envFeature.AppConfigPath + Environment.NewLine);
+            await context.Response.WriteAsync("AppPool ID: " + envFeature.AppPoolName + Environment.NewLine);
             await context.Response.WriteAsync("Site ID: " + envFeature.SiteId + Environment.NewLine);
             await context.Response.WriteAsync("Site Name: " + envFeature.SiteName + Environment.NewLine);
         });

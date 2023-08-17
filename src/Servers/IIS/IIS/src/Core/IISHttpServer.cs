@@ -76,7 +76,7 @@ internal sealed class IISHttpServer : IServer
         }
 
         Features.Set<IServerAddressesFeature>(_serverAddressesFeature);
-        Features.Set<IIISEnvironmentFeature>(iisConfigData);
+        Features.Set<IIISEnvironmentFeature>(new EnvironmentIISDetails());
 
         if (_options.MaxRequestBodySize > _options.IisMaxRequestSizeLimit)
         {

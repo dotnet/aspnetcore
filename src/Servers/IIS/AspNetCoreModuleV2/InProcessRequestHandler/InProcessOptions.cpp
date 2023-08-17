@@ -15,7 +15,7 @@ HRESULT InProcessOptions::Create(
     try
     {
         const WebConfigConfigurationSource configurationSource(pServer.GetAdminManager(), pHttpApplication);
-        options = std::make_unique<InProcessOptions>(configurationSource, &pServer, site);
+        options = std::make_unique<InProcessOptions>(configurationSource, site);
     }
     catch (InvalidOperationException& ex)
     {
@@ -40,7 +40,7 @@ HRESULT InProcessOptions::Create(
     return S_OK;
 }
 
-InProcessOptions::InProcessOptions(const ConfigurationSource &configurationSource, IHttpServer* server, IHttpSite* pSite) :
+InProcessOptions::InProcessOptions(const ConfigurationSource &configurationSource, IHttpSite* pSite) :
     m_fStdoutLogEnabled(false),
     m_fWindowsAuthEnabled(false),
     m_fBasicAuthEnabled(false),
@@ -49,12 +49,6 @@ InProcessOptions::InProcessOptions(const ConfigurationSource &configurationSourc
     m_dwStartupTimeLimitInMS(INFINITE),
     m_dwShutdownTimeLimitInMS(INFINITE)
 {
-    m_dwSiteId = pSite->GetSiteId();
-    m_strSiteName = std::wstring(pSite->GetSiteName());
-
-    m_appPoolId = std::wstring(server->GetAppPoolName());
-    m_appPoolConfig = ((IHttpServer2*)server)->GetAppPoolConfigFile();
-
     auto const aspNetCoreSection = configurationSource.GetRequiredSection(CS_ASPNETCORE_SECTION);
     m_strArguments = aspNetCoreSection->GetString(CS_ASPNETCORE_PROCESS_ARGUMENTS).value_or(CS_ASPNETCORE_PROCESS_ARGUMENTS_DEFAULT);
     m_strProcessPath = aspNetCoreSection->GetRequiredString(CS_ASPNETCORE_PROCESS_EXE_PATH);
