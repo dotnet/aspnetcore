@@ -15,6 +15,10 @@
 </p>
 
 <p>
+    <button id="programmatic-refresh" @onclick="ProgrammaticRefresh">Programmatic refresh</button><br />
+</p>
+
+<p>
     <a id="internal-link-navigation" href="some-path-@nextLinkNavigationIndex">/some-path-@nextLinkNavigationIndex</a>
     <button id="increment-link-navigation-index" @onclick="IncrementLinkNavigationIndex">Increment path index</button><br />
 </p>
@@ -99,5 +103,10 @@
         });
 
         nextProgrammaticNavigationIndex++;
+    }
+
+    void ProgrammaticRefresh()
+    {
+        NavigationManager.Refresh();
     }
 }
