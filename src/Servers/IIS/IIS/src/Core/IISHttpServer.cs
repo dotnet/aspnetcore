@@ -77,7 +77,7 @@ internal sealed class IISHttpServer : IServer
 
         Features.Set<IServerAddressesFeature>(_serverAddressesFeature);
 
-        if (EnvironmentIISDetails.Create() is { } iisEnvFeature)
+        if (new EnvironmentIISDetails() is { IsAvailable: true } iisEnvFeature)
         {
             Features.Set<IIISEnvironmentFeature>(iisEnvFeature);
         }
