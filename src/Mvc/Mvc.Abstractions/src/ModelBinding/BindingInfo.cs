@@ -3,6 +3,8 @@
 
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.Http.Metadata;
+using System.Reflection.Metadata;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -171,7 +173,15 @@ public class BindingInfo
         }
 
         // Keyed services
-        foreach (var fromKeyedServicesAttribute in attributes.OfType<FromKeyedServicesAttribute>())
+        if (attributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.GetType())))
+        {
+            if (attributes.OfType<FromKeyedServicesAttribute>().FirstOrDefault() is not null)
+            {
+                throw new NotSupportedException(
+                    $"The {nameof(FromKeyedServicesAttribute)} is not supported on parameters that are also annotated with {nameof(IFromServiceMetadata)}.");
+            }
+        }
+        if (attributes.OfType<FromKeyedServicesAttribute>().Any())
         {
             isBindingInfoPresent = true;
             bindingInfo.BindingSource = BindingSource.KeyedServices;

@@ -44,8 +44,5 @@ public class KeyedServicesTests : IClassFixture<MvcTestFixture<BasicWebSite.Star
         // Assert
         Assert.True(response.IsSuccessStatusCode);
         Assert.Equal("OK,NOT OK", await response.Content.ReadAsStringAsync());
-
-        var response2 = await Client.SendAsync(new HttpRequestMessage(HttpMethod.Get, "/services/GetBoth"));
-        Assert.True(response2.IsSuccessStatusCode);
     }
 }

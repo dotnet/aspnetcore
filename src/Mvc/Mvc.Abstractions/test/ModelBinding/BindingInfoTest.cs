@@ -307,4 +307,21 @@ public class BindingInfoTest
         Assert.NotNull(bindingInfo);
         Assert.Same(BindingSource.KeyedServices, bindingInfo.BindingSource);
     }
+
+    [Fact]
+    public void GetBindingInfo_ThrowsWhenWithFromKeyedServicesAttributeAndIFromServiceMetadata()
+    {
+        // Arrange
+        var attributes = new object[]
+        {
+                new FromKeyedServicesAttribute(new object()),
+                new FromServicesAttribute()
+        };
+        var modelType = typeof(Guid);
+        var provider = new TestModelMetadataProvider();
+        var modelMetadata = provider.GetMetadataForType(modelType);
+
+        // Act and Assert
+        Assert.Throws<NotSupportedException>(() => BindingInfo.GetBindingInfo(attributes, modelMetadata));
+    }
 }
