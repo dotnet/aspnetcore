@@ -47,6 +47,7 @@ internal sealed class MvcCoreMvcOptionsSetup : IConfigureOptions<MvcOptions>, IP
         // Set up ModelBinding
         options.ModelBinderProviders.Add(new BinderTypeModelBinderProvider());
         options.ModelBinderProviders.Add(new ServicesModelBinderProvider());
+        options.ModelBinderProviders.Add(new KeyedServicesModelBinderProvider());
         options.ModelBinderProviders.Add(new BodyModelBinderProvider(options.InputFormatters, _readerFactory, _loggerFactory, options));
         options.ModelBinderProviders.Add(new HeaderModelBinderProvider());
         options.ModelBinderProviders.Add(new FloatingPointTypeModelBinderProvider());
