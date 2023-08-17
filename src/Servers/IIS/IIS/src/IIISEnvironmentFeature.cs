@@ -14,7 +14,7 @@ public interface IIISEnvironmentFeature
     Version IISVersion { get; }
 
     /// <summary>
-    /// Gets the AppPool Id that is currently running
+    /// Gets the AppPool name that is currently running
     /// </summary>
     string AppPoolName { get; }
 
@@ -24,7 +24,7 @@ public interface IIISEnvironmentFeature
     string AppConfigPath { get; }
 
     /// <summary>
-    /// Gets the path of the application.
+    /// Gets the physical path of the application.
     /// </summary>
     string ApplicationPhysicalPath { get; }
 
