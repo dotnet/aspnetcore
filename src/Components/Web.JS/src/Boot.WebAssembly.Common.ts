@@ -55,7 +55,7 @@ export async function startWebAssembly(components: RootComponentManager<WebAssem
     // focus, in turn triggering a 'change' event. It may also be possible to listen to other DOM mutation events
     // that are themselves triggered by the application of a renderbatch.
     const renderer = getRendererer(browserRendererId);
-    if (renderer.eventDelegator.getHandler(eventHandlerId)) {
+    if (renderer?.eventDelegator.getHandler(eventHandlerId)) {
       monoPlatform.invokeWhenHeapUnlocked(continuation);
     }
   });

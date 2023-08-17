@@ -670,6 +670,108 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-2")).Text);
     }
 
+    [Fact]
+    public void Circuit_ShutsDown_WhenAllBlazorServerComponentsGetRemoved()
+    {
+        Navigate($"{ServerPathBase}/streaming-interactivity");
+
+        Browser.Equal("Not streaming", () => Browser.FindElement(By.Id("status")).Text);
+
+        Browser.Click(By.Id(AddServerPrerenderedId));
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-0")).Text);
+
+        Browser.Click(By.Id("increment-0"));
+        Browser.Equal("1", () => Browser.FindElement(By.Id("count-0")).Text);
+
+        Browser.Click(By.Id("remove-counter-link-0"));
+
+        AssertBrowserLogContainsMessage("Connection disconnected.");
+        AssertBrowserLogDoesNotContainErrors();
+    }
+
+    [Fact]
+    public void Circuit_CanShutDownAndReInitializeMultipleTimes()
+    {
+        const int numCircuits = 5;
+
+        Navigate($"{ServerPathBase}/streaming-interactivity");
+
+        Browser.Equal("Not streaming", () => Browser.FindElement(By.Id("status")).Text);
+
+        for (var i = 0; i < numCircuits; i++)
+        {
+            Browser.Click(By.Id(AddServerPrerenderedId));
+            Browser.Equal("True", () => Browser.FindElement(By.Id($"is-interactive-{i}")).Text);
+
+            Browser.Click(By.Id($"increment-{i}"));
+            Browser.Equal("1", () => Browser.FindElement(By.Id($"count-{i}")).Text);
+
+            Browser.Click(By.Id($"remove-counter-link-{i}"));
+
+            AssertBrowserLogContainsMessage("Connection disconnected.");
+            AssertBrowserLogDoesNotContainErrors();
+            ClearBrowserLogs();
+        }
+    }
+
+    [Fact]
+    public void DotNetObjectReference_CannotBeUsed_AfterCircuitShutsDown()
+    {
+        Navigate($"{ServerPathBase}/streaming-interactivity");
+
+        Browser.Equal("Not streaming", () => Browser.FindElement(By.Id("status")).Text);
+
+        Browser.Click(By.Id(AddServerPrerenderedId));
+        Browser.Equal("True", () => Browser.FindElement(By.Id($"is-interactive-0")).Text);
+
+        // This JS call works via .NET object reference to a counter component.
+        ((IJavaScriptExecutor)Browser).ExecuteScript("window.incrementCounter(0)");
+        Browser.Equal("1", () => Browser.FindElement(By.Id($"count-0")).Text);
+
+        Browser.Click(By.Id($"remove-counter-link-0"));
+
+        AssertBrowserLogDoesNotContainErrors();
+
+        ((IJavaScriptExecutor)Browser).ExecuteScript("window.incrementCounter(0)");
+
+        AssertBrowserLogContainsMessage("Error: The circuit");
+    }
+
+    [Fact]
+    public void DotNetObjectReference_CannotBeUsed_AfterCircuitShutsDown_AndANewCircuitIsInitialized()
+    {
+        Navigate($"{ServerPathBase}/streaming-interactivity");
+
+        Browser.Equal("Not streaming", () => Browser.FindElement(By.Id("status")).Text);
+
+        Browser.Click(By.Id(AddServerPrerenderedId));
+        Browser.Equal("True", () => Browser.FindElement(By.Id($"is-interactive-0")).Text);
+
+        // This JS call works via .NET object reference to a counter component.
+        ((IJavaScriptExecutor)Browser).ExecuteScript("window.incrementCounter(0)");
+        Browser.Equal("1", () => Browser.FindElement(By.Id($"count-0")).Text);
+
+        Browser.Click(By.Id($"remove-counter-link-0"));
+
+        AssertBrowserLogDoesNotContainErrors();
+
+        ((IJavaScriptExecutor)Browser).ExecuteScript("window.incrementCounter(0)");
+
+        AssertBrowserLogContainsMessage("Error: The circuit");
+        ClearBrowserLogs();
+
+        Browser.Click(By.Id(AddServerPrerenderedId));
+        Browser.Equal("True", () => Browser.FindElement(By.Id($"is-interactive-1")).Text);
+
+        ((IJavaScriptExecutor)Browser).ExecuteScript("window.incrementCounter(1)");
+        Browser.Equal("1", () => Browser.FindElement(By.Id($"count-1")).Text);
+
+        AssertBrowserLogDoesNotContainErrors();
+
+        ((IJavaScriptExecutor)Browser).ExecuteScript("window.incrementCounter(0)");
+        AssertBrowserLogContainsMessage("Error: The circuit");
+    }
+
     private void BlockWebAssemblyResourceLoad()
     {
         ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('block-load-boot-resource', 'true')");
@@ -731,5 +833,10 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
     {
         var entries = Browser.Manage().Logs.GetLog(LogType.Browser);
         Assert.DoesNotContain(entries, entry => entry.Level == LogLevel.Severe);
+    }
+
+    private void ClearBrowserLogs()
+    {
+        ((IJavaScriptExecutor)Browser).ExecuteScript("console.clear()");
     }
 }

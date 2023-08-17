@@ -163,7 +163,7 @@ export class WebRootComponentManager implements DescriptorHandler, NavigationEnh
     }
 
     const renderer = getRendererer(WebRendererId.Server);
-    if (renderer.getRootComponentCount() === 0) {
+    if (!renderer || renderer.getRootComponentCount() === 0) {
       disposeCircuit();
     }
   }

@@ -19,12 +19,14 @@ import { fetchAndInvokeInitializers } from './JSInitializers/JSInitializers.Serv
 import { WebRendererId } from './Rendering/WebRendererId';
 import { RootComponentManager } from './Services/RootComponentManager';
 import { detachWebRendererInterop } from './Rendering/WebRendererInteropMethods';
+import { CircuitDotNetCallDispatcher } from './Platform/Circuits/CircuitDotNetCallDispatcher';
 
 let renderingFailed = false;
 let started = false;
 let circuitActive = false;
 let connection: HubConnection;
 let circuit: CircuitDescriptor;
+let dotNetDispatcher: CircuitDotNetCallDispatcher;
 let dispatcher: DotNet.ICallDispatcher;
 let userOptions: Partial<CircuitStartOptions> | undefined;
 let logger: ConsoleLogger;
@@ -124,18 +126,8 @@ export async function startCircuit(components: RootComponentManager<ServerCompon
   const options = resolveOptions(userOptions);
   const appState = discoverPersistedState(document);
   circuit = new CircuitDescriptor(components, appState || '');
-
-  dispatcher = DotNet.attachDispatcher({
-    beginInvokeDotNetFromJS: (callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson): void => {
-      connection.send('BeginInvokeDotNetFromJS', callId ? callId.toString() : null, assemblyName, methodIdentifier, dotNetObjectId || 0, argsJson);
-    },
-    endInvokeJSFromDotNet: (asyncHandle, succeeded, argsJson): void => {
-      connection.send('EndInvokeJSFromDotNet', asyncHandle, succeeded, argsJson);
-    },
-    sendByteArray: (id: number, data: Uint8Array): void => {
-      connection.send('ReceiveByteArray', id, data);
-    },
-  });
+  dotNetDispatcher = new CircuitDotNetCallDispatcher(() => connection);
+  dispatcher = DotNet.attachDispatcher(dotNetDispatcher);
 
   const initialConnection = await initializeConnection(options, logger, circuit);
   const circuitStarted = await circuit.startCircuit(initialConnection);
@@ -169,6 +161,11 @@ export function disposeCircuit() {
   }
 
   circuitActive = false;
+
+  // We dispose the .NET dispatcher to prevent it from being used in the future.
+  // This avoids cases where, for example, .NET object references from a
+  // disconnected circuit start pointing to .NET objects for a new circuit.
+  dotNetDispatcher.dispose();
 
   connection.stop();
 
