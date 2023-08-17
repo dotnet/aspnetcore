@@ -16,17 +16,17 @@ public interface IIISEnvironmentFeature
     /// <summary>
     /// Gets the AppPool Id that is currently running
     /// </summary>
-    string AppPoolId { get; }
+    string AppPoolName { get; }
 
     /// <summary>
     /// Gets path to the AppPool configuration that is currently running
     /// </summary>
-    string AppPoolConfig { get; }
+    string AppConfigPath { get; }
 
     /// <summary>
     /// Gets the path of the application.
     /// </summary>
-    string ApplicationPath { get; }
+    string ApplicationPhysicalPath { get; }
 
     /// <summary>
     /// Gets the virtual path of the application.

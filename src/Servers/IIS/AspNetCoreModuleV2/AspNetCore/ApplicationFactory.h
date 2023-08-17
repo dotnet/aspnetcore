@@ -8,6 +8,7 @@
 #include <utility>
 #include "iapplication.h"
 #include "HandleWrapper.h"
+#include "ModuleEnvironment.h"
 
 typedef
 HRESULT
@@ -45,6 +46,8 @@ public:
                 {"ShadowCopyDirectory", shadowCopyDirectory.data()}
             }
         };
+
+        SetApplicationEnvironmentVariables(pServer, pHttpContext);
 
         return m_pfnAspNetCoreCreateApplication(pServer, pHttpContext->GetApplication(), parameters.data(), static_cast<DWORD>(parameters.size()), pApplication);
     }

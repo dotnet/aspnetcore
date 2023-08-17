@@ -222,24 +222,6 @@ http_get_completion_info(
     *hr = info->GetCompletionStatus();
 }
 
-// Attempts to load the IIS version if it is exported from the module. This was added in .NET 8,
-// and if it is unavailable to defaults to 0
-DWORD GetIISVersion() {
-    auto module = GetModuleHandle(L"aspnetcorev2.dll");
-
-    if (module != nullptr)
-    {
-        auto func = (DWORD(_stdcall*)()) GetProcAddress(module, "GetIISVersion");
-
-        if (func != NULL)
-        {
-            return func();
-        }
-    }
-
-    return 0;
-}
-
 //
 // the signature should be changed. application's based address should be passed in
 //
@@ -254,12 +236,6 @@ struct IISConfigurationData
     BOOL fAnonymousAuthEnable;
     BSTR pwzBindings;
     DWORD maxRequestBodySize;
-    BSTR pwzApplicationId;
-    BSTR pwzSiteName;
-    DWORD siteId;
-    BSTR pwzAppPoolId;
-    BSTR pwzAppPoolConfig;
-    DWORD iisVersion;
 };
 
 EXTERN_C __declspec(dllexport)
@@ -282,12 +258,6 @@ http_get_application_properties(
     pIISConfigurationData->fWindowsAuthEnabled = pConfiguration.QueryWindowsAuthEnabled();
     pIISConfigurationData->fBasicAuthEnabled = pConfiguration.QueryBasicAuthEnabled();
     pIISConfigurationData->fAnonymousAuthEnable = pConfiguration.QueryAnonymousAuthEnabled();
-    pIISConfigurationData->pwzApplicationId = SysAllocString(pInProcessApplication->QueryApplicationId().c_str());
-    pIISConfigurationData->siteId = pInProcessApplication->QueryConfig().QuerySiteId();
-    pIISConfigurationData->pwzSiteName = SysAllocString(pInProcessApplication->QueryConfig().QuerySiteName().c_str());
-    pIISConfigurationData->pwzAppPoolId = SysAllocString(pInProcessApplication->QueryConfig().QueryAppPoolId().c_str());
-    pIISConfigurationData->pwzAppPoolConfig = SysAllocString(pInProcessApplication->QueryConfig().QueryAppPoolConfig().c_str());
-    pIISConfigurationData->iisVersion = GetIISVersion();
 
     auto const serverAddresses = BindingInformation::Format(pConfiguration.QueryBindings(), pInProcessApplication->QueryApplicationVirtualPath());
     pIISConfigurationData->pwzBindings = SysAllocString(serverAddresses.c_str());
