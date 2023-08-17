@@ -19,7 +19,7 @@ public interface IIISEnvironmentFeature
     string AppPoolName { get; }
 
     /// <summary>
-    /// Gets path to the AppPool configuration that is currently running
+    /// Gets path to the application configuration that is currently running
     /// </summary>
     string AppConfigPath { get; }
 
