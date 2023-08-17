@@ -14,8 +14,7 @@ static std::wstring GetIISVersion() {
     return version.str();
 }
 
-static std::wstring ToVirtualPath(const std::wstring& configurationPath)
-{
+static std::wstring ToVirtualPath(const std::wstring& configurationPath) {
     auto segments = 0;
     auto position = configurationPath.find('/');
     // Skip first 4 segments of config path
