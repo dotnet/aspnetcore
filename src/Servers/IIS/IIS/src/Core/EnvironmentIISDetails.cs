@@ -24,6 +24,7 @@ internal sealed class EnvironmentIISDetails : IIISEnvironmentFeature
         }
 
         AppPoolName = Get(nameof(AppPoolName));
+        AppPoolConfigFile = Get(nameof(AppPoolConfigFile));
         AppConfigPath = Get(nameof(AppConfigPath));
         ApplicationPhysicalPath = Get(nameof(ApplicationPhysicalPath));
         ApplicationVirtualPath = Get(nameof(ApplicationVirtualPath));
@@ -36,6 +37,8 @@ internal sealed class EnvironmentIISDetails : IIISEnvironmentFeature
     public Version IISVersion { get; } = null!;
 
     public string AppPoolName { get; }
+
+    public string AppPoolConfigFile { get; }
 
     public string AppConfigPath { get; }
 

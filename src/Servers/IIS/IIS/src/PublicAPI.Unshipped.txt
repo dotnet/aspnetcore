@@ -32,6 +32,7 @@ Microsoft.AspNetCore.Server.IIS.IIISEnvironmentFeature.AppConfigPath.get -> stri
 Microsoft.AspNetCore.Server.IIS.IIISEnvironmentFeature.ApplicationId.get -> string!
 Microsoft.AspNetCore.Server.IIS.IIISEnvironmentFeature.ApplicationPhysicalPath.get -> string!
 Microsoft.AspNetCore.Server.IIS.IIISEnvironmentFeature.ApplicationVirtualPath.get -> string!
+Microsoft.AspNetCore.Server.IIS.IIISEnvironmentFeature.AppPoolConfigFile.get -> string!
 Microsoft.AspNetCore.Server.IIS.IIISEnvironmentFeature.AppPoolName.get -> string!
 Microsoft.AspNetCore.Server.IIS.IIISEnvironmentFeature.IISVersion.get -> System.Version!
 Microsoft.AspNetCore.Server.IIS.IIISEnvironmentFeature.SiteId.get -> uint
