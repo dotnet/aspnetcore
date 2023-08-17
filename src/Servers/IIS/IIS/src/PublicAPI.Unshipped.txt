@@ -36,3 +36,5 @@ Microsoft.AspNetCore.Server.IIS.IIISEnvironmentFeature.AppPoolName.get -> string
 Microsoft.AspNetCore.Server.IIS.IIISEnvironmentFeature.IISVersion.get -> System.Version!
 Microsoft.AspNetCore.Server.IIS.IIISEnvironmentFeature.SiteId.get -> uint
 Microsoft.AspNetCore.Server.IIS.IIISEnvironmentFeature.SiteName.get -> string!
+Microsoft.AspNetCore.Server.IIS.IISUtility
+static Microsoft.AspNetCore.Server.IIS.IISUtility.GetEnvironmentFeature() -> Microsoft.AspNetCore.Server.IIS.IIISEnvironmentFeature?

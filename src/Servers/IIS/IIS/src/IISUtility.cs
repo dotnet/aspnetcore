@@ -15,6 +15,5 @@ public static class IISUtility
     /// Gets the <see cref="IIISEnvironmentFeature"/> for the current application if available.
     /// If possible, prefer <see cref="IServer.Features"/> to access this value.
     /// </summary>
-    public static IIISEnvironmentFeature? GetEnvironmentFeature()
-         => new EnvironmentIISDetails() is { IsAvailable: true } details ? details : null;
+    public static IIISEnvironmentFeature? GetEnvironmentFeature() => EnvironmentIISDetails.Create();
 }
