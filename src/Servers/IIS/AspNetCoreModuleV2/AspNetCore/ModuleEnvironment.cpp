@@ -35,6 +35,7 @@ static std::wstring ToVirtualPath(const std::wstring& configurationPath) {
 void SetApplicationEnvironmentVariables(_In_ IHttpServer* pServer, _In_ IHttpContext* pHttpContext) {
     SetEnvironmentVariable(L"ANCM_IISVersion", GetIISVersion().c_str());
     SetEnvironmentVariable(L"ANCM_AppPoolName", pServer->GetAppPoolName());
+    SetEnvironmentVariable(L"ANCM_AppPoolConfigFile", ((IHttpServer2*)pServer)->GetAppPoolConfigFile());
 
     auto site = pHttpContext->GetSite();
     SetEnvironmentVariable(L"ANCM_SiteName", site->GetSiteName());

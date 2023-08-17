@@ -113,6 +113,7 @@ public class Startup
             await context.Response.WriteAsync("Application Virtual Path: " + envFeature.ApplicationVirtualPath + Environment.NewLine);
             await context.Response.WriteAsync("Application Config Path: " + envFeature.AppConfigPath + Environment.NewLine);
             await context.Response.WriteAsync("AppPool ID: " + envFeature.AppPoolName + Environment.NewLine);
+            await context.Response.WriteAsync("AppPool Config File: " + envFeature.AppPoolConfigFile + Environment.NewLine);
             await context.Response.WriteAsync("Site ID: " + envFeature.SiteId + Environment.NewLine);
             await context.Response.WriteAsync("Site Name: " + envFeature.SiteName + Environment.NewLine);
         });
