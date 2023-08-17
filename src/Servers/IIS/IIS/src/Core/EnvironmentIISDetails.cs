@@ -7,17 +7,15 @@ namespace Microsoft.AspNetCore.Server.IIS.Core;
 
 internal sealed class EnvironmentIISDetails : IIISEnvironmentFeature
 {
-    public bool IsAvailable => IISVersion.Major != 0;
+    public static IIISEnvironmentFeature? Create() => new EnvironmentIISDetails() is { IsAvailable: true } feature ? feature : null;
 
-    public EnvironmentIISDetails()
+    private bool IsAvailable => IISVersion is not null;
+
+    private EnvironmentIISDetails()
     {
         if (Version.TryParse(Get(nameof(IISVersion)), out var version))
         {
             IISVersion = version;
-        }
-        else
-        {
-            IISVersion = new Version();
         }
 
         if (uint.TryParse(Get(nameof(SiteId)), out var siteId))
@@ -35,7 +33,7 @@ internal sealed class EnvironmentIISDetails : IIISEnvironmentFeature
 
     private static string Get([CallerMemberName] string? name = null!) => Environment.GetEnvironmentVariable($"ANCM_{name}") ?? string.Empty;
 
-    public Version IISVersion { get; }
+    public Version IISVersion { get; } = null!;
 
     public string AppPoolName { get; }
 
