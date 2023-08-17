@@ -181,9 +181,11 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
     }
 
     [Theory]
-    [InlineData("server")]
-    [InlineData("webassembly")]
-    public void CanPerformProgrammaticEnhancedRefresh(string renderMode)
+    [InlineData("server", "refresh-with-navigate-to")]
+    [InlineData("webassembly", "refresh-with-navigate-to")]
+    [InlineData("server", "refresh-with-refresh")]
+    [InlineData("webassembly", "refresh-with-refresh")]
+    public void CanPerformProgrammaticEnhancedRefresh(string renderMode, string refreshButtonId)
     {
         Navigate($"{ServerPathBase}/nav");
         Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
@@ -199,7 +201,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.True(() => int.TryParse(renderIdElement.Text, out initialRenderId));
         Assert.NotEqual(-1, initialRenderId);
 
-        Browser.Exists(By.Id("perform-enhanced-refresh")).Click();
+        Browser.Exists(By.Id(refreshButtonId)).Click();
         Browser.True(() =>
         {
             if (IsElementStale(renderIdElement) || !int.TryParse(renderIdElement.Text, out var newRenderId))
@@ -235,7 +237,79 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.True(() => int.TryParse(initialRenderIdElement.Text, out initialRenderId));
         Assert.NotEqual(-1, initialRenderId);
 
-        Browser.Exists(By.Id("perform-page-reload")).Click();
+        Browser.Exists(By.Id("reload-with-navigate-to")).Click();
+        Browser.True(() => IsElementStale(initialRenderIdElement));
+
+        var finalRenderIdElement = Browser.Exists(By.Id("render-id"));
+        var finalRenderId = -1;
+        Browser.True(() => int.TryParse(finalRenderIdElement.Text, out finalRenderId));
+        Assert.NotEqual(-1, initialRenderId);
+        Assert.True(finalRenderId > initialRenderId);
+
+        // Ensure that the history stack was correctly updated
+        Browser.Navigate().Back();
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+        Assert.EndsWith("/nav", Browser.Url);
+    }
+
+    [Theory]
+    [InlineData("server")]
+    [InlineData("webassembly")]
+    public void RefreshCanFallBackOnFullPageReload(string renderMode)
+    {
+        Navigate($"{ServerPathBase}/nav");
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText($"Interactive component navigation ({renderMode})")).Click();
+        Browser.Equal("Page with interactive components that navigate", () => Browser.Exists(By.TagName("h1")).Text);
+        
+        ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('suppress-enhanced-navigation', 'true')");
+        Browser.Navigate().Refresh();
+        Browser.Equal("Page with interactive components that navigate", () => Browser.Exists(By.TagName("h1")).Text);
+
+        // Normally, you shouldn't store references to elements because they could become stale references
+        // after the page re-renders. However, we want to explicitly test that the element becomes stale
+        // across renders to ensure that a full page reload occurs.
+        var initialRenderIdElement = Browser.Exists(By.Id("render-id"));
+        var initialRenderId = -1;
+        Browser.True(() => int.TryParse(initialRenderIdElement.Text, out initialRenderId));
+        Assert.NotEqual(-1, initialRenderId);
+
+        Browser.Exists(By.Id("refresh-with-refresh")).Click();
+        Browser.True(() => IsElementStale(initialRenderIdElement));
+
+        var finalRenderIdElement = Browser.Exists(By.Id("render-id"));
+        var finalRenderId = -1;
+        Browser.True(() => int.TryParse(finalRenderIdElement.Text, out finalRenderId));
+        Assert.NotEqual(-1, initialRenderId);
+        Assert.True(finalRenderId > initialRenderId);
+
+        // Ensure that the history stack was correctly updated
+        Browser.Navigate().Back();
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+        Assert.EndsWith("/nav", Browser.Url);
+    }
+
+    [Theory]
+    [InlineData("server")]
+    [InlineData("webassembly")]
+    public void RefreshWithForceReloadDoesFullPageReload(string renderMode)
+    {
+        Navigate($"{ServerPathBase}/nav");
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText($"Interactive component navigation ({renderMode})")).Click();
+        Browser.Equal("Page with interactive components that navigate", () => Browser.Exists(By.TagName("h1")).Text);
+        
+        // Normally, you shouldn't store references to elements because they could become stale references
+        // after the page re-renders. However, we want to explicitly test that the element becomes stale
+        // across renders to ensure that a full page reload occurs.
+        var initialRenderIdElement = Browser.Exists(By.Id("render-id"));
+        var initialRenderId = -1;
+        Browser.True(() => int.TryParse(initialRenderIdElement.Text, out initialRenderId));
+        Assert.NotEqual(-1, initialRenderId);
+
+        Browser.Exists(By.Id("reload-with-refresh")).Click();
         Browser.True(() => IsElementStale(initialRenderIdElement));
 
         var finalRenderIdElement = Browser.Exists(By.Id("render-id"));
