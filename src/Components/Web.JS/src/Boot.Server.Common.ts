@@ -3,7 +3,7 @@
 
 import { DotNet } from '@microsoft/dotnet-js-interop';
 import { Blazor } from './GlobalExports';
-import { HubConnectionBuilder, HubConnection, HttpTransportType, HubConnectionState } from '@microsoft/signalr';
+import { HubConnectionBuilder, HubConnection, HttpTransportType } from '@microsoft/signalr';
 import { MessagePackHubProtocol } from '@microsoft/signalr-protocol-msgpack';
 import { showErrorNotification } from './BootErrors';
 import { RenderQueue } from './Platform/Circuits/RenderQueue';
@@ -23,7 +23,7 @@ import { CircuitDotNetCallDispatcher } from './Platform/Circuits/CircuitDotNetCa
 
 let renderingFailed = false;
 let started = false;
-let circuitActive = false;
+let startCircuitPromise: Promise<boolean> | undefined;
 let connection: HubConnection;
 let circuit: CircuitDescriptor;
 let dotNetDispatcher: CircuitDotNetCallDispatcher;
@@ -49,9 +49,9 @@ export async function startServer(components: RootComponentManager<ServerCompone
 
   // Establish options to be used
   const options = resolveOptions(userOptions);
-  const jsInitializer = await fetchAndInvokeInitializers(options);
-
   logger = new ConsoleLogger(options.logLevel);
+
+  const jsInitializer = await fetchAndInvokeInitializers(options);
 
   Blazor.reconnect = async (existingConnection?: HubConnection): Promise<boolean> => {
     if (renderingFailed) {
@@ -108,35 +108,28 @@ export async function startServer(components: RootComponentManager<ServerCompone
   jsInitializer.invokeAfterStartedCallbacks(Blazor);
 }
 
-export async function startCircuit(components: RootComponentManager<ServerComponentDescriptor>): Promise<boolean> {
+export function startCircuit(components: RootComponentManager<ServerComponentDescriptor>): Promise<boolean> {
   if (!started) {
     throw new Error('Cannot start the circuit until Blazor Server has started.');
   }
 
-  if (circuitActive) {
-    return false;
-  }
+  startCircuitPromise ??= (async () => {
+    const options = resolveOptions(userOptions);
+    const appState = discoverPersistedState(document);
+    circuit = new CircuitDescriptor(components, appState || '');
+    dotNetDispatcher = new CircuitDotNetCallDispatcher(() => connection);
+    dispatcher = DotNet.attachDispatcher(dotNetDispatcher);
 
-  circuitActive = true;
+    const initialConnection = await initializeConnection(options, logger, circuit);
+    const circuitStarted = await circuit.startCircuit(initialConnection);
+    if (!circuitStarted) {
+      logger.log(LogLevel.Error, 'Failed to start the circuit.');
+      return false;
+    }
+    return true;
+  })();
 
-  if (connection && connection.state !== HubConnectionState.Disconnected) {
-    return false;
-  }
-
-  const options = resolveOptions(userOptions);
-  const appState = discoverPersistedState(document);
-  circuit = new CircuitDescriptor(components, appState || '');
-  dotNetDispatcher = new CircuitDotNetCallDispatcher(() => connection);
-  dispatcher = DotNet.attachDispatcher(dotNetDispatcher);
-
-  const initialConnection = await initializeConnection(options, logger, circuit);
-  const circuitStarted = await circuit.startCircuit(initialConnection);
-  if (!circuitStarted) {
-    logger.log(LogLevel.Error, 'Failed to start the circuit.');
-    return false;
-  }
-
-  return true;
+  return startCircuitPromise;
 }
 
 export function hasStartedServer(): boolean {
@@ -144,7 +137,7 @@ export function hasStartedServer(): boolean {
 }
 
 export function isCircuitActive(): boolean {
-  return circuitActive;
+  return startCircuitPromise !== undefined;
 }
 
 export function attachCircuitAfterRenderCallback(callback: typeof afterRenderCallback) {
@@ -156,11 +149,11 @@ export function attachCircuitAfterRenderCallback(callback: typeof afterRenderCal
 }
 
 export function disposeCircuit() {
-  if (!circuitActive) {
+  if (startCircuitPromise === undefined) {
     return;
   }
 
-  circuitActive = false;
+  startCircuitPromise = undefined;
 
   // We dispose the .NET dispatcher to prevent it from being used in the future.
   // This avoids cases where, for example, .NET object references from a
