@@ -270,10 +270,10 @@ public class ComponentApplicationLifetimeTest
             return Task.FromResult(State);
         }
 
-        public Task PersistStateAsync(IReadOnlyDictionary<string, byte[]> state)
+        public Task PersistStateAsync(IReadOnlyDictionary<string, Tuple<PersistComponentStateDirection, byte[]>> state)
         {
             // We copy the data here because it's no longer available after this call completes.
-            State = state.ToDictionary(k => k.Key, v => v.Value);
+            State = state.ToDictionary(k => k.Key, v => v.Value.Item2);
             return Task.CompletedTask;
         }
     }

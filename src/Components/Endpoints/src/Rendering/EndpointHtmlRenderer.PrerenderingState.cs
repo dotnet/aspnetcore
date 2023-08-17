@@ -15,6 +15,9 @@ internal partial class EndpointHtmlRenderer
 {
     private static readonly object InvokedRenderModesKey = new object();
 
+    public async ValueTask<IHtmlContent> PrerenderPersistedStateForServerAndWebAssemblyAsync()
+        => await PrerenderPersistedStateAsync(_httpContext, PersistedStateSerializationMode.ServerAndWebAssembly);
+
     public async ValueTask<IHtmlContent> PrerenderPersistedStateAsync(HttpContext httpContext, PersistedStateSerializationMode serializationMode)
     {
         SetHttpContext(httpContext);
@@ -41,12 +44,14 @@ internal partial class EndpointHtmlRenderer
         }
 
         // Now given the mode, we obtain a particular store for that mode
-        var store = serializationMode switch
+        IPersistentComponentStateStore store = serializationMode switch
         {
             PersistedStateSerializationMode.Server =>
                 new ProtectedPrerenderComponentApplicationStore(_httpContext.RequestServices.GetRequiredService<IDataProtectionProvider>()),
             PersistedStateSerializationMode.WebAssembly =>
                 new PrerenderComponentApplicationStore(),
+            PersistedStateSerializationMode.ServerAndWebAssembly =>
+                new PartiallyProtectedPrerenderComponentApplicationStore(_httpContext.RequestServices.GetRequiredService<IDataProtectionProvider>()),
             _ =>
                 throw new InvalidOperationException("Invalid persistence mode.")
         };
@@ -103,24 +108,48 @@ internal partial class EndpointHtmlRenderer
 
     private sealed class ComponentStateHtmlContent : IHtmlContent
     {
-        private PrerenderComponentApplicationStore? _store;
+        private IPersistentComponentStateStore? _store;
 
         public static ComponentStateHtmlContent Empty { get; }
             = new ComponentStateHtmlContent(null);
 
-        public ComponentStateHtmlContent(PrerenderComponentApplicationStore? store)
+        public ComponentStateHtmlContent(IPersistentComponentStateStore? store)
         {
             _store = store;
         }
 
         public void WriteTo(TextWriter writer, HtmlEncoder encoder)
         {
-            if (_store != null)
+            if (_store == null)
             {
-                writer.Write("<!--Blazor-Component-State:");
-                writer.Write(_store.PersistedState);
+                return;
+            }
+
+            if (_store is ProtectedPrerenderComponentApplicationStore protectedstore)
+            {
+                WriteState(writer, protectedstore.PersistedState, "Blazor-Server-Component-State:");
+            }
+            else if (_store is PrerenderComponentApplicationStore store)
+            {
+                WriteState(writer, store.PersistedState, "Blazor-WebAssembly-Component-State:");
+            }
+            else if (_store is PartiallyProtectedPrerenderComponentApplicationStore partiallyProtected)
+            {
+                WriteState(writer, partiallyProtected.PersistedProtectedState, "Blazor-Server-Component-State:");
+                WriteState(writer, partiallyProtected.PersistedState, "Blazor-WebAssembly-Component-State:");
+            }
+
+            _store = null;
+        }
+
+        private static void WriteState(TextWriter writer, string? state, string commentPrefix)
+        {
+            if (state != null)
+            {
+                writer.Write("<!--");
+                writer.Write(commentPrefix);
+                writer.Write(state);
                 writer.Write("-->");
-                _store = null;
             }
         }
     }

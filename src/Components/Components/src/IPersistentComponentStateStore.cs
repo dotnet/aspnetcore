@@ -19,5 +19,5 @@ public interface IPersistentComponentStateStore
     /// </summary>
     /// <param name="state">The serialized state to persist.</param>
     /// <returns>A <see cref="Task" /> that completes when the state is persisted to disk.</returns>
-    Task PersistStateAsync(IReadOnlyDictionary<string, byte[]> state);
+    Task PersistStateAsync(IReadOnlyDictionary<string, Tuple<PersistComponentStateDirection, byte[]>> state);
 }

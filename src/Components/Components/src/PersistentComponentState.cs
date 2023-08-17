@@ -13,12 +13,12 @@ namespace Microsoft.AspNetCore.Components;
 public class PersistentComponentState
 {
     private IDictionary<string, byte[]>? _existingState;
-    private readonly IDictionary<string, byte[]> _currentState;
+    private readonly IDictionary<string, Tuple<PersistComponentStateDirection, byte[]>> _currentState;
 
     private readonly List<Func<Task>> _registeredCallbacks;
 
     internal PersistentComponentState(
-        IDictionary<string, byte[]> currentState,
+        IDictionary<string, Tuple<PersistComponentStateDirection, byte[]>> currentState,
         List<Func<Task>> pauseCallbacks)
     {
         _currentState = currentState;
@@ -53,12 +53,26 @@ public class PersistentComponentState
 
     /// <summary>
     /// Serializes <paramref name="instance"/> as JSON and persists it under the given <paramref name="key"/>.
+    /// Direction is <see cref="PersistComponentStateDirection.Server"/> by default.
     /// </summary>
     /// <typeparam name="TValue">The <paramref name="instance"/> type.</typeparam>
     /// <param name="key">The key to use to persist the state.</param>
     /// <param name="instance">The instance to persist.</param>
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public void PersistAsJson<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string key, TValue instance)
+    {
+        PersistAsJson(key, instance, PersistComponentStateDirection.Server);
+    }
+
+    /// <summary>
+    /// Serializes <paramref name="instance"/> as JSON and persists it under the given <paramref name="key"/> on the specified <paramref name="direction"/>.
+    /// </summary>
+    /// <typeparam name="TValue">The <paramref name="instance"/> type.</typeparam>
+    /// <param name="key">The key to use to persist the state.</param>
+    /// <param name="instance">The instance to persist.</param>
+    /// <param name="direction">The direction to persist data.</param>
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
+    public void PersistAsJson<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string key, TValue instance, PersistComponentStateDirection direction)
     {
         ArgumentNullException.ThrowIfNull(key);
 
@@ -72,7 +86,8 @@ public class PersistentComponentState
             throw new ArgumentException($"There is already a persisted object under the same key '{key}'");
         }
 
-        _currentState.Add(key, JsonSerializer.SerializeToUtf8Bytes(instance, JsonSerializerOptionsProvider.Options));
+        _currentState.Add(key, new Tuple<PersistComponentStateDirection, byte[]>
+            (direction, JsonSerializer.SerializeToUtf8Bytes(instance, JsonSerializerOptionsProvider.Options)));
     }
 
     /// <summary>

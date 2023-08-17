@@ -41,6 +41,14 @@ internal class PrerenderComponentApplicationStore : IPersistentComponentStateSto
 
     public Dictionary<string, byte[]> ExistingState { get; protected set; }
 
+    protected virtual PersistComponentStateDirection Direction
+    {
+        get
+        {
+            return PersistComponentStateDirection.WebAssembly;
+        }
+    }
+
     public Task<IDictionary<string, byte[]>> GetPersistedStateAsync()
     {
         return Task.FromResult((IDictionary<string, byte[]>)ExistingState);
@@ -50,9 +58,21 @@ internal class PrerenderComponentApplicationStore : IPersistentComponentStateSto
     protected virtual byte[] SerializeState(IReadOnlyDictionary<string, byte[]> state) =>
         JsonSerializer.SerializeToUtf8Bytes(state);
 
-    public Task PersistStateAsync(IReadOnlyDictionary<string, byte[]> state)
+    public Task PersistStateAsync(IReadOnlyDictionary<string, Tuple<PersistComponentStateDirection, byte[]>> state)
     {
-        PersistedState = Convert.ToBase64String(SerializeState(state));
+        Dictionary<string, byte[]> result = new(StringComparer.Ordinal);
+
+        foreach (var entry in state)
+        {
+            if (entry.Value.Item1 != Direction)
+            {
+                throw new InvalidOperationException("Invalid state direction to store.");
+            }
+
+            result[entry.Key] = entry.Value.Item2;
+        }
+
+        PersistedState = Convert.ToBase64String(SerializeState(result));
         return Task.CompletedTask;
     }
 }
