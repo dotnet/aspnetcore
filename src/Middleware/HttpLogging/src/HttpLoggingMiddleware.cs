@@ -18,23 +18,27 @@ internal sealed class HttpLoggingMiddleware
     private readonly RequestDelegate _next;
     private readonly ILogger _logger;
     private readonly ObjectPool<HttpLoggingInterceptorContext> _contextPool;
+    private readonly TimeProvider _timeProvider;
     private readonly IHttpLoggingInterceptor[] _interceptors;
     private readonly IOptionsMonitor<HttpLoggingOptions> _options;
     private const string Redacted = "[Redacted]";
 
     public HttpLoggingMiddleware(RequestDelegate next, IOptionsMonitor<HttpLoggingOptions> options, ILogger<HttpLoggingMiddleware> logger,
-        IEnumerable<IHttpLoggingInterceptor> interceptors, ObjectPool<HttpLoggingInterceptorContext> contextPool)
+        IEnumerable<IHttpLoggingInterceptor> interceptors, ObjectPool<HttpLoggingInterceptorContext> contextPool, TimeProvider timeProvider)
     {
         ArgumentNullException.ThrowIfNull(next);
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(logger);
         ArgumentNullException.ThrowIfNull(interceptors);
+        ArgumentNullException.ThrowIfNull(contextPool);
+        ArgumentNullException.ThrowIfNull(timeProvider);
 
         _next = next;
         _options = options;
         _logger = logger;
-        _contextPool = contextPool;
         _interceptors = interceptors.ToArray();
+        _contextPool = contextPool;
+        _timeProvider = timeProvider;
     }
 
     /// <summary>
@@ -74,7 +78,8 @@ internal sealed class HttpLoggingMiddleware
         logContext.LoggingFields = loggingFields;
         logContext.RequestBodyLogLimit = options.RequestBodyLogLimit;
         logContext.ResponseBodyLogLimit = options.ResponseBodyLogLimit;
-        logContext.StartTimestamp = TimeProvider.System.GetTimestamp();
+        logContext.StartTimestamp = _timeProvider.GetTimestamp();
+        logContext.TimeProvider = _timeProvider;
 
         if (loggingAttribute?.IsRequestBodyLogLimitSet is true)
         {
@@ -227,6 +232,7 @@ internal sealed class HttpLoggingMiddleware
                 context.Features.Set(originalUpgradeFeature);
             }
 
+            logContext.Reset();
             _contextPool.Return(logContext);
         }
     }
@@ -278,8 +284,7 @@ internal sealed class HttpLoggingMiddleware
 
         if (loggingFields.HasFlag(HttpLoggingFields.Duration))
         {
-            var duration = (long)TimeProvider.System.GetElapsedTime(logContext.StartTimestamp).TotalMilliseconds;
-            logContext.AddParameter(nameof(HttpLoggingFields.Duration), duration);
+            logContext.AddParameter(nameof(HttpLoggingFields.Duration), logContext.GetDuration());
         }
 
         if (loggingFields.HasFlag(HttpLoggingFields.ResponseHeaders))

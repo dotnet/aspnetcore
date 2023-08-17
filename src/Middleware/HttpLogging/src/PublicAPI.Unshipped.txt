@@ -19,6 +19,7 @@ Microsoft.AspNetCore.HttpLogging.HttpLoggingInterceptorContext.AddParameter(stri
 Microsoft.AspNetCore.HttpLogging.HttpLoggingInterceptorContext.Disable(Microsoft.AspNetCore.HttpLogging.HttpLoggingFields fields) -> void
 Microsoft.AspNetCore.HttpLogging.HttpLoggingInterceptorContext.Enable(Microsoft.AspNetCore.HttpLogging.HttpLoggingFields fields) -> void
 Microsoft.AspNetCore.HttpLogging.HttpLoggingInterceptorContext.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!
+Microsoft.AspNetCore.HttpLogging.HttpLoggingInterceptorContext.HttpContext.set -> void
 Microsoft.AspNetCore.HttpLogging.HttpLoggingInterceptorContext.HttpLoggingInterceptorContext() -> void
 Microsoft.AspNetCore.HttpLogging.HttpLoggingInterceptorContext.IsAnyEnabled(Microsoft.AspNetCore.HttpLogging.HttpLoggingFields fields) -> bool
 Microsoft.AspNetCore.HttpLogging.HttpLoggingInterceptorContext.LoggingFields.get -> Microsoft.AspNetCore.HttpLogging.HttpLoggingFields

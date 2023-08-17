@@ -24,6 +24,7 @@ public static class HttpLoggingServicesExtensions
         ArgumentNullException.ThrowIfNull(configureOptions);
 
         services.TryAddSingleton(ObjectPool.ObjectPool.Create<HttpLoggingInterceptorContext>());
+        services.TryAddSingleton(TimeProvider.System);
         services.Configure(configureOptions);
         return services;
     }

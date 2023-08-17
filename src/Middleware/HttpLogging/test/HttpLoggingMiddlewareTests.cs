@@ -42,7 +42,8 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             CreateOptionsAccessor(),
             LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
             Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingInterceptorContext>()));
+            ObjectPool.Create<HttpLoggingInterceptorContext>(),
+            TimeProvider.System));
 
         Assert.Throws<ArgumentNullException>(() => new HttpLoggingMiddleware(c =>
             {
@@ -51,7 +52,8 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             null,
             LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
             Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingInterceptorContext>()));
+            ObjectPool.Create<HttpLoggingInterceptorContext>(),
+            TimeProvider.System));
 
         Assert.Throws<ArgumentNullException>(() => new HttpLoggingMiddleware(c =>
             {
@@ -60,7 +62,38 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             CreateOptionsAccessor(),
             null,
             Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingInterceptorContext>()));
+            ObjectPool.Create<HttpLoggingInterceptorContext>(),
+            TimeProvider.System));
+
+        Assert.Throws<ArgumentNullException>(() => new HttpLoggingMiddleware(c =>
+        {
+            return Task.CompletedTask;
+        },
+            CreateOptionsAccessor(),
+            LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
+            null,
+            ObjectPool.Create<HttpLoggingInterceptorContext>(),
+            TimeProvider.System));
+
+        Assert.Throws<ArgumentNullException>(() => new HttpLoggingMiddleware(c =>
+        {
+            return Task.CompletedTask;
+        },
+            CreateOptionsAccessor(),
+            LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
+            Array.Empty<IHttpLoggingInterceptor>(),
+            null,
+            TimeProvider.System));
+
+        Assert.Throws<ArgumentNullException>(() => new HttpLoggingMiddleware(c =>
+        {
+            return Task.CompletedTask;
+        },
+            CreateOptionsAccessor(),
+            LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
+            Array.Empty<IHttpLoggingInterceptor>(),
+            ObjectPool.Create<HttpLoggingInterceptorContext>(),
+            null));
     }
 
     [Fact]
@@ -69,16 +102,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         var options = CreateOptionsAccessor();
         options.CurrentValue.LoggingFields = HttpLoggingFields.None;
 
-        var middleware = new HttpLoggingMiddleware(
-            c =>
-            {
-                c.Response.StatusCode = 200;
-                return Task.CompletedTask;
-            },
-            options,
-            LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
-            Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingInterceptorContext>());
+        var middleware = CreateMiddleware(options: options);
 
         var httpContext = new DefaultHttpContext();
         httpContext.Request.Protocol = "HTTP/1.0";
@@ -99,7 +123,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
     [Fact]
     public async Task DefaultRequestInfoOnlyHeadersAndRequestInfo()
     {
-        var middleware = new HttpLoggingMiddleware(
+        var middleware = CreateMiddleware(
             async c =>
             {
                 var arr = new byte[4096];
@@ -111,11 +135,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
                         break;
                     }
                 }
-            },
-            CreateOptionsAccessor(),
-            LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
-            Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingInterceptorContext>());
+            });
 
         var httpContext = new DefaultHttpContext();
         httpContext.Request.Protocol = "HTTP/1.0";
@@ -142,7 +162,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
     {
         var options = CreateOptionsAccessor();
         options.CurrentValue.LoggingFields = HttpLoggingFields.Request;
-        var middleware = new HttpLoggingMiddleware(
+        var middleware = CreateMiddleware(
             async c =>
             {
                 var arr = new byte[4096];
@@ -155,10 +175,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
                     }
                 }
             },
-            options,
-            LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
-            Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingInterceptorContext>());
+            options);
 
         var httpContext = new DefaultHttpContext();
         httpContext.Request.Protocol = "HTTP/1.0";
@@ -185,7 +202,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
     {
         var options = CreateOptionsAccessor();
         options.CurrentValue.LoggingFields = HttpLoggingFields.RequestProperties;
-        var middleware = new HttpLoggingMiddleware(
+        var middleware = CreateMiddleware(
             async c =>
             {
                 var arr = new byte[4096];
@@ -198,10 +215,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
                     }
                 }
             },
-            options,
-            LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
-            Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingInterceptorContext>());
+            options);
 
         var httpContext = new DefaultHttpContext();
         httpContext.Request.Protocol = "HTTP/1.0";
@@ -228,7 +242,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
     {
         var options = CreateOptionsAccessor();
         options.CurrentValue.LoggingFields = HttpLoggingFields.RequestHeaders;
-        var middleware = new HttpLoggingMiddleware(
+        var middleware = CreateMiddleware(
             async c =>
             {
                 var arr = new byte[4096];
@@ -241,10 +255,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
                     }
                 }
             },
-            options,
-            LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
-            Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingInterceptorContext>());
+            options);
 
         var httpContext = new DefaultHttpContext();
         httpContext.Request.Protocol = "HTTP/1.0";
@@ -271,7 +282,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
     [Fact]
     public async Task UnknownRequestHeadersRedacted()
     {
-        var middleware = new HttpLoggingMiddleware(
+        var middleware = CreateMiddleware(
             async c =>
             {
                 var arr = new byte[4096];
@@ -283,11 +294,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
                         break;
                     }
                 }
-            },
-            CreateOptionsAccessor(),
-            LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
-            Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingInterceptorContext>());
+            });
 
         var httpContext = new DefaultHttpContext();
 
@@ -304,15 +311,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         var options = CreateOptionsAccessor();
         options.CurrentValue.RequestHeaders.Clear();
         options.CurrentValue.RequestHeaders.Add("foo");
-        var middleware = new HttpLoggingMiddleware(
-             c =>
-             {
-                 return Task.CompletedTask;
-             },
-             options,
-             LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
-            Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingInterceptorContext>());
+        var middleware = CreateMiddleware(options: options);
 
         var httpContext = new DefaultHttpContext();
 
@@ -335,7 +334,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         var options = CreateOptionsAccessor();
         options.CurrentValue.LoggingFields = HttpLoggingFields.RequestBody;
 
-        var middleware = new HttpLoggingMiddleware(
+        var middleware = CreateMiddleware(
             async c =>
             {
                 var arr = new byte[4096];
@@ -348,10 +347,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
                     }
                 }
             },
-            options,
-            LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
-            Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingInterceptorContext>());
+            options);
 
         var httpContext = new DefaultHttpContext();
         httpContext.Request.ContentType = "text/plain";
@@ -370,7 +366,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         options.CurrentValue.LoggingFields = HttpLoggingFields.RequestBody;
         options.CurrentValue.RequestBodyLogLimit = 4;
 
-        var middleware = new HttpLoggingMiddleware(
+        var middleware = CreateMiddleware(
             async c =>
             {
                 var arr = new byte[4096];
@@ -387,10 +383,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
 
                 Assert.Equal(15, count);
             },
-            options,
-            LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
-            Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingInterceptorContext>());
+            options);
 
         var httpContext = new DefaultHttpContext();
         httpContext.Request.ContentType = "text/plain";
@@ -409,7 +402,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         var options = CreateOptionsAccessor();
         options.CurrentValue.LoggingFields = HttpLoggingFields.RequestBody;
 
-        var middleware = new HttpLoggingMiddleware(
+        var middleware = CreateMiddleware(
             async c =>
             {
                 var arr = new byte[4096];
@@ -426,10 +419,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
 
                 Assert.Equal(63000, count);
             },
-            options,
-            LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
-            Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingInterceptorContext>());
+            options);
 
         var httpContext = new DefaultHttpContext();
         httpContext.Request.ContentType = "text/plain";
@@ -448,16 +438,13 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         var options = CreateOptionsAccessor();
         options.CurrentValue.LoggingFields = HttpLoggingFields.RequestBody;
 
-        var middleware = new HttpLoggingMiddleware(
+        var middleware = CreateMiddleware(
             async c =>
             {
                 var arr = new byte[4096];
                 var res = await c.Request.Body.ReadAsync(arr);
             },
-            options,
-            LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
-            Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingInterceptorContext>());
+            options);
 
         var httpContext = new DefaultHttpContext();
         httpContext.Request.ContentType = "text/plain";
@@ -476,17 +463,14 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         var options = CreateOptionsAccessor();
         options.CurrentValue.LoggingFields = HttpLoggingFields.RequestBody;
 
-        var middleware = new HttpLoggingMiddleware(
+        var middleware = CreateMiddleware(
             async c =>
             {
                 var arr = new byte[4096];
                 _ = await c.Request.Body.ReadAsync(new byte[0]);
                 var res = await c.Request.Body.ReadAsync(arr);
             },
-            options,
-            LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
-            Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingInterceptorContext>());
+            options);
 
         var httpContext = new DefaultHttpContext();
         httpContext.Request.ContentType = "text/plain";
@@ -512,7 +496,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         var options = CreateOptionsAccessor();
         options.CurrentValue.LoggingFields = HttpLoggingFields.RequestBody;
 
-        var middleware = new HttpLoggingMiddleware(
+        var middleware = CreateMiddleware(
             async c =>
             {
                 var arr = new byte[4096];
@@ -525,10 +509,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
                     }
                 }
             },
-            options,
-            LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
-            Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingInterceptorContext>());
+            options);
 
         var httpContext = new DefaultHttpContext();
         httpContext.Request.ContentType = contentType;
@@ -549,7 +530,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         var options = CreateOptionsAccessor();
         options.CurrentValue.LoggingFields = HttpLoggingFields.RequestBody;
 
-        var middleware = new HttpLoggingMiddleware(
+        var middleware = CreateMiddleware(
             async c =>
             {
                 var arr = new byte[4096];
@@ -567,10 +548,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
 
                 Assert.Equal(1000, count);
             },
-            options,
-            LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
-            Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingInterceptorContext>());
+            options);
 
         var httpContext = new DefaultHttpContext();
         httpContext.Request.ContentType = contentType;
@@ -592,7 +570,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         options.CurrentValue.MediaTypeOptions.Clear();
         options.CurrentValue.MediaTypeOptions.AddText("text/plain", encoding);
 
-        var middleware = new HttpLoggingMiddleware(
+        var middleware = CreateMiddleware(
             async c =>
             {
                 var arr = new byte[4096];
@@ -609,10 +587,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
 
                 Assert.Equal(2000, count);
             },
-            options,
-            LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
-            Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingInterceptorContext>());
+            options);
 
         var httpContext = new DefaultHttpContext();
         httpContext.Request.ContentType = "text/plain";
@@ -626,18 +601,14 @@ public class HttpLoggingMiddlewareTests : LoggedTest
     [Fact]
     public async Task DefaultResponseInfoOnlyHeadersAndRequestInfo()
     {
-        var middleware = new HttpLoggingMiddleware(
+        var middleware = CreateMiddleware(
             async c =>
             {
                 c.Response.StatusCode = 200;
                 c.Response.Headers[HeaderNames.TransferEncoding] = "test";
                 c.Response.ContentType = "text/plain";
                 await c.Response.WriteAsync("test");
-            },
-            CreateOptionsAccessor(),
-            LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
-            Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingInterceptorContext>());
+            });
 
         var httpContext = new DefaultHttpContext();
 
@@ -653,7 +624,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         var options = CreateOptionsAccessor();
         options.CurrentValue.LoggingFields = HttpLoggingFields.Response;
 
-        var middleware = new HttpLoggingMiddleware(
+        var middleware = CreateMiddleware(
             async c =>
             {
                 c.Response.StatusCode = 200;
@@ -661,10 +632,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
                 c.Response.ContentType = "text/plain";
                 await c.Response.WriteAsync("test");
             },
-            options,
-            LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
-            Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingInterceptorContext>());
+            options);
 
         var httpContext = new DefaultHttpContext();
 
@@ -680,7 +648,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         var options = CreateOptionsAccessor();
         options.CurrentValue.LoggingFields = HttpLoggingFields.ResponseStatusCode;
 
-        var middleware = new HttpLoggingMiddleware(
+        var middleware = CreateMiddleware(
             async c =>
             {
                 c.Response.StatusCode = 200;
@@ -688,10 +656,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
                 c.Response.ContentType = "text/plain";
                 await c.Response.WriteAsync("test");
             },
-            options,
-            LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
-            Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingInterceptorContext>());
+            options);
 
         var httpContext = new DefaultHttpContext();
 
@@ -707,7 +672,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         var options = CreateOptionsAccessor();
         options.CurrentValue.LoggingFields = HttpLoggingFields.ResponseHeaders;
 
-        var middleware = new HttpLoggingMiddleware(
+        var middleware = CreateMiddleware(
             async c =>
             {
                 c.Response.StatusCode = 200;
@@ -715,10 +680,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
                 c.Response.ContentType = "text/plain";
                 await c.Response.WriteAsync("test");
             },
-            options,
-            LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
-            Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingInterceptorContext>());
+            options);
 
         var httpContext = new DefaultHttpContext();
 
@@ -734,16 +696,13 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         var options = CreateOptionsAccessor();
         options.CurrentValue.LoggingFields = HttpLoggingFields.ResponseHeaders;
 
-        var middleware = new HttpLoggingMiddleware(
+        var middleware = CreateMiddleware(
             c =>
             {
                 c.Response.Headers["Test"] = "Kestrel";
                 return Task.CompletedTask;
             },
-            options,
-            LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
-            Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingInterceptorContext>());
+            options);
 
         var httpContext = new DefaultHttpContext();
 
@@ -759,17 +718,14 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         options.CurrentValue.ResponseHeaders.Clear();
         options.CurrentValue.ResponseHeaders.Add("Test");
 
-        var middleware = new HttpLoggingMiddleware(
+        var middleware = CreateMiddleware(
             c =>
             {
                 c.Response.Headers["Test"] = "Kestrel";
                 c.Response.Headers["Server"] = "Kestrel";
                 return Task.CompletedTask;
             },
-            options,
-            LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
-            Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingInterceptorContext>());
+            options);
 
         var httpContext = new DefaultHttpContext();
 
@@ -784,16 +740,13 @@ public class HttpLoggingMiddlewareTests : LoggedTest
     {
         var options = CreateOptionsAccessor();
         options.CurrentValue.LoggingFields = HttpLoggingFields.ResponseBody;
-        var middleware = new HttpLoggingMiddleware(
+        var middleware = CreateMiddleware(
             c =>
             {
                 c.Response.ContentType = "text/plain";
                 return c.Response.WriteAsync(expected);
             },
-            options,
-            LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
-            Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingInterceptorContext>());
+            options);
 
         var httpContext = new DefaultHttpContext();
 
@@ -808,16 +761,13 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         var input = string.Concat(new string('a', 30000), new string('b', 3000));
         var options = CreateOptionsAccessor();
         options.CurrentValue.LoggingFields = HttpLoggingFields.ResponseBody;
-        var middleware = new HttpLoggingMiddleware(
+        var middleware = CreateMiddleware(
             c =>
             {
                 c.Response.ContentType = "text/plain";
                 return c.Response.WriteAsync(input);
             },
-            options,
-            LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
-            Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingInterceptorContext>());
+            options);
 
         var httpContext = new DefaultHttpContext();
 
@@ -836,7 +786,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         var writtenHeaders = new TaskCompletionSource();
         var letBodyFinish = new TaskCompletionSource();
 
-        var middleware = new HttpLoggingMiddleware(
+        var middleware = CreateMiddleware(
             async c =>
             {
                 c.Response.StatusCode = 200;
@@ -846,10 +796,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
                 writtenHeaders.SetResult();
                 await letBodyFinish.Task;
             },
-            options,
-            LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
-            Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingInterceptorContext>());
+            options);
 
         var httpContext = new DefaultHttpContext();
 
@@ -877,7 +824,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         var writtenHeaders = new TaskCompletionSource();
         var letBodyFinish = new TaskCompletionSource();
 
-        var middleware = new HttpLoggingMiddleware(
+        var middleware = CreateMiddleware(
             async c =>
             {
                 c.Response.StatusCode = 200;
@@ -887,10 +834,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
                 writtenHeaders.SetResult();
                 await letBodyFinish.Task;
             },
-            options,
-            LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
-            Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingInterceptorContext>());
+            options);
 
         var httpContext = new DefaultHttpContext();
 
@@ -913,16 +857,13 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         var expected = "Hello world";
         var options = CreateOptionsAccessor();
         options.CurrentValue.LoggingFields = HttpLoggingFields.ResponseBody;
-        var middleware = new HttpLoggingMiddleware(
+        var middleware = CreateMiddleware(
             c =>
             {
                 c.Response.ContentType = "foo/*";
                 return c.Response.WriteAsync(expected);
             },
-            options,
-            LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
-            Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingInterceptorContext>());
+            options);
 
         var httpContext = new DefaultHttpContext();
 
@@ -936,7 +877,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
     {
         var options = CreateOptionsAccessor();
         options.CurrentValue.LoggingFields = HttpLoggingFields.RequestBody;
-        var middleware = new HttpLoggingMiddleware(
+        var middleware = CreateMiddleware(
             async c =>
             {
                 c.Request.ContentType = null;
@@ -950,10 +891,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
                     }
                 }
             },
-            options,
-            LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
-            Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingInterceptorContext>());
+            options);
 
         var httpContext = new DefaultHttpContext();
 
@@ -987,17 +925,14 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             .ReturnsAsync(Stream.Null);
         httpContext.Features.Set<IHttpUpgradeFeature>(upgradeFeatureMock.Object);
 
-        var middleware = new HttpLoggingMiddleware(
+        var middleware = CreateMiddleware(
             async c =>
             {
                 await c.Features.Get<IHttpUpgradeFeature>().UpgradeAsync();
                 writtenHeaders.SetResult();
                 await letBodyFinish.Task;
             },
-            options,
-            LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
-            Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingInterceptorContext>());
+            options);
 
         var middlewareTask = middleware.Invoke(httpContext);
 
@@ -1033,17 +968,14 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             .ReturnsAsync(Stream.Null);
         httpContext.Features.Set<IHttpUpgradeFeature>(upgradeFeatureMock.Object);
 
-        var middleware = new HttpLoggingMiddleware(
+        var middleware = CreateMiddleware(
             async c =>
             {
                 await c.Features.Get<IHttpUpgradeFeature>().UpgradeAsync();
                 writtenHeaders.SetResult();
                 await letBodyFinish.Task;
             },
-            options,
-            LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
-            Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingInterceptorContext>());
+            options);
 
         var middlewareTask = middleware.Invoke(httpContext);
 
@@ -1079,17 +1011,14 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             .ReturnsAsync(Stream.Null);
         httpContext.Features.Set<IHttpUpgradeFeature>(upgradeFeatureMock.Object);
 
-        var middleware = new HttpLoggingMiddleware(
+        var middleware = CreateMiddleware(
             async c =>
             {
                 await c.Features.Get<IHttpUpgradeFeature>().UpgradeAsync();
                 writtenHeaders.SetResult();
                 await letBodyFinish.Task;
             },
-            options,
-            LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
-            Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingInterceptorContext>());
+            options);
 
         var middlewareTask = middleware.Invoke(httpContext);
 
@@ -1117,7 +1046,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         upgradeFeatureMock.Setup(m => m.IsUpgradableRequest).Returns(isUpgradableRequest);
         httpContext.Features.Set<IHttpUpgradeFeature>(upgradeFeatureMock.Object);
 
-        var middleware = new HttpLoggingMiddleware(
+        var middleware = CreateMiddleware(
             async c =>
             {
                 c.Response.StatusCode = 200;
@@ -1125,10 +1054,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
                 c.Response.ContentType = "text/plain";
                 await c.Response.StartAsync();
             },
-            options,
-            LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
-            Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingInterceptorContext>());
+            options);
 
         var middlewareTask = middleware.Invoke(httpContext);
 
@@ -1166,15 +1092,12 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         var writeCount = 0;
         TestSink.MessageLogged += (context) => { writeCount++; };
 
-        var middleware = new HttpLoggingMiddleware(
+        var middleware = CreateMiddleware(
             async c =>
             {
                 await c.Features.Get<IHttpUpgradeFeature>().UpgradeAsync();
             },
-            options,
-            LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
-            Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingInterceptorContext>());
+            options);
 
         await middleware.Invoke(httpContext);
 
@@ -1200,16 +1123,13 @@ public class HttpLoggingMiddlewareTests : LoggedTest
 
         IHttpUpgradeFeature upgradeFeature = null;
 
-        var middleware = new HttpLoggingMiddleware(
+        var middleware = CreateMiddleware(
             async c =>
             {
                 upgradeFeature = c.Features.Get<IHttpUpgradeFeature>();
                 await letBodyFinish.Task;
             },
-            options,
-            LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
-            Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingInterceptorContext>());
+            options);
 
         var middlewareTask = middleware.Invoke(httpContext);
 
@@ -1350,6 +1270,18 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         var options = new HttpLoggingOptions();
         var optionsAccessor = Mock.Of<IOptionsMonitor<HttpLoggingOptions>>(o => o.CurrentValue == options);
         return optionsAccessor;
+    }
+
+    private HttpLoggingMiddleware CreateMiddleware(RequestDelegate app = null,
+        IOptionsMonitor<HttpLoggingOptions> options = null)
+    {
+        return new HttpLoggingMiddleware(
+            app ?? (c => Task.CompletedTask),
+            options ?? CreateOptionsAccessor(),
+            LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
+            Array.Empty<IHttpLoggingInterceptor>(),
+            ObjectPool.Create<HttpLoggingInterceptorContext>(),
+            TimeProvider.System);
     }
 
     private IHost CreateApp(HttpLoggingFields defaultFields = HttpLoggingFields.All)

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Numerics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.ObjectPool;
 
@@ -9,18 +10,19 @@ namespace Microsoft.AspNetCore.HttpLogging;
 /// <summary>
 /// The context used for logging customization callbacks.
 /// </summary>
-public sealed class HttpLoggingInterceptorContext : IResettable
+public sealed class HttpLoggingInterceptorContext
 {
     private HttpContext? _httpContext;
 
     /// <summary>
     /// The request context.
     /// </summary>
-    // We'd make this a required constructor parameter but ObjectPool requires a parameterless constructor.
     public HttpContext HttpContext
     {
         get => _httpContext ?? throw new InvalidOperationException("HttpContext was not initialized");
-        internal set => _httpContext = value ?? throw new ArgumentNullException(nameof(value));
+        // Public for 3rd party testing of interceptors.
+        // We'd make this a required constructor/init parameter but ObjectPool requires a parameterless constructor.
+        set => _httpContext = value ?? throw new ArgumentNullException(nameof(value));
     }
 
     /// <summary>
@@ -39,6 +41,7 @@ public sealed class HttpLoggingInterceptorContext : IResettable
     public int ResponseBodyLogLimit { get; set; }
 
     internal long StartTimestamp { get; set; }
+    internal TimeProvider TimeProvider { get; set; } = null!;
 
     /// <summary>
     /// The parameters to log.
@@ -89,6 +92,10 @@ public sealed class HttpLoggingInterceptorContext : IResettable
     /// <returns>`true` if the field was enabled.</returns>
     public bool TryOverride(HttpLoggingFields field)
     {
+        if (BitOperations.PopCount((uint)field) != 1)
+        {
+            throw new ArgumentException("Only a single field can be overridden at a time.", nameof(field));
+        }
         if (LoggingFields.HasFlag(field))
         {
             Disable(field);
@@ -98,7 +105,7 @@ public sealed class HttpLoggingInterceptorContext : IResettable
         return false;
     }
 
-    bool IResettable.TryReset()
+    internal void Reset()
     {
         _httpContext = null;
         LoggingFields = HttpLoggingFields.None;
@@ -106,6 +113,10 @@ public sealed class HttpLoggingInterceptorContext : IResettable
         ResponseBodyLogLimit = 0;
         StartTimestamp = 0;
         Parameters.Clear();
-        return true;
+    }
+
+    internal long GetDuration()
+    {
+        return (long)TimeProvider.GetElapsedTime(StartTimestamp).TotalMilliseconds;
     }
 }
