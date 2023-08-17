@@ -104,18 +104,24 @@ public class Startup
                 await context.Response.WriteAsync(key + Environment.NewLine);
             }
 
-            var envFeature = server.Features.Get<IIISEnvironmentFeature>();
-            await context.Response.WriteAsync(Environment.NewLine);
-            await context.Response.WriteAsync("IIS Environment Information:" + Environment.NewLine);
-            await context.Response.WriteAsync("IIS Version: " + envFeature.IISVersion + Environment.NewLine);
-            await context.Response.WriteAsync("ApplicationId: " + envFeature.ApplicationId + Environment.NewLine);
-            await context.Response.WriteAsync("Application Path: " + envFeature.ApplicationPhysicalPath + Environment.NewLine);
-            await context.Response.WriteAsync("Application Virtual Path: " + envFeature.ApplicationVirtualPath + Environment.NewLine);
-            await context.Response.WriteAsync("Application Config Path: " + envFeature.AppConfigPath + Environment.NewLine);
-            await context.Response.WriteAsync("AppPool ID: " + envFeature.AppPoolId + Environment.NewLine);
-            await context.Response.WriteAsync("AppPool Config File: " + envFeature.AppPoolConfigFile + Environment.NewLine);
-            await context.Response.WriteAsync("Site ID: " + envFeature.SiteId + Environment.NewLine);
-            await context.Response.WriteAsync("Site Name: " + envFeature.SiteName + Environment.NewLine);
+            if (server.Features.Get<IIISEnvironmentFeature>() is { } envFeature)
+            {
+                await context.Response.WriteAsync(Environment.NewLine);
+                await context.Response.WriteAsync("IIS Environment Information:" + Environment.NewLine);
+                await context.Response.WriteAsync("IIS Version: " + envFeature.IISVersion + Environment.NewLine);
+                await context.Response.WriteAsync("ApplicationId: " + envFeature.ApplicationId + Environment.NewLine);
+                await context.Response.WriteAsync("Application Path: " + envFeature.ApplicationPhysicalPath + Environment.NewLine);
+                await context.Response.WriteAsync("Application Virtual Path: " + envFeature.ApplicationVirtualPath + Environment.NewLine);
+                await context.Response.WriteAsync("Application Config Path: " + envFeature.AppConfigPath + Environment.NewLine);
+                await context.Response.WriteAsync("AppPool ID: " + envFeature.AppPoolId + Environment.NewLine);
+                await context.Response.WriteAsync("AppPool Config File: " + envFeature.AppPoolConfigFile + Environment.NewLine);
+                await context.Response.WriteAsync("Site ID: " + envFeature.SiteId + Environment.NewLine);
+                await context.Response.WriteAsync("Site Name: " + envFeature.SiteName + Environment.NewLine);
+            }
+            else
+            {
+                await context.Response.WriteAsync($"No {nameof(IIISEnvironmentFeature)} available." + Environment.NewLine);
+            }
         });
     }
 
