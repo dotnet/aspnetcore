@@ -164,7 +164,7 @@ public enum HttpLoggingFields : long
 
     /// <summary>
     /// Flag for logging HTTP Response properties and headers.
-    /// Includes <see cref="ResponseStatusCode"/> and <see cref="ResponseHeaders"/>
+    /// Includes <see cref="ResponseStatusCode"/>, <see cref="ResponseHeaders"/>, and <see cref="Duration"/>.
     /// </summary>
     ResponsePropertiesAndHeaders = ResponseStatusCode | ResponseHeaders | Duration,
 
@@ -186,7 +186,7 @@ public enum HttpLoggingFields : long
     /// Logging the response body has performance implications, as it requires buffering
     /// the entire response body up to <see cref="HttpLoggingOptions.ResponseBodyLogLimit"/>.
     /// </summary>
-    Response = ResponseStatusCode | ResponseHeaders | ResponseBody | Duration,
+    Response = ResponsePropertiesAndHeaders | ResponseBody,
 
     /// <summary>
     /// Flag for logging both the HTTP Request and Response.

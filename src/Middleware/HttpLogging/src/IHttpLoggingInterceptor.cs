@@ -11,10 +11,10 @@ public interface IHttpLoggingInterceptor
     /// <summary>
     /// A callback to customize the logging of the request and response.
     /// </summary>
-    void OnRequest(HttpLoggingContext logContext);
+    ValueTask OnRequestAsync(HttpLoggingInterceptorContext logContext);
 
     /// <summary>
     /// A callback to customize the logging of the response.
     /// </summary>
-    void OnResponse(HttpLoggingContext logContext);
+    ValueTask OnResponseAsync(HttpLoggingInterceptorContext logContext);
 }

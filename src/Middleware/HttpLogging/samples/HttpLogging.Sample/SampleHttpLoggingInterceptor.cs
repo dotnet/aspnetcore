@@ -7,7 +7,7 @@ namespace HttpLogging.Sample;
 
 internal class SampleHttpLoggingInterceptor : IHttpLoggingInterceptor
 {
-    public void OnRequest(HttpLoggingContext logContext)
+    public ValueTask OnRequestAsync(HttpLoggingInterceptorContext logContext)
     {
         // Compare to ExcludePathStartsWith
         if (!logContext.HttpContext.Request.Path.StartsWithSegments("/api"))
@@ -18,7 +18,7 @@ internal class SampleHttpLoggingInterceptor : IHttpLoggingInterceptor
         // Don't enrich if we're not going to log any part of the request
         if (!logContext.IsAnyEnabled(HttpLoggingFields.Request))
         {
-            return;
+            return default;
         }
 
         if (logContext.TryOverride(HttpLoggingFields.RequestPath))
@@ -32,30 +32,32 @@ internal class SampleHttpLoggingInterceptor : IHttpLoggingInterceptor
         }
 
         EnrichRequest(logContext);
+
+        return default;
     }
 
-    private void RedactRequestHeaders(HttpLoggingContext logContext)
+    private void RedactRequestHeaders(HttpLoggingInterceptorContext logContext)
     {
         foreach (var header in logContext.HttpContext.Request.Headers)
         {
-            logContext.Add(header.Key, "RedactedHeader"); // TODO: Redact header value
+            logContext.AddParameter(header.Key, "RedactedHeader"); // TODO: Redact header value
         }
     }
 
-    private void RedactResponseHeaders(HttpLoggingContext logContext)
+    private void RedactResponseHeaders(HttpLoggingInterceptorContext logContext)
     {
         foreach (var header in logContext.HttpContext.Response.Headers)
         {
-            logContext.Add(header.Key, "RedactedHeader"); // TODO: Redact header value
+            logContext.AddParameter(header.Key, "RedactedHeader"); // TODO: Redact header value
         }
     }
 
-    public void OnResponse(HttpLoggingContext logContext)
+    public ValueTask OnResponseAsync(HttpLoggingInterceptorContext logContext)
     {
         // Don't enrich if we're not going to log any part of the response
         if (!logContext.IsAnyEnabled(HttpLoggingFields.Response))
         {
-            return;
+            return default;
         }
 
         if (logContext.TryOverride(HttpLoggingFields.ResponseHeaders))
@@ -64,20 +66,22 @@ internal class SampleHttpLoggingInterceptor : IHttpLoggingInterceptor
         }
 
         EnrichResponse(logContext);
+
+        return default;
     }
 
-    private void EnrichResponse(HttpLoggingContext logContext)
+    private void EnrichResponse(HttpLoggingInterceptorContext logContext)
     {
-        logContext.Add("ResponseEnrichment", "Stuff");
+        logContext.AddParameter("ResponseEnrichment", "Stuff");
     }
 
-    private void EnrichRequest(HttpLoggingContext logContext)
+    private void EnrichRequest(HttpLoggingInterceptorContext logContext)
     {
-        logContext.Add("RequestEnrichment", "Stuff");
+        logContext.AddParameter("RequestEnrichment", "Stuff");
     }
 
-    private void RedactPath(HttpLoggingContext logContext)
+    private void RedactPath(HttpLoggingInterceptorContext logContext)
     {
-        logContext.Add(nameof(logContext.HttpContext.Request.Path), "RedactedPath");
+        logContext.AddParameter(nameof(logContext.HttpContext.Request.Path), "RedactedPath");
     }
 }

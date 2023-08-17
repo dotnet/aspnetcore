@@ -9,28 +9,28 @@ Microsoft.AspNetCore.HttpLogging.HttpLoggingAttribute.RequestBodyLogLimit.get ->
 Microsoft.AspNetCore.HttpLogging.HttpLoggingAttribute.RequestBodyLogLimit.set -> void
 Microsoft.AspNetCore.HttpLogging.HttpLoggingAttribute.ResponseBodyLogLimit.get -> int
 Microsoft.AspNetCore.HttpLogging.HttpLoggingAttribute.ResponseBodyLogLimit.set -> void
-Microsoft.AspNetCore.HttpLogging.HttpLoggingContext
-Microsoft.AspNetCore.HttpLogging.HttpLoggingContext.Add(string! key, object? value) -> void
-Microsoft.AspNetCore.HttpLogging.HttpLoggingContext.Disable(Microsoft.AspNetCore.HttpLogging.HttpLoggingFields fields) -> void
-Microsoft.AspNetCore.HttpLogging.HttpLoggingContext.Enable(Microsoft.AspNetCore.HttpLogging.HttpLoggingFields fields) -> void
-Microsoft.AspNetCore.HttpLogging.HttpLoggingContext.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!
-Microsoft.AspNetCore.HttpLogging.HttpLoggingContext.HttpContext.set -> void
-Microsoft.AspNetCore.HttpLogging.HttpLoggingContext.HttpLoggingContext() -> void
-Microsoft.AspNetCore.HttpLogging.HttpLoggingContext.IsAnyEnabled(Microsoft.AspNetCore.HttpLogging.HttpLoggingFields fields) -> bool
-Microsoft.AspNetCore.HttpLogging.HttpLoggingContext.LoggingFields.get -> Microsoft.AspNetCore.HttpLogging.HttpLoggingFields
-Microsoft.AspNetCore.HttpLogging.HttpLoggingContext.LoggingFields.set -> void
-Microsoft.AspNetCore.HttpLogging.HttpLoggingContext.Parameters.get -> System.Collections.Generic.IList<System.Collections.Generic.KeyValuePair<string!, object?>>!
-Microsoft.AspNetCore.HttpLogging.HttpLoggingContext.RequestBodyLogLimit.get -> int
-Microsoft.AspNetCore.HttpLogging.HttpLoggingContext.RequestBodyLogLimit.set -> void
-Microsoft.AspNetCore.HttpLogging.HttpLoggingContext.ResponseBodyLogLimit.get -> int
-Microsoft.AspNetCore.HttpLogging.HttpLoggingContext.ResponseBodyLogLimit.set -> void
-Microsoft.AspNetCore.HttpLogging.HttpLoggingContext.TryOverride(Microsoft.AspNetCore.HttpLogging.HttpLoggingFields field) -> bool
 *REMOVED*Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.Response = Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.ResponsePropertiesAndHeaders | Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.ResponseBody -> Microsoft.AspNetCore.HttpLogging.HttpLoggingFields
 *REMOVED*Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.ResponsePropertiesAndHeaders = Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.ResponseStatusCode | Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.ResponseHeaders -> Microsoft.AspNetCore.HttpLogging.HttpLoggingFields
 Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.Duration = 4096 -> Microsoft.AspNetCore.HttpLogging.HttpLoggingFields
 Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.Response = Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.ResponseBody | Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.ResponsePropertiesAndHeaders -> Microsoft.AspNetCore.HttpLogging.HttpLoggingFields
 Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.ResponsePropertiesAndHeaders = Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.ResponseStatusCode | Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.ResponseHeaders | Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.Duration -> Microsoft.AspNetCore.HttpLogging.HttpLoggingFields
+Microsoft.AspNetCore.HttpLogging.HttpLoggingInterceptorContext
+Microsoft.AspNetCore.HttpLogging.HttpLoggingInterceptorContext.AddParameter(string! key, object? value) -> void
+Microsoft.AspNetCore.HttpLogging.HttpLoggingInterceptorContext.Disable(Microsoft.AspNetCore.HttpLogging.HttpLoggingFields fields) -> void
+Microsoft.AspNetCore.HttpLogging.HttpLoggingInterceptorContext.Enable(Microsoft.AspNetCore.HttpLogging.HttpLoggingFields fields) -> void
+Microsoft.AspNetCore.HttpLogging.HttpLoggingInterceptorContext.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!
+Microsoft.AspNetCore.HttpLogging.HttpLoggingInterceptorContext.HttpLoggingInterceptorContext() -> void
+Microsoft.AspNetCore.HttpLogging.HttpLoggingInterceptorContext.IsAnyEnabled(Microsoft.AspNetCore.HttpLogging.HttpLoggingFields fields) -> bool
+Microsoft.AspNetCore.HttpLogging.HttpLoggingInterceptorContext.LoggingFields.get -> Microsoft.AspNetCore.HttpLogging.HttpLoggingFields
+Microsoft.AspNetCore.HttpLogging.HttpLoggingInterceptorContext.LoggingFields.set -> void
+Microsoft.AspNetCore.HttpLogging.HttpLoggingInterceptorContext.Parameters.get -> System.Collections.Generic.IList<System.Collections.Generic.KeyValuePair<string!, object?>>!
+Microsoft.AspNetCore.HttpLogging.HttpLoggingInterceptorContext.RequestBodyLogLimit.get -> int
+Microsoft.AspNetCore.HttpLogging.HttpLoggingInterceptorContext.RequestBodyLogLimit.set -> void
+Microsoft.AspNetCore.HttpLogging.HttpLoggingInterceptorContext.ResponseBodyLogLimit.get -> int
+Microsoft.AspNetCore.HttpLogging.HttpLoggingInterceptorContext.ResponseBodyLogLimit.set -> void
+Microsoft.AspNetCore.HttpLogging.HttpLoggingInterceptorContext.TryOverride(Microsoft.AspNetCore.HttpLogging.HttpLoggingFields field) -> bool
 Microsoft.AspNetCore.HttpLogging.IHttpLoggingInterceptor
-Microsoft.AspNetCore.HttpLogging.IHttpLoggingInterceptor.OnRequest(Microsoft.AspNetCore.HttpLogging.HttpLoggingContext! logContext) -> void
-Microsoft.AspNetCore.HttpLogging.IHttpLoggingInterceptor.OnResponse(Microsoft.AspNetCore.HttpLogging.HttpLoggingContext! logContext) -> void
+Microsoft.AspNetCore.HttpLogging.IHttpLoggingInterceptor.OnRequestAsync(Microsoft.AspNetCore.HttpLogging.HttpLoggingInterceptorContext! logContext) -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.HttpLogging.IHttpLoggingInterceptor.OnResponseAsync(Microsoft.AspNetCore.HttpLogging.HttpLoggingInterceptorContext! logContext) -> System.Threading.Tasks.ValueTask
 static Microsoft.AspNetCore.Builder.HttpLoggingEndpointConventionBuilderExtensions.WithHttpLogging<TBuilder>(this TBuilder builder, Microsoft.AspNetCore.HttpLogging.HttpLoggingFields loggingFields, int? requestBodyLogLimit = null, int? responseBodyLogLimit = null) -> TBuilder
+static Microsoft.Extensions.DependencyInjection.HttpLoggingServicesExtensions.AddHttpLoggingInterceptor<T>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

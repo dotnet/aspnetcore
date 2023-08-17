@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.HttpLogging;
 /// <summary>
 /// The context used for logging customization callbacks.
 /// </summary>
-public sealed class HttpLoggingContext : IResettable
+public sealed class HttpLoggingInterceptorContext : IResettable
 {
     private HttpContext? _httpContext;
 
@@ -20,7 +20,7 @@ public sealed class HttpLoggingContext : IResettable
     public HttpContext HttpContext
     {
         get => _httpContext ?? throw new InvalidOperationException("HttpContext was not initialized");
-        set => _httpContext = value ?? throw new ArgumentNullException(nameof(value));
+        internal set => _httpContext = value ?? throw new ArgumentNullException(nameof(value));
     }
 
     /// <summary>
@@ -50,7 +50,7 @@ public sealed class HttpLoggingContext : IResettable
     /// </summary>
     /// <param name="key">The parameter name.</param>
     /// <param name="value">The parameter value.</param>
-    public void Add(string key, object? value)
+    public void AddParameter(string key, object? value)
     {
         Parameters.Add(new(key, value));
     }

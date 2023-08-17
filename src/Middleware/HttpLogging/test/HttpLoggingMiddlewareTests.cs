@@ -42,7 +42,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             CreateOptionsAccessor(),
             LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
             Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingContext>()));
+            ObjectPool.Create<HttpLoggingInterceptorContext>()));
 
         Assert.Throws<ArgumentNullException>(() => new HttpLoggingMiddleware(c =>
             {
@@ -51,7 +51,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             null,
             LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
             Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingContext>()));
+            ObjectPool.Create<HttpLoggingInterceptorContext>()));
 
         Assert.Throws<ArgumentNullException>(() => new HttpLoggingMiddleware(c =>
             {
@@ -60,7 +60,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             CreateOptionsAccessor(),
             null,
             Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingContext>()));
+            ObjectPool.Create<HttpLoggingInterceptorContext>()));
     }
 
     [Fact]
@@ -78,7 +78,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             options,
             LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
             Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingContext>());
+            ObjectPool.Create<HttpLoggingInterceptorContext>());
 
         var httpContext = new DefaultHttpContext();
         httpContext.Request.Protocol = "HTTP/1.0";
@@ -115,7 +115,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             CreateOptionsAccessor(),
             LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
             Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingContext>());
+            ObjectPool.Create<HttpLoggingInterceptorContext>());
 
         var httpContext = new DefaultHttpContext();
         httpContext.Request.Protocol = "HTTP/1.0";
@@ -158,7 +158,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             options,
             LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
             Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingContext>());
+            ObjectPool.Create<HttpLoggingInterceptorContext>());
 
         var httpContext = new DefaultHttpContext();
         httpContext.Request.Protocol = "HTTP/1.0";
@@ -201,7 +201,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             options,
             LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
             Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingContext>());
+            ObjectPool.Create<HttpLoggingInterceptorContext>());
 
         var httpContext = new DefaultHttpContext();
         httpContext.Request.Protocol = "HTTP/1.0";
@@ -244,7 +244,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             options,
             LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
             Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingContext>());
+            ObjectPool.Create<HttpLoggingInterceptorContext>());
 
         var httpContext = new DefaultHttpContext();
         httpContext.Request.Protocol = "HTTP/1.0";
@@ -287,7 +287,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             CreateOptionsAccessor(),
             LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
             Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingContext>());
+            ObjectPool.Create<HttpLoggingInterceptorContext>());
 
         var httpContext = new DefaultHttpContext();
 
@@ -312,7 +312,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
              options,
              LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
             Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingContext>());
+            ObjectPool.Create<HttpLoggingInterceptorContext>());
 
         var httpContext = new DefaultHttpContext();
 
@@ -351,7 +351,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             options,
             LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
             Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingContext>());
+            ObjectPool.Create<HttpLoggingInterceptorContext>());
 
         var httpContext = new DefaultHttpContext();
         httpContext.Request.ContentType = "text/plain";
@@ -390,7 +390,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             options,
             LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
             Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingContext>());
+            ObjectPool.Create<HttpLoggingInterceptorContext>());
 
         var httpContext = new DefaultHttpContext();
         httpContext.Request.ContentType = "text/plain";
@@ -429,7 +429,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             options,
             LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
             Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingContext>());
+            ObjectPool.Create<HttpLoggingInterceptorContext>());
 
         var httpContext = new DefaultHttpContext();
         httpContext.Request.ContentType = "text/plain";
@@ -457,7 +457,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             options,
             LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
             Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingContext>());
+            ObjectPool.Create<HttpLoggingInterceptorContext>());
 
         var httpContext = new DefaultHttpContext();
         httpContext.Request.ContentType = "text/plain";
@@ -486,7 +486,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             options,
             LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
             Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingContext>());
+            ObjectPool.Create<HttpLoggingInterceptorContext>());
 
         var httpContext = new DefaultHttpContext();
         httpContext.Request.ContentType = "text/plain";
@@ -528,7 +528,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             options,
             LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
             Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingContext>());
+            ObjectPool.Create<HttpLoggingInterceptorContext>());
 
         var httpContext = new DefaultHttpContext();
         httpContext.Request.ContentType = contentType;
@@ -570,7 +570,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             options,
             LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
             Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingContext>());
+            ObjectPool.Create<HttpLoggingInterceptorContext>());
 
         var httpContext = new DefaultHttpContext();
         httpContext.Request.ContentType = contentType;
@@ -612,7 +612,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             options,
             LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
             Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingContext>());
+            ObjectPool.Create<HttpLoggingInterceptorContext>());
 
         var httpContext = new DefaultHttpContext();
         httpContext.Request.ContentType = "text/plain";
@@ -637,7 +637,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             CreateOptionsAccessor(),
             LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
             Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingContext>());
+            ObjectPool.Create<HttpLoggingInterceptorContext>());
 
         var httpContext = new DefaultHttpContext();
 
@@ -664,7 +664,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             options,
             LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
             Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingContext>());
+            ObjectPool.Create<HttpLoggingInterceptorContext>());
 
         var httpContext = new DefaultHttpContext();
 
@@ -691,7 +691,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             options,
             LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
             Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingContext>());
+            ObjectPool.Create<HttpLoggingInterceptorContext>());
 
         var httpContext = new DefaultHttpContext();
 
@@ -718,7 +718,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             options,
             LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
             Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingContext>());
+            ObjectPool.Create<HttpLoggingInterceptorContext>());
 
         var httpContext = new DefaultHttpContext();
 
@@ -743,7 +743,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             options,
             LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
             Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingContext>());
+            ObjectPool.Create<HttpLoggingInterceptorContext>());
 
         var httpContext = new DefaultHttpContext();
 
@@ -769,7 +769,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             options,
             LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
             Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingContext>());
+            ObjectPool.Create<HttpLoggingInterceptorContext>());
 
         var httpContext = new DefaultHttpContext();
 
@@ -793,7 +793,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             options,
             LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
             Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingContext>());
+            ObjectPool.Create<HttpLoggingInterceptorContext>());
 
         var httpContext = new DefaultHttpContext();
 
@@ -817,7 +817,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             options,
             LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
             Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingContext>());
+            ObjectPool.Create<HttpLoggingInterceptorContext>());
 
         var httpContext = new DefaultHttpContext();
 
@@ -849,7 +849,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             options,
             LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
             Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingContext>());
+            ObjectPool.Create<HttpLoggingInterceptorContext>());
 
         var httpContext = new DefaultHttpContext();
 
@@ -890,7 +890,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             options,
             LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
             Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingContext>());
+            ObjectPool.Create<HttpLoggingInterceptorContext>());
 
         var httpContext = new DefaultHttpContext();
 
@@ -922,7 +922,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             options,
             LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
             Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingContext>());
+            ObjectPool.Create<HttpLoggingInterceptorContext>());
 
         var httpContext = new DefaultHttpContext();
 
@@ -953,7 +953,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             options,
             LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
             Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingContext>());
+            ObjectPool.Create<HttpLoggingInterceptorContext>());
 
         var httpContext = new DefaultHttpContext();
 
@@ -997,7 +997,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             options,
             LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
             Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingContext>());
+            ObjectPool.Create<HttpLoggingInterceptorContext>());
 
         var middlewareTask = middleware.Invoke(httpContext);
 
@@ -1043,7 +1043,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             options,
             LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
             Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingContext>());
+            ObjectPool.Create<HttpLoggingInterceptorContext>());
 
         var middlewareTask = middleware.Invoke(httpContext);
 
@@ -1089,7 +1089,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             options,
             LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
             Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingContext>());
+            ObjectPool.Create<HttpLoggingInterceptorContext>());
 
         var middlewareTask = middleware.Invoke(httpContext);
 
@@ -1128,7 +1128,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             options,
             LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
             Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingContext>());
+            ObjectPool.Create<HttpLoggingInterceptorContext>());
 
         var middlewareTask = middleware.Invoke(httpContext);
 
@@ -1174,7 +1174,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             options,
             LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
             Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingContext>());
+            ObjectPool.Create<HttpLoggingInterceptorContext>());
 
         await middleware.Invoke(httpContext);
 
@@ -1209,7 +1209,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             options,
             LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
             Array.Empty<IHttpLoggingInterceptor>(),
-            ObjectPool.Create<HttpLoggingContext>());
+            ObjectPool.Create<HttpLoggingInterceptorContext>());
 
         var middlewareTask = middleware.Invoke(httpContext);
 
