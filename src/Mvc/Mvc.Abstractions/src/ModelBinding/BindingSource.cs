@@ -87,6 +87,15 @@ public class BindingSource : IEquatable<BindingSource?>
         isFromRequest: false);
 
     /// <summary>
+    /// A <see cref="BindingSource"/> for request keyed services.
+    /// </summary>
+    public static readonly BindingSource KeyedServices = new BindingSource(
+        "KeyedServices",
+        Resources.BindingSource_KeyedServices,
+        isGreedy: true,
+        isFromRequest: false);
+
+    /// <summary>
     /// A <see cref="BindingSource"/> for special parameter types that are not user input.
     /// </summary>
     public static readonly BindingSource Special = new BindingSource(

@@ -4,6 +4,7 @@
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding;
 
@@ -167,6 +168,13 @@ public class BindingInfo
             isBindingInfoPresent = true;
             bindingInfo.EmptyBodyBehavior = configureEmptyBodyBehavior.EmptyBodyBehavior;
             break;
+        }
+
+        // Keyed services
+        foreach (var fromKeyedServicesAttribute in attributes.OfType<FromKeyedServicesAttribute>())
+        {
+            isBindingInfoPresent = true;
+            bindingInfo.BindingSource = BindingSource.KeyedServices;
         }
 
         return isBindingInfoPresent ? bindingInfo : null;
