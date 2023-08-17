@@ -1841,7 +1841,7 @@ describe("HubConnection", () => {
 
                     // Pretend TestConnection disconnected
                     connection.features.disconnected();
-                    await connection.features.resend(true);
+                    await connection.features.resend();
 
                     expect(connection.sentData.length).toBe(3);
                     expect(JSON.parse(connection.sentData[2])).toEqual({
@@ -1874,7 +1874,7 @@ describe("HubConnection", () => {
 
                     // Pretend TestConnection disconnected
                     connection.features.disconnected();
-                    await connection.features.resend(true);
+                    await connection.features.resend();
 
                     expect(connection.sentData.length).toBe(9);
                     expect(JSON.parse(connection.sentData[5])).toEqual({
@@ -1922,13 +1922,13 @@ describe("HubConnection", () => {
                     connection.features.disconnected();
 
                     // Send while disconnected, waits until resend completes
-                    const sendTask = hubConnection.send("test", 22);
+                    let sendTask = hubConnection.send("test", 22);
                     let sendDone = false;
-                    sendTask.finally(() => sendDone = true);
+                    sendTask = sendTask.finally(() => sendDone = true);
 
                     expect(sendDone).toBeFalsy();
 
-                    await connection.features.resend(true);
+                    await connection.features.resend();
 
                     await sendTask;
                     expect(sendDone).toBeTruthy();
@@ -1977,7 +1977,7 @@ describe("HubConnection", () => {
                     // Pretend TestConnection disconnected
                     connection.features.disconnected();
 
-                    await connection.features.resend(true);
+                    await connection.features.resend();
 
                     expect(connection.sentData.length).toBe(7);
                     expect(JSON.parse(connection.sentData[5])).toEqual({
@@ -2072,7 +2072,7 @@ describe("HubConnection", () => {
                     // Pretend TestConnection disconnected
                     connection.features.disconnected();
 
-                    await connection.features.resend(true);
+                    await connection.features.resend();
 
                     connection.receive({ type: MessageType.Sequence, sequenceId: 1 });
 
@@ -2110,7 +2110,7 @@ describe("HubConnection", () => {
                     // Pretend TestConnection disconnected
                     connection.features.disconnected();
 
-                    await connection.features.resend(true);
+                    await connection.features.resend();
 
                     connection.receive({ type: MessageType.Invocation, target: "t", arguments: [] });
                     connection.receive({ type: MessageType.Invocation, target: "t", arguments: [] });
@@ -2153,7 +2153,7 @@ describe("HubConnection", () => {
                     // Pretend TestConnection disconnected
                     connection.features.disconnected();
 
-                    await connection.features.resend(true);
+                    await connection.features.resend();
 
                     connection.receive({ type: MessageType.Sequence, sequenceId: 2 });
 
@@ -2183,7 +2183,7 @@ describe("HubConnection", () => {
                     });
                     const closeError = new PromiseSource<Error | undefined>();
                     hubConnection.onclose((e) => {
-                        closeError.resolve(e);
+                        closeError.reject(e);
                     });
                     await hubConnection.start();
 
@@ -2199,11 +2199,11 @@ describe("HubConnection", () => {
                     // Pretend TestConnection disconnected
                     connection.features.disconnected();
 
-                    await connection.features.resend(true);
+                    await connection.features.resend();
 
                     connection.receive({ type: MessageType.Sequence, sequenceId: 4 });
 
-                    expect(await closeError).toEqual(new Error("Sequence ID greater than amount of messages we've received."));
+                    await expect(closeError).rejects.toThrow("Sequence ID greater than amount of messages we've received.");
                 } finally {
                     await hubConnection.stop();
                 }
@@ -2226,9 +2226,9 @@ describe("HubConnection", () => {
                     await hubConnection.start();
 
                     // send large message to fill buffer, will be waiting until an ack occurs
-                    const sendTask = hubConnection.send("t", 'x'.repeat(100_000));
+                    let sendTask = hubConnection.send("t", 'x'.repeat(100_000));
                     let sendDone = false;
-                    sendTask.finally(() => sendDone = true);
+                    sendTask = sendTask.finally(() => sendDone = true);
 
                     await delayUntil(1);
 
@@ -2260,9 +2260,9 @@ describe("HubConnection", () => {
                     await hubConnection.start();
 
                     // send large message to fill buffer, will be waiting until an ack occurs
-                    const sendTask = hubConnection.send("t", 'x'.repeat(100_000));
+                    let sendTask = hubConnection.send("t", 'x'.repeat(100_000));
                     let sendDone = false;
-                    sendTask.finally(() => sendDone = true);
+                    sendTask = sendTask.finally(() => sendDone = true);
 
                     await delayUntil(1);
 
@@ -2270,8 +2270,10 @@ describe("HubConnection", () => {
 
                     connection.receive({ type: MessageType.Close, error: "test" });
 
-                    await sendTask;
+                    await expect(sendTask).rejects.toThrow("Server returned an error on close: test");
                     expect(sendDone).toBeTruthy();
+
+                    expect(await closeError).toEqual(new Error("Server returned an error on close: test"));
                 } finally {
                     await hubConnection.stop();
                 }
@@ -2286,17 +2288,12 @@ describe("HubConnection", () => {
 
                 const hubConnection = createHubConnection(connection, logger);
                 try {
-                    const closeError = new PromiseSource<Error | undefined>();
-                    hubConnection.onclose((e) => {
-                        closeError.resolve(e);
-                    });
-
                     await hubConnection.start();
 
                     // send large message to fill buffer, will be waiting until an ack occurs
-                    const sendTask = hubConnection.send("t", 'x'.repeat(100_000));
+                    let sendTask = hubConnection.send("t", 'x'.repeat(100_000));
                     let sendDone = false;
-                    sendTask.finally(() => sendDone = true);
+                    sendTask = sendTask.finally(() => sendDone = true);
 
                     await delayUntil(1);
 
@@ -2304,7 +2301,7 @@ describe("HubConnection", () => {
 
                     await hubConnection.stop();
 
-                    await sendTask;
+                    await expect(sendTask).rejects.toThrow("Connection closed.");
 
                     expect(sendDone).toBeTruthy();
                 } finally {
@@ -2329,9 +2326,9 @@ describe("HubConnection", () => {
                     await hubConnection.start();
 
                     // send large message to fill buffer, will be waiting until an ack occurs
-                    const sendTask = hubConnection.send("t", 'x'.repeat(100_000));
+                    let sendTask = hubConnection.send("t", 'x'.repeat(100_000));
                     let sendDone = false;
-                    sendTask.finally(() => sendDone = true);
+                    sendTask = sendTask.finally(() => sendDone = true);
 
                     await delayUntil(1);
 

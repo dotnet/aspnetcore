@@ -261,9 +261,9 @@ export class HubConnection {
             if (useAck) {
                 this._messageBuffer = new MessageBuffer(this._protocol, this.connection, this._statefulReconnectBufferSize);
                 this.connection.features.disconnected = this._messageBuffer._disconnected.bind(this._messageBuffer);
-                this.connection.features.resend = (doSend: boolean) => {
+                this.connection.features.resend = () => {
                     if (this._messageBuffer) {
-                        return this._messageBuffer._resend(doSend);
+                        return this._messageBuffer._resend();
                     }
                 }
             }
@@ -291,7 +291,7 @@ export class HubConnection {
     public async stop(): Promise<void> {
         // Capture the start promise before the connection might be restarted in an onclose callback.
         const startPromise = this._startPromise;
-        this.connection.features.resend = false;
+        this.connection.features.reconnect = false;
 
         this._stopPromise = this._stopInternal();
         await this._stopPromise;
@@ -841,8 +841,7 @@ export class HubConnection {
             this._connectionState = HubConnectionState.Disconnected;
             this._connectionStarted = false;
             if (this._messageBuffer) {
-                // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                this._messageBuffer._resend(false, error ?? new Error("Connection closed."));
+                this._messageBuffer._dispose(error ?? new Error("Connection closed."));
                 this._messageBuffer = undefined;
             }
 

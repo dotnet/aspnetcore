@@ -442,7 +442,7 @@ export class HttpConnection implements IConnection {
                     try {
                         this.features.disconnected();
                         await this.transport!.connect(url, transferFormat);
-                        await this.features.resend(true);
+                        await this.features.resend();
                     } catch {
                         callStop = true;
                     }
@@ -453,8 +453,6 @@ export class HttpConnection implements IConnection {
 
                 if (callStop) {
                     this._stopConnection(e);
-                    // Unblock promise in resend if connect failed
-                    this.features.resend(false);
                 }
             };
         } else {

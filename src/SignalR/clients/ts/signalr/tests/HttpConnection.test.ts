@@ -1903,10 +1903,9 @@ describe("TransportSendQueue", () => {
                 disconnectedCalled = true;
                 expect(resendCalled).toBe(false);
             };
-            connection.features.resend = (doSend: boolean) => {
+            connection.features.resend = () => {
                 resendCalled = true;
                 expect(disconnectedCalled).toBe(true);
-                expect(doSend).toBe(true);
                 resendPromise.resolve();
             };
 
@@ -1966,10 +1965,9 @@ describe("TransportSendQueue", () => {
                 disconnectedCalled = true;
                 expect(resendCalled).toBe(false);
             };
-            connection.features.resend = (doSend: boolean) => {
+            connection.features.resend = () => {
                 resendCalled = true;
                 expect(disconnectedCalled).toBe(true);
-                expect(doSend).toBe(false);
             };
 
             TestWebSocket.webSocketSet = new PromiseSource();
@@ -1992,7 +1990,7 @@ describe("TransportSendQueue", () => {
             TestWebSocket.webSocket.onclose(new TestEvent());
 
             await onclosePromise;
-            expect(resendCalled).toBe(true);
+            expect(resendCalled).toBe(false);
         });
     });
 });

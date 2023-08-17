@@ -17,15 +17,12 @@ export class MessageBuffer {
     private _waitForSequenceMessage: boolean = false;
 
     // Message IDs start at 1 and always increment by 1
-    private _currentReceivingSequenceId = 1;
-    private _latestReceivedSequenceId = -100;
+    private _nextReceivingSequenceId = 1;
+    private _latestReceivedSequenceId = 0;
     private _bufferedByteCount: number = 0;
+    private _reconnectInProgress: boolean = false;
 
     private _ackTimerHandle?: any;
-
-    private _resendPromise: Promise<void> = Promise.resolve();
-    private _resendResolve?: (value: void) => void = undefined;
-    private _resendReject?: (value?: any) => void = undefined;
 
     constructor(protocol: IHubProtocol, connection: IConnection, bufferSize: number) {
         this._protocol = protocol;
@@ -42,6 +39,7 @@ export class MessageBuffer {
         if (this._isInvocationMessage(message)) {
             this._totalMessageCount++;
             let backpressurePromiseResolver: (value: void) => void = () => {};
+            let backpressurePromiseRejector: (value?: void) => void = () => {};
 
             if (isArrayBuffer(serializedMessage)) {
                 this._bufferedByteCount += serializedMessage.byteLength;
@@ -50,10 +48,14 @@ export class MessageBuffer {
             }
 
             if (this._bufferedByteCount >= this._bufferSize) {
-                backpressurePromise = new Promise((resolve) => backpressurePromiseResolver = resolve);
+                backpressurePromise = new Promise((resolve, reject) => {
+                    backpressurePromiseResolver = resolve;
+                    backpressurePromiseRejector = reject;
+                });
             }
 
-            this._messages.push(new BufferedItem(serializedMessage, this._totalMessageCount, backpressurePromiseResolver));
+            this._messages.push(new BufferedItem(serializedMessage, this._totalMessageCount,
+                backpressurePromiseResolver, backpressurePromiseRejector));
         }
 
         try {
@@ -61,14 +63,13 @@ export class MessageBuffer {
             // We don't want to send on a disconnected connection
             // And we don't want to send if resend is running since that would mean sending
             // this message twice
-            if (this._resendReject === undefined) {
+            if (!this._reconnectInProgress) {
                 await this._connection.send(serializedMessage);
             }
-            await backpressurePromise;
         } catch {
             this._disconnected();
-            await this._resendPromise;
         }
+        await backpressurePromise;
     }
 
     public _ack(ackMessage: AckMessage): void {
@@ -115,10 +116,14 @@ export class MessageBuffer {
             return true;
         }
 
-        // id check
-        const currentId = this._currentReceivingSequenceId;
-        this._currentReceivingSequenceId++;
+        const currentId = this._nextReceivingSequenceId;
+        this._nextReceivingSequenceId++;
         if (currentId <= this._latestReceivedSequenceId) {
+            if (currentId === this._latestReceivedSequenceId) {
+                // Should only hit this if we just reconnected and the server is sending
+                // Messages it has buffered, which would mean it hasn't seen an Ack for these messages
+                this._ackTimer();
+            }
             // Ignore, this is a duplicate message
             return false;
         }
@@ -132,59 +137,42 @@ export class MessageBuffer {
     }
 
     public _resetSequence(message: SequenceMessage): void {
-        if (message.sequenceId > this._currentReceivingSequenceId) {
+        if (message.sequenceId > this._nextReceivingSequenceId) {
             // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this._connection.stop(new Error("Sequence ID greater than amount of messages we've received."));
             return;
         }
 
-        this._currentReceivingSequenceId = message.sequenceId;
+        this._nextReceivingSequenceId = message.sequenceId;
     }
 
     public _disconnected(): void {
+        this._reconnectInProgress = true;
         this._waitForSequenceMessage = true;
-        if (this._resendReject === undefined) {
-            this._resendPromise = new Promise((resolve, reject) => {
-                this._resendResolve = resolve;
-                this._resendReject = reject;
-            });
-        }
     }
 
-    public async _resend(doSend: boolean, error?: Error): Promise<void> {
-        if (!doSend) {
-            if (this._resendReject !== undefined) {
-                // We need to unblock the promise in the case where we aren't able to reconnect to the server
-                this._resendReject!(error ?? new Error("Unable to reconnect to server."));
-            }
+    public async _resend(): Promise<void> {
+        const sequenceId = this._messages.length !== 0
+            ? this._messages[0]._id
+            :  this._totalMessageCount + 1;
+        await this._connection.send(this._protocol.writeMessage({ type: MessageType.Sequence, sequenceId }));
 
-            // Unblock backpressure if any
-            for (const element of this._messages) {
-                element._resolver();
-            }
-
-            return;
+        // Get a local variable to the _messages, just in case messages are acked while resending
+        // Which would slice the _messages array (which creates a new copy)
+        const messages = this._messages;
+        for (const element of messages) {
+            await this._connection.send(element._message);
         }
 
-        try {
-            let sequenceId = this._totalMessageCount + 1;
-            if (this._messages.length !== 0) {
-                sequenceId = this._messages[0]._id;
-            }
-            await this._connection.send(this._protocol.writeMessage({ type: MessageType.Sequence, sequenceId }));
+        this._reconnectInProgress = false;
+    }
 
-            // Get a local variable to the _messages, just in case messages are acked while resending
-            // Which would slice the _messages array (which creates a new copy)
-            const messages = this._messages;
-            for (const element of messages) {
-                await this._connection.send(element._message);
-            }
-        } catch (e) {
-            this._resendReject!(e);
-        } finally {
-            this._resendResolve!();
-            this._resendReject = undefined;
-            this._resendResolve = undefined;
+    public _dispose(error?: Error): void {
+        error ??= new Error("Unable to reconnect to server.")
+
+        // Unblock backpressure if any
+        for (const element of this._messages) {
+            element._rejector(error);
         }
     }
 
@@ -213,7 +201,9 @@ export class MessageBuffer {
         if (this._ackTimerHandle === undefined) {
             this._ackTimerHandle = setTimeout(async () => {
                 try {
-                    await this._connection.send(this._protocol.writeMessage({ type: MessageType.Ack, sequenceId: this._latestReceivedSequenceId }))
+                    if (!this._reconnectInProgress) {
+                        await this._connection.send(this._protocol.writeMessage({ type: MessageType.Ack, sequenceId: this._latestReceivedSequenceId }))
+                    }
                 // Ignore errors, that means the connection is closed and we don't care about the Ack message anymore.
                 } catch { }
 
@@ -226,13 +216,15 @@ export class MessageBuffer {
 }
 
 class BufferedItem {
-    constructor(message: string | ArrayBuffer, id: number, resolver: (value: void) => void) {
+    constructor(message: string | ArrayBuffer, id: number, resolver: (value: void) => void, rejector: (value?: any) => void) {
         this._message = message;
         this._id = id;
         this._resolver = resolver;
+        this._rejector = rejector;
     }
 
     _message: string | ArrayBuffer;
     _id: number;
     _resolver: (value: void) => void;
+    _rejector: (value?: any) => void;
 }
