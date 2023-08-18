@@ -28,6 +28,7 @@ internal static partial class CertificatePathWatcherLoggerExtensions
     [LoggerMessage(7, LogLevel.Debug, "Removed file watcher for '{Path}'.", EventName = "RemovedFileWatcher")]
     public static partial void RemovedFileWatcher(this ILogger<CertificatePathWatcher> logger, string path);
 
+    [Obsolete("Will no longer be produced")]
     [LoggerMessage(8, LogLevel.Debug, "Error retrieving last modified time for '{Path}'.", EventName = "LastModifiedTimeError")]
     public static partial void LastModifiedTimeError(this ILogger<CertificatePathWatcher> logger, string path, Exception e);
 
@@ -52,6 +53,7 @@ internal static partial class CertificatePathWatcherLoggerExtensions
     [LoggerMessage(15, LogLevel.Trace, "Directory '{Directory}' now has watchers on {Count} files.", EventName = "FileCount")]
     public static partial void FileCount(this ILogger<CertificatePathWatcher> logger, string directory, int count);
 
+    [Obsolete("Will no longer be produced")]
     [LoggerMessage(16, LogLevel.Trace, "Ignored event since last modified time for '{Path}' was unavailable.", EventName = "EventWithoutLastModifiedTime")]
     public static partial void EventWithoutLastModifiedTime(this ILogger<CertificatePathWatcher> logger, string path);
 
@@ -60,4 +62,10 @@ internal static partial class CertificatePathWatcherLoggerExtensions
 
     [LoggerMessage(18, LogLevel.Trace, "Flagged {Count} observers of '{Path}' as changed.", EventName = "FlaggedObservers")]
     public static partial void FlaggedObservers(this ILogger<CertificatePathWatcher> logger, string path, int count);
+
+    [LoggerMessage(19, LogLevel.Debug, "Error computing checksum for '{Path}'.", EventName = "ChecksumError")]
+    public static partial void ChecksumError(this ILogger<CertificatePathWatcher> logger, string path, Exception e);
+
+    [LoggerMessage(20, LogLevel.Trace, "Ignored event since checksum for '{Path}' was unavailable.", EventName = "EventWithoutChecksum")]
+    public static partial void EventWithoutChecksum(this ILogger<CertificatePathWatcher> logger, string path);
 }

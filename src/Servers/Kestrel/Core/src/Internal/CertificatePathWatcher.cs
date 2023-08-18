@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Diagnostics;
+using System.Security.Cryptography;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.FileProviders.Physical;
@@ -13,9 +15,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 
 internal sealed partial class CertificatePathWatcher : IDisposable
 {
+    private const int _checksumLength = SHA256.HashSizeInBytes;
+
     private readonly Func<string, IFileProvider?> _fileProviderFactory;
     private readonly string _contentRootDir;
     private readonly ILogger<CertificatePathWatcher> _logger;
+    private readonly ArrayPool<byte> _checksumPool = ArrayPool<byte>.Create(); // Make our own since all of our arrays are the same size
 
     private readonly object _metadataLock = new();
 
@@ -145,7 +150,7 @@ internal sealed partial class CertificatePathWatcher : IDisposable
             dirMetadata.FileWatchCount++;
 
             // We actually don't care if the file doesn't exist - we'll watch in case it is created
-            fileMetadata.LastModifiedTime = GetLastModifiedTimeOrMinimum(path, dirMetadata.FileProvider);
+            fileMetadata.Checksum = ComputeChecksum(path, dirMetadata.FileProvider);
 
             _logger.CreatedFileWatcher(path);
         }
@@ -162,18 +167,32 @@ internal sealed partial class CertificatePathWatcher : IDisposable
         _logger.FileCount(dir, dirMetadata.FileWatchCount);
     }
 
-    private DateTimeOffset GetLastModifiedTimeOrMinimum(string path, IFileProvider fileProvider)
+    private byte[]? ComputeChecksum(string path, IFileProvider fileProvider)
     {
         try
         {
-            return fileProvider.GetFileInfo(Path.GetFileName(path)).LastModified;
+            var fileName = Path.GetFileName(path);
+            var fileInfo = fileProvider.GetFileInfo(fileName);
+            if (fileInfo.Exists)
+            {
+                Debug.Assert(!fileInfo.IsDirectory, "Computing the checksum of a directory");
+                var stream = fileInfo.CreateReadStream();
+
+                // There's no reason this needs to be cryptographically secure.  If someone
+                // can set certificates, they can already cause significant harm and a
+                // collision here will only prevent an in-use certificate from being reloaded.
+                var checksum = _checksumPool.Rent(_checksumLength);
+                var bytesWritten = SHA256.HashData(stream, checksum);
+                Debug.Assert(bytesWritten == _checksumLength);
+                return checksum;
+            }
         }
         catch (Exception e)
         {
-            _logger.LastModifiedTimeError(path, e);
+            _logger.ChecksumError(path, e);
         }
 
-        return DateTimeOffset.MinValue;
+        return null;
     }
 
     private void OnChange(string path)
@@ -190,7 +209,7 @@ internal sealed partial class CertificatePathWatcher : IDisposable
             // Existence implied by the fact that we're tracking the file
             var dirMetadata = _metadataForDirectory[Path.GetDirectoryName(path)!];
 
-            // We ignore file changes that don't advance the last modified time.
+            // We ignore file changes that don't include a modified checksum.
             // For example, if we lose access to the network share the file is
             // stored on, we don't notify our listeners because no one wants
             // their endpoint/server to shutdown when that happens.
@@ -198,27 +217,36 @@ internal sealed partial class CertificatePathWatcher : IDisposable
             // before a new cert is introduced with the old name.
             // This also helps us in scenarios where the underlying file system
             // reports more than one change for a single logical operation.
-            var lastModifiedTime = GetLastModifiedTimeOrMinimum(path, dirMetadata.FileProvider);
-            if (lastModifiedTime > fileMetadata.LastModifiedTime)
+            var newChecksum = ComputeChecksum(path, dirMetadata.FileProvider);
+            if (newChecksum is null)
             {
-                fileMetadata.LastModifiedTime = lastModifiedTime;
-            }
-            else
-            {
-                if (lastModifiedTime == DateTimeOffset.MinValue)
-                {
-                    _logger.EventWithoutLastModifiedTime(path);
-                }
-                else if (lastModifiedTime == fileMetadata.LastModifiedTime)
-                {
-                    _logger.RedundantEvent(path);
-                }
-                else
-                {
-                    _logger.OutOfOrderEvent(path);
-                }
+                _logger.EventWithoutChecksum(path);
                 return;
             }
+
+            var oldChecksum = fileMetadata.Checksum;
+            if (oldChecksum is not null)
+            {
+                var changed = false;
+                for (int i = 0; i < _checksumLength; i++)
+                {
+                    if (newChecksum[i] != oldChecksum[i])
+                    {
+                        changed = true;
+                        break;
+                    }
+                }
+
+                if (!changed)
+                {
+                    _logger.RedundantEvent(path);
+                    return;
+                }
+
+                _checksumPool.Return(oldChecksum);
+            }
+
+            fileMetadata.Checksum = newChecksum;
 
             var configs = fileMetadata.Configs;
             foreach (var config in configs)
@@ -327,7 +355,7 @@ internal sealed partial class CertificatePathWatcher : IDisposable
     {
         public readonly IDisposable Disposable = disposable;
         public readonly HashSet<CertificateConfig> Configs = new(ReferenceEqualityComparer.Instance);
-        public DateTimeOffset LastModifiedTime = DateTimeOffset.MinValue;
+        public byte[]? Checksum;
 
         public void Dispose() => Disposable.Dispose();
     }

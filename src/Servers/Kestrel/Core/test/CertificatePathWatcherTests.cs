@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Configuration;
@@ -125,8 +126,7 @@ public class CertificatePathWatcherTests : LoggedTest
         var logger = LoggerFactory.CreateLogger<CertificatePathWatcher>();
 
         var fileProvider = new MockFileProvider();
-        var fileLastModifiedTime = DateTimeOffset.UtcNow;
-        fileProvider.SetLastModifiedTime(fileName, fileLastModifiedTime);
+        fileProvider.SetContents(fileName, "Contents1");
 
         using var watcher = new CertificatePathWatcher(dir, logger, _ => fileProvider);
 
@@ -151,7 +151,7 @@ public class CertificatePathWatcherTests : LoggedTest
         Assert.Equal(observerCount, watcher.TestGetObserverCountUnsynchronized(filePath));
 
         // Simulate file change on disk
-        fileProvider.SetLastModifiedTime(fileName, fileLastModifiedTime.AddSeconds(1));
+        fileProvider.SetContents(fileName, "Contents2");
         fileProvider.FireChangeToken(fileName);
 
         await signalTcs.Task.DefaultTimeout();
@@ -163,53 +163,6 @@ public class CertificatePathWatcherTests : LoggedTest
         Assert.False(newChangeToken.HasChanged);
 
         Assert.All(certificateConfigs, cc => Assert.True(cc.FileHasChanged));
-    }
-
-    [Fact]
-    public async Task OutOfOrderLastModifiedTime()
-    {
-        var dir = Directory.GetCurrentDirectory();
-        var fileName = Path.GetRandomFileName();
-        var filePath = Path.Combine(dir, fileName);
-
-        var logger = LoggerFactory.CreateLogger<CertificatePathWatcher>();
-
-        var fileProvider = new MockFileProvider();
-        var fileLastModifiedTime = DateTimeOffset.UtcNow;
-        fileProvider.SetLastModifiedTime(fileName, fileLastModifiedTime);
-
-        using var watcher = new CertificatePathWatcher(dir, logger, _ => fileProvider);
-
-        var certificateConfig = new CertificateConfig
-        {
-            Path = filePath,
-        };
-
-        watcher.AddWatchUnsynchronized(certificateConfig);
-
-        var logTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-
-        TestSink.MessageLogged += writeContext =>
-        {
-            if (writeContext.EventId.Name == "OutOfOrderEvent")
-            {
-                logTcs.SetResult();
-            }
-        };
-
-        var oldChangeToken = watcher.GetChangeToken();
-
-        Assert.Equal(1, watcher.TestGetDirectoryWatchCountUnsynchronized());
-        Assert.Equal(1, watcher.TestGetFileWatchCountUnsynchronized(dir));
-        Assert.Equal(1, watcher.TestGetObserverCountUnsynchronized(filePath));
-
-        // Simulate file change on disk
-        fileProvider.SetLastModifiedTime(fileName, fileLastModifiedTime.AddSeconds(-1));
-        fileProvider.FireChangeToken(fileName);
-
-        await logTcs.Task.DefaultTimeout();
-
-        Assert.False(oldChangeToken.HasChanged);
     }
 
     [Fact]
@@ -347,7 +300,7 @@ public class CertificatePathWatcherTests : LoggedTest
     [InlineData(false, true)]
     [InlineData(false, false)]
     [LogLevel(LogLevel.Trace)]
-    public async Task IgnoreDeletion(bool seeChangeForDeletion, bool restoredWithNewerLastModifiedTime)
+    public async Task IgnoreDeletion(bool seeChangeForDeletion, bool restoredWithDifferentContents)
     {
         var dir = Directory.GetCurrentDirectory();
         var fileName = Path.GetRandomFileName();
@@ -356,8 +309,7 @@ public class CertificatePathWatcherTests : LoggedTest
         var logger = LoggerFactory.CreateLogger<CertificatePathWatcher>();
 
         var fileProvider = new MockFileProvider();
-        var fileLastModifiedTime = DateTimeOffset.UtcNow;
-        fileProvider.SetLastModifiedTime(fileName, fileLastModifiedTime);
+        fileProvider.SetContents(fileName, "Contents1");
 
         using var watcher = new CertificatePathWatcher(dir, logger, _ => fileProvider);
 
@@ -381,7 +333,7 @@ public class CertificatePathWatcherTests : LoggedTest
 
         TestSink.MessageLogged += writeContext =>
         {
-            if (writeContext.EventId.Name == "EventWithoutLastModifiedTime")
+            if (writeContext.EventId.Name == "EventWithoutChecksum")
             {
                 logNoLastModifiedTcs.SetResult();
             }
@@ -392,7 +344,7 @@ public class CertificatePathWatcherTests : LoggedTest
         };
 
         // Simulate file deletion
-        fileProvider.SetLastModifiedTime(fileName, null);
+        fileProvider.SetContents(fileName, null);
 
         // In some file systems and watch modes, there's no event when (e.g.) the directory containing the watched file is deleted
         if (seeChangeForDeletion)
@@ -409,10 +361,10 @@ public class CertificatePathWatcherTests : LoggedTest
         Assert.False(changeTcs.Task.IsCompleted);
 
         // Restore the file
-        fileProvider.SetLastModifiedTime(fileName, restoredWithNewerLastModifiedTime ? fileLastModifiedTime.AddSeconds(1) : fileLastModifiedTime);
+        fileProvider.SetContents(fileName, restoredWithDifferentContents ? "Contents2" : "Contents1");
         fileProvider.FireChangeToken(fileName);
 
-        if (restoredWithNewerLastModifiedTime)
+        if (restoredWithDifferentContents)
         {
             await changeTcs.Task.DefaultTimeout();
             Assert.False(logSameLastModifiedTcs.Task.IsCompleted);
@@ -546,7 +498,7 @@ public class CertificatePathWatcherTests : LoggedTest
     private sealed class MockFileProvider : IFileProvider
     {
         private readonly Dictionary<string, ConfigurationReloadToken> _changeTokens = new();
-        private readonly Dictionary<string, DateTimeOffset?> _lastModifiedTimes = new();
+        private readonly Dictionary<string, byte[]> _contents = new();
 
         public void FireChangeToken(string path)
         {
@@ -555,9 +507,10 @@ public class CertificatePathWatcherTests : LoggedTest
             oldChangeToken.OnReload();
         }
 
-        public void SetLastModifiedTime(string path, DateTimeOffset? lastModifiedTime)
+        public void SetContents(string path, string text)
         {
-            _lastModifiedTimes[path] = lastModifiedTime;
+            var bytes = text is null ? null : Encoding.UTF8.GetBytes(text);
+            _contents[path] = bytes;
         }
 
         IDirectoryContents IFileProvider.GetDirectoryContents(string subpath)
@@ -567,7 +520,7 @@ public class CertificatePathWatcherTests : LoggedTest
 
         IFileInfo IFileProvider.GetFileInfo(string subpath)
         {
-            return new MockFileInfo(_lastModifiedTimes[subpath]);
+            return new MockFileInfo(_contents[subpath]);
         }
 
         IChangeToken IFileProvider.Watch(string path)
@@ -582,21 +535,21 @@ public class CertificatePathWatcherTests : LoggedTest
 
         private sealed class MockFileInfo : IFileInfo
         {
-            private readonly DateTimeOffset? _lastModifiedTime;
+            private readonly byte[] _contents;
 
-            public MockFileInfo(DateTimeOffset? lastModifiedTime)
+            public MockFileInfo(byte[] contents)
             {
-                _lastModifiedTime = lastModifiedTime;
+                _contents = contents;
             }
 
-            bool IFileInfo.Exists => _lastModifiedTime.HasValue;
-            DateTimeOffset IFileInfo.LastModified => _lastModifiedTime.GetValueOrDefault();
+            bool IFileInfo.Exists => _contents is not null;
+            bool IFileInfo.IsDirectory => false;
+            Stream IFileInfo.CreateReadStream() => new MemoryStream(_contents);
 
             long IFileInfo.Length => throw new NotSupportedException();
             string IFileInfo.PhysicalPath => throw new NotSupportedException();
             string IFileInfo.Name => throw new NotSupportedException();
-            bool IFileInfo.IsDirectory => throw new NotSupportedException();
-            Stream IFileInfo.CreateReadStream() => throw new NotSupportedException();
+            DateTimeOffset IFileInfo.LastModified => throw new NotSupportedException();
         }
     }
 }
