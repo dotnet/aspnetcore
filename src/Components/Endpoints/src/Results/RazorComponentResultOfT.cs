@@ -2,15 +2,16 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Components;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
-namespace Microsoft.AspNetCore.Components.Endpoints;
+namespace Microsoft.AspNetCore.Http.HttpResults;
 
 /// <summary>
 /// An <see cref="IResult"/> that renders a Razor Component.
 /// </summary>
-public class RazorComponentResult<[DynamicallyAccessedMembers(Component)] TComponent> : RazorComponentResult where TComponent: IComponent
+public class RazorComponentResult<[DynamicallyAccessedMembers(Component)] TComponent>
+    : RazorComponentResult where TComponent: IComponent
 {
     /// <summary>
     /// Constructs an instance of <see cref="RazorComponentResult"/>.

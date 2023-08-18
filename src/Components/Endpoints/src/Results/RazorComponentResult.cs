@@ -2,12 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.Extensions.Internal;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
-namespace Microsoft.AspNetCore.Components.Endpoints;
+namespace Microsoft.AspNetCore.Http.HttpResults;
 
 /// <summary>
 /// An <see cref="IResult"/> that renders a Razor Component.
@@ -87,15 +87,10 @@ public class RazorComponentResult : IResult
     public bool PreventStreamingRendering { get; set; }
 
     /// <summary>
-    /// Requests the service of
-    /// <see cref="RazorComponentResultExecutor.ExecuteAsync(HttpContext, RazorComponentResult)" />
-    /// to process itself in the given <paramref name="httpContext" />.
+    /// Processes this result in the given <paramref name="httpContext" />.
     /// </summary>
     /// <param name="httpContext">An <see cref="HttpContext" /> associated with the current request.</param >
     /// <returns >A <see cref="T:System.Threading.Tasks.Task" /> which will complete when execution is completed.</returns >
     public Task ExecuteAsync(HttpContext httpContext)
-    {
-        var executor = httpContext.RequestServices.GetRequiredService<RazorComponentResultExecutor>();
-        return executor.ExecuteAsync(httpContext, this);
-    }
+        => RazorComponentResultExecutor.ExecuteAsync(httpContext, this);
 }
