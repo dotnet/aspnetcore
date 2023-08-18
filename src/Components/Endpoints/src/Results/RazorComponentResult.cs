@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 /// <summary>
 /// An <see cref="IResult"/> that renders a Razor Component.
 /// </summary>
-public class RazorComponentResult : IResult
+public class RazorComponentResult : IResult, IStatusCodeHttpResult, IContentTypeHttpResult
 {
     private static readonly IReadOnlyDictionary<string, object?> EmptyParameters
         = new Dictionary<string, object?>().AsReadOnly();
