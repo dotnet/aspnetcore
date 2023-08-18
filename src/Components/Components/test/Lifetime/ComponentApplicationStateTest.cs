@@ -12,7 +12,8 @@ public class ComponentApplicationStateTest
     {
         // Arrange
         var applicationState = new PersistentComponentState(
-            new Dictionary<string, Tuple<PersistComponentStateDirection, byte[]>>(),
+            new Dictionary<string, byte[]>(),
+            new Dictionary<string, byte[]>(),
             new List<Func<Task>>());
         var existingState = new Dictionary<string, byte[]>
         {
@@ -32,7 +33,8 @@ public class ComponentApplicationStateTest
     {
         // Arrange
         var applicationState = new PersistentComponentState(
-            new Dictionary<string, Tuple<PersistComponentStateDirection, byte[]>>(),
+            new Dictionary<string, byte[]>(),
+            new Dictionary<string, byte[]>(),
             new List<Func<Task>>());
         var existingState = new Dictionary<string, byte[]>
         {
@@ -50,7 +52,8 @@ public class ComponentApplicationStateTest
     {
         // Arrange
         var applicationState = new PersistentComponentState(
-            new Dictionary<string, Tuple<PersistComponentStateDirection, byte[]>>(),
+            new Dictionary<string, byte[]>(),
+            new Dictionary<string, byte[]>(),
             new List<Func<Task>>());
         var existingState = new Dictionary<string, byte[]>
         {
@@ -70,8 +73,11 @@ public class ComponentApplicationStateTest
     public void PersistState_SavesDataToTheStoreAsync()
     {
         // Arrange
-        var currentState = new Dictionary<string, Tuple<PersistComponentStateDirection, byte[]>>();
-        var applicationState = new PersistentComponentState(currentState, new List<Func<Task>>());
+        var currentState = new Dictionary<string, byte[]>();
+        var applicationState = new PersistentComponentState(
+            currentState,
+            new Dictionary<string, byte[]>(),
+            new List<Func<Task>>());
         applicationState.PersistingState = true;
         var myState = new byte[] { 1, 2, 3, 4 };
 
@@ -80,15 +86,18 @@ public class ComponentApplicationStateTest
 
         // Assert
         Assert.True(currentState.TryGetValue("MyState", out var stored));
-        Assert.Equal(myState, JsonSerializer.Deserialize<byte[]>(stored.Item2));
+        Assert.Equal(myState, JsonSerializer.Deserialize<byte[]>(stored));
     }
 
     [Fact]
     public void PersistState_ThrowsForDuplicateKeys()
     {
         // Arrange
-        var currentState = new Dictionary<string, Tuple<PersistComponentStateDirection, byte[]>>();
-        var applicationState = new PersistentComponentState(currentState, new List<Func<Task>>());
+        var currentState = new Dictionary<string, byte[]>();
+        var applicationState = new PersistentComponentState(
+            currentState,
+            new Dictionary<string, byte[]>(),
+            new List<Func<Task>>());
         applicationState.PersistingState = true;
         var myState = new byte[] { 1, 2, 3, 4 };
 
@@ -99,11 +108,34 @@ public class ComponentApplicationStateTest
     }
 
     [Fact]
+    public void PersistAsJson_SerializesTheDataToJsonAsync()
+    {
+        // Arrange
+        var currentState = new Dictionary<string, byte[]>();
+        var applicationState = new PersistentComponentState(
+            currentState,
+            new Dictionary<string, byte[]>(),
+            new List<Func<Task>>());
+        applicationState.PersistingState = true;
+        var myState = new byte[] { 1, 2, 3, 4 };
+
+        // Act
+        applicationState.PersistAsJson("MyState", myState);
+
+        // Assert
+        Assert.True(currentState.TryGetValue("MyState", out var stored));
+        Assert.Equal(myState, JsonSerializer.Deserialize<byte[]>(stored));
+    }
+
+    [Fact]
     public void PersistAsJson_NullValueAsync()
     {
         // Arrange
-        var currentState = new Dictionary<string, Tuple<PersistComponentStateDirection, byte[]>>();
-        var applicationState = new PersistentComponentState(currentState, new List<Func<Task>>());
+        var currentState = new Dictionary<string, byte[]>();
+        var applicationState = new PersistentComponentState(
+            currentState,
+            new Dictionary<string, byte[]>(),
+            new List<Func<Task>>());
         applicationState.PersistingState = true;
 
         // Act
@@ -111,7 +143,7 @@ public class ComponentApplicationStateTest
 
         // Assert
         Assert.True(currentState.TryGetValue("MyState", out var stored));
-        Assert.Null(JsonSerializer.Deserialize<byte[]>(stored.Item2));
+        Assert.Null(JsonSerializer.Deserialize<byte[]>(stored));
     }
 
     [Fact]
@@ -122,7 +154,8 @@ public class ComponentApplicationStateTest
         var serialized = JsonSerializer.SerializeToUtf8Bytes(myState);
         var existingState = new Dictionary<string, byte[]>() { ["MyState"] = serialized };
         var applicationState = new PersistentComponentState(
-            new Dictionary<string, Tuple<PersistComponentStateDirection, byte[]>>(),
+            new Dictionary<string, byte[]>(),
+            new Dictionary<string, byte[]>(),
             new List<Func<Task>>());
 
         applicationState.InitializeExistingState(existingState);
@@ -142,7 +175,8 @@ public class ComponentApplicationStateTest
         var serialized = JsonSerializer.SerializeToUtf8Bytes<byte[]>(null);
         var existingState = new Dictionary<string, byte[]>() { ["MyState"] = serialized };
         var applicationState = new PersistentComponentState(
-            new Dictionary<string, Tuple<PersistComponentStateDirection, byte[]>>(),
+            new Dictionary<string, byte[]>(),
+            new Dictionary<string, byte[]>(),
             new List<Func<Task>>());
 
         applicationState.InitializeExistingState(existingState);

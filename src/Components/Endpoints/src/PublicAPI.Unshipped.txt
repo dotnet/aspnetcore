@@ -53,7 +53,6 @@ Microsoft.AspNetCore.Components.Endpoints.RootComponentMetadata.Type.get -> Syst
 Microsoft.AspNetCore.Components.PersistedStateSerializationMode
 Microsoft.AspNetCore.Components.PersistedStateSerializationMode.Infer = 1 -> Microsoft.AspNetCore.Components.PersistedStateSerializationMode
 Microsoft.AspNetCore.Components.PersistedStateSerializationMode.Server = 2 -> Microsoft.AspNetCore.Components.PersistedStateSerializationMode
-Microsoft.AspNetCore.Components.PersistedStateSerializationMode.ServerAndWebAssembly = 4 -> Microsoft.AspNetCore.Components.PersistedStateSerializationMode
 Microsoft.AspNetCore.Components.PersistedStateSerializationMode.WebAssembly = 3 -> Microsoft.AspNetCore.Components.PersistedStateSerializationMode
 Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder
 Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

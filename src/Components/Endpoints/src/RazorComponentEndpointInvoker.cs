@@ -121,8 +121,11 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             await _renderer.SendStreamingUpdatesAsync(context, quiesceTask, bufferWriter);
         }
 
-        var persistStateHtmlContent = await _renderer.PrerenderPersistedStateForServerAndWebAssemblyAsync();
-        persistStateHtmlContent.WriteTo(writer, HtmlEncoder.Default);
+        var serverStateHtmlContent = await _renderer.PrerenderPersistedStateOnServerAsync();
+        serverStateHtmlContent.WriteTo(bufferWriter, HtmlEncoder.Default);
+
+        var webAssemblyStateHtmlContent = await _renderer.PrerenderPersistedStateOnWebAssemblyAsync();
+        webAssemblyStateHtmlContent.WriteTo(bufferWriter, HtmlEncoder.Default);
 
         // Invoke FlushAsync to ensure any buffered content is asynchronously written to the underlying
         // response asynchronously. In the absence of this line, the buffer gets synchronously written to the

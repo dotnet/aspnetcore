@@ -20,8 +20,6 @@ internal sealed class ProtectedPrerenderComponentApplicationStore : PrerenderCom
         DeserializeState(_protector.Unprotect(Convert.FromBase64String(existingState)));
     }
 
-    protected override PersistComponentStateDirection Direction => PersistComponentStateDirection.Server;
-
     protected override byte[] SerializeState(IReadOnlyDictionary<string, byte[]> state)
     {
         var bytes = base.SerializeState(state);

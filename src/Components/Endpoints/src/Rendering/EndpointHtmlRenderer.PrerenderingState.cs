@@ -15,9 +15,6 @@ internal partial class EndpointHtmlRenderer
 {
     private static readonly object InvokedRenderModesKey = new object();
 
-    public async ValueTask<IHtmlContent> PrerenderPersistedStateForServerAndWebAssemblyAsync()
-        => await PrerenderPersistedStateAsync(_httpContext, PersistedStateSerializationMode.ServerAndWebAssembly);
-
     public async ValueTask<IHtmlContent> PrerenderPersistedStateAsync(HttpContext httpContext, PersistedStateSerializationMode serializationMode)
     {
         SetHttpContext(httpContext);
@@ -43,23 +40,32 @@ internal partial class EndpointHtmlRenderer
             }
         }
 
-        // Now given the mode, we obtain a particular store for that mode
-        IPersistentComponentStateStore store = serializationMode switch
-        {
-            PersistedStateSerializationMode.Server =>
-                new ProtectedPrerenderComponentApplicationStore(_httpContext.RequestServices.GetRequiredService<IDataProtectionProvider>()),
-            PersistedStateSerializationMode.WebAssembly =>
-                new PrerenderComponentApplicationStore(),
-            PersistedStateSerializationMode.ServerAndWebAssembly =>
-                new PartiallyProtectedPrerenderComponentApplicationStore(_httpContext.RequestServices.GetRequiredService<IDataProtectionProvider>()),
-            _ =>
-                throw new InvalidOperationException("Invalid persistence mode.")
-        };
-
         // Finally, persist the state and return the HTML content
+        switch (serializationMode)
+        {
+            case PersistedStateSerializationMode.Server:
+                return await PrerenderPersistedStateOnServerAsync();
+            case PersistedStateSerializationMode.WebAssembly:
+                return await PrerenderPersistedStateOnWebAssemblyAsync();
+            default:
+                throw new InvalidOperationException("Invalid persistence mode.");
+        }
+    }
+
+    public async ValueTask<IHtmlContent> PrerenderPersistedStateOnServerAsync()
+    {
         var manager = _httpContext.RequestServices.GetRequiredService<ComponentStatePersistenceManager>();
-        await manager.PersistStateAsync(store, Dispatcher);
-        return new ComponentStateHtmlContent(store);
+        var protectedStore = new ProtectedPrerenderComponentApplicationStore(_httpContext.RequestServices.GetRequiredService<IDataProtectionProvider>());
+        await manager.PersistStateOnServerAsync(protectedStore, Dispatcher);
+        return new ComponentStateHtmlContent(protectedStore, PersistedStateSerializationMode.Server);
+    }
+
+    public async ValueTask<IHtmlContent> PrerenderPersistedStateOnWebAssemblyAsync()
+    {
+        var manager = _httpContext.RequestServices.GetRequiredService<ComponentStatePersistenceManager>();
+        var store = new PrerenderComponentApplicationStore();
+        await manager.PersistStateOnWebAssemblyAsync(store, Dispatcher);
+        return new ComponentStateHtmlContent(store, PersistedStateSerializationMode.WebAssembly);
     }
 
     // Internal for test only
@@ -108,49 +114,37 @@ internal partial class EndpointHtmlRenderer
 
     private sealed class ComponentStateHtmlContent : IHtmlContent
     {
-        private IPersistentComponentStateStore? _store;
+        private PrerenderComponentApplicationStore? _store;
+        private readonly PersistedStateSerializationMode _serializationMode;
 
         public static ComponentStateHtmlContent Empty { get; }
-            = new ComponentStateHtmlContent(null);
+            = new ComponentStateHtmlContent(null, PersistedStateSerializationMode.Infer);
 
-        public ComponentStateHtmlContent(IPersistentComponentStateStore? store)
+        public ComponentStateHtmlContent(PrerenderComponentApplicationStore? store, PersistedStateSerializationMode serializationMode)
         {
             _store = store;
+            _serializationMode = serializationMode;
         }
 
         public void WriteTo(TextWriter writer, HtmlEncoder encoder)
         {
-            if (_store == null)
+            if (_store == null || _store.PersistedState == null)
             {
                 return;
             }
 
-            if (_store is ProtectedPrerenderComponentApplicationStore protectedstore)
+            var commentPrefix = _serializationMode switch
             {
-                WriteState(writer, protectedstore.PersistedState, "Blazor-Server-Component-State:");
-            }
-            else if (_store is PrerenderComponentApplicationStore store)
-            {
-                WriteState(writer, store.PersistedState, "Blazor-WebAssembly-Component-State:");
-            }
-            else if (_store is PartiallyProtectedPrerenderComponentApplicationStore partiallyProtected)
-            {
-                WriteState(writer, partiallyProtected.PersistedProtectedState, "Blazor-Server-Component-State:");
-                WriteState(writer, partiallyProtected.PersistedState, "Blazor-WebAssembly-Component-State:");
-            }
+                PersistedStateSerializationMode.Server => "<!--Blazor-Server-Component-State:",
+                PersistedStateSerializationMode.WebAssembly => "<!--Blazor-WebAssembly-Component-State:",
+                _ =>
+                    throw new InvalidOperationException("Invalid persistence mode.")
+            };
 
+            writer.Write(commentPrefix);
+            writer.Write(_store.PersistedState);
+            writer.Write("-->");
             _store = null;
-        }
-
-        private static void WriteState(TextWriter writer, string? state, string commentPrefix)
-        {
-            if (state != null)
-            {
-                writer.Write("<!--");
-                writer.Write(commentPrefix);
-                writer.Write(state);
-                writer.Write("-->");
-            }
         }
     }
 }

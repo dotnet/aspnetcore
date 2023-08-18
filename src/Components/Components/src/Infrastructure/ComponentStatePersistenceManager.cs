@@ -11,9 +11,12 @@ namespace Microsoft.AspNetCore.Components.Infrastructure;
 /// </summary>
 public class ComponentStatePersistenceManager
 {
-    private bool _stateIsPersisted;
     private readonly List<Func<Task>> _pauseCallbacks = new();
-    private readonly Dictionary<string, Tuple<PersistComponentStateDirection, byte[]>> _currentState = new(StringComparer.Ordinal);
+    private bool _stateIsPersistedServer;
+    private bool _stateIsPersistedWebAssembly;
+    private readonly Dictionary<string, byte[]> _currentServerState = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, byte[]> _currentWebAssemblyState = new(StringComparer.Ordinal);
+
     private readonly ILogger<ComponentStatePersistenceManager> _logger;
 
     /// <summary>
@@ -21,7 +24,7 @@ public class ComponentStatePersistenceManager
     /// </summary>
     public ComponentStatePersistenceManager(ILogger<ComponentStatePersistenceManager> logger)
     {
-        State = new PersistentComponentState(_currentState, _pauseCallbacks);
+        State = new PersistentComponentState(_currentServerState, _currentWebAssemblyState, _pauseCallbacks);
         _logger = logger;
     }
 
@@ -52,18 +55,54 @@ public class ComponentStatePersistenceManager
 
     /// <summary>
     /// Persists the component application state into the given <see cref="IPersistentComponentStateStore"/>.
+    /// Persist on the server by default.
     /// </summary>
     /// <param name="store">The <see cref="IPersistentComponentStateStore"/> to restore the application state from.</param>
     /// <param name="dispatcher">The <see cref="Dispatcher"/> corresponding to the components' renderer.</param>
     /// <returns>A <see cref="Task"/> that will complete when the state has been restored.</returns>
     public Task PersistStateAsync(IPersistentComponentStateStore store, Dispatcher dispatcher)
+        => PersistStateOnServerAsync(store, dispatcher);
+
+    /// <summary>
+    /// Persists the component application state on the Server side into the given <see cref="IPersistentComponentStateStore"/>.
+    /// Persist on the server by default.
+    /// </summary>
+    /// <param name="store">The <see cref="IPersistentComponentStateStore"/> to restore the application state from.</param>
+    /// <param name="dispatcher">The <see cref="Dispatcher"/> corresponding to the components' renderer.</param>
+    /// <returns>A <see cref="Task"/> that will complete when the state has been restored.</returns>
+    public Task PersistStateOnServerAsync(IPersistentComponentStateStore store, Dispatcher dispatcher)
     {
-        if (_stateIsPersisted)
+        if (_stateIsPersistedServer)
         {
             throw new InvalidOperationException("State already persisted.");
         }
 
-        _stateIsPersisted = true;
+        _stateIsPersistedServer = true;
+
+        return PersistStateAsync(store, dispatcher, _currentServerState);
+    }
+
+    /// <summary>
+    /// Persists the component application state on the WebAssembly side into the given <see cref="IPersistentComponentStateStore"/>.
+    /// Persist on the server by default.
+    /// </summary>
+    /// <param name="store">The <see cref="IPersistentComponentStateStore"/> to restore the application state from.</param>
+    /// <param name="dispatcher">The <see cref="Dispatcher"/> corresponding to the components' renderer.</param>
+    /// <returns>A <see cref="Task"/> that will complete when the state has been restored.</returns>
+    public Task PersistStateOnWebAssemblyAsync(IPersistentComponentStateStore store, Dispatcher dispatcher)
+    {
+        if (_stateIsPersistedWebAssembly)
+        {
+            throw new InvalidOperationException("State already persisted.");
+        }
+
+        _stateIsPersistedWebAssembly = true;
+
+        return PersistStateAsync(store, dispatcher, _currentWebAssemblyState);
+    }
+
+    private Task PersistStateAsync(IPersistentComponentStateStore store, Dispatcher dispatcher, Dictionary<string, byte[]> currentState)
+    {
 
         return dispatcher.InvokeAsync(PauseAndPersistState);
 
@@ -73,7 +112,7 @@ public class ComponentStatePersistenceManager
             await PauseAsync();
             State.PersistingState = false;
 
-            await store.PersistStateAsync(_currentState);
+            await store.PersistStateAsync(currentState);
         }
     }
 
