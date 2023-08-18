@@ -36,6 +36,9 @@
             Blazor.start({
                 ssr: {
                     disableDomPreservation: suppressEnhancedNavigation,
+
+                    // We use a short timeout so tests don't take too long
+                    circuitInactivityTimeoutMs: 100,
                 },
                 webAssembly: {
                     loadBootResource: function (type, name, defaultUri, integrity) {

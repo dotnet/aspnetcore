@@ -21,7 +21,7 @@ import { attachComponentDescriptorHandler, registerAllComponentDescriptors } fro
 import { hasProgrammaticEnhancedNavigationHandler, performProgrammaticEnhancedNavigation } from './Services/NavigationUtils';
 
 let started = false;
-const rootComponentManager = new WebRootComponentManager();
+let rootComponentManager: WebRootComponentManager;
 
 function boot(options?: Partial<WebStartOptions>) : Promise<void> {
   if (started) {
@@ -42,6 +42,8 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
 
   setCircuitOptions(options?.circuit);
   setWebAssemblyOptions(options?.webAssembly);
+
+  rootComponentManager = new WebRootComponentManager(options?.ssr?.circuitInactivityTimeoutMs ?? 2000);
 
   attachComponentDescriptorHandler(rootComponentManager);
   attachStreamingRenderingListener(options?.ssr, rootComponentManager);

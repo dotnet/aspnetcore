@@ -754,7 +754,7 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Browser.Equal("1", () => Browser.FindElement(By.Id($"count-0")).Text);
 
         Browser.Click(By.Id($"remove-counter-link-0"));
-
+        AssertBrowserLogContainsMessage("Connection disconnected.");
         AssertBrowserLogDoesNotContainErrors();
 
         ((IJavaScriptExecutor)Browser).ExecuteScript("window.incrementCounter(0)");
@@ -777,7 +777,7 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Browser.Equal("1", () => Browser.FindElement(By.Id($"count-0")).Text);
 
         Browser.Click(By.Id($"remove-counter-link-0"));
-
+        AssertBrowserLogContainsMessage("Connection disconnected.");
         AssertBrowserLogDoesNotContainErrors();
 
         ((IJavaScriptExecutor)Browser).ExecuteScript("window.incrementCounter(0)");

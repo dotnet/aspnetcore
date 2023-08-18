@@ -23,6 +23,7 @@ import { CircuitDotNetCallDispatcher } from './Platform/Circuits/CircuitDotNetCa
 
 let renderingFailed = false;
 let started = false;
+let circuitActive = false;
 let startCircuitPromise: Promise<boolean> | undefined;
 let connection: HubConnection;
 let circuit: CircuitDescriptor;
@@ -113,6 +114,7 @@ export function startCircuit(components: RootComponentManager<ServerComponentDes
     throw new Error('Cannot start the circuit until Blazor Server has started.');
   }
 
+  circuitActive = true;
   startCircuitPromise ??= (async () => {
     const appState = discoverPersistedState(document);
     renderQueue = new RenderQueue(logger);
@@ -132,28 +134,20 @@ export function startCircuit(components: RootComponentManager<ServerComponentDes
   return startCircuitPromise;
 }
 
-export function hasStartedServer(): boolean {
-  return started;
-}
-
-export function isCircuitActive(): boolean {
-  return startCircuitPromise !== undefined;
-}
-
-export function attachCircuitAfterRenderCallback(callback: typeof afterRenderCallback) {
-  if (afterRenderCallback) {
-    throw new Error('A Blazor Server after render batch callback was already attached.');
-  }
-
-  afterRenderCallback = callback;
-}
-
-export function disposeCircuit() {
-  if (startCircuitPromise === undefined) {
+export async function disposeCircuit() {
+  if (!circuitActive) {
     return;
   }
 
-  startCircuitPromise = undefined;
+  circuitActive = false;
+
+  await startCircuitPromise;
+
+  if (circuitActive) {
+    // A call to 'startCircuit' was made while we were waiting to dispose the circuit.
+    // Therefore, we should abort the disposal.
+    return;
+  }
 
   // We dispose the .NET dispatcher to prevent it from being used in the future.
   // This avoids cases where, for example, .NET object references from a
@@ -163,6 +157,25 @@ export function disposeCircuit() {
   connection.stop();
 
   detachWebRendererInterop(WebRendererId.Server);
+
+  // Setting this to undefined allows a new circuit to be started in the future.
+  startCircuitPromise = undefined;
+}
+
+export function hasStartedServer(): boolean {
+  return started;
+}
+
+export function isCircuitActive(): boolean {
+  return circuitActive;
+}
+
+export function attachCircuitAfterRenderCallback(callback: typeof afterRenderCallback) {
+  if (afterRenderCallback) {
+    throw new Error('A Blazor Server after render batch callback was already attached.');
+  }
+
+  afterRenderCallback = callback;
 }
 
 async function initializeConnection(logger: Logger, circuit: CircuitDescriptor): Promise<HubConnection> {
