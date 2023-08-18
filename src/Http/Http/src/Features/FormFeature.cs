@@ -367,7 +367,7 @@ public class FormFeature : IFormFeature
         var finalFormOptionsMetadata = new MutableFormOptionsMetadata(formOptionsMetadatas[metadataCount - 1]);
         for (int i = metadataCount - 2; i >= 0; i--)
         {
-            finalFormOptionsMetadata = formOptionsMetadatas[i].MergeWith(finalFormOptionsMetadata);
+            formOptionsMetadatas[i].MergeWith(ref finalFormOptionsMetadata);
         }
         return finalFormOptionsMetadata.ResolveFormOptions(baseFormOptions);
     }

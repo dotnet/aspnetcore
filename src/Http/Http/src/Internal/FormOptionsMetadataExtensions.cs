@@ -7,9 +7,9 @@ namespace Microsoft.AspNetCore.Http.Features;
 
 internal static class FormOptionsMetadataExtensions
 {
-    public static MutableFormOptionsMetadata MergeWith(
+    public static void MergeWith(
         this IFormOptionsMetadata formOptionsMetadata,
-        MutableFormOptionsMetadata otherFormOptionsMetadata)
+        ref MutableFormOptionsMetadata otherFormOptionsMetadata)
     {
         otherFormOptionsMetadata.BufferBody ??= formOptionsMetadata.BufferBody;
         otherFormOptionsMetadata.MemoryBufferThreshold ??= formOptionsMetadata.MemoryBufferThreshold;
@@ -21,6 +21,5 @@ internal static class FormOptionsMetadataExtensions
         otherFormOptionsMetadata.MultipartHeadersCountLimit ??= formOptionsMetadata.MultipartHeadersCountLimit;
         otherFormOptionsMetadata.MultipartHeadersLengthLimit ??= formOptionsMetadata.MultipartHeadersLengthLimit;
         otherFormOptionsMetadata.MultipartBodyLengthLimit ??= formOptionsMetadata.MultipartBodyLengthLimit;
-        return otherFormOptionsMetadata;
     }
 }
