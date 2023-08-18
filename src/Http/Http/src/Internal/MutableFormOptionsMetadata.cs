@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Http.Metadata;
 
 namespace Microsoft.AspNetCore.Http.Features;
 
-internal class MutableFormOptionsMetadata(IFormOptionsMetadata formOptionsMetadata) : IFormOptionsMetadata
+internal struct MutableFormOptionsMetadata(IFormOptionsMetadata formOptionsMetadata) : IFormOptionsMetadata
 {
     internal FormOptions ResolveFormOptions(FormOptions baseFormOptions) => new FormOptions
     {

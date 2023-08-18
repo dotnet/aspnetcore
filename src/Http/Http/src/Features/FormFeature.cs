@@ -50,12 +50,8 @@ public class FormFeature : IFormFeature
     /// <param name="request">The <see cref="HttpRequest"/>.</param>
     /// <param name="options">The <see cref="FormOptions"/>.</param>
     public FormFeature(HttpRequest request, FormOptions options)
+        : this(request, options, null)
     {
-        ArgumentNullException.ThrowIfNull(request);
-        ArgumentNullException.ThrowIfNull(options);
-
-        _request = request;
-        _options = options;
     }
 
     internal FormFeature(HttpRequest request, FormOptions options, Endpoint? endpoint)
