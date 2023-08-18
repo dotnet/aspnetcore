@@ -202,6 +202,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Moq" />
     <LatestPackageReference Include="Newtonsoft.Json.Bson" />
     <LatestPackageReference Include="NSwag.ApiDescription.Client" />
+    <LatestPackageReference Include="NSwag.AspNetCore" />
     <LatestPackageReference Include="NuGet.Frameworks" />
     <LatestPackageReference Include="NuGet.Versioning" />
     <LatestPackageReference Include="Photino.NET" />
