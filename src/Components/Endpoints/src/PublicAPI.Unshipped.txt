@@ -44,8 +44,8 @@ Microsoft.AspNetCore.Http.HttpResults.RazorComponentResult.Parameters.get -> Sys
 Microsoft.AspNetCore.Http.HttpResults.RazorComponentResult.PreventStreamingRendering.get -> bool
 Microsoft.AspNetCore.Http.HttpResults.RazorComponentResult.PreventStreamingRendering.set -> void
 Microsoft.AspNetCore.Http.HttpResults.RazorComponentResult.RazorComponentResult(System.Type! componentType) -> void
-Microsoft.AspNetCore.Http.HttpResults.RazorComponentResult.RazorComponentResult(System.Type! componentType, object? parameters) -> void
-Microsoft.AspNetCore.Http.HttpResults.RazorComponentResult.RazorComponentResult(System.Type! componentType, System.Collections.Generic.IReadOnlyDictionary<string!, object?>? parameters) -> void
+Microsoft.AspNetCore.Http.HttpResults.RazorComponentResult.RazorComponentResult(System.Type! componentType, object! parameters) -> void
+Microsoft.AspNetCore.Http.HttpResults.RazorComponentResult.RazorComponentResult(System.Type! componentType, System.Collections.Generic.IReadOnlyDictionary<string!, object?>! parameters) -> void
 Microsoft.AspNetCore.Http.HttpResults.RazorComponentResult.StatusCode.get -> int?
 Microsoft.AspNetCore.Http.HttpResults.RazorComponentResult.StatusCode.set -> void
 Microsoft.AspNetCore.Http.HttpResults.RazorComponentResult<TComponent>

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Endpoints;
@@ -22,7 +23,7 @@ public class RazorComponentResult : IResult
     /// </summary>
     /// <param name="componentType">The type of the component to render. This must implement <see cref="IComponent"/>.</param>
     public RazorComponentResult([DynamicallyAccessedMembers(Component)] Type componentType)
-        : this(componentType, null)
+        : this(componentType, ReadOnlyDictionary<string, object?>.Empty)
     {
     }
 
@@ -31,8 +32,10 @@ public class RazorComponentResult : IResult
     /// </summary>
     /// <param name="componentType">The type of the component to render. This must implement <see cref="IComponent"/>.</param>
     /// <param name="parameters">Parameters for the component.</param>
-    public RazorComponentResult([DynamicallyAccessedMembers(Component)] Type componentType, object? parameters)
-        : this(componentType, CoerceParametersObjectToDictionary(parameters))
+    public RazorComponentResult(
+        [DynamicallyAccessedMembers(Component)] Type componentType,
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] object parameters)
+        : this(componentType, CoerceParametersObjectToDictionary(parameters)!)
     {
     }
 
@@ -41,19 +44,20 @@ public class RazorComponentResult : IResult
     /// </summary>
     /// <param name="componentType">The type of the component to render. This must implement <see cref="IComponent"/>.</param>
     /// <param name="parameters">Parameters for the component.</param>
-    public RazorComponentResult([DynamicallyAccessedMembers(Component)] Type componentType, IReadOnlyDictionary<string, object?>? parameters)
+    public RazorComponentResult([DynamicallyAccessedMembers(Component)] Type componentType, IReadOnlyDictionary<string, object?> parameters)
     {
+        ArgumentNullException.ThrowIfNull(componentType);
+        ArgumentNullException.ThrowIfNull(parameters);
+
         // Note that the Blazor renderer will validate that componentType implements IComponent and throws a suitable
         // exception if not, so we don't need to duplicate that logic here.
-
-        ArgumentNullException.ThrowIfNull(componentType);
         ComponentType = componentType;
         Parameters = parameters ?? EmptyParameters;
     }
 
     private static IReadOnlyDictionary<string, object?>? CoerceParametersObjectToDictionary(object? parameters)
         => parameters is null
-        ? null
+        ? throw new ArgumentNullException(nameof(parameters))
         : (IReadOnlyDictionary<string, object?>)PropertyHelper.ObjectToDictionary(parameters);
 
     /// <summary>
