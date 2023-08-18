@@ -27,6 +27,7 @@
       SystemNetHttpJsonVersion=$(SystemNetHttpJsonVersion);
       MicrosoftGraphVersion=$(MicrosoftGraphVersion);
       SwashbuckleAspNetCoreVersion=$(SwashbuckleAspNetCoreVersion);
+      NSwagAspNetCoreVersion=$(NSwagAspNetCoreVersion);
     </GeneratedContentProperties>
   </PropertyGroup>
 

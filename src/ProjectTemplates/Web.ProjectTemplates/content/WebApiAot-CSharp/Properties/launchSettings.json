@@ -5,7 +5,11 @@
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,
+      //#if (EnableOpenAPI)
+      "launchUrl": "swagger",
+      //#else
       "launchUrl": "todos",
+      //#endif
       "applicationUrl": "http://localhost:5000",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
