@@ -124,6 +124,16 @@
       "description": "If specified, skips the automatic restore of the project on create.",
       "defaultValue": "false"
     },
+    "DisableOpenAPI": {
+      "type": "parameter",
+      "dataType": "bool",
+      "defaultValue": "false",
+      "description": "Disable OpenAPI (Swagger) support"
+    },
+    "EnableOpenAPI": {
+      "type": "computed",
+      "value": "(!DisableOpenAPI)"
+    },
     "UseProgramMain": {
       "type": "parameter",
       "datatype": "bool",

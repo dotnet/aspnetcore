@@ -10,4 +10,11 @@
     <PublishAot>true</PublishAot>
   </PropertyGroup>
 
+  <!--#if (EnableOpenAPI) -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="${MicrosoftAspNetCoreOpenApiVersion}" Condition="'$(EnableOpenAPI)' == 'True'" />
+    <PackageReference Include="NSwag.AspNetCore" Version="${NSwagAspNetCoreVersion}" Condition="'$(EnableOpenAPI)' == 'True'" />
+  </ItemGroup>
+
+  <!--#endif -->
 </Project>
