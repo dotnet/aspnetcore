@@ -368,7 +368,7 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>f7df78f4c9b3944d1b937b264601d7b5da55f3ab</Sha>
     </Dependency>
-    <Dependency Name="System.Drawing.Common" Version="9.0.0-alpha.1.23417.2">
+    <Dependency Name="System.Drawing.Common" Version="8.0.0-rc.1.23408.5">
       <Uri>https://github.com/dotnet/winforms</Uri>
       <Sha>5954c5fae2b4c0df34c3be658294b9289d02ac76</Sha>
     </Dependency>
