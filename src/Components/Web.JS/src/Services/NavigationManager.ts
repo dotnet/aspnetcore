@@ -25,6 +25,7 @@ export const internalFunctions = {
   setHasLocationChangingListeners,
   endLocationChanging,
   navigateTo: navigateToFromDotNet,
+  refresh,
   getBaseURI: (): string => document.baseURI,
   getLocationHref: (): string => location.href,
   scrollToElement,
@@ -91,6 +92,14 @@ function performScrollToElementOnTheSamePage(absoluteHref : string, replace: boo
 
   const identifier = absoluteHref.substring(hashIndex + 1);
   scrollToElement(identifier);
+}
+
+function refresh(forceReload: boolean): void {
+  if (!forceReload && hasProgrammaticEnhancedNavigationHandler()) {
+    performProgrammaticEnhancedNavigation(location.href, /* replace */ true);
+  } else {
+    location.reload();
+  }
 }
 
 // For back-compat, we need to accept multiple overloads
