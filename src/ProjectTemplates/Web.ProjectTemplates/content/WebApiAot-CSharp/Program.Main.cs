@@ -12,8 +12,21 @@ public class Program
         {
             options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default);
         });
+        #if (EnableOpenAPI)
+
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddOpenApiDocument();
+        #endif
 
         var app = builder.Build();
+        #if (EnableOpenAPI)
+        
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseOpenApi();
+            app.UseSwaggerUi3();
+        }
+        #endif
 
         var sampleTodos = new Todo[] {
             new(1, "Walk the dog"),
@@ -24,11 +37,23 @@ public class Program
         };
 
         var todosApi = app.MapGroup("/todos");
-        todosApi.MapGet("/", () => sampleTodos);
+        #if (EnableOpenAPI)
+        todosApi.MapGet("/", () => sampleTodos)
+                .WithName("GetTodos")
+                .WithOpenApi();
         todosApi.MapGet("/{id}", (int id) =>
             sampleTodos.FirstOrDefault(a => a.Id == id) is { } todo
                 ? Results.Ok(todo)
-                : Results.NotFound());
+                : Results.NotFound())
+                .WithName("GetTodosById")
+                .WithOpenApi();
+        #else
+                todosApi.MapGet("/", () => sampleTodos);
+                todosApi.MapGet("/{id}", (int id) =>
+                    sampleTodos.FirstOrDefault(a => a.Id == id) is { } todo
+                        ? Results.Ok(todo)
+                        : Results.NotFound());
+        #endif
 
         app.Run();
     }

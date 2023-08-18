@@ -18,6 +18,10 @@
       "longName": "exclude-launch-settings",
       "shortName": ""
     },
+    "DisableOpenAPI": {
+      "longName": "no-openapi",
+      "shortName": ""
+    },
     "UseProgramMain": {
       "longName": "use-program-main",
       "shortName": ""
