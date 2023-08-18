@@ -45,7 +45,8 @@ public class ComponentStatePersistenceManager
     }
 
     /// <summary>
-    /// Persists the component application state into the given <see cref="IPersistentComponentStateStore"/>.
+    /// Persists the component application state into the given <see cref="IPersistentComponentStateStore"/>
+    /// so that it could be restored on Server by default.
     /// </summary>
     /// <param name="store">The <see cref="IPersistentComponentStateStore"/> to restore the application state from.</param>
     /// <param name="renderer">The <see cref="Renderer"/> that components are being rendered.</param>
@@ -54,8 +55,8 @@ public class ComponentStatePersistenceManager
         => PersistStateAsync(store, renderer.Dispatcher);
 
     /// <summary>
-    /// Persists the component application state into the given <see cref="IPersistentComponentStateStore"/>.
-    /// Persist on the server by default.
+    /// Persists the component application state into the given <see cref="IPersistentComponentStateStore"/>
+    /// so that it could be restored on Server by default.
     /// </summary>
     /// <param name="store">The <see cref="IPersistentComponentStateStore"/> to restore the application state from.</param>
     /// <param name="dispatcher">The <see cref="Dispatcher"/> corresponding to the components' renderer.</param>
@@ -64,8 +65,8 @@ public class ComponentStatePersistenceManager
         => PersistStateOnServerAsync(store, dispatcher);
 
     /// <summary>
-    /// Persists the component application state on the Server side into the given <see cref="IPersistentComponentStateStore"/>.
-    /// Persist on the server by default.
+    /// Persists the component application state into the given <see cref="IPersistentComponentStateStore"/>
+    /// so that it could be restored on Server.
     /// </summary>
     /// <param name="store">The <see cref="IPersistentComponentStateStore"/> to restore the application state from.</param>
     /// <param name="dispatcher">The <see cref="Dispatcher"/> corresponding to the components' renderer.</param>
@@ -83,8 +84,8 @@ public class ComponentStatePersistenceManager
     }
 
     /// <summary>
-    /// Persists the component application state on the WebAssembly side into the given <see cref="IPersistentComponentStateStore"/>.
-    /// Persist on the server by default.
+    /// Persists the component application state on the WebAssembly side into the given <see cref="IPersistentComponentStateStore"/>
+    /// so that it could be restored on WebAssembly.
     /// </summary>
     /// <param name="store">The <see cref="IPersistentComponentStateStore"/> to restore the application state from.</param>
     /// <param name="dispatcher">The <see cref="Dispatcher"/> corresponding to the components' renderer.</param>

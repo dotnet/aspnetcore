@@ -23,9 +23,6 @@ Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.
 Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.PersistStateOnWebAssemblyAsync(Microsoft.AspNetCore.Components.IPersistentComponentStateStore! store, Microsoft.AspNetCore.Components.Dispatcher! dispatcher) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.ParameterView.ToDictionary() -> System.Collections.Generic.IReadOnlyDictionary<string!, object?>!
 *REMOVED*Microsoft.AspNetCore.Components.ParameterView.ToDictionary() -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>!
-Microsoft.AspNetCore.Components.PersistComponentStateDirection
-Microsoft.AspNetCore.Components.PersistComponentStateDirection.Server = 1 -> Microsoft.AspNetCore.Components.PersistComponentStateDirection
-Microsoft.AspNetCore.Components.PersistComponentStateDirection.WebAssembly = 2 -> Microsoft.AspNetCore.Components.PersistComponentStateDirection
 Microsoft.AspNetCore.Components.PersistentComponentState.PersistOnServerAsJson<TValue>(string! key, TValue instance) -> void
 Microsoft.AspNetCore.Components.PersistentComponentState.PersistOnWebAssemblyAsJson<TValue>(string! key, TValue instance) -> void
 Microsoft.AspNetCore.Components.RenderHandle.DispatchExceptionAsync(System.Exception! exception) -> System.Threading.Tasks.Task!

@@ -56,8 +56,8 @@ public class PersistentComponentState
     }
 
     /// <summary>
-    /// Serializes <paramref name="instance"/> as JSON and persists it under the given <paramref name="key"/>.
-    /// Persists on Server by default.
+    /// Serializes <paramref name="instance"/> as JSON and persists it under the given <paramref name="key"/>
+    /// so that it could be restored on Server by default.
     /// </summary>
     /// <typeparam name="TValue">The <paramref name="instance"/> type.</typeparam>
     /// <param name="key">The key to use to persist the state.</param>
@@ -67,7 +67,8 @@ public class PersistentComponentState
         => PersistOnServerAsJson(key, instance);
 
     /// <summary>
-    /// Serializes <paramref name="instance"/> as JSON and persists it under the given <paramref name="key"/> on the Server side.
+    /// Serializes <paramref name="instance"/> as JSON and persists it under the given <paramref name="key"/>
+    /// so that it could be restored on Server.
     /// </summary>
     /// <typeparam name="TValue">The <paramref name="instance"/> type.</typeparam>
     /// <param name="key">The key to use to persist the state.</param>
@@ -77,7 +78,8 @@ public class PersistentComponentState
         => PersistAsJson(key, instance, _currentServerState);
 
     /// <summary>
-    /// Serializes <paramref name="instance"/> as JSON and persists it under the given <paramref name="key"/> on the WebAssembly side.
+    /// Serializes <paramref name="instance"/> as JSON and persists it under the given <paramref name="key"/>
+    /// so that it could be restored on WebAssembly.
     /// </summary>
     /// <typeparam name="TValue">The <paramref name="instance"/> type.</typeparam>
     /// <param name="key">The key to use to persist the state.</param>
