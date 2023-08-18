@@ -8,7 +8,7 @@ using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.WebView;
 
-// Handles comunication between the component abstractions (Renderer, NavigationManager, JSInterop, etc.)
+// Handles communication between the component abstractions (Renderer, NavigationManager, JSInterop, etc.)
 // and the underlying transport channel
 internal sealed class IpcSender
 {
@@ -37,6 +37,11 @@ internal sealed class IpcSender
     public void Navigate(string uri, NavigationOptions options)
     {
         DispatchMessageWithErrorHandling(IpcCommon.Serialize(IpcCommon.OutgoingMessageType.Navigate, uri, options));
+    }
+
+    public void Refresh(bool forceReload)
+    {
+        DispatchMessageWithErrorHandling(IpcCommon.Serialize(IpcCommon.OutgoingMessageType.Refresh, forceReload));
     }
 
     public void AttachToDocument(int componentId, string selector)
