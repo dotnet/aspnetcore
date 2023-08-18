@@ -715,6 +715,31 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
     }
 
     [Fact]
+    public async Task ReconnectionHandler_DoesNotRun_AfterIntentionallyShuttingDownTheCircuit()
+    {
+        Navigate($"{ServerPathBase}/streaming-interactivity");
+
+        Browser.Equal("Not streaming", () => Browser.FindElement(By.Id("status")).Text);
+
+        Browser.Click(By.Id(AddServerPrerenderedId));
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-0")).Text);
+
+        Browser.Click(By.Id("increment-0"));
+        Browser.Equal("1", () => Browser.FindElement(By.Id("count-0")).Text);
+
+        Browser.Click(By.Id("remove-counter-link-0"));
+
+        AssertBrowserLogContainsMessage("Connection disconnected.");
+        AssertBrowserLogDoesNotContainErrors();
+        ClearBrowserLogs();
+
+        // Wait for the reconnection handler to run, if it's going to. Hopefully it doesn't.
+        await Task.Delay(5000);
+
+        AssertBrowserLogDoesNotContainMessage("WebSocket connected to");
+    }
+
+    [Fact]
     public void DotNetObjectReference_CannotBeUsed_AfterCircuitShutsDown()
     {
         Navigate($"{ServerPathBase}/streaming-interactivity");
@@ -821,12 +846,15 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
     }
 
     private void AssertBrowserLogContainsMessage(string message)
+        => Browser.True(() => DoesBrowserLogContainMessage(message));
+
+    private void AssertBrowserLogDoesNotContainMessage(string message)
+        => Browser.False(() => DoesBrowserLogContainMessage(message));
+
+    private bool DoesBrowserLogContainMessage(string message)
     {
-        Browser.True(() =>
-        {
-            var entries = Browser.Manage().Logs.GetLog(LogType.Browser);
-            return entries.Any(entry => entry.Message.Contains(message));
-        });
+        var entries = Browser.Manage().Logs.GetLog(LogType.Browser);
+        return entries.Any(entry => entry.Message.Contains(message));
     }
 
     private void AssertBrowserLogDoesNotContainErrors()

@@ -28,16 +28,17 @@ let connection: HubConnection;
 let circuit: CircuitDescriptor;
 let dotNetDispatcher: CircuitDotNetCallDispatcher;
 let dispatcher: DotNet.ICallDispatcher;
-let userOptions: Partial<CircuitStartOptions> | undefined;
+let renderQueue: RenderQueue;
+let options: CircuitStartOptions;
 let logger: ConsoleLogger;
 let afterRenderCallback: (() => void) | undefined;
 
 export function setCircuitOptions(circuitUserOptions?: Partial<CircuitStartOptions>) {
-  if (userOptions) {
+  if (options) {
     throw new Error('Circuit options have already been configured.');
   }
 
-  userOptions = circuitUserOptions;
+  options = resolveOptions(circuitUserOptions);
 }
 
 export async function startServer(components: RootComponentManager<ServerComponentDescriptor>): Promise<void> {
@@ -48,7 +49,6 @@ export async function startServer(components: RootComponentManager<ServerCompone
   started = true;
 
   // Establish options to be used
-  const options = resolveOptions(userOptions);
   logger = new ConsoleLogger(options.logLevel);
 
   const jsInitializer = await fetchAndInvokeInitializers(options);
@@ -59,7 +59,7 @@ export async function startServer(components: RootComponentManager<ServerCompone
       return false;
     }
 
-    const reconnection = existingConnection || await initializeConnection(options, logger, circuit);
+    const reconnection = existingConnection || await initializeConnection(logger, circuit);
     if (!(await circuit.reconnect(reconnection))) {
       logger.log(LogLevel.Information, 'Reconnection attempt to the circuit was rejected by the server. This may indicate that the associated state is no longer available on the server.');
       return false;
@@ -114,13 +114,13 @@ export function startCircuit(components: RootComponentManager<ServerComponentDes
   }
 
   startCircuitPromise ??= (async () => {
-    const options = resolveOptions(userOptions);
     const appState = discoverPersistedState(document);
+    renderQueue = new RenderQueue(logger);
     circuit = new CircuitDescriptor(components, appState || '');
     dotNetDispatcher = new CircuitDotNetCallDispatcher(() => connection);
     dispatcher = DotNet.attachDispatcher(dotNetDispatcher);
 
-    const initialConnection = await initializeConnection(options, logger, circuit);
+    const initialConnection = await initializeConnection(logger, circuit);
     const circuitStarted = await circuit.startCircuit(initialConnection);
     if (!circuitStarted) {
       logger.log(LogLevel.Error, 'Failed to start the circuit.');
@@ -165,7 +165,7 @@ export function disposeCircuit() {
   detachWebRendererInterop(WebRendererId.Server);
 }
 
-async function initializeConnection(options: CircuitStartOptions, logger: Logger, circuit: CircuitDescriptor): Promise<HubConnection> {
+async function initializeConnection(logger: Logger, circuit: CircuitDescriptor): Promise<HubConnection> {
   const hubProtocol = new MessagePackHubProtocol();
   (hubProtocol as unknown as { name: string }).name = 'blazorpack';
 
@@ -196,7 +196,6 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
     dispatcher.supplyDotNetStream(streamId, readableStream);
   });
 
-  const renderQueue = new RenderQueue(logger);
   newConnection.on('JS.RenderBatch', async (batchId: number, batchData: Uint8Array) => {
     logger.log(LogLevel.Debug, `Received render batch with id ${batchId} and ${batchData.byteLength} bytes.`);
     await renderQueue.processBatch(batchId, batchData, newConnection);
@@ -205,7 +204,7 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
 
   newConnection.on('JS.EndLocationChanging', Blazor._internal.navigationManager.endLocationChanging);
 
-  newConnection.onclose(error => !renderingFailed && options.reconnectionHandler!.onConnectionDown(options.reconnectionOptions, error));
+  newConnection.onclose(error => isCircuitActive() && !renderingFailed && options.reconnectionHandler!.onConnectionDown(options.reconnectionOptions, error));
   newConnection.on('JS.Error', error => {
     renderingFailed = true;
     unhandledError(newConnection, error, logger);
