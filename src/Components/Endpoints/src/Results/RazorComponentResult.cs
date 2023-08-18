@@ -35,7 +35,7 @@ public class RazorComponentResult : IResult, IStatusCodeHttpResult, IContentType
     public RazorComponentResult(
         [DynamicallyAccessedMembers(Component)] Type componentType,
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] object parameters)
-        : this(componentType, CoerceParametersObjectToDictionary(parameters)!)
+        : this(componentType, CoerceParametersObjectToDictionary(parameters))
     {
     }
 
@@ -55,7 +55,7 @@ public class RazorComponentResult : IResult, IStatusCodeHttpResult, IContentType
         Parameters = parameters ?? EmptyParameters;
     }
 
-    private static IReadOnlyDictionary<string, object?>? CoerceParametersObjectToDictionary(object? parameters)
+    private static IReadOnlyDictionary<string, object?> CoerceParametersObjectToDictionary(object? parameters)
         => parameters is null
         ? throw new ArgumentNullException(nameof(parameters))
         : (IReadOnlyDictionary<string, object?>)PropertyHelper.ObjectToDictionary(parameters);
