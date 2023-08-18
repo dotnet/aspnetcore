@@ -178,19 +178,16 @@ public class BindingInfo
         }
 
         // Keyed services
-        if (attributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.GetType())))
+        if (attributes.OfType<FromKeyedServicesAttribute>().FirstOrDefault() is { } fromKeyedServicesAttribute)
         {
-            if (attributes.OfType<FromKeyedServicesAttribute>().FirstOrDefault() is not null)
+            if (bindingInfo.BindingSource != null)
             {
                 throw new NotSupportedException(
-                    $"The {nameof(FromKeyedServicesAttribute)} is not supported on parameters that are also annotated with {nameof(IFromServiceMetadata)}.");
+                    $"The {nameof(FromKeyedServicesAttribute)} is not supported on parameters that are also annotated with {nameof(IBindingSourceMetadata)}.");
             }
-        }
-        if (attributes.OfType<FromKeyedServicesAttribute>().FirstOrDefault() is { } fromKeydServicesAttribute)
-        {
             isBindingInfoPresent = true;
             bindingInfo.BindingSource = BindingSource.Services;
-            bindingInfo.ServiceKey = fromKeydServicesAttribute.Key;
+            bindingInfo.ServiceKey = fromKeyedServicesAttribute.Key;
         }
 
         return isBindingInfoPresent ? bindingInfo : null;
