@@ -167,7 +167,6 @@ public class RoutingMetricsTests
             new DefaultEndpointDataSource(),
             listener,
             Options.Create(new RouteOptions()),
-            Options.Create(new FormOptions()),
             metrics,
             next);
 
