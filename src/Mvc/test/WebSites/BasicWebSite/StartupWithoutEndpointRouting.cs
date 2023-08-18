@@ -45,6 +45,7 @@ public class StartupWithoutEndpointRouting
         services.AddSingleton<ContactsRepository>();
         services.AddKeyedSingleton<ICustomService, OkCustomService>("ok_service");
         services.AddKeyedSingleton<ICustomService, BadCustomService>("not_ok_service");
+        services.AddSingleton<ICustomService, DefaultCustomService>();
         services.AddScoped<RequestIdService>();
         services.AddTransient<ServiceActionFilter>();
         services.AddScoped<TestResponseGenerator>();

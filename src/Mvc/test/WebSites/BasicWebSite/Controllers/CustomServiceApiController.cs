@@ -28,4 +28,26 @@ public class CustomServicesApiController : Controller
     {
         return $"{s1.Process()},{s2.Process()}";
     }
+
+    [HttpGet("GetKeyNull")]
+    public ActionResult<string> GetKeyNull([FromKeyedServices(null)] ICustomService service)
+    {
+        return service.Process();
+    }
+
+    [HttpGet("GetOptionalNotRegistered")]
+    public ActionResult<string> GetOptionalNotRegistered([FromKeyedServices("no_existing_key")] ICustomService? service)
+    {
+        if (service != null)
+        {
+            throw new Exception("Service should not have been resolved");
+        }
+        return string.Empty;
+    }
+
+    [HttpGet("GetRequiredNotRegistered")]
+    public ActionResult<string> GetRequiredNotRegistered([FromKeyedServices("no_existing_key")] ICustomService service)
+    {
+        return service.Process();
+    }
 }

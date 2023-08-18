@@ -45,4 +45,45 @@ public class KeyedServicesTests : IClassFixture<MvcTestFixture<BasicWebSite.Star
         Assert.True(response.IsSuccessStatusCode);
         Assert.Equal("OK,NOT OK", await response.Content.ReadAsStringAsync());
     }
+
+    [Fact]
+    public async Task ExplicitSingleFromKeyedServiceAttributeWithNullKey()
+    {
+        // Arrange
+        var request = new HttpRequestMessage(HttpMethod.Get, "/services/GetKeyNull");
+
+        // Act
+        var response = await Client.SendAsync(request);
+
+        // Assert
+        Assert.True(response.IsSuccessStatusCode);
+        Assert.Equal("DEFAULT", await response.Content.ReadAsStringAsync());
+    }
+
+    [Fact]
+    public async Task ExplicitSingleFromKeyedServiceAttributeOptionalNotRegistered()
+    {
+        // Arrange
+        var request = new HttpRequestMessage(HttpMethod.Get, "/services/GetOptionalNotRegistered");
+
+        // Act
+        var response = await Client.SendAsync(request);
+
+        // Assert
+        Assert.True(response.IsSuccessStatusCode);
+        Assert.Equal(string.Empty, await response.Content.ReadAsStringAsync());
+    }
+
+    [Fact]
+    public async Task ExplicitSingleFromKeyedServiceAttributeRequiredNotRegistered()
+    {
+        // Arrange
+        var request = new HttpRequestMessage(HttpMethod.Get, "/services/GetRequiredNotRegistered");
+
+        // Act
+        var response = await Client.SendAsync(request);
+
+        // Assert
+        Assert.False(response.IsSuccessStatusCode);
+    }
 }
