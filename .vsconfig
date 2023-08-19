@@ -15,7 +15,6 @@
     "Microsoft.VisualStudio.Component.Windows10SDK.19041",
     "Microsoft.VisualStudio.Workload.ManagedDesktop",
     "Microsoft.VisualStudio.Workload.NativeDesktop",
-    "Microsoft.VisualStudio.Workload.NetWeb",
-    "Microsoft.VisualStudio.Workload.VisualStudioExtension"
+    "Microsoft.VisualStudio.Workload.NetWeb"
   ]
 }
