@@ -2,6 +2,10 @@
   <Import Project="eng\Common.props" />
 
   <PropertyGroup>
+    <AccelerateBuildsInVisualStudio>true</AccelerateBuildsInVisualStudio>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <!-- $(RepoRoot) is normally set globally and Arcade overrides it to ensure a trailing slash. -->
     <RepoRoot Condition=" '$(RepoRoot)' == '' OR !HasTrailingSlash('$(RepoRoot)') ">$(MSBuildThisFileDirectory)</RepoRoot>
 
