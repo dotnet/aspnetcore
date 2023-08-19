@@ -1853,6 +1853,24 @@ public abstract class ControllerBase
     /// <summary>
     /// Creates an <see cref="ObjectResult"/> that produces a <see cref="ProblemDetails"/> response.
     /// </summary>
+    /// <param name="problemDetails">The <see cref="ProblemDetails"/> object to produce a response from.</param>
+    /// <returns>The created <see cref="ObjectResult"/> for the response.</returns>
+    [NonAction]
+    public virtual ObjectResult Problem(ProblemDetails problemDetails)
+    {
+        ArgumentNullException.ThrowIfNull(problemDetails);
+
+        problemDetails.Status ??= 500;
+
+        return new ObjectResult(problemDetails)
+        {
+            StatusCode = problemDetails.Status
+        };
+    }
+
+    /// <summary>
+    /// Creates an <see cref="ObjectResult"/> that produces a <see cref="ProblemDetails"/> response.
+    /// </summary>
     /// <param name="statusCode">The value for <see cref="ProblemDetails.Status" />.</param>
     /// <param name="detail">The value for <see cref="ProblemDetails.Detail" />.</param>
     /// <param name="instance">The value for <see cref="ProblemDetails.Instance" />.</param>

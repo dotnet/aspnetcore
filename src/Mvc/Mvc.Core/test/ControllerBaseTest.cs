@@ -2416,6 +2416,45 @@ public class ControllerBaseTest
     }
 
     [Fact]
+    public void ProblemDetails_Object_Works()
+    {
+        // Arrange
+        var problemDetails = new ProblemDetails();
+
+        var controller = new TestableController();
+
+        // Act
+        var actionResult = controller.Problem(problemDetails);
+
+        // Assert
+        var badRequestResult = Assert.IsType<ObjectResult>(actionResult);
+        Assert.Same(problemDetails, Assert.IsType<ProblemDetails>(badRequestResult.Value));
+        Assert.Equal(500, actionResult.StatusCode);
+        Assert.Equal(500, problemDetails.Status);
+    }
+
+    [Fact]
+    public void ProblemDetails_Object_UsesPassedInStatusCode()
+    {
+        // Arrange
+        var problemDetails = new ProblemDetails
+        {
+            Status = 503
+        };
+
+        var controller = new TestableController();
+
+        // Act
+        var actionResult = controller.Problem(problemDetails);
+
+        // Assert
+        var badRequestResult = Assert.IsType<ObjectResult>(actionResult);
+        Assert.Same(problemDetails, Assert.IsType<ProblemDetails>(badRequestResult.Value));
+        Assert.Equal(503, actionResult.StatusCode);
+        Assert.Equal(503, problemDetails.Status);
+    }
+
+    [Fact]
     public void ProblemDetails_Works()
     {
         // Arrange
