@@ -15,5 +15,11 @@
     <!-- All installers are shipping assets. -->
     <IsShipping>true</IsShipping>
     <IsPackable>true</IsPackable>
+
+    <!--
+      For installers project, build acceleration may not work correctly.
+      Read more here => https://github.com/dotnet/project-system/blob/main/docs/build-acceleration.md#limitations
+    -->
+    <AccelerateBuildsInVisualStudio>false</AccelerateBuildsInVisualStudio>
   </PropertyGroup>
 </Project>
