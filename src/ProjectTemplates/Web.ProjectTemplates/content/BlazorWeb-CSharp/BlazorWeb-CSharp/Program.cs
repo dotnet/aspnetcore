@@ -2,6 +2,10 @@ using BlazorWeb_CSharp.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add appsettings files to the configuration
+builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+builder.Configuration.AddJsonFile($"appsettings.Development.json", optional: true);
+
 // Add services to the container.
 #if (!UseServer && !UseWebAssembly)
 builder.Services.AddRazorComponents();
