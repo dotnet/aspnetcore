@@ -56,7 +56,7 @@ internal static class ChecksumValidator
         }
 
         var sourceDocumentChecksum = ComputeChecksum(projectItem, primaryChecksum.ChecksumAlgorithm);
-        if (!string.Equals(sourceDocumentChecksum.algorithm, primaryChecksum.ChecksumAlgorithm) ||
+        if (!string.Equals(sourceDocumentChecksum.algorithm, primaryChecksum.ChecksumAlgorithm, StringComparison.Ordinal) ||
             !ChecksumsEqual(primaryChecksum.Checksum, sourceDocumentChecksum.checksum))
         {
             // Main file exists, but checksums not equal.
@@ -80,7 +80,7 @@ internal static class ChecksumValidator
             }
 
             sourceDocumentChecksum = ComputeChecksum(importItem, checksum.ChecksumAlgorithm);
-            if (!string.Equals(sourceDocumentChecksum.algorithm, checksum.ChecksumAlgorithm) ||
+            if (!string.Equals(sourceDocumentChecksum.algorithm, checksum.ChecksumAlgorithm, StringComparison.Ordinal) ||
                 !ChecksumsEqual(checksum.Checksum, sourceDocumentChecksum.checksum))
             {
                 // Import file exists, but checksums not equal.

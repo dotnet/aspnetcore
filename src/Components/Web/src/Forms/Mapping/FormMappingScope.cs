@@ -53,7 +53,7 @@ public sealed class FormMappingScope : ICascadingValueSupplier, IComponent
 
             _cascadingValueSupplier = new SupplyParameterFromFormValueProvider(FormValueModelBinder, Name);
         }
-        else if (!string.Equals(Name, _cascadingValueSupplier.MappingScopeName))
+        else if (!string.Equals(Name, _cascadingValueSupplier.MappingScopeName, StringComparison.Ordinal))
         {
             throw new InvalidOperationException($"{nameof(FormMappingScope)} '{nameof(Name)}' can't change after initialization.");
         }

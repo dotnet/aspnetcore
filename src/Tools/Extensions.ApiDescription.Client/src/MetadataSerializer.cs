@@ -1,6 +1,7 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.Build.Framework;
@@ -99,7 +100,7 @@ public static class MetadataSerializer
         foreach (var segment in metadata)
         {
             var keyAndValue = segment.Split(new[] { '=' }, count: 2);
-            if (string.Equals("Identity", keyAndValue[0]))
+            if (string.Equals("Identity", keyAndValue[0], StringComparison.Ordinal))
             {
                 item2.EvaluatedIncludeEscaped = keyAndValue[1];
                 continue;

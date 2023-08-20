@@ -41,7 +41,7 @@ internal sealed class MiddlewareFilterConfigurationProvider
         var methodName = "Configure";
 
         var methods = startupType.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
-        var selectedMethods = methods.Where(method => method.Name.Equals(methodName)).ToList();
+        var selectedMethods = methods.Where(method => method.Name.Equals(methodName, StringComparison.Ordinal)).ToList();
         if (selectedMethods.Count > 1)
         {
             throw new InvalidOperationException(

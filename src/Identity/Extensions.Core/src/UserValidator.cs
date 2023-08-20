@@ -68,7 +68,7 @@ public class UserValidator<TUser> : IUserValidator<TUser> where TUser : class
         {
             var owner = await manager.FindByNameAsync(userName).ConfigureAwait(false);
             if (owner != null &&
-                !string.Equals(await manager.GetUserIdAsync(owner).ConfigureAwait(false), await manager.GetUserIdAsync(user).ConfigureAwait(false)))
+                !string.Equals(await manager.GetUserIdAsync(owner).ConfigureAwait(false), await manager.GetUserIdAsync(user).ConfigureAwait(false), StringComparison.Ordinal))
             {
                 errors ??= new List<IdentityError>();
                 errors.Add(Describer.DuplicateUserName(userName));
@@ -96,7 +96,7 @@ public class UserValidator<TUser> : IUserValidator<TUser> where TUser : class
         }
         var owner = await manager.FindByEmailAsync(email).ConfigureAwait(false);
         if (owner != null &&
-            !string.Equals(await manager.GetUserIdAsync(owner).ConfigureAwait(false), await manager.GetUserIdAsync(user).ConfigureAwait(false)))
+            !string.Equals(await manager.GetUserIdAsync(owner).ConfigureAwait(false), await manager.GetUserIdAsync(user).ConfigureAwait(false), StringComparison.Ordinal))
         {
             errors ??= new List<IdentityError>();
             errors.Add(Describer.DuplicateEmail(email));

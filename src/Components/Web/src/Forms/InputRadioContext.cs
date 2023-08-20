@@ -33,5 +33,5 @@ internal sealed class InputRadioContext
     /// <param name="groupName">The group name of the ancestor <see cref="InputRadioContext"/>.</param>
     /// <returns>The <see cref="InputRadioContext"/>, or <c>null</c> if none was found.</returns>
     public InputRadioContext? FindContextInAncestors(string groupName)
-        => string.Equals(GroupName, groupName) ? this : ParentContext?.FindContextInAncestors(groupName);
+        => string.Equals(GroupName, groupName, StringComparison.Ordinal) ? this : ParentContext?.FindContextInAncestors(groupName);
 }

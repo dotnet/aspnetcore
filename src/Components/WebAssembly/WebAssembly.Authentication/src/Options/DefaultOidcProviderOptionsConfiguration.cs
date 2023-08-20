@@ -34,7 +34,7 @@ internal sealed class DefaultOidcOptionsConfiguration : IPostConfigureOptions<Re
 
     public void PostConfigure(string? name, RemoteAuthenticationOptions<OidcProviderOptions> options)
     {
-        if (string.Equals(name, Options.DefaultName))
+        if (string.Equals(name, Options.DefaultName, StringComparison.Ordinal))
         {
             Configure(options);
         }

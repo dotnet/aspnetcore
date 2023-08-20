@@ -419,7 +419,7 @@ public class InputTagHelper : TagHelper
         }
 
         htmlAttributes["type"] = inputType;
-        if (string.Equals(inputType, "file") &&
+        if (string.Equals(inputType, "file", StringComparison.Ordinal) &&
             string.Equals(
                 inputTypeHint,
                 TemplateRenderer.IEnumerableOfIFormFileName,
@@ -493,7 +493,7 @@ public class InputTagHelper : TagHelper
         {
             // Rfc3339 mode _may_ override EditFormatString in a limited number of cases. Happens only when
             // EditFormatString has a default format i.e. came from a [DataType] attribute.
-            if (string.Equals("text", inputType) &&
+            if (string.Equals("text", inputType, StringComparison.Ordinal) &&
                 string.Equals(nameof(DateTimeOffset), inputTypeHint, StringComparison.OrdinalIgnoreCase))
             {
                 // Auto-select a format that round-trips Offset and sub-Second values in a DateTimeOffset. Not

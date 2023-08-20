@@ -269,7 +269,7 @@ public class Startup
                     {
                         json.Add(attribute.Key, attribute.Value);
 
-                        if (string.Equals(attribute.Key, "CommitHash"))
+                        if (string.Equals(attribute.Key, "CommitHash", StringComparison.Ordinal))
                         {
                             commitHash = attribute.Value;
                         }

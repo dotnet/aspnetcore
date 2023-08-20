@@ -229,11 +229,13 @@ public class MultiSelectList : IEnumerable<SelectListItem>
         SelectListGroup group = null;
         for (var index = 0; index < _groups.Count; index++)
         {
+#pragma warning disable CA1309 // Use ordinal string comparison
             if (string.Equals(_groups[index].Name, groupName, StringComparison.CurrentCulture))
             {
                 group = _groups[index];
                 break;
             }
+#pragma warning restore CA1309 // Use ordinal string comparison
         }
 
         if (group == null)

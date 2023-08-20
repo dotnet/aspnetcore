@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -29,7 +29,7 @@ internal sealed class CaseSensitiveTagHelperAttributeComparer : IEqualityCompare
             string.Equals(attributeX.Name, attributeY.Name, StringComparison.Ordinal) &&
             attributeX.ValueStyle == attributeY.ValueStyle &&
             (attributeX.ValueStyle == HtmlAttributeValueStyle.Minimized ||
-             string.Equals(GetString(attributeX.Value), GetString(attributeY.Value)));
+             string.Equals(GetString(attributeX.Value), GetString(attributeY.Value), StringComparison.Ordinal));
     }
 
     public int GetHashCode(TagHelperAttribute attribute)

@@ -90,11 +90,11 @@ public class GenerateEmbeddedResourcesManifest : Microsoft.Build.Utilities.Task
         return manifest;
     }
 
-    private static string GetManifestPath(ITaskItem taskItem) => string.IsNullOrEmpty(taskItem.GetMetadata(LogicalName)) || string.Equals(taskItem.GetMetadata(LogicalName), taskItem.GetMetadata(ManifestResourceName)) ?
+    private static string GetManifestPath(ITaskItem taskItem) => string.IsNullOrEmpty(taskItem.GetMetadata(LogicalName)) || string.Equals(taskItem.GetMetadata(LogicalName), taskItem.GetMetadata(ManifestResourceName), StringComparison.Ordinal) ?
         taskItem.GetMetadata(TargetPath) :
         NormalizePath(taskItem.GetMetadata(LogicalName));
 
-    private static string GetAssemblyResourceName(ITaskItem taskItem) => string.IsNullOrEmpty(taskItem.GetMetadata(LogicalName)) || string.Equals(taskItem.GetMetadata(LogicalName), taskItem.GetMetadata(ManifestResourceName)) ?
+    private static string GetAssemblyResourceName(ITaskItem taskItem) => string.IsNullOrEmpty(taskItem.GetMetadata(LogicalName)) || string.Equals(taskItem.GetMetadata(LogicalName), taskItem.GetMetadata(ManifestResourceName), StringComparison.Ordinal) ?
         taskItem.GetMetadata(ManifestResourceName) :
         taskItem.GetMetadata(LogicalName);
 

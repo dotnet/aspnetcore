@@ -61,7 +61,7 @@ public class Program
     public static void UpdateFile(string path, string content)
     {
         var existingContent = File.Exists(path) ? File.ReadAllText(path) : "";
-        if (!string.Equals(content, existingContent))
+        if (!string.Equals(content, existingContent, StringComparison.Ordinal))
         {
             File.WriteAllText(path, content);
             Console.WriteLine($"{path} updated.");

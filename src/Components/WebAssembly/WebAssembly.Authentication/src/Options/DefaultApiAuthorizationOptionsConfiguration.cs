@@ -23,7 +23,7 @@ internal sealed class DefaultApiAuthorizationOptionsConfiguration : IPostConfigu
 
     public void PostConfigure(string? name, RemoteAuthenticationOptions<ApiAuthorizationProviderOptions> options)
     {
-        if (string.Equals(name, Options.DefaultName))
+        if (string.Equals(name, Options.DefaultName, StringComparison.Ordinal))
         {
             Configure(options);
         }

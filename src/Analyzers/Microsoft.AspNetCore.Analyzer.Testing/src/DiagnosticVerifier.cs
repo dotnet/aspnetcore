@@ -106,7 +106,7 @@ public abstract class DiagnosticVerifier
             // Filter out non-error diagnostics not produced by our analyzer
             // We want to KEEP errors because we might have written bad code. But sometimes we leave warnings in to make the
             // test code more convenient
-            diags = diags.Where(d => d.Severity == DiagnosticSeverity.Error || analyzer.SupportedDiagnostics.Any(s => s.Id.Equals(d.Id))).ToImmutableArray();
+            diags = diags.Where(d => d.Severity == DiagnosticSeverity.Error || analyzer.SupportedDiagnostics.Any(s => s.Id.Equals(d.Id, StringComparison.Ordinal))).ToImmutableArray();
 
             foreach (var diag in diags)
             {

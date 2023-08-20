@@ -648,7 +648,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
             IHubProtocol? protocol = null;
             foreach (var hubProtocol in _hubProtocolResolver.AllProtocols)
             {
-                if (hubProtocol.Name.Equals(completion.ProtocolName))
+                if (hubProtocol.Name.Equals(completion.ProtocolName, StringComparison.Ordinal))
                 {
                     protocol = hubProtocol;
                     break;

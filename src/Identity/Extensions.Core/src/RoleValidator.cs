@@ -56,7 +56,7 @@ public class RoleValidator<TRole> : IRoleValidator<TRole> where TRole : class
         {
             var owner = await manager.FindByNameAsync(roleName).ConfigureAwait(false);
             if (owner != null &&
-                !string.Equals(await manager.GetRoleIdAsync(owner).ConfigureAwait(false), await manager.GetRoleIdAsync(role).ConfigureAwait(false)))
+                !string.Equals(await manager.GetRoleIdAsync(owner).ConfigureAwait(false), await manager.GetRoleIdAsync(role).ConfigureAwait(false), StringComparison.Ordinal))
             {
                 errors ??= new List<IdentityError>();
                 errors.Add(Describer.DuplicateRoleName(roleName));

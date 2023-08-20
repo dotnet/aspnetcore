@@ -67,7 +67,7 @@ public readonly struct ParameterView
     {
         foreach (var entry in this)
         {
-            if (string.Equals(entry.Name, parameterName))
+            if (string.Equals(entry.Name, parameterName, StringComparison.Ordinal))
             {
                 result = (TValue)entry.Value;
                 return true;

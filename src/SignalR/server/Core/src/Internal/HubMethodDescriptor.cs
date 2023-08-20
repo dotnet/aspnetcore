@@ -16,11 +16,11 @@ internal sealed class HubMethodDescriptor
 {
     private static readonly MethodInfo MakeCancelableAsyncEnumeratorMethod = typeof(AsyncEnumerableAdapters)
         .GetRuntimeMethods()
-        .Single(m => m.Name.Equals(nameof(AsyncEnumerableAdapters.MakeCancelableAsyncEnumerator)) && m.IsGenericMethod);
+        .Single(m => m.Name.Equals(nameof(AsyncEnumerableAdapters.MakeCancelableAsyncEnumerator), StringComparison.Ordinal) && m.IsGenericMethod);
 
     private static readonly MethodInfo MakeAsyncEnumeratorFromChannelMethod = typeof(AsyncEnumerableAdapters)
         .GetRuntimeMethods()
-        .Single(m => m.Name.Equals(nameof(AsyncEnumerableAdapters.MakeAsyncEnumeratorFromChannel)) && m.IsGenericMethod);
+        .Single(m => m.Name.Equals(nameof(AsyncEnumerableAdapters.MakeAsyncEnumeratorFromChannel), StringComparison.Ordinal) && m.IsGenericMethod);
 
     private readonly MethodInfo? _makeCancelableEnumeratorMethodInfo;
     private Func<object, CancellationToken, IAsyncEnumerator<object>>? _makeCancelableEnumerator;

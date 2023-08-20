@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -13,7 +13,7 @@ internal static class OptionsFacts
         for (var i = 0; i < analysis.Options.Length; i++)
         {
             var item = analysis.Options[i];
-            if (string.Equals(item.OptionsType.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat), SymbolNames.MvcOptions.MetadataName) &&
+            if (string.Equals(item.OptionsType.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat), SymbolNames.MvcOptions.MetadataName, StringComparison.Ordinal) &&
                 string.Equals(item.Property.Name, SymbolNames.MvcOptions.EnableEndpointRoutingPropertyName, StringComparison.Ordinal))
             {
                 return item.ConstantValue as bool? == false;

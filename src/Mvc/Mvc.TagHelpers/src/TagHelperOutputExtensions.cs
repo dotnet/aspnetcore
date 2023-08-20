@@ -241,7 +241,7 @@ public static class TagHelperOutputExtensions
             return;
         }
 
-        listOfClasses.RemoveAll(x => x.Equals(encodedClassValue));
+        listOfClasses.RemoveAll(x => x.Equals(encodedClassValue, StringComparison.Ordinal));
 
         if (listOfClasses.Count > 0)
         {

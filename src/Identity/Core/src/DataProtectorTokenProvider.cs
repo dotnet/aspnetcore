@@ -130,7 +130,7 @@ public class DataProtectorTokenProvider<TUser> : IUserTwoFactorTokenProvider<TUs
                 }
 
                 var purp = reader.ReadString();
-                if (!string.Equals(purp, purpose))
+                if (!string.Equals(purp, purpose, StringComparison.Ordinal))
                 {
                     Logger.PurposeNotEquals(purpose, purp);
                     return false;
