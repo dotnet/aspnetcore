@@ -86,7 +86,6 @@ Microsoft.AspNetCore.Components.Web.HtmlRenderer.RenderComponentAsync(System.Typ
 Microsoft.AspNetCore.Components.Web.HtmlRenderer.RenderComponentAsync<TComponent>() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent>!
 Microsoft.AspNetCore.Components.Web.HtmlRenderer.RenderComponentAsync<TComponent>(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent>!
 Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent
-Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent.ComponentId.get -> int
 Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent.HtmlRootComponent() -> void
 Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent.QuiescenceTask.get -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent.ToHtmlString() -> string!
