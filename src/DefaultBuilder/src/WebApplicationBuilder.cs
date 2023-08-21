@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -346,6 +347,11 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
     /// A collection of logging providers for the application to compose. This is useful for adding new logging providers.
     /// </summary>
     public ILoggingBuilder Logging => _hostApplicationBuilder.Logging;
+
+    /// <summary>
+    /// Allows enabling metrics and directing their output.
+    /// </summary>
+    public IMetricsBuilder Metrics => _hostApplicationBuilder.Metrics;
 
     /// <summary>
     /// An <see cref="IWebHostBuilder"/> for configuring server specific properties, but not building.

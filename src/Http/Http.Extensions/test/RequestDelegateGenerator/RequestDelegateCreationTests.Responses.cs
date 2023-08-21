@@ -67,6 +67,9 @@ app.MapGet("/hello", () => "Hello world!")
     [InlineData(@"app.MapGet(""/"", () => 123456);", "123456")]
     [InlineData(@"app.MapGet(""/"", () => true);", "true")]
     [InlineData(@"app.MapGet(""/"", () => new DateTime(2023, 1, 1));", @"""2023-01-01T00:00:00""")]
+    [InlineData(@"app.MapGet(""/"", int () => 123456);", "123456")]
+    [InlineData(@"app.MapGet(""/"", bool () => true);", "true")]
+    [InlineData(@"app.MapGet(""/"", DateTime () => new DateTime(2023, 1, 1));", @"""2023-01-01T00:00:00""")]
     public async Task MapAction_NoParam_AnyReturn(string source, string expectedBody)
     {
         var (result, compilation) = await RunGeneratorAsync(source);
@@ -85,11 +88,17 @@ app.MapGet("/hello", () => "Hello world!")
     public static IEnumerable<object[]> MapAction_NoParam_ComplexReturn_Data => new List<object[]>()
     {
         new object[] { """app.MapGet("/", () => new Todo() { Name = "Test Item"});""" },
+        new object[] { """app.MapGet("/", Todo () => new Todo() { Name = "Test Item"});""" },
+        new object[] { """app.MapGet("/", Todo? () => new Todo() { Name = "Test Item"});""" },
         new object[] { """
 object GetTodo() => new Todo() { Name = "Test Item"};
 app.MapGet("/", GetTodo);
 """},
-        new object[] { """app.MapGet("/", () => TypedResults.Ok(new Todo() { Name = "Test Item"}));""" }
+        new object[] { """
+object? GetTodo() => new Todo() { Name = "Test Item"};
+app.MapGet("/", GetTodo);
+"""},
+        new object[] { """app.MapGet("/", IResult () => TypedResults.Ok(new Todo() { Name = "Test Item"}));""" }
     };
 
     [Theory]
@@ -138,7 +147,10 @@ app.MapGet("/", GetTodo);
     {
         new object[] { @"app.MapGet(""/"", () => Task.FromResult(""Hello world!""));", "Hello world!" },
         new object[] { @"app.MapGet(""/"", () => Task.FromResult(new Todo() { Name = ""Test Item"" }));", """{"id":0,"name":"Test Item","isComplete":false}""" },
-        new object[] { @"app.MapGet(""/"", () => Task.FromResult(TypedResults.Ok(new Todo() { Name = ""Test Item"" })));", """{"id":0,"name":"Test Item","isComplete":false}""" }
+        new object[] { @"app.MapGet(""/"", () => Task.FromResult(TypedResults.Ok(new Todo() { Name = ""Test Item"" })));", """{"id":0,"name":"Test Item","isComplete":false}""" },
+        new object[] { @"app.MapGet(""/"", Task<string> () => Task.FromResult(""Hello world!""));", "Hello world!" },
+        new object[] { @"app.MapGet(""/"", Task<Todo> () => Task.FromResult(new Todo() { Name = ""Test Item"" }));", """{"id":0,"name":"Test Item","isComplete":false}""" },
+        new object[] { @"app.MapGet(""/"", Task<Microsoft.AspNetCore.Http.HttpResults.Ok<Todo>> () => Task.FromResult(TypedResults.Ok(new Todo() { Name = ""Test Item"" })));", """{"id":0,"name":"Test Item","isComplete":false}""" }
     };
 
     [Theory]
@@ -890,10 +902,12 @@ app.MapPost("/", bool? () => null);
 
             var testTaskBoolAction = """
 app.MapPost("/", () => Task.FromResult<bool?>(null));
+app.MapPost("/", Task<bool?> () => Task.FromResult<bool?>(null));
 """;
 
             var testValueTaskBoolAction = """
 app.MapPost("/", () => ValueTask.FromResult<bool?>(null));
+app.MapPost("/", ValueTask<bool?> () => ValueTask.FromResult<bool?>(null));
 """;
 
             var testIntAction = """
@@ -902,22 +916,29 @@ app.MapPost("/", int? () => null);
 
             var testTaskIntAction = """
 app.MapPost("/", () => Task.FromResult<int?>(null));
+app.MapPost("/", Task<int?> () => Task.FromResult<int?>(null));
 """;
 
             var testValueTaskIntAction = """
 app.MapPost("/", () => ValueTask.FromResult<int?>(null));
+app.MapPost("/", ValueTask<int?> () => ValueTask.FromResult<int?>(null));
 """;
 
             var testTodoAction = """
+int id = 0;
+Todo? GetMaybeTodo() => id == 0 ? null : new Todo();
 app.MapPost("/", Todo? () => null);
+app.MapGet("/", GetMaybeTodo);
 """;
 
             var testTaskTodoAction = """
 app.MapPost("/", () => Task.FromResult<Todo?>(null));
+app.MapPost("/", Task<Todo?>? () => Task.FromResult<Todo?>(null));
 """;
 
             var testValueTaskTodoAction = """
 app.MapPost("/", () => ValueTask.FromResult<Todo?>(null));
+app.MapPost("/", ValueTask<Todo?> () => ValueTask.FromResult<Todo?>(null));
 """;
 
             var testTodoStructAction = """
@@ -945,12 +966,15 @@ app.MapPost("/", TodoStruct? () => null);
     public async Task RequestDelegateWritesNullReturnNullValue(string source)
     {
         var (_, compilation) = await RunGeneratorAsync(source);
-        var endpoint = GetEndpointFromCompilation(compilation);
+        var endpoints = GetEndpointsFromCompilation(compilation);
 
-        var httpContext = CreateHttpContext();
-        await endpoint.RequestDelegate(httpContext);
+        foreach (var endpoint in endpoints)
+        {
+            var httpContext = CreateHttpContext();
+            await endpoint.RequestDelegate(httpContext);
 
-        await VerifyResponseBodyAsync(httpContext, "null");
+            await VerifyResponseBodyAsync(httpContext, "null");
+        }
     }
 
     [Theory]

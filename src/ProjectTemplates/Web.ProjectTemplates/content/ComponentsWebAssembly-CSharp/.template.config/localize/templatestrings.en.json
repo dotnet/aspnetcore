@@ -33,7 +33,6 @@
   "symbols/NoHttps/description": "Whether to turn off HTTPS. This option only applies if Individual, IndividualB2C, SingleOrg, or MultiOrg aren't used for --auth.",
   "symbols/UseLocalDB/description": "Whether to use LocalDB instead of SQLite. This option only applies if --auth Individual or --auth IndividualB2C is specified.",
   "symbols/CalledApiUrl/description": "URL of the API to call from the web app. This option only applies if --auth SingleOrg, --auth MultiOrg or --auth IndividualB2C without and ASP.NET Core host is specified.",
-  "symbols/CallsMicrosoftGraph/description": "Specifies if the web app calls Microsoft Graph. This option only applies if --auth SingleOrg or --auth MultiOrg is specified.",
   "symbols/CalledApiScopes/description": "Scopes to request to call the API from the web app. This option only applies if --auth SingleOrg, --auth MultiOrg or --auth IndividualB2C without and ASP.NET Core host is specified.",
   "symbols/UseProgramMain/displayName": "Do not use _top-level statements",
   "_symbols/UseProgramMain/displayName.comment": "Use '_' as accelerator key when translating.",

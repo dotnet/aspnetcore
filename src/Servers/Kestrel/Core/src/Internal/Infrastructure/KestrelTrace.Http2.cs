@@ -129,6 +129,6 @@ internal sealed partial class KestrelTrace : ILogger
         [LoggerMessage(63, LogLevel.Critical, @"The event loop in connection {ConnectionId} failed unexpectedly.", EventName = "Http2UnexpectedConnectionQueueError")]
         public static partial void Http2UnexpectedConnectionQueueError(ILogger logger, string connectionId, Exception ex);
 
-        // Highest shared ID is 63. New consecutive IDs start at 64
+        // IDs prior to 64 are reserved for back compat (the various KestrelTrace loggers used to share a single sequence)
     }
 }

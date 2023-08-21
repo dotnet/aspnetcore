@@ -21,7 +21,7 @@ using StackExchange.Redis;
 
 namespace Microsoft.Extensions.Caching.StackExchangeRedis;
 
-internal class RedisOutputCacheStore : IOutputCacheStore, IOutputCacheBufferStore, IDisposable
+internal partial class RedisOutputCacheStore : IOutputCacheStore, IOutputCacheBufferStore, IDisposable
 {
     private readonly RedisCacheOptions _options;
     private readonly ILogger _logger;
@@ -114,14 +114,14 @@ internal class RedisOutputCacheStore : IOutputCacheStore, IOutputCacheBufferStor
                 catch (Exception ex)
                 {
                     // this sweep failed; log it
-                    _logger.LogDebug(ex, "Transient error occurred executing redis output-cache GC loop");
+                    RedisOutputCacheGCTransientFault(_logger, ex);
                 }
             }
         }
         catch (Exception ex)
         {
             // the entire loop is dead
-            _logger.LogDebug(ex, "Fatal error occurred executing redis output-cache GC loop");
+            RedisOutputCacheGCFatalError(_logger, ex);
         }
     }
 

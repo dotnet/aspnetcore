@@ -9,34 +9,36 @@ internal sealed class RoutingMetrics
 {
     public const string MeterName = "Microsoft.AspNetCore.Routing";
 
+     // Reuse boxed object for common values
+    private static readonly object BoxedTrue = true;
+    private static readonly object BoxedFalse = false;
+
     private readonly Meter _meter;
-    private readonly Counter<long> _matchSuccessCounter;
-    private readonly Counter<long> _matchFailureCounter;
+    private readonly Counter<long> _matchAttemptsCounter;
 
     public RoutingMetrics(IMeterFactory meterFactory)
     {
         _meter = meterFactory.Create(MeterName);
 
-        _matchSuccessCounter = _meter.CreateCounter<long>(
-           "routing-match-success",
-            description: "Number of requests that successfully matched to an endpoint.");
-
-        _matchFailureCounter = _meter.CreateCounter<long>(
-           "routing-match-failure",
-            description: "Number of requests that failed to match to an endpoint. An unmatched request may be handled by later middleware, such as the static files or authentication middleware.");
+        _matchAttemptsCounter = _meter.CreateCounter<long>(
+            "aspnetcore.routing.match_attempts",
+            unit: "{match_attempt}",
+            description: "Number of requests that were attempted to be matched to an endpoint.");
     }
 
-    public bool MatchSuccessCounterEnabled => _matchSuccessCounter.Enabled;
+    public bool MatchSuccessCounterEnabled => _matchAttemptsCounter.Enabled;
 
     public void MatchSuccess(string route, bool isFallback)
     {
-        _matchSuccessCounter.Add(1,
-            new KeyValuePair<string, object?>("route", route),
-            new KeyValuePair<string, object?>("fallback", isFallback));
+        _matchAttemptsCounter.Add(1,
+            new KeyValuePair<string, object?>("http.route", route),
+            new KeyValuePair<string, object?>("aspnetcore.routing.match_status", "success"),
+            new KeyValuePair<string, object?>("aspnetcore.routing.is_fallback", isFallback ? BoxedTrue : BoxedFalse));
     }
 
     public void MatchFailure()
     {
-        _matchFailureCounter.Add(1);
+        _matchAttemptsCounter.Add(1,
+            new KeyValuePair<string, object?>("aspnetcore.routing.match_status", "failure"));
     }
 }

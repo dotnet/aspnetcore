@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -65,7 +66,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
 
     internal static async Task InitializeStandardComponentServicesAsync(
         HttpContext httpContext,
-        Type? componentType = null,
+        [DynamicallyAccessedMembers(Component)] Type? componentType = null,
         string? handler = null,
         IFormCollection? form = null)
     {
@@ -99,6 +100,10 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
             // Saving RouteData to avoid routing twice in Router component
             var routingStateProvider = httpContext.RequestServices.GetRequiredService<EndpointRoutingStateProvider>();
             routingStateProvider.RouteData = new RouteData(componentType, httpContext.GetRouteData().Values);
+            if (httpContext.GetEndpoint() is RouteEndpoint endpoint)
+            {
+                routingStateProvider.RouteData.Template = endpoint.RoutePattern.RawText;
+            }
         }
     }
 

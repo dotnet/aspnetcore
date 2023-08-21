@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -12,6 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering;
 /// <summary>
 /// Context for view execution.
 /// </summary>
+[DebuggerDisplay("{DebuggerToString(),nq}")]
 public class ViewContext : ActionContext
 {
     private FormContext _formContext = default!;
@@ -212,4 +214,6 @@ public class ViewContext : ActionContext
     {
         return ClientValidationEnabled ? FormContext : null;
     }
+
+    private string DebuggerToString() => View?.Path ?? $"{{{GetType().FullName}}}";
 }

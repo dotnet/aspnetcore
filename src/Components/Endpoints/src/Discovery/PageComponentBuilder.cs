@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.Discovery;
 
@@ -10,7 +12,7 @@ namespace Microsoft.AspNetCore.Components.Discovery;
 /// A razor component page <see cref="PageComponentBuilder"/>.
 /// </summary>
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
-public class PageComponentBuilder : IEquatable<PageComponentBuilder?>
+internal class PageComponentBuilder : IEquatable<PageComponentBuilder?>
 {
     private IReadOnlyList<string> _routeTemplates = Array.Empty<string>();
 
@@ -35,6 +37,7 @@ public class PageComponentBuilder : IEquatable<PageComponentBuilder?>
     /// <summary>
     /// Gets or sets the page type.
     /// </summary>
+    [DynamicallyAccessedMembers(Component)]
     public required Type PageType { get; set; }
 
     /// <summary>
@@ -85,6 +88,6 @@ public class PageComponentBuilder : IEquatable<PageComponentBuilder?>
 
     private string GetDebuggerDisplay()
     {
-        return $"{PageType.FullName}{string.Join(", ", RouteTemplates ?? Enumerable.Empty<string>())}";
+        return $"Type = {PageType.FullName}, RouteTemplates = {string.Join(", ", RouteTemplates ?? Enumerable.Empty<string>())}";
     }
 }

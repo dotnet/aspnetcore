@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { synchronizeDomContent } from '../Rendering/DomMerging/DomSync';
-import { handleClickForNavigationInterception, hasInteractiveRouter } from './NavigationUtils';
+import { attachProgrammaticEnhancedNavigationHandler, handleClickForNavigationInterception, hasInteractiveRouter } from './NavigationUtils';
 
 /*
 In effect, we have two separate client-side navigation mechanisms:
@@ -48,12 +48,24 @@ export function attachProgressivelyEnhancedNavigationListener(callbacks: Navigat
   document.addEventListener('click', onDocumentClick);
   document.addEventListener('submit', onDocumentSubmit);
   window.addEventListener('popstate', onPopState);
+
+  attachProgrammaticEnhancedNavigationHandler(performProgrammaticEnhancedNavigation);
 }
 
 export function detachProgressivelyEnhancedNavigationListener() {
   document.removeEventListener('click', onDocumentClick);
   document.removeEventListener('submit', onDocumentSubmit);
   window.removeEventListener('popstate', onPopState);
+}
+
+function performProgrammaticEnhancedNavigation(absoluteInternalHref: string, replace: boolean) {
+  if (replace) {
+    history.replaceState(null, /* ignored title */ '', absoluteInternalHref);
+  } else {
+    history.pushState(null, /* ignored title */ '', absoluteInternalHref);
+  }
+
+  performEnhancedPageLoad(absoluteInternalHref);
 }
 
 function onDocumentClick(event: MouseEvent) {

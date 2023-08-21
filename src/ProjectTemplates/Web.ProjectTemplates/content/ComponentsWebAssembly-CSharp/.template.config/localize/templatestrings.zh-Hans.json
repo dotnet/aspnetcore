@@ -32,7 +32,6 @@
   "symbols/NoHttps/description": "是否禁用 HTTPS。仅当 Individual、IndividualB2C、SingleOrg 或 MultiOrg 不用于 --auth 时，此选项才适用。",
   "symbols/UseLocalDB/description": "是否使用 LocalDB 而不是 SQLite。仅当指定了 --auth Individual 或 --auth IndividualB2C 时，此选项才适用。",
   "symbols/CalledApiUrl/description": "要从 Web 应用调用的 API 的 URL。仅当指定了 --auth SingleOrg、--auth MultiOrg 或不带 ASP.NET Core 主机的 --auth IndividualB2C 时，此选项才适用。",
-  "symbols/CallsMicrosoftGraph/description": "指定 Web 应用是否调用 Microsoft Graph。仅当指定了 --auth SingleOrg 或 --auth MultiOrg 时，此选项才适用。",
   "symbols/CalledApiScopes/description": "请求从 Web 应用调用 API 的范围。仅当指定了 --auth SingleOrg、--auth MultiOrg 或不带 ASP.NET Core 主机的 --auth IndividualB2C 时，此选项才适用。",
   "symbols/UseProgramMain/displayName": "不使用顶级语句(_T)",
   "symbols/UseProgramMain/description": "是否生成显式程序类和主方法，而不是顶级语句。",

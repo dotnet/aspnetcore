@@ -320,6 +320,6 @@ public class ComponentState : IAsyncDisposable
 
     private string GetDebuggerDisplay()
     {
-        return $"{ComponentId} - {Component.GetType().Name} - Disposed: {_componentWasDisposed}";
+        return $"ComponentId = {ComponentId}, Type = {Component.GetType().Name}, Disposed = {_componentWasDisposed}";
     }
 }

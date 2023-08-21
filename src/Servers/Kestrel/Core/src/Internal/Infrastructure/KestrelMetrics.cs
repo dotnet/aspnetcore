@@ -1,11 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Connections;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
+using System.Net;
+using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Security.Authentication;
+using Microsoft.AspNetCore.Connections;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
@@ -14,52 +17,62 @@ internal sealed class KestrelMetrics
     // Note: Dot separated instead of dash.
     public const string MeterName = "Microsoft.AspNetCore.Server.Kestrel";
 
+    public const string Http11 = "1.1";
+    public const string Http2 = "2";
+    public const string Http3 = "3";
+
     private readonly Meter _meter;
-    private readonly UpDownCounter<long> _currentConnectionsCounter;
+    private readonly UpDownCounter<long> _activeConnectionsCounter;
     private readonly Histogram<double> _connectionDuration;
     private readonly Counter<long> _rejectedConnectionsCounter;
     private readonly UpDownCounter<long> _queuedConnectionsCounter;
     private readonly UpDownCounter<long> _queuedRequestsCounter;
     private readonly UpDownCounter<long> _currentUpgradedRequestsCounter;
     private readonly Histogram<double> _tlsHandshakeDuration;
-    private readonly UpDownCounter<long> _currentTlsHandshakesCounter;
+    private readonly UpDownCounter<long> _activeTlsHandshakesCounter;
 
     public KestrelMetrics(IMeterFactory meterFactory)
     {
         _meter = meterFactory.Create(MeterName);
 
-        _currentConnectionsCounter = _meter.CreateUpDownCounter<long>(
-           "kestrel-current-connections",
+        _activeConnectionsCounter = _meter.CreateUpDownCounter<long>(
+            "kestrel.active_connections",
+            unit: "{connection}",
             description: "Number of connections that are currently active on the server.");
 
         _connectionDuration = _meter.CreateHistogram<double>(
-            "kestrel-connection-duration",
+            "kestrel.connection.duration",
             unit: "s",
             description: "The duration of connections on the server.");
 
         _rejectedConnectionsCounter = _meter.CreateCounter<long>(
-           "kestrel-rejected-connections",
+           "kestrel.rejected_connections",
+            unit: "{connection}",
             description: "Number of connections rejected by the server. Connections are rejected when the currently active count exceeds the value configured with MaxConcurrentConnections.");
 
         _queuedConnectionsCounter = _meter.CreateUpDownCounter<long>(
-           "kestrel-queued-connections",
+           "kestrel.queued_connections",
+            unit: "{connection}",
             description: "Number of connections that are currently queued and are waiting to start.");
 
         _queuedRequestsCounter = _meter.CreateUpDownCounter<long>(
-           "kestrel-queued-requests",
+           "kestrel.queued_requests",
+            unit: "{request}",
             description: "Number of HTTP requests on multiplexed connections (HTTP/2 and HTTP/3) that are currently queued and are waiting to start.");
 
         _currentUpgradedRequestsCounter = _meter.CreateUpDownCounter<long>(
-           "kestrel-current-upgraded-connections",
+           "kestrel.upgraded_connections",
+            unit: "{connection}",
             description: "Number of HTTP connections that are currently upgraded (WebSockets). The number only tracks HTTP/1.1 connections.");
 
         _tlsHandshakeDuration = _meter.CreateHistogram<double>(
-            "kestrel-tls-handshake-duration",
+            "kestrel.tls_handshake.duration",
             unit: "s",
             description: "The duration of TLS handshakes on the server.");
 
-        _currentTlsHandshakesCounter = _meter.CreateUpDownCounter<long>(
-           "kestrel-current-tls-handshakes",
+        _activeTlsHandshakesCounter = _meter.CreateUpDownCounter<long>(
+           "kestrel.active_tls_handshakes",
+            unit: "{handshake}",
             description: "Number of TLS handshakes that are currently in progress on the server.");
     }
 
@@ -76,7 +89,7 @@ internal sealed class KestrelMetrics
     {
         var tags = new TagList();
         InitializeConnectionTags(ref tags, metricsContext);
-        _currentConnectionsCounter.Add(1, tags);
+        _activeConnectionsCounter.Add(1, tags);
     }
 
     public void ConnectionStop(in ConnectionMetricsContext metricsContext, Exception? exception, List<KeyValuePair<string, object?>>? customTags, long startTimestamp, long currentTimestamp)
@@ -96,14 +109,14 @@ internal sealed class KestrelMetrics
         if (metricsContext.CurrentConnectionsCounterEnabled)
         {
             // Decrease in connections counter must match tags from increase. No custom tags.
-            _currentConnectionsCounter.Add(-1, tags);
+            _activeConnectionsCounter.Add(-1, tags);
         }
 
         if (metricsContext.ConnectionDurationEnabled)
         {
             if (exception != null)
             {
-                tags.Add("exception-name", exception.GetType().FullName);
+                tags.Add("exception.type", exception.GetType().FullName);
             }
 
             // Add custom tags for duration.
@@ -182,7 +195,8 @@ internal sealed class KestrelMetrics
     {
         var tags = new TagList();
         InitializeConnectionTags(ref tags, metricsContext);
-        tags.Add("version", httpVersion);
+        tags.Add("network.protocol.name", "http");
+        tags.Add("network.protocol.version", httpVersion);
         _queuedRequestsCounter.Add(1, tags);
     }
 
@@ -199,7 +213,8 @@ internal sealed class KestrelMetrics
     {
         var tags = new TagList();
         InitializeConnectionTags(ref tags, metricsContext);
-        tags.Add("version", httpVersion);
+        tags.Add("network.protocol.name", "http");
+        tags.Add("network.protocol.version", httpVersion);
         _queuedRequestsCounter.Add(-1, tags);
     }
 
@@ -249,7 +264,7 @@ internal sealed class KestrelMetrics
         // Tags must match TLS handshake end.
         var tags = new TagList();
         InitializeConnectionTags(ref tags, metricsContext);
-        _currentTlsHandshakesCounter.Add(1, tags);
+        _activeTlsHandshakesCounter.Add(1, tags);
     }
 
     public void TlsHandshakeStop(in ConnectionMetricsContext metricsContext, long startTimestamp, long currentTimestamp, SslProtocols? protocol = null, Exception? exception = null)
@@ -269,16 +284,21 @@ internal sealed class KestrelMetrics
         if (metricsContext.CurrentTlsHandshakesCounterEnabled)
         {
             // Tags must match TLS handshake start.
-            _currentTlsHandshakesCounter.Add(-1, tags);
+            _activeTlsHandshakesCounter.Add(-1, tags);
         }
 
-        if (protocol != null)
+        if (protocol != null && TryGetHandshakeProtocol(protocol.Value, out var protocolName, out var protocolVersion))
         {
-            tags.Add("protocol", protocol.ToString());
+            // Protocol name should always be TLS. Have logic to a tls.protocol.name tag if not TLS just in case.
+            if (protocolName != "tls")
+            {
+                tags.Add("tls.protocol.name", protocolName);
+            }
+            tags.Add("tls.protocol.version", protocolVersion);
         }
         if (exception != null)
         {
-            tags.Add("exception-name", exception.GetType().FullName);
+            tags.Add("exception.type", exception.GetType().FullName);
         }
 
         var duration = Stopwatch.GetElapsedTime(startTimestamp, currentTimestamp);
@@ -287,11 +307,42 @@ internal sealed class KestrelMetrics
 
     private static void InitializeConnectionTags(ref TagList tags, in ConnectionMetricsContext metricsContext)
     {
-        if (metricsContext.ConnectionContext.LocalEndPoint is { } localEndpoint)
+        var localEndpoint = metricsContext.ConnectionContext.LocalEndPoint;
+        if (localEndpoint is IPEndPoint localIPEndPoint)
         {
-            // TODO: Improve getting string allocation for endpoint. Currently allocates.
-            // Considering adding a way to cache on ConnectionContext.
-            tags.Add("endpoint", localEndpoint.ToString());
+            tags.Add("server.address", localIPEndPoint.Address.ToString());
+            tags.Add("server.port", localIPEndPoint.Port);
+
+            switch (localIPEndPoint.Address.AddressFamily)
+            {
+                case AddressFamily.InterNetwork:
+                    tags.Add("network.type", "ipv4");
+                    break;
+                case AddressFamily.InterNetworkV6:
+                    tags.Add("network.type", "ipv6");
+                    break;
+            }
+
+            // There isn't an easy way to detect whether QUIC is the underlying transport.
+            // This code assumes that a multiplexed connection is QUIC.
+            // Improve in the future if there are additional multiplexed connection types.
+            var transport = metricsContext.ConnectionContext is not MultiplexedConnectionContext ? "tcp" : "udp";
+            tags.Add("network.transport", transport);
+        }
+        else if (localEndpoint is UnixDomainSocketEndPoint udsEndPoint)
+        {
+            tags.Add("server.address", udsEndPoint.ToString());
+            tags.Add("network.transport", "unix");
+        }
+        else if (localEndpoint is NamedPipeEndPoint namedPipeEndPoint)
+        {
+            tags.Add("server.address", namedPipeEndPoint.ToString());
+            tags.Add("network.transport", "pipe");
+        }
+        else if (localEndpoint != null)
+        {
+            tags.Add("server.address", localEndpoint.ToString());
+            tags.Add("network.transport", localEndpoint.AddressFamily.ToString());
         }
     }
 
@@ -299,7 +350,49 @@ internal sealed class KestrelMetrics
     {
         // Cache the state at the start of the connection so we produce consistent start/stop events.
         return new ConnectionMetricsContext(connection,
-            _currentConnectionsCounter.Enabled, _connectionDuration.Enabled, _queuedConnectionsCounter.Enabled,
-            _queuedRequestsCounter.Enabled, _currentUpgradedRequestsCounter.Enabled, _currentTlsHandshakesCounter.Enabled);
+            _activeConnectionsCounter.Enabled, _connectionDuration.Enabled, _queuedConnectionsCounter.Enabled,
+            _queuedRequestsCounter.Enabled, _currentUpgradedRequestsCounter.Enabled, _activeTlsHandshakesCounter.Enabled);
+    }
+
+    public static bool TryGetHandshakeProtocol(SslProtocols protocols, [NotNullWhen(true)] out string? name, [NotNullWhen(true)] out string? version)
+    {
+        // Protocol should be either TLS 1.2 or 1.3. Many older SslProtocols are no longer supported.
+        // Logic for resolving older known values is still here out of an abundence of caution.
+
+#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable SYSLIB0039 // Type or member is obsolete
+        switch (protocols)
+        {
+            case SslProtocols.Ssl2:
+                name = "ssl";
+                version = "2.0";
+                return true;
+            case SslProtocols.Ssl3:
+                name = "ssl";
+                version = "3.0";
+                return true;
+            case SslProtocols.Tls:
+                name = "tls";
+                version = "1.0";
+                return true;
+            case SslProtocols.Tls11:
+                name = "tls";
+                version = "1.1";
+                return true;
+            case SslProtocols.Tls12:
+                name = "tls";
+                version = "1.2";
+                return true;
+            case SslProtocols.Tls13:
+                name = "tls";
+                version = "1.3";
+                return true;
+        }
+#pragma warning restore SYSLIB0039 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
+
+        name = null;
+        version = null;
+        return false;
     }
 }

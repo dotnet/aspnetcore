@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
+using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.Logging.Testing;
@@ -29,6 +30,7 @@ public class Program
             ["Save state"] = (BuildWebHost<SaveState>(CreateAdditionalArgs(args)), "/save-state"),
             ["Globalization + Localization (Server-side)"] = (BuildWebHost<InternationalizationStartup>(CreateAdditionalArgs(args)), "/subdir"),
             ["Server-side blazor"] = (BuildWebHost<ServerStartup>(CreateAdditionalArgs(args)), "/subdir"),
+            ["Blazor web with server-side blazor root component"] = (BuildWebHost<RazorComponentEndpointsStartup<Root>>(CreateAdditionalArgs(args)), "/subdir"),
             ["Hosted client-side blazor"] = (BuildWebHost<ClientStartup>(CreateAdditionalArgs(args)), "/subdir"),
             ["Hot Reload"] = (BuildWebHost<HotReloadStartup>(CreateAdditionalArgs(args)), "/subdir"),
             ["Dev server client-side blazor"] = CreateDevServerHost(CreateAdditionalArgs(args))
