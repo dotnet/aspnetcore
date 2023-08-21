@@ -98,7 +98,7 @@ public class WsFederationHandler : RemoteAuthenticationHandler<WsFederationOptio
         var wsFederationMessage = new WsFederationMessage()
         {
             IssuerAddress = _configuration.TokenEndpoint ?? string.Empty,
-            Wtrealm = Options.Wtrealm,
+            Wtrealm = Options.Wtrealm!,
             Wa = WsFederationConstants.WsFederationActions.SignIn,
         };
 
@@ -195,7 +195,7 @@ public class WsFederationHandler : RemoteAuthenticationHandler<WsFederationOptio
             {
                 // Extract the user state from properties and reset.
                 properties.Items.TryGetValue(WsFederationDefaults.UserstatePropertiesKey, out var userState);
-                wsFederationMessage.Wctx = userState;
+                wsFederationMessage.Wctx = userState!;
             }
 
             var messageReceivedContext = new MessageReceivedContext(Context, Scheme, Options, properties)
@@ -425,7 +425,7 @@ public class WsFederationHandler : RemoteAuthenticationHandler<WsFederationOptio
         var wsFederationMessage = new WsFederationMessage()
         {
             IssuerAddress = _configuration.TokenEndpoint ?? string.Empty,
-            Wtrealm = Options.Wtrealm,
+            Wtrealm = Options.Wtrealm!,
             Wa = WsFederationConstants.WsFederationActions.SignOut,
         };
 
