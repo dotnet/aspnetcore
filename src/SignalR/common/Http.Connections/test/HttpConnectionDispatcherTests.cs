@@ -2279,7 +2279,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             context.Request.Method = "POST";
             context.Response.Body = ms;
             context.Request.QueryString = new QueryString("?negotiateVersion=1&UseAck=true");
-            await dispatcher.ExecuteNegotiateAsync(context, new HttpConnectionDispatcherOptions { AllowAcks = false });
+            await dispatcher.ExecuteNegotiateAsync(context, new HttpConnectionDispatcherOptions { AllowStatefulReconnects = false });
 
             var negotiateResponse = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(ms.ToArray()));
             Assert.False(negotiateResponse.TryGetValue("useAck", out _));
@@ -2306,7 +2306,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             context.Request.Method = "POST";
             context.Response.Body = ms;
             context.Request.QueryString = new QueryString("?negotiateVersion=1");
-            await dispatcher.ExecuteNegotiateAsync(context, new HttpConnectionDispatcherOptions { AllowAcks = true });
+            await dispatcher.ExecuteNegotiateAsync(context, new HttpConnectionDispatcherOptions { AllowStatefulReconnects = true });
 
             var negotiateResponse = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(ms.ToArray()));
             Assert.False(negotiateResponse.TryGetValue("useAck", out _));
@@ -2333,7 +2333,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             context.Request.Method = "POST";
             context.Response.Body = ms;
             context.Request.QueryString = new QueryString("?negotiateVersion=1&UseAck=true");
-            await dispatcher.ExecuteNegotiateAsync(context, new HttpConnectionDispatcherOptions { AllowAcks = true });
+            await dispatcher.ExecuteNegotiateAsync(context, new HttpConnectionDispatcherOptions { AllowStatefulReconnects = true });
 
             var negotiateResponse = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(ms.ToArray()));
             Assert.True((bool)negotiateResponse["useAck"]);

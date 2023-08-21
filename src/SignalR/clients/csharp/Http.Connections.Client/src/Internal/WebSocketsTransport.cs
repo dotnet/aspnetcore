@@ -36,7 +36,7 @@ internal sealed partial class WebSocketsTransport : ITransport, IReconnectFeatur
     private readonly HttpConnectionOptions _httpConnectionOptions;
     private readonly HttpClient? _httpClient;
     private CancellationTokenSource _stopCts = default!;
-    private readonly bool _useAck;
+    private readonly bool _useStatefulReconnect;
 
     private IDuplexPipe? _transport;
     // Used for reconnect (when enabled) to determine if the close was ungraceful or not, reconnect only happens on ungraceful disconnect
@@ -53,9 +53,9 @@ internal sealed partial class WebSocketsTransport : ITransport, IReconnectFeatur
     public Action NotifyOnReconnect { get => _notifyOnReconnect is not null ? _notifyOnReconnect : () => { }; set => _notifyOnReconnect = value; }
 
     public WebSocketsTransport(HttpConnectionOptions httpConnectionOptions, ILoggerFactory loggerFactory, Func<Task<string?>> accessTokenProvider, HttpClient? httpClient,
-        bool useAck = false)
+        bool useStatefulReconnect = false)
     {
-        _useAck = useAck;
+        _useStatefulReconnect = useStatefulReconnect;
         _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<WebSocketsTransport>();
         _httpConnectionOptions = httpConnectionOptions ?? new HttpConnectionOptions();
 
@@ -368,7 +368,7 @@ internal sealed partial class WebSocketsTransport : ITransport, IReconnectFeatur
             }
         }
 
-        if (_useAck && !_gracefulClose)
+        if (_useStatefulReconnect && !_gracefulClose)
         {
             UpdateConnectionPair();
             await StartAsync(url, _webSocketMessageType == WebSocketMessageType.Binary ? TransferFormat.Binary : TransferFormat.Text, default).ConfigureAwait(false);
