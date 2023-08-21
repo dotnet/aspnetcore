@@ -1363,12 +1363,6 @@ public class ServicesHub : TestHub
         return total + value;
     }
 
-    public int MultipleSameKeyedServices([FromKeyedServices("service1")] Service1 service, [FromKeyedServices("service1")] Service1 service2)
-    {
-        Assert.Same(service, service2);
-        return 445;
-    }
-
     public int ServiceWithoutAttribute(Service1 service)
     {
         return 1;
@@ -1391,6 +1385,15 @@ public class ServicesHub : TestHub
             await channelReader.ReadAsync();
         }
     }
+}
+
+public class KeyedServicesHub : TestHub
+{
+    public int MultipleSameKeyedServices([FromKeyedServices("service1")] Service1 service, [FromKeyedServices("service1")] Service1 service2)
+    {
+        Assert.Same(service, service2);
+        return 445;
+    }
 
     public int KeyedService([FromKeyedServices("service1")] Service1 service)
     {
@@ -1411,6 +1414,13 @@ public class ServicesHub : TestHub
     {
         Assert.NotEqual(service, service2);
         return 45;
+    }
+}
+
+public class BadServicesHub : Hub
+{
+    public void BadMethod([FromKeyedServices("service1")] [FromService] Service1 service)
+    {
     }
 }
 
