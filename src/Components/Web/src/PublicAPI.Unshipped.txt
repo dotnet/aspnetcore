@@ -44,7 +44,6 @@ Microsoft.AspNetCore.Components.Forms.Mapping.FormMappingError.Path.get -> strin
 Microsoft.AspNetCore.Components.Forms.Mapping.FormValueMappingContext
 Microsoft.AspNetCore.Components.Forms.Mapping.FormValueMappingContext.AcceptFormName.get -> string?
 Microsoft.AspNetCore.Components.Forms.Mapping.FormValueMappingContext.AcceptMappingScopeName.get -> string!
-Microsoft.AspNetCore.Components.Forms.Mapping.FormValueMappingContext.FormValueMappingContext(string! acceptMappingScopeName, string? acceptFormName, System.Type! valueType, string! parameterName) -> void
 Microsoft.AspNetCore.Components.Forms.Mapping.FormValueMappingContext.MapErrorToContainer.get -> System.Action<string!, object!>?
 Microsoft.AspNetCore.Components.Forms.Mapping.FormValueMappingContext.MapErrorToContainer.set -> void
 Microsoft.AspNetCore.Components.Forms.Mapping.FormValueMappingContext.OnError.get -> System.Action<string!, System.FormattableString!, string?>?
