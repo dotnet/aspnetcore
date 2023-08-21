@@ -63,10 +63,10 @@ Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.
 Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.StaticHtmlRenderer(System.IServiceProvider! serviceProvider, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
 Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.TryCreateScopeQualifiedEventName(int componentId, string! assignedEventName, out string? scopeQualifiedEventName) -> bool
 Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute
-Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute.Handler.get -> string?
-Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute.Handler.set -> void
 Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute.Name.get -> string?
 Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute.Name.set -> void
+Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute.FormName.get -> string?
+Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute.FormName.set -> void
 Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute.SupplyParameterFromFormAttribute() -> void
 Microsoft.AspNetCore.Components.Web.AutoRenderMode
 Microsoft.AspNetCore.Components.Web.AutoRenderMode.AutoRenderMode() -> void

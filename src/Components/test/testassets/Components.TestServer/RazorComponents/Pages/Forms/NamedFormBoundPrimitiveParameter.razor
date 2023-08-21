@@ -33,7 +33,7 @@
     string _attemptedValue = null;
     IReadOnlyList<FormattableString> _errors;
 
-    [SupplyParameterFromForm(Handler = "named-form-handler")] public int Parameter { get; set; } = 0;
+    [SupplyParameterFromForm(FormName = "named-form-handler")] public int Parameter { get; set; } = 0;
 
     [CascadingParameter] public FormMappingContext Context { get; set; }
 
