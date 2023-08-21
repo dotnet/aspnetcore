@@ -195,7 +195,7 @@ public class WsFederationHandler : RemoteAuthenticationHandler<WsFederationOptio
             {
                 // Extract the user state from properties and reset.
                 properties.Items.TryGetValue(WsFederationDefaults.UserstatePropertiesKey, out var userState);
-                wsFederationMessage.Wctx = userState!;
+                wsFederationMessage.Wctx = userState!; // TODO: '!' can be removed with https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet/issues/2240
             }
 
             var messageReceivedContext = new MessageReceivedContext(Context, Scheme, Options, properties)
