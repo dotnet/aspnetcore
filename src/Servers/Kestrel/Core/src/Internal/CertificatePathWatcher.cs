@@ -29,9 +29,15 @@ internal sealed partial class CertificatePathWatcher : IDisposable
 
     public CertificatePathWatcher(IHostEnvironment hostEnvironment, ILogger<CertificatePathWatcher> logger)
         : this(
-              hostEnvironment.ContentRootPath,
-              logger,
-              dir => Directory.Exists(dir) ? new PhysicalFileProvider(dir, ExclusionFilters.None) : null)
+            hostEnvironment.ContentRootPath,
+            logger,
+            dir => Directory.Exists(dir)
+                ? new PhysicalFileProvider(dir, ExclusionFilters.None)
+                {
+                    UseActivePolling = true,
+                    UsePollingFileWatcher = true,
+                }
+                : null)
     {
     }
 

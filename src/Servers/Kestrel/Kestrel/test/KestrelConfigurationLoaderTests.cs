@@ -894,7 +894,7 @@ public class KestrelConfigurationLoaderTests
 
             if (reloadOnChange)
             {
-                await fileTcs.Task.DefaultTimeout();
+                await fileTcs.Task.TimeoutAfter(TimeSpan.FromSeconds(10)); // Needs to be meaningfully longer than the polling period - 4 seconds
             }
             else
             {
