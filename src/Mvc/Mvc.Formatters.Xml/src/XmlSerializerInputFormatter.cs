@@ -144,7 +144,7 @@ public class XmlSerializerInputFormatter : TextInputFormatter, IInputFormatterEx
         // https://github.com/dotnet/corefx/blob/master/src/System.Private.Xml/src/System/Xml/Serialization/XmlSerializer.cs#L652
         catch (InvalidOperationException exception) when (exception.InnerException != null &&
             exception.InnerException.InnerException == null &&
-            string.Equals("Microsoft.GeneratedCode", exception.InnerException.Source, StringComparison.InvariantCulture))
+            string.Equals("Microsoft.GeneratedCode", exception.InnerException.Source, StringComparison.Ordinal))
         {
             // Know this was an XML parsing error because the inner Exception was thrown in the (generated)
             // assembly the XmlSerializer uses for parsing. The problem did not arise lower in the stack i.e. it's

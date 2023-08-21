@@ -163,7 +163,7 @@ public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAut
 
         if (Options.SessionStore != null)
         {
-            var claim = ticket.Principal.Claims.FirstOrDefault(c => c.Type.Equals(SessionIdClaim));
+            var claim = ticket.Principal.Claims.FirstOrDefault(c => c.Type.Equals(SessionIdClaim, StringComparison.Ordinal));
             if (claim == null)
             {
                 return AuthenticateResults.MissingSessionId;
