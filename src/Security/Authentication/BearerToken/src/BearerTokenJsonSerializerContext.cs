@@ -3,7 +3,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Microsoft.AspNetCore.Authentication.BearerToken.DTO;
+namespace Microsoft.AspNetCore.Authentication.BearerToken;
 
 [JsonSerializable(typeof(AccessTokenResponse))]
 internal sealed partial class BearerTokenJsonSerializerContext : JsonSerializerContext

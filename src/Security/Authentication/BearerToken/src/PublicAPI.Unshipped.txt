@@ -1,5 +1,14 @@
 #nullable enable
 const Microsoft.AspNetCore.Authentication.BearerToken.BearerTokenDefaults.AuthenticationScheme = "BearerToken" -> string!
+Microsoft.AspNetCore.Authentication.BearerToken.AccessTokenResponse
+Microsoft.AspNetCore.Authentication.BearerToken.AccessTokenResponse.AccessToken.get -> string!
+Microsoft.AspNetCore.Authentication.BearerToken.AccessTokenResponse.AccessToken.init -> void
+Microsoft.AspNetCore.Authentication.BearerToken.AccessTokenResponse.AccessTokenResponse() -> void
+Microsoft.AspNetCore.Authentication.BearerToken.AccessTokenResponse.ExpiresIn.get -> long
+Microsoft.AspNetCore.Authentication.BearerToken.AccessTokenResponse.ExpiresIn.init -> void
+Microsoft.AspNetCore.Authentication.BearerToken.AccessTokenResponse.RefreshToken.get -> string!
+Microsoft.AspNetCore.Authentication.BearerToken.AccessTokenResponse.RefreshToken.init -> void
+Microsoft.AspNetCore.Authentication.BearerToken.AccessTokenResponse.TokenType.get -> string!
 Microsoft.AspNetCore.Authentication.BearerToken.BearerTokenDefaults
 Microsoft.AspNetCore.Authentication.BearerToken.BearerTokenEvents
 Microsoft.AspNetCore.Authentication.BearerToken.BearerTokenEvents.BearerTokenEvents() -> void

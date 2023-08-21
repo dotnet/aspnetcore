@@ -4,7 +4,6 @@
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Text.Json.Serialization.Metadata;
-using Microsoft.AspNetCore.Authentication.BearerToken.DTO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
