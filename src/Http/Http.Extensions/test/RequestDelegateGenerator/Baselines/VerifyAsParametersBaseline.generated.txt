@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Http.Generated
         private static readonly string[] PostVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Post };
         private static readonly string[] PutVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Put };
 
-        [InterceptsLocation(@"TestMapActions.cs", 44, 5)]
+        [InterceptsLocation(@"TestMapActions.cs", 45, 5)]
         internal static RouteHandlerBuilder MapGet0(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
@@ -195,7 +195,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 createRequestDelegate);
         }
 
-        [InterceptsLocation(@"TestMapActions.cs", 45, 5)]
+        [InterceptsLocation(@"TestMapActions.cs", 46, 5)]
         internal static RouteHandlerBuilder MapPost1(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
@@ -322,7 +322,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 createRequestDelegate);
         }
 
-        [InterceptsLocation(@"TestMapActions.cs", 46, 5)]
+        [InterceptsLocation(@"TestMapActions.cs", 47, 5)]
         internal static RouteHandlerBuilder MapPut2(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
@@ -420,7 +420,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 createRequestDelegate);
         }
 
-        [InterceptsLocation(@"TestMapActions.cs", 47, 5)]
+        [InterceptsLocation(@"TestMapActions.cs", 48, 5)]
         internal static RouteHandlerBuilder MapPatch3(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
@@ -537,7 +537,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 createRequestDelegate);
         }
 
-        [InterceptsLocation(@"TestMapActions.cs", 48, 5)]
+        [InterceptsLocation(@"TestMapActions.cs", 49, 5)]
         internal static RouteHandlerBuilder MapGet4(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
