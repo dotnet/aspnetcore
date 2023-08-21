@@ -24,7 +24,8 @@ public class RazorComponentResult<[DynamicallyAccessedMembers(Component)] TCompo
     /// Constructs an instance of <see cref="RazorComponentResult"/>.
     /// </summary>
     /// <param name="parameters">Parameters for the component.</param>
-    public RazorComponentResult(object parameters) : base(typeof(TComponent), parameters)
+    public RazorComponentResult(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] object parameters) : base(typeof(TComponent), parameters)
     {
     }
 

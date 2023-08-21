@@ -44,7 +44,9 @@ public class RazorComponentResult : IResult, IStatusCodeHttpResult, IContentType
     /// </summary>
     /// <param name="componentType">The type of the component to render. This must implement <see cref="IComponent"/>.</param>
     /// <param name="parameters">Parameters for the component.</param>
-    public RazorComponentResult([DynamicallyAccessedMembers(Component)] Type componentType, IReadOnlyDictionary<string, object?> parameters)
+    public RazorComponentResult(
+        [DynamicallyAccessedMembers(Component)] Type componentType,
+        IReadOnlyDictionary<string, object?> parameters)
     {
         ArgumentNullException.ThrowIfNull(componentType);
         ArgumentNullException.ThrowIfNull(parameters);
@@ -63,7 +65,6 @@ public class RazorComponentResult : IResult, IStatusCodeHttpResult, IContentType
     /// <summary>
     /// Gets the component type.
     /// </summary>
-    [DynamicallyAccessedMembers(Component)]
     public Type ComponentType { get; }
 
     /// <summary>
