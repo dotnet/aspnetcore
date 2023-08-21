@@ -1920,7 +1920,7 @@ public partial class HubConnection : IAsyncDisposable
             {
                 _messageBuffer = new MessageBuffer(connection, hubConnection._protocol,
                     _hubConnection._serviceProvider.GetService<IOptions<HubConnectionOptions>>()?.Value.StatefulReconnectBufferSize
-                    ?? DefaultStatefulReconnectBufferSize);
+                        ?? DefaultStatefulReconnectBufferSize);
 
                 feature.OnReconnected(_messageBuffer.ResendAsync);
             }

@@ -4,6 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -16,7 +17,8 @@ namespace Microsoft.AspNetCore.Http.Features;
 public class FormFeature : IFormFeature
 {
     private readonly HttpRequest _request;
-    private readonly FormOptions _options;
+    private readonly Endpoint? _endpoint;
+    private FormOptions _options;
     private Task<IFormCollection>? _parsedFormTask;
     private IFormCollection? _form;
 
@@ -48,12 +50,18 @@ public class FormFeature : IFormFeature
     /// <param name="request">The <see cref="HttpRequest"/>.</param>
     /// <param name="options">The <see cref="FormOptions"/>.</param>
     public FormFeature(HttpRequest request, FormOptions options)
+        : this(request, options, null)
+    {
+    }
+
+    internal FormFeature(HttpRequest request, FormOptions options, Endpoint? endpoint)
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(options);
 
         _request = request;
         _options = options;
+        _endpoint = endpoint;
     }
 
     // Internal for testing.
@@ -144,6 +152,7 @@ public class FormFeature : IFormFeature
     private async Task<IFormCollection> InnerReadFormAsync(CancellationToken cancellationToken)
     {
         HandleUncheckedAntiforgeryValidationFeature();
+        _options = _endpoint is null ? _options : GetFormOptionsFromMetadata(_options, _endpoint);
 
         if (!HasFormContentType)
         {
@@ -344,5 +353,22 @@ public class FormFeature : IFormFeature
             throw new InvalidDataException($"Multipart boundary length limit {lengthLimit} exceeded.");
         }
         return boundary.ToString();
+    }
+
+    private static FormOptions GetFormOptionsFromMetadata(FormOptions baseFormOptions, Endpoint endpoint)
+    {
+        var formOptionsMetadatas = endpoint.Metadata
+            .GetOrderedMetadata<IFormOptionsMetadata>();
+        var metadataCount = formOptionsMetadatas.Count;
+        if (metadataCount == 0)
+        {
+            return baseFormOptions;
+        }
+        var finalFormOptionsMetadata = new MutableFormOptionsMetadata(formOptionsMetadatas[metadataCount - 1]);
+        for (int i = metadataCount - 2; i >= 0; i--)
+        {
+            formOptionsMetadatas[i].MergeWith(ref finalFormOptionsMetadata);
+        }
+        return finalFormOptionsMetadata.ResolveFormOptions(baseFormOptions);
     }
 }

@@ -399,13 +399,13 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
                         if (negotiationResponse == null)
                         {
                             // Temporary until other transports work
-                            _httpConnectionOptions.UseAcks = transportType == HttpTransportType.WebSockets ? _httpConnectionOptions.UseAcks : false;
+                            _httpConnectionOptions.UseStatefulReconnect = transportType == HttpTransportType.WebSockets ? _httpConnectionOptions.UseStatefulReconnect : false;
                             negotiationResponse = await GetNegotiationResponseAsync(uri, cancellationToken).ConfigureAwait(false);
                             connectUrl = CreateConnectUrl(uri, negotiationResponse.ConnectionToken);
                         }
 
                         Log.StartingTransport(_logger, transportType, uri);
-                        await StartTransport(connectUrl, transportType, transferFormat, cancellationToken, negotiationResponse.UseAcking).ConfigureAwait(false);
+                        await StartTransport(connectUrl, transportType, transferFormat, cancellationToken, negotiationResponse.UseStatefulReconnect).ConfigureAwait(false);
                         break;
                     }
                 }
@@ -457,7 +457,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
                 uri = Utils.AppendQueryString(urlBuilder.Uri, $"negotiateVersion={_protocolVersionNumber}");
             }
 
-            if (_httpConnectionOptions.UseAcks)
+            if (_httpConnectionOptions.UseStatefulReconnect)
             {
                 uri = Utils.AppendQueryString(uri, "useAck=true");
             }

@@ -38,7 +38,7 @@ internal sealed partial class WebSocketsTransport : ITransport, IStatefulReconne
     private readonly HttpConnectionOptions _httpConnectionOptions;
     private readonly HttpClient? _httpClient;
     private CancellationTokenSource _stopCts = default!;
-    private bool _useAck;
+    private readonly bool _useStatefulReconnect;
 
     private IDuplexPipe? _transport;
     // Used for reconnect (when enabled) to determine if the close was ungraceful or not, reconnect only happens on ungraceful disconnect
@@ -72,9 +72,9 @@ internal sealed partial class WebSocketsTransport : ITransport, IStatefulReconne
 #pragma warning restore CA2252 // This API requires opting into preview features
 
     public WebSocketsTransport(HttpConnectionOptions httpConnectionOptions, ILoggerFactory loggerFactory, Func<Task<string?>> accessTokenProvider, HttpClient? httpClient,
-        bool useAck = false)
+        bool useStatefulReconnect = false)
     {
-        _useAck = useAck;
+        _useStatefulReconnect = useStatefulReconnect;
         _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<WebSocketsTransport>();
         _httpConnectionOptions = httpConnectionOptions ?? new HttpConnectionOptions();
 
@@ -393,7 +393,7 @@ internal sealed partial class WebSocketsTransport : ITransport, IStatefulReconne
             }
         }
 
-        if (_useAck && !_gracefulClose)
+        if (_useStatefulReconnect && !_gracefulClose)
         {
             if (!UpdateConnectionPair())
             {
@@ -670,11 +670,11 @@ internal sealed partial class WebSocketsTransport : ITransport, IStatefulReconne
     {
         lock (this)
         {
-            // Lock and check _useAck, we want to swap the Pipe completely before DisableReconnect returns if there is contention there.
+            // Lock and check _useStatefulReconnect, we want to swap the Pipe completely before DisableReconnect returns if there is contention there.
             // The calling code will start completing the transport after DisableReconnect
             // so we want to avoid any possibility of the new Pipe staying alive or even worse a new WebSocket connection being open when the transport
             // might think it's closed.
-            if (_useAck == false)
+            if (_useStatefulReconnect == false)
             {
                 return false;
             }
@@ -698,7 +698,7 @@ internal sealed partial class WebSocketsTransport : ITransport, IStatefulReconne
     {
         lock (this)
         {
-            _useAck = false;
+            _useStatefulReconnect = false;
         }
     }
 }
