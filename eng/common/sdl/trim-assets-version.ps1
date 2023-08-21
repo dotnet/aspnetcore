@@ -25,7 +25,7 @@ function Install-VersionTools-Cli {
   Write-Host "Installing the package '$CliToolName' with a version of '$version' ..."
   $feed = "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json"
 
-  $argumentList = @("tool", "install", "--local", "$CliToolName", "--add-source $feed", "--no-cache", "--version $Version")
+  $argumentList = @("tool", "install", "--local", "$CliToolName", "--add-source $feed", "--no-cache", "--version $Version", "--create-manifest-if-needed")
   Start-Process "$dotnet" -Verbose -ArgumentList $argumentList -NoNewWindow -Wait
 }
 

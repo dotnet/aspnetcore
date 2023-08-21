@@ -105,6 +105,11 @@ jobs:
         downloadPath: $(Build.ArtifactStagingDirectory)\artifacts
         checkDownloadedFiles: true
 
+  - powershell: eng/common/sdl/trim-assets-version.ps1
+      -InputPath $(Build.ArtifactStagingDirectory)\artifacts
+    displayName: Trim the version from the NuGet packages
+    continueOnError: ${{ parameters.sdlContinueOnError }}
+
   - powershell: eng/common/sdl/extract-artifact-packages.ps1
       -InputPath $(Build.ArtifactStagingDirectory)\artifacts\BlobArtifacts
       -ExtractPath $(Build.ArtifactStagingDirectory)\artifacts\BlobArtifacts
