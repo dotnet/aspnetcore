@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Primitives;
@@ -24,7 +25,7 @@ public class CertificatePathWatcherTests : LoggedTest
 
         var logger = LoggerFactory.CreateLogger<CertificatePathWatcher>();
 
-        using var watcher = new CertificatePathWatcher(dir, logger, _ => NoChangeFileProvider.Instance);
+        using var watcher = new CertificatePathWatcher(new MockHostEnvironment(dir, NoChangeFileProvider.Instance), logger);
 
         var changeToken = watcher.GetChangeToken();
 
@@ -37,14 +38,10 @@ public class CertificatePathWatcherTests : LoggedTest
 
         watcher.AddWatchUnsynchronized(certificateConfig);
 
-        messageProps = GetLogMessageProperties(TestSink, "CreatedDirectoryWatcher");
-        Assert.Equal(dir, messageProps["Directory"]);
-
         messageProps = GetLogMessageProperties(TestSink, "CreatedFileWatcher");
         Assert.Equal(filePath, messageProps["Path"]);
 
-        Assert.Equal(1, watcher.TestGetDirectoryWatchCountUnsynchronized());
-        Assert.Equal(1, watcher.TestGetFileWatchCountUnsynchronized(dir));
+        Assert.Equal(1, watcher.TestGetFileWatchCountUnsynchronized());
         Assert.Equal(1, watcher.TestGetObserverCountUnsynchronized(filePath));
 
         watcher.RemoveWatchUnsynchronized(certificateConfig);
@@ -52,11 +49,7 @@ public class CertificatePathWatcherTests : LoggedTest
         messageProps = GetLogMessageProperties(TestSink, "RemovedFileWatcher");
         Assert.Equal(filePath, messageProps["Path"]);
 
-        messageProps = GetLogMessageProperties(TestSink, "RemovedDirectoryWatcher");
-        Assert.Equal(dir, messageProps["Directory"]);
-
-        Assert.Equal(0, watcher.TestGetDirectoryWatchCountUnsynchronized());
-        Assert.Equal(0, watcher.TestGetFileWatchCountUnsynchronized(dir));
+        Assert.Equal(0, watcher.TestGetFileWatchCountUnsynchronized());
         Assert.Equal(0, watcher.TestGetObserverCountUnsynchronized(filePath));
 
         Assert.Same(changeToken, watcher.GetChangeToken());
@@ -79,7 +72,7 @@ public class CertificatePathWatcherTests : LoggedTest
             dirs[i] = Path.Combine(rootDir, $"dir{i}");
         }
 
-        using var watcher = new CertificatePathWatcher(rootDir, logger, _ => NoChangeFileProvider.Instance);
+        using var watcher = new CertificatePathWatcher(new MockHostEnvironment(rootDir, NoChangeFileProvider.Instance), logger);
 
         var certificateConfigs = new CertificateConfig[fileCount];
         var filesInDir = new int[dirCount];
@@ -97,19 +90,14 @@ public class CertificatePathWatcherTests : LoggedTest
             watcher.AddWatchUnsynchronized(certificateConfig);
         }
 
-        Assert.Equal(Math.Min(dirCount, fileCount), watcher.TestGetDirectoryWatchCountUnsynchronized());
-
-        for (int i = 0; i < dirCount; i++)
-        {
-            Assert.Equal(filesInDir[i], watcher.TestGetFileWatchCountUnsynchronized(dirs[i]));
-        }
+        Assert.Equal(fileCount, watcher.TestGetFileWatchCountUnsynchronized());
 
         foreach (var certificateConfig in certificateConfigs)
         {
             watcher.RemoveWatchUnsynchronized(certificateConfig);
         }
 
-        Assert.Equal(0, watcher.TestGetDirectoryWatchCountUnsynchronized());
+        Assert.Equal(0, watcher.TestGetFileWatchCountUnsynchronized());
     }
 
     [Theory]
@@ -128,7 +116,7 @@ public class CertificatePathWatcherTests : LoggedTest
         var fileLastModifiedTime = DateTimeOffset.UtcNow;
         fileProvider.SetLastModifiedTime(fileName, fileLastModifiedTime);
 
-        using var watcher = new CertificatePathWatcher(dir, logger, _ => fileProvider);
+        using var watcher = new CertificatePathWatcher(new MockHostEnvironment(dir, fileProvider), logger);
 
         var signalTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -146,8 +134,7 @@ public class CertificatePathWatcherTests : LoggedTest
             watcher.AddWatchUnsynchronized(certificateConfigs[i]);
         }
 
-        Assert.Equal(1, watcher.TestGetDirectoryWatchCountUnsynchronized());
-        Assert.Equal(1, watcher.TestGetFileWatchCountUnsynchronized(dir));
+        Assert.Equal(1, watcher.TestGetFileWatchCountUnsynchronized());
         Assert.Equal(observerCount, watcher.TestGetObserverCountUnsynchronized(filePath));
 
         // Simulate file change on disk
@@ -178,7 +165,7 @@ public class CertificatePathWatcherTests : LoggedTest
         var fileLastModifiedTime = DateTimeOffset.UtcNow;
         fileProvider.SetLastModifiedTime(fileName, fileLastModifiedTime);
 
-        using var watcher = new CertificatePathWatcher(dir, logger, _ => fileProvider);
+        using var watcher = new CertificatePathWatcher(new MockHostEnvironment(dir, fileProvider), logger);
 
         var certificateConfig = new CertificateConfig
         {
@@ -199,8 +186,7 @@ public class CertificatePathWatcherTests : LoggedTest
 
         var oldChangeToken = watcher.GetChangeToken();
 
-        Assert.Equal(1, watcher.TestGetDirectoryWatchCountUnsynchronized());
-        Assert.Equal(1, watcher.TestGetFileWatchCountUnsynchronized(dir));
+        Assert.Equal(1, watcher.TestGetFileWatchCountUnsynchronized());
         Assert.Equal(1, watcher.TestGetObserverCountUnsynchronized(filePath));
 
         // Simulate file change on disk
@@ -210,31 +196,6 @@ public class CertificatePathWatcherTests : LoggedTest
         await logTcs.Task.DefaultTimeout();
 
         Assert.False(oldChangeToken.HasChanged);
-    }
-
-    [Fact]
-    public void DirectoryDoesNotExist()
-    {
-        var dir = Path.Combine(Directory.GetCurrentDirectory(), Path.GetRandomFileName());
-
-        Assert.False(Directory.Exists(dir));
-
-        var logger = LoggerFactory.CreateLogger<CertificatePathWatcher>();
-
-        // Returning null indicates that the directory does not exist
-        using var watcher = new CertificatePathWatcher(dir, logger, _ => null);
-
-        var certificateConfig = new CertificateConfig
-        {
-            Path = Path.Combine(dir, "test.pfx"),
-        };
-
-        watcher.AddWatchUnsynchronized(certificateConfig);
-
-        var messageProps = GetLogMessageProperties(TestSink, "DirectoryDoesNotExist");
-        Assert.Equal(dir, messageProps["Directory"]);
-
-        Assert.Equal(0, watcher.TestGetDirectoryWatchCountUnsynchronized());
     }
 
     [Theory]
@@ -248,7 +209,7 @@ public class CertificatePathWatcherTests : LoggedTest
 
         var logger = LoggerFactory.CreateLogger<CertificatePathWatcher>();
 
-        using var watcher = new CertificatePathWatcher(dir, logger, _ => NoChangeFileProvider.Instance);
+        using var watcher = new CertificatePathWatcher(new MockHostEnvironment(dir, NoChangeFileProvider.Instance), logger);
 
         var certificateConfig = new CertificateConfig
         {
@@ -282,7 +243,7 @@ public class CertificatePathWatcherTests : LoggedTest
 
         var logger = LoggerFactory.CreateLogger<CertificatePathWatcher>();
 
-        using var watcher = new CertificatePathWatcher(dir, logger, _ => NoChangeFileProvider.Instance);
+        using var watcher = new CertificatePathWatcher(new MockHostEnvironment(dir, NoChangeFileProvider.Instance), logger);
 
         var certificateConfig1 = new CertificateConfig
         {
@@ -322,7 +283,7 @@ public class CertificatePathWatcherTests : LoggedTest
 
         var logger = LoggerFactory.CreateLogger<CertificatePathWatcher>();
 
-        using var watcher = new CertificatePathWatcher(dir, logger, _ => NoChangeFileProvider.Instance);
+        using var watcher = new CertificatePathWatcher(new MockHostEnvironment(dir, NoChangeFileProvider.Instance), logger);
 
         var certificateConfig = new CertificateConfig
         {
@@ -359,7 +320,7 @@ public class CertificatePathWatcherTests : LoggedTest
         var fileLastModifiedTime = DateTimeOffset.UtcNow;
         fileProvider.SetLastModifiedTime(fileName, fileLastModifiedTime);
 
-        using var watcher = new CertificatePathWatcher(dir, logger, _ => fileProvider);
+        using var watcher = new CertificatePathWatcher(new MockHostEnvironment(dir, fileProvider), logger);
 
         var certificateConfig = new CertificateConfig
         {
@@ -368,8 +329,7 @@ public class CertificatePathWatcherTests : LoggedTest
 
         watcher.AddWatchUnsynchronized(certificateConfig);
 
-        Assert.Equal(1, watcher.TestGetDirectoryWatchCountUnsynchronized());
-        Assert.Equal(1, watcher.TestGetFileWatchCountUnsynchronized(dir));
+        Assert.Equal(1, watcher.TestGetFileWatchCountUnsynchronized());
         Assert.Equal(1, watcher.TestGetObserverCountUnsynchronized(filePath));
 
         var changeTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -402,8 +362,7 @@ public class CertificatePathWatcherTests : LoggedTest
             await logNoLastModifiedTcs.Task.DefaultTimeout();
         }
 
-        Assert.Equal(1, watcher.TestGetDirectoryWatchCountUnsynchronized());
-        Assert.Equal(1, watcher.TestGetFileWatchCountUnsynchronized(dir));
+        Assert.Equal(1, watcher.TestGetFileWatchCountUnsynchronized());
         Assert.Equal(1, watcher.TestGetObserverCountUnsynchronized(filePath));
 
         Assert.False(changeTcs.Task.IsCompleted);
@@ -433,7 +392,7 @@ public class CertificatePathWatcherTests : LoggedTest
 
         var logger = LoggerFactory.CreateLogger<CertificatePathWatcher>();
 
-        using var watcher = new CertificatePathWatcher(dir, logger, _ => NoChangeFileProvider.Instance);
+        using var watcher = new CertificatePathWatcher(new MockHostEnvironment(dir, NoChangeFileProvider.Instance), logger);
 
         var changeToken = watcher.GetChangeToken();
 
@@ -455,22 +414,19 @@ public class CertificatePathWatcherTests : LoggedTest
         // Add certificateConfig1
         watcher.UpdateWatches(new List<CertificateConfig> { }, new List<CertificateConfig> { certificateConfig1 });
 
-        Assert.Equal(1, watcher.TestGetDirectoryWatchCountUnsynchronized());
-        Assert.Equal(1, watcher.TestGetFileWatchCountUnsynchronized(dir));
+        Assert.Equal(1, watcher.TestGetFileWatchCountUnsynchronized());
         Assert.Equal(1, watcher.TestGetObserverCountUnsynchronized(filePath));
 
         // Remove certificateConfig1
         watcher.UpdateWatches(new List<CertificateConfig> { certificateConfig1 }, new List<CertificateConfig> { });
 
-        Assert.Equal(0, watcher.TestGetDirectoryWatchCountUnsynchronized());
-        Assert.Equal(0, watcher.TestGetFileWatchCountUnsynchronized(dir));
+        Assert.Equal(0, watcher.TestGetFileWatchCountUnsynchronized());
         Assert.Equal(0, watcher.TestGetObserverCountUnsynchronized(filePath));
 
         // Re-add certificateConfig1
         watcher.UpdateWatches(new List<CertificateConfig> { }, new List<CertificateConfig> { certificateConfig1 });
 
-        Assert.Equal(1, watcher.TestGetDirectoryWatchCountUnsynchronized());
-        Assert.Equal(1, watcher.TestGetFileWatchCountUnsynchronized(dir));
+        Assert.Equal(1, watcher.TestGetFileWatchCountUnsynchronized());
         Assert.Equal(1, watcher.TestGetObserverCountUnsynchronized(filePath));
 
         watcher.UpdateWatches(
@@ -491,9 +447,54 @@ public class CertificatePathWatcherTests : LoggedTest
                 certificateConfig3, // Add it again
             });
 
-        Assert.Equal(1, watcher.TestGetDirectoryWatchCountUnsynchronized());
-        Assert.Equal(1, watcher.TestGetFileWatchCountUnsynchronized(dir));
+        Assert.Equal(1, watcher.TestGetFileWatchCountUnsynchronized());
         Assert.Equal(3, watcher.TestGetObserverCountUnsynchronized(filePath));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void PathOutsideContentRoot(bool absoluteFilePath)
+    {
+        var testRootDir = Directory.GetCurrentDirectory();
+        var contentRootDir = Path.Combine(testRootDir, Path.GetRandomFileName());
+        var outsideContentRootDir = Path.Combine(testRootDir, Path.GetRandomFileName());
+        var outsideContentRootFile = Path.Combine(outsideContentRootDir, Path.GetRandomFileName());
+        var outsideContentRootFileRelativePath = Path.GetRelativePath(contentRootDir, outsideContentRootFile);
+        var loggedPath = absoluteFilePath ? outsideContentRootFile : Path.Combine(contentRootDir, outsideContentRootFileRelativePath);
+
+        var logger = LoggerFactory.CreateLogger<CertificatePathWatcher>();
+
+        using var watcher = new CertificatePathWatcher(new MockHostEnvironment(contentRootDir, NoChangeFileProvider.Instance), logger);
+
+        var changeToken = watcher.GetChangeToken();
+
+        var certificateConfig = new CertificateConfig
+        {
+            Path = absoluteFilePath ? outsideContentRootFile : outsideContentRootFileRelativePath,
+        };
+
+        IDictionary<string, object> messageProps;
+
+        watcher.AddWatchUnsynchronized(certificateConfig);
+
+        messageProps = GetLogMessageProperties(TestSink, "CreatedFileWatcher");
+        Assert.Equal(loggedPath, messageProps["Path"]);
+
+        messageProps = GetLogMessageProperties(TestSink, "NullChangeToken");
+        Assert.Equal(loggedPath, messageProps["Path"]);
+
+        // Ideally, these would be zero, but having a dummy change token isn't the end of the world
+        Assert.Equal(1, watcher.TestGetFileWatchCountUnsynchronized());
+        Assert.Equal(1, watcher.TestGetObserverCountUnsynchronized(loggedPath));
+
+        watcher.RemoveWatchUnsynchronized(certificateConfig);
+
+        messageProps = GetLogMessageProperties(TestSink, "RemovedFileWatcher");
+        Assert.Equal(loggedPath, messageProps["Path"]);
+
+        Assert.Equal(0, watcher.TestGetFileWatchCountUnsynchronized());
+        Assert.Equal(0, watcher.TestGetObserverCountUnsynchronized(loggedPath));
     }
 
     private static IDictionary<string, object> GetLogMessageProperties(ITestSink testSink, string eventName)
@@ -514,20 +515,7 @@ public class CertificatePathWatcherTests : LoggedTest
 
         IDirectoryContents IFileProvider.GetDirectoryContents(string subpath) => throw new NotSupportedException();
         IFileInfo IFileProvider.GetFileInfo(string subpath) => throw new NotSupportedException();
-        IChangeToken IFileProvider.Watch(string filter) => NoChangeChangeToken.Instance;
-
-        private sealed class NoChangeChangeToken : IChangeToken
-        {
-            public static readonly IChangeToken Instance = new NoChangeChangeToken();
-
-            private NoChangeChangeToken()
-            {
-            }
-
-            bool IChangeToken.HasChanged => false;
-            bool IChangeToken.ActiveChangeCallbacks => true;
-            IDisposable IChangeToken.RegisterChangeCallback(Action<object> callback, object state) => DummyDisposable.Instance;
-        }
+        IChangeToken IFileProvider.Watch(string filter) => NullChangeToken.Singleton;
     }
 
     private sealed class DummyDisposable : IDisposable
@@ -598,5 +586,16 @@ public class CertificatePathWatcherTests : LoggedTest
             bool IFileInfo.IsDirectory => throw new NotSupportedException();
             Stream IFileInfo.CreateReadStream() => throw new NotSupportedException();
         }
+    }
+
+    private sealed class MockHostEnvironment(string contentRootPath, IFileProvider contentRootFileProvider) : IHostEnvironment
+    {
+        private readonly string _contentRootPath = contentRootPath;
+        private readonly IFileProvider _contentRootFileProvider = contentRootFileProvider;
+
+        string IHostEnvironment.EnvironmentName { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        string IHostEnvironment.ApplicationName { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        string IHostEnvironment.ContentRootPath { get => _contentRootPath; set => throw new NotImplementedException(); }
+        IFileProvider IHostEnvironment.ContentRootFileProvider { get => _contentRootFileProvider; set => throw new NotImplementedException(); }
     }
 }

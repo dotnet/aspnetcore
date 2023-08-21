@@ -4,7 +4,6 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.FileProviders.Physical;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
@@ -13,14 +12,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 
 internal sealed partial class CertificatePathWatcher : IDisposable
 {
-    private readonly Func<string, IFileProvider?> _fileProviderFactory;
-    private readonly string _contentRootDir;
+    private readonly IHostEnvironment _hostEnvironment;
     private readonly ILogger<CertificatePathWatcher> _logger;
 
     private readonly object _metadataLock = new();
 
-    /// <remarks>Acquire <see cref="_metadataLock"/> before accessing.</remarks>
-    private readonly Dictionary<string, DirectoryWatchMetadata> _metadataForDirectory = new();
     /// <remarks>Acquire <see cref="_metadataLock"/> before accessing.</remarks>
     private readonly Dictionary<string, FileWatchMetadata> _metadataForFile = new();
 
@@ -28,21 +24,9 @@ internal sealed partial class CertificatePathWatcher : IDisposable
     private bool _disposed;
 
     public CertificatePathWatcher(IHostEnvironment hostEnvironment, ILogger<CertificatePathWatcher> logger)
-        : this(
-              hostEnvironment.ContentRootPath,
-              logger,
-              dir => Directory.Exists(dir) ? new PhysicalFileProvider(dir, ExclusionFilters.None) : null)
     {
-    }
-
-    /// <remarks>
-    /// For testing.
-    /// </remarks>
-    internal CertificatePathWatcher(string contentRootPath, ILogger<CertificatePathWatcher> logger, Func<string, IFileProvider?> fileProviderFactory)
-    {
-        _contentRootDir = contentRootPath;
+        _hostEnvironment = hostEnvironment;
         _logger = logger;
-        _fileProviderFactory = fileProviderFactory;
     }
 
     /// <summary>
@@ -104,42 +88,32 @@ internal sealed partial class CertificatePathWatcher : IDisposable
     {
         Debug.Assert(certificateConfig.IsFileCert, "AddWatch called on non-file cert");
 
-        var path = Path.Combine(_contentRootDir, certificateConfig.Path);
-        var dir = Path.GetDirectoryName(path)!;
-
-        if (!_metadataForDirectory.TryGetValue(dir, out var dirMetadata))
-        {
-            // If we wanted to detected deletions of this whole directory (which we don't since we ignore deletions),
-            // we'd probably need to watch the whole directory hierarchy
-
-            var fileProvider = _fileProviderFactory(dir);
-            if (fileProvider is null)
-            {
-                _logger.DirectoryDoesNotExist(dir, path);
-                return;
-            }
-
-            dirMetadata = new DirectoryWatchMetadata(fileProvider);
-            _metadataForDirectory.Add(dir, dirMetadata);
-
-            _logger.CreatedDirectoryWatcher(dir);
-        }
+        var contentRootPath = _hostEnvironment.ContentRootPath;
+        var path = Path.Combine(contentRootPath, certificateConfig.Path);
+        var relativePath = Path.GetRelativePath(contentRootPath, path);
 
         if (!_metadataForFile.TryGetValue(path, out var fileMetadata))
         {
             // PhysicalFileProvider appears to be able to tolerate non-existent files, as long as the directory exists
 
             var disposable = ChangeToken.OnChange(
-                () => dirMetadata.FileProvider.Watch(Path.GetFileName(path)),
+                () =>
+                {
+                    var changeToken = _hostEnvironment.ContentRootFileProvider.Watch(relativePath);
+                    if (ReferenceEquals(changeToken, NullChangeToken.Singleton))
+                    {
+                        _logger.NullChangeToken(path);
+                    }
+                    return changeToken;
+                },
                 static tuple => tuple.Item1.OnChange(tuple.Item2),
                 ValueTuple.Create(this, path));
 
             fileMetadata = new FileWatchMetadata(disposable);
             _metadataForFile.Add(path, fileMetadata);
-            dirMetadata.FileWatchCount++;
 
             // We actually don't care if the file doesn't exist - we'll watch in case it is created
-            fileMetadata.LastModifiedTime = GetLastModifiedTimeOrMinimum(path, dirMetadata.FileProvider);
+            fileMetadata.LastModifiedTime = GetLastModifiedTimeOrMinimum(path, _hostEnvironment.ContentRootFileProvider);
 
             _logger.CreatedFileWatcher(path);
         }
@@ -153,7 +127,7 @@ internal sealed partial class CertificatePathWatcher : IDisposable
         _logger.AddedObserver(path);
 
         _logger.ObserverCount(path, fileMetadata.Configs.Count);
-        _logger.FileCount(dir, dirMetadata.FileWatchCount);
+        _logger.FileCount(contentRootPath, _metadataForFile.Count);
     }
 
     private DateTimeOffset GetLastModifiedTimeOrMinimum(string path, IFileProvider fileProvider)
@@ -181,9 +155,6 @@ internal sealed partial class CertificatePathWatcher : IDisposable
                 return;
             }
 
-            // Existence implied by the fact that we're tracking the file
-            var dirMetadata = _metadataForDirectory[Path.GetDirectoryName(path)!];
-
             // We ignore file changes that don't advance the last modified time.
             // For example, if we lose access to the network share the file is
             // stored on, we don't notify our listeners because no one wants
@@ -192,7 +163,7 @@ internal sealed partial class CertificatePathWatcher : IDisposable
             // before a new cert is introduced with the old name.
             // This also helps us in scenarios where the underlying file system
             // reports more than one change for a single logical operation.
-            var lastModifiedTime = GetLastModifiedTimeOrMinimum(path, dirMetadata.FileProvider);
+            var lastModifiedTime = GetLastModifiedTimeOrMinimum(path, _hostEnvironment.ContentRootFileProvider);
             if (lastModifiedTime > fileMetadata.LastModifiedTime)
             {
                 fileMetadata.LastModifiedTime = lastModifiedTime;
@@ -219,6 +190,8 @@ internal sealed partial class CertificatePathWatcher : IDisposable
             {
                 config.FileHasChanged = true;
             }
+
+            _logger.FlaggedObservers(path, configs.Count);
         }
 
         // AddWatch and RemoveWatch don't affect the token, so this doesn't need to be under the semaphore.
@@ -238,8 +211,8 @@ internal sealed partial class CertificatePathWatcher : IDisposable
     {
         Debug.Assert(certificateConfig.IsFileCert, "RemoveWatch called on non-file cert");
 
-        var path = Path.Combine(_contentRootDir, certificateConfig.Path);
-        var dir = Path.GetDirectoryName(path)!;
+        var contentRootPath = _hostEnvironment.ContentRootPath;
+        var path = Path.Combine(contentRootPath, certificateConfig.Path);
 
         if (!_metadataForFile.TryGetValue(path, out var fileMetadata))
         {
@@ -257,35 +230,20 @@ internal sealed partial class CertificatePathWatcher : IDisposable
 
         _logger.RemovedObserver(path);
 
-        // If we found fileMetadata, there must be a containing/corresponding dirMetadata
-        var dirMetadata = _metadataForDirectory[dir];
-
         if (configs.Count == 0)
         {
             fileMetadata.Dispose();
             _metadataForFile.Remove(path);
-            dirMetadata.FileWatchCount--;
 
             _logger.RemovedFileWatcher(path);
-
-            if (dirMetadata.FileWatchCount == 0)
-            {
-                dirMetadata.Dispose();
-                _metadataForDirectory.Remove(dir);
-
-                _logger.RemovedDirectoryWatcher(dir);
-            }
         }
 
         _logger.ObserverCount(path, configs.Count);
-        _logger.FileCount(dir, dirMetadata.FileWatchCount);
+        _logger.FileCount(contentRootPath, _metadataForFile.Count);
     }
 
     /// <remarks>Test hook</remarks>
-    internal int TestGetDirectoryWatchCountUnsynchronized() => _metadataForDirectory.Count;
-
-    /// <remarks>Test hook</remarks>
-    internal int TestGetFileWatchCountUnsynchronized(string dir) => _metadataForDirectory.TryGetValue(dir, out var metadata) ? metadata.FileWatchCount : 0;
+    internal int TestGetFileWatchCountUnsynchronized() => _metadataForFile.Count;
 
     /// <remarks>Test hook</remarks>
     internal int TestGetObserverCountUnsynchronized(string path) => _metadataForFile.TryGetValue(path, out var metadata) ? metadata.Configs.Count : 0;
@@ -298,23 +256,10 @@ internal sealed partial class CertificatePathWatcher : IDisposable
         }
         _disposed = true;
 
-        foreach (var dirMetadata in _metadataForDirectory.Values)
-        {
-            dirMetadata.Dispose();
-        }
-
         foreach (var fileMetadata in _metadataForFile.Values)
         {
             fileMetadata.Dispose();
         }
-    }
-
-    private sealed class DirectoryWatchMetadata(IFileProvider fileProvider) : IDisposable
-    {
-        public readonly IFileProvider FileProvider = fileProvider;
-        public int FileWatchCount;
-
-        public void Dispose() => (FileProvider as IDisposable)?.Dispose();
     }
 
     private sealed class FileWatchMetadata(IDisposable disposable) : IDisposable

@@ -7,6 +7,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 
 internal static partial class CertificatePathWatcherLoggerExtensions
 {
+    [Obsolete("No longer fired")]
     [LoggerMessage(1, LogLevel.Warning, "Directory '{Directory}' does not exist so changes to the certificate '{Path}' will not be tracked.", EventName = "DirectoryDoesNotExist")]
     public static partial void DirectoryDoesNotExist(this ILogger<CertificatePathWatcher> logger, string directory, string path);
 
@@ -16,12 +17,14 @@ internal static partial class CertificatePathWatcherLoggerExtensions
     [LoggerMessage(3, LogLevel.Warning, "Attempted to remove unknown observer from path '{Path}'.", EventName = "UnknownObserver")]
     public static partial void UnknownObserver(this ILogger<CertificatePathWatcher> logger, string path);
 
+    [Obsolete("No longer fired")]
     [LoggerMessage(4, LogLevel.Debug, "Created directory watcher for '{Directory}'.", EventName = "CreatedDirectoryWatcher")]
     public static partial void CreatedDirectoryWatcher(this ILogger<CertificatePathWatcher> logger, string directory);
 
     [LoggerMessage(5, LogLevel.Debug, "Created file watcher for '{Path}'.", EventName = "CreatedFileWatcher")]
     public static partial void CreatedFileWatcher(this ILogger<CertificatePathWatcher> logger, string path);
 
+    [Obsolete("No longer fired")]
     [LoggerMessage(6, LogLevel.Debug, "Removed directory watcher for '{Directory}'.", EventName = "RemovedDirectoryWatcher")]
     public static partial void RemovedDirectoryWatcher(this ILogger<CertificatePathWatcher> logger, string directory);
 
@@ -60,4 +63,7 @@ internal static partial class CertificatePathWatcherLoggerExtensions
 
     [LoggerMessage(18, LogLevel.Trace, "Flagged {Count} observers of '{Path}' as changed.", EventName = "FlaggedObservers")]
     public static partial void FlaggedObservers(this ILogger<CertificatePathWatcher> logger, string path, int count);
+
+    [LoggerMessage(18, LogLevel.Warning, "The host environment cannot watch path '{Path}' - is it within the content root?", EventName = "NullChangeToken")]
+    public static partial void NullChangeToken(this ILogger<CertificatePathWatcher> logger, string path);
 }
