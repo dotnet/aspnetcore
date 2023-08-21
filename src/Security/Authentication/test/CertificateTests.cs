@@ -329,15 +329,25 @@ public class ClientCertificateAuthenticationTests
     [Fact]
     public async Task VerifyClientCertWithUntrustedRootAndTrustedChainEndsUpInForbiddenBasedOnSelectorPriority()
     {
+        // OnCertificateValidating replaces trusted components and does not include SelfSignedPrimaryRoot
+        successfulValidationEvents.OnCertificateValidating = context =>
+        {
+            context.ChainPolicy.CustomTrustStore.Clear();
+            context.ChainPolicy.CustomTrustStore.Add(Certificates.SignedSecondaryRoot);
+
+            context.ChainPolicy.ExtraStore.Clear();
+            context.ChainPolicy.CustomTrustStore.Add(Certificates.SignedSecondaryRoot);
+
+            return Task.CompletedTask;
+        };
+
         using var host = await CreateHost(
             new CertificateAuthenticationOptions
             {
                 Events = successfulValidationEvents,
                 ChainTrustValidationMode = X509ChainTrustMode.CustomRootTrust,
                 CustomTrustStore = new X509Certificate2Collection() { Certificates.SelfSignedPrimaryRoot, Certificates.SignedSecondaryRoot },
-                CustomTrustStoreSelector = c => new X509Certificate2Collection() { Certificates.SignedSecondaryRoot },
                 AdditionalChainCertificates = new X509Certificate2Collection() { Certificates.SelfSignedPrimaryRoot },
-                AdditionalChainCertificatesSelector = c => new X509Certificate2Collection() { Certificates.SignedSecondaryRoot },
                 RevocationMode = X509RevocationMode.NoCheck
             }, Certificates.SignedClient);
 
@@ -384,13 +394,19 @@ public class ClientCertificateAuthenticationTests
     [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/39669")]
     public async Task VerifyValidClientCertWithAdditionalCertificatesAuthenticatesSelector()
     {
+        successfulValidationEvents.OnCertificateValidating = context =>
+        {
+            context.ChainPolicy.CustomTrustStore.Add(Certificates.SelfSignedPrimaryRoot);
+            context.ChainPolicy.CustomTrustStore.Add(Certificates.SignedSecondaryRoot);
+
+            return Task.CompletedTask;
+        };
+
         using var host = await CreateHost(
             new CertificateAuthenticationOptions
             {
                 Events = successfulValidationEvents,
                 ChainTrustValidationMode = X509ChainTrustMode.CustomRootTrust,
-                CustomTrustStoreSelector = c => new X509Certificate2Collection() { Certificates.SelfSignedPrimaryRoot, },
-                AdditionalChainCertificatesSelector = c => new X509Certificate2Collection() { Certificates.SignedSecondaryRoot },
                 RevocationMode = X509RevocationMode.NoCheck
             }, Certificates.SignedClient);
 
@@ -885,7 +901,6 @@ public class ClientCertificateAuthenticationTests
                         authBuilder = services.AddAuthentication().AddCertificate(options =>
                         {
                             options.CustomTrustStore = configureOptions.CustomTrustStore;
-                            options.CustomTrustStoreSelector = configureOptions.CustomTrustStoreSelector;
                             options.ChainTrustValidationMode = configureOptions.ChainTrustValidationMode;
                             options.AllowedCertificateTypes = configureOptions.AllowedCertificateTypes;
                             options.Events = configureOptions.Events;
@@ -894,7 +909,6 @@ public class ClientCertificateAuthenticationTests
                             options.RevocationMode = configureOptions.RevocationMode;
                             options.ValidateValidityPeriod = configureOptions.ValidateValidityPeriod;
                             options.AdditionalChainCertificates = configureOptions.AdditionalChainCertificates;
-                            options.AdditionalChainCertificatesSelector = configureOptions.AdditionalChainCertificatesSelector;
                             options.TimeProvider = configureOptions.TimeProvider;
 
                             if (timeProvider != null)
@@ -948,8 +962,8 @@ public class ClientCertificateAuthenticationTests
         {
             var claims = new[]
             {
-                    new Claim(ClaimTypes.NameIdentifier, context.ClientCertificate.Subject, ClaimValueTypes.String, context.Options.ClaimsIssuer),
-                    new Claim(ClaimTypes.Name, context.ClientCertificate.Subject, ClaimValueTypes.String, context.Options.ClaimsIssuer)
+                new Claim(ClaimTypes.NameIdentifier, context.ClientCertificate.Subject, ClaimValueTypes.String, context.Options.ClaimsIssuer),
+                new Claim(ClaimTypes.Name, context.ClientCertificate.Subject, ClaimValueTypes.String, context.Options.ClaimsIssuer)
             };
 
             context.Principal = new ClaimsPrincipal(new ClaimsIdentity(claims, context.Scheme.Name));

@@ -135,6 +135,15 @@ internal sealed class CertificateAuthenticationHandler : AuthenticationHandler<C
         }
 
         var chainPolicy = BuildChainPolicy(clientCertificate, isCertificateSelfSigned);
+        var certificateValidatingContext = new CertificateValidatingContext(Context, Scheme, Options)
+        {
+            ChainPolicy = chainPolicy,
+            ClientCertificate = clientCertificate,
+            IsSelfSigned = isCertificateSelfSigned,
+        };
+
+        await Events.CertificateValidating(certificateValidatingContext);
+
         using var chain = new X509Chain
         {
             ChainPolicy = chainPolicy
@@ -216,17 +225,15 @@ internal sealed class CertificateAuthenticationHandler : AuthenticationHandler<C
         }
         else
         {
-            X509Certificate2Collection? customTrustStore = Options.CustomTrustStoreSelector?.Invoke(certificate) ?? Options.CustomTrustStore;
-            if (customTrustStore != null)
+            if (Options.CustomTrustStore != null)
             {
-                chainPolicy.CustomTrustStore.AddRange(customTrustStore);
+                chainPolicy.CustomTrustStore.AddRange(Options.CustomTrustStore);
             }
 
             chainPolicy.TrustMode = Options.ChainTrustValidationMode;
         }
 
-        X509Certificate2Collection? additionalChainCertificates = Options.AdditionalChainCertificatesSelector?.Invoke(certificate) ?? Options.AdditionalChainCertificates;
-        chainPolicy.ExtraStore.AddRange(additionalChainCertificates);
+        chainPolicy.ExtraStore.AddRange(Options.AdditionalChainCertificates);
 
         if (!Options.ValidateValidityPeriod)
         {

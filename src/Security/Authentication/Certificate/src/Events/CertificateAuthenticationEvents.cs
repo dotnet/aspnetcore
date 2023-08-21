@@ -16,6 +16,11 @@ public class CertificateAuthenticationEvents
     public Func<CertificateAuthenticationFailedContext, Task> OnAuthenticationFailed { get; set; } = context => Task.CompletedTask;
 
     /// <summary>
+    /// Invoked before a certificate has been validated.
+    /// </summary>
+    public Func<CertificateValidatingContext, Task> OnCertificateValidating { get; set; } = context => Task.CompletedTask;
+
+    /// <summary>
     /// A delegate assigned to this property will be invoked when a certificate has passed basic validation, but where custom validation may be needed.
     /// </summary>
     /// <remarks>
@@ -36,6 +41,13 @@ public class CertificateAuthenticationEvents
     /// <param name="context"></param>
     /// <returns></returns>
     public virtual Task AuthenticationFailed(CertificateAuthenticationFailedContext context) => OnAuthenticationFailed(context);
+
+    /// <summary>
+    /// Invoked before a certificate has been validated
+    /// </summary>
+    /// <param name="context"></param>
+    /// <returns></returns>
+    public virtual Task CertificateValidating(CertificateValidatingContext context) => OnCertificateValidating(context);
 
     /// <summary>
     /// Invoked after a certificate has been validated
