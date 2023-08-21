@@ -189,7 +189,7 @@ internal sealed partial class HttpConnectionDispatcher
                 return;
             }
 
-            if (connection.TransportType != HttpTransportType.WebSockets || connection.UseAcks)
+            if (connection.TransportType != HttpTransportType.WebSockets || connection.UseStatefulReconnect)
             {
                 if (!await connection.CancelPreviousPoll(context))
                 {
@@ -336,7 +336,7 @@ internal sealed partial class HttpConnectionDispatcher
         }
 
         var useAck = false;
-        if (options.AllowAcks == true && context.Request.Query.TryGetValue("UseAck", out var useAckValue))
+        if (options.AllowStatefulReconnects == true && context.Request.Query.TryGetValue("UseAck", out var useAckValue))
         {
             var useAckStringValue = useAckValue.ToString();
             bool.TryParse(useAckStringValue, out useAck);
@@ -389,7 +389,7 @@ internal sealed partial class HttpConnectionDispatcher
         response.ConnectionId = connectionId;
         response.ConnectionToken = connectionToken;
         response.AvailableTransports = new List<AvailableTransport>();
-        response.UseAcking = useAck;
+        response.UseStatefulReconnect = useAck;
 
         if ((options.Transports & HttpTransportType.WebSockets) != 0 && ServerHasWebSockets(context.Features))
         {

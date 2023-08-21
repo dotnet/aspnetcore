@@ -49,7 +49,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     private CancellationTokenSource? _sendCts;
     private bool _activeSend;
     private long _startedSendTime;
-    private readonly bool _useAcks;
+    private readonly bool _useStatefulReconnect;
     private readonly object _sendingLock = new object();
     internal CancellationToken SendingToken { get; private set; }
 
@@ -105,10 +105,10 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         _connectionCloseRequested = new CancellationTokenSource();
         ConnectionClosedRequested = _connectionCloseRequested.Token;
         AuthenticationExpiration = DateTimeOffset.MaxValue;
-        _useAcks = useAcks;
+        _useStatefulReconnect = useAcks;
     }
 
-    public bool UseAcks => _useAcks;
+    public bool UseStatefulReconnect => _useStatefulReconnect;
 
     public CancellationTokenSource? Cancellation { get; set; }
 
@@ -548,7 +548,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
             cts?.Cancel();
 
             // TODO: remove transport check once other transports support acks
-            if (UseAcks && TransportType == HttpTransportType.WebSockets)
+            if (UseStatefulReconnect && TransportType == HttpTransportType.WebSockets)
             {
                 // Break transport send loop in case it's still waiting on reading from the application
                 Application.Input.CancelPendingRead();
