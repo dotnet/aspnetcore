@@ -38,7 +38,7 @@ internal sealed partial class WebSocketsTransport : ITransport, IStatefulReconne
     private readonly HttpConnectionOptions _httpConnectionOptions;
     private readonly HttpClient? _httpClient;
     private CancellationTokenSource _stopCts = default!;
-    private readonly bool _useStatefulReconnect;
+    private bool _useStatefulReconnect;
 
     private IDuplexPipe? _transport;
     // Used for reconnect (when enabled) to determine if the close was ungraceful or not, reconnect only happens on ungraceful disconnect
