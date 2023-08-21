@@ -34,6 +34,7 @@ internal static partial class CertificatePathWatcherLoggerExtensions
     [LoggerMessage(9, LogLevel.Debug, "Ignored event for presently untracked file '{Path}'.", EventName = "UntrackedFileEvent")]
     public static partial void UntrackedFileEvent(this ILogger<CertificatePathWatcher> logger, string path);
 
+    [Obsolete("No longer fired")]
     [LoggerMessage(10, LogLevel.Debug, "Ignored out-of-order event for file '{Path}'.", EventName = "OutOfOrderEvent")]
     public static partial void OutOfOrderEvent(this ILogger<CertificatePathWatcher> logger, string path);
 
@@ -52,12 +53,17 @@ internal static partial class CertificatePathWatcherLoggerExtensions
     [LoggerMessage(15, LogLevel.Trace, "Directory '{Directory}' now has watchers on {Count} files.", EventName = "FileCount")]
     public static partial void FileCount(this ILogger<CertificatePathWatcher> logger, string directory, int count);
 
+    [Obsolete("No longer fired")]
     [LoggerMessage(16, LogLevel.Trace, "Ignored event since last modified time for '{Path}' was unavailable.", EventName = "EventWithoutLastModifiedTime")]
     public static partial void EventWithoutLastModifiedTime(this ILogger<CertificatePathWatcher> logger, string path);
 
+    [Obsolete("No longer fired")]
     [LoggerMessage(17, LogLevel.Trace, "Ignored redundant event for '{Path}'.", EventName = "RedundantEvent")]
     public static partial void RedundantEvent(this ILogger<CertificatePathWatcher> logger, string path);
 
     [LoggerMessage(18, LogLevel.Trace, "Flagged {Count} observers of '{Path}' as changed.", EventName = "FlaggedObservers")]
     public static partial void FlaggedObservers(this ILogger<CertificatePathWatcher> logger, string path, int count);
+
+    [LoggerMessage(19, LogLevel.Trace, "Ignored event since '{Path}' was unavailable.", EventName = "EventWithoutFile")]
+    public static partial void EventWithoutFile(this ILogger<CertificatePathWatcher> logger, string path);
 }
