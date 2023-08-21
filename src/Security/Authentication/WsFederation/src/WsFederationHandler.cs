@@ -98,7 +98,7 @@ public class WsFederationHandler : RemoteAuthenticationHandler<WsFederationOptio
         var wsFederationMessage = new WsFederationMessage()
         {
             IssuerAddress = _configuration.TokenEndpoint ?? string.Empty,
-            Wtrealm = Options.Wtrealm!,
+            Wtrealm = Options.Wtrealm!, // TODO: https://github.com/dotnet/aspnetcore/issues/50242
             Wa = WsFederationConstants.WsFederationActions.SignIn,
         };
 
@@ -425,7 +425,7 @@ public class WsFederationHandler : RemoteAuthenticationHandler<WsFederationOptio
         var wsFederationMessage = new WsFederationMessage()
         {
             IssuerAddress = _configuration.TokenEndpoint ?? string.Empty,
-            Wtrealm = Options.Wtrealm!,
+            Wtrealm = Options.Wtrealm!, // TODO: https://github.com/dotnet/aspnetcore/issues/50242
             Wa = WsFederationConstants.WsFederationActions.SignOut,
         };
 
