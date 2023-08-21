@@ -35,6 +35,8 @@ public class CustomServicesApiController : Controller
         return service.Process();
     }
 
+# nullable enable
+
     [HttpGet("GetOptionalNotRegistered")]
     public ActionResult<string> GetOptionalNotRegistered([FromKeyedServices("no_existing_key")] ICustomService? service)
     {
