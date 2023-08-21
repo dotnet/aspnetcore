@@ -1289,6 +1289,18 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     }
 
     [Fact]
+    public void Refresh_FullyReloadsTheCurrentPage()
+    {
+        SetUrlViaPushState("/");
+
+        Browser.MountTestComponent<NavigationManagerComponent>();
+        Browser.FindElement(By.Id("programmatic-refresh")).Click();
+
+        // If the page fully reloads, the NavigationManagerComponent will no longer be mounted
+        Browser.DoesNotExist(By.Id("programmatic-refresh"));
+    }
+
+    [Fact]
     public void PreventDefault_CanBlockNavigation_ForInternalNavigation_PreventDefaultTarget()
         => PreventDefault_CanBlockNavigation("internal", "target");
 

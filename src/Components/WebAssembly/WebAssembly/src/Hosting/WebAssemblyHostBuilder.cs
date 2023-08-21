@@ -102,18 +102,17 @@ public sealed class WebAssemblyHostBuilder
         var registeredComponents = new ComponentMarker[componentsCount];
         for (var i = 0; i < componentsCount; i++)
         {
-            var id = jsMethods.RegisteredComponents_GetId(i);
-            var assembly = jsMethods.RegisteredComponents_GetAssembly(id);
-            var typeName = jsMethods.RegisteredComponents_GetTypeName(id);
-            var serializedParameterDefinitions = jsMethods.RegisteredComponents_GetParameterDefinitions(id);
-            var serializedParameterValues = jsMethods.RegisteredComponents_GetParameterValues(id);
+            var assembly = jsMethods.RegisteredComponents_GetAssembly(i);
+            var typeName = jsMethods.RegisteredComponents_GetTypeName(i);
+            var serializedParameterDefinitions = jsMethods.RegisteredComponents_GetParameterDefinitions(i);
+            var serializedParameterValues = jsMethods.RegisteredComponents_GetParameterValues(i);
             registeredComponents[i] = ComponentMarker.Create(ComponentMarker.WebAssemblyMarkerType, false, null);
             registeredComponents[i].WriteWebAssemblyData(
                 assembly,
                 typeName,
                 serializedParameterDefinitions,
                 serializedParameterValues);
-            registeredComponents[i].PrerenderId = id.ToString(CultureInfo.InvariantCulture);
+            registeredComponents[i].PrerenderId = i.ToString(CultureInfo.InvariantCulture);
         }
 
         _rootComponentCache = new RootComponentTypeCache();

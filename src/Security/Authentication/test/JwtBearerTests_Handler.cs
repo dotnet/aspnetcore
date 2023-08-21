@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Net.Http;
@@ -951,11 +952,11 @@ public class JwtBearerTests_Handler : SharedAuthenticationTests<JwtBearerOptions
         var expiresElement = dom.RootElement.GetProperty("expires");
         Assert.Equal(JsonValueKind.String, expiresElement.ValueKind);
 
-        var elementValue = DateTime.Parse(expiresElement.GetString());
+        var elementValue = DateTime.Parse(expiresElement.GetString(), CultureInfo.InvariantCulture);
         var elementValueUtc = elementValue.ToUniversalTime();
         // roundtrip DateTime.MaxValue through parsing because it is lossy and we
         // need equivalent values to compare against.
-        var max = DateTime.Parse(DateTime.MaxValue.ToString());
+        var max = DateTime.Parse(DateTime.MaxValue.ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture);
 
         Assert.Equal(max, elementValueUtc);
     }

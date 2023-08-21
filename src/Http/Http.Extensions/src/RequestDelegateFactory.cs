@@ -39,7 +39,6 @@ namespace Microsoft.AspNetCore.Http;
 public static partial class RequestDelegateFactory
 {
     private static readonly ParameterBindingMethodCache ParameterBindingMethodCache = new();
-    private static readonly FormDataMapperOptions FormDataMapperOptions = new();
 
     private static readonly MethodInfo ExecuteTaskWithEmptyResultMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteTaskWithEmptyResult), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo ExecuteValueTaskWithEmptyResultMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteValueTaskWithEmptyResult), BindingFlags.NonPublic | BindingFlags.Static)!;
@@ -332,6 +331,11 @@ public static partial class RequestDelegateFactory
         // The converse is not true. Metadata may have already been inferred even if ArgumentExpressions is null, but metadata
         // inference is skipped internally if necessary.
         factoryContext.ArgumentExpressions ??= CreateArgumentsAndInferMetadata(methodInfo, factoryContext);
+
+        // Although we can re-use the cached argument expressions for most cases, parameters that are bound
+        // using the new form mapping logic are a special exception because we need to account for the `FormOptionsMetadata`
+        // added to the builder _during_ the construction of the parameter binding.
+        UpdateFormBindingArgumentExpressions(factoryContext);
 
         factoryContext.MethodCall = CreateMethodCall(methodInfo, targetExpression, factoryContext.ArgumentExpressions);
         EndpointFilterDelegate? filterPipeline = null;
@@ -753,7 +757,7 @@ public static partial class RequestDelegateFactory
                 (parameter.ParameterType.IsArray && ParameterBindingMethodCache.HasTryParseMethod(parameter.ParameterType.GetElementType()!));
             return useSimpleBinding
                 ? BindParameterFromFormItem(parameter, formAttribute.Name ?? parameter.Name, factoryContext)
-                : BindComplexParameterFromFormItem(parameter, formAttribute.Name ?? parameter.Name, factoryContext);
+                : BindComplexParameterFromFormItem(parameter, string.IsNullOrEmpty(formAttribute.Name) ? parameter.Name : formAttribute.Name, factoryContext);
         }
         else if (parameter.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType)))
         {
@@ -1982,14 +1986,40 @@ public static partial class RequestDelegateFactory
             "form");
     }
 
+    private static void UpdateFormBindingArgumentExpressions(RequestDelegateFactoryContext factoryContext)
+    {
+        if (factoryContext.ArgumentExpressions == null || factoryContext.ArgumentExpressions.Length == 0)
+        {
+            return;
+        }
+
+        for (var i = 0; i < factoryContext.ArgumentExpressions.Length; i++)
+        {
+            var parameter = factoryContext.Parameters[i];
+            var key = parameter.Name!;
+            if (factoryContext.TrackedParameters.TryGetValue(key, out var trackedParameter) && trackedParameter == RequestDelegateFactoryConstants.FormBindingAttribute)
+            {
+                factoryContext.ArgumentExpressions[i] = BindComplexParameterFromFormItem(parameter, key, factoryContext);
+            }
+        }
+    }
+
     private static Expression BindComplexParameterFromFormItem(
         ParameterInfo parameter,
         string key,
         RequestDelegateFactoryContext factoryContext)
     {
         factoryContext.FirstFormRequestBodyParameter ??= parameter;
-        factoryContext.TrackedParameters.Add(key, RequestDelegateFactoryConstants.FormAttribute);
+        factoryContext.TrackedParameters.TryAdd(key, RequestDelegateFactoryConstants.FormBindingAttribute);
         factoryContext.ReadForm = true;
+        var formDataMapperOptions = new FormDataMapperOptions();
+        var formMappingOptionsMetadatas = factoryContext.EndpointBuilder.Metadata.OfType<FormMappingOptionsMetadata>();
+        foreach (var formMappingOptionsMetadata in formMappingOptionsMetadatas)
+        {
+            formDataMapperOptions.MaxRecursionDepth = formMappingOptionsMetadata.MaxRecursionDepth ?? formDataMapperOptions.MaxRecursionDepth;
+            formDataMapperOptions.MaxCollectionSize = formMappingOptionsMetadata.MaxCollectionSize ?? formDataMapperOptions.MaxCollectionSize;
+            formDataMapperOptions.MaxKeyBufferSize = formMappingOptionsMetadata.MaxKeySize ?? formDataMapperOptions.MaxKeyBufferSize;
+        }
 
         // var name_local;
         // var name_reader;
@@ -2001,25 +2031,35 @@ public static partial class RequestDelegateFactory
         var formBuffer = Expression.Variable(typeof(char[]), "form_buffer");
 
         // ProcessForm(context.Request.Form, form_dict, form_buffer);
-        var processFormExpr = Expression.Call(ProcessFormMethod, FormExpr, formDict, formBuffer);
+        var processFormExpr = Expression.Call(ProcessFormMethod, FormExpr, Expression.Constant(formDataMapperOptions.MaxKeyBufferSize), formDict, formBuffer);
         // name_reader = new FormDataReader(form_dict, CultureInfo.InvariantCulture, form_buffer.AsMemory(0, FormDataMapperOptions.MaxKeyBufferSize));
         var initializeReaderExpr = Expression.Assign(
             formReader,
             Expression.New(FormDataReaderConstructor,
                 formDict,
                 Expression.Constant(CultureInfo.InvariantCulture),
-                Expression.Call(AsMemoryMethod, formBuffer, Expression.Constant(0), Expression.Constant(FormDataMapperOptions.MaxKeyBufferSize))));
+                Expression.Call(AsMemoryMethod, formBuffer, Expression.Constant(0), Expression.Constant(formDataMapperOptions.MaxKeyBufferSize))));
+        // name_reader.MaxRecursionDepth = formDataMapperOptions.MaxRecursionDepth;
+        var setMaxRecursionDepthExpr = Expression.Assign(
+            Expression.Property(formReader, nameof(FormDataReader.MaxRecursionDepth)),
+            Expression.Constant(formDataMapperOptions.MaxRecursionDepth));
         // FormDataMapper.Map<string>(name_reader, FormDataMapperOptions);
         var invokeMapMethodExpr = Expression.Call(
             FormDataMapperMapMethod.MakeGenericMethod(parameter.ParameterType),
             formReader,
-            Expression.Constant(FormDataMapperOptions));
-        // ArrayPool<char>.Shared.Return(form_buffer, false);
+            Expression.Constant(formDataMapperOptions));
+        // if (form_buffer != null)
+        // {
+        //   ArrayPool<char>.Shared.Return(form_buffer, false);
+        // }
         var returnBufferExpr = Expression.Call(
             Expression.Property(null, typeof(ArrayPool<char>).GetProperty(nameof(ArrayPool<char>.Shared))!),
             ArrayPoolSharedReturnMethod,
             formBuffer,
             Expression.Constant(false));
+        var conditionalReturnBufferExpr = Expression.IfThen(
+            Expression.NotEqual(formBuffer, Expression.Constant(null)),
+            returnBufferExpr);
 
         return Expression.Block(
             new[] { formArgument, formReader, formDict, formBuffer },
@@ -2027,13 +2067,14 @@ public static partial class RequestDelegateFactory
                 Expression.Block(
                     processFormExpr,
                     initializeReaderExpr,
+                    setMaxRecursionDepthExpr,
                     Expression.Assign(formArgument, invokeMapMethodExpr)),
-                returnBufferExpr),
+                conditionalReturnBufferExpr),
             formArgument
         );
     }
 
-    private static void ProcessForm(IFormCollection form, ref IReadOnlyDictionary<FormKey, StringValues> formDictionary, ref char[] buffer)
+    private static void ProcessForm(IFormCollection form, int maxKeyBufferSize, ref IReadOnlyDictionary<FormKey, StringValues> formDictionary, ref char[] buffer)
     {
         var dictionary = new Dictionary<FormKey, StringValues>();
         foreach (var (key, value) in form)
@@ -2041,7 +2082,7 @@ public static partial class RequestDelegateFactory
             dictionary.Add(new FormKey(key.AsMemory()), value);
         }
         formDictionary = dictionary.AsReadOnly();
-        buffer = ArrayPool<char>.Shared.Rent(FormDataMapperOptions.MaxKeyBufferSize);
+        buffer = ArrayPool<char>.Shared.Rent(maxKeyBufferSize);
     }
 
     private static Expression BindParameterFromFormFiles(
@@ -2441,6 +2482,7 @@ public static partial class RequestDelegateFactory
         public const string ServiceAttribute = "Service (Attribute)";
         public const string FormFileAttribute = "Form File (Attribute)";
         public const string FormAttribute = "Form (Attribute)";
+        public const string FormBindingAttribute = "Form Binding (Attribute)";
         public const string RouteParameter = "Route (Inferred)";
         public const string QueryStringParameter = "Query String (Inferred)";
         public const string ServiceParameter = "Services (Inferred)";

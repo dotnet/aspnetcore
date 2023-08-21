@@ -167,6 +167,12 @@ internal
                 case PingMessage _:
                     // Pings are ignored
                     break;
+                case AckMessage _:
+                    // Ignored for now
+                    break;
+                case SequenceMessage _:
+                    // Ignored for now
+                    break;
                 default:
                     // Message implement ToString so this should be helpful.
                     throw new NotSupportedException($"TestClient recieved an unexpected message: {message}.");

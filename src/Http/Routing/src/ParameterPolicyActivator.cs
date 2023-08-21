@@ -5,6 +5,9 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
+#if COMPONENTS
+using Microsoft.AspNetCore.Components.Routing;
+#endif
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Routing;
@@ -37,8 +40,8 @@ internal static class ParameterPolicyActivator
             {
                 // Error if type is not a parameter policy
                 throw new RouteCreationException(
-                            Resources.FormatDefaultInlineConstraintResolver_TypeNotConstraint(
-                                                        parameterPolicyType, parameterPolicyKey, typeof(T).Name));
+                    Resources.FormatDefaultInlineConstraintResolver_TypeNotConstraint(
+                        parameterPolicyType, parameterPolicyKey, typeof(T).Name));
             }
 
             // Return null if type is parameter policy but is not the exact type
@@ -118,8 +121,8 @@ internal static class ParameterPolicyActivator
             if (matchingConstructors.Count == 0)
             {
                 throw new RouteCreationException(
-                            Resources.FormatDefaultInlineConstraintResolver_CouldNotFindCtor(
-                                                   parameterPolicyType.Name, arguments.Length));
+                    Resources.FormatDefaultInlineConstraintResolver_CouldNotFindCtor(
+                        parameterPolicyType.Name, arguments.Length));
             }
             else
             {
@@ -179,8 +182,8 @@ internal static class ParameterPolicyActivator
         if (multipleBestLengthFound)
         {
             throw new RouteCreationException(
-                        Resources.FormatDefaultInlineConstraintResolver_AmbiguousCtors(
-                                               parameterPolicyType.Name, longestLength));
+                Resources.FormatDefaultInlineConstraintResolver_AmbiguousCtors(
+                    parameterPolicyType.Name, longestLength));
         }
 
         return longest!;

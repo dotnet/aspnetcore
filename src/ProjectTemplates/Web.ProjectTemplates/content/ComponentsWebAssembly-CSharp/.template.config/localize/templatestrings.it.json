@@ -32,7 +32,6 @@
   "symbols/NoHttps/description": "Indica se disattivare HTTPS. Questa opzione si applica solo se Individual, IndividualB2C, SingleOrg o MultiOrg non vengono usati per --auth.",
   "symbols/UseLocalDB/description": "Indica se usare LocalDB invece di SQLite. Questa opzione si applica solo se è specificato --auth Individual o --auth IndividualB2C.",
   "symbols/CalledApiUrl/description": "URL dell'API da chiamare dall'app Web. Questa opzione si applica solo se è specificato --auth SingleOrg, --auth MultiOrg o --auth IndividualB2C without e host ASP.NET Core.",
-  "symbols/CallsMicrosoftGraph/description": "Specifica se l'app Web chiama Microsoft Graph. Questa opzione si applica solo se è specificato --auth SingleOrg o --auth MultiOrg.",
   "symbols/CalledApiScopes/description": "Ambiti per richiedere di chiamare l'API dall'app Web. Questa opzione si applica solo se è specificato --auth SingleOrg, --auth MultiOrg o --auth IndividualB2C without e host ASP.NET Core.",
   "symbols/UseProgramMain/displayName": "Non usare_istruzioni di primo livello",
   "symbols/UseProgramMain/description": "Indica se generare una classe Program esplicita e un metodo Main anziché istruzioni di primo livello.",

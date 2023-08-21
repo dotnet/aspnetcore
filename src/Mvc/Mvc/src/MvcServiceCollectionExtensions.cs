@@ -27,7 +27,7 @@ public static class MvcServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
     /// <returns>An <see cref="IMvcBuilder"/> that can be used to further configure the MVC services.</returns>
-    [RequiresUnreferencedCode("MVC does not currently support native AOT.", Url = "https://aka.ms/aspnet/nativeaot")]
+    [RequiresUnreferencedCode("MVC does not currently support trimming or native AOT.", Url = "https://aka.ms/aspnet/trimming")]
     public static IMvcBuilder AddMvc(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
@@ -42,7 +42,7 @@ public static class MvcServiceCollectionExtensions
     /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
     /// <param name="setupAction">An <see cref="Action{MvcOptions}"/> to configure the provided <see cref="MvcOptions"/>.</param>
     /// <returns>An <see cref="IMvcBuilder"/> that can be used to further configure the MVC services.</returns>
-    [RequiresUnreferencedCode("MVC does not currently support native AOT.", Url = "https://aka.ms/aspnet/nativeaot")]
+    [RequiresUnreferencedCode("MVC does not currently support trimming or native AOT.", Url = "https://aka.ms/aspnet/trimming")]
     public static IMvcBuilder AddMvc(this IServiceCollection services, Action<MvcOptions> setupAction)
     {
         ArgumentNullException.ThrowIfNull(services);
@@ -79,7 +79,7 @@ public static class MvcServiceCollectionExtensions
     /// on the resulting builder.
     /// </para>
     /// </remarks>
-    [RequiresUnreferencedCode("MVC does not currently support native AOT.", Url = "https://aka.ms/aspnet/nativeaot")]
+    [RequiresUnreferencedCode("MVC does not currently support trimming or native AOT.", Url = "https://aka.ms/aspnet/trimming")]
     public static IMvcBuilder AddControllers(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
@@ -114,7 +114,7 @@ public static class MvcServiceCollectionExtensions
     /// on the resulting builder.
     /// </para>
     /// </remarks>
-    [RequiresUnreferencedCode("MVC does not currently support native AOT.", Url = "https://aka.ms/aspnet/nativeaot")]
+    [RequiresUnreferencedCode("MVC does not currently support trimming or native AOT.", Url = "https://aka.ms/aspnet/trimming")]
     public static IMvcBuilder AddControllers(this IServiceCollection services, Action<MvcOptions>? configure)
     {
         ArgumentNullException.ThrowIfNull(services);
@@ -172,7 +172,7 @@ public static class MvcServiceCollectionExtensions
     /// To add services for pages call <see cref="AddRazorPages(IServiceCollection)"/>.
     /// </para>
     /// </remarks>
-    [RequiresUnreferencedCode("MVC does not currently support native AOT.", Url = "https://aka.ms/aspnet/nativeaot")]
+    [RequiresUnreferencedCode("MVC does not currently support trimming or native AOT.", Url = "https://aka.ms/aspnet/trimming")]
     public static IMvcBuilder AddControllersWithViews(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
@@ -205,7 +205,7 @@ public static class MvcServiceCollectionExtensions
     /// To add services for pages call <see cref="AddRazorPages(IServiceCollection)"/>.
     /// </para>
     /// </remarks>
-    [RequiresUnreferencedCode("MVC does not currently support native AOT.", Url = "https://aka.ms/aspnet/nativeaot")]
+    [RequiresUnreferencedCode("MVC does not currently support trimming or native AOT.", Url = "https://aka.ms/aspnet/trimming")]
     public static IMvcBuilder AddControllersWithViews(this IServiceCollection services, Action<MvcOptions>? configure)
     {
         ArgumentNullException.ThrowIfNull(services);
@@ -253,7 +253,7 @@ public static class MvcServiceCollectionExtensions
     /// To add services for controllers with views call <see cref="AddControllersWithViews(IServiceCollection)"/>.
     /// </para>
     /// </remarks>
-    [RequiresUnreferencedCode("Razor Pages does not currently support native AOT.", Url = "https://aka.ms/aspnet/nativeaot")]
+    [RequiresUnreferencedCode("Razor Pages does not currently support trimming or native AOT.", Url = "https://aka.ms/aspnet/trimming")]
     public static IMvcBuilder AddRazorPages(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
@@ -284,7 +284,7 @@ public static class MvcServiceCollectionExtensions
     /// To add services for controllers with views call <see cref="AddControllersWithViews(IServiceCollection)"/>.
     /// </para>
     /// </remarks>
-    [RequiresUnreferencedCode("Razor Pages does not currently support native AOT.", Url = "https://aka.ms/aspnet/nativeaot")]
+    [RequiresUnreferencedCode("Razor Pages does not currently support trimming or native AOT.", Url = "https://aka.ms/aspnet/trimming")]
     public static IMvcBuilder AddRazorPages(this IServiceCollection services, Action<RazorPagesOptions>? configure)
     {
         ArgumentNullException.ThrowIfNull(services);

@@ -9,10 +9,7 @@
 #include "StdWrapper.h"
 #include "ntassert.h"
 #include "StringHelpers.h"
-
-#define LOG_IF_DUPFAIL(err) do { if (err == -1) { LOG_IF_FAILED(HRESULT_FROM_WIN32(_doserrno)); } } while (0, 0);
-#define LOG_IF_ERRNO(err) do { if (err != 0) { LOG_IF_FAILED(HRESULT_FROM_WIN32(_doserrno)); } } while (0, 0);
-
+#include "Environment.h"
 
 StandardStreamRedirection::StandardStreamRedirection(RedirectionOutput& output, bool commandLineLaunch) :
     m_output(output),
@@ -23,6 +20,28 @@ StandardStreamRedirection::StandardStreamRedirection(RedirectionOutput& output, 
     m_commandLineLaunch(commandLineLaunch)
 {
     TryStartRedirection();
+
+    // Allow users to override the default termination timeout for the redirection thread.
+    auto timeoutMsStr = Environment::GetEnvironmentVariableValue(L"ASPNETCORE_OUTPUT_REDIRECTION_TERMINATION_TIMEOUT_MS");
+    if (timeoutMsStr.has_value())
+    {
+        try
+        {
+            int timeoutMs = std::stoi(timeoutMsStr.value());
+            if (timeoutMs > 0 && timeoutMs <= PIPE_OUTPUT_THREAD_TIMEOUT_MS_MAX)
+            {
+                m_terminationTimeoutMs = timeoutMs;
+            }
+            else
+            {
+                LOG_WARN(L"ASPNETCORE_OUTPUT_REDIRECTION_TERMINATION_TIMEOUT_MS must be an integer between 0 and 1800000. Ignoring.");
+            }
+        }
+        catch (...)
+        {
+            LOG_WARN(L"ASPNETCORE_OUTPUT_REDIRECTION_TERMINATION_TIMEOUT_MS must be an integer between 0 and 1800000. Ignoring.");
+        }
+    }
 }
 
 StandardStreamRedirection::~StandardStreamRedirection() noexcept(false)
@@ -80,8 +99,6 @@ void StandardStreamRedirection::Start()
 // be thrown away.
 void StandardStreamRedirection::Stop()
 {
-    DWORD    dwThreadStatus = 0;
-
     if (m_disposed)
     {
         return;
@@ -126,12 +143,13 @@ void StandardStreamRedirection::Stop()
     }
 
     // GetExitCodeThread returns 0 on failure; thread status code is invalid.
+    DWORD dwThreadStatus = 0;
     if (m_hErrThread != nullptr &&
         !LOG_LAST_ERROR_IF(!GetExitCodeThread(m_hErrThread, &dwThreadStatus)) &&
         dwThreadStatus == STILL_ACTIVE)
     {
         // Wait for graceful shutdown, i.e., the exit of the background thread or timeout
-        if (WaitForSingleObject(m_hErrThread, PIPE_OUTPUT_THREAD_TIMEOUT) != WAIT_OBJECT_0)
+        if (WaitForSingleObject(m_hErrThread, m_terminationTimeoutMs) != WAIT_OBJECT_0)
         {
             // If the thread is still running, we need kill it first before exit to avoid AV
             if (!LOG_LAST_ERROR_IF(GetExitCodeThread(m_hErrThread, &dwThreadStatus) == 0) &&

@@ -1,4 +1,5 @@
 #nullable enable
+Microsoft.AspNetCore.Builder.WebApplicationBuilder.Metrics.get -> Microsoft.Extensions.Diagnostics.Metrics.IMetricsBuilder!
 static Microsoft.AspNetCore.Builder.WebApplication.CreateEmptyBuilder(Microsoft.AspNetCore.Builder.WebApplicationOptions! options) -> Microsoft.AspNetCore.Builder.WebApplicationBuilder!
 static Microsoft.AspNetCore.Builder.WebApplication.CreateSlimBuilder() -> Microsoft.AspNetCore.Builder.WebApplicationBuilder!
 static Microsoft.AspNetCore.Builder.WebApplication.CreateSlimBuilder(Microsoft.AspNetCore.Builder.WebApplicationOptions! options) -> Microsoft.AspNetCore.Builder.WebApplicationBuilder!

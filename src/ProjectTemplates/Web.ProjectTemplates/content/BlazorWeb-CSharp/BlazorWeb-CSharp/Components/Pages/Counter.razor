@@ -1,0 +1,27 @@
+﻿@page "/counter"
+@*#if (UseWebAssembly) -->
+
+<!-- Temporary workaround until MapRazorComponents supports AddAdditionalAssemblies -->
+<!-- Once that is implemented, the main project won't need to include this file -->
+
+<BlazorWeb_CSharp.Client.Pages.Counter />
+##else
+@attribute [RenderModeServer]
+
+<PageTitle>Counter</PageTitle>
+
+<h1>Counter</h1>
+
+<p role="status">Current count: @currentCount</p>
+
+<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+
+@code {
+    private int currentCount = 0;
+
+    private void IncrementCount()
+    {
+        currentCount++;
+    }
+}
+##endif*@

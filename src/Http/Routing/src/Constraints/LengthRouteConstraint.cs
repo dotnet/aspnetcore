@@ -2,15 +2,22 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+#if !COMPONENTS
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Matching;
-
+#else
+using Microsoft.AspNetCore.Components.Routing;
+#endif
 namespace Microsoft.AspNetCore.Routing.Constraints;
 
+#if !COMPONENTS
 /// <summary>
 /// Constrains a route parameter to be a string of a given length or within a given range of lengths.
 /// </summary>
 public class LengthRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy, ICachableParameterPolicy
+#else
+internal class LengthRouteConstraint : IRouteConstraint
+#endif
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="LengthRouteConstraint" /> class that constrains
@@ -71,11 +78,16 @@ public class LengthRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatc
 
     /// <inheritdoc />
     public bool Match(
+#if !COMPONENTS
         HttpContext? httpContext,
         IRouter? route,
         string routeKey,
         RouteValueDictionary values,
         RouteDirection routeDirection)
+#else
+        string routeKey,
+        RouteValueDictionary values)
+#endif
     {
         ArgumentNullException.ThrowIfNull(routeKey);
         ArgumentNullException.ThrowIfNull(values);
@@ -95,8 +107,10 @@ public class LengthRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatc
         return length >= MinLength && length <= MaxLength;
     }
 
+#if !COMPONENTS
     bool IParameterLiteralNodeMatchingPolicy.MatchesLiteral(string parameterName, string literal)
     {
         return CheckConstraintCore(literal);
     }
+#endif
 }

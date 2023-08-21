@@ -5,6 +5,7 @@ using System.Diagnostics;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.ShortCircuit;
 using Microsoft.AspNetCore.Testing;
@@ -32,6 +33,7 @@ public class EndpointRoutingShortCircuitBenchmark
             new BenchmarkEndpointDataSource(),
             new DiagnosticListener("benchmark"),
             Options.Create(new RouteOptions()),
+            Options.Create(new FormOptions()),
             routingMetrics,
             context => Task.CompletedTask);
 
@@ -44,6 +46,7 @@ public class EndpointRoutingShortCircuitBenchmark
             new BenchmarkEndpointDataSource(),
             new DiagnosticListener("benchmark"),
             Options.Create(new RouteOptions()),
+            Options.Create(new FormOptions()),
             routingMetrics,
             context => Task.CompletedTask);
     }

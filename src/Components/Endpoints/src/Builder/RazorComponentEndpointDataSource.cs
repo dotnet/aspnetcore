@@ -2,16 +2,19 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components.Discovery;
+using Microsoft.AspNetCore.Components.Endpoints.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Primitives;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
-internal class RazorComponentEndpointDataSource<TRootComponent> : EndpointDataSource
+internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Component)] TRootComponent> : EndpointDataSource
 {
     private readonly object _lock = new();
     private readonly List<Action<EndpointBuilder>> _conventions = new();
@@ -37,7 +40,7 @@ internal class RazorComponentEndpointDataSource<TRootComponent> : EndpointDataSo
         _applicationBuilder = applicationBuilder;
         _renderModeEndpointProviders = renderModeEndpointProviders.ToArray();
         _factory = factory;
-        DefaultBuilder = new RazorComponentEndpointConventionBuilder(
+        DefaultBuilder = new RazorComponentsEndpointConventionBuilder(
             _lock,
             builder,
             _options,
@@ -48,7 +51,7 @@ internal class RazorComponentEndpointDataSource<TRootComponent> : EndpointDataSo
         _changeToken = new CancellationChangeToken(_cancellationTokenSource.Token);
     }
 
-    internal RazorComponentEndpointConventionBuilder DefaultBuilder { get; }
+    internal RazorComponentsEndpointConventionBuilder DefaultBuilder { get; }
 
     public override IReadOnlyList<Endpoint> Endpoints
     {
@@ -95,13 +98,6 @@ internal class RazorComponentEndpointDataSource<TRootComponent> : EndpointDataSo
         }
 
         ICollection<IComponentRenderMode> renderModes = Options.ConfiguredRenderModes;
-
-        if (Options.UseDeclaredRenderModes)
-        {
-            var componentRenderModes = context.GetDeclaredRenderModesByDiscoveredComponents();
-            componentRenderModes.UnionWith(Options.ConfiguredRenderModes);
-            renderModes = componentRenderModes;
-        }
 
         foreach (var renderMode in renderModes)
         {

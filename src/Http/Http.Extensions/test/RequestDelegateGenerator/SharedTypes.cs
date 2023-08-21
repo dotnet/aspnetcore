@@ -193,8 +193,8 @@ public class ParsableTodo : IParsable<ParsableTodo>
         }
         else
         {
-        result = null!;
-        return false;
+            result = null!;
+            return false;
         }
     }
 }
@@ -1028,5 +1028,72 @@ public class TodoWithExplicitIParsable : IParsable<TodoWithExplicitIParsable>
     {
         result = new TodoWithExplicitIParsable();
         return true;
+    }
+}
+
+#nullable enable
+public class BindableWithMismatchedNullability<T>
+{
+    public BindableWithMismatchedNullability(T? value)
+    {
+        Value = value;
+    }
+
+    public T? Value { get; }
+
+    public static async ValueTask<BindableWithMismatchedNullability<T?>> BindAsync(HttpContext httpContext, ParameterInfo parameter)
+    {
+        await Task.CompletedTask;
+        return new BindableWithMismatchedNullability<T?>(default);
+    }
+}
+
+public struct BindableStructWithMismatchedNullability<T>
+{
+    public BindableStructWithMismatchedNullability(T? value)
+    {
+        Value = value;
+    }
+
+    public T? Value { get; }
+
+    public static async ValueTask<BindableStructWithMismatchedNullability<T?>> BindAsync(HttpContext httpContext, ParameterInfo parameter)
+    {
+        await Task.CompletedTask;
+        return new BindableStructWithMismatchedNullability<T?>(default);
+    }
+}
+
+public class BindableClassWithNullReturn
+{
+    public static async ValueTask<BindableClassWithNullReturn?> BindAsync(HttpContext httpContext, ParameterInfo parameter)
+    {
+        await Task.CompletedTask;
+        return null;
+    }
+}
+
+public struct BindableStructWithNullReturn
+{
+    public static async ValueTask<BindableStructWithNullReturn?> BindAsync(HttpContext httpContext, ParameterInfo parameter)
+    {
+        await Task.CompletedTask;
+        return null;
+    }
+}
+
+public struct BindableStruct
+{
+    public BindableStruct(string value)
+    {
+        Value = value;
+    }
+
+    public string Value { get; }
+
+    public static async ValueTask<BindableStruct> BindAsync(HttpContext httpContext, ParameterInfo parameter)
+    {
+        await Task.CompletedTask;
+        return new BindableStruct(httpContext.Request.Query["value"].ToString());
     }
 }

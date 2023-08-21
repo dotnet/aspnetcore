@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text.Json.Serialization;
+using System.Text.Json;
 
 namespace Microsoft.AspNetCore.Authentication.BearerToken.DTO;
 
@@ -15,35 +15,31 @@ internal sealed class AccessTokenResponse
     /// in the form of an opaque <see cref="AccessToken"/>.
     /// </summary>
     /// <remarks>
-    /// This is serialized as "token_type": "Bearer" using System.Text.Json.
+    /// This is serialized as "tokenType": "Bearer" using <see cref="JsonSerializerDefaults.Web"/>.
     /// </remarks>
-    [JsonPropertyName("token_type")]
     public string TokenType { get; } = "Bearer";
 
     /// <summary>
     /// The opaque bearer token to send as part of the Authorization request header.
     /// </summary>
     /// <remarks>
-    /// This is serialized as "access_token": "{AccessToken}" using System.Text.Json.
+    /// This is serialized as "accessToken": "{AccessToken}" using <see cref="JsonSerializerDefaults.Web"/>.
     /// </remarks>
-    [JsonPropertyName("access_token")]
     public required string AccessToken { get; init; }
 
     /// <summary>
     /// The number of seconds before the <see cref="AccessToken"/> expires.
     /// </summary>
     /// <remarks>
-    /// This is serialized as "expires_in": "{ExpiresInSeconds}" using System.Text.Json.
+    /// This is serialized as "expiresIn": "{ExpiresInSeconds}" using <see cref="JsonSerializerDefaults.Web"/>.
     /// </remarks>
-    [JsonPropertyName("expires_in")]
-    public required long ExpiresInSeconds { get; init; }
+    public required long ExpiresIn { get; init; }
 
     /// <summary>
     /// If set, this provides the ability to get a new access_token after it expires using a refresh endpoint.
     /// </summary>
     /// <remarks>
-    /// This is serialized as "refresh_token": "{RefreshToken}" using System.Text.Json.
+    /// This is serialized as "refreshToken": "{RefreshToken}" using using <see cref="JsonSerializerDefaults.Web"/>.
     /// </remarks>
-    [JsonPropertyName("refresh_token")]
     public required string RefreshToken { get; init; }
 }

@@ -8,6 +8,7 @@
 -->
 <Project>
   <ItemGroup>
+    <RequiresDelayedBuild Include="$(RepoRoot)src\Framework\Microsoft.Internal.Aspnetcore.DotNetApiDocs.Transport\src\Microsoft.Internal.Aspnetcore.DotNetApiDocs.Transport.csproj" />
     <RequiresDelayedBuild Include="$(RepoRoot)src\DataProtection\DataProtection\test\Microsoft.AspNetCore.DataProtection.TrimmingTests\Microsoft.AspNetCore.DataProtection.TrimmingTests.proj" />
     <RequiresDelayedBuild Include="$(RepoRoot)src\DefaultBuilder\test\Microsoft.AspNetCore.NativeAotTests\Microsoft.AspNetCore.NativeAotTests.proj" />
     <RequiresDelayedBuild Include="$(RepoRoot)src\DefaultBuilder\test\Microsoft.AspNetCore.TrimmingTests\Microsoft.AspNetCore.TrimmingTests.proj" />

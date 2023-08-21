@@ -61,7 +61,7 @@ public class BootResourceCachingTest
     }
 
     [Fact]
-    public void IncrementallyUpdatesCache()
+    public async Task IncrementallyUpdatesCache()
     {
         // Perform a first load to populate the cache
         Navigate("/");
@@ -91,8 +91,17 @@ public class BootResourceCachingTest
             requestedDll => Assert.Contains("/Microsoft.AspNetCore.Components.wasm", requestedDll),
             requestedDll => Assert.Contains("/dotnet.native.wasm", requestedDll));
 
-        // We also update the cache (add new items, remove unnecessary items)
         var cacheEntryUrls3 = GetCacheEntryUrls();
+        // wait until the cache was cleaned, max 500ms
+        for (var i = 0; i < 5; i++)
+        {
+            if (!cacheEntryUrls3.Contains(cacheEntryForDotNetWasmWithChangedHash))
+            {
+                break;
+            }
+            await Task.Delay(100); // wait for cache purge
+            cacheEntryUrls3 = GetCacheEntryUrls();
+        }
         Assert.Contains(cacheEntryForComponentsDll, cacheEntryUrls3);
         Assert.Contains(cacheEntryForDotNetWasm, cacheEntryUrls3);
         Assert.DoesNotContain(cacheEntryForDotNetWasmWithChangedHash, cacheEntryUrls3);

@@ -35,22 +35,26 @@ public class StreamingRenderingTest : ServerTestBase<BasicTestAppServerSiteFixtu
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void CanPerformStreamingRendering(bool duringEnhancedNavigation)
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void CanPerformStreamingRendering(bool useLargeItems, bool duringEnhancedNavigation)
     {
         IWebElement originalH1Elem;
+        var linkText = useLargeItems ? "Large Streaming" : "Streaming";
+        var url = useLargeItems ? "large-streaming" : "streaming";
 
         if (duringEnhancedNavigation)
         {
             Navigate($"{ServerPathBase}/nav");
             originalH1Elem = Browser.Exists(By.TagName("h1"));
             Browser.Equal("Hello", () => originalH1Elem.Text);
-            Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Streaming")).Click();
+            Browser.Exists(By.TagName("nav")).FindElement(By.LinkText(linkText)).Click();
         }
         else
         {
-            Navigate($"{ServerPathBase}/streaming");
+            Navigate($"{ServerPathBase}/{url}");
             originalH1Elem = Browser.Exists(By.TagName("h1"));
         }
 
@@ -68,7 +72,9 @@ public class StreamingRenderingTest : ServerTestBase<BasicTestAppServerSiteFixtu
             Browser.FindElement(By.Id("add-item-link")).Click();
             Browser.Collection(getDisplayedItems, Enumerable.Range(1, i).Select<int, Action<IWebElement>>(index =>
             {
-                return actualItem => Assert.Equal($"Item {index}", actualItem.Text);
+                return useLargeItems
+                    ? actualItem => Assert.StartsWith($"Large Item {index}", actualItem.Text)
+                    : actualItem => Assert.Equal($"Item {index}", actualItem.Text);
             }).ToArray());
             Assert.Equal("Waiting for more...", getStatusText().Text);
 
@@ -82,22 +88,26 @@ public class StreamingRenderingTest : ServerTestBase<BasicTestAppServerSiteFixtu
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void RetainsDomNodesDuringStreamingRenderingUpdates(bool duringEnhancedNavigation)
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void RetainsDomNodesDuringStreamingRenderingUpdates(bool useLargeItems, bool duringEnhancedNavigation)
     {
         IWebElement originalH1Elem;
+        var linkText = useLargeItems ? "Large Streaming" : "Streaming";
+        var url = useLargeItems ? "streaming" : "large-streaming";
 
         if (duringEnhancedNavigation)
         {
             Navigate($"{ServerPathBase}/nav");
             originalH1Elem = Browser.Exists(By.TagName("h1"));
             Browser.Equal("Hello", () => originalH1Elem.Text);
-            Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Streaming")).Click();
+            Browser.Exists(By.TagName("nav")).FindElement(By.LinkText(linkText)).Click();
         }
         else
         {
-            Navigate($"{ServerPathBase}/streaming");
+            Navigate($"{ServerPathBase}/{url}");
             originalH1Elem = Browser.Exists(By.TagName("h1"));
         }
 

@@ -21,10 +21,10 @@ internal sealed class MessageBuffer : IDisposable
 
     private readonly ConnectionContext _connection;
     private readonly IHubProtocol _protocol;
+    private readonly long _bufferLimit;
     private readonly AckMessage _ackMessage = new(0);
     private readonly SequenceMessage _sequenceMessage = new(0);
-    private readonly Channel<int> _waitForAck = Channel.CreateBounded<int>(new BoundedChannelOptions(1) { FullMode = BoundedChannelFullMode.DropOldest });
-    private readonly int _bufferLimit = 100 * 1000;
+    private readonly Channel<long> _waitForAck = Channel.CreateBounded<long>(new BoundedChannelOptions(1) { FullMode = BoundedChannelFullMode.DropOldest });
 
 #if NET8_0_OR_GREATER
     private readonly PeriodicTimer _timer = new(TimeSpan.FromSeconds(1));
@@ -46,21 +46,21 @@ internal sealed class MessageBuffer : IDisposable
     private object Lock => _buffer;
 
     private LinkedBuffer _buffer;
-    private int _bufferedByteCount;
+    private long _bufferedByteCount;
 
     static MessageBuffer()
     {
         _completedTCS.SetResult(new());
     }
 
-    // TODO: pass in limits
-    public MessageBuffer(ConnectionContext connection, IHubProtocol protocol)
+    public MessageBuffer(ConnectionContext connection, IHubProtocol protocol, long bufferLimit)
     {
         // TODO: pool
         _buffer = new LinkedBuffer();
 
         _connection = connection;
         _protocol = protocol;
+        _bufferLimit = bufferLimit;
 
 #if !NET8_0_OR_GREATER
         _timer.Start();
@@ -179,7 +179,7 @@ internal sealed class MessageBuffer : IDisposable
     {
         // TODO: what if ackMessage.SequenceId is larger than last sent message?
 
-        var newCount = -1;
+        var newCount = -1L;
 
         lock (Lock)
         {

@@ -6,6 +6,6 @@ namespace Microsoft.AspNetCore.Identity.DTO;
 internal sealed class ResetPasswordRequest
 {
     public required string Email { get; init; }
-    public string? ResetCode { get; init; }
-    public string? NewPassword { get; init; }
+    public required string ResetCode { get; init; }
+    public required string NewPassword { get; init; }
 }

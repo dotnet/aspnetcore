@@ -498,7 +498,6 @@ public class WebSocketMiddlewareTests : LoggedTest
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/48933")]
     public async Task WebSocket_Abort_Interrupts_Pending_ReceiveAsync()
     {
         WebSocket serverSocket = null;
