@@ -121,6 +121,20 @@ EndpointRouteBuilderExtensions.
 
 
 MapGet(app, "/hello2/{id}", (int id) => $"Hello {id}!");
+app.
+MapGet
+("/hello1/{id}", (int id) => $"Hello {id}!");
+EndpointRouteBuilderExtensions.
+   MapGet
+(app, "/hello2/{id}", (int id) => $"Hello {id}!");
+app
+.
+MapGet
+("/hello1/{id}", (int id) => $"Hello {id}!");
+EndpointRouteBuilderExtensions
+.
+   MapGet
+(app, "/hello2/{id}", (int id) => $"Hello {id}!");
 """;
         var (_, compilation) = await RunGeneratorAsync(source);
         var endpoints = GetEndpointsFromCompilation(compilation);

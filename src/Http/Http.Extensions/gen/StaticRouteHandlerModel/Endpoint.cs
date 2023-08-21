@@ -142,7 +142,7 @@ internal class Endpoint
 
     private static (string, int, int) GetLocation(IInvocationOperation operation)
     {
-        // The invocation express consists of two properties:
+        // The invocation expression consists of two properties:
         // - Expression: which is a `MemberAccessExpressionSyntax` that represents the method being invoked.
         // - ArgumentList: the list of arguments being invoked.
         // Here, we resolve the `MemberAccessExpressionSyntax` to get the location of the method being invoked.
