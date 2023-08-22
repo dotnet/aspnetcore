@@ -58,7 +58,8 @@
     "ws": "^7.4.5"
   },
   "resolutions": {
-    "ansi-regex": "5.0.1"
+    "ansi-regex": "5.0.1",
+    "tough-cookie": ">=4.1.3"
   },
   "browser": {
     "./src/DynamicImports.ts": "./src/DynamicImports.browser.ts",
