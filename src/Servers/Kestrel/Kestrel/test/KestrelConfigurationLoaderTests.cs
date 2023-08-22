@@ -922,7 +922,7 @@ public class KestrelConfigurationLoaderTests
         }
     }
 
-    [Fact]
+    [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Windows)] // Windows has poor support for directory symlinks (e.g. https://github.com/dotnet/runtime/issues/27826)
     public async Task CertificateChangedOnDisk_Symlink()
     {
@@ -963,10 +963,10 @@ public class KestrelConfigurationLoaderTests
             var endpointConfigurationCallCount = 0;
             var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
             {
-                    new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
-                    new KeyValuePair<string, string>("Endpoints:End1:Certificate:Path", fileLink.FullName),
-                    new KeyValuePair<string, string>("Endpoints:End1:Certificate:Password", certificatePassword),
-                }).Build();
+                new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
+                new KeyValuePair<string, string>("Endpoints:End1:Certificate:Path", fileLink.FullName),
+                new KeyValuePair<string, string>("Endpoints:End1:Certificate:Password", certificatePassword),
+            }).Build();
 
             var configLoader = serverOptions
                 .Configure(config, reloadOnChange: true)
@@ -986,11 +986,13 @@ public class KestrelConfigurationLoaderTests
 
             configLoader.GetReloadToken().RegisterChangeCallback(_ => fileTcs.SetResult(), state: null);
 
-            // Clobber link/ directory symlink - this will effectively cause the cert to be updated
+            // Clobber link/ directory symlink - this will effectively cause the cert to be updated.
+            // Unfortunately, it throws (file exists) if we don't delete the old one first so it's not a single, clean FS operation.
             dirLink.Delete();
             dirLink = Directory.CreateSymbolicLink(Path.Combine(tempDir, "link"), "./new");
 
-            await fileTcs.Task.TimeoutAfter(TimeSpan.FromSeconds(10)); // Needs to be meaningfully longer than the polling period - 4 seconds
+            // This can fail in local runs where the timeout is 5 seconds and polling period is 4 seconds - just re-run
+            await fileTcs.Task.DefaultTimeout();
 
             Assert.Equal(1, endpointConfigurationCallCount);
 
