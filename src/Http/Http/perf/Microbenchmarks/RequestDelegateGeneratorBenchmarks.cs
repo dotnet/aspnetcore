@@ -12,14 +12,21 @@ public class RequestDelegateGeneratorBenchmarks : RequestDelegateCreationTestBas
     [Params(10, 100, 1000, 10000)]
     public int EndpointCount { get; set; }
 
+    private string _source;
+
+    [GlobalSetup]
+    public void Setup()
+    {
+        _source = "";
+        for (var i = 0; i < EndpointCount; i++)
+        {
+            _source += $"""app.MapGet("/route{i}", (int? id) => "Hello World!");""";
+        }
+    }
+
     [Benchmark]
     public async Task CreateRequestDelegate()
     {
-        var source = "";
-        for (var i = 0; i < EndpointCount; i++)
-        {
-            source += $"""app.MapGet("/route{i}", (int? id) => "Hello World!");""";
-        }
-        await RunGeneratorAsync(source);
+        await RunGeneratorAsync(_source);
     }
 }
