@@ -4,6 +4,7 @@
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding;
 
@@ -35,6 +36,7 @@ public class BindingInfo
         PropertyFilterProvider = other.PropertyFilterProvider;
         RequestPredicate = other.RequestPredicate;
         EmptyBodyBehavior = other.EmptyBodyBehavior;
+        ServiceKey = other.ServiceKey;
     }
 
     /// <summary>
@@ -88,6 +90,11 @@ public class BindingInfo
     /// Gets or sets the value which decides if empty bodies are treated as valid inputs.
     /// </summary>
     public EmptyBodyBehavior EmptyBodyBehavior { get; set; }
+
+    /// <summary>
+    /// Get or sets the value used as the key when looking for a keyed service
+    /// </summary>
+    public object? ServiceKey { get; set; }
 
     /// <summary>
     /// Constructs a new instance of <see cref="BindingInfo"/> from the given <paramref name="attributes"/>.
@@ -167,6 +174,19 @@ public class BindingInfo
             isBindingInfoPresent = true;
             bindingInfo.EmptyBodyBehavior = configureEmptyBodyBehavior.EmptyBodyBehavior;
             break;
+        }
+
+        // Keyed services
+        if (attributes.OfType<FromKeyedServicesAttribute>().FirstOrDefault() is { } fromKeyedServicesAttribute)
+        {
+            if (bindingInfo.BindingSource != null)
+            {
+                throw new NotSupportedException(
+                    $"The {nameof(FromKeyedServicesAttribute)} is not supported on parameters that are also annotated with {nameof(IBindingSourceMetadata)}.");
+            }
+            isBindingInfoPresent = true;
+            bindingInfo.BindingSource = BindingSource.Services;
+            bindingInfo.ServiceKey = fromKeyedServicesAttribute.Key;
         }
 
         return isBindingInfoPresent ? bindingInfo : null;

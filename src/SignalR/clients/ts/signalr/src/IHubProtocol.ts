@@ -20,6 +20,8 @@ export enum MessageType {
     Ping = 6,
     /** Indicates the message is a Close message and implements the {@link @microsoft/signalr.CloseMessage} interface. */
     Close = 7,
+    Ack = 8,
+    Sequence = 9
 }
 
 /** Defines a dictionary of string keys and string values representing headers attached to a Hub message. */
@@ -36,7 +38,9 @@ export type HubMessage =
     CompletionMessage |
     CancelInvocationMessage |
     PingMessage |
-    CloseMessage;
+    CloseMessage |
+    AckMessage |
+    SequenceMessage;
 
 /** Defines properties common to all Hub messages. */
 export interface HubMessageBase {
@@ -142,6 +146,20 @@ export interface CancelInvocationMessage extends HubInvocationMessage {
     readonly type: MessageType.CancelInvocation;
     /** The invocation ID. */
     readonly invocationId: string;
+}
+
+export interface AckMessage extends HubMessageBase
+{
+    readonly type: MessageType.Ack;
+
+    readonly sequenceId: number;
+}
+
+export interface SequenceMessage extends HubMessageBase
+{
+    readonly type: MessageType.Sequence;
+
+    readonly sequenceId: number;
 }
 
 /** A protocol abstraction for communicating with SignalR Hubs.  */

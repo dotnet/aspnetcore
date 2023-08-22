@@ -329,9 +329,9 @@
       <Sha>9a1c3e1b7f0c8763d4c96e593961a61a72679a7b</Sha>
       <SourceBuild RepoName="xdt" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="8.0.0-alpha.1.23414.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="8.0.0-alpha.1.23421.1">
       <Uri>https://github.com/dotnet/source-build-reference-packages</Uri>
-      <Sha>45f5554ac6813e1e155c47fd80ec146c684f65e8</Sha>
+      <Sha>f4903e46459e0348e3793055dd8b68b8b0264034</Sha>
       <SourceBuild RepoName="source-build-reference-packages" ManagedOnly="true" />
     </Dependency>
     <!-- Not updated automatically -->
@@ -388,9 +388,9 @@
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha>385129cbc980a515ddee2fa56f6b16f3183ed9bc</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Telemetry.Testing" Version="8.0.0-rc.2.23417.1">
+    <Dependency Name="Microsoft.Extensions.Telemetry.Testing" Version="8.0.0-rc.2.23421.8">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6f38a71521d48c518445e39dc643a43d8599ce23</Sha>
+      <Sha>30dc2c0878042e9b29c32daf74a55c8c06ddc598</Sha>
     </Dependency>
     <Dependency Name="NuGet.Frameworks" Version="6.2.4">
       <Uri>https://github.com/nuget/nuget.client</Uri>

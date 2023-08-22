@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.Extensions.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.Microbenchmarks" />
   </ItemGroup>
 
   <ItemGroup>
