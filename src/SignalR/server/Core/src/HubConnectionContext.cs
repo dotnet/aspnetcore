@@ -455,7 +455,7 @@ public partial class HubConnectionContext
     public virtual void Abort()
     {
 #pragma warning disable CA2252 // This API requires opting into preview features
-        if (_useAcks && _connectionContext.Features.Get<IStatefulReconnectFeature>() is IStatefulReconnectFeature feature)
+        if (_useStatefulReconnect && _connectionContext.Features.Get<IStatefulReconnectFeature>() is IStatefulReconnectFeature feature)
         {
             feature.DisableReconnect();
         }

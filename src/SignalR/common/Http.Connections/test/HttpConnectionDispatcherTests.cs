@@ -2355,7 +2355,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         using (StartVerifiableLog())
         {
             var manager = CreateConnectionManager(LoggerFactory);
-            var options = new HttpConnectionDispatcherOptions() { AllowAcks = true };
+            var options = new HttpConnectionDispatcherOptions() { AllowStatefulReconnects = true };
             options.WebSockets.CloseTimeout = TimeSpan.FromMilliseconds(1);
             // pretend negotiate occurred
             var connection = manager.CreateConnection(options, negotiateVersion: 1, useAck: true);
@@ -2430,7 +2430,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         using (StartVerifiableLog())
         {
             var manager = CreateConnectionManager(LoggerFactory);
-            var options = new HttpConnectionDispatcherOptions() { AllowAcks = true };
+            var options = new HttpConnectionDispatcherOptions() { AllowStatefulReconnects = true };
             options.WebSockets.CloseTimeout = TimeSpan.FromMilliseconds(1);
             // pretend negotiate occurred
             var connection = manager.CreateConnection(options, negotiateVersion: 1, useAck: true);
