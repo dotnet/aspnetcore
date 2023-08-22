@@ -138,7 +138,6 @@ public enum HttpLoggingFields : long
     /// <summary>
     /// Log how long it took to process the request and return a response in total milliseconds.
     /// </summary>
-    // TODO: This does not include the time taken to write the response body.
     Duration = 0x1000,
 
     /// <summary>

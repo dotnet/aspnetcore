@@ -111,6 +111,7 @@ public sealed class HttpLoggingInterceptorContext
         RequestBodyLogLimit = 0;
         ResponseBodyLogLimit = 0;
         StartTimestamp = 0;
+        TimeProvider = null!;
         Parameters.Clear();
     }
 
