@@ -86,7 +86,7 @@ public class KestrelServer : IServer
 
         public void PopulateMultiplexedTransportFeatures(FeatureCollection features, ListenOptions listenOptions)
         {
-            throw new NotImplementedException(); // Not actually required by this impl
+            throw new NotImplementedException(); // Not actually required by this impl, which never provides an IMultiplexedConnectionListenerFactory
         }
 
         public ListenOptions UseHttpsWithDefaults(ListenOptions listenOptions)
