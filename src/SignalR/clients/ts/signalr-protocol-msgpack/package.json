@@ -49,6 +49,7 @@
   },
   "devDependencies": {},
   "resolutions": {
-    "ws": ">=7.4.6"
+    "ws": ">=7.4.6",
+    "tough-cookie": ">=4.1.3"
   }
 }

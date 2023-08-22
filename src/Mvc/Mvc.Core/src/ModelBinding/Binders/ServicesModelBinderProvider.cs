@@ -25,11 +25,16 @@ public class ServicesModelBinderProvider : IModelBinderProvider
         {
             // IsRequired will be false for a Reference Type
             // without a default value in a oblivious nullability context
-            // however, for services we shoud treat them as required
+            // however, for services we should treat them as required
             var isRequired = context.Metadata.IsRequired ||
                     (context.Metadata.Identity.ParameterInfo?.HasDefaultValue != true &&
                         !context.Metadata.ModelType.IsValueType &&
                         context.Metadata.NullabilityState == NullabilityState.Unknown);
+
+            if (context.BindingInfo.ServiceKey != null)
+            {
+                return new KeyedServicesModelBinder(context.BindingInfo.ServiceKey, !isRequired);
+            }
 
             return isRequired ? _servicesBinder : _optionalServicesBinder;
         }

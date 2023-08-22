@@ -429,10 +429,12 @@ internal static class RenderTreeDiffBuilder
 
         while (hasMoreOld || hasMoreNew)
         {
-            var oldSeq = hasMoreOld ? oldTree[oldStartIndex].SequenceField : int.MaxValue;
-            var newSeq = hasMoreNew ? newTree[newStartIndex].SequenceField : int.MaxValue;
-            var oldAttributeName = oldTree[oldStartIndex].AttributeNameField;
-            var newAttributeName = newTree[newStartIndex].AttributeNameField;
+            var (oldSeq, oldAttributeName) = hasMoreOld
+                ? (oldTree[oldStartIndex].SequenceField, oldTree[oldStartIndex].AttributeNameField)
+                : (int.MaxValue, null);
+            var (newSeq, newAttributeName) = hasMoreNew
+                ? (newTree[newStartIndex].SequenceField, newTree[newStartIndex].AttributeNameField)
+                : (int.MaxValue, null);
 
             if (oldSeq == newSeq &&
                 string.Equals(oldAttributeName, newAttributeName, StringComparison.Ordinal))
