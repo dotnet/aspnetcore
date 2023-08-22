@@ -63,7 +63,7 @@ public static class RazorComponentsServiceCollectionExtensions
         services.TryAddScoped<EndpointRoutingStateProvider>();
         services.TryAddScoped<IRoutingStateProvider>(sp => sp.GetRequiredService<EndpointRoutingStateProvider>());
         services.AddSupplyValueFromQueryProvider();
-        services.AddCascadingValue(sp => sp.GetRequiredService<EndpointHtmlRenderer>().HttpContext);
+        services.TryAddCascadingValue(sp => sp.GetRequiredService<EndpointHtmlRenderer>().HttpContext);
 
         // Form handling
         services.AddSupplyValueFromFormProvider();

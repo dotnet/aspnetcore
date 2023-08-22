@@ -727,6 +727,51 @@ public class CascadingParameterTest
             });
     }
 
+    [Fact]
+    public void CanUseTryAddPatternForCascadingValuesInServiceCollection_ValueFactory()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+
+        // Act
+        services.TryAddCascadingValue(_ => new Type1());
+        services.TryAddCascadingValue(_ => new Type1());
+        services.TryAddCascadingValue(_ => new Type2());
+
+        // Assert
+        Assert.Equal(2, services.Count());
+    }
+
+    [Fact]
+    public void CanUseTryAddPatternForCascadingValuesInServiceCollection_NamedValueFactory()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+
+        // Act
+        services.TryAddCascadingValue("Name1", _ => new Type1());
+        services.TryAddCascadingValue("Name2", _ => new Type1());
+        services.TryAddCascadingValue("Name3", _ => new Type2());
+
+        // Assert
+        Assert.Equal(2, services.Count());
+    }
+
+    [Fact]
+    public void CanUseTryAddPatternForCascadingValuesInServiceCollection_CascadingValueSource()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+
+        // Act
+        services.TryAddCascadingValue(_ => new CascadingValueSource<Type1>("Name1", new Type1(), false));
+        services.TryAddCascadingValue(_ => new CascadingValueSource<Type1>("Name2", new Type1(), false));
+        services.TryAddCascadingValue(_ => new CascadingValueSource<Type2>("Name3", new Type2(), false));
+
+        // Assert
+        Assert.Equal(2, services.Count());
+    }
+
     private class SingleDeliveryValue(string text)
     {
         public string Text => text;
@@ -940,4 +985,7 @@ public class CascadingParameterTest
             StringValue = newValue;
         }
     }
+
+    class Type1 { }
+    class Type2 { }
 }
