@@ -3,7 +3,6 @@
 
 using System.Numerics;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.ObjectPool;
 
 namespace Microsoft.AspNetCore.HttpLogging;
 
