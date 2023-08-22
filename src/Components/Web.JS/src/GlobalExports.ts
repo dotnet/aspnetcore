@@ -18,7 +18,6 @@ import { RootComponentsFunctions } from './Rendering/JSRootComponents';
 import { attachWebRendererInterop } from './Rendering/WebRendererInteropMethods';
 import { WebStartOptions } from './Platform/WebStartOptions';
 import { RuntimeAPI } from 'dotnet';
-import { hasProgrammaticEnhancedNavigationHandler, performProgrammaticEnhancedNavigation } from './Services/NavigationUtils';
 
 // TODO: It's kind of hard to tell which .NET platform(s) some of these APIs are relevant to.
 // It's important to know this information when dealing with the possibility of mulitple .NET platforms being available.
@@ -87,8 +86,7 @@ interface IBlazor {
     // APIs invoked by hot reload
     applyHotReload?: (id: string, metadataDelta: string, ilDelta: string, pdbDelta: string | undefined) => void;
     getApplyUpdateCapabilities?: () => string;
-    performProgrammaticEnhancedNavigation: (absoluteInternalHref: string, replace: boolean) => void;
-    hasProgrammaticEnhancedNavigationHandler: () => boolean;
+    hotReloadApplied?: () => void;
   }
 }
 
@@ -106,9 +104,7 @@ export const Blazor: IBlazor = {
     InputFile,
     NavigationLock,
     getJSDataStreamChunk: getNextChunk,
-    attachWebRendererInterop,
-    performProgrammaticEnhancedNavigation,
-    hasProgrammaticEnhancedNavigationHandler
+    attachWebRendererInterop
   },
 };
 

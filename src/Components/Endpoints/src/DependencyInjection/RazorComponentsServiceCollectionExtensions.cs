@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection.Metadata;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Endpoints.DependencyInjection;
@@ -45,7 +46,10 @@ public static class RazorComponentsServiceCollectionExtensions
         // Endpoints
         services.TryAddSingleton<RazorComponentEndpointDataSourceFactory>();
         services.TryAddSingleton<RazorComponentEndpointFactory>();
-        services.TryAddSingleton<HotReloadService>();
+        if (MetadataUpdater.IsSupported)
+        {
+            services.TryAddSingleton<HotReloadService>();
+        }
         services.TryAddScoped<IRazorComponentEndpointInvoker, RazorComponentEndpointInvoker>();
 
         // Common services required for components server side rendering
