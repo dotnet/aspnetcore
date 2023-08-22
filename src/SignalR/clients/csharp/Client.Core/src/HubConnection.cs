@@ -1006,7 +1006,7 @@ public partial class HubConnection : IAsyncDisposable
 
         if (connectionState.UsingAcks())
         {
-            await connectionState.WriteAsync(new SerializedHubMessage(hubMessage), cancellationToken).ConfigureAwait(false);
+            await connectionState.WriteAsync(hubMessage, cancellationToken).ConfigureAwait(false);
         }
         else
         {
@@ -1133,7 +1133,7 @@ public partial class HubConnection : IAsyncDisposable
                 break;
             case AckMessage ackMessage:
                 Log.ReceivedAckMessage(_logger, ackMessage.SequenceId);
-                connectionState.Ack(ackMessage);
+                await connectionState.Ack(ackMessage).ConfigureAwait(false);
                 break;
             case SequenceMessage sequenceMessage:
                 Log.ReceivedSequenceMessage(_logger, sequenceMessage.SequenceId);
@@ -2071,7 +2071,7 @@ public partial class HubConnection : IAsyncDisposable
             }
         }
 
-        public ValueTask<FlushResult> WriteAsync(SerializedHubMessage message, CancellationToken cancellationToken)
+        public ValueTask<FlushResult> WriteAsync(HubMessage message, CancellationToken cancellationToken)
         {
             Debug.Assert(_messageBuffer is not null);
             return _messageBuffer.WriteAsync(message, cancellationToken);
@@ -2090,12 +2090,14 @@ public partial class HubConnection : IAsyncDisposable
             return true;
         }
 
-        public void Ack(AckMessage ackMessage)
+        public Task Ack(AckMessage ackMessage)
         {
             if (UsingAcks())
             {
-                _messageBuffer.Ack(ackMessage);
+                return _messageBuffer.AckAsync(ackMessage);
             }
+
+            return Task.CompletedTask;
         }
 
         public void ResetSequence(SequenceMessage sequenceMessage)
