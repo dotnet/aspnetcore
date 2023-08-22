@@ -201,15 +201,24 @@ internal sealed partial class HttpConnectionDispatcher
             // Create a new Tcs every poll to keep track of the poll finishing, so we can properly wait on previous polls
             var currentRequestTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
+            var reconnectTask = Task.CompletedTask;
+
             switch (transport)
             {
                 case HttpTransportType.None:
                     break;
                 case HttpTransportType.WebSockets:
+                    var isReconnect = connection.ApplicationTask is not null;
                     var ws = new WebSocketsServerTransport(options.WebSockets, connection.Application, connection, _loggerFactory);
                     if (!connection.TryActivatePersistentConnection(connectionDelegate, ws, currentRequestTcs.Task, context, _logger))
                     {
                         return;
+                    }
+
+                    if (connection.UseStatefulReconnect && isReconnect)
+                    {
+                        // Should call this after the transport has started, otherwise we'll be writing to a Pipe that isn't being read from
+                        reconnectTask = connection.NotifyOnReconnect?.Invoke(connection.Transport.Output) ?? Task.CompletedTask;
                     }
                     break;
                 case HttpTransportType.LongPolling:
@@ -225,6 +234,18 @@ internal sealed partial class HttpConnectionDispatcher
             }
 
             context.Features.Get<IHttpRequestTimeoutFeature>()?.DisableTimeout();
+
+            try
+            {
+                await reconnectTask;
+            }
+            catch (Exception ex)
+            {
+                // MessageBuffer shouldn't throw from the callback
+                // But users can technically add a callback, we don't want to trust them not to throw
+                Log.NotifyOnReconnectError(_logger, ex);
+            }
+
             var resultTask = await Task.WhenAny(connection.ApplicationTask!, connection.TransportTask!);
 
             try
