@@ -734,8 +734,6 @@ public class CascadingParameterTest
 
     private class SingleDeliveryCascadingParameterAttribute : CascadingParameterAttributeBase
     {
-        public override string Name { get; set; }
-
         internal override bool SingleDelivery => true;
     }
 
@@ -852,13 +850,11 @@ public class CascadingParameterTest
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
     class CustomCascadingParameter1Attribute : CascadingParameterAttributeBase
     {
-        public override string Name { get; set; }
     }
 
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
     class CustomCascadingParameter2Attribute : CascadingParameterAttributeBase
     {
-        public override string Name { get; set; }
     }
 
     class CustomCascadingValueProducer<TAttribute> : AutoRenderComponent, ICascadingValueSupplier
@@ -904,7 +900,7 @@ public class CascadingParameterTest
 
     class CustomCascadingValueConsumer1 : AutoRenderComponent
     {
-        [CustomCascadingParameter1(Name = nameof(Value))]
+        [CustomCascadingParameter1]
         public object Value { get; set; }
 
         protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -915,7 +911,7 @@ public class CascadingParameterTest
 
     class CustomCascadingValueConsumer2 : AutoRenderComponent
     {
-        [CustomCascadingParameter2(Name = nameof(Value))]
+        [CustomCascadingParameter2]
         public object Value { get; set; }
 
         protected override void BuildRenderTree(RenderTreeBuilder builder)
