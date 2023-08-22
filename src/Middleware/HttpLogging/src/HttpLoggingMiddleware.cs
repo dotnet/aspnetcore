@@ -209,7 +209,7 @@ internal sealed class HttpLoggingMiddleware
                 await LogResponseHeadersAsync(logContext, options._internalResponseHeaders, _interceptors, _logger);
             }
 
-            responseBufferingStream?.LogResponseBody();
+            responseBufferingStream?.LogResponseBody(logContext.IsAnyEnabled(HttpLoggingFields.Duration) ? logContext.GetDuration() : null);
         }
         finally
         {
@@ -252,6 +252,7 @@ internal sealed class HttpLoggingMiddleware
         return upgradeFeatureLogging == null || !upgradeFeatureLogging.IsUpgraded;
     }
 
+    // Called from the response body stream sync Write and Flush APIs. These are disabled by the server by default, so we're not as worried about the sync-over-async code needed here.
     public static void LogResponseHeadersSync(HttpLoggingInterceptorContext logContext, HashSet<string> allowedResponseHeaders, IHttpLoggingInterceptor[] interceptors, ILogger logger)
     {
         for (var i = 0; i < interceptors.Length; i++)

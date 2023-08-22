@@ -1342,7 +1342,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
                                 return "testing";
                             }).WithHttpLogging((HttpLoggingFields.Request & ~HttpLoggingFields.RequestScheme) | (HttpLoggingFields.Response & ~HttpLoggingFields.ResponseStatusCode));
 
-                            endpoint.MapGet("/attr_restrictedsize", [HttpLogging(HttpLoggingFields.Request | HttpLoggingFields.Response, RequestBodyLogLimit = 3, ResponseBodyLogLimit = 6)] async (HttpContext c) =>
+                            endpoint.MapGet("/attr_restrictedsize", [HttpLogging(HttpLoggingFields.RequestBody | HttpLoggingFields.ResponseBody, RequestBodyLogLimit = 3, ResponseBodyLogLimit = 6)] async (HttpContext c) =>
                             {
                                 await c.Request.Body.ReadAsync(new byte[100]);
                                 return "testing";
@@ -1352,7 +1352,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
                             {
                                 await c.Request.Body.ReadAsync(new byte[100]);
                                 return "testing";
-                            }).WithHttpLogging(HttpLoggingFields.Request | HttpLoggingFields.Response, requestBodyLogLimit: 3, responseBodyLogLimit: 6);
+                            }).WithHttpLogging(HttpLoggingFields.RequestBody | HttpLoggingFields.ResponseBody, requestBodyLogLimit: 3, responseBodyLogLimit: 6);
                         });
                     });
                 });

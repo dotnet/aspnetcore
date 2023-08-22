@@ -115,8 +115,8 @@ public sealed class HttpLoggingInterceptorContext
         Parameters.Clear();
     }
 
-    internal long GetDuration()
+    internal double GetDuration()
     {
-        return (long)TimeProvider.GetElapsedTime(StartTimestamp).TotalMilliseconds;
+        return TimeProvider.GetElapsedTime(StartTimestamp).TotalMilliseconds;
     }
 }
