@@ -65,6 +65,8 @@ Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.
 Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute
 Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute.Handler.get -> string?
 Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute.Handler.set -> void
+Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute.Name.get -> string?
+Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute.Name.set -> void
 Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute.SupplyParameterFromFormAttribute() -> void
 Microsoft.AspNetCore.Components.Web.AutoRenderMode
 Microsoft.AspNetCore.Components.Web.AutoRenderMode.AutoRenderMode() -> void
@@ -111,8 +113,6 @@ override Microsoft.AspNetCore.Components.Forms.Editor<T>.OnParametersSet() -> vo
 override Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.Dispatcher.get -> Microsoft.AspNetCore.Components.Dispatcher!
 override Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.HandleException(System.Exception! exception) -> void
 override Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.UpdateDisplayAsync(in Microsoft.AspNetCore.Components.RenderTree.RenderBatch renderBatch) -> System.Threading.Tasks.Task!
-override Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute.Name.get -> string?
-override Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute.Name.set -> void
 override Microsoft.AspNetCore.Components.Web.RenderModeAutoAttribute.Mode.get -> Microsoft.AspNetCore.Components.IComponentRenderMode!
 override Microsoft.AspNetCore.Components.Web.RenderModeServerAttribute.Mode.get -> Microsoft.AspNetCore.Components.IComponentRenderMode!
 override Microsoft.AspNetCore.Components.Web.RenderModeWebAssemblyAttribute.Mode.get -> Microsoft.AspNetCore.Components.IComponentRenderMode!
