@@ -393,9 +393,9 @@
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha>385129cbc980a515ddee2fa56f6b16f3183ed9bc</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Telemetry.Testing" Version="8.0.0-rc.2.23421.8">
+    <Dependency Name="Microsoft.Extensions.Telemetry.Testing" Version="8.0.0-rc.2.23422.1">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>30dc2c0878042e9b29c32daf74a55c8c06ddc598</Sha>
+      <Sha>2cf1664d35005762f8b310f7377ff3f605bad2c8</Sha>
     </Dependency>
     <Dependency Name="NuGet.Frameworks" Version="6.2.4">
       <Uri>https://github.com/nuget/nuget.client</Uri>
