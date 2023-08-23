@@ -104,16 +104,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
 
         var middleware = CreateMiddleware(options: options);
 
-        var httpContext = new DefaultHttpContext();
-        httpContext.Request.Protocol = "HTTP/1.0";
-        httpContext.Request.Method = "GET";
-        httpContext.Request.Scheme = "http";
-        httpContext.Request.Path = new PathString("/foo");
-        httpContext.Request.PathBase = new PathString("/foo");
-        httpContext.Request.QueryString = new QueryString("?foo");
-        httpContext.Request.Headers["Connection"] = "keep-alive";
-        httpContext.Request.ContentType = "text/plain";
-        httpContext.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes("test"));
+        var httpContext = CreateRequest();
 
         await middleware.Invoke(httpContext);
 
@@ -137,15 +128,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
                 }
             });
 
-        var httpContext = new DefaultHttpContext();
-        httpContext.Request.Protocol = "HTTP/1.0";
-        httpContext.Request.Method = "GET";
-        httpContext.Request.Scheme = "http";
-        httpContext.Request.Path = new PathString("/foo");
-        httpContext.Request.PathBase = new PathString("/foo");
-        httpContext.Request.Headers["Connection"] = "keep-alive";
-        httpContext.Request.ContentType = "text/plain";
-        httpContext.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes("test"));
+        var httpContext = CreateRequest();
 
         await middleware.Invoke(httpContext);
         Assert.Contains(TestSink.Writes, w => w.Message.Contains("Protocol: HTTP/1.0"));
@@ -177,15 +160,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             },
             options);
 
-        var httpContext = new DefaultHttpContext();
-        httpContext.Request.Protocol = "HTTP/1.0";
-        httpContext.Request.Method = "GET";
-        httpContext.Request.Scheme = "http";
-        httpContext.Request.Path = new PathString("/foo");
-        httpContext.Request.PathBase = new PathString("/foo");
-        httpContext.Request.Headers["Connection"] = "keep-alive";
-        httpContext.Request.ContentType = "text/plain";
-        httpContext.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes("test"));
+        var httpContext = CreateRequest();
 
         await middleware.Invoke(httpContext);
         Assert.Contains(TestSink.Writes, w => w.Message.Contains("Protocol: HTTP/1.0"));
@@ -217,15 +192,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             },
             options);
 
-        var httpContext = new DefaultHttpContext();
-        httpContext.Request.Protocol = "HTTP/1.0";
-        httpContext.Request.Method = "GET";
-        httpContext.Request.Scheme = "http";
-        httpContext.Request.Path = new PathString("/foo");
-        httpContext.Request.PathBase = new PathString("/foo");
-        httpContext.Request.Headers["Connection"] = "keep-alive";
-        httpContext.Request.ContentType = "text/plain";
-        httpContext.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes("test"));
+        var httpContext = CreateRequest();
 
         await middleware.Invoke(httpContext);
         Assert.Contains(TestSink.Writes, w => w.Message.Contains("Protocol: HTTP/1.0"));
@@ -257,16 +224,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             },
             options);
 
-        var httpContext = new DefaultHttpContext();
-        httpContext.Request.Protocol = "HTTP/1.0";
-        httpContext.Request.Method = "GET";
-        httpContext.Request.Scheme = "http";
-        httpContext.Request.Path = new PathString("/foo");
-        httpContext.Request.PathBase = new PathString("/foo");
-        httpContext.Request.QueryString = new QueryString("?foo");
-        httpContext.Request.Headers["Connection"] = "keep-alive";
-        httpContext.Request.ContentType = "text/plain";
-        httpContext.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes("test"));
+        var httpContext = CreateRequest();
 
         await middleware.Invoke(httpContext);
         Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("Protocol: HTTP/1.0"));
@@ -599,6 +557,108 @@ public class HttpLoggingMiddlewareTests : LoggedTest
     }
 
     [Fact]
+    public async Task RequestInterceptorCanDisableRequestAndResponseLogs()
+    {
+        var options = CreateOptionsAccessor();
+        options.CurrentValue.LoggingFields = HttpLoggingFields.All;
+
+        var middleware = CreateMiddleware(RequestResponseApp, options, new FakeInterceptor(context =>
+        {
+            context.LoggingFields = HttpLoggingFields.None;
+        }));
+
+        var httpContext = CreateRequest();
+
+        await middleware.Invoke(httpContext);
+
+        Assert.Empty(TestSink.Writes);
+    }
+
+    [Fact]
+    public async Task RequestInterceptorCanEnableRequestAndResponseLogs()
+    {
+        var options = CreateOptionsAccessor();
+        options.CurrentValue.LoggingFields = HttpLoggingFields.None;
+
+        var middleware = CreateMiddleware(RequestResponseApp, options,
+            interceptor: new FakeInterceptor(context =>
+            {
+                context.LoggingFields = HttpLoggingFields.All;
+            }));
+
+        var httpContext = CreateRequest();
+
+        await middleware.Invoke(httpContext);
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Protocol: HTTP/1.0"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Method: GET"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Scheme: http"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Path: /foo"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("PathBase: /foo"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Connection: keep-alive"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("RequestBody: test"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("StatusCode: 418"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Content-Type: text/plain"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Body: Hello World"));
+    }
+
+    [Fact]
+    public async Task RequestInterceptorCanAugmentRequestLogs()
+    {
+        var options = CreateOptionsAccessor();
+        options.CurrentValue.LoggingFields = HttpLoggingFields.All;
+
+        var middleware = CreateMiddleware(RequestResponseApp, options,
+            interceptor: new FakeInterceptor(context =>
+            {
+                context.AddParameter("foo", "bar");
+            }));
+
+        var httpContext = CreateRequest();
+
+        await middleware.Invoke(httpContext);
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Protocol: HTTP/1.0"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Method: GET"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Scheme: http"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Path: /foo"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("PathBase: /foo"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Connection: keep-alive"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("RequestBody: test"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("StatusCode: 418"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Content-Type: text/plain"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Body: Hello World"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("foo: bar"));
+    }
+
+    [Fact]
+    public async Task RequestInterceptorCanReplaceRequestLogs()
+    {
+        var options = CreateOptionsAccessor();
+        options.CurrentValue.LoggingFields = HttpLoggingFields.All;
+
+        var middleware = CreateMiddleware(RequestResponseApp, options,
+            interceptor: new FakeInterceptor(context =>
+            {
+                Assert.True(context.TryOverride(HttpLoggingFields.RequestPath));
+                context.AddParameter("Path", "ReplacedPath");
+            }));
+
+        var httpContext = CreateRequest();
+
+        await middleware.Invoke(httpContext);
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Protocol: HTTP/1.0"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Method: GET"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Scheme: http"));
+        Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("Path: /foo"));
+        Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("PathBase: /foo"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Connection: keep-alive"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("RequestBody: test"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("StatusCode: 418"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Content-Type: text/plain"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Body: Hello World"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Path: ReplacedPath"));
+    }
+
+    [Fact]
     public async Task DefaultResponseInfoOnlyHeadersAndRequestInfo()
     {
         var middleware = CreateMiddleware(
@@ -640,6 +700,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         Assert.Contains(TestSink.Writes, w => w.Message.Contains("StatusCode: 200"));
         Assert.Contains(TestSink.Writes, w => w.Message.Contains("Transfer-Encoding: test"));
         Assert.Contains(TestSink.Writes, w => w.Message.Contains("Body: test"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Duration: "));
     }
 
     [Fact]
@@ -877,25 +938,10 @@ public class HttpLoggingMiddlewareTests : LoggedTest
     {
         var options = CreateOptionsAccessor();
         options.CurrentValue.LoggingFields = HttpLoggingFields.RequestBody;
-        var middleware = CreateMiddleware(
-            async c =>
-            {
-                c.Request.ContentType = null;
-                var arr = new byte[4096];
-                while (true)
-                {
-                    var res = await c.Request.Body.ReadAsync(arr);
-                    if (res == 0)
-                    {
-                        break;
-                    }
-                }
-            },
-            options);
+        var middleware = CreateMiddleware(RequestResponseApp, options);
 
         var httpContext = new DefaultHttpContext();
-
-        httpContext.Request.Headers["foo"] = "bar";
+        httpContext.Request.Headers.Remove(HeaderNames.ContentType);
 
         await middleware.Invoke(httpContext);
 
@@ -1142,6 +1188,120 @@ public class HttpLoggingMiddlewareTests : LoggedTest
     }
 
     [Fact]
+    public async Task ResponseInterceptorCanDisableResponseLogs()
+    {
+        var options = CreateOptionsAccessor();
+        options.CurrentValue.LoggingFields = HttpLoggingFields.All;
+
+        var middleware = CreateMiddleware(RequestResponseApp, options, new FakeInterceptor(_ => { }, context =>
+        {
+            context.LoggingFields = HttpLoggingFields.None;
+        }));
+
+        var httpContext = CreateRequest();
+
+        await middleware.Invoke(httpContext);
+
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Protocol: HTTP/1.0"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Method: GET"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Scheme: http"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Path: /foo"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("PathBase: /foo"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Connection: keep-alive"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("RequestBody: test"));
+        // Only response is disabled
+        Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("StatusCode: 418"));
+        Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("Content-Type: text/plain; p=response"));
+        Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("Body: Hello World"));
+    }
+
+    [Fact]
+    public async Task ResponseInterceptorCanEnableResponseLogs()
+    {
+        var options = CreateOptionsAccessor();
+        options.CurrentValue.LoggingFields = HttpLoggingFields.None;
+
+        var middleware = CreateMiddleware(RequestResponseApp, options,
+            interceptor: new FakeInterceptor(_ => { }, context =>
+            {
+                context.LoggingFields = HttpLoggingFields.All;
+            }));
+
+        var httpContext = CreateRequest();
+
+        await middleware.Invoke(httpContext);
+        Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("Protocol: HTTP/1.0"));
+        Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("Method: GET"));
+        Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("Scheme: http"));
+        Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("Path: /foo"));
+        Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("PathBase: /foo"));
+        Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("Connection: keep-alive"));
+        Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("RequestBody: test"));
+        // Only Response is enabled
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("StatusCode: 418"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Content-Type: text/plain"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Body: Hello World"));
+    }
+
+    [Fact]
+    public async Task ResponseInterceptorCanAugmentResponseLogs()
+    {
+        var options = CreateOptionsAccessor();
+        options.CurrentValue.LoggingFields = HttpLoggingFields.All;
+
+        var middleware = CreateMiddleware(RequestResponseApp, options,
+            interceptor: new FakeInterceptor(_ => { }, context =>
+            {
+                context.AddParameter("foo", "bar");
+            }));
+
+        var httpContext = CreateRequest();
+
+        await middleware.Invoke(httpContext);
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Protocol: HTTP/1.0"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Method: GET"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Scheme: http"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Path: /foo"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("PathBase: /foo"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Connection: keep-alive"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("RequestBody: test"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("StatusCode: 418"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Content-Type: text/plain"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Body: Hello World"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("foo: bar"));
+    }
+
+    [Fact]
+    public async Task ResponseInterceptorCanReplaceResponseLogs()
+    {
+        var options = CreateOptionsAccessor();
+        options.CurrentValue.LoggingFields = HttpLoggingFields.All;
+
+        var middleware = CreateMiddleware(RequestResponseApp, options,
+            interceptor: new FakeInterceptor(_ => { }, context =>
+            {
+                Assert.True(context.TryOverride(HttpLoggingFields.ResponseStatusCode));
+                context.AddParameter("StatusCode", "412");
+            }));
+
+        var httpContext = CreateRequest();
+
+        await middleware.Invoke(httpContext);
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Protocol: HTTP/1.0"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Method: GET"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Scheme: http"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Path: /foo"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("PathBase: /foo"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Connection: keep-alive"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("RequestBody: test"));
+
+        Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("StatusCode: 418"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Content-Type: text/plain"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Body: Hello World"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("StatusCode: 412"));
+    }
+
+    [Fact]
     public async Task HttpLoggingAttributeWithLessOptionsAppliesToEndpoint()
     {
         var app = CreateApp();
@@ -1201,6 +1361,34 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         var filteredLogs = TestSink.Writes.Where(w => w.LoggerName.Contains("HttpLogging"));
         Assert.Contains(filteredLogs, w => w.Message.Equals("RequestBody: fro"));
         Assert.Contains(filteredLogs, w => w.Message.Equals("ResponseBody: testin"));
+    }
+
+    [Fact]
+    public async Task InterceptorCanSeeAndOverrideAttributeSettings()
+    {
+        var app = CreateApp(HttpLoggingFields.None, new FakeInterceptor(requestContext =>
+        {
+            Assert.Equal(HttpLoggingFields.All, requestContext.LoggingFields);
+            requestContext.Disable(HttpLoggingFields.RequestHeaders);
+        },
+        responseContext =>
+        {
+            Assert.Equal(HttpLoggingFields.All & ~HttpLoggingFields.RequestHeaders, responseContext.LoggingFields);
+            responseContext.Disable(HttpLoggingFields.ResponseHeaders);
+        }));
+        await app.StartAsync();
+
+        using var server = app.GetTestServer();
+        var client = server.CreateClient();
+        var request = new HttpRequestMessage(HttpMethod.Get, "/attr_responseandrequest");
+        request.Headers.TryAddWithoutValidation("Accept", "application/json");
+        var initialResponse = await client.SendAsync(request);
+
+        var filteredLogs = TestSink.Writes.Where(w => w.LoggerName.Contains("HttpLogging"));
+        Assert.Contains(filteredLogs, w => w.Message.Contains("Request"));
+        Assert.DoesNotContain(filteredLogs, w => w.Message.Contains("Accept"));
+        Assert.Contains(filteredLogs, w => w.Message.Contains("StatusCode: 200"));
+        Assert.DoesNotContain(filteredLogs, w => w.Message.Contains("Content-Type: text/plain"));
     }
 
     [Fact]
@@ -1265,6 +1453,49 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         Assert.Contains(filteredLogs, w => w.Message.Equals("ResponseBody: testin"));
     }
 
+    [Fact]
+    public async Task InterceptorCanSeeAndOverrideExtensions()
+    {
+        var app = CreateApp(HttpLoggingFields.None, new FakeInterceptor(requestContext =>
+        {
+            Assert.Equal(HttpLoggingFields.All, requestContext.LoggingFields);
+            requestContext.Disable(HttpLoggingFields.RequestHeaders);
+        },
+        responseContext =>
+        {
+            Assert.Equal(HttpLoggingFields.All & ~HttpLoggingFields.RequestHeaders, responseContext.LoggingFields);
+            responseContext.Disable(HttpLoggingFields.ResponseHeaders);
+        }));
+        await app.StartAsync();
+
+        using var server = app.GetTestServer();
+        var client = server.CreateClient();
+        var request = new HttpRequestMessage(HttpMethod.Get, "/ext_responseandrequest");
+        request.Headers.TryAddWithoutValidation("Accept", "application/json");
+        var initialResponse = await client.SendAsync(request);
+
+        var filteredLogs = TestSink.Writes.Where(w => w.LoggerName.Contains("HttpLogging"));
+        Assert.Contains(filteredLogs, w => w.Message.Contains("Request"));
+        Assert.DoesNotContain(filteredLogs, w => w.Message.Contains("Accept"));
+        Assert.Contains(filteredLogs, w => w.Message.Contains("StatusCode: 200"));
+        Assert.DoesNotContain(filteredLogs, w => w.Message.Contains("Content-Type: text/plain"));
+    }
+
+    private static DefaultHttpContext CreateRequest()
+    {
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.Protocol = "HTTP/1.0";
+        httpContext.Request.Method = "GET";
+        httpContext.Request.Scheme = "http";
+        httpContext.Request.Path = new PathString("/foo");
+        httpContext.Request.PathBase = new PathString("/foo");
+        httpContext.Request.QueryString = new QueryString("?foo");
+        httpContext.Request.Headers["Connection"] = "keep-alive";
+        httpContext.Request.ContentType = "text/plain";
+        httpContext.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes("test"));
+        return httpContext;
+    }
+
     private IOptionsMonitor<HttpLoggingOptions> CreateOptionsAccessor()
     {
         var options = new HttpLoggingOptions();
@@ -1273,18 +1504,36 @@ public class HttpLoggingMiddlewareTests : LoggedTest
     }
 
     private HttpLoggingMiddleware CreateMiddleware(RequestDelegate app = null,
-        IOptionsMonitor<HttpLoggingOptions> options = null)
+        IOptionsMonitor<HttpLoggingOptions> options = null,
+        IHttpLoggingInterceptor interceptor = null)
     {
         return new HttpLoggingMiddleware(
             app ?? (c => Task.CompletedTask),
             options ?? CreateOptionsAccessor(),
             LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
-            Array.Empty<IHttpLoggingInterceptor>(),
+            interceptor == null ? Array.Empty<IHttpLoggingInterceptor>() : [interceptor],
             ObjectPool.Create<HttpLoggingInterceptorContext>(),
             TimeProvider.System);
     }
 
-    private IHost CreateApp(HttpLoggingFields defaultFields = HttpLoggingFields.All)
+    private static async Task RequestResponseApp(HttpContext context)
+    {
+        var arr = new byte[4096];
+        while (true)
+        {
+            var res = await context.Request.Body.ReadAsync(arr);
+            if (res == 0)
+            {
+                break;
+            }
+        }
+
+        context.Response.StatusCode = StatusCodes.Status418ImATeapot;
+        context.Response.ContentType = "text/plain; p=response";
+        await context.Response.WriteAsync("Hello World");
+    }
+
+    private IHost CreateApp(HttpLoggingFields defaultFields = HttpLoggingFields.All, IHttpLoggingInterceptor interceptor = null)
     {
         var builder = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
@@ -1298,6 +1547,10 @@ public class HttpLoggingMiddlewareTests : LoggedTest
                         {
                             o.LoggingFields = defaultFields;
                         });
+                        if (interceptor != null)
+                        {
+                            services.AddSingleton(interceptor);
+                        }
                         services.AddSingleton(LoggerFactory);
                     })
                     .Configure(app =>
@@ -1321,6 +1574,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
                             endpoint.MapGet("/attr_responseandrequest", [HttpLogging(HttpLoggingFields.Request | HttpLoggingFields.Response)] async (HttpContext c) =>
                             {
                                 await c.Request.Body.ReadAsync(new byte[100]);
+                                c.Response.ContentType = "text/plain";
                                 return "testing";
                             });
 
@@ -1357,5 +1611,20 @@ public class HttpLoggingMiddlewareTests : LoggedTest
                     });
                 });
         return builder.Build();
+    }
+
+    private class FakeInterceptor(Action<HttpLoggingInterceptorContext> interceptRequest, Action<HttpLoggingInterceptorContext> interceptResponse = null) : IHttpLoggingInterceptor
+    {
+        public ValueTask OnRequestAsync(HttpLoggingInterceptorContext logContext)
+        {
+            interceptRequest(logContext);
+            return default;
+        }
+
+        public ValueTask OnResponseAsync(HttpLoggingInterceptorContext logContext)
+        {
+            interceptResponse?.Invoke(logContext);
+            return default;
+        }
     }
 }

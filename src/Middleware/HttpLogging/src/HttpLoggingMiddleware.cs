@@ -186,7 +186,7 @@ internal sealed class HttpLoggingMiddleware
                 }
             }
 
-            if (loggingFields.HasFlag(HttpLoggingFields.ResponseBody))
+            if (loggingFields.HasFlag(HttpLoggingFields.ResponseBody) || _interceptors.Length > 0)
             {
                 originalBodyFeature = context.Features.Get<IHttpResponseBodyFeature>()!;
 
