@@ -8,7 +8,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents();
-builder.Services.AddAntiforgery();
 
 builder.Services.AddSingleton<WeatherForecastService>();
 

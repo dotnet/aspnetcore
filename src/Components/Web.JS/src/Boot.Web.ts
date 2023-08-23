@@ -31,12 +31,12 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
   started = true;
 
   Blazor._internal.loadWebAssemblyQuicklyTimeout = 3000;
-  // Definedh ere to avoid inadvertently imported enhanced navigation
+  // Defined here to avoid inadvertently imported enhanced navigation
   // related APIs in WebAssembly or Blazor Server contexts.
   Blazor._internal.hotReloadApplied = () => {
     if (hasProgrammaticEnhancedNavigationHandler())
     {
-      performProgrammaticEnhancedNavigation(location.href, false);
+      performProgrammaticEnhancedNavigation(location.href, true);
     }
   }
 
