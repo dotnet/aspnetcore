@@ -43,4 +43,3 @@ public class RequestDelegateGeneratorBenchmarks : RequestDelegateCreationTestBas
         _driver.RunGeneratorsAndUpdateCompilation(_compilation, out var _, out var _);
     }
 }
-}
