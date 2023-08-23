@@ -21,6 +21,8 @@ internal sealed class MessageBuffer : IDisposable
 
     public static TimeSpan AckRate => TimeSpan.FromSeconds(1);
 
+    private const int PoolLimit = 10;
+
     private readonly IHubProtocol _protocol;
     private readonly long _bufferLimit;
     private readonly AckMessage _ackMessage = new(0);
@@ -46,6 +48,9 @@ internal sealed class MessageBuffer : IDisposable
 
     private TaskCompletionSource<FlushResult> _resend = _completedTCS;
 
+    // Pool per connection
+    private readonly Stack<LinkedBuffer> _pool = new();
+
     private LinkedBuffer _buffer;
     private long _bufferedByteCount;
 
@@ -66,7 +71,6 @@ internal sealed class MessageBuffer : IDisposable
         _timer = new(AckRate, timeProvider);
 #endif
 
-        // TODO: pool
         _buffer = new LinkedBuffer();
 
         _writer = connection.Transport.Output;
@@ -113,17 +117,11 @@ internal sealed class MessageBuffer : IDisposable
         }
     }
 
-    /// <summary>
-    /// Calling code is assumed to not call this method in parallel. Currently HubConnection and HubConnectionContext respect that.
-    /// </summary>
     public ValueTask<FlushResult> WriteAsync(SerializedHubMessage hubMessage, CancellationToken cancellationToken)
     {
         return WriteAsyncCore(hubMessage.Message!, hubMessage.GetSerializedMessage(_protocol), cancellationToken);
     }
 
-    /// <summary>
-    /// Calling code is assumed to not call this method in parallel. Currently HubConnection and HubConnectionContext respect that.
-    /// </summary>
     public ValueTask<FlushResult> WriteAsync(HubMessage hubMessage, CancellationToken cancellationToken)
     {
         return WriteAsyncCore(hubMessage, _protocol.GetMessageBytes(hubMessage), cancellationToken);
@@ -160,7 +158,7 @@ internal sealed class MessageBuffer : IDisposable
             {
                 _totalMessageCount++;
                 _bufferedByteCount += messageBytes.Length;
-                _buffer.AddMessage(messageBytes, _totalMessageCount);
+                _buffer.AddMessage(messageBytes, _totalMessageCount, _pool);
 
                 writeTask = _writer.WriteAsync(messageBytes, cancellationToken);
             }
@@ -187,7 +185,7 @@ internal sealed class MessageBuffer : IDisposable
         await _writeLock.WaitAsync(cancellationToken: default).ConfigureAwait(false);
         try
         {
-            var item = _buffer.RemoveMessages(ackMessage.SequenceId);
+            var item = _buffer.RemoveMessages(ackMessage.SequenceId, _pool);
             _buffer = item.buffer;
             _bufferedByteCount -= item.returnCredit;
 
@@ -315,6 +313,7 @@ internal sealed class MessageBuffer : IDisposable
     }
 
     // Linked list of SerializedHubMessage arrays, sort of like ReadOnlySequence
+    // Not a thread safe class, should be used with locking in mind
     private sealed class LinkedBuffer
     {
         private const int BufferLength = 10;
@@ -326,7 +325,7 @@ internal sealed class MessageBuffer : IDisposable
 
         private readonly ReadOnlyMemory<byte>[] _messages = new ReadOnlyMemory<byte>[BufferLength];
 
-        public void AddMessage(ReadOnlyMemory<byte> hubMessage, long sequenceId)
+        public void AddMessage(ReadOnlyMemory<byte> hubMessage, long sequenceId, Stack<LinkedBuffer> pool)
         {
             if (_startingSequenceId < 0)
             {
@@ -343,8 +342,15 @@ internal sealed class MessageBuffer : IDisposable
             }
             else if (_next is null)
             {
-                _next = new LinkedBuffer();
-                _next.AddMessage(hubMessage, sequenceId);
+                if (pool.Count != 0)
+                {
+                    _next = pool.Pop();
+                }
+                else
+                {
+                    _next = new LinkedBuffer();
+                }
+                _next.AddMessage(hubMessage, sequenceId, pool);
             }
             else
             {
@@ -358,16 +364,16 @@ internal sealed class MessageBuffer : IDisposable
                 }
 
                 // TODO: verify no stack overflow potential
-                linkedBuffer.AddMessage(hubMessage, sequenceId);
+                linkedBuffer.AddMessage(hubMessage, sequenceId, pool);
             }
         }
 
-        public (LinkedBuffer buffer, int returnCredit) RemoveMessages(long sequenceId)
+        public (LinkedBuffer buffer, int returnCredit) RemoveMessages(long sequenceId, Stack<LinkedBuffer> pool)
         {
-            return RemoveMessagesCore(this, sequenceId);
+            return RemoveMessagesCore(this, sequenceId, pool);
         }
 
-        private static (LinkedBuffer buffer, int returnCredit) RemoveMessagesCore(LinkedBuffer linkedBuffer, long sequenceId)
+        private static (LinkedBuffer buffer, int returnCredit) RemoveMessagesCore(LinkedBuffer linkedBuffer, long sequenceId, Stack<LinkedBuffer> pool)
         {
             var returnCredit = 0;
             while (linkedBuffer._startingSequenceId <= sequenceId)
@@ -387,14 +393,14 @@ internal sealed class MessageBuffer : IDisposable
                 {
                     if (linkedBuffer._next is null)
                     {
-                        linkedBuffer.Reset(shouldPool: false);
+                        linkedBuffer.Reset(shouldPool: false, pool);
                         return (linkedBuffer, returnCredit);
                     }
                     else
                     {
                         var tmp = linkedBuffer;
                         linkedBuffer = linkedBuffer._next;
-                        tmp.Reset(shouldPool: true);
+                        tmp.Reset(shouldPool: true, pool);
                     }
                 }
                 else
@@ -406,7 +412,7 @@ internal sealed class MessageBuffer : IDisposable
             return (linkedBuffer, returnCredit);
         }
 
-        private void Reset(bool shouldPool)
+        private void Reset(bool shouldPool, Stack<LinkedBuffer> pool)
         {
             _startingSequenceId = long.MinValue;
             _currentIndex = -1;
@@ -415,9 +421,12 @@ internal sealed class MessageBuffer : IDisposable
 
             Array.Clear(_messages, 0, BufferLength);
 
-            // TODO: Add back to pool
             if (shouldPool)
             {
+                if (pool.Count < PoolLimit)
+                {
+                    pool.Push(this);
+                }
             }
         }
 
