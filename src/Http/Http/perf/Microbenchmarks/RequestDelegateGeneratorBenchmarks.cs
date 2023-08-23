@@ -12,21 +12,35 @@ public class RequestDelegateGeneratorBenchmarks : RequestDelegateCreationTestBas
     [Params(10, 100, 1000, 10000)]
     public int EndpointCount { get; set; }
 
-    private string _source;
+    private GeneratorDriver _driver;
+    private Compilation _compilation;
 
     [GlobalSetup]
-    public void Setup()
+    public async Task Setup()
     {
-        _source = "";
+        var project = CreateProject();
+        var innerSource = "";
         for (var i = 0; i < EndpointCount; i++)
         {
-            _source += $"""app.MapGet("/route{i}", (int? id) => "Hello World!");""";
+            innerSource += $"""app.MapGet("/route{i}", (int? id) => "Hello World!");""";
         }
+        var source = GetMapActionString(innerSource);
+        project = project.AddDocument("TestMapActions.cs", SourceText.From(source, Encoding.UTF8)).Project;
+        _compilation = await project.GetCompilationAsync();
+
+        var generator = new RequestDelegateGenerator.RequestDelegateGenerator().AsSourceGenerator();
+        _driver = CSharpGeneratorDriver.Create(generators: new[]
+            {
+                generator
+            },
+            driverOptions: new GeneratorDriverOptions(IncrementalGeneratorOutputKind.None, trackIncrementalGeneratorSteps: true),
+            parseOptions: ParseOptions);
     }
 
     [Benchmark]
-    public async Task CreateRequestDelegate()
+    public void CreateRequestDelegate()
     {
-        await RunGeneratorAsync(_source);
+        _driver.RunGeneratorsAndUpdateCompilation(_compilation, out var _, out var _);
     }
+}
 }
