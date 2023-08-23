@@ -2,7 +2,7 @@
 *REMOVED*Microsoft.AspNetCore.Identity.UI.Services.IEmailSender
 *REMOVED*Microsoft.AspNetCore.Identity.UI.Services.IEmailSender.SendEmailAsync(string! email, string! subject, string! htmlMessage) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Identity.UI.Services.IEmailSender (forwarded, contained in Microsoft.AspNetCore.Identity)
+Microsoft.AspNetCore.Identity.UI.Services.IEmailSender.SendConfirmationLinkAsync<TUser>(TUser! user, string! email, string! confirmationLink) -> System.Threading.Tasks.Task! (forwarded, contained in Microsoft.AspNetCore.Identity)
 Microsoft.AspNetCore.Identity.UI.Services.IEmailSender.SendEmailAsync(string! email, string! subject, string! htmlMessage) -> System.Threading.Tasks.Task! (forwarded, contained in Microsoft.AspNetCore.Identity)
-Microsoft.AspNetCore.Identity.UI.Services.IEmailSender.SendConfirmationLinkAsync(string! email, string! confirmationLink) -> System.Threading.Tasks.Task! (forwarded, contained in Microsoft.AspNetCore.Identity)
-Microsoft.AspNetCore.Identity.UI.Services.IEmailSender.SendPasswordResetLinkAsync(string! email, string! resetLink) -> System.Threading.Tasks.Task! (forwarded, contained in Microsoft.AspNetCore.Identity)
-Microsoft.AspNetCore.Identity.UI.Services.IEmailSender.SendPasswordResetCodeAsync(string! email, string! resetCode) -> System.Threading.Tasks.Task! (forwarded, contained in Microsoft.AspNetCore.Identity)
+Microsoft.AspNetCore.Identity.UI.Services.IEmailSender.SendPasswordResetCodeAsync<TUser>(TUser! user, string! email, string! resetCode) -> System.Threading.Tasks.Task! (forwarded, contained in Microsoft.AspNetCore.Identity)
+Microsoft.AspNetCore.Identity.UI.Services.IEmailSender.SendPasswordResetLinkAsync<TUser>(TUser! user, string! email, string! resetLink) -> System.Threading.Tasks.Task! (forwarded, contained in Microsoft.AspNetCore.Identity)

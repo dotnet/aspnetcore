@@ -146,7 +146,7 @@ internal sealed class RegisterModel<TUser> : RegisterModel where TUser : class
                     values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
                     protocol: Request.Scheme)!;
 
-                await _emailSender.SendConfirmationLinkAsync(Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
+                await _emailSender.SendConfirmationLinkAsync(user, Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
 
                 if (_userManager.Options.SignIn.RequireConfirmedAccount)
                 {

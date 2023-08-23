@@ -92,7 +92,7 @@ internal sealed class ResendEmailConfirmationModel<TUser> : ResendEmailConfirmat
             pageHandler: null,
             values: new { userId = userId, code = code },
             protocol: Request.Scheme)!;
-        await _emailSender.SendConfirmationLinkAsync(Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
+        await _emailSender.SendConfirmationLinkAsync(user, Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
 
         ModelState.AddModelError(string.Empty, "Verification email sent. Please check your email.");
         return Page();

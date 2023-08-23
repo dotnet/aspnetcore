@@ -83,10 +83,10 @@ Microsoft.AspNetCore.Identity.SignInManager<TUser>.AuthenticationScheme.get -> s
 Microsoft.AspNetCore.Identity.SignInManager<TUser>.AuthenticationScheme.set -> void
 Microsoft.AspNetCore.Identity.TwoFactorSecurityStampValidator<TUser>.TwoFactorSecurityStampValidator(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Identity.SecurityStampValidatorOptions!>! options, Microsoft.AspNetCore.Identity.SignInManager<TUser!>! signInManager, Microsoft.Extensions.Logging.ILoggerFactory! logger) -> void
 Microsoft.AspNetCore.Identity.UI.Services.IEmailSender
-Microsoft.AspNetCore.Identity.UI.Services.IEmailSender.SendConfirmationLinkAsync(string! email, string! confirmationLink) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Identity.UI.Services.IEmailSender.SendConfirmationLinkAsync<TUser>(TUser! user, string! email, string! confirmationLink) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Identity.UI.Services.IEmailSender.SendEmailAsync(string! email, string! subject, string! htmlMessage) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.Identity.UI.Services.IEmailSender.SendPasswordResetCodeAsync(string! email, string! resetCode) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.Identity.UI.Services.IEmailSender.SendPasswordResetLinkAsync(string! email, string! resetLink) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Identity.UI.Services.IEmailSender.SendPasswordResetCodeAsync<TUser>(TUser! user, string! email, string! resetCode) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Identity.UI.Services.IEmailSender.SendPasswordResetLinkAsync<TUser>(TUser! user, string! email, string! resetLink) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Identity.UI.Services.NoOpEmailSender
 Microsoft.AspNetCore.Identity.UI.Services.NoOpEmailSender.NoOpEmailSender() -> void
 Microsoft.AspNetCore.Identity.UI.Services.NoOpEmailSender.SendEmailAsync(string! email, string! subject, string! htmlMessage) -> System.Threading.Tasks.Task!

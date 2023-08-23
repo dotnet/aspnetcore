@@ -23,34 +23,37 @@ public interface IEmailSender
     /// This API supports the ASP.NET Core Identity infrastructure and is not intended to be used as a general purpose
     /// email abstraction. It should be implemented by the application so the Identity infrastructure can send confirmation emails.
     /// </summary>
+    /// <param name="user">The user that is attempting to confirm their email.</param>
     /// <param name="email">The recipient's email address.</param>
     /// <param name="confirmationLink">The link to follow to confirm a user's email. Do not double encode this.</param>
     /// <returns></returns>
-    Task SendConfirmationLinkAsync(string email, string confirmationLink)
+    Task SendConfirmationLinkAsync<TUser>(TUser user, string email, string confirmationLink) where TUser : class
     {
         return SendEmailAsync(email, "Confirm your email", $"Please confirm your account by <a href='{confirmationLink}'>clicking here</a>.");
     }
 
     /// <summary>
     /// This API supports the ASP.NET Core Identity infrastructure and is not intended to be used as a general purpose
-    /// email abstraction. It should be implemented by the application so the Identity infrastructure can send confirmation emails.
+    /// email abstraction. It should be implemented by the application so the Identity infrastructure can send password reset emails.
     /// </summary>
+    /// <param name="user">The user that is attempting to reset their password.</param>
     /// <param name="email">The recipient's email address.</param>
     /// <param name="resetLink">The link to follow to reset the user password. Do not double encode this.</param>
     /// <returns></returns>
-    Task SendPasswordResetLinkAsync(string email, string resetLink)
+    Task SendPasswordResetLinkAsync<TUser>(TUser user, string email, string resetLink) where TUser : class
     {
         return SendEmailAsync(email, "Reset your password", $"Please reset your password by <a href='{resetLink}'>clicking here</a>.");
     }
 
     /// <summary>
     /// This API supports the ASP.NET Core Identity infrastructure and is not intended to be used as a general purpose
-    /// email abstraction. It should be implemented by the application so the Identity infrastructure can send confirmation emails.
+    /// email abstraction. It should be implemented by the application so the Identity infrastructure can send password reset emails.
     /// </summary>
+    /// <param name="user">The user that is attempting to reset their password.</param>
     /// <param name="email">The recipient's email address.</param>
     /// <param name="resetCode">The code to use to reset the user password. Do not double encode this.</param>
     /// <returns></returns>
-    Task SendPasswordResetCodeAsync(string email, string resetCode)
+    Task SendPasswordResetCodeAsync<TUser>(TUser user, string email, string resetCode) where TUser : class
     {
         return SendEmailAsync(email, "Reset your password", $"Please reset your password using the following code: {resetCode}");
     }
