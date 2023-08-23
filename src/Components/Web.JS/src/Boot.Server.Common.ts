@@ -92,10 +92,8 @@ export async function startServer(components: RootComponentManager<ServerCompone
 
   let disconnectSent = false;
   const cleanup = () => {
-    if (!disconnectSent) {
-      const data = new FormData();
-      const circuitId = circuit.circuitId!;
-      data.append('circuitId', circuitId);
+    if (!disconnectSent && isCircuitActive()) {
+      const data = getDisconnectFormData();
       disconnectSent = navigator.sendBeacon('_blazor/disconnect', data);
     }
   };
@@ -154,6 +152,12 @@ export async function disposeCircuit() {
   // disconnected circuit start pointing to .NET objects for a new circuit.
   dotNetDispatcher.dispose();
 
+  const formData = getDisconnectFormData();
+  fetch('_blazor/disconnect', {
+    method: 'POST',
+    body: formData,
+  });
+
   connection.stop();
 
   detachWebRendererInterop(WebRendererId.Server);
@@ -176,6 +180,13 @@ export function attachCircuitAfterRenderCallback(callback: typeof afterRenderCal
   }
 
   afterRenderCallback = callback;
+}
+
+function getDisconnectFormData(): FormData {
+  const data = new FormData();
+  const circuitId = circuit.circuitId!;
+  data.append('circuitId', circuitId);
+  return data;
 }
 
 async function initializeConnection(logger: Logger, circuit: CircuitDescriptor): Promise<HubConnection> {
