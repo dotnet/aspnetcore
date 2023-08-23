@@ -17,11 +17,11 @@ public static class CascadingValueServiceCollectionExtensions
     /// </summary>
     /// <typeparam name="TValue">The value type.</typeparam>
     /// <param name="serviceCollection">The <see cref="IServiceCollection"/>.</param>
-    /// <param name="valueFactory">A callback that supplies a fixed value within each service provider scope.</param>
+    /// <param name="initialValueFactory">A callback that supplies a fixed value within each service provider scope.</param>
     /// <returns>The <see cref="IServiceCollection"/>.</returns>
     public static IServiceCollection AddCascadingValue<TValue>(
-        this IServiceCollection serviceCollection, Func<IServiceProvider, TValue> valueFactory)
-        => serviceCollection.AddScoped<ICascadingValueSupplier>(sp => new CascadingValueSource<TValue>(() => valueFactory(sp), isFixed: true));
+        this IServiceCollection serviceCollection, Func<IServiceProvider, TValue> initialValueFactory)
+        => serviceCollection.AddScoped<ICascadingValueSupplier>(sp => new CascadingValueSource<TValue>(() => initialValueFactory(sp), isFixed: true));
 
     /// <summary>
     /// Adds a cascading value to the <paramref name="serviceCollection"/>. This is equivalent to having
@@ -30,11 +30,11 @@ public static class CascadingValueServiceCollectionExtensions
     /// <typeparam name="TValue">The value type.</typeparam>
     /// <param name="serviceCollection">The <see cref="IServiceCollection"/>.</param>
     /// <param name="name">A name for the cascading value. If set, <see cref="CascadingParameterAttribute"/> can be configured to match based on this name.</param>
-    /// <param name="valueFactory">A callback that supplies a fixed value within each service provider scope.</param>
+    /// <param name="initialValueFactory">A callback that supplies a fixed value within each service provider scope.</param>
     /// <returns>The <see cref="IServiceCollection"/>.</returns>
     public static IServiceCollection AddCascadingValue<TValue>(
-        this IServiceCollection serviceCollection, string name, Func<IServiceProvider, TValue> valueFactory)
-        => serviceCollection.AddScoped<ICascadingValueSupplier>(sp => new CascadingValueSource<TValue>(name, () => valueFactory(sp), isFixed: true));
+        this IServiceCollection serviceCollection, string name, Func<IServiceProvider, TValue> initialValueFactory)
+        => serviceCollection.AddScoped<ICascadingValueSupplier>(sp => new CascadingValueSource<TValue>(name, () => initialValueFactory(sp), isFixed: true));
 
     /// <summary>
     /// Adds a cascading value to the <paramref name="serviceCollection"/>. This is equivalent to having

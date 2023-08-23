@@ -39,9 +39,6 @@ public static class RazorComponentsServiceCollectionExtensions
 
         services.TryAddSingleton<RazorComponentsMarkerService>();
 
-        // Results
-        services.TryAddSingleton<RazorComponentResultExecutor>();
-
         // Endpoints
         services.TryAddSingleton<RazorComponentEndpointDataSourceFactory>();
         services.TryAddSingleton<RazorComponentEndpointFactory>();
