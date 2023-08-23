@@ -14,12 +14,12 @@ internal class RazorComponentEndpointDataSourceFactory
 {
     private readonly RazorComponentEndpointFactory _factory;
     private readonly IEnumerable<RenderModeEndpointProvider> _providers;
-    private readonly HotReloadService _hotReloadService;
+    private readonly HotReloadService? _hotReloadService;
 
     public RazorComponentEndpointDataSourceFactory(
         RazorComponentEndpointFactory factory,
         IEnumerable<RenderModeEndpointProvider> providers,
-        HotReloadService hotReloadService)
+        HotReloadService? hotReloadService = null)
     {
         _factory = factory;
         _providers = providers;

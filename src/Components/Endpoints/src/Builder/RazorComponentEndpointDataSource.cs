@@ -24,7 +24,7 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
     private readonly IApplicationBuilder _applicationBuilder;
     private readonly RenderModeEndpointProvider[] _renderModeEndpointProviders;
     private readonly RazorComponentEndpointFactory _factory;
-    private readonly HotReloadService _hotReloadService;
+    private readonly HotReloadService? _hotReloadService;
     private List<Endpoint>? _endpoints;
     private CancellationTokenSource _cancellationTokenSource;
     private IChangeToken _changeToken;
@@ -38,7 +38,7 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
         IEnumerable<RenderModeEndpointProvider> renderModeEndpointProviders,
         IApplicationBuilder applicationBuilder,
         RazorComponentEndpointFactory factory,
-        HotReloadService hotReloadService)
+        HotReloadService? hotReloadService = null)
     {
         _builder = builder;
         _applicationBuilder = applicationBuilder;
@@ -137,7 +137,7 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
             _cancellationTokenSource = new CancellationTokenSource();
             _changeToken = new CancellationChangeToken(_cancellationTokenSource.Token);
             oldCancellationTokenSource?.Cancel();
-            if (_hotReloadService.MetadataUpdateSupported)
+            if (_hotReloadService is { MetadataUpdateSupported : true })
             {
                 ChangeToken.OnChange(_hotReloadService.GetChangeToken, UpdateEndpoints);
             }
