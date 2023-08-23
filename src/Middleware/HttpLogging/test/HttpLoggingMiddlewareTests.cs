@@ -316,6 +316,62 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         Assert.Contains(TestSink.Writes, w => w.Message.Contains(expected));
     }
 
+    [Theory]
+    [MemberData(nameof(BodyData))]
+    public async Task RequestBodyCopyToWorks(string expected)
+    {
+        var options = CreateOptionsAccessor();
+        options.CurrentValue.LoggingFields = HttpLoggingFields.RequestBody;
+
+        var middleware = CreateMiddleware(
+            async c =>
+            {
+                var ms = new MemoryStream();
+                c.Request.Body.CopyTo(ms);
+                ms.Position = 0;
+                var sr = new StreamReader(ms);
+                var body = await sr.ReadToEndAsync();
+                Assert.Equal(expected, body);
+            },
+            options);
+
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.ContentType = "text/plain";
+        httpContext.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(expected));
+
+        await middleware.Invoke(httpContext);
+
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains(expected));
+    }
+
+    [Theory]
+    [MemberData(nameof(BodyData))]
+    public async Task RequestBodyCopyToAsyncWorks(string expected)
+    {
+        var options = CreateOptionsAccessor();
+        options.CurrentValue.LoggingFields = HttpLoggingFields.RequestBody;
+
+        var middleware = CreateMiddleware(
+            async c =>
+            {
+                var ms = new MemoryStream();
+                await c.Request.Body.CopyToAsync(ms);
+                ms.Position = 0;
+                var sr = new StreamReader(ms);
+                var body = await sr.ReadToEndAsync();
+                Assert.Equal(expected, body);
+            },
+            options);
+
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.ContentType = "text/plain";
+        httpContext.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(expected));
+
+        await middleware.Invoke(httpContext);
+
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains(expected));
+    }
+
     [Fact]
     public async Task RequestBodyReadingLimitLongCharactersWorks()
     {

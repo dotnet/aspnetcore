@@ -290,12 +290,48 @@ internal abstract class BufferingStream : Stream, IBufferWriter<byte>
 
     public override void CopyTo(Stream destination, int bufferSize)
     {
-        _innerStream.CopyTo(destination, bufferSize);
+        // Set a minimum buffer size of 4K since the base Stream implementation has weird behavior when the stream is
+        // seekable *and* the length is 0 (it passes in a buffer size of 1).
+        // See https://github.com/dotnet/runtime/blob/222415c56c9ea73530444768c0e68413eb374f5d/src/libraries/System.Private.CoreLib/src/System/IO/Stream.cs#L164-L184
+        bufferSize = Math.Max(4096, bufferSize);
+        // At least a 4K buffer
+        var buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
+        try
+        {
+            var bytesRead = Read(buffer);
+            while (bytesRead > 0)
+            {
+                destination.Write(buffer.AsSpan(0, bytesRead));
+                bytesRead = Read(buffer);
+            }
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(buffer);
+        }
     }
 
-    public override Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
+    public override async Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
     {
-        return _innerStream.CopyToAsync(destination, bufferSize, cancellationToken);
+        // Set a minimum buffer size of 4K since the base Stream implementation has weird behavior when the stream is
+        // seekable *and* the length is 0 (it passes in a buffer size of 1).
+        // See https://github.com/dotnet/runtime/blob/222415c56c9ea73530444768c0e68413eb374f5d/src/libraries/System.Private.CoreLib/src/System/IO/Stream.cs#L164-L184
+        bufferSize = Math.Max(4096, bufferSize);
+        // At least a 4K buffer
+        var buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
+        try
+        {
+            var bytesRead = await ReadAsync(buffer, cancellationToken);
+            while (bytesRead > 0)
+            {
+                await destination.WriteAsync(buffer.AsMemory(0, bytesRead), cancellationToken);
+                bytesRead = await ReadAsync(buffer, cancellationToken);
+            }
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(buffer);
+        }
     }
 
     public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
@@ -306,10 +342,5 @@ internal abstract class BufferingStream : Stream, IBufferWriter<byte>
     public override ValueTask DisposeAsync()
     {
         return _innerStream.DisposeAsync();
-    }
-
-    public override int Read(Span<byte> buffer)
-    {
-        return _innerStream.Read(buffer);
     }
 }
