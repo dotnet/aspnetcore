@@ -30,12 +30,12 @@ public sealed class HttpLoggingInterceptorContext
     public HttpLoggingFields LoggingFields { get; set; }
 
     /// <summary>
-    /// Limits how much of the request body to log.
+    /// Gets or sets the maximum number of bytes of the request body to log.
     /// </summary>
     public int RequestBodyLogLimit { get; set; }
 
     /// <summary>
-    /// Limits how much of the response body to log.
+    /// Gets or sets the maximum number of bytes of the response body to log.
     /// </summary>
     public int ResponseBodyLogLimit { get; set; }
 
@@ -88,7 +88,7 @@ public sealed class HttpLoggingInterceptorContext
     /// and disables it so that a custom log value can be provided instead.
     /// </summary>
     /// <param name="field">A single field flag to check.</param>
-    /// <returns>`true` if the field was enabled.</returns>
+    /// <returns><see langword="true" /> if the field was enabled.</returns>
     public bool TryOverride(HttpLoggingFields field)
     {
         if (BitOperations.PopCount((uint)field) != 1)
