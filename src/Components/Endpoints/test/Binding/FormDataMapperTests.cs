@@ -1540,6 +1540,72 @@ public class FormDataMapperTests
     }
 
     [Fact]
+    public void CanDeserialize_ComplexType_IgnoresPropertiesWithoutPublicSetters()
+    {
+        // Arrange
+        var expected = new TypeIgnoresReadOnlyProperties() { Name = "John" };
+        var data = new Dictionary<string, StringValues>()
+        {
+            ["Id"] = "1",
+            ["Name"] = "John",
+            ["Age"] = "20",
+            ["Email"] = "john@doe.com",
+            ["IsPreferred"] = "true",
+        };
+
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
+        var options = new FormDataMapperOptions();
+
+        // Act
+        var result = FormDataMapper.Map<TypeIgnoresReadOnlyProperties>(reader, options);
+        Assert.Equal(0, result.Id);
+        Assert.Equal(expected.Name, result.Name);
+        Assert.Equal(expected.Age, result.Age);
+        Assert.Equal(expected.Email, result.Email);
+        Assert.Equal(expected.IsPreferred, result.IsPreferred);
+    }
+
+    [Fact]
+    public void CanDeserialize_ComplexType_CanDeserializeTuples()
+    {
+        // Arrange
+        var expected = new Tuple<int, string>(1, "John");
+        var data = new Dictionary<string, StringValues>()
+        {
+            ["Item1"] = "1",
+            ["Item2"] = "John",
+        };
+
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
+        var options = new FormDataMapperOptions();
+
+        // Act
+        var result = FormDataMapper.Map<Tuple<int, string>>(reader, options);
+        Assert.Equal(expected.Item1, result.Item1);
+        Assert.Equal(expected.Item2, result.Item2);
+    }
+
+    [Fact]
+    public void CanDeserialize_ComplexType_CanDeserializeValueTuples()
+    {
+        // Arrange
+        var expected = new ValueTuple<int, string>(1, "John");
+        var data = new Dictionary<string, StringValues>()
+        {
+            ["Item1"] = "1",
+            ["Item2"] = "John",
+        };
+
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
+        var options = new FormDataMapperOptions();
+
+        // Act
+        var result = FormDataMapper.Map<ValueTuple<int, string>>(reader, options);
+        Assert.Equal(expected.Item1, result.Item1);
+        Assert.Equal(expected.Item2, result.Item2);
+    }
+
+    [Fact]
     public void CanDeserialize_ComplexType_DoesNotRegisterMissingRequiredParametersIfNoValueFound()
     {
         // Arrange
@@ -1993,6 +2059,19 @@ internal class DataMemberAttributesConstructorType
 
     [IgnoreDataMember]
     public string Ignored { get; set; }
+}
+
+internal class TypeIgnoresReadOnlyProperties
+{
+    public int Id { get; }
+
+    public int Age { get; internal set; }
+
+    public string Email { get; private set; }
+
+    public bool IsPreferred { get; protected set; }
+
+    public string Name { get; set; }
 }
 
 public class ThrowsWithMissingParameterValue
