@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Routing;
 namespace Microsoft.AspNetCore.Identity.Data;
 
 /// <summary>
-/// The response type for the "/manage/info" endpoints add by <see cref="IdentityApiEndpointRouteBuilderExtensions.MapIdentityApi"/>.
+/// The response type for the "/manage/info" endpoints added by <see cref="IdentityApiEndpointRouteBuilderExtensions.MapIdentityApi"/>.
 /// </summary>
 public sealed class InfoResponse
 {

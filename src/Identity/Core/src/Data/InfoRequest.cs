@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Routing;
 namespace Microsoft.AspNetCore.Identity.Data;
 
 /// <summary>
-/// The request type for the "/manage/info" endpoint add by <see cref="IdentityApiEndpointRouteBuilderExtensions.MapIdentityApi"/>.
+/// The request type for the "/manage/info" endpoint added by <see cref="IdentityApiEndpointRouteBuilderExtensions.MapIdentityApi"/>.
 /// All properties are optional. No modifications will be made to the user if all the properties are omitted from the request.
 /// </summary>
 public sealed class InfoRequest

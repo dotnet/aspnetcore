@@ -6,13 +6,13 @@ using Microsoft.AspNetCore.Routing;
 namespace Microsoft.AspNetCore.Identity.Data;
 
 /// <summary>
-/// The request type for the "/manage/2fa" endpoint add by <see cref="IdentityApiEndpointRouteBuilderExtensions.MapIdentityApi"/>.
+/// The request type for the "/manage/2fa" endpoint added by <see cref="IdentityApiEndpointRouteBuilderExtensions.MapIdentityApi"/>.
 /// </summary>
 public sealed class TwoFactorRequest
 {
     /// <summary>
     /// An optional <see cref="bool"/> to enable or disable the two-factor login requirement for the authenticated user. If null or unset,
-    /// the current state will remain unchanged.
+    /// the current two-factor login requirement for the user will remain unchanged.
     /// </summary>
     public bool? Enable { get; init; }
 
