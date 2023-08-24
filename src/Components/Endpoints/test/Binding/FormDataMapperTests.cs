@@ -1566,6 +1566,31 @@ public class FormDataMapperTests
     }
 
     [Fact]
+    public void CanDeserialize_ComplexType_RequiredProperties()
+    {
+        // Arrange
+        var expected = new TypeRequiredProperties() { Name = null, Age = 20 };
+        var data = new Dictionary<string, StringValues>()
+        {
+            ["Age"] = "20",
+        };
+
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
+        var errors = new List<FormDataMappingError>();
+        reader.ErrorHandler = (key, message, attemptedValue) =>
+        {
+            errors.Add(new FormDataMappingError(key, message, attemptedValue));
+        };
+        var options = new FormDataMapperOptions();
+
+        // Act
+        var result = FormDataMapper.Map<TypeRequiredProperties>(reader, options);
+        Assert.Equal(expected.Name, result.Name);
+        Assert.Equal(expected.Age, result.Age);
+        Assert.Single(errors);
+    }
+
+    [Fact]
     public void CanDeserialize_ComplexType_CanDeserializeTuples()
     {
         // Arrange
@@ -2072,6 +2097,13 @@ internal class TypeIgnoresReadOnlyProperties
     public bool IsPreferred { get; protected set; }
 
     public string Name { get; set; }
+}
+
+internal class TypeRequiredProperties
+{
+    public int Age { get; set; }
+
+    public required string Name { get; set; }
 }
 
 public class ThrowsWithMissingParameterValue
