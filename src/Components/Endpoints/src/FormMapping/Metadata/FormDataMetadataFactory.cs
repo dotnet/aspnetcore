@@ -1,9 +1,10 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using Microsoft.Extensions.Internal;
 
@@ -143,6 +144,12 @@ internal class FormDataMetadataFactory(List<IFormDataConverterFactory> factories
                 {
                     propertyInfo.Name = dataMemberAttribute.Name;
                     propertyInfo.Required = dataMemberAttribute.IsRequired;
+                }
+
+                var requiredAttribute = property.GetCustomAttribute<RequiredMemberAttribute>();
+                if (requiredAttribute != null)
+                {
+                    propertyInfo.Required = true;
                 }
 
                 result.Properties.Add(propertyInfo);
