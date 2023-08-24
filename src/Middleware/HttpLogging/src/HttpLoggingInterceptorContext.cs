@@ -3,12 +3,22 @@
 
 using System.Numerics;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Builder;
 
 namespace Microsoft.AspNetCore.HttpLogging;
 
 /// <summary>
-/// The context used for logging customization callbacks.
+/// The context used for <see cref="IHttpLoggingInterceptor"/>.
 /// </summary>
+/// <remarks>
+/// Settings will be pre-initialized with the relevant values from <see cref="HttpLoggingOptions" /> and updated with endpoint specific
+/// values from <see cref="HttpLoggingAttribute"/> or
+/// <see cref="HttpLoggingEndpointConventionBuilderExtensions.WithHttpLogging{TBuilder}(TBuilder, HttpLoggingFields, int?, int?)" />.
+/// All settings can be modified per request. All settings will carry over from
+/// <see cref="IHttpLoggingInterceptor.OnRequestAsync(HttpLoggingInterceptorContext)"/>
+/// to <see cref="IHttpLoggingInterceptor.OnResponseAsync(HttpLoggingInterceptorContext)"/> except the <see cref="Parameters"/>
+/// which are cleared after logging the request.
+/// </remarks>
 public sealed class HttpLoggingInterceptorContext
 {
     private HttpContext? _httpContext;
@@ -16,6 +26,9 @@ public sealed class HttpLoggingInterceptorContext
     /// <summary>
     /// The request context.
     /// </summary>
+    /// <remarks>
+    /// This property should not be set by user code except for testing purposes.
+    /// </remarks>
     public HttpContext HttpContext
     {
         get => _httpContext ?? throw new InvalidOperationException("HttpContext was not initialized");
@@ -43,12 +56,13 @@ public sealed class HttpLoggingInterceptorContext
     internal TimeProvider TimeProvider { get; set; } = null!;
 
     /// <summary>
-    /// The parameters to log.
+    /// Data that will be logged as part of the request or response. These values are cleared after logging the request.
+    /// All other relevant settings will carry over to the response.
     /// </summary>
     public IList<KeyValuePair<string, object?>> Parameters { get; } = new List<KeyValuePair<string, object?>>();
 
     /// <summary>
-    /// Adds a parameter to the log context.
+    /// Adds data that will be logged as part of the request or response.
     /// </summary>
     /// <param name="key">The parameter name.</param>
     /// <param name="value">The parameter value.</param>
@@ -84,20 +98,16 @@ public sealed class HttpLoggingInterceptorContext
     }
 
     /// <summary>
-    /// Checks if the given field is currently enabled in <see cref="LoggingFields"/>
-    /// and disables it so that a custom log value can be provided instead.
+    /// Checks if any of the given fields are currently enabled in <see cref="LoggingFields"/>
+    /// and disables them so that a custom log value can be provided instead.
     /// </summary>
-    /// <param name="field">A single field flag to check.</param>
-    /// <returns><see langword="true" /> if the field was enabled.</returns>
-    public bool TryOverride(HttpLoggingFields field)
+    /// <param name="fields">One or more field flag to check.</param>
+    /// <returns><see langword="true" /> if any of the fields were previously enabled.</returns>
+    public bool TryOverride(HttpLoggingFields fields)
     {
-        if (BitOperations.PopCount((uint)field) != 1)
+        if (IsAnyEnabled(fields))
         {
-            throw new ArgumentException("Only a single field can be overridden at a time.", nameof(field));
-        }
-        if (LoggingFields.HasFlag(field))
-        {
-            Disable(field);
+            Disable(fields);
             return true;
         }
 

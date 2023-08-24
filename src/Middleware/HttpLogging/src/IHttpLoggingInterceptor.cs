@@ -11,10 +11,22 @@ public interface IHttpLoggingInterceptor
     /// <summary>
     /// A callback to customize the logging of the request and response.
     /// </summary>
+    /// <remarks>
+    /// This is called when the request is first received and can be used to configure both request and response options. All settings will carry over to
+    /// <see cref="OnResponseAsync(HttpLoggingInterceptorContext)"/>except the <see cref="HttpLoggingInterceptorContext.Parameters"/>
+    /// will be cleared after logging the request. <see cref="HttpLoggingInterceptorContext.LoggingFields"/> may be changed per request to control the logging behavior.
+    /// If no request fields are enabled, and the <see cref="HttpLoggingInterceptorContext.Parameters"/> collection is empty, no request logging will occur.
+    /// </remarks>
     ValueTask OnRequestAsync(HttpLoggingInterceptorContext logContext);
 
     /// <summary>
     /// A callback to customize the logging of the response.
     /// </summary>
+    /// <remarks>
+    /// This is called when the first write to the response happens, or the response ends without a write, just before anything is sent to the client. Settings are carried
+    /// over from <see cref="OnRequestAsync(HttpLoggingInterceptorContext)"/> (except the <see cref="HttpLoggingInterceptorContext.Parameters"/>) and response settings may
+    /// still be modified. Changes to request settings will have no effect. If no response fields are enabled, and the <see cref="HttpLoggingInterceptorContext.Parameters"/>
+    /// collection is empty, no response logging will occur.
+    /// </remarks>
     ValueTask OnResponseAsync(HttpLoggingInterceptorContext logContext);
 }
