@@ -6,7 +6,7 @@ import { isRendererAttached, registerRendererAttachedListener, updateRootCompone
 import { WebRendererId } from '../Rendering/WebRendererId';
 import { NavigationEnhancementCallbacks, isPerformingEnhancedPageLoad } from './NavigationEnhancement';
 import { DescriptorHandler } from '../Rendering/DomMerging/DomSync';
-import { attachCircuitAfterRenderCallback, disposeCircuit, hasStartedServer, isCircuitActive, startCircuit, startServer } from '../Boot.Server.Common';
+import { disposeCircuit, hasStartedServer, isCircuitAvailable, startCircuit, startServer } from '../Boot.Server.Common';
 import { hasLoadedWebAssemblyPlatform, hasStartedLoadingWebAssemblyPlatform, hasStartedWebAssembly, loadWebAssemblyPlatformIfNotStarted, startWebAssembly, waitForBootConfigLoaded } from '../Boot.WebAssembly.Common';
 import { MonoConfig } from 'dotnet';
 import { RootComponentManager } from './RootComponentManager';
@@ -63,15 +63,18 @@ export class WebRootComponentManager implements DescriptorHandler, NavigationEnh
     registerRendererAttachedListener(() => {
       this.rootComponentsMayRequireRefresh();
     });
-
-    attachCircuitAfterRenderCallback(() => {
-      this.circuitMayHaveNoRootComponents();
-    });
   }
 
   // Implements NavigationEnhancementCallbacks.
   public documentUpdated() {
     this.rootComponentsMayRequireRefresh();
+  }
+
+  // Implements RootComponentManager.
+  public onAfterRenderBatch(browserRendererId: number): void {
+    if (browserRendererId === WebRendererId.Server) {
+      this.circuitMayHaveNoRootComponents();
+    }
   }
 
   public registerComponent(descriptor: ComponentDescriptor) {
@@ -143,25 +146,22 @@ export class WebRootComponentManager implements DescriptorHandler, NavigationEnh
     this.rootComponentsMayRequireRefresh();
   }
 
-  private async startCircutIfNotStarted() {
-    if (hasStartedServer()) {
-      if (!isCircuitActive()) {
-        await startCircuit(this);
-      }
-      return;
+  private startCircutIfNotStarted() {
+    if (!hasStartedServer()) {
+      return startServer(this);
     }
 
-    await startServer(this);
+    if (!isCircuitAvailable()) {
+      return startCircuit();
+    }
   }
 
   private async startWebAssemblyIfNotStarted() {
     this.startLoadingWebAssemblyIfNotStarted();
 
-    if (hasStartedWebAssembly()) {
-      return;
+    if (!hasStartedWebAssembly()) {
+      await startWebAssembly(this);
     }
-
-    await startWebAssembly(this);
   }
 
   // This function should be called each time we think an SSR update
@@ -174,6 +174,10 @@ export class WebRootComponentManager implements DescriptorHandler, NavigationEnh
     }
 
     this._isComponentRefreshPending = true;
+
+    // The following timeout allows us to liberally call this function without
+    // taking the small performance hit from requent repeated calls to
+    // refreshRootComponents.
     setTimeout(() => {
       this._isComponentRefreshPending = false;
       this.refreshRootComponents(this._rootComponents);
