@@ -441,7 +441,7 @@ class LogicalElementNodeList implements ItemList<Node> {
   [index: number]: Node;
 
   item(index: number): Node | null {
-    return this[index] as unknown as Node;
+    return this[index] as unknown as Node || null;
   }
 
   forEach(callbackfn: (value: Node, key: number, parent: ItemList<Node>) => void, thisArg?: any): void {

@@ -65,7 +65,11 @@ export async function startServer(components: RootComponentManager<ServerCompone
   Blazor._internal.sendJSDataStream = (data: ArrayBufferView | Blob, streamId: number, chunkSize: number) => circuit.sendJsDataStream(data, streamId, chunkSize);
 
   const jsInitializer = await fetchAndInvokeInitializers(options);
-  await circuit.start();
+  const circuitStarted = await circuit.start();
+  if (!circuitStarted) {
+    logger.log(LogLevel.Error, 'Failed to start the circuit.');
+    return;
+  }
 
   const cleanup = () => {
     circuit.sendDisconnectBeacon();
@@ -80,7 +84,7 @@ export async function startServer(components: RootComponentManager<ServerCompone
   jsInitializer.invokeAfterStartedCallbacks(Blazor);
 }
 
-export function startCircuit(): Promise<void> {
+export function startCircuit(): Promise<boolean> {
   if (!started) {
     throw new Error('Cannot start the circuit until Blazor Server has started.');
   }
@@ -88,7 +92,7 @@ export function startCircuit(): Promise<void> {
   if (circuit.didRenderingFail()) {
     // We can't start a new circuit after a rendering failure because the renderer
     // might be in an invalid state.
-    return Promise.resolve();
+    return Promise.resolve(false);
   }
 
   if (circuit.isDisposedOrDisposing()) {

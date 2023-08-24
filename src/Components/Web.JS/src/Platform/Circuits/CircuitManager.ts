@@ -36,7 +36,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
   private _circuitId?: string;
 
-  private _startPromise?: Promise<void>;
+  private _startPromise?: Promise<boolean>;
 
   private _renderingFailed = false;
 
@@ -59,7 +59,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     this._dispatcher = DotNet.attachDispatcher(this);
   }
 
-  public start(): Promise<void> {
+  public start(): Promise<boolean> {
     if (this.isDisposedOrDisposing()) {
       throw new Error('Cannot start a disposed circuit.');
     }
@@ -71,8 +71,12 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     return this._startPromise;
   }
 
-  private async startCore(): Promise<void> {
+  private async startCore(): Promise<boolean> {
     this._connection = await this.startConnection();
+
+    if (this._connection.state !== HubConnectionState.Connected) {
+      return false;
+    }
 
     const componentsJson = JSON.stringify(this._componentManager.initialComponents.map(c => descriptorToMarker(c)));
     this._circuitId = await this._connection.invoke<string>(
@@ -84,9 +88,10 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     );
 
     if (!this._circuitId) {
-      this._logger.log(LogLevel.Error, 'Failed to start the circuit.');
-      return;
+      return false;
     }
+
+    return true;
   }
 
   private async startConnection(): Promise<HubConnection> {
