@@ -98,10 +98,12 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
         {
             var endpoints = new List<Endpoint>();
             var context = _builder.Build();
+            var configuredRenderModesMetadata = new ConfiguredRenderModesMetadata(
+                Options.ConfiguredRenderModes.ToArray());
 
             foreach (var definition in context.Pages)
             {
-                _factory.AddEndpoints(endpoints, typeof(TRootComponent), definition, _conventions, _finallyConventions);
+                _factory.AddEndpoints(endpoints, typeof(TRootComponent), definition, _conventions, _finallyConventions, configuredRenderModesMetadata);
             }
 
             ICollection<IComponentRenderMode> renderModes = Options.ConfiguredRenderModes;
@@ -127,8 +129,8 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
                 if (!found)
                 {
                     throw new InvalidOperationException($"Unable to find a provider for the render mode: {renderMode.GetType().FullName}. This generally " +
-                        $"means that a call to 'AddWebAssemblyComponents' or 'AddServerComponents' is missing. " +
-                        $"Alternatively call 'AddWebAssemblyRenderMode', 'AddServerRenderMode' might be missing if you have set UseDeclaredRenderModes = false.");
+                        "means that a call to 'AddWebAssemblyComponents' or 'AddServerComponents' is missing. " +
+                        "For example, change builder.Services.AddRazorComponents() to builder.Services.AddRazorComponents().AddServerComponents().");
                 }
             }
 

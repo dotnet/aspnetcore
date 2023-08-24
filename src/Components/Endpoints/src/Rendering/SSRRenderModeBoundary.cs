@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Http;
@@ -31,8 +32,13 @@ internal class SSRRenderModeBoundary : IComponent
     private IReadOnlyDictionary<string, object?>? _latestParameters;
     private string? _markerKey;
 
-    public SSRRenderModeBoundary([DynamicallyAccessedMembers(Component)] Type componentType, IComponentRenderMode renderMode)
+    public SSRRenderModeBoundary(
+        HttpContext httpContext,
+        [DynamicallyAccessedMembers(Component)] Type componentType,
+        IComponentRenderMode renderMode)
     {
+        AssertRenderModeIsConfigured(httpContext, componentType, renderMode);
+
         _componentType = componentType;
         _renderMode = renderMode;
         _prerender = renderMode switch
@@ -42,6 +48,50 @@ internal class SSRRenderModeBoundary : IComponent
             AutoRenderMode mode => mode.Prerender,
             _ => throw new ArgumentException($"Server-side rendering does not support the render mode '{renderMode}'.", nameof(renderMode))
         };
+    }
+
+    private static void AssertRenderModeIsConfigured(HttpContext httpContext, Type componentType, IComponentRenderMode renderMode)
+    {
+        var configuredRenderModesMetadata = httpContext.GetEndpoint()?.Metadata.GetMetadata<ConfiguredRenderModesMetadata>();
+        if (configuredRenderModesMetadata is null)
+        {
+            // This is not a Razor Components endpoint. It might be that the app is using RazorComponentResult,
+            // or perhaps something else has changed the endpoint dynamically. In this case we don't know how
+            // the app is configured so we just proceed and allow any errors to happen if the client-side code
+            // later tries to reach endpoints that aren't mapped.
+            return;
+        }
+
+        var configuredModes = configuredRenderModesMetadata.ConfiguredRenderModes;
+
+        // We have to allow for specified rendermodes being subclases of the known types
+        if (renderMode is ServerRenderMode || renderMode is AutoRenderMode)
+        {
+            AssertRenderModeIsConfigured<ServerRenderMode>(componentType, renderMode, configuredModes, "AddServerRenderMode");
+        }
+
+        if (renderMode is WebAssemblyRenderMode || renderMode is AutoRenderMode)
+        {
+            AssertRenderModeIsConfigured<WebAssemblyRenderMode>(componentType, renderMode, configuredModes, "AddWebAssemblyRenderMode");
+        }
+    }
+
+    private static void AssertRenderModeIsConfigured<TRequiredMode>(Type componentType, IComponentRenderMode specifiedMode, IComponentRenderMode[] configuredModes, string expectedCall) where TRequiredMode: IComponentRenderMode
+    {
+        foreach (var configuredMode in configuredModes)
+        {
+            // We have to allow for configured rendermodes being subclases of the known types
+            if (configuredMode is TRequiredMode)
+            {
+                return;
+            }
+        }
+
+        throw new InvalidOperationException($"A component of type '{componentType}' has render mode '{specifiedMode.GetType().Name}', " +
+            $"but the required endpoints are not mapped on the server. When calling " +
+            $"'{nameof(RazorComponentsEndpointRouteBuilderExtensions.MapRazorComponents)}', add a call to " +
+            $"'{expectedCall}'. For example, " +
+            $"'builder.{nameof(RazorComponentsEndpointRouteBuilderExtensions.MapRazorComponents)}<...>.{expectedCall}()'");
     }
 
     public void Attach(RenderHandle renderHandle)
