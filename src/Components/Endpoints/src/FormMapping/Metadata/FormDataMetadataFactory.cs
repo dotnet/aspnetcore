@@ -153,6 +153,12 @@ internal partial class FormDataMetadataFactory(List<IFormDataConverterFactory> f
                 {
                     Log.ConstructorParameter(_logger, type, parameter.Name!, parameter.ParameterType);
                     var parameterTypeInfo = GetOrCreateMetadataFor(parameter.ParameterType, options);
+                    if (parameterTypeInfo == null)
+                    {
+                        Log.ConstructorParameterTypeNotSupported(_logger, type, parameter.Name!, parameter.ParameterType);
+                        return null;
+                    }
+
                     result.ConstructorParameters.Add(new FormDataParameterMetadata(parameter, parameterTypeInfo));
                 }
             }
@@ -196,6 +202,11 @@ internal partial class FormDataMetadataFactory(List<IFormDataConverterFactory> f
                 }
 
                 var propertyTypeInfo = GetOrCreateMetadataFor(property.PropertyType, options);
+                if (propertyTypeInfo == null)
+                {
+                    Log.PropertyTypeNotSupported(_logger, type, property.Name, property.PropertyType);
+                    return null;
+                }
                 var propertyInfo = new FormDataPropertyMetadata(property, propertyTypeInfo);
 
                 var dataMemberAttribute = property.GetCustomAttribute<DataMemberAttribute>();
@@ -385,5 +396,11 @@ internal partial class FormDataMetadataFactory(List<IFormDataConverterFactory> f
 
         [LoggerMessage(23, LogLevel.Error, "Unable to select a constructor. No public constructors found for type '{Type}'.", EventName = nameof(NoPublicConstructorFound))]
         public static partial void NoPublicConstructorFound(ILogger<FormDataMetadataFactory> logger, Type type);
+
+        [LoggerMessage(24, LogLevel.Error, "Can not map type '{Type}'. Constructor parameter {Name} of type {ParameterType} is not supported.", EventName = nameof(ConstructorParameterTypeNotSupported))]
+        public static partial void ConstructorParameterTypeNotSupported(ILogger<FormDataMetadataFactory> logger, Type type, string name, Type parameterType);
+
+        [LoggerMessage(25, LogLevel.Error, "Can not map type '{Type}'. Property {Name} of type {PropertyType} is not supported.", EventName = nameof(PropertyTypeNotSupported))]
+        public static partial void PropertyTypeNotSupported(ILogger<FormDataMetadataFactory> logger, Type type, string name, Type propertyType);
     }
 }

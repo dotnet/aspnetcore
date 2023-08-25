@@ -567,6 +567,32 @@ public class FormDataMetadataFactoryTests
         Assert.Null(metadata);
     }
 
+    [Fact]
+    public void CreateMetadata_ReturnsNull_ForTypesWithUnsupportedConstructorParameters()
+    {
+        // Arrange
+        var (factory, options, logs) = ResolveFactory();
+
+        // Act
+        var metadata = factory.GetOrCreateMetadataFor(typeof(UnsupportedConstructorParameterType), options);
+
+        // Assert
+        Assert.Null(metadata);
+    }
+
+    [Fact]
+    public void CreateMetadata_ReturnsNull_ForTypesWithUnsupportedProperties()
+    {
+        // Arrange
+        var (factory, options, logs) = ResolveFactory();
+
+        // Act
+        var metadata = factory.GetOrCreateMetadataFor(typeof(UnsupportedPropertyType), options);
+
+        // Assert
+        Assert.Null(metadata);
+    }
+
     private (FormDataMetadataFactory, FormDataMapperOptions, TestSink) ResolveFactory()
     {
         var logMessages = new List<LogMessage>();
@@ -607,6 +633,18 @@ public class NoPublicConstructor
     private NoPublicConstructor()
     {
     }
+}
+
+public class UnsupportedConstructorParameterType
+{
+    public UnsupportedConstructorParameterType(NoPublicConstructor noPublicConstructor)
+    {
+    }
+}
+
+public class UnsupportedPropertyType
+{
+    public ICustomer Customer { get; set; }
 }
 
 public class TypeWithNonPublicConstructors
