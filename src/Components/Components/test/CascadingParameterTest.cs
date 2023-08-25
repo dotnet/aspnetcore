@@ -727,6 +727,51 @@ public class CascadingParameterTest
             });
     }
 
+    [Fact]
+    public void CanUseTryAddPatternForCascadingValuesInServiceCollection_ValueFactory()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+
+        // Act
+        services.TryAddCascadingValue(_ => new Type1());
+        services.TryAddCascadingValue(_ => new Type1());
+        services.TryAddCascadingValue(_ => new Type2());
+
+        // Assert
+        Assert.Equal(2, services.Count());
+    }
+
+    [Fact]
+    public void CanUseTryAddPatternForCascadingValuesInServiceCollection_NamedValueFactory()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+
+        // Act
+        services.TryAddCascadingValue("Name1", _ => new Type1());
+        services.TryAddCascadingValue("Name2", _ => new Type1());
+        services.TryAddCascadingValue("Name3", _ => new Type2());
+
+        // Assert
+        Assert.Equal(2, services.Count());
+    }
+
+    [Fact]
+    public void CanUseTryAddPatternForCascadingValuesInServiceCollection_CascadingValueSource()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+
+        // Act
+        services.TryAddCascadingValue(_ => new CascadingValueSource<Type1>("Name1", new Type1(), false));
+        services.TryAddCascadingValue(_ => new CascadingValueSource<Type1>("Name2", new Type1(), false));
+        services.TryAddCascadingValue(_ => new CascadingValueSource<Type2>("Name3", new Type2(), false));
+
+        // Assert
+        Assert.Equal(2, services.Count());
+    }
+
     private class SingleDeliveryValue(string text)
     {
         public string Text => text;
@@ -734,8 +779,6 @@ public class CascadingParameterTest
 
     private class SingleDeliveryCascadingParameterAttribute : CascadingParameterAttributeBase
     {
-        public override string Name { get; set; }
-
         internal override bool SingleDelivery => true;
     }
 
@@ -852,13 +895,11 @@ public class CascadingParameterTest
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
     class CustomCascadingParameter1Attribute : CascadingParameterAttributeBase
     {
-        public override string Name { get; set; }
     }
 
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
     class CustomCascadingParameter2Attribute : CascadingParameterAttributeBase
     {
-        public override string Name { get; set; }
     }
 
     class CustomCascadingValueProducer<TAttribute> : AutoRenderComponent, ICascadingValueSupplier
@@ -904,7 +945,7 @@ public class CascadingParameterTest
 
     class CustomCascadingValueConsumer1 : AutoRenderComponent
     {
-        [CustomCascadingParameter1(Name = nameof(Value))]
+        [CustomCascadingParameter1]
         public object Value { get; set; }
 
         protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -915,7 +956,7 @@ public class CascadingParameterTest
 
     class CustomCascadingValueConsumer2 : AutoRenderComponent
     {
-        [CustomCascadingParameter2(Name = nameof(Value))]
+        [CustomCascadingParameter2]
         public object Value { get; set; }
 
         protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -944,4 +985,7 @@ public class CascadingParameterTest
             StringValue = newValue;
         }
     }
+
+    class Type1 { }
+    class Type2 { }
 }

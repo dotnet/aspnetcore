@@ -14,6 +14,7 @@ internal enum EndpointParameterSource
     JsonBodyOrService,
     FormBody,
     Service,
+    KeyedService,
     // SpecialType refers to HttpContext, HttpRequest, CancellationToken, Stream, etc...
     // that are specially checked for in RequestDelegateFactory.CreateArgument()
     SpecialType,

@@ -29,9 +29,17 @@ internal sealed partial class CertificatePathWatcher : IDisposable
 
     public CertificatePathWatcher(IHostEnvironment hostEnvironment, ILogger<CertificatePathWatcher> logger)
         : this(
-              hostEnvironment.ContentRootPath,
-              logger,
-              dir => Directory.Exists(dir) ? new PhysicalFileProvider(dir, ExclusionFilters.None) : null)
+            hostEnvironment.ContentRootPath,
+            logger,
+            dir => Directory.Exists(dir)
+                ? new PhysicalFileProvider(dir, ExclusionFilters.None)
+                {
+                    // Force polling because it monitors both symlinks and their targets,
+                    // whereas the non-polling watcher only monitors the symlinks themselves
+                    UseActivePolling = true,
+                    UsePollingFileWatcher = true,
+                }
+                : null)
     {
     }
 
@@ -138,9 +146,6 @@ internal sealed partial class CertificatePathWatcher : IDisposable
             _metadataForFile.Add(path, fileMetadata);
             dirMetadata.FileWatchCount++;
 
-            // We actually don't care if the file doesn't exist - we'll watch in case it is created
-            fileMetadata.LastModifiedTime = GetLastModifiedTimeOrMinimum(path, dirMetadata.FileProvider);
-
             _logger.CreatedFileWatcher(path);
         }
 
@@ -154,20 +159,6 @@ internal sealed partial class CertificatePathWatcher : IDisposable
 
         _logger.ObserverCount(path, fileMetadata.Configs.Count);
         _logger.FileCount(dir, dirMetadata.FileWatchCount);
-    }
-
-    private DateTimeOffset GetLastModifiedTimeOrMinimum(string path, IFileProvider fileProvider)
-    {
-        try
-        {
-            return fileProvider.GetFileInfo(Path.GetFileName(path)).LastModified;
-        }
-        catch (Exception e)
-        {
-            _logger.LastModifiedTimeError(path, e);
-        }
-
-        return DateTimeOffset.MinValue;
     }
 
     private void OnChange(string path)
@@ -184,33 +175,17 @@ internal sealed partial class CertificatePathWatcher : IDisposable
             // Existence implied by the fact that we're tracking the file
             var dirMetadata = _metadataForDirectory[Path.GetDirectoryName(path)!];
 
-            // We ignore file changes that don't advance the last modified time.
+            // We ignore file changes that result in a file becoming unavailable.
             // For example, if we lose access to the network share the file is
             // stored on, we don't notify our listeners because no one wants
             // their endpoint/server to shutdown when that happens.
             // We also anticipate that a cert file might be renamed to cert.bak
             // before a new cert is introduced with the old name.
-            // This also helps us in scenarios where the underlying file system
-            // reports more than one change for a single logical operation.
-            var lastModifiedTime = GetLastModifiedTimeOrMinimum(path, dirMetadata.FileProvider);
-            if (lastModifiedTime > fileMetadata.LastModifiedTime)
+
+            var fileInfo = dirMetadata.FileProvider.GetFileInfo(Path.GetFileName(path));
+            if (!fileInfo.Exists)
             {
-                fileMetadata.LastModifiedTime = lastModifiedTime;
-            }
-            else
-            {
-                if (lastModifiedTime == DateTimeOffset.MinValue)
-                {
-                    _logger.EventWithoutLastModifiedTime(path);
-                }
-                else if (lastModifiedTime == fileMetadata.LastModifiedTime)
-                {
-                    _logger.RedundantEvent(path);
-                }
-                else
-                {
-                    _logger.OutOfOrderEvent(path);
-                }
+                _logger.EventWithoutFile(path);
                 return;
             }
 
@@ -219,6 +194,8 @@ internal sealed partial class CertificatePathWatcher : IDisposable
             {
                 config.FileHasChanged = true;
             }
+
+            _logger.FlaggedObservers(path, configs.Count);
         }
 
         // AddWatch and RemoveWatch don't affect the token, so this doesn't need to be under the semaphore.
@@ -321,7 +298,6 @@ internal sealed partial class CertificatePathWatcher : IDisposable
     {
         public readonly IDisposable Disposable = disposable;
         public readonly HashSet<CertificateConfig> Configs = new(ReferenceEqualityComparer.Instance);
-        public DateTimeOffset LastModifiedTime = DateTimeOffset.MinValue;
 
         public void Dispose() => Disposable.Dispose();
     }
