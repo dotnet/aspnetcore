@@ -536,6 +536,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
 
     [Theory]
     [InlineData("application/invalid")]
+    [InlineData("application/invalid; charset=utf-8")]
     [InlineData("multipart/form-data")]
     public async Task RejectedContentTypes(string contentType)
     {
@@ -610,6 +611,83 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         await middleware.Invoke(httpContext);
 
         Assert.Contains(TestSink.Writes, w => w.Message.Contains(expected));
+    }
+
+    [Fact]
+    public async Task CharsetHonoredIfSupported()
+    {
+        var encoding = Encoding.Unicode;
+        var expected = new string('a', 1000);
+        var options = CreateOptionsAccessor();
+        options.CurrentValue.LoggingFields = HttpLoggingFields.RequestBody;
+        options.CurrentValue.MediaTypeOptions.Clear();
+        options.CurrentValue.MediaTypeOptions.AddText("text/plain", encoding);
+
+        var middleware = CreateMiddleware(
+            async c =>
+            {
+                var arr = new byte[4096];
+                var count = 0;
+                while (true)
+                {
+                    var res = await c.Request.Body.ReadAsync(arr);
+                    if (res == 0)
+                    {
+                        break;
+                    }
+                    count += res;
+                }
+
+                Assert.Equal(1000, count);
+            },
+            options);
+
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.ContentType = "text/plain; charset=" + Encoding.ASCII.WebName;
+        httpContext.Request.Body = new MemoryStream(Encoding.ASCII.GetBytes(expected));
+
+        await middleware.Invoke(httpContext);
+
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("RequestBody:"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains(expected));
+    }
+
+    [Fact]
+    public async Task CharsetNotHonoredIfNotSupported()
+    {
+        var encoding = Encoding.Unicode;
+        var expected = new string('a', 1000);
+        var options = CreateOptionsAccessor();
+        options.CurrentValue.LoggingFields = HttpLoggingFields.RequestBody;
+        options.CurrentValue.MediaTypeOptions.Clear();
+        options.CurrentValue.MediaTypeOptions.AddText("text/plain", encoding);
+
+        var middleware = CreateMiddleware(
+            async c =>
+            {
+                var arr = new byte[4096];
+                var count = 0;
+                while (true)
+                {
+                    var res = await c.Request.Body.ReadAsync(arr);
+                    if (res == 0)
+                    {
+                        break;
+                    }
+                    count += res;
+                }
+
+                Assert.Equal(4000, count);
+            },
+            options);
+
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.ContentType = "text/plain; charset=" + Encoding.UTF32.WebName;
+        httpContext.Request.Body = new MemoryStream(Encoding.UTF32.GetBytes(expected));
+
+        await middleware.Invoke(httpContext);
+
+        Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("RequestBody:"));
     }
 
     [Fact]
@@ -694,7 +772,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         var middleware = CreateMiddleware(RequestResponseApp, options,
             interceptor: new FakeInterceptor(context =>
             {
-                Assert.True(context.TryOverride(HttpLoggingFields.RequestPath));
+                Assert.True(context.TryDisable(HttpLoggingFields.RequestPath));
                 context.AddParameter("Path", "ReplacedPath");
             }));
 
@@ -1336,7 +1414,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         var middleware = CreateMiddleware(RequestResponseApp, options,
             interceptor: new FakeInterceptor(_ => { }, context =>
             {
-                Assert.True(context.TryOverride(HttpLoggingFields.ResponseStatusCode));
+                Assert.True(context.TryDisable(HttpLoggingFields.ResponseStatusCode));
                 context.AddParameter("StatusCode", "412");
             }));
 
@@ -1537,6 +1615,56 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         Assert.DoesNotContain(filteredLogs, w => w.Message.Contains("Content-Type: text/plain"));
     }
 
+    [Fact]
+    public async Task MultipleInterceptorsRun()
+    {
+        var builder = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
+                    {
+                        services.AddRouting();
+                        services.AddHttpLogging(o => o.LoggingFields = HttpLoggingFields.All);
+                        services.AddHttpLoggingInterceptor<FakeInterceptor0>();
+                        services.AddHttpLoggingInterceptor<FakeInterceptor1>();
+                        services.AddSingleton(LoggerFactory);
+                    })
+                    .Configure(app =>
+                    {
+                        app.UseRouting();
+                        app.UseHttpLogging();
+                        app.UseEndpoints(endpoint =>
+                        {
+                            endpoint.MapGet("/", async (HttpContext c) =>
+                            {
+                                await c.Request.Body.ReadAsync(new byte[100]);
+                                return "testing";
+                            });
+                        });
+                    });
+            });
+        using var host = builder.Build();
+        await host.StartAsync();
+
+        using var server = host.GetTestServer();
+        var client = server.CreateClient();
+        var request = new HttpRequestMessage(HttpMethod.Get, "/");
+        request.Headers.TryAddWithoutValidation("Accept", "application/json");
+        var initialResponse = await client.SendAsync(request);
+
+        var filteredLogs = TestSink.Writes.Where(w => w.LoggerName.Contains("HttpLogging"));
+
+        var requestLog = Assert.Single(filteredLogs, w => w.Message.Contains("Request:"));
+        Assert.Contains("i0request: v0", requestLog.Message);
+        Assert.Contains("i1request: v1", requestLog.Message);
+
+        var responseLog = Assert.Single(filteredLogs, w => w.Message.Contains("Response:"));
+        Assert.Contains("i0response: v0", responseLog.Message);
+        Assert.Contains("i1response: v1", responseLog.Message);
+    }
+
     private static DefaultHttpContext CreateRequest()
     {
         var httpContext = new DefaultHttpContext();
@@ -1680,6 +1808,36 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         public ValueTask OnResponseAsync(HttpLoggingInterceptorContext logContext)
         {
             interceptResponse?.Invoke(logContext);
+            return default;
+        }
+    }
+
+    private class FakeInterceptor0() : IHttpLoggingInterceptor
+    {
+        public ValueTask OnRequestAsync(HttpLoggingInterceptorContext logContext)
+        {
+            logContext.AddParameter("i0request", "v0");
+            return default;
+        }
+
+        public ValueTask OnResponseAsync(HttpLoggingInterceptorContext logContext)
+        {
+            logContext.AddParameter("i0response", "v0");
+            return default;
+        }
+    }
+
+    private class FakeInterceptor1() : IHttpLoggingInterceptor
+    {
+        public ValueTask OnRequestAsync(HttpLoggingInterceptorContext logContext)
+        {
+            logContext.AddParameter("i1request", "v1");
+            return default;
+        }
+
+        public ValueTask OnResponseAsync(HttpLoggingInterceptorContext logContext)
+        {
+            logContext.AddParameter("i1response", "v1");
             return default;
         }
     }

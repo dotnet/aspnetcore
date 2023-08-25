@@ -39,29 +39,45 @@ public sealed class HttpLoggingInterceptorContext
     /// <summary>
     /// What parts of the request and response to log.
     /// </summary>
+    /// <remarks>
+    /// This is pre-populated with the value from <see cref="HttpLoggingOptions.LoggingFields"/>,
+    /// <see cref="HttpLoggingAttribute.LoggingFields"/>, or
+    /// <see cref="HttpLoggingEndpointConventionBuilderExtensions.WithHttpLogging{TBuilder}(TBuilder, HttpLoggingFields, int?, int?)"/>.
+    /// </remarks>
     public HttpLoggingFields LoggingFields { get; set; }
 
     /// <summary>
     /// Gets or sets the maximum number of bytes of the request body to log.
     /// </summary>
+    /// <remarks>
+    /// This is pre-populated with the value from <see cref="HttpLoggingOptions.RequestBodyLogLimit"/>,
+    /// <see cref="HttpLoggingAttribute.RequestBodyLogLimit"/>, or
+    /// <see cref="HttpLoggingEndpointConventionBuilderExtensions.WithHttpLogging{TBuilder}(TBuilder, HttpLoggingFields, int?, int?)"/>.
+    /// </remarks>
     public int RequestBodyLogLimit { get; set; }
 
     /// <summary>
     /// Gets or sets the maximum number of bytes of the response body to log.
     /// </summary>
+    /// <remarks>
+    /// This is pre-populated with the value from <see cref="HttpLoggingOptions.ResponseBodyLogLimit"/>,
+    /// <see cref="HttpLoggingAttribute.ResponseBodyLogLimit"/>, or
+    /// <see cref="HttpLoggingEndpointConventionBuilderExtensions.WithHttpLogging{TBuilder}(TBuilder, HttpLoggingFields, int?, int?)"/>.
+    /// </remarks>
     public int ResponseBodyLogLimit { get; set; }
 
     internal long StartTimestamp { get; set; }
     internal TimeProvider TimeProvider { get; set; } = null!;
 
     /// <summary>
-    /// Data that will be logged as part of the request or response. These values are cleared after logging the request.
+    /// Data that will be logged as part of the request or response. Values specified in <see cref="LoggingFields"/>
+    /// will be added automatically after all interceptors run. These values are cleared after logging the request.
     /// All other relevant settings will carry over to the response.
     /// </summary>
     public IList<KeyValuePair<string, object?>> Parameters { get; } = new List<KeyValuePair<string, object?>>();
 
     /// <summary>
-    /// Adds data that will be logged as part of the request or response.
+    /// Adds data that will be logged as part of the request or response. See <see cref="Parameters"/>.
     /// </summary>
     /// <param name="key">The parameter name.</param>
     /// <param name="value">The parameter value.</param>
@@ -100,9 +116,9 @@ public sealed class HttpLoggingInterceptorContext
     /// Checks if any of the given fields are currently enabled in <see cref="LoggingFields"/>
     /// and disables them so that a custom log value can be provided instead.
     /// </summary>
-    /// <param name="fields">One or more field flag to check.</param>
+    /// <param name="fields">One or more field flags to check.</param>
     /// <returns><see langword="true" /> if any of the fields were previously enabled.</returns>
-    public bool TryOverride(HttpLoggingFields fields)
+    public bool TryDisable(HttpLoggingFields fields)
     {
         if (IsAnyEnabled(fields))
         {

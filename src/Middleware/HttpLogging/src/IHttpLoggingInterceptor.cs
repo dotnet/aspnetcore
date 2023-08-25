@@ -13,7 +13,7 @@ public interface IHttpLoggingInterceptor
     /// </summary>
     /// <remarks>
     /// This is called when the request is first received and can be used to configure both request and response options. All settings will carry over to
-    /// <see cref="OnResponseAsync(HttpLoggingInterceptorContext)"/>except the <see cref="HttpLoggingInterceptorContext.Parameters"/>
+    /// <see cref="OnResponseAsync(HttpLoggingInterceptorContext)"/> except the <see cref="HttpLoggingInterceptorContext.Parameters"/>
     /// will be cleared after logging the request. <see cref="HttpLoggingInterceptorContext.LoggingFields"/> may be changed per request to control the logging behavior.
     /// If no request fields are enabled, and the <see cref="HttpLoggingInterceptorContext.Parameters"/> collection is empty, no request logging will occur.
     /// </remarks>

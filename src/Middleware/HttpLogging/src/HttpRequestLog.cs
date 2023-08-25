@@ -8,12 +8,12 @@ namespace Microsoft.AspNetCore.HttpLogging;
 
 internal sealed class HttpRequestLog : IReadOnlyList<KeyValuePair<string, object?>>
 {
-    private readonly IList<KeyValuePair<string, object?>> _keyValues;
+    private readonly List<KeyValuePair<string, object?>> _keyValues;
     private string? _cachedToString;
 
     internal static readonly Func<object, Exception?, string> Callback = (state, exception) => ((HttpRequestLog)state).ToString();
 
-    public HttpRequestLog(IList<KeyValuePair<string, object?>> keyValues)
+    public HttpRequestLog(List<KeyValuePair<string, object?>> keyValues)
     {
         _keyValues = keyValues;
     }

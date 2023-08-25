@@ -253,9 +253,9 @@ try {
                     }
                 }
                 # Check for changes in Unshipped in servicing branches
-                if ($targetBranch -like 'release*'
-                    -and $targetBranch -notlike '*preview*'
-                    -and $targetBranch -notlike '*rc*'
+                if ($targetBranch -like 'release*' `
+                    -and $targetBranch -notlike '*preview*' `
+                    -and $targetBranch -notlike '*rc*' `
                     -and $file -like '*PublicAPI.Unshipped.txt') {
                     $changedAPIBaselines.Add($file)
                 }

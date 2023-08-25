@@ -156,7 +156,7 @@ internal sealed class HttpLoggingMiddleware
                 }
             }
 
-            var httpRequestLog = new HttpRequestLog(logContext.Parameters);
+            var httpRequestLog = new HttpRequestLog((List<KeyValuePair<string, object?>>)logContext.Parameters);
 
             _logger.RequestLog(httpRequestLog);
 
@@ -295,7 +295,7 @@ internal sealed class HttpLoggingMiddleware
 
         if (logContext.Parameters.Count > 0)
         {
-            var httpResponseLog = new HttpResponseLog(logContext.Parameters);
+            var httpResponseLog = new HttpResponseLog((List<KeyValuePair<string, object?>>)logContext.Parameters);
 
             logger.ResponseLog(httpResponseLog);
         }

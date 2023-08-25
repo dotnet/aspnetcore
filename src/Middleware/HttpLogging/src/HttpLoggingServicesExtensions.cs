@@ -38,7 +38,7 @@ public static class HttpLoggingServicesExtensions
     public static IServiceCollection AddHttpLoggingInterceptor<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>
         (this IServiceCollection services) where T : class, IHttpLoggingInterceptor
     {
-        services.TryAddSingleton<IHttpLoggingInterceptor, T>();
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IHttpLoggingInterceptor, T>());
         return services;
     }
 

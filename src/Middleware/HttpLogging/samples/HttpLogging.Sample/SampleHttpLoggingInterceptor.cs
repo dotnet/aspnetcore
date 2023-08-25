@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.HttpLogging;
 
 namespace HttpLogging.Sample;
 
-internal class SampleHttpLoggingInterceptor : IHttpLoggingInterceptor
+internal sealed class SampleHttpLoggingInterceptor : IHttpLoggingInterceptor
 {
     public ValueTask OnRequestAsync(HttpLoggingInterceptorContext logContext)
     {
@@ -21,12 +21,12 @@ internal class SampleHttpLoggingInterceptor : IHttpLoggingInterceptor
             return default;
         }
 
-        if (logContext.TryOverride(HttpLoggingFields.RequestPath))
+        if (logContext.TryDisable(HttpLoggingFields.RequestPath))
         {
             RedactPath(logContext);
         }
 
-        if (logContext.TryOverride(HttpLoggingFields.RequestHeaders))
+        if (logContext.TryDisable(HttpLoggingFields.RequestHeaders))
         {
             RedactRequestHeaders(logContext);
         }
@@ -60,7 +60,7 @@ internal class SampleHttpLoggingInterceptor : IHttpLoggingInterceptor
             return default;
         }
 
-        if (logContext.TryOverride(HttpLoggingFields.ResponseHeaders))
+        if (logContext.TryDisable(HttpLoggingFields.ResponseHeaders))
         {
             RedactResponseHeaders(logContext);
         }
