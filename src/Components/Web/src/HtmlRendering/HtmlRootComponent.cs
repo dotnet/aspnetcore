@@ -23,7 +23,7 @@ public readonly struct HtmlRootComponent
     /// <summary>
     /// Gets a <see cref="Task"/> that completes when the component hierarchy has completed asynchronous tasks such as loading.
     /// </summary>
-    public Task QuiescenceTask { get; } = Task.CompletedTask;
+    public Task QuiescenceTask { get; }
 
     /// <summary>
     /// Returns an HTML string representation of the component's latest output.
