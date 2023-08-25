@@ -5,6 +5,9 @@ using System.Text.RegularExpressions;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
+builder.Services.AddAuthentication().AddJwtBearer();
+builder.Services.AddAuthentication().AddGoogle();
+builder.Services.AddAuthentication().AddCookies();
 
 var app = builder.Build();
 var db = new DbContext();
