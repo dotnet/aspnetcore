@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { synchronizeDomContent } from '../Rendering/DomMerging/DomSync';
+import { registerAllComponentDescriptors, synchronizeDomContent } from '../Rendering/DomMerging/DomSync';
 import { attachProgrammaticEnhancedNavigationHandler, handleClickForNavigationInterception, hasInteractiveRouter } from './NavigationUtils';
 
 /*
@@ -39,8 +39,8 @@ export interface NavigationEnhancementCallbacks {
   documentUpdated: () => void;
 }
 
-export function isPerformingEnhancedPageLoad() {
-  return performingEnhancedPageLoad;
+export function isPageLoading() {
+  return performingEnhancedPageLoad || document.readyState === 'loading';
 }
 
 export function attachProgressivelyEnhancedNavigationListener(callbacks: NavigationEnhancementCallbacks) {
@@ -50,12 +50,23 @@ export function attachProgressivelyEnhancedNavigationListener(callbacks: Navigat
   window.addEventListener('popstate', onPopState);
 
   attachProgrammaticEnhancedNavigationHandler(performProgrammaticEnhancedNavigation);
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', onInitialDomContentLoaded);
+  } else {
+    onInitialDomContentLoaded();
+  }
 }
 
 export function detachProgressivelyEnhancedNavigationListener() {
   document.removeEventListener('click', onDocumentClick);
   document.removeEventListener('submit', onDocumentSubmit);
   window.removeEventListener('popstate', onPopState);
+}
+
+function onInitialDomContentLoaded() {
+  registerAllComponentDescriptors(document);
+  navigationEnhancementCallbacks.documentUpdated();
 }
 
 function performProgrammaticEnhancedNavigation(absoluteInternalHref: string, replace: boolean) {

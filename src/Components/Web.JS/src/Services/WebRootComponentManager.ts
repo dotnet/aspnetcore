@@ -4,7 +4,7 @@
 import { ComponentDescriptor, ComponentMarker, descriptorToMarker } from './ComponentDescriptorDiscovery';
 import { isRendererAttached, registerRendererAttachedListener, updateRootComponents } from '../Rendering/WebRendererInteropMethods';
 import { WebRendererId } from '../Rendering/WebRendererId';
-import { NavigationEnhancementCallbacks, isPerformingEnhancedPageLoad } from './NavigationEnhancement';
+import { NavigationEnhancementCallbacks, isPageLoading } from './NavigationEnhancement';
 import { DescriptorHandler } from '../Rendering/DomMerging/DomSync';
 import { disposeCircuit, hasStartedServer, isCircuitAvailable, startCircuit, startServer } from '../Boot.Server.Common';
 import { hasLoadedWebAssemblyPlatform, hasStartedLoadingWebAssemblyPlatform, hasStartedWebAssembly, loadWebAssemblyPlatformIfNotStarted, startWebAssembly, waitForBootConfigLoaded } from '../Boot.WebAssembly.Common';
@@ -296,8 +296,9 @@ export class WebRootComponentManager implements DescriptorHandler, NavigationEnh
     if (isDescriptorInDocument(component.descriptor)) {
       if (component.assignedRendererId === undefined) {
         // We haven't added this component for interactivity yet.
-        if (isPerformingEnhancedPageLoad()) {
-          // We don't add new components during enhanced page loads.
+        if (isPageLoading()) {
+          // We don't add new components while the page is loading or while
+          // enhanced navigation is underway.
           return null;
         }
 
