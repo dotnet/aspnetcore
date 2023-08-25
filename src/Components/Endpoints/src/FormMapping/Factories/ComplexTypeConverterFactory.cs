@@ -3,7 +3,6 @@
 
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Endpoints.FormMapping.Metadata;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.FormMapping;
@@ -18,38 +17,12 @@ internal class ComplexTypeConverterFactory(FormDataMapperOptions options, ILogge
     [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
     public bool CanConvert(Type type, FormDataMapperOptions options)
     {
-        if (type.IsGenericTypeDefinition)
-        {
-            return false;
-        }
-
-        var constructors = type.GetConstructors();
-        if (constructors.Length > 1 || (constructors.Length == 0 && !type.IsValueType))
-        {
-            // We can't select the constructor when there are multiple of them.
-            return false;
-        }
-
-        if (MetadataFactory.HasMetadataFor(type))
-        {
-            return true;
-        }
-
         // Create the metadata for the type. This walks the graph and creates metadata for all the types
         // in the reference graph, detecting and identifying recursive types.
-        MetadataFactory.GetOrCreateMetadataFor(type, options);
+        var metadata = MetadataFactory.GetOrCreateMetadataFor(type, options);
 
-        // Check that all properties have a valid converter.
-        var propertyHelper = PropertyHelper.GetVisibleProperties(type);
-        foreach (var helper in propertyHelper)
-        {
-            if (!options.CanConvert(helper.Property.PropertyType))
-            {
-                return false;
-            }
-        }
-
-        return true;
+        // If we can create metadata for the type, then we can convert it.
+        return metadata != null;
     }
 
     // We are going to compile a function that maps all the properties for the type.

@@ -480,6 +480,93 @@ public class FormDataMetadataFactoryTests
             });
     }
 
+    [Fact]
+    public void CanCreateMetadata_SinglePublicConstructorAndNonPublicConstructors()
+    {
+        // Arrange
+        var (factory, options, logs) = ResolveFactory();
+
+        // Act
+        var metadata = factory.GetOrCreateMetadataFor(typeof(TypeWithNonPublicConstructors), options);
+
+        // Assert
+        Assert.NotNull(metadata);
+        Assert.Equal(typeof(TypeWithNonPublicConstructors), metadata.Type);
+        Assert.Equal(FormDataTypeKind.Object, metadata.Kind);
+        Assert.False(metadata.IsRecursive);
+        Assert.NotNull(metadata.Constructor);
+        Assert.Collection(metadata.ConstructorParameters,
+            parameter =>
+            {
+                Assert.Equal("id", parameter.Name);
+                Assert.NotNull(parameter.ParameterMetadata);
+                Assert.Equal(typeof(int), parameter.ParameterMetadata.Type);
+                Assert.Equal(FormDataTypeKind.Primitive, parameter.ParameterMetadata.Kind);
+                Assert.Null(parameter.ParameterMetadata.Constructor);
+                Assert.Empty(parameter.ParameterMetadata.Properties);
+            });
+    }
+
+    [Fact]
+    public void CreateMetadata_ReturnsNull_ForInterfaceTypes()
+    {
+        // Arrange
+        var (factory, options, logs) = ResolveFactory();
+        // Act
+        var metadata = factory.GetOrCreateMetadataFor(typeof(ICustomer), options);
+
+        // Assert
+        Assert.Null(metadata);
+    }
+
+    [Fact]
+    public void CreateMetadata_ReturnsNull_ForGenericTypeDefinitions()
+    {
+        // Arrange
+        var (factory, options, logs) = ResolveFactory();
+        // Act
+        var metadata = factory.GetOrCreateMetadataFor(typeof(IList<>), options);
+
+        // Assert
+        Assert.Null(metadata);
+    }
+
+    [Fact]
+    public void CreateMetadata_ReturnsNull_ForTypesWithMultiplePublicConstructors()
+    {
+        // Arrange
+        var (factory, options, logs) = ResolveFactory();
+        // Act
+        var metadata = factory.GetOrCreateMetadataFor(typeof(TypeWithMultipleConstructors), options);
+
+        // Assert
+        Assert.Null(metadata);
+    }
+
+    [Fact]
+    public void CreateMetadata_ReturnsNull_ForAbstractTypes()
+    {
+        // Arrange
+        var (factory, options, logs) = ResolveFactory();
+        // Act
+        var metadata = factory.GetOrCreateMetadataFor(typeof(AbstracType), options);
+
+        // Assert
+        Assert.Null(metadata);
+    }
+
+    [Fact]
+    public void CreateMetadata_ReturnsNull_ForTypesWithNoPublicConstructors()
+    {
+        // Arrange
+        var (factory, options, logs) = ResolveFactory();
+        // Act
+        var metadata = factory.GetOrCreateMetadataFor(typeof(NoPublicConstructor), options);
+
+        // Assert
+        Assert.Null(metadata);
+    }
+
     private (FormDataMetadataFactory, FormDataMapperOptions, TestSink) ResolveFactory()
     {
         var logMessages = new List<LogMessage>();
@@ -488,6 +575,51 @@ public class FormDataMetadataFactoryTests
         var factory = options.Factories.OfType<ComplexTypeConverterFactory>().Single().MetadataFactory;
         return (factory, options, sink);
     }
+}
+
+public interface ICustomer
+{
+    public int Id { get; set; }
+}
+
+public class TypeWithMultipleConstructors
+{
+    public TypeWithMultipleConstructors()
+    {
+    }
+
+    public TypeWithMultipleConstructors(int id)
+    {
+    }
+
+    public int Id { get; set; }
+}
+
+public abstract class AbstracType
+{
+    public AbstracType()
+    {
+    }
+}
+
+public class NoPublicConstructor
+{
+    private NoPublicConstructor()
+    {
+    }
+}
+
+public class TypeWithNonPublicConstructors
+{
+    internal TypeWithNonPublicConstructors()
+    {
+    }
+
+    public TypeWithNonPublicConstructors(int id)
+    {
+    }
+
+    public int Id { get; set; }
 }
 
 public class CustomerWithOrders
