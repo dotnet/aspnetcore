@@ -1,12 +1,27 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <OutputType>Exe</OutputType>
     <RootNamespace>Microsoft.AspNetCore.Components.WebView</RootNamespace>
+    <!-- Suppress CS8002 because Photino assemblies are not signed -->
+    <NoWarn>@(NoWarn);CS8002</NoWarn>
+    <!-- See code comment in Program.cs/Main in this project regarding this -->
+    <StartupObject>Microsoft.AspNetCore.Components.WebView.Program</StartupObject>
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Samples\PhotinoPlatform\src\Microsoft.AspNetCore.Components.WebView.Photino.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.WebView" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="wwwroot\**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>
