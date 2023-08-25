@@ -125,6 +125,11 @@ public enum HttpLoggingFields : long
     /// Flag for logging the HTTP Request <see cref="HttpRequest.Body"/>.
     /// Logging the request body has performance implications, as it requires buffering
     /// the entire request body up to <see cref="HttpLoggingOptions.RequestBodyLogLimit"/>.
+    /// <para>
+    /// Note that the body is only logged if the application code consumes the body; the
+    /// HTTP Logging Middleware does not automatically consume the body on behalf of the
+    /// application.
+    /// </para>
     /// </summary>
     RequestBody = 0x400,
 
