@@ -8,6 +8,7 @@
  * between Mvc.Razor and Components.Endpoints.
  */
 
+using System.Diagnostics;
 using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Html;
@@ -28,6 +29,7 @@ internal sealed class ViewBufferTextWriter : TextWriter
 {
     private readonly TextWriter? _inner;
     private readonly HtmlEncoder? _htmlEncoder;
+    private bool _inUse;
 
     /// <summary>
     /// Creates a new instance of <see cref="ViewBufferTextWriter"/>.
@@ -73,14 +75,10 @@ internal sealed class ViewBufferTextWriter : TextWriter
     /// </summary>
     public MemoryPoolViewBuffer Buffer { get; }
 
-    /// <summary>
-    /// Gets a value that indicates if <see cref="Flush"/> or <see cref="FlushAsync" /> was invoked.
-    /// </summary>
-    public bool Flushed { get; private set; }
-
     /// <inheritdoc />
     public override void Write(char value)
     {
+        Debug.Assert(!_inUse, $"Attempting to use {nameof(ViewBufferTextWriter)} while in use");
         Buffer.AppendHtml(value.ToString());
     }
 
@@ -92,6 +90,7 @@ internal sealed class ViewBufferTextWriter : TextWriter
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(count, buffer.Length - index);
 
+        Debug.Assert(!_inUse, $"Attempting to use {nameof(ViewBufferTextWriter)} while in use");
         Buffer.AppendHtml(new string(buffer, index, count));
     }
 
@@ -103,6 +102,7 @@ internal sealed class ViewBufferTextWriter : TextWriter
             return;
         }
 
+        Debug.Assert(!_inUse, $"Attempting to use {nameof(ViewBufferTextWriter)} while in use");
         Buffer.AppendHtml(value);
     }
 
@@ -139,6 +139,7 @@ internal sealed class ViewBufferTextWriter : TextWriter
             return;
         }
 
+        Debug.Assert(!_inUse, $"Attempting to use {nameof(ViewBufferTextWriter)} while in use");
         Buffer.AppendHtml(value);
     }
 
@@ -153,6 +154,7 @@ internal sealed class ViewBufferTextWriter : TextWriter
             return;
         }
 
+        Debug.Assert(!_inUse, $"Attempting to use {nameof(ViewBufferTextWriter)} while in use");
         value.MoveTo(Buffer);
     }
 
@@ -184,6 +186,7 @@ internal sealed class ViewBufferTextWriter : TextWriter
     /// <inheritdoc />
     public override Task WriteAsync(char value)
     {
+        Debug.Assert(!_inUse, $"Attempting to use {nameof(ViewBufferTextWriter)} while in use");
         Buffer.AppendHtml(value.ToString());
         return Task.CompletedTask;
     }
@@ -198,6 +201,7 @@ internal sealed class ViewBufferTextWriter : TextWriter
             throw new ArgumentOutOfRangeException(nameof(count));
         }
 
+        Debug.Assert(!_inUse, $"Attempting to use {nameof(ViewBufferTextWriter)} while in use");
         Buffer.AppendHtml(new string(buffer, index, count));
         return Task.CompletedTask;
     }
@@ -205,6 +209,7 @@ internal sealed class ViewBufferTextWriter : TextWriter
     /// <inheritdoc />
     public override Task WriteAsync(string? value)
     {
+        Debug.Assert(!_inUse, $"Attempting to use {nameof(ViewBufferTextWriter)} while in use");
         Buffer.AppendHtml(value);
         return Task.CompletedTask;
     }
@@ -212,12 +217,14 @@ internal sealed class ViewBufferTextWriter : TextWriter
     /// <inheritdoc />
     public override void WriteLine()
     {
+        Debug.Assert(!_inUse, $"Attempting to use {nameof(ViewBufferTextWriter)} while in use");
         Buffer.AppendHtml(NewLine);
     }
 
     /// <inheritdoc />
     public override void WriteLine(string? value)
     {
+        Debug.Assert(!_inUse, $"Attempting to use {nameof(ViewBufferTextWriter)} while in use");
         Buffer.AppendHtml(value);
         Buffer.AppendHtml(NewLine);
     }
@@ -225,6 +232,7 @@ internal sealed class ViewBufferTextWriter : TextWriter
     /// <inheritdoc />
     public override Task WriteLineAsync(char value)
     {
+        Debug.Assert(!_inUse, $"Attempting to use {nameof(ViewBufferTextWriter)} while in use");
         Buffer.AppendHtml(value.ToString());
         Buffer.AppendHtml(NewLine);
         return Task.CompletedTask;
@@ -233,6 +241,7 @@ internal sealed class ViewBufferTextWriter : TextWriter
     /// <inheritdoc />
     public override Task WriteLineAsync(char[] value, int start, int offset)
     {
+        Debug.Assert(!_inUse, $"Attempting to use {nameof(ViewBufferTextWriter)} while in use");
         Buffer.AppendHtml(new string(value, start, offset));
         Buffer.AppendHtml(NewLine);
         return Task.CompletedTask;
@@ -241,6 +250,7 @@ internal sealed class ViewBufferTextWriter : TextWriter
     /// <inheritdoc />
     public override Task WriteLineAsync(string? value)
     {
+        Debug.Assert(!_inUse, $"Attempting to use {nameof(ViewBufferTextWriter)} while in use");
         Buffer.AppendHtml(value);
         Buffer.AppendHtml(NewLine);
         return Task.CompletedTask;
@@ -249,6 +259,7 @@ internal sealed class ViewBufferTextWriter : TextWriter
     /// <inheritdoc />
     public override Task WriteLineAsync()
     {
+        Debug.Assert(!_inUse, $"Attempting to use {nameof(ViewBufferTextWriter)} while in use");
         Buffer.AppendHtml(NewLine);
         return Task.CompletedTask;
     }
@@ -263,8 +274,7 @@ internal sealed class ViewBufferTextWriter : TextWriter
             return;
         }
 
-        Flushed = true;
-
+        Debug.Assert(!_inUse, $"Attempting to use {nameof(ViewBufferTextWriter)} while in use");
         Buffer.WriteTo(_inner, _htmlEncoder ?? HtmlEncoder.Default);
         Buffer.Clear();
 
@@ -282,11 +292,13 @@ internal sealed class ViewBufferTextWriter : TextWriter
             return;
         }
 
-        Flushed = true;
+        Debug.Assert(!_inUse, $"Attempting to use {nameof(ViewBufferTextWriter)} while in use");
+        _inUse = true;
 
         await Buffer.WriteToAsync(_inner, _htmlEncoder ?? HtmlEncoder.Default);
         Buffer.Clear();
 
         await _inner.FlushAsync();
+        _inUse = false;
     }
 }
