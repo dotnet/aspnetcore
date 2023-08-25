@@ -31,7 +31,10 @@ internal sealed class FormDataMapperOptions
         _factories.Add(new DictionaryConverterFactory());
         _factories.Add(new CollectionConverterFactory());
         _factories.Add(new ComplexTypeConverterFactory(this, loggerFactory));
+        Logger = loggerFactory.CreateLogger<FormDataMapperOptions>();
     }
+
+    internal ILogger Logger { get; }
 
     // Not configurable for now, this is the max number of elements we will bind. This is important for
     // security reasons, as we don't want to bind a huge collection and cause perf issues.

@@ -60,6 +60,7 @@ internal partial class FormDataMetadataFactory(List<IFormDataConverterFactory> f
             if (type.IsGenericTypeDefinition)
             {
                 Log.GenericTypeDefinitionNotSupported(_logger, type);
+                _context.TypeMetadata.Remove(type);
                 return null;
             }
 
@@ -111,6 +112,7 @@ internal partial class FormDataMetadataFactory(List<IFormDataConverterFactory> f
                 if (type.IsAbstract)
                 {
                     Log.AbstractClassesNotSupported(_logger, type);
+                    _context.TypeMetadata.Remove(type);
                     return null;
                 }
             }
@@ -135,6 +137,7 @@ internal partial class FormDataMetadataFactory(List<IFormDataConverterFactory> f
                     Log.NoPublicConstructorFound(_logger, type);
                 }
 
+                _context.TypeMetadata.Remove(type);
                 // We can't bind to reference types without constructors.
                 return null;
             }
@@ -156,6 +159,7 @@ internal partial class FormDataMetadataFactory(List<IFormDataConverterFactory> f
                     if (parameterTypeInfo == null)
                     {
                         Log.ConstructorParameterTypeNotSupported(_logger, type, parameter.Name!, parameter.ParameterType);
+                        _context.TypeMetadata.Remove(type);
                         return null;
                     }
 
@@ -205,6 +209,7 @@ internal partial class FormDataMetadataFactory(List<IFormDataConverterFactory> f
                 if (propertyTypeInfo == null)
                 {
                     Log.PropertyTypeNotSupported(_logger, type, property.Name, property.PropertyType);
+                    _context.TypeMetadata.Remove(type);
                     return null;
                 }
                 var propertyInfo = new FormDataPropertyMetadata(property, propertyTypeInfo);
@@ -382,25 +387,25 @@ internal partial class FormDataMetadataFactory(List<IFormDataConverterFactory> f
         [LoggerMessage(18, LogLevel.Debug, "Metadata created for {Type}.", EventName = nameof(MetadataComputed))]
         public static partial void MetadataComputed(ILogger<FormDataMetadataFactory> logger, Type type);
 
-        [LoggerMessage(19, LogLevel.Error, "Can not map type generic type definition '{Type}'.", EventName = nameof(GenericTypeDefinitionNotSupported))]
+        [LoggerMessage(19, LogLevel.Debug, "Can not map type generic type definition '{Type}'.", EventName = nameof(GenericTypeDefinitionNotSupported))]
         public static partial void GenericTypeDefinitionNotSupported(ILogger<FormDataMetadataFactory> logger, Type type);
 
-        [LoggerMessage(20, LogLevel.Error, "Unable to select a constructor. Multiple public constructors found for type '{Type}'.", EventName = nameof(MultiplePublicConstructorsFound))]
+        [LoggerMessage(20, LogLevel.Debug, "Unable to select a constructor. Multiple public constructors found for type '{Type}'.", EventName = nameof(MultiplePublicConstructorsFound))]
         public static partial void MultiplePublicConstructorsFound(ILogger<FormDataMetadataFactory> logger, Type type);
 
-        [LoggerMessage(21, LogLevel.Error, "Can not map interface type '{Type}'.", EventName = nameof(InterfacesNotSupported))]
+        [LoggerMessage(21, LogLevel.Debug, "Can not map interface type '{Type}'.", EventName = nameof(InterfacesNotSupported))]
         public static partial void InterfacesNotSupported(ILogger<FormDataMetadataFactory> logger, Type type);
 
-        [LoggerMessage(22, LogLevel.Error, "Can not map abstract type '{Type}'.", EventName = nameof(AbstractClassesNotSupported))]
+        [LoggerMessage(22, LogLevel.Debug, "Can not map abstract type '{Type}'.", EventName = nameof(AbstractClassesNotSupported))]
         public static partial void AbstractClassesNotSupported(ILogger<FormDataMetadataFactory> logger, Type type);
 
-        [LoggerMessage(23, LogLevel.Error, "Unable to select a constructor. No public constructors found for type '{Type}'.", EventName = nameof(NoPublicConstructorFound))]
+        [LoggerMessage(23, LogLevel.Debug, "Unable to select a constructor. No public constructors found for type '{Type}'.", EventName = nameof(NoPublicConstructorFound))]
         public static partial void NoPublicConstructorFound(ILogger<FormDataMetadataFactory> logger, Type type);
 
-        [LoggerMessage(24, LogLevel.Error, "Can not map type '{Type}'. Constructor parameter {Name} of type {ParameterType} is not supported.", EventName = nameof(ConstructorParameterTypeNotSupported))]
+        [LoggerMessage(24, LogLevel.Debug, "Can not map type '{Type}'. Constructor parameter {Name} of type {ParameterType} is not supported.", EventName = nameof(ConstructorParameterTypeNotSupported))]
         public static partial void ConstructorParameterTypeNotSupported(ILogger<FormDataMetadataFactory> logger, Type type, string name, Type parameterType);
 
-        [LoggerMessage(25, LogLevel.Error, "Can not map type '{Type}'. Property {Name} of type {PropertyType} is not supported.", EventName = nameof(PropertyTypeNotSupported))]
+        [LoggerMessage(25, LogLevel.Debug, "Can not map type '{Type}'. Property {Name} of type {PropertyType} is not supported.", EventName = nameof(PropertyTypeNotSupported))]
         public static partial void PropertyTypeNotSupported(ILogger<FormDataMetadataFactory> logger, Type type, string name, Type propertyType);
     }
 }
