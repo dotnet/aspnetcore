@@ -3401,7 +3401,7 @@
           {
             "name": "addReply",
             "parameters": {
-              "comment": "Thank you for filing this issue. In order for us to investigate this issue, please provide [a minimalistic repro project](https://github.com/dotnet/aspnetcore/blob/main/docs/repro.md) that illustrates the problem. Please post the project as a public GitHub repo because we cannot open ZIP attachments."
+              "comment": "Thank you for filing this issue. In order for us to investigate this issue, please provide [a minimal repro project](https://github.com/dotnet/aspnetcore/blob/main/docs/repro.md) that illustrates the problem without unnecessary code. Please share with us in a public GitHub repo because we cannot open ZIP attachments, and don't include any confidential content."
             }
           },
           {
