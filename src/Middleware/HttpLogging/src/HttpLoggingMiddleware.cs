@@ -97,10 +97,9 @@ internal sealed class HttpLoggingMiddleware
 
         loggingFields = logContext.LoggingFields;
 
-        if (logContext.IsAnyEnabled(HttpLoggingFields.Request))
+        var request = context.Request;
+        if (logContext.IsAnyEnabled(HttpLoggingFields.RequestPropertiesAndHeaders))
         {
-            var request = context.Request;
-
             if (loggingFields.HasFlag(HttpLoggingFields.RequestProtocol))
             {
                 logContext.AddParameter(nameof(request.Protocol), request.Protocol);
@@ -132,35 +131,38 @@ internal sealed class HttpLoggingMiddleware
                 FilterHeaders(logContext, request.Headers, options._internalRequestHeaders);
             }
 
-            if (loggingFields.HasFlag(HttpLoggingFields.RequestBody))
+            if (logContext.Parameters.Count > 0)
             {
-                if (request.ContentType is null)
-                {
-                    _logger.NoMediaType("request");
-                }
-                else if (MediaTypeHelpers.TryGetEncodingForMediaType(request.ContentType,
-                    options.MediaTypeOptions.MediaTypeStates,
-                    out var encoding))
-                {
-                    originalBody = request.Body;
-                    requestBufferingStream = new RequestBufferingStream(
-                        request.Body,
-                        logContext.RequestBodyLogLimit,
-                        _logger,
-                        encoding);
-                    request.Body = requestBufferingStream;
-                }
-                else
-                {
-                    _logger.UnrecognizedMediaType("request");
-                }
+                var httpRequestLog = new HttpRequestLog((List<KeyValuePair<string, object?>>)logContext.Parameters);
+
+                _logger.RequestLog(httpRequestLog);
+
+                logContext.Parameters.Clear();
             }
+        }
 
-            var httpRequestLog = new HttpRequestLog((List<KeyValuePair<string, object?>>)logContext.Parameters);
-
-            _logger.RequestLog(httpRequestLog);
-
-            logContext.Parameters.Clear();
+        if (loggingFields.HasFlag(HttpLoggingFields.RequestBody))
+        {
+            if (request.ContentType is null)
+            {
+                _logger.NoMediaType("request");
+            }
+            else if (MediaTypeHelpers.TryGetEncodingForMediaType(request.ContentType,
+                options.MediaTypeOptions.MediaTypeStates,
+                out var encoding))
+            {
+                originalBody = request.Body;
+                requestBufferingStream = new RequestBufferingStream(
+                    request.Body,
+                    logContext.RequestBodyLogLimit,
+                    _logger,
+                    encoding);
+                request.Body = requestBufferingStream;
+            }
+            else
+            {
+                _logger.UnrecognizedMediaType("request");
+            }
         }
 
         ResponseBufferingStream? responseBufferingStream = null;
@@ -173,7 +175,7 @@ internal sealed class HttpLoggingMiddleware
         {
             var response = context.Response;
 
-            if (loggingFields.HasFlag(HttpLoggingFields.ResponseStatusCode) || loggingFields.HasFlag(HttpLoggingFields.ResponseHeaders))
+            if (logContext.IsAnyEnabled(HttpLoggingFields.ResponsePropertiesAndHeaders))
             {
                 originalUpgradeFeature = context.Features.Get<IHttpUpgradeFeature>();
 
