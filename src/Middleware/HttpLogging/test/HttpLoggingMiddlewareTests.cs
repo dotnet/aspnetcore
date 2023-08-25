@@ -285,6 +285,23 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         Assert.DoesNotContain(TestSink.Writes, w => w.Message.Contains("Connection: keep-alive"));
     }
 
+    [Fact]
+    public async Task LogsMessageIfNotConsumed()
+    {
+        var options = CreateOptionsAccessor();
+        options.CurrentValue.LoggingFields = HttpLoggingFields.RequestBody;
+
+        var middleware = CreateMiddleware(options: options);
+
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.ContentType = "text/plain";
+        httpContext.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes("Hello World"));
+
+        await middleware.Invoke(httpContext);
+
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("RequestBody: [Not consumed by app]"));
+    }
+
     [Theory]
     [MemberData(nameof(BodyData))]
     public async Task RequestBodyReadingWorks(string expected)
@@ -404,7 +421,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         httpContext.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(input));
 
         await middleware.Invoke(httpContext);
-        var expected = input.Substring(0, options.CurrentValue.RequestBodyLogLimit / 3);
+        var expected = input.Substring(0, options.CurrentValue.RequestBodyLogLimit / 3) + "[Truncated by RequestBodyLogLimit]";
 
         Assert.Contains(TestSink.Writes, w => w.Message.Equals("RequestBody: " + expected));
     }
@@ -440,7 +457,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         httpContext.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(input));
 
         await middleware.Invoke(httpContext);
-        var expected = input.Substring(0, options.CurrentValue.ResponseBodyLogLimit);
+        var expected = input.Substring(0, options.CurrentValue.RequestBodyLogLimit) + "[Truncated by RequestBodyLogLimit]";
 
         Assert.Contains(TestSink.Writes, w => w.Message.Equals("RequestBody: " + expected));
     }
@@ -465,7 +482,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         httpContext.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(input));
 
         await middleware.Invoke(httpContext);
-        var expected = input.Substring(0, 4096);
+        var expected = input.Substring(0, 4096) + "[Only partially consumed by app]";
 
         Assert.Contains(TestSink.Writes, w => w.Message.Equals("RequestBody: " + expected));
     }
@@ -491,7 +508,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         httpContext.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(input));
 
         await middleware.Invoke(httpContext);
-        var expected = input.Substring(0, 4096);
+        var expected = input.Substring(0, 4096) + "[Only partially consumed by app]";
 
         Assert.Contains(TestSink.Writes, w => w.Message.Equals("RequestBody: " + expected));
     }
@@ -1493,7 +1510,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         var initialResponse = await client.SendAsync(request);
 
         var filteredLogs = TestSink.Writes.Where(w => w.LoggerName.Contains("HttpLogging"));
-        Assert.Contains(filteredLogs, w => w.Message.Equals("RequestBody: fro"));
+        Assert.Contains(filteredLogs, w => w.Message.Equals("RequestBody: fro[Truncated by RequestBodyLogLimit]"));
         Assert.Contains(filteredLogs, w => w.Message.Equals("ResponseBody: testin"));
     }
 
@@ -1583,7 +1600,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         var initialResponse = await client.SendAsync(request);
 
         var filteredLogs = TestSink.Writes.Where(w => w.LoggerName.Contains("HttpLogging"));
-        Assert.Contains(filteredLogs, w => w.Message.Equals("RequestBody: fro"));
+        Assert.Contains(filteredLogs, w => w.Message.Equals("RequestBody: fro[Truncated by RequestBodyLogLimit]"));
         Assert.Contains(filteredLogs, w => w.Message.Equals("ResponseBody: testin"));
     }
 

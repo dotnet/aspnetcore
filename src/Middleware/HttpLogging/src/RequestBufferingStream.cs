@@ -11,6 +11,7 @@ internal sealed class RequestBufferingStream : BufferingStream
 {
     private readonly Encoding _encoding;
     private readonly int _limit;
+    private BodyStatus _status = BodyStatus.None;
 
     public bool HasLogged { get; private set; }
 
@@ -81,9 +82,12 @@ internal sealed class RequestBufferingStream : BufferingStream
         if (span.Length == 0 && !HasLogged)
         {
             // Done reading, log the string.
+            _status = BodyStatus.Complete;
             LogRequestBody();
             return;
         }
+
+        _status = BodyStatus.Incomplete;
 
         var innerCount = Math.Min(remaining, span.Length);
 
@@ -100,6 +104,7 @@ internal sealed class RequestBufferingStream : BufferingStream
 
         if (_limit - _bytesBuffered == 0 && !HasLogged)
         {
+            _status = BodyStatus.Truncated;
             LogRequestBody();
         }
     }
@@ -108,7 +113,16 @@ internal sealed class RequestBufferingStream : BufferingStream
     {
         if (!HasLogged)
         {
-            _logger.RequestBody(GetString(_encoding));
+            var status = _status switch
+            {
+                BodyStatus.None => "[Not consumed by app]",
+                BodyStatus.Incomplete => "[Only partially consumed by app]",
+                BodyStatus.Complete => "",
+                BodyStatus.Truncated => "[Truncated by RequestBodyLogLimit]",
+                _ => throw new NotImplementedException(_status.ToString()),
+            };
+
+            _logger.RequestBody(GetString(_encoding), status);
             HasLogged = true;
         }
     }
@@ -121,5 +135,28 @@ internal sealed class RequestBufferingStream : BufferingStream
     public override int EndRead(IAsyncResult asyncResult)
     {
         return TaskToApm.End<int>(asyncResult);
+    }
+
+    private enum BodyStatus
+    {
+        /// <summary>
+        /// The body was not read.
+        /// </summary>
+        None,
+
+        /// <summary>
+        /// The body was partially read.
+        /// </summary>
+        Incomplete,
+
+        /// <summary>
+        /// The body was completely read.
+        /// </summary>
+        Complete,
+
+        /// <summary>
+        /// The body was read and truncated.
+        /// </summary>
+        Truncated,
     }
 }
