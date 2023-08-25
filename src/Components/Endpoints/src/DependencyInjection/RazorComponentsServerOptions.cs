@@ -1,6 +1,3 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-
 using Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
@@ -8,9 +5,14 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 /// <summary>
 /// Provides options for configuring server-side rendering of Razor Components.
 /// </summary>
-public sealed class RazorComponentsOptions
+public sealed class RazorComponentsServerOptions
 {
-    internal readonly FormDataMapperOptions _formMappingOptions = new();
+    internal FormDataMapperOptions _formMappingOptions = new();
+
+    /// <summary>
+    /// Gets or sets a value that determines whether to include detailed information on errors.
+    /// </summary>
+    public bool DetailedErrors { get; set; }
 
     /// <summary>
     /// Gets or sets the maximum number of elements allowed in a form collection.

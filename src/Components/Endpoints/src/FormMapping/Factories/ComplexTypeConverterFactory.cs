@@ -4,14 +4,15 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Endpoints.FormMapping.Metadata;
 using Microsoft.Extensions.Internal;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 
 // This factory is registered last, which means, dictionaries and collections, have already
 // been processed by the time we get here.
-internal class ComplexTypeConverterFactory(FormDataMapperOptions options) : IFormDataConverterFactory
+internal class ComplexTypeConverterFactory(FormDataMapperOptions options, ILoggerFactory loggerFactory) : IFormDataConverterFactory
 {
-    internal FormDataMetadataFactory MetadataFactory { get; } = new FormDataMetadataFactory(options.Factories);
+    internal FormDataMetadataFactory MetadataFactory { get; } = new FormDataMetadataFactory(options.Factories, loggerFactory);
 
     [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
     [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]

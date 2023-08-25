@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Extensions.Logging.Testing;
+
 namespace Microsoft.AspNetCore.Components.Endpoints.FormMapping.Metadata;
 
 public class FormDataMetadataFactoryTests
@@ -9,7 +11,7 @@ public class FormDataMetadataFactoryTests
     public void CanCreateMetadata_ForBasicClassTypes()
     {
         // Arrange
-        var (factory, options) = ResolveFactory();
+        var (factory, options, logs) = ResolveFactory();
         // Act
         var metadata = factory.GetOrCreateMetadataFor(typeof(Customer), options);
 
@@ -43,7 +45,7 @@ public class FormDataMetadataFactoryTests
     public void CanCreateMetadata_ForMoreComplexClassTypes()
     {
         // Arrange
-        var (factory, options) = ResolveFactory();
+        var (factory, options, logs) = ResolveFactory();
         // Act
         var metadata = factory.GetOrCreateMetadataFor(typeof(CustomerWithAddress), options);
 
@@ -116,7 +118,7 @@ public class FormDataMetadataFactoryTests
     public void CanCreateMetadata_ForValueTypes()
     {
         // Arrange
-        var (factory, options) = ResolveFactory();
+        var (factory, options, logs) = ResolveFactory();
         // Act
         var metadata = factory.GetOrCreateMetadataFor(typeof(Address), options);
 
@@ -150,7 +152,7 @@ public class FormDataMetadataFactoryTests
     public void CanCreateMetadata_DetectsConstructors()
     {
         // Arrange
-        var (factory, options) = ResolveFactory();
+        var (factory, options, logs) = ResolveFactory();
         // Act
         var metadata = factory.GetOrCreateMetadataFor(typeof(KeyValuePair<int, string>), options);
 
@@ -184,7 +186,7 @@ public class FormDataMetadataFactoryTests
     public void CanCreateMetadata_ForTypeWithCollection()
     {
         // Arrange
-        var (factory, options) = ResolveFactory();
+        var (factory, options, logs) = ResolveFactory();
         // Act
         var metadata = factory.GetOrCreateMetadataFor(typeof(CustomerWithOrders), options);
         Assert.NotNull(metadata);
@@ -247,7 +249,7 @@ public class FormDataMetadataFactoryTests
     public void CanCreateMetadata_ForTypeWithDictionary()
     {
         // Arrange
-        var (factory, options) = ResolveFactory();
+        var (factory, options, logs) = ResolveFactory();
         // Act
         var metadata = factory.GetOrCreateMetadataFor(typeof(CompanyWithWarehousesByLocation), options);
 
@@ -321,7 +323,7 @@ public class FormDataMetadataFactoryTests
     public void CanCreateMetadata_ForRecursiveTypes()
     {
         // Arrange
-        var (factory, options) = ResolveFactory();
+        var (factory, options, logs) = ResolveFactory();
         // Act
         var metadata = factory.GetOrCreateMetadataFor(typeof(RecursiveList<string>), options);
 
@@ -355,7 +357,7 @@ public class FormDataMetadataFactoryTests
     public void CanCreateMetadata_ForRecursiveTypesWithInheritance()
     {
         // Arrange
-        var (factory, options) = ResolveFactory();
+        var (factory, options, logs) = ResolveFactory();
         // Act
         var metadata = factory.GetOrCreateMetadataFor(typeof(BaseList<string>), options);
 
@@ -408,7 +410,7 @@ public class FormDataMetadataFactoryTests
     public void CanCreateMetadata_ForRecursiveTypesCollections()
     {
         // Arrange
-        var (factory, options) = ResolveFactory();
+        var (factory, options, logs) = ResolveFactory();
         // Act
         var metadata = factory.GetOrCreateMetadataFor(typeof(Tree<string>), options);
 
@@ -445,7 +447,7 @@ public class FormDataMetadataFactoryTests
     public void CanCreateMetadata_ForRecursiveTypesDictionaries()
     {
         // Arrange
-        var (factory, options) = ResolveFactory();
+        var (factory, options, logs) = ResolveFactory();
         // Act
         var metadata = factory.GetOrCreateMetadataFor(typeof(DictionaryTree<string>), options);
 
@@ -478,11 +480,13 @@ public class FormDataMetadataFactoryTests
             });
     }
 
-    private (FormDataMetadataFactory, FormDataMapperOptions) ResolveFactory()
+    private (FormDataMetadataFactory, FormDataMapperOptions, TestSink) ResolveFactory()
     {
-        var options = new FormDataMapperOptions();
+        var logMessages = new List<LogMessage>();
+        var sink = new TestSink();
+        var options = new FormDataMapperOptions(new TestLoggerFactory(sink, enabled: true));
         var factory = options.Factories.OfType<ComplexTypeConverterFactory>().Single().MetadataFactory;
-        return (factory, options);
+        return (factory, options, sink);
     }
 }
 
@@ -556,4 +560,17 @@ public class CustomerWithAddress
 {
     public Address BillingAddress { get; set; }
     public Address ShippingAddress { get; set; }
+}
+
+internal record struct LogMessage(int id, string message, string eventName)
+{
+    public static implicit operator (int id, string message, string eventName)(LogMessage value)
+    {
+        return (value.id, value.message, value.eventName);
+    }
+
+    public static implicit operator LogMessage((int id, string message, string eventName) value)
+    {
+        return new LogMessage(value.id, value.message, value.eventName);
+    }
 }

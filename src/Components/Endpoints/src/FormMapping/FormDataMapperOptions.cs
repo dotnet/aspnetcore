@@ -4,6 +4,8 @@
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 
@@ -14,7 +16,13 @@ internal sealed class FormDataMapperOptions
 
     [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
     [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
-    public FormDataMapperOptions()
+    public FormDataMapperOptions() : this(NullLoggerFactory.Instance)
+    {        
+    }
+
+    [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
+    public FormDataMapperOptions(ILoggerFactory loggerFactory)
     {
         _converters = new(WellKnownConverters.Converters);
         _factories.Add(new ParsableConverterFactory());
@@ -22,7 +30,7 @@ internal sealed class FormDataMapperOptions
         _factories.Add(new NullableConverterFactory());
         _factories.Add(new DictionaryConverterFactory());
         _factories.Add(new CollectionConverterFactory());
-        _factories.Add(new ComplexTypeConverterFactory(this));
+        _factories.Add(new ComplexTypeConverterFactory(this, loggerFactory));
     }
 
     // Not configurable for now, this is the max number of elements we will bind. This is important for

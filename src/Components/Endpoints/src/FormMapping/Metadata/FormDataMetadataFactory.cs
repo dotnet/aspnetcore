@@ -7,15 +7,17 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using Microsoft.Extensions.Internal;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.FormMapping.Metadata;
 
-internal class FormDataMetadataFactory(List<IFormDataConverterFactory> factories)
+internal partial class FormDataMetadataFactory(List<IFormDataConverterFactory> factories, Extensions.Logging.ILoggerFactory loggerFactory)
 {
     private readonly FormMetadataContext _context = new();
     private readonly ParsableConverterFactory _parsableFactory = factories.OfType<ParsableConverterFactory>().Single();
     private readonly DictionaryConverterFactory _dictionaryFactory = factories.OfType<DictionaryConverterFactory>().Single();
     private readonly CollectionConverterFactory _collectionFactory = factories.OfType<CollectionConverterFactory>().Single();
+    private readonly ILogger<FormDataMetadataFactory> _logger = loggerFactory.CreateLogger<FormDataMetadataFactory>();
 
     [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
     [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
@@ -39,6 +41,7 @@ internal class FormDataMetadataFactory(List<IFormDataConverterFactory> factories
             // the type graph.
             if (shouldClearContext)
             {
+                Log.StartResolveMetadataGraph(_logger, type);
                 _context.BeginResolveGraph();
             }
 
@@ -46,7 +49,12 @@ internal class FormDataMetadataFactory(List<IFormDataConverterFactory> factories
             var result = _context.TypeMetadata.TryGetValue(type, out var value) ? value : new FormDataTypeMetadata(type);
             if (value == null)
             {
+                Log.NoMetadataFound(_logger, type);
                 _context.TypeMetadata[type] = result;
+            }
+            else
+            {
+                Log.MetadataFound(_logger, type);
             }
 
             // Check for cycles and mark any type as recursive if needed.
@@ -63,12 +71,14 @@ internal class FormDataMetadataFactory(List<IFormDataConverterFactory> factories
                 (Nullable.GetUnderlyingType(type) is { } underlyingType &&
                     _parsableFactory.CanConvert(underlyingType, options)))
             {
+                Log.PrimitiveType(_logger, type);
                 result.Kind = FormDataTypeKind.Primitive;
                 return result;
             }
 
             if (_dictionaryFactory.CanConvert(type, options))
             {
+                Log.DictionaryType(_logger, type);
                 result.Kind = FormDataTypeKind.Dictionary;
                 var (keyType, valueType) = DictionaryConverterFactory.ResolveDictionaryTypes(type)!;
                 result.KeyType = GetOrCreateMetadataFor(keyType, options);
@@ -78,11 +88,13 @@ internal class FormDataMetadataFactory(List<IFormDataConverterFactory> factories
 
             if (_collectionFactory.CanConvert(type, options))
             {
+                Log.CollectionType(_logger, type);
                 result.Kind = FormDataTypeKind.Collection;
                 result.ElementType = GetOrCreateMetadataFor(CollectionConverterFactory.ResolveElementType(type)!, options);
                 return result;
             }
 
+            Log.ObjectType(_logger, type);
             result.Kind = FormDataTypeKind.Object;
             _context.Track(type);
             var constructors = type.GetConstructors();
@@ -94,10 +106,17 @@ internal class FormDataMetadataFactory(List<IFormDataConverterFactory> factories
 
             if (result.Constructor != null)
             {
+                if (_logger.IsEnabled(LogLevel.Debug))
+                {
+                    var parameters = $"({string.Join(", ", result.Constructor.GetParameters().Select(p => p.ParameterType.Name))})";
+                    Log.ConstructorFound(_logger, type, parameters);
+                }
+
                 var values = result.Constructor.GetParameters();
 
                 foreach (var parameter in values)
                 {
+                    Log.ConstructorParameter(_logger, type, parameter.Name!, parameter.ParameterType);
                     var parameterTypeInfo = GetOrCreateMetadataFor(parameter.ParameterType, options);
                     result.ConstructorParameters.Add(new FormDataParameterMetadata(parameter, parameterTypeInfo));
                 }
@@ -107,15 +126,18 @@ internal class FormDataMetadataFactory(List<IFormDataConverterFactory> factories
             foreach (var propertyHelper in candidateProperty)
             {
                 var property = propertyHelper.Property;
+                Log.CandidateProperty(_logger, propertyHelper.Name, property.PropertyType);
                 var matchingConstructorParameter = result
                     .ConstructorParameters
                     .FirstOrDefault(p => string.Equals(p.Name, property.Name, StringComparison.OrdinalIgnoreCase));
 
                 if (matchingConstructorParameter != null)
                 {
+                    Log.MatchingConstructorParameterFound(_logger, matchingConstructorParameter.Name, property.Name);
                     var dataMember = property.GetCustomAttribute<DataMemberAttribute>();
                     if (dataMember != null && dataMember.IsNameSetExplicitly && dataMember.Name != null)
                     {
+                        Log.CustomParameterNameMetadata(_logger, dataMember.Name, property.Name);
                         matchingConstructorParameter.Name = dataMember.Name;
                     }
 
@@ -126,12 +148,14 @@ internal class FormDataMetadataFactory(List<IFormDataConverterFactory> factories
                 var ignoreDataMember = property.GetCustomAttribute<IgnoreDataMemberAttribute>();
                 if (ignoreDataMember != null)
                 {
+                    Log.IgnoredProperty(_logger, property.Name);
                     // The propertyHelper is marked as ignored, we don't need to add it.
                     continue;
                 }
 
                 if (property.SetMethod == null || !property.SetMethod.IsPublic)
                 {
+                    Log.NonPublicSetter(_logger, property.Name);
                     // The property is readonly, we don't need to add it.
                     continue;
                 }
@@ -142,14 +166,17 @@ internal class FormDataMetadataFactory(List<IFormDataConverterFactory> factories
                 var dataMemberAttribute = property.GetCustomAttribute<DataMemberAttribute>();
                 if (dataMemberAttribute != null && dataMemberAttribute.IsNameSetExplicitly && dataMemberAttribute.Name != null)
                 {
+                    Log.CustomParameterNameMetadata(_logger, dataMemberAttribute.Name, property.Name);
                     propertyInfo.Name = dataMemberAttribute.Name;
                     propertyInfo.Required = dataMemberAttribute.IsRequired;
+                    Log.PropertyRequired(_logger, propertyInfo.Name, propertyInfo.Required);
                 }
 
                 var requiredAttribute = property.GetCustomAttribute<RequiredMemberAttribute>();
                 if (requiredAttribute != null)
                 {
                     propertyInfo.Required = true;
+                    Log.PropertyRequired(_logger, propertyInfo.Name, propertyInfo.Required);
                 }
 
                 result.Properties.Add(propertyInfo);
@@ -162,6 +189,7 @@ internal class FormDataMetadataFactory(List<IFormDataConverterFactory> factories
             _context.Untrack(type);
             if (shouldClearContext)
             {
+                Log.EndResolveMetadataGraph(_logger, type);
                 _context.EndResolveGraph();
             }
         }
@@ -187,14 +215,28 @@ internal class FormDataMetadataFactory(List<IFormDataConverterFactory> factories
                 // We found an exact match in the current resolution graph.
                 // This means that the type is recursive.
                 result.IsRecursive = true;
+                ReportRecursiveChain(type);
+
             }
             else if (type.IsSubclassOf(_context.CurrentTypes[i]))
             {
                 // We found a type that is assignable from the current type.
                 // This means that the type is recursive.
-                // The type must have already been registered in DI.
                 var existingType = _context.TypeMetadata[_context.CurrentTypes[i]];
+                ReportRecursiveChain(type);
                 existingType.IsRecursive = true;
+            }
+
+            // We don't need to check for interfaces here because we never map to an interface, so if we encounter one, we will fail,
+            // as we can't construct the converter to map the interface to a concrete instance.
+        }
+
+        void ReportRecursiveChain(Type type)
+        {
+            if (_logger.IsEnabled(LogLevel.Debug))
+            {
+                var chain = string.Join(" -> ", _context.CurrentTypes.Append(type).Select(t => t.Name));
+                Log.RecursiveTypeFound(_logger, type, chain);
             }
         }
     }
@@ -235,5 +277,59 @@ internal class FormDataMetadataFactory(List<IFormDataConverterFactory> factories
         {
             CurrentTypes.Remove(type);
         }
+    }
+
+    private static partial class Log
+    {
+        [LoggerMessage(1, LogLevel.Debug, "Begin resolve metadata graph for type '{Type}'.", EventName = nameof(StartResolveMetadataGraph))]
+        public static partial void StartResolveMetadataGraph(ILogger logger, Type type);
+
+        [LoggerMessage(2, LogLevel.Debug, "End resolve metadata graph for type '{Type}'.", EventName = nameof(EndResolveMetadataGraph))]
+        public static partial void EndResolveMetadataGraph(ILogger logger, Type type);
+
+        [LoggerMessage(3, LogLevel.Debug, "Cached metadata found for type '{Type}'.", EventName = nameof(Metadata))]
+        public static partial void MetadataFound(ILogger<FormDataMetadataFactory> logger, Type type);
+
+        [LoggerMessage(4, LogLevel.Debug, "No cached metadata graph for type '{Type}'.", EventName = nameof(NoMetadataFound))]
+        public static partial void NoMetadataFound(ILogger<FormDataMetadataFactory> logger, Type type);
+
+        [LoggerMessage(5, LogLevel.Debug, "Recursive type '{Type}' found in the resolution graph '{Chain}'.", EventName = nameof(RecursiveTypeFound))]
+        public static partial void RecursiveTypeFound(ILogger<FormDataMetadataFactory> logger, Type type, string chain);
+
+        [LoggerMessage(6, LogLevel.Debug, "'{Type}' identified as primitive.", EventName = nameof(PrimitiveType))]
+        public static partial void PrimitiveType(ILogger<FormDataMetadataFactory> logger, Type type);
+
+        [LoggerMessage(7, LogLevel.Debug, "'{Type}' identified as dictionary.", EventName = nameof(DictionaryType))]
+        public static partial void DictionaryType(ILogger<FormDataMetadataFactory> logger, Type type);
+
+        [LoggerMessage(8, LogLevel.Debug, "'{Type}' identified as collection.", EventName = nameof(CollectionType))]
+        public static partial void CollectionType(ILogger<FormDataMetadataFactory> logger, Type type);
+
+        [LoggerMessage(9, LogLevel.Debug, "'{Type}' identified as object.", EventName = nameof(ObjectType))]
+        public static partial void ObjectType(ILogger<FormDataMetadataFactory> logger, Type type);
+
+        [LoggerMessage(10, LogLevel.Debug, "Constructor found for type '{Type}' with parameters '{Parameters}'.", EventName = nameof(ConstructorFound))]
+        public static partial void ConstructorFound(ILogger<FormDataMetadataFactory> logger, Type type, string parameters);
+
+        [LoggerMessage(11, LogLevel.Debug, "Constructor parameter '{Name}' of type '{ParameterType}' found for type '{Type}'.", EventName = nameof(ConstructorParameter))]
+        public static partial void ConstructorParameter(ILogger<FormDataMetadataFactory> logger, Type type, string name, Type parameterType);
+
+        [LoggerMessage(12, LogLevel.Debug, "Candidate property '{Name}' of type '{PropertyType}'.", EventName = nameof(CandidateProperty))]
+        public static partial void CandidateProperty(ILogger<FormDataMetadataFactory> logger, string name, Type propertyType);
+
+        [LoggerMessage(13, LogLevel.Debug, "Candidate property {PropertyName} has a matching constructor parameter '{ConstructorParameterName}'.", EventName = nameof(MatchingConstructorParameterFound))]
+        public static partial void MatchingConstructorParameterFound(ILogger<FormDataMetadataFactory> logger, string constructorParameterName, string propertyName);
+
+        [LoggerMessage(14, LogLevel.Debug, "Candidate property or constructor parameter {PropertyName} defines a custom name '{CustomName}'.", EventName = nameof(CustomParameterNameMetadata))]
+        public static partial void CustomParameterNameMetadata(ILogger<FormDataMetadataFactory> logger, string customName, string propertyName);
+
+        [LoggerMessage(15, LogLevel.Debug, "Candidate property {Name} will not be mapped. It has been explicitly ignored.", EventName = nameof(IgnoredProperty))]
+        public static partial void IgnoredProperty(ILogger<FormDataMetadataFactory> logger, string name);
+
+        [LoggerMessage(16, LogLevel.Debug, "Candidate property {Name} will not be mapped. It has no public setter.", EventName = nameof(NonPublicSetter))]
+        public static partial void NonPublicSetter(ILogger<FormDataMetadataFactory> logger, string name);
+
+        [LoggerMessage(17, LogLevel.Debug, "Candidate property {Name} is marked as required.", EventName = nameof(PropertyRequired))]
+        public static partial void PropertyRequired(ILogger<FormDataMetadataFactory> logger, string name, bool required);
     }
 }
