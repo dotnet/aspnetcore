@@ -1241,15 +1241,16 @@ public class ForwardedHeadersMiddlewareTests
     }
 
     [Theory]
-    [InlineData("11.111.111.11", "host1, host2", "h1, h2", "/prefix1, /prefix2")]
-    [InlineData("11.111.111.11, 22.222.222.22", "host1", "h1, h2", "/prefix1, /prefix2")]
-    [InlineData("11.111.111.11, 22.222.222.22", "host1, host2", "h1", "/prefix1, /prefix2")]
-    [InlineData("11.111.111.11, 22.222.222.22", "host1, host2", "h1, h2", "/prefix1")]
+    [InlineData("11.111.111.11", "host1, host2", "h1, h2", "/prefix1, /prefix2", "443")]
+    [InlineData("11.111.111.11, 22.222.222.22", "host1", "h1, h2", "/prefix1, /prefix2", "443")]
+    [InlineData("11.111.111.11, 22.222.222.22", "host1, host2", "h1", "/prefix1, /prefix2", "443")]
+    [InlineData("11.111.111.11, 22.222.222.22", "host1, host2", "h1, h2", "/prefix1", "443")]
     public async Task XForwardedPrefixParameterCountMismatch(
         string forwardedFor,
         string forwardedHost,
         string forwardedProto,
-        string forwardedPrefix)
+        string forwardedPrefix,
+        string forwardedPort)
     {
         using var host = new HostBuilder()
             .ConfigureWebHost(webHostBuilder =>
@@ -1264,7 +1265,8 @@ public class ForwardedHeadersMiddlewareTests
                             ForwardedHeaders.XForwardedFor |
                             ForwardedHeaders.XForwardedHost |
                             ForwardedHeaders.XForwardedProto |
-                            ForwardedHeaders.XForwardedPrefix,
+                            ForwardedHeaders.XForwardedPrefix |
+                            ForwardedHeaders.XForwardedPort,
                         RequireHeaderSymmetry = true,
                     });
                 });
@@ -1280,6 +1282,7 @@ public class ForwardedHeadersMiddlewareTests
             c.Request.Headers["X-Forwarded-Host"] = forwardedHost;
             c.Request.Headers["X-Forwarded-Proto"] = forwardedProto;
             c.Request.Headers["X-Forwarded-Prefix"] = forwardedPrefix;
+            c.Request.Headers["X-Forwarded-Port"] = forwardedPort;
         });
 
         Assert.Equal(PathString.Empty, context.Request.PathBase);
@@ -1287,10 +1290,12 @@ public class ForwardedHeadersMiddlewareTests
         Assert.False(context.Request.Headers.ContainsKey("X-Original-Host"));
         Assert.False(context.Request.Headers.ContainsKey("X-Original-Proto"));
         Assert.False(context.Request.Headers.ContainsKey("X-Original-Prefix"));
+        Assert.False(context.Request.Headers.ContainsKey("X-Original-Port"));
         Assert.True(context.Request.Headers.ContainsKey("X-Forwarded-For"));
         Assert.True(context.Request.Headers.ContainsKey("X-Forwarded-Host"));
         Assert.True(context.Request.Headers.ContainsKey("X-Forwarded-Proto"));
         Assert.True(context.Request.Headers.ContainsKey("X-Forwarded-Prefix"));
+        Assert.True(context.Request.Headers.ContainsKey("X-Forwarded-Port"));
     }
 
     [Theory]

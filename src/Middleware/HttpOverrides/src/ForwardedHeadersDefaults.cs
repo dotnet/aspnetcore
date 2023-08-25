@@ -30,6 +30,11 @@ public static class ForwardedHeadersDefaults
     public static string XForwardedPrefixHeaderName { get; } = "X-Forwarded-Prefix";
 
     /// <summary>
+    /// X-Forwarded-Port
+    /// </summary>
+    public static string XForwardedPortHeaderName { get; } = "X-Forwarded-Port";
+
+    /// <summary>
     /// X-Original-For
     /// </summary>
     public static string XOriginalForHeaderName { get; } = "X-Original-For";
@@ -48,4 +53,9 @@ public static class ForwardedHeadersDefaults
     /// X-Original-Prefix
     /// </summary>
     public static string XOriginalPrefixHeaderName { get; } = "X-Original-Prefix";
+
+    /// <summary>
+    /// X-Original-Port
+    /// </summary>
+    public static string XOriginalPortHeaderName { get; } = "X-Original-Port";
 }

@@ -30,7 +30,11 @@ public enum ForwardedHeaders
     /// </summary>
     XForwardedPrefix = 1 << 3,
     /// <summary>
+    /// Process X-Forwarded-Port, which identifies the port used by the client.
+    /// </summary>
+    XForwardedPort = 1 << 3,
+    /// <summary>
     /// Process X-Forwarded-For, X-Forwarded-Host, X-Forwarded-Proto and X-Forwarded-Prefix.
     /// </summary>
-    All = XForwardedFor | XForwardedHost | XForwardedProto | XForwardedPrefix
+    All = XForwardedFor | XForwardedHost | XForwardedProto | XForwardedPrefix | XForwardedPort
 }
