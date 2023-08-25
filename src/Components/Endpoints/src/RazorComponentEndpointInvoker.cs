@@ -71,7 +71,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
 
         // Matches MVC's MemoryPoolHttpResponseStreamWriterFactory.DefaultBufferSize
         var defaultBufferSize = 16 * 1024;
-        await using var writer = new HttpResponseStreamWriter(context.Response.Body, Encoding.UTF8, defaultBufferSize, ArrayPool<byte>.Shared, ArrayPool<char>.Shared);
+        await using var writer = new HttpResponseStreamWriter(context.Response.Body, Encoding.UTF8, 10 * 1024, ArrayPool<byte>.Shared, ArrayPool<char>.Shared);
         var viewBufferScope = new MemoryPoolViewBufferScope(ArrayPool<ViewBufferValue>.Shared);
         var viewBuffer = new MemoryPoolViewBuffer(viewBufferScope, pageComponent.FullName ?? pageComponent.Name, defaultBufferSize);
         await using var bufferWriter = new ViewBufferTextWriter(viewBuffer, Encoding.UTF8, HtmlEncoder.Default, writer);
@@ -119,6 +119,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         if (!quiesceTask.IsCompletedSuccessfully)
         {
             await _renderer.SendStreamingUpdatesAsync(context, quiesceTask, bufferWriter);
+            Console.WriteLine("Finished SendStreamingUpdatesAsync");
         }
 
         // Invoke FlushAsync to ensure any buffered content is asynchronously written to the underlying
