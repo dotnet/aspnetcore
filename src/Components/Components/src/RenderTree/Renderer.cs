@@ -361,6 +361,17 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     protected virtual ComponentState CreateComponentState(int componentId, IComponent component, ComponentState? parentComponentState)
         => new ComponentState(this, componentId, component, parentComponentState);
 
+    // Some nonobvious semantics of UpdateDisplayAsync:
+    // - even though it's async, it can only safely use renderBatch during the initial
+    //   synchronous part (until the first yield), because this is a shared buffer with
+    //   access controlled via sync context. This is enforced by the compiler by means
+    //   of the 'in' modifier on the parameter.
+    // - even though it returns a Task, the upstream code treats the flow of UI updates
+    //   like a pipe, in that it will make further calls to UpdateDisplayAsync without
+    //   waiting for prior ones' tasks to complete. This is for perf - there's no reason
+    //   why Blazor Server should pause processing UI updates just because we're still
+    //   flushing out prior ones across the network.
+
     /// <summary>
     /// Updates the visible UI.
     /// </summary>
@@ -729,6 +740,13 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             // Fire off the execution of OnAfterRenderAsync, but don't wait for it
             // if there is async work to be done.
             _ = InvokeRenderCompletedCalls(batch.UpdatedComponents, updateDisplayTask);
+
+            // This isn't sufficient. It would cause the final quiescence task to wait until
+            // we've finished updating the display, but wouldn't stop other renderbatches
+            // running before prior UpdateDisplayAsync calls completed. If each renderbatch
+            // needs to flush, then the writer itself is going to have to take care of chaining
+            // them.
+            //AddPendingTask(null, WaitButIgnoreCancellation(updateDisplayTask));
         }
         catch (Exception e)
         {
@@ -750,6 +768,19 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         if (_batchBuilder.ComponentRenderQueue.Count > 0)
         {
             ProcessRenderQueue();
+        }
+    }
+
+    // TODO: Remove this; it's unused.
+    private static async Task WaitButIgnoreCancellation(Task task)
+    {
+        try
+        {
+            await task;
+        }
+        catch (TaskCanceledException)
+        {
+
         }
     }
 

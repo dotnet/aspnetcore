@@ -67,6 +67,32 @@ internal sealed class ViewBufferTextWriter : TextWriter
         _inner = inner;
     }
 
+    // The issue is that ViewBufferTextWriter doesn't solve the underlying problem, which is that
+    // we need a place to write output synchronously and to be able to flush it to the response
+    // from time to time (when each renderbatch is finished). The specific issue with
+    // ViewBufferTextWriter is that it assumes that during FlushAsync, no other writes or calls
+    // to FlushAsync will occur. But EndpointHtmlRenderer can't comply with that limitation, since
+    // more renders may occur and we still need a place to write them synchronously. The whole
+    // problem to be solved is providing a buffer where we can always write synchronously.
+    //
+    // I think the reason this didn't surface as an issue (with prerendering) before is that we
+    // never called FlushAsync until the end, so it just grew a large buffer. But for streaming
+    // SSR we do need to flush while more renders may be occurring in the background.
+    //
+    // Possible solutions:
+    //  - Every time there's a call to FlushAsync, swap out the current buffer with a new one,
+    //    and then start a task that awaits prior underlying flushes before doing an underlying
+    //    flush on the buffer we just took out of service.
+    //  - Or, swap completely to using a Pipe<char> with an unlimited write buffer. All writes
+    //    go into it synchronously, and when there's a call to FlushAsync we'd:
+    //    - If there's still a FlushAsync going on, no-op and complete
+    //    - Otherwise, start an async loop that reads chunks and asynchronously flushes them to
+    //      the underlying output, until we run out of chunks.
+    //  - Or, change the semantics of rendering so that ProcessRenderQueue defers its own start
+    //    if an UpdateDisplayAsync is still in progress.
+    //    - This is not a good solution as it would change the times when StateHasChanged causes
+    //      a render.
+
     /// <inheritdoc />
     public override Encoding Encoding { get; }
 
