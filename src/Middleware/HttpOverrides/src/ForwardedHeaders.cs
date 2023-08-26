@@ -32,7 +32,7 @@ public enum ForwardedHeaders
     /// <summary>
     /// Process X-Forwarded-Port, which identifies the port used by the client.
     /// </summary>
-    XForwardedPort = 1 << 3,
+    XForwardedPort = 1 << 4,
     /// <summary>
     /// Process X-Forwarded-For, X-Forwarded-Host, X-Forwarded-Proto and X-Forwarded-Prefix.
     /// </summary>
