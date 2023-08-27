@@ -21,7 +21,6 @@ BOOL                g_fInAppOfflineShutdown = FALSE;
 HINSTANCE           g_hServerModule;
 DWORD               g_dwIISServerVersion;
 
-
 VOID
 StaticCleanup()
 {

@@ -5,6 +5,7 @@
 #include <string>
 #include <sstream>
 
+// Set in the RegisterModule call IIS uses to initiate the module
 extern DWORD g_dwIISServerVersion;
 
 static std::wstring GetIISVersion() {
