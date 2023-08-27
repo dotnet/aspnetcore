@@ -97,7 +97,7 @@ public class MessageBufferTests
         pipes.Application.Input.AdvanceTo(buffer.Start);
 
         DuplexPipe.UpdateConnectionPair(ref pipes, connection);
-        messageBuffer.Resend();
+        await messageBuffer.ResendAsync(pipes.Transport.Output);
 
         // Any message except SequenceMessage will be ignored until a SequenceMessage is received
         Assert.False(messageBuffer.ShouldProcessMessage(PingMessage.Instance));
@@ -149,7 +149,7 @@ public class MessageBufferTests
         messageBuffer.Ack(new AckMessage(1));
 
         DuplexPipe.UpdateConnectionPair(ref pipes, connection);
-        messageBuffer.Resend();
+        await messageBuffer.ResendAsync(pipes.Transport.Output);
 
         res = await pipes.Application.Input.ReadAsync();
 
@@ -181,7 +181,7 @@ public class MessageBufferTests
         using var messageBuffer = new MessageBuffer(connection, protocol, bufferLimit: 1000);
 
         DuplexPipe.UpdateConnectionPair(ref pipes, connection);
-        messageBuffer.Resend();
+        await messageBuffer.ResendAsync(pipes.Transport.Output);
 
         var res = await pipes.Application.Input.ReadAsync();
 
@@ -213,7 +213,7 @@ public class MessageBufferTests
         messageBuffer.Ack(new AckMessage(ackNum));
 
         DuplexPipe.UpdateConnectionPair(ref pipes, connection);
-        messageBuffer.Resend();
+        await messageBuffer.ResendAsync(pipes.Transport.Output);
 
         var res = await pipes.Application.Input.ReadAsync();
 
@@ -320,7 +320,6 @@ internal sealed class DuplexPipe : IDuplexPipe
 
     public static void UpdateConnectionPair(ref DuplexPipePair duplexPipePair, ConnectionContext connection)
     {
-        var prevPipe = duplexPipePair.Application.Input;
         var input = new Pipe();
 
         // Add new pipe for reading from and writing to transport from app code
@@ -331,9 +330,6 @@ internal sealed class DuplexPipe : IDuplexPipe
         duplexPipePair.Transport = transportToApplication;
 
         connection.Transport = duplexPipePair.Transport;
-
-        // Close previous pipe with specific error that application code can catch to know a restart is occurring
-        prevPipe.Complete(new ConnectionResetException(""));
     }
 }
 

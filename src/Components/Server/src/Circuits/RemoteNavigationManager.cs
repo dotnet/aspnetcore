@@ -117,6 +117,25 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
         }
     }
 
+    /// <inheritdoc />
+    public override void Refresh(bool forceReload = false)
+    {
+        _ = RefreshAsync();
+
+        async Task RefreshAsync()
+        {
+            try
+            {
+                await _jsRuntime.InvokeVoidAsync(Interop.Refresh, forceReload);
+            }
+            catch (Exception ex)
+            {
+                Log.RefreshFailed(_logger, ex);
+                UnhandledException?.Invoke(this, ex);
+            }
+        }
+    }
+
     protected override void HandleLocationChangingHandlerException(Exception ex, LocationChangingContext context)
     {
         Log.NavigationFailed(_logger, context.TargetLocation, ex);
@@ -162,5 +181,8 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
 
         [LoggerMessage(4, LogLevel.Error, "Navigation failed when changing the location to {Uri}", EventName = "NavigationFailed")]
         public static partial void NavigationFailed(ILogger logger, string uri, Exception exception);
+
+        [LoggerMessage(5, LogLevel.Error, "Failed to refresh", EventName = "RefreshFailed")]
+        public static partial void RefreshFailed(ILogger logger, Exception exception);
     }
 }

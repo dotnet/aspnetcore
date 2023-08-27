@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.WebSockets;
 using System.Threading.Channels;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Abstractions;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.SignalR.Protocol;
@@ -878,6 +879,70 @@ public partial class HubConnectionTests : VerifiableLoggedTest
         mockConnection.Verify(c => c.StopAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
+    [Fact]
+    public async Task DisableReconnectCalledWhenCloseMessageReceived()
+    {
+        var builder = new HubConnectionBuilder().WithUrl("http://example.com");
+        var innerConnection = new TestConnection();
+        var reconnectFeature = new TestReconnectFeature();
+#pragma warning disable CA2252 // This API requires opting into preview features
+        innerConnection.Features.Set<IStatefulReconnectFeature>(reconnectFeature);
+#pragma warning restore CA2252 // This API requires opting into preview features
+
+        var delegateConnectionFactory = new DelegateConnectionFactory(
+            endPoint => innerConnection.StartAsync());
+        builder.Services.AddSingleton<IConnectionFactory>(delegateConnectionFactory);
+
+        var hubConnection = builder.Build();
+        var closedEventTcs = new TaskCompletionSource<Exception>();
+        hubConnection.Closed += e =>
+        {
+            closedEventTcs.SetResult(e);
+            return Task.CompletedTask;
+        };
+
+        await hubConnection.StartAsync().DefaultTimeout();
+
+        await innerConnection.ReceiveJsonMessage(new { type = HubProtocolConstants.CloseMessageType });
+
+        var exception = await closedEventTcs.Task.DefaultTimeout();
+        Assert.Null(exception);
+
+        await reconnectFeature.DisableReconnectCalled.DefaultTimeout();
+    }
+
+    [Fact]
+    public async Task DisableReconnectCalledWhenSendingCloseMessage()
+    {
+        var builder = new HubConnectionBuilder().WithUrl("http://example.com");
+        var innerConnection = new TestConnection();
+        var reconnectFeature = new TestReconnectFeature();
+#pragma warning disable CA2252 // This API requires opting into preview features
+        innerConnection.Features.Set<IStatefulReconnectFeature>(reconnectFeature);
+#pragma warning restore CA2252 // This API requires opting into preview features
+
+        var delegateConnectionFactory = new DelegateConnectionFactory(
+            endPoint => innerConnection.StartAsync());
+        builder.Services.AddSingleton<IConnectionFactory>(delegateConnectionFactory);
+
+        var hubConnection = builder.Build();
+        var closedEventTcs = new TaskCompletionSource<Exception>();
+        hubConnection.Closed += e =>
+        {
+            closedEventTcs.SetResult(e);
+            return Task.CompletedTask;
+        };
+
+        await hubConnection.StartAsync().DefaultTimeout();
+
+        await hubConnection.StopAsync().DefaultTimeout();
+
+        var exception = await closedEventTcs.Task.DefaultTimeout();
+        Assert.Null(exception);
+
+        await reconnectFeature.DisableReconnectCalled.DefaultTimeout();
+    }
+
     private class SampleObject
     {
         public SampleObject(string foo, int bar)
@@ -960,6 +1025,26 @@ public partial class HubConnectionTests : VerifiableLoggedTest
         public ReadOnlyMemory<byte> GetMessageBytes(HubMessage message)
         {
             return HubProtocolExtensions.GetMessageBytes(this, message);
+        }
+    }
+
+#pragma warning disable CA2252 // This API requires opting into preview features
+    private sealed class TestReconnectFeature : IStatefulReconnectFeature
+#pragma warning restore CA2252 // This API requires opting into preview features
+    {
+        private TaskCompletionSource _disableReconnect = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public Task DisableReconnectCalled => _disableReconnect.Task;
+
+#pragma warning disable CA2252 // This API requires opting into preview features
+        public void OnReconnected(Func<PipeWriter, Task> notifyOnReconnected) { }
+#pragma warning restore CA2252 // This API requires opting into preview features
+
+#pragma warning disable CA2252 // This API requires opting into preview features
+        public void DisableReconnect()
+#pragma warning restore CA2252 // This API requires opting into preview features
+        {
+            _disableReconnect.TrySetResult();
         }
     }
 }

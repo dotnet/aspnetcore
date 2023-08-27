@@ -2319,6 +2319,73 @@ public class RenderTreeDiffBuilderTest : IDisposable
             entry => AssertNamedEventChange(entry, NamedEventChangeType.Added, 123, 1, "eventname1", "changed name"));
     }
 
+    [Fact]
+    public void CanAddNewAttributeAtArrayBuilderSizeBoundary()
+    {
+        // Represents https://github.com/dotnet/aspnetcore/issues/49192
+
+        // Arrange: old and new trees go exactly up to the array builder capacity
+        oldTree.OpenElement(0, "elem");
+        for (var i = 0; oldTree.GetFrames().Count < oldTree.GetFrames().Array.Length; i++)
+        {
+            oldTree.AddAttribute(1, $"myattribute_{i}", "value");
+        }
+        newTree.OpenElement(0, "elem");
+        for (var i = 0; newTree.GetFrames().Count < newTree.GetFrames().Array.Length; i++)
+        {
+            newTree.AddAttribute(1, $"myattribute_{i}", "value");
+        }
+
+        // ... then the new tree gets one more attribute that crosses the builder size boundary, forcing buffer expansion
+        newTree.AddAttribute(1, $"myattribute_final", "value");
+
+        // Act
+        oldTree.CloseElement();
+        newTree.CloseElement();
+        var (result, referenceFrames) = GetSingleUpdatedComponent();
+
+        // Assert
+        Assert.Collection(result.Edits,
+            entry =>
+            {
+                AssertEdit(entry, RenderTreeEditType.SetAttribute, 0);
+                Assert.Equal(0, entry.ReferenceFrameIndex);
+                AssertFrame.Attribute(referenceFrames[0], "myattribute_final", "value", 1);
+            });
+    }
+
+    [Fact]
+    public void CanRemoveOldAttributeAtArrayBuilderSizeBoundary()
+    {
+        // Arrange: old and new trees go exactly up to the array builder capacity
+        oldTree.OpenElement(0, "elem");
+        for (var i = 0; oldTree.GetFrames().Count < oldTree.GetFrames().Array.Length; i++)
+        {
+            oldTree.AddAttribute(1, $"myattribute_{i}", "value");
+        }
+        newTree.OpenElement(0, "elem");
+        for (var i = 0; newTree.GetFrames().Count < newTree.GetFrames().Array.Length; i++)
+        {
+            newTree.AddAttribute(1, $"myattribute_{i}", "value");
+        }
+
+        // ... then the old tree gets one more attribute that crosses the builder size boundary, forcing buffer expansion
+        oldTree.AddAttribute(1, $"myattribute_final", "value");
+
+        // Act
+        oldTree.CloseElement();
+        newTree.CloseElement();
+        var (result, referenceFrames) = GetSingleUpdatedComponent();
+
+        // Assert
+        Assert.Collection(result.Edits,
+            entry =>
+            {
+                AssertEdit(entry, RenderTreeEditType.RemoveAttribute, 0);
+                Assert.Equal("myattribute_final", entry.RemovedAttributeName);
+            });
+    }
+
     private (RenderTreeDiff, RenderTreeFrame[]) GetSingleUpdatedComponent(bool initializeFromFrames = false)
     {
         var result = GetSingleUpdatedComponentWithBatch(initializeFromFrames);

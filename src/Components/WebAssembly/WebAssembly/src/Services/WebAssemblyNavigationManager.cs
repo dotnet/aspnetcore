@@ -79,6 +79,12 @@ internal sealed partial class WebAssemblyNavigationManager : NavigationManager
         }
     }
 
+    /// <inheritdoc />
+    public override void Refresh(bool forceReload = false)
+    {
+        DefaultWebAssemblyJSRuntime.Instance.InvokeVoid(Interop.Refresh, forceReload);
+    }
+
     protected override void HandleLocationChangingHandlerException(Exception ex, LocationChangingContext context)
     {
         Log.NavigationFailed(_logger, context.TargetLocation, ex);

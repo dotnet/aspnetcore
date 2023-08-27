@@ -5186,7 +5186,9 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
 
         using (var client = new TestClient())
         {
-            client.Connection.Features.Set<IReconnectFeature>(new EmptyReconnectFeature());
+#pragma warning disable CA2252 // This API requires opting into preview features
+            client.Connection.Features.Set<IStatefulReconnectFeature>(new EmptyReconnectFeature());
+#pragma warning restore CA2252 // This API requires opting into preview features
             var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
 
             await client.InvokeAsync(nameof(MethodHub.Echo), new object[] { new string('x', 500) }).DefaultTimeout();
@@ -5206,9 +5208,139 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
         }
     }
 
-    private class EmptyReconnectFeature : IReconnectFeature
+#pragma warning disable CA2252 // This API requires opting into preview features
+    private class EmptyReconnectFeature : IStatefulReconnectFeature
     {
-        public Action NotifyOnReconnect { get; set; }
+        public void OnReconnected(Func<PipeWriter, Task> notifyOnReconnect) { }
+
+        public void DisableReconnect()
+        {
+            throw new NotImplementedException();
+        }
+    }
+#pragma warning restore CA2252 // This API requires opting into preview features
+
+    [Fact]
+    public async Task IReconnectNotifyTriggersSequenceMessage()
+    {
+        using (StartVerifiableLog())
+        {
+            var state = new ConnectionLifetimeState();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(s => s.AddSingleton(state), LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ConnectionLifetimeHub>>();
+
+            using var client = new TestClient();
+            var reconnectFeature = new TestReconnectFeature();
+#pragma warning disable CA2252 // This API requires opting into preview features
+            client.Connection.Features.Set<IStatefulReconnectFeature>(reconnectFeature);
+#pragma warning restore CA2252 // This API requires opting into preview features
+
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+            UpdateConnectionPair(client.Connection);
+
+            await reconnectFeature.NotifyOnReconnect(client.Connection.Transport.Output);
+
+            var seqMessage = Assert.IsType<SequenceMessage>(await client.ReadAsync().DefaultTimeout());
+            Assert.Equal(1, seqMessage.SequenceId);
+
+            await client.SendHubMessageAsync(new SequenceMessage(1)).DefaultTimeout();
+
+            await client.SendHubMessageAsync(new CloseMessage(error: null));
+
+            await connectionHandlerTask.DefaultTimeout();
+
+            Assert.Null(state.DisconnectedException);
+        }
+    }
+
+    public struct DuplexPipePair
+    {
+        public IDuplexPipe Transport { get; set; }
+        public IDuplexPipe Application { get; set; }
+
+        public DuplexPipePair(IDuplexPipe transport, IDuplexPipe application)
+        {
+            Transport = transport;
+            Application = application;
+        }
+    }
+
+    private static void UpdateConnectionPair(DefaultConnectionContext connection)
+    {
+        var prevPipe = connection.Application.Input;
+        var input = new Pipe();
+
+        // Add new pipe for reading from and writing to transport from app code
+        var transportToApplication = new DuplexPipe(connection.Transport.Input, input.Writer);
+        var applicationToTransport = new DuplexPipe(input.Reader, connection.Application.Output);
+
+        connection.Application = applicationToTransport;
+        connection.Transport = transportToApplication;
+
+        connection.Transport = connection.Transport;
+
+        // Close previous pipe with specific error that application code can catch to know a restart is occurring
+        prevPipe.Complete(new ConnectionResetException(""));
+    }
+
+    [Fact]
+    public async Task GracefulCloseDisablesReconnect()
+    {
+        using (StartVerifiableLog())
+        {
+            var state = new ConnectionLifetimeState();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(s => s.AddSingleton(state), LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ConnectionLifetimeHub>>();
+
+            using var client = new TestClient();
+
+            var reconnectFeature = new TestReconnectFeature();
+#pragma warning disable CA2252 // This API requires opting into preview features
+            client.Connection.Features.Set<IStatefulReconnectFeature>(reconnectFeature);
+#pragma warning restore CA2252 // This API requires opting into preview features
+
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+            await client.SendHubMessageAsync(new CloseMessage(error: null));
+
+            await reconnectFeature.ReconnectDisabled.DefaultTimeout();
+
+            var message = Assert.IsType<CloseMessage>(await client.ReadAsync().DefaultTimeout());
+            Assert.Null(message.Error);
+
+            await connectionHandlerTask.DefaultTimeout();
+
+            Assert.Null(state.DisconnectedException);
+        }
+    }
+
+#pragma warning disable CA2252 // This API requires opting into preview features
+    private class TestReconnectFeature : IStatefulReconnectFeature
+#pragma warning restore CA2252 // This API requires opting into preview features
+    {
+        private TaskCompletionSource _reconnectDisabled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        private Func<PipeWriter, Task> _notifyOnReconnect;
+
+        public Task ReconnectDisabled => _reconnectDisabled.Task;
+
+        public Task NotifyOnReconnect(PipeWriter writer)
+        {
+            return _notifyOnReconnect(writer);
+        }
+
+#pragma warning disable CA2252 // This API requires opting into preview features
+        public void OnReconnected(Func<PipeWriter, Task> notifyOnReconnect)
+        {
+            _notifyOnReconnect = notifyOnReconnect;
+        }
+#pragma warning restore CA2252 // This API requires opting into preview features
+
+#pragma warning disable CA2252 // This API requires opting into preview features
+        public void DisableReconnect()
+#pragma warning restore CA2252 // This API requires opting into preview features
+        {
+            _reconnectDisabled.TrySetResult();
+        }
     }
 
     private class CustomHubActivator<THub> : IHubActivator<THub> where THub : Hub
