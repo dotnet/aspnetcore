@@ -19,6 +19,8 @@ BOOL                g_fRecycleProcessCalled = FALSE;
 BOOL                g_fInShutdown = FALSE;
 BOOL                g_fInAppOfflineShutdown = FALSE;
 HINSTANCE           g_hServerModule;
+DWORD               g_dwIISServerVersion;
+
 
 VOID
 StaticCleanup()
@@ -63,8 +65,6 @@ BOOL WINAPI DllMain(HMODULE hModule,
     return TRUE;
 }
 
-DWORD dwIISServerVersion;
-
 HRESULT
 __stdcall
 RegisterModule(
@@ -92,7 +92,7 @@ HRESULT
 
 --*/
 {
-    dwIISServerVersion = dwServerVersion;
+    g_dwIISServerVersion = dwServerVersion;
 
     if (pHttpServer->IsCommandLineLaunch())
     {
