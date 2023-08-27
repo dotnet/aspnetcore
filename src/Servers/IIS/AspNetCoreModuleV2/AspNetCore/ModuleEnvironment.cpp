@@ -1,12 +1,15 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the MIT License. See License.txt in the project root for license information.
+
 #include "ModuleEnvironment.h"
 #include <string>
 #include <sstream>
 
-extern DWORD dwIISServerVersion;
+extern DWORD g_dwIISServerVersion;
 
 static std::wstring GetIISVersion() {
-    auto major = (int)(dwIISServerVersion >> 16);
-    auto minor = (int)(dwIISServerVersion & 0xffff);
+    auto major = (int)(g_dwIISServerVersion >> 16);
+    auto minor = (int)(g_dwIISServerVersion & 0xffff);
 
     std::wstringstream version;
     version << major << "." << minor;
@@ -36,7 +39,11 @@ void SetApplicationEnvironmentVariables(_In_ IHttpServer &server, _In_ IHttpCont
     SetEnvironmentVariable(L"ASPNETCORE_IIS_VERSION", GetIISVersion().c_str());
 
     SetEnvironmentVariable(L"ASPNETCORE_IIS_APP_POOL_ID", server.GetAppPoolName());
-    SetEnvironmentVariable(L"ASPNETCORE_IIS_APP_POOL_CONFIG_FILE", ((IHttpServer2&)server).GetAppPoolConfigFile());
+
+    IHttpServer2* server2;
+    if (SUCCEEDED(HttpGetExtendedInterface(&server, &server, &server2))) {
+        SetEnvironmentVariable(L"ASPNETCORE_IIS_APP_POOL_CONFIG_FILE", server2->GetAppPoolConfigFile());
+    }
 
     auto site = pHttpContext.GetSite();
     SetEnvironmentVariable(L"ASPNETCORE_IIS_SITE_NAME", site->GetSiteName());
