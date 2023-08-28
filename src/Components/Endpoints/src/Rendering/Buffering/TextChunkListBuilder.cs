@@ -81,6 +81,6 @@ internal class TextChunkListBuilder(ArrayPool<TextChunk> pool, int pageLength) :
 
     public void Dispose()
     {
-        Clear();
+        _pageSource.Dispose();
     }
 }
