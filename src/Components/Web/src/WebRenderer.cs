@@ -86,9 +86,9 @@ public abstract class WebRenderer : Renderer
     }
 
     /// <summary>
-    /// 
+    /// Updates the application state.
     /// </summary>
-    /// <param name="applicationState"></param>
+    /// <param name="applicationState">The application state.</param>
     protected virtual async Task UpdateApplicationState(string applicationState)
     {
         await Task.CompletedTask;

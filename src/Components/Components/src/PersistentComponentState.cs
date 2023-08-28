@@ -76,7 +76,7 @@ public partial class PersistentComponentState
     /// Registered callbacks can use this opportunity to persist their state so that it can be retrieved when the application resumes.
     /// </summary>
     /// <param name="callback">The callback to invoke when the application is being paused.</param>
-    /// <param name="serializationMode"></param>
+    /// <param name="serializationMode">The <see cref="PersistedStateSerializationMode"/> to register the callback.</param>
     /// <returns>A subscription that can be used to unregister the callback when disposed.</returns>
     public PersistingComponentStateSubscription RegisterOnPersisting(Func<Task> callback, PersistedStateSerializationMode serializationMode)
     {

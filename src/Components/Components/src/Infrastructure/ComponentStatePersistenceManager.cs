@@ -46,7 +46,7 @@ public class ComponentStatePersistenceManager
     /// Restores the component application state from the given <see cref="IPersistentComponentStateStore"/>.
     /// </summary>
     /// <param name="store">The <see cref="IPersistentComponentStateStore"/> to restore the application state from.</param>
-    /// <param name="serializationMode"></param>
+    /// <param name="serializationMode">The <see cref="PersistedStateSerializationMode"/> to restore the application state.</param>
     /// <returns>A <see cref="Task"/> that will complete when the state has been restored.</returns>
     public async Task RestoreStateAsync(IPersistentComponentStateStore store, PersistedStateSerializationMode serializationMode)
     {
@@ -59,8 +59,8 @@ public class ComponentStatePersistenceManager
     /// <summary>
     /// Persists the component application state into the given <see cref="IPersistentComponentStateStore"/>.
     /// </summary>
-    /// <param name="store">The <see cref="IPersistentComponentStateStore"/> to restore the application state from.</param>
-    /// <param name="serializationMode"></param>
+    /// <param name="store">The <see cref="IPersistentComponentStateStore"/> to persist the application state into.</param>
+    /// <param name="serializationMode">The <see cref="PersistedStateSerializationMode"/> to persist the application state.</param>
     /// <param name="renderer">The <see cref="Renderer"/> that components are being rendered.</param>
     /// <returns>A <see cref="Task"/> that will complete when the state has been restored.</returns>
     public Task PersistStateAsync(
@@ -73,8 +73,8 @@ public class ComponentStatePersistenceManager
     /// Persists the component application state into the given <see cref="IPersistentComponentStateStore"/>
     /// so that it could be restored on Server.
     /// </summary>
-    /// <param name="store">The <see cref="IPersistentComponentStateStore"/> to restore the application state from.</param>
-    /// <param name="serializationMode"></param>
+    /// <param name="store">The <see cref="IPersistentComponentStateStore"/> to persist the application state into.</param>
+    /// <param name="serializationMode">The <see cref="PersistedStateSerializationMode"/> to persist the application state.</param>
     /// <param name="dispatcher">The <see cref="Dispatcher"/> corresponding to the components' renderer.</param>
     /// <returns>A <see cref="Task"/> that will complete when the state has been restored.</returns>
     public Task PersistStateAsync(

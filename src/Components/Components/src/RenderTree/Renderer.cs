@@ -134,10 +134,10 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         => GetRequiredComponentState(componentId);
 
     /// <summary>
-    /// 
+    /// Gets the <see cref="ComponentState"/> associated with the specified component.
     /// </summary>
-    /// <param name="component"></param>
-    /// <returns></returns>
+    /// <param name="component">The component</param>
+    /// <returns>The corresponding <see cref="ComponentState"/>.</returns>
     protected internal ComponentState GetComponentState(IComponent component)
         => _componentStateByComponent.GetValueOrDefault(component);
 

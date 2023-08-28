@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Components;
 public enum PersistedStateSerializationMode
 {
     /// <summary>
-    /// Indicates that the serialization mode should be inferred from the current request context.
+    /// Indicates that the serialization mode should be inferred.
     /// </summary>
     Infer = 1,
 
