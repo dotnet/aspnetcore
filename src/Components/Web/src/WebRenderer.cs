@@ -86,6 +86,15 @@ public abstract class WebRenderer : Renderer
     }
 
     /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="applicationState"></param>
+    protected virtual async Task UpdateApplicationState(string applicationState)
+    {
+        await Task.CompletedTask;
+    }
+
+    /// <summary>
     /// Performs the specified operations on the renderer's root components.
     /// </summary>
     /// <param name="operationsJson">A JSON-serialized list of operations to perform on the renderer's root components.</param>
@@ -140,6 +149,10 @@ public abstract class WebRenderer : Renderer
                 webEventData.EventFieldInfo,
                 webEventData.EventArgs);
         }
+
+        [JSInvokable]
+        public async Task UpdateApplicationState(string applicationState)
+            => await _renderer.UpdateApplicationState(applicationState);
 
         [JSInvokable]
         public void UpdateRootComponents(string operationsJson)

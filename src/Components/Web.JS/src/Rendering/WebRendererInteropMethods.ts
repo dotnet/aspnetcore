@@ -72,6 +72,11 @@ export function dispatchEvent(browserRendererId: number, eventDescriptor: EventD
   });
 }
 
+export function updateApplicationState(browserRendererId: number, state: string): Promise<void> {
+  const interopMethods = getInteropMethods(browserRendererId);
+  return interopMethods.invokeMethodAsync('UpdateApplicationState', state);
+}
+
 export function updateRootComponents(browserRendererId: number, operationsJson: string): Promise<void> {
   const interopMethods = getInteropMethods(browserRendererId);
   return interopMethods.invokeMethodAsync('UpdateRootComponents', operationsJson);

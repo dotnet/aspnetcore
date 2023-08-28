@@ -6,9 +6,12 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json;
+using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
@@ -25,6 +28,8 @@ internal partial class RemoteRenderer : WebRenderer
     private readonly CircuitOptions _options;
     private readonly IServerComponentDeserializer _serverComponentDeserializer;
     private readonly ILogger _logger;
+    private readonly IDataProtectionProvider _dataProtectionProvider;
+    private readonly Infrastructure.ComponentStatePersistenceManager _componentStatePersistenceManager;
     internal readonly ConcurrentQueue<UnacknowledgedRenderBatch> _unacknowledgedRenderBatches = new ConcurrentQueue<UnacknowledgedRenderBatch>();
     private long _nextRenderId = 1;
     private bool _disposing;
@@ -52,6 +57,8 @@ internal partial class RemoteRenderer : WebRenderer
         _options = options;
         _serverComponentDeserializer = serverComponentDeserializer;
         _logger = logger;
+        _dataProtectionProvider = serviceProvider.GetRequiredService<IDataProtectionProvider>();
+        _componentStatePersistenceManager = serviceProvider.GetRequiredService<ComponentStatePersistenceManager>();
 
         ElementReferenceContext = jsRuntime.ElementReferenceContext;
     }
@@ -70,6 +77,15 @@ internal partial class RemoteRenderer : WebRenderer
     {
         var attachComponentTask = _client.SendAsync("JS.AttachComponent", componentId, domElementSelector);
         _ = CaptureAsyncExceptions(attachComponentTask);
+    }
+
+    protected override async Task UpdateApplicationState(string applicationState)
+    {
+        var store = !string.IsNullOrEmpty(applicationState) ?
+                new ProtectedPrerenderComponentApplicationStore(applicationState, _dataProtectionProvider) :
+        new ProtectedPrerenderComponentApplicationStore(_dataProtectionProvider);
+
+        await _componentStatePersistenceManager.RestoreStateAsync(store, PersistedStateSerializationMode.Server);
     }
 
     protected override void UpdateRootComponents(string operationsJson)

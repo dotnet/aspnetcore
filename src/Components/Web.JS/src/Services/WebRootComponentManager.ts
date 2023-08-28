@@ -1,8 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { ComponentDescriptor, ComponentMarker, descriptorToMarker } from './ComponentDescriptorDiscovery';
-import { isRendererAttached, updateRootComponents, waitForRendererAttached } from '../Rendering/WebRendererInteropMethods';
+import { ComponentDescriptor, ComponentMarker, descriptorToMarker, discoverServerPersistedState, discoverWebAssemblyPersistedState } from './ComponentDescriptorDiscovery';
+import { isRendererAttached, updateApplicationState, updateRootComponents, waitForRendererAttached } from '../Rendering/WebRendererInteropMethods';
 import { WebRendererId } from '../Rendering/WebRendererId';
 import { NavigationEnhancementCallbacks, isPerformingEnhancedPageLoad } from './NavigationEnhancement';
 import { DescriptorHandler } from '../Rendering/DomMerging/DomSync';
@@ -70,6 +70,7 @@ export class WebRootComponentManager implements DescriptorHandler, NavigationEnh
 
   // Implements NavigationEnhancementCallbacks.
   public documentUpdated() {
+    this.updateApplicationState();
     this.refreshAllRootComponents();
   }
 
@@ -166,6 +167,17 @@ export class WebRootComponentManager implements DescriptorHandler, NavigationEnh
       setTimeout(() => {
         this.refreshAllRootComponents();
       }, 0);
+    }
+  }
+
+  private updateApplicationState() {
+    const serverAppState = discoverServerPersistedState(document);
+    if (serverAppState) {
+      updateApplicationState(WebRendererId.Server, serverAppState);
+    } 
+    const webAssemblyAppState = discoverWebAssemblyPersistedState(document);
+    if (webAssemblyAppState) {
+      updateApplicationState(WebRendererId.WebAssembly, webAssemblyAppState);
     }
   }
 
