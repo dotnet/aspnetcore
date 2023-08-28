@@ -12,6 +12,7 @@ internal readonly struct TextChunk
     private readonly string? _stringValue;
     private readonly char _charValue;
     private readonly ArraySegment<char> _charArraySegmentValue;
+    private readonly int _intValue;
 
     public TextChunk(string value)
     {
@@ -31,9 +32,15 @@ internal readonly struct TextChunk
         _charArraySegmentValue = value;
     }
 
-    private enum TextChunkType { String, Char, CharArraySegment };
+    public TextChunk(int value)
+    {
+        _type = TextChunkType.Int;
+        _intValue = value;
+    }
 
-    public Task WriteToAsync(TextWriter writer)
+    private enum TextChunkType { Int, String, Char, CharArraySegment };
+
+    public Task WriteToAsync(TextWriter writer, ref StringBuilder? tempBuffer)
     {
         switch (_type)
         {
@@ -43,6 +50,11 @@ internal readonly struct TextChunk
                 return writer.WriteAsync(_charValue);
             case TextChunkType.CharArraySegment:
                 return writer.WriteAsync(_charArraySegmentValue);
+            case TextChunkType.Int:
+                tempBuffer ??= new();
+                tempBuffer.Clear();
+                tempBuffer.Append(_intValue);
+                return writer.WriteAsync(tempBuffer);
             default:
                 throw new InvalidOperationException($"Unknown type {_type}");
         }
@@ -139,6 +151,8 @@ internal class TextChunkListBuilder(ArrayPool<TextChunk> pool, int pageLength) :
 
     public async Task WriteToAsync(TextWriter writer)
     {
+        StringBuilder? tempBuffer = null;
+
         if (_priorPages is not null)
         {
             foreach (var page in _priorPages)
@@ -146,7 +160,7 @@ internal class TextChunkListBuilder(ArrayPool<TextChunk> pool, int pageLength) :
                 var (count, buffer) = (page.Count, page.Buffer);
                 for (var i = 0; i < count; i++)
                 {
-                    await buffer[i].WriteToAsync(writer);
+                    await buffer[i].WriteToAsync(writer, ref tempBuffer);
                 }
             }
         }
@@ -156,7 +170,7 @@ internal class TextChunkListBuilder(ArrayPool<TextChunk> pool, int pageLength) :
             var (count, buffer) = (_currentPage.Count, _currentPage.Buffer);
             for (var i = 0; i < count; i++)
             {
-                await buffer[i].WriteToAsync(writer);
+                await buffer[i].WriteToAsync(writer, ref tempBuffer);
             }
         }
     }
@@ -208,6 +222,19 @@ internal class BufferedTextWriter : TextWriter
     public override void Write(char[] buffer, int index, int count)
     {
         _currentOutput.Add(new TextChunk(new ArraySegment<char>(buffer, index, count)));
+    }
+
+    public override void Write(string? value)
+    {
+        if (value is not null)
+        {
+            _currentOutput.Add(new TextChunk(value));
+        }
+    }
+
+    public override void Write(int value)
+    {
+        _currentOutput.Add(new TextChunk(value));
     }
 
     public override Encoding Encoding => Encoding.UTF8;
