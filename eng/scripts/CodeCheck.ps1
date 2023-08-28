@@ -264,7 +264,7 @@ try {
         if ($changedAPIBaselines.count -gt 0) {
             LogError ("Detected modification to baseline API files. PublicAPI.Shipped.txt files should only " +
                 "be updated after a major release, and PublicAPI.Unshipped.txt files should not " +
-                "be updated in release branches. If this is an rc branch and you've updated a PublicAPI.Unshipped.txt " +
+                "be updated in release branches. If this is a preview or rc branch and you've updated a PublicAPI.Unshipped.txt " +
                 "file, contact a repo admin to help you force-merge this PR. See /docs/APIBaselines.md for more information.")
             LogError "Modified API baseline files:"
             foreach ($file in $changedAPIBaselines) {
