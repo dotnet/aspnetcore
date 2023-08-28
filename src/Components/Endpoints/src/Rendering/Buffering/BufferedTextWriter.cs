@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Buffers;
 using System.Text;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Rendering;
@@ -17,7 +16,7 @@ internal class BufferedTextWriter : TextWriter
     public BufferedTextWriter(TextWriter underlying)
     {
         _underlying = underlying;
-        _currentOutput = new(ArrayPool<TextChunk>.Shared, PageSize);
+        _currentOutput = new(PageSize);
     }
 
     public override Encoding Encoding => Encoding.UTF8;
@@ -59,22 +58,11 @@ internal class BufferedTextWriter : TextWriter
 
         // Swap buffers
         var outputToFlush = _currentOutput;
-        _currentOutput = _previousOutput ?? new(ArrayPool<TextChunk>.Shared, PageSize);
+        _currentOutput = _previousOutput ?? new(PageSize);
         _previousOutput = outputToFlush;
 
         await outputToFlush.WriteToAsync(_underlying);
         outputToFlush.Clear();
         await _underlying.FlushAsync();
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            _currentOutput.Dispose();
-            _previousOutput?.Dispose();
-        }
-
-        base.Dispose(disposing);
     }
 }

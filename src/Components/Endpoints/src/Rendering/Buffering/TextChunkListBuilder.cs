@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Buffers;
 using System.Text;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Rendering;
@@ -9,9 +8,8 @@ namespace Microsoft.AspNetCore.Components.Endpoints.Rendering;
 // This behaves like a List<TextChunk>, but is more optimized for growing to larger sizes
 // since its underlying storage is pages rather than a single contiguous array. That means
 // when expanding it doesn't have to copy the old data to a new location.
-internal class TextChunkListBuilder(ArrayPool<TextChunk> pool, int pageLength) : IDisposable
+internal class TextChunkListBuilder(int pageLength)
 {
-    private readonly TextChunkPagePool _pageSource = new TextChunkPagePool(pool, pageLength);
     private TextChunkPage? _currentPage;
     private List<TextChunkPage>? _priorPages;
 
@@ -19,14 +17,14 @@ internal class TextChunkListBuilder(ArrayPool<TextChunk> pool, int pageLength) :
     {
         if (_currentPage is null)
         {
-            _currentPage = _pageSource.Rent();
+            _currentPage = new TextChunkPage(pageLength);
         }
 
         if (!_currentPage.TryAdd(value))
         {
             _priorPages ??= new();
             _priorPages.Add(_currentPage);
-            _currentPage = _pageSource.Rent();
+            _currentPage = new TextChunkPage(pageLength);
             if (!_currentPage.TryAdd(value))
             {
                 throw new InvalidOperationException("New page didn't accept write");
@@ -64,23 +62,9 @@ internal class TextChunkListBuilder(ArrayPool<TextChunk> pool, int pageLength) :
     {
         if (_currentPage is not null)
         {
-            _pageSource.Return(_currentPage);
             _currentPage = null;
         }
 
-        if (_priorPages is not null)
-        {
-            foreach (var page in _priorPages)
-            {
-                _pageSource.Return(page);
-            }
-
-            _priorPages.Clear();
-        }
-    }
-
-    public void Dispose()
-    {
-        _pageSource.Dispose();
+        _priorPages?.Clear();
     }
 }

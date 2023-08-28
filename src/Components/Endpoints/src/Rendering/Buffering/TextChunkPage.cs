@@ -4,9 +4,15 @@
 namespace Microsoft.AspNetCore.Components.Endpoints.Rendering;
 
 // Used internally by TextChunkListBuilder
-internal class TextChunkPage(TextChunk[] _buffer)
+internal class TextChunkPage
 {
+    private readonly TextChunk[] _buffer;
     private int _count;
+
+    public TextChunkPage(int capacity)
+    {
+        _buffer = new TextChunk[capacity];
+    }
 
     public TextChunk[] Buffer => _buffer;
     public int Count => _count;
@@ -24,13 +30,8 @@ internal class TextChunkPage(TextChunk[] _buffer)
         }
     }
 
-    public void Clear(bool clearUnderlyingArray)
+    public void Clear()
     {
-        if (clearUnderlyingArray)
-        {
-            Array.Clear(_buffer, 0, _count);
-        }
-
         _count = 0;
     }
 }
