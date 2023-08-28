@@ -17,7 +17,7 @@ import { WebStartOptions } from './Platform/WebStartOptions';
 import { attachStreamingRenderingListener } from './Rendering/StreamingRendering';
 import { attachProgressivelyEnhancedNavigationListener } from './Services/NavigationEnhancement';
 import { WebRootComponentManager } from './Services/WebRootComponentManager';
-import { attachComponentDescriptorHandler } from './Rendering/DomMerging/DomSync';
+import { attachComponentDescriptorHandler, registerAllComponentDescriptors } from './Rendering/DomMerging/DomSync';
 import { hasProgrammaticEnhancedNavigationHandler, performProgrammaticEnhancedNavigation } from './Services/NavigationUtils';
 
 let started = false;
@@ -52,7 +52,21 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
     attachProgressivelyEnhancedNavigationListener(rootComponentManager);
   }
 
+  // Wait until the initial page response completes before activating interactive components.
+  // If stream rendering is used, this helps to ensure that only the final set of interactive
+  // components produced by the stream render actually get activated for interactivity.
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', onInitialDomContentLoaded);
+  } else {
+    onInitialDomContentLoaded();
+  }
+
   return Promise.resolve();
+}
+
+function onInitialDomContentLoaded() {
+  registerAllComponentDescriptors(document);
+  rootComponentManager.documentUpdated();
 }
 
 Blazor.start = boot;
