@@ -3,6 +3,8 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.HtmlRendering;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
@@ -10,7 +12,7 @@ using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
-internal partial class EndpointHtmlRenderer
+internal partial class EndpointHtmlRenderer : IComponentSerializationModeHandler
 {
     private static readonly object ComponentSequenceKey = new object();
 
@@ -33,19 +35,45 @@ internal partial class EndpointHtmlRenderer
         }
     }
 
+    public PersistedStateSerializationMode GetComponentSerializationMode(IComponent component)
+    {
+        var ssrRenderBoundary = GetClosestRenderModeBoundary(component);
+        var renderMode = ssrRenderBoundary!.RenderMode;
+
+        return renderMode switch
+        {
+            ServerRenderMode => PersistedStateSerializationMode.Server,
+            WebAssemblyRenderMode => PersistedStateSerializationMode.WebAssembly,
+            _ => throw new InvalidOperationException("Invalid render mode.")
+        };
+    }
+
+    private SSRRenderModeBoundary? GetClosestRenderModeBoundary(IComponent component)
+    {
+        var componentState = GetComponentState(component);
+        return GetClosestRenderModeBoundary(componentState);
+    }
+
     private SSRRenderModeBoundary? GetClosestRenderModeBoundary(int componentId)
     {
         var componentState = GetComponentState(componentId);
+        return GetClosestRenderModeBoundary(componentState);
+    }
+
+    private static SSRRenderModeBoundary? GetClosestRenderModeBoundary(ComponentState componentState)
+    {
+        var currentComponentState = componentState;
+
         do
         {
-            if (componentState.Component is SSRRenderModeBoundary boundary)
+            if (currentComponentState.Component is SSRRenderModeBoundary boundary)
             {
                 return boundary;
             }
 
-            componentState = componentState.ParentComponentState;
+            currentComponentState = currentComponentState.ParentComponentState;
         }
-        while (componentState is not null);
+        while (currentComponentState is not null);
 
         return null;
     }

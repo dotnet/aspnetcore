@@ -13,7 +13,7 @@ import { CircuitDescriptor } from './Platform/Circuits/CircuitManager';
 import { resolveOptions, CircuitStartOptions } from './Platform/Circuits/CircuitStartOptions';
 import { DefaultReconnectionHandler } from './Platform/Circuits/DefaultReconnectionHandler';
 import { attachRootComponentToLogicalElement } from './Rendering/Renderer';
-import { discoverPersistedState, ServerComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
+import { discoverServerPersistedState, ServerComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
 import { sendJSDataStream } from './Platform/Circuits/CircuitStreamingInterop';
 import { fetchAndInvokeInitializers } from './JSInitializers/JSInitializers.Server';
 import { WebRendererId } from './Rendering/WebRendererId';
@@ -68,7 +68,7 @@ export async function startCircuit(components: RootComponentManager<ServerCompon
   options.reconnectionHandler = options.reconnectionHandler || Blazor.defaultReconnectionHandler;
   logger.log(LogLevel.Information, 'Starting up Blazor server-side application.');
 
-  const appState = discoverPersistedState(document);
+  const appState = discoverServerPersistedState(document);
   circuit = new CircuitDescriptor(components, appState || '');
 
   // Configure navigation via SignalR

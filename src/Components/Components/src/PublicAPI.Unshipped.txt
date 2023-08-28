@@ -18,9 +18,22 @@ Microsoft.AspNetCore.Components.CascadingValueSource<TValue>.NotifyChangedAsync(
 Microsoft.AspNetCore.Components.CascadingValueSource<TValue>.NotifyChangedAsync(TValue newValue) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.ComponentBase.DispatchExceptionAsync(System.Exception! exception) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.IComponentRenderMode
-Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.PersistStateAsync(Microsoft.AspNetCore.Components.IPersistentComponentStateStore! store, Microsoft.AspNetCore.Components.Dispatcher! dispatcher) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.IComponentSerializationModeHandler
+Microsoft.AspNetCore.Components.IComponentSerializationModeHandler.GetComponentSerializationMode(Microsoft.AspNetCore.Components.IComponent! component) -> Microsoft.AspNetCore.Components.PersistedStateSerializationMode
+*REMOVED*Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.ComponentStatePersistenceManager(Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager!>! logger) -> void
+Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.ComponentStatePersistenceManager(Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager!>! logger, Microsoft.AspNetCore.Components.IComponentSerializationModeHandler! serializationModeHandler) -> void
+*REMOVED*Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.PersistStateAsync(Microsoft.AspNetCore.Components.IPersistentComponentStateStore! store, Microsoft.AspNetCore.Components.RenderTree.Renderer! renderer) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.PersistStateAsync(Microsoft.AspNetCore.Components.IPersistentComponentStateStore! store, Microsoft.AspNetCore.Components.PersistedStateSerializationMode serializationMode, Microsoft.AspNetCore.Components.Dispatcher! dispatcher) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.PersistStateAsync(Microsoft.AspNetCore.Components.IPersistentComponentStateStore! store, Microsoft.AspNetCore.Components.PersistedStateSerializationMode serializationMode, Microsoft.AspNetCore.Components.RenderTree.Renderer! renderer) -> System.Threading.Tasks.Task!
+*REMOVED*Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.RestoreStateAsync(Microsoft.AspNetCore.Components.IPersistentComponentStateStore! store) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.RestoreStateAsync(Microsoft.AspNetCore.Components.IPersistentComponentStateStore! store, Microsoft.AspNetCore.Components.PersistedStateSerializationMode serializationMode) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.ParameterView.ToDictionary() -> System.Collections.Generic.IReadOnlyDictionary<string!, object?>!
 *REMOVED*Microsoft.AspNetCore.Components.ParameterView.ToDictionary() -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>!
+Microsoft.AspNetCore.Components.PersistedStateSerializationMode
+Microsoft.AspNetCore.Components.PersistedStateSerializationMode.Infer = 1 -> Microsoft.AspNetCore.Components.PersistedStateSerializationMode
+Microsoft.AspNetCore.Components.PersistedStateSerializationMode.Server = 2 -> Microsoft.AspNetCore.Components.PersistedStateSerializationMode
+Microsoft.AspNetCore.Components.PersistedStateSerializationMode.WebAssembly = 3 -> Microsoft.AspNetCore.Components.PersistedStateSerializationMode
+Microsoft.AspNetCore.Components.PersistentComponentState.RegisterOnPersisting(System.Func<System.Threading.Tasks.Task!>! callback, Microsoft.AspNetCore.Components.PersistedStateSerializationMode serializationMode) -> Microsoft.AspNetCore.Components.PersistingComponentStateSubscription
 Microsoft.AspNetCore.Components.RenderHandle.DispatchExceptionAsync(System.Exception! exception) -> System.Threading.Tasks.Task!
 *REMOVED*Microsoft.AspNetCore.Components.NavigationManager.ToAbsoluteUri(string! relativeUri) -> System.Uri!
 Microsoft.AspNetCore.Components.NavigationManager.ToAbsoluteUri(string? relativeUri) -> System.Uri!
@@ -44,6 +57,7 @@ Microsoft.AspNetCore.Components.RenderTree.NamedEventChangeType
 Microsoft.AspNetCore.Components.RenderTree.NamedEventChangeType.Added = 0 -> Microsoft.AspNetCore.Components.RenderTree.NamedEventChangeType
 Microsoft.AspNetCore.Components.RenderTree.NamedEventChangeType.Removed = 1 -> Microsoft.AspNetCore.Components.RenderTree.NamedEventChangeType
 Microsoft.AspNetCore.Components.RenderTree.RenderBatch.NamedEventChanges.get -> Microsoft.AspNetCore.Components.RenderTree.ArrayRange<Microsoft.AspNetCore.Components.RenderTree.NamedEventChange>?
+Microsoft.AspNetCore.Components.RenderTree.Renderer.GetComponentState(Microsoft.AspNetCore.Components.IComponent! component) -> Microsoft.AspNetCore.Components.Rendering.ComponentState!
 Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.ComponentFrameFlags.get -> Microsoft.AspNetCore.Components.RenderTree.ComponentFrameFlags
 Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType.ComponentRenderMode = 9 -> Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType
 Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType.NamedEvent = 10 -> Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType
