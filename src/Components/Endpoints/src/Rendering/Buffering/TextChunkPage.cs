@@ -24,9 +24,13 @@ internal class TextChunkPage(TextChunk[] _buffer)
         }
     }
 
-    public void Clear()
+    public void Clear(bool clearUnderlyingArray)
     {
-        Array.Clear(_buffer, 0, _count);
+        if (clearUnderlyingArray)
+        {
+            Array.Clear(_buffer, 0, _count);
+        }
+
         _count = 0;
     }
 }

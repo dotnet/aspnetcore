@@ -30,7 +30,7 @@ internal readonly struct TextChunkPagePool(ArrayPool<TextChunk> underlyingPool, 
 
     public void Return(TextChunkPage page)
     {
-        page.Clear();
+        page.Clear(false);
         _availablePages.Push(page);
     }
 
@@ -38,7 +38,7 @@ internal readonly struct TextChunkPagePool(ArrayPool<TextChunk> underlyingPool, 
     {
         foreach (var page in _allPages)
         {
-            page.Clear();
+            page.Clear(clearUnderlyingArray: true); // Clear underlying array because this is returning to a shared pool
             underlyingPool.Return(page.Buffer);
         }
     }

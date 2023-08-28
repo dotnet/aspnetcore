@@ -71,8 +71,8 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             form: result.HandlerName != null && context.Request.HasFormContentType ? await context.Request.ReadFormAsync() : null);
 
         // Matches MVC's MemoryPoolHttpResponseStreamWriterFactory.DefaultBufferSize
-        //var defaultBufferSize = 16 * 1024;
-        await using var writer = new HttpResponseStreamWriter(context.Response.Body, Encoding.UTF8, 10 * 1024, ArrayPool<byte>.Shared, ArrayPool<char>.Shared);
+        var defaultBufferSize = 16 * 1024;
+        await using var writer = new HttpResponseStreamWriter(context.Response.Body, Encoding.UTF8, defaultBufferSize, ArrayPool<byte>.Shared, ArrayPool<char>.Shared);
         using var bufferWriter = new BufferedTextWriter(writer);
         /*
         var viewBufferScope = new MemoryPoolViewBufferScope(ArrayPool<ViewBufferValue>.Shared);
