@@ -74,11 +74,6 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         var defaultBufferSize = 16 * 1024;
         await using var writer = new HttpResponseStreamWriter(context.Response.Body, Encoding.UTF8, defaultBufferSize, ArrayPool<byte>.Shared, ArrayPool<char>.Shared);
         using var bufferWriter = new BufferedTextWriter(writer);
-        /*
-        var viewBufferScope = new MemoryPoolViewBufferScope(ArrayPool<ViewBufferValue>.Shared);
-        var viewBuffer = new MemoryPoolViewBuffer(viewBufferScope, pageComponent.FullName ?? pageComponent.Name, defaultBufferSize);
-        await using var bufferWriter = new ViewBufferTextWriter(viewBuffer, Encoding.UTF8, HtmlEncoder.Default, writer);
-        */
 
         // Note that we always use Static rendering mode for the top-level output from a RazorComponentResult,
         // because you never want to serialize the invocation of RazorComponentResultHost. Instead, that host
