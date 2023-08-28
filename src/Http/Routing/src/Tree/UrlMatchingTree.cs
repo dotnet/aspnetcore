@@ -100,10 +100,10 @@ internal class UrlMatchingTree
 #if !COMPONENTS
             if (part.IsLiteral)
             {
-                if (!current.Literals.TryGetValue(part.Text, out var next))
+                if (!current.Literals.TryGetValue(part.Text!, out var next))
                 {
                     next = new UrlMatchingNode(length: i + 1);
-                    current.Literals.Add(part.Text, next);
+                    current.Literals.Add(part.Text!, next);
                 }
 #else
             if (part is RoutePatternLiteralPart literalPart)
