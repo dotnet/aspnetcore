@@ -134,8 +134,6 @@ app.UseHttpsRedirection();
 #endif
 app.UseStaticFiles();
 
-app.UseRouting();
-
 app.UseAuthorization();
 
 app.MapControllerRoute(
