@@ -90,9 +90,18 @@ internal sealed class HttpLoggingMiddleware
             logContext.ResponseBodyLogLimit = loggingAttribute.ResponseBodyLogLimit;
         }
 
-        for (var i = 0; i < _interceptors.Length; i++)
+        try
         {
-            await _interceptors[i].OnRequestAsync(logContext);
+            for (var i = 0; i < _interceptors.Length; i++)
+            {
+                await _interceptors[i].OnRequestAsync(logContext);
+            }
+        }
+        catch (Exception)
+        {
+            logContext.Reset();
+            _contextPool.Return(logContext);
+            throw;
         }
 
         loggingFields = logContext.LoggingFields;

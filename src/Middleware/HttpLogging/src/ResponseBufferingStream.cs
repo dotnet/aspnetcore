@@ -179,15 +179,15 @@ internal sealed class ResponseBufferingStream : BufferingStream, IHttpResponseBo
     {
         if (_logBody)
         {
-            var requestBody = GetString(_encoding!);
+            var responseBody = GetString(_encoding!);
 
             if (duration.HasValue)
             {
-                _logger.ResponseBodyWithDuration(requestBody, duration.Value);
+                _logger.ResponseBodyWithDuration(responseBody, duration.Value);
             }
             else
             {
-                _logger.ResponseBody(requestBody);
+                _logger.ResponseBody(responseBody);
             }
         }
     }
