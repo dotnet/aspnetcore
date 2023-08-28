@@ -400,8 +400,17 @@ internal sealed partial class WebSocketsTransport : ITransport, IStatefulReconne
                 return;
             }
 
-            await StartAsync(url, _webSocketMessageType == WebSocketMessageType.Binary ? TransferFormat.Binary : TransferFormat.Text,
-                cancellationToken: default).ConfigureAwait(false);
+            try
+            {
+                await StartAsync(url, _webSocketMessageType == WebSocketMessageType.Binary ? TransferFormat.Binary : TransferFormat.Text,
+                    cancellationToken: default).ConfigureAwait(false);
+            }
+            catch
+            {
+                _application.Output.Complete();
+                _application.Input.Complete();
+                throw new InvalidOperationException("Reconnect attempt failed.");
+            }
         }
     }
 
@@ -479,7 +488,7 @@ internal sealed partial class WebSocketsTransport : ITransport, IStatefulReconne
         {
             if (!_aborted)
             {
-                if (_gracefulClose)
+                if (_gracefulClose || !_useStatefulReconnect)
                 {
                     _application.Output.Complete(ex);
                 }
@@ -493,7 +502,7 @@ internal sealed partial class WebSocketsTransport : ITransport, IStatefulReconne
         finally
         {
             // We're done writing
-            if (_gracefulClose)
+            if (_gracefulClose || !_useStatefulReconnect)
             {
                 _application.Output.Complete();
             }
@@ -589,7 +598,7 @@ internal sealed partial class WebSocketsTransport : ITransport, IStatefulReconne
                 }
             }
 
-            if (_gracefulClose)
+            if (_gracefulClose || !_useStatefulReconnect)
             {
                 _application.Input.Complete(error);
             }

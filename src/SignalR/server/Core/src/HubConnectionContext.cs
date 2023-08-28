@@ -579,18 +579,27 @@ public partial class HubConnectionContext
                                     Features.Get<IConnectionHeartbeatFeature>()?.OnHeartbeat(state => ((HubConnectionContext)state).KeepAliveTick(), this);
                                 }
 
+#pragma warning disable CA2252 // This API requires opting into preview features
+                                if (_connectionContext.Features.Get<IStatefulReconnectFeature>() is IStatefulReconnectFeature feature)
+                                {
+                                    if (handshakeRequestMessage.Version < 2)
+                                    {
+                                        Log.DisablingReconnect(_logger, handshakeRequestMessage.Protocol, handshakeRequestMessage.Version);
+                                        feature.DisableReconnect();
+                                    }
+                                    else
+                                    {
+                                        _useStatefulReconnect = true;
+                                        _messageBuffer = new MessageBuffer(_connectionContext, Protocol, _statefulReconnectBufferSize);
+                                        feature.OnReconnected(_messageBuffer.ResendAsync);
+                                    }
+                                }
+#pragma warning restore CA2252 // This API requires opting into preview features
+
                                 Log.HandshakeComplete(_logger, Protocol.Name);
 
                                 await WriteHandshakeResponseAsync(HandshakeResponseMessage.Empty);
 
-#pragma warning disable CA2252 // This API requires opting into preview features
-                                if (_connectionContext.Features.Get<IStatefulReconnectFeature>() is IStatefulReconnectFeature feature)
-                                {
-                                    _useStatefulReconnect = true;
-                                    _messageBuffer = new MessageBuffer(_connectionContext, Protocol, _statefulReconnectBufferSize);
-                                    feature.OnReconnected(_messageBuffer.ResendAsync);
-                                }
-#pragma warning restore CA2252 // This API requires opting into preview features
                                 return true;
                             }
                             else if (overLength)

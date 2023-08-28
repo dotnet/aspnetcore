@@ -37,7 +37,7 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
     private const string SequenceIdPropertyName = "sequenceId";
 
     private const string ProtocolName = "json";
-    private const int ProtocolVersion = 1;
+    private const int ProtocolVersion = 2;
 
     /// <summary>
     /// Gets the serializer used to serialize invocation arguments and return values.
@@ -72,7 +72,7 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
     /// <inheritdoc />
     public bool IsVersionSupported(int version)
     {
-        return version == Version;
+        return version <= Version;
     }
 
     /// <inheritdoc />

@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol;
 public class MessagePackHubProtocol : IHubProtocol
 {
     private const string ProtocolName = "messagepack";
-    private const int ProtocolVersion = 1;
+    private const int ProtocolVersion = 2;
     private readonly DefaultMessagePackHubProtocolWorker _worker;
 
     /// <inheritdoc />
@@ -53,7 +53,7 @@ public class MessagePackHubProtocol : IHubProtocol
     /// <inheritdoc />
     public bool IsVersionSupported(int version)
     {
-        return version == Version;
+        return version <= Version;
     }
 
     /// <inheritdoc />
