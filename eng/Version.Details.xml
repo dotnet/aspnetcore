@@ -367,26 +367,26 @@
       <Uri>https://github.com/dotnet/winforms</Uri>
       <Sha>eaf8dc910e9c1b0e6fe40264fe666c6a395bc47b</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="8.0.0-beta.23419.1">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="8.0.0-beta.23425.2">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>385129cbc980a515ddee2fa56f6b16f3183ed9bc</Sha>
+      <Sha>90c167d5c57de4a8bced566379dbd893556c94e8</Sha>
       <SourceBuild RepoName="arcade" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="8.0.0-beta.23419.1">
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="8.0.0-beta.23425.2">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>385129cbc980a515ddee2fa56f6b16f3183ed9bc</Sha>
+      <Sha>90c167d5c57de4a8bced566379dbd893556c94e8</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Build.Tasks.Templating" Version="8.0.0-beta.23419.1">
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Templating" Version="8.0.0-beta.23425.2">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>385129cbc980a515ddee2fa56f6b16f3183ed9bc</Sha>
+      <Sha>90c167d5c57de4a8bced566379dbd893556c94e8</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="8.0.0-beta.23419.1">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="8.0.0-beta.23425.2">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>385129cbc980a515ddee2fa56f6b16f3183ed9bc</Sha>
+      <Sha>90c167d5c57de4a8bced566379dbd893556c94e8</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.RemoteExecutor" Version="8.0.0-beta.23419.1">
+    <Dependency Name="Microsoft.DotNet.RemoteExecutor" Version="8.0.0-beta.23425.2">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>385129cbc980a515ddee2fa56f6b16f3183ed9bc</Sha>
+      <Sha>90c167d5c57de4a8bced566379dbd893556c94e8</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Telemetry.Testing" Version="8.0.0-rc.2.23421.8">
       <Uri>https://github.com/dotnet/extensions</Uri>
