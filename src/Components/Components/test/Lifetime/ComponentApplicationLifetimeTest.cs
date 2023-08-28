@@ -14,8 +14,11 @@ namespace Microsoft.AspNetCore.Components;
 
 public class ComponentApplicationLifetimeTest
 {
-    [Fact]
-    public async Task RestoreStateAsync_InitializesStateWithDataFromTheProvidedStore()
+    [Theory]
+    [InlineData(PersistedStateSerializationMode.Infer)]
+    [InlineData(PersistedStateSerializationMode.Server)]
+    [InlineData(PersistedStateSerializationMode.WebAssembly)]
+    public async Task RestoreStateAsync_InitializesStateWithDataFromTheProvidedStore(PersistedStateSerializationMode serializationMode)
     {
         // Arrange
         var data = new byte[] { 0, 1, 2, 3, 4 };
@@ -24,10 +27,12 @@ public class ComponentApplicationLifetimeTest
             ["MyState"] = JsonSerializer.SerializeToUtf8Bytes(data)
         };
         var store = new TestStore(state);
-        var lifetime = new ComponentStatePersistenceManager(NullLogger<ComponentStatePersistenceManager>.Instance);
+        var lifetime = new ComponentStatePersistenceManager(
+            NullLogger<ComponentStatePersistenceManager>.Instance,
+            new TestComponentSerializationModeHandler(serializationMode));
 
         // Act
-        await lifetime.RestoreStateAsync(store);
+        await lifetime.RestoreStateAsync(store, serializationMode);
 
         // Assert
         Assert.True(lifetime.State.TryTakeFromJson<byte[]>("MyState", out var retrieved));
@@ -35,8 +40,11 @@ public class ComponentApplicationLifetimeTest
         Assert.Equal(data, retrieved);
     }
 
-    [Fact]
-    public async Task RestoreStateAsync_ThrowsOnDoubleInitialization()
+    [Theory]
+    [InlineData(PersistedStateSerializationMode.Infer)]
+    [InlineData(PersistedStateSerializationMode.Server)]
+    [InlineData(PersistedStateSerializationMode.WebAssembly)]
+    public async Task RestoreStateAsync_ThrowsOnDoubleInitialization(PersistedStateSerializationMode serializationMode)
     {
         // Arrange
         var state = new Dictionary<string, byte[]>
@@ -44,21 +52,27 @@ public class ComponentApplicationLifetimeTest
             ["MyState"] = new byte[] { 0, 1, 2, 3, 4 }
         };
         var store = new TestStore(state);
-        var lifetime = new ComponentStatePersistenceManager(NullLogger<ComponentStatePersistenceManager>.Instance);
+        var lifetime = new ComponentStatePersistenceManager(
+            NullLogger<ComponentStatePersistenceManager>.Instance,
+            new TestComponentSerializationModeHandler(serializationMode));
 
-        await lifetime.RestoreStateAsync(store);
+        await lifetime.RestoreStateAsync(store, serializationMode);
 
         // Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => lifetime.RestoreStateAsync(store));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => lifetime.RestoreStateAsync(store, serializationMode));
     }
 
-    [Fact]
-    public async Task PersistStateAsync_SavesPersistedStateToTheStore()
+    [Theory]
+    [InlineData(PersistedStateSerializationMode.Server)]
+    [InlineData(PersistedStateSerializationMode.WebAssembly)]
+    public async Task PersistStateAsync_SavesPersistedStateToTheStore(PersistedStateSerializationMode serializationMode)
     {
         // Arrange
         var state = new Dictionary<string, byte[]>();
         var store = new TestStore(state);
-        var lifetime = new ComponentStatePersistenceManager(NullLogger<ComponentStatePersistenceManager>.Instance);
+        var lifetime = new ComponentStatePersistenceManager(
+            NullLogger<ComponentStatePersistenceManager>.Instance,
+            new TestComponentSerializationModeHandler(serializationMode));
 
         var renderer = new TestRenderer();
         var data = new byte[] { 1, 2, 3, 4 };
@@ -67,43 +81,51 @@ public class ComponentApplicationLifetimeTest
         {
             lifetime.State.PersistAsJson("MyState", new byte[] { 1, 2, 3, 4 });
             return Task.CompletedTask;
-        });
+        }, serializationMode);
 
         // Act
-        await lifetime.PersistStateAsync(store, renderer);
+        await lifetime.PersistStateAsync(store, serializationMode, renderer);
 
         // Assert
         Assert.True(store.State.TryGetValue("MyState", out var persisted));
         Assert.Equal(data, JsonSerializer.Deserialize<byte[]>(persisted.ToArray()));
     }
 
-    [Fact]
-    public async Task PersistStateAsync_InvokesPauseCallbacksDuringPersist()
+    [Theory]
+    [InlineData(PersistedStateSerializationMode.Server)]
+    [InlineData(PersistedStateSerializationMode.WebAssembly)]
+    public async Task PersistStateAsync_InvokesPauseCallbacksDuringPersist(PersistedStateSerializationMode serializationMode)
     {
         // Arrange
         var state = new Dictionary<string, byte[]>();
         var store = new TestStore(state);
-        var lifetime = new ComponentStatePersistenceManager(NullLogger<ComponentStatePersistenceManager>.Instance);
+        var lifetime = new ComponentStatePersistenceManager(
+            NullLogger<ComponentStatePersistenceManager>.Instance,
+            new TestComponentSerializationModeHandler(serializationMode));
         var renderer = new TestRenderer();
         var data = new byte[] { 1, 2, 3, 4 };
         var invoked = false;
 
-        lifetime.State.RegisterOnPersisting(() => { invoked = true; return default; });
+        lifetime.State.RegisterOnPersisting(() => { invoked = true; return default; }, serializationMode);
 
         // Act
-        await lifetime.PersistStateAsync(store, renderer);
+        await lifetime.PersistStateAsync(store, serializationMode, renderer);
 
         // Assert
         Assert.True(invoked);
     }
 
-    [Fact]
-    public async Task PersistStateAsync_FiresCallbacksInParallel()
+    [Theory]
+    [InlineData(PersistedStateSerializationMode.Server)]
+    [InlineData(PersistedStateSerializationMode.WebAssembly)]
+    public async Task PersistStateAsync_FiresCallbacksSequentually(PersistedStateSerializationMode serializationMode)
     {
         // Arrange
         var state = new Dictionary<string, byte[]>();
         var store = new TestStore(state);
-        var lifetime = new ComponentStatePersistenceManager(NullLogger<ComponentStatePersistenceManager>.Instance);
+        var lifetime = new ComponentStatePersistenceManager(
+            NullLogger<ComponentStatePersistenceManager>.Instance,
+            new TestComponentSerializationModeHandler(serializationMode));
         var renderer = new TestRenderer();
 
         var sequence = new List<int> { };
@@ -111,11 +133,11 @@ public class ComponentApplicationLifetimeTest
         var tcs = new TaskCompletionSource();
         var tcs2 = new TaskCompletionSource();
 
-        lifetime.State.RegisterOnPersisting(async () => { sequence.Add(1); await tcs.Task; sequence.Add(3); });
-        lifetime.State.RegisterOnPersisting(async () => { sequence.Add(2); await tcs2.Task; sequence.Add(4); });
+        lifetime.State.RegisterOnPersisting(async () => { sequence.Add(1); await tcs.Task; sequence.Add(2); }, serializationMode);
+        lifetime.State.RegisterOnPersisting(async () => { sequence.Add(3); await tcs2.Task; sequence.Add(4); }, serializationMode);
 
         // Act
-        var persistTask = lifetime.PersistStateAsync(store, renderer);
+        var persistTask = lifetime.PersistStateAsync(store, serializationMode, renderer);
         tcs.SetResult();
         tcs2.SetResult();
 
@@ -125,13 +147,17 @@ public class ComponentApplicationLifetimeTest
         Assert.Equal(new[] { 1, 2, 3, 4 }, sequence);
     }
 
-    [Fact]
-    public async Task PersistStateAsync_CallbacksAreRemovedWhenSubscriptionsAreDisposed()
+    [Theory]
+    [InlineData(PersistedStateSerializationMode.Server)]
+    [InlineData(PersistedStateSerializationMode.WebAssembly)]
+    public async Task PersistStateAsync_CallbacksAreRemovedWhenSubscriptionsAreDisposed(PersistedStateSerializationMode serializationMode)
     {
         // Arrange
         var state = new Dictionary<string, byte[]>();
         var store = new TestStore(state);
-        var lifetime = new ComponentStatePersistenceManager(NullLogger<ComponentStatePersistenceManager>.Instance);
+        var lifetime = new ComponentStatePersistenceManager(
+            NullLogger<ComponentStatePersistenceManager>.Instance,
+            new TestComponentSerializationModeHandler(serializationMode));
         var renderer = new TestRenderer();
 
         var sequence = new List<int> { };
@@ -139,14 +165,14 @@ public class ComponentApplicationLifetimeTest
         var tcs = new TaskCompletionSource();
         var tcs2 = new TaskCompletionSource();
 
-        var subscription1 = lifetime.State.RegisterOnPersisting(async () => { sequence.Add(1); await tcs.Task; sequence.Add(3); });
-        var subscription2 = lifetime.State.RegisterOnPersisting(async () => { sequence.Add(2); await tcs2.Task; sequence.Add(4); });
+        var subscription1 = lifetime.State.RegisterOnPersisting(async () => { sequence.Add(1); await tcs.Task; sequence.Add(3); }, serializationMode);
+        var subscription2 = lifetime.State.RegisterOnPersisting(async () => { sequence.Add(2); await tcs2.Task; sequence.Add(4); }, serializationMode);
 
         // Act
         subscription1.Dispose();
         subscription2.Dispose();
 
-        var persistTask = lifetime.PersistStateAsync(store, renderer);
+        var persistTask = lifetime.PersistStateAsync(store, serializationMode, renderer);
         tcs.SetResult();
         tcs2.SetResult();
 
@@ -156,8 +182,10 @@ public class ComponentApplicationLifetimeTest
         Assert.Empty(sequence);
     }
 
-    [Fact]
-    public async Task PersistStateAsync_ContinuesInvokingPauseCallbacksDuringPersistIfACallbackThrows()
+    [Theory]
+    [InlineData(PersistedStateSerializationMode.Server)]
+    [InlineData(PersistedStateSerializationMode.WebAssembly)]
+    public async Task PersistStateAsync_ContinuesInvokingCallbacksDuringPersistIfACallbackThrows(PersistedStateSerializationMode serializationMode)
     {
         // Arrange
         var sink = new TestSink();
@@ -165,16 +193,16 @@ public class ComponentApplicationLifetimeTest
         var logger = loggerFactory.CreateLogger<ComponentStatePersistenceManager>();
         var state = new Dictionary<string, byte[]>();
         var store = new TestStore(state);
-        var lifetime = new ComponentStatePersistenceManager(logger);
+        var lifetime = new ComponentStatePersistenceManager(logger, new TestComponentSerializationModeHandler(serializationMode));
         var renderer = new TestRenderer();
         var data = new byte[] { 1, 2, 3, 4 };
         var invoked = false;
 
-        lifetime.State.RegisterOnPersisting(() => throw new InvalidOperationException());
-        lifetime.State.RegisterOnPersisting(() => { invoked = true; return Task.CompletedTask; });
+        lifetime.State.RegisterOnPersisting(() => throw new InvalidOperationException(), serializationMode);
+        lifetime.State.RegisterOnPersisting(() => { invoked = true; return Task.CompletedTask; }, serializationMode);
 
         // Act
-        await lifetime.PersistStateAsync(store, renderer);
+        await lifetime.PersistStateAsync(store, serializationMode, renderer);
 
         // Assert
         Assert.True(invoked);
@@ -182,8 +210,10 @@ public class ComponentApplicationLifetimeTest
         Assert.Equal(LogLevel.Error, log.LogLevel);
     }
 
-    [Fact]
-    public async Task PersistStateAsync_ContinuesInvokingPauseCallbacksDuringPersistIfACallbackThrowsAsynchonously()
+    [Theory]
+    [InlineData(PersistedStateSerializationMode.Server)]
+    [InlineData(PersistedStateSerializationMode.WebAssembly)]
+    public async Task PersistStateAsync_ContinuesInvokingCallbacksDuringPersistIfACallbackThrowsAsynchonously(PersistedStateSerializationMode serializationMode)
     {
         // Arrange
         var sink = new TestSink();
@@ -191,16 +221,16 @@ public class ComponentApplicationLifetimeTest
         var logger = loggerFactory.CreateLogger<ComponentStatePersistenceManager>();
         var state = new Dictionary<string, byte[]>();
         var store = new TestStore(state);
-        var lifetime = new ComponentStatePersistenceManager(logger);
+        var lifetime = new ComponentStatePersistenceManager(logger, new TestComponentSerializationModeHandler(serializationMode));
         var renderer = new TestRenderer();
         var invoked = false;
         var tcs = new TaskCompletionSource();
 
-        lifetime.State.RegisterOnPersisting(async () => { await tcs.Task; throw new InvalidOperationException(); });
-        lifetime.State.RegisterOnPersisting(() => { invoked = true; return Task.CompletedTask; });
+        lifetime.State.RegisterOnPersisting(async () => { await tcs.Task; throw new InvalidOperationException(); }, serializationMode);
+        lifetime.State.RegisterOnPersisting(() => { invoked = true; return Task.CompletedTask; }, serializationMode);
 
         // Act
-        var persistTask = lifetime.PersistStateAsync(store, renderer);
+        var persistTask = lifetime.PersistStateAsync(store,serializationMode, renderer);
         tcs.SetResult();
 
         await persistTask;
@@ -211,13 +241,17 @@ public class ComponentApplicationLifetimeTest
         Assert.Equal(LogLevel.Error, log.LogLevel);
     }
 
-    [Fact]
-    public async Task PersistStateAsync_ThrowsWhenDeveloperTriesToPersistStateMultipleTimes()
+    [Theory]
+    [InlineData(PersistedStateSerializationMode.Server)]
+    [InlineData(PersistedStateSerializationMode.WebAssembly)]
+    public async Task PersistStateAsync_ThrowsWhenDeveloperTriesToPersistStateMultipleTimes(PersistedStateSerializationMode serializationMode)
     {
         // Arrange
         var state = new Dictionary<string, byte[]>();
         var store = new TestStore(state);
-        var lifetime = new ComponentStatePersistenceManager(NullLogger<ComponentStatePersistenceManager>.Instance);
+        var lifetime = new ComponentStatePersistenceManager(
+            NullLogger<ComponentStatePersistenceManager>.Instance,
+            new TestComponentSerializationModeHandler(serializationMode));
 
         var renderer = new TestRenderer();
         var data = new byte[] { 1, 2, 3, 4 };
@@ -226,13 +260,13 @@ public class ComponentApplicationLifetimeTest
         {
             lifetime.State.PersistAsJson<byte[]>("MyState", new byte[] { 1, 2, 3, 4 });
             return Task.CompletedTask;
-        });
+        }, serializationMode);
 
         // Act
-        await lifetime.PersistStateAsync(store, renderer);
+        await lifetime.PersistStateAsync(store, serializationMode, renderer);
 
         // Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => lifetime.PersistStateAsync(store, renderer));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => lifetime.PersistStateAsync(store, serializationMode, renderer));
     }
 
     private class TestRenderer : Renderer
@@ -275,6 +309,21 @@ public class ComponentApplicationLifetimeTest
             // We copy the data here because it's no longer available after this call completes.
             State = state.ToDictionary(k => k.Key, v => v.Value);
             return Task.CompletedTask;
+        }
+    }
+
+    private class TestComponentSerializationModeHandler : IComponentSerializationModeHandler
+    {
+        private PersistedStateSerializationMode _serializationMode;
+
+        public TestComponentSerializationModeHandler(PersistedStateSerializationMode serializationMode)
+        {
+            _serializationMode = serializationMode;
+        }
+
+        public PersistedStateSerializationMode GetComponentSerializationMode(IComponent component)
+        {
+            return _serializationMode;
         }
     }
 }
