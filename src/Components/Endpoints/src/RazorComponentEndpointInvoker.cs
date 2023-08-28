@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Components.Endpoints.Rendering;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
@@ -70,11 +71,14 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             form: result.HandlerName != null && context.Request.HasFormContentType ? await context.Request.ReadFormAsync() : null);
 
         // Matches MVC's MemoryPoolHttpResponseStreamWriterFactory.DefaultBufferSize
-        var defaultBufferSize = 16 * 1024;
+        //var defaultBufferSize = 16 * 1024;
         await using var writer = new HttpResponseStreamWriter(context.Response.Body, Encoding.UTF8, 10 * 1024, ArrayPool<byte>.Shared, ArrayPool<char>.Shared);
+        var bufferWriter = new BufferedTextWriter(writer, Encoding.UTF8);
+        /*
         var viewBufferScope = new MemoryPoolViewBufferScope(ArrayPool<ViewBufferValue>.Shared);
         var viewBuffer = new MemoryPoolViewBuffer(viewBufferScope, pageComponent.FullName ?? pageComponent.Name, defaultBufferSize);
         await using var bufferWriter = new ViewBufferTextWriter(viewBuffer, Encoding.UTF8, HtmlEncoder.Default, writer);
+        */
 
         // Note that we always use Static rendering mode for the top-level output from a RazorComponentResult,
         // because you never want to serialize the invocation of RazorComponentResultHost. Instead, that host
