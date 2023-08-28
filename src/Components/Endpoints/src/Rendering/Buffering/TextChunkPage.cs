@@ -13,7 +13,7 @@ internal class TextChunkPage(TextChunk[] _buffer)
 
     public bool TryAdd(TextChunk value)
     {
-        if (_count < _buffer.Length - 1)
+        if (_count < _buffer.Length)
         {
             _buffer[_count++] = value;
             return true;
