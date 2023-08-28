@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Components.Endpoints.Rendering;
 
 internal class BufferedTextWriter : TextWriter
 {
-    private const int PageSize = 64;
+    private const int PageSize = 512;
     private readonly TextWriter _underlying;
     private TextChunkListBuilder _currentOutput;
     private TextChunkListBuilder? _previousOutput;
