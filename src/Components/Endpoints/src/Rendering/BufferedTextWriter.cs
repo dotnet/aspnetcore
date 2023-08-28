@@ -8,30 +8,45 @@ namespace Microsoft.AspNetCore.Components.Endpoints.Rendering;
 
 internal readonly struct TextChunk
 {
-    public readonly TextChunkType Type;
-    public readonly string? StringValue;
-    public readonly char CharValue;
-    public readonly ArraySegment<char> CharArraySegmentValue;
+    private readonly TextChunkType _type;
+    private readonly string? _stringValue;
+    private readonly char _charValue;
+    private readonly ArraySegment<char> _charArraySegmentValue;
 
     public TextChunk(string value)
     {
-        Type = TextChunkType.String;
-        StringValue = value;
+        _type = TextChunkType.String;
+        _stringValue = value;
     }
 
     public TextChunk(char value)
     {
-        Type = TextChunkType.Char;
-        CharValue = value;
+        _type = TextChunkType.Char;
+        _charValue = value;
     }
 
     public TextChunk(ArraySegment<char> value)
     {
-        Type = TextChunkType.CharArraySegment;
-        CharArraySegmentValue = value;
+        _type = TextChunkType.CharArraySegment;
+        _charArraySegmentValue = value;
     }
 
-    public enum TextChunkType { String, Char, CharArraySegment };
+    private enum TextChunkType { String, Char, CharArraySegment };
+
+    public Task WriteToAsync(TextWriter writer)
+    {
+        switch (_type)
+        {
+            case TextChunkType.String:
+                return writer.WriteAsync(_stringValue);
+            case TextChunkType.Char:
+                return writer.WriteAsync(_charValue);
+            case TextChunkType.CharArraySegment:
+                return writer.WriteAsync(_charArraySegmentValue);
+            default:
+                throw new InvalidOperationException($"Unknown type {_type}");
+        }
+    }
 }
 
 internal class TextChunkPage(TextChunk[] _buffer)
@@ -97,7 +112,7 @@ internal readonly struct TextChunkPagePool(ArrayPool<TextChunk> underlyingPool, 
     }
 }
 
-internal class StringListBuilder(ArrayPool<TextChunk> pool, int pageLength) : IDisposable
+internal class TextChunkListBuilder(ArrayPool<TextChunk> pool, int pageLength) : IDisposable
 {
     private readonly TextChunkPagePool _pageSource = new TextChunkPagePool(pool, pageLength);
     private TextChunkPage? _currentPage;
@@ -122,7 +137,7 @@ internal class StringListBuilder(ArrayPool<TextChunk> pool, int pageLength) : ID
         }
     }
 
-    public IEnumerable<TextChunk> GetContents()
+    public async Task WriteToAsync(TextWriter writer)
     {
         if (_priorPages is not null)
         {
@@ -131,7 +146,7 @@ internal class StringListBuilder(ArrayPool<TextChunk> pool, int pageLength) : ID
                 var (count, buffer) = (page.Count, page.Buffer);
                 for (var i = 0; i < count; i++)
                 {
-                    yield return buffer[i];
+                    await buffer[i].WriteToAsync(writer);
                 }
             }
         }
@@ -141,7 +156,7 @@ internal class StringListBuilder(ArrayPool<TextChunk> pool, int pageLength) : ID
             var (count, buffer) = (_currentPage.Count, _currentPage.Buffer);
             for (var i = 0; i < count; i++)
             {
-                yield return buffer[i];
+                await buffer[i].WriteToAsync(writer);
             }
         }
     }
@@ -175,8 +190,8 @@ internal class BufferedTextWriter : TextWriter
 {
     private const int PageSize = 64;
     private readonly TextWriter _underlying;
-    private StringListBuilder _currentOutput;
-    private StringListBuilder? _previousOutput;
+    private TextChunkListBuilder _currentOutput;
+    private TextChunkListBuilder? _previousOutput;
     private Task _currentFlushAsyncTask = Task.CompletedTask;
 
     public BufferedTextWriter(TextWriter underlying)
@@ -218,22 +233,7 @@ internal class BufferedTextWriter : TextWriter
         _currentOutput = _previousOutput ?? new(ArrayPool<TextChunk>.Shared, PageSize);
         _previousOutput = outputToFlush;
 
-        foreach (var entry in outputToFlush.GetContents())
-        {
-            switch (entry.Type)
-            {
-                case TextChunk.TextChunkType.String:
-                    await _underlying.WriteAsync(entry.StringValue);
-                    break;
-                case TextChunk.TextChunkType.Char:
-                    await _underlying.WriteAsync(entry.CharValue);
-                    break;
-                case TextChunk.TextChunkType.CharArraySegment:
-                    await _underlying.WriteAsync(entry.CharArraySegmentValue);
-                    break;
-            }
-        }
-
+        await outputToFlush.WriteToAsync(_underlying);
         outputToFlush.Clear();
         await _underlying.FlushAsync();
     }
