@@ -11,8 +11,7 @@ public class TextChunkPageTest
     public async Task CanAddValuesUntilFull()
     {
         // Arrange
-        var buffer = new TextChunk[3];
-        var page = new TextChunkPage(buffer);
+        var page = new TextChunkPage(3);
 
         // Act/Assert 1: Can add values if not full
         Assert.Equal(0, page.Count);
