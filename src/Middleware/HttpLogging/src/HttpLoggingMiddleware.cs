@@ -140,13 +140,13 @@ internal sealed class HttpLoggingMiddleware
                 FilterHeaders(logContext, request.Headers, options._internalRequestHeaders);
             }
 
-            if (logContext.Parameters.Count > 0)
+            if (logContext.InternalParameters.Count > 0)
             {
-                var httpRequestLog = new HttpRequestLog((List<KeyValuePair<string, object?>>)logContext.Parameters);
+                var httpRequestLog = new HttpRequestLog(logContext.InternalParameters);
 
                 _logger.RequestLog(httpRequestLog);
 
-                logContext.Parameters.Clear();
+                logContext.InternalParameters.Clear();
             }
         }
 
@@ -197,6 +197,7 @@ internal sealed class HttpLoggingMiddleware
                 }
             }
 
+            // Hook the response body when there are interceptors in case they want to conditionally log the body.
             if (loggingFields.HasFlag(HttpLoggingFields.ResponseBody) || _interceptors.Length > 0)
             {
                 originalBodyFeature = context.Features.Get<IHttpResponseBodyFeature>()!;
@@ -304,9 +305,9 @@ internal sealed class HttpLoggingMiddleware
             FilterHeaders(logContext, response.Headers, allowedResponseHeaders);
         }
 
-        if (logContext.Parameters.Count > 0)
+        if (logContext.InternalParameters.Count > 0)
         {
-            var httpResponseLog = new HttpResponseLog((List<KeyValuePair<string, object?>>)logContext.Parameters);
+            var httpResponseLog = new HttpResponseLog(logContext.InternalParameters);
 
             logger.ResponseLog(httpResponseLog);
         }

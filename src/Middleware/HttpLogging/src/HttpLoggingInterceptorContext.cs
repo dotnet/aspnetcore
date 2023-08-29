@@ -30,14 +30,14 @@ public sealed class HttpLoggingInterceptorContext
     /// </remarks>
     public HttpContext HttpContext
     {
-        get => _httpContext ?? throw new InvalidOperationException("HttpContext was not initialized");
+        get => _httpContext ?? throw new InvalidOperationException("HttpContext was not initialized.");
         // Public for 3rd party testing of interceptors.
         // We'd make this a required constructor/init parameter but ObjectPool requires a parameterless constructor.
         set => _httpContext = value ?? throw new ArgumentNullException(nameof(value));
     }
 
     /// <summary>
-    /// What parts of the request and response to log.
+    /// Gets or sets which parts of the request and response to log.
     /// </summary>
     /// <remarks>
     /// This is pre-populated with the value from <see cref="HttpLoggingOptions.LoggingFields"/>,
@@ -68,13 +68,15 @@ public sealed class HttpLoggingInterceptorContext
 
     internal long StartTimestamp { get; set; }
     internal TimeProvider TimeProvider { get; set; } = null!;
+    internal List<KeyValuePair<string, object?>> InternalParameters { get; } = new();
 
     /// <summary>
-    /// Data that will be logged as part of the request or response. Values specified in <see cref="LoggingFields"/>
+    /// Gets a list of parameters that will be logged as part of the request or response. Values specified in <see cref="LoggingFields"/>
     /// will be added automatically after all interceptors run. These values are cleared after logging the request.
     /// All other relevant settings will carry over to the response.
     /// </summary>
-    public IList<KeyValuePair<string, object?>> Parameters { get; } = new List<KeyValuePair<string, object?>>();
+    public IList<KeyValuePair<string, object?>> Parameters => InternalParameters;
+
 
     /// <summary>
     /// Adds data that will be logged as part of the request or response. See <see cref="Parameters"/>.
@@ -83,13 +85,13 @@ public sealed class HttpLoggingInterceptorContext
     /// <param name="value">The parameter value.</param>
     public void AddParameter(string key, object? value)
     {
-        Parameters.Add(new(key, value));
+        InternalParameters.Add(new(key, value));
     }
 
     /// <summary>
     /// Adds the given fields to what's currently enabled in <see cref="LoggingFields"/>.
     /// </summary>
-    /// <param name="fields"></param>
+    /// <param name="fields">Additional fields to enable.</param>
     public void Enable(HttpLoggingFields fields)
     {
         LoggingFields |= fields;
@@ -98,6 +100,7 @@ public sealed class HttpLoggingInterceptorContext
     /// <summary>
     /// Checks if any of the given fields are currently enabled in <see cref="LoggingFields"/>.
     /// </summary>
+    /// <param name="fields">One or more field flags to check.</param>
     public bool IsAnyEnabled(HttpLoggingFields fields)
     {
         return (LoggingFields & fields) != HttpLoggingFields.None;
@@ -106,17 +109,16 @@ public sealed class HttpLoggingInterceptorContext
     /// <summary>
     /// Removes the given fields from what's currently enabled in <see cref="LoggingFields"/>.
     /// </summary>
-    /// <param name="fields"></param>
+    /// <param name="fields">Fields to disable.</param>
     public void Disable(HttpLoggingFields fields)
     {
         LoggingFields &= ~fields;
     }
 
     /// <summary>
-    /// Checks if any of the given fields are currently enabled in <see cref="LoggingFields"/>
-    /// and disables them so that a custom log value can be provided instead.
+    /// Disables the given fields if any are currently enabled in <see cref="LoggingFields"/>.
     /// </summary>
-    /// <param name="fields">One or more field flags to check.</param>
+    /// <param name="fields">One or more field flags to disable if present.</param>
     /// <returns><see langword="true" /> if any of the fields were previously enabled.</returns>
     public bool TryDisable(HttpLoggingFields fields)
     {
@@ -137,7 +139,7 @@ public sealed class HttpLoggingInterceptorContext
         ResponseBodyLogLimit = 0;
         StartTimestamp = 0;
         TimeProvider = null!;
-        Parameters.Clear();
+        InternalParameters.Clear();
     }
 
     internal double GetDuration()

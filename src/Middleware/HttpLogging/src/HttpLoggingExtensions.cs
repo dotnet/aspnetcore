@@ -20,7 +20,7 @@ internal static partial class HttpLoggingExtensions
         exception: null,
         formatter: HttpResponseLog.Callback);
 
-    [LoggerMessage(3, LogLevel.Information, "RequestBody: {Body}{status}", EventName = "RequestBody")]
+    [LoggerMessage(3, LogLevel.Information, "RequestBody: {Body}{Status}", EventName = "RequestBody")]
     public static partial void RequestBody(this ILogger logger, string body, string status);
 
     [LoggerMessage(4, LogLevel.Information, "ResponseBody: {Body}", EventName = "ResponseBody")]
