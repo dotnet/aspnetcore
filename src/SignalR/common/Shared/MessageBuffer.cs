@@ -35,7 +35,6 @@ internal sealed class MessageBuffer : IDisposable
     private PipeWriter _writer;
 
     private long _totalMessageCount;
-    private bool _waitForSequenceMessage;
 
     // Message IDs start at 1 and always increment by 1
     private long _currentReceivingSequenceId = 1;
@@ -181,19 +180,11 @@ internal sealed class MessageBuffer : IDisposable
 
     internal bool ShouldProcessMessage(HubMessage message)
     {
-        // TODO: if we're expecting a sequence message but get here should we error or ignore or maybe even continue to process them?
-        if (_waitForSequenceMessage)
+        // Technically handled by the 'is not HubInvocationMessage' check, but this is future proofing in case that check changes
+        // SequenceMessage should not be counted towards ackable messages
+        if (message is SequenceMessage)
         {
-            if (message is SequenceMessage)
-            {
-                _waitForSequenceMessage = false;
-                return true;
-            }
-            else
-            {
-                // ignore messages received while waiting for sequence message
-                return false;
-            }
+            return true;
         }
 
         // Only care about messages implementing HubInvocationMessage currently (e.g. ignore ping, close, ack, sequence)
@@ -204,6 +195,8 @@ internal sealed class MessageBuffer : IDisposable
         }
 
         var currentId = _currentReceivingSequenceId;
+        // Safe to modify outside a lock because the only other modifier is ResetSequence()
+        // which would be called on the same thread after this method completes
         _currentReceivingSequenceId++;
         if (currentId <= _latestReceivedSequenceId)
         {
@@ -228,8 +221,6 @@ internal sealed class MessageBuffer : IDisposable
 
     internal async Task ResendAsync(PipeWriter writer)
     {
-        _waitForSequenceMessage = true;
-
         var tcs = new TaskCompletionSource<FlushResult>(TaskCreationOptions.RunContinuationsAsynchronously);
         _resend = tcs;
 
