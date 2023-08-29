@@ -707,6 +707,7 @@ public record ParametersListWithHttpContext(
 public record struct ParameterListRecordStruct(HttpContext HttpContext, [FromRoute] int Value);
 
 public record ParameterListRecordClass(HttpContext HttpContext, [FromRoute] int Value);
+public record struct ParameterRecordStructWithJsonBodyOrService(TodoStruct Todo, TestService Service);
 
 #nullable enable
 public record ParameterListRecordWithoutPositionalParameters
