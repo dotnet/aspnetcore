@@ -26,7 +26,6 @@ internal sealed partial class ServerSentEventsTransport : ITransport
     private readonly CancellationTokenSource _transportCts = new CancellationTokenSource();
     private readonly CancellationTokenSource _inputCts = new CancellationTokenSource();
     private readonly ServerSentEventsMessageParser _parser = new ServerSentEventsMessageParser();
-    private readonly bool _useAck;
     private IDuplexPipe? _transport;
     private IDuplexPipe? _application;
 
@@ -36,11 +35,10 @@ internal sealed partial class ServerSentEventsTransport : ITransport
 
     public PipeWriter Output => _transport!.Output;
 
-    public ServerSentEventsTransport(HttpClient httpClient, HttpConnectionOptions? httpConnectionOptions = null, ILoggerFactory? loggerFactory = null, bool useAck = false)
+    public ServerSentEventsTransport(HttpClient httpClient, HttpConnectionOptions? httpConnectionOptions = null, ILoggerFactory? loggerFactory = null)
     {
         ArgumentNullThrowHelper.ThrowIfNull(httpClient);
 
-        _useAck = useAck;
         _httpClient = httpClient;
         _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<ServerSentEventsTransport>();
         _httpConnectionOptions = httpConnectionOptions ?? new();

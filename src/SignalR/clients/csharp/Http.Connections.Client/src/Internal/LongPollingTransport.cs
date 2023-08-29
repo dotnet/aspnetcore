@@ -19,7 +19,6 @@ internal sealed partial class LongPollingTransport : ITransport
     private readonly HttpClient _httpClient;
     private readonly ILogger _logger;
     private readonly HttpConnectionOptions _httpConnectionOptions;
-    private readonly bool _useAck;
     private IDuplexPipe? _application;
     private IDuplexPipe? _transport;
     // Volatile so that the poll loop sees the updated value set from a different thread
@@ -33,12 +32,11 @@ internal sealed partial class LongPollingTransport : ITransport
 
     public PipeWriter Output => _transport!.Output;
 
-    public LongPollingTransport(HttpClient httpClient, HttpConnectionOptions? httpConnectionOptions = null, ILoggerFactory? loggerFactory = null, bool useAck = false)
+    public LongPollingTransport(HttpClient httpClient, HttpConnectionOptions? httpConnectionOptions = null, ILoggerFactory? loggerFactory = null)
     {
         _httpClient = httpClient;
         _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<LongPollingTransport>();
         _httpConnectionOptions = httpConnectionOptions ?? new();
-        _useAck = useAck;
     }
 
     public async Task StartAsync(Uri url, TransferFormat transferFormat, CancellationToken cancellationToken = default)

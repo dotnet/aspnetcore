@@ -53,7 +53,7 @@ public class DefaultTransportFactoryTests
     {
         var transportFactory = new DefaultTransportFactory(requestedTransport, loggerFactory: null, httpClient: new HttpClient(), httpConnectionOptions: null, accessTokenProvider: null);
         Assert.IsType(expectedTransportType,
-            transportFactory.CreateTransport(AllTransportTypes, useAck: true));
+            transportFactory.CreateTransport(AllTransportTypes, useStatefulReconnect: true));
     }
 
     [Theory]
@@ -66,7 +66,7 @@ public class DefaultTransportFactoryTests
         var transportFactory =
             new DefaultTransportFactory(requestedTransport, loggerFactory: null, httpClient: new HttpClient(), httpConnectionOptions: null, accessTokenProvider: null);
         var ex = Assert.Throws<InvalidOperationException>(
-            () => transportFactory.CreateTransport(~requestedTransport, useAck: true));
+            () => transportFactory.CreateTransport(~requestedTransport, useStatefulReconnect: true));
 
         Assert.Equal("No requested transports available on the server.", ex.Message);
     }
@@ -77,7 +77,7 @@ public class DefaultTransportFactoryTests
     {
         Assert.IsType<WebSocketsTransport>(
             new DefaultTransportFactory(AllTransportTypes, loggerFactory: null, httpClient: new HttpClient(), httpConnectionOptions: null, accessTokenProvider: null)
-                .CreateTransport(AllTransportTypes, useAck: true));
+                .CreateTransport(AllTransportTypes, useStatefulReconnect: true));
     }
 
     [Theory]
@@ -90,7 +90,7 @@ public class DefaultTransportFactoryTests
         {
             var transportFactory = new DefaultTransportFactory(requestedTransport, loggerFactory: null, httpClient: new HttpClient(), httpConnectionOptions: null, accessTokenProvider: null);
             Assert.IsType(expectedTransportType,
-                transportFactory.CreateTransport(AllTransportTypes, useAck: true));
+                transportFactory.CreateTransport(AllTransportTypes, useStatefulReconnect: true));
         }
     }
 
@@ -103,7 +103,7 @@ public class DefaultTransportFactoryTests
             var transportFactory =
                 new DefaultTransportFactory(requestedTransport, loggerFactory: null, httpClient: new HttpClient(), httpConnectionOptions: null, accessTokenProvider: null);
             var ex = Assert.Throws<InvalidOperationException>(
-                () => transportFactory.CreateTransport(AllTransportTypes, useAck: true));
+                () => transportFactory.CreateTransport(AllTransportTypes, useStatefulReconnect: true));
 
             Assert.Equal("No requested transports available on the server.", ex.Message);
         }
