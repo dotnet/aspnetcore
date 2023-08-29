@@ -1,5 +1,5 @@
 ﻿@page "/forms/modify-http-context/{OperationId}"
-@attribute [StreamRendering(true)]
+@attribute [StreamRendering]
 @inject AsyncOperationService AsyncOperation
 @inject NavigationManager Navigation
 @* This is not the recommended way to access the HttpContext in Blazor, this is just for test purposes *@

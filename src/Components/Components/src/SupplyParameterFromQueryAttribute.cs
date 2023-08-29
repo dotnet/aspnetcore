@@ -14,5 +14,5 @@ public sealed class SupplyParameterFromQueryAttribute : CascadingParameterAttrib
     /// Gets or sets the name of the querystring parameter. If null, the querystring
     /// parameter is assumed to have the same name as the associated property.
     /// </summary>
-    public override string? Name { get; set; }
+    public string? Name { get; set; }
 }
