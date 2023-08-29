@@ -66,7 +66,7 @@ export class WebRootComponentManager implements DescriptorHandler, NavigationEnh
   }
 
   // Implements NavigationEnhancementCallbacks.
-    public documentUpdated() {
+  public documentUpdated() {
     this.updateApplicationState();
     this.rootComponentsMayRequireRefresh();
   }
@@ -166,14 +166,18 @@ export class WebRootComponentManager implements DescriptorHandler, NavigationEnh
   }
 
     private updateApplicationState() {
+      if (isRendererAttached(WebRendererId.Server)) {
         const serverAppState = discoverServerPersistedState(document);
         if (serverAppState) {
             updateApplicationState(WebRendererId.Server, serverAppState);
         }
+      }   
+      if (isRendererAttached(WebRendererId.WebAssembly)) {
         const webAssemblyAppState = discoverWebAssemblyPersistedState(document);
         if (webAssemblyAppState) {
             updateApplicationState(WebRendererId.WebAssembly, webAssemblyAppState);
         }
+      }  
     }
 
   // This function should be called each time we think an SSR update
