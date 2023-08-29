@@ -161,6 +161,7 @@ public class StreamingRenderingTest : ServerTestBase<BasicTestAppServerSiteFixtu
         var itemCount = 100000;
         var url = new Uri(new Uri(Browser.Url), $"{ServerPathBase}/overlapping-streaming?count={itemCount}");
         var response = await BandwidthThrottledGet(url.ToString(), 1024 * 10, 1);
+        response = response.Replace("&#xD;", "");
 
         // Verify initial synchronous output
         var initialContent = ExtractContent(response, "<div id=\"content-to-verify\">", "</div>");
@@ -184,7 +185,7 @@ public class StreamingRenderingTest : ServerTestBase<BasicTestAppServerSiteFixtu
         }
 
         static string ExpectedContent(string message, int itemCount)
-            => string.Join("", Enumerable.Range(0, itemCount).Select(i => $"<span>{i}: {message}</span>&#xD;&#xA;"));
+            => string.Join("", Enumerable.Range(0, itemCount).Select(i => $"<span>{i}: {message}</span>&#xA;"));
 
         static async Task<string> BandwidthThrottledGet(string url, int chunkLength, int delayPerChunkMs)
         {
