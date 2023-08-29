@@ -9,10 +9,10 @@ internal class BufferedTextWriter : TextWriter
 {
     private const int PageSize = 256;
     private readonly TextWriter _underlying;
+    private readonly StringBuilder _charArraySegmentBuilder = new();
     private TextChunkListBuilder _currentOutput;
     private TextChunkListBuilder? _previousOutput;
     private Task _currentFlushAsyncTask = Task.CompletedTask;
-    private StringBuilder _charArraySegmentBuilder = new();
 
     public BufferedTextWriter(TextWriter underlying)
     {
