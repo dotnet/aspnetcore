@@ -581,6 +581,38 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         }
     }
 
+    internal SetTransportState TrySetTransport(HttpTransportType transportType, HttpConnectionsMetrics metrics)
+    {
+        lock (_stateLock)
+        {
+            if (TransportType != HttpTransportType.None
+                && UseStatefulReconnect == false && TransportType != HttpTransportType.LongPolling)
+            {
+                return SetTransportState.AlreadyActive;
+            }
+
+            if (TransportType == HttpTransportType.None)
+            {
+                TransportType = transportType;
+
+                if (HttpConnectionsEventSource.Log.IsEnabled() || MetricsContext.ConnectionDurationEnabled)
+                {
+                    StartTimestamp = Stopwatch.GetTimestamp();
+                }
+
+                HttpConnectionsEventSource.Log.ConnectionStart(ConnectionId);
+
+                metrics.ConnectionTransportStart(MetricsContext, transportType);
+            }
+            else if (TransportType != transportType)
+            {
+                return SetTransportState.CannotChange;
+            }
+
+            return SetTransportState.Success;
+        }
+    }
+
     public void MarkInactive()
     {
         lock (_stateLock)
@@ -716,6 +748,13 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
                 await notifyOnReconnect(writer);
             };
         }
+    }
+
+    internal enum SetTransportState
+    {
+        Success,
+        AlreadyActive,
+        CannotChange,
     }
 
     private static partial class Log
