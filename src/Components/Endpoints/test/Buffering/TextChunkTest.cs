@@ -14,7 +14,7 @@ public class TextChunkTest
     public async Task CanHoldString()
     {
         var chunk = new TextChunk("string value");
-        await chunk.WriteToAsync(_writer, ref _tempBuffer);
+        await chunk.WriteToAsync(_writer, string.Empty, ref _tempBuffer);
         Assert.Equal("string value", _writer.ToString());
     }
 
@@ -22,7 +22,7 @@ public class TextChunkTest
     public async Task CanHoldChar()
     {
         var chunk = new TextChunk('x');
-        await chunk.WriteToAsync(_writer, ref _tempBuffer);
+        await chunk.WriteToAsync(_writer, string.Empty, ref _tempBuffer);
         Assert.Equal("x", _writer.ToString());
     }
 
@@ -30,8 +30,9 @@ public class TextChunkTest
     public async Task CanHoldCharArraySegment()
     {
         var chars = new char[] { 'a', 'b', 'c', 'd', 'e' };
-        var chunk = new TextChunk(new ArraySegment<char>(chars, 1, 3));
-        await chunk.WriteToAsync(_writer, ref _tempBuffer);
+        var charArrayScope = new StringBuilder();
+        var chunk = new TextChunk(new ArraySegment<char>(chars, 1, 3), charArrayScope);
+        await chunk.WriteToAsync(_writer, charArrayScope.ToString(), ref _tempBuffer);
 
         // See it still works when the underlying array is mutated
         chars[2] = 'X';
@@ -42,8 +43,8 @@ public class TextChunkTest
     [Fact]
     public async Task CanHoldInt()
     {
-        await new TextChunk(123).WriteToAsync(_writer, ref _tempBuffer);
-        await new TextChunk(456).WriteToAsync(_writer, ref _tempBuffer);
+        await new TextChunk(123).WriteToAsync(_writer, string.Empty, ref _tempBuffer);
+        await new TextChunk(456).WriteToAsync(_writer, string.Empty, ref _tempBuffer);
         Assert.Equal("123456", _writer.ToString());
     }
 }

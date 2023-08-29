@@ -32,7 +32,7 @@ internal class TextChunkListBuilder(int pageLength)
         }
     }
 
-    public async Task WriteToAsync(TextWriter writer)
+    public async Task WriteToAsync(TextWriter writer, string charArraySegments)
     {
         StringBuilder? tempBuffer = null;
 
@@ -43,7 +43,7 @@ internal class TextChunkListBuilder(int pageLength)
                 var (count, buffer) = (page.Count, page.Buffer);
                 for (var i = 0; i < count; i++)
                 {
-                    await buffer[i].WriteToAsync(writer, ref tempBuffer);
+                    await buffer[i].WriteToAsync(writer, charArraySegments, ref tempBuffer);
                 }
             }
         }
@@ -53,7 +53,7 @@ internal class TextChunkListBuilder(int pageLength)
             var (count, buffer) = (_currentPage.Count, _currentPage.Buffer);
             for (var i = 0; i < count; i++)
             {
-                await buffer[i].WriteToAsync(writer, ref tempBuffer);
+                await buffer[i].WriteToAsync(writer, charArraySegments, ref tempBuffer);
             }
         }
     }

@@ -12,6 +12,7 @@ public class TextChunkPageTest
     {
         // Arrange
         var page = new TextChunkPage(3);
+        var charArrayScope = new StringBuilder();
 
         // Act/Assert 1: Can add values if not full
         Assert.Equal(0, page.Count);
@@ -29,7 +30,7 @@ public class TextChunkPageTest
         StringBuilder tempBuffer = null;
         for (var i = 0; i < page.Count; i++)
         {
-            await page.Buffer[i].WriteToAsync(writer, ref tempBuffer);
+            await page.Buffer[i].WriteToAsync(writer, charArrayScope.ToString(), ref tempBuffer);
         }
 
         Assert.Equal("Item1Item2Item3", writer.ToString());
