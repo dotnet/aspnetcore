@@ -20,7 +20,7 @@
 @code {
     bool _submitted = false;
 
-    [SupplyParameterFromForm(FormName = "named-form-handler")] public DataModel Model { get; set; }
+    [SupplyParameterFromForm(Handler = "named-form-handler")] public DataModel Model { get; set; }
 
     [CascadingParameter] public FormMappingContext Context { get; set; }
 

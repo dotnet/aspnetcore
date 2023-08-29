@@ -1,14 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { DotNet } from '@microsoft/dotnet-js-interop';
-
 export const Virtualize = {
   init,
   dispose,
 };
 
-const dispatcherObserversByDotNetIdPropname = Symbol();
+const observersByDotNetId = {};
 
 function findClosestScrollContainer(element: HTMLElement | null): HTMLElement | null {
   // If we recurse up as far as body or the document root, return null so that the
@@ -28,7 +26,7 @@ function findClosestScrollContainer(element: HTMLElement | null): HTMLElement | 
   return findClosestScrollContainer(element.parentElement);
 }
 
-function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spacerAfter: HTMLElement, rootMargin = 50): void {
+function init(dotNetHelper: any, spacerBefore: HTMLElement, spacerAfter: HTMLElement, rootMargin = 50): void {
   // Overflow anchoring can cause an ongoing scroll loop, because when we resize the spacers, the browser
   // would update the scroll position to compensate. Then the spacer would remain visible and we'd keep on
   // trying to resize it.
@@ -53,8 +51,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   const mutationObserverBefore = createSpacerMutationObserver(spacerBefore);
   const mutationObserverAfter = createSpacerMutationObserver(spacerAfter);
 
-  const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
-  observersByDotNetObjectId[id] = {
+  observersByDotNetId[dotNetHelper._id] = {
     intersectionObserver,
     mutationObserverBefore,
     mutationObserverAfter,
@@ -118,20 +115,8 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   }
 }
 
-function getObserversMapEntry(dotNetHelper: DotNet.DotNetObject): { observersByDotNetObjectId: {[id: number]: any }, id: number } {
-  const dotNetHelperDispatcher = dotNetHelper['_callDispatcher'];
-  const dotNetHelperId = dotNetHelper['_id'];
-  dotNetHelperDispatcher[dispatcherObserversByDotNetIdPropname] ??= { };
-
-  return {
-    observersByDotNetObjectId: dotNetHelperDispatcher[dispatcherObserversByDotNetIdPropname],
-    id: dotNetHelperId,
-  };
-}
-
-function dispose(dotNetHelper: DotNet.DotNetObject): void {
-  const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
-  const observers = observersByDotNetObjectId[id];
+function dispose(dotNetHelper: any): void {
+  const observers = observersByDotNetId[dotNetHelper._id];
 
   if (observers) {
     observers.intersectionObserver.disconnect();
@@ -140,6 +125,6 @@ function dispose(dotNetHelper: DotNet.DotNetObject): void {
 
     dotNetHelper.dispose();
 
-    delete observersByDotNetObjectId[id];
+    delete observersByDotNetId[dotNetHelper._id];
   }
 }

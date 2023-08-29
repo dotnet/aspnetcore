@@ -19,8 +19,7 @@ import { RootComponentManager } from './Services/RootComponentManager';
 
 let options: Partial<WebAssemblyStartOptions> | undefined;
 let platformLoadPromise: Promise<void> | undefined;
-let loadedWebAssemblyPlatform = false;
-let started = false;
+let hasStarted = false;
 
 let resolveBootConfigPromise: (value: MonoConfig) => void;
 const bootConfigPromise = new Promise<MonoConfig>(resolve => {
@@ -36,11 +35,11 @@ export function setWebAssemblyOptions(webAssemblyOptions?: Partial<WebAssemblySt
 }
 
 export async function startWebAssembly(components: RootComponentManager<WebAssemblyComponentDescriptor>): Promise<void> {
-  if (started) {
+  if (hasStarted) {
     throw new Error('Blazor WebAssembly has already started.');
   }
 
-  started = true;
+  hasStarted = true;
 
   if (inAuthRedirectIframe()) {
     // eslint-disable-next-line @typescript-eslint/no-empty-function
@@ -55,7 +54,7 @@ export async function startWebAssembly(components: RootComponentManager<WebAssem
     // focus, in turn triggering a 'change' event. It may also be possible to listen to other DOM mutation events
     // that are themselves triggered by the application of a renderbatch.
     const renderer = getRendererer(browserRendererId);
-    if (renderer?.eventDelegator.getHandler(eventHandlerId)) {
+    if (renderer.eventDelegator.getHandler(eventHandlerId)) {
       monoPlatform.invokeWhenHeapUnlocked(continuation);
     }
   });
@@ -147,28 +146,13 @@ export async function startWebAssembly(components: RootComponentManager<WebAssem
   api.invokeLibraryInitializers('afterStarted', [Blazor]);
 }
 
-export function hasStartedWebAssembly(): boolean {
-  return started;
-}
-
 export function waitForBootConfigLoaded(): Promise<MonoConfig> {
   return bootConfigPromise;
 }
 
 export function loadWebAssemblyPlatformIfNotStarted(): Promise<void> {
-  platformLoadPromise ??= (async () => {
-    await monoPlatform.load(options ?? {}, resolveBootConfigPromise);
-    loadedWebAssemblyPlatform = true;
-  })();
+  platformLoadPromise ??= monoPlatform.load(options ?? {}, resolveBootConfigPromise);
   return platformLoadPromise;
-}
-
-export function hasStartedLoadingWebAssemblyPlatform(): boolean {
-  return platformLoadPromise !== undefined;
-}
-
-export function hasLoadedWebAssemblyPlatform(): boolean {
-  return loadedWebAssemblyPlatform;
 }
 
 // obsolete, legacy, don't use for new code!

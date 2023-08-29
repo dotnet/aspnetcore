@@ -18,8 +18,8 @@ public class StreamRenderingAttribute : Attribute
     /// <summary>
     /// Constructs an instance of <see cref="StreamRenderingAttribute"/>
     /// </summary>
-    /// <param name="enabled">A flag to indicate whether this component and its descendants should stream their rendering. The default value is true.</param>
-    public StreamRenderingAttribute(bool enabled = true)
+    /// <param name="enabled">A flag to indicate whether this component and its descendants should stream their rendering.</param>
+    public StreamRenderingAttribute(bool enabled)
     {
         Enabled = enabled;
     }

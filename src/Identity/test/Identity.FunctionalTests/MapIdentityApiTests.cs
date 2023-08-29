@@ -13,7 +13,6 @@ using System.Text.RegularExpressions;
 using Identity.DefaultUI.WebSite;
 using Identity.DefaultUI.WebSite.Data;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -32,9 +31,8 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests;
 
 public class MapIdentityApiTests : LoggedTest
 {
-    private static string Email { get; } = $"{Guid.NewGuid()}@example.com";
-    private static string Password { get; } = "[PLACEHOLDER]-1a";
-    private static Uri BaseAddress { get; } = new Uri("http://example.com");
+    private string Email { get; } = $"{Guid.NewGuid()}@example.com";
+    private string Password { get; } = "[PLACEHOLDER]-1a";
 
     [Theory]
     [MemberData(nameof(AddIdentityModes))]
@@ -1275,10 +1273,7 @@ public class MapIdentityApiTests : LoggedTest
         where TContext : DbContext
     {
         var builder = WebApplication.CreateSlimBuilder();
-        builder.WebHost.UseTestServer(options =>
-        {
-            options.BaseAddress = BaseAddress;
-        });
+        builder.WebHost.UseTestServer();
         builder.Services.AddSingleton(LoggerFactory);
         builder.Services.AddAuthorization();
 
@@ -1353,9 +1348,7 @@ public class MapIdentityApiTests : LoggedTest
         Assert.True(confirmationMatch.Success);
         Assert.Equal(2, confirmationMatch.Groups.Count);
 
-        var url = WebUtility.HtmlDecode(confirmationMatch.Groups[1].Value);
-        Assert.StartsWith(BaseAddress.ToString(), url);
-        return url;
+        return WebUtility.HtmlDecode(confirmationMatch.Groups[1].Value);
     }
 
     private static string GetPasswordResetCode(TestEmail email)

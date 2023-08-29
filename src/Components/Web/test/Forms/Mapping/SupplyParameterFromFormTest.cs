@@ -75,7 +75,7 @@ public class SupplyParameterFromFormTest
 
     class FormParametersComponentWithName : TestComponentBase
     {
-        [SupplyParameterFromForm(FormName = "handler-name")] public string FormParameter { get; set; }
+        [SupplyParameterFromForm(Handler = "handler-name")] public string FormParameter { get; set; }
     }
 
     class TestFormModelValueBinder(string IncomingScopeQualifiedFormName = "") : IFormValueMapper

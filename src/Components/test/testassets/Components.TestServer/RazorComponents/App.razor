@@ -16,8 +16,7 @@
         <NotFound>There's nothing here</NotFound>
     </Router>
     <script src="_framework/blazor.web.js" autostart="false" suppress-error="BL9992"></script>
-    <script src="_content/TestContentPackage/counterInterop.js"></script>
-    <script>
+    <script suppress-error="BL9992">
         const suppressEnhancedNavigation = sessionStorage.getItem('suppress-enhanced-navigation') === 'true';
         const blockLoadBootResource = sessionStorage.getItem('block-load-boot-resource') === 'true';
         const useLongWebAssemblyTimeout = sessionStorage.getItem('use-long-auto-timeout') === 'true';
@@ -36,9 +35,6 @@
             Blazor.start({
                 ssr: {
                     disableDomPreservation: suppressEnhancedNavigation,
-
-                    // We use a short timeout so tests don't take too long
-                    circuitInactivityTimeoutMs: 100,
                 },
                 webAssembly: {
                     loadBootResource: function (type, name, defaultUri, integrity) {

@@ -24,8 +24,7 @@ internal class RazorComponentEndpointFactory
         [DynamicallyAccessedMembers(Component)] Type rootComponent,
         PageComponentInfo pageDefinition,
         IReadOnlyList<Action<EndpointBuilder>> conventions,
-        IReadOnlyList<Action<EndpointBuilder>> finallyConventions,
-        ConfiguredRenderModesMetadata configuredRenderModesMetadata)
+        IReadOnlyList<Action<EndpointBuilder>> finallyConventions)
     {
         // We do not provide a way to establish the order or the name for the page routes.
         // Order is not supported in our client router.
@@ -49,7 +48,6 @@ internal class RazorComponentEndpointFactory
         builder.Metadata.Add(HttpMethodsMetadata);
         builder.Metadata.Add(new ComponentTypeMetadata(pageDefinition.Type));
         builder.Metadata.Add(new RootComponentMetadata(rootComponent));
-        builder.Metadata.Add(configuredRenderModesMetadata);
 
         foreach (var convention in conventions)
         {

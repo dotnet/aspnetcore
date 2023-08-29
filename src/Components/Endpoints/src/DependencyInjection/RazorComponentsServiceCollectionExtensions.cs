@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection.Metadata;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Endpoints.DependencyInjection;
@@ -40,13 +39,12 @@ public static class RazorComponentsServiceCollectionExtensions
 
         services.TryAddSingleton<RazorComponentsMarkerService>();
 
+        // Results
+        services.TryAddSingleton<RazorComponentResultExecutor>();
+
         // Endpoints
         services.TryAddSingleton<RazorComponentEndpointDataSourceFactory>();
         services.TryAddSingleton<RazorComponentEndpointFactory>();
-        if (MetadataUpdater.IsSupported)
-        {
-            services.TryAddSingleton<HotReloadService>();
-        }
         services.TryAddScoped<IRazorComponentEndpointInvoker, RazorComponentEndpointInvoker>();
 
         // Common services required for components server side rendering
@@ -65,7 +63,6 @@ public static class RazorComponentsServiceCollectionExtensions
         services.TryAddScoped<EndpointRoutingStateProvider>();
         services.TryAddScoped<IRoutingStateProvider>(sp => sp.GetRequiredService<EndpointRoutingStateProvider>());
         services.AddSupplyValueFromQueryProvider();
-        services.TryAddCascadingValue(sp => sp.GetRequiredService<EndpointHtmlRenderer>().HttpContext);
 
         // Form handling
         services.AddSupplyValueFromFormProvider();

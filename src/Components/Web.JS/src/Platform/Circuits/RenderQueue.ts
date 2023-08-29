@@ -8,6 +8,8 @@ import { HubConnection } from '@microsoft/signalr';
 import { WebRendererId } from '../../Rendering/WebRendererId';
 
 export class RenderQueue {
+  private static instance: RenderQueue;
+
   private nextBatchId = 2;
 
   private fatalError?: string;
@@ -16,6 +18,14 @@ export class RenderQueue {
 
   public constructor(logger: Logger) {
     this.logger = logger;
+  }
+
+  public static getOrCreate(logger: Logger): RenderQueue {
+    if (!RenderQueue.instance) {
+      RenderQueue.instance = new RenderQueue(logger);
+    }
+
+    return this.instance;
   }
 
   public async processBatch(receivedBatchId: number, batchData: Uint8Array, connection: HubConnection): Promise<void> {

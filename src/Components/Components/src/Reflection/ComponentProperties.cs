@@ -184,7 +184,8 @@ internal static class ComponentProperties
             {
                 throw new InvalidOperationException(
                     $"Object of type '{targetType.FullName}' has a property matching the name '{parameterName}', " +
-                    $"but it does not have [Parameter], [CascadingParameter], or any other parameter-supplying attribute.");
+                    $"but it does not have [{nameof(ParameterAttribute)}], [{nameof(CascadingParameterAttribute)}] or " +
+                    $"[SupplyParameterFromFormAttribute] applied.");
             }
             else
             {

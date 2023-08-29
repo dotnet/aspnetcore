@@ -133,10 +133,7 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, f
   const abortSignal = currentEnhancedNavigationAbortController.signal;
   const responsePromise = fetch(internalDestinationHref, Object.assign({
     signal: abortSignal,
-    headers: {
-      'blazor-enhanced-nav': 'on',
-      'accept': 'text/html',
-    },
+    headers: { 'blazor-enhanced-nav': 'on' },
   }, fetchOptions));
   await getResponsePartsWithFraming(responsePromise, abortSignal,
     (response, initialContent) => {

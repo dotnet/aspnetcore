@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
@@ -23,12 +24,13 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering;
 /// </summary>
 internal sealed partial class WebAssemblyRenderer : WebRenderer
 {
-    private readonly RootComponentTypeCache _rootComponentCache = new();
+    private readonly RootComponentTypeCache _rootComponentCache;
     private readonly ILogger _logger;
 
     public WebAssemblyRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, JSComponentInterop jsComponentInterop)
         : base(serviceProvider, loggerFactory, DefaultWebAssemblyJSRuntime.Instance.ReadJsonSerializerOptions(), jsComponentInterop)
     {
+        _rootComponentCache = serviceProvider.GetRequiredService<RootComponentTypeCache>();
         _logger = loggerFactory.CreateLogger<WebAssemblyRenderer>();
 
         ElementReferenceContext = DefaultWebAssemblyJSRuntime.Instance.ElementReferenceContext;
