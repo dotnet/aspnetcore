@@ -31,7 +31,7 @@
     <BaselinePackageReference Include="Duende.IdentityServer.Storage" Version="[6.0.4, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="[7.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Http" Version="[7.0.0, )" />
-    <BaselinePackageReference Include="Newtonsoft.Json" Version="[13.0.3, )" />
+    <BaselinePackageReference Include="Newtonsoft.Json" Version="[13.0.1, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.App.Ref-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.App.Ref' ">
@@ -473,15 +473,15 @@
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.JsonPatch' AND '$(TargetFramework)' == 'net462' ">
     <BaselinePackageReference Include="Microsoft.CSharp" Version="[4.7.0, )" />
-    <BaselinePackageReference Include="Newtonsoft.Json" Version="[13.0.3, )" />
+    <BaselinePackageReference Include="Newtonsoft.Json" Version="[13.0.1, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.JsonPatch' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net7.0') ">
     <BaselinePackageReference Include="Microsoft.CSharp" Version="[4.7.0, )" />
-    <BaselinePackageReference Include="Newtonsoft.Json" Version="[13.0.3, )" />
+    <BaselinePackageReference Include="Newtonsoft.Json" Version="[13.0.1, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.JsonPatch' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.CSharp" Version="[4.7.0, )" />
-    <BaselinePackageReference Include="Newtonsoft.Json" Version="[13.0.3, )" />
+    <BaselinePackageReference Include="Newtonsoft.Json" Version="[13.0.1, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Metadata-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Metadata' ">
@@ -500,7 +500,7 @@
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.NewtonsoftJson' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net7.0') ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="[7.0.0, )" />
-    <BaselinePackageReference Include="Newtonsoft.Json" Version="[13.0.3, )" />
+    <BaselinePackageReference Include="Newtonsoft.Json" Version="[13.0.1, )" />
     <BaselinePackageReference Include="Newtonsoft.Json.Bson" Version="[1.0.2, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation-->
@@ -634,15 +634,15 @@
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson' AND '$(TargetFramework)' == 'net462' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[7.0.0, )" />
-    <BaselinePackageReference Include="Newtonsoft.Json" Version="[13.0.3, )" />
+    <BaselinePackageReference Include="Newtonsoft.Json" Version="[13.0.1, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net7.0') ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[7.0.0, )" />
-    <BaselinePackageReference Include="Newtonsoft.Json" Version="[13.0.3, )" />
+    <BaselinePackageReference Include="Newtonsoft.Json" Version="[13.0.1, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[7.0.0, )" />
-    <BaselinePackageReference Include="Newtonsoft.Json" Version="[13.0.3, )" />
+    <BaselinePackageReference Include="Newtonsoft.Json" Version="[13.0.1, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.SignalR.Specification.Tests-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Specification.Tests' ">
