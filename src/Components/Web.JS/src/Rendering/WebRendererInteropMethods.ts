@@ -6,7 +6,8 @@ import { EventDescriptor } from './Events/EventDelegator';
 import { enableJSRootComponents, JSComponentParametersByIdentifier, JSComponentIdentifiersByInitializer } from './JSRootComponents';
 
 const interopMethodsByRenderer = new Map<number, DotNet.DotNetObject>();
-const rendererAttachedListeners: ((browserRendererId: number) => void)[] = [];
+const resolveAttachedPromiseByRenderer = new Map<number, () => void>();
+const attachedPromisesByRenderer = new Map<number, Promise<void>>();
 
 let resolveFirstRendererAttached : () => void;
 
@@ -32,26 +33,35 @@ export function attachWebRendererInterop(
   }
 
   resolveFirstRendererAttached();
-  invokeRendererAttachedListeners(rendererId);
-}
-
-export function detachWebRendererInterop(rendererId: number) {
-  if (!interopMethodsByRenderer.delete(rendererId)) {
-    throw new Error(`Interop methods are not registered for renderer ${rendererId}`);
-  }
+  resolveRendererAttached(rendererId);
 }
 
 export function isRendererAttached(browserRendererId: number): boolean {
   return interopMethodsByRenderer.has(browserRendererId);
 }
 
-export function registerRendererAttachedListener(listener: (browserRendererId: number) => void) {
-  rendererAttachedListeners.push(listener);
+export function waitForRendererAttached(browserRendererId: number): Promise<void> {
+  if (isRendererAttached(browserRendererId)) {
+    return Promise.resolve();
+  }
+
+  let attachedPromise = attachedPromisesByRenderer.get(browserRendererId);
+  if (!attachedPromise) {
+    attachedPromise = new Promise<void>((resolve) => {
+      resolveAttachedPromiseByRenderer.set(browserRendererId, resolve);
+    });
+    attachedPromisesByRenderer.set(browserRendererId, attachedPromise);
+  }
+
+  return attachedPromise;
 }
 
-function invokeRendererAttachedListeners(browserRendererId: number) {
-  for (const listener of rendererAttachedListeners) {
-    listener(browserRendererId);
+function resolveRendererAttached(browserRendererId: number): void {
+  const resolveRendererAttached = resolveAttachedPromiseByRenderer.get(browserRendererId);
+  if (resolveRendererAttached) {
+    resolveAttachedPromiseByRenderer.delete(browserRendererId);
+    attachedPromisesByRenderer.delete(browserRendererId);
+    resolveRendererAttached();
   }
 }
 

@@ -141,18 +141,18 @@ internal static class AssertFrame
         AssertFrame.Sequence(frame, sequence);
     }
 
-    public static void ComponentRenderMode(RenderTreeFrame frame, IComponentRenderMode mode)
+    public static void ComponentRenderMode(RenderTreeFrame frame, IComponentRenderMode mode, int? sequence = null)
     {
         Assert.Equal(RenderTreeFrameType.ComponentRenderMode, frame.FrameType);
         Assert.Same(mode, frame.ComponentRenderMode);
-        AssertFrame.Sequence(frame, 0);
+        AssertFrame.Sequence(frame, sequence);
     }
 
-    public static void NamedEvent(RenderTreeFrame frame, string eventType, string assignedName)
+    public static void NamedEvent(RenderTreeFrame frame, string eventType, string assignedName, int? sequence = null)
     {
         Assert.Equal(RenderTreeFrameType.NamedEvent, frame.FrameType);
         Assert.Equal(eventType, frame.NamedEventType);
         Assert.Equal(assignedName, frame.NamedEventAssignedName);
-        AssertFrame.Sequence(frame, 0);
+        AssertFrame.Sequence(frame, sequence);
     }
 }

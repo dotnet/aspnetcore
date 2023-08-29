@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms.Mapping;
 
@@ -29,8 +28,8 @@ public class RazorComponentsServiceCollectionExtensionsTest
             }
             else
             {
-                // 'multi-registration' services should not have any duplicate implementation types
-                AssertAllImplementationTypesAreDistinct(services, service.ServiceType);
+                // 'multi-registration' services should only have one *instance* of each implementation registered.
+                AssertContainsSingle(services, service.ServiceType, service.ImplementationType);
             }
         }
     }
@@ -56,8 +55,8 @@ public class RazorComponentsServiceCollectionExtensionsTest
             }
             else
             {
-                // 'multi-registration' services should not have any duplicate implementation types
-                AssertAllImplementationTypesAreDistinct(services, service.ServiceType);
+                // 'multi-registration' services should only have one *instance* of each implementation registered.
+                AssertContainsSingle(services, service.ServiceType, service.ImplementationType);
             }
         }
     }
@@ -105,32 +104,28 @@ public class RazorComponentsServiceCollectionExtensionsTest
             $" time(s) but was actually registered {actual} time(s).");
     }
 
-    private void AssertAllImplementationTypesAreDistinct(
+    private void AssertContainsSingle(
         IServiceCollection services,
-        Type serviceType)
+        Type serviceType,
+        Type implementationType)
     {
-        var serviceProvider = services.BuildServiceProvider();
-        var implementationTypes = services
-            .Where(sd => sd.ServiceType == serviceType)
-            .Select(service => service switch
-            {
-                { ImplementationType: { } type } => type,
-                { ImplementationInstance: { } instance } => instance.GetType(),
-                { ImplementationFactory: { } factory } => factory(serviceProvider).GetType(),
-            })
+        var matches = services
+            .Where(sd =>
+                sd.ServiceType == serviceType &&
+                sd.ImplementationType == implementationType)
             .ToArray();
 
-        if (implementationTypes.Length == 0)
+        if (matches.Length == 0)
         {
             Assert.True(
                 false,
-                $"Could not find an implementation type for {serviceType}");
+                $"Could not find an instance of {implementationType} registered as {serviceType}");
         }
-        else if (implementationTypes.Length != implementationTypes.Distinct().Count())
+        else if (matches.Length > 1)
         {
             Assert.True(
                 false,
-                $"Found duplicate implementation types for {serviceType}. Implementation types: {string.Join(", ", implementationTypes.Select(x => x.ToString()))}");
+                $"Found multiple instances of {implementationType} registered as {serviceType}");
         }
     }
 }

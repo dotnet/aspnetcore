@@ -144,16 +144,16 @@ public class EditForm : ComponentBase
         {
             if (!string.IsNullOrEmpty(FormName))
             {
-                builder.AddNamedEvent("onsubmit", FormName);
+                builder.AddNamedEvent(5, "onsubmit", FormName);
             }
 
-            RenderSSRFormHandlingChildren(builder, 5);
+            RenderSSRFormHandlingChildren(builder, 6);
         }
 
-        builder.OpenComponent<CascadingValue<EditContext>>(6);
-        builder.AddComponentParameter(7, "IsFixed", true);
-        builder.AddComponentParameter(8, "Value", _editContext);
-        builder.AddComponentParameter(9, "ChildContent", ChildContent?.Invoke(_editContext));
+        builder.OpenComponent<CascadingValue<EditContext>>(7);
+        builder.AddComponentParameter(8, "IsFixed", true);
+        builder.AddComponentParameter(9, "Value", _editContext);
+        builder.AddComponentParameter(10, "ChildContent", ChildContent?.Invoke(_editContext));
         builder.CloseComponent();
 
         builder.CloseElement();

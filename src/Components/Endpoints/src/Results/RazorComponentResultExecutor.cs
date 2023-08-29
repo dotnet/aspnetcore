@@ -9,15 +9,23 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
-using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
-internal static class RazorComponentResultExecutor
+/// <summary>
+/// Executes a <see cref="RazorComponentResult"/>.
+/// </summary>
+public class RazorComponentResultExecutor
 {
-    public const string DefaultContentType = "text/html; charset=utf-8";
+    /// <summary>
+    /// The default content-type header value for Razor Components, <c>text/html; charset=utf-8</c>.
+    /// </summary>
+    public static readonly string DefaultContentType = "text/html; charset=utf-8";
 
-    public static Task ExecuteAsync(HttpContext httpContext, RazorComponentResult result)
+    /// <summary>
+    /// Executes a <see cref="RazorComponentResult"/> asynchronously.
+    /// </summary>
+    public virtual Task ExecuteAsync(HttpContext httpContext, RazorComponentResult result)
     {
         ArgumentNullException.ThrowIfNull(httpContext);
 
@@ -36,7 +44,7 @@ internal static class RazorComponentResultExecutor
             result.PreventStreamingRendering);
     }
 
-    private static Task RenderComponentToResponse(
+    internal static Task RenderComponentToResponse(
         HttpContext httpContext,
         [DynamicallyAccessedMembers(Component)] Type componentType,
         IReadOnlyDictionary<string, object?>? componentParameters,

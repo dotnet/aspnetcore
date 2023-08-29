@@ -50,8 +50,7 @@ public static class SupplyParameterFromQueryProviderServiceCollectionExtensions
                 UpdateQueryParameters();
             }
 
-            var attribute = (SupplyParameterFromQueryAttribute)parameterInfo.Attribute; // Must be a valid cast because we check in CanSupplyValue
-            var queryParameterName = attribute.Name ?? parameterInfo.PropertyName;
+            var queryParameterName = parameterInfo.Attribute.Name ?? parameterInfo.PropertyName;
             return _queryParameterValueSupplier.GetQueryParameterValue(parameterInfo.PropertyType, queryParameterName);
         }
 

@@ -5002,7 +5002,7 @@ public class RendererTest
         var component = new TestComponent(builder =>
         {
             builder.OpenComponent<TestComponent>(0);
-            builder.AddComponentRenderMode(new ComponentWithUnknownRenderMode.UnknownRenderMode());
+            builder.AddComponentRenderMode(1, new ComponentWithUnknownRenderMode.UnknownRenderMode());
             builder.CloseComponent();
         });
 
@@ -5046,7 +5046,7 @@ public class RendererTest
         {
             builder.OpenComponent<TestComponent>(0);
             builder.AddComponentParameter(1, nameof(MessageComponent.Message), "Some message");
-            builder.AddComponentRenderMode(new SubstituteComponentRenderMode());
+            builder.AddComponentRenderMode(2, new SubstituteComponentRenderMode());
             builder.CloseComponent();
         });
 

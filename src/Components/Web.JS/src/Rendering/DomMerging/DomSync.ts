@@ -11,7 +11,7 @@ import { UpdateCost, ItemList, Operation, computeEditScript } from './EditScript
 let descriptorHandler: DescriptorHandler | null = null;
 
 export interface DescriptorHandler {
-  registerComponent(descriptor: ComponentDescriptor): void;
+  registerComponentDescriptor(descriptor: ComponentDescriptor): void;
 }
 
 export function attachComponentDescriptorHandler(handler: DescriptorHandler) {
@@ -22,7 +22,7 @@ export function registerAllComponentDescriptors(root: Node) {
   const descriptors = upgradeComponentCommentsToLogicalRootComments(root);
 
   for (const descriptor of descriptors) {
-    descriptorHandler?.registerComponent(descriptor);
+    descriptorHandler?.registerComponentDescriptor(descriptor);
   }
 }
 
@@ -244,7 +244,7 @@ function treatAsInsertion(nodeToInsert: Node, nextNode: Node | null, parentNode:
   while (iterator.nextNode()) {
     const logicalRootDescriptor = getLogicalRootDescriptor(iterator.referenceNode as unknown as LogicalElement);
     if (logicalRootDescriptor) {
-      descriptorHandler?.registerComponent(logicalRootDescriptor);
+      descriptorHandler?.registerComponentDescriptor(logicalRootDescriptor);
     }
   }
 }
@@ -441,7 +441,7 @@ class LogicalElementNodeList implements ItemList<Node> {
   [index: number]: Node;
 
   item(index: number): Node | null {
-    return this[index] as unknown as Node || null;
+    return this[index] as unknown as Node;
   }
 
   forEach(callbackfn: (value: Node, key: number, parent: ItemList<Node>) => void, thisArg?: any): void {

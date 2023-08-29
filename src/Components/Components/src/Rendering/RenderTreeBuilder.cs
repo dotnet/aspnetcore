@@ -28,7 +28,7 @@ public sealed class RenderTreeBuilder : IDisposable
     private bool _hasSeenAddMultipleAttributes;
     private Dictionary<string, int>? _seenAttributeNames;
     private IComponentRenderMode? _pendingComponentCallSiteRenderMode; // TODO: Remove when Razor compiler supports call-site @rendermode
-    private string? _pendingNamedSubmitEvent; // TODO: Remove when Razor compiler supports @formname
+    private (int Sequence, string AssignedName)? _pendingNamedSubmitEvent; // TODO: Remove when Razor compiler supports @formname
 
     /// <summary>
     /// The reserved parameter name used for supplying child content.
@@ -83,9 +83,9 @@ public sealed class RenderTreeBuilder : IDisposable
     // TODO: Remove this once Razor supports @formname
     private void CompletePendingNamedSubmitEvent()
     {
-        if (_pendingNamedSubmitEvent is not null)
+        if (_pendingNamedSubmitEvent is { } pendingNamedSubmitEvent)
         {
-            AddNamedEvent("onsubmit", _pendingNamedSubmitEvent);
+            AddNamedEvent(pendingNamedSubmitEvent.Sequence, "onsubmit", pendingNamedSubmitEvent.AssignedName);
             _pendingNamedSubmitEvent = default;
         }
     }
@@ -241,7 +241,7 @@ public sealed class RenderTreeBuilder : IDisposable
             // That should compile directly as a call to AddNamedEvent.
             if (string.Equals(name, "@formname", StringComparison.Ordinal) && _lastNonAttributeFrameType == RenderTreeFrameType.Element)
             {
-                _pendingNamedSubmitEvent = value!;
+                _pendingNamedSubmitEvent = (sequence, value!);
             }
             else
             {
@@ -623,7 +623,7 @@ public sealed class RenderTreeBuilder : IDisposable
     {
         if (_pendingComponentCallSiteRenderMode is not null)
         {
-            AddComponentRenderMode(_pendingComponentCallSiteRenderMode);
+            AddComponentRenderMode(0, _pendingComponentCallSiteRenderMode);
             _pendingComponentCallSiteRenderMode = null;
         }
 
@@ -681,8 +681,9 @@ public sealed class RenderTreeBuilder : IDisposable
     /// <summary>
     /// Adds a frame indicating the render mode on the enclosing component frame.
     /// </summary>
+    /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
     /// <param name="renderMode">The <see cref="IComponentRenderMode"/>.</param>
-    public void AddComponentRenderMode(IComponentRenderMode renderMode)
+    public void AddComponentRenderMode(int sequence, IComponentRenderMode renderMode)
     {
         ArgumentNullException.ThrowIfNull(renderMode);
 
@@ -708,16 +709,17 @@ public sealed class RenderTreeBuilder : IDisposable
 
         parentFrame.ComponentFrameFlagsField |= ComponentFrameFlags.HasCallerSpecifiedRenderMode;
 
-        _entries.AppendComponentRenderMode(renderMode);
+        _entries.AppendComponentRenderMode(sequence, renderMode);
         _lastNonAttributeFrameType = RenderTreeFrameType.ComponentRenderMode;
     }
 
     /// <summary>
     /// Assigns a name to an event in the enclosing element.
     /// </summary>
+    /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
     /// <param name="eventType">The event type, e.g., 'onsubmit'.</param>
     /// <param name="assignedName">The application-assigned name.</param>
-    public void AddNamedEvent(string eventType, string assignedName)
+    public void AddNamedEvent(int sequence, string eventType, string assignedName)
     {
         ArgumentNullException.ThrowIfNull(eventType);
         ArgumentException.ThrowIfNullOrEmpty(assignedName);
@@ -731,7 +733,7 @@ public sealed class RenderTreeBuilder : IDisposable
             throw new InvalidOperationException($"Named events may only be added as children of frames of type {RenderTreeFrameType.Element}");
         }
 
-        _entries.AppendNamedEvent(eventType, assignedName);
+        _entries.AppendNamedEvent(sequence, eventType, assignedName);
         _lastNonAttributeFrameType = RenderTreeFrameType.NamedEvent;
     }
 

@@ -14,16 +14,13 @@ internal class RazorComponentEndpointDataSourceFactory
 {
     private readonly RazorComponentEndpointFactory _factory;
     private readonly IEnumerable<RenderModeEndpointProvider> _providers;
-    private readonly HotReloadService? _hotReloadService;
 
     public RazorComponentEndpointDataSourceFactory(
         RazorComponentEndpointFactory factory,
-        IEnumerable<RenderModeEndpointProvider> providers,
-        HotReloadService? hotReloadService = null)
+        IEnumerable<RenderModeEndpointProvider> providers)
     {
         _factory = factory;
         _providers = providers;
-        _hotReloadService = hotReloadService;
     }
 
     public RazorComponentEndpointDataSource<TRootComponent> CreateDataSource<[DynamicallyAccessedMembers(Component)] TRootComponent>(IEndpointRouteBuilder endpoints)
@@ -31,6 +28,6 @@ internal class RazorComponentEndpointDataSourceFactory
         var builder = ComponentApplicationBuilder.GetBuilder<TRootComponent>() ??
             DefaultRazorComponentApplication<TRootComponent>.Instance.GetBuilder();
 
-        return new RazorComponentEndpointDataSource<TRootComponent>(builder, _providers, endpoints.CreateApplicationBuilder(), _factory, _hotReloadService);
+        return new RazorComponentEndpointDataSource<TRootComponent>(builder, _providers, endpoints.CreateApplicationBuilder(), _factory);
     }
 }

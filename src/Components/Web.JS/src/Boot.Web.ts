@@ -18,10 +18,9 @@ import { attachStreamingRenderingListener } from './Rendering/StreamingRendering
 import { attachProgressivelyEnhancedNavigationListener } from './Services/NavigationEnhancement';
 import { WebRootComponentManager } from './Services/WebRootComponentManager';
 import { attachComponentDescriptorHandler, registerAllComponentDescriptors } from './Rendering/DomMerging/DomSync';
-import { hasProgrammaticEnhancedNavigationHandler, performProgrammaticEnhancedNavigation } from './Services/NavigationUtils';
 
 let started = false;
-let rootComponentManager: WebRootComponentManager;
+const rootComponentManager = new WebRootComponentManager();
 
 function boot(options?: Partial<WebStartOptions>) : Promise<void> {
   if (started) {
@@ -31,19 +30,9 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
   started = true;
 
   Blazor._internal.loadWebAssemblyQuicklyTimeout = 3000;
-  // Defined here to avoid inadvertently imported enhanced navigation
-  // related APIs in WebAssembly or Blazor Server contexts.
-  Blazor._internal.hotReloadApplied = () => {
-    if (hasProgrammaticEnhancedNavigationHandler())
-    {
-      performProgrammaticEnhancedNavigation(location.href, true);
-    }
-  }
 
   setCircuitOptions(options?.circuit);
   setWebAssemblyOptions(options?.webAssembly);
-
-  rootComponentManager = new WebRootComponentManager(options?.ssr?.circuitInactivityTimeoutMs ?? 2000);
 
   attachComponentDescriptorHandler(rootComponentManager);
   attachStreamingRenderingListener(options?.ssr, rootComponentManager);

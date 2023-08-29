@@ -14,5 +14,5 @@
 @code{
     bool _submitted = false;
 
-    [SupplyParameterFromForm(FormName = "named-form-handler")] public string Parameter { get; set; } = "";
+    [SupplyParameterFromForm(Handler = "named-form-handler")] public string Parameter { get; set; } = "";
 }

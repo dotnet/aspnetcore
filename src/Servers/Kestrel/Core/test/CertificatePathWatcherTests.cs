@@ -187,10 +187,17 @@ public class CertificatePathWatcherTests : LoggedTest
 
         watcher.AddWatchUnsynchronized(certificateConfig);
 
-        var signalTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var logTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        TestSink.MessageLogged += writeContext =>
+        {
+            if (writeContext.EventId.Name == "OutOfOrderEvent")
+            {
+                logTcs.SetResult();
+            }
+        };
 
         var oldChangeToken = watcher.GetChangeToken();
-        oldChangeToken.RegisterChangeCallback(_ => signalTcs.SetResult(), state: null);
 
         Assert.Equal(1, watcher.TestGetDirectoryWatchCountUnsynchronized());
         Assert.Equal(1, watcher.TestGetFileWatchCountUnsynchronized(dir));
@@ -200,9 +207,9 @@ public class CertificatePathWatcherTests : LoggedTest
         fileProvider.SetLastModifiedTime(fileName, fileLastModifiedTime.AddSeconds(-1));
         fileProvider.FireChangeToken(fileName);
 
-        await signalTcs.Task.DefaultTimeout();
+        await logTcs.Task.DefaultTimeout();
 
-        Assert.True(oldChangeToken.HasChanged);
+        Assert.False(oldChangeToken.HasChanged);
     }
 
     [Fact]
@@ -335,10 +342,12 @@ public class CertificatePathWatcherTests : LoggedTest
     }
 
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(false, false)]
     [LogLevel(LogLevel.Trace)]
-    public async Task IgnoreDeletion(bool restoredWithNewerLastModifiedTime)
+    public async Task IgnoreDeletion(bool seeChangeForDeletion, bool restoredWithNewerLastModifiedTime)
     {
         var dir = Directory.GetCurrentDirectory();
         var fileName = Path.GetRandomFileName();
@@ -368,21 +377,30 @@ public class CertificatePathWatcherTests : LoggedTest
         watcher.GetChangeToken().RegisterChangeCallback(_ => changeTcs.SetResult(), state: null);
 
         var logNoLastModifiedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var logSameLastModifiedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         TestSink.MessageLogged += writeContext =>
         {
-            if (writeContext.EventId.Name == "EventWithoutFile")
+            if (writeContext.EventId.Name == "EventWithoutLastModifiedTime")
             {
                 logNoLastModifiedTcs.SetResult();
+            }
+            else if (writeContext.EventId.Name == "RedundantEvent")
+            {
+                logSameLastModifiedTcs.SetResult();
             }
         };
 
         // Simulate file deletion
         fileProvider.SetLastModifiedTime(fileName, null);
 
-        fileProvider.FireChangeToken(fileName);
+        // In some file systems and watch modes, there's no event when (e.g.) the directory containing the watched file is deleted
+        if (seeChangeForDeletion)
+        {
+            fileProvider.FireChangeToken(fileName);
 
-        await logNoLastModifiedTcs.Task.DefaultTimeout();
+            await logNoLastModifiedTcs.Task.DefaultTimeout();
+        }
 
         Assert.Equal(1, watcher.TestGetDirectoryWatchCountUnsynchronized());
         Assert.Equal(1, watcher.TestGetFileWatchCountUnsynchronized(dir));
@@ -394,7 +412,16 @@ public class CertificatePathWatcherTests : LoggedTest
         fileProvider.SetLastModifiedTime(fileName, restoredWithNewerLastModifiedTime ? fileLastModifiedTime.AddSeconds(1) : fileLastModifiedTime);
         fileProvider.FireChangeToken(fileName);
 
-        await changeTcs.Task.DefaultTimeout();
+        if (restoredWithNewerLastModifiedTime)
+        {
+            await changeTcs.Task.DefaultTimeout();
+            Assert.False(logSameLastModifiedTcs.Task.IsCompleted);
+        }
+        else
+        {
+            await logSameLastModifiedTcs.Task.DefaultTimeout();
+            Assert.False(changeTcs.Task.IsCompleted);
+        }
     }
 
     [Fact]
