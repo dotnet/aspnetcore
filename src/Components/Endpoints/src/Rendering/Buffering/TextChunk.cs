@@ -16,7 +16,7 @@ internal readonly struct TextChunk
     // by _type. That will reduce memory usage and improve locality.
     private readonly string? _stringValue;
     private readonly char _charValue;
-    private readonly ArraySegment<char> _charArraySegmentValue;
+    private readonly char[]? _charArray;
     private readonly int _intValue;
 
     public TextChunk(string value)
@@ -33,8 +33,8 @@ internal readonly struct TextChunk
 
     public TextChunk(ArraySegment<char> value)
     {
-        _type = TextChunkType.CharArraySegment;
-        _charArraySegmentValue = value;
+        _type = TextChunkType.CharArray;
+        _charArray = value.ToArray();
     }
 
     public TextChunk(int value)
@@ -51,8 +51,8 @@ internal readonly struct TextChunk
                 return writer.WriteAsync(_stringValue);
             case TextChunkType.Char:
                 return writer.WriteAsync(_charValue);
-            case TextChunkType.CharArraySegment:
-                return writer.WriteAsync(_charArraySegmentValue);
+            case TextChunkType.CharArray:
+                return writer.WriteAsync(_charArray);
             case TextChunkType.Int:
                 // The same technique could be used to optimize writing other
                 // nonstring types, but currently only int is often used
@@ -65,5 +65,5 @@ internal readonly struct TextChunk
         }
     }
 
-    private enum TextChunkType { Int, String, Char, CharArraySegment };
+    private enum TextChunkType { Int, String, Char, CharArray };
 }
