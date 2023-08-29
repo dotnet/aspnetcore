@@ -2220,10 +2220,10 @@ public class RenderTreeDiffBuilderTest : IDisposable
 
         newTree.OpenElement(0, "existing");
         newTree.AddAttribute(1, "attr1", "unrelated val1");
-        newTree.AddNamedEvent(2, "someevent1", "added to existing element");
+        newTree.AddNamedEvent("someevent1", "added to existing element");
         newTree.CloseElement();
-        newTree.OpenElement(3, "new element");
-        newTree.AddNamedEvent(4, "someevent2", "added with new element");
+        newTree.OpenElement(2, "new element");
+        newTree.AddNamedEvent("someevent2", "added with new element");
         newTree.CloseElement();
 
         // Act
@@ -2247,10 +2247,10 @@ public class RenderTreeDiffBuilderTest : IDisposable
     {
         oldTree.OpenElement(0, "retaining");
         oldTree.AddAttribute(1, "attr1", "unrelated val1");
-        oldTree.AddNamedEvent(2, "someevent1", "removing from retained element");
+        oldTree.AddNamedEvent("someevent1", "removing from retained element");
         oldTree.CloseElement();
-        oldTree.OpenElement(3, "removing");
-        oldTree.AddNamedEvent(4, "someevent2", "removed because element was removed");
+        oldTree.OpenElement(2, "removing");
+        oldTree.AddNamedEvent("someevent2", "removed because element was removed");
         oldTree.CloseElement();
 
         newTree.OpenElement(0, "retaining");
@@ -2272,12 +2272,12 @@ public class RenderTreeDiffBuilderTest : IDisposable
     public void RecognizesNamedEventBeingMoved()
     {
         oldTree.OpenElement(0, "elem");
-        oldTree.AddNamedEvent(2, "eventname", "assigned name");
+        oldTree.AddNamedEvent("eventname", "assigned name");
         oldTree.CloseElement();
 
         newTree.OpenElement(0, "elem");
         newTree.AddAttribute(1, "attr1", "unrelated val1");
-        newTree.AddNamedEvent(2, "eventname", "assigned name");
+        newTree.AddNamedEvent("eventname", "assigned name");
         newTree.CloseElement();
 
         // Act
@@ -2300,13 +2300,13 @@ public class RenderTreeDiffBuilderTest : IDisposable
     public void RecognizesNamedEventChangingAssignedName()
     {
         oldTree.OpenElement(0, "elem");
-        oldTree.AddNamedEvent(1, "eventname1", "original name");
-        oldTree.AddNamedEvent(2, "eventname2", "will be left unchanged");
+        oldTree.AddNamedEvent("eventname1", "original name");
+        oldTree.AddNamedEvent("eventname2", "will be left unchanged");
         oldTree.CloseElement();
 
         newTree.OpenElement(0, "elem");
-        newTree.AddNamedEvent(1, "eventname1", "changed name");
-        newTree.AddNamedEvent(2, "eventname2", "will be left unchanged");
+        newTree.AddNamedEvent("eventname1", "changed name");
+        newTree.AddNamedEvent("eventname2", "will be left unchanged");
         newTree.CloseElement();
 
         // Act
@@ -2317,6 +2317,73 @@ public class RenderTreeDiffBuilderTest : IDisposable
         Assert.Collection(batch.NamedEventChanges.Value.AsEnumerable(),
             entry => AssertNamedEventChange(entry, NamedEventChangeType.Removed, 123, 1, "eventname1", "original name"),
             entry => AssertNamedEventChange(entry, NamedEventChangeType.Added, 123, 1, "eventname1", "changed name"));
+    }
+
+    [Fact]
+    public void CanAddNewAttributeAtArrayBuilderSizeBoundary()
+    {
+        // Represents https://github.com/dotnet/aspnetcore/issues/49192
+
+        // Arrange: old and new trees go exactly up to the array builder capacity
+        oldTree.OpenElement(0, "elem");
+        for (var i = 0; oldTree.GetFrames().Count < oldTree.GetFrames().Array.Length; i++)
+        {
+            oldTree.AddAttribute(1, $"myattribute_{i}", "value");
+        }
+        newTree.OpenElement(0, "elem");
+        for (var i = 0; newTree.GetFrames().Count < newTree.GetFrames().Array.Length; i++)
+        {
+            newTree.AddAttribute(1, $"myattribute_{i}", "value");
+        }
+
+        // ... then the new tree gets one more attribute that crosses the builder size boundary, forcing buffer expansion
+        newTree.AddAttribute(1, $"myattribute_final", "value");
+
+        // Act
+        oldTree.CloseElement();
+        newTree.CloseElement();
+        var (result, referenceFrames) = GetSingleUpdatedComponent();
+
+        // Assert
+        Assert.Collection(result.Edits,
+            entry =>
+            {
+                AssertEdit(entry, RenderTreeEditType.SetAttribute, 0);
+                Assert.Equal(0, entry.ReferenceFrameIndex);
+                AssertFrame.Attribute(referenceFrames[0], "myattribute_final", "value", 1);
+            });
+    }
+
+    [Fact]
+    public void CanRemoveOldAttributeAtArrayBuilderSizeBoundary()
+    {
+        // Arrange: old and new trees go exactly up to the array builder capacity
+        oldTree.OpenElement(0, "elem");
+        for (var i = 0; oldTree.GetFrames().Count < oldTree.GetFrames().Array.Length; i++)
+        {
+            oldTree.AddAttribute(1, $"myattribute_{i}", "value");
+        }
+        newTree.OpenElement(0, "elem");
+        for (var i = 0; newTree.GetFrames().Count < newTree.GetFrames().Array.Length; i++)
+        {
+            newTree.AddAttribute(1, $"myattribute_{i}", "value");
+        }
+
+        // ... then the old tree gets one more attribute that crosses the builder size boundary, forcing buffer expansion
+        oldTree.AddAttribute(1, $"myattribute_final", "value");
+
+        // Act
+        oldTree.CloseElement();
+        newTree.CloseElement();
+        var (result, referenceFrames) = GetSingleUpdatedComponent();
+
+        // Assert
+        Assert.Collection(result.Edits,
+            entry =>
+            {
+                AssertEdit(entry, RenderTreeEditType.RemoveAttribute, 0);
+                Assert.Equal("myattribute_final", entry.RemovedAttributeName);
+            });
     }
 
     private (RenderTreeDiff, RenderTreeFrame[]) GetSingleUpdatedComponent(bool initializeFromFrames = false)

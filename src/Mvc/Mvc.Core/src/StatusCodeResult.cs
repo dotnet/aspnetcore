@@ -37,7 +37,7 @@ public partial class StatusCodeResult : ActionResult, IClientErrorActionResult
 
         var httpContext = context.HttpContext;
         var factory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
-        var logger = factory.CreateLogger<StatusCodeResult>();
+        var logger = factory.CreateLogger(typeof(StatusCodeResult));
         Log.HttpStatusCodeResultExecuting(logger, StatusCode);
 
         httpContext.Response.StatusCode = StatusCode;

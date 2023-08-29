@@ -19,6 +19,11 @@
                 return type === 'dotnetjs'
                     ? `${defaultUri}?customizedbootresource=true`
                     : fetch(defaultUri, { integrity: integrity, cache: 'no-cache', headers: { 'customizedbootresource': 'true' } });
+            },
+            configureRuntime: function (builder) {
+                builder.withConfig({
+                    cachedResourcesPurgeDelay: 0
+                });
             }
         });
     </script>

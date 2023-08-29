@@ -33,7 +33,6 @@ public class EndpointRoutingShortCircuitBenchmark
             new BenchmarkEndpointDataSource(),
             new DiagnosticListener("benchmark"),
             Options.Create(new RouteOptions()),
-            Options.Create(new FormOptions()),
             routingMetrics,
             context => Task.CompletedTask);
 
@@ -46,7 +45,6 @@ public class EndpointRoutingShortCircuitBenchmark
             new BenchmarkEndpointDataSource(),
             new DiagnosticListener("benchmark"),
             Options.Create(new RouteOptions()),
-            Options.Create(new FormOptions()),
             routingMetrics,
             context => Task.CompletedTask);
     }

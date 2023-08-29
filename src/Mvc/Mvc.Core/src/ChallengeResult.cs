@@ -94,7 +94,7 @@ public partial class ChallengeResult : ActionResult
 
         var httpContext = context.HttpContext;
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
-        var logger = loggerFactory.CreateLogger<ChallengeResult>();
+        var logger = loggerFactory.CreateLogger(typeof(ChallengeResult));
         Log.ChallengeResultExecuting(logger, AuthenticationSchemes);
 
         if (AuthenticationSchemes != null && AuthenticationSchemes.Count > 0)

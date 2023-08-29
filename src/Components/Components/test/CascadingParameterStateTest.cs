@@ -476,8 +476,6 @@ public class CascadingParameterStateTest
 
     class SupplyParameterWithSingleDeliveryAttribute : CascadingParameterAttributeBase
     {
-        public override string Name { get; set; }
-
         internal override bool SingleDelivery => true;
     }
 
@@ -522,20 +520,4 @@ public class CascadingParameterStateTest
             Initialize("https://localhost:85/subdir/", "https://localhost:85/subdir/path?query=value#hash");
         }
     }
-}
-
-[AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
-public sealed class SupplyParameterFromFormAttribute : CascadingParameterAttributeBase
-{
-    /// <summary>
-    /// Gets or sets the name for the parameter. The name is used to match
-    /// the form data and decide whether or not the value needs to be bound.
-    /// </summary>
-    public override string Name { get; set; }
-
-    /// <summary>
-    /// Gets or sets the name for the handler. The name is used to match
-    /// the form data and decide whether or not the value needs to be bound.
-    /// </summary>
-    public string Handler { get; set; }
 }

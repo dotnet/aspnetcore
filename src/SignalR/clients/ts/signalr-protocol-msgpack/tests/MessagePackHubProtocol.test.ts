@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { CloseMessage, CompletionMessage, InvocationMessage, MessageType, NullLogger, StreamItemMessage } from "@microsoft/signalr";
+import { AckMessage, CloseMessage, CompletionMessage, InvocationMessage, MessageType, NullLogger, SequenceMessage, StreamItemMessage } from "@microsoft/signalr";
 import { MessagePackHubProtocol } from "../src/MessagePackHubProtocol";
 
 describe("MessagePackHubProtocol", () => {
@@ -283,5 +283,36 @@ describe("MessagePackHubProtocol", () => {
         const parsedMessages = protocol.parseMessages(protocol.writeMessage(closeMessage), NullLogger.instance);
         expect(parsedMessages.length).toEqual(1);
         expect(parsedMessages[0].type).toEqual(MessageType.Close);
+    });
+
+    it("can write/read Ack message", () => {
+        const ackMessage = {
+            sequenceId: 13,
+            type: MessageType.Ack,
+        } as AckMessage;
+
+        const protocol = new MessagePackHubProtocol();
+        const parsedMessages = protocol.parseMessages(protocol.writeMessage(ackMessage), NullLogger.instance);
+        expect(parsedMessages.length).toEqual(1);
+        expect(parsedMessages[0].type).toEqual(MessageType.Ack);
+        expect(parsedMessages[0]).toEqual({
+            sequenceId: 13,
+            type: MessageType.Ack
+        });
+    });
+
+    it("can write/read Sequence message", () => {
+        const sequenceMessage = {
+            sequenceId: 24,
+            type: MessageType.Sequence,
+        } as SequenceMessage;
+
+        const protocol = new MessagePackHubProtocol();
+        const parsedMessages = protocol.parseMessages(protocol.writeMessage(sequenceMessage), NullLogger.instance);
+        expect(parsedMessages.length).toEqual(1);
+        expect(parsedMessages[0]).toEqual({
+            sequenceId: 24,
+            type: MessageType.Sequence
+        });
     });
 });

@@ -19,7 +19,6 @@ internal sealed class MessageBuffer : IDisposable
 {
     private static readonly TaskCompletionSource<FlushResult> _completedTCS = new TaskCompletionSource<FlushResult>();
 
-    private readonly ConnectionContext _connection;
     private readonly IHubProtocol _protocol;
     private readonly long _bufferLimit;
     private readonly AckMessage _ackMessage = new(0);
@@ -32,6 +31,8 @@ internal sealed class MessageBuffer : IDisposable
     private readonly TimerAwaitable _timer = new(TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
 #endif
     private readonly SemaphoreSlim _writeLock = new(1, 1);
+
+    private PipeWriter _writer;
 
     private long _totalMessageCount;
     private bool _waitForSequenceMessage;
@@ -58,7 +59,7 @@ internal sealed class MessageBuffer : IDisposable
         // TODO: pool
         _buffer = new LinkedBuffer();
 
-        _connection = connection;
+        _writer = connection.Transport.Output;
         _protocol = protocol;
         _bufferLimit = bufferLimit;
 
@@ -89,8 +90,8 @@ internal sealed class MessageBuffer : IDisposable
                     await _writeLock.WaitAsync().ConfigureAwait(false);
                     try
                     {
-                        _protocol.WriteMessage(_ackMessage, _connection.Transport.Output);
-                        await _connection.Transport.Output.FlushAsync().ConfigureAwait(false);
+                        _protocol.WriteMessage(_ackMessage, _writer);
+                        await _writer.FlushAsync().ConfigureAwait(false);
                         _lastAckedId = sequenceId;
                     }
                     finally
@@ -128,8 +129,6 @@ internal sealed class MessageBuffer : IDisposable
         // TODO: We could consider buffering messages until they hit backpressure in the case when the connection is down
         await _resend.Task.ConfigureAwait(false);
 
-        var waitForResend = false;
-
         await _writeLock.WaitAsync(cancellationToken: default).ConfigureAwait(false);
         try
         {
@@ -140,7 +139,7 @@ internal sealed class MessageBuffer : IDisposable
             else
             {
                 // Non-ackable message, don't add to buffer
-                return await _connection.Transport.Output.WriteAsync(hubMessage.GetSerializedMessage(_protocol), cancellationToken).ConfigureAwait(false);
+                return await _writer.WriteAsync(hubMessage.GetSerializedMessage(_protocol), cancellationToken).ConfigureAwait(false);
             }
 
             var messageBytes = hubMessage.GetSerializedMessage(_protocol);
@@ -150,29 +149,12 @@ internal sealed class MessageBuffer : IDisposable
                 _buffer.AddMessage(hubMessage, _totalMessageCount);
             }
 
-            return await _connection.Transport.Output.WriteAsync(messageBytes, cancellationToken).ConfigureAwait(false);
-        }
-        // TODO: figure out what exception to use
-        catch (ConnectionResetException)
-        {
-            waitForResend = true;
+            return await _writer.WriteAsync(messageBytes, cancellationToken).ConfigureAwait(false);
         }
         finally
         {
             _writeLock.Release();
         }
-
-        if (waitForResend)
-        {
-            var oldTcs = Interlocked.Exchange(ref _resend, new TaskCompletionSource<FlushResult>(TaskCreationOptions.RunContinuationsAsynchronously));
-            if (!oldTcs.Task.IsCompleted)
-            {
-                return await oldTcs.Task.ConfigureAwait(false);
-            }
-            return await _resend.Task.ConfigureAwait(false);
-        }
-
-        throw new NotImplementedException("shouldn't reach here");
     }
 
     public void Ack(AckMessage ackMessage)
@@ -244,29 +226,22 @@ internal sealed class MessageBuffer : IDisposable
         _currentReceivingSequenceId = sequenceMessage.SequenceId;
     }
 
-    internal void Resend()
+    internal async Task ResendAsync(PipeWriter writer)
     {
         _waitForSequenceMessage = true;
 
         var tcs = new TaskCompletionSource<FlushResult>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var oldTcs = Interlocked.Exchange(ref _resend, tcs);
-        // WriteAsync can also try to swap the TCS, we need to check if it's completed to know if it was swapped or not
-        if (!oldTcs.Task.IsCompleted)
-        {
-            // Swap back to the TCS created by WriteAsync since it's waiting on the result of that task
-            Interlocked.Exchange(ref _resend, oldTcs);
-            tcs = oldTcs;
-        }
+        _resend = tcs;
 
-        _ = DoResendAsync(tcs);
-    }
-
-    private async Task DoResendAsync(TaskCompletionSource<FlushResult> tcs)
-    {
         FlushResult finalResult = new();
         await _writeLock.WaitAsync().ConfigureAwait(false);
         try
         {
+            // Complete previous pipe so transport reader can cleanup
+            _writer.Complete();
+            // Replace writer with new pipe that the transport will be reading from
+            _writer = writer;
+
             _sequenceMessage.SequenceId = _totalMessageCount + 1;
 
             var isFirst = true;
@@ -277,17 +252,17 @@ internal sealed class MessageBuffer : IDisposable
                     if (isFirst)
                     {
                         _sequenceMessage.SequenceId = item.SequenceId;
-                        _protocol.WriteMessage(_sequenceMessage, _connection.Transport.Output);
+                        _protocol.WriteMessage(_sequenceMessage, _writer);
                         isFirst = false;
                     }
-                    finalResult = await _connection.Transport.Output.WriteAsync(item.HubMessage!.GetSerializedMessage(_protocol)).ConfigureAwait(false);
+                    finalResult = await _writer.WriteAsync(item.HubMessage!.GetSerializedMessage(_protocol)).ConfigureAwait(false);
                 }
             }
 
             if (isFirst)
             {
-                _protocol.WriteMessage(_sequenceMessage, _connection.Transport.Output);
-                finalResult = await _connection.Transport.Output.FlushAsync().ConfigureAwait(false);
+                _protocol.WriteMessage(_sequenceMessage, _writer);
+                finalResult = await _writer.FlushAsync().ConfigureAwait(false);
             }
         }
         catch (Exception ex)

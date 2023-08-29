@@ -9,12 +9,6 @@ namespace Microsoft.AspNetCore.Components;
 public abstract class CascadingParameterAttributeBase : Attribute
 {
     /// <summary>
-    /// Gets or sets the name for the parameter, which correlates to the name
-    /// of a cascading value.
-    /// </summary>
-    public abstract string? Name { get; set; }
-
-    /// <summary>
     /// Gets a flag indicating whether the cascading parameter should
     /// be supplied only once per component.
     /// </summary>
