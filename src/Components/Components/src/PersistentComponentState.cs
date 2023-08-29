@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components;
 /// <summary>
 /// The state for the components and services of a components application.
 /// </summary>
-public partial class PersistentComponentState
+public class PersistentComponentState
 {
     private IDictionary<string, byte[]>? _existingState;
 

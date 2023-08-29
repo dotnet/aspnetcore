@@ -7,7 +7,7 @@ import { LogLevel } from './Platform/Logging/Logger';
 import { CircuitManager } from './Platform/Circuits/CircuitManager';
 import { resolveOptions, CircuitStartOptions } from './Platform/Circuits/CircuitStartOptions';
 import { DefaultReconnectionHandler } from './Platform/Circuits/DefaultReconnectionHandler';
-import { discoverServerPersistedStat, ServerComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
+import { discoverServerPersistedState, ServerComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
 import { fetchAndInvokeInitializers } from './JSInitializers/JSInitializers.Server';
 import { RootComponentManager } from './Services/RootComponentManager';
 
