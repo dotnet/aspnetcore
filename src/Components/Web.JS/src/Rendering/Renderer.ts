@@ -47,7 +47,7 @@ export function attachRootComponentToElement(elementSelector: string, componentI
   attachRootComponentToLogicalElement(browserRendererId || 0, toLogicalElement(element, /* allow existing contents */ true), componentId, appendContent);
 }
 
-export function getRendererer(browserRendererId: number): BrowserRenderer {
+export function getRendererer(browserRendererId: number): BrowserRenderer | undefined {
   return browserRenderers[browserRendererId];
 }
 
