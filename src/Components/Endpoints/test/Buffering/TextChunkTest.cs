@@ -32,11 +32,11 @@ public class TextChunkTest
         var chars = new char[] { 'a', 'b', 'c', 'd', 'e' };
         var charArrayScope = new StringBuilder();
         var chunk = new TextChunk(new ArraySegment<char>(chars, 1, 3), charArrayScope);
-        await chunk.WriteToAsync(_writer, charArrayScope.ToString(), ref _tempBuffer);
 
-        // See it still works when the underlying array is mutated
+        // See it retains the correct data even if the underlying array is mutated
         chars[2] = 'X';
 
+        await chunk.WriteToAsync(_writer, charArrayScope.ToString(), ref _tempBuffer);
         Assert.Equal("bcd", _writer.ToString());
     }
 
