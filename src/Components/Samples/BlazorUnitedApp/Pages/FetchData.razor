@@ -1,7 +1,6 @@
 ﻿@page "/fetchdata"
 @using BlazorUnitedApp.Data
 @inject WeatherForecastService ForecastService
-@attribute [StreamRendering]
 <PageTitle>Weather forecast</PageTitle>
 
 <h1>Weather forecast</h1>
@@ -42,11 +41,6 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        await Task.Delay(1000);
-        for (var i = 0; i < 5; i++)
-        {
-            forecasts = await ForecastService.GetForecastAsync(DateOnly.FromDateTime(DateTime.Now));
-            StateHasChanged();
-        }
+        forecasts = await ForecastService.GetForecastAsync(DateOnly.FromDateTime(DateTime.Now));
     }
 }
