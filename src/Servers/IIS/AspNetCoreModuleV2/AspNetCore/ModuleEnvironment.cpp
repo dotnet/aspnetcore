@@ -9,8 +9,8 @@
 extern DWORD g_dwIISServerVersion;
 
 static std::wstring GetIISVersion() {
-    auto major = (int)(g_dwIISServerVersion >> 16);
-    auto minor = (int)(g_dwIISServerVersion & 0xffff);
+    int major = (int)(g_dwIISServerVersion >> 16);
+    int minor = (int)(g_dwIISServerVersion & 0xffff);
 
     std::wstringstream version;
     version << major << "." << minor;
@@ -19,8 +19,9 @@ static std::wstring GetIISVersion() {
 }
 
 static std::wstring ToVirtualPath(const std::wstring& configurationPath) {
-    auto segments = 0;
-    auto position = configurationPath.find('/');
+    int segments = 0;
+    size_t position = configurationPath.find('/');
+
     // Skip first 4 segments of config path
     while (segments != 3 && position != std::wstring::npos)
     {
@@ -46,11 +47,11 @@ void SetApplicationEnvironmentVariables(_In_ IHttpServer &server, _In_ IHttpCont
         SetEnvironmentVariable(L"ASPNETCORE_IIS_APP_POOL_CONFIG_FILE", server2->GetAppPoolConfigFile());
     }
 
-    auto site = pHttpContext.GetSite();
+    IHttpSite* site = pHttpContext.GetSite();
     SetEnvironmentVariable(L"ASPNETCORE_IIS_SITE_NAME", site->GetSiteName());
     SetEnvironmentVariable(L"ASPNETCORE_IIS_SITE_ID", std::to_wstring(site->GetSiteId()).c_str());
 
-    auto app = pHttpContext.GetApplication();
+    IHttpApplication* app = pHttpContext.GetApplication();
     SetEnvironmentVariable(L"ASPNETCORE_IIS_APP_CONFIG_PATH", app->GetAppConfigPath());
     SetEnvironmentVariable(L"ASPNETCORE_IIS_APPLICATION_ID", app->GetApplicationId());
     SetEnvironmentVariable(L"ASPNETCORE_IIS_APPLICATION_VIRTUAL_PATH", ToVirtualPath(app->GetAppConfigPath()).c_str());
