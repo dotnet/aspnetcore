@@ -105,6 +105,7 @@ public partial class IISExpressDeployer : IISDeployerBase
                 applicationBaseUri: actualUri.ToString(),
                 contentRoot: contentRoot,
                 hostShutdownToken: hostExitToken,
+                appPoolName: "IISExpressAppPool",
                 hostProcess: _hostProcess);
         }
     }
