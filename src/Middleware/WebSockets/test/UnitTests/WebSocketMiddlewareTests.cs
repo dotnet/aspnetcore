@@ -8,6 +8,7 @@ using System.Text;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Timeouts;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.WebSockets.Test;
@@ -543,6 +544,7 @@ public class WebSocketMiddlewareTests : LoggedTest
             catch (Exception ex)
             {
                 // Capture this exception so a test failure can give us more information.
+                Logger.LogError(ex, "Unexpected error.");
                 receiveException = ex;
             }
             finally
@@ -608,6 +610,11 @@ public class WebSocketMiddlewareTests : LoggedTest
             {
                 operationWasCancelled.Set();
                 finishedWithOperationCancelled = true;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Unexpected error.");
+                throw;
             }
             finally
             {
