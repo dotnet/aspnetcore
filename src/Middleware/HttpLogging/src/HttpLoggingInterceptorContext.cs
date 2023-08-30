@@ -72,7 +72,7 @@ public sealed class HttpLoggingInterceptorContext
 
     /// <summary>
     /// Gets a list of parameters that will be logged as part of the request or response. Values specified in <see cref="LoggingFields"/>
-    /// will be added automatically after all interceptors run. These values are cleared after logging the request.
+    /// will be added automatically after all interceptors run. All values are cleared after logging the request.
     /// All other relevant settings will carry over to the response.
     /// </summary>
     public IList<KeyValuePair<string, object?>> Parameters => InternalParameters;
