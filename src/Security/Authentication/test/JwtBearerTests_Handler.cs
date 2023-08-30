@@ -914,23 +914,21 @@ public class JwtBearerTests_Handler : SharedAuthenticationTests<JwtBearerOptions
     public async Task ExpirationAndIssuedWhenMinOrMaxValue()
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(new string('a', 128)));
-        //var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-        //var claims = new[]
-        //{
-        //    new Claim(ClaimTypes.NameIdentifier, "Bob")
-        //};
+        var claims = new[]
+        {
+           new Claim(ClaimTypes.NameIdentifier, "Bob")
+        };
 
-        //var token = new JwtSecurityToken(
-        //    issuer: "issuer.contoso.com",
-        //    audience: "audience.contoso.com",
-        //    claims: claims,
-        //    expires: DateTime.MaxValue,
-        //    signingCredentials: creds);
+        var token = new JwtSecurityToken(
+           issuer: "issuer.contoso.com",
+           audience: "audience.contoso.com",
+           claims: claims,
+           expires: DateTime.MaxValue,
+           signingCredentials: creds);
 
-        //var tokenText = new JwtSecurityTokenHandler().WriteToken(token);
-        // TODO: when https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet/issues/2261 is fixed, uncomment the above code and remove this hard-coded string
-        var tokenText = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IkJvYiIsImV4cCI6MjUzNDAyMzAwODAwLCJpc3MiOiJpc3N1ZXIuY29udG9zby5jb20iLCJhdWQiOiJhdWRpZW5jZS5jb250b3NvLmNvbSJ9.0zvasyAh-GmjR_o46QSRCoQ9VaSXJjW5_YMcR6qy-jw";
+        var tokenText = new JwtSecurityTokenHandler().WriteToken(token);
 
         using var host = await CreateHost(o =>
         {
