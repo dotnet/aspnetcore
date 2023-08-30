@@ -68,7 +68,7 @@ public sealed class HttpLoggingOptions
     /// </summary>
     public ISet<string> ResponseHeaders => _internalResponseHeaders;
 
-    internal HashSet<string> _internalResponseHeaders = new HashSet<string>(20, StringComparer.OrdinalIgnoreCase)
+    internal HashSet<string> _internalResponseHeaders = new HashSet<string>(19, StringComparer.OrdinalIgnoreCase)
         {
             HeaderNames.AcceptRanges,
             HeaderNames.Age,
