@@ -8,7 +8,6 @@ import { LogicalElement, getLogicalChildrenArray, getLogicalNextSibling, getLogi
 import { synchronizeAttributes } from './AttributeSync';
 import { areIncompatibleDataPermanentElements, isDataPermanentElement } from './DataPermanentElementSync';
 import { UpdateCost, ItemList, Operation, computeEditScript } from './EditScript';
-import { areIncompatibleScriptElements } from './ScriptElementSync';
 
 let descriptorHandler: DescriptorHandler | null = null;
 
