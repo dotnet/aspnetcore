@@ -105,7 +105,7 @@ internal sealed class ResponseBufferingStream : BufferingStream, IHttpResponseBo
         if (!HeadersWritten)
         {
             // Log headers as first write occurs (headers locked now)
-            HttpLoggingMiddleware.LogResponseHeadersSync(_logContext, _options._internalResponseHeaders, _interceptors, _logger);
+            HttpLoggingMiddleware.LogResponseHeadersSync(_logContext, _options, _interceptors, _logger);
             OnFirstWriteCore();
         }
     }
@@ -115,7 +115,7 @@ internal sealed class ResponseBufferingStream : BufferingStream, IHttpResponseBo
         if (!HeadersWritten)
         {
             // Log headers as first write occurs (headers locked now)
-            await HttpLoggingMiddleware.LogResponseHeadersAsync(_logContext, _options._internalResponseHeaders, _interceptors, _logger);
+            await HttpLoggingMiddleware.LogResponseHeadersAsync(_logContext, _options, _interceptors, _logger);
             OnFirstWriteCore();
         }
     }
@@ -189,6 +189,14 @@ internal sealed class ResponseBufferingStream : BufferingStream, IHttpResponseBo
             {
                 _logger.ResponseBody(responseBody);
             }
+        }
+    }
+
+    public void LogResponseBody(HttpLoggingInterceptorContext logContext)
+    {
+        if (logContext.IsAnyEnabled(HttpLoggingFields.ResponseBody))
+        {
+            logContext.AddParameter("ResponseBody", GetString(_encoding!));
         }
     }
 }

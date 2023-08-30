@@ -30,6 +30,8 @@ Microsoft.AspNetCore.HttpLogging.HttpLoggingInterceptorContext.RequestBodyLogLim
 Microsoft.AspNetCore.HttpLogging.HttpLoggingInterceptorContext.ResponseBodyLogLimit.get -> int
 Microsoft.AspNetCore.HttpLogging.HttpLoggingInterceptorContext.ResponseBodyLogLimit.set -> void
 Microsoft.AspNetCore.HttpLogging.HttpLoggingInterceptorContext.TryDisable(Microsoft.AspNetCore.HttpLogging.HttpLoggingFields fields) -> bool
+Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.CombineLogs.get -> bool
+Microsoft.AspNetCore.HttpLogging.HttpLoggingOptions.CombineLogs.set -> void
 Microsoft.AspNetCore.HttpLogging.IHttpLoggingInterceptor
 Microsoft.AspNetCore.HttpLogging.IHttpLoggingInterceptor.OnRequestAsync(Microsoft.AspNetCore.HttpLogging.HttpLoggingInterceptorContext! logContext) -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.HttpLogging.IHttpLoggingInterceptor.OnResponseAsync(Microsoft.AspNetCore.HttpLogging.HttpLoggingInterceptorContext! logContext) -> System.Threading.Tasks.ValueTask

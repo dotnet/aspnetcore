@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -855,6 +856,58 @@ public class HttpLoggingMiddlewareTests : LoggedTest
     }
 
     [Fact]
+    public async Task ResponseWithExceptionBeforeBodyLogged()
+    {
+        var options = CreateOptionsAccessor();
+        options.CurrentValue.LoggingFields = HttpLoggingFields.Response;
+
+        var middleware = CreateMiddleware(
+            async c =>
+            {
+                c.Response.StatusCode = 200;
+                c.Response.Headers[HeaderNames.TransferEncoding] = "test";
+                c.Response.ContentType = "text/plain";
+
+                throw new IOException("Test exception");
+            },
+            options);
+
+        var httpContext = new DefaultHttpContext();
+
+        await Assert.ThrowsAsync<IOException>(() => middleware.Invoke(httpContext));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("StatusCode: 200"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Transfer-Encoding: test"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Duration: "));
+    }
+
+    [Fact]
+    public async Task ResponseWithExceptionAfterBodyLogged()
+    {
+        var options = CreateOptionsAccessor();
+        options.CurrentValue.LoggingFields = HttpLoggingFields.Response;
+
+        var middleware = CreateMiddleware(
+            async c =>
+            {
+                c.Response.StatusCode = 200;
+                c.Response.Headers[HeaderNames.TransferEncoding] = "test";
+                c.Response.ContentType = "text/plain";
+                await c.Response.WriteAsync("test");
+
+                throw new IOException("Test exception");
+            },
+            options);
+
+        var httpContext = new DefaultHttpContext();
+
+        await Assert.ThrowsAsync<IOException>(() => middleware.Invoke(httpContext));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("StatusCode: 200"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Transfer-Encoding: test"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Body: test"));
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Duration: "));
+    }
+
+    [Fact]
     public async Task StatusCodeLogs()
     {
         var options = CreateOptionsAccessor();
@@ -1143,6 +1196,75 @@ public class HttpLoggingMiddlewareTests : LoggedTest
     }
 
     [Fact]
+    public async Task UpgradeWithCombineLogs_OneLog()
+    {
+        var options = CreateOptionsAccessor();
+        options.CurrentValue.LoggingFields = HttpLoggingFields.All;
+        options.CurrentValue.CombineLogs = true;
+
+        var writtenHeaders = new TaskCompletionSource();
+        var letBodyFinish = new TaskCompletionSource();
+
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.Protocol = "HTTP/1.1";
+        httpContext.Request.Method = "GET";
+        httpContext.Request.Scheme = "http";
+        httpContext.Request.Path = "/";
+        httpContext.Request.Headers.Connection = HeaderNames.Upgrade;
+        httpContext.Request.Headers.Upgrade = "websocket";
+
+        var upgradeFeatureMock = new Mock<IHttpUpgradeFeature>();
+        upgradeFeatureMock.Setup(m => m.IsUpgradableRequest).Returns(true);
+        upgradeFeatureMock
+            .Setup(m => m.UpgradeAsync())
+            .Callback(() =>
+            {
+                httpContext.Response.StatusCode = StatusCodes.Status101SwitchingProtocols;
+                httpContext.Response.Headers.Connection = HeaderNames.Upgrade;
+            })
+            .ReturnsAsync(Stream.Null);
+        httpContext.Features.Set<IHttpUpgradeFeature>(upgradeFeatureMock.Object);
+
+        var middleware = CreateMiddleware(
+            async c =>
+            {
+                await c.Features.Get<IHttpUpgradeFeature>().UpgradeAsync();
+                writtenHeaders.SetResult();
+                await letBodyFinish.Task;
+            },
+            options);
+
+        var middlewareTask = middleware.Invoke(httpContext);
+
+        await writtenHeaders.Task;
+
+        Assert.True(TestSink.Writes.TryTake(out var contentTypeLog));
+        Assert.Equal("No Content-Type header for request body.", contentTypeLog.Message);
+
+        Assert.True(TestSink.Writes.TryTake(out var requestLog));
+        var lines = requestLog.Message.Split(Environment.NewLine);
+        var i = 0;
+        Assert.Equal("Request and Response:", lines[i++]);
+        Assert.Equal("Protocol: HTTP/1.1", lines[i++]);
+        Assert.Equal("Method: GET", lines[i++]);
+        Assert.Equal("Scheme: http", lines[i++]);
+        Assert.Equal("PathBase: ", lines[i++]);
+        Assert.Equal("Path: /", lines[i++]);
+        Assert.Equal("Connection: Upgrade", lines[i++]);
+        Assert.Equal("Upgrade: websocket", lines[i++]);
+        Assert.Equal("StatusCode: 101", lines[i++]);
+        Assert.StartsWith("Duration: ", lines[i++]);
+        Assert.Equal("Connection: Upgrade", lines[i++]);
+        Assert.Equal(lines.Length, i);
+
+        letBodyFinish.SetResult();
+
+        await middlewareTask;
+
+        Assert.False(TestSink.Writes.TryTake(out var _));
+    }
+
+    [Fact]
     public async Task UpgradeToWebSocketLogsResponseHeadersWhenResponseIsFlushed()
     {
         var options = CreateOptionsAccessor();
@@ -1336,6 +1458,89 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         await middlewareTask;
 
         Assert.False(httpContext.Features.Get<IHttpUpgradeFeature>() is UpgradeFeatureLoggingDecorator);
+    }
+
+    [Fact]
+    public async Task CombineLogs_OneLog()
+    {
+        var options = CreateOptionsAccessor();
+        options.CurrentValue.LoggingFields = HttpLoggingFields.All;
+        options.CurrentValue.CombineLogs = true;
+
+        var middleware = CreateMiddleware(
+            async c =>
+            {
+                await c.Request.Body.DrainAsync(default);
+                c.Response.Headers[HeaderNames.TransferEncoding] = "test";
+                c.Response.ContentType = "text/plain2";
+                await c.Response.WriteAsync("test response");
+            },
+            options);
+
+        var httpContext = CreateRequest();
+        await middleware.Invoke(httpContext);
+
+        var lines = Assert.Single(TestSink.Writes).Message.Split(Environment.NewLine);
+        var i = 0;
+        Assert.Equal("Request and Response:", lines[i++]);
+        Assert.Equal("Protocol: HTTP/1.0", lines[i++]);
+        Assert.Equal("Method: GET", lines[i++]);
+        Assert.Equal("Scheme: http", lines[i++]);
+        Assert.Equal("PathBase: /foo", lines[i++]);
+        Assert.Equal("Path: /foo", lines[i++]);
+        Assert.Equal("Connection: keep-alive", lines[i++]);
+        Assert.Equal("Content-Type: text/plain", lines[i++]);
+        Assert.Equal("StatusCode: 200", lines[i++]);
+        Assert.StartsWith("Duration: ", lines[i++]);
+        Assert.Equal("Transfer-Encoding: test", lines[i++]);
+        Assert.Equal("Content-Type: text/plain2", lines[i++]);
+        Assert.StartsWith("Total Duration: ", lines[i++]);
+        Assert.Equal("RequestBody: test", lines[i++]);
+        Assert.Equal("RequestBodyStatus: [Completed]", lines[i++]);
+        Assert.Equal("ResponseBody: test response", lines[i++]);
+        Assert.Equal(lines.Length, i);
+    }
+
+    [Fact]
+    public async Task CombineLogs_Exception_RequestLogged()
+    {
+        var options = CreateOptionsAccessor();
+        options.CurrentValue.LoggingFields = HttpLoggingFields.All;
+        options.CurrentValue.CombineLogs = true;
+
+        var middleware = CreateMiddleware(
+            async c =>
+            {
+                await c.Request.Body.DrainAsync(default);
+                c.Response.Headers[HeaderNames.TransferEncoding] = "test";
+                c.Response.ContentType = "text/plain2";
+
+                throw new IOException("Test exception");
+            },
+            options);
+
+        var httpContext = CreateRequest();
+        await Assert.ThrowsAsync<IOException>(() => middleware.Invoke(httpContext));
+
+        var lines = Assert.Single(TestSink.Writes).Message.Split(Environment.NewLine);
+        var i = 0;
+        Assert.Equal("Request and Response:", lines[i++]);
+        Assert.Equal("Protocol: HTTP/1.0", lines[i++]);
+        Assert.Equal("Method: GET", lines[i++]);
+        Assert.Equal("Scheme: http", lines[i++]);
+        Assert.Equal("PathBase: /foo", lines[i++]);
+        Assert.Equal("Path: /foo", lines[i++]);
+        Assert.Equal("Connection: keep-alive", lines[i++]);
+        Assert.Equal("Content-Type: text/plain", lines[i++]);
+        Assert.Equal("StatusCode: 200", lines[i++]);
+        Assert.StartsWith("Duration: ", lines[i++]);
+        Assert.Equal("Transfer-Encoding: test", lines[i++]);
+        Assert.Equal("Content-Type: text/plain2", lines[i++]);
+        Assert.StartsWith("Total Duration: ", lines[i++]);
+        Assert.Equal("RequestBody: test", lines[i++]);
+        Assert.Equal("RequestBodyStatus: [Completed]", lines[i++]);
+        Assert.Equal("ResponseBody: ", lines[i++]);
+        Assert.Equal(lines.Length, i);
     }
 
     [Fact]

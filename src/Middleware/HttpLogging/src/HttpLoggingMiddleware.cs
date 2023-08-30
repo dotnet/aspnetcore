@@ -140,9 +140,9 @@ internal sealed class HttpLoggingMiddleware
                 FilterHeaders(logContext, request.Headers, options._internalRequestHeaders);
             }
 
-            if (logContext.InternalParameters.Count > 0)
+            if (logContext.InternalParameters.Count > 0 && !options.CombineLogs)
             {
-                var httpRequestLog = new HttpRequestLog(logContext.InternalParameters);
+                var httpRequestLog = new HttpLog(logContext.InternalParameters, "Request");
 
                 _logger.RequestLog(httpRequestLog);
 
@@ -165,7 +165,8 @@ internal sealed class HttpLoggingMiddleware
                     request.Body,
                     logContext.RequestBodyLogLimit,
                     _logger,
-                    encoding);
+                    encoding,
+                    !options.CombineLogs);
                 request.Body = requestBufferingStream;
             }
             else
@@ -191,7 +192,7 @@ internal sealed class HttpLoggingMiddleware
                 if (originalUpgradeFeature != null && originalUpgradeFeature.IsUpgradableRequest)
                 {
                     loggableUpgradeFeature = new UpgradeFeatureLoggingDecorator(originalUpgradeFeature,
-                        logContext, options._internalResponseHeaders, _interceptors, _logger);
+                        logContext, options, _interceptors, _logger);
 
                     context.Features.Set<IHttpUpgradeFeature>(loggableUpgradeFeature);
                 }
@@ -209,19 +210,54 @@ internal sealed class HttpLoggingMiddleware
                 context.Features.Set<IHttpResponseBodyFeature>(responseBufferingStream);
             }
 
-            await _next(context);
-
-            // If the middleware pipeline didn't read until 0 was returned from ReadAsync,
-            // make sure we log the request body.
-            requestBufferingStream?.LogRequestBody();
-
-            if (ResponseHeadersNotYetWritten(responseBufferingStream, loggableUpgradeFeature))
+            try
             {
-                // No body, not an upgradable request or request not upgraded, write headers here.
-                await LogResponseHeadersAsync(logContext, options._internalResponseHeaders, _interceptors, _logger);
+                await _next(context);
             }
+            finally
+            {
+                if (options.CombineLogs && loggableUpgradeFeature?.IsUpgraded is true)
+                {
+                    // Logging already happened in UpgradeAsync.
+                }
+                else if (options.CombineLogs)
+                {
+                    if (ResponseHeadersNotYetWritten(responseBufferingStream, loggableUpgradeFeature))
+                    {
+                        // No body, not an upgradable request or request not upgraded, write headers here.
+                        await LogResponseHeadersAsync(logContext, options, _interceptors, _logger);
+                    }
 
-            responseBufferingStream?.LogResponseBody(logContext.IsAnyEnabled(HttpLoggingFields.Duration) ? logContext.GetDuration() : null);
+                    if (logContext.IsAnyEnabled(HttpLoggingFields.Duration))
+                    {
+                        logContext.AddParameter("Total Duration", logContext.GetDuration());
+                    }
+
+                    // Now that the interceptors have run, add the request & response body logs (if they're still enabled).
+                    requestBufferingStream?.LogRequestBody(logContext);
+                    responseBufferingStream?.LogResponseBody(logContext);
+
+                    if (logContext.InternalParameters.Count > 0)
+                    {
+                        var log = new HttpLog(logContext.InternalParameters, "Request and Response");
+                        _logger.RequestResponseLog(log);
+                    }
+                }
+                else
+                {
+                    // If the middleware pipeline didn't read until 0 was returned from ReadAsync,
+                    // make sure we log the request body.
+                    requestBufferingStream?.LogRequestBody();
+
+                    if (ResponseHeadersNotYetWritten(responseBufferingStream, loggableUpgradeFeature))
+                    {
+                        // No body, not an upgradable request or request not upgraded, write headers here.
+                        await LogResponseHeadersAsync(logContext, options, _interceptors, _logger);
+                    }
+
+                    responseBufferingStream?.LogResponseBody(logContext.IsAnyEnabled(HttpLoggingFields.Duration) ? logContext.GetDuration() : null);
+                }
+            }
         }
         finally
         {
@@ -265,27 +301,39 @@ internal sealed class HttpLoggingMiddleware
     }
 
     // Called from the response body stream sync Write and Flush APIs. These are disabled by the server by default, so we're not as worried about the sync-over-async code needed here.
-    public static void LogResponseHeadersSync(HttpLoggingInterceptorContext logContext, HashSet<string> allowedResponseHeaders, IHttpLoggingInterceptor[] interceptors, ILogger logger)
+    public static void LogResponseHeadersSync(HttpLoggingInterceptorContext logContext, HttpLoggingOptions options, IHttpLoggingInterceptor[] interceptors, ILogger logger)
     {
         for (var i = 0; i < interceptors.Length; i++)
         {
             interceptors[i].OnResponseAsync(logContext).AsTask().GetAwaiter().GetResult();
         }
 
-        LogResponseHeadersCore(logContext, allowedResponseHeaders, logger);
+        LogResponseHeadersCore(logContext, options, logger);
     }
 
-    public static async ValueTask LogResponseHeadersAsync(HttpLoggingInterceptorContext logContext, HashSet<string> allowedResponseHeaders, IHttpLoggingInterceptor[] interceptors, ILogger logger)
+    public static async ValueTask LogResponseHeadersAsync(HttpLoggingInterceptorContext logContext, HttpLoggingOptions options, IHttpLoggingInterceptor[] interceptors, ILogger logger)
     {
         for (var i = 0; i < interceptors.Length; i++)
         {
             await interceptors[i].OnResponseAsync(logContext);
         }
 
-        LogResponseHeadersCore(logContext, allowedResponseHeaders, logger);
+        LogResponseHeadersCore(logContext, options, logger);
     }
 
-    private static void LogResponseHeadersCore(HttpLoggingInterceptorContext logContext, HashSet<string> allowedResponseHeaders, ILogger logger)
+    public static async ValueTask LogUpgradeAsync(HttpLoggingInterceptorContext logContext, HttpLoggingOptions options, IHttpLoggingInterceptor[] interceptors, ILogger logger)
+    {
+        await LogResponseHeadersAsync(logContext, options, interceptors, logger);
+
+        if (options.CombineLogs)
+        {
+            // No request or response body, and the request and response properties have already been added.
+            var log = new HttpLog(logContext.InternalParameters, "Request and Response");
+            logger.RequestResponseLog(log);
+        }
+    }
+
+    private static void LogResponseHeadersCore(HttpLoggingInterceptorContext logContext, HttpLoggingOptions options, ILogger logger)
     {
         var loggingFields = logContext.LoggingFields;
         var response = logContext.HttpContext.Response;
@@ -302,13 +350,12 @@ internal sealed class HttpLoggingMiddleware
 
         if (loggingFields.HasFlag(HttpLoggingFields.ResponseHeaders))
         {
-            FilterHeaders(logContext, response.Headers, allowedResponseHeaders);
+            FilterHeaders(logContext, response.Headers, options._internalResponseHeaders);
         }
 
-        if (logContext.InternalParameters.Count > 0)
+        if (logContext.InternalParameters.Count > 0 && !options.CombineLogs)
         {
-            var httpResponseLog = new HttpResponseLog(logContext.InternalParameters);
-
+            var httpResponseLog = new HttpLog(logContext.InternalParameters, "Response");
             logger.ResponseLog(httpResponseLog);
         }
     }

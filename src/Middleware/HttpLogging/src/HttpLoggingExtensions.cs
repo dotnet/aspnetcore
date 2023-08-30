@@ -7,18 +7,18 @@ namespace Microsoft.AspNetCore.HttpLogging;
 
 internal static partial class HttpLoggingExtensions
 {
-    public static void RequestLog(this ILogger logger, HttpRequestLog requestLog) => logger.Log(
+    public static void RequestLog(this ILogger logger, HttpLog requestLog) => logger.Log(
         LogLevel.Information,
         new EventId(1, "RequestLog"),
         requestLog,
         exception: null,
-        formatter: HttpRequestLog.Callback);
-    public static void ResponseLog(this ILogger logger, HttpResponseLog responseLog) => logger.Log(
+        formatter: HttpLog.Callback);
+    public static void ResponseLog(this ILogger logger, HttpLog responseLog) => logger.Log(
         LogLevel.Information,
         new EventId(2, "ResponseLog"),
         responseLog,
         exception: null,
-        formatter: HttpResponseLog.Callback);
+        formatter: HttpLog.Callback);
 
     [LoggerMessage(3, LogLevel.Information, "RequestBody: {Body}{Status}", EventName = "RequestBody")]
     public static partial void RequestBody(this ILogger logger, string body, string status);
@@ -37,4 +37,11 @@ internal static partial class HttpLoggingExtensions
 
     [LoggerMessage(8, LogLevel.Information, "Response Duration: {Duration}ms, Body: {Body}", EventName = "ResponseDurationAndBody")]
     public static partial void ResponseBodyWithDuration(this ILogger logger, string body, double duration);
+
+    public static void RequestResponseLog(this ILogger logger, HttpLog log) => logger.Log(
+        LogLevel.Information,
+        new EventId(9, "RequestResponseLog"),
+        log,
+        exception: null,
+        formatter: HttpLog.Callback);
 }

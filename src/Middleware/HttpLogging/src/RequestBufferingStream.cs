@@ -10,18 +10,20 @@ namespace Microsoft.AspNetCore.HttpLogging;
 internal sealed class RequestBufferingStream : BufferingStream
 {
     private readonly Encoding _encoding;
+    private readonly bool _logOnFinish;
     private readonly int _limit;
     private BodyStatus _status = BodyStatus.None;
 
     public bool HasLogged { get; private set; }
 
-    public RequestBufferingStream(Stream innerStream, int limit, ILogger logger, Encoding encoding)
+    public RequestBufferingStream(Stream innerStream, int limit, ILogger logger, Encoding encoding, bool logOnFinish)
         : base(innerStream, logger)
     {
         _logger = logger;
         _limit = limit;
         _innerStream = innerStream;
         _encoding = encoding;
+        _logOnFinish = logOnFinish;
     }
 
     public override async ValueTask<int> ReadAsync(Memory<byte> destination, CancellationToken cancellationToken = default)
@@ -74,12 +76,12 @@ internal sealed class RequestBufferingStream : BufferingStream
         // get what was read into the buffer
         var remaining = _limit - _bytesBuffered;
 
-        if (remaining == 0)
+        if (remaining == 0 || _status > BodyStatus.Incomplete)
         {
             return;
         }
 
-        if (span.Length == 0 && !HasLogged)
+        if (span.Length == 0)
         {
             // Done reading, log the string.
             _status = BodyStatus.Complete;
@@ -102,7 +104,7 @@ internal sealed class RequestBufferingStream : BufferingStream
             BuffersExtensions.Write(this, span.Slice(0, innerCount));
         }
 
-        if (_limit - _bytesBuffered == 0 && !HasLogged)
+        if (_limit - _bytesBuffered == 0)
         {
             _status = BodyStatus.Truncated;
             LogRequestBody();
@@ -111,21 +113,30 @@ internal sealed class RequestBufferingStream : BufferingStream
 
     public void LogRequestBody()
     {
-        if (!HasLogged)
+        if (!HasLogged && _logOnFinish)
         {
-            var status = _status switch
-            {
-                BodyStatus.None => "[Not consumed by app]",
-                BodyStatus.Incomplete => "[Only partially consumed by app]",
-                BodyStatus.Complete => "",
-                BodyStatus.Truncated => "[Truncated by RequestBodyLogLimit]",
-                _ => throw new NotImplementedException(_status.ToString()),
-            };
-
-            _logger.RequestBody(GetString(_encoding), status);
             HasLogged = true;
+            _logger.RequestBody(GetString(_encoding), GetStatus(showCompleted: false));
         }
     }
+
+    public void LogRequestBody(HttpLoggingInterceptorContext logContext)
+    {
+        if (logContext.IsAnyEnabled(HttpLoggingFields.RequestBody))
+        {
+            logContext.AddParameter("RequestBody", GetString(_encoding));
+            logContext.AddParameter("RequestBodyStatus", GetStatus(showCompleted: true));
+        }
+    }
+
+    private string GetStatus(bool showCompleted) => _status switch
+    {
+        BodyStatus.None => "[Not consumed by app]",
+        BodyStatus.Incomplete => "[Only partially consumed by app]",
+        BodyStatus.Complete => showCompleted ? "[Completed]" : "",
+        BodyStatus.Truncated => "[Truncated by RequestBodyLogLimit]",
+        _ => throw new NotImplementedException(_status.ToString()),
+    };
 
     public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
     {

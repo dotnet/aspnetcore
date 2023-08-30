@@ -10,18 +10,18 @@ internal sealed class UpgradeFeatureLoggingDecorator : IHttpUpgradeFeature
 {
     private readonly IHttpUpgradeFeature _innerUpgradeFeature;
     private readonly HttpLoggingInterceptorContext _logContext;
-    private readonly HashSet<string> _responseHeaders;
+    private readonly HttpLoggingOptions _options;
     private readonly IHttpLoggingInterceptor[] _interceptors;
     private readonly ILogger _logger;
 
     private bool _isUpgraded;
 
-    public UpgradeFeatureLoggingDecorator(IHttpUpgradeFeature innerUpgradeFeature, HttpLoggingInterceptorContext logContext, HashSet<string> responseHeaders,
+    public UpgradeFeatureLoggingDecorator(IHttpUpgradeFeature innerUpgradeFeature, HttpLoggingInterceptorContext logContext, HttpLoggingOptions options,
         IHttpLoggingInterceptor[] interceptors, ILogger logger)
     {
         _innerUpgradeFeature = innerUpgradeFeature ?? throw new ArgumentNullException(nameof(innerUpgradeFeature));
         _logContext = logContext ?? throw new ArgumentNullException(nameof(logContext));
-        _responseHeaders = responseHeaders ?? throw new ArgumentNullException(nameof(responseHeaders));
+        _options = options ?? throw new ArgumentNullException(nameof(options));
         _interceptors = interceptors;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
@@ -36,7 +36,7 @@ internal sealed class UpgradeFeatureLoggingDecorator : IHttpUpgradeFeature
 
         _isUpgraded = true;
 
-        await HttpLoggingMiddleware.LogResponseHeadersAsync(_logContext, _responseHeaders, _interceptors, _logger);
+        await HttpLoggingMiddleware.LogUpgradeAsync(_logContext, _options, _interceptors, _logger);
 
         return upgradeStream;
     }
