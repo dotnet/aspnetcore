@@ -16,7 +16,6 @@ internal static class ExpressionFormatter
 
     private delegate void CapturedValueFormatter(object closure, ref ReverseStringBuilder builder);
 
-    private static readonly ConcurrentDictionary<MemberInfo, CapturedValueFormatter> s_expressionCache = new();
     private static readonly ConcurrentDictionary<MemberInfo, CapturedValueFormatter> s_capturedValueFormatterCache = new();
     private static readonly ConcurrentDictionary<MethodInfo, MethodInfoData> s_methodInfoDataCache = new();
 
