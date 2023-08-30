@@ -23,6 +23,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
             {
                 new FormMappingOptionsMetadata(maxCollectionSize: 2)
             }),
+            ThrowOnBadRequest = true
         };
         var metadataResult = new RequestDelegateMetadataResult { EndpointMetadata = new List<object>() };
         var httpContext = CreateHttpContext();
@@ -52,10 +53,10 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         var requestDelegate = factoryResult.RequestDelegate;
 
         // Act
-        var exception = await Assert.ThrowsAsync<FormDataMappingException>(async () => await requestDelegate(httpContext));
+        var exception = await Assert.ThrowsAsync<BadHttpRequestException>(async () => await requestDelegate(httpContext));
 
         // Assert
-        Assert.Equal("The number of elements in the dictionary exceeded the maximum number of '2' elements allowed.", exception.Error.Message.ToString(CultureInfo.InvariantCulture));
+        Assert.Equal("The number of elements in the dictionary exceeded the maximum number of '2' elements allowed.", exception.Message);
     }
 
     [Fact]
@@ -69,6 +70,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
             {
                 new FormMappingOptionsMetadata(maxCollectionSize: 2)
             }),
+            ThrowOnBadRequest = true
         };
         var metadataResult = new RequestDelegateMetadataResult { EndpointMetadata = new List<object>() };
         var httpContext = CreateHttpContext();
@@ -98,10 +100,10 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         var requestDelegate = factoryResult.RequestDelegate;
 
         // Act
-        var exception = await Assert.ThrowsAsync<FormDataMappingException>(async () => await requestDelegate(httpContext));
+        var exception = await Assert.ThrowsAsync<BadHttpRequestException>(async () => await requestDelegate(httpContext));
 
         // Assert
-        Assert.Equal("The number of elements in the dictionary exceeded the maximum number of '2' elements allowed.", exception.Error.Message.ToString(CultureInfo.InvariantCulture));
+        Assert.Equal("The number of elements in the dictionary exceeded the maximum number of '2' elements allowed.", exception.Message);
     }
 
     [Fact]
@@ -116,6 +118,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
                 new FormMappingOptionsMetadata(maxCollectionSize: 2),
                 new FormMappingOptionsMetadata(maxKeySize: 23)
             }),
+            ThrowOnBadRequest = true
         };
         var metadataResult = new RequestDelegateMetadataResult { EndpointMetadata = new List<object>() };
         var httpContext = CreateHttpContext();
@@ -145,10 +148,10 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         var requestDelegate = factoryResult.RequestDelegate;
 
         // Act
-        var exception = await Assert.ThrowsAsync<FormDataMappingException>(async () => await requestDelegate(httpContext));
+        var exception = await Assert.ThrowsAsync<BadHttpRequestException>(async () => await requestDelegate(httpContext));
 
         // Assert
-        Assert.Equal("The number of elements in the dictionary exceeded the maximum number of '2' elements allowed.", exception.Error.Message.ToString(CultureInfo.InvariantCulture));
+        Assert.Equal("The number of elements in the dictionary exceeded the maximum number of '2' elements allowed.", exception.Message);
 
         // Arrange - 2
         httpContext = CreateHttpContext();
@@ -239,6 +242,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
             {
                 new FormMappingOptionsMetadata(maxRecursionDepth: 3)
             }),
+            ThrowOnBadRequest = true
         };
         var metadataResult = new RequestDelegateMetadataResult { EndpointMetadata = new List<object>() };
         void TestAction([FromForm] Employee args) { capturedEmployee = args; };
@@ -271,10 +275,9 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         var factoryResult = RequestDelegateFactory.Create(TestAction, options, metadataResult);
         var requestDelegate = factoryResult.RequestDelegate;
 
-        var exception = await Assert.ThrowsAsync<FormDataMappingException>(async () => await requestDelegate(httpContext));
+        var exception = await Assert.ThrowsAsync<BadHttpRequestException>(async () => await requestDelegate(httpContext));
 
-        Assert.Equal("Manager.Manager.Manager", exception.Error.Key);
-        Assert.Equal("The maximum recursion depth of '3' was exceeded for 'Manager.Manager.Manager.Name'.", exception.Error.Message.ToString(CultureInfo.InvariantCulture));
+        Assert.Equal("The maximum recursion depth of '3' was exceeded for 'Manager.Manager.Manager.Name'.", exception.Message);
 
     }
 
