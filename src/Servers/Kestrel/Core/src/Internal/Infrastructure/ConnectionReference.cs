@@ -28,7 +28,7 @@ internal sealed class ConnectionReference
         return _weakReference.TryGetTarget(out connection);
     }
 
-    public void StopTrasnsportTracking()
+    public void StopTransportTracking()
     {
         _transportConnectionManager.StopTracking(_id);
     }
