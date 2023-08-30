@@ -5,6 +5,8 @@ using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.DataContracts;
 
 namespace Microsoft.AspNetCore.Components.Forms;
 
@@ -14,6 +16,7 @@ internal static class ExpressionFormatter
 
     private delegate void CapturedValueFormatter(object closure, ref ReverseStringBuilder builder);
 
+    private static readonly ConcurrentDictionary<MemberInfo, CapturedValueFormatter> s_expressionCache = new();
     private static readonly ConcurrentDictionary<MemberInfo, CapturedValueFormatter> s_capturedValueFormatterCache = new();
     private static readonly ConcurrentDictionary<MethodInfo, MethodInfoData> s_methodInfoDataCache = new();
 
@@ -105,7 +108,7 @@ internal static class ExpressionFormatter
                     wasLastExpressionMemberAccess = true;
                     wasLastExpressionIndexer = false;
 
-                    var name = memberExpression.Member.Name;
+                    var name = memberExpression.Member.GetCustomAttribute<DataMemberAttribute>()?.Name ?? memberExpression.Member.Name;
                     builder.InsertFront(name);
 
                     break;
