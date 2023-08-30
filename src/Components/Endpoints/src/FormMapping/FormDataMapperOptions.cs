@@ -56,14 +56,6 @@ internal sealed class FormDataMapperOptions
     // For testing purposes only.
     internal List<IFormDataConverterFactory> Factories => _factories;
 
-    internal bool HasConverter(Type valueType) => _converters.ContainsKey(valueType);
-
-    internal bool IsSingleValueConverter(Type type)
-    {
-        return _converters.TryGetValue(type, out var converter) &&
-            converter is ISingleValueConverter;
-    }
-
     [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
     [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
     internal FormDataConverter<T> ResolveConverter<T>()

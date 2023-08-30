@@ -5,13 +5,27 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 
-internal sealed class NullableConverter<T> : FormDataConverter<T?> where T : struct
+internal sealed class NullableConverter<T>(FormDataConverter<T> nonNullableConverter) : FormDataConverter<T?>, ISingleValueConverter<T?> where T : struct
 {
-    private readonly FormDataConverter<T> _nonNullableConverter;
+    private readonly FormDataConverter<T> _nonNullableConverter = nonNullableConverter;
 
-    public NullableConverter(FormDataConverter<T> nonNullableConverter)
+    public bool CanConvertSingleValue() => _nonNullableConverter is ISingleValueConverter<T> singleValueConverter &&
+        singleValueConverter.CanConvertSingleValue();
+
+    public bool TryConvertValue(FormDataReader reader, string value, out T? result)
     {
-        _nonNullableConverter = nonNullableConverter;
+        var converter = (ISingleValueConverter<T>)_nonNullableConverter;
+
+        if (converter.TryConvertValue(reader, value, out var converted))
+        {
+            result = converted;
+            return true;
+        }
+        else
+        {
+            result = null;
+            return false;
+        }
     }
 
     [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]

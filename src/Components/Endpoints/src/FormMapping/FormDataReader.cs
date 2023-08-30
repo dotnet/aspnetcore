@@ -245,6 +245,9 @@ internal struct FormDataReader : IDisposable
         return foundSingleValue;
     }
 
+    internal bool TryGetValues(out StringValues values) =>
+        _readOnlyMemoryKeys.TryGetValue(new FormKey(_currentPrefixBuffer), out values);
+
     internal string GetPrefix() => _currentPrefixBuffer.ToString();
 
     internal string GetLastPrefixSegment()
