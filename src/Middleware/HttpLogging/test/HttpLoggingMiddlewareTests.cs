@@ -1021,6 +1021,26 @@ public class HttpLoggingMiddlewareTests : LoggedTest
     }
 
     [Fact]
+    public async Task ResponseBodyNotLoggedIfEmpty()
+    {
+        var options = CreateOptionsAccessor();
+        options.CurrentValue.LoggingFields = HttpLoggingFields.ResponseBody;
+        var middleware = CreateMiddleware(
+            c =>
+            {
+                c.Response.ContentType = "text/plain";
+                return Task.CompletedTask;
+            },
+            options);
+
+        var httpContext = new DefaultHttpContext();
+
+        await middleware.Invoke(httpContext);
+
+        Assert.Empty(TestSink.Writes);
+    }
+
+    [Fact]
     public async Task ResponseBodyWritingLimitWorks()
     {
         var input = string.Concat(new string('a', 30000), new string('b', 3000));
@@ -1460,11 +1480,17 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         Assert.False(httpContext.Features.Get<IHttpUpgradeFeature>() is UpgradeFeatureLoggingDecorator);
     }
 
-    [Fact]
-    public async Task CombineLogs_OneLog()
+    [Theory]
+    [InlineData(HttpLoggingFields.All, true, true)]
+    [InlineData(HttpLoggingFields.All, false, false)]
+    [InlineData(HttpLoggingFields.RequestPropertiesAndHeaders, true, true)]
+    [InlineData(HttpLoggingFields.RequestPropertiesAndHeaders, false, false)]
+    [InlineData(HttpLoggingFields.ResponsePropertiesAndHeaders, true, true)]
+    [InlineData(HttpLoggingFields.ResponsePropertiesAndHeaders, false, false)]
+    public async Task CombineLogs_OneLog(HttpLoggingFields fields, bool hasRequestBody, bool hasResponseBody)
     {
         var options = CreateOptionsAccessor();
-        options.CurrentValue.LoggingFields = HttpLoggingFields.All;
+        options.CurrentValue.LoggingFields = fields;
         options.CurrentValue.CombineLogs = true;
 
         var middleware = CreateMiddleware(
@@ -1472,32 +1498,58 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             {
                 await c.Request.Body.DrainAsync(default);
                 c.Response.Headers[HeaderNames.TransferEncoding] = "test";
-                c.Response.ContentType = "text/plain2";
-                await c.Response.WriteAsync("test response");
+                if (hasResponseBody)
+                {
+                    c.Response.ContentType = "text/plain2";
+                    await c.Response.WriteAsync("test response");
+                }
             },
             options);
 
         var httpContext = CreateRequest();
+        if (!hasRequestBody)
+        {
+            httpContext.Request.ContentType = null;
+            httpContext.Request.Body = Stream.Null;
+        }
         await middleware.Invoke(httpContext);
 
-        var lines = Assert.Single(TestSink.Writes).Message.Split(Environment.NewLine);
+        var lines = Assert.Single(TestSink.Writes.Where(w => w.LogLevel >= LogLevel.Information)).Message.Split(Environment.NewLine);
         var i = 0;
         Assert.Equal("Request and Response:", lines[i++]);
-        Assert.Equal("Protocol: HTTP/1.0", lines[i++]);
-        Assert.Equal("Method: GET", lines[i++]);
-        Assert.Equal("Scheme: http", lines[i++]);
-        Assert.Equal("PathBase: /foo", lines[i++]);
-        Assert.Equal("Path: /foo", lines[i++]);
-        Assert.Equal("Connection: keep-alive", lines[i++]);
-        Assert.Equal("Content-Type: text/plain", lines[i++]);
-        Assert.Equal("StatusCode: 200", lines[i++]);
-        Assert.StartsWith("Duration: ", lines[i++]);
-        Assert.Equal("Transfer-Encoding: test", lines[i++]);
-        Assert.Equal("Content-Type: text/plain2", lines[i++]);
-        Assert.StartsWith("Total Duration: ", lines[i++]);
-        Assert.Equal("RequestBody: test", lines[i++]);
-        Assert.Equal("RequestBodyStatus: [Completed]", lines[i++]);
-        Assert.Equal("ResponseBody: test response", lines[i++]);
+        if (fields.HasFlag(HttpLoggingFields.RequestPropertiesAndHeaders))
+        {
+            Assert.Equal("Protocol: HTTP/1.0", lines[i++]);
+            Assert.Equal("Method: GET", lines[i++]);
+            Assert.Equal("Scheme: http", lines[i++]);
+            Assert.Equal("PathBase: /foo", lines[i++]);
+            Assert.Equal("Path: /foo", lines[i++]);
+            Assert.Equal("Connection: keep-alive", lines[i++]);
+            if (hasRequestBody)
+            {
+                Assert.Equal("Content-Type: text/plain", lines[i++]);
+            }
+        }
+        if (fields.HasFlag(HttpLoggingFields.ResponsePropertiesAndHeaders))
+        {
+            Assert.Equal("StatusCode: 200", lines[i++]);
+            Assert.StartsWith("Duration: ", lines[i++]);
+            Assert.Equal("Transfer-Encoding: test", lines[i++]);
+            if (hasResponseBody)
+            {
+                Assert.Equal("Content-Type: text/plain2", lines[i++]);
+            }
+            Assert.StartsWith("Total Duration: ", lines[i++]);
+        }
+        if (fields.HasFlag(HttpLoggingFields.RequestBody) && hasRequestBody)
+        {
+            Assert.Equal("RequestBody: test", lines[i++]);
+            Assert.Equal("RequestBodyStatus: [Completed]", lines[i++]);
+        }
+        if (fields.HasFlag(HttpLoggingFields.ResponseBody) && hasResponseBody)
+        {
+            Assert.Equal("ResponseBody: test response", lines[i++]);
+        }
         Assert.Equal(lines.Length, i);
     }
 
@@ -1539,7 +1591,6 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         Assert.StartsWith("Total Duration: ", lines[i++]);
         Assert.Equal("RequestBody: test", lines[i++]);
         Assert.Equal("RequestBodyStatus: [Completed]", lines[i++]);
-        Assert.Equal("ResponseBody: ", lines[i++]);
         Assert.Equal(lines.Length, i);
     }
 

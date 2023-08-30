@@ -194,7 +194,7 @@ internal sealed class ResponseBufferingStream : BufferingStream, IHttpResponseBo
 
     public void LogResponseBody(HttpLoggingInterceptorContext logContext)
     {
-        if (logContext.IsAnyEnabled(HttpLoggingFields.ResponseBody))
+        if (_logBody)
         {
             logContext.AddParameter("ResponseBody", GetString(_encoding!));
         }
