@@ -62,3 +62,8 @@ dotnet pack **/Microsoft.Extensions.FileProviders.Embedded.csproj
 dotnet pack **/Microsoft.Extensions.ObjectPool.csproj
 dotnet pack **/Microsoft.Extensions.WebEncoders.csproj
 dotnet pack **/Microsoft.Net.Http.Headers.csproj
+
+# razor
+dotnet pack **/Microsoft.AspNetCore.Html.Abstractions.csproj
+dotnet pack **/Microsoft.AspNetCore.Razor.csproj
+dotnet pack **/Microsoft.AspNetCore.Razor.Runtime.csproj

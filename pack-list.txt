@@ -11,6 +11,7 @@ Microsoft.AspNetCore.HostFiltering.csproj
 Microsoft.AspNetCore.Hosting.Abstractions.csproj
 Microsoft.AspNetCore.Hosting.Server.Abstractions.csproj
 Microsoft.AspNetCore.Hosting.csproj
+Microsoft.AspNetCore.Html.Abstractions.csproj
 Microsoft.AspNetCore.Http.Abstractions.csproj
 Microsoft.AspNetCore.Http.Extensions.csproj
 Microsoft.AspNetCore.Http.Features.csproj
@@ -20,6 +21,8 @@ Microsoft.AspNetCore.HttpOverrides.csproj
 Microsoft.AspNetCore.Localization.csproj
 Microsoft.AspNetCore.Owin.csproj
 Microsoft.AspNetCore.Metadata.csproj
+Microsoft.AspNetCore.Razor.csproj
+Microsoft.AspNetCore.Razor.Runtime.csproj
 Microsoft.AspNetCore.ResponseCompression.csproj
 Microsoft.AspNetCore.Rewrite.csproj
 Microsoft.AspNetCore.Routing.Abstractions.csproj
