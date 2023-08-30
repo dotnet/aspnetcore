@@ -15,10 +15,11 @@ import { shouldAutoStart } from './BootCommon';
 import { Blazor } from './GlobalExports';
 import { WebStartOptions } from './Platform/WebStartOptions';
 import { attachStreamingRenderingListener } from './Rendering/StreamingRendering';
-import { attachProgressivelyEnhancedNavigationListener } from './Services/NavigationEnhancement';
+import { NavigationEnhancementCallbacks, attachProgressivelyEnhancedNavigationListener } from './Services/NavigationEnhancement';
 import { WebRootComponentManager } from './Services/WebRootComponentManager';
-import { attachComponentDescriptorHandler, registerAllComponentDescriptors } from './Rendering/DomMerging/DomSync';
 import { hasProgrammaticEnhancedNavigationHandler, performProgrammaticEnhancedNavigation } from './Services/NavigationUtils';
+import { attachComponentDescriptorHandler, registerAllComponentDescriptors } from './Rendering/DomMerging/DomSync';
+import { CallbackCollection } from './Services/CallbackCollection';
 
 let started = false;
 let rootComponentManager: WebRootComponentManager;
@@ -44,12 +45,22 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
   setWebAssemblyOptions(options?.webAssembly);
 
   rootComponentManager = new WebRootComponentManager(options?.ssr?.circuitInactivityTimeoutMs ?? 2000);
+  const enhancedPageUpdateCallbacks = new CallbackCollection();
+
+  Blazor.registerEnhancedPageUpdateCallback = (callback) => enhancedPageUpdateCallbacks.registerCallback(callback);
+
+  const navigationEnhancementCallbacks: NavigationEnhancementCallbacks = {
+    documentUpdated: () => {
+      rootComponentManager.onDocumentUpdated();
+      enhancedPageUpdateCallbacks.enqueueCallbackInvocation();
+    },
+  };
 
   attachComponentDescriptorHandler(rootComponentManager);
-  attachStreamingRenderingListener(options?.ssr, rootComponentManager);
+  attachStreamingRenderingListener(options?.ssr, navigationEnhancementCallbacks);
 
   if (!options?.ssr?.disableDomPreservation) {
-    attachProgressivelyEnhancedNavigationListener(rootComponentManager);
+    attachProgressivelyEnhancedNavigationListener(navigationEnhancementCallbacks);
   }
 
   // Wait until the initial page response completes before activating interactive components.
@@ -66,7 +77,7 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
 
 function onInitialDomContentLoaded() {
   registerAllComponentDescriptors(document);
-  rootComponentManager.documentUpdated();
+  rootComponentManager.onDocumentUpdated();
 }
 
 Blazor.start = boot;

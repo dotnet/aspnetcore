@@ -33,6 +33,7 @@ interface IBlazor {
   navigateTo: (uri: string, options: NavigationOptions) => void;
   registerCustomEventType: (eventName: string, options: EventTypeOptions) => void;
 
+  registerEnhancedPageUpdateCallback?: (callback: () => void) => { dispose(): void };
   disconnect?: () => void;
   reconnect?: (existingConnection?: HubConnection) => Promise<boolean>;
   defaultReconnectionHandler?: DefaultReconnectionHandler;
@@ -104,7 +105,7 @@ export const Blazor: IBlazor = {
     InputFile,
     NavigationLock,
     getJSDataStreamChunk: getNextChunk,
-    attachWebRendererInterop
+    attachWebRendererInterop,
   },
 };
 

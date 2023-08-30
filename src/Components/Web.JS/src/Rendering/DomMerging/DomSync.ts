@@ -6,7 +6,9 @@ import { isInteractiveRootComponentElement } from '../BrowserRenderer';
 import { applyAnyDeferredValue } from '../DomSpecialPropertyUtil';
 import { LogicalElement, getLogicalChildrenArray, getLogicalNextSibling, getLogicalParent, getLogicalRootDescriptor, insertLogicalChild, insertLogicalChildBefore, isLogicalElement, toLogicalElement, toLogicalRootCommentElement } from '../LogicalElements';
 import { synchronizeAttributes } from './AttributeSync';
+import { areIncompatibleDataPermanentElements, isDataPermanentElement } from './DataPermanentElementSync';
 import { UpdateCost, ItemList, Operation, computeEditScript } from './EditScript';
+import { areIncompatibleScriptElements } from './ScriptElementSync';
 
 let descriptorHandler: DescriptorHandler | null = null;
 
@@ -184,7 +186,12 @@ function treatAsMatch(destination: Node, source: Node) {
       const editableElementValue = getEditableElementValue(source as Element);
       synchronizeAttributes(destination as Element, source as Element);
       applyAnyDeferredValue(destination as Element);
-      synchronizeDomContentCore(destination as Element, source as Element);
+
+      if (isDataPermanentElement(destination as Element)) {
+        // The destination element's content should be retained, so we avoid recursing into it.
+      } else {
+        synchronizeDomContentCore(destination as Element, source as Element);
+      }
 
       // This is a much simpler alternative to the deferred-value-assignment logic we use in interactive rendering.
       // Because this sync algorithm goes depth-first, we know all the attributes and descendants are fully in sync
@@ -284,11 +291,21 @@ function domNodeComparer(a: Node, b: Node): UpdateCost {
       // For elements, we're only doing a shallow comparison and don't know if attributes/descendants are different.
       // We never 'update' one element type into another. We regard the update cost for same-type elements as zero because
       // then the 'find common prefix/suffix' optimization can include elements in those prefixes/suffixes.
+      // If an element has the 'data-permanent' attribute, it may have content that should be retained between DOM synchronizations.
+      // To maximize the chance that data permanent elements get matched up correctly, we compare the IDs of each element.
       // TODO: If we want to support some way to force matching/nonmatching based on @key, we can add logic here
       //       to return UpdateCost.Infinite if either has a key but they don't match. This will prevent unwanted retention.
       //       For the converse (forcing retention, even if that means reordering), we could post-process the list of
       //       inserts/deletes to find matches based on key to treat those pairs as 'move' operations.
-      return (a as Element).tagName === (b as Element).tagName ? UpdateCost.None : UpdateCost.Infinite;
+      if ((a as Element).tagName !== (b as Element).tagName) {
+        return UpdateCost.Infinite;
+      }
+
+      if (areIncompatibleDataPermanentElements(a as Element, b as Element)) {
+        return UpdateCost.Infinite;
+      }
+
+      return UpdateCost.None;
     case Node.DOCUMENT_TYPE_NODE:
       // It's invalid to insert or delete doctype, and we have no use case for doing that. So just skip such
       // nodes by saying they are always unchanged.

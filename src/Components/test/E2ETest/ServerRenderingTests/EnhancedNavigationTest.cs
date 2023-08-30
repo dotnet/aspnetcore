@@ -309,6 +309,91 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
     }
 
     [Fact]
+    public void CanRegisterAndRemoveEnhancedPageUpdateCallback()
+    {
+        Navigate($"{ServerPathBase}/nav");
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Preserve content")).Click();
+        Browser.Equal("Page that preserves content", () => Browser.Exists(By.TagName("h1")).Text);
+
+        // Required until https://github.com/dotnet/aspnetcore/issues/50424 is fixed
+        Browser.Navigate().Refresh();
+
+        Browser.Exists(By.Id("refresh-with-refresh"));
+
+        Browser.Click(By.Id("start-listening"));
+
+        Browser.Click(By.Id("refresh-with-refresh"));
+        AssertEnhancedUpdateCountEquals(1);
+
+        Browser.Click(By.Id("refresh-with-refresh"));
+        AssertEnhancedUpdateCountEquals(2);
+
+        Browser.Click(By.Id("stop-listening"));
+
+        Browser.Click(By.Id("refresh-with-refresh"));
+        AssertEnhancedUpdateCountEquals(2);
+
+        Browser.Click(By.Id("refresh-with-refresh"));
+        AssertEnhancedUpdateCountEquals(2);
+
+        void AssertEnhancedUpdateCountEquals(long count)
+            => Browser.Equal(count, () => ((IJavaScriptExecutor)Browser).ExecuteScript("return window.enhancedPageUpdateCount;"));
+    }
+
+    [Fact]
+    public void ElementsWithDataPermanentAttribute_HavePreservedContent()
+    {
+        Navigate($"{ServerPathBase}/nav");
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Preserve content")).Click();
+        Browser.Equal("Page that preserves content", () => Browser.Exists(By.TagName("h1")).Text);
+
+        // Required until https://github.com/dotnet/aspnetcore/issues/50424 is fixed
+        Browser.Navigate().Refresh();
+
+        Browser.Exists(By.Id("refresh-with-refresh"));
+
+        Browser.Click(By.Id("start-listening"));
+
+        Browser.Click(By.Id("refresh-with-refresh"));
+        AssertEnhancedUpdateCountEquals(1);
+
+        Browser.Equal("Preserved content", () => Browser.Exists(By.Id("preserved-content")).Text);
+
+        Browser.Click(By.Id("refresh-with-refresh"));
+        AssertEnhancedUpdateCountEquals(2);
+
+        Browser.Equal("Preserved content", () => Browser.Exists(By.Id("preserved-content")).Text);
+    }
+
+    [Fact]
+    public void ElementsWithoutDataPermanentAttribute_DoNotHavePreservedContent()
+    {
+        Navigate($"{ServerPathBase}/nav");
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Preserve content")).Click();
+        Browser.Equal("Page that preserves content", () => Browser.Exists(By.TagName("h1")).Text);
+
+        // Required until https://github.com/dotnet/aspnetcore/issues/50424 is fixed
+        Browser.Navigate().Refresh();
+
+        Browser.Exists(By.Id("refresh-with-refresh"));
+
+        Browser.Click(By.Id("start-listening"));
+
+        Browser.Equal("Non preserved content", () => Browser.Exists(By.Id("non-preserved-content")).Text);
+
+        Browser.Click(By.Id("refresh-with-refresh"));
+        AssertEnhancedUpdateCountEquals(1);
+
+        Browser.Equal("", () => Browser.Exists(By.Id("non-preserved-content")).Text);
+    }
+
+    [Fact]
     public void EnhancedNavNotUsedForNonBlazorDestinations()
     {
         Navigate($"{ServerPathBase}/nav");
@@ -319,6 +404,9 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.Equal("This is a non-Blazor endpoint", () => Browser.Exists(By.TagName("h1")).Text);
         Assert.Equal("undefined", Browser.ExecuteJavaScript<string>("return typeof Blazor")); // Blazor JS is NOT loaded
     }
+
+    private void AssertEnhancedUpdateCountEquals(long count)
+        => Browser.Equal(count, () => ((IJavaScriptExecutor)Browser).ExecuteScript("return window.enhancedPageUpdateCount;"));
 
     private static bool IsElementStale(IWebElement element)
     {

@@ -1,0 +1,46 @@
+﻿@page "/nav/preserve-content"
+@using TestContentPackage
+
+<h1>Page that preserves content</h1>
+
+<div id="preserved-content" data-permanent></div>
+<div id="non-preserved-content"></div>
+
+<InteractiveNavigationComponent @rendermode="@_interactiveNavigationRenderMode" />
+
+<hr />
+
+<button id="start-listening" onclick="listenForEnhancedUpdates()">Listen for enhanced page updates</button>
+<br />
+<button id="stop-listening" onclick="stopListeningForEnhancedUpdates()">Stop listening for enhanced page updates</button>
+
+<script>
+    //# sourceURL=preserve-content.js
+    const preservedContent = document.getElementById('preserved-content');
+    const nonPreservedContent = document.getElementById('non-preserved-content');
+
+    preservedContent.textContent = 'Preserved content';
+    nonPreservedContent.textContent = 'Non preserved content';
+
+    let registration = null;
+
+    window.listenForEnhancedUpdates = () => {
+        if (!registration) {
+            window.enhancedPageUpdateCount = 0;
+            registration = Blazor.registerEnhancedPageUpdateCallback(() => {
+                window.enhancedPageUpdateCount++;
+            });
+        }
+    };
+
+    window.stopListeningForEnhancedUpdates = () => {
+        if (registration) {
+            registration.dispose();
+            registration = null;
+        }
+    };
+</script>
+
+@code {
+    private readonly IComponentRenderMode _interactiveNavigationRenderMode = new ServerRenderMode(prerender: false);
+}
