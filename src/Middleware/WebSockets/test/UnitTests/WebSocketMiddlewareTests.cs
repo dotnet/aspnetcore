@@ -517,7 +517,7 @@ public class WebSocketMiddlewareTests : LoggedTest
             serverSocket = await context.WebSockets.AcceptWebSocketAsync();
             socketWasAccepted.Set();
 
-            var serverBuffer = new byte[1024];
+            var serverBuffer = new ArraySegment<byte>(new byte[1024]);
 
             try
             {
@@ -594,7 +594,7 @@ public class WebSocketMiddlewareTests : LoggedTest
             serverSocket = await context.WebSockets.AcceptWebSocketAsync();
             socketWasAccepted.Set();
 
-            var serverBuffer = new byte[1024];
+            var serverBuffer = new ArraySegment<byte>(new byte[1024]);
 
             var finishedWithOperationCancelled = false;
 
