@@ -1496,7 +1496,7 @@
             ]
           },
           {
-            "label": "area-runtime",
+            "label": "area-networking",
             "pathFilter": [
               "src/Servers/",
               "src/Http/",
