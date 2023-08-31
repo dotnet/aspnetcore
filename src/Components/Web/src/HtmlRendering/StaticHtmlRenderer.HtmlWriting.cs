@@ -141,19 +141,7 @@ public partial class StaticHtmlRenderer
             }
             else if (string.Equals(frame.ElementNameField, "script", StringComparison.OrdinalIgnoreCase))
             {
-                // Script tags are special. Unlike in XHTML, the contents of script elements in HTML
-                // are parsed as plain text, so HTML entities are not recognized and are treated as
-                // literal text. Code like console.log(&quot;Hello&quot;) would be a syntax error.
-                // HTML does not make use of <![CDATA[ ... ]]> either. So inside <script>...</script>,
-                // we must disable HTML encoding. This is hardly a XSS issue since if an application
-                // is rendering user content inside <script>, they already have an XSS problem unless
-                // they have carefully escaped the user content.
-                // https://stackoverflow.com/a/14781466
-                // https://html.spec.whatwg.org/multipage/scripting.html#restrictions-for-contents-of-script-elements
-                var originalEncoder = _htmlEncoder;
-                _htmlEncoder = _nullHtmlEncoder;
-                afterElement = RenderChildren(componentId, output, frames, afterAttributes, remainingElements);
-                _htmlEncoder = originalEncoder;
+                afterElement = RenderScriptElementChildren(componentId, output, frames, afterAttributes, remainingElements);
             }
             else
             {
@@ -187,6 +175,29 @@ public partial class StaticHtmlRenderer
             }
             Debug.Assert(afterAttributes == position + frame.ElementSubtreeLength);
             return afterAttributes;
+        }
+    }
+
+    private int RenderScriptElementChildren(int componentId, TextWriter output, ArrayRange<RenderTreeFrame> frames, int position, int maxElements)
+    {
+        // Script tags are special. Unlike in XHTML, the contents of script elements in HTML
+        // are parsed as plain text, so HTML entities are not recognized and are treated as
+        // literal text. Code like console.log(&quot;Hello&quot;) would be a syntax error.
+        // HTML does not make use of <![CDATA[ ... ]]> either. So inside <script>...</script>,
+        // we must disable HTML encoding. This is hardly a XSS issue since if an application
+        // is rendering user content inside <script>, they already have an XSS problem unless
+        // they have carefully escaped the user content.
+        // https://stackoverflow.com/a/14781466
+        // https://html.spec.whatwg.org/multipage/scripting.html#restrictions-for-contents-of-script-elements
+        var originalEncoder = _htmlEncoder;
+        try
+        {
+            _htmlEncoder = _nullHtmlEncoder;
+            return RenderChildren(componentId, output, frames, position, maxElements);
+        }
+        finally
+        {
+            _htmlEncoder = originalEncoder;
         }
     }
 
