@@ -47,20 +47,13 @@ internal abstract class BufferingStream : Stream, IBufferWriter<byte>
         set => _innerStream.WriteTimeout = value;
     }
 
-    public string GetString(Encoding? encoding)
+    public string GetString(Encoding encoding)
     {
         try
         {
             if (_head == null || _tail == null)
             {
                 // nothing written
-                return "";
-            }
-
-            if (encoding == null)
-            {
-                // This method is used only for the response body
-                _logger.UnrecognizedMediaType("response");
                 return "";
             }
 
@@ -295,15 +288,7 @@ internal abstract class BufferingStream : Stream, IBufferWriter<byte>
         _innerStream.EndWrite(asyncResult);
     }
 
-    public override void CopyTo(Stream destination, int bufferSize)
-    {
-        _innerStream.CopyTo(destination, bufferSize);
-    }
-
-    public override Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
-    {
-        return _innerStream.CopyToAsync(destination, bufferSize, cancellationToken);
-    }
+    // Do not override CopyTo/Async, they call Read/Async internally.
 
     public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
     {
@@ -313,10 +298,5 @@ internal abstract class BufferingStream : Stream, IBufferWriter<byte>
     public override ValueTask DisposeAsync()
     {
         return _innerStream.DisposeAsync();
-    }
-
-    public override int Read(Span<byte> buffer)
-    {
-        return _innerStream.Read(buffer);
     }
 }

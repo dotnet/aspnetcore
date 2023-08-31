@@ -6,16 +6,18 @@ using System.Text;
 
 namespace Microsoft.AspNetCore.HttpLogging;
 
-internal sealed class HttpResponseLog : IReadOnlyList<KeyValuePair<string, object?>>
+internal sealed class HttpLog : IReadOnlyList<KeyValuePair<string, object?>>
 {
     private readonly List<KeyValuePair<string, object?>> _keyValues;
+    private readonly string _title;
     private string? _cachedToString;
 
-    internal static readonly Func<object, Exception?, string> Callback = (state, exception) => ((HttpResponseLog)state).ToString();
+    internal static readonly Func<object, Exception?, string> Callback = (state, exception) => ((HttpLog)state).ToString();
 
-    public HttpResponseLog(List<KeyValuePair<string, object?>> keyValues)
+    public HttpLog(List<KeyValuePair<string, object?>> keyValues, string title)
     {
         _keyValues = keyValues;
+        _title = title;
     }
 
     public KeyValuePair<string, object?> this[int index] => _keyValues[index];
@@ -35,10 +37,11 @@ internal sealed class HttpResponseLog : IReadOnlyList<KeyValuePair<string, objec
     {
         if (_cachedToString == null)
         {
-            // Use 2kb as a rough average size for response headers
+            // Use 2kb as a rough average size for request/response headers
             var builder = new ValueStringBuilder(2 * 1024);
             var count = _keyValues.Count;
-            builder.Append("Response:");
+            builder.Append(_title);
+            builder.Append(':');
             builder.Append(Environment.NewLine);
 
             for (var i = 0; i < count - 1; i++)
