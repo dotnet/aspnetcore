@@ -33,10 +33,9 @@ internal sealed class UpgradeFeatureLoggingDecorator : IHttpUpgradeFeature
     public async Task<Stream> UpgradeAsync()
     {
         var upgradeStream = await _innerUpgradeFeature.UpgradeAsync();
-
         _isUpgraded = true;
 
-        await HttpLoggingMiddleware.LogUpgradeAsync(_logContext, _options, _interceptors, _logger);
+        await HttpLoggingMiddleware.LogResponseHeadersAsync(_logContext, _options, _interceptors, _logger);
 
         return upgradeStream;
     }

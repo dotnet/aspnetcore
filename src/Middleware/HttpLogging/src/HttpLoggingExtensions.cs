@@ -35,8 +35,8 @@ internal static partial class HttpLoggingExtensions
     [LoggerMessage(7, LogLevel.Debug, "No Content-Type header for {Name} body.", EventName = "NoMediaType")]
     public static partial void NoMediaType(this ILogger logger, string name);
 
-    [LoggerMessage(8, LogLevel.Information, "Response Duration: {Duration}ms, Body: {Body}", EventName = "ResponseDurationAndBody")]
-    public static partial void ResponseBodyWithDuration(this ILogger logger, string body, double duration);
+    [LoggerMessage(8, LogLevel.Information, "Duration: {Duration}ms", EventName = "Duration")]
+    public static partial void Duration(this ILogger logger, double duration);
 
     public static void RequestResponseLog(this ILogger logger, HttpLog log) => logger.Log(
         LogLevel.Information,

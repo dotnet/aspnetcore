@@ -175,20 +175,12 @@ internal sealed class ResponseBufferingStream : BufferingStream, IHttpResponseBo
         await base.FlushAsync(cancellationToken);
     }
 
-    public void LogResponseBody(double? duration)
+    public void LogResponseBody()
     {
         if (_logBody)
         {
             var responseBody = GetString(_encoding!);
-
-            if (duration.HasValue)
-            {
-                _logger.ResponseBodyWithDuration(responseBody, duration.Value);
-            }
-            else
-            {
-                _logger.ResponseBody(responseBody);
-            }
+            _logger.ResponseBody(responseBody);
         }
     }
 

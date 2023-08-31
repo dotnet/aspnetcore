@@ -136,7 +136,7 @@ public enum HttpLoggingFields : long
     ResponseBody = 0x800,
 
     /// <summary>
-    /// Log how long it took to process the request and return a response in total milliseconds.
+    /// Flag for logging how long it took to process the request and response in milliseconds.
     /// </summary>
     Duration = 0x1000,
 
@@ -163,9 +163,9 @@ public enum HttpLoggingFields : long
 
     /// <summary>
     /// Flag for logging HTTP Response properties and headers.
-    /// Includes <see cref="ResponseStatusCode"/>, <see cref="ResponseHeaders"/>, and <see cref="Duration"/>.
+    /// Includes <see cref="ResponseStatusCode"/> and <see cref="ResponseHeaders"/>.
     /// </summary>
-    ResponsePropertiesAndHeaders = ResponseStatusCode | ResponseHeaders | Duration,
+    ResponsePropertiesAndHeaders = ResponseStatusCode | ResponseHeaders,
 
     /// <summary>
     /// Flag for logging the entire HTTP Request.
@@ -189,7 +189,7 @@ public enum HttpLoggingFields : long
 
     /// <summary>
     /// Flag for logging both the HTTP Request and Response.
-    /// Includes <see cref="Request"/> and <see cref="Response"/>.
+    /// Includes <see cref="Request"/>, <see cref="Response"/>, and <see cref="Duration"/>.
     /// Logging the request and response body has performance implications, as it requires buffering
     /// the entire request and response body up to the <see cref="HttpLoggingOptions.RequestBodyLogLimit"/>
     /// and <see cref="HttpLoggingOptions.ResponseBodyLogLimit"/>.
@@ -198,5 +198,5 @@ public enum HttpLoggingFields : long
     /// The HTTP Request <see cref="HttpRequest.QueryString"/> is not included with this flag as it may contain private information.
     /// If desired, it should be explicitly specified with <see cref="RequestQuery"/>.
     /// </remarks>
-    All = Request | Response
+    All = Request | Response | Duration
 }

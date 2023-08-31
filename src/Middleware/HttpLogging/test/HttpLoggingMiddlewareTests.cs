@@ -852,7 +852,28 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         Assert.Contains(TestSink.Writes, w => w.Message.Contains("StatusCode: 200"));
         Assert.Contains(TestSink.Writes, w => w.Message.Contains("Transfer-Encoding: test"));
         Assert.Contains(TestSink.Writes, w => w.Message.Contains("Body: test"));
-        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Duration: "));
+    }
+
+    [Fact]
+    public async Task DurationLogs()
+    {
+        var options = CreateOptionsAccessor();
+        options.CurrentValue.LoggingFields = HttpLoggingFields.Duration;
+
+        var middleware = CreateMiddleware(
+            async c =>
+            {
+                c.Response.StatusCode = 200;
+                c.Response.Headers[HeaderNames.TransferEncoding] = "test";
+                c.Response.ContentType = "text/plain";
+                await c.Response.WriteAsync("test");
+            },
+            options);
+
+        var httpContext = new DefaultHttpContext();
+
+        await middleware.Invoke(httpContext);
+        Assert.Contains(TestSink.Writes, w => w.Message.StartsWith("Duration: ", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -862,7 +883,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         options.CurrentValue.LoggingFields = HttpLoggingFields.Response;
 
         var middleware = CreateMiddleware(
-            async c =>
+            c =>
             {
                 c.Response.StatusCode = 200;
                 c.Response.Headers[HeaderNames.TransferEncoding] = "test";
@@ -877,7 +898,6 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         await Assert.ThrowsAsync<IOException>(() => middleware.Invoke(httpContext));
         Assert.Contains(TestSink.Writes, w => w.Message.Contains("StatusCode: 200"));
         Assert.Contains(TestSink.Writes, w => w.Message.Contains("Transfer-Encoding: test"));
-        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Duration: "));
     }
 
     [Fact]
@@ -904,7 +924,6 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         Assert.Contains(TestSink.Writes, w => w.Message.Contains("StatusCode: 200"));
         Assert.Contains(TestSink.Writes, w => w.Message.Contains("Transfer-Encoding: test"));
         Assert.Contains(TestSink.Writes, w => w.Message.Contains("Body: test"));
-        Assert.Contains(TestSink.Writes, w => w.Message.Contains("Duration: "));
     }
 
     [Fact]
@@ -1249,14 +1268,10 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             async c =>
             {
                 await c.Features.Get<IHttpUpgradeFeature>().UpgradeAsync();
-                writtenHeaders.SetResult();
-                await letBodyFinish.Task;
             },
             options);
 
-        var middlewareTask = middleware.Invoke(httpContext);
-
-        await writtenHeaders.Task;
+        await middleware.Invoke(httpContext);
 
         Assert.True(TestSink.Writes.TryTake(out var contentTypeLog));
         Assert.Equal("No Content-Type header for request body.", contentTypeLog.Message);
@@ -1273,13 +1288,9 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         Assert.Equal("Connection: Upgrade", lines[i++]);
         Assert.Equal("Upgrade: websocket", lines[i++]);
         Assert.Equal("StatusCode: 101", lines[i++]);
-        Assert.StartsWith("Duration: ", lines[i++]);
         Assert.Equal("Connection: Upgrade", lines[i++]);
+        Assert.StartsWith("Duration: ", lines[i++]);
         Assert.Equal(lines.Length, i);
-
-        letBodyFinish.SetResult();
-
-        await middlewareTask;
 
         Assert.False(TestSink.Writes.TryTake(out var _));
     }
@@ -1533,13 +1544,11 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         if (fields.HasFlag(HttpLoggingFields.ResponsePropertiesAndHeaders))
         {
             Assert.Equal("StatusCode: 200", lines[i++]);
-            Assert.StartsWith("Duration: ", lines[i++]);
             Assert.Equal("Transfer-Encoding: test", lines[i++]);
             if (hasResponseBody)
             {
                 Assert.Equal("Content-Type: text/plain2", lines[i++]);
             }
-            Assert.StartsWith("Total Duration: ", lines[i++]);
         }
         if (fields.HasFlag(HttpLoggingFields.RequestBody) && hasRequestBody)
         {
@@ -1549,6 +1558,10 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         if (fields.HasFlag(HttpLoggingFields.ResponseBody) && hasResponseBody)
         {
             Assert.Equal("ResponseBody: test response", lines[i++]);
+        }
+        if (fields.HasFlag(HttpLoggingFields.Duration))
+        {
+            Assert.StartsWith("Duration: ", lines[i++]);
         }
         Assert.Equal(lines.Length, i);
     }
@@ -1585,12 +1598,11 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         Assert.Equal("Connection: keep-alive", lines[i++]);
         Assert.Equal("Content-Type: text/plain", lines[i++]);
         Assert.Equal("StatusCode: 200", lines[i++]);
-        Assert.StartsWith("Duration: ", lines[i++]);
         Assert.Equal("Transfer-Encoding: test", lines[i++]);
         Assert.Equal("Content-Type: text/plain2", lines[i++]);
-        Assert.StartsWith("Total Duration: ", lines[i++]);
         Assert.Equal("RequestBody: test", lines[i++]);
         Assert.Equal("RequestBodyStatus: [Completed]", lines[i++]);
+        Assert.StartsWith("Duration: ", lines[i++]);
         Assert.Equal(lines.Length, i);
     }
 
@@ -2028,7 +2040,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
                                 return "testing";
                             }).WithHttpLogging(HttpLoggingFields.Response);
 
-                            endpoint.MapGet("/attr_responseandrequest", [HttpLogging(HttpLoggingFields.Request | HttpLoggingFields.Response)] async (HttpContext c) =>
+                            endpoint.MapGet("/attr_responseandrequest", [HttpLogging(HttpLoggingFields.All)] async (HttpContext c) =>
                             {
                                 await c.Request.Body.ReadAsync(new byte[100]);
                                 c.Response.ContentType = "text/plain";
@@ -2039,7 +2051,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
                             {
                                 await c.Request.Body.ReadAsync(new byte[100]);
                                 return "testing";
-                            }).WithHttpLogging(HttpLoggingFields.Request | HttpLoggingFields.Response);
+                            }).WithHttpLogging(HttpLoggingFields.All);
 
                             endpoint.MapGet("/attr_restrictedheaders", [HttpLogging((HttpLoggingFields.Request & ~HttpLoggingFields.RequestScheme) | (HttpLoggingFields.Response & ~HttpLoggingFields.ResponseStatusCode))] async (HttpContext c) =>
                             {
