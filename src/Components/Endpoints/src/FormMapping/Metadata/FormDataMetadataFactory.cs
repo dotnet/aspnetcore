@@ -17,6 +17,7 @@ internal partial class FormDataMetadataFactory(List<IFormDataConverterFactory> f
     private readonly FormMetadataContext _context = new();
     private readonly ParsableConverterFactory _parsableFactory = factories.OfType<ParsableConverterFactory>().Single();
     private readonly DictionaryConverterFactory _dictionaryFactory = factories.OfType<DictionaryConverterFactory>().Single();
+    private readonly FileConverterFactory? _fileConverterFactory = factories.OfType<FileConverterFactory>().SingleOrDefault();
     private readonly CollectionConverterFactory _collectionFactory = factories.OfType<CollectionConverterFactory>().Single();
     private readonly ILogger<FormDataMetadataFactory> _logger = loggerFactory.CreateLogger<FormDataMetadataFactory>();
 

@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text.Json;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Http;
@@ -59,4 +60,6 @@ internal sealed class RequestDelegateFactoryContext
 
     // Grab these options upfront to avoid the per request DI scope that would be made otherwise to get the options when writing Json
     public required JsonSerializerOptions JsonSerializerOptions { get; set; }
+
+    public required FormDataMapperOptions FormDataMapperOptions { get; set; }
 }

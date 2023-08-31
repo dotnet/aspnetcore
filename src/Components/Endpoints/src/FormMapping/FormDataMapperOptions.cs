@@ -3,6 +3,7 @@
 
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -27,6 +28,7 @@ internal sealed class FormDataMapperOptions
         _converters = new(WellKnownConverters.Converters);
         _factories.Add(new ParsableConverterFactory());
         _factories.Add(new EnumConverterFactory());
+        _factories.Add(new FileConverterFactory());
         _factories.Add(new NullableConverterFactory());
         _factories.Add(new DictionaryConverterFactory());
         _factories.Add(new CollectionConverterFactory());

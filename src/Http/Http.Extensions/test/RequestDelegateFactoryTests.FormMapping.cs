@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 
@@ -278,7 +280,58 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         var exception = await Assert.ThrowsAsync<BadHttpRequestException>(async () => await requestDelegate(httpContext));
 
         Assert.Equal("The maximum recursion depth of '3' was exceeded for 'Manager.Manager.Manager.Name'.", exception.Message);
+    }
 
+    [Fact]
+    public async Task SupportsFormFileSourcesInDto()
+    {
+        FormFileDto capturedArgument = default;
+        void TestAction([FromForm] FormFileDto args) { capturedArgument = args; };
+        var httpContext = CreateHttpContext();
+        var formFiles = new FormFileCollection
+        {
+            new FormFile(Stream.Null, 0, 10, "file", "file.txt"),
+        };
+        httpContext.Request.Form = new FormCollection(new() { { "Description", "A test file" } }, formFiles);
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.TryAddSingleton<IHttpContextAccessor>(new HttpContextAccessor(httpContext));
+        var options = new RequestDelegateFactoryOptions
+        {
+            ServiceProvider = serviceCollection.BuildServiceProvider()
+        };
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction, options);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+        Assert.Equal("A test file", capturedArgument.Description);
+        Assert.Equal(formFiles["file"], capturedArgument.File);
+    }
+
+    [Fact]
+    public async Task SupportsFormFileCollectionSourcesInDto()
+    {
+        FormFileCollectionDto capturedArgument = default;
+        void TestAction([FromForm] FormFileCollectionDto args) { capturedArgument = args; };
+        var httpContext = CreateHttpContext();
+        var formFiles = new FormFileCollection
+        {
+            new FormFile(Stream.Null, 0, 10, "file", "file.txt"),
+        };
+        httpContext.Request.Form = new FormCollection(new() { { "Description", "A test file" } }, formFiles);
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.TryAddSingleton<IHttpContextAccessor>(new HttpContextAccessor(httpContext));
+        var options = new RequestDelegateFactoryOptions
+        {
+            ServiceProvider = serviceCollection.BuildServiceProvider()
+        };
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction, options);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+        Assert.Equal("A test file", capturedArgument.Description);
+        Assert.Equal(formFiles, capturedArgument.FileCollection);
     }
 
     private record TodoRecord(int Id, string Name, bool IsCompleted);
@@ -287,5 +340,27 @@ public partial class RequestDelegateFactoryTests : LoggedTest
     {
         public string Name { get; set; }
         public Employee Manager { get; set; }
+    }
+
+    private class FormFileDto
+    {
+        public string Description { get; set; }
+        public IFormFile File { get; set; }
+    }
+
+    private class FormFileCollectionDto
+    {
+        public string Description { get; set; }
+        public IFormFileCollection FileCollection { get; set; }
+    }
+
+    private class HttpContextAccessor(HttpContext httpContext) : IHttpContextAccessor
+    {
+
+        public HttpContext HttpContext
+        {
+            get;
+            set;
+        } = httpContext;
     }
 }
