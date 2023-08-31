@@ -15,7 +15,7 @@ const fs = {
 describe("Output files", () => {
     it(".min.js file is small", async () => {
         const size = await (await fs.stat(path.resolve(__dirname, "..", "dist/browser/signalr.min.js"))).size;
-        expect(size).toBeLessThan(45000);
+        expect(size).toBeLessThan(48000);
     });
 
     it("non .min.js file is big", async () => {

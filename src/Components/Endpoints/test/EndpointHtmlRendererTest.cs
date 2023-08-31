@@ -980,7 +980,7 @@ public class EndpointHtmlRendererTest
             builder.SetKey(firstRender);
 
             builder.AddAttribute(1, "onsubmit", () => { eventReceivedCount++; component.TriggerRender(); });
-            builder.AddNamedEvent(2, "onsubmit", "my-name");
+            builder.AddNamedEvent("onsubmit", "my-name");
             builder.CloseElement();
 
             firstRender = false;
@@ -1014,7 +1014,7 @@ public class EndpointHtmlRendererTest
         {
             builder.OpenElement(0, "form");
             builder.AddAttribute(1, "onsubmit", () => { eventReceivedCount++; });
-            builder.AddNamedEvent(2, "onsubmit", firstRender ? "my-name-1" : "my-name-2");
+            builder.AddNamedEvent("onsubmit", firstRender ? "my-name-1" : "my-name-2");
             builder.CloseElement();
             firstRender = false;
         });
@@ -1186,7 +1186,7 @@ public class EndpointHtmlRendererTest
         {
             builder.OpenElement(0, "form");
             builder.AddAttribute(1, "onsubmit", Handler ?? (() => { }));
-            builder.AddNamedEvent(2, "onsubmit", "default");
+            builder.AddNamedEvent("onsubmit", "default");
             builder.CloseElement();
         }
     }
@@ -1201,12 +1201,12 @@ public class EndpointHtmlRendererTest
             if (!hasRendered)
             {
                 builder.AddAttribute(1, "onsubmit", () => { });
-                builder.AddNamedEvent(2, "onsubmit", "default");
+                builder.AddNamedEvent("onsubmit", "default");
             }
             else
             {
                 builder.AddAttribute(1, "onsubmit", () => { GC.KeepAlive(new object()); });
-                builder.AddNamedEvent(2, "onsubmit", "default");
+                builder.AddNamedEvent("onsubmit", "default");
             }
             builder.CloseElement();
             if (!hasRendered)
@@ -1231,7 +1231,7 @@ public class EndpointHtmlRendererTest
             builder.AddAttribute(1, "onsubmit", !hasRendered
                 ? () => { Message = "Received call to original handler"; }
                 : () => { Message = "Received call to updated handler"; });
-            builder.AddNamedEvent(2, "onsubmit", "default");
+            builder.AddNamedEvent("onsubmit", "default");
             builder.CloseElement();
         }
 
@@ -1248,7 +1248,7 @@ public class EndpointHtmlRendererTest
         {
             builder.OpenElement(0, "form");
             builder.AddAttribute(1, "onsubmit", () => { });
-            builder.AddNamedEvent(2, "onsubmit", "default");
+            builder.AddNamedEvent("onsubmit", "default");
             builder.CloseElement();
         }
     }

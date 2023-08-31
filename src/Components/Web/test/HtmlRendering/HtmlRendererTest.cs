@@ -992,7 +992,7 @@ public class HtmlRendererTest
         var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
         {
             rtb.OpenElement(0, "div");
-            rtb.AddNamedEvent(1, "someevent", "somename");
+            rtb.AddNamedEvent("someevent", "somename");
             rtb.CloseElement();
         })).BuildServiceProvider();
 
@@ -1015,7 +1015,7 @@ public class HtmlRendererTest
         var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
         {
             rtb.OpenElement(0, "form");
-            rtb.AddNamedEvent(1, "onsubmit", "somename");
+            rtb.AddNamedEvent("onsubmit", "somename");
             rtb.CloseElement();
         })).BuildServiceProvider();
 
@@ -1038,7 +1038,7 @@ public class HtmlRendererTest
         var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
         {
             rtb.OpenElement(0, "form");
-            rtb.AddNamedEvent(1, "onsubmit", "some <name>");
+            rtb.AddNamedEvent("onsubmit", "some <name>");
             rtb.CloseElement();
         }))
             .AddSingleton<ICascadingValueSupplier>(new SupplyParameterFromFormValueProvider(formValueMapper, ""))
@@ -1066,7 +1066,7 @@ public class HtmlRendererTest
             rtb.AddComponentParameter(1, nameof(FormMappingScope.ChildContent), (RenderFragment<FormMappingContext>)(ctx => rtb =>
             {
                 rtb.OpenElement(0, "form");
-                rtb.AddNamedEvent(1, "onsubmit", "somename");
+                rtb.AddNamedEvent("onsubmit", "somename");
                 rtb.CloseElement();
             }));
             rtb.CloseComponent();

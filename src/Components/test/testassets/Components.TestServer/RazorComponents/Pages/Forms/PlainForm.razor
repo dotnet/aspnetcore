@@ -67,9 +67,9 @@
 
     [SupplyParameterFromForm] public string StringViaExpression { get; set; }
 
-    [SupplyParameterFromForm(Handler = "my-form")] public string StringViaExpressionWithHandler { get; set; }
+    [SupplyParameterFromForm(FormName = "my-form")] public string StringViaExpressionWithHandler { get; set; }
 
-    [SupplyParameterFromForm(Handler = "unmatched-handler")] public string StringViaExpressionWithUnmatchedHandler { get; set; }
+    [SupplyParameterFromForm(FormName = "unmatched-handler")] public string StringViaExpressionWithUnmatchedHandler { get; set; }
 
     [SupplyParameterFromForm] public MyComplexObject Person { get; set; } = new();
 

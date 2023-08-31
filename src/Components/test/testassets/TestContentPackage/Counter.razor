@@ -13,6 +13,7 @@
     private int _currentCount = 0;
     private bool _isInteractive = false;
     private string _renderMode = "SSR";
+    private DotNetObjectReference<Counter> _selfReference;
 
     [Parameter, EditorRequired]
     public int IncrementAmount { get; set; }
@@ -23,23 +24,29 @@
     [Parameter]
     public string DisposeBrowserConsoleMessage { get; set; }
 
-    private void IncrementCount()
+    [JSInvokable]
+    public void IncrementCount()
     {
         _currentCount += IncrementAmount;
+        StateHasChanged();
     }
 
-    protected override void OnAfterRender(bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
             _isInteractive = true;
             _renderMode = OperatingSystem.IsBrowser() ? "WebAssembly" : "Server";
+            _selfReference = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("enableCounterJsInterop", _selfReference);
             StateHasChanged();
         }
     }
 
     public async ValueTask DisposeAsync()
     {
+        _selfReference?.Dispose();
+
         if (_isInteractive && DisposeBrowserConsoleMessage is not null)
         {
             await JSRuntime.InvokeVoidAsync("console.log", DisposeBrowserConsoleMessage);

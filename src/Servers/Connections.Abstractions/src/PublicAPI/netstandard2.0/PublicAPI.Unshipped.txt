@@ -1,7 +1,7 @@
 #nullable enable
-Microsoft.AspNetCore.Connections.Abstractions.IReconnectFeature
-Microsoft.AspNetCore.Connections.Abstractions.IReconnectFeature.NotifyOnReconnect.get -> System.Action!
-Microsoft.AspNetCore.Connections.Abstractions.IReconnectFeature.NotifyOnReconnect.set -> void
+Microsoft.AspNetCore.Connections.Abstractions.IStatefulReconnectFeature
+Microsoft.AspNetCore.Connections.Abstractions.IStatefulReconnectFeature.DisableReconnect() -> void
+Microsoft.AspNetCore.Connections.Abstractions.IStatefulReconnectFeature.OnReconnected(System.Func<System.IO.Pipelines.PipeWriter!, System.Threading.Tasks.Task!>! notifyOnReconnect) -> void
 Microsoft.AspNetCore.Connections.Features.IConnectionMetricsTagsFeature
 Microsoft.AspNetCore.Connections.Features.IConnectionMetricsTagsFeature.Tags.get -> System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<string!, object?>>!
 Microsoft.AspNetCore.Connections.Features.IConnectionNamedPipeFeature
