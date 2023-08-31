@@ -171,6 +171,7 @@
   <data name="CertificateXmlEncryptor_CertificateNotFound" xml:space="preserve">
     <value>A certificate with the thumbprint '{0}' could not be found. For more information go to http://aka.ms/dataprotectionwarning</value>
   </data>
+  <!-- This is no longer used -->
   <data name="EncryptedXmlDecryptor_DoesNotWorkOnCoreClr" xml:space="preserve">
     <value>Decrypting EncryptedXml-encapsulated payloads is not yet supported on Core CLR. For more information go to http://aka.ms/dataprotectionwarning</value>
   </data>
@@ -189,6 +190,7 @@
   <data name="LifetimeMustNotBeNegative" xml:space="preserve">
     <value>{0} must not be negative. For more information go to http://aka.ms/dataprotectionwarning</value>
   </data>
+  <!-- This is only used to test LoggingExtensions.UsingEphemeralFileSystemLocationInContainer -->
   <data name="FileSystem_EphemeralKeysLocationInContainer" xml:space="preserve">
     <value>Storing keys in a directory '{path}' that may not be persisted outside of the container. Protected data will be unavailable when container is destroyed. For more information go to http://aka.ms/dataprotectionwarning</value>
   </data>
