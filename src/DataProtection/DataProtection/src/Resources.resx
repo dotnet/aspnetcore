@@ -121,7 +121,7 @@
     <value>An error occurred during a cryptographic operation. Refer to the inner exception for more information.</value>
   </data>
   <data name="Common_BufferIncorrectlySized" xml:space="preserve">
-    <value>The provided buffer is of length {0} byte(s). It must instead be exactly {1} byte(s) in length. For more information go to http://aka.ms/dataprotectionwarning</value>
+    <value>The provided buffer is of length {0} byte(s). It must instead be exactly {1} byte(s) in length.</value>
   </data>
   <data name="CryptCommon_PayloadInvalid" xml:space="preserve">
     <value>The payload was invalid. For more information go to http://aka.ms/dataprotectionwarning</value>
