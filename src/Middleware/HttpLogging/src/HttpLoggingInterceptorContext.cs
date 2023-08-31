@@ -75,6 +75,9 @@ public sealed class HttpLoggingInterceptorContext
     /// will be added automatically after all interceptors run. All values are cleared after logging the request.
     /// All other relevant settings will carry over to the response.
     /// </summary>
+    /// <remarks>
+    /// If <see cref="HttpLoggingOptions.CombineLogs"/> is enabled, the parameters will be logged as part of the combined log.
+    /// </remarks>
     public IList<KeyValuePair<string, object?>> Parameters => InternalParameters;
 
     /// <summary>

@@ -111,8 +111,8 @@ public sealed class HttpLoggingOptions
     public int ResponseBodyLogLimit { get; set; } = 32 * 1024;
 
     /// <summary>
-    /// Gets or sets if the middleware will combine the request, request body, response, and response body logs into a single log entry.
-    /// The default is <see langword="false"/>.
+    /// Gets or sets if the middleware will combine the request, request body, response, response body,
+    /// and duration logs into a single log entry. The default is <see langword="false"/>.
     /// </summary>
     public bool CombineLogs { get; set; }
 }
