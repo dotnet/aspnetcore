@@ -235,6 +235,6 @@ internal static partial class LoggingExtensions
     [LoggerMessage(66, LogLevel.Information, "Key ring failed to load during application startup.", EventName = "KeyRingFailedToLoadOnStartup")]
     public static partial void KeyRingFailedToLoadOnStartup(this ILogger logger, Exception innerException);
 
-    [LoggerMessage(60, LogLevel.Warning, "Storing keys in a directory '{path}' that may not be persisted outside of the container. Protected data will be unavailable when container is destroyed. For more information go to http://aka.ms/dataprotectionwarning", EventName = "UsingEphemeralFileSystemLocationInContainer")]
+    [LoggerMessage(60, LogLevel.Warning, "Storing keys in a directory '{path}' that may not be persisted outside of the container. Protected data will be unavailable when container is destroyed. For more information go to http://aka.ms/aspnet/dataprotectionwarning", EventName = "UsingEphemeralFileSystemLocationInContainer")]
     public static partial void UsingEphemeralFileSystemLocationInContainer(this ILogger logger, string path);
 }

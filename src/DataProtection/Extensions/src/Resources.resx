@@ -124,6 +124,6 @@
     <value>The payload expired at {0}.</value>
   </data>
   <data name="TimeLimitedDataProtector_PayloadInvalid" xml:space="preserve">
-    <value>The payload is invalid. For more information go to http://aka.ms/dataprotectionwarning</value>
+    <value>The payload is invalid. For more information go to http://aka.ms/aspnet/dataprotectionwarning</value>
   </data>
 </root>
