@@ -60,6 +60,49 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
+    public void DataAnnotationsWorkForForms(bool suppressEnhancedNavigation)
+    {
+        var dispatchToForm = new DispatchToForm(this)
+        {
+            Url = "forms/default-form-bound-parameter-annotations",
+            FormCssSelector = "form",
+            InputFieldId = "Parameter.FirstName",
+            InputFieldCssSelector = "input[name='Parameter.FirstName']",
+            InputFieldValue = "John",
+            SuppressEnhancedNavigation = suppressEnhancedNavigation,
+            AssertErrors = errors =>
+            {
+                var error = Assert.Single(errors);
+                Assert.Equal("Name is too long", error.Text);
+                Assert.Equal("John", Browser.FindElement(By.CssSelector("input[name='Parameter.FirstName']")).GetAttribute("value"));
+            },
+        };
+        DispatchToFormCore(dispatchToForm);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void DataContractAttributesWorkForForms(bool suppressEnhancedNavigation)
+    {
+        var dispatchToForm = new DispatchToForm(this)
+        {
+            Url = "forms/default-form-bound-parameter-annotations",
+            FormCssSelector = "form",
+            InputFieldId = "Parameter.FirstName",
+            InputFieldCssSelector = "input[name='Parameter.FirstName']",
+            InputFieldValue = "Jon",
+            SuppressEnhancedNavigation = suppressEnhancedNavigation
+        };
+        DispatchToFormCore(dispatchToForm);
+
+        var text = Browser.Exists(By.Id("pass-id")).Text;
+        Assert.Equal("0", text);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
     public void MultipleParametersMultipleFormsDoNotConflict(bool suppressEnhancedNavigation)
     {
         var dispatchToForm = new DispatchToForm(this)
