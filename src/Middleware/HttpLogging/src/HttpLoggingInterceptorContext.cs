@@ -68,7 +68,7 @@ public sealed class HttpLoggingInterceptorContext
 
     internal long StartTimestamp { get; set; }
     internal TimeProvider TimeProvider { get; set; } = null!;
-    internal List<KeyValuePair<string, object?>> InternalParameters { get; } = new();
+    internal List<KeyValuePair<string, object?>> InternalParameters { get; private set; } = new();
 
     /// <summary>
     /// Gets a list of parameters that will be logged as part of the request or response. Values specified in <see cref="LoggingFields"/>
@@ -138,7 +138,8 @@ public sealed class HttpLoggingInterceptorContext
         ResponseBodyLogLimit = 0;
         StartTimestamp = 0;
         TimeProvider = null!;
-        InternalParameters.Clear();
+        // Not pooled, the logger may store a reference to this instance.
+        InternalParameters = new();
     }
 
     internal double GetDuration()
