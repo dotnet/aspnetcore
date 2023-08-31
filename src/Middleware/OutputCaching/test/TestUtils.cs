@@ -2,8 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
+using System.Buffers;
+using System.IO.Pipelines;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -17,6 +20,7 @@ using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 using Moq;
+using static Microsoft.AspNetCore.OutputCaching.Tests.OutputCacheMiddlewareTests;
 
 namespace Microsoft.AspNetCore.OutputCaching.Tests;
 
@@ -197,7 +201,7 @@ internal class TestUtils
         }
         if (cache == null)
         {
-            cache = new TestOutputCache();
+            cache = new SimpleTestOutputCache();
         }
         if (options == null)
         {
@@ -219,7 +223,7 @@ internal class TestUtils
     internal static OutputCacheContext CreateTestContext(HttpContext? httpContext = null, IOutputCacheStore? cache = null, OutputCacheOptions? options = null, ITestSink? testSink = null)
     {
         var serviceProvider = new Mock<IServiceProvider>();
-        serviceProvider.Setup(x => x.GetService(typeof(IOutputCacheStore))).Returns(cache ?? new TestOutputCache());
+        serviceProvider.Setup(x => x.GetService(typeof(IOutputCacheStore))).Returns(cache ?? new SimpleTestOutputCache());
         serviceProvider.Setup(x => x.GetService(typeof(IOptions<OutputCacheOptions>))).Returns(Options.Create(options ?? new OutputCacheOptions()));
         serviceProvider.Setup(x => x.GetService(typeof(ILogger<OutputCacheMiddleware>))).Returns(testSink == null ? NullLogger.Instance : new TestLogger("OutputCachingTests", testSink, true));
 
@@ -239,7 +243,7 @@ internal class TestUtils
     internal static OutputCacheContext CreateUninitializedContext(HttpContext? httpContext = null, IOutputCacheStore? cache = null, OutputCacheOptions? options = null, ITestSink? testSink = null)
     {
         var serviceProvider = new Mock<IServiceProvider>();
-        serviceProvider.Setup(x => x.GetService(typeof(IOutputCacheStore))).Returns(cache ?? new TestOutputCache());
+        serviceProvider.Setup(x => x.GetService(typeof(IOutputCacheStore))).Returns(cache ?? new SimpleTestOutputCache());
         serviceProvider.Setup(x => x.GetService(typeof(IOptions<OutputCacheOptions>))).Returns(Options.Create(options ?? new OutputCacheOptions()));
         serviceProvider.Setup(x => x.GetService(typeof(ILogger<OutputCacheMiddleware>))).Returns(testSink == null ? NullLogger.Instance : new TestLogger("OutputCachingTests", testSink, true));
 
@@ -320,7 +324,7 @@ internal class TestResponseCachingKeyProvider : IOutputCacheKeyProvider
     }
 }
 
-internal class TestOutputCache : IOutputCacheStore
+internal class SimpleTestOutputCache : ITestOutputCacheStore
 {
     private readonly Dictionary<string, byte[]?> _storage = new();
     public int GetCount { get; private set; }
@@ -359,6 +363,23 @@ internal class TestOutputCache : IOutputCacheStore
 
             return ValueTask.CompletedTask;
         }
+    }
+}
+
+internal class BufferTestOutputCache : SimpleTestOutputCache, IOutputCacheBufferStore
+{
+    ValueTask IOutputCacheBufferStore.SetAsync(string key, ReadOnlySequence<byte> value, ReadOnlyMemory<string> tags, TimeSpan validFor, CancellationToken cancellationToken)
+        => SetAsync(key, value.ToArray(), tags.ToArray(), validFor, cancellationToken);
+
+    async ValueTask<bool> IOutputCacheBufferStore.TryGetAsync(string key, PipeWriter destination, CancellationToken cancellationToken)
+    {
+        var data = await GetAsync(key, cancellationToken); // in reality we expect this to be sync, but: meh
+        if (data is null)
+        {
+            return false;
+        }
+        await destination.WriteAsync(data, cancellationToken);
+        return true;
     }
 }
 
