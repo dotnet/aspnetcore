@@ -184,7 +184,7 @@ internal static partial class LoggingExtensions
     [LoggerMessage(48, LogLevel.Error, "An error occurred while reading the key ring.", EventName = "ErrorOccurredWhileReadingKeyRing")]
     public static partial void ErrorOccurredWhileReadingKeyRing(this ILogger logger, Exception exception);
 
-    [LoggerMessage(49, LogLevel.Error, "The key ring does not contain a valid default key, and the key manager is configured with auto-generation of keys disabled.", EventName = "KeyRingDoesNotContainValidDefaultKey")]
+    [LoggerMessage(49, LogLevel.Error, "The key ring does not contain a valid default protection key. The data protection system cannot create a new key because auto-generation of keys is disabled. For more information go to http://aka.ms/dataprotectionwarning", EventName = "KeyRingDoesNotContainValidDefaultKey")]
     public static partial void KeyRingDoesNotContainValidDefaultKey(this ILogger logger);
 
     [LoggerMessage(50, LogLevel.Warning, "Using an in-memory repository. Keys will not be persisted to storage.", EventName = "UsingInMemoryRepository")]
