@@ -18,10 +18,12 @@ public class OutputCacheMiddlewareTests_SimpleStore : OutputCacheMiddlewareTests
 {
     public override ITestOutputCacheStore GetStore() => new SimpleTestOutputCache();
 }
+
 public class OutputCacheMiddlewareTests_BufferStore : OutputCacheMiddlewareTests
 {
     public override ITestOutputCacheStore GetStore() => new BufferTestOutputCache();
 }
+
 public abstract class OutputCacheMiddlewareTests
 {
     public interface ITestOutputCacheStore : IOutputCacheStore
