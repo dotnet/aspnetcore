@@ -4,7 +4,7 @@
     <Description>Output cache implementation of Microsoft.AspNetCore.OutputCaching.IOutputCacheStore using Redis.</Description>
     <TargetFrameworks>$(DefaultNetCoreTargetFramework)</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <PackageTags>cache;distributedcache;redis</PackageTags>
+    <PackageTags>cache;outputcache;redis</PackageTags>
     <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
     <IsPackable>true</IsPackable>
     <IsShipping>true</IsShipping>
