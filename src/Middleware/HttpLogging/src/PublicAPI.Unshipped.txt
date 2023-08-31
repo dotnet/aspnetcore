@@ -9,6 +9,7 @@ Microsoft.AspNetCore.HttpLogging.HttpLoggingAttribute.RequestBodyLogLimit.get ->
 Microsoft.AspNetCore.HttpLogging.HttpLoggingAttribute.RequestBodyLogLimit.set -> void
 Microsoft.AspNetCore.HttpLogging.HttpLoggingAttribute.ResponseBodyLogLimit.get -> int
 Microsoft.AspNetCore.HttpLogging.HttpLoggingAttribute.ResponseBodyLogLimit.set -> void
+*REMOVED*Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.All = Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.Request | Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.Response -> Microsoft.AspNetCore.HttpLogging.HttpLoggingFields
 Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.All = Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.Request | Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.Response | Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.Duration -> Microsoft.AspNetCore.HttpLogging.HttpLoggingFields
 Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.Duration = 4096 -> Microsoft.AspNetCore.HttpLogging.HttpLoggingFields
 Microsoft.AspNetCore.HttpLogging.HttpLoggingInterceptorContext
