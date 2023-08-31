@@ -5,7 +5,6 @@ using System.Buffers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Net.Http.Headers;
-using static Microsoft.AspNetCore.OutputCaching.Tests.OutputCacheMiddlewareTests;
 
 namespace Microsoft.AspNetCore.OutputCaching.Tests;
 

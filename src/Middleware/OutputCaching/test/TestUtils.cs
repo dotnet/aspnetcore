@@ -6,7 +6,6 @@ using System.Buffers;
 using System.IO.Pipelines;
 using System.Net.Http;
 using System.Text;
-using System.Threading;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -20,7 +19,6 @@ using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 using Moq;
-using static Microsoft.AspNetCore.OutputCaching.Tests.OutputCacheMiddlewareTests;
 
 namespace Microsoft.AspNetCore.OutputCaching.Tests;
 
@@ -401,4 +399,10 @@ internal class AllowTestPolicy : IOutputCachePolicy
     {
         return ValueTask.CompletedTask;
     }
+}
+
+public interface ITestOutputCacheStore : IOutputCacheStore
+{
+    int GetCount { get; }
+    int SetCount { get; }
 }

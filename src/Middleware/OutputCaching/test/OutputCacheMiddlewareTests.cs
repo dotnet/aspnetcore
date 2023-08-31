@@ -26,12 +26,6 @@ public class OutputCacheMiddlewareTests_BufferStore : OutputCacheMiddlewareTests
 
 public abstract class OutputCacheMiddlewareTests
 {
-    public interface ITestOutputCacheStore : IOutputCacheStore
-    {
-        int GetCount { get; }
-        int SetCount { get; }
-    }
-
     public abstract ITestOutputCacheStore GetStore();
 
     [Fact]

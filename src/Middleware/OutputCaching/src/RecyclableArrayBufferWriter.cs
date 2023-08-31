@@ -58,8 +58,7 @@ internal sealed class RecyclableArrayBufferWriter<T> : IBufferWriter<T>, IDispos
             => throw new ArgumentOutOfRangeException(nameof(count));
     }
 
-    public ReadOnlyMemory<T> GetCommittedMemory() => new ReadOnlyMemory<T>(_buffer, 0, _index);
-    public ReadOnlySpan<T> GetCommittedSpan() => new ReadOnlySpan<T>(_buffer, 0, _index);
+    public ReadOnlyMemory<T> GetCommittedMemory() => new ReadOnlyMemory<T>(_buffer, 0, _index); // could also directly expose a ReadOnlySpan<byte> if useful
 
     public Memory<T> GetMemory(int sizeHint = 0)
     {
