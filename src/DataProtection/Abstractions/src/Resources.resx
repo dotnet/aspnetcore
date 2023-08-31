@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -124,7 +124,7 @@
     <value>The purposes collection cannot be null or empty and cannot contain null elements.</value>
   </data>
   <data name="CryptCommon_GenericError" xml:space="preserve">
-    <value>An error occurred during a cryptographic operation.</value>
+    <value>An error occurred during a cryptographic operation. Refer to the inner exception for more information.</value>
   </data>
   <data name="DataProtectionExtensions_NoService" xml:space="preserve">
     <value>No service for type '{0}' has been registered.</value>
