@@ -77,7 +77,6 @@ public sealed class HttpLoggingInterceptorContext
     /// </summary>
     public IList<KeyValuePair<string, object?>> Parameters => InternalParameters;
 
-
     /// <summary>
     /// Adds data that will be logged as part of the request or response. See <see cref="Parameters"/>.
     /// </summary>
