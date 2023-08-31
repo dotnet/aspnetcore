@@ -132,6 +132,7 @@
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.HeaderPropagation" />
     <AspNetCoreShippingAssembly Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" />
+    <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.OutputCaching.StackExchangeRedis" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.MiddlewareAnalysis" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.SpaProxy" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.SpaServices.Extensions" />

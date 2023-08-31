@@ -1,22 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#if NET7_0_OR_GREATER
-
-using System;
 using System.Buffers;
 using System.IO.Pipelines;
-using System.Runtime.CompilerServices;
-using System.Security.Cryptography;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.OutputCaching;
-using Pipelines.Sockets.Unofficial.Buffers;
 using StackExchange.Redis;
-using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.Extensions.Caching.StackExchangeRedis;
+namespace Microsoft.AspNetCore.OutputCaching.StackExchangeRedis.Tests;
 
 public class OutputCacheGetSetTests : IClassFixture<RedisConnectionFixture>
 {
@@ -31,7 +21,7 @@ public class OutputCacheGetSetTests : IClassFixture<RedisConnectionFixture>
     public OutputCacheGetSetTests(RedisConnectionFixture connection, ITestOutputHelper log)
     {
         _fixture = connection;
-        _cache = new RedisOutputCacheStore(new RedisCacheOptions
+        _cache = new RedisOutputCacheStore(new RedisOutputCacheOptions
         {
             ConnectionMultiplexerFactory = () => Task.FromResult(_fixture.Connection),
             InstanceName = "TestPrefix",
@@ -445,5 +435,3 @@ public class OutputCacheGetSetTests : IClassFixture<RedisConnectionFixture>
         public byte[] Array { get; }
     }
 }
-
-#endif

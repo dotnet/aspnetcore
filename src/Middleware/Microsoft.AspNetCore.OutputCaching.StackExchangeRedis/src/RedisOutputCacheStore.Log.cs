@@ -1,13 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#if NET7_0_OR_GREATER // IOutputCacheStore only exists from net7
-
 using System;
 using Microsoft.Extensions.Logging;
 using StackExchange.Redis;
 
-namespace Microsoft.Extensions.Caching.StackExchangeRedis;
+namespace Microsoft.AspNetCore.OutputCaching.StackExchangeRedis;
 
 internal partial class RedisOutputCacheStore
 {
@@ -17,4 +15,3 @@ internal partial class RedisOutputCacheStore
     [LoggerMessage(2, LogLevel.Error, "Fatal error occurred executing redis output-cache GC loop.", EventName = "RedisOutputCacheGCFatalError")]
     internal static partial void RedisOutputCacheGCFatalError(ILogger logger, Exception exception);
 }
-#endif
