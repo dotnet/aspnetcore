@@ -141,7 +141,7 @@ internal partial class EndpointHtmlRenderer
                 writer.Write("</template>");
             }
 
-            writer.Write("</blazor-ssr>");
+            writer.Write("<blazor-ssr-end></blazor-ssr-end></blazor-ssr>");
             writer.Write(_ssrFramingCommentMarkup);
         }
     }
