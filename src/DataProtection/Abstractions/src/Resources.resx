@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="CryptCommon_PayloadInvalid" xml:space="preserve">
-    <value>The payload was invalid.</value>
+    <value>The payload was invalid. For more information go to http://aka.ms/dataprotectionwarning</value>
   </data>
   <data name="DataProtectionExtensions_NullPurposesCollection" xml:space="preserve">
     <value>The purposes collection cannot be null or empty and cannot contain null elements.</value>
