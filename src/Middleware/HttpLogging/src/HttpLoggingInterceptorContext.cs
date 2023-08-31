@@ -68,7 +68,7 @@ public sealed class HttpLoggingInterceptorContext
 
     internal long StartTimestamp { get; set; }
     internal TimeProvider TimeProvider { get; set; } = null!;
-    internal List<KeyValuePair<string, object?>> InternalParameters { get; private set; } = new();
+    internal List<KeyValuePair<string, object?>> InternalParameters { get; set; } = new();
 
     /// <summary>
     /// Gets a list of parameters that will be logged as part of the request or response. Values specified in <see cref="LoggingFields"/>

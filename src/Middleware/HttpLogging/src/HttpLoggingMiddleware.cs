@@ -146,7 +146,7 @@ internal sealed class HttpLoggingMiddleware
 
                 _logger.RequestLog(httpRequestLog);
 
-                logContext.InternalParameters.Clear();
+                logContext.InternalParameters = new();
             }
         }
 
