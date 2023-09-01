@@ -82,6 +82,21 @@ public static class RazorComponentsServiceCollectionExtensions
         return new DefaultRazorComponentsBuilder(services);
     }
 
+    /// <summary>
+    /// Registers services required for persisting application state on the server side.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="configure">An <see cref="Action{RazorComponentOptions}"/> to configure the provided <see cref="RazorComponentsOptions"/>.</param>
+    /// <returns>An <see cref="IRazorComponentsBuilder"/> that can be used to further configure the Razor component services.</returns>
+    [RequiresUnreferencedCode("Razor Components does not currently support trimming or native AOT.", Url = "https://aka.ms/aspnet/nativeaot")]
+    public static IRazorComponentsBuilder AddServerSerializationModeHandler(this IServiceCollection services, Action<RazorComponentsOptions>? configure = null)
+    {
+        services.AddScoped<ServerSerializationModeHandler>();
+        services.TryAddScoped<ISerializationModeHandler>(services => services.GetRequiredService<ServerSerializationModeHandler>());
+
+        return new DefaultRazorComponentsBuilder(services);
+    }
+
     private sealed class DefaultRazorComponentsBuilder(IServiceCollection services) : IRazorComponentsBuilder
     {
         public IServiceCollection Services { get; } = services;

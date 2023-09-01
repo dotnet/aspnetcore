@@ -208,6 +208,9 @@ public static class MvcViewFeaturesMvcCoreBuilderExtensions
         services.TryAddSingleton(ArrayPool<ViewBufferValue>.Shared);
         services.TryAddScoped<IViewBufferScope, MemoryPoolViewBufferScope>();
 
+        // Persist application state only on Server
+        services.AddServerSerializationModeHandler();
+
         // Component rendering
         services.AddRazorComponents();
     }

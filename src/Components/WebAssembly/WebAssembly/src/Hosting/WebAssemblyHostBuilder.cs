@@ -259,6 +259,8 @@ public sealed class WebAssemblyHostBuilder
         Services.AddSingleton<IScrollToLocationHash>(WebAssemblyScrollToLocationHash.Instance);
         Services.AddSingleton(new LazyAssemblyLoader(DefaultWebAssemblyJSRuntime.Instance));
         Services.AddSingleton<RootComponentTypeCache>(_ => _rootComponentCache ?? new());
+        Services.AddSingleton<WebAssemblySerializationModeHandler>();
+        Services.AddSingleton<ISerializationModeHandler>(services => services.GetRequiredService<WebAssemblySerializationModeHandler>());
         Services.AddSingleton<ComponentStatePersistenceManager>();
         Services.AddSingleton<PersistentComponentState>(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
         Services.AddSingleton<AntiforgeryStateProvider, DefaultAntiforgeryStateProvider>();
