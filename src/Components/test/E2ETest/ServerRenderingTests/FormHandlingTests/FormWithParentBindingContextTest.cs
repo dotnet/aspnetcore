@@ -70,6 +70,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
             InputFieldCssSelector = "input[name='Parameter.FirstName']",
             InputFieldValue = "John",
             SuppressEnhancedNavigation = suppressEnhancedNavigation,
+            ErrorSelector = "ul.validation-errors li.validation-message",
             AssertErrors = errors =>
             {
                 var error = Assert.Single(errors);

@@ -36,6 +36,7 @@ public static class RazorComponentsServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
 
         // Dependencies
+        services.AddLogging();
         services.AddAntiforgery();
 
         services.TryAddSingleton<RazorComponentsMarkerService>();
