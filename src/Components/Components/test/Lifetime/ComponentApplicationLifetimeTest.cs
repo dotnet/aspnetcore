@@ -299,6 +299,12 @@ public class ComponentApplicationLifetimeTest
             _serializationMode = serializationMode;
         }
 
+        public PersistedStateSerializationMode GlobalSerializationMode
+        {
+            get => _serializationMode;
+            set => throw new NotImplementedException();
+        }
+
         public PersistedStateSerializationMode GetCallbackTargetSerializationMode(object callbackTarget)
         {
             return _serializationMode;

@@ -255,6 +255,12 @@ public class ComponentApplicationStateTest
 
     private class TestComponentSerializationModeHandler : ISerializationModeHandler
     {
+        public PersistedStateSerializationMode GlobalSerializationMode
+        {
+            get => throw new NotImplementedException();
+            set => throw new NotImplementedException();
+        }
+
         public PersistedStateSerializationMode GetCallbackTargetSerializationMode(object callbackTarget)
         {
             throw new NotImplementedException();
