@@ -11,7 +11,7 @@ public interface IComponentSerializationModeHandler
     /// <summary>
     /// Infers <see cref="IComponent"/>'s <see cref="PersistedStateSerializationMode"/>.
     /// </summary>
-    /// <param name="component">The component</param>
+    /// <param name="callbackTarget">The callback target</param>
     /// <returns>The <see cref="PersistedStateSerializationMode"/> for the component.</returns>
-    public PersistedStateSerializationMode GetComponentSerializationMode(IComponent component);
+    public PersistedStateSerializationMode GetComponentSerializationMode(object? callbackTarget);
 }

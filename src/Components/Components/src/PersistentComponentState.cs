@@ -55,17 +55,11 @@ public class PersistentComponentState
     {
         ArgumentNullException.ThrowIfNull(callback);
 
-        if (callback.Target is not IComponent)
-        {
-            throw new InvalidOperationException("Cannot infer serialization mode for non component. Provide a serialization mode.");
-        }
-
         var serializationMode = SerializationMode;
 
         if (SerializationMode == PersistedStateSerializationMode.Infer)
         {
-            var component = (IComponent)callback.Target;
-            serializationMode = _serializationModeHandler.GetComponentSerializationMode(component);
+            serializationMode = _serializationModeHandler.GetComponentSerializationMode(callback.Target);
         }
 
         return RegisterOnPersisting(callback, serializationMode);

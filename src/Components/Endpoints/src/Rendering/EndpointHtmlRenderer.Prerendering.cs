@@ -35,10 +35,23 @@ internal partial class EndpointHtmlRenderer : IComponentSerializationModeHandler
         }
     }
 
-    public PersistedStateSerializationMode GetComponentSerializationMode(IComponent component)
+    public PersistedStateSerializationMode GetComponentSerializationMode(object? callbackTarget)
     {
+        if (callbackTarget is not IComponent)
+        {
+            throw new InvalidOperationException("Cannot infer serialization mode for non component. Provide a serialization mode.");
+        }
+
+        var component = (IComponent)callbackTarget;
+
         var ssrRenderBoundary = GetClosestRenderModeBoundary(component);
-        var renderMode = ssrRenderBoundary!.RenderMode;
+
+        if (ssrRenderBoundary is null)
+        {
+            throw new InvalidCastException("Cannot infer serialization mode.");
+        }
+
+        var renderMode = ssrRenderBoundary.RenderMode;
 
         return renderMode switch
         {
