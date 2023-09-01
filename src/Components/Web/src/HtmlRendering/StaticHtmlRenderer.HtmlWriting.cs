@@ -21,7 +21,7 @@ public partial class StaticHtmlRenderer
         string.Empty,
         typeof(FormMappingContext));
 
-    private static readonly TextEncoder _nullHtmlEncoder = JavaScriptEncoder.Default;
+    private static readonly TextEncoder _javaScriptEncoder = JavaScriptEncoder.Default;
     private TextEncoder _htmlEncoder = HtmlEncoder.Default;
     private string? _closestSelectValueAsString;
 
@@ -180,19 +180,15 @@ public partial class StaticHtmlRenderer
 
     private int RenderScriptElementChildren(int componentId, TextWriter output, ArrayRange<RenderTreeFrame> frames, int position, int maxElements)
     {
-        // Script tags are special. Unlike in XHTML, the contents of script elements in HTML
-        // are parsed as plain text, so HTML entities are not recognized and are treated as
-        // literal text. Code like console.log(&quot;Hello&quot;) would be a syntax error.
-        // HTML does not make use of <![CDATA[ ... ]]> either. So inside <script>...</script>,
-        // we must disable HTML encoding. This is hardly a XSS issue since if an application
-        // is rendering user content inside <script>, they already have an XSS problem unless
-        // they have carefully escaped the user content.
-        // https://stackoverflow.com/a/14781466
-        // https://html.spec.whatwg.org/multipage/scripting.html#restrictions-for-contents-of-script-elements
+        // Inside a <script> context, AddContent calls should result in the text being
+        // JavaScript encoded rather than HTML encoded. It's not that we recommend inserting
+        // user-supplied content inside a <script> block, but that if someone does, we
+        // want the encoding style to match the context for correctness and safety. This is
+        // also consistent with .cshtml's treatment of <script>.
         var originalEncoder = _htmlEncoder;
         try
         {
-            _htmlEncoder = _nullHtmlEncoder;
+            _htmlEncoder = _javaScriptEncoder;
             return RenderChildren(componentId, output, frames, position, maxElements);
         }
         finally

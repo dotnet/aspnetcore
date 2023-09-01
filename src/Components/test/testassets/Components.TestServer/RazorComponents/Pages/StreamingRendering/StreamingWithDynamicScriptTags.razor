@@ -16,7 +16,9 @@
     <p id="dynamic-p-before">This content is added before the scripts</p>
 
     <!-- Show it works with inline script -->
-    <script>document.getElementById("dynamic-script-output-inline").textContent = "This was set by JS via inline script asynchronously";</script>
+    <script>
+        document.getElementById("dynamic-script-output-inline").textContent = "This was set by JS via inline script asynchronously (special chars: @expressionWithSpecialChars)";
+    </script>
 
     <p id="dynamic-p-between">This content is added between the scripts</p>
 
@@ -28,6 +30,7 @@
 
 @code {
     bool addScripts;
+    string expressionWithSpecialChars = "' \" </script>"; // To show the dynamic content is JS-encoded, not HTML-encoded
 
     protected override async Task OnInitializedAsync()
     {
