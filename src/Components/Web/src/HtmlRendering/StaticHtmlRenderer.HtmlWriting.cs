@@ -21,7 +21,8 @@ public partial class StaticHtmlRenderer
         string.Empty,
         typeof(FormMappingContext));
 
-    private static readonly HtmlEncoder _htmlEncoder = HtmlEncoder.Default;
+    private static readonly HtmlEncoder _nullHtmlEncoder = NullHtmlEncoder.Default;
+    private HtmlEncoder _htmlEncoder = HtmlEncoder.Default;
     private string? _closestSelectValueAsString;
 
     /// <summary>
@@ -138,6 +139,22 @@ public partial class StaticHtmlRenderer
                 _htmlEncoder.Encode(output, capturedValueAttribute);
                 afterElement = position + frame.ElementSubtreeLength; // Skip descendants
             }
+            else if (string.Equals(frame.ElementNameField, "script", StringComparison.OrdinalIgnoreCase))
+            {
+                // Script tags are special. Unlike in XHTML, the contents of script elements in HTML
+                // are parsed as plain text, so HTML entities are not recognized and are treated as
+                // literal text. Code like console.log(&quot;Hello&quot;) would be a syntax error.
+                // HTML does not make use of <![CDATA[ ... ]]> either. So inside <script>...</script>,
+                // we must disable HTML encoding. This is hardly a XSS issue since if an application
+                // is rendering user content inside <script>, they already have an XSS problem unless
+                // they have carefully escaped the user content.
+                // https://stackoverflow.com/a/14781466
+                // https://html.spec.whatwg.org/multipage/scripting.html#restrictions-for-contents-of-script-elements
+                var originalEncoder = _htmlEncoder;
+                _htmlEncoder = _nullHtmlEncoder;
+                afterElement = RenderChildren(componentId, output, frames, afterAttributes, remainingElements);
+                _htmlEncoder = originalEncoder;
+            }
             else
             {
                 afterElement = RenderChildren(componentId, output, frames, afterAttributes, remainingElements);
@@ -245,7 +262,7 @@ public partial class StaticHtmlRenderer
         return false;
     }
 
-    private static int RenderAttributes(
+    private int RenderAttributes(
         TextWriter output, ArrayRange<RenderTreeFrame> frames, int position, int maxElements, bool includeValueAttribute, out string? capturedValueAttribute)
     {
         capturedValueAttribute = null;

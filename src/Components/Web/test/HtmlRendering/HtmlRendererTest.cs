@@ -986,6 +986,30 @@ public class HtmlRendererTest
     }
 
     [Fact]
+    public async Task RenderComponentAsync_CanRenderScriptTagWithoutHtmlEncodingQuotesOrSemicolons()
+    {
+        // Arrange
+        var scriptText = "alert('The apostrophes must not be encoded' + \" and nor must these\"); // Nor the semicolon";
+        var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
+        {
+            rtb.OpenElement(0, "script");
+            rtb.AddContent(1, scriptText);
+            rtb.CloseElement();
+            rtb.AddContent(2, "This should be \"encoded\" though");
+        })).BuildServiceProvider();
+
+        var htmlRenderer = GetHtmlRenderer(serviceProvider);
+        await htmlRenderer.Dispatcher.InvokeAsync(async () =>
+        {
+            // Act
+            var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
+
+            // Assert
+            Assert.Equal($"<script>{scriptText}</script>This should be &quot;encoded&quot; though", result.ToHtmlString());
+        });
+    }
+
+    [Fact]
     public async Task RenderComponentAsync_IgnoresNamedEvents()
     {
         // Arrange

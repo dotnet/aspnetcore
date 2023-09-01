@@ -146,4 +146,19 @@ public class StreamingRenderingTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
         Assert.EndsWith("/subdir/nav", Browser.Url);
     }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void CanAddScriptElementsDynamically(bool suppressEnhancedNavigation)
+    {
+        EnhancedNavigationTestUtil.SuppressEnhancedNavigation(this, suppressEnhancedNavigation);
+        Navigate($"{ServerPathBase}/streaming-scripts");
+
+        Browser.Equal("This was set by JS via src", () => Browser.FindElement(By.Id("dynamic-script-output-src")).Text);
+        Browser.Equal("This was set by JS via inline script asynchronously", () => Browser.FindElement(By.Id("dynamic-script-output-inline")).Text);
+        Browser.Exists(By.Id("dynamic-p-before"));
+        Browser.Exists(By.Id("dynamic-p-between"));
+        Browser.Exists(By.Id("dynamic-p-after"));
+    }
 }
