@@ -692,7 +692,10 @@ public class AccessesServicesMetadataBinder : IEndpointMetadataProvider
 }
 
 public record MetadataService;
-public record ParameterListFromQuery(HttpContext HttpContext, [FromQuery] int Value);
+public record ParameterListFromQuery(HttpContext HttpContext,
+    [FromQuery] int Value,
+    [FromQuery(Name = "customQuery")] int CustomValue,
+    [property: FromQuery(Name = "anotherCustomQuery")] int? AnotherCustomValue = null);
 public record ParameterListFromRoute(HttpContext HttpContext, int Value);
 public record ParameterListFromHeader(HttpContext HttpContext, [FromHeader(Name = "X-Custom-Header")] int Value);
 public record ParametersListWithImplicitFromBody(HttpContext HttpContext, TodoStruct Todo);
