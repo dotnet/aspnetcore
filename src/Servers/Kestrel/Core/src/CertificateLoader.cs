@@ -30,43 +30,11 @@ public static class CertificateLoader
     /// <returns>The loaded certificate.</returns>
     public static X509Certificate2 LoadFromStoreCert(string subject, string storeName, StoreLocation storeLocation, bool allowInvalid)
     {
-        using (var store = new X509Store(storeName, storeLocation))
-        {
-            X509Certificate2Collection? storeCertificates = null;
-            X509Certificate2? foundCertificate = null;
-
-            try
-            {
-                store.Open(OpenFlags.ReadOnly);
-                storeCertificates = store.Certificates;
-                foreach (var certificate in storeCertificates.Find(X509FindType.FindBySubjectName, subject, !allowInvalid)
-                    .OfType<X509Certificate2>()
-                    .Where(IsCertificateAllowedForServerAuth)
-                    .Where(DoesCertificateHaveAnAccessiblePrivateKey)
-                    .OrderByDescending(certificate => certificate.NotAfter))
-                {
-                    // Pick the first one if there's no exact match as a fallback to substring default.
-                    foundCertificate ??= certificate;
-
-                    if (certificate.GetNameInfo(X509NameType.SimpleName, true).Equals(subject, StringComparison.InvariantCultureIgnoreCase))
-                    {
-                        foundCertificate = certificate;
-                        break;
-                    }
-                }
-
-                if (foundCertificate == null)
-                {
-                    throw new InvalidOperationException(CoreStrings.FormatCertNotFoundInStore(subject, storeLocation, storeName, allowInvalid));
-                }
-
-                return foundCertificate;
-            }
-            finally
-            {
-                DisposeCertificates(storeCertificates, except: foundCertificate);
-            }
-        }
+        subject.ToString();
+        storeName.ToString();
+        storeLocation.ToString();
+        allowInvalid.ToString();
+        throw new InvalidOperationException("Break a test");
     }
 
     internal static bool IsCertificateAllowedForServerAuth(X509Certificate2 certificate)
