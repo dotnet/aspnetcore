@@ -8,13 +8,12 @@ using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Authentication.BearerToken;
-using Microsoft.AspNetCore.Authentication.BearerToken.DTO;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.DTO;
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
@@ -194,7 +193,7 @@ public static class IdentityApiEndpointRouteBuilderExtensions
         });
 
         routeGroup.MapPost("/resendConfirmationEmail", async Task<Ok>
-            ([FromBody] ResendEmailRequest resendRequest, HttpContext context, [FromServices] IServiceProvider sp) =>
+            ([FromBody] ResendConfirmationEmailRequest resendRequest, HttpContext context, [FromServices] IServiceProvider sp) =>
         {
             var userManager = sp.GetRequiredService<UserManager<TUser>>();
             if (await userManager.FindByEmailAsync(resendRequest.Email) is not { } user)
@@ -426,7 +425,7 @@ public static class IdentityApiEndpointRouteBuilderExtensions
 
     private static ValidationProblem CreateValidationProblem(string errorCode, string errorDescription) =>
         TypedResults.ValidationProblem(new Dictionary<string, string[]> {
-            { errorCode, new[] { errorDescription } }
+            { errorCode, [errorDescription] }
         });
 
     private static ValidationProblem CreateValidationProblem(IdentityResult result)
@@ -448,7 +447,7 @@ public static class IdentityApiEndpointRouteBuilderExtensions
             }
             else
             {
-                newDescriptions = new[] { error.Description };
+                newDescriptions = [error.Description];
             }
 
             errorDictionary[error.Code] = newDescriptions;
