@@ -232,13 +232,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         var url = "forms/default-form-bound-complextype-parameter";
         var expectedTarget = GetExpectedTarget(this, null, url);
 
-        if (suppressEnhancedNavigation)
-        {
-            GoTo("");
-            Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
-            ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('suppress-enhanced-navigation', 'true')");
-        }
-
+        SuppressEnhancedNavigation(suppressEnhancedNavigation);
         GoTo(url);
 
         Browser.Exists(By.Id("ready"));
@@ -275,13 +269,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         var url = "forms/default-form-bound-complextype-multiple-components";
         var expectedTarget = GetExpectedTarget(this, null, url);
 
-        if (suppressEnhancedNavigation)
-        {
-            GoTo("");
-            Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
-            ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('suppress-enhanced-navigation', 'true')");
-        }
-
+        SuppressEnhancedNavigation(suppressEnhancedNavigation);
         GoTo(url);
 
         Browser.Exists(By.Id("ready"));
@@ -340,13 +328,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         var url = "forms/default-form-bound-complextype-multiple-components";
         var expectedTarget = GetExpectedTarget(this, null, url);
 
-        if (suppressEnhancedNavigation)
-        {
-            GoTo("");
-            Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
-            ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('suppress-enhanced-navigation', 'true')");
-        }
-
+        SuppressEnhancedNavigation(suppressEnhancedNavigation);
         GoTo(url);
 
         Browser.Exists(By.Id("ready"));
@@ -399,13 +381,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         var url = "forms/default-form-bound-complextype-parameter";
         var expectedTarget = GetExpectedTarget(this, null, url);
 
-        if (suppressEnhancedNavigation)
-        {
-            GoTo("");
-            Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
-            ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('suppress-enhanced-navigation', 'true')");
-        }
-
+        SuppressEnhancedNavigation(suppressEnhancedNavigation);
         GoTo(url);
 
         Browser.Exists(By.Id("ready"));
@@ -445,13 +421,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         var url = "forms/default-form-bound-dictionary-parameter";
         var expectedTarget = GetExpectedTarget(this, null, url);
 
-        if (suppressEnhancedNavigation)
-        {
-            GoTo("");
-            Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
-            ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('suppress-enhanced-navigation', 'true')");
-        }
-
+        SuppressEnhancedNavigation(suppressEnhancedNavigation);
         GoTo(url);
 
         Browser.Exists(By.Id("ready"));
@@ -488,13 +458,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         var url = "forms/default-form-bound-dictionary-parameter-errors";
         var expectedTarget = GetExpectedTarget(this, null, url);
 
-        if (suppressEnhancedNavigation)
-        {
-            GoTo("");
-            Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
-            ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('suppress-enhanced-navigation', 'true')");
-        }
-
+        SuppressEnhancedNavigation(suppressEnhancedNavigation);
         GoTo(url);
 
         Browser.Exists(By.Id("ready"));
@@ -535,13 +499,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         var url = "forms/default-form-bound-collection-parameter";
         var expectedTarget = GetExpectedTarget(this, null, url);
 
-        if (suppressEnhancedNavigation)
-        {
-            GoTo("");
-            Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
-            ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('suppress-enhanced-navigation', 'true')");
-        }
-
+        SuppressEnhancedNavigation(suppressEnhancedNavigation);
         GoTo(url);
 
         Browser.Exists(By.Id("ready"));
@@ -587,13 +545,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         var url = "forms/default-form-bound-collection-parameter";
         var expectedTarget = GetExpectedTarget(this, null, url);
 
-        if (suppressEnhancedNavigation)
-        {
-            GoTo("");
-            Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
-            ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('suppress-enhanced-navigation', 'true')");
-        }
-
+        SuppressEnhancedNavigation(suppressEnhancedNavigation);
         GoTo(url);
 
         Browser.Exists(By.Id("ready"));
@@ -1117,16 +1069,6 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         Browser.Exists(By.Id("received-notification"));
     }
 
-    private void SuppressEnhancedNavigation(bool shouldSuppress)
-    {
-        if (shouldSuppress)
-        {
-            GoTo("");
-            Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
-            ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('suppress-enhanced-navigation', 'true')");
-        }
-    }
-
     private void AssertHasInternalServerError(bool suppressedEnhancedNavigation, bool streaming = false)
     {
         if (streaming)
@@ -1289,6 +1231,9 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
             }
         }
     }
+
+    private void SuppressEnhancedNavigation(bool shouldSuppress)
+        => EnhancedNavigationTestUtil.SuppressEnhancedNavigation(this, shouldSuppress);
 
     private record struct DispatchToForm()
     {

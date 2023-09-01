@@ -115,7 +115,7 @@ public class RazorComponentResultTest
         tcs.SetResult();
         await completionTask;
         Assert.Equal(
-            "<!--bl:X-->Loading task status: WaitingForActivation<!--/bl:X--><blazor-ssr><template blazor-component-id=\"X\">Loading task status: RanToCompletion</template></blazor-ssr>",
+            "<!--bl:X-->Loading task status: WaitingForActivation<!--/bl:X--><blazor-ssr><template blazor-component-id=\"X\">Loading task status: RanToCompletion</template><blazor-ssr-end></blazor-ssr-end></blazor-ssr>",
             MaskComponentIds(GetStringContent(responseBody)));
     }
 
@@ -141,7 +141,7 @@ public class RazorComponentResultTest
         tcs.SetResult();
         await completionTask;
         Assert.Equal(
-            "<!--bl:X-->Loading...<!--/bl:X--><blazor-ssr><template blazor-component-id=\"X\">Loaded</template></blazor-ssr>",
+            "<!--bl:X-->Loading...<!--/bl:X--><blazor-ssr><template blazor-component-id=\"X\">Loaded</template><blazor-ssr-end></blazor-ssr-end></blazor-ssr>",
             MaskComponentIds(GetStringContent(responseBody)));
     }
 
@@ -172,7 +172,7 @@ public class RazorComponentResultTest
         tcs.SetResult();
         await completionTask;
         Assert.Equal(
-            $"{expectedInitialHtml}<blazor-ssr><template blazor-component-id=\"X\">[LoadingTask: RanToCompletion]\n<!--bl:X-->[Child render: 2]\n<!--/bl:X--></template></blazor-ssr>",
+            $"{expectedInitialHtml}<blazor-ssr><template blazor-component-id=\"X\">[LoadingTask: RanToCompletion]\n<!--bl:X-->[Child render: 2]\n<!--/bl:X--></template><blazor-ssr-end></blazor-ssr-end></blazor-ssr>",
             MaskComponentIds(GetStringContent(responseBody)));
     }
 
@@ -266,7 +266,7 @@ public class RazorComponentResultTest
 
         // Assert
         Assert.Equal(
-            $"<!--bl:X-->Some output\n<!--/bl:X--><blazor-ssr><template type=\"redirection\">https://test/somewhere/else</template></blazor-ssr>",
+            $"<!--bl:X-->Some output\n<!--/bl:X--><blazor-ssr><template type=\"redirection\">https://test/somewhere/else</template><blazor-ssr-end></blazor-ssr-end></blazor-ssr>",
             MaskComponentIds(GetStringContent(responseBody)));
     }
 
@@ -352,7 +352,7 @@ public class RazorComponentResultTest
         await testContext.Quiescence;
         html = GetStringContent(testContext.ResponseBody);
         Assert.EndsWith(
-            "<blazor-ssr><template blazor-component-id=\"X\">Loaded</template></blazor-ssr>",
+            "<blazor-ssr><template blazor-component-id=\"X\">Loaded</template><blazor-ssr-end></blazor-ssr-end></blazor-ssr>",
             MaskComponentIds(html));
     }
 
@@ -385,7 +385,7 @@ public class RazorComponentResultTest
         await testContext.Quiescence;
         html = GetStringContent(testContext.ResponseBody);
         Assert.EndsWith(
-            "<blazor-ssr><template blazor-component-id=\"X\">Loaded</template></blazor-ssr>",
+            "<blazor-ssr><template blazor-component-id=\"X\">Loaded</template><blazor-ssr-end></blazor-ssr-end></blazor-ssr>",
             MaskComponentIds(html));
     }
 

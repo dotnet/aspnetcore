@@ -16,50 +16,47 @@ export function attachStreamingRenderingListener(options: SsrStartOptions | unde
     enableDomPreservation = false;
   }
 
-  customElements.define('blazor-ssr', BlazorStreamingUpdate);
+  // By the time <blazor-ssr-end> is in the DOM, we know all the preceding content within the same <blazor-ssr> is also there,
+  // so it's time to process it. We can't simply listen for <blazor-ssr>, because connectedCallback may fire before its content
+  // is present, and even listening for a later slotchange event doesn't work because the presence of <script> elements in the
+  // content can cause slotchange to fire before the rest of the content is added.
+  customElements.define('blazor-ssr-end', BlazorStreamingUpdate);
 }
 
 class BlazorStreamingUpdate extends HTMLElement {
   connectedCallback() {
-    // Synchronously remove this from the DOM to minimize our chance of affecting anything else
-    this.parentNode?.removeChild(this);
+    const blazorSsrElement = this.parentNode!;
 
-    // The <blazor-ssr> element might not yet be populated since connectedCallback runs before
-    // the child markup is parsed. The most immediate way to get a notification when the child
-    // markup is added is to define a slot.
-    const shadowRoot = this.attachShadow({ mode: 'open' });
-    const slot = document.createElement('slot');
-    shadowRoot.appendChild(slot);
+    // Synchronously remove this from the DOM to minimize our chance of affecting anything else
+    blazorSsrElement.parentNode?.removeChild(blazorSsrElement);
 
     // When this element receives content, if it's <template blazor-component-id="...">...</template>,
     // insert the template content into the DOM
-    slot.addEventListener('slotchange', _ => {
-      this.childNodes.forEach(node => {
-        if (node instanceof HTMLTemplateElement) {
-          const componentId = node.getAttribute('blazor-component-id');
-          if (componentId) {
-            insertStreamingContentIntoDocument(componentId, node.content);
-          } else {
-            switch (node.getAttribute('type')) {
-              case 'redirection':
-                // We use 'replace' here because it's closest to the non-progressively-enhanced behavior, and will make the most sense
-                // if the async delay was very short, as the user would not perceive having been on the intermediate page.
-                const destinationUrl = node.content.textContent!;
-                if (isWithinBaseUriSpace(destinationUrl)) {
-                  history.replaceState(null, '', destinationUrl);
-                  performEnhancedPageLoad(destinationUrl);
-                } else {
-                  location.replace(destinationUrl);
-                }
-                break;
-              case 'error':
-                // This is kind of brutal but matches what happens without progressive enhancement
-                replaceDocumentWithPlainText(node.content.textContent || 'Error');
-                break;
-            }
+    blazorSsrElement.childNodes.forEach(node => {
+      if (node instanceof HTMLTemplateElement) {
+        const componentId = node.getAttribute('blazor-component-id');
+        if (componentId) {
+          insertStreamingContentIntoDocument(componentId, node.content);
+        } else {
+          switch (node.getAttribute('type')) {
+            case 'redirection':
+              // We use 'replace' here because it's closest to the non-progressively-enhanced behavior, and will make the most sense
+              // if the async delay was very short, as the user would not perceive having been on the intermediate page.
+              const destinationUrl = node.content.textContent!;
+              if (isWithinBaseUriSpace(destinationUrl)) {
+                history.replaceState(null, '', destinationUrl);
+                performEnhancedPageLoad(destinationUrl);
+              } else {
+                location.replace(destinationUrl);
+              }
+              break;
+            case 'error':
+              // This is kind of brutal but matches what happens without progressive enhancement
+              replaceDocumentWithPlainText(node.content.textContent || 'Error');
+              break;
           }
         }
-      });
+      }
     });
   }
 }

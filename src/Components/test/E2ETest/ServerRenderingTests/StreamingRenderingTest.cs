@@ -149,6 +149,21 @@ public class StreamingRenderingTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Assert.EndsWith("/subdir/nav", Browser.Url);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void CanAddScriptElementsDynamically(bool suppressEnhancedNavigation)
+    {
+        EnhancedNavigationTestUtil.SuppressEnhancedNavigation(this, suppressEnhancedNavigation);
+        Navigate($"{ServerPathBase}/streaming-scripts");
+
+        Browser.Equal("This was set by JS via src", () => Browser.FindElement(By.Id("dynamic-script-output-src")).Text);
+        Browser.Equal("This was set by JS via inline script asynchronously (special chars: ' \" </script>)", () => Browser.FindElement(By.Id("dynamic-script-output-inline")).Text);
+        Browser.Exists(By.Id("dynamic-p-before"));
+        Browser.Exists(By.Id("dynamic-p-between"));
+        Browser.Exists(By.Id("dynamic-p-after"));
+    }
+
     [Fact]
     public async Task HandlesOverlappingStreamingBatches()
     {
