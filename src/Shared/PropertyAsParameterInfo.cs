@@ -146,7 +146,7 @@ internal sealed class PropertyAsParameterInfo : ParameterInfo
             return _underlyingProperty.GetCustomAttributes(attributeType, inherit);
         }
 
-        var propertyAttributes = _underlyingProperty.GetCustomAttributes(inherit);
+        var propertyAttributes = _underlyingProperty.GetCustomAttributes(attributeType, inherit);
 
         var mergedAttributes = new Attribute[constructorAttributes.Length + propertyAttributes.Length];
         Array.Copy(constructorAttributes, mergedAttributes, constructorAttributes.Length);
