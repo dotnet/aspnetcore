@@ -85,7 +85,7 @@ internal partial class RemoteRenderer : WebRenderer
                 new ProtectedPrerenderComponentApplicationStore(applicationState, _dataProtectionProvider) :
         new ProtectedPrerenderComponentApplicationStore(_dataProtectionProvider);
 
-        await _componentStatePersistenceManager.RestoreStateAsync(store, PersistedStateSerializationMode.Server);
+        await _componentStatePersistenceManager.RestoreStateAsync(store);
     }
 
     protected override void UpdateRootComponents(string operationsJson)

@@ -66,7 +66,7 @@ public class ComponentApplicationStateTest
             new List<Func<Task>>(),
             new TestComponentSerializationModeHandler());
         applicationState.PersistingState = true;
-        applicationState.SerializationMode = PersistedStateSerializationMode.Server;
+        applicationState.CurrentSerializationMode = PersistedStateSerializationMode.Server;
         var myState = new byte[] { 1, 2, 3, 4 };
 
         // Act
@@ -89,7 +89,7 @@ public class ComponentApplicationStateTest
             new List<Func<Task>>(),
             new TestComponentSerializationModeHandler());
         applicationState.PersistingState = true;
-        applicationState.SerializationMode = PersistedStateSerializationMode.WebAssembly;
+        applicationState.CurrentSerializationMode = PersistedStateSerializationMode.WebAssembly;
         var myState = new byte[] { 1, 2, 3, 4 };
 
         // Act
@@ -111,7 +111,7 @@ public class ComponentApplicationStateTest
             new List<Func<Task>>(),
             new TestComponentSerializationModeHandler());
         applicationState.PersistingState = true;
-        applicationState.SerializationMode = PersistedStateSerializationMode.Infer;
+        applicationState.CurrentSerializationMode = PersistedStateSerializationMode.Infer;
         var myState = new byte[] { 1, 2, 3, 4 };
 
         // Act & Assert
@@ -130,7 +130,7 @@ public class ComponentApplicationStateTest
             new List<Func<Task>>(),
             new TestComponentSerializationModeHandler());
         applicationState.PersistingState = true;
-        applicationState.SerializationMode = PersistedStateSerializationMode.Server;
+        applicationState.CurrentSerializationMode = PersistedStateSerializationMode.Server;
         var myState = new byte[] { 1, 2, 3, 4 };
 
         applicationState.PersistAsJson("MyState", myState);
@@ -151,7 +151,7 @@ public class ComponentApplicationStateTest
             new List<Func<Task>>(),
             new TestComponentSerializationModeHandler());
         applicationState.PersistingState = true;
-        applicationState.SerializationMode = PersistedStateSerializationMode.Server;
+        applicationState.CurrentSerializationMode = PersistedStateSerializationMode.Server;
         var myState = new byte[] { 1, 2, 3, 4 };
 
         applicationState.PersistAsJson("MyState", myState);
@@ -172,7 +172,7 @@ public class ComponentApplicationStateTest
             new List<Func<Task>>(),
             new TestComponentSerializationModeHandler());
         applicationState.PersistingState = true;
-        applicationState.SerializationMode = PersistedStateSerializationMode.Server;
+        applicationState.CurrentSerializationMode = PersistedStateSerializationMode.Server;
 
         // Act
         applicationState.PersistAsJson<byte[]>("MyState", null);
@@ -194,7 +194,7 @@ public class ComponentApplicationStateTest
             new List<Func<Task>>(),
             new TestComponentSerializationModeHandler());
         applicationState.PersistingState = true;
-        applicationState.SerializationMode = PersistedStateSerializationMode.WebAssembly;
+        applicationState.CurrentSerializationMode = PersistedStateSerializationMode.WebAssembly;
 
         // Act
         applicationState.PersistAsJson<byte[]>("MyState", null);
@@ -253,9 +253,9 @@ public class ComponentApplicationStateTest
 
     //TODO: Add tests for RegisterOnPersisting
 
-    private class TestComponentSerializationModeHandler : IComponentSerializationModeHandler
+    private class TestComponentSerializationModeHandler : ISerializationModeHandler
     {
-        public PersistedStateSerializationMode GetComponentSerializationMode(object callbackTarget)
+        public PersistedStateSerializationMode GetCallbackTargetSerializationMode(object callbackTarget)
         {
             throw new NotImplementedException();
         }

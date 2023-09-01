@@ -95,7 +95,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         // It's important that this is initialized since a component might try to restore state during prerendering
         // (which will obviously not work, but should not fail)
         var componentApplicationLifetime = httpContext.RequestServices.GetRequiredService<ComponentStatePersistenceManager>();
-        await componentApplicationLifetime.RestoreStateAsync(new PrerenderComponentApplicationStore(), PersistedStateSerializationMode.Infer);
+        await componentApplicationLifetime.RestoreStateAsync(new PrerenderComponentApplicationStore());
 
         if (componentType != null)
         {

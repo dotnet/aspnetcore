@@ -20,19 +20,23 @@ public class ComponentStatePersistenceManager
     private readonly Dictionary<string, byte[]> _currentServerState = new(StringComparer.Ordinal);
     private readonly Dictionary<string, byte[]> _currentWebAssemblyState = new(StringComparer.Ordinal);
 
+    private readonly ISerializationModeHandler _serializationModeHandler;
+
     private readonly ILogger<ComponentStatePersistenceManager> _logger;
 
     /// <summary>
     /// Initializes a new instance of <see cref="ComponentStatePersistenceManager"/>.
     /// </summary>
-    public ComponentStatePersistenceManager(ILogger<ComponentStatePersistenceManager> logger, IComponentSerializationModeHandler serializationModeHandler)
+    public ComponentStatePersistenceManager(ILogger<ComponentStatePersistenceManager> logger, ISerializationModeHandler serializationModeHandler)
     {
+        _serializationModeHandler = serializationModeHandler;
+
         State = new PersistentComponentState(
             _currentServerState,
             _currentWebAssemblyState,
             _serverCallbacks,
             _webAssemblyCallbacks,
-            serializationModeHandler);
+            _serializationModeHandler);
 
         _logger = logger;
     }
@@ -46,14 +50,11 @@ public class ComponentStatePersistenceManager
     /// Restores the component application state from the given <see cref="IPersistentComponentStateStore"/>.
     /// </summary>
     /// <param name="store">The <see cref="IPersistentComponentStateStore"/> to restore the application state from.</param>
-    /// <param name="serializationMode">The <see cref="PersistedStateSerializationMode"/> to restore the application state.</param>
     /// <returns>A <see cref="Task"/> that will complete when the state has been restored.</returns>
-    public async Task RestoreStateAsync(IPersistentComponentStateStore store, PersistedStateSerializationMode serializationMode)
+    public async Task RestoreStateAsync(IPersistentComponentStateStore store)
     {
         var data = await store.GetPersistedStateAsync();
         State.InitializeExistingState(data);
-        // We need to set the serialization in order to register callbacks later
-        State.SerializationMode = serializationMode;
     }
 
     /// <summary>
@@ -82,6 +83,12 @@ public class ComponentStatePersistenceManager
         PersistedStateSerializationMode serializationMode,
         Dispatcher dispatcher)
     {
+        if (_serializationModeHandler.GlobalSerializationMode != PersistedStateSerializationMode.Infer &&
+            serializationMode != _serializationModeHandler.GlobalSerializationMode)
+        {
+            throw new InvalidOperationException("Cannot persist state with the given serialization mode.");
+        }
+
         switch (serializationMode)
         {
             case PersistedStateSerializationMode.Server:
@@ -112,73 +119,28 @@ public class ComponentStatePersistenceManager
         Dictionary<string, byte[]> currentState,
         Dispatcher dispatcher)
     {
-        return dispatcher.InvokeAsync(PauseAndPersistState);
+        return dispatcher.InvokeAsync(PersistStateAsync);
 
-        async Task PauseAndPersistState()
+        async Task PersistStateAsync()
         {
             State.PersistingState = true;
-            State.SerializationMode = serializationMode;
+            State.CurrentSerializationMode = serializationMode;
 
-            await PauseAsync(callbacks);
+            foreach (var callback in callbacks)
+            {
+                try
+                {
+                    await callback();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(new EventId(1000, "PersistenceCallbackError"), ex, "There was an error executing a callback while pausing the application.");
+                }
+            }
 
             State.PersistingState = false;
 
             await store.PersistStateAsync(currentState);
-        }
-    }
-
-    internal async Task PauseAsync(List<Func<Task>> callbacks)
-    {
-        List<Task>? pendingCallbackTasks = null;
-
-        for (var i = 0; i < callbacks.Count; i++)
-        {
-            var callback = callbacks[i];
-            var result = ExecuteCallback(callback, _logger);
-            if (!result.IsCompletedSuccessfully)
-            {
-                pendingCallbackTasks ??= new();
-                pendingCallbackTasks.Add(result);
-            }
-        }
-
-        if (pendingCallbackTasks != null)
-        {
-            await Task.WhenAll(pendingCallbackTasks);
-        }
-
-        static Task ExecuteCallback(Func<Task> callback, ILogger<ComponentStatePersistenceManager> logger)
-        {
-            try
-            {
-                var current = callback();
-                if (current.IsCompletedSuccessfully)
-                {
-                    return current;
-                }
-                else
-                {
-                    return Awaited(current, logger);
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(new EventId(1000, "PersistenceCallbackError"), ex, "There was an error executing a callback while pausing the application.");
-                return Task.CompletedTask;
-            }
-
-            static async Task Awaited(Task task, ILogger<ComponentStatePersistenceManager> logger)
-            {
-                try
-                {
-                    await task;
-                }
-                catch (Exception ex)
-                {
-                    logger.LogError(new EventId(1000, "PersistenceCallbackError"), ex, "There was an error executing a callback while pausing the application.");
-                    return;
-                }
-            }
         }
     }
 }

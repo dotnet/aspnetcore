@@ -54,7 +54,7 @@ public static class RazorComponentsServiceCollectionExtensions
         services.TryAddSingleton<WebAssemblyComponentSerializer>();
         services.TryAddScoped<EndpointHtmlRenderer>();
         services.TryAddScoped<IComponentPrerenderer>(services => services.GetRequiredService<EndpointHtmlRenderer>());
-        services.TryAddScoped<IComponentSerializationModeHandler>(services => services.GetRequiredService<EndpointHtmlRenderer>());
+        services.TryAddScoped<ISerializationModeHandler>(services => services.GetRequiredService<EndpointHtmlRenderer>());
         services.TryAddScoped<NavigationManager, HttpNavigationManager>();
         services.TryAddScoped<IJSRuntime, UnsupportedJavaScriptRuntime>();
         services.TryAddScoped<INavigationInterception, UnsupportedNavigationInterception>();

@@ -134,7 +134,7 @@ public sealed class WebAssemblyHost : IAsyncDisposable
             new PrerenderComponentApplicationStore(_persistedState) :
             new PrerenderComponentApplicationStore();
 
-        await manager.RestoreStateAsync(store, PersistedStateSerializationMode.WebAssembly);
+        await manager.RestoreStateAsync(store);
 
         if (MetadataUpdater.IsSupported)
         {

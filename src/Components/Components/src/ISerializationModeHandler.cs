@@ -6,12 +6,18 @@ namespace Microsoft.AspNetCore.Components;
 /// <summary>
 /// A service that can infer <see cref="IComponent"/>'s <see cref="PersistedStateSerializationMode"/>.
 /// </summary>
-public interface IComponentSerializationModeHandler
+public interface ISerializationModeHandler
 {
     /// <summary>
     /// Infers <see cref="IComponent"/>'s <see cref="PersistedStateSerializationMode"/>.
     /// </summary>
     /// <param name="callbackTarget">The callback target</param>
     /// <returns>The <see cref="PersistedStateSerializationMode"/> for the component.</returns>
-    public PersistedStateSerializationMode GetComponentSerializationMode(object? callbackTarget);
+    public PersistedStateSerializationMode GetCallbackTargetSerializationMode(object? callbackTarget);
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public PersistedStateSerializationMode GlobalSerializationMode { get; set; }
+
 }

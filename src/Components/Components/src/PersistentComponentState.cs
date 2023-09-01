@@ -20,14 +20,14 @@ public class PersistentComponentState
     private readonly List<Func<Task>> _registeredServerCallbacks;
     private readonly List<Func<Task>> _registeredWebAssemblyCallbacks;
 
-    private readonly IComponentSerializationModeHandler _serializationModeHandler;
+    private readonly ISerializationModeHandler _serializationModeHandler;
 
     internal PersistentComponentState(
         IDictionary<string, byte[]> currentServerState,
         IDictionary<string, byte[]> currentWebAssemblyState,
         List<Func<Task>> pauseServerCallbacks,
         List<Func<Task>> pauseWebAssemblyCallbacks,
-        IComponentSerializationModeHandler serializationModeHandler)
+        ISerializationModeHandler serializationModeHandler)
     {
         _currentServerState = currentServerState;
         _currentWebAssemblyState = currentWebAssemblyState;
@@ -38,10 +38,11 @@ public class PersistentComponentState
 
     internal bool PersistingState { get; set; }
 
-    internal PersistedStateSerializationMode SerializationMode { get; set; } = PersistedStateSerializationMode.Infer;
+    internal PersistedStateSerializationMode CurrentSerializationMode { get; set; } = PersistedStateSerializationMode.Infer;
 
     internal void InitializeExistingState(IDictionary<string, byte[]> existingState)
     {
+        // The existing state is either Server or WebAsasembly
         _existingState = existingState ?? throw new ArgumentNullException(nameof(existingState));
     }
 
@@ -55,12 +56,7 @@ public class PersistentComponentState
     {
         ArgumentNullException.ThrowIfNull(callback);
 
-        var serializationMode = SerializationMode;
-
-        if (SerializationMode == PersistedStateSerializationMode.Infer)
-        {
-            serializationMode = _serializationModeHandler.GetComponentSerializationMode(callback.Target);
-        }
+        var serializationMode = _serializationModeHandler.GetCallbackTargetSerializationMode(callback.Target);
 
         return RegisterOnPersisting(callback, serializationMode);
     }
@@ -75,6 +71,12 @@ public class PersistentComponentState
     public PersistingComponentStateSubscription RegisterOnPersisting(Func<Task> callback, PersistedStateSerializationMode serializationMode)
     {
         ArgumentNullException.ThrowIfNull(callback);
+
+        if (_serializationModeHandler.GlobalSerializationMode != PersistedStateSerializationMode.Infer &&
+            serializationMode != _serializationModeHandler.GlobalSerializationMode)
+        {
+            throw new InvalidOperationException("Cannot register a callback with the given serialization mode.");
+        }
 
         var registeredCallbacks = serializationMode switch
         {
@@ -97,7 +99,7 @@ public class PersistentComponentState
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public void PersistAsJson<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string key, TValue instance)
     {
-        var currentState = SerializationMode switch
+        var currentState = CurrentSerializationMode switch
         {
             PersistedStateSerializationMode.Server => _currentServerState,
             PersistedStateSerializationMode.WebAssembly => _currentWebAssemblyState,

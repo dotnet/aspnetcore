@@ -62,7 +62,9 @@ internal sealed partial class CircuitFactory : ICircuitFactory
         }
 
         var appLifetime = scope.ServiceProvider.GetRequiredService<ComponentStatePersistenceManager>();
-        await appLifetime.RestoreStateAsync(store, PersistedStateSerializationMode.Server);
+        var serializationModeHandler = scope.ServiceProvider.GetRequiredService<ISerializationModeHandler>();
+        serializationModeHandler.GlobalSerializationMode = PersistedStateSerializationMode.Server;
+        await appLifetime.RestoreStateAsync(store);
 
         var serverComponentDeserializer = scope.ServiceProvider.GetRequiredService<IServerComponentDeserializer>();
         var jsComponentInterop = new CircuitJSComponentInterop(_options);

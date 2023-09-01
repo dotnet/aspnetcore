@@ -4,7 +4,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.HtmlRendering;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
@@ -12,7 +11,7 @@ using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
-internal partial class EndpointHtmlRenderer : IComponentSerializationModeHandler
+internal partial class EndpointHtmlRenderer
 {
     private static readonly object ComponentSequenceKey = new object();
 
@@ -33,32 +32,6 @@ internal partial class EndpointHtmlRenderer : IComponentSerializationModeHandler
             // This component is the start of a subtree with a rendermode, so introduce a new rendermode boundary here
             return new SSRRenderModeBoundary(_httpContext, componentType, renderMode);
         }
-    }
-
-    public PersistedStateSerializationMode GetComponentSerializationMode(object? callbackTarget)
-    {
-        if (callbackTarget is not IComponent)
-        {
-            throw new InvalidOperationException("Cannot infer serialization mode for non component. Provide a serialization mode.");
-        }
-
-        var component = (IComponent)callbackTarget;
-
-        var ssrRenderBoundary = GetClosestRenderModeBoundary(component);
-
-        if (ssrRenderBoundary is null)
-        {
-            throw new InvalidCastException("Cannot infer serialization mode.");
-        }
-
-        var renderMode = ssrRenderBoundary.RenderMode;
-
-        return renderMode switch
-        {
-            ServerRenderMode => PersistedStateSerializationMode.Server,
-            WebAssemblyRenderMode => PersistedStateSerializationMode.WebAssembly,
-            _ => throw new InvalidOperationException("Invalid render mode.")
-        };
     }
 
     private SSRRenderModeBoundary? GetClosestRenderModeBoundary(IComponent component)

@@ -32,7 +32,7 @@ public class ComponentApplicationLifetimeTest
             new TestComponentSerializationModeHandler(serializationMode));
 
         // Act
-        await lifetime.RestoreStateAsync(store, serializationMode);
+        await lifetime.RestoreStateAsync(store);
 
         // Assert
         Assert.True(lifetime.State.TryTakeFromJson<byte[]>("MyState", out var retrieved));
@@ -290,7 +290,7 @@ public class ComponentApplicationLifetimeTest
         }
     }
 
-    private class TestComponentSerializationModeHandler : IComponentSerializationModeHandler
+    private class TestComponentSerializationModeHandler : ISerializationModeHandler
     {
         private PersistedStateSerializationMode _serializationMode;
 
@@ -299,7 +299,7 @@ public class ComponentApplicationLifetimeTest
             _serializationMode = serializationMode;
         }
 
-        public PersistedStateSerializationMode GetComponentSerializationMode(object callbackTarget)
+        public PersistedStateSerializationMode GetCallbackTargetSerializationMode(object callbackTarget)
         {
             return _serializationMode;
         }
