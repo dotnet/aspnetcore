@@ -31,17 +31,24 @@ public sealed class NamedPipeTransportOptions
     /// </remarks>
     public long? MaxReadBufferSize { get; set; } = 1024 * 1024;
 
+
+#pragma warning disable CS1574 // XML comment has cref attribute that could not be resolved
     /// <summary>
     /// Gets or sets the maximum outgoing bytes the transport will buffer before applying write backpressure.
     /// <para>
     /// A value of <see langword="null"/> or 0 disables backpressure entirely allowing unlimited buffering.
     /// Unlimited server buffering is a security risk given untrusted clients.
     /// </para>
+    /// <para>
+    /// For server limits to work correctly, this needs to be consistent with
+    /// <see cref="Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerLimits.MaxResponseBufferSize"/>.
+    /// </para>
     /// </summary>
     /// <remarks>
     /// Defaults to 64 KiB.
     /// </remarks>
     public long? MaxWriteBufferSize { get; set; } = 64 * 1024;
+#pragma warning restore CS1574 // XML comment has cref attribute that could not be resolved
 
     /// <summary>
     /// Gets or sets a value that indicates that the pipe can only be connected to by a client created by

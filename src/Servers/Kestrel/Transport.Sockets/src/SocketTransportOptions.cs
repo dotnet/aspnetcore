@@ -56,17 +56,23 @@ public class SocketTransportOptions
     /// </remarks>
     public int Backlog { get; set; } = 512;
 
+#pragma warning disable CS1574 // XML comment has cref attribute that could not be resolved
     /// <summary>
     /// Gets or sets the maximum unconsumed incoming bytes the transport will buffer.
     /// <para>
     /// A value of <see langword="null"/> or 0 disables backpressure entirely allowing unlimited buffering.
     /// Unlimited server buffering is a security risk given untrusted clients.
     /// </para>
+    /// <para>
+    /// For server limits to work correctly, this needs to be consistent with
+    /// <see cref="Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerLimits.MaxResponseBufferSize"/>.
+    /// </para>
     /// </summary>
     /// <remarks>
     /// Defaults to 1 MiB.
     /// </remarks>
     public long? MaxReadBufferSize { get; set; } = 1024 * 1024;
+#pragma warning restore CS1574 // XML comment has cref attribute that could not be resolved
 
     /// <summary>
     /// Gets or sets the maximum outgoing bytes the transport will buffer before applying write backpressure.
