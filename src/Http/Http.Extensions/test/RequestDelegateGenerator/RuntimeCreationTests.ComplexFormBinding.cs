@@ -181,7 +181,7 @@ app.MapPost("/", ([FromForm] Dictionary<string, bool> elements) => Results.Ok(el
         var log = Assert.Single(logs);
 
         Assert.Equal(new EventId(10, "FormMappingFailed"), log.EventId);
-        Assert.Equal(LogLevel.Debug, logs[0].LogLevel);
+        Assert.Equal(LogLevel.Debug, log.LogLevel);
         Assert.Equal(@"Failed to bind parameter ""Dictionary<string, bool> elements"" from the request body as form.", log.Message);
         var log1Values = Assert.IsAssignableFrom<IReadOnlyList<KeyValuePair<string, object>>>(log.State);
         Assert.Equal("Dictionary<string, bool>", log1Values[0].Value);

@@ -2025,10 +2025,11 @@ public static partial class RequestDelegateFactory
         for (var i = 0; i < factoryContext.ArgumentExpressions.Length; i++)
         {
             var parameter = factoryContext.Parameters[i];
-            var key = parameter.Name!;
+            var formAttribute = parameter.GetCustomAttributes().OfType<IFromFormMetadata>().FirstOrDefault();
+            var key = formAttribute == null || string.IsNullOrEmpty(formAttribute.Name) ? parameter.Name! : formAttribute.Name;
             if (factoryContext.TrackedParameters.TryGetValue(key, out var trackedParameter) && trackedParameter == RequestDelegateFactoryConstants.FormBindingAttribute)
             {
-                factoryContext.ArgumentExpressions[i] = BindComplexParameterFromFormItem(parameter, key, factoryContext, i);
+                factoryContext.ArgumentExpressions[i] = BindComplexParameterFromFormItem(parameter, key, factoryContext, true);
             }
         }
     }
@@ -2037,11 +2038,22 @@ public static partial class RequestDelegateFactory
         ParameterInfo parameter,
         string key,
         RequestDelegateFactoryContext factoryContext,
-        int? index = null)
+        bool setExpressions = false)
     {
         factoryContext.FirstFormRequestBodyParameter ??= parameter;
         factoryContext.TrackedParameters.TryAdd(key, RequestDelegateFactoryConstants.FormBindingAttribute);
         factoryContext.ReadForm = true;
+
+        // var name_local;
+        var formArgument = Expression.Variable(parameter.ParameterType, $"{parameter.Name}_local");
+
+        // Delay setting the generated LINQ expressions until
+        // metadata has already been inferred so that we can read from `FormMappingOptionsMetadata`.
+        if (!setExpressions)
+        {
+            return formArgument;
+        }
+
         var formDataMapperOptions = new FormDataMapperOptions();
         var formMappingOptionsMetadatas = factoryContext.EndpointBuilder.Metadata.OfType<FormMappingOptionsMetadata>();
         foreach (var formMappingOptionsMetadata in formMappingOptionsMetadatas)
@@ -2051,11 +2063,9 @@ public static partial class RequestDelegateFactory
             formDataMapperOptions.MaxKeyBufferSize = formMappingOptionsMetadata.MaxKeySize ?? formDataMapperOptions.MaxKeyBufferSize;
         }
 
-        // var name_local;
         // var name_reader;
         // var form_dict;
         // var form_buffer;
-        var formArgument = Expression.Variable(parameter.ParameterType, $"{parameter.Name}_local");
         var formReader = Expression.Variable(typeof(FormDataReader), $"{parameter.Name}_reader");
         var formDict = Expression.Variable(typeof(IReadOnlyDictionary<FormKey, StringValues>), "form_dict");
         var formBuffer = Expression.Variable(typeof(char[]), "form_buffer");
@@ -2105,6 +2115,7 @@ public static partial class RequestDelegateFactory
         // catch (FormDataMappingException e)
         // {
         //    wasParamCheckFailure = true;
+        //    LogFormMappingFailedMethod(httpContext, "string", "name", ex, factoryContext.ThrowOnBadRequest);
         // }
         // finally
         // {
@@ -2136,19 +2147,8 @@ public static partial class RequestDelegateFactory
                 )))
         );
 
-        // Update the existing expressions if they already exist and we're
-        // recomputing the form binding expressions after reading endpoint
-        // metadata.
-        if (index is {} i)
-        {
-            factoryContext.ParamCheckExpressions[i] = bindAndCheckForm;
-            factoryContext.ExtraLocals[i] = formArgument;
-        }
-        else
-        {
-            factoryContext.ParamCheckExpressions.Add(bindAndCheckForm);
-            factoryContext.ExtraLocals.Add(formArgument);
-        }
+        factoryContext.ParamCheckExpressions.Add(bindAndCheckForm);
+        factoryContext.ExtraLocals.Add(formArgument);
 
         return formArgument;
     }
