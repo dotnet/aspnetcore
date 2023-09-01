@@ -986,16 +986,30 @@ public class HtmlRendererTest
     }
 
     [Fact]
-    public async Task RenderComponentAsync_CanRenderScriptTagWithoutHtmlEncodingQuotesOrSemicolons()
+    public async Task RenderComponentAsync_CanRenderScriptTag_WithJavaScriptEncodedContent()
     {
+        // This is equivalent to Razor markup similar to:
+        //
+        //     <script>
+        //         alert('Hello, @name!');
+        //     </script>
+        //     And now with HTML encoding: @name
+        //
+        // Currently some extra linebreaks are needed to work around a Razor compiler issue (otherwise
+        // everything is treated as content to be encoded) but once https://github.com/dotnet/razor/issues/9204
+        // is fixed, the above should be correct.
+
         // Arrange
-        var scriptText = "alert('The apostrophes must not be encoded' + \" and nor must these\"); // Nor the semicolon";
+        var name = "Person with special chars like ' \" </script>";
         var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
         {
             rtb.OpenElement(0, "script");
-            rtb.AddContent(1, scriptText);
+            rtb.AddMarkupContent(1, "\n    alert('Hello, ");
+            rtb.AddContent(2, name);
+            rtb.AddMarkupContent(3, "!');\n");
             rtb.CloseElement();
-            rtb.AddContent(2, "This should be \"encoded\" though");
+            rtb.AddMarkupContent(4, "\nAnd now with HTML encoding: ");
+            rtb.AddContent(5, name);
         })).BuildServiceProvider();
 
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
@@ -1005,7 +1019,10 @@ public class HtmlRendererTest
             var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
             // Assert
-            Assert.Equal($"<script>{scriptText}</script>This should be &quot;encoded&quot; though", result.ToHtmlString());
+            Assert.Equal(@"<script>
+    alert('Hello, Person with special chars like \u0027 \u0022 \u003C/script\u003E!');
+</script>
+And now with HTML encoding: Person with special chars like &#x27; &quot; &lt;/script&gt;".Replace("\r", ""), result.ToHtmlString());
         });
     }
 

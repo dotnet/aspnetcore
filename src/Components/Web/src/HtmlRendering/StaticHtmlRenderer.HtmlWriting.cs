@@ -21,8 +21,8 @@ public partial class StaticHtmlRenderer
         string.Empty,
         typeof(FormMappingContext));
 
-    private static readonly HtmlEncoder _nullHtmlEncoder = NullHtmlEncoder.Default;
-    private HtmlEncoder _htmlEncoder = HtmlEncoder.Default;
+    private static readonly TextEncoder _nullHtmlEncoder = JavaScriptEncoder.Default;
+    private TextEncoder _htmlEncoder = HtmlEncoder.Default;
     private string? _closestSelectValueAsString;
 
     /// <summary>
