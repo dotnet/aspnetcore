@@ -124,7 +124,7 @@
     <value>The value '{0}' is not valid for '{1}'.</value>
   </data>
   <data name="MappingExceptionMessage" xml:space="preserve">
-    <value>An error occurred while trying to map a value from form data. For more details, see the 'Error' property and the `InnerException' property.</value>
+    <value>An error occurred while trying to map a value from form data. For more details, see the 'Error' property and the 'InnerException' property.</value>
   </data>
   <data name="MaxCollectionSizeReached" xml:space="preserve">
     <value>The number of elements in the {0} exceeded the maximum number of '{1}' elements allowed.</value>

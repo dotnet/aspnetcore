@@ -498,9 +498,8 @@ public class MinimalFormTests
         };
         request.Content = new FormUrlEncodedContent(nameValueCollection);
 
-        var exception = await Record.ExceptionAsync(async () => await client.SendAsync(request));
-        Assert.NotNull(exception);
-        Assert.Contains("An error occurred while trying to map a value from form data.", exception.Message);
+        var response = await client.SendAsync(request);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     [Fact]
