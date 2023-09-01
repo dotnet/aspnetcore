@@ -241,6 +241,7 @@ app.MapPost("/parameterListRecordStruct/{value}", parameterListRecordStruct);
 app.MapPut("/parametersListWithHttpContext", parametersListWithHttpContext);
 app.MapPatch("/parametersListWithImplicitFromBody", ([AsParameters] ParametersListWithImplicitFromBody args) => args.Todo.Name ?? string.Empty);
 app.MapGet("/parametersListWithMetadataType", parametersListWithMetadataType);
+app.MapPost("/parameterRecordStructWithJsonBodyOrService", ([AsParameters] ParameterRecordStructWithJsonBodyOrService args) => args.Todo.Name ?? string.Empty);
 """);
 
         await VerifyAgainstBaselineUsingFile(compilation);
