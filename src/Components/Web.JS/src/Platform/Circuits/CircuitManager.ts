@@ -133,7 +133,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
     connection.on('JS.EndLocationChanging', Blazor._internal.navigationManager.endLocationChanging);
 
-    connection.onclose(error => !this._disposed && this._options.reconnectionHandler!.onConnectionDown(this._options.reconnectionOptions, error));
+    connection.onclose(error => !this._disposed && !this._renderingFailed && this._options.reconnectionHandler!.onConnectionDown(this._options.reconnectionOptions, error));
     connection.on('JS.Error', error => {
       this._renderingFailed = true;
       this.unhandledError(error);

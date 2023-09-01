@@ -16,6 +16,7 @@
 #include "ConfigurationLoadException.h"
 #include "resource.h"
 #include "file_utility.h"
+#include "ModuleEnvironment.h"
 
 extern HINSTANCE           g_hServerModule;
 extern BOOL                g_fInAppOfflineShutdown;
@@ -72,6 +73,8 @@ APPLICATION_INFO::CreateHandler(
 HRESULT
 APPLICATION_INFO::CreateApplication(IHttpContext& pHttpContext)
 {
+    SetApplicationEnvironmentVariables(m_pServer, pHttpContext);
+
     auto& pHttpApplication = *pHttpContext.GetApplication();
     if (AppOfflineApplication::ShouldBeStarted(pHttpApplication))
     {

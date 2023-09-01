@@ -27,3 +27,13 @@
 *REMOVED*override Microsoft.AspNetCore.Server.IIS.Core.WriteOnlyStream.ReadTimeout.set -> void
 *REMOVED*override Microsoft.AspNetCore.Server.IIS.Core.WriteOnlyStream.Seek(long offset, System.IO.SeekOrigin origin) -> long
 *REMOVED*override Microsoft.AspNetCore.Server.IIS.Core.WriteOnlyStream.SetLength(long value) -> void
+Microsoft.AspNetCore.Server.IIS.IIISEnvironmentFeature
+Microsoft.AspNetCore.Server.IIS.IIISEnvironmentFeature.AppConfigPath.get -> string!
+Microsoft.AspNetCore.Server.IIS.IIISEnvironmentFeature.ApplicationId.get -> string!
+Microsoft.AspNetCore.Server.IIS.IIISEnvironmentFeature.ApplicationPhysicalPath.get -> string!
+Microsoft.AspNetCore.Server.IIS.IIISEnvironmentFeature.ApplicationVirtualPath.get -> string!
+Microsoft.AspNetCore.Server.IIS.IIISEnvironmentFeature.AppPoolConfigFile.get -> string!
+Microsoft.AspNetCore.Server.IIS.IIISEnvironmentFeature.AppPoolId.get -> string!
+Microsoft.AspNetCore.Server.IIS.IIISEnvironmentFeature.IISVersion.get -> System.Version!
+Microsoft.AspNetCore.Server.IIS.IIISEnvironmentFeature.SiteId.get -> uint
+Microsoft.AspNetCore.Server.IIS.IIISEnvironmentFeature.SiteName.get -> string!

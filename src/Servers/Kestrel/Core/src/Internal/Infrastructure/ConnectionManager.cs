@@ -79,7 +79,7 @@ internal sealed class ConnectionManager : IHeartbeatHandler
                 // It's safe to modify the ConcurrentDictionary in the foreach.
                 // The connection reference has become unrooted because the application never completed.
                 _trace.ApplicationNeverCompleted(reference.ConnectionId);
-                reference.StopTrasnsportTracking();
+                reference.StopTransportTracking();
             }
 
             // If both conditions are false, the connection was removed during the heartbeat.
