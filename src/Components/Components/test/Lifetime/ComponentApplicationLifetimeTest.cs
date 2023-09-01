@@ -41,28 +41,6 @@ public class ComponentApplicationLifetimeTest
     }
 
     [Theory]
-    [InlineData(PersistedStateSerializationMode.Infer)]
-    [InlineData(PersistedStateSerializationMode.Server)]
-    [InlineData(PersistedStateSerializationMode.WebAssembly)]
-    public async Task RestoreStateAsync_ThrowsOnDoubleInitialization(PersistedStateSerializationMode serializationMode)
-    {
-        // Arrange
-        var state = new Dictionary<string, byte[]>
-        {
-            ["MyState"] = new byte[] { 0, 1, 2, 3, 4 }
-        };
-        var store = new TestStore(state);
-        var lifetime = new ComponentStatePersistenceManager(
-            NullLogger<ComponentStatePersistenceManager>.Instance,
-            new TestComponentSerializationModeHandler(serializationMode));
-
-        await lifetime.RestoreStateAsync(store, serializationMode);
-
-        // Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => lifetime.RestoreStateAsync(store, serializationMode));
-    }
-
-    [Theory]
     [InlineData(PersistedStateSerializationMode.Server)]
     [InlineData(PersistedStateSerializationMode.WebAssembly)]
     public async Task PersistStateAsync_SavesPersistedStateToTheStore(PersistedStateSerializationMode serializationMode)
@@ -118,7 +96,7 @@ public class ComponentApplicationLifetimeTest
     [Theory]
     [InlineData(PersistedStateSerializationMode.Server)]
     [InlineData(PersistedStateSerializationMode.WebAssembly)]
-    public async Task PersistStateAsync_FiresCallbacksSequentually(PersistedStateSerializationMode serializationMode)
+    public async Task PersistStateAsync_FiresCallbacksInParallel(PersistedStateSerializationMode serializationMode)
     {
         // Arrange
         var state = new Dictionary<string, byte[]>();
@@ -133,8 +111,8 @@ public class ComponentApplicationLifetimeTest
         var tcs = new TaskCompletionSource();
         var tcs2 = new TaskCompletionSource();
 
-        lifetime.State.RegisterOnPersisting(async () => { sequence.Add(1); await tcs.Task; sequence.Add(2); }, serializationMode);
-        lifetime.State.RegisterOnPersisting(async () => { sequence.Add(3); await tcs2.Task; sequence.Add(4); }, serializationMode);
+        lifetime.State.RegisterOnPersisting(async () => { sequence.Add(1); await tcs.Task; sequence.Add(3); }, serializationMode);
+        lifetime.State.RegisterOnPersisting(async () => { sequence.Add(2); await tcs2.Task; sequence.Add(4); }, serializationMode);
 
         // Act
         var persistTask = lifetime.PersistStateAsync(store, serializationMode, renderer);
@@ -321,7 +299,7 @@ public class ComponentApplicationLifetimeTest
             _serializationMode = serializationMode;
         }
 
-        public PersistedStateSerializationMode GetComponentSerializationMode(IComponent component)
+        public PersistedStateSerializationMode GetComponentSerializationMode(object callbackTarget)
         {
             return _serializationMode;
         }

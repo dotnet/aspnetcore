@@ -31,27 +31,6 @@ public class ComponentApplicationStateTest
     }
 
     [Fact]
-    public void InitializeExistingState_ThrowsIfAlreadyInitialized()
-    {
-        // Arrange
-        var applicationState = new PersistentComponentState(
-            new Dictionary<string, byte[]>(),
-            new Dictionary<string, byte[]>(),
-            new List<Func<Task>>(),
-            new List<Func<Task>>(),
-            new TestComponentSerializationModeHandler());
-        var existingState = new Dictionary<string, byte[]>
-        {
-            ["MyState"] = new byte[] { 1, 2, 3, 4 }
-        };
-
-        applicationState.InitializeExistingState(existingState);
-
-        // Act & Assert
-        Assert.Throws<InvalidOperationException>(() => applicationState.InitializeExistingState(existingState));
-    }
-
-    [Fact]
     public void TryRetrieveState_ReturnsStateWhenItExists()
     {
         // Arrange
@@ -276,7 +255,7 @@ public class ComponentApplicationStateTest
 
     private class TestComponentSerializationModeHandler : IComponentSerializationModeHandler
     {
-        public PersistedStateSerializationMode GetComponentSerializationMode(IComponent component)
+        public PersistedStateSerializationMode GetComponentSerializationMode(object callbackTarget)
         {
             throw new NotImplementedException();
         }
