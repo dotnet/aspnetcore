@@ -10,13 +10,13 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 
-internal struct FormDataReader : IDisposable
+internal class FormDataReader : IDisposable
 {
     private readonly IReadOnlyDictionary<FormKey, StringValues> _readOnlyMemoryKeys;
     private readonly Memory<char> _prefixBuffer;
     private Memory<char> _currentPrefixBuffer;
-    private int _currentDepth = 0;
-    private int _errorCount = 0;
+    private int _currentDepth;
+    private int _errorCount;
 
     // As an implementation detail, reuse FormKey for the values.
     // It's just a thin wrapper over ReadOnlyMemory<char> that caches
@@ -41,7 +41,8 @@ internal struct FormDataReader : IDisposable
     public Action<string, FormattableString, string?>? ErrorHandler { get; set; }
 
     public Action<string, object>? AttachInstanceToErrorsHandler { get; set; }
-    public int MaxErrorCount { get; set; } = 100;
+
+    public int MaxErrorCount { get; set; } = 200;
 
     public void AddMappingError(FormattableString errorMessage, string? attemptedValue)
     {
@@ -230,7 +231,7 @@ internal struct FormDataReader : IDisposable
         key.CopyTo(_prefixBuffer[startingPoint..].Span);
     }
 
-    internal readonly bool TryGetValue([NotNullWhen(true)] out string? value)
+    internal bool TryGetValue([NotNullWhen(true)] out string? value)
     {
         var foundSingleValue = _readOnlyMemoryKeys.TryGetValue(new FormKey(_currentPrefixBuffer), out var result) || result.Count == 1;
         if (foundSingleValue)

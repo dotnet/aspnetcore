@@ -34,27 +34,18 @@ internal sealed class FormDataMapperOptions
         Logger = loggerFactory.CreateLogger<FormDataMapperOptions>();
     }
 
-    internal ILogger Logger { get; }
-
-    // Not configurable for now, this is the max number of elements we will bind. This is important for
-    // security reasons, as we don't want to bind a huge collection and cause perf issues.
-    // Some examples of this are:
-    // Binding to collection using hashes, where the payload can be crafted to force the worst case on insertion
-    // which is O(n).
-    internal int MaxCollectionSize = FormReader.DefaultValueCountLimit;
-
-    // MVC uses 32, JSON uses 64. Let's stick to STJ default.
-    internal int MaxRecursionDepth = 64;
-
-    // This is normally 200 (similar to ModelStateDictionary.DefaultMaxAllowedErrors in MVC) 
-    internal int MaxErrorCount = 200;
-
-    internal int MaxKeyBufferSize = FormReader.DefaultKeyLengthLimit;
-
-    internal bool UseCurrentCulture;
-
     // For testing purposes only.
     internal List<IFormDataConverterFactory> Factories => _factories;
+
+    internal ILogger Logger { get; }
+
+    internal int MaxCollectionSize { get; set; } = FormReader.DefaultValueCountLimit;
+
+    internal int MaxRecursionDepth { get; set; } = 64;
+
+    internal int MaxErrorCount { get; set; } = 200;
+
+    internal int MaxKeyBufferSize { get; set; } = FormReader.DefaultKeyLengthLimit;
 
     [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
     [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
