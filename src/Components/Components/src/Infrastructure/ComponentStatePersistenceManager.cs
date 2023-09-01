@@ -119,28 +119,73 @@ public class ComponentStatePersistenceManager
         Dictionary<string, byte[]> currentState,
         Dispatcher dispatcher)
     {
-        return dispatcher.InvokeAsync(PersistStateAsync);
+        return dispatcher.InvokeAsync(PauseAndPersistState);
 
-        async Task PersistStateAsync()
+        async Task PauseAndPersistState()
         {
             State.PersistingState = true;
             State.CurrentSerializationMode = serializationMode;
 
-            foreach (var callback in callbacks)
-            {
-                try
-                {
-                    await callback();
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(new EventId(1000, "PersistenceCallbackError"), ex, "There was an error executing a callback while pausing the application.");
-                }
-            }
+            await PauseAsync(callbacks);
 
             State.PersistingState = false;
 
             await store.PersistStateAsync(currentState);
+        }
+    }
+
+    internal async Task PauseAsync(List<Func<Task>> callbacks)
+    {
+        List<Task>? pendingCallbackTasks = null;
+
+        for (var i = 0; i < callbacks.Count; i++)
+        {
+            var callback = callbacks[i];
+            var result = ExecuteCallback(callback, _logger);
+            if (!result.IsCompletedSuccessfully)
+            {
+                pendingCallbackTasks ??= new();
+                pendingCallbackTasks.Add(result);
+            }
+        }
+
+        if (pendingCallbackTasks != null)
+        {
+            await Task.WhenAll(pendingCallbackTasks);
+        }
+
+        static Task ExecuteCallback(Func<Task> callback, ILogger<ComponentStatePersistenceManager> logger)
+        {
+            try
+            {
+                var current = callback();
+                if (current.IsCompletedSuccessfully)
+                {
+                    return current;
+                }
+                else
+                {
+                    return Awaited(current, logger);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(new EventId(1000, "PersistenceCallbackError"), ex, "There was an error executing a callback while pausing the application.");
+                return Task.CompletedTask;
+            }
+
+            static async Task Awaited(Task task, ILogger<ComponentStatePersistenceManager> logger)
+            {
+                try
+                {
+                    await task;
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(new EventId(1000, "PersistenceCallbackError"), ex, "There was an error executing a callback while pausing the application.");
+                    return;
+                }
+            }
         }
     }
 }
