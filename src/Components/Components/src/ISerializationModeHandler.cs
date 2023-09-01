@@ -14,10 +14,4 @@ public interface ISerializationModeHandler
     /// <param name="callbackTarget">The callback target</param>
     /// <returns>The <see cref="PersistedStateSerializationMode"/> for the component.</returns>
     public PersistedStateSerializationMode GetCallbackTargetSerializationMode(object? callbackTarget);
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public PersistedStateSerializationMode GlobalSerializationMode { get; set; }
-
 }

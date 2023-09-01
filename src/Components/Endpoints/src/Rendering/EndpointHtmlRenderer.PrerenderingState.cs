@@ -15,69 +15,60 @@ internal partial class EndpointHtmlRenderer
 {
     private static readonly object InvokedRenderModesKey = new object();
 
-    public async ValueTask<IHtmlContent> PrerenderServerPersistedStateAsync()
-    {
-        return await PrerenderPersistedStateAsync(_httpContext, PersistedStateSerializationMode.Server);
-    }
-
-    public async ValueTask<IHtmlContent> PrerenderWebAssemblyPersistedStateAsync()
-    {
-        return await PrerenderPersistedStateAsync(_httpContext, PersistedStateSerializationMode.WebAssembly);
-    }
-
     public async ValueTask<IHtmlContent> PrerenderPersistedStateAsync(HttpContext httpContext, PersistedStateSerializationMode serializationMode)
     {
         SetHttpContext(httpContext);
 
-        // First we resolve "infer" mode to a specific mode
-        if (serializationMode == PersistedStateSerializationMode.Infer)
+        var (shouldPrerenderServer, shouldPrerenderWebAssembly) = serializationMode switch
         {
-            switch (GetPersistStateRenderMode(_httpContext))
+            PersistedStateSerializationMode.Server => (true, false),
+            PersistedStateSerializationMode.WebAssembly => (false, true),
+            PersistedStateSerializationMode.Infer => GetPersistStateRenderMode(_httpContext) switch
             {
-                case InvokedRenderModes.Mode.None:
-                    return ComponentStateHtmlContent.Empty;
-                case InvokedRenderModes.Mode.ServerAndWebAssembly:
-                    throw new InvalidOperationException(
-                        Resources.FailedToInferComponentPersistenceMode);
-                case InvokedRenderModes.Mode.Server:
-                    serializationMode = PersistedStateSerializationMode.Server;
-                    break;
-                case InvokedRenderModes.Mode.WebAssembly:
-                    serializationMode = PersistedStateSerializationMode.WebAssembly;
-                    break;
-                default:
-                    throw new InvalidOperationException("Invalid persistence mode");
-            }
-        }
-
-        // Now given the mode, we obtain a particular store for that mode
-        var store = serializationMode switch
-        {
-            PersistedStateSerializationMode.Server =>
-                new ProtectedPrerenderComponentApplicationStore(_httpContext.RequestServices.GetRequiredService<IDataProtectionProvider>()),
-            PersistedStateSerializationMode.WebAssembly =>
-                new PrerenderComponentApplicationStore(),
-            _ =>
-                throw new InvalidOperationException("Invalid persistence mode.")
+                InvokedRenderModes.Mode.None => (false, false),
+                InvokedRenderModes.Mode.ServerAndWebAssembly => (true, true),
+                InvokedRenderModes.Mode.Server => (true, false),
+                InvokedRenderModes.Mode.WebAssembly => (false, true),
+                var x => throw new InvalidOperationException($"Unknown invoked render mode '{x}'."),
+            },
+            var x => throw new InvalidOperationException($"Unknown serialization mode '{x}'."),
         };
 
-        // Finally, persist the state and return the HTML content
         var manager = _httpContext.RequestServices.GetRequiredService<ComponentStatePersistenceManager>();
-        await manager.PersistStateAsync(store, serializationMode, Dispatcher);
-        return new ComponentStateHtmlContent(store, serializationMode);
+        PrerenderComponentApplicationStore? serverStore = null;
+        PrerenderComponentApplicationStore? webAssemblyStore = null;
+
+        if (shouldPrerenderServer)
+        {
+            serverStore = new ProtectedPrerenderComponentApplicationStore(_httpContext.RequestServices.GetRequiredService<IDataProtectionProvider>())
+            {
+                SerializationModeFilter = static serializationMode => serializationMode is PersistedStateSerializationMode.Infer or PersistedStateSerializationMode.Server,
+            };
+            await manager.PersistStateAsync(serverStore, Dispatcher);
+        }
+
+        if (shouldPrerenderWebAssembly)
+        {
+            webAssemblyStore = new PrerenderComponentApplicationStore()
+            {
+                SerializationModeFilter = static serializationMode => serializationMode is PersistedStateSerializationMode.Infer or PersistedStateSerializationMode.WebAssembly,
+            };
+            await manager.PersistStateAsync(webAssemblyStore, Dispatcher);
+        }
+
+        return new ComponentStateHtmlContent(serverStore, webAssemblyStore);
     }
 
     // Internal for test only
     internal static void UpdateSaveStateRenderMode(HttpContext httpContext, IComponentRenderMode? mode)
     {
-        // TODO: This will all have to change when we support multiple render modes in the same response
         if (ModeEnablesPrerendering(mode))
         {
             var currentInvocation = mode switch
             {
                 ServerRenderMode => InvokedRenderModes.Mode.Server,
                 WebAssemblyRenderMode => InvokedRenderModes.Mode.WebAssembly,
-                AutoRenderMode => throw new NotImplementedException("TODO: To be able to support AutoRenderMode, we have to serialize persisted state in both WebAssembly and Server formats, or unify the two formats."),
+                AutoRenderMode => InvokedRenderModes.Mode.ServerAndWebAssembly,
                 _ => throw new ArgumentException(Resources.FormatUnsupportedRenderMode(mode), nameof(mode)),
             };
 
@@ -113,37 +104,32 @@ internal partial class EndpointHtmlRenderer
 
     private sealed class ComponentStateHtmlContent : IHtmlContent
     {
-        private PrerenderComponentApplicationStore? _store;
-        private readonly PersistedStateSerializationMode _serializationMode;
+        private readonly PrerenderComponentApplicationStore? _serverStore;
+        private readonly PrerenderComponentApplicationStore? _webAssemblyStore;
 
-        public static ComponentStateHtmlContent Empty { get; }
-            = new ComponentStateHtmlContent(null, PersistedStateSerializationMode.Infer);
+        public static ComponentStateHtmlContent Empty { get; } = new(null, null);
 
-        public ComponentStateHtmlContent(PrerenderComponentApplicationStore? store, PersistedStateSerializationMode serializationMode)
+        public ComponentStateHtmlContent(PrerenderComponentApplicationStore? serverStore, PrerenderComponentApplicationStore? webAssemblyStore)
         {
-            _store = store;
-            _serializationMode = serializationMode;
+            _webAssemblyStore = webAssemblyStore;
+            _serverStore = serverStore;
         }
 
         public void WriteTo(TextWriter writer, HtmlEncoder encoder)
         {
-            if (_store == null)
+            if (_serverStore is not null)
             {
-                return;
+                writer.Write("<!--Blazor-Server-Component-State:");
+                writer.Write(_serverStore.PersistedState);
+                writer.Write("-->");
             }
 
-            var commentPrefix = _serializationMode switch
+            if (_webAssemblyStore is not null)
             {
-                PersistedStateSerializationMode.Server => "<!--Blazor-Server-Component-State:",
-                PersistedStateSerializationMode.WebAssembly => "<!--Blazor-WebAssembly-Component-State:",
-                _ =>
-                    throw new InvalidOperationException("Invalid persistence mode.")
-            };
-
-            writer.Write(commentPrefix);
-            writer.Write(_store.PersistedState);
-            writer.Write("-->");
-            _store = null;
+                writer.Write("<!--Blazor-WebAssembly-Component-State:");
+                writer.Write(_webAssemblyStore.PersistedState);
+                writer.Write("-->");
+            }
         }
     }
 }

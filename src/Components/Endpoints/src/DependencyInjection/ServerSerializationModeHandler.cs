@@ -7,12 +7,6 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 internal class ServerSerializationModeHandler : ISerializationModeHandler
 {
-    public PersistedStateSerializationMode GlobalSerializationMode
-    {
-        get => PersistedStateSerializationMode.Server;
-        set => throw new NotImplementedException("Cannot change global serialization mode.");
-    }
-
     public PersistedStateSerializationMode GetCallbackTargetSerializationMode(object? callbackTarget)
         => PersistedStateSerializationMode.Server;
 }

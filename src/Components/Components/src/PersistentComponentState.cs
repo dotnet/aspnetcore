@@ -14,35 +14,20 @@ public class PersistentComponentState
 {
     private IDictionary<string, byte[]>? _existingState;
 
-    private readonly IDictionary<string, byte[]> _currentServerState;
-    private readonly IDictionary<string, byte[]> _currentWebAssemblyState;
-
-    private readonly List<Func<Task>> _registeredServerCallbacks;
-    private readonly List<Func<Task>> _registeredWebAssemblyCallbacks;
-
+    private readonly List<PersistenceCallback> _registeredCallbacks;
     private readonly ISerializationModeHandler _serializationModeHandler;
 
-    internal PersistentComponentState(
-        IDictionary<string, byte[]> currentServerState,
-        IDictionary<string, byte[]> currentWebAssemblyState,
-        List<Func<Task>> pauseServerCallbacks,
-        List<Func<Task>> pauseWebAssemblyCallbacks,
-        ISerializationModeHandler serializationModeHandler)
+    internal PersistenceContext? PersistenceContext { get; set; }
+
+    internal PersistentComponentState(List<PersistenceCallback> registeredCallbacks, ISerializationModeHandler serializationModeHandler)
     {
-        _currentServerState = currentServerState;
-        _currentWebAssemblyState = currentWebAssemblyState;
-        _registeredServerCallbacks = pauseServerCallbacks;
-        _registeredWebAssemblyCallbacks = pauseWebAssemblyCallbacks;
+        _registeredCallbacks = registeredCallbacks;
         _serializationModeHandler = serializationModeHandler;
     }
 
-    internal bool PersistingState { get; set; }
-
-    internal PersistedStateSerializationMode CurrentSerializationMode { get; set; } = PersistedStateSerializationMode.Infer;
-
     internal void InitializeExistingState(IDictionary<string, byte[]> existingState)
     {
-        // The existing state is either Server or WebAsasembly
+        // The existing state is either Server or WebAssembly
         _existingState = existingState ?? throw new ArgumentNullException(nameof(existingState));
     }
 
@@ -72,22 +57,10 @@ public class PersistentComponentState
     {
         ArgumentNullException.ThrowIfNull(callback);
 
-        if (_serializationModeHandler.GlobalSerializationMode != PersistedStateSerializationMode.Infer &&
-            serializationMode != _serializationModeHandler.GlobalSerializationMode)
-        {
-            throw new InvalidOperationException("Cannot register a callback with the given serialization mode.");
-        }
+        var persistenceCallback = new PersistenceCallback(callback, serializationMode);
+        _registeredCallbacks.Add(persistenceCallback);
 
-        var registeredCallbacks = serializationMode switch
-        {
-            PersistedStateSerializationMode.Server => _registeredServerCallbacks,
-            PersistedStateSerializationMode.WebAssembly => _registeredWebAssemblyCallbacks,
-            _ => throw new InvalidOperationException("Invalid persistence mode.")
-        };
-
-        registeredCallbacks.Add(callback);
-
-        return new PersistingComponentStateSubscription(registeredCallbacks, callback);
+        return new PersistingComponentStateSubscription(_registeredCallbacks, persistenceCallback);
     }
 
     /// <summary>
@@ -99,16 +72,7 @@ public class PersistentComponentState
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public void PersistAsJson<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string key, TValue instance)
     {
-        var currentState = CurrentSerializationMode switch
-        {
-            PersistedStateSerializationMode.Server => _currentServerState,
-            PersistedStateSerializationMode.WebAssembly => _currentWebAssemblyState,
-            _ => throw new InvalidOperationException("Invalid persistence mode.")
-        };
-
-        ArgumentNullException.ThrowIfNull(key);
-
-        if (!PersistingState)
+        if (PersistenceContext is not { State: var currentState })
         {
             throw new InvalidOperationException("Persisting state is only allowed during an OnPersisting callback.");
         }

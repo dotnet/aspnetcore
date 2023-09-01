@@ -11,34 +11,19 @@ namespace Microsoft.AspNetCore.Components.Infrastructure;
 /// </summary>
 public class ComponentStatePersistenceManager
 {
-    private bool _serverStateIsPersisted;
-    private bool _webAssemblyStateIsPersisted;
-
-    private readonly List<Func<Task>> _serverCallbacks = new();
-    private readonly List<Func<Task>> _webAssemblyCallbacks = new();
-
-    private readonly Dictionary<string, byte[]> _currentServerState = new(StringComparer.Ordinal);
-    private readonly Dictionary<string, byte[]> _currentWebAssemblyState = new(StringComparer.Ordinal);
-
-    private readonly ISerializationModeHandler _serializationModeHandler;
-
+    private readonly List<PersistenceCallback> _registeredCallbacks = new();
     private readonly ILogger<ComponentStatePersistenceManager> _logger;
+
+    private bool _stateIsPersisted;
 
     /// <summary>
     /// Initializes a new instance of <see cref="ComponentStatePersistenceManager"/>.
     /// </summary>
     public ComponentStatePersistenceManager(ILogger<ComponentStatePersistenceManager> logger, ISerializationModeHandler serializationModeHandler)
     {
-        _serializationModeHandler = serializationModeHandler;
-
-        State = new PersistentComponentState(
-            _currentServerState,
-            _currentWebAssemblyState,
-            _serverCallbacks,
-            _webAssemblyCallbacks,
-            _serializationModeHandler);
-
         _logger = logger;
+
+        State = new(_registeredCallbacks, serializationModeHandler);
     }
 
     /// <summary>
@@ -61,87 +46,54 @@ public class ComponentStatePersistenceManager
     /// Persists the component application state into the given <see cref="IPersistentComponentStateStore"/>.
     /// </summary>
     /// <param name="store">The <see cref="IPersistentComponentStateStore"/> to persist the application state into.</param>
-    /// <param name="serializationMode">The <see cref="PersistedStateSerializationMode"/> to persist the application state.</param>
     /// <param name="renderer">The <see cref="Renderer"/> that components are being rendered.</param>
     /// <returns>A <see cref="Task"/> that will complete when the state has been restored.</returns>
-    public Task PersistStateAsync(
-        IPersistentComponentStateStore store,
-        PersistedStateSerializationMode serializationMode,
-        Renderer renderer)
-        => PersistStateAsync(store, serializationMode, renderer.Dispatcher);
+    public Task PersistStateAsync(IPersistentComponentStateStore store, Renderer renderer)
+        => PersistStateAsync(store, renderer.Dispatcher);
 
     /// <summary>
     /// Persists the component application state into the given <see cref="IPersistentComponentStateStore"/>
     /// so that it could be restored on Server.
     /// </summary>
     /// <param name="store">The <see cref="IPersistentComponentStateStore"/> to persist the application state into.</param>
-    /// <param name="serializationMode">The <see cref="PersistedStateSerializationMode"/> to persist the application state.</param>
     /// <param name="dispatcher">The <see cref="Dispatcher"/> corresponding to the components' renderer.</param>
     /// <returns>A <see cref="Task"/> that will complete when the state has been restored.</returns>
-    public Task PersistStateAsync(
-        IPersistentComponentStateStore store,
-        PersistedStateSerializationMode serializationMode,
-        Dispatcher dispatcher)
+    public Task PersistStateAsync(IPersistentComponentStateStore store, Dispatcher dispatcher)
     {
-        if (_serializationModeHandler.GlobalSerializationMode != PersistedStateSerializationMode.Infer &&
-            serializationMode != _serializationModeHandler.GlobalSerializationMode)
+        if (_stateIsPersisted)
         {
-            throw new InvalidOperationException("Cannot persist state with the given serialization mode.");
+            throw new InvalidOperationException("State already persisted.");
         }
 
-        switch (serializationMode)
-        {
-            case PersistedStateSerializationMode.Server:
-                if (_serverStateIsPersisted)
-                {
-                    throw new InvalidOperationException("State already persisted.");
-                }
-                _serverStateIsPersisted = true;
-                return PersistStateAsync(store, serializationMode, _serverCallbacks, _currentServerState, dispatcher);
+        _stateIsPersisted = true;
 
-            case PersistedStateSerializationMode.WebAssembly:
-                if (_webAssemblyStateIsPersisted)
-                {
-                    throw new InvalidOperationException("State already persisted.");
-                }
-                _webAssemblyStateIsPersisted = true;
-                return PersistStateAsync(store, serializationMode, _webAssemblyCallbacks, _currentWebAssemblyState, dispatcher);
-
-            default:
-                throw new InvalidOperationException("Invalid persistence mode");
-        }
-    }
-
-    private Task PersistStateAsync(
-        IPersistentComponentStateStore store,
-        PersistedStateSerializationMode serializationMode,
-        List<Func<Task>> callbacks,
-        Dictionary<string, byte[]> currentState,
-        Dispatcher dispatcher)
-    {
         return dispatcher.InvokeAsync(PauseAndPersistState);
 
         async Task PauseAndPersistState()
         {
-            State.PersistingState = true;
-            State.CurrentSerializationMode = serializationMode;
+            var currentState = new Dictionary<string, byte[]>();
 
-            await PauseAsync(callbacks);
-
-            State.PersistingState = false;
+            State.PersistenceContext = new(currentState);
+            await PauseAsync(store);
+            State.PersistenceContext = default;
 
             await store.PersistStateAsync(currentState);
         }
     }
 
-    internal async Task PauseAsync(List<Func<Task>> callbacks)
+    internal Task PauseAsync(IPersistentComponentStateStore store)
     {
         List<Task>? pendingCallbackTasks = null;
 
-        for (var i = 0; i < callbacks.Count; i++)
+        for (var i = 0; i < _registeredCallbacks.Count; i++)
         {
-            var callback = callbacks[i];
-            var result = ExecuteCallback(callback, _logger);
+            var callback = _registeredCallbacks[i];
+            if (!store.SupportsSerializationMode(callback.SerializationMode))
+            {
+                continue;
+            }
+
+            var result = ExecuteCallback(callback.Callback, _logger);
             if (!result.IsCompletedSuccessfully)
             {
                 pendingCallbackTasks ??= new();
@@ -151,7 +103,11 @@ public class ComponentStatePersistenceManager
 
         if (pendingCallbackTasks != null)
         {
-            await Task.WhenAll(pendingCallbackTasks);
+            return Task.WhenAll(pendingCallbackTasks);
+        }
+        else
+        {
+            return Task.CompletedTask;
         }
 
         static Task ExecuteCallback(Func<Task> callback, ILogger<ComponentStatePersistenceManager> logger)

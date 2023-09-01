@@ -12,10 +12,7 @@ public class ComponentApplicationStateTest
     {
         // Arrange
         var applicationState = new PersistentComponentState(
-            new Dictionary<string, byte[]>(),
-            new Dictionary<string, byte[]>(),
-            new List<Func<Task>>(),
-            new List<Func<Task>>(),
+            new List<PersistenceCallback>(),
             new TestComponentSerializationModeHandler());
         var existingState = new Dictionary<string, byte[]>
         {
@@ -35,10 +32,7 @@ public class ComponentApplicationStateTest
     {
         // Arrange
         var applicationState = new PersistentComponentState(
-            new Dictionary<string, byte[]>(),
-            new Dictionary<string, byte[]>(),
-            new List<Func<Task>>(),
-            new List<Func<Task>>(),
+            new List<PersistenceCallback>(),
             new TestComponentSerializationModeHandler());
         var existingState = new Dictionary<string, byte[]>
         {
@@ -59,14 +53,10 @@ public class ComponentApplicationStateTest
     {
         // Arrange
         var currentServerState = new Dictionary<string, byte[]>();
-        var applicationState = new PersistentComponentState(
-            currentServerState,
-            new Dictionary<string, byte[]>(),
-            new List<Func<Task>>(),
-            new List<Func<Task>>(),
-            new TestComponentSerializationModeHandler());
-        applicationState.PersistingState = true;
-        applicationState.CurrentSerializationMode = PersistedStateSerializationMode.Server;
+        var applicationState = new PersistentComponentState(new(), new TestComponentSerializationModeHandler())
+        {
+            PersistenceContext = new(currentServerState)
+        };
         var myState = new byte[] { 1, 2, 3, 4 };
 
         // Act
@@ -82,14 +72,10 @@ public class ComponentApplicationStateTest
     {
         // Arrange
         var currentWebAssemblyState = new Dictionary<string, byte[]>();
-        var applicationState = new PersistentComponentState(
-            new Dictionary<string, byte[]>(),
-            currentWebAssemblyState,
-            new List<Func<Task>>(),
-            new List<Func<Task>>(),
-            new TestComponentSerializationModeHandler());
-        applicationState.PersistingState = true;
-        applicationState.CurrentSerializationMode = PersistedStateSerializationMode.WebAssembly;
+        var applicationState = new PersistentComponentState(new(), new TestComponentSerializationModeHandler())
+        {
+            PersistenceContext = new(currentWebAssemblyState)
+        };
         var myState = new byte[] { 1, 2, 3, 4 };
 
         // Act
@@ -101,36 +87,14 @@ public class ComponentApplicationStateTest
     }
 
     [Fact]
-    public void PersistAsJson_ThrowsForInferSerializationMode()
-    {
-        // Arrange
-        var applicationState = new PersistentComponentState(
-            new Dictionary<string, byte[]>(),
-            new Dictionary<string, byte[]>(),
-            new List<Func<Task>>(),
-            new List<Func<Task>>(),
-            new TestComponentSerializationModeHandler());
-        applicationState.PersistingState = true;
-        applicationState.CurrentSerializationMode = PersistedStateSerializationMode.Infer;
-        var myState = new byte[] { 1, 2, 3, 4 };
-
-        // Act & Assert
-        Assert.Throws<InvalidOperationException>(() => applicationState.PersistAsJson("MyState", myState));
-    }
-
-    [Fact]
     public void PersistAsJson_Server_ThrowsForDuplicateKeys()
     {
         // Arrange
         var currentServerState = new Dictionary<string, byte[]>();
-        var applicationState = new PersistentComponentState(
-            currentServerState,
-            new Dictionary<string, byte[]>(),
-            new List<Func<Task>>(),
-            new List<Func<Task>>(),
-            new TestComponentSerializationModeHandler());
-        applicationState.PersistingState = true;
-        applicationState.CurrentSerializationMode = PersistedStateSerializationMode.Server;
+        var applicationState = new PersistentComponentState(new(), new TestComponentSerializationModeHandler())
+        {
+            PersistenceContext = new(new Dictionary<string, byte[]>())
+        };
         var myState = new byte[] { 1, 2, 3, 4 };
 
         applicationState.PersistAsJson("MyState", myState);
@@ -144,14 +108,10 @@ public class ComponentApplicationStateTest
     {
         // Arrange
         var currentWebAssemblyState = new Dictionary<string, byte[]>();
-        var applicationState = new PersistentComponentState(
-            new Dictionary<string, byte[]>(),
-            currentWebAssemblyState,
-            new List<Func<Task>>(),
-            new List<Func<Task>>(),
-            new TestComponentSerializationModeHandler());
-        applicationState.PersistingState = true;
-        applicationState.CurrentSerializationMode = PersistedStateSerializationMode.Server;
+        var applicationState = new PersistentComponentState(new(), new TestComponentSerializationModeHandler())
+        {
+            PersistenceContext = new(new Dictionary<string, byte[]>())
+        };
         var myState = new byte[] { 1, 2, 3, 4 };
 
         applicationState.PersistAsJson("MyState", myState);
@@ -165,14 +125,10 @@ public class ComponentApplicationStateTest
     {
         // Arrange
         var currentServerState = new Dictionary<string, byte[]>();
-        var applicationState = new PersistentComponentState(
-            currentServerState,
-            new Dictionary<string, byte[]>(),
-            new List<Func<Task>>(),
-            new List<Func<Task>>(),
-            new TestComponentSerializationModeHandler());
-        applicationState.PersistingState = true;
-        applicationState.CurrentSerializationMode = PersistedStateSerializationMode.Server;
+        var applicationState = new PersistentComponentState(new(), new TestComponentSerializationModeHandler())
+        {
+            PersistenceContext = new(currentServerState)
+        };
 
         // Act
         applicationState.PersistAsJson<byte[]>("MyState", null);
@@ -187,14 +143,10 @@ public class ComponentApplicationStateTest
     {
         // Arrange
         var currentWebAssemblyState = new Dictionary<string, byte[]>();
-        var applicationState = new PersistentComponentState(
-            new Dictionary<string, byte[]>(),
-            currentWebAssemblyState,
-            new List<Func<Task>>(),
-            new List<Func<Task>>(),
-            new TestComponentSerializationModeHandler());
-        applicationState.PersistingState = true;
-        applicationState.CurrentSerializationMode = PersistedStateSerializationMode.WebAssembly;
+        var applicationState = new PersistentComponentState(new(), new TestComponentSerializationModeHandler())
+        {
+            PersistenceContext = new(currentWebAssemblyState)
+        };
 
         // Act
         applicationState.PersistAsJson<byte[]>("MyState", null);
@@ -211,12 +163,7 @@ public class ComponentApplicationStateTest
         var myState = new byte[] { 1, 2, 3, 4 };
         var serialized = JsonSerializer.SerializeToUtf8Bytes(myState);
         var existingState = new Dictionary<string, byte[]>() { ["MyState"] = serialized };
-        var applicationState = new PersistentComponentState(
-            new Dictionary<string, byte[]>(),
-            new Dictionary<string, byte[]>(),
-            new List<Func<Task>>(),
-            new List<Func<Task>>(),
-            new TestComponentSerializationModeHandler());
+        var applicationState = new PersistentComponentState(new(), new TestComponentSerializationModeHandler());
 
         applicationState.InitializeExistingState(existingState);
 
@@ -234,12 +181,7 @@ public class ComponentApplicationStateTest
         // Arrange
         var serialized = JsonSerializer.SerializeToUtf8Bytes<byte[]>(null);
         var existingState = new Dictionary<string, byte[]>() { ["MyState"] = serialized };
-        var applicationState = new PersistentComponentState(
-            new Dictionary<string, byte[]>(),
-            new Dictionary<string, byte[]>(),
-            new List<Func<Task>>(),
-            new List<Func<Task>>(),
-            new TestComponentSerializationModeHandler());
+        var applicationState = new PersistentComponentState(new(), new TestComponentSerializationModeHandler());
 
         applicationState.InitializeExistingState(existingState);
 
@@ -255,12 +197,6 @@ public class ComponentApplicationStateTest
 
     private class TestComponentSerializationModeHandler : ISerializationModeHandler
     {
-        public PersistedStateSerializationMode GlobalSerializationMode
-        {
-            get => throw new NotImplementedException();
-            set => throw new NotImplementedException();
-        }
-
         public PersistedStateSerializationMode GetCallbackTargetSerializationMode(object callbackTarget)
         {
             throw new NotImplementedException();

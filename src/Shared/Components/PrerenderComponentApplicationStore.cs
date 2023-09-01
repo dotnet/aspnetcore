@@ -41,6 +41,8 @@ internal class PrerenderComponentApplicationStore : IPersistentComponentStateSto
 
     public Dictionary<string, byte[]> ExistingState { get; protected set; }
 
+    public Func<PersistedStateSerializationMode, bool> SerializationModeFilter { get; set; }
+
     public Task<IDictionary<string, byte[]>> GetPersistedStateAsync()
     {
         return Task.FromResult((IDictionary<string, byte[]>)ExistingState);
@@ -55,4 +57,7 @@ internal class PrerenderComponentApplicationStore : IPersistentComponentStateSto
         PersistedState = Convert.ToBase64String(SerializeState(state));
         return Task.CompletedTask;
     }
+
+    public bool SupportsSerializationMode(PersistedStateSerializationMode serializationMode)
+        => SerializationModeFilter?.Invoke(serializationMode) ?? true;
 }

@@ -62,7 +62,7 @@ public class ComponentApplicationLifetimeTest
         }, serializationMode);
 
         // Act
-        await lifetime.PersistStateAsync(store, serializationMode, renderer);
+        await lifetime.PersistStateAsync(store, renderer);
 
         // Assert
         Assert.True(store.State.TryGetValue("MyState", out var persisted));
@@ -87,7 +87,7 @@ public class ComponentApplicationLifetimeTest
         lifetime.State.RegisterOnPersisting(() => { invoked = true; return default; }, serializationMode);
 
         // Act
-        await lifetime.PersistStateAsync(store, serializationMode, renderer);
+        await lifetime.PersistStateAsync(store, renderer);
 
         // Assert
         Assert.True(invoked);
@@ -115,7 +115,7 @@ public class ComponentApplicationLifetimeTest
         lifetime.State.RegisterOnPersisting(async () => { sequence.Add(2); await tcs2.Task; sequence.Add(4); }, serializationMode);
 
         // Act
-        var persistTask = lifetime.PersistStateAsync(store, serializationMode, renderer);
+        var persistTask = lifetime.PersistStateAsync(store, renderer);
         tcs.SetResult();
         tcs2.SetResult();
 
@@ -150,7 +150,7 @@ public class ComponentApplicationLifetimeTest
         subscription1.Dispose();
         subscription2.Dispose();
 
-        var persistTask = lifetime.PersistStateAsync(store, serializationMode, renderer);
+        var persistTask = lifetime.PersistStateAsync(store, renderer);
         tcs.SetResult();
         tcs2.SetResult();
 
@@ -180,7 +180,7 @@ public class ComponentApplicationLifetimeTest
         lifetime.State.RegisterOnPersisting(() => { invoked = true; return Task.CompletedTask; }, serializationMode);
 
         // Act
-        await lifetime.PersistStateAsync(store, serializationMode, renderer);
+        await lifetime.PersistStateAsync(store, renderer);
 
         // Assert
         Assert.True(invoked);
@@ -208,7 +208,7 @@ public class ComponentApplicationLifetimeTest
         lifetime.State.RegisterOnPersisting(() => { invoked = true; return Task.CompletedTask; }, serializationMode);
 
         // Act
-        var persistTask = lifetime.PersistStateAsync(store,serializationMode, renderer);
+        var persistTask = lifetime.PersistStateAsync(store, renderer);
         tcs.SetResult();
 
         await persistTask;
@@ -241,10 +241,10 @@ public class ComponentApplicationLifetimeTest
         }, serializationMode);
 
         // Act
-        await lifetime.PersistStateAsync(store, serializationMode, renderer);
+        await lifetime.PersistStateAsync(store, renderer);
 
         // Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => lifetime.PersistStateAsync(store, serializationMode, renderer));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => lifetime.PersistStateAsync(store, renderer));
     }
 
     private class TestRenderer : Renderer
@@ -297,12 +297,6 @@ public class ComponentApplicationLifetimeTest
         public TestComponentSerializationModeHandler(PersistedStateSerializationMode serializationMode)
         {
             _serializationMode = serializationMode;
-        }
-
-        public PersistedStateSerializationMode GlobalSerializationMode
-        {
-            get => _serializationMode;
-            set => throw new NotImplementedException();
         }
 
         public PersistedStateSerializationMode GetCallbackTargetSerializationMode(object callbackTarget)
