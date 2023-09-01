@@ -13,6 +13,7 @@ namespace Microsoft.AspNetCore.Components.Endpoints.FormMapping.Metadata;
 
 internal partial class FormDataMetadataFactory(List<IFormDataConverterFactory> factories, Extensions.Logging.ILoggerFactory loggerFactory)
 {
+    private readonly object _lock = new object();
     private readonly FormMetadataContext _context = new();
     private readonly ParsableConverterFactory _parsableFactory = factories.OfType<ParsableConverterFactory>().Single();
     private readonly DictionaryConverterFactory _dictionaryFactory = factories.OfType<DictionaryConverterFactory>().Single();
@@ -24,225 +25,228 @@ internal partial class FormDataMetadataFactory(List<IFormDataConverterFactory> f
     public FormDataTypeMetadata? GetOrCreateMetadataFor(Type type, FormDataMapperOptions options)
     {
         var shouldClearContext = !_context.ResolutionInProgress;
-        try
+        lock (_lock)
         {
-            // We are walking the graph in order to detect recursive types.
-            // We evaluate whether a type is:
-            // 1. Primitive
-            // 2. Dictionary
-            // 3. Collection
-            // 4. Complex
-            // Only complex types can be recursive.
-            // We only compute metadata when we are dealing with objects, other classes of
-            // types are handled directly by the appropriate converters.
-            // We keep track of the metadata for the types because it is useful when we generate
-            // the specific object converter for a type.
-            // The code generation varies depending on whether there is recursion or not within
-            // the type graph.
-            if (shouldClearContext)
+            try
             {
-                Log.StartResolveMetadataGraph(_logger, type);
-                _context.BeginResolveGraph();
-            }
-
-            // Try to get the metadata for the type or create and add a new instance.
-            var result = _context.TypeMetadata.TryGetValue(type, out var value) ? value : new FormDataTypeMetadata(type);
-            if (value == null)
-            {
-                Log.NoMetadataFound(_logger, type);
-                _context.TypeMetadata[type] = result;
-            }
-            else
-            {
-                Log.MetadataFound(_logger, type);
-            }
-
-            if (type.IsGenericTypeDefinition)
-            {
-                Log.GenericTypeDefinitionNotSupported(_logger, type);
-                _context.TypeMetadata.Remove(type);
-                return null;
-            }
-
-            // Check for cycles and mark any type as recursive if needed.
-            DetectCyclesAndMarkMetadataTypesAsRecursive(type, result);
-
-            // We found the value on the existing metadata, we can return it.
-            if (value != null)
-            {
-                return result;
-            }
-
-            // These blocks are evaluated in a specific order.
-            if (_parsableFactory.CanConvert(type, options) || type.IsEnum ||
-                (Nullable.GetUnderlyingType(type) is { } underlyingType &&
-                    _parsableFactory.CanConvert(underlyingType, options)))
-            {
-                Log.PrimitiveType(_logger, type);
-                result.Kind = FormDataTypeKind.Primitive;
-                return result;
-            }
-
-            if (_dictionaryFactory.CanConvert(type, options))
-            {
-                Log.DictionaryType(_logger, type);
-                result.Kind = FormDataTypeKind.Dictionary;
-                var (keyType, valueType) = DictionaryConverterFactory.ResolveDictionaryTypes(type)!;
-                result.KeyType = GetOrCreateMetadataFor(keyType, options);
-                result.ValueType = GetOrCreateMetadataFor(valueType, options);
-                return result;
-            }
-
-            if (_collectionFactory.CanConvert(type, options))
-            {
-                Log.CollectionType(_logger, type);
-                result.Kind = FormDataTypeKind.Collection;
-                result.ElementType = GetOrCreateMetadataFor(CollectionConverterFactory.ResolveElementType(type)!, options);
-                return result;
-            }
-
-            Log.ObjectType(_logger, type);
-            result.Kind = FormDataTypeKind.Object;
-            _context.Track(type);
-            var constructors = type.GetConstructors();
-
-            if (constructors.Length == 1)
-            {
-                result.Constructor = constructors[0];
-                if (type.IsAbstract)
+                // We are walking the graph in order to detect recursive types.
+                // We evaluate whether a type is:
+                // 1. Primitive
+                // 2. Dictionary
+                // 3. Collection
+                // 4. Complex
+                // Only complex types can be recursive.
+                // We only compute metadata when we are dealing with objects, other classes of
+                // types are handled directly by the appropriate converters.
+                // We keep track of the metadata for the types because it is useful when we generate
+                // the specific object converter for a type.
+                // The code generation varies depending on whether there is recursion or not within
+                // the type graph.
+                if (shouldClearContext)
                 {
-                    Log.AbstractClassesNotSupported(_logger, type);
-                    _context.TypeMetadata.Remove(type);
-                    return null;
+                    Log.StartResolveMetadataGraph(_logger, type);
+                    _context.BeginResolveGraph();
                 }
-            }
-            else if (constructors.Length > 1)
-            {
-                // We can't select the constructor when there are multiple of them.
-                Log.MultiplePublicConstructorsFound(_logger, type);
-                return null;
-            }
-            else if (!type.IsValueType)
-            {
-                if (type.IsInterface)
+
+                // Try to get the metadata for the type or create and add a new instance.
+                var result = _context.TypeMetadata.TryGetValue(type, out var value) ? value : new FormDataTypeMetadata(type);
+                if (value == null)
                 {
-                    Log.InterfacesNotSupported(_logger, type);
-                }
-                else if (type.IsAbstract)
-                {
-                    Log.AbstractClassesNotSupported(_logger, type);
+                    Log.NoMetadataFound(_logger, type);
+                    _context.TypeMetadata[type] = result;
                 }
                 else
                 {
-                    Log.NoPublicConstructorFound(_logger, type);
+                    Log.MetadataFound(_logger, type);
                 }
 
-                _context.TypeMetadata.Remove(type);
-                // We can't bind to reference types without constructors.
-                return null;
-            }
-
-            if (result.Constructor != null)
-            {
-                if (_logger.IsEnabled(LogLevel.Debug))
+                if (type.IsGenericTypeDefinition)
                 {
-                    var parameters = $"({string.Join(", ", result.Constructor.GetParameters().Select(p => p.ParameterType.Name))})";
-                    Log.ConstructorFound(_logger, type, parameters);
-                }
-
-                var values = result.Constructor.GetParameters();
-
-                foreach (var parameter in values)
-                {
-                    Log.ConstructorParameter(_logger, type, parameter.Name!, parameter.ParameterType);
-                    var parameterTypeInfo = GetOrCreateMetadataFor(parameter.ParameterType, options);
-                    if (parameterTypeInfo == null)
-                    {
-                        Log.ConstructorParameterTypeNotSupported(_logger, type, parameter.Name!, parameter.ParameterType);
-                        _context.TypeMetadata.Remove(type);
-                        return null;
-                    }
-
-                    result.ConstructorParameters.Add(new FormDataParameterMetadata(parameter, parameterTypeInfo));
-                }
-            }
-
-            var candidateProperty = PropertyHelper.GetVisibleProperties(type);
-            foreach (var propertyHelper in candidateProperty)
-            {
-                var property = propertyHelper.Property;
-                Log.CandidateProperty(_logger, propertyHelper.Name, property.PropertyType);
-                var matchingConstructorParameter = result
-                    .ConstructorParameters
-                    .FirstOrDefault(p => string.Equals(p.Name, property.Name, StringComparison.OrdinalIgnoreCase));
-
-                if (matchingConstructorParameter != null)
-                {
-                    Log.MatchingConstructorParameterFound(_logger, matchingConstructorParameter.Name, property.Name);
-                    var dataMember = property.GetCustomAttribute<DataMemberAttribute>();
-                    if (dataMember != null && dataMember.IsNameSetExplicitly && dataMember.Name != null)
-                    {
-                        Log.CustomParameterNameMetadata(_logger, dataMember.Name, property.Name);
-                        matchingConstructorParameter.Name = dataMember.Name;
-                    }
-
-                    // The propertyHelper is already present in the constructor, we don't need to add it again.
-                    continue;
-                }
-
-                var ignoreDataMember = property.GetCustomAttribute<IgnoreDataMemberAttribute>();
-                if (ignoreDataMember != null)
-                {
-                    Log.IgnoredProperty(_logger, property.Name);
-                    // The propertyHelper is marked as ignored, we don't need to add it.
-                    continue;
-                }
-
-                if (property.SetMethod == null || !property.SetMethod.IsPublic)
-                {
-                    Log.NonPublicSetter(_logger, property.Name);
-                    // The property is readonly, we don't need to add it.
-                    continue;
-                }
-
-                var propertyTypeInfo = GetOrCreateMetadataFor(property.PropertyType, options);
-                if (propertyTypeInfo == null)
-                {
-                    Log.PropertyTypeNotSupported(_logger, type, property.Name, property.PropertyType);
+                    Log.GenericTypeDefinitionNotSupported(_logger, type);
                     _context.TypeMetadata.Remove(type);
                     return null;
                 }
-                var propertyInfo = new FormDataPropertyMetadata(property, propertyTypeInfo);
 
-                var dataMemberAttribute = property.GetCustomAttribute<DataMemberAttribute>();
-                if (dataMemberAttribute != null && dataMemberAttribute.IsNameSetExplicitly && dataMemberAttribute.Name != null)
+                // Check for cycles and mark any type as recursive if needed.
+                DetectCyclesAndMarkMetadataTypesAsRecursive(type, result);
+
+                // We found the value on the existing metadata, we can return it.
+                if (value != null)
                 {
-                    Log.CustomParameterNameMetadata(_logger, dataMemberAttribute.Name, property.Name);
-                    propertyInfo.Name = dataMemberAttribute.Name;
-                    propertyInfo.Required = dataMemberAttribute.IsRequired;
-                    Log.PropertyRequired(_logger, propertyInfo.Name);
+                    return result;
                 }
 
-                var requiredAttribute = property.GetCustomAttribute<RequiredMemberAttribute>();
-                if (requiredAttribute != null)
+                // These blocks are evaluated in a specific order.
+                if (_parsableFactory.CanConvert(type, options) || type.IsEnum ||
+                    (Nullable.GetUnderlyingType(type) is { } underlyingType &&
+                        _parsableFactory.CanConvert(underlyingType, options)))
                 {
-                    propertyInfo.Required = true;
-                    Log.PropertyRequired(_logger, propertyInfo.Name);
+                    Log.PrimitiveType(_logger, type);
+                    result.Kind = FormDataTypeKind.Primitive;
+                    return result;
                 }
 
-                result.Properties.Add(propertyInfo);
+                if (_dictionaryFactory.CanConvert(type, options))
+                {
+                    Log.DictionaryType(_logger, type);
+                    result.Kind = FormDataTypeKind.Dictionary;
+                    var (keyType, valueType) = DictionaryConverterFactory.ResolveDictionaryTypes(type)!;
+                    result.KeyType = GetOrCreateMetadataFor(keyType, options);
+                    result.ValueType = GetOrCreateMetadataFor(valueType, options);
+                    return result;
+                }
+
+                if (_collectionFactory.CanConvert(type, options))
+                {
+                    Log.CollectionType(_logger, type);
+                    result.Kind = FormDataTypeKind.Collection;
+                    result.ElementType = GetOrCreateMetadataFor(CollectionConverterFactory.ResolveElementType(type)!, options);
+                    return result;
+                }
+
+                Log.ObjectType(_logger, type);
+                result.Kind = FormDataTypeKind.Object;
+                _context.Track(type);
+                var constructors = type.GetConstructors();
+
+                if (constructors.Length == 1)
+                {
+                    result.Constructor = constructors[0];
+                    if (type.IsAbstract)
+                    {
+                        Log.AbstractClassesNotSupported(_logger, type);
+                        _context.TypeMetadata.Remove(type);
+                        return null;
+                    }
+                }
+                else if (constructors.Length > 1)
+                {
+                    // We can't select the constructor when there are multiple of them.
+                    Log.MultiplePublicConstructorsFound(_logger, type);
+                    return null;
+                }
+                else if (!type.IsValueType)
+                {
+                    if (type.IsInterface)
+                    {
+                        Log.InterfacesNotSupported(_logger, type);
+                    }
+                    else if (type.IsAbstract)
+                    {
+                        Log.AbstractClassesNotSupported(_logger, type);
+                    }
+                    else
+                    {
+                        Log.NoPublicConstructorFound(_logger, type);
+                    }
+
+                    _context.TypeMetadata.Remove(type);
+                    // We can't bind to reference types without constructors.
+                    return null;
+                }
+
+                if (result.Constructor != null)
+                {
+                    if (_logger.IsEnabled(LogLevel.Debug))
+                    {
+                        var parameters = $"({string.Join(", ", result.Constructor.GetParameters().Select(p => p.ParameterType.Name))})";
+                        Log.ConstructorFound(_logger, type, parameters);
+                    }
+
+                    var values = result.Constructor.GetParameters();
+
+                    foreach (var parameter in values)
+                    {
+                        Log.ConstructorParameter(_logger, type, parameter.Name!, parameter.ParameterType);
+                        var parameterTypeInfo = GetOrCreateMetadataFor(parameter.ParameterType, options);
+                        if (parameterTypeInfo == null)
+                        {
+                            Log.ConstructorParameterTypeNotSupported(_logger, type, parameter.Name!, parameter.ParameterType);
+                            _context.TypeMetadata.Remove(type);
+                            return null;
+                        }
+
+                        result.ConstructorParameters.Add(new FormDataParameterMetadata(parameter, parameterTypeInfo));
+                    }
+                }
+
+                var candidateProperty = PropertyHelper.GetVisibleProperties(type);
+                foreach (var propertyHelper in candidateProperty)
+                {
+                    var property = propertyHelper.Property;
+                    Log.CandidateProperty(_logger, propertyHelper.Name, property.PropertyType);
+                    var matchingConstructorParameter = result
+                        .ConstructorParameters
+                        .FirstOrDefault(p => string.Equals(p.Name, property.Name, StringComparison.OrdinalIgnoreCase));
+
+                    if (matchingConstructorParameter != null)
+                    {
+                        Log.MatchingConstructorParameterFound(_logger, matchingConstructorParameter.Name, property.Name);
+                        var dataMember = property.GetCustomAttribute<DataMemberAttribute>();
+                        if (dataMember != null && dataMember.IsNameSetExplicitly && dataMember.Name != null)
+                        {
+                            Log.CustomParameterNameMetadata(_logger, dataMember.Name, property.Name);
+                            matchingConstructorParameter.Name = dataMember.Name;
+                        }
+
+                        // The propertyHelper is already present in the constructor, we don't need to add it again.
+                        continue;
+                    }
+
+                    var ignoreDataMember = property.GetCustomAttribute<IgnoreDataMemberAttribute>();
+                    if (ignoreDataMember != null)
+                    {
+                        Log.IgnoredProperty(_logger, property.Name);
+                        // The propertyHelper is marked as ignored, we don't need to add it.
+                        continue;
+                    }
+
+                    if (property.SetMethod == null || !property.SetMethod.IsPublic)
+                    {
+                        Log.NonPublicSetter(_logger, property.Name);
+                        // The property is readonly, we don't need to add it.
+                        continue;
+                    }
+
+                    var propertyTypeInfo = GetOrCreateMetadataFor(property.PropertyType, options);
+                    if (propertyTypeInfo == null)
+                    {
+                        Log.PropertyTypeNotSupported(_logger, type, property.Name, property.PropertyType);
+                        _context.TypeMetadata.Remove(type);
+                        return null;
+                    }
+                    var propertyInfo = new FormDataPropertyMetadata(property, propertyTypeInfo);
+
+                    var dataMemberAttribute = property.GetCustomAttribute<DataMemberAttribute>();
+                    if (dataMemberAttribute != null && dataMemberAttribute.IsNameSetExplicitly && dataMemberAttribute.Name != null)
+                    {
+                        Log.CustomParameterNameMetadata(_logger, dataMemberAttribute.Name, property.Name);
+                        propertyInfo.Name = dataMemberAttribute.Name;
+                        propertyInfo.Required = dataMemberAttribute.IsRequired;
+                        Log.PropertyRequired(_logger, propertyInfo.Name);
+                    }
+
+                    var requiredAttribute = property.GetCustomAttribute<RequiredMemberAttribute>();
+                    if (requiredAttribute != null)
+                    {
+                        propertyInfo.Required = true;
+                        Log.PropertyRequired(_logger, propertyInfo.Name);
+                    }
+
+                    result.Properties.Add(propertyInfo);
+                }
+
+                Log.MetadataComputed(_logger, type);
+                return result;
             }
-
-            Log.MetadataComputed(_logger, type);
-            return result;
-        }
-        finally
-        {
-            _context.Untrack(type);
-            if (shouldClearContext)
+            finally
             {
-                Log.EndResolveMetadataGraph(_logger, type);
-                _context.EndResolveGraph();
+                _context.Untrack(type);
+                if (shouldClearContext)
+                {
+                    Log.EndResolveMetadataGraph(_logger, type);
+                    _context.EndResolveGraph();
+                }
             }
         }
     }
