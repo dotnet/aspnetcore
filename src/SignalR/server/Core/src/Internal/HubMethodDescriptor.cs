@@ -119,7 +119,7 @@ internal sealed class HubMethodDescriptor
                         if (marked)
                         {
                             throw new InvalidOperationException(
-                                $"Multiple service attributes on parameter '{p.ParameterType}' of method '{methodExecutor.MethodInfo.DeclaringType?.Name}.{methodExecutor.MethodInfo.Name}' is not supported.");
+                                $"{methodExecutor.MethodInfo.DeclaringType?.Name}.{methodExecutor.MethodInfo.Name}: The {nameof(FromKeyedServicesAttribute)} is not supported on parameters that are also annotated with {nameof(IFromServiceMetadata)}.");
                         }
                     }
                 }

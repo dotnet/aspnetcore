@@ -5059,7 +5059,7 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
             provider.AddKeyedScoped<Service1>("service1");
         });
         var ex = Assert.Throws<InvalidOperationException>(() => serviceProvider.GetService<HubConnectionHandler<BadServicesHub>>());
-        Assert.Equal("Multiple service attributes on parameter 'Microsoft.AspNetCore.SignalR.Tests.Service1' of method 'BadServicesHub.BadMethod' is not supported.", ex.Message);
+        Assert.Equal("BadServicesHub.BadMethod: The FromKeyedServicesAttribute is not supported on parameters that are also annotated with IFromServiceMetadata.", ex.Message);
     }
 
     [Fact]
