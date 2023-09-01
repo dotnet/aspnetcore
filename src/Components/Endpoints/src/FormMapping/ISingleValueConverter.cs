@@ -7,5 +7,5 @@ internal interface ISingleValueConverter<T>
 {
     bool CanConvertSingleValue();
 
-    bool TryConvertValue(FormDataReader reader, string value, out T result);
+    bool TryConvertValue(ref FormDataReader reader, string value, out T result);
 }

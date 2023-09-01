@@ -10,7 +10,7 @@ internal sealed class ParsableConverter<T> : FormDataConverter<T>, ISingleValueC
 {
     public bool CanConvertSingleValue() => true;
 
-    public bool TryConvertValue(FormDataReader reader, string value, out T result)
+    public bool TryConvertValue(ref FormDataReader reader, string value, out T result)
     {
         if (T.TryParse(value, reader.Culture, out result!))
         {
@@ -37,7 +37,7 @@ internal sealed class ParsableConverter<T> : FormDataConverter<T>, ISingleValueC
         }
         else
         {
-            return TryConvertValue(reader, value!, out result!);
+            return TryConvertValue(ref reader, value!, out result!);
         }
     }
 }

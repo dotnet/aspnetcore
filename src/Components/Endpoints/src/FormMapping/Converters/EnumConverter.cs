@@ -10,7 +10,7 @@ internal class EnumConverter<TEnum> : FormDataConverter<TEnum>, ISingleValueConv
 {
     public bool CanConvertSingleValue() => true;
 
-    public bool TryConvertValue(FormDataReader reader, string value, out TEnum result)
+    public bool TryConvertValue(ref FormDataReader reader, string value, out TEnum result)
     {
         if (Enum.TryParse(value, ignoreCase: true, out result))
         {
@@ -36,6 +36,6 @@ internal class EnumConverter<TEnum> : FormDataConverter<TEnum>, ISingleValueConv
             return true;
         }
 
-        return TryConvertValue(reader, value!, out result);
+        return TryConvertValue(ref reader, value!, out result);
     }
 }

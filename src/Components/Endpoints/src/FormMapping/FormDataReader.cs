@@ -10,6 +10,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 
+[DebuggerDisplay($"{{{nameof(DebuggerDisplay)}(),nq}}")]
 internal struct FormDataReader : IDisposable
 {
     private readonly IReadOnlyDictionary<FormKey, StringValues> _readOnlyMemoryKeys;
@@ -231,7 +232,7 @@ internal struct FormDataReader : IDisposable
         key.CopyTo(_prefixBuffer[startingPoint..].Span);
     }
 
-    internal bool TryGetValue([NotNullWhen(true)] out string? value)
+    internal readonly bool TryGetValue([NotNullWhen(true)] out string? value)
     {
         var foundSingleValue = _readOnlyMemoryKeys.TryGetValue(new FormKey(_currentPrefixBuffer), out var result) || result.Count == 1;
         if (foundSingleValue)
@@ -246,7 +247,7 @@ internal struct FormDataReader : IDisposable
         return foundSingleValue;
     }
 
-    internal bool TryGetValues(out StringValues values) =>
+    internal readonly bool TryGetValues(out StringValues values) =>
         _readOnlyMemoryKeys.TryGetValue(new FormKey(_currentPrefixBuffer), out values);
 
     internal string GetPrefix() => _currentPrefixBuffer.ToString();
@@ -309,4 +310,7 @@ internal struct FormDataReader : IDisposable
             void IEnumerator.Reset() { }
         }
     }
+
+    private readonly string DebuggerDisplay =>
+        $"Key count = {_readOnlyMemoryKeys.Count}, Prefix = {_currentPrefixBuffer}, Error count = {_errorCount}, Current depth = {_currentDepth}";
 }

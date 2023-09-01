@@ -12,11 +12,11 @@ internal sealed class NullableConverter<T>(FormDataConverter<T> nonNullableConve
     public bool CanConvertSingleValue() => _nonNullableConverter is ISingleValueConverter<T> singleValueConverter &&
         singleValueConverter.CanConvertSingleValue();
 
-    public bool TryConvertValue(FormDataReader reader, string value, out T? result)
+    public bool TryConvertValue(ref FormDataReader reader, string value, out T? result)
     {
         var converter = (ISingleValueConverter<T>)_nonNullableConverter;
 
-        if (converter.TryConvertValue(reader, value, out var converted))
+        if (converter.TryConvertValue(ref reader, value, out var converted))
         {
             result = converted;
             return true;

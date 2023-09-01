@@ -231,7 +231,7 @@ internal class CollectionConverter<TCollection, TCollectionPolicy, TBuffer, TEle
                 var value = values[i];
                 try
                 {
-                    if (!singleValueConverter.TryConvertValue(context, value!, out var elementValue))
+                    if (!singleValueConverter.TryConvertValue(ref context, value!, out var elementValue))
                     {
                         succeded = false;
                     }
