@@ -10,7 +10,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 
-internal class FormDataReader : IDisposable
+internal struct FormDataReader : IDisposable
 {
     private readonly IReadOnlyDictionary<FormKey, StringValues> _readOnlyMemoryKeys;
     private readonly Memory<char> _prefixBuffer;
