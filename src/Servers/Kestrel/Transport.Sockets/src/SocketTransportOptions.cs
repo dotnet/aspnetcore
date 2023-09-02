@@ -65,7 +65,7 @@ public class SocketTransportOptions
     /// </para>
     /// <para>
     /// For server limits to work correctly, this needs to be consistent with
-    /// <see cref="Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerLimits.MaxResponseBufferSize"/>.
+    /// <see cref="P:Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerLimits.MaxResponseBufferSize"/>.
     /// </para>
     /// </summary>
     /// <remarks>

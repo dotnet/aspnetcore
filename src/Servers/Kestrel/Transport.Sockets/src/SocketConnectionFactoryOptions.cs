@@ -50,13 +50,12 @@ public class SocketConnectionFactoryOptions
     /// </summary>
     public long? MaxReadBufferSize { get; set; } = 1024 * 1024;
 
-
 #pragma warning disable CS1574 // XML comment has cref attribute that could not be resolved
     /// <summary>
     /// Gets or sets the maximum outgoing bytes the transport will buffer before applying write backpressure.
     /// <para>
     /// For server limits to work correctly, this needs to be consistent with
-    /// <see cref="Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerLimits.MaxResponseBufferSize"/>.
+    /// <see cref="P:Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerLimits.MaxResponseBufferSize"/>.
     /// </para>
     /// </summary>
     public long? MaxWriteBufferSize { get; set; } = 64 * 1024;

@@ -42,7 +42,6 @@ public class KestrelServerLimits
     private long? _maxConcurrentConnections;
     private long? _maxConcurrentUpgradedConnections;
 
-
 #pragma warning disable CS1574 // XML comment has cref attribute that could not be resolved
     /// <summary>
     /// Gets or sets the maximum size of the response buffer before write
@@ -52,8 +51,8 @@ public class KestrelServerLimits
     /// <para>
     /// For limits to work correctly, this needs to be consistent with
     /// <code>MaxWriteBufferSize</code> in the transport options
-    /// (e.g. <see cref="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions.MaxWriteBufferSize"/>
-    /// and/or <see cref="Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions.MaxWriteBufferSize"/>).
+    /// (e.g. <see cref="P:Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions.MaxWriteBufferSize"/>
+    /// and/or <see cref="P:Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions.MaxWriteBufferSize"/>).
     /// </para>
     /// </summary>
     /// <remarks>
