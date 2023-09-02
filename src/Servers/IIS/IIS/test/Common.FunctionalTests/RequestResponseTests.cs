@@ -612,6 +612,28 @@ public class RequestResponseTests
     }
 
     [ConditionalTheory]
+    [InlineData("IIISEnvironmentFeature")]
+    [InlineData("IIISEnvironmentFeatureConfig")]
+    public async Task IISEnvironmentFeatureIsAvailable(string endpoint)
+    {
+        var siteName = _fixture.DeploymentResult.DeploymentParameters.SiteName.ToUpperInvariant();
+    
+        var expected = $"""
+            IIS Version: 10.0
+            ApplicationId: /LM/W3SVC/1/ROOT
+            Application Path: {_fixture.DeploymentResult.ContentRoot}\
+            Application Virtual Path: /
+            Application Config Path: MACHINE/WEBROOT/APPHOST/{siteName}
+            AppPool ID: {_fixture.DeploymentResult.AppPoolName}
+            AppPool Config File: {_fixture.DeploymentResult.DeploymentParameters.ServerConfigLocation}
+            Site ID: 1
+            Site Name: {siteName}
+            """;
+
+        Assert.Equal(expected, await _fixture.Client.GetStringAsync($"/{endpoint}"));
+    }
+
+    [ConditionalTheory]
     [InlineData(65000)]
     [InlineData(1000000)]
     [InlineData(10000000)]
