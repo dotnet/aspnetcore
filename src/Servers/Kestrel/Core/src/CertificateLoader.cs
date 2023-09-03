@@ -3,7 +3,7 @@
 
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
+//using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Https;
 
@@ -77,7 +77,7 @@ public static class CertificateLoader
     internal static bool DoesCertificateHaveASubjectAlternativeName(X509Certificate2 certificate)
         => certificate.Extensions.OfType<X509SubjectAlternativeNameExtension>().Any();
 
-    private static void DisposeCertificates(X509Certificate2Collection? certificates, X509Certificate2? except)
+    /*private static void DisposeCertificates(X509Certificate2Collection? certificates, X509Certificate2? except)
     {
         if (certificates != null)
         {
@@ -89,5 +89,5 @@ public static class CertificateLoader
                 }
             }
         }
-    }
+    }*/
 }
