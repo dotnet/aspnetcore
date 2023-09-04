@@ -11,6 +11,6 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "selenium-standalone": "^7.1.0"
+    "selenium-standalone": "^9.1.1"
   }
 }

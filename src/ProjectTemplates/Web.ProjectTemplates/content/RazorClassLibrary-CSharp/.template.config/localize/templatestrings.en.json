@@ -1,7 +1,7 @@
 {
   "author": "Microsoft",
   "name": "Razor Class Library",
-  "description": "A project for creating a Razor class library that targets .NET Standard",
+  "description": "A project for creating a Razor class library that targets .NET",
   "symbols/Framework/description": "The target framework for the project.",
   "symbols/Framework/choices/net8.0/description": "Target net8.0",
   "_symbols/Framework/choices/net8.0/description.comment": "{Locked='net8.0'}",

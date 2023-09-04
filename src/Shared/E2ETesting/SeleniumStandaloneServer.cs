@@ -85,7 +85,7 @@ public class SeleniumStandaloneServer : IDisposable
     private static async Task InitializeInstance(ITestOutputHelper output)
     {
         var port = FindAvailablePort();
-        var uri = new UriBuilder("http", SeleniumHost, port, "/wd/hub").Uri;
+        var uri = new UriBuilder("http", SeleniumHost, port).Uri;
 
         var seleniumConfigPath = typeof(SeleniumStandaloneServer).Assembly
             .GetCustomAttributes<AssemblyMetadataAttribute>()
@@ -111,7 +111,7 @@ public class SeleniumStandaloneServer : IDisposable
         var psi = new ProcessStartInfo
         {
             FileName = "npm",
-            Arguments = $"run selenium-standalone start -- --config \"{seleniumConfigPath}\" {chromeDriverArg} -- -host {SeleniumHost} -port {port}",
+            Arguments = $"run selenium-standalone start -- --config \"{seleniumConfigPath}\" {chromeDriverArg} -- --host {SeleniumHost} --port {port}",
             RedirectStandardOutput = true,
             RedirectStandardError = true,
         };
