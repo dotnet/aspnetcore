@@ -20,17 +20,14 @@ internal static partial class FormDataMapper
             converter = options.ResolveConverter<T>();
             if (converter == null)
             {
-                Log.CannotResolveConverter(options.Logger, typeof(T));
+                Log.CannotResolveConverter(options.Logger, typeof(T), null);
                 return default;
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            Log.CannotResolveConverter(options.Logger, typeof(T));
+            Log.CannotResolveConverter(options.Logger, typeof(T), ex);
             return default;
-        }
-        finally
-        {
         }
 
         if (converter.TryRead(ref reader, typeof(T), options, out var result, out _))
@@ -46,6 +43,6 @@ internal static partial class FormDataMapper
     private static partial class Log
     {
         [LoggerMessage(1, LogLevel.Warning, "Cannot resolve converter for type '{Type}'.", EventName = "CannotResolveConverter")]
-        public static partial void CannotResolveConverter(ILogger logger, Type type);
+        public static partial void CannotResolveConverter(ILogger logger, Type type, Exception? ex);
     }
 }

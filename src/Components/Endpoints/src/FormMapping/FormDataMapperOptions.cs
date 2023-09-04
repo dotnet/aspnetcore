@@ -49,7 +49,7 @@ internal sealed class FormDataMapperOptions
 
     [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
     [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
-    internal FormDataConverter<T> ResolveConverter<T>()
+    internal FormDataConverter<T>? ResolveConverter<T>()
     {
         return (FormDataConverter<T>)_converters.GetOrAdd(typeof(T), CreateConverter, this);
     }

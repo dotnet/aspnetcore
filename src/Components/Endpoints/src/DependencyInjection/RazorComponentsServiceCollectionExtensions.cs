@@ -62,7 +62,6 @@ public static class RazorComponentsServiceCollectionExtensions
         services.TryAddScoped<PersistentComponentState>(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
         services.TryAddScoped<IErrorBoundaryLogger, PrerenderingErrorBoundaryLogger>();
         services.ConfigureOptions<DefaultRazorComponentsServerOptionsConfiguration>();
-        //services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<RazorComponentsServerOptions>, DefaultRazorComponentsServerOptionsConfiguration>());
         services.TryAddScoped<EndpointRoutingStateProvider>();
         services.TryAddScoped<IRoutingStateProvider>(sp => sp.GetRequiredService<EndpointRoutingStateProvider>());
         services.AddSupplyValueFromQueryProvider();
