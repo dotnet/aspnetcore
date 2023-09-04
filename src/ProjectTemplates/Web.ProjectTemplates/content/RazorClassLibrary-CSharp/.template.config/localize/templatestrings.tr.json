@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
   "name": "Razor Sınıf Kitaplığı",
-  "description": "A project for creating a Razor class library that targets .NET",
+  "description": ".NET’i hedefleyen bir Razor sınıf kitaplığı oluşturma projesi.",
   "symbols/Framework/description": "Projenin hedef çerçevesi.",
   "symbols/Framework/choices/net8.0/description": "Hedef net8.0",
   "symbols/skipRestore/description": "Belirtilirse, oluşturma sırasında projenin otomatik geri yüklenmesini atlar.",
