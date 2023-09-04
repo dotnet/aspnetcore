@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.FormMapping.Metadata;
 
-internal partial class FormDataMetadataFactory(List<IFormDataConverterFactory> factories, Extensions.Logging.ILoggerFactory loggerFactory)
+internal partial class FormDataMetadataFactory(List<IFormDataConverterFactory> factories, ILoggerFactory loggerFactory)
 {
     private readonly object _lock = new object();
     private readonly FormMetadataContext _context = new();
