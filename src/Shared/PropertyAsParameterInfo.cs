@@ -139,14 +139,20 @@ internal sealed class PropertyAsParameterInfo : ParameterInfo
 
     public override object[] GetCustomAttributes(Type attributeType, bool inherit)
     {
-        var attributes = _constructionParameterInfo?.GetCustomAttributes(attributeType, inherit);
+        var constructorAttributes = _constructionParameterInfo?.GetCustomAttributes(attributeType, inherit);
 
-        if (attributes == null || attributes is { Length: 0 })
+        if (constructorAttributes == null || constructorAttributes is { Length: 0 })
         {
-            attributes = _underlyingProperty.GetCustomAttributes(attributeType, inherit);
+            return _underlyingProperty.GetCustomAttributes(attributeType, inherit);
         }
 
-        return attributes;
+        var propertyAttributes = _underlyingProperty.GetCustomAttributes(attributeType, inherit);
+
+        var mergedAttributes = new Attribute[constructorAttributes.Length + propertyAttributes.Length];
+        Array.Copy(constructorAttributes, mergedAttributes, constructorAttributes.Length);
+        Array.Copy(propertyAttributes, 0, mergedAttributes, constructorAttributes.Length, propertyAttributes.Length);
+
+        return mergedAttributes;
     }
 
     public override object[] GetCustomAttributes(bool inherit)
