@@ -4927,13 +4927,14 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
             });
 
             provider.AddKeyedScoped<Service1>("service1");
+            provider.AddKeyedScoped<Service1>("service2");
         });
-        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ServicesHub>>();
+        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<KeyedServicesHub>>();
 
         using (var client = new TestClient())
         {
             var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
-            var res = await client.InvokeAsync(nameof(ServicesHub.KeyedService)).DefaultTimeout();
+            var res = await client.InvokeAsync(nameof(KeyedServicesHub.KeyedService)).DefaultTimeout();
             Assert.Equal(43L, res.Result);
         }
     }
@@ -4949,13 +4950,14 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
             });
 
             provider.AddKeyedScoped<Service1>("service1");
+            provider.AddKeyedScoped<Service1>("service2");
         });
-        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ServicesHub>>();
+        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<KeyedServicesHub>>();
 
         using (var client = new TestClient())
         {
             var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
-            var res = await client.InvokeAsync(nameof(ServicesHub.KeyedServiceWithParam), 91).DefaultTimeout();
+            var res = await client.InvokeAsync(nameof(KeyedServicesHub.KeyedServiceWithParam), 91).DefaultTimeout();
             Assert.Equal(1183L, res.Result);
         }
     }
@@ -4971,14 +4973,15 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
             });
 
             provider.AddKeyedScoped<Service1>("service1");
+            provider.AddKeyedScoped<Service1>("service2");
             provider.AddScoped<Service2>();
         });
-        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ServicesHub>>();
+        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<KeyedServicesHub>>();
 
         using (var client = new TestClient())
         {
             var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
-            var res = await client.InvokeAsync(nameof(ServicesHub.KeyedServiceNonKeyedService)).DefaultTimeout();
+            var res = await client.InvokeAsync(nameof(KeyedServicesHub.KeyedServiceNonKeyedService)).DefaultTimeout();
             Assert.Equal(11L, res.Result);
         }
     }
@@ -4996,12 +4999,12 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
             provider.AddKeyedScoped<Service1>("service1");
             provider.AddKeyedScoped<Service1>("service2");
         });
-        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ServicesHub>>();
+        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<KeyedServicesHub>>();
 
         using (var client = new TestClient())
         {
             var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
-            var res = await client.InvokeAsync(nameof(ServicesHub.MultipleKeyedServices)).DefaultTimeout();
+            var res = await client.InvokeAsync(nameof(KeyedServicesHub.MultipleKeyedServices)).DefaultTimeout();
             Assert.Equal(45L, res.Result);
         }
     }
@@ -5017,19 +5020,20 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
             });
 
             provider.AddKeyedScoped<Service1>("service1");
+            provider.AddKeyedScoped<Service1>("service2");
         });
-        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ServicesHub>>();
+        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<KeyedServicesHub>>();
 
         using (var client = new TestClient())
         {
             var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
-            var res = await client.InvokeAsync(nameof(ServicesHub.MultipleSameKeyedServices)).DefaultTimeout();
+            var res = await client.InvokeAsync(nameof(KeyedServicesHub.MultipleSameKeyedServices)).DefaultTimeout();
             Assert.Equal(445L, res.Result);
         }
     }
 
     [Fact]
-    public async Task KeyedServiceNotResolvedIfNotInDI()
+    public void KeyedServiceNotResolvedIfNotInDI()
     {
         var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(provider =>
         {
@@ -5038,14 +5042,24 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
                 options.EnableDetailedErrors = true;
             });
         });
-        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ServicesHub>>();
+        var ex = Assert.Throws<InvalidOperationException>(() => serviceProvider.GetService<HubConnectionHandler<KeyedServicesHub>>());
+        Assert.Equal("'Microsoft.AspNetCore.SignalR.Tests.Service1' is not in DI as a keyed service.", ex.Message);
+    }
 
-        using (var client = new TestClient())
+    [Fact]
+    public void KeyedServiceAndFromServiceOnSameParameterInvalidWithKeyedServiceInDI()
+    {
+        var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(provider =>
         {
-            var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
-            var res = await client.InvokeAsync(nameof(ServicesHub.KeyedService)).DefaultTimeout();
-            Assert.Equal("Failed to invoke 'KeyedService' due to an error on the server. InvalidDataException: Invocation provides 0 argument(s) but target expects 1.", res.Error);
-        }
+            provider.AddSignalR(options =>
+            {
+                options.EnableDetailedErrors = true;
+            });
+
+            provider.AddKeyedScoped<Service1>("service1");
+        });
+        var ex = Assert.Throws<InvalidOperationException>(() => serviceProvider.GetService<HubConnectionHandler<BadServicesHub>>());
+        Assert.Equal("BadServicesHub.BadMethod: The FromKeyedServicesAttribute is not supported on parameters that are also annotated with IFromServiceMetadata.", ex.Message);
     }
 
     [Fact]
