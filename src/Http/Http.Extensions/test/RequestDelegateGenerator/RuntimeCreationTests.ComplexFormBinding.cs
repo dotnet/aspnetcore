@@ -5,6 +5,7 @@ using System.Net.Http;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
@@ -172,7 +173,19 @@ app.MapPost("/", ([FromForm] Dictionary<string, bool> elements) => Results.Ok(el
         httpContext.Request.Headers["Content-Type"] = "multipart/form-data;boundary=some-boundary";
         httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
 
-        await Assert.ThrowsAsync<FormDataMappingException>(async () => await endpoint.RequestDelegate(httpContext));
+        await endpoint.RequestDelegate(httpContext);
+        Assert.Equal(StatusCodes.Status400BadRequest, httpContext.Response.StatusCode);
+
+        var logs = TestSink.Writes.ToArray();
+
+        var log = Assert.Single(logs);
+
+        Assert.Equal(new EventId(10, "FormMappingFailed"), log.EventId);
+        Assert.Equal(LogLevel.Debug, log.LogLevel);
+        Assert.Equal(@"Failed to bind parameter ""Dictionary<string, bool> elements"" from the request body as form.", log.Message);
+        var log1Values = Assert.IsAssignableFrom<IReadOnlyList<KeyValuePair<string, object>>>(log.State);
+        Assert.Equal("Dictionary<string, bool>", log1Values[0].Value);
+        Assert.Equal("elements", log1Values[1].Value);
     }
 
     [Fact]

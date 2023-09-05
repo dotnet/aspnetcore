@@ -3,13 +3,13 @@
 
 using System.Text.Json.Serialization;
 
-namespace Microsoft.AspNetCore.Identity.DTO;
+namespace Microsoft.AspNetCore.Identity.Data;
 
 [JsonSerializable(typeof(RegisterRequest))]
 [JsonSerializable(typeof(LoginRequest))]
 [JsonSerializable(typeof(RefreshRequest))]
 [JsonSerializable(typeof(ResetPasswordRequest))]
-[JsonSerializable(typeof(ResendEmailRequest))]
+[JsonSerializable(typeof(ResendConfirmationEmailRequest))]
 [JsonSerializable(typeof(InfoRequest))]
 [JsonSerializable(typeof(InfoResponse))]
 [JsonSerializable(typeof(TwoFactorRequest))]

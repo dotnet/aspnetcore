@@ -141,7 +141,7 @@ internal partial class EndpointHtmlRenderer
                 writer.Write("</template>");
             }
 
-            writer.Write("</blazor-ssr>");
+            writer.Write("<blazor-ssr-end></blazor-ssr-end></blazor-ssr>");
             writer.Write(_ssrFramingCommentMarkup);
         }
     }
@@ -173,14 +173,14 @@ internal partial class EndpointHtmlRenderer
 
         writer.Write("<blazor-ssr><template type=\"error\">");
         writer.Write(HtmlEncoder.Default.Encode(message));
-        writer.Write("</template></blazor-ssr>");
+        writer.Write("</template><blazor-ssr-end></blazor-ssr-end></blazor-ssr>");
     }
 
     private static void HandleNavigationAfterResponseStarted(TextWriter writer, string destinationUrl)
     {
         writer.Write("<blazor-ssr><template type=\"redirection\">");
         writer.Write(HtmlEncoder.Default.Encode(destinationUrl));
-        writer.Write("</template></blazor-ssr>");
+        writer.Write("</template><blazor-ssr-end></blazor-ssr-end></blazor-ssr>");
     }
 
     protected override void WriteComponentHtml(int componentId, TextWriter output)

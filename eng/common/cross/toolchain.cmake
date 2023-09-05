@@ -207,6 +207,7 @@ elseif(ILLUMOS)
     set(CMAKE_CXX_STANDARD_LIBRARIES "${CMAKE_CXX_STANDARD_LIBRARIES} -lssp")
 elseif(HAIKU)
     set(CMAKE_SYSROOT "${CROSS_ROOTFS}")
+    set(CMAKE_PROGRAM_PATH "${CMAKE_PROGRAM_PATH};${CROSS_ROOTFS}/cross-tools-x86_64/bin")
 
     set(TOOLSET_PREFIX ${TOOLCHAIN}-)
     function(locate_toolchain_exec exec var)
@@ -217,7 +218,6 @@ elseif(HAIKU)
         endif()
 
         find_program(EXEC_LOCATION_${exec}
-            PATHS "${CROSS_ROOTFS}/cross-tools-x86_64/bin"
             NAMES
             "${TOOLSET_PREFIX}${exec}${CLR_CMAKE_COMPILER_FILE_NAME_VERSION}"
             "${TOOLSET_PREFIX}${exec}")

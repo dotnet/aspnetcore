@@ -3,12 +3,12 @@
 
 using System.Text.Json;
 
-namespace Microsoft.AspNetCore.Authentication.BearerToken.DTO;
+namespace Microsoft.AspNetCore.Authentication.BearerToken;
 
 /// <summary>
-/// The JSON data transfer object for the bearer token response.
+/// The JSON data transfer object for the bearer token response typically found in "/login" and "/refresh" responses.
 /// </summary>
-internal sealed class AccessTokenResponse
+public sealed class AccessTokenResponse
 {
     /// <summary>
     /// The value is always "Bearer" which indicates this response provides a "Bearer" token
