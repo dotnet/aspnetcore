@@ -7,7 +7,7 @@
     "WebAssembly",
     "PWA"
   ],
-  "name": "Blazor WebAssembly App",
+  "name": "Blazor WebAssembly Standalone App",
   "defaultName": "BlazorApp",
   "description": "A project template for creating a Blazor app that runs on WebAssembly. This template can be used for web apps with rich dynamic user interfaces (UIs).",
   "groupIdentity": "Microsoft.Web.Blazor.Wasm",
