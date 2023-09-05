@@ -1,6 +1,6 @@
 {
   "author": "Microsoft",
-  "name": "Blazor WebAssembly App",
+  "name": "Blazor WebAssembly Standalone App",
   "description": "A project template for creating a Blazor app that runs on WebAssembly. This template can be used for web apps with rich dynamic user interfaces (UIs).",
   "symbols/Framework/description": "The target framework for the project.",
   "symbols/Framework/choices/net8.0/description": "Target net8.0",

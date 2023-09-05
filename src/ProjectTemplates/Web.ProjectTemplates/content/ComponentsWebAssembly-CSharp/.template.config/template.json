@@ -73,13 +73,13 @@
         {
           "condition": "(NoAuth)",
           "rename": {
-            "Shared/MainLayout.NoAuth.razor": "Shared/MainLayout.razor"
+            "Components/Layout/MainLayout.NoAuth.razor": "Components/Layout/MainLayout.razor"
           },
           "exclude": [
-            "Pages/Authentication.razor",
-            "Shared/LoginDisplay.*.razor",
-            "Shared/MainLayout.Auth.razor",
-            "Shared/RedirectToLogin.razor",
+            "Components/Pages/Authentication.razor",
+            "Components/Login/LoginDisplay.*.razor",
+            "Components/Layout/MainLayout.Auth.razor",
+            "Components/Login/RedirectToLogin.razor",
             "wwwroot/appsettings.Development.json",
             "wwwroot/appsettings.json"
           ]
@@ -87,47 +87,47 @@
         {
           "condition": "(!NoAuth)",
           "rename": {
-            "Shared/MainLayout.Auth.razor": "Shared/MainLayout.razor"
+            "Components/Layout/MainLayout.Auth.razor": "Components/Layout/MainLayout.razor"
           },
           "exclude": [
-            "Shared/MainLayout.NoAuth.razor"
+            "Components/Layout/MainLayout.NoAuth.razor"
           ]
         },
         {
           "condition": "(IndividualLocalAuth)",
           "rename": {
-            "Shared/LoginDisplay.IndividualLocalAuth.razor": "Shared/LoginDisplay.razor"
+            "Components/Login/LoginDisplay.IndividualLocalAuth.razor": "Components/Login/LoginDisplay.razor"
           },
           "exclude": [
-            "Shared/LoginDisplay.IndividualMsalAuth.razor"
+            "Components/Login/LoginDisplay.IndividualMsalAuth.razor"
           ]
         },
         {
           "condition": "(IndividualB2CAuth || OrganizationalAuth)",
           "rename": {
-            "Shared/LoginDisplay.IndividualMsalAuth.razor": "Shared/LoginDisplay.razor"
+            "Components/Login/LoginDisplay.IndividualMsalAuth.razor": "Components/Login/LoginDisplay.razor"
           },
           "exclude": [
-            "Shared/LoginDisplay.IndividualLocalAuth.razor"
+            "Components/Login/LoginDisplay.IndividualLocalAuth.razor"
           ]
         },
         {
           "condition": "(!GenerateApi)",
           "rename": {
-            "Shared/NavMenu.NoApi.razor": "Shared/NavMenu.razor"
+            "Components/Layout/NavMenu.NoApi.razor": "Components/Layout/NavMenu.razor"
           },
           "exclude": [
-            "Pages/CallWebApi.razor",
-            "Shared/NavMenu.CallsWebApi.razor"
+            "Components/Pages/CallWebApi.razor",
+            "Components/Layout/NavMenu.CallsWebApi.razor"
           ]
         },
         {
           "condition": "(GenerateApi)",
           "rename": {
-            "Shared/NavMenu.CallsWebApi.razor": "Shared/NavMenu.razor"
+            "Components/Layout/NavMenu.CallsWebApi.razor": "Components/Layout/NavMenu.razor"
           },
           "exclude": [
-            "Shared/NavMenu.NoApi.razor"
+            "Components/Layout/NavMenu.NoApi.razor"
           ]
         },
         {
