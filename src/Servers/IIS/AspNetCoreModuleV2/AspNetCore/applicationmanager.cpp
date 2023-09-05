@@ -175,25 +175,32 @@ APPLICATION_MANAGER::RecycleApplicationFromManager(
                 }
             }
         }
+
+        // Remove apps after calling shutdown on each of them
+        // This is exclusive to in-process, as the shutdown of an inprocess app recycles
+        // the entire worker process.
+        if (m_handlerResolver.GetHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS)
         {
             SRWExclusiveLock lock(m_srwLock);
             const std::wstring configurationPath = pszApplicationId;
 
-            // Remove apps after calling shutdown on each of them
-            // This is exclusive to in-process, as the shutdown of an inprocess app recycles
-            // the entire worker process.
             auto itr = m_pApplicationInfoHash.begin();
             while (itr != m_pApplicationInfoHash.end())
             {
-                if (itr->second != nullptr && itr->second->ConfigurationPathApplies(configurationPath))
+                for (auto& application : applicationsToRecycle)
                 {
-                    itr = m_pApplicationInfoHash.erase(itr);
+                    if (itr->second != nullptr && itr->second->ConfigurationPathApplies(configurationPath)
+                        && itr->second.get() == application.get())
+                    {
+                        itr = m_pApplicationInfoHash.erase(itr);
+                        break;
+                    }
+                    else
+                    {
+                        ++itr;
+                    }
                 }
-                else
-                {
-                    ++itr;
-                }
-            }
+            } // Release Exclusive m_srwLock
         }
     }
     CATCH_RETURN()
