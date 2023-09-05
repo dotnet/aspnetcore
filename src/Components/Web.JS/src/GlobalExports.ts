@@ -18,6 +18,7 @@ import { RootComponentsFunctions } from './Rendering/JSRootComponents';
 import { attachWebRendererInterop } from './Rendering/WebRendererInteropMethods';
 import { WebStartOptions } from './Platform/WebStartOptions';
 import { RuntimeAPI } from 'dotnet';
+import { EventRegistry } from './Services/EventRegistry';
 
 // TODO: It's kind of hard to tell which .NET platform(s) some of these APIs are relevant to.
 // It's important to know this information when dealing with the possibility of mulitple .NET platforms being available.
@@ -29,11 +30,12 @@ import { RuntimeAPI } from 'dotnet';
 // * Blazor._internal.{foo}: internal, platform-agnostic Blazor APIs
 // * Blazor.platform.{somePlatformName}.{foo}: public, platform-specific Blazor APIs (would be empty at first, so no initial breaking changes)
 // * Blazor.platform.{somePlatformName}.{_internal}.{foo}: internal, platform-specific Blazor APIs
-interface IBlazor {
+export interface IBlazor {
   navigateTo: (uri: string, options: NavigationOptions) => void;
   registerCustomEventType: (eventName: string, options: EventTypeOptions) => void;
 
-  registerEnhancedPageUpdateCallback?: (callback: () => void) => { dispose(): void };
+  addEventListener: typeof EventRegistry.prototype.addEventListener;
+  removeEventListener: typeof EventRegistry.prototype.removeEventListener;
   disconnect?: () => void;
   reconnect?: (existingConnection?: HubConnection) => Promise<boolean>;
   defaultReconnectionHandler?: DefaultReconnectionHandler;
@@ -47,6 +49,7 @@ interface IBlazor {
     domWrapper: typeof domFunctions;
     Virtualize: typeof Virtualize;
     PageTitle: typeof PageTitle;
+    dispatchEvent: typeof EventRegistry.prototype.dispatchEvent;
     forceCloseConnection?: () => Promise<void>;
     InputFile?: typeof InputFile;
     NavigationLock: typeof NavigationLock;
@@ -91,9 +94,13 @@ interface IBlazor {
   }
 }
 
+const eventRegistry = new EventRegistry();
+
 export const Blazor: IBlazor = {
   navigateTo,
   registerCustomEventType,
+  addEventListener: eventRegistry.addEventListener.bind(eventRegistry),
+  removeEventListener: eventRegistry.removeEventListener.bind(eventRegistry),
   rootComponents: RootComponentsFunctions,
   runtime: {} as RuntimeAPI,
 
@@ -106,8 +113,11 @@ export const Blazor: IBlazor = {
     NavigationLock,
     getJSDataStreamChunk: getNextChunk,
     attachWebRendererInterop,
+    dispatchEvent: eventRegistry.dispatchEvent.bind(eventRegistry),
   },
 };
+
+eventRegistry.attachBlazorInstance(Blazor);
 
 // Make the following APIs available in global scope for invocation from JS
 window['Blazor'] = Blazor;

@@ -22,25 +22,20 @@
     preservedContent.textContent = 'Preserved content';
     nonPreservedContent.textContent = 'Non preserved content';
 
-    let registration = null;
+    const onEnhancedLoad = (ev) => {
+        window.enhancedPageUpdateCount++;
+    }
 
     window.listenForEnhancedUpdates = () => {
-        if (!registration) {
-            window.enhancedPageUpdateCount = 0;
-            registration = Blazor.registerEnhancedPageUpdateCallback(() => {
-                window.enhancedPageUpdateCount++;
-            });
-        }
+        window.enhancedPageUpdateCount = 0;
+        Blazor.addEventListener('enhancedload', onEnhancedLoad);
     };
 
     window.stopListeningForEnhancedUpdates = () => {
-        if (registration) {
-            registration.dispose();
-            registration = null;
-        }
+        Blazor.removeEventListener('enhancedload', onEnhancedLoad);
     };
 </script>
 
 @code {
-    private readonly IComponentRenderMode _interactiveNavigationRenderMode = new ServerRenderMode(prerender: false);
+    private readonly IComponentRenderMode _interactiveNavigationRenderMode = new InteractiveServerRenderMode(prerender: false);
 }

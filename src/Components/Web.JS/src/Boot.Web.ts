@@ -19,7 +19,6 @@ import { NavigationEnhancementCallbacks, attachProgressivelyEnhancedNavigationLi
 import { WebRootComponentManager } from './Services/WebRootComponentManager';
 import { hasProgrammaticEnhancedNavigationHandler, performProgrammaticEnhancedNavigation } from './Services/NavigationUtils';
 import { attachComponentDescriptorHandler, registerAllComponentDescriptors } from './Rendering/DomMerging/DomSync';
-import { CallbackCollection } from './Services/CallbackCollection';
 
 let started = false;
 let rootComponentManager: WebRootComponentManager;
@@ -45,14 +44,12 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
   setWebAssemblyOptions(options?.webAssembly);
 
   rootComponentManager = new WebRootComponentManager(options?.ssr?.circuitInactivityTimeoutMs ?? 2000);
-  const enhancedPageUpdateCallbacks = new CallbackCollection();
-
-  Blazor.registerEnhancedPageUpdateCallback = (callback) => enhancedPageUpdateCallbacks.registerCallback(callback);
+  const enqueueDispatchEnhancedLoad = createEnhancedLoadDispatcher();
 
   const navigationEnhancementCallbacks: NavigationEnhancementCallbacks = {
     documentUpdated: () => {
       rootComponentManager.onDocumentUpdated();
-      enhancedPageUpdateCallbacks.enqueueCallbackInvocation();
+      enqueueDispatchEnhancedLoad();
     },
   };
 
@@ -78,6 +75,24 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
 function onInitialDomContentLoaded() {
   registerAllComponentDescriptors(document);
   rootComponentManager.onDocumentUpdated();
+}
+
+// This function ensures that 'enhancedload' only gets invoked once
+// for any synchronous sequence of document updates via SSR.
+function createEnhancedLoadDispatcher() {
+  let isDispatchPending = false;
+
+  return function() {
+    if (isDispatchPending) {
+      return;
+    }
+
+    isDispatchPending = true;
+    setTimeout(() => {
+      isDispatchPending = false;
+      Blazor._internal.dispatchEvent('enhancedload', {});
+    }, 0);
+  };
 }
 
 Blazor.start = boot;
