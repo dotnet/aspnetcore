@@ -71,6 +71,24 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
     }
 
     [Fact]
+    public void EnhancedNavRequestsIncludeExpectedHeaders()
+    {
+        Navigate($"{ServerPathBase}/nav");
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("List headers")).Click();
+
+        var ul = Browser.Exists(By.Id("all-headers"));
+        var allHeaders = ul.FindElements(By.TagName("li")).Select(x => x.Text.ToLowerInvariant()).ToList();
+
+        // The server can trigger arbitrary behavior based on this
+        Assert.Contains("blazor-enhanced-nav: on", allHeaders);
+
+        // This is to make the enhanced nav outcomes more similar to non-enhanced nav.
+        // For example, the default error middleware will only serve the error page if
+        // this header is included.
+        Assert.Contains("accept: text/html", allHeaders);
+    }
+
+    [Fact]
     public void ScrollsToHashWithContentAddedAsynchronously()
     {
         Navigate($"{ServerPathBase}/nav");
@@ -262,8 +280,8 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
 
         Browser.Exists(By.TagName("nav")).FindElement(By.LinkText($"Interactive component navigation ({renderMode})")).Click();
         Browser.Equal("Page with interactive components that navigate", () => Browser.Exists(By.TagName("h1")).Text);
-        
-        ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('suppress-enhanced-navigation', 'true')");
+
+        EnhancedNavigationTestUtil.SuppressEnhancedNavigation(this, true, skipNavigation: true);
         Browser.Navigate().Refresh();
         Browser.Equal("Page with interactive components that navigate", () => Browser.Exists(By.TagName("h1")).Text);
 

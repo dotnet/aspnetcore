@@ -2110,7 +2110,7 @@ public class RenderTreeBuilderTest
         // Act
         builder.OpenComponent<TestComponent>(0);
         builder.AddComponentParameter(1, "param", 123);
-        builder.AddComponentRenderMode(2, renderMode);
+        builder.AddComponentRenderMode(renderMode);
         builder.CloseComponent();
 
         // Assert
@@ -2122,7 +2122,7 @@ public class RenderTreeBuilderTest
                 Assert.True(frame.ComponentFrameFlags.HasFlag(ComponentFrameFlags.HasCallerSpecifiedRenderMode));
             },
             frame => AssertFrame.Attribute(frame, "param", 123, 1),
-            frame => AssertFrame.ComponentRenderMode(frame, renderMode, 2));
+            frame => AssertFrame.ComponentRenderMode(frame, renderMode));
     }
 
     [Fact]
@@ -2135,7 +2135,7 @@ public class RenderTreeBuilderTest
         // Act/Assert
         var ex = Assert.Throws<InvalidOperationException>(() =>
         {
-            builder.AddComponentRenderMode(1, new TestRenderMode());
+            builder.AddComponentRenderMode(new TestRenderMode());
         });
         Assert.Equal($"The enclosing frame is not of the required type '{nameof(RenderTreeFrameType.Component)}'.", ex.Message);
     }
@@ -2150,7 +2150,7 @@ public class RenderTreeBuilderTest
         // Act/Assert
         var ex = Assert.Throws<ArgumentNullException>(() =>
         {
-            builder.AddComponentRenderMode(1, null);
+            builder.AddComponentRenderMode(null);
         });
         Assert.Equal("renderMode", ex.ParamName);
     }
@@ -2161,7 +2161,7 @@ public class RenderTreeBuilderTest
         // Arrange
         var builder = new RenderTreeBuilder();
         builder.OpenComponent<TestComponent>(0);
-        builder.AddComponentRenderMode(1, new TestRenderMode());
+        builder.AddComponentRenderMode(new TestRenderMode());
 
         // Act/Assert
         var ex = Assert.Throws<InvalidOperationException>(() =>
@@ -2201,7 +2201,7 @@ public class RenderTreeBuilderTest
             },
             frame => AssertFrame.Attribute(frame, "param", 123, 1),
             frame => AssertFrame.Attribute(frame, "anotherparam", 456, 3),
-            frame => AssertFrame.ComponentRenderMode(frame, renderMode, 0));
+            frame => AssertFrame.ComponentRenderMode(frame, renderMode));
     }
 
     [Fact]
@@ -2214,7 +2214,7 @@ public class RenderTreeBuilderTest
         // Act
         builder.OpenElement(0, "elem");
         builder.AddAttribute(1, "attr", 123);
-        builder.AddNamedEvent(2, "myeventtype", "my event name");
+        builder.AddNamedEvent("myeventtype", "my event name");
         builder.CloseElement();
 
         // Assert
@@ -2235,7 +2235,7 @@ public class RenderTreeBuilderTest
         // Act/Assert
         var ex = Assert.Throws<InvalidOperationException>(() =>
         {
-            builder.AddNamedEvent(1, "x", "y");
+            builder.AddNamedEvent("x", "y");
         });
         Assert.Equal($"Named events may only be added as children of frames of type {RenderTreeFrameType.Element}", ex.Message);
     }
@@ -2250,7 +2250,7 @@ public class RenderTreeBuilderTest
         // Act/Assert
         var ex = Assert.Throws<ArgumentNullException>(() =>
         {
-            builder.AddNamedEvent(1, null, "assigned name");
+            builder.AddNamedEvent(null, "assigned name");
         });
         Assert.Equal("eventType", ex.ParamName);
     }
@@ -2265,7 +2265,7 @@ public class RenderTreeBuilderTest
         // Act/Assert
         var ex = Assert.Throws<ArgumentNullException>(() =>
         {
-            builder.AddNamedEvent(1, "eventtype", null);
+            builder.AddNamedEvent("eventtype", null);
         });
         Assert.Equal("assignedName", ex.ParamName);
     }
@@ -2280,7 +2280,7 @@ public class RenderTreeBuilderTest
         // Act/Assert
         var ex = Assert.Throws<ArgumentException>(() =>
         {
-            builder.AddNamedEvent(1, "eventtype", "");
+            builder.AddNamedEvent("eventtype", "");
         });
         Assert.Equal("assignedName", ex.ParamName);
     }
@@ -2291,7 +2291,7 @@ public class RenderTreeBuilderTest
         // Arrange
         var builder = new RenderTreeBuilder();
         builder.OpenElement(0, "elem");
-        builder.AddNamedEvent(1, "someevent", "somename");
+        builder.AddNamedEvent("someevent", "somename");
 
         // Act/Assert
         var ex = Assert.Throws<InvalidOperationException>(() =>
@@ -2325,7 +2325,7 @@ public class RenderTreeBuilderTest
             frame => AssertFrame.Element(frame, "div", 5, 0),
             frame => AssertFrame.Attribute(frame, "attr1", "123", 1),
             frame => AssertFrame.Attribute(frame, "attr2", "456", 3),
-            frame => AssertFrame.NamedEvent(frame, "onsubmit", "some custom name", 2),
+            frame => AssertFrame.NamedEvent(frame, "onsubmit", "some custom name"),
             frame => AssertFrame.Element(frame, "other", 1));
     }
 

@@ -6,8 +6,7 @@ import { EventDescriptor } from './Events/EventDelegator';
 import { enableJSRootComponents, JSComponentParametersByIdentifier, JSComponentIdentifiersByInitializer } from './JSRootComponents';
 
 const interopMethodsByRenderer = new Map<number, DotNet.DotNetObject>();
-const resolveAttachedPromiseByRenderer = new Map<number, () => void>();
-const attachedPromisesByRenderer = new Map<number, Promise<void>>();
+const rendererAttachedListeners: ((browserRendererId: number) => void)[] = [];
 
 let resolveFirstRendererAttached : () => void;
 
@@ -33,35 +32,26 @@ export function attachWebRendererInterop(
   }
 
   resolveFirstRendererAttached();
-  resolveRendererAttached(rendererId);
+  invokeRendererAttachedListeners(rendererId);
+}
+
+export function detachWebRendererInterop(rendererId: number) {
+  if (!interopMethodsByRenderer.delete(rendererId)) {
+    throw new Error(`Interop methods are not registered for renderer ${rendererId}`);
+  }
 }
 
 export function isRendererAttached(browserRendererId: number): boolean {
   return interopMethodsByRenderer.has(browserRendererId);
 }
 
-export function waitForRendererAttached(browserRendererId: number): Promise<void> {
-  if (isRendererAttached(browserRendererId)) {
-    return Promise.resolve();
-  }
-
-  let attachedPromise = attachedPromisesByRenderer.get(browserRendererId);
-  if (!attachedPromise) {
-    attachedPromise = new Promise<void>((resolve) => {
-      resolveAttachedPromiseByRenderer.set(browserRendererId, resolve);
-    });
-    attachedPromisesByRenderer.set(browserRendererId, attachedPromise);
-  }
-
-  return attachedPromise;
+export function registerRendererAttachedListener(listener: (browserRendererId: number) => void) {
+  rendererAttachedListeners.push(listener);
 }
 
-function resolveRendererAttached(browserRendererId: number): void {
-  const resolveRendererAttached = resolveAttachedPromiseByRenderer.get(browserRendererId);
-  if (resolveRendererAttached) {
-    resolveAttachedPromiseByRenderer.delete(browserRendererId);
-    attachedPromisesByRenderer.delete(browserRendererId);
-    resolveRendererAttached();
+function invokeRendererAttachedListeners(browserRendererId: number) {
+  for (const listener of rendererAttachedListeners) {
+    listener(browserRendererId);
   }
 }
 

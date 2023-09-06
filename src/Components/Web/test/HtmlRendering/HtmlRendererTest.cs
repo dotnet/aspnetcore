@@ -986,13 +986,54 @@ public class HtmlRendererTest
     }
 
     [Fact]
+    public async Task RenderComponentAsync_CanRenderScriptTag_WithJavaScriptEncodedContent()
+    {
+        // This is equivalent to Razor markup similar to:
+        //
+        //     <script>
+        //         alert('Hello, @name!');
+        //     </script>
+        //     And now with HTML encoding: @name
+        //
+        // Currently some extra linebreaks are needed to work around a Razor compiler issue (otherwise
+        // everything is treated as content to be encoded) but once https://github.com/dotnet/razor/issues/9204
+        // is fixed, the above should be correct.
+
+        // Arrange
+        var name = "Person with special chars like ' \" </script>";
+        var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
+        {
+            rtb.OpenElement(0, "script");
+            rtb.AddMarkupContent(1, "\n    alert('Hello, ");
+            rtb.AddContent(2, name);
+            rtb.AddMarkupContent(3, "!');\n");
+            rtb.CloseElement();
+            rtb.AddMarkupContent(4, "\nAnd now with HTML encoding: ");
+            rtb.AddContent(5, name);
+        })).BuildServiceProvider();
+
+        var htmlRenderer = GetHtmlRenderer(serviceProvider);
+        await htmlRenderer.Dispatcher.InvokeAsync(async () =>
+        {
+            // Act
+            var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
+
+            // Assert
+            Assert.Equal(@"<script>
+    alert('Hello, Person with special chars like \u0027 \u0022 \u003C/script\u003E!');
+</script>
+And now with HTML encoding: Person with special chars like &#x27; &quot; &lt;/script&gt;".Replace("\r", ""), result.ToHtmlString());
+        });
+    }
+
+    [Fact]
     public async Task RenderComponentAsync_IgnoresNamedEvents()
     {
         // Arrange
         var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
         {
             rtb.OpenElement(0, "div");
-            rtb.AddNamedEvent(1, "someevent", "somename");
+            rtb.AddNamedEvent("someevent", "somename");
             rtb.CloseElement();
         })).BuildServiceProvider();
 
@@ -1015,7 +1056,7 @@ public class HtmlRendererTest
         var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
         {
             rtb.OpenElement(0, "form");
-            rtb.AddNamedEvent(1, "onsubmit", "somename");
+            rtb.AddNamedEvent("onsubmit", "somename");
             rtb.CloseElement();
         })).BuildServiceProvider();
 
@@ -1038,7 +1079,7 @@ public class HtmlRendererTest
         var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
         {
             rtb.OpenElement(0, "form");
-            rtb.AddNamedEvent(1, "onsubmit", "some <name>");
+            rtb.AddNamedEvent("onsubmit", "some <name>");
             rtb.CloseElement();
         }))
             .AddSingleton<ICascadingValueSupplier>(new SupplyParameterFromFormValueProvider(formValueMapper, ""))
@@ -1066,7 +1107,7 @@ public class HtmlRendererTest
             rtb.AddComponentParameter(1, nameof(FormMappingScope.ChildContent), (RenderFragment<FormMappingContext>)(ctx => rtb =>
             {
                 rtb.OpenElement(0, "form");
-                rtb.AddNamedEvent(1, "onsubmit", "somename");
+                rtb.AddNamedEvent("onsubmit", "somename");
                 rtb.CloseElement();
             }));
             rtb.CloseComponent();

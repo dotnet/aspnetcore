@@ -183,7 +183,7 @@ public partial class ParameterViewTest
         Assert.Equal(default, target.IntProp);
         Assert.Equal(
             $"Object of type '{typeof(HasPropertyWithoutParameterAttribute).FullName}' has a property matching the name '{nameof(HasPropertyWithoutParameterAttribute.IntProp)}', " +
-            $"but it does not have [{nameof(ParameterAttribute)}], [{nameof(CascadingParameterAttribute)}] or [{nameof(SupplyParameterFromFormAttribute)}] applied.",
+            "but it does not have [Parameter], [CascadingParameter], or any other parameter-supplying attribute.",
             ex.Message);
     }
 

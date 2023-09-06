@@ -29,7 +29,7 @@ internal partial class EndpointHtmlRenderer
         else
         {
             // This component is the start of a subtree with a rendermode, so introduce a new rendermode boundary here
-            return new SSRRenderModeBoundary(componentType, renderMode);
+            return new SSRRenderModeBoundary(_httpContext, componentType, renderMode);
         }
     }
 
@@ -84,7 +84,7 @@ internal partial class EndpointHtmlRenderer
         {
             var rootComponent = prerenderMode is null
                 ? InstantiateComponent(componentType)
-                : new SSRRenderModeBoundary(componentType, prerenderMode);
+                : new SSRRenderModeBoundary(_httpContext, componentType, prerenderMode);
             var htmlRootComponent = await Dispatcher.InvokeAsync(() => BeginRenderingComponent(rootComponent, parameters));
             var result = new PrerenderedComponentHtmlContent(Dispatcher, htmlRootComponent);
 

@@ -31,6 +31,10 @@ export class BrowserRenderer {
     attachNavigationManagerToEventDelegator(this.eventDelegator);
   }
 
+  public getRootComponentCount(): number {
+    return this.rootComponentIds.size;
+  }
+
   public attachRootComponentToLogicalElement(componentId: number, element: LogicalElement, appendContent: boolean): void {
     if (isInteractiveRootComponentElement(element)) {
       throw new Error(`Root component '${componentId}' could not be attached because its target element is already associated with a root component`);
