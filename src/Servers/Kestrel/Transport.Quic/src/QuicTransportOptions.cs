@@ -36,6 +36,8 @@ public sealed class QuicTransportOptions
     /// <para>
     /// For server limits to work correctly, this needs to be consistent with
     /// <see cref="P:Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerLimits.MaxResponseBufferSize"/>.
+    /// If this limit is larger, the response might be truncated.  If this limit is smaller, rate limit
+    /// might be too generous.
     /// </para>
     /// </summary>
     [RequiresPreviewFeatures]

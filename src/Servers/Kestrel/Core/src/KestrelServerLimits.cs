@@ -52,6 +52,8 @@ public class KestrelServerLimits
     /// <code>MaxWriteBufferSize</code> in the transport options
     /// (e.g. <see cref="P:Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions.MaxWriteBufferSize"/>
     /// and/or <see cref="P:Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.QuicTransportOptions.MaxWriteBufferSize"/>).
+    /// If this limit is smaller, the response might be truncated.  If this limit is larger, rate limit
+    /// might be too generous.
     /// </para>
     /// </summary>
     /// <remarks>
