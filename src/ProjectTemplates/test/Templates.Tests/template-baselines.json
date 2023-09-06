@@ -1651,6 +1651,34 @@
         "wwwroot/sample-data/weather.json"
       ]
     },
+    "Empty": {
+      "Template": "blazorwasm",
+      "Arguments": "new blazorwasm --empty",
+      "Files": [
+        "Program.cs",
+        "Components/App.razor",
+        "Components/_Imports.razor",
+        "Components/Pages/Home.razor",
+        "Components/Layout/MainLayout.razor",
+        "Properties/launchSettings.json",
+        "wwwroot/index.html",
+        "wwwroot/css/app.css"
+      ]
+    },
+    "EmptyAuth": {
+      "Template": "blazorwasm",
+      "Arguments": "new blazorwasm -au Individual --empty",
+      "Files": [
+        "Program.cs",
+        "Components/App.razor",
+        "Components/_Imports.razor",
+        "Components/Pages/Home.razor",
+        "Components/Layout/MainLayout.razor",
+        "Properties/launchSettings.json",
+        "wwwroot/index.html",
+        "wwwroot/css/app.css"
+      ]
+    },
     "Individual": {
       "Template": "blazorwasm",
       "Arguments": "new blazorwasm -au Individual",
@@ -1788,6 +1816,23 @@
         "wwwroot/sample-data/weather.json"
       ]
     },
+    "EmptyPWA": {
+      "Template": "blazorwasm",
+      "Arguments": "new blazorwasm --pwa --empty",
+      "Files": [
+        "Program.cs",
+        "Components/App.razor",
+        "Components/_Imports.razor",
+        "Components/Pages/Home.razor",
+        "Components/Layout/MainLayout.razor",
+        "Properties/launchSettings.json",
+        "wwwroot/index.html",
+        "wwwroot/manifest.webmanifest",
+        "wwwroot/service-worker.js",
+        "wwwroot/service-worker.published.js",
+        "wwwroot/css/app.css"
+      ]
+    },
     "ExcludeLaunchSettings": {
       "Template": "blazorwasm",
       "Arguments": "new blazorwasm --exclude-launch-settings",
@@ -1815,6 +1860,19 @@
         "wwwroot/css/bootstrap-icons/fonts/bootstrap-icons.woff",
         "wwwroot/css/bootstrap-icons/fonts/bootstrap-icons.woff2",
         "wwwroot/sample-data/weather.json"
+      ]
+    },
+    "EmptyExcludeLaunchSettings": {
+      "Template": "blazorwasm",
+      "Arguments": "new blazorwasm --empty --exclude-launch-settings",
+      "Files": [
+        "Program.cs",
+        "Components/App.razor",
+        "Components/_Imports.razor",
+        "Components/Pages/Home.razor",
+        "Components/Layout/MainLayout.razor",
+        "wwwroot/index.html",
+        "wwwroot/css/app.css"
       ]
     }
   },

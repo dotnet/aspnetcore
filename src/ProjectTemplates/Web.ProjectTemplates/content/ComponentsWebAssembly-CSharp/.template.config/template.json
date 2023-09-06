@@ -135,6 +135,20 @@
           "exclude": [
             "Properties/launchSettings.json"
           ]
+        },
+        {
+          "condition": "(!SampleContent)",
+          "exclude": [
+            "Components/Pages/Counter.*",
+            "Components/Pages/Weather.*",
+            "Components/Layout/MainLayout.razor.css",
+            "Components/Layout/NavMenu.*",
+            "wwwroot/css/bootstrap/**",
+            "wwwroot/css/bootstrap-icons/**",
+            "wwwroot/favicon.png",
+            "wwwroot/icon*.png",
+            "wwwroot/sample-data/weather.json"
+          ]
         }
       ]
     }
@@ -195,7 +209,7 @@
     },
     "MissingAuthority": {
       "type": "computed",
-      "value": "(IndividualAuth && Authority == \"https://login.microsoftonline.com/\" && ClientId == \"33333333-3333-3333-33333333333333333\")"
+      "value": "(!NoAuth && IndividualAuth && Authority == \"https://login.microsoftonline.com/\" && ClientId == \"33333333-3333-3333-33333333333333333\")"
     },
     "AAdB2CInstance": {
       "type": "parameter",
@@ -388,9 +402,26 @@
       "type": "computed",
       "value": "(auth == \"IndividualB2C\")"
     },
+    "IncludeSampleContent": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "true",
+      "displayName": "_Include sample pages",
+      "description": "Configures whether to add sample pages and styling to demonstrate basic usage patterns."
+    },
+    "Empty": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Configures whether to omit sample pages and styling that demonstrate basic usage patterns."
+    },
+    "SampleContent": {
+      "type": "computed",
+      "value": "(((IncludeSampleContent && (HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\"))) || ((!Empty && (HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\"))))"
+    },
     "NoAuth": {
       "type": "computed",
-      "value": "(!(IndividualAuth || OrganizationalAuth))"
+      "value": "(!SampleContent || !(IndividualAuth || OrganizationalAuth))"
     },
     "RequiresHttps": {
       "type": "computed",
