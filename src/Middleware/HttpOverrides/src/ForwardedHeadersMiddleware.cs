@@ -172,10 +172,10 @@ public class ForwardedHeadersMiddleware
             checkPort = true;
             forwardedPort = requestHeaders.GetCommaSeparatedValues(_options.ForwardedPortHeaderName);
             if (_options.RequireHeaderSymmetry
-                && ((checkFor && forwardedFor!.Length != forwardedPrefix.Length)
-                    || (checkProto && forwardedProto!.Length != forwardedPrefix.Length)
-                    || (checkHost && forwardedHost!.Length != forwardedPrefix.Length)
-                    || (checkPort && forwardedPort!.Length != forwardedPrefix.Length)))
+                && ((checkFor && forwardedFor!.Length != forwardedPort.Length)
+                    || (checkProto && forwardedProto!.Length != forwardedPort.Length)
+                    || (checkHost && forwardedHost!.Length != forwardedPort.Length)
+                    || (checkPort && forwardedPort!.Length != forwardedPort.Length)))
             {
                 _logger.LogWarning(1, "Parameter count mismatch between X-Forwarded-Prefix and X-Forwarded-Host and X-Forwarded-Port and X-Forwarded-For or X-Forwarded-Proto.");
                 return;
@@ -191,7 +191,7 @@ public class ForwardedHeadersMiddleware
             if (_options.RequireHeaderSymmetry
                 && ((checkFor && forwardedFor!.Length != forwardedPrefix.Length)
                     || (checkProto && forwardedProto!.Length != forwardedPrefix.Length)
-                    || (checkHost && forwardedPort!.Length != forwardedPrefix.Length)
+                    || (checkHost && forwardedHost!.Length != forwardedPrefix.Length)
                     || (checkHost && forwardedPort!.Length != forwardedPrefix.Length)))
             {
                 _logger.LogWarning(1, "Parameter count mismatch between X-Forwarded-Prefix and X-Forwarded-Host and X-Forwarded-For or X-Forwarded-Proto.");
