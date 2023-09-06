@@ -9,7 +9,14 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits;
 
 internal sealed class RemoteNavigationInterception : INavigationInterception
 {
+    private readonly NavigationManager _navigationManager;
+
     private IJSRuntime _jsRuntime;
+
+    public RemoteNavigationInterception(NavigationManager navigationManager)
+    {
+        _navigationManager = navigationManager;
+    }
 
     public void AttachJSRuntime(IJSRuntime jsRuntime)
     {
@@ -35,6 +42,22 @@ internal sealed class RemoteNavigationInterception : INavigationInterception
                 "attempted during prerendering or while the client is disconnected.");
         }
 
-        await _jsRuntime.InvokeAsync<object>(Interop.EnableNavigationInterception);
+        await _jsRuntime.InvokeAsync<object>(Interop.EnableNavigationInterception, _navigationManager.Uri);
+    }
+
+    public async Task DisableNavigationInterceptionAsync()
+    {
+        if (!HasAttachedJSRuntime)
+        {
+            return;
+        }
+
+        try
+        {
+            await _jsRuntime.InvokeAsync<object>(Interop.DisableNavigationInterception);
+        }
+        catch (JSDisconnectedException)
+        {
+        }
     }
 }

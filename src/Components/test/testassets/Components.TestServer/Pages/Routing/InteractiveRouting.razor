@@ -1,0 +1,10 @@
+﻿@page "/routing/interactive"
+@using TestContentPackage
+
+<nav>
+    <NavLink href="routing/interactive">Home</NavLink>
+    <NavLink href="routing/interactive/navigation">Navigation</NavLink>
+</nav>
+<hr />
+
+<InteractiveRouter @rendermode="@(new ServerRenderMode(false))" />

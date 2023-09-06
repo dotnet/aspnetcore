@@ -13,4 +13,11 @@ public interface INavigationInterception
     /// </summary>
     /// <returns>A <see cref="Task" /> that represents the asynchronous operation.</returns>
     Task EnableNavigationInterceptionAsync();
+
+    /// <summary>
+    /// Disables navigation interception on the client.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> that represents the asynchronous operation.</returns>
+    Task DisableNavigationInterceptionAsync()
+        => Task.CompletedTask;
 }

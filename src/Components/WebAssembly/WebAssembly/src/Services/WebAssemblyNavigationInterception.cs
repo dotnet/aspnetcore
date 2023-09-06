@@ -7,11 +7,22 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services;
 
 internal sealed class WebAssemblyNavigationInterception : INavigationInterception
 {
-    public static readonly WebAssemblyNavigationInterception Instance = new WebAssemblyNavigationInterception();
+    private readonly NavigationManager _navigationManager;
+
+    public WebAssemblyNavigationInterception(NavigationManager navigationManager)
+    {
+        _navigationManager = navigationManager;
+    }
 
     public Task EnableNavigationInterceptionAsync()
     {
-        InternalJSImportMethods.Instance.NavigationManager_EnableNavigationInterception();
+        InternalJSImportMethods.Instance.NavigationManager_EnableNavigationInterception(_navigationManager.Uri);
+        return Task.CompletedTask;
+    }
+
+    public Task DisableNavigationInterceptionAsync()
+    {
+        InternalJSImportMethods.Instance.NavigationManager_DisableNavigationInterception();
         return Task.CompletedTask;
     }
 }

@@ -21,7 +21,8 @@ let resolveCurrentNavigation: ((shouldContinueNavigation: boolean) => void) | nu
 // These are the functions we're making available for invocation from .NET
 export const internalFunctions = {
   listenForNavigationEvents,
-  enableNavigationInterception: setHasInteractiveRouter,
+  enableNavigationInterception,
+  disableNavigationInterception,
   setHasLocationChangingListeners,
   endLocationChanging,
   navigateTo: navigateToFromDotNet,
@@ -45,6 +46,20 @@ function listenForNavigationEvents(
   hasRegisteredNavigationEventListeners = true;
   window.addEventListener('popstate', onPopState);
   currentHistoryIndex = history.state?._index ?? 0;
+}
+
+async function enableNavigationInterception(uriInDotNet?: string) {
+  setHasInteractiveRouter(true);
+  if (uriInDotNet && location.href !== uriInDotNet) {
+    // The location known by .NET is out of sync with the actual browser location.
+    // Therefore, we should notify .NET that the location has changed so that any
+    // interactive router can react accordingly.
+    await notifyLocationChanged(false);
+  }
+}
+
+function disableNavigationInterception() {
+  setHasInteractiveRouter(false);
 }
 
 function setHasLocationChangingListeners(hasListeners: boolean) {

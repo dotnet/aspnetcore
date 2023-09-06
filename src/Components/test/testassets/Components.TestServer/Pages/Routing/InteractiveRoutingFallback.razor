@@ -1,0 +1,8 @@
+﻿@page "/routing/interactive/{pageName}"
+
+<h1>Fallback page for <span id="page-name">@PageName</span>!</h1>
+
+@code {
+    [Parameter]
+    public string PageName { get; set; }
+}

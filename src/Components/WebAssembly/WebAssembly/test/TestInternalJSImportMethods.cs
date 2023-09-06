@@ -20,7 +20,9 @@ internal sealed class TestInternalJSImportMethods : IInternalJSImportMethods
     public string GetPersistedState()
         => null;
 
-    public void NavigationManager_EnableNavigationInterception() { }
+    public void NavigationManager_EnableNavigationInterception(string uri) { }
+
+    public void NavigationManager_DisableNavigationInterception() { }
 
     public void NavigationManager_ScrollToElement(string id) { }
 

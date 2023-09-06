@@ -107,16 +107,16 @@ function findAnchorTarget(event: MouseEvent): HTMLAnchorElement | null {
 
 function findClosestAnchorAncestorLegacy(element: Element | null, tagName: string) {
   return !element
-  ? null
-  : element.tagName === tagName
-  ? element
-  : findClosestAnchorAncestorLegacy(element.parentElement, tagName);
+    ? null
+    : element.tagName === tagName
+      ? element
+      : findClosestAnchorAncestorLegacy(element.parentElement, tagName);
 }
 
 export function hasInteractiveRouter(): boolean {
   return hasInteractiveRouterValue;
 }
 
-export function setHasInteractiveRouter() {
-  hasInteractiveRouterValue = true;
+export function setHasInteractiveRouter(hasInteractiveRouter: boolean) {
+  hasInteractiveRouterValue = hasInteractiveRouter;
 }
