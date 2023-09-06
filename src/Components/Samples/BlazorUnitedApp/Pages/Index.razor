@@ -33,7 +33,7 @@
 
     [SupplyParameterFromForm] Customer? Value { get; set; }
 
-    protected override void OnInitialized() => Value ??= new();
+    protected override void OnInitialized() => throw new InvalidOperationException("Some error");
 
     bool _submitted = false;
     public void Submit() => _submitted = true;
