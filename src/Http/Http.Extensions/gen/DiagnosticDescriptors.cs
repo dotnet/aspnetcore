@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Http.RequestDelegateGenerator;
 
 internal static class DiagnosticDescriptors
 {
-    private static string GetHelpLinkUrl(string id) => $"https://learn.microsoft.com/en-us/aspnet/core/fundamentals/aot/request-delegate-generator/diagnostics/{id}";
+    private static string GetHelpLinkUrl(string id) => $"https://learn.microsoft.com/aspnet/core/fundamentals/aot/request-delegate-generator/diagnostics/{id}";
 
     public static DiagnosticDescriptor UnableToResolveRoutePattern { get; } = new(
         "RDG001",
