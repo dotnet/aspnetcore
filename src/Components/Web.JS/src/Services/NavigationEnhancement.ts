@@ -73,6 +73,10 @@ function onDocumentClick(event: MouseEvent) {
     return;
   }
 
+  if (event.target instanceof HTMLAnchorElement && !enhancedNavigationIsEnabledForLink(event.target)) {
+    return;
+  }
+
   handleClickForNavigationInterception(event, absoluteInternalHref => {
     history.pushState(null, /* ignored title */ '', absoluteInternalHref);
     performEnhancedPageLoad(absoluteInternalHref);
@@ -99,6 +103,10 @@ function onDocumentSubmit(event: SubmitEvent) {
   // to make sure this handler only ever runs after interactive handlers.
   const formElem = event.target;
   if (formElem instanceof HTMLFormElement) {
+    if (!enhancedNavigationIsEnabledForForm(formElem)) {
+      return;
+    }
+
     event.preventDefault();
 
     const url = new URL(formElem.action);
@@ -277,4 +285,22 @@ function splitStream(frameBoundaryMarker: string) {
       controller.enqueue(buffer);
     }
   });
+}
+
+function enhancedNavigationIsEnabledForLink(element: HTMLAnchorElement): boolean {
+  // For links, they default to being enhanced, but you can override at any ancestor level (both positively and negatively)
+  const closestOverride = element.closest('[data-enhance]');
+  if (closestOverride) {
+    const attributeValue = closestOverride.getAttribute('data-enhance')!;
+    return attributeValue === '' || attributeValue.toLowerCase() === 'true';
+  } else {
+    return true;
+  }
+}
+
+function enhancedNavigationIsEnabledForForm(form: HTMLFormElement): boolean {
+  // For forms, they default *not* to being enhanced, and must be enabled explicitly on the form element itself (not an ancestor).
+  const attributeValue = form.getAttribute('data-enhance');
+  return typeof(attributeValue) === 'string'
+    && attributeValue === '' || attributeValue?.toLowerCase() === 'true';
 }
