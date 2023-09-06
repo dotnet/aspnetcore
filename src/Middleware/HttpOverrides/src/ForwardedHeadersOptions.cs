@@ -39,7 +39,7 @@ public class ForwardedHeadersOptions
     /// Gets or sets the header used to retrieve the value for the port.
     /// Defaults to the value specified by <see cref="ForwardedHeadersDefaults.XForwardedPortHeaderName"/>
     /// </summary>
-    public string ForwardedPortHeaderName { get; set; } = ForwardedHeadersDefaults.XForwardedPort;
+    public string ForwardedPortHeaderName { get; set; } = ForwardedHeadersDefaults.XForwardedPortHeaderName;
 
     /// <summary>
     /// Gets or sets the header used to store the original value of client IP before applying forwarded headers.
