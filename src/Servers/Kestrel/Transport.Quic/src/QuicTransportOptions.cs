@@ -31,7 +31,6 @@ public sealed class QuicTransportOptions
     [RequiresPreviewFeatures]
     public long? MaxReadBufferSize { get; set; } = 1024 * 1024;
 
-#pragma warning disable CS1574 // XML comment has cref attribute that could not be resolved
     /// <summary>
     /// The maximum write size.
     /// <para>
@@ -40,7 +39,6 @@ public sealed class QuicTransportOptions
     /// </para>
     /// </summary>
     [RequiresPreviewFeatures]
-#pragma warning restore CS1574 // XML comment has cref attribute that could not be resolved
     public long? MaxWriteBufferSize { get; set; } = 64 * 1024;
 
     /// <summary>

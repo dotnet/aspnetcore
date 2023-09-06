@@ -50,7 +50,6 @@ public class SocketConnectionFactoryOptions
     /// </summary>
     public long? MaxReadBufferSize { get; set; } = 1024 * 1024;
 
-#pragma warning disable CS1574 // XML comment has cref attribute that could not be resolved
     /// <summary>
     /// Gets or sets the maximum outgoing bytes the transport will buffer before applying write backpressure.
     /// <para>
@@ -59,7 +58,6 @@ public class SocketConnectionFactoryOptions
     /// </para>
     /// </summary>
     public long? MaxWriteBufferSize { get; set; } = 64 * 1024;
-#pragma warning restore CS1574 // XML comment has cref attribute that could not be resolved
 
     /// <summary>
     /// Inline application and transport continuations instead of dispatching to the threadpool.

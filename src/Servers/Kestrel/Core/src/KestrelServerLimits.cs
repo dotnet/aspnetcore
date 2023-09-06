@@ -42,7 +42,6 @@ public class KestrelServerLimits
     private long? _maxConcurrentConnections;
     private long? _maxConcurrentUpgradedConnections;
 
-#pragma warning disable CS1574 // XML comment has cref attribute that could not be resolved
     /// <summary>
     /// Gets or sets the maximum size of the response buffer before write
     /// calls begin to block or return tasks that don't complete until the
@@ -61,7 +60,6 @@ public class KestrelServerLimits
     /// don't complete until the entire response buffer is flushed.
     /// </remarks>
     public long? MaxResponseBufferSize
-#pragma warning restore CS1574 // XML comment has cref attribute that could not be resolved
     {
         get => _maxResponseBufferSize;
         set

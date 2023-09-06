@@ -31,7 +31,6 @@ public sealed class NamedPipeTransportOptions
     /// </remarks>
     public long? MaxReadBufferSize { get; set; } = 1024 * 1024;
 
-#pragma warning disable CS1574 // XML comment has cref attribute that could not be resolved
     /// <summary>
     /// Gets or sets the maximum outgoing bytes the transport will buffer before applying write backpressure.
     /// <para>
@@ -47,7 +46,6 @@ public sealed class NamedPipeTransportOptions
     /// Defaults to 64 KiB.
     /// </remarks>
     public long? MaxWriteBufferSize { get; set; } = 64 * 1024;
-#pragma warning restore CS1574 // XML comment has cref attribute that could not be resolved
 
     /// <summary>
     /// Gets or sets a value that indicates that the pipe can only be connected to by a client created by

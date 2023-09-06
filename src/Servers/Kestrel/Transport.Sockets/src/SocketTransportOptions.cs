@@ -56,7 +56,6 @@ public class SocketTransportOptions
     /// </remarks>
     public int Backlog { get; set; } = 512;
 
-#pragma warning disable CS1574 // XML comment has cref attribute that could not be resolved
     /// <summary>
     /// Gets or sets the maximum unconsumed incoming bytes the transport will buffer.
     /// <para>
@@ -72,7 +71,6 @@ public class SocketTransportOptions
     /// Defaults to 1 MiB.
     /// </remarks>
     public long? MaxReadBufferSize { get; set; } = 1024 * 1024;
-#pragma warning restore CS1574 // XML comment has cref attribute that could not be resolved
 
     /// <summary>
     /// Gets or sets the maximum outgoing bytes the transport will buffer before applying write backpressure.
