@@ -3,7 +3,7 @@
 
 <h2>Default form with dictionary bound parameter</h2>
 
-<EditForm Model="Model" method="POST" OnValidSubmit="DisplayCustomer" FormName="someform">
+<EditForm Enhance Model="Model" method="POST" OnValidSubmit="DisplayCustomer" FormName="someform">
     <ValidationSummary />
     @for(var i = 0; i< Model.Count;i++)
     {
@@ -30,7 +30,7 @@
                 <InputCheckbox @bind-Value="@Model[index].IsPreferred" />
             </label>
             <ValidationMessage data-index="@index" For="@(() => Model[index].IsPreferred)" />
-        </div>        
+        </div>
     }
     <input id="send" type="submit" value="Send" />
 </EditForm>
