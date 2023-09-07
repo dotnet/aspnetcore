@@ -1665,20 +1665,6 @@
         "wwwroot/css/app.css"
       ]
     },
-    "EmptyAuth": {
-      "Template": "blazorwasm",
-      "Arguments": "new blazorwasm -au Individual --empty",
-      "Files": [
-        "Program.cs",
-        "Components/App.razor",
-        "Components/_Imports.razor",
-        "Components/Pages/Home.razor",
-        "Components/Layout/MainLayout.razor",
-        "Properties/launchSettings.json",
-        "wwwroot/index.html",
-        "wwwroot/css/app.css"
-      ]
-    },
     "Individual": {
       "Template": "blazorwasm",
       "Arguments": "new blazorwasm -au Individual",
@@ -1712,6 +1698,25 @@
         "wwwroot/css/bootstrap-icons/fonts/bootstrap-icons.woff",
         "wwwroot/css/bootstrap-icons/fonts/bootstrap-icons.woff2",
         "wwwroot/sample-data/weather.json"
+      ]
+    },
+    "IndividualEmpty": {
+      "Template": "blazorwasm",
+      "Arguments": "new blazorwasm -au Individual --empty",
+      "Files": [
+        "Program.cs",
+        "Components/App.razor",
+        "Components/_Imports.razor",
+        "Components/Pages/Authentication.razor",
+        "Components/Pages/Home.razor",
+        "Components/Layout/MainLayout.razor",
+        "Components/Login/LoginDisplay.razor",
+        "Components/Login/RedirectToLogin.razor",
+        "Properties/launchSettings.json",
+        "wwwroot/appsettings.Development.json",
+        "wwwroot/appsettings.json",
+        "wwwroot/index.html",
+        "wwwroot/css/app.css"
       ]
     },
     "IndividualB2C": {
@@ -1748,6 +1753,24 @@
         "wwwroot/sample-data/weather.json"
       ]
     },
+    "IndividualB2CEmpty": {
+      "Template": "blazorwasm",
+      "Arguments": "new blazorwasm -au IndividualB2C --empty",
+      "Files": [
+        "Program.cs",
+        "Components/App.razor",
+        "Components/_Imports.razor",
+        "Components/Pages/Authentication.razor",
+        "Components/Pages/Home.razor",
+        "Components/Layout/MainLayout.razor",
+        "Components/Login/LoginDisplay.razor",
+        "Components/Login/RedirectToLogin.razor",
+        "Properties/launchSettings.json",
+        "wwwroot/appsettings.json",
+        "wwwroot/index.html",
+        "wwwroot/css/app.css"
+      ]
+    },
     "SingleOrg": {
       "Template": "blazorwasm",
       "Arguments": "new blazorwasm -au SingleOrg",
@@ -1780,6 +1803,24 @@
         "wwwroot/css/bootstrap-icons/fonts/bootstrap-icons.woff",
         "wwwroot/css/bootstrap-icons/fonts/bootstrap-icons.woff2",
         "wwwroot/sample-data/weather.json"
+      ]
+    },
+    "SingleOrgEmpty": {
+      "Template": "blazorwasm",
+      "Arguments": "new blazorwasm -au SingleOrg --empty",
+      "Files": [
+        "Program.cs",
+        "Components/App.razor",
+        "Components/_Imports.razor",
+        "Components/Pages/Authentication.razor",
+        "Components/Pages/Home.razor",
+        "Components/Layout/MainLayout.razor",
+        "Components/Login/LoginDisplay.razor",
+        "Components/Login/RedirectToLogin.razor",
+        "Properties/launchSettings.json",
+        "wwwroot/appsettings.json",
+        "wwwroot/index.html",
+        "wwwroot/css/app.css"
       ]
     },
     "PWA": {
@@ -1873,67 +1914,6 @@
         "Components/Layout/MainLayout.razor",
         "wwwroot/index.html",
         "wwwroot/css/app.css"
-      ]
-    }
-  },
-  "blazorwasm-empty": {
-    "None": {
-      "Template": "blazorwasm-empty",
-      "Arguments": "new blazorwasm-empty",
-      "Files": [
-        "Pages/Index.razor",
-        "Properties/launchSettings.json",
-        "wwwroot/css/app.css",
-        "wwwroot/index.html",
-        "_Imports.razor",
-        "App.razor",
-        "MainLayout.razor",
-        "Program.cs"
-      ]
-    },
-    "PWA": {
-      "Template": "blazorwasm-empty",
-      "Arguments": "new blazorwasm-empty --pwa",
-      "Files": [
-        "Pages/Index.razor",
-        "Properties/launchSettings.json",
-        "wwwroot/css/app.css",
-        "wwwroot/icon-512.png",
-        "wwwroot/index.html",
-        "wwwroot/manifest.webmanifest",
-        "wwwroot/service-worker.js",
-        "wwwroot/service-worker.published.js",
-        "_Imports.razor",
-        "App.razor",
-        "MainLayout.razor",
-        "Program.cs"
-      ]
-    },
-    "NoHttps": {
-      "Template": "blazorwasm-empty",
-      "Arguments": "new blazorwasm-empty --no-https",
-      "Files": [
-        "Pages/Index.razor",
-        "Properties/launchSettings.json",
-        "wwwroot/css/app.css",
-        "wwwroot/index.html",
-        "_Imports.razor",
-        "App.razor",
-        "MainLayout.razor",
-        "Program.cs"
-      ]
-    },
-    "ExcludeLaunchSettings": {
-      "Template": "blazorwasm-empty",
-      "Arguments": "new blazorwasm-empty --exclude-launch-settings",
-      "Files": [
-        "Pages/Index.razor",
-        "wwwroot/css/app.css",
-        "wwwroot/index.html",
-        "_Imports.razor",
-        "App.razor",
-        "MainLayout.razor",
-        "Program.cs"
       ]
     }
   }
