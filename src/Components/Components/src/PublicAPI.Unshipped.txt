@@ -17,14 +17,11 @@ Microsoft.AspNetCore.Components.CascadingValueSource<TValue>.NotifyChangedAsync(
 Microsoft.AspNetCore.Components.ComponentBase.DispatchExceptionAsync(System.Exception! exception) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.IComponentRenderMode
 *REMOVED*Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.ComponentStatePersistenceManager(Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager!>! logger) -> void
-*REMOVED*Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.PersistStateAsync(Microsoft.AspNetCore.Components.IPersistentComponentStateStore! store, Microsoft.AspNetCore.Components.RenderTree.Renderer! renderer) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.ComponentStatePersistenceManager(Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager!>! logger, Microsoft.AspNetCore.Components.ISerializationModeHandler! serializationModeHandler) -> void
 Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.PersistStateAsync(Microsoft.AspNetCore.Components.IPersistentComponentStateStore! store, Microsoft.AspNetCore.Components.Dispatcher! dispatcher) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.IPersistentComponentStateStore.SupportsSerializationMode(Microsoft.AspNetCore.Components.PersistedStateSerializationMode serializationMode) -> bool
 Microsoft.AspNetCore.Components.ISerializationModeHandler
 Microsoft.AspNetCore.Components.ISerializationModeHandler.GetCallbackTargetSerializationMode(object? callbackTarget) -> Microsoft.AspNetCore.Components.PersistedStateSerializationMode
-Microsoft.AspNetCore.Components.ISerializationModeHandler.GlobalSerializationMode.get -> Microsoft.AspNetCore.Components.PersistedStateSerializationMode
-Microsoft.AspNetCore.Components.ISerializationModeHandler.GlobalSerializationMode.set -> void
 Microsoft.AspNetCore.Components.ParameterView.ToDictionary() -> System.Collections.Generic.IReadOnlyDictionary<string!, object?>!
 *REMOVED*Microsoft.AspNetCore.Components.ParameterView.ToDictionary() -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>!
 Microsoft.AspNetCore.Components.PersistedStateSerializationMode
