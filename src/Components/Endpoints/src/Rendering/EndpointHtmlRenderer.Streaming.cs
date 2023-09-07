@@ -15,7 +15,6 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal partial class EndpointHtmlRenderer
 {
-    private const string _progressivelyEnhancedNavRequestHeaderName = "blazor-enhanced-nav";
     private const string _streamingRenderingFramingHeaderName = "ssr-framing";
     private TextWriter? _streamingUpdatesWriter;
     private HashSet<int>? _visitedComponentIdsInCurrentStreamingBatch;
@@ -23,7 +22,7 @@ internal partial class EndpointHtmlRenderer
 
     public void InitializeStreamingRenderingFraming(HttpContext httpContext)
     {
-        if (httpContext.Request.Headers.ContainsKey(_progressivelyEnhancedNavRequestHeaderName))
+        if (IsProgressivelyEnhancedNavigation(httpContext.Request))
         {
             var id = Guid.NewGuid().ToString();
             httpContext.Response.Headers.Add(_streamingRenderingFramingHeaderName, id);
@@ -241,6 +240,13 @@ internal partial class EndpointHtmlRenderer
             output.Write(serializedEndRecord);
             output.Write("-->");
         }
+    }
+
+    private static bool IsProgressivelyEnhancedNavigation(HttpRequest request)
+    {
+        // For enhanced nav, the Blazor JS code control the "accept" header precisely, so we can be very specific about the format
+        var accept = request.Headers.Accept;
+        return accept.Count == 1 && string.Equals(accept[0]!, "text/html;blazor-enhanced-nav=on", StringComparison.Ordinal);
     }
 
     private readonly struct ComponentIdAndDepth

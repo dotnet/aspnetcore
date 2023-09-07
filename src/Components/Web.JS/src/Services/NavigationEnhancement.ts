@@ -174,6 +174,13 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, f
         internalDestinationHref = response.url;
       }
 
+      // For enhanced nav redirecting to an external URL, we'll get a special Blazor-specific redirection command
+      const externalRedirectionUrl = response.headers.get('blazor-enhanced-nav-redirect-location');
+      if (externalRedirectionUrl) {
+        location.replace(externalRedirectionUrl);
+        return;
+      }
+
       const responseContentType = response.headers.get('content-type');
       if (responseContentType?.startsWith('text/html') && initialContent) {
         // For HTML responses, regardless of the status code, display it
