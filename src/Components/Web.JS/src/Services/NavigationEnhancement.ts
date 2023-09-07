@@ -139,17 +139,37 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, f
   // framing boundaries to distinguish the initial document and each subsequent streaming SSR update.
   currentEnhancedNavigationAbortController = new AbortController();
   const abortSignal = currentEnhancedNavigationAbortController.signal;
-  const responsePromise = fetch(internalDestinationHref, Object.assign({
+  const responsePromise = fetch(internalDestinationHref, Object.assign(<RequestInit>{
     signal: abortSignal,
+    mode: 'no-cors', // If there's a redirection to an external origin, even if it enables CORS, we don't want to receive its content and patch it into our DOM on this origin
     headers: {
-      'blazor-enhanced-nav': 'on',
-      'accept': 'text/html',
+      // Because of no-cors, we can only send CORS-safelisted headers, so communicate the info about
+      // enhanced nav as a MIME type parameter
+      'accept': 'text/html;blazor-enhanced-nav=on',
     },
   }, fetchOptions));
   await getResponsePartsWithFraming(responsePromise, abortSignal,
     (response, initialContent) => {
+      const isGetRequest = !fetchOptions?.method || fetchOptions.method === 'get';
+
+      // For true 301/302/etc redirections to external URLs, we'll receive an opaque response
+      // (even if it has CORS enabled, since we passed no-cors), and the browser won't disclose
+      // the target URL to JS code. We must therefore retry as a non-enhanced-nav page load to reach
+      // the destination. This also has the benefit that we can be certain not to introduce content
+      // from an external origin into the DOM here.
+      if (response.type === 'opaque') {
+        if (isGetRequest) {
+          retryEnhancedNavAsFullPageLoad(internalDestinationHref);
+          return;
+        } else {
+          throw new Error('Enhanced navigation does not support making a non-GET request to an endpoint that redirects to an external origin. Avoid enabling enhanced navigation for form posts that may perform external redirections.');
+        }
+      }
+
+      // For 301/302/etc redirections to internal URLs, the browser will already have followed the chain of redirections
+      // to the end, and given us the final content. We do still need to update the current URL to match the final location,
+      // then let the rest of enhanced nav logic run to patch the new content into the DOM.
       if (response.redirected) {
-        // We already followed a redirection, so update the current URL to match the redirected destination, just like for normal navigation redirections
         history.replaceState(null, '', response.url);
         internalDestinationHref = response.url;
       }
@@ -170,13 +190,10 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, f
       } else {
         // For any other response, it's not HTML and we don't know what to do. It might be plain text,
         // or an image, or something else.
-        if (!fetchOptions?.method || fetchOptions.method === 'get') {
+        if (isGetRequest) {
           // If it's a get request, we'll trust that it's idempotent and cheap enough to request
           // a second time, so we can fall back on a full reload.
-          // The ? trick here is the same workaround as described in #10839, and without it, the user
-          // would not be able to use the back button afterwards.
-          history.replaceState(null, '', internalDestinationHref + '?');
-          location.replace(internalDestinationHref);
+          retryEnhancedNavAsFullPageLoad(internalDestinationHref);
         } else {
           // For non-get requests, we can't safely re-request, so just treat it as an error
           replaceDocumentWithPlainText(`Error: ${fetchOptions.method} request to ${internalDestinationHref} returned non-HTML content of type ${responseContentType || 'unspecified'}.`);
@@ -210,12 +227,6 @@ async function getResponsePartsWithFraming(responsePromise: Promise<Response>, a
 
   try {
     response = await responsePromise;
-
-    const externalRedirectionUrl = response.headers.get('blazor-enhanced-nav-redirect-location');
-    if (externalRedirectionUrl) {
-      location.replace(externalRedirectionUrl);
-      return;
-    }
 
     if (!response.body) { // Not sure how this can happen, but the TypeScript annotations suggest it can
       onInitialDocument(response, '');
@@ -303,4 +314,11 @@ function enhancedNavigationIsEnabledForForm(form: HTMLFormElement): boolean {
   const attributeValue = form.getAttribute('data-enhance');
   return typeof(attributeValue) === 'string'
     && attributeValue === '' || attributeValue?.toLowerCase() === 'true';
+}
+
+function retryEnhancedNavAsFullPageLoad(internalDestinationHref: string) {
+  // The ? trick here is the same workaround as described in #10839, and without it, the user
+  // would not be able to use the back button afterwards.
+  history.replaceState(null, '', internalDestinationHref + '?');
+  location.replace(internalDestinationHref);
 }

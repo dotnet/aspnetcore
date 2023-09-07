@@ -149,31 +149,23 @@ internal partial class EndpointHtmlRenderer
                 "Navigation commands can not be issued during server-side prerendering after the response from the server has started. Applications must buffer the" +
                 "response and avoid using features like FlushAsync() before all components on the page have been rendered to prevent failed navigation commands.");
         }
-        else if (IsPossibleExternalDestination(httpContext.Request, navigationException.Location) && httpContext.Request.Headers.ContainsKey("blazor-enhanced-nav"))
-        {
-            // It's unsafe to do a 301/302/etc to an external destination when this was requested via fetch, because
-            // assuming it doesn't expose CORS headers, we won't be allowed to follow the redirection nor will
-            // we even find out what the destination URL would have been. But since it's our own JS code making this
-            // fetch request, we can have a custom protocol for describing the URL we wanted to redirect to.
-            httpContext.Response.Headers.Add("blazor-enhanced-nav-redirect-location", navigationException.Location);
-            return new ValueTask<PrerenderedComponentHtmlContent>(PrerenderedComponentHtmlContent.Empty);
-        }
         else
         {
+            // If this was an enhanced nav request, it will have been sent with "mode: 'no-cors'" which means:
+            // - If the redirection target is on the same origin, the browser will follow it automatically
+            //   and then disclose the final URL to JS code as response.url. Our JS-side code will update the
+            //   URL in the history stack to match. Unfortunately the browser will strip off any hash part of
+            //   the URL so developers will have to disable enhanced nav for links where scrolling to a target
+            //   is important.
+            // - If the redirection target is on a different origin, the browser will not disclose the URL,
+            //   but instead will supply an opaqueredirect response. Our JS-side code will have to renavigate
+            //   to the original (pre-redirection) URL without enhanced nav so the browser can follow the redirection.
+            // Note that we could return the redirection URL to the browser explicitly here (e.g., as a header in
+            // a 200 response) but doing so would disclose more info to JS than a regular 301/302, so we don't
+            // want to do that.
             httpContext.Response.Redirect(navigationException.Location);
             return new ValueTask<PrerenderedComponentHtmlContent>(PrerenderedComponentHtmlContent.Empty);
         }
-    }
-
-    private static bool IsPossibleExternalDestination(HttpRequest request, string destinationUrl)
-    {
-        if (!Uri.TryCreate(destinationUrl, UriKind.Absolute, out var absoluteUri))
-        {
-            return false;
-        }
-
-        return absoluteUri.Scheme != request.Scheme
-            || absoluteUri.Authority != request.Host.Value;
     }
 
     internal static ServerComponentInvocationSequence GetOrCreateInvocationId(HttpContext httpContext)
