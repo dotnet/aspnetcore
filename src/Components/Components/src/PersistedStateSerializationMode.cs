@@ -22,4 +22,9 @@ public enum PersistedStateSerializationMode
     /// Indicates that the state should be persisted so that execution may resume on WebAssembly.
     /// </summary>
     WebAssembly = 3,
+
+    /// <summary>
+    /// Indicates that the state should be persisted so that execution may resume on both Server and WebAssembly.
+    /// </summary>
+    ServerAndWebAssembly = 4,
 }

@@ -14,8 +14,6 @@ public class ComponentStatePersistenceManager
     private readonly List<PersistenceCallback> _registeredCallbacks = new();
     private readonly ILogger<ComponentStatePersistenceManager> _logger;
 
-    private bool _stateIsPersisted;
-
     /// <summary>
     /// Initializes a new instance of <see cref="ComponentStatePersistenceManager"/>.
     /// </summary>
@@ -30,6 +28,15 @@ public class ComponentStatePersistenceManager
     /// Gets the <see cref="ComponentStatePersistenceManager"/> associated with the <see cref="ComponentStatePersistenceManager"/>.
     /// </summary>
     public PersistentComponentState State { get; }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="serializationModeHandler"></param>
+    public void SetSerializationModeHandler(ISerializationModeHandler serializationModeHandler)
+    {
+        State.SetSerializationModeHandler(serializationModeHandler);
+    }
 
     /// <summary>
     /// Restores the component application state from the given <see cref="IPersistentComponentStateStore"/>.
@@ -60,13 +67,6 @@ public class ComponentStatePersistenceManager
     /// <returns>A <see cref="Task"/> that will complete when the state has been restored.</returns>
     public Task PersistStateAsync(IPersistentComponentStateStore store, Dispatcher dispatcher)
     {
-        if (_stateIsPersisted)
-        {
-            throw new InvalidOperationException("State already persisted.");
-        }
-
-        _stateIsPersisted = true;
-
         return dispatcher.InvokeAsync(PauseAndPersistState);
 
         async Task PauseAndPersistState()

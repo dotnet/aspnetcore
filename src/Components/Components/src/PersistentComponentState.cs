@@ -15,7 +15,7 @@ public class PersistentComponentState
     private IDictionary<string, byte[]>? _existingState;
 
     private readonly List<PersistenceCallback> _registeredCallbacks;
-    private readonly ISerializationModeHandler _serializationModeHandler;
+    private ISerializationModeHandler _serializationModeHandler;
 
     internal PersistenceContext? PersistenceContext { get; set; }
 
@@ -29,6 +29,11 @@ public class PersistentComponentState
     {
         // The existing state is either Server or WebAssembly
         _existingState = existingState ?? throw new ArgumentNullException(nameof(existingState));
+    }
+
+    internal void SetSerializationModeHandler(ISerializationModeHandler serializationModeHandler)
+    {
+        _serializationModeHandler = serializationModeHandler;
     }
 
     /// <summary>

@@ -19,19 +19,33 @@ internal partial class EndpointHtmlRenderer
     {
         SetHttpContext(httpContext);
 
+        // First we resolve "infer" mode to a specific mode
+        if (serializationMode == PersistedStateSerializationMode.Infer)
+        {
+            switch (GetPersistStateRenderMode(_httpContext))
+            {
+                case InvokedRenderModes.Mode.None:
+                    return ComponentStateHtmlContent.Empty;
+                case InvokedRenderModes.Mode.ServerAndWebAssembly:
+                    throw new InvalidOperationException(
+                        Resources.FailedToInferComponentPersistenceMode);
+                case InvokedRenderModes.Mode.Server:
+                    serializationMode = PersistedStateSerializationMode.Server;
+                    break;
+                case InvokedRenderModes.Mode.WebAssembly:
+                    serializationMode = PersistedStateSerializationMode.WebAssembly;
+                    break;
+                default:
+                    throw new InvalidOperationException("Invalid persistence mode");
+            }
+        }
+
         var (shouldPrerenderServer, shouldPrerenderWebAssembly) = serializationMode switch
         {
             PersistedStateSerializationMode.Server => (true, false),
             PersistedStateSerializationMode.WebAssembly => (false, true),
-            PersistedStateSerializationMode.Infer => GetPersistStateRenderMode(_httpContext) switch
-            {
-                InvokedRenderModes.Mode.None => (false, false),
-                InvokedRenderModes.Mode.ServerAndWebAssembly => (true, true),
-                InvokedRenderModes.Mode.Server => (true, false),
-                InvokedRenderModes.Mode.WebAssembly => (false, true),
-                var x => throw new InvalidOperationException($"Unknown invoked render mode '{x}'."),
-            },
-            var x => throw new InvalidOperationException($"Unknown serialization mode '{x}'."),
+            PersistedStateSerializationMode.ServerAndWebAssembly => (true, true),
+            var x => throw new InvalidOperationException($"Invalid serialization mode '{x}'."),
         };
 
         var manager = _httpContext.RequestServices.GetRequiredService<ComponentStatePersistenceManager>();
@@ -42,7 +56,7 @@ internal partial class EndpointHtmlRenderer
         {
             serverStore = new ProtectedPrerenderComponentApplicationStore(_httpContext.RequestServices.GetRequiredService<IDataProtectionProvider>())
             {
-                SerializationModeFilter = static serializationMode => serializationMode is PersistedStateSerializationMode.Infer or PersistedStateSerializationMode.Server,
+                SerializationModeFilter = static serializationMode => serializationMode is PersistedStateSerializationMode.ServerAndWebAssembly or PersistedStateSerializationMode.Server,
             };
             await manager.PersistStateAsync(serverStore, Dispatcher);
         }
@@ -51,7 +65,7 @@ internal partial class EndpointHtmlRenderer
         {
             webAssemblyStore = new PrerenderComponentApplicationStore()
             {
-                SerializationModeFilter = static serializationMode => serializationMode is PersistedStateSerializationMode.Infer or PersistedStateSerializationMode.WebAssembly,
+                SerializationModeFilter = static serializationMode => serializationMode is PersistedStateSerializationMode.ServerAndWebAssembly or PersistedStateSerializationMode.WebAssembly,
             };
             await manager.PersistStateAsync(webAssemblyStore, Dispatcher);
         }

@@ -19,6 +19,7 @@ Microsoft.AspNetCore.Components.IComponentRenderMode
 *REMOVED*Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.ComponentStatePersistenceManager(Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager!>! logger) -> void
 Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.ComponentStatePersistenceManager(Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager!>! logger, Microsoft.AspNetCore.Components.ISerializationModeHandler! serializationModeHandler) -> void
 Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.PersistStateAsync(Microsoft.AspNetCore.Components.IPersistentComponentStateStore! store, Microsoft.AspNetCore.Components.Dispatcher! dispatcher) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.SetSerializationModeHandler(Microsoft.AspNetCore.Components.ISerializationModeHandler! serializationModeHandler) -> void
 Microsoft.AspNetCore.Components.IPersistentComponentStateStore.SupportsSerializationMode(Microsoft.AspNetCore.Components.PersistedStateSerializationMode serializationMode) -> bool
 Microsoft.AspNetCore.Components.ISerializationModeHandler
 Microsoft.AspNetCore.Components.ISerializationModeHandler.GetCallbackTargetSerializationMode(object? callbackTarget) -> Microsoft.AspNetCore.Components.PersistedStateSerializationMode
@@ -27,6 +28,7 @@ Microsoft.AspNetCore.Components.ParameterView.ToDictionary() -> System.Collectio
 Microsoft.AspNetCore.Components.PersistedStateSerializationMode
 Microsoft.AspNetCore.Components.PersistedStateSerializationMode.Infer = 1 -> Microsoft.AspNetCore.Components.PersistedStateSerializationMode
 Microsoft.AspNetCore.Components.PersistedStateSerializationMode.Server = 2 -> Microsoft.AspNetCore.Components.PersistedStateSerializationMode
+Microsoft.AspNetCore.Components.PersistedStateSerializationMode.ServerAndWebAssembly = 4 -> Microsoft.AspNetCore.Components.PersistedStateSerializationMode
 Microsoft.AspNetCore.Components.PersistedStateSerializationMode.WebAssembly = 3 -> Microsoft.AspNetCore.Components.PersistedStateSerializationMode
 Microsoft.AspNetCore.Components.PersistentComponentState.RegisterOnPersisting(System.Func<System.Threading.Tasks.Task!>! callback, Microsoft.AspNetCore.Components.PersistedStateSerializationMode serializationMode) -> Microsoft.AspNetCore.Components.PersistingComponentStateSubscription
 Microsoft.AspNetCore.Components.RenderHandle.DispatchExceptionAsync(System.Exception! exception) -> System.Threading.Tasks.Task!
