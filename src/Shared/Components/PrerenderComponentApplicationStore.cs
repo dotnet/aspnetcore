@@ -10,6 +10,8 @@ namespace Microsoft.AspNetCore.Components;
 internal class PrerenderComponentApplicationStore : IPersistentComponentStateStore
 #pragma warning restore CA1852 // Seal internal types
 {
+    private bool _stateIsPersisted;
+
     public PrerenderComponentApplicationStore()
     {
         ExistingState = new();
@@ -54,6 +56,12 @@ internal class PrerenderComponentApplicationStore : IPersistentComponentStateSto
 
     public Task PersistStateAsync(IReadOnlyDictionary<string, byte[]> state)
     {
+        if (_stateIsPersisted)
+        {
+            throw new InvalidOperationException("State already persisted.");
+        }
+        _stateIsPersisted = true;
+
         PersistedState = Convert.ToBase64String(SerializeState(state));
         return Task.CompletedTask;
     }
