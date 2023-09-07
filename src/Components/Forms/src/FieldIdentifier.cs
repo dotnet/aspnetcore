@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.Components.HotReload;
 
 namespace Microsoft.AspNetCore.Components.Forms;
 
@@ -15,6 +16,11 @@ namespace Microsoft.AspNetCore.Components.Forms;
 public readonly struct FieldIdentifier : IEquatable<FieldIdentifier>
 {
     private static readonly ConcurrentDictionary<(Type ModelType, string FieldName), Func<object, object>> _fieldAccessors = new();
+
+    static FieldIdentifier()
+    {
+        HotReloadManager.Default.OnDeltaApplied += ClearCache;
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FieldIdentifier"/> structure.
@@ -202,5 +208,10 @@ public readonly struct FieldIdentifier : IEquatable<FieldIdentifier>
         }
         model = result;
         return model;
+    }
+
+    private static void ClearCache()
+    {
+        _fieldAccessors.Clear();
     }
 }

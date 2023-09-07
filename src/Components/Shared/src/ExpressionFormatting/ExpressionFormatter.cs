@@ -6,12 +6,17 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.Serialization;
-using System.Runtime.Serialization.DataContracts;
+using Microsoft.AspNetCore.Components.HotReload;
 
 namespace Microsoft.AspNetCore.Components.Forms;
 
 internal static class ExpressionFormatter
 {
+    static ExpressionFormatter()
+    {
+        HotReloadManager.Default.OnDeltaApplied += ClearCache;
+    }
+
     internal const int StackAllocBufferSize = 128;
 
     private delegate void CapturedValueFormatter(object closure, ref ReverseStringBuilder builder);
