@@ -77,7 +77,7 @@
           },
           "exclude": [
             "Components/Pages/Authentication.razor",
-            "Components/Login/LoginDisplay.*.razor",
+            "Components/Login/LoginDisplay.razor",
             "Components/Layout/MainLayout.Auth.razor",
             "Components/Login/RedirectToLogin.razor",
             "wwwroot/appsettings.Development.json",
@@ -91,24 +91,6 @@
           },
           "exclude": [
             "Components/Layout/MainLayout.NoAuth.razor"
-          ]
-        },
-        {
-          "condition": "(IndividualLocalAuth)",
-          "rename": {
-            "Components/Login/LoginDisplay.IndividualLocalAuth.razor": "Components/Login/LoginDisplay.razor"
-          },
-          "exclude": [
-            "Components/Login/LoginDisplay.IndividualMsalAuth.razor"
-          ]
-        },
-        {
-          "condition": "(IndividualB2CAuth || OrganizationalAuth)",
-          "rename": {
-            "Components/Login/LoginDisplay.IndividualMsalAuth.razor": "Components/Login/LoginDisplay.razor"
-          },
-          "exclude": [
-            "Components/Login/LoginDisplay.IndividualLocalAuth.razor"
           ]
         },
         {
@@ -209,7 +191,7 @@
     },
     "MissingAuthority": {
       "type": "computed",
-      "value": "(!NoAuth && IndividualAuth && Authority == \"https://login.microsoftonline.com/\" && ClientId == \"33333333-3333-3333-33333333333333333\")"
+      "value": "(IndividualAuth && Authority == \"https://login.microsoftonline.com/\" && ClientId == \"33333333-3333-3333-33333333333333333\")"
     },
     "AAdB2CInstance": {
       "type": "parameter",
@@ -421,7 +403,7 @@
     },
     "NoAuth": {
       "type": "computed",
-      "value": "(!SampleContent || !(IndividualAuth || OrganizationalAuth))"
+      "value": "(!(IndividualAuth || OrganizationalAuth))"
     },
     "RequiresHttps": {
       "type": "computed",
