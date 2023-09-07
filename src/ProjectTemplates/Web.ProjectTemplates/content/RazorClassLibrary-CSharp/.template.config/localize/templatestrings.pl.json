@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
   "name": "Biblioteka klas Razor",
-  "description": "Projekt służący do tworzenia biblioteki klas Razor przeznaczonej dla platformy .NET Standard",
+  "description": "Projekt do tworzenia biblioteki klas Razor przeznaczonej dla platformy .NET Standard",
   "symbols/Framework/description": "Platforma docelowa dla tego projektu.",
   "symbols/Framework/choices/net8.0/description": "Docelowa platforma net8.0",
   "symbols/skipRestore/description": "Jeśli ta opcja jest określona, pomija automatyczne przywracanie projektu podczas tworzenia.",
