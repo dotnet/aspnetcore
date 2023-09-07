@@ -289,9 +289,9 @@ function splitStream(frameBoundaryMarker: string) {
 
 function enhancedNavigationIsEnabledForLink(element: HTMLAnchorElement): boolean {
   // For links, they default to being enhanced, but you can override at any ancestor level (both positively and negatively)
-  const closestOverride = element.closest('[data-enhance]');
+  const closestOverride = element.closest('[data-enhance-nav]');
   if (closestOverride) {
-    const attributeValue = closestOverride.getAttribute('data-enhance')!;
+    const attributeValue = closestOverride.getAttribute('data-enhance-nav')!;
     return attributeValue === '' || attributeValue.toLowerCase() === 'true';
   } else {
     return true;
