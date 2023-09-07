@@ -19,7 +19,7 @@ public class FileLoggerProcessorTests
 
     public FileLoggerProcessorTests()
     {
-        TempPath = Environment.CurrentDirectory + "_";
+        TempPath = Path.Combine(Environment.CurrentDirectory, "_");
     }
 
     public string TempPath { get; }
