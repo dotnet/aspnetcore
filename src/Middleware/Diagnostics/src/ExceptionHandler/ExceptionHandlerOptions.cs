@@ -22,7 +22,7 @@ public class ExceptionHandlerOptions
     /// replace it on <see cref="HttpContext.RequestServices"/> when re-executing the request to handle an error.
     /// </summary>
     /// <remarks>The default value is <see langword="false"/>.</remarks>
-    public bool CreateScopeForErrors { get; set; }
+    public bool CreateScopeForErrors { get; set; } = true;
 
     /// <summary>
     /// The <see cref="RequestDelegate" /> that will handle the exception. If this is not
