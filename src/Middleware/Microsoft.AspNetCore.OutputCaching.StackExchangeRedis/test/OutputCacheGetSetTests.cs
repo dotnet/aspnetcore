@@ -3,6 +3,7 @@
 
 using System.Buffers;
 using System.IO.Pipelines;
+using Microsoft.Extensions.DependencyInjection;
 using StackExchange.Redis;
 using Xunit.Abstractions;
 
@@ -20,16 +21,19 @@ public class OutputCacheGetSetTests : IClassFixture<RedisConnectionFixture>
 
     public OutputCacheGetSetTests(RedisConnectionFixture connection, ITestOutputHelper log)
     {
+        // use DI to get the configured service, but tweak the GC mode
         _fixture = connection;
-        _cache = new RedisOutputCacheStore(new RedisOutputCacheOptions
-        {
-            ConnectionMultiplexerFactory = () => Task.FromResult(_fixture.Connection),
-            InstanceName = "TestPrefix",
-        })
-        {
-            GarbageCollectionEnabled = false,
-        };
         Log = log;
+        var services = new ServiceCollection();
+        services.AddStackExchangeRedisOutputCache(options => {
+            options.ConnectionMultiplexerFactory = () => Task.FromResult(_fixture.Connection);
+            options.InstanceName = "TestPrefix";
+        });
+        var svc = Assert.IsAssignableFrom<RedisOutputCacheStore>(
+            services.BuildServiceProvider().GetService<IOutputCacheStore>());
+        Assert.NotNull(svc);
+        svc.GarbageCollectionEnabled = false;
+        _cache = svc;
     }
 
 #if DEBUG

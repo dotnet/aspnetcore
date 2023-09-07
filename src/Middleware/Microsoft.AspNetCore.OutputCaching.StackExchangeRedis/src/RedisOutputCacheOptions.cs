@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.OutputCaching.StackExchangeRedis;
 /// <summary>
 /// Configuration options for Redis based output cache.
 /// </summary>
-public sealed class RedisOutputCacheOptions : IOptions<RedisOutputCacheOptions>
+public sealed class RedisOutputCacheOptions
 {
     /// <summary>
     /// The configuration used to connect to Redis.
@@ -41,11 +41,6 @@ public sealed class RedisOutputCacheOptions : IOptions<RedisOutputCacheOptions>
     /// The Redis profiling session
     /// </summary>
     public Func<ProfilingSession>? ProfilingSession { get; set; }
-
-    RedisOutputCacheOptions IOptions<RedisOutputCacheOptions>.Value
-    {
-        get { return this; }
-    }
 
     private bool? _useForceReconnect;
     internal bool UseForceReconnect
