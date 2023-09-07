@@ -188,7 +188,7 @@ APPLICATION_MANAGER::RecycleApplicationFromManager(
             while (itr != m_pApplicationInfoHash.end())
             {
                 if (itr->second != nullptr && itr->second->ConfigurationPathApplies(configurationPath)
-                    && applicationsToRecycle.contains(itr->second);)
+                    && std::find(applicationsToRecycle.begin(), applicationsToRecycle.end(), itr->second) != applicationsToRecycle.end())
                 {
                     itr = m_pApplicationInfoHash.erase(itr);
                     break;
