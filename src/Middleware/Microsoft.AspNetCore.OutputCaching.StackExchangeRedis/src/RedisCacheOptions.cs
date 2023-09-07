@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.OutputCaching.StackExchangeRedis;
 /// <summary>
 /// Configuration options for Redis based output cache.
 /// </summary>
-public class RedisOutputCacheOptions : IOptions<RedisOutputCacheOptions>
+public sealed class RedisOutputCacheOptions : IOptions<RedisOutputCacheOptions>
 {
     /// <summary>
     /// The configuration used to connect to Redis.
