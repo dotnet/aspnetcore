@@ -177,7 +177,7 @@ APPLICATION_MANAGER::RecycleApplicationFromManager(
         }
 
         // Remove apps after calling shutdown on each of them
-        // This is exclusive to in-process, as the shutdown of an inprocess app recycles
+        // This is exclusive to in-process, as the shutdown of an in-process app recycles
         // the entire worker process.
         if (m_handlerResolver.GetHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS)
         {
@@ -187,21 +187,18 @@ APPLICATION_MANAGER::RecycleApplicationFromManager(
             auto itr = m_pApplicationInfoHash.begin();
             while (itr != m_pApplicationInfoHash.end())
             {
-                for (auto& application : applicationsToRecycle)
+                if (itr->second != nullptr && itr->second->ConfigurationPathApplies(configurationPath)
+                    && applicationsToRecycle.contains(itr->second);)
                 {
-                    if (itr->second != nullptr && itr->second->ConfigurationPathApplies(configurationPath)
-                        && itr->second.get() == application.get())
-                    {
-                        itr = m_pApplicationInfoHash.erase(itr);
-                        break;
-                    }
-                    else
-                    {
-                        ++itr;
-                    }
+                    itr = m_pApplicationInfoHash.erase(itr);
+                    break;
                 }
-            } // Release Exclusive m_srwLock
-        }
+                else
+                {
+                    ++itr;
+                }
+            }
+        } // Release Exclusive m_srwLock
     }
     CATCH_RETURN()
 
