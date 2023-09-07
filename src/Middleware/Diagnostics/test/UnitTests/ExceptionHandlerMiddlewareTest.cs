@@ -396,29 +396,7 @@ public class ExceptionHandlerMiddlewareTest
     {
         public object GetService(Type serviceType)
         {
-            if (serviceType == typeof(IServiceScopeFactory))
-            {
-                return new TestServiceScopeFactory();
-            }
-
             throw new NotImplementedException();
-        }
-    }
-
-    private class TestServiceScopeFactory : IServiceScopeFactory
-    {
-        public IServiceScope CreateScope()
-        {
-            return new TestServiceScope();
-        }
-    }
-
-    private class TestServiceScope : IServiceScope
-    {
-        public IServiceProvider ServiceProvider => new TestServiceProvider();
-
-        public void Dispose()
-        {
         }
     }
 }
