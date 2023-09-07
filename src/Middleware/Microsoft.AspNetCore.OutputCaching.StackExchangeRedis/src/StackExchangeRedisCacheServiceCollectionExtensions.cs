@@ -4,7 +4,6 @@
 using System;
 using Microsoft.AspNetCore.OutputCaching.StackExchangeRedis;
 using Microsoft.AspNetCore.Shared;
-using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection;
