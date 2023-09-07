@@ -183,7 +183,6 @@ public class ForwardedHeadersMiddleware
             entryCount = Math.Max(forwardedPort.Length, entryCount);
         }
 
-
         if (_options.ForwardedHeaders.HasFlag(ForwardedHeaders.XForwardedPrefix))
         {
             checkPrefix = true;
