@@ -60,7 +60,7 @@ internal partial class EndpointHtmlRenderer
         }
         catch (NavigationException navigationException)
         {
-            HandleNavigationAfterResponseStarted(writer, navigationException.Location);
+            HandleNavigationAfterResponseStarted(writer, httpContext, navigationException.Location);
         }
         catch (Exception ex)
         {
@@ -176,10 +176,10 @@ internal partial class EndpointHtmlRenderer
         writer.Write("</template><blazor-ssr-end></blazor-ssr-end></blazor-ssr>");
     }
 
-    private static void HandleNavigationAfterResponseStarted(TextWriter writer, string destinationUrl)
+    private static void HandleNavigationAfterResponseStarted(TextWriter writer, HttpContext httpContext, string destinationUrl)
     {
         writer.Write("<blazor-ssr><template type=\"redirection\">");
-        writer.Write(HtmlEncoder.Default.Encode(destinationUrl));
+        writer.Write(HtmlEncoder.Default.Encode(OpaqueRedirection.CreateProtectedRedirectionUrl(httpContext, destinationUrl)));
         writer.Write("</template><blazor-ssr-end></blazor-ssr-end></blazor-ssr>");
     }
 
