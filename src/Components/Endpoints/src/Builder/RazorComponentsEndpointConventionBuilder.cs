@@ -4,7 +4,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Discovery;
 using Microsoft.AspNetCore.Components.Endpoints;
-using Microsoft.AspNetCore.Components.Web;
 
 namespace Microsoft.AspNetCore.Builder;
 
@@ -37,17 +36,6 @@ public sealed class RazorComponentsEndpointConventionBuilder : IEndpointConventi
     /// Gets the <see cref="ComponentApplicationBuilder"/> that is used to build the endpoints.
     /// </summary>
     internal ComponentApplicationBuilder ApplicationBuilder => _builder;
-
-    /// <summary>
-    /// Configures the <see cref="RenderMode.Server"/> for this application.
-    /// </summary>
-    /// <returns>The <see cref="RazorComponentsEndpointConventionBuilder"/>.</returns>
-    public RazorComponentsEndpointConventionBuilder AddServerRenderMode()
-    {
-        _options.ConfiguredRenderModes.Add(RenderMode.Server);
-
-        return this;
-    }
 
     /// <inheritdoc/>
     public void Add(Action<EndpointBuilder> convention)
