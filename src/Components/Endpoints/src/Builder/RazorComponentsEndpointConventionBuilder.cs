@@ -61,12 +61,9 @@ public sealed class RazorComponentsEndpointConventionBuilder : IEndpointConventi
         }
     }
 
-    /// <summary>
-    /// Adds the given <paramref name="renderMode"/> to the list of configured render modes if not present.
-    /// </summary>
-    /// <param name="renderMode">The <see cref="IComponentRenderMode"/> to add.</param>
-    public void AddRenderMode(IComponentRenderMode renderMode)
+    internal void AddRenderMode(IComponentRenderMode renderMode)
     {
         _options.ConfiguredRenderModes.Add(renderMode);
     }
 }
+

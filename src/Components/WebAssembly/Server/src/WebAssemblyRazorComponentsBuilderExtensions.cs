@@ -32,25 +32,21 @@ public static class WebAssemblyRazorComponentsBuilderExtensions
         return builder;
     }
 
-    private class WebAssemblyEndpointProvider : RenderModeEndpointProvider
+    private class WebAssemblyEndpointProvider(IServiceProvider services) : RenderModeEndpointProvider
     {
-        private readonly IServiceProvider _services;
-        private readonly WebAssemblyComponentsEndpointOptions _options;
-
-        public WebAssemblyEndpointProvider(IServiceProvider services, IOptions<WebAssemblyComponentsEndpointOptions> options)
-        {
-            _services = services;
-            _options = options.Value;
-        }
-
         public override IEnumerable<RouteEndpointBuilder> GetEndpointBuilders(IComponentRenderMode renderMode, IApplicationBuilder applicationBuilder)
         {
             if (renderMode is not WebAssemblyRenderModeWithOptions wasmWithOptions)
             {
+                if (renderMode is WebAssemblyRenderMode)
+                {
+                    throw new InvalidOperationException("Invalid render mode. Use AddWebAssemblyComponents(Action<WebAssemblyComponentsEndpointOptions>) to configure the WebAssembly render mode.");
+                }
+
                 return Array.Empty<RouteEndpointBuilder>();
             }
 
-            var endpointRouteBuilder = new EndpointRouteBuilder(_services, applicationBuilder);
+            var endpointRouteBuilder = new EndpointRouteBuilder(services, applicationBuilder);
             var pathPrefix = wasmWithOptions.EndpointOptions?.PathPrefix;
 
             applicationBuilder.UseBlazorFrameworkFiles(pathPrefix ?? default);
