@@ -191,7 +191,6 @@ APPLICATION_MANAGER::RecycleApplicationFromManager(
                     && std::find(applicationsToRecycle.begin(), applicationsToRecycle.end(), itr->second) != applicationsToRecycle.end())
                 {
                     itr = m_pApplicationInfoHash.erase(itr);
-                    break;
                 }
                 else
                 {
