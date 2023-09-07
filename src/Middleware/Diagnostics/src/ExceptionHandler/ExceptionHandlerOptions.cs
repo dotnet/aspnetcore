@@ -19,10 +19,10 @@ public class ExceptionHandlerOptions
 
     /// <summary>
     /// Gets or sets whether the handler needs to create a separate <see cref="IServiceProvider"/> scope and
-    /// replace it on <see cref="HttpContext"/>.
+    /// replace it on <see cref="HttpContext.RequestServices"/> when re-executing the request to handle an error.
     /// </summary>
     /// <remarks>The default value is <see langword="false"/>.</remarks>
-    public bool UseNewServiceResolutionScope { get; set; }
+    public bool CreateScopeForErrors { get; set; }
 
     /// <summary>
     /// The <see cref="RequestDelegate" /> that will handle the exception. If this is not

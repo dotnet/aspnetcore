@@ -143,8 +143,8 @@ internal sealed class ExceptionHandlerMiddlewareImpl
         {
             context.Request.Path = _options.ExceptionHandlingPath;
         }
-        var oldScope = _options.UseNewServiceResolutionScope ? context.RequestServices : null;
-        using var scope = _options.UseNewServiceResolutionScope ? context.RequestServices.GetRequiredService<IServiceScopeFactory>().CreateScope() : null;
+        var oldScope = _options.CreateScopeForErrors ? context.RequestServices : null;
+        using var scope = _options.CreateScopeForErrors ? context.RequestServices.GetRequiredService<IServiceScopeFactory>().CreateScope() : null;
 
         try
         {

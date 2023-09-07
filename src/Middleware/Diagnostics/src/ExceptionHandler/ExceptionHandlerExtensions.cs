@@ -62,7 +62,7 @@ public static class ExceptionHandlerExtensions
         return app.UseExceptionHandler(new ExceptionHandlerOptions
         {
             ExceptionHandlingPath = new PathString(errorHandlingPath),
-            UseNewServiceResolutionScope = newScope
+            CreateScopeForErrors = newScope
         });
     }
 
