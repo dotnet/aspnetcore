@@ -40,6 +40,6 @@
 
     <!-- Transivite dependency of Microsoft.CodeAnalysis.ExternalAccess.AspNetCore -> Microsoft.CodeAnalysis.Features.
          In product build the dependency is bumped to latest, which also bumps the version of DiaSymReader  -->
-    <UsagePattern IdentityGlob="Microsoft.DiaSymReader/*1.4.0*" />
+    <UsagePattern IdentityGlob="Microsoft.DiaSymReader/*2.0.0*" />
   </IgnorePatterns>
 </UsageData>
