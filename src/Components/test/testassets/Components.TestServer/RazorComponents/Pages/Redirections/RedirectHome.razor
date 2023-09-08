@@ -29,18 +29,18 @@
 
 <h2>Streaming off, enhanced nav on cases</h2>
 <ul>
-    <li><a href="redirect/get">Streaming GET with internal redirection</a></li>
-    <li><a href="redirect/get?external=true">Streaming GET with external redirection</a></li>
+    <li><a href="redirect/get">Enhanced GET with internal redirection</a></li>
+    <li><a href="redirect/get?external=true">Enhanced GET with external redirection</a></li>
     <li>
         <form id="form-enhanced-internal" @formname="myform" method="post" action="redirect/post" data-enhance>
             <AntiforgeryToken />
-            <button>Streaming POST with internal redirection</button>
+            <button>Enhanced POST with internal redirection</button>
         </form>
     </li>
     <li>
         <form id="form-enhanced-external" @formname="myform" method="post" action="redirect/post?external=true" data-enhance>
             <AntiforgeryToken />
-            <button>Streaming POST with external redirection</button>
+            <button>Enhanced POST with external redirection</button>
         </form>
     </li>
 </ul>

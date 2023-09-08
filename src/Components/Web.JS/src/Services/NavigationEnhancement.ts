@@ -170,7 +170,14 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, f
       // to the end, and given us the final content. We do still need to update the current URL to match the final location,
       // then let the rest of enhanced nav logic run to patch the new content into the DOM.
       if (response.redirected) {
-        history.replaceState(null, '', response.url);
+        if (isGetRequest) {
+          // For gets, the intermediate (redirecting) URL is already in the address bar, so we have to use 'replace'
+          // so that 'back' would go to the page before the redirection
+          history.replaceState(null, '', response.url);
+        } else {
+          // For non-gets, we're still on the source page, so need to append a whole new history entry
+          history.pushState(null, '', response.url);
+        }
         internalDestinationHref = response.url;
       }
 

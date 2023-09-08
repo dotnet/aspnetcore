@@ -76,6 +76,56 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
         Browser.Contains("microsoft.com", () => Browser.Url);
     }
 
+    [Fact]
+    public void RedirectEnhancedGetToInternal()
+    {
+        // Note that in this specific case we can't preserve the hash part of the URL, as it
+        // gets lost when the browser follows a 'fetch' redirection. If we decide it's important
+        // to support this later, we'd have to change the server not to do a real redirection
+        // here and instead use the same protocol it uses for external redirections.
+
+        Browser.Exists(By.LinkText("Enhanced GET with internal redirection")).Click();
+        Browser.Equal("Scroll to hash", () => _originalH1Element.Text);
+        Assert.EndsWith("/subdir/nav/scroll-to-hash", Browser.Url);
+
+        // See that 'back' takes you to the place from before the redirection
+        Browser.Navigate().Back();
+        Browser.Equal("Redirections", () => _originalH1Element.Text);
+        Assert.EndsWith("/subdir/redirect", Browser.Url);
+    }
+
+    [Fact]
+    public void RedirectEnhancedGetToExternal()
+    {
+        Browser.Exists(By.LinkText("Enhanced GET with external redirection")).Click();
+        Browser.Contains("microsoft.com", () => Browser.Url);
+    }
+
+    [Fact]
+    public void RedirectEnhancedPostToInternal()
+    {
+        // Note that in this specific case we can't preserve the hash part of the URL, as it
+        // gets lost when the browser follows a 'fetch' redirection. If we decide it's important
+        // to support this later, we'd have to change the server not to do a real redirection
+        // here and instead use the same protocol it uses for external redirections.
+
+        Browser.Exists(By.CssSelector("#form-enhanced-internal button")).Click();
+        Browser.Equal("Scroll to hash", () => _originalH1Element.Text);
+        Assert.EndsWith("/subdir/nav/scroll-to-hash", Browser.Url);
+
+        // See that 'back' takes you to the place from before the redirection
+        Browser.Navigate().Back();
+        Browser.Equal("Redirections", () => _originalH1Element.Text);
+        Assert.EndsWith("/subdir/redirect", Browser.Url);
+    }
+
+    [Fact]
+    public void RedirectEnhancedPostToExternal()
+    {
+        Browser.Exists(By.CssSelector("#form-enhanced-external button")).Click();
+        Browser.Contains("microsoft.com", () => Browser.Url);
+    }
+
     private void AssertElementRemoved(IWebElement element)
     {
         Browser.True(() =>
