@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
   "name": "API web ASP.NET Core",
-  "description": "A project template for creating a RESTful Web API using ASP.NET Core controllers or minimal APIs, with optional support for OpenAPI and authentication.",
+  "description": "Modèle de projet pour la création d’une API web RESTful à l’aide de contrôleurs ASP.NET Core ou d’API minimales, avec prise en charge facultative pour OpenAPI et l’authentification.",
   "symbols/auth/choices/None/description": "Aucune authentification",
   "symbols/auth/choices/IndividualB2C/description": "Authentification individuelle avec Azure AD B2C",
   "symbols/auth/choices/SingleOrg/description": "Authentification organisationnelle pour un seul locataire",
@@ -24,7 +24,7 @@
   "symbols/NoHttps/description": "Indique s’il faut désactiver HTTPS. Cette option s’applique uniquement si IndividualB2C, SingleOrg ou MultiOrg ne sont pas utilisés pour --auth.",
   "symbols/UseLocalDB/description": "Indique s’il faut utiliser localDB au lieu de SQLite. Cette option s’applique uniquement si --auth Individual ou --auth IndividualB2C est spécifié.",
   "symbols/UseMinimalAPIs/description": "Indique s’il faut utiliser des API minimales au lieu de contrôleurs.",
-  "symbols/UseControllers/description": "Whether to use controllers instead of minimal APIs. This option overides the value specified by --minimal.",
+  "symbols/UseControllers/description": "Indique s’il faut utiliser des contrôleurs plutôt que des API minimales. Cette option dépasse la valeur spécifiée par --minimal.",
   "symbols/Framework/description": "Framework cible du projet.",
   "symbols/Framework/choices/net8.0/description": "Cible net8.0",
   "symbols/skipRestore/description": "S’il est spécifié, ignore la restauration automatique du projet lors de la création.",

@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
   "name": "Internetowy interfejs API platformy ASP.NET Core",
-  "description": "A project template for creating a RESTful Web API using ASP.NET Core controllers or minimal APIs, with optional support for OpenAPI and authentication.",
+  "description": "Szablon projektu służący do tworzenia internetowego interfejsu API RESTful przy użyciu kontrolerów platformy ASP.NET Core lub minimalnych interfejsów API z opcjonalną obsługą interfejsu OpenAPI i uwierzytelniania.",
   "symbols/auth/choices/None/description": "Bez uwierzytelniania",
   "symbols/auth/choices/IndividualB2C/description": "Indywidualne uwierzytelnianie za pomocą usługi Azure AD B2C",
   "symbols/auth/choices/SingleOrg/description": "Uwierzytelnianie organizacyjne dla pojedynczej dzierżawy",
@@ -24,7 +24,7 @@
   "symbols/NoHttps/description": "Określa, czy wyłączyć protokół HTTPS. Ta opcja ma zastosowanie tylko wtedy, gdy elementy IndividualB2C, SingleOrg lub MultiOrg nie są używane dla uwierzytelniania --auth.",
   "symbols/UseLocalDB/description": "Określa, czy używać bazy danych LocalDB zamiast oprogramowania SQLite. Ta opcja ma zastosowanie tylko wtedy, gdy określono uwierzytelnianie --auth Individual lub --auth IndividualB2C.",
   "symbols/UseMinimalAPIs/description": "Określa, czy używać minimalnej ilości interfejsów API zamiast kontrolerów.",
-  "symbols/UseControllers/description": "Whether to use controllers instead of minimal APIs. This option overides the value specified by --minimal.",
+  "symbols/UseControllers/description": "Określa, czy używać kontrolerów zamiast minimalnych interfejsów API. Ta opcja przesłania wartość określoną przez parametr --minimal.",
   "symbols/Framework/description": "Platforma docelowa dla tego projektu.",
   "symbols/Framework/choices/net8.0/description": "Docelowa platforma net8.0",
   "symbols/skipRestore/description": "Jeśli ta opcja jest określona, pomija automatyczne przywracanie projektu podczas tworzenia.",

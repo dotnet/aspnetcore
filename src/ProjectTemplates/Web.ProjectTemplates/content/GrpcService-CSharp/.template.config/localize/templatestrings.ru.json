@@ -1,7 +1,7 @@
 ﻿{
   "author": "Майкрософт",
   "name": "Служба gRPC ASP.NET Core",
-  "description": "A project template for creating a gRPC service using ASP.NET Core, with optional support for publishing as native AOT.",
+  "description": "Шаблон проекта для создания службы gRPC с помощью ASP.NET Core с необязательной поддержкой публикации в качестве «native AOT».",
   "symbols/Framework/description": "Целевая платформа для проекта.",
   "symbols/Framework/choices/net8.0/description": "Целевая net8.0",
   "symbols/ExcludeLaunchSettings/description": "Следует ли исключить launchSettings.json из созданного шаблона.",

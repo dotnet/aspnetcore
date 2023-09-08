@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
   "name": "Biblioteca de Classes Razor",
-  "description": "Um projeto para criar uma biblioteca de classes Razor direcionada ao .NET Standard",
+  "description": "Um projeto para criar uma biblioteca de classes Razor voltada para .NET",
   "symbols/Framework/description": "A estrutura de destino do projeto.",
   "symbols/Framework/choices/net8.0/description": "net8.0 de destino",
   "symbols/skipRestore/description": "Se especificado, ignora a restauração automática do projeto sendo criado.",
