@@ -1,12 +1,40 @@
 ﻿@page "/redirect"
+@using Microsoft.AspNetCore.Components.Forms
 
 <h1>Redirections</h1>
 
 <h2>Non-enhanced nav cases</h2>
-
 <ul data-enhance-nav="false">
-    <li><a href="redirect/streaming/get">Streaming GET with internal target</a></li>
-    <li><a href="redirect/streaming/get?external=true">Streaming GET with external target</a></li>
-    <li><a href="redirect/streaming/post">Streaming POST with internal target</a></li>
-    <li><a href="redirect/streaming/post?external=true">Streaming POST with external target</a></li>
+    <li><a href="redirect/streaming/get">Streaming GET with internal redirection</a></li>
+    <li><a href="redirect/streaming/get?external=true">Streaming GET with external redirection</a></li>
+    <li>
+        <form @formname="myform" method="post" action="redirect/streaming/post">
+            <AntiforgeryToken />
+            <button>Streaming POST with internal redirection</button>
+        </form>
+    </li>
+    <li>
+        <form @formname="myform" method="post" action="redirect/streaming/post?external=true">
+            <AntiforgeryToken />
+            <button>Streaming POST with external redirection</button>
+        </form>
+    </li>
+</ul>
+
+<h2>Enhanced nav cases</h2>
+<ul>
+    <li><a href="redirect/get">Streaming GET with internal redirection</a></li>
+    <li><a href="redirect/get?external=true">Streaming GET with external redirection</a></li>
+    <li>
+        <form @formname="myform" method="post" action="redirect/post" data-enhance>
+            <AntiforgeryToken />
+            <button>Streaming POST with internal redirection</button>
+        </form>
+    </li>
+    <li>
+        <form @formname="myform" method="post" action="redirect/post?external=true" data-enhance>
+            <AntiforgeryToken />
+            <button>Streaming POST with external redirection</button>
+        </form>
+    </li>
 </ul>

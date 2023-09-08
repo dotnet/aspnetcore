@@ -1,9 +1,8 @@
-﻿@page "/redirect/streaming/post"
-@attribute [StreamRendering]
+﻿@page "/redirect/post"
 @inject NavigationManager Nav
 @using Microsoft.AspNetCore.Components.Forms
 
-<h3>Streaming POST</h3>
+<h3>Nonstreaming POST</h3>
 
 <form @formname="myform" method="post" @onsubmit="DoRedirectionAsync"></form>
 
