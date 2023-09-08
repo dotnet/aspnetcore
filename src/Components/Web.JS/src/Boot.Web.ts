@@ -17,7 +17,7 @@ import { WebStartOptions } from './Platform/WebStartOptions';
 import { attachStreamingRenderingListener } from './Rendering/StreamingRendering';
 import { attachProgressivelyEnhancedNavigationListener } from './Services/NavigationEnhancement';
 import { WebRootComponentManager } from './Services/WebRootComponentManager';
-import { attachComponentDescriptorHandler, registerAllComponentDescriptors } from './Rendering/DomMerging/DomSync';
+import { attachComponentDescriptorHandler, preprocessInitialDOM } from './Rendering/DomMerging/DomSync';
 import { hasProgrammaticEnhancedNavigationHandler, performProgrammaticEnhancedNavigation } from './Services/NavigationUtils';
 
 let started = false;
@@ -34,11 +34,10 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
   // Defined here to avoid inadvertently imported enhanced navigation
   // related APIs in WebAssembly or Blazor Server contexts.
   Blazor._internal.hotReloadApplied = () => {
-    if (hasProgrammaticEnhancedNavigationHandler())
-    {
+    if (hasProgrammaticEnhancedNavigationHandler()) {
       performProgrammaticEnhancedNavigation(location.href, true);
     }
-  }
+  };
 
   setCircuitOptions(options?.circuit);
   setWebAssemblyOptions(options?.webAssembly);
@@ -52,8 +51,16 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
     attachProgressivelyEnhancedNavigationListener(rootComponentManager);
   }
 
-  registerAllComponentDescriptors(document);
-  rootComponentManager.documentUpdated();
+  // HACK: https://github.com/dotnet/aspnetcore/pull/50345 hasn't been merged
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      preprocessInitialDOM(document);
+      rootComponentManager.documentUpdated();
+    });
+  } else {
+    preprocessInitialDOM(document);
+    rootComponentManager.documentUpdated();
+  }
 
   return Promise.resolve();
 }

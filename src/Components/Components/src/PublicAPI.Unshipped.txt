@@ -42,6 +42,7 @@ Microsoft.AspNetCore.Components.RenderTree.NamedEventChangeType
 Microsoft.AspNetCore.Components.RenderTree.NamedEventChangeType.Added = 0 -> Microsoft.AspNetCore.Components.RenderTree.NamedEventChangeType
 Microsoft.AspNetCore.Components.RenderTree.NamedEventChangeType.Removed = 1 -> Microsoft.AspNetCore.Components.RenderTree.NamedEventChangeType
 Microsoft.AspNetCore.Components.RenderTree.RenderBatch.NamedEventChanges.get -> Microsoft.AspNetCore.Components.RenderTree.ArrayRange<Microsoft.AspNetCore.Components.RenderTree.NamedEventChange>?
+Microsoft.AspNetCore.Components.RenderTree.Renderer.RootComponentCount.get -> int
 Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.ComponentFrameFlags.get -> Microsoft.AspNetCore.Components.RenderTree.ComponentFrameFlags
 Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType.ComponentRenderMode = 9 -> Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType
 Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType.NamedEvent = 10 -> Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType

@@ -121,6 +121,6 @@ static Microsoft.AspNetCore.Components.Web.RenderMode.WebAssembly.get -> Microso
 virtual Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.RenderChildComponent(System.IO.TextWriter! output, ref Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame componentFrame) -> void
 virtual Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.WriteComponentHtml(int componentId, System.IO.TextWriter! output) -> void
 virtual Microsoft.AspNetCore.Components.RenderTree.WebRenderer.GetWebRendererId() -> int
-virtual Microsoft.AspNetCore.Components.RenderTree.WebRenderer.UpdateRootComponents(string! operationsJson) -> void
 Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.EmptyContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.EmptyContent.set -> void
+virtual Microsoft.AspNetCore.Components.RenderTree.WebRenderer.UpdateRootComponents(string! updateSetJson) -> void

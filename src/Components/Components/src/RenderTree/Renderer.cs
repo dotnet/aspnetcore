@@ -121,6 +121,11 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     internal bool IsRenderingOnMetadataUpdate { get; private set; }
 
     /// <summary>
+    /// Gets the number of root components.
+    /// </summary>
+    protected int RootComponentCount => _rootComponentsLatestParameters?.Count ?? 0;
+
+    /// <summary>
     /// Gets whether the renderer has been disposed.
     /// </summary>
     internal bool Disposed => _rendererIsDisposed;

@@ -4,6 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json;
+using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Logging;
 
@@ -198,6 +199,37 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
         _seenSequenceNumbersForCurrentInvocation.Add(serverComponent.Sequence);
         result = descriptor;
         return true;
+    }
+
+    public bool TryDeserializeCircuitComponentValidation(string payload, [NotNullWhen(true)] out CircuitRootComponentValidation? result)
+    {
+        string unprotected;
+        try
+        {
+            var payloadBytes = Convert.FromBase64String(payload);
+            var unprotectedBytes = _dataProtector.Unprotect(payloadBytes);
+            unprotected = Encoding.UTF8.GetString(unprotectedBytes);
+        }
+        catch (Exception)
+        {
+            // TODO: Log.
+            result = default;
+            return false;
+        }
+
+        try
+        {
+            result = JsonSerializer.Deserialize<CircuitRootComponentValidation>(
+                unprotected,
+                ServerComponentSerializationSettings.JsonSerializationOptions);
+            return true;
+        }
+        catch (Exception)
+        {
+            // TODO: Log.
+            result = default;
+            return false;
+        }
     }
 
     private bool IsWellFormedServerComponent(ComponentMarker record)

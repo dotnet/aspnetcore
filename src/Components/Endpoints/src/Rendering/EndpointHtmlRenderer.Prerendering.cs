@@ -6,6 +6,7 @@ using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Components.Web.HtmlRendering;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
@@ -13,6 +14,8 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 internal partial class EndpointHtmlRenderer
 {
     private static readonly object ComponentSequenceKey = new object();
+
+    private readonly CircuitEnabledBoundaryRegistry _circuitEnabledBoundaryRegistry = new();
 
     protected override IComponent ResolveComponentForRenderMode([DynamicallyAccessedMembers(Component)] Type componentType, int? parentComponentId, IComponentActivator componentActivator, IComponentRenderMode renderMode)
     {
@@ -29,7 +32,7 @@ internal partial class EndpointHtmlRenderer
         else
         {
             // This component is the start of a subtree with a rendermode, so introduce a new rendermode boundary here
-            return new SSRRenderModeBoundary(_httpContext, componentType, renderMode);
+            return new SSRRenderModeBoundary(_httpContext, componentType, renderMode, _circuitEnabledBoundaryRegistry);
         }
     }
 
@@ -119,6 +122,22 @@ internal partial class EndpointHtmlRenderer
         {
             return await HandleNavigationException(_httpContext, navigationException);
         }
+    }
+
+    internal async Task WriteCircuitComponentValidationAsync(HttpContext httpContext, TextWriter output)
+    {
+        var circuitEnabledComponentCount = _circuitEnabledBoundaryRegistry.CircuitEnabledBoundaryCount;
+        if (circuitEnabledComponentCount == 0)
+        {
+            // Exit early if there aren't any server components.
+            return;
+        }
+
+        var serverComponentSerializer = httpContext.RequestServices.GetRequiredService<ServerComponentSerializer>();
+        var invocationId = GetOrCreateInvocationId(httpContext);
+        var payload = serverComponentSerializer.SerializeValidation(circuitEnabledComponentCount, invocationId);
+
+        await output.WriteAsync($"<!--bl-validate:{payload}-->");
     }
 
     private async Task WaitForResultReady(bool waitForQuiescence, PrerenderedComponentHtmlContent result)

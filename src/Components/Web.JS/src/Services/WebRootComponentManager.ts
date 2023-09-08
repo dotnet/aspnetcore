@@ -13,6 +13,11 @@ import { RootComponentManager } from './RootComponentManager';
 import { Blazor } from '../GlobalExports';
 import { getRendererer } from '../Rendering/Renderer';
 
+type RootComponentUpdateSet = {
+  operations: RootComponentOperation[];
+  circuitComponentValidation?: string;
+};
+
 type RootComponentOperation = RootComponentAddOperation | RootComponentUpdateOperation | RootComponentRemoveOperation;
 
 type RootComponentAddOperation = {
@@ -52,6 +57,8 @@ export class WebRootComponentManager implements DescriptorHandler, NavigationEnh
 
   private _circuitInactivityTimeoutId: any;
 
+  private _circuitComponentValidation: string | undefined;
+
   // Implements RootComponentManager.
   // An empty array becuase all root components managed
   // by WebRootComponentManager are added and removed dynamically.
@@ -77,6 +84,7 @@ export class WebRootComponentManager implements DescriptorHandler, NavigationEnh
     }
   }
 
+  // Implements DescriptorHandler.
   public registerComponent(descriptor: ComponentDescriptor) {
     if (this._descriptors.has(descriptor)) {
       return;
@@ -97,6 +105,11 @@ export class WebRootComponentManager implements DescriptorHandler, NavigationEnh
   private unregisterComponent(component: RootComponentInfo) {
     this._descriptors.delete(component.descriptor);
     this._rootComponents.delete(component);
+  }
+
+  // Implements DescriptorHandler.
+  public registerCircuitComponentValidation(payload: string): void {
+    this._circuitComponentValidation = payload;
   }
 
   private async startLoadingWebAssemblyIfNotStarted() {
@@ -256,8 +269,12 @@ export class WebRootComponentManager implements DescriptorHandler, NavigationEnh
     }
 
     for (const [rendererId, operations] of operationsByRendererId) {
-      const operationsJson = JSON.stringify(operations);
-      updateRootComponents(rendererId, operationsJson);
+      const updateSet: RootComponentUpdateSet = {
+        operations,
+        circuitComponentValidation: this._circuitComponentValidation,
+      };
+      const updateSetJson = JSON.stringify(updateSet);
+      updateRootComponents(rendererId, updateSetJson);
     }
 
     this.circuitMayHaveNoRootComponents();

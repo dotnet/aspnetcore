@@ -62,9 +62,9 @@ export function dispatchEvent(browserRendererId: number, eventDescriptor: EventD
   });
 }
 
-export function updateRootComponents(browserRendererId: number, operationsJson: string): Promise<void> {
+export function updateRootComponents(browserRendererId: number, updateSetJson: string): Promise<void> {
   const interopMethods = getInteropMethods(browserRendererId);
-  return interopMethods.invokeMethodAsync('UpdateRootComponents', operationsJson);
+  return interopMethods.invokeMethodAsync('UpdateRootComponents', updateSetJson);
 }
 
 function getInteropMethods(rendererId: number): DotNet.DotNetObject {

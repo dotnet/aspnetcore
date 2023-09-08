@@ -88,8 +88,8 @@ public abstract class WebRenderer : Renderer
     /// <summary>
     /// Performs the specified operations on the renderer's root components.
     /// </summary>
-    /// <param name="operationsJson">A JSON-serialized list of operations to perform on the renderer's root components.</param>
-    protected virtual void UpdateRootComponents(string operationsJson)
+    /// <param name="updateSetJson">A JSON-serialized set of operations to perform on the renderer's root components.</param>
+    protected virtual void UpdateRootComponents(string updateSetJson)
     {
     }
 

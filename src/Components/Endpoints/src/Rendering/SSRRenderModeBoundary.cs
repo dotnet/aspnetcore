@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 /// A component that describes a location in prerendered output where client-side code
 /// should insert an interactive component.
 /// </summary>
-internal class SSRRenderModeBoundary : IComponent
+internal sealed class SSRRenderModeBoundary : IComponent, IDisposable
 {
     private static readonly ConcurrentDictionary<Type, string> _componentTypeNameHashCache = new();
 
@@ -28,6 +28,7 @@ internal class SSRRenderModeBoundary : IComponent
     private readonly Type _componentType;
     private readonly IComponentRenderMode _renderMode;
     private readonly bool _prerender;
+    private readonly CircuitEnabledBoundaryRegistry? _circuitEnabledBoundaryRegistry;
     private RenderHandle _renderHandle;
     private IReadOnlyDictionary<string, object?>? _latestParameters;
     private string? _markerKey;
@@ -35,7 +36,8 @@ internal class SSRRenderModeBoundary : IComponent
     public SSRRenderModeBoundary(
         HttpContext httpContext,
         [DynamicallyAccessedMembers(Component)] Type componentType,
-        IComponentRenderMode renderMode)
+        IComponentRenderMode renderMode,
+        CircuitEnabledBoundaryRegistry? circuitEnabledBoundaryRegistry = default)
     {
         AssertRenderModeIsConfigured(httpContext, componentType, renderMode);
 
@@ -48,6 +50,12 @@ internal class SSRRenderModeBoundary : IComponent
             AutoRenderMode mode => mode.Prerender,
             _ => throw new ArgumentException($"Server-side rendering does not support the render mode '{renderMode}'.", nameof(renderMode))
         };
+
+        if (circuitEnabledBoundaryRegistry is not null && _renderMode is ServerRenderMode or AutoRenderMode)
+        {
+            _circuitEnabledBoundaryRegistry = circuitEnabledBoundaryRegistry;
+            _circuitEnabledBoundaryRegistry.RegisterCircuitEnabledBoundary(this);
+        }
     }
 
     private static void AssertRenderModeIsConfigured(HttpContext httpContext, Type componentType, IComponentRenderMode renderMode)
@@ -213,5 +221,10 @@ internal class SSRRenderModeBoundary : IComponent
         SHA1.HashData(typeNameBytes, typeNameHashBytes);
 
         return Convert.ToHexString(typeNameHashBytes);
+    }
+
+    public void Dispose()
+    {
+        _circuitEnabledBoundaryRegistry?.UnregisterCircuitEnabledBoundary(this);
     }
 }

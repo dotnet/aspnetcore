@@ -6,23 +6,35 @@ import { isInteractiveRootComponentElement } from '../BrowserRenderer';
 import { applyAnyDeferredValue } from '../DomSpecialPropertyUtil';
 import { LogicalElement, getLogicalChildrenArray, getLogicalNextSibling, getLogicalParent, getLogicalRootDescriptor, insertLogicalChild, insertLogicalChildBefore, isLogicalElement, toLogicalElement, toLogicalRootCommentElement } from '../LogicalElements';
 import { synchronizeAttributes } from './AttributeSync';
+import { discoverCircuitComponentValidation } from './CircuitComponentValidation';
 import { UpdateCost, ItemList, Operation, computeEditScript } from './EditScript';
 
 let descriptorHandler: DescriptorHandler | null = null;
 
 export interface DescriptorHandler {
   registerComponent(descriptor: ComponentDescriptor): void;
+  registerCircuitComponentValidation(payload: string): void;
 }
 
 export function attachComponentDescriptorHandler(handler: DescriptorHandler) {
   descriptorHandler = handler;
 }
 
-export function registerAllComponentDescriptors(root: Node) {
+export function preprocessInitialDOM(root: Node) {
+  updateCircuitComponentValidation(root);
+
   const descriptors = upgradeComponentCommentsToLogicalRootComments(root);
 
   for (const descriptor of descriptors) {
     descriptorHandler?.registerComponent(descriptor);
+  }
+}
+
+// TODO: Wrong place for this.
+export function updateCircuitComponentValidation(root: Node) {
+  const circuitComponentValidation = discoverCircuitComponentValidation(root);
+  if (circuitComponentValidation) {
+    descriptorHandler?.registerCircuitComponentValidation(circuitComponentValidation);
   }
 }
 

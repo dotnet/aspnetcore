@@ -55,11 +55,16 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
 
     [DynamicDependency(JsonSerialized, typeof(RootComponentOperation))]
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "The correct members will be preserved by the above DynamicDependency")]
-    protected override void UpdateRootComponents(string operationsJson)
+    protected override void UpdateRootComponents(string updateSetJson)
     {
-        var operations = JsonSerializer.Deserialize<IEnumerable<RootComponentOperation>>(
-            operationsJson,
+        var updateSet = JsonSerializer.Deserialize<RootComponentUpdateSet>(
+            updateSetJson,
             WebAssemblyComponentSerializationSettings.JsonSerializationOptions)!;
+
+        if (updateSet.Operations is not { } operations)
+        {
+            return;
+        }
 
         foreach (var operation in operations)
         {

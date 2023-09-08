@@ -72,24 +72,53 @@ internal partial class RemoteRenderer : WebRenderer
         _ = CaptureAsyncExceptions(attachComponentTask);
     }
 
-    protected override void UpdateRootComponents(string operationsJson)
+    protected override void UpdateRootComponents(string updateSetJson)
     {
-        var operations = JsonSerializer.Deserialize<IEnumerable<RootComponentOperation>>(
-            operationsJson,
+        var updateSet = JsonSerializer.Deserialize<RootComponentUpdateSet>(
+            updateSetJson,
             ServerComponentSerializationSettings.JsonSerializationOptions);
 
-        foreach (var operation in operations)
+        // May be null if there are no root components on the page.
+        CircuitRootComponentValidation componentValidation = null;
+        if (updateSet.CircuitComponentValidation is { Length: > 0 } circuitComponentValidation &&
+            !_serverComponentDeserializer.TryDeserializeCircuitComponentValidation(circuitComponentValidation, out componentValidation))
+        {
+            Log.InvalidRootComponentUpdateSet(_logger, "Invalid circuit component validation payload.");
+            return;
+        }
+
+        var maxRootComponentCount = componentValidation?.MaxComponentCount ?? 0;
+        var newRootComponentCount = RootComponentCount;
+
+        // TODO: Verify that the prerender ID of the component validation payload matches that of each component payload.
+
+        // Update and remove first so that we don't exceed the expected component count.
+        foreach (var operation in updateSet.Operations)
         {
             switch (operation.Type)
             {
-                case RootComponentOperationType.Add:
-                    AddRootComponent(operation);
-                    break;
                 case RootComponentOperationType.Update:
                     UpdateRootComponent(operation);
                     break;
                 case RootComponentOperationType.Remove:
                     RemoveRootComponent(operation);
+                    newRootComponentCount--;
+                    break;
+            }
+        }
+
+        // Then, add the remaining root components.
+        foreach (var operation in updateSet.Operations)
+        {
+            switch (operation.Type)
+            {
+                case RootComponentOperationType.Add:
+                    newRootComponentCount++;
+                    if (newRootComponentCount > maxRootComponentCount)
+                    {
+                        throw new InvalidOperationException("Exceeded the expected number of root components.");
+                    }
+                    AddRootComponent(operation);
                     break;
             }
         }
@@ -486,6 +515,9 @@ internal partial class RemoteRenderer : WebRenderer
 
         [LoggerMessage(108, LogLevel.Debug, "The root component operation of type '{OperationType}' was invalid: {Message}", EventName = "InvalidRootComponentOperation")]
         public static partial void InvalidRootComponentOperation(ILogger logger, RootComponentOperationType operationType, string message);
+
+        [LoggerMessage(109, LogLevel.Debug, "The root component update set was invalid: {Message}", EventName = "InvalidRootComponentUpdateSet")]
+        public static partial void InvalidRootComponentUpdateSet(ILogger logger, string message);
     }
 }
 

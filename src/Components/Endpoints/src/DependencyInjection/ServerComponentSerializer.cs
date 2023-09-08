@@ -22,6 +22,17 @@ internal sealed class ServerComponentSerializer
         marker.WriteServerData(sequence, serverComponent);
     }
 
+    public string SerializeValidation(int circuitEnabledComponentCount, ServerComponentInvocationSequence invocationId)
+    {
+        var serializedPayloadBytes = JsonSerializer.SerializeToUtf8Bytes(new
+        {
+            PrerenderId = invocationId.Value,
+            MaxComponentCount = circuitEnabledComponentCount,
+        }, ServerComponentSerializationSettings.JsonSerializationOptions);
+        var protectedBytes = _dataProtector.Protect(serializedPayloadBytes, ServerComponentSerializationSettings.DataExpiration);
+        return Convert.ToBase64String(protectedBytes);
+    }
+
     private (int sequence, string payload) CreateSerializedServerComponent(
         ServerComponentInvocationSequence invocationId,
         Type rootComponent,

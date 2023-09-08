@@ -1,7 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { synchronizeDomContent } from '../Rendering/DomMerging/DomSync';
+import { discoverCircuitComponentValidation } from '../Rendering/DomMerging/CircuitComponentValidation';
+import { synchronizeDomContent, updateCircuitComponentValidation } from '../Rendering/DomMerging/DomSync';
 import { attachProgrammaticEnhancedNavigationHandler, handleClickForNavigationInterception, hasInteractiveRouter } from './NavigationUtils';
 
 /*
@@ -191,6 +192,10 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, f
       const targetElem = document.getElementById(hash);
       targetElem?.scrollIntoView();
     }
+
+    // HACK: Scan the entire document, not just new content. The circuit component validation comment
+    // might get rendered outside of the 'new' content.
+    updateCircuitComponentValidation(document);
 
     performingEnhancedPageLoad = false;
     navigationEnhancementCallbacks.documentUpdated();
