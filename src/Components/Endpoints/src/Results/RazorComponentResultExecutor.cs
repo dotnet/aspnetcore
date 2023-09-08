@@ -47,6 +47,7 @@ internal static class RazorComponentResultExecutor
         return endpointHtmlRenderer.Dispatcher.InvokeAsync(async () =>
         {
             endpointHtmlRenderer.InitializeStreamingRenderingFraming(httpContext);
+            EndpointHtmlRenderer.MarkAsAllowingEnhancedNavigation(httpContext);
 
             // We could pool these dictionary instances if we wanted, and possibly even the ParameterView
             // backing buffers could come from a pool like they do during rendering.

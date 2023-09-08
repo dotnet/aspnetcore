@@ -166,6 +166,18 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, f
         }
       }
 
+      if (response.headers.get('blazor-enhanced-nav') !== 'allow') {
+        // This appears to be a non-Blazor-Endpoint response. We don't want to use enhanced nav
+        // because the content we receive is not designed to be patched into an existing frame,
+        // and may be incompatible with the Blazor JS that's already here.
+        if (isGetRequest) {
+          retryEnhancedNavAsFullPageLoad(internalDestinationHref);
+          return;
+        } else {
+          throw new Error('Enhanced navigation does not support making a non-GET request to a non-Blazor endpoint. Avoid enabling enhanced navigation for forms that post to a non-Blazor endpoint.');
+        }
+      }
+
       // For 301/302/etc redirections to internal URLs, the browser will already have followed the chain of redirections
       // to the end, and given us the final content. We do still need to update the current URL to match the final location,
       // then let the rest of enhanced nav logic run to patch the new content into the DOM.

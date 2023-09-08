@@ -50,6 +50,11 @@ internal partial class EndpointHtmlRenderer
         return null;
     }
 
+    public static void MarkAsAllowingEnhancedNavigation(HttpContext context)
+    {
+        context.Response.Headers.Add("blazor-enhanced-nav", "allow");
+    }
+
     public ValueTask<IHtmlAsyncContent> PrerenderComponentAsync(
         HttpContext httpContext,
         [DynamicallyAccessedMembers(Component)] Type componentType,
