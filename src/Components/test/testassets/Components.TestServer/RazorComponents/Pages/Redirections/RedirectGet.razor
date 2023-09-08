@@ -10,6 +10,6 @@
     protected override async Task OnInitializedAsync()
     {
         await Task.Delay(500);
-        Nav.NavigateTo(External ? "https://microsoft.com" : "nav/other");
+        Nav.NavigateTo(External ? "https://microsoft.com" : "nav/scroll-to-hash#some-content");
     }
 }

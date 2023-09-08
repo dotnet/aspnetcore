@@ -142,7 +142,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         {
             response.Redirect(request.Query["external"] == "true"
                 ? "https://microsoft.com"
-                : $"{request.PathBase}/nav/other");
+                : $"{request.PathBase}/nav/scroll-to-hash#some-content");
             return Task.CompletedTask;
         }
     }
