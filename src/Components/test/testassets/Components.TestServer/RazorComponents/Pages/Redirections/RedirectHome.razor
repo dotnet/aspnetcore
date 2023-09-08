@@ -14,13 +14,13 @@
     <li><a href="redirect/streaming/get">Streaming GET with internal redirection</a></li>
     <li><a href="redirect/streaming/get?external=true">Streaming GET with external redirection</a></li>
     <li>
-        <form @formname="myform" method="post" action="redirect/streaming/post">
+        <form id="form-streaming-internal" @formname="myform" method="post" action="redirect/streaming/post">
             <AntiforgeryToken />
             <button>Streaming POST with internal redirection</button>
         </form>
     </li>
     <li>
-        <form @formname="myform" method="post" action="redirect/streaming/post?external=true">
+        <form id="form-streaming-external" @formname="myform" method="post" action="redirect/streaming/post?external=true">
             <AntiforgeryToken />
             <button>Streaming POST with external redirection</button>
         </form>
@@ -32,13 +32,13 @@
     <li><a href="redirect/get">Streaming GET with internal redirection</a></li>
     <li><a href="redirect/get?external=true">Streaming GET with external redirection</a></li>
     <li>
-        <form @formname="myform" method="post" action="redirect/post" data-enhance>
+        <form id="form-enhanced-internal" @formname="myform" method="post" action="redirect/post" data-enhance>
             <AntiforgeryToken />
             <button>Streaming POST with internal redirection</button>
         </form>
     </li>
     <li>
-        <form @formname="myform" method="post" action="redirect/post?external=true" data-enhance>
+        <form id="form-enhanced-external" @formname="myform" method="post" action="redirect/post?external=true" data-enhance>
             <AntiforgeryToken />
             <button>Streaming POST with external redirection</button>
         </form>
@@ -50,13 +50,13 @@
     <li><a href="redirect/streaming/get">Streaming enhanced GET with internal redirection</a></li>
     <li><a href="redirect/streaming/get?external=true">Streaming enhanced GET with external redirection</a></li>
     <li>
-        <form @formname="myform" method="post" action="redirect/streaming/post" data-enhance>
+        <form id="form-streaming-enhanced-internal" @formname="myform" method="post" action="redirect/streaming/post" data-enhance>
             <AntiforgeryToken />
             <button>Streaming enhanced POST with internal redirection</button>
         </form>
     </li>
     <li>
-        <form @formname="myform" method="post" action="redirect/streaming/post?external=true" data-enhance>
+        <form id="form-streaming-enhanced-external" @formname="myform" method="post" action="redirect/streaming/post?external=true" data-enhance>
             <AntiforgeryToken />
             <button>Streaming enhanced POST with external redirection</button>
         </form>
@@ -76,14 +76,14 @@
     <li><a href="redirect/nonblazor/get?external=true">Enhanced GET to non-Blazor endpoint with external redirection</a></li>
     <li>
         <!-- We don't recommend enhanced posts to non-Blazor endpoints, but people might still do it -->
-        <form @formname="myform" method="post" action="redirect/nonblazor/post" data-enhance>
+        <form id="form-nonblazor-enhanced-internal" @formname="myform" method="post" action="redirect/nonblazor/post" data-enhance>
             <AntiforgeryToken />
             <button>Enhanced POST to non-Blazor endpoint with internal redirection</button>
         </form>
     </li>
     <li>
         <!-- We don't recommend enhanced posts to non-Blazor endpoints, but people might still do it -->
-        <form @formname="myform" method="post" action="redirect/nonblazor/post?external=true" data-enhance>
+        <form id="form-nonblazor-enhanced-external" @formname="myform" method="post" action="redirect/nonblazor/post?external=true" data-enhance>
             <AntiforgeryToken />
             <button>Enhanced POST to non-Blazor endpoint with external redirection</button>
             <span>Note: this case is not supported and is shown here only for manual testing. No E2E test attempts this case.</span>

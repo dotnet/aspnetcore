@@ -54,6 +54,28 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
         Browser.Contains("microsoft.com", () => Browser.Url);
     }
 
+    [Fact]
+    public void RedirectStreamingPostToInternal()
+    {
+        Browser.Exists(By.CssSelector("#form-streaming-internal button")).Click();
+        AssertElementRemoved(_originalH1Element);
+        Browser.Equal("Scroll to hash", () => Browser.Exists(By.TagName("h1")).Text);
+        Browser.True(() => Browser.GetScrollY() > 500);
+        Assert.EndsWith("/subdir/nav/scroll-to-hash#some-content", Browser.Url);
+
+        // See that 'back' takes you to the place from before the redirection
+        Browser.Navigate().Back();
+        Browser.Equal("Redirections", () => Browser.Exists(By.TagName("h1")).Text);
+        Assert.EndsWith("/subdir/redirect", Browser.Url);
+    }
+
+    [Fact]
+    public void RedirectStreamingPostToExternal()
+    {
+        Browser.Exists(By.CssSelector("#form-streaming-external button")).Click();
+        Browser.Contains("microsoft.com", () => Browser.Url);
+    }
+
     private void AssertElementRemoved(IWebElement element)
     {
         Browser.True(() =>
