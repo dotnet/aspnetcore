@@ -3,7 +3,7 @@
 
 import { SsrStartOptions } from '../Platform/SsrStartOptions';
 import { NavigationEnhancementCallbacks, performEnhancedPageLoad, replaceDocumentWithPlainText } from '../Services/NavigationEnhancement';
-import { isWithinBaseUriSpace } from '../Services/NavigationUtils';
+import { isWithinBaseUriSpace, toAbsoluteUri } from '../Services/NavigationUtils';
 import { synchronizeDomContent } from './DomMerging/DomSync';
 
 let enableDomPreservation = true;
@@ -42,12 +42,25 @@ class BlazorStreamingUpdate extends HTMLElement {
             case 'redirection':
               // We use 'replace' here because it's closest to the non-progressively-enhanced behavior, and will make the most sense
               // if the async delay was very short, as the user would not perceive having been on the intermediate page.
-              const destinationUrl = node.content.textContent!;
-              if (isWithinBaseUriSpace(destinationUrl)) {
-                history.replaceState(null, '', destinationUrl);
+              const destinationUrl = toAbsoluteUri(node.content.textContent!);
+              const isFormPost = node.getAttribute('from') === 'form-post';
+              const isEnhancedNav = node.getAttribute('enhanced') === 'true';
+              if (isEnhancedNav && isWithinBaseUriSpace(destinationUrl)) {
+                if (isFormPost) {
+                  // The URL is not yet updated. Push a whole new entry so that 'back' goes back to the pre-redirection location.
+                  history.pushState(null, '', destinationUrl);
+                } else {
+                  // The URL was already updated on the original link click. Replace so that 'back' goes to the pre-redirection location.
+                  history.replaceState(null, '', destinationUrl);
+                }
                 performEnhancedPageLoad(destinationUrl);
               } else {
-                location.replace(destinationUrl);
+                // Same reason for varying as above
+                if (isFormPost) {
+                  location.assign(destinationUrl);
+                } else {
+                  location.replace(destinationUrl);
+                }
               }
               break;
             case 'error':

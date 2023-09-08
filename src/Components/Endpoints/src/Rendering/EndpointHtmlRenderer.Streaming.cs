@@ -177,7 +177,19 @@ internal partial class EndpointHtmlRenderer
 
     private static void HandleNavigationAfterResponseStarted(TextWriter writer, HttpContext httpContext, string destinationUrl)
     {
-        writer.Write("<blazor-ssr><template type=\"redirection\">");
+        writer.Write("<blazor-ssr><template type=\"redirection\"");
+
+        if (string.Equals(httpContext.Request.Method, "POST", StringComparison.OrdinalIgnoreCase))
+        {
+            writer.Write(" from=\"form-post\"");
+        }
+
+        if (IsProgressivelyEnhancedNavigation(httpContext.Request))
+        {
+            writer.Write(" enhanced=\"true\"");
+        }
+
+        writer.Write(">");
         writer.Write(HtmlEncoder.Default.Encode(OpaqueRedirection.CreateProtectedRedirectionUrl(httpContext, destinationUrl)));
         writer.Write("</template><blazor-ssr-end></blazor-ssr-end></blazor-ssr>");
     }

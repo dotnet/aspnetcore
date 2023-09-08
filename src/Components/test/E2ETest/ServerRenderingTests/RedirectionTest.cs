@@ -1,13 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
+using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
+using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using OpenQA.Selenium;
 using TestServer;
 using Xunit.Abstractions;
-using Components.TestServer.RazorComponents;
-using OpenQA.Selenium;
 
 namespace Microsoft.AspNetCore.Components.E2ETests.ServerRenderingTests;
 
@@ -123,6 +123,52 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
     public void RedirectEnhancedPostToExternal()
     {
         Browser.Exists(By.CssSelector("#form-enhanced-external button")).Click();
+        Browser.Contains("microsoft.com", () => Browser.Url);
+    }
+
+    [Fact]
+    public void RedirectStreamingEnhancedGetToInternal()
+    {
+        // Because this is enhanced nav, it doesn't support preserving the hash in the
+        // redirection for the same reason as above
+
+        Browser.Exists(By.LinkText("Streaming enhanced GET with internal redirection")).Click();
+        Browser.Equal("Scroll to hash", () => _originalH1Element.Text);
+        Assert.EndsWith("/subdir/nav/scroll-to-hash", Browser.Url);
+
+        // See that 'back' takes you to the place from before the redirection
+        Browser.Navigate().Back();
+        Browser.Equal("Redirections", () => _originalH1Element.Text);
+        Assert.EndsWith("/subdir/redirect", Browser.Url);
+    }
+
+    [Fact]
+    public void RedirectStreamingEnhancedGetToExternal()
+    {
+        Browser.Exists(By.LinkText("Streaming enhanced GET with external redirection")).Click();
+        Browser.Contains("microsoft.com", () => Browser.Url);
+    }
+
+    [Fact]
+    public void RedirectStreamingEnhancedPostToInternal()
+    {
+        // Because this is enhanced nav, it doesn't support preserving the hash in the
+        // redirection for the same reason as above
+
+        Browser.Exists(By.CssSelector("#form-streaming-enhanced-internal button")).Click();
+        Browser.Equal("Scroll to hash", () => _originalH1Element.Text);
+        Assert.EndsWith("/subdir/nav/scroll-to-hash", Browser.Url);
+
+        // See that 'back' takes you to the place from before the redirection
+        Browser.Navigate().Back();
+        Browser.Equal("Redirections", () => _originalH1Element.Text);
+        Assert.EndsWith("/subdir/redirect", Browser.Url);
+    }
+
+    [Fact]
+    public void RedirectStreamingEnhancedPostToExternal()
+    {
+        Browser.Exists(By.CssSelector("#form-streaming-enhanced-external button")).Click();
         Browser.Contains("microsoft.com", () => Browser.Url);
     }
 
