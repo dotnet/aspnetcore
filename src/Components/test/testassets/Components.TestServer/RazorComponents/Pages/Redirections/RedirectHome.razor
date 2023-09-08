@@ -56,3 +56,31 @@
         </form>
     </li>
 </ul>
+
+<h2>Enhanced nav to non-Blazor endpoint cases</h2>
+<p>
+    In these cases we can't rely on the server doing anything special to participate in the process.
+    The server is just going to return a regular 302, not any special signal. If the target URL is internal,
+    the "fetch" request will follow it automatically so it just works. If the target URL is external, the
+    "fetch" gets an opaque response, and so if it's a GET we'll follow by retrying, or if it's POST
+    we have to just fail because we can't safely retry.
+</p>
+<ul>
+    <li><a href="redirect/nonblazor/get">Enhanced GET to non-Blazor endpoint with internal redirection</a></li>
+    <li><a href="redirect/nonblazor/get?external=true">Enhanced GET to non-Blazor endpoint with external redirection</a></li>
+    <li>
+        <!-- We don't recommend enhanced posts to non-Blazor endpoints, but people might still do it -->
+        <form @formname="myform" method="post" action="redirect/nonblazor/post" data-enhance>
+            <AntiforgeryToken />
+            <button>Enhanced POST to non-Blazor endpoint with internal redirection</button>
+        </form>
+    </li>
+    <li>
+        <!-- We don't recommend enhanced posts to non-Blazor endpoints, but people might still do it -->
+        <form @formname="myform" method="post" action="redirect/nonblazor/post?external=true" data-enhance>
+            <AntiforgeryToken />
+            <button>Enhanced POST to non-Blazor endpoint with external redirection</button>
+            <span>Note: this case is not supported and is shown here only for manual testing. No E2E test attempts this case.</span>
+        </form>
+    </li>
+</ul>

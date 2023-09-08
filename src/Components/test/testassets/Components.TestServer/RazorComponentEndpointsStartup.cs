@@ -133,5 +133,17 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             }
             await response.WriteAsync("</ul>");
         });
+
+        // Used in the redirection to non-Blazor endpoints tests
+        endpoints.MapGet("redirect/nonblazor/get", PerformRedirection);
+        endpoints.MapPost("redirect/nonblazor/post", PerformRedirection);
+
+        static Task PerformRedirection(HttpRequest request, HttpResponse response)
+        {
+            response.Redirect(request.Query["external"] == "true"
+                ? "https://microsoft.com"
+                : $"{request.PathBase}/nav/other");
+            return Task.CompletedTask;
+        }
     }
 }
