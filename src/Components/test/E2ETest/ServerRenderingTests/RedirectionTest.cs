@@ -165,6 +165,46 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
         Browser.Contains("microsoft.com", () => Browser.Url);
     }
 
+    [Fact]
+    public void RedirectEnhancedNonBlazorGetToInternal()
+    {
+        // See above for why enhanced nav doesn't support preserving the hash
+        Browser.Exists(By.LinkText("Enhanced GET to non-Blazor endpoint with internal redirection")).Click();
+        Browser.Equal("Scroll to hash", () => _originalH1Element.Text);
+        Assert.EndsWith("/subdir/nav/scroll-to-hash", Browser.Url);
+
+        // See that 'back' takes you to the place from before the redirection
+        Browser.Navigate().Back();
+        Browser.Equal("Redirections", () => _originalH1Element.Text);
+        Assert.EndsWith("/subdir/redirect", Browser.Url);
+    }
+
+    [Fact]
+    public void RedirectEnhancedNonBlazorGetToExternal()
+    {
+        Browser.Exists(By.LinkText("Enhanced GET to non-Blazor endpoint with external redirection")).Click();
+        Browser.Contains("microsoft.com", () => Browser.Url);
+    }
+
+    [Fact]
+    public void RedirectEnhancedNonBlazorPostToInternal()
+    {
+        // See above for why enhanced nav doesn't support preserving the hash
+        Browser.Exists(By.CssSelector("#form-nonblazor-enhanced-internal button")).Click();
+        Browser.Equal("Scroll to hash", () => _originalH1Element.Text);
+        Assert.EndsWith("/subdir/nav/scroll-to-hash", Browser.Url);
+
+        // See that 'back' takes you to the place from before the redirection
+        Browser.Navigate().Back();
+        Browser.Equal("Redirections", () => _originalH1Element.Text);
+        Assert.EndsWith("/subdir/redirect", Browser.Url);
+    }
+
+    // There's no RedirectEnhancedNonBlazorPostToExternal case as it's explicitly unsupported
+    // We would need server-side middleware that runs on *all* requests to convert the 301/302/etc
+    // response to something like a 200 that the 'fetch' is allowed to read (embedding the
+    // destination URL).
+
     private void AssertElementRemoved(IWebElement element)
     {
         Browser.True(() =>
