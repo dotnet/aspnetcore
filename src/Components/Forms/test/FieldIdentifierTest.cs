@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using System.Linq.Expressions;
 
 namespace Microsoft.AspNetCore.Components.Forms;
@@ -135,6 +136,25 @@ public class FieldIdentifierTest
         var fieldIdentifier = FieldIdentifier.Create(() => model.StringProperty);
         Assert.Same(model, fieldIdentifier.Model);
         Assert.Equal(nameof(model.StringProperty), fieldIdentifier.FieldName);
+    }
+
+    [Fact]
+    public void CanCreateFromExpression_PropertyUsesCache()
+    {
+        var models = new TestModel[] { new TestModel(), new TestModel() };
+        var cache = new ConcurrentDictionary<(Type ModelType, string FieldName), Func<object, object>>();
+        var result = new TestModel[2];
+        for (var i = 0; i < models.Length; i++)
+        {
+            var model = models[i];
+            LambdaExpression expression = () => model.StringProperty;
+            var body = expression.Body as MemberExpression;
+            var value = FieldIdentifier.GetModelFromMemberAccess((MemberExpression)body.Expression, cache);
+            result[i] = Assert.IsType<TestModel>(value);
+        }
+
+        Assert.Single(cache);
+        Assert.Equal(models, result);
     }
 
     [Fact]
