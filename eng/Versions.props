@@ -295,10 +295,10 @@
     <GrpcNetClientVersion>2.52.0</GrpcNetClientVersion>
     <GrpcToolsVersion>2.52.0</GrpcToolsVersion>
     <MessagePackVersion>2.5.108</MessagePackVersion>
-    <MicrosoftIdentityWebVersion>2.13.0</MicrosoftIdentityWebVersion>
-    <MicrosoftIdentityWebGraphServiceClientVersion>2.13.0</MicrosoftIdentityWebGraphServiceClientVersion>
-    <MicrosoftIdentityWebUIVersion>2.13.0</MicrosoftIdentityWebUIVersion>
-    <MicrosoftIdentityWebDownstreamApiVersion>2.13.0</MicrosoftIdentityWebDownstreamApiVersion>
+    <MicrosoftIdentityWebVersion>2.13.4</MicrosoftIdentityWebVersion>
+    <MicrosoftIdentityWebGraphServiceClientVersion>2.13.4</MicrosoftIdentityWebGraphServiceClientVersion>
+    <MicrosoftIdentityWebUIVersion>2.13.4</MicrosoftIdentityWebUIVersion>
+    <MicrosoftIdentityWebDownstreamApiVersion>2.13.4</MicrosoftIdentityWebDownstreamApiVersion>
     <MessagePackAnalyzerVersion>$(MessagePackVersion)</MessagePackAnalyzerVersion>
     <MoqVersion>4.10.0</MoqVersion>
     <MonoCecilVersion>0.11.2</MonoCecilVersion>
