@@ -288,12 +288,12 @@
     <CommandLineParserVersion>2.3.0</CommandLineParserVersion>
     <FSharpCoreVersion>6.0.0</FSharpCoreVersion>
     <GoogleApiCommonProtosVersion>2.5.0</GoogleApiCommonProtosVersion>
-    <GoogleProtobufVersion>3.22.0</GoogleProtobufVersion>
-    <GrpcAspNetCoreVersion>2.52.0</GrpcAspNetCoreVersion>
-    <GrpcAspNetCoreServerVersion>2.52.0</GrpcAspNetCoreServerVersion>
-    <GrpcAuthVersion>2.52.0</GrpcAuthVersion>
-    <GrpcNetClientVersion>2.52.0</GrpcNetClientVersion>
-    <GrpcToolsVersion>2.52.0</GrpcToolsVersion>
+    <GoogleProtobufVersion>3.23.1</GoogleProtobufVersion>
+    <GrpcAspNetCoreVersion>2.57.0</GrpcAspNetCoreVersion>
+    <GrpcAspNetCoreServerVersion>2.57.0</GrpcAspNetCoreServerVersion>
+    <GrpcAuthVersion>2.57.0</GrpcAuthVersion>
+    <GrpcNetClientVersion>2.57.0</GrpcNetClientVersion>
+    <GrpcToolsVersion>2.57.0</GrpcToolsVersion>
     <MessagePackVersion>2.5.108</MessagePackVersion>
     <MicrosoftIdentityWebVersion>2.13.0</MicrosoftIdentityWebVersion>
     <MicrosoftIdentityWebGraphServiceClientVersion>2.13.0</MicrosoftIdentityWebGraphServiceClientVersion>
