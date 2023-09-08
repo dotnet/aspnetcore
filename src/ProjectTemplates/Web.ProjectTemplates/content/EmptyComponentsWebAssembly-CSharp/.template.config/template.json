@@ -12,9 +12,9 @@
   "defaultName": "BlazorApp-empty",
   "description": "An empty project template for creating a Blazor app that runs on WebAssembly. This template does not have any content in it.",
   "groupIdentity": "Microsoft.Web.Blazor.Wasm.Empty",
-  "precedence": "9800",
-  "identity": "Microsoft.Web.Blazor.Wasm.Empty.CSharp.8.0",
-  "thirdPartyNotices": "https://aka.ms/aspnetcore/8.0-third-party-notices",
+  "precedence": "9900",
+  "identity": "Microsoft.Web.Blazor.Wasm.Empty.CSharp.9.0",
+  "thirdPartyNotices": "https://aka.ms/aspnetcore/9.0-third-party-notices",
   "preferNameDirectory": true,
   "primaryOutputs": [
     {
@@ -58,12 +58,12 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "net8.0",
-          "description": "Target net8.0"
+          "choice": "net9.0",
+          "description": "Target net9.0"
         }
       ],
-      "replaces": "net8.0",
-      "defaultValue": "net8.0"
+      "replaces": "net9.0",
+      "defaultValue": "net9.0"
     },
     "skipRestore": {
       "type": "parameter",

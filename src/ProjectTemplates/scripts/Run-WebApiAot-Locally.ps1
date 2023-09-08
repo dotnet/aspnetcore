@@ -9,4 +9,4 @@ $ErrorActionPreference = 'Stop'
 
 . $PSScriptRoot\Test-Template.ps1
 
-Test-Template "webapiaot" "webapiaot" "Microsoft.DotNet.Web.ProjectTemplates.8.0.8.0.0-dev.nupkg" $false
+Test-Template "webapiaot" "webapiaot" "Microsoft.DotNet.Web.ProjectTemplates.9.0.9.0.0-dev.nupkg" $false

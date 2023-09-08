@@ -7,6 +7,13 @@
     <EnableSingleFileAnalyzer Condition=" '$(EnableSingleFileAnalyzer)' == '' ">$(EnableAOTAnalyzer)</EnableSingleFileAnalyzer>
   </PropertyGroup>
 
+  <!-- Add known packs from the downlevel TFM until we are building with an SDK that supports the new TFM all-up. -->
+  <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'">
+    <KnownILLinkPack Include="@(KnownILLinkPack->WithMetadataValue('Identity', 'Microsoft.NET.ILLink.Tasks')->WithMetadataValue('TargetFramework', 'net8.0'))">
+      <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    </KnownILLinkPack>
+  </ItemGroup>
+
   <PropertyGroup>
     <!-- Ignore API doc requirements for test assets -->
     <NoWarn Condition="'$(IsTestAssetProject)' == 'true' or '$(IsSampleProject)' == 'true' or '$(IsBenchmarkProject)' == 'true' or
