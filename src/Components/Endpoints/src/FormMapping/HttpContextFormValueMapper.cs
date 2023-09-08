@@ -21,7 +21,7 @@ internal sealed class HttpContextFormValueMapper : IFormValueMapper
 
     public HttpContextFormValueMapper(
         HttpContextFormDataProvider formData,
-        IOptions<RazorComponentsServerOptions> options)
+        IOptions<RazorComponentsServiceOptions> options)
     {
         _formData = formData;
         _options = options.Value._formMappingOptions;

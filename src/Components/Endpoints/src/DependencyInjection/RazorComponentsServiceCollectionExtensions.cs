@@ -28,10 +28,10 @@ public static class RazorComponentsServiceCollectionExtensions
     /// Registers services required for server-side rendering of Razor Components.
     /// </summary>
     /// <param name="services">The service collection.</param>
-    /// <param name="configure">An <see cref="Action{RazorComponentOptions}"/> to configure the provided <see cref="RazorComponentsServerOptions"/>.</param>
+    /// <param name="configure">An <see cref="Action{RazorComponentOptions}"/> to configure the provided <see cref="RazorComponentsServiceOptions"/>.</param>
     /// <returns>An <see cref="IRazorComponentsBuilder"/> that can be used to further configure the Razor component services.</returns>
     [RequiresUnreferencedCode("Razor Components does not currently support trimming or native AOT.", Url = "https://aka.ms/aspnet/nativeaot")]
-    public static IRazorComponentsBuilder AddRazorComponents(this IServiceCollection services, Action<RazorComponentsServerOptions>? configure = null)
+    public static IRazorComponentsBuilder AddRazorComponents(this IServiceCollection services, Action<RazorComponentsServiceOptions>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(services);
 
@@ -63,7 +63,7 @@ public static class RazorComponentsServiceCollectionExtensions
         services.TryAddScoped<PersistentComponentState>(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
         services.TryAddScoped<IErrorBoundaryLogger, PrerenderingErrorBoundaryLogger>();
         services.TryAddEnumerable(
-            ServiceDescriptor.Singleton<IPostConfigureOptions<RazorComponentsServerOptions>, DefaultRazorComponentsServerOptionsConfiguration>());
+            ServiceDescriptor.Singleton<IPostConfigureOptions<RazorComponentsServiceOptions>, DefaultRazorComponentsServiceOptionsConfiguration>());
         services.TryAddScoped<EndpointRoutingStateProvider>();
         services.TryAddScoped<IRoutingStateProvider>(sp => sp.GetRequiredService<EndpointRoutingStateProvider>());
         services.AddSupplyValueFromQueryProvider();

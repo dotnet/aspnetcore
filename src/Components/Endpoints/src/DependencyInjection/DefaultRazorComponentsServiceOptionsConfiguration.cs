@@ -10,12 +10,12 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
-internal class DefaultRazorComponentsServerOptionsConfiguration(IConfiguration configuration, ILoggerFactory loggerFactory)
-    : IPostConfigureOptions<RazorComponentsServerOptions>
+internal class DefaultRazorComponentsServiceOptionsConfiguration(IConfiguration configuration, ILoggerFactory loggerFactory)
+    : IPostConfigureOptions<RazorComponentsServiceOptions>
 {
     public IConfiguration Configuration { get; } = configuration;
 
-    public void PostConfigure(string? name, RazorComponentsServerOptions options)
+    public void PostConfigure(string? name, RazorComponentsServiceOptions options)
     {
         var value = Configuration[WebHostDefaults.DetailedErrorsKey];
         options.DetailedErrors = string.Equals(value, "true", StringComparison.OrdinalIgnoreCase) ||

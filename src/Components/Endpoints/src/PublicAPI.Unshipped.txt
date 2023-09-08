@@ -18,18 +18,18 @@ Microsoft.AspNetCore.Components.Endpoints.Infrastructure.RenderModeEndpointProvi
 Microsoft.AspNetCore.Components.Endpoints.Infrastructure.RenderModeEndpointProvider.RenderModeEndpointProvider() -> void
 Microsoft.AspNetCore.Components.Endpoints.IRazorComponentEndpointInvoker
 Microsoft.AspNetCore.Components.Endpoints.IRazorComponentEndpointInvoker.Render(Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServerOptions
-Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServerOptions.DetailedErrors.get -> bool
-Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServerOptions.DetailedErrors.set -> void
-Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServerOptions.MaxFormMappingCollectionSize.get -> int
-Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServerOptions.MaxFormMappingCollectionSize.set -> void
-Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServerOptions.MaxFormMappingErrorCount.get -> int
-Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServerOptions.MaxFormMappingErrorCount.set -> void
-Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServerOptions.MaxFormMappingKeySize.get -> int
-Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServerOptions.MaxFormMappingKeySize.set -> void
-Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServerOptions.MaxFormMappingRecursionDepth.get -> int
-Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServerOptions.MaxFormMappingRecursionDepth.set -> void
-Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServerOptions.RazorComponentsServerOptions() -> void
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.DetailedErrors.get -> bool
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.DetailedErrors.set -> void
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.MaxFormMappingCollectionSize.get -> int
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.MaxFormMappingCollectionSize.set -> void
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.MaxFormMappingErrorCount.get -> int
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.MaxFormMappingErrorCount.set -> void
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.MaxFormMappingKeySize.get -> int
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.MaxFormMappingKeySize.set -> void
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.MaxFormMappingRecursionDepth.get -> int
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.MaxFormMappingRecursionDepth.set -> void
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.RazorComponentsServiceOptions() -> void
 Microsoft.AspNetCore.Components.Endpoints.RootComponentMetadata
 Microsoft.AspNetCore.Components.Endpoints.RootComponentMetadata.RootComponentMetadata(System.Type! rootComponentType) -> void
 Microsoft.AspNetCore.Components.Endpoints.RootComponentMetadata.Type.get -> System.Type!
@@ -59,4 +59,4 @@ Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder.Services.get ->
 Microsoft.Extensions.DependencyInjection.RazorComponentsServiceCollectionExtensions
 static Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilderExtensions.AddAdditionalAssemblies(this Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder! builder, params System.Reflection.Assembly![]! assemblies) -> Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder!
 static Microsoft.AspNetCore.Builder.RazorComponentsEndpointRouteBuilderExtensions.MapRazorComponents<TRootComponent>(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints) -> Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder!
-static Microsoft.Extensions.DependencyInjection.RazorComponentsServiceCollectionExtensions.AddRazorComponents(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServerOptions!>? configure = null) -> Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder!
+static Microsoft.Extensions.DependencyInjection.RazorComponentsServiceCollectionExtensions.AddRazorComponents(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions!>? configure = null) -> Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder!
