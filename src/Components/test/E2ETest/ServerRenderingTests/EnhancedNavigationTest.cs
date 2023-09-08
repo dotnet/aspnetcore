@@ -8,7 +8,6 @@ using TestServer;
 using Xunit.Abstractions;
 using Components.TestServer.RazorComponents;
 using OpenQA.Selenium;
-using System.Globalization;
 
 namespace Microsoft.AspNetCore.Components.E2ETests.ServerRenderingTests;
 
@@ -125,74 +124,11 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
     {
         Navigate($"{ServerPathBase}/nav");
         Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Scroll to hash")).Click();
-        Assert.Equal(0, BrowserScrollY);
+        Assert.Equal(0, Browser.GetScrollY());
 
         var asyncContentHeader = Browser.Exists(By.Id("some-content"));
         Browser.Equal("Some content", () => asyncContentHeader.Text);
-        Browser.True(() => BrowserScrollY > 500);
-    }
-
-    [Fact]
-    public void CanFollowSynchronousRedirection()
-    {
-        Navigate($"{ServerPathBase}/nav");
-
-        var h1Elem = Browser.Exists(By.TagName("h1"));
-        Browser.Equal("Hello", () => h1Elem.Text);
-
-        // Click a link and show we redirected, preserving elements, and updating the URL
-        // Note that in this specific case we can't preserve the hash part of the URL, as it
-        // gets lost when the browser follows a 'fetch' redirection. If we decide it's important
-        // to support this later, we'd have to change the server not to do a real redirection
-        // here and instead use the same protocol it uses for external redirections.
-        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Redirect")).Click();
-        Browser.Equal("Scroll to hash", () => h1Elem.Text);
-        Assert.EndsWith("/subdir/nav/scroll-to-hash", Browser.Url);
-
-        // See that 'back' takes you to the place from before the redirection
-        Browser.Navigate().Back();
-        Browser.Equal("Hello", () => h1Elem.Text);
-        Assert.EndsWith("/subdir/nav", Browser.Url);
-    }
-
-    [Fact]
-    public void CanFollowAsynchronousRedirectionWhileStreaming()
-    {
-        Navigate($"{ServerPathBase}/nav");
-
-        var h1Elem = Browser.Exists(By.TagName("h1"));
-        Browser.Equal("Hello", () => h1Elem.Text);
-
-        // Click a link and show we redirected, preserving elements, scrolling to hash, and updating the URL
-        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Redirect while streaming")).Click();
-        Browser.Equal("Scroll to hash", () => h1Elem.Text);
-        Browser.True(() => BrowserScrollY > 500);
-        Assert.EndsWith("/subdir/nav/scroll-to-hash#some-content", Browser.Url);
-
-        // See that 'back' takes you to the place from before the redirection
-        Browser.Navigate().Back();
-        Browser.Equal("Hello", () => h1Elem.Text);
-        Assert.EndsWith("/subdir/nav", Browser.Url);
-    }
-
-    [Fact]
-    public void CanFollowSynchronousExternalRedirection()
-    {
-        Navigate($"{ServerPathBase}/nav");
-        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
-
-        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Redirect external")).Click();
-        Browser.Contains("microsoft.com", () => Browser.Url);
-    }
-
-    [Fact]
-    public void CanFollowAsynchronousExternalRedirectionWhileStreaming()
-    {
-        Navigate($"{ServerPathBase}/nav");
-        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
-
-        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Redirect external while streaming")).Click();
-        Browser.Contains("microsoft.com", () => Browser.Url);
+        Browser.True(() => Browser.GetScrollY() > 500);
     }
 
     [Theory]
@@ -372,12 +308,6 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.Navigate().Back();
         Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
         Assert.EndsWith("/nav", Browser.Url);
-    }
-
-    private long BrowserScrollY
-    {
-        get => Convert.ToInt64(((IJavaScriptExecutor)Browser).ExecuteScript("return window.scrollY"), CultureInfo.CurrentCulture);
-        set => ((IJavaScriptExecutor)Browser).ExecuteScript($"window.scrollTo(0, {value})");
     }
 
     private static bool IsElementStale(IWebElement element)

@@ -3,6 +3,12 @@
 
 <h1>Redirections</h1>
 
+<p>
+    If streaming and enhanced nav are both off, Blazor has no special involvement in the GET/POST,
+    so normal browser/HTTP behavior applies. So, we only need to test cases where either or both
+    of them are on.
+</p>
+
 <h2>Streaming on, enhanced nav off cases</h2>
 <ul data-enhance-nav="false">
     <li><a href="redirect/streaming/get">Streaming GET with internal redirection</a></li>
