@@ -46,6 +46,9 @@ internal sealed class RequestDelegateFactoryContext
 
     public NullabilityInfoContext NullabilityContext { get; } = new();
 
+    // Used to invoke TryResolveFormAsync once per handler so that we can
+    // avoid the blocking code-path that occurs when `httpContext.Request.Form`
+    // is called.
     public bool ReadForm { get; set; }
     public bool ReadFormFile { get; set; }
     public ParameterInfo? FirstFormRequestBodyParameter { get; set; }

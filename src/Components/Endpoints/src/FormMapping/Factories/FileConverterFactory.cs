@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 
-internal sealed class FileConverterFactory(IHttpContextAccessor httpContextAccessor) : IFormDataConverterFactory
+internal sealed class FileConverterFactory : IFormDataConverterFactory
 {
     [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
     [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
@@ -16,7 +16,7 @@ internal sealed class FileConverterFactory(IHttpContextAccessor httpContextAcces
     [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
     public FormDataConverter CreateConverter(Type type, FormDataMapperOptions options)
     {
-        return Activator.CreateInstance(typeof(FileConverter<>).MakeGenericType(type), httpContextAccessor.HttpContext) as FormDataConverter ??
+        return Activator.CreateInstance(typeof(FileConverter<>).MakeGenericType(type)) as FormDataConverter ??
             throw new InvalidOperationException($"Unable to create converter for '{type.FullName}'.");
     }
 }

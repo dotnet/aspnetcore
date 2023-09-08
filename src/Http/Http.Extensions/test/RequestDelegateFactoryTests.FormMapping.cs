@@ -293,19 +293,30 @@ public partial class RequestDelegateFactoryTests : LoggedTest
             new FormFile(Stream.Null, 0, 10, "file", "file.txt"),
         };
         httpContext.Request.Form = new FormCollection(new() { { "Description", "A test file" } }, formFiles);
-        var serviceCollection = new ServiceCollection();
-        serviceCollection.TryAddSingleton<IHttpContextAccessor>(new HttpContextAccessor(httpContext));
-        var options = new RequestDelegateFactoryOptions
-        {
-            ServiceProvider = serviceCollection.BuildServiceProvider()
-        };
 
-        var factoryResult = RequestDelegateFactory.Create(TestAction, options);
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
         var requestDelegate = factoryResult.RequestDelegate;
 
         await requestDelegate(httpContext);
         Assert.Equal("A test file", capturedArgument.Description);
         Assert.Equal(formFiles["file"], capturedArgument.File);
+    }
+
+    [Fact]
+    public async Task SupportsNullableFormFileSourcesInDto()
+    {
+        NullableFormFileDto capturedArgument = default;
+        void TestAction([FromForm] NullableFormFileDto args) { capturedArgument = args; };
+        var httpContext = CreateHttpContext();
+        var formFiles = new FormFileCollection();
+        httpContext.Request.Form = new FormCollection(new() { { "Description", "A test file" } }, formFiles);
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+        Assert.Equal("A test file", capturedArgument.Description);
+        Assert.Null(capturedArgument.File);
     }
 
     [Fact]
@@ -319,14 +330,8 @@ public partial class RequestDelegateFactoryTests : LoggedTest
             new FormFile(Stream.Null, 0, 10, "file", "file.txt"),
         };
         httpContext.Request.Form = new FormCollection(new() { { "Description", "A test file" } }, formFiles);
-        var serviceCollection = new ServiceCollection();
-        serviceCollection.TryAddSingleton<IHttpContextAccessor>(new HttpContextAccessor(httpContext));
-        var options = new RequestDelegateFactoryOptions
-        {
-            ServiceProvider = serviceCollection.BuildServiceProvider()
-        };
 
-        var factoryResult = RequestDelegateFactory.Create(TestAction, options);
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
         var requestDelegate = factoryResult.RequestDelegate;
 
         await requestDelegate(httpContext);
@@ -341,26 +346,23 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         public string Name { get; set; }
         public Employee Manager { get; set; }
     }
+#nullable enable
 
     private class FormFileDto
     {
-        public string Description { get; set; }
-        public IFormFile File { get; set; }
+        public string Description { get; set; } = String.Empty;
+        public required IFormFile File { get; set; }
+    }
+
+    private class NullableFormFileDto
+    {
+        public string? Description { get; set; }
+        public IFormFile? File { get; set; }
     }
 
     private class FormFileCollectionDto
     {
-        public string Description { get; set; }
-        public IFormFileCollection FileCollection { get; set; }
-    }
-
-    private class HttpContextAccessor(HttpContext httpContext) : IHttpContextAccessor
-    {
-
-        public HttpContext HttpContext
-        {
-            get;
-            set;
-        } = httpContext;
+        public string Description { get; set; } = string.Empty;
+        public required IFormFileCollection FileCollection { get; set; }
     }
 }

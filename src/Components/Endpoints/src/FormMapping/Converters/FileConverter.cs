@@ -6,13 +6,13 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 
-internal sealed class FileConverter<T>(HttpContext? httpContext) : FormDataConverter<T>, ISingleValueConverter
+internal sealed class FileConverter<T> : FormDataConverter<T>, ISingleValueConverter
 {
     [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
     [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
     internal override bool TryRead(ref FormDataReader reader, Type type, FormDataMapperOptions options, out T? result, out bool found)
     {
-        if (httpContext == null)
+        if (reader.FormFileCollection == null)
         {
             result = default;
             found = false;
@@ -21,12 +21,12 @@ internal sealed class FileConverter<T>(HttpContext? httpContext) : FormDataConve
 
         if (typeof(T) == typeof(IFormFileCollection))
         {
-            result = (T)httpContext.Request.Form.Files;
+            result = (T)reader.FormFileCollection;
             found = true;
             return true;
         }
 
-        var formFileCollection = httpContext.Request.Form.Files;
+        var formFileCollection = reader.FormFileCollection;
         if (formFileCollection.Count == 0)
         {
             result = default;

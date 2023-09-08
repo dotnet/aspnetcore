@@ -9,6 +9,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.Serialization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.FormMapping;
@@ -72,14 +73,16 @@ public class FormDataMapperTests
         Assert.Equal(expected, result);
     }
 
-    private FormDataReader CreateFormDataReader(Dictionary<string, StringValues> collection, CultureInfo invariantCulture)
+    private FormDataReader CreateFormDataReader(Dictionary<string, StringValues> collection, CultureInfo invariantCulture, IFormFileCollection formFileCollection = null)
     {
         var dictionary = new Dictionary<FormKey, StringValues>(collection.Count);
         foreach (var kvp in collection)
         {
             dictionary.Add(new FormKey(kvp.Key.AsMemory()), kvp.Value);
         }
-        return new FormDataReader(dictionary, CultureInfo.InvariantCulture, new char[2048]);
+        return formFileCollection is null
+            ? new FormDataReader(dictionary, CultureInfo.InvariantCulture, new char[2048])
+            : new FormDataReader(dictionary, CultureInfo.InvariantCulture, new char[2048], formFileCollection);
     }
 
     [Theory]
@@ -1847,6 +1850,51 @@ public class FormDataMapperTests
         var constructorError = errors[1];
         Assert.Equal("", constructorError.Key);
         Assert.Equal("Value cannot be null. (Parameter 'key')", constructorError.Message.ToString(CultureInfo.InvariantCulture));
+    }
+
+    [Fact]
+    public void CanDeserialize_ComplexType_CanSerializerFormFile()
+    {
+        // Arrange
+        var expected = new FormFile(Stream.Null, 0, 10, "file", "file.txt");
+        var formFileCollection = new FormFileCollection { expected };
+        var data = new Dictionary<string, StringValues>();
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture, formFileCollection);
+        var errors = new List<FormDataMappingError>();
+        reader.ErrorHandler = (key, message, attemptedValue) =>
+        {
+            errors.Add(new FormDataMappingError(key, message, attemptedValue));
+        };
+        reader.PushPrefix("file");
+        var options = new FormDataMapperOptions();
+
+        // Act
+        var result = CallDeserialize(reader, options, typeof(IFormFile));
+
+        // Assert
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void CanDeserialize_ComplexType_CanSerializerFormFileCollection()
+    {
+        // Arrange
+        var expected = new FormFileCollection { new FormFile(Stream.Null, 0, 10, "file", "file.txt") };
+        var data = new Dictionary<string, StringValues>();
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture, expected);
+        var errors = new List<FormDataMappingError>();
+        reader.ErrorHandler = (key, message, attemptedValue) =>
+        {
+            errors.Add(new FormDataMappingError(key, message, attemptedValue));
+        };
+        reader.PushPrefix("file");
+        var options = new FormDataMapperOptions();
+
+        // Act
+        var result = CallDeserialize(reader, options, typeof(IFormFileCollection));
+
+        // Assert
+        Assert.Equal(expected, result);
     }
 
     [Fact]

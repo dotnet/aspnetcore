@@ -120,7 +120,7 @@ public static partial class RequestDelegateFactory
     private static readonly MemberExpression FilterContextHttpContextStatusCodeExpr = Expression.Property(FilterContextHttpContextResponseExpr, typeof(HttpResponse).GetProperty(nameof(HttpResponse.StatusCode))!);
     private static readonly ParameterExpression InvokedFilterContextExpr = Expression.Parameter(typeof(EndpointFilterInvocationContext), "filterContext");
 
-    private static readonly ConstructorInfo FormDataReaderConstructor = typeof(FormDataReader).GetConstructor(new[] { typeof(IReadOnlyDictionary<FormKey, StringValues>), typeof(CultureInfo), typeof(Memory<char>) })!;
+    private static readonly ConstructorInfo FormDataReaderConstructor = typeof(FormDataReader).GetConstructor(new[] { typeof(IReadOnlyDictionary<FormKey, StringValues>), typeof(CultureInfo), typeof(Memory<char>), typeof(IFormFileCollection) })!;
     private static readonly MethodInfo ProcessFormMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ProcessForm), BindingFlags.Static | BindingFlags.NonPublic)!;
     private static readonly MethodInfo FormDataMapperMapMethod = typeof(FormDataMapper).GetMethod(nameof(FormDataMapper.Map))!;
     private static readonly MethodInfo AsMemoryMethod = new Func<char[]?, int, int, Memory<char>>(MemoryExtensions.AsMemory).Method;
@@ -276,9 +276,7 @@ public static partial class RequestDelegateFactory
         var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices ?? EmptyServiceProvider.Instance;
         var endpointBuilder = options?.EndpointBuilder ?? new RdfEndpointBuilder(serviceProvider);
         var jsonSerializerOptions = serviceProvider.GetService<IOptions<JsonOptions>>()?.Value.SerializerOptions ?? JsonOptions.DefaultSerializerOptions;
-        var formDataMapperOptions = serviceProvider.GetService<IHttpContextAccessor>() is {} httpContextAccessor
-            ? new FormDataMapperOptions(httpContextAccessor)
-            : new FormDataMapperOptions();
+        var formDataMapperOptions = new FormDataMapperOptions();;
 
         var factoryContext = new RequestDelegateFactoryContext
         {
@@ -2077,13 +2075,14 @@ public static partial class RequestDelegateFactory
 
         // ProcessForm(context.Request.Form, form_dict, form_buffer);
         var processFormExpr = Expression.Call(ProcessFormMethod, FormExpr, Expression.Constant(formDataMapperOptions.MaxKeyBufferSize), formDict, formBuffer);
-        // name_reader = new FormDataReader(form_dict, CultureInfo.InvariantCulture, form_buffer.AsMemory(0, formDataMapperOptions.MaxKeyBufferSize));
+        // name_reader = new FormDataReader(form_dict, CultureInfo.InvariantCulture, form_buffer.AsMemory(0, formDataMapperOptions.MaxKeyBufferSize), httpContext.Request.Form.Files);
         var initializeReaderExpr = Expression.Assign(
             formReader,
             Expression.New(FormDataReaderConstructor,
                 formDict,
                 Expression.Constant(CultureInfo.InvariantCulture),
-                Expression.Call(AsMemoryMethod, formBuffer, Expression.Constant(0), Expression.Constant(formDataMapperOptions.MaxKeyBufferSize))));
+                Expression.Call(AsMemoryMethod, formBuffer, Expression.Constant(0), Expression.Constant(formDataMapperOptions.MaxKeyBufferSize)),
+                FormFilesExpr));
         // name_reader.MaxRecursionDepth = formDataMapperOptions.MaxRecursionDepth;
         var setMaxRecursionDepthExpr = Expression.Assign(
             Expression.Property(formReader, nameof(FormDataReader.MaxRecursionDepth)),
