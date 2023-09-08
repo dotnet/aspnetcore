@@ -78,13 +78,10 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         var ul = Browser.Exists(By.Id("all-headers"));
         var allHeaders = ul.FindElements(By.TagName("li")).Select(x => x.Text.ToLowerInvariant()).ToList();
 
-        // The server can trigger arbitrary behavior based on this
-        Assert.Contains("blazor-enhanced-nav: on", allHeaders);
-
-        // This is to make the enhanced nav outcomes more similar to non-enhanced nav.
-        // For example, the default error middleware will only serve the error page if
-        // this header is included.
-        Assert.Contains("accept: text/html", allHeaders);
+        // Specifying text/html is to make the enhanced nav outcomes more similar to non-enhanced nav.
+        // For example, the default error middleware will only serve the error page if this content type is requested.
+        // The blazor-enhanced-nav parameter can be used to trigger arbitrary server-side behaviors.
+        Assert.Contains("accept: text/html;blazor-enhanced-nav=on", allHeaders);
     }
 
     [Fact]
