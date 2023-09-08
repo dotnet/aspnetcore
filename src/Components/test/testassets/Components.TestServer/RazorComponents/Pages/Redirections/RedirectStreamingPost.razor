@@ -1,0 +1,33 @@
+﻿@page "/redirect/streaming/post"
+@attribute [StreamRendering]
+@inject NavigationManager Nav
+@using Microsoft.AspNetCore.Components.Forms
+
+<h3>Streaming POST</h3>
+
+<form @formname="myform" method="post" @onsubmit="DoRedirectionAsync">
+    <AntiforgeryToken />
+    <input type="hidden" name="wasposted" value="true" />
+    <button id="myform-submit" type="submit" style="display:none">Submit</button>
+</form>
+
+@if (!WasPosted)
+{
+    <script>
+        document.getElementById("myform-submit").click();
+    </script>
+}
+
+@code {
+    [SupplyParameterFromQuery]
+    public bool External { get; set; }
+
+    [SupplyParameterFromForm]
+    public bool WasPosted { get; set; }
+
+    private async Task DoRedirectionAsync()
+    {
+        await Task.Delay(500);
+        Nav.NavigateTo(External ? "https://microsoft.com" : "nav/other");
+    }
+}
