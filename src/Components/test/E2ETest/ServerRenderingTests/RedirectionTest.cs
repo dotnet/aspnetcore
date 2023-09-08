@@ -79,10 +79,11 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
     [Fact]
     public void RedirectEnhancedGetToInternal()
     {
-        // Note that in this specific case we can't preserve the hash part of the URL, as it
-        // gets lost when the browser follows a 'fetch' redirection. If we decide it's important
-        // to support this later, we'd have to change the server not to do a real redirection
-        // here and instead use the same protocol it uses for external redirections.
+        // Note that for enhanced nav we can't preserve the hash part of the URL, as it
+        // gets discarded when the browser follows a 'fetch' redirection. This is not solvable
+        // unless we are willing to make the server return extra information so that the
+        // 'fetch' response does disclose the redirection hash to JS. As it stands, people
+        // who need to redirect to a URL with a hash need not to do an enhanced nav to it.
 
         Browser.Exists(By.LinkText("Enhanced GET with internal redirection")).Click();
         Browser.Equal("Scroll to hash", () => _originalH1Element.Text);
@@ -104,11 +105,7 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
     [Fact]
     public void RedirectEnhancedPostToInternal()
     {
-        // Note that in this specific case we can't preserve the hash part of the URL, as it
-        // gets lost when the browser follows a 'fetch' redirection. If we decide it's important
-        // to support this later, we'd have to change the server not to do a real redirection
-        // here and instead use the same protocol it uses for external redirections.
-
+        // See above for why enhanced nav doesn't support preserving the hash
         Browser.Exists(By.CssSelector("#form-enhanced-internal button")).Click();
         Browser.Equal("Scroll to hash", () => _originalH1Element.Text);
         Assert.EndsWith("/subdir/nav/scroll-to-hash", Browser.Url);
@@ -129,9 +126,7 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
     [Fact]
     public void RedirectStreamingEnhancedGetToInternal()
     {
-        // Because this is enhanced nav, it doesn't support preserving the hash in the
-        // redirection for the same reason as above
-
+        // See above for why enhanced nav doesn't support preserving the hash
         Browser.Exists(By.LinkText("Streaming enhanced GET with internal redirection")).Click();
         Browser.Equal("Scroll to hash", () => _originalH1Element.Text);
         Assert.EndsWith("/subdir/nav/scroll-to-hash", Browser.Url);
@@ -152,9 +147,7 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
     [Fact]
     public void RedirectStreamingEnhancedPostToInternal()
     {
-        // Because this is enhanced nav, it doesn't support preserving the hash in the
-        // redirection for the same reason as above
-
+        // See above for why enhanced nav doesn't support preserving the hash
         Browser.Exists(By.CssSelector("#form-streaming-enhanced-internal button")).Click();
         Browser.Equal("Scroll to hash", () => _originalH1Element.Text);
         Assert.EndsWith("/subdir/nav/scroll-to-hash", Browser.Url);
