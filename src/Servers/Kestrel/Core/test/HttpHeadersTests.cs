@@ -298,4 +298,12 @@ public class HttpHeadersTests
         Assert.Null(httpHeaders.ContentLength);
         Assert.False(httpHeaders.ContentLength.HasValue);
     }
+
+    [Fact]
+    public void KeysCompareShouldBeCaseInsensitive()
+    {
+        var httpHeaders = new HttpHeaders();
+        httpHeaders["Cache-Control"] = "no-cache";
+        Assert.True(httpHeaders.Keys.Contains("cache-control"));
+    }
 }
