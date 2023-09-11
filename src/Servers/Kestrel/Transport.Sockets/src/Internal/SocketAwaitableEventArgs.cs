@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
         private readonly PipeScheduler _ioScheduler;
 
-        private Action<object?>? _continuation;
+    private volatile Action<object?>? _continuation;
 
         public SocketAwaitableEventArgs(PipeScheduler ioScheduler)
             : base(unsafeSuppressExecutionContextFlow: true)
