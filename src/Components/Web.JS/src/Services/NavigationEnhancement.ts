@@ -151,6 +151,7 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, f
   await getResponsePartsWithFraming(responsePromise, abortSignal,
     (response, initialContent) => {
       const isGetRequest = !fetchOptions?.method || fetchOptions.method === 'get';
+      const isSuccessResponse = response.status >= 200 && response.status < 300;
 
       // For true 301/302/etc redirections to external URLs, we'll receive an opaque response
       // (even if it has CORS enabled, since we passed no-cors), and the browser won't disclose
@@ -166,10 +167,15 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, f
         }
       }
 
-      if (response.headers.get('blazor-enhanced-nav') !== 'allow') {
-        // This appears to be a non-Blazor-Endpoint response. We don't want to use enhanced nav
+      if (isSuccessResponse && response.headers.get('blazor-enhanced-nav') !== 'allow') {
+        // This appears to be a non-Blazor-Endpoint success response. We don't want to use enhanced nav
         // because the content we receive is not designed to be patched into an existing frame,
         // and may be incompatible with the Blazor JS that's already here.
+        // The reason we don't apply the same logic for non-success responses is that:
+        //  - We don't want to retry as then developers will get double-failures in logs
+        //  - We really want to show error pages to avoid losing vital debugging info
+        // ... and since error pages can be considered terminally fatal, we don't have to worry about
+        // whether the page has complex client-side behaviors that are incompatible with our JS.
         if (isGetRequest) {
           retryEnhancedNavAsFullPageLoad(internalDestinationHref);
           return;
@@ -210,7 +216,7 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, f
         // For any other text-based content, we'll just display it, because that's what
         // would happen if this was a non-enhanced request.
         replaceDocumentWithPlainText(initialContent);
-      } else if ((response.status < 200 || response.status >= 300) && !initialContent) {
+      } else if (!isSuccessResponse && !initialContent) {
         // For any non-success response that has no content at all, make up our own error UI
         replaceDocumentWithPlainText(`Error: ${response.status} ${response.statusText}`);
       } else {
