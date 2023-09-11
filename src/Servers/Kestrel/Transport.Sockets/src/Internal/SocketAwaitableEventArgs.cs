@@ -18,7 +18,7 @@ internal class SocketAwaitableEventArgs : SocketAsyncEventArgs, IValueTaskSource
 
     private readonly PipeScheduler _ioScheduler;
 
-    private Action<object?>? _continuation;
+    private volatile Action<object?>? _continuation;
 
     public SocketAwaitableEventArgs(PipeScheduler ioScheduler)
         : base(unsafeSuppressExecutionContextFlow: true)
