@@ -791,12 +791,4 @@ public partial class HubConnectionContext
         }
         return true;
     }
-
-    internal void ResetSequence(SequenceMessage sequenceMessage)
-    {
-        if (UsingStatefulReconnect())
-        {
-            _messageBuffer.ResetSequence(sequenceMessage);
-        }
-    }
 }

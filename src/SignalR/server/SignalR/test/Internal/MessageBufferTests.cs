@@ -120,7 +120,7 @@ public class MessageBufferTests
 
         pipes.Application.Input.AdvanceTo(buffer.Start);
 
-        messageBuffer.ResetSequence(new SequenceMessage(1));
+        messageBuffer.ShouldProcessMessage(new SequenceMessage(1));
 
         Assert.True(messageBuffer.ShouldProcessMessage(PingMessage.Instance));
         Assert.False(messageBuffer.ShouldProcessMessage(CompletionMessage.WithResult("1", null)));
@@ -191,7 +191,7 @@ public class MessageBufferTests
 
         pipes.Application.Input.AdvanceTo(buffer.Start);
 
-        Assert.Throws<InvalidOperationException>(() => messageBuffer.ResetSequence(new SequenceMessage(2)));
+        Assert.Throws<InvalidOperationException>(() => messageBuffer.ShouldProcessMessage(new SequenceMessage(2)));
     }
 
     [Fact]

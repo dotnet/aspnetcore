@@ -180,10 +180,19 @@ internal sealed class MessageBuffer : IDisposable
 
     internal bool ShouldProcessMessage(HubMessage message)
     {
-        // Technically handled by the 'is not HubInvocationMessage' check, but this is future proofing in case that check changes
-        // SequenceMessage should not be counted towards ackable messages
-        if (message is SequenceMessage)
+        if (message is SequenceMessage sequenceMessage)
         {
+            // TODO: is a sequence message expected right now?
+
+            if (sequenceMessage.SequenceId > _currentReceivingSequenceId)
+            {
+                throw new InvalidOperationException("Sequence ID greater than amount of messages we've received.");
+            }
+
+            _currentReceivingSequenceId = sequenceMessage.SequenceId;
+
+            // Technically handled by the 'is not HubInvocationMessage' check, but this is future proofing in case that check changes
+            // SequenceMessage should not be counted towards ackable messages
             return true;
         }
 
@@ -206,17 +215,6 @@ internal sealed class MessageBuffer : IDisposable
         _latestReceivedSequenceId = currentId;
 
         return true;
-    }
-
-    internal void ResetSequence(SequenceMessage sequenceMessage)
-    {
-        // TODO: is a sequence message expected right now?
-
-        if (sequenceMessage.SequenceId > _currentReceivingSequenceId)
-        {
-            throw new InvalidOperationException("Sequence ID greater than amount of messages we've received.");
-        }
-        _currentReceivingSequenceId = sequenceMessage.SequenceId;
     }
 
     internal async Task ResendAsync(PipeWriter writer)
