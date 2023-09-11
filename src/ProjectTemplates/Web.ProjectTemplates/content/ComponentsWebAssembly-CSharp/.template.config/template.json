@@ -38,7 +38,7 @@
         ".template.config/**"
       ],
       "copyOnly": [
-        "**/wwwroot/css/**"
+        "**/wwwroot/bootstrap/**"
       ],
       "modifiers": [
         {
