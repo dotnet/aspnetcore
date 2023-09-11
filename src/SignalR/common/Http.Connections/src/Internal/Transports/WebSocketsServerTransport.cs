@@ -290,7 +290,8 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
             {
                 _application.Input.Complete();
             }
-            else if (error is not null)
+
+            if (error is not null)
             {
                 Log.SendErrored(_logger, error);
             }

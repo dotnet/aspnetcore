@@ -194,7 +194,7 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
 
             case AckMessage ackMessage:
                 Log.ReceivedAckMessage(_logger, ackMessage.SequenceId);
-                return connection.Ack(ackMessage);
+                return connection.AckAsync(ackMessage);
 
             case SequenceMessage sequenceMessage:
                 Log.ReceivedSequenceMessage(_logger, sequenceMessage.SequenceId);

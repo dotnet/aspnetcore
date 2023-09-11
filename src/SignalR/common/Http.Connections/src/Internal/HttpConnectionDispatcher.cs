@@ -297,7 +297,7 @@ internal sealed partial class HttpConnectionDispatcher
                     // We'll mark the connection as inactive and allow the connection to reconnect if that's the case.
                     if (await connection.TransportTask!
                         // If acks aren't enabled we can close the connection immediately (not LongPolling)
-                        || (!connection.UseStatefulReconnect && connection.TransportType != HttpTransportType.LongPolling))
+                        || !connection.ClientReconnectExpected())
                     {
                         await _manager.DisposeAndRemoveAsync(connection, closeGracefully: true, HttpConnectionStopStatus.NormalClosure);
                     }

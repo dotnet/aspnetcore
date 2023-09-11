@@ -1133,7 +1133,7 @@ public partial class HubConnection : IAsyncDisposable
                 break;
             case AckMessage ackMessage:
                 Log.ReceivedAckMessage(_logger, ackMessage.SequenceId);
-                await connectionState.Ack(ackMessage).ConfigureAwait(false);
+                await connectionState.AckAsync(ackMessage).ConfigureAwait(false);
                 break;
             case SequenceMessage sequenceMessage:
                 Log.ReceivedSequenceMessage(_logger, sequenceMessage.SequenceId);
@@ -1943,7 +1943,7 @@ public partial class HubConnection : IAsyncDisposable
             {
                 _messageBuffer = new MessageBuffer(connection, hubConnection._protocol,
                     _hubConnection._serviceProvider.GetService<IOptions<HubConnectionOptions>>()?.Value.StatefulReconnectBufferSize
-                        ?? DefaultStatefulReconnectBufferSize);
+                        ?? DefaultStatefulReconnectBufferSize, _logger);
 
                 feature.OnReconnected(_messageBuffer.ResendAsync);
             }
@@ -2090,7 +2090,7 @@ public partial class HubConnection : IAsyncDisposable
             return true;
         }
 
-        public Task Ack(AckMessage ackMessage)
+        public Task AckAsync(AckMessage ackMessage)
         {
             if (UsingAcks())
             {

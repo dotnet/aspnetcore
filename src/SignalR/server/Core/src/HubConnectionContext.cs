@@ -590,7 +590,7 @@ public partial class HubConnectionContext
                                     else
                                     {
                                         _useStatefulReconnect = true;
-                                        _messageBuffer = new MessageBuffer(_connectionContext, Protocol, _statefulReconnectBufferSize, _timeProvider);
+                                        _messageBuffer = new MessageBuffer(_connectionContext, Protocol, _statefulReconnectBufferSize, _logger, _timeProvider);
                                         feature.OnReconnected(_messageBuffer.ResendAsync);
                                     }
                                 }
@@ -784,7 +784,7 @@ public partial class HubConnectionContext
         _streamTracker?.CompleteAll(new OperationCanceledException("The underlying connection was closed."));
     }
 
-    internal Task Ack(AckMessage ackMessage)
+    internal Task AckAsync(AckMessage ackMessage)
     {
         if (UsingStatefulReconnect())
         {

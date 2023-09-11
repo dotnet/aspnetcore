@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Time.Testing;
 
 namespace Microsoft.AspNetCore.SignalR.Tests.Internal;
@@ -20,7 +21,7 @@ public class MessageBufferTests
         var connection = new TestConnectionContext();
         var pipes = DuplexPipe.CreateConnectionPair(new PipeOptions(), new PipeOptions());
         connection.Transport = pipes.Transport;
-        using var messageBuffer = new MessageBuffer(connection, protocol, bufferLimit: 1);
+        using var messageBuffer = new MessageBuffer(connection, protocol, bufferLimit: 1, NullLogger.Instance);
 
         for (var i = 0; i < 100; i++)
         {
@@ -48,7 +49,7 @@ public class MessageBufferTests
         var connection = new TestConnectionContext();
         var pipes = DuplexPipe.CreateConnectionPair(new PipeOptions(), new PipeOptions(pauseWriterThreshold: 200000, resumeWriterThreshold: 100000));
         connection.Transport = pipes.Transport;
-        using var messageBuffer = new MessageBuffer(connection, protocol, bufferLimit: 100_000);
+        using var messageBuffer = new MessageBuffer(connection, protocol, bufferLimit: 100_000, NullLogger.Instance);
 
         await messageBuffer.WriteAsync(new SerializedHubMessage(new InvocationMessage("t", new object[] { new byte[100000] })), default);
 
@@ -86,7 +87,7 @@ public class MessageBufferTests
         var pipeOptions = new PipeOptions(pauseWriterThreshold: 100, resumeWriterThreshold: 50);
         var pipes = DuplexPipe.CreateConnectionPair(new PipeOptions(), pipeOptions);
         connection.Transport = pipes.Transport;
-        using var messageBuffer = new MessageBuffer(connection, protocol, bufferLimit: 100_00);
+        using var messageBuffer = new MessageBuffer(connection, protocol, bufferLimit: 100_000, NullLogger.Instance);
 
         await messageBuffer.WriteAsync(new SerializedHubMessage(new InvocationMessage("t", new object[] { new byte[40] })), default);
 
@@ -126,7 +127,7 @@ public class MessageBufferTests
         var connection = new TestConnectionContext();
         var pipes = DuplexPipe.CreateConnectionPair(new PipeOptions(), new PipeOptions());
         connection.Transport = pipes.Transport;
-        using var messageBuffer = new MessageBuffer(connection, protocol, bufferLimit: 1000);
+        using var messageBuffer = new MessageBuffer(connection, protocol, bufferLimit: 1000, NullLogger.Instance);
 
         await messageBuffer.WriteAsync(new StreamItemMessage("id", null), default);
 
@@ -176,7 +177,7 @@ public class MessageBufferTests
         var connection = new TestConnectionContext();
         var pipes = DuplexPipe.CreateConnectionPair(new PipeOptions(), new PipeOptions());
         connection.Transport = pipes.Transport;
-        using var messageBuffer = new MessageBuffer(connection, protocol, bufferLimit: 1000);
+        using var messageBuffer = new MessageBuffer(connection, protocol, bufferLimit: 1000, NullLogger.Instance);
 
         await messageBuffer.WriteAsync(new StreamItemMessage("id", null), default);
 
@@ -220,7 +221,7 @@ public class MessageBufferTests
         var connection = new TestConnectionContext();
         var pipes = DuplexPipe.CreateConnectionPair(new PipeOptions(), new PipeOptions());
         connection.Transport = pipes.Transport;
-        using var messageBuffer = new MessageBuffer(connection, protocol, bufferLimit: 1000);
+        using var messageBuffer = new MessageBuffer(connection, protocol, bufferLimit: 1000, NullLogger.Instance);
 
         DuplexPipe.UpdateConnectionPair(ref pipes, connection);
         await messageBuffer.ResendAsync(pipes.Transport.Output);
@@ -244,7 +245,7 @@ public class MessageBufferTests
         var connection = new TestConnectionContext();
         var pipes = DuplexPipe.CreateConnectionPair(new PipeOptions(), new PipeOptions());
         connection.Transport = pipes.Transport;
-        using var messageBuffer = new MessageBuffer(connection, protocol, bufferLimit: 100_000);
+        using var messageBuffer = new MessageBuffer(connection, protocol, bufferLimit: 100_000, NullLogger.Instance);
 
         for (var i = 0; i < 1000; i++)
         {
@@ -287,7 +288,7 @@ public class MessageBufferTests
         var connection = new TestConnectionContext();
         var pipes = DuplexPipe.CreateConnectionPair(new PipeOptions(), new PipeOptions());
         connection.Transport = pipes.Transport;
-        using var messageBuffer = new MessageBuffer(connection, protocol, bufferLimit: 1);
+        using var messageBuffer = new MessageBuffer(connection, protocol, bufferLimit: 1, NullLogger.Instance);
 
         await messageBuffer.WriteAsync(new SerializedHubMessage(new InvocationMessage("t", new object[] { 1 })), default);
 
@@ -324,7 +325,7 @@ public class MessageBufferTests
         var connection = new TestConnectionContext();
         var pipes = DuplexPipe.CreateConnectionPair(new PipeOptions(), new PipeOptions());
         connection.Transport = pipes.Transport;
-        using var messageBuffer = new MessageBuffer(connection, protocol, bufferLimit: 100_000);
+        using var messageBuffer = new MessageBuffer(connection, protocol, bufferLimit: 100_000, NullLogger.Instance);
 
         await messageBuffer.WriteAsync(new StreamItemMessage("1", null), default);
 
@@ -367,7 +368,7 @@ public class MessageBufferTests
         var pipes = DuplexPipe.CreateConnectionPair(new PipeOptions(), new PipeOptions());
         connection.Transport = pipes.Transport;
         var timeProvider = new FakeTimeProvider();
-        using var messageBuffer = new MessageBuffer(connection, protocol, bufferLimit: 100_000, timeProvider);
+        using var messageBuffer = new MessageBuffer(connection, protocol, bufferLimit: 100_000, NullLogger.Instance, timeProvider);
 
         // Simulate receiving messages
         Assert.True(messageBuffer.ShouldProcessMessage(new StreamItemMessage("1", null)));
@@ -404,7 +405,7 @@ public class MessageBufferTests
         var pipeOptions = new PipeOptions(pauseWriterThreshold: 250, resumeWriterThreshold: 120);
         var pipes = DuplexPipe.CreateConnectionPair(new PipeOptions(), pipeOptions);
         connection.Transport = pipes.Transport;
-        using var messageBuffer = new MessageBuffer(connection, protocol, bufferLimit: 100_000);
+        using var messageBuffer = new MessageBuffer(connection, protocol, bufferLimit: 100_000, NullLogger.Instance);
 
         await messageBuffer.WriteAsync(new SerializedHubMessage(new InvocationMessage("t", new object[] { new byte[10] })), default);
         await messageBuffer.WriteAsync(new SerializedHubMessage(new InvocationMessage("t", new object[] { new byte[100] })), default).DefaultTimeout();
@@ -447,7 +448,7 @@ public class MessageBufferTests
         var pipes = DuplexPipe.CreateConnectionPair(new PipeOptions(), pipeOptions);
         connection.Transport = pipes.Transport;
         var timeProvider = new FakeTimeProvider();
-        using var messageBuffer = new MessageBuffer(connection, protocol, bufferLimit: 100_000, timeProvider);
+        using var messageBuffer = new MessageBuffer(connection, protocol, bufferLimit: 100_000, NullLogger.Instance, timeProvider);
 
         await messageBuffer.WriteAsync(new SerializedHubMessage(new InvocationMessage("t", new object[] { new byte[10] })), default);
         var writeTask = messageBuffer.WriteAsync(new SerializedHubMessage(new InvocationMessage("t", new object[] { new byte[100] })), default).DefaultTimeout();

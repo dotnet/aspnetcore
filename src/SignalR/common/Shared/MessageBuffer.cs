@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.SignalR.Internal;
 
@@ -25,6 +26,7 @@ internal sealed class MessageBuffer : IDisposable
 
     private readonly IHubProtocol _protocol;
     private readonly long _bufferLimit;
+    private readonly ILogger _logger;
     private readonly AckMessage _ackMessage = new(0);
     private readonly SequenceMessage _sequenceMessage = new(0);
     private readonly Channel<long> _waitForAck = Channel.CreateBounded<long>(new BoundedChannelOptions(1) { FullMode = BoundedChannelFullMode.DropOldest });
@@ -59,12 +61,12 @@ internal sealed class MessageBuffer : IDisposable
         _completedTCS.SetResult(new());
     }
 
-    public MessageBuffer(ConnectionContext connection, IHubProtocol protocol, long bufferLimit)
-        : this(connection, protocol, bufferLimit, TimeProvider.System)
+    public MessageBuffer(ConnectionContext connection, IHubProtocol protocol, long bufferLimit, ILogger logger)
+        : this(connection, protocol, bufferLimit, logger, TimeProvider.System)
     {
     }
 
-    public MessageBuffer(ConnectionContext connection, IHubProtocol protocol, long bufferLimit, TimeProvider timeProvider)
+    public MessageBuffer(ConnectionContext connection, IHubProtocol protocol, long bufferLimit, ILogger logger, TimeProvider timeProvider)
     {
 #if NET8_0_OR_GREATER
         timeProvider ??= TimeProvider.System;
@@ -76,6 +78,7 @@ internal sealed class MessageBuffer : IDisposable
         _writer = connection.Transport.Output;
         _protocol = protocol;
         _bufferLimit = bufferLimit;
+        _logger = logger;
 
 #if !NET8_0_OR_GREATER
         _timer.Start();
@@ -149,6 +152,8 @@ internal sealed class MessageBuffer : IDisposable
         // TODO: We could consider buffering messages until they hit backpressure in the case when the connection is down
         await _resend.Task.ConfigureAwait(false);
 
+        // Await the flush outside of the _writeLock so AckAsync can make forward progress if there is backpressure.
+        // Multiple flush calls is fine, it's multiple GetMemory calls that are problematic, which is fine since we lock around the actual write
         ValueTask<FlushResult> writeTask;
 
         await _writeLock.WaitAsync(cancellationToken: default).ConfigureAwait(false);
@@ -186,8 +191,8 @@ internal sealed class MessageBuffer : IDisposable
         try
         {
             var item = _buffer.RemoveMessages(ackMessage.SequenceId, _pool);
-            _buffer = item.buffer;
-            _bufferedByteCount -= item.returnCredit;
+            _buffer = item.Buffer;
+            _bufferedByteCount -= item.ReturnCredit;
 
             newCount = _bufferedByteCount;
         }
@@ -299,6 +304,7 @@ internal sealed class MessageBuffer : IDisposable
             tcs.SetException(ex);
             // Observe exception in case WriteAsync isn't waiting on the task
             _ = tcs.Task.Exception;
+            _logger.LogDebug(ex, "Failure while resending messages after a reconnect.");
         }
         finally
         {
@@ -355,7 +361,6 @@ internal sealed class MessageBuffer : IDisposable
             else
             {
                 // TODO: Should we avoid this path by keeping a tail pointer?
-                // Debug.Assert(false);
 
                 var linkedBuffer = _next;
                 while (linkedBuffer._next is not null)
@@ -363,17 +368,16 @@ internal sealed class MessageBuffer : IDisposable
                     linkedBuffer = linkedBuffer._next;
                 }
 
-                // TODO: verify no stack overflow potential
                 linkedBuffer.AddMessage(hubMessage, sequenceId, pool);
             }
         }
 
-        public (LinkedBuffer buffer, int returnCredit) RemoveMessages(long sequenceId, Stack<LinkedBuffer> pool)
+        public (LinkedBuffer Buffer, int ReturnCredit) RemoveMessages(long sequenceId, Stack<LinkedBuffer> pool)
         {
             return RemoveMessagesCore(this, sequenceId, pool);
         }
 
-        private static (LinkedBuffer buffer, int returnCredit) RemoveMessagesCore(LinkedBuffer linkedBuffer, long sequenceId, Stack<LinkedBuffer> pool)
+        private static (LinkedBuffer Buffer, int ReturnCredit) RemoveMessagesCore(LinkedBuffer linkedBuffer, long sequenceId, Stack<LinkedBuffer> pool)
         {
             var returnCredit = 0;
             while (linkedBuffer._startingSequenceId <= sequenceId)
@@ -393,14 +397,18 @@ internal sealed class MessageBuffer : IDisposable
                 {
                     if (linkedBuffer._next is null)
                     {
-                        linkedBuffer.Reset(shouldPool: false, pool);
+                        linkedBuffer.Reset();
                         return (linkedBuffer, returnCredit);
                     }
                     else
                     {
                         var tmp = linkedBuffer;
                         linkedBuffer = linkedBuffer._next;
-                        tmp.Reset(shouldPool: true, pool);
+                        tmp.Reset();
+                        if (pool.Count < PoolLimit)
+                        {
+                            pool.Push(tmp);
+                        }
                     }
                 }
                 else
@@ -412,7 +420,7 @@ internal sealed class MessageBuffer : IDisposable
             return (linkedBuffer, returnCredit);
         }
 
-        private void Reset(bool shouldPool, Stack<LinkedBuffer> pool)
+        private void Reset()
         {
             _startingSequenceId = long.MinValue;
             _currentIndex = -1;
@@ -420,14 +428,6 @@ internal sealed class MessageBuffer : IDisposable
             _next = null;
 
             Array.Clear(_messages, 0, BufferLength);
-
-            if (shouldPool)
-            {
-                if (pool.Count < PoolLimit)
-                {
-                    pool.Push(this);
-                }
-            }
         }
 
         public IEnumerable<(ReadOnlyMemory<byte> HubMessage, long SequenceId)> GetMessages()
