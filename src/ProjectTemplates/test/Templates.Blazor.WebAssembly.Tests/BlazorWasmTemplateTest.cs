@@ -35,9 +35,29 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
     }
 
     [Fact]
+    public async Task BlazorWasmStandaloneTemplateEmptyCanCreateBuildPublish()
+    {
+        var project = await CreateBuildPublishAsync(args: new[] { ArgConstants.Empty }); ;
+
+        // The service worker assets manifest isn't generated for non-PWA projects
+        var publishDir = Path.Combine(project.TemplatePublishDir, "wwwroot");
+        Assert.False(File.Exists(Path.Combine(publishDir, "service-worker-assets.js")), "Non-PWA templates should not produce service-worker-assets.js");
+    }
+
+    [Fact]
     public async Task BlazorWasmStandaloneTemplateNoHttpsCanCreateBuildPublish()
     {
         var project = await CreateBuildPublishAsync(args: new[] { ArgConstants.NoHttps });
+
+        // The service worker assets manifest isn't generated for non-PWA projects
+        var publishDir = Path.Combine(project.TemplatePublishDir, "wwwroot");
+        Assert.False(File.Exists(Path.Combine(publishDir, "service-worker-assets.js")), "Non-PWA templates should not produce service-worker-assets.js");
+    }
+
+    [Fact]
+    public async Task BlazorWasmStandaloneTemplateNoHttpsEmptyCanCreateBuildPublish()
+    {
+        var project = await CreateBuildPublishAsync(args: new[] { ArgConstants.NoHttps, ArgConstants.Empty });
 
         // The service worker assets manifest isn't generated for non-PWA projects
         var publishDir = Path.Combine(project.TemplatePublishDir, "wwwroot");
@@ -49,6 +69,14 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
         => CreateBuildPublishAsync(args: new[] { ArgConstants.Pwa });
 
     [Fact]
+    public Task BlazorWasmStandalonePwaEmptyTemplateCanCreateBuildPublish()
+        => CreateBuildPublishAsync(args: new[] { ArgConstants.Pwa, ArgConstants.Empty });
+
+    [Fact]
     public Task BlazorWasmStandalonePwaTemplateNoHttpsCanCreateBuildPublish()
         => CreateBuildPublishAsync(args: new[] { ArgConstants.Pwa, ArgConstants.NoHttps });
+
+    [Fact]
+    public Task BlazorWasmStandalonePwaEmptyTemplateNoHttpsCanCreateBuildPublish()
+        => CreateBuildPublishAsync(args: new[] { ArgConstants.Pwa, ArgConstants.NoHttps, ArgConstants.Empty });
 }
