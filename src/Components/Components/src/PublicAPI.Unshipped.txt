@@ -16,9 +16,13 @@ Microsoft.AspNetCore.Components.CascadingValueSource<TValue>.NotifyChangedAsync(
 Microsoft.AspNetCore.Components.CascadingValueSource<TValue>.NotifyChangedAsync(TValue newValue) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.ComponentBase.DispatchExceptionAsync(System.Exception! exception) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.IComponentRenderMode
+Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.PersistentStateCallbackFilter
 Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.PersistStateAsync(Microsoft.AspNetCore.Components.IPersistentComponentStateStore! store, Microsoft.AspNetCore.Components.Dispatcher! dispatcher) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.PersistStateAsync(Microsoft.AspNetCore.Components.IPersistentComponentStateStore! store, Microsoft.AspNetCore.Components.Dispatcher! dispatcher, Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.PersistentStateCallbackFilter! filter) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.IPersistentComponentStateStore.SupportsRenderMode(Microsoft.AspNetCore.Components.IComponentRenderMode? renderMode) -> bool
 Microsoft.AspNetCore.Components.ParameterView.ToDictionary() -> System.Collections.Generic.IReadOnlyDictionary<string!, object?>!
 *REMOVED*Microsoft.AspNetCore.Components.ParameterView.ToDictionary() -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>!
+Microsoft.AspNetCore.Components.PersistentComponentState.RegisterOnPersisting(System.Func<System.Threading.Tasks.Task!>! callback, Microsoft.AspNetCore.Components.IComponentRenderMode? renderMode) -> Microsoft.AspNetCore.Components.PersistingComponentStateSubscription
 Microsoft.AspNetCore.Components.RenderHandle.DispatchExceptionAsync(System.Exception! exception) -> System.Threading.Tasks.Task!
 *REMOVED*Microsoft.AspNetCore.Components.NavigationManager.ToAbsoluteUri(string! relativeUri) -> System.Uri!
 Microsoft.AspNetCore.Components.NavigationManager.ToAbsoluteUri(string? relativeUri) -> System.Uri!
@@ -42,6 +46,7 @@ Microsoft.AspNetCore.Components.RenderTree.NamedEventChangeType
 Microsoft.AspNetCore.Components.RenderTree.NamedEventChangeType.Added = 0 -> Microsoft.AspNetCore.Components.RenderTree.NamedEventChangeType
 Microsoft.AspNetCore.Components.RenderTree.NamedEventChangeType.Removed = 1 -> Microsoft.AspNetCore.Components.RenderTree.NamedEventChangeType
 Microsoft.AspNetCore.Components.RenderTree.RenderBatch.NamedEventChanges.get -> Microsoft.AspNetCore.Components.RenderTree.ArrayRange<Microsoft.AspNetCore.Components.RenderTree.NamedEventChange>?
+Microsoft.AspNetCore.Components.RenderTree.Renderer.GetComponentState(Microsoft.AspNetCore.Components.IComponent! component) -> Microsoft.AspNetCore.Components.Rendering.ComponentState!
 Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame.ComponentFrameFlags.get -> Microsoft.AspNetCore.Components.RenderTree.ComponentFrameFlags
 Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType.ComponentRenderMode = 9 -> Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType
 Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType.NamedEvent = 10 -> Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType

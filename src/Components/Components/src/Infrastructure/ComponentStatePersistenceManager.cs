@@ -11,10 +11,10 @@ namespace Microsoft.AspNetCore.Components.Infrastructure;
 /// </summary>
 public class ComponentStatePersistenceManager
 {
-    private bool _stateIsPersisted;
-    private readonly List<Func<Task>> _pauseCallbacks = new();
+    private readonly List<PersistenceCallback> _pauseCallbacks = new();
     private readonly Dictionary<string, byte[]> _currentState = new(StringComparer.Ordinal);
     private readonly ILogger<ComponentStatePersistenceManager> _logger;
+    private readonly PersistentStateCallbackFilter _defaultFilter = (target, renderMode) => true;
 
     /// <summary>
     /// Initializes a new instance of <see cref="ComponentStatePersistenceManager"/>.
@@ -57,34 +57,43 @@ public class ComponentStatePersistenceManager
     /// <param name="dispatcher">The <see cref="Dispatcher"/> corresponding to the components' renderer.</param>
     /// <returns>A <see cref="Task"/> that will complete when the state has been restored.</returns>
     public Task PersistStateAsync(IPersistentComponentStateStore store, Dispatcher dispatcher)
+        => PersistStateAsync(store, dispatcher, _defaultFilter);
+
+    /// <summary>
+    /// Persists the component application state into the given <see cref="IPersistentComponentStateStore"/>.
+    /// </summary>
+    /// <param name="store">The <see cref="IPersistentComponentStateStore"/> to restore the application state from.</param>
+    /// <param name="dispatcher">The <see cref="Dispatcher"/> corresponding to the components' renderer.</param>
+    /// <param name="filter"></param>
+    /// <returns>A <see cref="Task"/> that will complete when the state has been restored.</returns>
+    public Task PersistStateAsync(IPersistentComponentStateStore store, Dispatcher dispatcher, PersistentStateCallbackFilter filter)
     {
-        if (_stateIsPersisted)
-        {
-            throw new InvalidOperationException("State already persisted.");
-        }
-
-        _stateIsPersisted = true;
-
         return dispatcher.InvokeAsync(PauseAndPersistState);
 
         async Task PauseAndPersistState()
         {
             State.PersistingState = true;
-            await PauseAsync();
+            await PauseAsync(filter);
             State.PersistingState = false;
 
             await store.PersistStateAsync(_currentState);
         }
     }
 
-    internal Task PauseAsync()
+    internal Task PauseAsync(PersistentStateCallbackFilter filter)
     {
         List<Task>? pendingCallbackTasks = null;
 
         for (var i = 0; i < _pauseCallbacks.Count; i++)
         {
             var callback = _pauseCallbacks[i];
-            var result = ExecuteCallback(callback, _logger);
+
+            if (!filter.Invoke(callback.Callback.Target, callback.RenderMode))
+            {
+                continue;
+            }
+
+            var result = ExecuteCallback(callback.Callback, _logger);
             if (!result.IsCompletedSuccessfully)
             {
                 pendingCallbackTasks ??= new();
@@ -135,4 +144,14 @@ public class ComponentStatePersistenceManager
             }
         }
     }
+
+    internal readonly record struct PersistenceCallback(Func<Task> Callback, IComponentRenderMode? RenderMode);
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="target"></param>
+    /// <param name="renderMode"></param>
+    /// <returns></returns>
+    public delegate bool PersistentStateCallbackFilter(object? target, IComponentRenderMode? renderMode);
 }

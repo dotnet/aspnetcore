@@ -11,7 +11,7 @@ import { SharedMemoryRenderBatch } from './Rendering/RenderBatch/SharedMemoryRen
 import { PlatformApi, Pointer } from './Platform/Platform';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
 import { addDispatchEventMiddleware } from './Rendering/WebRendererInteropMethods';
-import { WebAssemblyComponentDescriptor, discoverPersistedState } from './Services/ComponentDescriptorDiscovery';
+import { WebAssemblyComponentDescriptor, discoverWebAssemblyPersistedState } from './Services/ComponentDescriptorDiscovery';
 import { receiveDotNetDataStream } from './StreamingInterop';
 import { WebAssemblyComponentAttacher } from './Platform/WebAssemblyComponentAttacher';
 import { MonoConfig } from 'dotnet';
@@ -121,7 +121,7 @@ export async function startWebAssembly(components: RootComponentManager<WebAssem
     getParameterValues: (id) => componentAttacher.getParameterValues(id) || '',
   };
 
-  Blazor._internal.getPersistedState = () => discoverPersistedState(document) || '';
+  Blazor._internal.getPersistedState = () => discoverWebAssemblyPersistedState(document) || '';
 
   Blazor._internal.attachRootComponentToElement = (selector, componentId, rendererId: any) => {
     const element = componentAttacher.resolveRegisteredElement(selector, componentId);
