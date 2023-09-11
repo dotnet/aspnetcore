@@ -151,24 +151,47 @@ public sealed class WebAssemblyHost : IAsyncDisposable
 
             WebAssemblyNavigationManager.Instance.CreateLogger(loggerFactory);
 
+            RootComponentMapping[] mappings = [];
+            if (Environment.GetEnvironmentVariable("__BLAZOR_WEBASSEMBLY_WAIT_FOR_ROOT_COMPONENTS") == "true")
+            {
+                // In Blazor web, we wait for the JS side to tell us about the components available
+                // before we render the initial set of components. Any additional update goes through
+                // UpdateRootComponents.
+                // We do it this way to ensure that the persistent component state is only used the first time
+                // the wasm runtime is initalized and is done in the same way for both webassembly and blazor
+                // web.
+                mappings = await InternalJSImportMethods.GetInitialComponentUpdate();
+            }
+
             var initializationTcs = new TaskCompletionSource();
-            WebAssemblyCallQueue.Schedule((_rootComponents, _renderer, initializationTcs), static async state =>
+            WebAssemblyCallQueue.Schedule((_rootComponents, _renderer, initializationTcs), async state =>
             {
                 var (rootComponents, renderer, initializationTcs) = state;
-
                 try
                 {
                     // Here, we add each root component but don't await the returned tasks so that the
                     // components can be processed in parallel.
                     var count = rootComponents.Count;
-                    var pendingRenders = new Task[count];
+                    var pendingRenders = new List<Task>(count + mappings.Length);
                     for (var i = 0; i < count; i++)
                     {
                         var rootComponent = rootComponents[i];
-                        pendingRenders[i] = renderer.AddComponentAsync(
+                        pendingRenders.Add(renderer.AddComponentAsync(
                             rootComponent.ComponentType,
                             rootComponent.Parameters,
-                            rootComponent.Selector);
+                            rootComponent.Selector));
+                    }
+
+                    if (mappings != null)
+                    {
+                        for (var i = 0; i < mappings.Length; i++)
+                        {
+                            var rootComponent = mappings[i];
+                            pendingRenders.Add(renderer.AddComponentAsync(
+                                rootComponent.ComponentType,
+                                rootComponent.Parameters,
+                                rootComponent.Selector));
+                        }
                     }
 
                     // Now we wait for all components to finish rendering.

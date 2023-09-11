@@ -170,6 +170,12 @@ public class ComponentHubTest
             return true;
         }
 
+        public bool TryDeserializeRootComponentOperations(string serializedComponentOperations, out (RootComponentOperation, ComponentDescriptor)[] operationsWithDescriptors)
+        {
+            operationsWithDescriptors = default;
+            return true;
+        }
+
         public bool TryDeserializeSingleComponentDescriptor(ComponentMarker record, [NotNullWhen(true)] out ComponentDescriptor result)
         {
             result = default;

@@ -133,7 +133,20 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     protected ComponentState GetComponentState(int componentId)
         => GetRequiredComponentState(componentId);
 
-    internal ComponentState GetComponentState(IComponent component)
+    /// <summary>
+    /// Gets the <see cref="IComponentRenderMode"/> for a given component if available.
+    /// </summary>
+    /// <param name="component">The component type</param>
+    /// <returns></returns>
+    protected internal virtual IComponentRenderMode? GetComponentRenderMode(IComponent component)
+        => null;
+
+    /// <summary>
+    /// Resolves the component state for a given <see cref="IComponent"/> instance.
+    /// </summary>
+    /// <param name="component">The <see cref="IComponent"/> instance</param>
+    /// <returns></returns>
+    protected internal ComponentState GetComponentState(IComponent component)
         => _componentStateByComponent.GetValueOrDefault(component);
 
     private async void RenderRootComponentsOnHotReload()

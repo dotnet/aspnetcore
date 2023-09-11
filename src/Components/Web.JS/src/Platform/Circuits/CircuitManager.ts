@@ -22,7 +22,7 @@ import { sendJSDataStream } from './CircuitStreamingInterop';
 export class CircuitManager implements DotNet.DotNetCallDispatcher {
   private readonly _componentManager: RootComponentManager<ServerComponentDescriptor>;
 
-  private readonly _applicationState: string;
+  private _applicationState: string;
 
   private readonly _options: CircuitStartOptions;
 
@@ -37,6 +37,8 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   private _circuitId?: string;
 
   private _startPromise?: Promise<boolean>;
+
+  private _firstUpdate = true;
 
   private _renderingFailed = false;
 
@@ -69,6 +71,16 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     }
 
     return this._startPromise;
+  }
+
+  public updateRootComponents(operations: string): Promise<void> | undefined {
+    if (this._firstUpdate) {
+      // Only send the application state on the first update.
+      this._firstUpdate = false;
+      return this._connection?.send('UpdateRootComponents', operations, this._applicationState);
+    } else {
+      return this._connection?.send('UpdateRootComponents', operations, '');
+    }
   }
 
   private async startCore(): Promise<boolean> {
