@@ -112,7 +112,7 @@
     <SystemDiagnosticsDiagnosticSourceVersion>8.0.0-rc.2.23457.7</SystemDiagnosticsDiagnosticSourceVersion>
     <SystemDiagnosticsEventLogVersion>8.0.0-rc.2.23457.7</SystemDiagnosticsEventLogVersion>
     <SystemDirectoryServicesProtocolsVersion>8.0.0-rc.2.23457.7</SystemDirectoryServicesProtocolsVersion>
-    <SystemDrawingCommonVersion>9.0.0-alpha.1.23454.1</SystemDrawingCommonVersion>
+    <SystemDrawingCommonVersion>9.0.0-alpha.1.23460.1</SystemDrawingCommonVersion>
     <SystemIOPipelinesVersion>8.0.0-rc.2.23457.7</SystemIOPipelinesVersion>
     <SystemNetHttpJsonVersion>8.0.0-rc.2.23457.7</SystemNetHttpJsonVersion>
     <SystemNetHttpWinHttpHandlerVersion>8.0.0-rc.2.23457.7</SystemNetHttpWinHttpHandlerVersion>
