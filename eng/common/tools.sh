@@ -341,7 +341,7 @@ function InitializeBuildTool {
   # return values
   _InitializeBuildTool="$_InitializeDotNetCli/dotnet"
   _InitializeBuildToolCommand="msbuild"
-  _InitializeBuildToolFramework="net9.0"
+  _InitializeBuildToolFramework="net8.0"
 }
 
 # Set RestoreNoCache as a workaround for https://github.com/NuGet/Home/issues/3116
