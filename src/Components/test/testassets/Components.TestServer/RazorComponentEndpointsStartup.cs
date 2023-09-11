@@ -142,6 +142,13 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         endpoints.MapGet("redirect/nonblazor/get", PerformRedirection);
         endpoints.MapPost("redirect/nonblazor/post", PerformRedirection);
 
+        // Used when testing enhanced navigation to non-Blazor endpoints
+        endpoints.Map("/nav/non-blazor-html-response", async (HttpResponse response) =>
+        {
+            response.ContentType = "text/html";
+            await response.WriteAsync("<html><body><h1>This is a non-Blazor endpoint</h1><p>That's all</p></body></html>");
+        });
+
         static Task PerformRedirection(HttpRequest request, HttpResponse response)
         {
             response.Redirect(request.Query["external"] == "true"

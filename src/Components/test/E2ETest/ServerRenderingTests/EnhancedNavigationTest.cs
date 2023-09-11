@@ -8,6 +8,7 @@ using TestServer;
 using Xunit.Abstractions;
 using Components.TestServer.RazorComponents;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Support.Extensions;
 
 namespace Microsoft.AspNetCore.Components.E2ETests.ServerRenderingTests;
 
@@ -305,6 +306,18 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.Navigate().Back();
         Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
         Assert.EndsWith("/nav", Browser.Url);
+    }
+
+    [Fact]
+    public void EnhancedNavNotUsedForNonBlazorDestinations()
+    {
+        Navigate($"{ServerPathBase}/nav");
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+        Assert.Equal("object", Browser.ExecuteJavaScript<string>("return typeof Blazor")); // Blazor JS is loaded
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Non-Blazor HTML page")).Click();
+        Browser.Equal("This is a non-Blazor endpoint", () => Browser.Exists(By.TagName("h1")).Text);
+        Assert.Equal("undefined", Browser.ExecuteJavaScript<string>("return typeof Blazor")); // Blazor JS is NOT loaded
     }
 
     private static bool IsElementStale(IWebElement element)
