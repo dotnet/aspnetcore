@@ -1,22 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#if NET7_0_OR_GREATER
-
-using System;
 using System.Buffers;
 using System.IO.Pipelines;
-using System.Runtime.CompilerServices;
-using System.Security.Cryptography;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.OutputCaching;
-using Pipelines.Sockets.Unofficial.Buffers;
+using Microsoft.Extensions.DependencyInjection;
 using StackExchange.Redis;
-using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.Extensions.Caching.StackExchangeRedis;
+namespace Microsoft.AspNetCore.OutputCaching.StackExchangeRedis.Tests;
 
 public class OutputCacheGetSetTests : IClassFixture<RedisConnectionFixture>
 {
@@ -30,16 +21,19 @@ public class OutputCacheGetSetTests : IClassFixture<RedisConnectionFixture>
 
     public OutputCacheGetSetTests(RedisConnectionFixture connection, ITestOutputHelper log)
     {
+        // use DI to get the configured service, but tweak the GC mode
         _fixture = connection;
-        _cache = new RedisOutputCacheStore(new RedisCacheOptions
-        {
-            ConnectionMultiplexerFactory = () => Task.FromResult(_fixture.Connection),
-            InstanceName = "TestPrefix",
-        })
-        {
-            GarbageCollectionEnabled = false,
-        };
         Log = log;
+        var services = new ServiceCollection();
+        services.AddStackExchangeRedisOutputCache(options => {
+            options.ConnectionMultiplexerFactory = () => Task.FromResult(_fixture.Connection);
+            options.InstanceName = "TestPrefix";
+        });
+        var svc = Assert.IsAssignableFrom<RedisOutputCacheStore>(
+            services.BuildServiceProvider().GetService<IOutputCacheStore>());
+        Assert.NotNull(svc);
+        svc.GarbageCollectionEnabled = false;
+        _cache = svc;
     }
 
 #if DEBUG
@@ -445,5 +439,3 @@ public class OutputCacheGetSetTests : IClassFixture<RedisConnectionFixture>
         public byte[] Array { get; }
     }
 }
-
-#endif

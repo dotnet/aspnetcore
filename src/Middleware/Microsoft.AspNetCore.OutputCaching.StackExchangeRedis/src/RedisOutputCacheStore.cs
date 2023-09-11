@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#if NET7_0_OR_GREATER // IOutputCacheStore only exists from net7
-
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -13,17 +11,17 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 
-namespace Microsoft.Extensions.Caching.StackExchangeRedis;
+namespace Microsoft.AspNetCore.OutputCaching.StackExchangeRedis;
 
 internal partial class RedisOutputCacheStore : IOutputCacheStore, IOutputCacheBufferStore, IDisposable
 {
-    private readonly RedisCacheOptions _options;
+    private readonly RedisOutputCacheOptions _options;
     private readonly ILogger _logger;
     private readonly RedisKey _valueKeyPrefix;
     private readonly RedisKey _tagKeyPrefix;
@@ -48,11 +46,11 @@ internal partial class RedisOutputCacheStore : IOutputCacheStore, IOutputCacheBu
     private readonly TimeSpan ReconnectErrorThreshold = TimeSpan.FromSeconds(30);
 
     /// <summary>
-    /// Initializes a new instance of <see cref="RedisCache"/>.
+    /// Initializes a new instance of <see cref="RedisOutputCacheStore"/>.
     /// </summary>
     /// <param name="optionsAccessor">The configuration options.</param>
-    public RedisOutputCacheStore(IOptions<RedisCacheOptions> optionsAccessor) // TODO: OC-specific options?
-        : this(optionsAccessor, Logging.Abstractions.NullLoggerFactory.Instance.CreateLogger<RedisCache>())
+    public RedisOutputCacheStore(IOptions<RedisOutputCacheOptions> optionsAccessor) // TODO: OC-specific options?
+        : this(optionsAccessor, NullLoggerFactory.Instance.CreateLogger<RedisOutputCacheStore>())
     {
     }
 
@@ -65,11 +63,11 @@ internal partial class RedisOutputCacheStore : IOutputCacheStore, IOutputCacheBu
 #endif
 
     /// <summary>
-    /// Initializes a new instance of <see cref="RedisCache"/>.
+    /// Initializes a new instance of <see cref="RedisOutputCacheStore"/>.
     /// </summary>
     /// <param name="optionsAccessor">The configuration options.</param>
     /// <param name="logger">The logger.</param>
-    internal RedisOutputCacheStore(IOptions<RedisCacheOptions> optionsAccessor, ILogger logger)
+    internal RedisOutputCacheStore(IOptions<RedisOutputCacheOptions> optionsAccessor, ILogger logger)
     {
         ArgumentNullThrowHelper.ThrowIfNull(optionsAccessor);
         ArgumentNullThrowHelper.ThrowIfNull(logger);
@@ -487,4 +485,3 @@ internal partial class RedisOutputCacheStore : IOutputCacheStore, IOutputCacheBu
         }
     }
 }
-#endif

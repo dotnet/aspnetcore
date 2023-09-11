@@ -1,20 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#if NET7_0_OR_GREATER
-
-using System;
 using StackExchange.Redis;
-using Xunit;
 
-namespace Microsoft.Extensions.Caching.StackExchangeRedis;
+namespace Microsoft.AspNetCore.OutputCaching.StackExchangeRedis.Tests;
 
 public class RedisConnectionFixture : IDisposable
 {
     private readonly ConnectionMultiplexer _muxer;
     public RedisConnectionFixture()
     {
-        var options = new RedisCacheOptions
+        var options = new RedisOutputCacheOptions
         {
             Configuration = "127.0.0.1:6379", // TODO: CI test config here
         }.GetConfiguredOptions("CI test");
@@ -27,5 +23,3 @@ public class RedisConnectionFixture : IDisposable
 
     public void Dispose() => _muxer.Dispose();
 }
-
-#endif
