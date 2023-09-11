@@ -256,7 +256,7 @@ internal partial class EndpointHtmlRenderer
 
     private static bool IsProgressivelyEnhancedNavigation(HttpRequest request)
     {
-        // For enhanced nav, the Blazor JS code control the "accept" header precisely, so we can be very specific about the format
+        // For enhanced nav, the Blazor JS code controls the "accept" header precisely, so we can be very specific about the format
         var accept = request.Headers.Accept;
         return accept.Count == 1 && string.Equals(accept[0]!, "text/html;blazor-enhanced-nav=on", StringComparison.Ordinal);
     }

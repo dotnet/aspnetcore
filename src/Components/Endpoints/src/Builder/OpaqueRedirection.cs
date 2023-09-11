@@ -25,7 +25,9 @@ internal static class OpaqueRedirection
     // returns a regular 301/302/etc. To handle this,
     //
     //  - If it's redirected to an internal URL, the browser will just follow the redirection automatically
-    //    and client-side code simply updates the client-side URL to match
+    //    and client-side code will then:
+    //    - Check if it went to a Blazor endpoint, and if so, simply update the client-side URL to match
+    //    - Or if it's a non-Blazor endpoint, behaves like "external URL" below
     //  - If it's to an external URL:
     //    - If it's a GET request, the client-side code will retry as a non-enhanced request
     //    - For other request types, we have to let it fail as it would be unsafe to retry
@@ -35,11 +37,6 @@ internal static class OpaqueRedirection
 
     public static string CreateProtectedRedirectionUrl(HttpContext httpContext, string destinationUrl)
     {
-        // For consistency with how 'fetch' works, we don't want to disclose the redirection URL to JS code, even if
-        // it's an internal URL (e.g., if the redirection chain is A->B->C, we don't want JS to be able to see B).
-        // This is even more important if it's an external URL, since it could be an auth endpoint with sensitive
-        // info inside it. So, we supply the URL to a framework endpoint that will perform the redirection, and
-        // the client-side code and navigate to this.
         var protector = CreateProtector(httpContext);
         var protectedUrl = protector.Protect(destinationUrl, TimeSpan.FromSeconds(10));
         return $"{RedirectionEndpointBaseRelativeUrl}?url={UrlEncoder.Default.Encode(protectedUrl)}";
