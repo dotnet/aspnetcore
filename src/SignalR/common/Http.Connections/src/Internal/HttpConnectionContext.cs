@@ -585,12 +585,6 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     {
         lock (_stateLock)
         {
-            if (TransportType != HttpTransportType.None
-                && UseStatefulReconnect == false && TransportType != HttpTransportType.LongPolling)
-            {
-                return SetTransportState.AlreadyActive;
-            }
-
             if (TransportType == HttpTransportType.None)
             {
                 TransportType = transportType;
@@ -607,6 +601,10 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
             else if (TransportType != transportType)
             {
                 return SetTransportState.CannotChange;
+            }
+            else if (!ClientReconnectExpected())
+            {
+                return SetTransportState.AlreadyActive;
             }
 
             return SetTransportState.Success;
@@ -748,6 +746,12 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
                 await notifyOnReconnect(writer);
             };
         }
+    }
+
+    // If the connection is using the Stateful Reconnect feature or using LongPolling
+    internal bool ClientReconnectExpected()
+    {
+        return UseStatefulReconnect == true || TransportType == HttpTransportType.LongPolling;
     }
 
     internal enum SetTransportState
