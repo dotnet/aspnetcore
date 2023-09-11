@@ -38,7 +38,7 @@ public static class WebAssemblyRazorComponentsBuilderExtensions
             {
                 if (renderMode is WebAssemblyRenderMode)
                 {
-                    throw new InvalidOperationException("Invalid render mode. Use AddWebAssemblyComponents(Action<WebAssemblyComponentsEndpointOptions>) to configure the WebAssembly render mode.");
+                    throw new InvalidOperationException("Invalid render mode. Use AddWebAssemblyRenderMode(Action<WebAssemblyComponentsEndpointOptions>) to configure the WebAssembly render mode.");
                 }
 
                 return Array.Empty<RouteEndpointBuilder>();

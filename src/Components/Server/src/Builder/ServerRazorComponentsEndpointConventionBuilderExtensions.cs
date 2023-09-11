@@ -17,8 +17,7 @@ public static class ServerRazorComponentsEndpointConventionBuilderExtensions
     /// <returns>The <see cref="RazorComponentsEndpointConventionBuilder"/>.</returns>
     public static RazorComponentsEndpointConventionBuilder AddServerRenderMode(this RazorComponentsEndpointConventionBuilder builder)
     {
-        ComponentEndpointConventionBuilderHelper.AddRenderMode(builder, RenderMode.Server);
-
+        ComponentEndpointConventionBuilderHelper.AddRenderMode(builder, new InternalServerRenderMode());
         return builder;
     }
 }
