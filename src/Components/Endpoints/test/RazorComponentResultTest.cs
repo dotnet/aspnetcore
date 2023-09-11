@@ -347,6 +347,7 @@ public class RazorComponentResultTest
         // Act/Assert: Produce initial output, noting absence of streaming markers at top level
         testContext.TopLevelComponentTask.SetResult();
         await initialOutputTask;
+        await WaitForContentWrittenAsync(testContext.ResponseBody);
         var html = MaskComponentIds(GetStringContent(testContext.ResponseBody));
         Assert.StartsWith("[Top level component: Loaded]", html);
         Assert.Contains("[Within streaming region: <!--bl:X-->Loading...<!--/bl:X-->]", html);
