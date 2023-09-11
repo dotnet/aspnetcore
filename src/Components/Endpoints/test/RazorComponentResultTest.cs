@@ -101,6 +101,7 @@ public class RazorComponentResultTest
         var result = new RazorComponentResult(typeof(StreamingAsyncLoadingComponent),
             PropertyHelper.ObjectToDictionary(new { LoadingTask = tcs.Task }).AsReadOnly());
         var completionTask = result.ExecuteAsync(httpContext);
+        await WaitForContentWrittenAsync(responseBody);
         Assert.Equal(
             "<!--bl:X-->Loading task status: WaitingForActivation<!--/bl:X-->",
             MaskComponentIds(GetStringContent(responseBody)));
@@ -131,6 +132,7 @@ public class RazorComponentResultTest
         var result = new RazorComponentResult(typeof(DoubleRenderingStreamingAsyncComponent),
             PropertyHelper.ObjectToDictionary(new { WaitFor = tcs.Task }).AsReadOnly());
         var completionTask = result.ExecuteAsync(httpContext);
+        await WaitForContentWrittenAsync(responseBody);
         Assert.Equal(
             "<!--bl:X-->Loading...<!--/bl:X-->",
             MaskComponentIds(GetStringContent(responseBody)));
@@ -161,11 +163,12 @@ public class RazorComponentResultTest
         var result = new RazorComponentResult(typeof(StreamingComponentWithChild),
             PropertyHelper.ObjectToDictionary(new { LoadingTask = tcs.Task }).AsReadOnly());
         var completionTask = result.ExecuteAsync(httpContext);
+        await WaitForContentWrittenAsync(responseBody);
         var expectedInitialHtml = "<!--bl:X-->[LoadingTask: WaitingForActivation]\n<!--bl:X-->[Child render: 1]\n<!--/bl:X--><!--/bl:X-->";
         Assert.Equal(
             expectedInitialHtml,
             MaskComponentIds(GetStringContent(responseBody)));
-
+        
         // Act/Assert 2: When loading completes, it emits a streaming batch update in which the
         // child is present only within the parent markup, not as a separate entry
         tcs.SetResult();
@@ -375,6 +378,7 @@ public class RazorComponentResultTest
         // Act/Assert: Does produce output when nonstreaming subtree is quiescent
         testContext.WithinNestedNonstreamingRegionTask.SetResult();
         await initialOutputTask;
+        await WaitForContentWrittenAsync(testContext.ResponseBody);
         var html = MaskComponentIds(GetStringContent(testContext.ResponseBody));
         Assert.Contains("[Within streaming region: <!--bl:X-->Loading...<!--/bl:X-->]", html);
         Assert.DoesNotContain("blazor-ssr", html);
@@ -465,6 +469,27 @@ public class RazorComponentResultTest
         result.Request.Scheme = "https";
         result.Request.Host = new HostString("test");
         return result;
+    }
+
+    // Some tests want to observe the output state when some content has been written, but without waiting for
+    // the whole streaming task to complete. There isn't any public API that exposes this specific phase, so
+    // rather than making the renderer track additional tasks that would only be used in tests, this allows the
+    // tests to continue once the first batch of output was written.
+    private static async Task WaitForContentWrittenAsync(Stream stream, TimeSpan? timeout = default)
+    {
+        var timeoutRemaining = timeout.GetValueOrDefault(TimeSpan.FromSeconds(1));
+        var pollInterval = TimeSpan.FromMilliseconds(50);
+        do
+        {
+            if (stream.Position > 0)
+            {
+                return;
+            }
+            await Task.Delay(pollInterval);
+            timeoutRemaining = timeoutRemaining - pollInterval;
+        } while (timeoutRemaining.TotalMilliseconds > 0);
+
+        Assert.Fail("Timeout elapsed without content being written");
     }
 
     class FakeDataProtectionProvider : IDataProtectionProvider
