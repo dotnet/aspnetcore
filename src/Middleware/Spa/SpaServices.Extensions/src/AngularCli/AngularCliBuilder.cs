@@ -30,10 +30,7 @@ public class AngularCliBuilder : ISpaPrerendererBuilder
     /// <param name="npmScript">The name of the script in your package.json file that builds the server-side bundle for your Angular application.</param>
     public AngularCliBuilder(string npmScript)
     {
-        if (string.IsNullOrEmpty(npmScript))
-        {
-            throw new ArgumentException("Cannot be null or empty.", nameof(npmScript));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(npmScript);
 
         _scriptName = npmScript;
     }
