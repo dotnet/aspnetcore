@@ -3,13 +3,10 @@
 
 using System;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
-using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel.Emitters;
 using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel;
-
-using WellKnownType = WellKnownTypeData.WellKnownType;
 
 internal class EndpointResponse
 {
@@ -21,11 +18,9 @@ internal class EndpointResponse
     public bool IsIResult { get; set; }
     public bool IsSerializable { get; set; }
     public bool IsEndpointMetadataProvider { get; set; }
-    private WellKnownTypes WellKnownTypes { get; init; }
 
-    internal EndpointResponse(IMethodSymbol method, WellKnownTypes wellKnownTypes)
+    internal EndpointResponse(IMethodSymbol method)
     {
-        WellKnownTypes = wellKnownTypes;
         ResponseType = UnwrapResponseType(method, out bool isAwaitable, out bool awaitableIsVoid);
         WrappedResponseType = method.ReturnType.ToDisplayString(EmitterConstants.DisplayFormat);
         IsAwaitable = isAwaitable;
@@ -33,35 +28,25 @@ internal class EndpointResponse
         IsIResult = GetIsIResult();
         IsSerializable = GetIsSerializable();
         ContentType = GetContentType();
-        IsEndpointMetadataProvider = ImplementsIEndpointMetadataProvider(ResponseType, wellKnownTypes);
+        IsEndpointMetadataProvider = ImplementsIEndpointMetadataProvider(ResponseType);
     }
 
-    private static bool ImplementsIEndpointMetadataProvider(ITypeSymbol? responseType, WellKnownTypes wellKnownTypes)
-        => responseType == null ? false : responseType.Implements(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IEndpointMetadataProvider));
+    private static bool ImplementsIEndpointMetadataProvider(ITypeSymbol? responseType)
+        => responseType == null ? false : responseType.Implements(["Microsoft", "AspNetCore", "Http", "Metadata", "IEndpointMetadataProvider"]);
 
     private ITypeSymbol? UnwrapResponseType(IMethodSymbol method, out bool isAwaitable, out bool awaitableIsVoid)
     {
         isAwaitable = false;
         awaitableIsVoid = false;
         var returnType = method.ReturnType;
-        var task = WellKnownTypes.Get(WellKnownType.System_Threading_Tasks_Task);
-        var taskOfT = WellKnownTypes.Get(WellKnownType.System_Threading_Tasks_Task_T);
-        var valueTask = WellKnownTypes.Get(WellKnownType.System_Threading_Tasks_ValueTask);
-        var valueTaskOfT = WellKnownTypes.Get(WellKnownType.System_Threading_Tasks_ValueTask_T);
-        if (returnType.OriginalDefinition.Equals(taskOfT, SymbolEqualityComparer.Default) ||
-            returnType.OriginalDefinition.Equals(valueTaskOfT, SymbolEqualityComparer.Default))
+        if (returnType.OriginalDefinition.EqualsByName(["System", "Threading", "Tasks", "Task"]) ||
+            returnType.OriginalDefinition.EqualsByName(["System", "Threading", "Tasks", "ValueTask"]))
         {
             isAwaitable = true;
-            awaitableIsVoid = false;
-            return ((INamedTypeSymbol)returnType).TypeArguments[0];
-        }
-
-        if (returnType.OriginalDefinition.Equals(task, SymbolEqualityComparer.Default) ||
-            returnType.OriginalDefinition.Equals(valueTask, SymbolEqualityComparer.Default))
-        {
-            isAwaitable = true;
-            awaitableIsVoid = true;
-            return null;
+            awaitableIsVoid = returnType is INamedTypeSymbol { IsGenericType: false };
+            return returnType is INamedTypeSymbol { IsGenericType: true } namedReturnType
+                ? namedReturnType.TypeArguments[0]
+                : null;
         }
 
         return returnType;
@@ -76,9 +61,8 @@ internal class EndpointResponse
 
     private bool GetIsIResult()
     {
-        var resultType = WellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_IResult);
-        return WellKnownTypes.Implements(ResponseType, resultType) ||
-            SymbolEqualityComparer.Default.Equals(ResponseType, resultType);
+        return ResponseType is not null &&
+            (ResponseType.Implements(["Microsoft", "AspNetCore", "Http", "IResult"]) || ResponseType.EqualsByName(["Microsoft", "AspNetCore", "Http", "IResult"]));
     }
 
     private string? GetContentType()
@@ -93,7 +77,7 @@ internal class EndpointResponse
             return null;
         }
 
-        return ResponseType!.SpecialType is SpecialType.System_String ? "text/plain; charset=utf-8" : "application/json";
+        return ResponseType?.SpecialType is SpecialType.System_String ? "text/plain; charset=utf-8" : "application/json";
     }
 
     public override bool Equals(object obj)

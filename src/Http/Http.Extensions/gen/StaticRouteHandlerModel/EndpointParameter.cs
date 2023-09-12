@@ -9,26 +9,24 @@ using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
-using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel.Emitters;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using WellKnownType = Microsoft.AspNetCore.App.Analyzers.Infrastructure.WellKnownTypeData.WellKnownType;
 
 namespace Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel;
 
 internal class EndpointParameter
 {
-    public EndpointParameter(Endpoint endpoint, IParameterSymbol parameter, WellKnownTypes wellKnownTypes): this(endpoint, parameter.Type, parameter.Name, wellKnownTypes)
+    public EndpointParameter(Endpoint endpoint, IParameterSymbol parameter): this(endpoint, parameter.Type, parameter.Name)
     {
         Ordinal = parameter.Ordinal;
         IsOptional = parameter.IsOptional();
         HasDefaultValue = parameter.HasExplicitDefaultValue;
         DefaultValue = parameter.GetDefaultValueString();
-        ProcessEndpointParameterSource(endpoint, parameter, parameter.GetAttributes(), wellKnownTypes);
+        ProcessEndpointParameterSource(endpoint, parameter, parameter.GetAttributes());
     }
 
-    private EndpointParameter(Endpoint endpoint, IPropertySymbol property, IParameterSymbol? parameter, WellKnownTypes wellKnownTypes) : this(endpoint, property.Type, property.Name, wellKnownTypes)
+    private EndpointParameter(Endpoint endpoint, IPropertySymbol property, IParameterSymbol? parameter) : this(endpoint, property.Type, property.Name)
     {
         Ordinal = parameter?.Ordinal ?? 0;
         IsProperty = true;
@@ -48,10 +46,10 @@ internal class EndpointParameter
             ? $"new PropertyAsParameterInfo({(IsOptional ? "true" : "false")}, {propertyInfo}, {parameter.GetParameterInfoFromConstructorCode()})"
             : $"new PropertyAsParameterInfo({(IsOptional ? "true" : "false")}, {propertyInfo})";
         endpoint.EmitterContext.RequiresPropertyAsParameterInfo = IsProperty && IsEndpointParameterMetadataProvider;
-        ProcessEndpointParameterSource(endpoint, property, attributeBuilder.ToImmutable(), wellKnownTypes);
+        ProcessEndpointParameterSource(endpoint, property, attributeBuilder.ToImmutable());
     }
 
-    private EndpointParameter(Endpoint endpoint, ITypeSymbol typeSymbol, string parameterName, WellKnownTypes wellKnownTypes)
+    private EndpointParameter(Endpoint endpoint, ITypeSymbol typeSymbol, string parameterName)
     {
         Type = typeSymbol;
         SymbolName = parameterName;
@@ -59,51 +57,51 @@ internal class EndpointParameter
         Source = EndpointParameterSource.Unknown;
         IsArray = TryGetArrayElementType(typeSymbol, out var elementType);
         ElementType = elementType;
-        IsEndpointMetadataProvider = ImplementsIEndpointMetadataProvider(typeSymbol, wellKnownTypes);
-        IsEndpointParameterMetadataProvider = ImplementsIEndpointParameterMetadataProvider(typeSymbol, wellKnownTypes);
+        IsEndpointMetadataProvider = ImplementsIEndpointMetadataProvider(typeSymbol);
+        IsEndpointParameterMetadataProvider = ImplementsIEndpointParameterMetadataProvider(typeSymbol);
         endpoint.EmitterContext.HasEndpointParameterMetadataProvider |= IsEndpointParameterMetadataProvider;
         endpoint.EmitterContext.HasEndpointMetadataProvider |= IsEndpointMetadataProvider;
     }
 
-    private void ProcessEndpointParameterSource(Endpoint endpoint, ISymbol symbol, ImmutableArray<AttributeData> attributes, WellKnownTypes wellKnownTypes)
+    private void ProcessEndpointParameterSource(Endpoint endpoint, ISymbol symbol, ImmutableArray<AttributeData> attributes)
     {
-        if (attributes.TryGetAttributeImplementingInterface(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromRouteMetadata), out var fromRouteAttribute))
+        if (attributes.TryGetAttributeImplementingInterface(["Microsoft", "AspNetCore", "Http", "Metadata", "IFromRouteMetadata"], out var fromRouteAttribute))
         {
             Source = EndpointParameterSource.Route;
             LookupName = GetEscapedParameterName(fromRouteAttribute, symbol.Name);
-            IsParsable = TryGetParsability(Type, wellKnownTypes, out var parsingBlockEmitter);
+            IsParsable = TryGetParsability(Type, out var parsingBlockEmitter);
             ParsingBlockEmitter = parsingBlockEmitter;
         }
-        else if (attributes.TryGetAttributeImplementingInterface(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromQueryMetadata), out var fromQueryAttribute))
+        else if (attributes.TryGetAttributeImplementingInterface(["Microsoft", "AspNetCore", "Http", "Metadata", "IFromQueryMetadata"], out var fromQueryAttribute))
         {
             Source = EndpointParameterSource.Query;
             LookupName = GetEscapedParameterName(fromQueryAttribute, symbol.Name);
-            IsParsable = TryGetParsability(Type, wellKnownTypes, out var parsingBlockEmitter);
+            IsParsable = TryGetParsability(Type, out var parsingBlockEmitter);
             ParsingBlockEmitter = parsingBlockEmitter;
         }
-        else if (attributes.TryGetAttributeImplementingInterface(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromHeaderMetadata), out var fromHeaderAttribute))
+        else if (attributes.TryGetAttributeImplementingInterface(["Microsoft", "AspNetCore", "Http", "Metadata", "IFromHeaderMetadata"], out var fromHeaderAttribute))
         {
             Source = EndpointParameterSource.Header;
             LookupName = GetEscapedParameterName(fromHeaderAttribute, symbol.Name);
-            IsParsable = TryGetParsability(Type, wellKnownTypes, out var parsingBlockEmitter);
+            IsParsable = TryGetParsability(Type, out var parsingBlockEmitter);
             ParsingBlockEmitter = parsingBlockEmitter;
         }
-        else if (attributes.TryGetAttributeImplementingInterface(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromFormMetadata), out var fromFormAttribute))
+        else if (attributes.TryGetAttributeImplementingInterface(["Microsoft", "AspNetCore", "Http", "Metadata", "IFromFormMetadata"], out var fromFormAttribute))
         {
             endpoint.IsAwaitable = true;
             Source = EndpointParameterSource.FormBody;
             LookupName = GetEscapedParameterName(fromFormAttribute, symbol.Name);
-            if (SymbolEqualityComparer.Default.Equals(Type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_IFormFileCollection)))
+            if (Type.EqualsByName(["Microsoft", "AspNetCore", "Http", "IFormFileCollection"]))
             {
                 IsFormFile = true;
                 AssigningCode = "httpContext.Request.Form.Files";
             }
-            else if (SymbolEqualityComparer.Default.Equals(Type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_IFormFile)))
+            else if (Type.EqualsByName(["Microsoft", "AspNetCore", "Http", "IFormFile"]))
             {
                 IsFormFile = true;
                 AssigningCode = $"httpContext.Request.Form.Files[{SymbolDisplay.FormatLiteral(LookupName, true)}]";
             }
-            else if (SymbolEqualityComparer.Default.Equals(Type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_IFormCollection)))
+            else if (Type.EqualsByName(["Microsoft", "AspNetCore", "Http", "IFormCollection"]))
             {
                 AssigningCode = "httpContext.Request.Form";
             }
@@ -112,18 +110,18 @@ internal class EndpointParameter
                 AssigningCode = !IsArray
                     ? $"(string?)httpContext.Request.Form[{SymbolDisplay.FormatLiteral(LookupName, true)}]"
                     : $"httpContext.Request.Form[{SymbolDisplay.FormatLiteral(LookupName, true)}].ToArray()";
-                IsParsable = TryGetParsability(Type, wellKnownTypes, out var parsingBlockEmitter);
+                IsParsable = TryGetParsability(Type, out var parsingBlockEmitter);
                 ParsingBlockEmitter = parsingBlockEmitter;
             }
         }
-        else if (TryGetExplicitFromJsonBody(symbol, attributes, wellKnownTypes, out var isOptional))
+        else if (TryGetExplicitFromJsonBody(symbol, attributes, out var isOptional))
         {
-            if (SymbolEqualityComparer.Default.Equals(Type, wellKnownTypes.Get(WellKnownType.System_IO_Stream)))
+            if (Type.EqualsByName(["System", "IO", "Stream"]))
             {
                 Source = EndpointParameterSource.SpecialType;
                 AssigningCode = "httpContext.Request.Body";
             }
-            else if (SymbolEqualityComparer.Default.Equals(Type, wellKnownTypes.Get(WellKnownType.System_IO_Pipelines_PipeReader)))
+            else if (Type.EqualsByName(["System", "IO", "Pipelines", "PipeReader"]))
             {
                 Source = EndpointParameterSource.SpecialType;
                 AssigningCode = "httpContext.Request.BodyReader";
@@ -135,22 +133,22 @@ internal class EndpointParameter
             }
             IsOptional = isOptional;
         }
-        else if (attributes.HasAttributeImplementingInterface(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromServiceMetadata)))
+        else if (attributes.HasAttributeImplementingInterface(["Microsoft", "AspNetCore", "Http", "Metadata", "IFromServiceMetadata"]))
         {
             Source = EndpointParameterSource.Service;
-            if (attributes.TryGetAttribute(wellKnownTypes.Get(WellKnownType.Microsoft_Extensions_DependencyInjection_FromKeyedServicesAttribute), out var keyedServicesAttribute))
+            if (attributes.TryGetAttribute(["Microsoft", "Extensions", "DependencyInjection", "FromKeyedServicesAttribute"], out var keyedServicesAttribute))
             {
                 var location = endpoint.Operation.Syntax.GetLocation();
                 endpoint.Diagnostics.Add(Diagnostic.Create(DiagnosticDescriptors.KeyedAndNotKeyedServiceAttributesNotSupported, location));
             }
         }
-        else if (attributes.TryGetAttribute(wellKnownTypes.Get(WellKnownType.Microsoft_Extensions_DependencyInjection_FromKeyedServicesAttribute), out var keyedServicesAttribute))
+        else if (attributes.TryGetAttribute(["Microsoft", "Extensions", "DependencyInjection", "FromKeyedServicesAttribute"], out var keyedServicesAttribute))
         {
             Source = EndpointParameterSource.KeyedService;
             var constructorArgument = keyedServicesAttribute.ConstructorArguments.FirstOrDefault();
             KeyedServiceKey = SymbolDisplay.FormatPrimitive(constructorArgument.Value!, true, true);
         }
-        else if (attributes.HasAttribute(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_AsParametersAttribute)))
+        else if (attributes.HasAttribute(["Microsoft", "AspNetCore", "Http", "AsParametersAttribute"]))
         {
             Source = EndpointParameterSource.AsParameters;
             var location = endpoint.Operation.Syntax.GetLocation();
@@ -168,7 +166,7 @@ internal class EndpointParameter
                 }
                 return;
             }
-            EndpointParameters = matchedProperties.Select(matchedParameter => new EndpointParameter(endpoint, matchedParameter.Property, matchedParameter.Parameter, wellKnownTypes));
+            EndpointParameters = matchedProperties.Select(matchedParameter => new EndpointParameter(endpoint, matchedParameter.Property, matchedParameter.Parameter));
             if (isDefaultConstructor == true)
             {
                 var parameterList = string.Join(", ", EndpointParameters.Select(p => $"{p.LookupName} = {p.EmitHandlerArgument()}"));
@@ -180,33 +178,33 @@ internal class EndpointParameter
                 AssigningCode = $"new {namedTypeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}({parameterList})";
             }
         }
-        else if (TryGetSpecialTypeAssigningCode(Type, wellKnownTypes, out var specialTypeAssigningCode))
+        else if (TryGetSpecialTypeAssigningCode(Type, out var specialTypeAssigningCode))
         {
             Source = EndpointParameterSource.SpecialType;
             AssigningCode = specialTypeAssigningCode;
         }
-        else if (SymbolEqualityComparer.Default.Equals(Type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_IFormFileCollection)))
+        else if (Type.EqualsByName(["Microsoft", "AspNetCore", "Http", "IFormFileCollection"]))
         {
             endpoint.IsAwaitable = true;
             Source = EndpointParameterSource.FormBody;
             IsFormFile = true;
             AssigningCode = "httpContext.Request.Form.Files";
         }
-        else if (SymbolEqualityComparer.Default.Equals(Type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_IFormFile)))
+        else if (Type.EqualsByName(["Microsoft", "AspNetCore", "Http", "IFormFile"]))
         {
             endpoint.IsAwaitable = true;
             Source = EndpointParameterSource.FormBody;
             IsFormFile = true;
             AssigningCode = $"httpContext.Request.Form.Files[{SymbolDisplay.FormatLiteral(LookupName, true)}]";
         }
-        else if (SymbolEqualityComparer.Default.Equals(Type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_IFormCollection)))
+        else if (Type.EqualsByName(["Microsoft", "AspNetCore", "Http", "IFormCollection"]))
         {
             endpoint.IsAwaitable = true;
             Source = EndpointParameterSource.FormBody;
             LookupName = symbol.Name;
             AssigningCode = "httpContext.Request.Form";
         }
-        else if (HasBindAsync(Type, wellKnownTypes, out var bindMethod, out var bindMethodSymbol))
+        else if (HasBindAsync(Type, out var bindMethod, out var bindMethodSymbol))
         {
             endpoint.IsAwaitable = true;
             endpoint.EmitterContext.RequiresPropertyAsParameterInfo = IsProperty && bindMethod is BindabilityMethod.BindAsyncWithParameter or BindabilityMethod.IBindableFromHttpContext;
@@ -223,12 +221,12 @@ internal class EndpointParameter
             endpoint.IsAwaitable = true;
             Source = EndpointParameterSource.JsonBodyOrQuery;
         }
-        else if (SymbolEqualityComparer.Default.Equals(Type, wellKnownTypes.Get(WellKnownType.Microsoft_Extensions_Primitives_StringValues)))
+        else if (Type.EqualsByName(["Microsoft", "Extensions", "Primitives", "StringValues"]))
         {
             Source = EndpointParameterSource.Query;
             IsStringValues = true;
         }
-        else if (TryGetParsability(Type, wellKnownTypes, out var parsingBlockEmitter))
+        else if (TryGetParsability(Type, out var parsingBlockEmitter))
         {
             Source = EndpointParameterSource.RouteOrQuery;
             IsParsable = true;
@@ -248,11 +246,11 @@ internal class EndpointParameter
         endpoint.EmitterContext.HasJsonBodyOrQuery |= Source == EndpointParameterSource.JsonBodyOrQuery;
     }
 
-    private static bool ImplementsIEndpointMetadataProvider(ITypeSymbol type, WellKnownTypes wellKnownTypes)
-        => type.Implements(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IEndpointMetadataProvider));
+    private static bool ImplementsIEndpointMetadataProvider(ITypeSymbol type)
+        => type.Implements(["Microsoft", "AspNetCore", "Http", "Metadata", "IEndpointMetadataProvider"]);
 
-    private static bool ImplementsIEndpointParameterMetadataProvider(ITypeSymbol type, WellKnownTypes wellKnownTypes)
-        => type.Implements(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IEndpointParameterMetadataProvider));
+    private static bool ImplementsIEndpointParameterMetadataProvider(ITypeSymbol type)
+        => type.Implements(["Microsoft", "AspNetCore", "Http", "Metadata", "IEndpointParameterMetadataProvider"]);
 
     public ITypeSymbol Type { get; }
     public ITypeSymbol ElementType { get; }
@@ -285,13 +283,13 @@ internal class EndpointParameter
     public BindabilityMethod? BindMethod { get; set; }
     public IMethodSymbol? BindableMethodSymbol { get; set; }
 
-    private static bool HasBindAsync(ITypeSymbol typeSymbol, WellKnownTypes wellKnownTypes, [NotNullWhen(true)] out BindabilityMethod? bindMethod, [NotNullWhen(true)] out IMethodSymbol? bindMethodSymbol)
+    private static bool HasBindAsync(ITypeSymbol typeSymbol, [NotNullWhen(true)] out BindabilityMethod? bindMethod, [NotNullWhen(true)] out IMethodSymbol? bindMethodSymbol)
     {
         var parameterType = typeSymbol.UnwrapTypeSymbol(unwrapArray: true, unwrapNullable: true);
-        return ParsabilityHelper.GetBindability(parameterType, wellKnownTypes, out bindMethod, out bindMethodSymbol) == Bindability.Bindable;
+        return ParsabilityHelper.GetBindability(parameterType, out bindMethod, out bindMethodSymbol) == Bindability.Bindable;
     }
 
-    private static bool TryGetArrayElementType(ITypeSymbol type, [NotNullWhen(true)]out ITypeSymbol elementType)
+    private static bool TryGetArrayElementType(ITypeSymbol type, [NotNullWhen(true)] out ITypeSymbol elementType)
     {
         if (type.TypeKind == TypeKind.Array)
         {
@@ -305,7 +303,7 @@ internal class EndpointParameter
         }
     }
 
-    private bool TryGetParsability(ITypeSymbol typeSymbol, WellKnownTypes wellKnownTypes, [NotNullWhen(true)] out Action<CodeWriter, string, string>? parsingBlockEmitter)
+    private bool TryGetParsability(ITypeSymbol typeSymbol, [NotNullWhen(true)] out Action<CodeWriter, string, string>? parsingBlockEmitter)
     {
         var parameterType = typeSymbol.UnwrapTypeSymbol(unwrapArray: true, unwrapNullable: true);
 
@@ -314,7 +312,7 @@ internal class EndpointParameter
         // support usage in the code generator an optional out parameter has been added to hint at what variant of the various
         // TryParse methods should be used (this implies that the preferences are baked into ParsabilityHelper). If we aren't
         // parsable at all we bail.
-        if (ParsabilityHelper.GetParsability(parameterType, wellKnownTypes, out var parsabilityMethod) != Parsability.Parsable)
+        if (ParsabilityHelper.GetParsability(parameterType, out var parsabilityMethod) != Parsability.Parsable)
         {
             parsingBlockEmitter = null;
             return false;
@@ -343,11 +341,11 @@ internal class EndpointParameter
         {
             preferredTryParseInvocation = (string inputArgument, string outputArgument) => $$"""{{parameterType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}.TryParse({{inputArgument}}!, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal | DateTimeStyles.AllowWhiteSpaces, out var {{outputArgument}})""";
         }
-        else if (SymbolEqualityComparer.Default.Equals(parameterType, wellKnownTypes.Get(WellKnownType.System_DateTimeOffset)))
+        else if (parameterType.EqualsByName(["System", "DateTimeOffset"]))
         {
             preferredTryParseInvocation = (string inputArgument, string outputArgument) => $$"""{{parameterType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}.TryParse({{inputArgument}}!, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AllowWhiteSpaces, out var {{outputArgument}})""";
         }
-        else if (SymbolEqualityComparer.Default.Equals(parameterType, wellKnownTypes.Get(WellKnownType.System_DateOnly)))
+        else if (parameterType.EqualsByName(["DateOnly", "System"]))
         {
             preferredTryParseInvocation = (string inputArgument, string outputArgument) => $$"""{{parameterType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}}.TryParse({{inputArgument}}!, CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, out var {{outputArgument}})""";
         }
@@ -411,40 +409,40 @@ internal class EndpointParameter
         return true;
     }
 
-    private static bool TryGetSpecialTypeAssigningCode(ITypeSymbol type, WellKnownTypes wellKnownTypes, [NotNullWhen(true)] out string? callingCode)
+    private static bool TryGetSpecialTypeAssigningCode(ITypeSymbol type, [NotNullWhen(true)] out string? callingCode)
     {
         callingCode = null;
-        if (SymbolEqualityComparer.Default.Equals(type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_HttpContext)))
+        if (type.EqualsByName(["Microsoft", "AspNetCore", "Http", "HttpContext"]))
         {
             callingCode = "httpContext";
             return true;
         }
-        if (SymbolEqualityComparer.Default.Equals(type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_HttpRequest)))
+        if (type.EqualsByName(["Microsoft", "AspNetCore", "Http", "HttpRequest"]))
         {
             callingCode = "httpContext.Request";
             return true;
         }
-        if (SymbolEqualityComparer.Default.Equals(type, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_HttpResponse)))
+        if (type.EqualsByName(["Microsoft", "AspNetCore", "Http", "HttpResponse"]))
         {
             callingCode = "httpContext.Response";
             return true;
         }
-        if (SymbolEqualityComparer.Default.Equals(type, wellKnownTypes.Get(WellKnownType.System_IO_Pipelines_PipeReader)))
+        if (type.EqualsByName(["System", "IO", "Pipelines", "PipeReader"]))
         {
             callingCode = "httpContext.Request.BodyReader";
             return true;
         }
-        if (SymbolEqualityComparer.Default.Equals(type, wellKnownTypes.Get(WellKnownType.System_IO_Stream)))
+        if (type.EqualsByName(["System", "IO", "Stream"]))
         {
             callingCode = "httpContext.Request.Body";
             return true;
         }
-        if (SymbolEqualityComparer.Default.Equals(type, wellKnownTypes.Get(WellKnownType.System_Security_Claims_ClaimsPrincipal)))
+        if (type.EqualsByName(["System", "Security", "Claims", "ClaimsPrincipal"]))
         {
             callingCode = "httpContext.User";
             return true;
         }
-        if (SymbolEqualityComparer.Default.Equals(type, wellKnownTypes.Get(WellKnownType.System_Threading_CancellationToken)))
+        if (type.EqualsByName(["System", "Threading", "CancellationToken"]))
         {
             callingCode = "httpContext.RequestAborted";
             return true;
@@ -455,11 +453,10 @@ internal class EndpointParameter
 
     private static bool TryGetExplicitFromJsonBody(ISymbol typeSymbol,
         ImmutableArray<AttributeData> attributes,
-        WellKnownTypes wellKnownTypes,
         out bool isOptional)
     {
         isOptional = false;
-        if (!attributes.TryGetAttributeImplementingInterface(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromBodyMetadata), out var fromBodyAttribute))
+        if (!attributes.TryGetAttributeImplementingInterface(["Microsoft", "AspNetCore", "Http", "Metadata", "IFromBodyMetadata"], out var fromBodyAttribute))
         {
             return false;
         }

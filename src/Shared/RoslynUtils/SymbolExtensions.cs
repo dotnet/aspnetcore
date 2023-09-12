@@ -66,11 +66,31 @@ internal static class SymbolExtensions
         return attributes.TryGetAttribute(attributeType, out _);
     }
 
+    public static bool HasAttribute(this ImmutableArray<AttributeData> attributes, string[] attributeType)
+    {
+        return attributes.TryGetAttribute(attributeType, out _);
+    }
+
     public static bool TryGetAttribute(this ImmutableArray<AttributeData> attributes, INamedTypeSymbol attributeType, [NotNullWhen(true)] out AttributeData? matchedAttribute)
     {
         foreach (var attributeData in attributes)
         {
             if (SymbolEqualityComparer.Default.Equals(attributeData.AttributeClass, attributeType))
+            {
+                matchedAttribute = attributeData;
+                return true;
+            }
+        }
+
+        matchedAttribute = null;
+        return false;
+    }
+
+    public static bool TryGetAttribute(this ImmutableArray<AttributeData> attributes, string[] attributeName, [NotNullWhen(true)] out AttributeData? matchedAttribute)
+    {
+        foreach (var attributeData in attributes)
+        {
+            if (attributeData.AttributeClass?.EqualsByName(attributeName) == true)
             {
                 matchedAttribute = attributeData;
                 return true;
@@ -106,6 +126,11 @@ internal static class SymbolExtensions
         return attributes.TryGetAttributeImplementingInterface(interfaceType, out var _);
     }
 
+    public static bool HasAttributeImplementingInterface(this ImmutableArray<AttributeData> attributes, string[] interfaceName)
+    {
+        return attributes.TryGetAttributeImplementingInterface(interfaceName, out var _);
+    }
+
     public static bool TryGetAttributeImplementingInterface(this ImmutableArray<AttributeData> attributes, INamedTypeSymbol interfaceType, [NotNullWhen(true)] out AttributeData? matchedAttribute)
     {
         foreach (var attributeData in attributes)
@@ -118,6 +143,61 @@ internal static class SymbolExtensions
         }
 
         matchedAttribute = null;
+        return false;
+    }
+
+    public static bool TryGetAttributeImplementingInterface(this ImmutableArray<AttributeData> attributes, string[] interfaceName, [NotNullWhen(true)] out AttributeData? matchedAttribute)
+    {
+        foreach (var attributeData in attributes)
+        {
+            if (attributeData.AttributeClass is not null && attributeData.AttributeClass.Implements(interfaceName))
+            {
+                matchedAttribute = attributeData;
+                return true;
+            }
+        }
+
+        matchedAttribute = null;
+        return false;
+    }
+
+    public static bool Implements(this ITypeSymbol type, params string[] interfaceName)
+    {
+        foreach (var t in type.AllInterfaces)
+        {
+            if (t.EqualsByName(interfaceName))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static bool EqualsByName(this ITypeSymbol type, params string[] name)
+    {
+        var length = name.Length;
+        // Check that the type name matches what we expect
+        if (type.Name != name[length - 1])
+        {
+            return false;
+        }
+        // Enumerate the containing namespaces to ensure they match
+        var targetNamespace = type.ContainingNamespace;
+        for (var i = length - 2; i >= 0; i--)
+        {
+            if (targetNamespace.Name != name[i])
+            {
+                return false;
+            }
+            targetNamespace = targetNamespace.ContainingNamespace;
+        }
+        // Once all namespace parts have been enumerated
+        // we should be in the global namespace
+        if (targetNamespace.IsGlobalNamespace)
+        {
+            return true;
+        }
+
         return false;
     }
 

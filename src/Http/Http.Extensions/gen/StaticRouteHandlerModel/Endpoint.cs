@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerM
 
 internal class Endpoint
 {
-    public Endpoint(IInvocationOperation operation, WellKnownTypes wellKnownTypes, SemanticModel semanticModel)
+    public Endpoint(IInvocationOperation operation, SemanticModel semanticModel)
     {
         Operation = operation;
         Location = GetLocation(operation);
@@ -28,7 +28,7 @@ internal class Endpoint
             return;
         }
 
-        Response = new EndpointResponse(method, wellKnownTypes);
+        Response = new EndpointResponse(method);
         Response.EmitRequiredDiagnostics(Diagnostics, Operation.Syntax.GetLocation());
         IsAwaitable = Response?.IsAwaitable == true;
 
@@ -56,7 +56,7 @@ internal class Endpoint
             {
                 continue;
             }
-            var parameter = new EndpointParameter(this, parameterSymbol, wellKnownTypes);
+            var parameter = new EndpointParameter(this, parameterSymbol);
 
             switch (parameter.Source)
             {

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -23,13 +24,13 @@ internal static class InvocationOperationExtensions
         "MapFallback"
     };
 
-    public static bool IsValidOperation(this IOperation? operation, WellKnownTypes wellKnownTypes, [NotNullWhen(true)] out IInvocationOperation? invocationOperation)
+    public static bool IsValidOperation(this IOperation? operation, [NotNullWhen(true)] out IInvocationOperation? invocationOperation)
     {
         invocationOperation = null;
         if (operation is IInvocationOperation targetOperation &&
             targetOperation.TryGetRouteHandlerArgument(out var routeHandlerParameter) &&
             routeHandlerParameter is { Parameter.Type: {} delegateType } &&
-            SymbolEqualityComparer.Default.Equals(delegateType, wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_Delegate)))
+            delegateType.EqualsByName(["System", "Delegate"]))
         {
             invocationOperation = targetOperation;
             return true;

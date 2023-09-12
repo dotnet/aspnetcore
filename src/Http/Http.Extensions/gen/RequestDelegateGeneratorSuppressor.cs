@@ -56,10 +56,9 @@ public sealed class RequestDelegateGeneratorSuppressor : DiagnosticSuppressor
 
             var semanticModel = context.GetSemanticModel(sourceTree);
             var operation = semanticModel.GetOperation(node, context.CancellationToken);
-            var wellKnownTypes = WellKnownTypes.GetOrCreate(semanticModel.Compilation);
-            if (operation.IsValidOperation(wellKnownTypes, out var invocationOperation))
+            if (operation.IsValidOperation(out var invocationOperation))
             {
-                var endpoint = new Endpoint(invocationOperation, wellKnownTypes, semanticModel);
+                var endpoint = new Endpoint(invocationOperation, semanticModel);
                 if (endpoint.Diagnostics.Count == 0)
                 {
                     var targetSuppression = diagnostic.Id == SuppressRUCDiagnostic.SuppressedDiagnosticId

@@ -5,14 +5,11 @@ using System.Collections.Immutable;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
 using Microsoft.AspNetCore.Analyzers.Infrastructure;
-using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel.Emitters;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.AspNetCore.Http.RequestDelegateGenerator;
 
@@ -26,10 +23,9 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
             transform: static (context, token) =>
             {
                 var operation = context.SemanticModel.GetOperation(context.Node, token);
-                var wellKnownTypes = WellKnownTypes.GetOrCreate(context.SemanticModel.Compilation);
-                if (operation.IsValidOperation(wellKnownTypes, out var invocationOperation))
+                if (operation.IsValidOperation(out var invocationOperation))
                 {
-                    return new Endpoint(invocationOperation, wellKnownTypes, context.SemanticModel);
+                    return new Endpoint(invocationOperation, context.SemanticModel);
                 }
                 return null;
             })
