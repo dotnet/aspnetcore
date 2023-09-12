@@ -67,7 +67,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
 
             if (IsRouteParameter(routeUsage, handlerDelegateParameter))
             {
-                var parsability = ParsabilityHelper.GetParsability(parameterTypeSymbol, wellKnownTypes);
+                var parsability = ParsabilityHelper.GetParsability(parameterTypeSymbol);
 
                 if (parsability != Parsability.Parsable)
                 {
@@ -97,7 +97,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
         static bool ReportFromAttributeDiagnostic(OperationAnalysisContext context, WellKnownType fromMetadataInterfaceType, WellKnownTypes wellKnownTypes, IParameterSymbol parameter, INamedTypeSymbol parameterTypeSymbol, Location location)
         {
             var fromMetadataInterfaceTypeSymbol = wellKnownTypes.Get(fromMetadataInterfaceType);
-            var parsability = ParsabilityHelper.GetParsability(parameterTypeSymbol, wellKnownTypes);
+            var parsability = ParsabilityHelper.GetParsability(parameterTypeSymbol);
             if (parameter.HasAttributeImplementingInterface(fromMetadataInterfaceTypeSymbol) && parsability != Parsability.Parsable)
             {
                 context.ReportDiagnostic(Diagnostic.Create(

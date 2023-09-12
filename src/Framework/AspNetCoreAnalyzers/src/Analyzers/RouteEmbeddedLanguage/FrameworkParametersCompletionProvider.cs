@@ -131,7 +131,7 @@ public sealed class FrameworkParametersCompletionProvider : CompletionProvider
 
         // Don't offer route parameter names when the parameter type can't be bound to route parameters.
         // e.g. special types like HttpContext, non-primitive types that don't have a static TryParse method.
-        if (!IsCurrentParameterBindable(token, semanticModel, wellKnownTypes, context.CancellationToken))
+        if (!IsCurrentParameterBindable(token, semanticModel, context.CancellationToken))
         {
             return;
         }
@@ -383,7 +383,7 @@ public sealed class FrameworkParametersCompletionProvider : CompletionProvider
         return false;
     }
 
-    private static bool IsCurrentParameterBindable(SyntaxToken token, SemanticModel semanticModel, WellKnownTypes wellKnownTypes, CancellationToken cancellationToken)
+    private static bool IsCurrentParameterBindable(SyntaxToken token, SemanticModel semanticModel, CancellationToken cancellationToken)
     {
         if (token.Parent.IsKind(SyntaxKind.PredefinedType))
         {
@@ -393,7 +393,7 @@ public sealed class FrameworkParametersCompletionProvider : CompletionProvider
         var parameterTypeSymbol = semanticModel.GetSymbolInfo(token.Parent!, cancellationToken).GetAnySymbol();
         if (parameterTypeSymbol is INamedTypeSymbol typeSymbol)
         {
-            return ParsabilityHelper.GetParsability(typeSymbol, wellKnownTypes) == Parsability.Parsable;
+            return ParsabilityHelper.GetParsability(typeSymbol) == Parsability.Parsable;
 
         }
         else if (parameterTypeSymbol is IMethodSymbol)
