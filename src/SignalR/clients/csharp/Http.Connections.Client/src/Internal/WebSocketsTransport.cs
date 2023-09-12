@@ -372,6 +372,9 @@ internal sealed partial class WebSocketsTransport : ITransport, IStatefulReconne
 
                     // Abort the websocket if we're stuck in a pending send to the client
                     socket.Abort();
+
+                    // Should not throw
+                    await sending.ConfigureAwait(false);
                 }
             }
             else
@@ -390,26 +393,44 @@ internal sealed partial class WebSocketsTransport : ITransport, IStatefulReconne
                 {
                     _application.Output.CancelPendingFlush();
                 }
+
+                // Should not throw
+                await receiving.ConfigureAwait(false);
             }
         }
 
-        if (_useStatefulReconnect && !_gracefulClose)
+        var cleanup = true;
+        try
         {
-            if (!UpdateConnectionPair())
+            if (_useStatefulReconnect && !_gracefulClose)
             {
-                return;
-            }
+                if (!UpdateConnectionPair())
+                {
+                    return;
+                }
 
-            try
-            {
-                await StartAsync(url, _webSocketMessageType == WebSocketMessageType.Binary ? TransferFormat.Binary : TransferFormat.Text,
-                    cancellationToken: default).ConfigureAwait(false);
+                try
+                {
+                    await StartAsync(url, _webSocketMessageType == WebSocketMessageType.Binary ? TransferFormat.Binary : TransferFormat.Text,
+                        cancellationToken: default).ConfigureAwait(false);
+                    cleanup = false;
+                }
+                catch
+                {
+                    throw new InvalidOperationException("Reconnect attempt failed.");
+                }
             }
-            catch
+        }
+        finally
+        {
+            if (cleanup)
             {
+                // Pipes will usually already be completed.
+                // If stateful reconnect fails we want to make sure the Pipes are cleaned up.
+                // And in rare cases where the websocket is closing at the same time StopAsync is called
+                // It's possible a Pipe won't be completed so let's be safe and call Complete again.
                 _application.Output.Complete();
                 _application.Input.Complete();
-                throw new InvalidOperationException("Reconnect attempt failed.");
             }
         }
     }
