@@ -7,6 +7,8 @@
     <PublishAot>{PublishAot}</PublishAot>
     <MicrosoftNETCoreAppRuntimeVersion>{MicrosoftNETCoreAppRuntimeVersion}</MicrosoftNETCoreAppRuntimeVersion>
     <RepoRoot>{RepoRoot}</RepoRoot>
+    <!-- Workaround while there is no SDK available that understands the TFM; suppress unsupported version errors. -->
+    <NETCoreAppMaximumVersion>99.9</NETCoreAppMaximumVersion>
     <_ExtraTrimmerArgs>{ExtraTrimmerArgs} $(_ExtraTrimmerArgs)</_ExtraTrimmerArgs>
     {AdditionalProperties}
   </PropertyGroup>
