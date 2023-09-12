@@ -77,7 +77,7 @@ internal class EndpointResponse
             return null;
         }
 
-        return ResponseType?.SpecialType is SpecialType.System_String ? "text/plain; charset=utf-8" : "application/json";
+        return ResponseType!.SpecialType is SpecialType.System_String ? "text/plain; charset=utf-8" : "application/json";
     }
 
     public override bool Equals(object obj)
