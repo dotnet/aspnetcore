@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
     <!-- Workaround while there is no SDK available that understands the TFM; suppress unsupported version errors. -->
-    <NETCoreAppMaximumVersion>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)</NETCoreAppMaximumVersion>
+    <NETCoreAppMaximumVersion>99.9</NETCoreAppMaximumVersion>
   </PropertyGroup>
 </Project>
