@@ -120,10 +120,7 @@ public static class MvcAreaRouteBuilderExtensions
     {
         ArgumentNullException.ThrowIfNull(routeBuilder);
 
-        if (string.IsNullOrEmpty(areaName))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(areaName));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(areaName);
 
         var defaultsDictionary = new RouteValueDictionary(defaults);
         defaultsDictionary["area"] = defaultsDictionary["area"] ?? areaName;

@@ -39,10 +39,7 @@ public static class MvcRazorPagesMvcBuilderExtensions
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        if (string.IsNullOrEmpty(rootDirectory))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(rootDirectory));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(rootDirectory);
 
         if (rootDirectory[0] != '/')
         {

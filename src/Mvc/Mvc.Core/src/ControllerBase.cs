@@ -328,10 +328,7 @@ public abstract class ControllerBase
     [NonAction]
     public virtual RedirectResult Redirect([StringSyntax(StringSyntaxAttribute.Uri)] string url)
     {
-        if (string.IsNullOrEmpty(url))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(url));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(url);
 
         return new RedirectResult(url);
     }
@@ -345,10 +342,7 @@ public abstract class ControllerBase
     [NonAction]
     public virtual RedirectResult RedirectPermanent([StringSyntax(StringSyntaxAttribute.Uri)] string url)
     {
-        if (string.IsNullOrEmpty(url))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(url));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(url);
 
         return new RedirectResult(url, permanent: true);
     }
@@ -363,10 +357,7 @@ public abstract class ControllerBase
     [NonAction]
     public virtual RedirectResult RedirectPreserveMethod([StringSyntax(StringSyntaxAttribute.Uri)] string url)
     {
-        if (string.IsNullOrEmpty(url))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(url));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(url);
 
         return new RedirectResult(url: url, permanent: false, preserveMethod: true);
     }
@@ -381,10 +372,7 @@ public abstract class ControllerBase
     [NonAction]
     public virtual RedirectResult RedirectPermanentPreserveMethod([StringSyntax(StringSyntaxAttribute.Uri)] string url)
     {
-        if (string.IsNullOrEmpty(url))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(url));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(url);
 
         return new RedirectResult(url: url, permanent: true, preserveMethod: true);
     }
@@ -398,10 +386,7 @@ public abstract class ControllerBase
     [NonAction]
     public virtual LocalRedirectResult LocalRedirect([StringSyntax(StringSyntaxAttribute.Uri, UriKind.Relative)] string localUrl)
     {
-        if (string.IsNullOrEmpty(localUrl))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(localUrl));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(localUrl);
 
         return new LocalRedirectResult(localUrl);
     }
@@ -415,10 +400,7 @@ public abstract class ControllerBase
     [NonAction]
     public virtual LocalRedirectResult LocalRedirectPermanent([StringSyntax(StringSyntaxAttribute.Uri, UriKind.Relative)] string localUrl)
     {
-        if (string.IsNullOrEmpty(localUrl))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(localUrl));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(localUrl);
 
         return new LocalRedirectResult(localUrl, permanent: true);
     }
@@ -433,10 +415,7 @@ public abstract class ControllerBase
     [NonAction]
     public virtual LocalRedirectResult LocalRedirectPreserveMethod([StringSyntax(StringSyntaxAttribute.Uri, UriKind.Relative)] string localUrl)
     {
-        if (string.IsNullOrEmpty(localUrl))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(localUrl));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(localUrl);
 
         return new LocalRedirectResult(localUrl: localUrl, permanent: false, preserveMethod: true);
     }
@@ -451,10 +430,7 @@ public abstract class ControllerBase
     [NonAction]
     public virtual LocalRedirectResult LocalRedirectPermanentPreserveMethod([StringSyntax(StringSyntaxAttribute.Uri, UriKind.Relative)] string localUrl)
     {
-        if (string.IsNullOrEmpty(localUrl))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(localUrl));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(localUrl);
 
         return new LocalRedirectResult(localUrl: localUrl, permanent: true, preserveMethod: true);
     }

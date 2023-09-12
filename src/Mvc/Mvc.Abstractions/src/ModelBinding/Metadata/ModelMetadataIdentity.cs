@@ -53,10 +53,7 @@ public readonly struct ModelMetadataIdentity : IEquatable<ModelMetadataIdentity>
         ArgumentNullException.ThrowIfNull(modelType);
         ArgumentNullException.ThrowIfNull(containerType);
 
-        if (string.IsNullOrEmpty(name))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(name));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(name);
 
         return new ModelMetadataIdentity(modelType, name, containerType);
     }

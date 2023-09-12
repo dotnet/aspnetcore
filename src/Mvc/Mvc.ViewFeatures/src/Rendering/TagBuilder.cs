@@ -28,10 +28,7 @@ public class TagBuilder : IHtmlContent
     /// <param name="tagName">An HTML tag name.</param>
     public TagBuilder(string tagName)
     {
-        if (string.IsNullOrEmpty(tagName))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(tagName));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(tagName);
 
         TagName = tagName;
     }
@@ -42,10 +39,7 @@ public class TagBuilder : IHtmlContent
     /// <param name="tagBuilder">Tag to copy.</param>
     public TagBuilder(TagBuilder tagBuilder)
     {
-        if (tagBuilder == null)
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(tagBuilder));
-        }
+        ArgumentException.ThrowIfNull(tagBuilder);
 
         if (tagBuilder._attributes != null)
         {

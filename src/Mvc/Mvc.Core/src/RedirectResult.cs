@@ -48,12 +48,7 @@ public class RedirectResult : ActionResult, IKeepTempDataResult
     /// <param name="preserveMethod">If set to true, make the temporary redirect (307) or permanent redirect (308) preserve the initial request method.</param>
     public RedirectResult([StringSyntax(StringSyntaxAttribute.Uri)] string url, bool permanent, bool preserveMethod)
     {
-        ArgumentNullException.ThrowIfNull(url);
-
-        if (string.IsNullOrEmpty(url))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(url));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(url);
 
         Permanent = permanent;
         PreserveMethod = preserveMethod;
@@ -79,10 +74,7 @@ public class RedirectResult : ActionResult, IKeepTempDataResult
         [MemberNotNull(nameof(_url))]
         set
         {
-            if (string.IsNullOrEmpty(value))
-            {
-                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(value));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(value);
 
             _url = value;
         }

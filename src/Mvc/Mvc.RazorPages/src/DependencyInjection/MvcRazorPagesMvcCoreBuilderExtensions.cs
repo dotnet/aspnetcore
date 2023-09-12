@@ -71,10 +71,7 @@ public static class MvcRazorPagesMvcCoreBuilderExtensions
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        if (string.IsNullOrEmpty(rootDirectory))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(rootDirectory));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(rootDirectory);
 
         builder.Services.Configure<RazorPagesOptions>(options => options.RootDirectory = rootDirectory);
         return builder;

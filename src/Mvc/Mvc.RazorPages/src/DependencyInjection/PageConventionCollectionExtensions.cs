@@ -73,10 +73,7 @@ public static class PageConventionCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(conventions);
 
-        if (string.IsNullOrEmpty(pageName))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(pageName));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(pageName);
 
         conventions.AddPageApplicationModelConvention(pageName, model =>
         {
@@ -112,15 +109,9 @@ public static class PageConventionCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(conventions);
 
-        if (string.IsNullOrEmpty(areaName))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(areaName));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(areaName);
 
-        if (string.IsNullOrEmpty(pageName))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(pageName));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(pageName);
 
         conventions.AddAreaPageApplicationModelConvention(areaName, pageName, model =>
         {
@@ -146,10 +137,7 @@ public static class PageConventionCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(conventions);
 
-        if (string.IsNullOrEmpty(folderPath))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(folderPath));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(folderPath);
 
         conventions.AddFolderApplicationModelConvention(folderPath, model =>
         {
@@ -185,15 +173,9 @@ public static class PageConventionCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(conventions);
 
-        if (string.IsNullOrEmpty(areaName))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(areaName));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(areaName);
 
-        if (string.IsNullOrEmpty(folderPath))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(folderPath));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(folderPath);
 
         conventions.AddAreaFolderApplicationModelConvention(areaName, folderPath, model =>
         {
@@ -220,10 +202,7 @@ public static class PageConventionCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(conventions);
 
-        if (string.IsNullOrEmpty(pageName))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(pageName));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(pageName);
 
         conventions.AddPageApplicationModelConvention(pageName, model =>
         {
@@ -286,15 +265,9 @@ public static class PageConventionCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(conventions);
 
-        if (string.IsNullOrEmpty(areaName))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(areaName));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(areaName);
 
-        if (string.IsNullOrEmpty(pageName))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(pageName));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(pageName);
 
         conventions.AddAreaPageApplicationModelConvention(areaName, pageName, model =>
         {
@@ -321,10 +294,7 @@ public static class PageConventionCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(conventions);
 
-        if (string.IsNullOrEmpty(folderPath))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(folderPath));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(folderPath);
 
         conventions.AddFolderApplicationModelConvention(folderPath, model =>
         {
@@ -387,15 +357,9 @@ public static class PageConventionCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(conventions);
 
-        if (string.IsNullOrEmpty(areaName))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(areaName));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(areaName);
 
-        if (string.IsNullOrEmpty(folderPath))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(folderPath));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(folderPath);
 
         conventions.AddAreaFolderApplicationModelConvention(areaName, folderPath, model =>
         {
@@ -426,10 +390,7 @@ public static class PageConventionCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(conventions);
 
-        if (string.IsNullOrEmpty(pageName))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(pageName));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(pageName);
 
         ArgumentNullException.ThrowIfNull(route);
 
@@ -465,15 +426,9 @@ public static class PageConventionCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(conventions);
 
-        if (string.IsNullOrEmpty(areaName))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(areaName));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(areaName);
 
-        if (string.IsNullOrEmpty(pageName))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(pageName));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(pageName);
 
         ArgumentNullException.ThrowIfNull(route);
 
