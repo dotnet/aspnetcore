@@ -5,6 +5,8 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Logging;
+using Windows.Win32;
+using Windows.Win32.Networking.HttpServer;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
@@ -42,7 +44,7 @@ internal sealed partial class RequestQueue
         }
 
         var statusCode = HttpApi.HttpCreateRequestQueue(
-                HttpApi.Version,
+                HttpApi.OldVersion,
                 requestQueueName,
                 IntPtr.Zero,
                 flags,
@@ -54,7 +56,7 @@ internal sealed partial class RequestQueue
             Created = false;
             flags = HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.OpenExisting;
             statusCode = HttpApi.HttpCreateRequestQueue(
-                    HttpApi.Version,
+                    HttpApi.OldVersion,
                     requestQueueName,
                     IntPtr.Zero,
                     flags,
@@ -108,9 +110,9 @@ internal sealed partial class RequestQueue
         Debug.Assert(Created);
         CheckDisposed();
 
-        var result = HttpApi.HttpSetRequestQueueProperty(Handle,
-            HttpApiTypes.HTTP_SERVER_PROPERTY.HttpServerQueueLengthProperty,
-            new IntPtr((void*)&length), (uint)Marshal.SizeOf<long>(), 0, IntPtr.Zero);
+        var result = PInvoke.HttpSetRequestQueueProperty(Handle,
+            HTTP_SERVER_PROPERTY.HttpServerQueueLengthProperty,
+            &length, (uint)Marshal.SizeOf<long>());
 
         if (result != 0)
         {
@@ -124,9 +126,9 @@ internal sealed partial class RequestQueue
         Debug.Assert(Created);
         CheckDisposed();
 
-        var result = HttpApi.HttpSetRequestQueueProperty(Handle,
-            HttpApiTypes.HTTP_SERVER_PROPERTY.HttpServer503VerbosityProperty,
-            new IntPtr((void*)&verbosity), (uint)Marshal.SizeOf<long>(), 0, IntPtr.Zero);
+        var result = PInvoke.HttpSetRequestQueueProperty(Handle,
+            HTTP_SERVER_PROPERTY.HttpServer503VerbosityProperty,
+            &verbosity, (uint)Marshal.SizeOf<long>());
 
         if (result != 0)
         {

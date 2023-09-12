@@ -3,6 +3,8 @@
 
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Win32.SafeHandles;
+using Windows.Win32;
+using Windows.Win32.Foundation;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
@@ -16,7 +18,7 @@ internal sealed class HttpRequestQueueV2Handle : SafeHandleZeroOrMinusOneIsInval
 
     protected override bool ReleaseHandle()
     {
-        return (HttpApi.HttpCloseRequestQueue(handle) ==
-                    UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS);
+        return PInvoke.HttpCloseRequestQueue((HANDLE)handle) ==
+                    UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS;
     }
 }

@@ -4,6 +4,7 @@
 using System.Buffers;
 using System.Diagnostics;
 using Microsoft.AspNetCore.HttpSys.Internal;
+using Windows.Win32.Networking.HttpServer;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core.IO;
 
@@ -109,7 +110,7 @@ internal abstract class AsyncWriteOperationBase : AsyncIOOperation
             ref var chunk = ref pDataChunks[currentChunk];
             handle = readOnlyMemory.Pin();
 
-            chunk.DataChunkType = HttpApiTypes.HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromMemory;
+            chunk.DataChunkType = HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromMemory;
             chunk.fromMemory.BufferLength = (uint)readOnlyMemory.Length;
             chunk.fromMemory.pBuffer = (IntPtr)handle.Pointer;
 

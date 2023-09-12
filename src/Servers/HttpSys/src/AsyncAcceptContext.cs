@@ -39,7 +39,7 @@ internal sealed unsafe class AsyncAcceptContext : IValueTaskSource<RequestContex
 
         AllocateNativeRequest();
 
-        uint statusCode = QueueBeginGetContext();
+        var statusCode = QueueBeginGetContext();
         if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS &&
             statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_IO_PENDING)
         {
@@ -79,7 +79,7 @@ internal sealed unsafe class AsyncAcceptContext : IValueTaskSource<RequestContex
                 AllocateNativeRequest(numBytes, _requestContext.RequestId);
 
                 // We need to issue a new request, either because auth failed, or because our buffer was too small the first time.
-                uint statusCode = QueueBeginGetContext();
+                var statusCode = QueueBeginGetContext();
 
                 if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS &&
                     statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_IO_PENDING)
@@ -118,7 +118,7 @@ internal sealed unsafe class AsyncAcceptContext : IValueTaskSource<RequestContex
                 // Small perf impact by not using HTTP_RECEIVE_REQUEST_FLAG_COPY_BODY
                 // if the request sends header+body in a single TCP packet
                 (uint)HttpApiTypes.HTTP_FLAGS.NONE,
-                _requestContext.NativeRequest,
+                _requestContext.NativeRequestV0,
                 _requestContext.Size,
                 &bytesTransferred,
                 _overlapped);

@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
+using Windows.Win32.Networking.HttpServer;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
@@ -97,7 +98,7 @@ public sealed class AuthenticationManager
             IntPtr infoptr = new IntPtr(&authInfo);
 
             _urlGroup.SetProperty(
-                HttpApiTypes.HTTP_SERVER_PROPERTY.HttpServerAuthenticationProperty,
+                HTTP_SERVER_PROPERTY.HttpServerAuthenticationProperty,
                 infoptr, (uint)AuthInfoSize);
         }
     }

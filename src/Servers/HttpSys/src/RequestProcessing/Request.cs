@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
+using Windows.Win32.Networking.HttpServer;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
@@ -61,12 +62,12 @@ internal sealed partial class Request
         var prefix = requestContext.Server.Options.UrlPrefixes.GetPrefix((int)requestContext.UrlContext);
 
         // 'OPTIONS * HTTP/1.1'
-        if (KnownMethod == HttpApiTypes.HTTP_VERB.HttpVerbOPTIONS && string.Equals(RawUrl, "*", StringComparison.Ordinal))
+        if (KnownMethod == HTTP_VERB.HttpVerbOPTIONS && string.Equals(RawUrl, "*", StringComparison.Ordinal))
         {
             PathBase = string.Empty;
             Path = string.Empty;
         }
-        // Prefix may be null if the requested has been transfered to our queue
+        // Prefix may be null if the requested has been transferred to our queue
         else if (prefix is not null)
         {
             var pathBase = prefix.PathWithoutTrailingSlash;
@@ -230,9 +231,9 @@ internal sealed partial class Request
 
     public RequestHeaders Headers { get; }
 
-    internal HttpApiTypes.HTTP_VERB KnownMethod { get; }
+    internal HTTP_VERB KnownMethod { get; }
 
-    internal bool IsHeadMethod => KnownMethod == HttpApiTypes.HTTP_VERB.HttpVerbHEAD;
+    internal bool IsHeadMethod => KnownMethod == HTTP_VERB.HttpVerbHEAD;
 
     public string Method { get; }
 

@@ -1,16 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Runtime.InteropServices;
 using System.Security;
-using System.Security.Authentication.ExtendedProtection;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.HttpSys.Internal;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
@@ -20,8 +17,6 @@ internal sealed unsafe partial class ClientCertLoader : IAsyncResult, IDisposabl
 {
     private const uint CertBoblSize = 1500;
     private static readonly IOCompletionCallback IOCallback = new IOCompletionCallback(WaitCallback);
-    private static readonly int RequestChannelBindStatusSize =
-        Marshal.SizeOf<HttpApiTypes.HTTP_REQUEST_CHANNEL_BIND_STATUS>();
 
     private SafeNativeOverlapped? _overlapped;
     private byte[]? _backingBuffer;
@@ -346,84 +341,5 @@ internal sealed unsafe partial class ClientCertLoader : IAsyncResult, IDisposabl
     public bool IsCompleted
     {
         get { return _tcs.Task.IsCompleted; }
-    }
-
-    internal static unsafe ChannelBinding? GetChannelBindingFromTls(RequestQueue requestQueue, ulong connectionId, ILogger logger)
-    {
-        // +128 since a CBT is usually <128 thus we need to call HRCC just once. If the CBT
-        // is >128 we will get ERROR_MORE_DATA and call again
-        int size = RequestChannelBindStatusSize + 128;
-
-        Debug.Assert(size >= 0);
-
-        byte[]? blob = null;
-        SafeLocalFreeChannelBinding? token = null;
-
-        uint bytesReceived = 0;
-        uint statusCode;
-
-        do
-        {
-            blob = new byte[size];
-            fixed (byte* blobPtr = blob)
-            {
-                // Http.sys team: ServiceName will always be null if
-                // HTTP_RECEIVE_SECURE_CHANNEL_TOKEN flag is set.
-                statusCode = HttpApi.HttpReceiveClientCertificate(
-                    requestQueue.Handle,
-                    connectionId,
-                    (uint)HttpApiTypes.HTTP_FLAGS.HTTP_RECEIVE_SECURE_CHANNEL_TOKEN,
-                    blobPtr,
-                    (uint)size,
-                    &bytesReceived,
-                    SafeNativeOverlapped.Zero);
-
-                if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
-                {
-                    int tokenOffset = GetTokenOffsetFromBlob((IntPtr)blobPtr);
-                    int tokenSize = GetTokenSizeFromBlob((IntPtr)blobPtr);
-                    Debug.Assert(tokenSize < Int32.MaxValue);
-
-                    token = SafeLocalFreeChannelBinding.LocalAlloc(tokenSize);
-
-                    Marshal.Copy(blob, tokenOffset, token.DangerousGetHandle(), tokenSize);
-                }
-                else if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_MORE_DATA)
-                {
-                    int tokenSize = GetTokenSizeFromBlob((IntPtr)blobPtr);
-                    Debug.Assert(tokenSize < Int32.MaxValue);
-
-                    size = RequestChannelBindStatusSize + tokenSize;
-                }
-                else if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_INVALID_PARAMETER)
-                {
-                    Log.ChannelBindingUnsupported(logger);
-                    return null; // old schannel library which doesn't support CBT
-                }
-                else
-                {
-                    // It's up to the consumer to fail if the missing ChannelBinding matters to them.
-                    Log.ChannelBindingMissing(logger, new HttpSysException((int)statusCode));
-                    break;
-                }
-            }
-        }
-        while (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS);
-
-        return token;
-    }
-
-    private static int GetTokenOffsetFromBlob(IntPtr blob)
-    {
-        Debug.Assert(blob != IntPtr.Zero);
-        IntPtr tokenPointer = Marshal.ReadIntPtr(blob, (int)Marshal.OffsetOf<HttpApiTypes.HTTP_REQUEST_CHANNEL_BIND_STATUS>("ChannelToken"));
-        Debug.Assert(tokenPointer != IntPtr.Zero);
-        return (int)IntPtrHelper.Subtract(tokenPointer, blob);
-    }
-
-    private static int GetTokenSizeFromBlob(IntPtr blob)
-    {
-        Debug.Assert(blob != IntPtr.Zero);
-        return Marshal.ReadInt32(blob, (int)Marshal.OffsetOf<HttpApiTypes.HTTP_REQUEST_CHANNEL_BIND_STATUS>("ChannelTokenSize"));
     }
 }

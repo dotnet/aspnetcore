@@ -241,7 +241,7 @@ public class ServerOnExistingQueueTests
         // Create a queue without a UrlGroup or any UrlPrefixes
         HttpRequestQueueV2Handle requestQueueHandle = null;
         var statusCode = HttpApi.HttpCreateRequestQueue(
-                HttpApi.Version,
+                HttpApi.OldVersion,
                 queueName,
                 IntPtr.Zero,
                 0,

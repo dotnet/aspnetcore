@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Logging;
+using Windows.Win32.Networking.HttpServer;
 using static Microsoft.AspNetCore.HttpSys.Internal.UnsafeNclNativeMethods;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
@@ -295,7 +296,7 @@ internal sealed partial class ResponseBody : Stream
         ReadOnlySpan<byte> bytes)
     {
         ref var chunk = ref chunks[chunkIndex++];
-        chunk.DataChunkType = HttpApiTypes.HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromMemory;
+        chunk.DataChunkType = HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromMemory;
         fixed (byte* ptr = bytes)
         {
             chunk.fromMemory.pBuffer = (IntPtr)ptr;

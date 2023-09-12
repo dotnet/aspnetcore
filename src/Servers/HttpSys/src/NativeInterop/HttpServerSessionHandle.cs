@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Win32.SafeHandles;
+using Windows.Win32;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
@@ -34,8 +35,8 @@ internal sealed class HttpServerSessionHandle : CriticalHandleZeroOrMinusOneIsIn
             if (Interlocked.Increment(ref disposed) == 1)
             {
                 // Closing server session also closes all open url groups under that server session.
-                return (HttpApi.HttpCloseServerSession(serverSessionId) ==
-                    UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS);
+                return PInvoke.HttpCloseServerSession(serverSessionId) ==
+                    UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS;
             }
         }
         return true;

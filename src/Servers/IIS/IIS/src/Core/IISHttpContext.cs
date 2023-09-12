@@ -21,6 +21,7 @@ using Microsoft.AspNetCore.Server.IIS.Core.IO;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
+using Windows.Win32.Networking.HttpServer;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core;
 
@@ -77,7 +78,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
         IISHttpServer server,
         ILogger logger,
         bool useLatin1)
-        : base((HttpApiTypes.HTTP_REQUEST*)NativeMethods.HttpGetRawRequest(pInProcessHandler), useLatin1: useLatin1)
+        : base((HTTP_REQUEST_V1*)NativeMethods.HttpGetRawRequest(pInProcessHandler), useLatin1: useLatin1)
     {
         _memoryPool = memoryPool;
         _requestNativeHandle = pInProcessHandler;
@@ -89,7 +90,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
     }
 
     private int PauseWriterThreshold => _options.MaxRequestBodyBufferSize;
-    private int ResumeWriterTheshold => PauseWriterThreshold / 2;
+    private int ResumeWriterThreshold => PauseWriterThreshold / 2;
     private bool IsHttps => SslStatus != SslStatus.Insecure;
 
     public Version HttpVersion { get; set; } = default!;
@@ -133,7 +134,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
     private HeaderCollection HttpResponseTrailers => _trailers ??= new HeaderCollection(checkTrailers: true);
     internal bool HasTrailers => _trailers?.Count > 0;
 
-    internal HttpApiTypes.HTTP_VERB KnownMethod { get; private set; }
+    internal HTTP_VERB KnownMethod { get; private set; }
 
     private bool HasStartedConsumingRequestBody { get; set; }
     public long? MaxRequestBodySize { get; set; }
@@ -142,7 +143,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
     {
         // create a memory barrier between initialize and disconnect to prevent a possible
         // NullRef with disconnect being called before these fields have been written
-        // disconnect aquires this lock as well
+        // disconnect acquires this lock as well
         lock (_abortLock)
         {
             _thisHandle = GCHandle.Alloc(this);
@@ -163,7 +164,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
                 pathBase = pathBase[..^1];
             }
 
-            if (KnownMethod == HttpApiTypes.HTTP_VERB.HttpVerbOPTIONS && string.Equals(RawTarget, "*", StringComparison.Ordinal))
+            if (KnownMethod == HTTP_VERB.HttpVerbOPTIONS && string.Equals(RawTarget, "*", StringComparison.Ordinal))
             {
                 PathBase = string.Empty;
                 Path = string.Empty;
@@ -301,7 +302,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
                 // schedules app code when backpressure is relieved which may block.
                 readerScheduler: PipeScheduler.Inline,
                 pauseWriterThreshold: PauseWriterThreshold,
-                resumeWriterThreshold: ResumeWriterTheshold,
+                resumeWriterThreshold: ResumeWriterThreshold,
                 minimumSegmentSize: MinAllocBufferSize));
             _bodyOutput = new OutputProducer(pipe);
         }

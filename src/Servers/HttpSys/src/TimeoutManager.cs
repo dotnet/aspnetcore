@@ -3,6 +3,7 @@
 
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.HttpSys.Internal;
+using Windows.Win32.Networking.HttpServer;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
@@ -226,7 +227,7 @@ public sealed class TimeoutManager
         var infoptr = new IntPtr(&timeoutinfo);
 
         _urlGroup.SetProperty(
-            HttpApiTypes.HTTP_SERVER_PROPERTY.HttpServerTimeoutsProperty,
+            HTTP_SERVER_PROPERTY.HttpServerTimeoutsProperty,
             infoptr, (uint)TimeoutLimitSize);
     }
 

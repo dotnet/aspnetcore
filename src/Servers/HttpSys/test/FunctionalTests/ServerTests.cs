@@ -47,7 +47,7 @@ public class ServerTests
         // First create the queue.
         HttpRequestQueueV2Handle requestQueueHandle = null;
         var statusCode = HttpApi.HttpCreateRequestQueue(
-                HttpApi.Version,
+                HttpApi.OldVersion,
                 queueName,
                 IntPtr.Zero,
                 0,

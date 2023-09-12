@@ -2,65 +2,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Security.Authentication;
-using Microsoft.AspNetCore.Http;
+using Windows.Win32.Networking.HttpServer;
 
 namespace Microsoft.AspNetCore.HttpSys.Internal;
 #pragma warning disable IDE0044 // Add readonly modifier. We don't want to modify these interop types
 
 internal static unsafe class HttpApiTypes
 {
-    internal enum HTTP_API_VERSION
-    {
-        Invalid,
-        Version10,
-        Version20,
-    }
-
-    // see http.w for definitions
-    internal enum HTTP_SERVER_PROPERTY
-    {
-        HttpServerAuthenticationProperty,
-        HttpServerLoggingProperty,
-        HttpServerQosProperty,
-        HttpServerTimeoutsProperty,
-        HttpServerQueueLengthProperty,
-        HttpServerStateProperty,
-        HttpServer503VerbosityProperty,
-        HttpServerBindingProperty,
-        HttpServerExtendedAuthenticationProperty,
-        HttpServerListenEndpointProperty,
-        HttpServerChannelBindProperty,
-        HttpServerProtectionLevelProperty,
-        HttpServerDelegationProperty = 16
-    }
-
-    // Currently only one request info type is supported but the enum is for future extensibility.
-
-    internal enum HTTP_REQUEST_INFO_TYPE
-    {
-        HttpRequestInfoTypeAuth,
-        HttpRequestInfoTypeChannelBind,
-        HttpRequestInfoTypeSslProtocol,
-        HttpRequestInfoTypeSslTokenBindingDraft,
-        HttpRequestInfoTypeSslTokenBinding,
-        HttpRequestInfoTypeRequestTiming,
-        HttpRequestInfoTypeTcpInfoV0,
-        HttpRequestInfoTypeRequestSizing,
-        HttpRequestInfoTypeQuicStats,
-        HttpRequestInfoTypeTcpInfoV1,
-    }
-
-    internal enum HTTP_RESPONSE_INFO_TYPE
-    {
-        HttpResponseInfoTypeMultipleKnownHeaders,
-        HttpResponseInfoTypeAuthenticationProperty,
-        HttpResponseInfoTypeQosProperty,
-    }
-
     internal enum HTTP_REQUEST_PROPERTY
     {
         HttpRequestPropertyIsb,
@@ -79,28 +29,6 @@ internal static unsafe class HttpApiTypes
         IdleConnection,
         HeaderWait,
         MinSendRate,
-    }
-
-    internal enum HTTP_DELEGATE_REQUEST_PROPERTY_ID : uint
-    {
-        DelegateRequestReservedProperty,
-        DelegateRequestDelegateUrlProperty
-    }
-
-    internal enum HTTP_FEATURE_ID
-    {
-        HttpFeatureUnknown,
-        HttpFeatureResponseTrailers,
-        HttpFeatureApiTimings,
-        HttpFeatureDelegateEx,
-    }
-
-    [StructLayout(LayoutKind.Sequential, Pack = 4)]
-    internal struct HTTP_DELEGATE_REQUEST_PROPERTY_INFO
-    {
-        internal HTTP_DELEGATE_REQUEST_PROPERTY_ID PropertyId;
-        internal uint PropertyInfoLength;
-        internal IntPtr PropertyInfo;
     }
 
     internal struct HTTP_REQUEST_PROPERTY_STREAM_ERROR
@@ -128,22 +56,6 @@ internal static unsafe class HttpApiTypes
         HTTP_REQUEST_PROPERTY_SNI_FLAG_SNI_USED = 0x00000001,
         // Indicates that client did not send the SNI.
         HTTP_REQUEST_PROPERTY_SNI_FLAG_NO_SNI = 0x00000002,
-    }
-
-    internal const int MaxTimeout = 6;
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct HTTP_VERSION
-    {
-        internal ushort MajorVersion;
-        internal ushort MinorVersion;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct HTTP_KNOWN_HEADER
-    {
-        internal ushort RawValueLength;
-        internal byte* pRawValue;
     }
 
     [StructLayout(LayoutKind.Explicit)]
@@ -192,59 +104,12 @@ internal static unsafe class HttpApiTypes
         internal ushort HttpApiMinorVersion;
     }
 
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct HTTP_COOKED_URL
-    {
-        internal ushort FullUrlLength;
-        internal ushort HostLength;
-        internal ushort AbsPathLength;
-        internal ushort QueryStringLength;
-        internal ushort* pFullUrl;
-        internal ushort* pHost;
-        internal ushort* pAbsPath;
-        internal ushort* pQueryString;
-    }
-
     // Only cache unauthorized GETs + HEADs.
     [StructLayout(LayoutKind.Sequential)]
     internal struct HTTP_CACHE_POLICY
     {
         internal HTTP_CACHE_POLICY_TYPE Policy;
         internal uint SecondsToLive;
-    }
-
-    internal enum HTTP_CACHE_POLICY_TYPE : int
-    {
-        HttpCachePolicyNocache = 0,
-        HttpCachePolicyUserInvalidates = 1,
-        HttpCachePolicyTimeToLive = 2,
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct SOCKADDR
-    {
-        internal ushort sa_family;
-        internal byte sa_data;
-        internal byte sa_data_02;
-        internal byte sa_data_03;
-        internal byte sa_data_04;
-        internal byte sa_data_05;
-        internal byte sa_data_06;
-        internal byte sa_data_07;
-        internal byte sa_data_08;
-        internal byte sa_data_09;
-        internal byte sa_data_10;
-        internal byte sa_data_11;
-        internal byte sa_data_12;
-        internal byte sa_data_13;
-        internal byte sa_data_14;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct HTTP_TRANSPORT_ADDRESS
-    {
-        internal SOCKADDR* pRemoteAddress;
-        internal SOCKADDR* pLocalAddress;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -255,206 +120,6 @@ internal static unsafe class HttpApiTypes
         internal byte* pCertEncoded;
         internal void* Token;
         internal byte CertDeniedByMapper;
-    }
-
-    internal enum HTTP_SERVICE_BINDING_TYPE : uint
-    {
-        HttpServiceBindingTypeNone = 0,
-        HttpServiceBindingTypeW,
-        HttpServiceBindingTypeA
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct HTTP_SERVICE_BINDING_BASE
-    {
-        internal HTTP_SERVICE_BINDING_TYPE Type;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct HTTP_REQUEST_CHANNEL_BIND_STATUS
-    {
-        internal IntPtr ServiceName;
-        internal IntPtr ChannelToken;
-        internal uint ChannelTokenSize;
-        internal uint Flags;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct HTTP_UNKNOWN_HEADER
-    {
-        internal ushort NameLength;
-        internal ushort RawValueLength;
-        internal byte* pName;
-        internal byte* pRawValue;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct HTTP_SSL_INFO
-    {
-        internal ushort ServerCertKeySize;
-        internal ushort ConnectionKeySize;
-        internal uint ServerCertIssuerSize;
-        internal uint ServerCertSubjectSize;
-        internal byte* pServerCertIssuer;
-        internal byte* pServerCertSubject;
-        internal HTTP_SSL_CLIENT_CERT_INFO* pClientCertInfo;
-        internal uint SslClientCertNegotiated;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct HTTP_RESPONSE_HEADERS
-    {
-        internal ushort UnknownHeaderCount;
-        internal HTTP_UNKNOWN_HEADER* pUnknownHeaders;
-        internal ushort TrailerCount;
-        internal HTTP_UNKNOWN_HEADER* pTrailers;
-        internal HTTP_KNOWN_HEADER KnownHeaders;
-        internal HTTP_KNOWN_HEADER KnownHeaders_02;
-        internal HTTP_KNOWN_HEADER KnownHeaders_03;
-        internal HTTP_KNOWN_HEADER KnownHeaders_04;
-        internal HTTP_KNOWN_HEADER KnownHeaders_05;
-        internal HTTP_KNOWN_HEADER KnownHeaders_06;
-        internal HTTP_KNOWN_HEADER KnownHeaders_07;
-        internal HTTP_KNOWN_HEADER KnownHeaders_08;
-        internal HTTP_KNOWN_HEADER KnownHeaders_09;
-        internal HTTP_KNOWN_HEADER KnownHeaders_10;
-        internal HTTP_KNOWN_HEADER KnownHeaders_11;
-        internal HTTP_KNOWN_HEADER KnownHeaders_12;
-        internal HTTP_KNOWN_HEADER KnownHeaders_13;
-        internal HTTP_KNOWN_HEADER KnownHeaders_14;
-        internal HTTP_KNOWN_HEADER KnownHeaders_15;
-        internal HTTP_KNOWN_HEADER KnownHeaders_16;
-        internal HTTP_KNOWN_HEADER KnownHeaders_17;
-        internal HTTP_KNOWN_HEADER KnownHeaders_18;
-        internal HTTP_KNOWN_HEADER KnownHeaders_19;
-        internal HTTP_KNOWN_HEADER KnownHeaders_20;
-        internal HTTP_KNOWN_HEADER KnownHeaders_21;
-        internal HTTP_KNOWN_HEADER KnownHeaders_22;
-        internal HTTP_KNOWN_HEADER KnownHeaders_23;
-        internal HTTP_KNOWN_HEADER KnownHeaders_24;
-        internal HTTP_KNOWN_HEADER KnownHeaders_25;
-        internal HTTP_KNOWN_HEADER KnownHeaders_26;
-        internal HTTP_KNOWN_HEADER KnownHeaders_27;
-        internal HTTP_KNOWN_HEADER KnownHeaders_28;
-        internal HTTP_KNOWN_HEADER KnownHeaders_29;
-        internal HTTP_KNOWN_HEADER KnownHeaders_30;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct HTTP_REQUEST_HEADERS
-    {
-        internal ushort UnknownHeaderCount;
-        internal HTTP_UNKNOWN_HEADER* pUnknownHeaders;
-        internal ushort TrailerCount;
-        internal HTTP_UNKNOWN_HEADER* pTrailers;
-        internal HTTP_KNOWN_HEADER KnownHeaders;
-        internal HTTP_KNOWN_HEADER KnownHeaders_02;
-        internal HTTP_KNOWN_HEADER KnownHeaders_03;
-        internal HTTP_KNOWN_HEADER KnownHeaders_04;
-        internal HTTP_KNOWN_HEADER KnownHeaders_05;
-        internal HTTP_KNOWN_HEADER KnownHeaders_06;
-        internal HTTP_KNOWN_HEADER KnownHeaders_07;
-        internal HTTP_KNOWN_HEADER KnownHeaders_08;
-        internal HTTP_KNOWN_HEADER KnownHeaders_09;
-        internal HTTP_KNOWN_HEADER KnownHeaders_10;
-        internal HTTP_KNOWN_HEADER KnownHeaders_11;
-        internal HTTP_KNOWN_HEADER KnownHeaders_12;
-        internal HTTP_KNOWN_HEADER KnownHeaders_13;
-        internal HTTP_KNOWN_HEADER KnownHeaders_14;
-        internal HTTP_KNOWN_HEADER KnownHeaders_15;
-        internal HTTP_KNOWN_HEADER KnownHeaders_16;
-        internal HTTP_KNOWN_HEADER KnownHeaders_17;
-        internal HTTP_KNOWN_HEADER KnownHeaders_18;
-        internal HTTP_KNOWN_HEADER KnownHeaders_19;
-        internal HTTP_KNOWN_HEADER KnownHeaders_20;
-        internal HTTP_KNOWN_HEADER KnownHeaders_21;
-        internal HTTP_KNOWN_HEADER KnownHeaders_22;
-        internal HTTP_KNOWN_HEADER KnownHeaders_23;
-        internal HTTP_KNOWN_HEADER KnownHeaders_24;
-        internal HTTP_KNOWN_HEADER KnownHeaders_25;
-        internal HTTP_KNOWN_HEADER KnownHeaders_26;
-        internal HTTP_KNOWN_HEADER KnownHeaders_27;
-        internal HTTP_KNOWN_HEADER KnownHeaders_28;
-        internal HTTP_KNOWN_HEADER KnownHeaders_29;
-        internal HTTP_KNOWN_HEADER KnownHeaders_30;
-        internal HTTP_KNOWN_HEADER KnownHeaders_31;
-        internal HTTP_KNOWN_HEADER KnownHeaders_32;
-        internal HTTP_KNOWN_HEADER KnownHeaders_33;
-        internal HTTP_KNOWN_HEADER KnownHeaders_34;
-        internal HTTP_KNOWN_HEADER KnownHeaders_35;
-        internal HTTP_KNOWN_HEADER KnownHeaders_36;
-        internal HTTP_KNOWN_HEADER KnownHeaders_37;
-        internal HTTP_KNOWN_HEADER KnownHeaders_38;
-        internal HTTP_KNOWN_HEADER KnownHeaders_39;
-        internal HTTP_KNOWN_HEADER KnownHeaders_40;
-        internal HTTP_KNOWN_HEADER KnownHeaders_41;
-    }
-
-    internal enum HTTP_VERB : int
-    {
-        HttpVerbUnparsed = 0,
-        HttpVerbUnknown = 1,
-        HttpVerbInvalid = 2,
-        HttpVerbOPTIONS = 3,
-        HttpVerbGET = 4,
-        HttpVerbHEAD = 5,
-        HttpVerbPOST = 6,
-        HttpVerbPUT = 7,
-        HttpVerbDELETE = 8,
-        HttpVerbTRACE = 9,
-        HttpVerbCONNECT = 10,
-        HttpVerbTRACK = 11,
-        HttpVerbMOVE = 12,
-        HttpVerbCOPY = 13,
-        HttpVerbPROPFIND = 14,
-        HttpVerbPROPPATCH = 15,
-        HttpVerbMKCOL = 16,
-        HttpVerbLOCK = 17,
-        HttpVerbUNLOCK = 18,
-        HttpVerbSEARCH = 19,
-        HttpVerbMaximum = 20,
-    }
-
-    internal static readonly string?[] HttpVerbs = new string?[]
-    {
-                null,
-                "Unknown",
-                "Invalid",
-                HttpMethods.Options,
-                HttpMethods.Get,
-                HttpMethods.Head,
-                HttpMethods.Post,
-                HttpMethods.Put,
-                HttpMethods.Delete,
-                HttpMethods.Trace,
-                HttpMethods.Connect,
-                "TRACK",
-                "MOVE",
-                "COPY",
-                "PROPFIND",
-                "PROPPATCH",
-                "MKCOL",
-                "LOCK",
-                "UNLOCK",
-                "SEARCH",
-    };
-
-    internal enum HTTP_DATA_CHUNK_TYPE : int
-    {
-        HttpDataChunkFromMemory,
-        HttpDataChunkFromFileHandle,
-        HttpDataChunkFromFragmentCache,
-        HttpDataChunkFromFragmentCacheEx,
-        HttpDataChunkTrailers,
-        HttpDataChunkMaximum,
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct HTTP_RESPONSE_INFO
-    {
-        internal HTTP_RESPONSE_INFO_TYPE Type;
-        internal uint Length;
-        internal HTTP_MULTIPLE_KNOWN_HEADERS* pInfo;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -521,14 +186,6 @@ internal static unsafe class HttpApiTypes
         internal uint KeyExchangeStrength;
     }
 
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct HTTP_REQUEST_INFO
-    {
-        internal HTTP_REQUEST_INFO_TYPE InfoType;
-        internal uint InfoLength;
-        internal void* pInfo;
-    }
-
     [Flags]
     internal enum HTTP_REQUEST_FLAGS
     {
@@ -557,7 +214,7 @@ internal static unsafe class HttpApiTypes
         internal HTTP_REQUEST_HEADERS Headers;
         internal ulong BytesReceived;
         internal ushort EntityChunkCount;
-        internal HTTP_DATA_CHUNK* pEntityChunks;
+        internal Windows.Win32.Networking.HttpServer.HTTP_DATA_CHUNK* pEntityChunks;
         internal ulong RawConnectionId;
         internal HTTP_SSL_INFO* pSslInfo;
     }
@@ -565,7 +222,7 @@ internal static unsafe class HttpApiTypes
     [StructLayout(LayoutKind.Sequential)]
     internal struct HTTP_REQUEST_V2
     {
-        internal HTTP_REQUEST Request;
+        internal HTTP_REQUEST_V1 Request;
         internal ushort RequestInfoCount;
         internal HTTP_REQUEST_INFO* pRequestInfo;
     }
@@ -673,7 +330,6 @@ internal static unsafe class HttpApiTypes
     internal enum HTTP_FLAGS : uint
     {
         NONE = 0x00000000,
-        HTTP_RECEIVE_REQUEST_FLAG_COPY_BODY = 0x00000001,
         HTTP_RECEIVE_SECURE_CHANNEL_TOKEN = 0x00000001,
         HTTP_SEND_RESPONSE_FLAG_DISCONNECT = 0x00000001,
         HTTP_SEND_RESPONSE_FLAG_MORE_DATA = 0x00000002,
@@ -681,8 +337,6 @@ internal static unsafe class HttpApiTypes
         HTTP_SEND_RESPONSE_FLAG_RAW_HEADER = 0x00000004,
         HTTP_SEND_REQUEST_FLAG_MORE_DATA = 0x00000001,
         HTTP_PROPERTY_FLAG_PRESENT = 0x00000001,
-        HTTP_INITIALIZE_SERVER = 0x00000001,
-        HTTP_INITIALIZE_CONFIG = 0x00000002,
         HTTP_INITIALIZE_CBT = 0x00000004,
         HTTP_SEND_RESPONSE_FLAG_OPAQUE = 0x00000040,
         HTTP_SEND_RESPONSE_FLAG_GOAWAY = 0x00000100,
