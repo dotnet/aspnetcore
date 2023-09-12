@@ -12,6 +12,9 @@
     <KnownILLinkPack Include="@(KnownILLinkPack->WithMetadataValue('Identity', 'Microsoft.NET.ILLink.Tasks')->WithMetadataValue('TargetFramework', 'net8.0'))">
       <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     </KnownILLinkPack>
+    <KnownWebAssemblySdkPack Include="@(KnownWebAssemblySdkPack->WithMetadataValue('Identity', 'Microsoft.NET.Sdk.WebAssembly.Pack')->WithMetadataValue('TargetFramework', 'net8.0'))">
+      <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    </KnownWebAssemblySdkPack>
   </ItemGroup>
 
   <PropertyGroup>
