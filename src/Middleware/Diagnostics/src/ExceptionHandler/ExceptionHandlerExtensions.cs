@@ -53,16 +53,16 @@ public static class ExceptionHandlerExtensions
     /// </summary>
     /// <param name="app">The <see cref="IApplicationBuilder"/>.</param>
     /// <param name="errorHandlingPath">The <see cref="string"/> path to the endpoint that will handle the exception.</param>
-    /// <param name="newScope">Whether or not to create a new <see cref="IServiceProvider"/> scope.</param>
+    /// <param name="createScopeForErrors">Whether or not to create a new <see cref="IServiceProvider"/> scope.</param>
     /// <returns></returns>
-    public static IApplicationBuilder UseExceptionHandler(this IApplicationBuilder app, string errorHandlingPath, bool newScope)
+    public static IApplicationBuilder UseExceptionHandler(this IApplicationBuilder app, string errorHandlingPath, bool createScopeForErrors)
     {
         ArgumentNullException.ThrowIfNull(app);
 
         return app.UseExceptionHandler(new ExceptionHandlerOptions
         {
             ExceptionHandlingPath = new PathString(errorHandlingPath),
-            CreateScopeForErrors = newScope
+            CreateScopeForErrors = createScopeForErrors
         });
     }
 
