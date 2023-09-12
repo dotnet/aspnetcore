@@ -84,12 +84,12 @@ internal static class InvocationOperationExtensions
         IArgumentOperation argument => ResolveMethodFromOperation(argument.Value, semanticModel),
         IConversionOperation conv => ResolveMethodFromOperation(conv.Operand, semanticModel),
         IDelegateCreationOperation del => ResolveMethodFromOperation(del.Target, semanticModel),
-        IFieldReferenceOperation { Field.IsReadOnly: true } f when ResolveDeclarationOperation(f.Field, semanticModel) is IOperation op =>
-            ResolveMethodFromOperation(op, semanticModel),
         IAnonymousFunctionOperation anon => anon.Symbol,
         ILocalFunctionOperation local => local.Symbol,
         IMethodReferenceOperation method => method.Method,
         IParenthesizedOperation parenthesized => ResolveMethodFromOperation(parenthesized.Operand, semanticModel),
+        IFieldReferenceOperation { Field.IsReadOnly: true } f when ResolveDeclarationOperation(f.Field, semanticModel) is IOperation op =>
+            ResolveMethodFromOperation(op, semanticModel),
         _ => null
     };
 
