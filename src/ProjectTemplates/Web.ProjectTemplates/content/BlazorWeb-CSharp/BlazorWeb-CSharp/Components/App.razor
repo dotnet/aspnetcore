@@ -13,11 +13,19 @@
     @*#if (SampleContent) -->
     <link rel="icon" type="image/png" href="favicon.png" />
     ##endif*@
+    @*#if (InteractiveAtRoot) -->
+    <HeadOutlet @rendermode="@RenderMode.Server" />
+    ##else
     <HeadOutlet />
+    ##endif*@
 </head>
 
 <body>
+    @*#if (InteractiveAtRoot) -->
+    <Routes @rendermode="@RenderMode.Server" />
+    ##else
     <Routes />
+    ##endif*@
     <script src="_framework/blazor.web.js"></script>
 </body>
 

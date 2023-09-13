@@ -6,7 +6,9 @@
 
 <BlazorWeb_CSharp.Client.Pages.Counter />
 ##else
+@*#if (!InteractiveAtRoot) -->
 @attribute [RenderModeServer]
+##endif*@
 
 <PageTitle>Counter</PageTitle>
 
