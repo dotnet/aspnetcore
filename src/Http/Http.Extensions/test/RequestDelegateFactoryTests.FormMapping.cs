@@ -291,6 +291,8 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         var formFiles = new FormFileCollection
         {
             new FormFile(Stream.Null, 0, 10, "file", "file.txt"),
+            new FormFile(Stream.Null, 0, 10, "formFiles", "file-1.txt"),
+            new FormFile(Stream.Null, 0, 10, "formFiles", "file-2.txt"),
         };
         httpContext.Request.Form = new FormCollection(new() { { "Description", "A test file" } }, formFiles);
 
@@ -300,43 +302,8 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         await requestDelegate(httpContext);
         Assert.Equal("A test file", capturedArgument.Description);
         Assert.Equal(formFiles["file"], capturedArgument.File);
-    }
-
-    [Fact]
-    public async Task SupportsNullableFormFileSourcesInDto()
-    {
-        NullableFormFileDto capturedArgument = default;
-        void TestAction([FromForm] NullableFormFileDto args) { capturedArgument = args; };
-        var httpContext = CreateHttpContext();
-        var formFiles = new FormFileCollection();
-        httpContext.Request.Form = new FormCollection(new() { { "Description", "A test file" } }, formFiles);
-
-        var factoryResult = RequestDelegateFactory.Create(TestAction);
-        var requestDelegate = factoryResult.RequestDelegate;
-
-        await requestDelegate(httpContext);
-        Assert.Equal("A test file", capturedArgument.Description);
-        Assert.Null(capturedArgument.File);
-    }
-
-    [Fact]
-    public async Task SupportsFormFileCollectionSourcesInDto()
-    {
-        FormFileCollectionDto capturedArgument = default;
-        void TestAction([FromForm] FormFileCollectionDto args) { capturedArgument = args; };
-        var httpContext = CreateHttpContext();
-        var formFiles = new FormFileCollection
-        {
-            new FormFile(Stream.Null, 0, 10, "file", "file.txt"),
-        };
-        httpContext.Request.Form = new FormCollection(new() { { "Description", "A test file" } }, formFiles);
-
-        var factoryResult = RequestDelegateFactory.Create(TestAction);
-        var requestDelegate = factoryResult.RequestDelegate;
-
-        await requestDelegate(httpContext);
-        Assert.Equal("A test file", capturedArgument.Description);
-        Assert.Equal(formFiles, capturedArgument.FileCollection);
+        Assert.Equal(formFiles.GetFiles("formFiles"), capturedArgument.FormFiles);
+        Assert.Equal(formFiles, capturedArgument.FormFileCollection);
     }
 
     private record TodoRecord(int Id, string Name, bool IsCompleted);
@@ -351,18 +318,8 @@ public partial class RequestDelegateFactoryTests : LoggedTest
     private class FormFileDto
     {
         public string Description { get; set; } = String.Empty;
-        public required IFormFile File { get; set; }
-    }
-
-    private class NullableFormFileDto
-    {
-        public string? Description { get; set; }
         public IFormFile? File { get; set; }
-    }
-
-    private class FormFileCollectionDto
-    {
-        public string Description { get; set; } = string.Empty;
-        public required IFormFileCollection FileCollection { get; set; }
+        public IReadOnlyList<IFormFile>? FormFiles { get; set; }
+        public IFormFileCollection? FormFileCollection { get; set; }
     }
 }

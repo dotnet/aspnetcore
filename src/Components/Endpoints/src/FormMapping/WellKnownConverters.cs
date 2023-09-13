@@ -1,7 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#if COMPONENTS
+using Microsoft.AspNetCore.Components.Forms;
+#endif
 using Microsoft.AspNetCore.Http;
+
 namespace Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 
 internal static class WellKnownConverters
@@ -40,7 +44,11 @@ internal static class WellKnownConverters
             { typeof(TimeOnly), new ParsableConverter<TimeOnly>() },
             { typeof(Guid), new ParsableConverter<Guid>() },
             { typeof(IFormFileCollection), new FileConverter<IFormFileCollection>() },
-            { typeof(IFormFile), new FileConverter<IFormFile>() }
+            { typeof(IFormFile), new FileConverter<IFormFile>() },
+            { typeof(IReadOnlyList<IFormFile>), new FileConverter<IReadOnlyList<IFormFile>>() },
+#if COMPONENTS
+            { typeof(IBrowserFile), new FileConverter<IBrowserFile>() }
+#endif
         };
 
         converters.Add(typeof(char?), new NullableConverter<char>((FormDataConverter<char>)converters[typeof(char)]));

@@ -2,6 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+#if COMPONENTS
+using Microsoft.AspNetCore.Components.Forms;
+#endif
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.FormMapping;
@@ -10,7 +13,13 @@ internal sealed class FileConverterFactory : IFormDataConverterFactory
 {
     [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
     [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
-    public bool CanConvert(Type type, FormDataMapperOptions options) => type == typeof(IFormFile) || type == typeof(IFormFileCollection);
+#if COMPONENTS
+    public bool CanConvert(Type type, FormDataMapperOptions options) => CanConvertCommon(type) || type == typeof(IBrowserFile);
+#else
+    public bool CanConvert(Type type, FormDataMapperOptions options) => CanConvertCommon(type);
+#endif
+
+    private static bool CanConvertCommon(Type type) => type == typeof(IFormFile) || type == typeof(IFormFileCollection) || type == typeof(IReadOnlyList<IFormFile>);
 
     [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
     [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]

@@ -9,6 +9,8 @@ using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.Serialization;
+using System.Text;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 
@@ -1876,6 +1878,67 @@ public class FormDataMapperTests
     }
 
     [Fact]
+    public void CanDeserialize_ComplexType_CanSerializerIReadOnlyListFormFile()
+    {
+        // Arrange
+        var formFileCollection = new FormFileCollection
+        {
+            new FormFile(Stream.Null, 0, 10, "file", "file-1.txt"),
+            new FormFile(Stream.Null, 0, 20, "file", "file-2.txt"),
+            new FormFile(Stream.Null, 0, 30, "file", "file-3.txt"),
+            new FormFile(Stream.Null, 0, 40, "oddOneOutFile", "file-4.txt"),
+        };
+        var data = new Dictionary<string, StringValues>();
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture, formFileCollection);
+        var errors = new List<FormDataMappingError>();
+        reader.ErrorHandler = (key, message, attemptedValue) =>
+        {
+            errors.Add(new FormDataMappingError(key, message, attemptedValue));
+        };
+        reader.PushPrefix("file");
+        var options = new FormDataMapperOptions();
+
+        // Act
+        var result = CallDeserialize(reader, options, typeof(IReadOnlyList<IFormFile>));
+
+        // Assert
+        var formFileResult = Assert.IsAssignableFrom<IReadOnlyList<IFormFile>>(result);
+        Assert.Collection(formFileResult,
+            element => Assert.Equal("file-1.txt", element.FileName),
+            element => Assert.Equal("file-2.txt", element.FileName),
+            element => Assert.Equal("file-3.txt", element.FileName)
+        );
+    }
+
+    [Fact]
+    public void CanDeserialize_ComplexType_ReturnsFirstFileForMultiples()
+    {
+        // Arrange
+        var formFileCollection = new FormFileCollection
+        {
+            new FormFile(Stream.Null, 0, 10, "file", "file-1.txt"),
+            new FormFile(Stream.Null, 0, 20, "file", "file-2.txt"),
+            new FormFile(Stream.Null, 0, 30, "file", "file-3.txt"),
+            new FormFile(Stream.Null, 0, 40, "oddOneOutFile", "file-4.txt"),
+        };
+        var data = new Dictionary<string, StringValues>();
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture, formFileCollection);
+        var errors = new List<FormDataMappingError>();
+        reader.ErrorHandler = (key, message, attemptedValue) =>
+        {
+            errors.Add(new FormDataMappingError(key, message, attemptedValue));
+        };
+        reader.PushPrefix("file");
+        var options = new FormDataMapperOptions();
+
+        // Act
+        var result = CallDeserialize(reader, options, typeof(IFormFile));
+
+        // Assert
+        Assert.Equal(formFileCollection[0], result);
+    }
+
+    [Fact]
     public void CanDeserialize_ComplexType_CanSerializerFormFileCollection()
     {
         // Arrange
@@ -1895,6 +1958,34 @@ public class FormDataMapperTests
 
         // Assert
         Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void CanDeserialize_ComplexType_CanSerializerBrowserFile()
+    {
+        // Arrange
+        var expectedString = "This is the contents of my text file.";
+        var expected = new FormFileCollection { new FormFile(new MemoryStream(Encoding.UTF8.GetBytes(expectedString)), 0, expectedString.Length, "file", "file.txt") };
+        var data = new Dictionary<string, StringValues>();
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture, expected);
+        var errors = new List<FormDataMappingError>();
+        reader.ErrorHandler = (key, message, attemptedValue) =>
+        {
+            errors.Add(new FormDataMappingError(key, message, attemptedValue));
+        };
+        reader.PushPrefix("file");
+        var options = new FormDataMapperOptions();
+
+        // Act
+        var result = CallDeserialize(reader, options, typeof(IBrowserFile));
+
+        // Assert
+        var browserFile = Assert.IsAssignableFrom<IBrowserFile>(result);
+        Assert.Equal("file", browserFile.Name);
+        Assert.Equal(expectedString.Length, browserFile.Size);
+        var buffer = new byte[browserFile.Size];
+        browserFile.OpenReadStream().Read(buffer);
+        Assert.Equal(expectedString, Encoding.UTF8.GetString(buffer, 0, buffer.Length));
     }
 
     [Fact]

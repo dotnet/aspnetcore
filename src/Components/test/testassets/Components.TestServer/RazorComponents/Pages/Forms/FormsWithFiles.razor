@@ -1,0 +1,57 @@
+﻿@page "/forms/with-files"
+@using Microsoft.AspNetCore.Components.Forms
+
+<h2>Forms With Files</h2>
+
+<EditForm Model="Model" method="POST" OnValidSubmit="DisplaySuccess" FormName="fileForm" enctype="multipart/form-data">
+    <ValidationSummary />
+    <div>
+        <label for="Model.ProfilePicture">
+            Profile Picture:
+            <InputFile @bind-Value="Model.ProfilePicture" name="Model.ProfilePicture" />
+        </label>
+        <ValidationMessage For="() => Model.ProfilePicture" />
+    </div>
+    <div>
+        <label for="Model.Documents">
+            Documents:
+            <InputFile @bind-Value="Model.Documents" multiple name="Model.Documents" />
+        </label>
+        <ValidationMessage For="() => Model.Documents" />
+    </div>
+    <div>
+        <label for="Model.Documents">
+            Header Photo:
+            <InputFile @bind-Value="Model.HeaderPhoto" name="Model.HeaderPhoto" />
+        </label>
+        <ValidationMessage For="() => Model.HeaderPhoto" />
+    </div>
+    <input id="send" type="submit" value="Send" />
+</EditForm>
+
+@if(_shouldDisplaySuccess)
+{
+    <p id="profile-picture">Profile Picture: @Model.ProfilePicture.FileName</p>
+    <p id="documents">Documents: @Model.Documents.Count()</p>
+    <p id="header-photo">Header Photo: @Model.HeaderPhoto.Name</p>
+    <p id="form-collection">Total: @Model.FormFiles.Count</p>
+}
+
+@code
+{
+    bool _shouldDisplaySuccess = false;
+
+    public void DisplaySuccess() => _shouldDisplaySuccess = true;
+
+    [SupplyParameterFromForm] public FileContainer Model { get; set; }
+
+    protected override void OnInitialized() => Model ??= new FileContainer();
+
+    public class FileContainer
+    {
+        public IFormFile ProfilePicture { get; set; }
+        public IReadOnlyList<IFormFile> Documents { get; set; }
+        public IBrowserFile HeaderPhoto { get; set; }
+        public IFormFileCollection FormFiles { get; set; }
+    }
+}

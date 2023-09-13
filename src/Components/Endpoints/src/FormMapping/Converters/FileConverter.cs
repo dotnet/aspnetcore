@@ -2,6 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+#if COMPONENTS
+using Microsoft.AspNetCore.Components.Forms;
+#endif
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.FormMapping;
@@ -16,6 +19,27 @@ internal sealed class FileConverter<T> : FormDataConverter<T>, ISingleValueConve
         {
             result = default;
             found = false;
+            return true;
+        }
+
+#if COMPONENTS
+        if (typeof(T) == typeof(IBrowserFile))
+        {
+            var targetFile = reader.FormFileCollection.GetFile(reader.CurrentPrefix.ToString());
+            if (targetFile != null)
+            {
+                var browserFile = new BrowserFileFromFormFile(targetFile);
+                result = (T)(IBrowserFile)browserFile;
+                found = true;
+                return true;
+            }
+        }
+#endif
+
+        if (typeof(T) == typeof(IReadOnlyList<IFormFile>))
+        {
+            result = (T)reader.FormFileCollection.GetFiles(reader.CurrentPrefix.ToString());
+            found = true;
             return true;
         }
 
