@@ -12,7 +12,5 @@ Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.All = Microsoft.AspNetCore.H
 Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedPrefix = 8 -> Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders
 static Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersDefaults.XForwardedPrefixHeaderName.get -> string!
 static Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersDefaults.XOriginalPrefixHeaderName.get -> string!
-static Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersDefaults.XForwardedPortHeaderName.get -> string!
-static Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersDefaults.XOriginalPortHeaderName.get -> string!
 static Microsoft.AspNetCore.HttpOverrides.IPNetwork.Parse(System.ReadOnlySpan<char> networkSpan) -> Microsoft.AspNetCore.HttpOverrides.IPNetwork!
 static Microsoft.AspNetCore.HttpOverrides.IPNetwork.TryParse(System.ReadOnlySpan<char> networkSpan, out Microsoft.AspNetCore.HttpOverrides.IPNetwork? network) -> bool
