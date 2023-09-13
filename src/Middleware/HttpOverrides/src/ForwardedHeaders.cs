@@ -34,7 +34,7 @@ public enum ForwardedHeaders
     /// </summary>
     XForwardedPort = 1 << 4,
     /// <summary>
-    /// Process X-Forwarded-For, X-Forwarded-Host, X-Forwarded-Proto and X-Forwarded-Prefix.
+    /// Process X-Forwarded-For, X-Forwarded-Host, X-Forwarded-Proto, X-Forwarded-Prefix and X-Forwarded-Port.
     /// </summary>
     All = XForwardedFor | XForwardedHost | XForwardedProto | XForwardedPrefix | XForwardedPort
 }
