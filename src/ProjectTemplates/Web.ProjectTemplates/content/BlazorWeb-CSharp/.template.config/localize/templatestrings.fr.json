@@ -17,6 +17,8 @@
   "symbols/IncludeSampleContent/displayName": "_Inclure des exemples de pages",
   "symbols/IncludeSampleContent/description": "Configure s'il faut ajouter des exemples de pages et de style pour illustrer les modèles d'utilisation de base.",
   "symbols/Empty/description": "Configure s'il faut omettre les exemples de pages et le style qui illustrent les modèles d'utilisation de base.",
+  "symbols/InteractiveAtRoot/displayName": "_Enable interactive rendering globally throughout the site",
+  "symbols/InteractiveAtRoot/description": "Configures whether to make every page interactive by applying an interactive render mode at the top level. If false, pages will use static server rendering by default, and can be marked interactive on a per-page or per-component basis.",
   "symbols/NoHttps/description": "Indique s’il faut désactiver HTTPS. Cette option s’applique uniquement si Individual, IndividualB2C, SingleOrg ou MultiOrg ne sont pas utilisés pour --auth.",
   "symbols/UseProgramMain/displayName": "N’utilisez pas _d’instructions de niveau supérieur.",
   "symbols/UseProgramMain/description": "Indique s’il faut générer une classe Programme explicite et une méthode Main au lieu d’instructions de niveau supérieur.",

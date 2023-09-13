@@ -17,6 +17,10 @@
     "IncludeSampleContent": {
       "isHidden": true
     },
+    "InteractiveAtRoot": {
+      "longName": "all-interactive",
+      "shortName": "int"
+    },
     "Framework": {
       "longName": "framework"
     },

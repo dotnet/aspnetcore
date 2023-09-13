@@ -17,6 +17,8 @@
   "symbols/IncludeSampleContent/displayName": "Örnek _sayfalar ekle",
   "symbols/IncludeSampleContent/description": "Temel kullanım düzenlerini göstermek için örnek sayfaların ve stil oluşturma özelliklerinin eklenip eklenmeyeceğini yapılandırır.",
   "symbols/Empty/description": "Temel kullanım düzenlerini gösteren örnek sayfaların ve stil oluşturma özelliklerinin atlanıp atlanmayacağını yapılandırır.",
+  "symbols/InteractiveAtRoot/displayName": "_Enable interactive rendering globally throughout the site",
+  "symbols/InteractiveAtRoot/description": "Configures whether to make every page interactive by applying an interactive render mode at the top level. If false, pages will use static server rendering by default, and can be marked interactive on a per-page or per-component basis.",
   "symbols/NoHttps/description": "HTTPS'nin kapatılıp kapatılmayacağı. Bu seçenek yalnızca Bireysel, IndividualB2C, SingleOrg veya MultiOrg -- auth için kullanılmazsa geçerlidir.",
   "symbols/UseProgramMain/displayName": "_Üst düzey deyimler kullanmayın",
   "symbols/UseProgramMain/description": "Üst düzey deyimler yerine açık bir Program sınıfı ve Ana yöntem oluşturup oluşturulmayacağını belirtir.",

@@ -17,6 +17,8 @@
   "symbols/IncludeSampleContent/displayName": "샘플 페이지 포함(_I)",
   "symbols/IncludeSampleContent/description": "기본 사용 패턴을 보여주기 위해 샘플 페이지 및 스타일을 추가할지 여부를 구성합니다.",
   "symbols/Empty/description": "기본 사용 패턴을 보여주는 샘플 페이지 및 스타일을 생략할지 여부를 구성합니다.",
+  "symbols/InteractiveAtRoot/displayName": "_Enable interactive rendering globally throughout the site",
+  "symbols/InteractiveAtRoot/description": "Configures whether to make every page interactive by applying an interactive render mode at the top level. If false, pages will use static server rendering by default, and can be marked interactive on a per-page or per-component basis.",
   "symbols/NoHttps/description": "HTTPS를 끌지 여부입니다. 이 옵션은 Individual, IndividualB2C, SingleOrg 또는 MultiOrg가 --auth에 사용되지 않는 경우에만 적용됩니다.",
   "symbols/UseProgramMain/displayName": "최상위 문 사용 안 함(_T)",
   "symbols/UseProgramMain/description": "최상위 문 대신 명시적 Program 클래스 및 Main 메서드를 생성할지 여부입니다.",

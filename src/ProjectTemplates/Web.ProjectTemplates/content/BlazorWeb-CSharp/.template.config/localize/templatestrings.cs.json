@@ -17,6 +17,8 @@
   "symbols/IncludeSampleContent/displayName": "_Zahrnout ukázkové stránky",
   "symbols/IncludeSampleContent/description": "Nastavuje, jestli se mají přidávat ukázkové stránky a styly pro demonstraci základních vzorů použití.",
   "symbols/Empty/description": "Nastavuje, jestli se mají vynechat ukázkové stránky a styly, které demonstrují základní vzory použití.",
+  "symbols/InteractiveAtRoot/displayName": "_Enable interactive rendering globally throughout the site",
+  "symbols/InteractiveAtRoot/description": "Configures whether to make every page interactive by applying an interactive render mode at the top level. If false, pages will use static server rendering by default, and can be marked interactive on a per-page or per-component basis.",
   "symbols/NoHttps/description": "Určuje, jestli se má protokol HTTPS vypnout. Tato možnost platí jenom v případě, že se pro --auth nepoužívají Individual, IndividualB2C, SingleOrg ani MultiOrg.",
   "symbols/UseProgramMain/displayName": "Nepoužívat _příkazy nejvyšší úrovně",
   "symbols/UseProgramMain/description": "Určuje, jestli se má místo příkazů nejvyšší úrovně generovat explicitní třída Program a metoda Main.",

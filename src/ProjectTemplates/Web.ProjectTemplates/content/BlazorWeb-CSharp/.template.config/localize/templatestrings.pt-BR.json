@@ -17,6 +17,8 @@
   "symbols/IncludeSampleContent/displayName": "_Incluir páginas de amostra",
   "symbols/IncludeSampleContent/description": "Configura se deseja adicionar páginas de amostra e estilo para demonstrar padrões de uso básicos.",
   "symbols/Empty/description": "Configura a omissão de páginas de amostra e estilo que demonstram padrões básicos de uso.",
+  "symbols/InteractiveAtRoot/displayName": "_Enable interactive rendering globally throughout the site",
+  "symbols/InteractiveAtRoot/description": "Configures whether to make every page interactive by applying an interactive render mode at the top level. If false, pages will use static server rendering by default, and can be marked interactive on a per-page or per-component basis.",
   "symbols/NoHttps/description": "Se o HTTPS deve ser desativado. Essa opção se aplica somente se Individual, IndividualB2C, SingleOrg ou MultiOrg não forem usados para --auth.",
   "symbols/UseProgramMain/displayName": "Não use ins_truções de nível superior",
   "symbols/UseProgramMain/description": "Se deve gerar uma classe de Programa explícita e um método principal em vez de instruções de nível superior.",

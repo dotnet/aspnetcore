@@ -17,6 +17,8 @@
   "symbols/IncludeSampleContent/displayName": "包含示例页(_I)",
   "symbols/IncludeSampleContent/description": "配置是否添加示例页和样式以演示基本使用模式。",
   "symbols/Empty/description": "配置是否忽略演示基本使用模式的示例页和样式。",
+  "symbols/InteractiveAtRoot/displayName": "_Enable interactive rendering globally throughout the site",
+  "symbols/InteractiveAtRoot/description": "Configures whether to make every page interactive by applying an interactive render mode at the top level. If false, pages will use static server rendering by default, and can be marked interactive on a per-page or per-component basis.",
   "symbols/NoHttps/description": "是否禁用 HTTPS。仅当 Individual、IndividualB2C、SingleOrg 或 MultiOrg 不用于 --auth 时，此选项才适用。",
   "symbols/UseProgramMain/displayName": "不使用顶级语句(_T)",
   "symbols/UseProgramMain/description": "是否生成显式程序类和主方法，而不是顶级语句。",

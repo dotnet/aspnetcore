@@ -17,6 +17,8 @@
   "symbols/IncludeSampleContent/displayName": "サンプル ページを含める(_I)",
   "symbols/IncludeSampleContent/description": "基本的な使用パターンを示すサンプル ページとスタイルを追加するかどうかを構成します。",
   "symbols/Empty/description": "基本的な使用パターンを示すサンプル ページとスタイルを省略するかどうかを構成します。",
+  "symbols/InteractiveAtRoot/displayName": "_Enable interactive rendering globally throughout the site",
+  "symbols/InteractiveAtRoot/description": "Configures whether to make every page interactive by applying an interactive render mode at the top level. If false, pages will use static server rendering by default, and can be marked interactive on a per-page or per-component basis.",
   "symbols/NoHttps/description": "HTTPS をオフにするかどうか。このオプションは、Individual、IndividualB2C、SingleOrg、または MultiOrg が --auth に使用されていない場合にのみ適用されます。",
   "symbols/UseProgramMain/displayName": "最上位レベルのステートメントを使用しない(_T)",
   "symbols/UseProgramMain/description": "最上位レベルのステートメントではなく、明示的な Program クラスと Main メソッドを生成するかどうか。",

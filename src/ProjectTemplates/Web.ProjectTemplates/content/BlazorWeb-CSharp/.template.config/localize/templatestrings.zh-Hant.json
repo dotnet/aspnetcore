@@ -17,6 +17,8 @@
   "symbols/IncludeSampleContent/displayName": "包含範例頁面(_I)",
   "symbols/IncludeSampleContent/description": "設定是否要新增範例頁面和樣式，以示範基本使用模式。",
   "symbols/Empty/description": "設定是否要省略範例頁面和樣式，其示範基本使用模式。",
+  "symbols/InteractiveAtRoot/displayName": "_Enable interactive rendering globally throughout the site",
+  "symbols/InteractiveAtRoot/description": "Configures whether to make every page interactive by applying an interactive render mode at the top level. If false, pages will use static server rendering by default, and can be marked interactive on a per-page or per-component basis.",
   "symbols/NoHttps/description": "是否要關閉 HTTPS。只有當 Individual、IndividualB2C、SingleOrg 或 MultiOrg 未用於 --auth 時，才適用此選項。",
   "symbols/UseProgramMain/displayName": "不要使用最上層陳述式(_T)",
   "symbols/UseProgramMain/description": "是否要產生明確的 Program 類別和 Main 方法，而非最上層語句。",
