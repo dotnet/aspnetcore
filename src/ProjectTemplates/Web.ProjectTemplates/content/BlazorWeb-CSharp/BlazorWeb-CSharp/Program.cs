@@ -1,3 +1,6 @@
+#if (UseWebAssembly)
+using BlazorWeb_CSharp.Client.Pages;
+#endif
 using BlazorWeb_CSharp.Components;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -46,13 +49,15 @@ app.UseStaticFiles();
 #if (UseServer && UseWebAssembly)
 app.MapRazorComponents<App>()
     .AddServerRenderMode()
-    .AddWebAssemblyRenderMode();
+    .AddWebAssemblyRenderMode()
+    .AddAdditionalAssemblies(typeof(Counter).Assembly);
 #elif (UseServer)
 app.MapRazorComponents<App>()
     .AddServerRenderMode();
 #elif (UseWebAssembly)
 app.MapRazorComponents<App>()
-    .AddWebAssemblyRenderMode();
+    .AddWebAssemblyRenderMode()
+    .AddAdditionalAssemblies(typeof(Counter).Assembly);
 #else
 app.MapRazorComponents<App>();
 #endif
