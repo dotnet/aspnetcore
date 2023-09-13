@@ -73,8 +73,8 @@ public class RequestHeaderBenchmarks
         var length = Encoding.ASCII.GetBytes("localhost:5001", dataDestination);
         fixed (byte* address = &MemoryMarshal.GetReference(dataDestination))
         {
-            requestStructure.Headers.KnownHeaders._29.pRawValue = (PCSTR)address;
-            requestStructure.Headers.KnownHeaders._29.RawValueLength = (ushort)length;
+            requestStructure.Headers.KnownHeaders._28.pRawValue = (PCSTR)address;
+            requestStructure.Headers.KnownHeaders._28.RawValueLength = (ushort)length;
         }
         return dataDestination;
     }

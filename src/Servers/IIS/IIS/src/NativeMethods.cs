@@ -4,6 +4,7 @@
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.AspNetCore.Server.IIS.Core;
+using Windows.Win32.Networking.HttpServer;
 
 namespace Microsoft.AspNetCore.Server.IIS;
 
@@ -64,7 +65,7 @@ internal static partial class NativeMethods
     private static partial int http_flush_response_bytes(NativeSafeHandle pInProcessHandler, [MarshalAs(UnmanagedType.Bool)] bool fMoreData, [MarshalAs(UnmanagedType.Bool)] out bool fCompletionExpected);
 
     [LibraryImport(AspNetCoreModuleDll)]
-    private static unsafe partial HttpApiTypes.HTTP_REQUEST_V2* http_get_raw_request(NativeSafeHandle pInProcessHandler);
+    private static unsafe partial HTTP_REQUEST_V2* http_get_raw_request(NativeSafeHandle pInProcessHandler);
 
     [LibraryImport(AspNetCoreModuleDll)]
     private static partial int http_stop_calls_into_managed(NativeSafeHandle pInProcessApplication);
@@ -196,7 +197,7 @@ internal static partial class NativeMethods
         return http_flush_response_bytes(pInProcessHandler, fMoreData, out fCompletionExpected);
     }
 
-    internal static unsafe HttpApiTypes.HTTP_REQUEST_V2* HttpGetRawRequest(NativeSafeHandle pInProcessHandler)
+    internal static unsafe HTTP_REQUEST_V2* HttpGetRawRequest(NativeSafeHandle pInProcessHandler)
     {
         return http_get_raw_request(pInProcessHandler);
     }

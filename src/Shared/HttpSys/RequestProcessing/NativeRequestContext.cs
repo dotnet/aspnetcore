@@ -112,15 +112,6 @@ internal unsafe class NativeRequestContext : IDisposable
         }
     }
 
-    internal HttpApiTypes.HTTP_REQUEST* NativeRequestV0
-    {
-        get
-        {
-            Debug.Assert(_nativeRequest != null || _backingBuffer == null, "native request accessed after ReleasePins().");
-            return (HttpApiTypes.HTTP_REQUEST*)_nativeRequest;
-        }
-    }
-
     internal HTTP_REQUEST_V1* NativeRequest
     {
         get
@@ -130,12 +121,12 @@ internal unsafe class NativeRequestContext : IDisposable
         }
     }
 
-    internal HttpApiTypes.HTTP_REQUEST_V2* NativeRequestV2
+    internal HTTP_REQUEST_V2* NativeRequestV2
     {
         get
         {
             Debug.Assert(_nativeRequest != null || _backingBuffer == null, "native request accessed after ReleasePins().");
-            return (HttpApiTypes.HTTP_REQUEST_V2*)_nativeRequest;
+            return (HTTP_REQUEST_V2*)_nativeRequest;
         }
     }
 
@@ -769,19 +760,19 @@ internal unsafe class NativeRequestContext : IDisposable
     {
         if (PermanentlyPinned)
         {
-            return GetRequestInfo((IntPtr)_nativeRequest, (HttpApiTypes.HTTP_REQUEST_V2*)_nativeRequest);
+            return GetRequestInfo((IntPtr)_nativeRequest, (HTTP_REQUEST_V2*)_nativeRequest);
         }
         else
         {
             fixed (byte* pMemoryBlob = _backingBuffer.Memory.Span)
             {
-                var request = (HttpApiTypes.HTTP_REQUEST_V2*)(pMemoryBlob + _bufferAlignment);
+                var request = (HTTP_REQUEST_V2*)(pMemoryBlob + _bufferAlignment);
                 return GetRequestInfo(_originalBufferAddress, request);
             }
         }
     }
 
-    private IReadOnlyDictionary<int, ReadOnlyMemory<byte>> GetRequestInfo(IntPtr baseAddress, HttpApiTypes.HTTP_REQUEST_V2* nativeRequest)
+    private IReadOnlyDictionary<int, ReadOnlyMemory<byte>> GetRequestInfo(IntPtr baseAddress, HTTP_REQUEST_V2* nativeRequest)
     {
         var count = nativeRequest->RequestInfoCount;
         if (count == 0)
@@ -812,22 +803,22 @@ internal unsafe class NativeRequestContext : IDisposable
     {
         if (PermanentlyPinned)
         {
-            return GetClientCertificate((IntPtr)_nativeRequest, (HttpApiTypes.HTTP_REQUEST_V2*)_nativeRequest);
+            return GetClientCertificate((IntPtr)_nativeRequest, (HTTP_REQUEST_V2*)_nativeRequest);
         }
         else
         {
             fixed (byte* pMemoryBlob = _backingBuffer.Memory.Span)
             {
-                var request = (HttpApiTypes.HTTP_REQUEST_V2*)(pMemoryBlob + _bufferAlignment);
+                var request = (HTTP_REQUEST_V2*)(pMemoryBlob + _bufferAlignment);
                 return GetClientCertificate(_originalBufferAddress, request);
             }
         }
     }
 
     // Throws CryptographicException
-    private X509Certificate2? GetClientCertificate(IntPtr baseAddress, HttpApiTypes.HTTP_REQUEST_V2* nativeRequest)
+    private X509Certificate2? GetClientCertificate(IntPtr baseAddress, HTTP_REQUEST_V2* nativeRequest)
     {
-        var request = nativeRequest->Request;
+        var request = nativeRequest->Base;
         var fixup = (byte*)nativeRequest - (byte*)baseAddress;
         if (request.pSslInfo == null)
         {

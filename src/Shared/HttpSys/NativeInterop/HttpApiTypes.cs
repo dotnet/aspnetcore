@@ -196,37 +196,6 @@ internal static unsafe class HttpApiTypes
         Http3 = 8,
     }
 
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct HTTP_REQUEST
-    {
-        internal HTTP_REQUEST_FLAGS Flags;
-        internal ulong ConnectionId;
-        internal ulong RequestId;
-        internal ulong UrlContext;
-        internal HTTP_VERSION Version;
-        internal HTTP_VERB Verb;
-        internal ushort UnknownVerbLength;
-        internal ushort RawUrlLength;
-        internal byte* pUnknownVerb;
-        internal byte* pRawUrl;
-        internal HTTP_COOKED_URL CookedUrl;
-        internal HTTP_TRANSPORT_ADDRESS Address;
-        internal HTTP_REQUEST_HEADERS Headers;
-        internal ulong BytesReceived;
-        internal ushort EntityChunkCount;
-        internal Windows.Win32.Networking.HttpServer.HTTP_DATA_CHUNK* pEntityChunks;
-        internal ulong RawConnectionId;
-        internal HTTP_SSL_INFO* pSslInfo;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct HTTP_REQUEST_V2
-    {
-        internal HTTP_REQUEST_V1 Request;
-        internal ushort RequestInfoCount;
-        internal HTTP_REQUEST_INFO* pRequestInfo;
-    }
-
     internal enum HTTP_AUTH_STATUS
     {
         HttpAuthStatusSuccess,
@@ -278,18 +247,6 @@ internal static unsafe class HttpApiTypes
     {
         ushort RealmLength;
         char* Realm;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct HTTP_REQUEST_TOKEN_BINDING_INFO
-    {
-        public byte* TokenBinding;
-        public uint TokenBindingSize;
-
-        public byte* TlsUnique;
-        public uint TlsUniqueSize;
-
-        public char* KeyType;
     }
 
     [StructLayout(LayoutKind.Sequential)]

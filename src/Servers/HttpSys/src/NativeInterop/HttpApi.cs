@@ -23,7 +23,7 @@ internal static unsafe partial class HttpApi
     internal static partial uint HttpReceiveClientCertificate(SafeHandle requestQueueHandle, ulong connectionId, uint flags, byte* pSslClientCertInfo, uint sslClientCertInfoSize, uint* pBytesReceived, SafeNativeOverlapped pOverlapped);
 
     [LibraryImport(HTTPAPI, SetLastError = true)]
-    internal static partial uint HttpReceiveHttpRequest(SafeHandle requestQueueHandle, ulong requestId, uint flags, HttpApiTypes.HTTP_REQUEST* pRequestBuffer, uint requestBufferLength, uint* pBytesReturned, NativeOverlapped* pOverlapped);
+    internal static partial uint HttpReceiveHttpRequest(SafeHandle requestQueueHandle, ulong requestId, uint flags, Windows.Win32.Networking.HttpServer.HTTP_REQUEST_V1* pRequestBuffer, uint requestBufferLength, uint* pBytesReturned, NativeOverlapped* pOverlapped);
 
     [LibraryImport(HTTPAPI, SetLastError = true)]
     internal static partial uint HttpSendHttpResponse(SafeHandle requestQueueHandle, ulong requestId, uint flags, HttpApiTypes.HTTP_RESPONSE_V2* pHttpResponse, HttpApiTypes.HTTP_CACHE_POLICY* pCachePolicy, uint* pBytesSent, IntPtr pReserved1, uint Reserved2, SafeNativeOverlapped pOverlapped, IntPtr pLogData);
