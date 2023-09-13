@@ -61,11 +61,12 @@ Microsoft.AspNetCore.HttpOverrides.CertificateForwardingOptions.CertificateHeade
 Microsoft.AspNetCore.HttpOverrides.CertificateForwardingOptions.CertificateHeader.set -> void
 Microsoft.AspNetCore.HttpOverrides.CertificateForwardingOptions.HeaderConverter -> System.Func<string!, System.Security.Cryptography.X509Certificates.X509Certificate2!>!
 Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders
-Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.All = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedHost | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto -> Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders
+Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.All = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedHost | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedPort -> Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders
 Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.None = 0 -> Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders
 Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor = 1 -> Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders
 Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedHost = 2 -> Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders
 Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto = 4 -> Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders
+Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedPort = 16 -> Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders
 Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersDefaults
 Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersMiddleware
 Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersMiddleware.ApplyForwarders(Microsoft.AspNetCore.Http.HttpContext! context) -> void
