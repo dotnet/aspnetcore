@@ -34,9 +34,10 @@ internal partial class EndpointHtmlRenderer
         }
     }
 
-    private IComponentRenderMode GetComponentRenderMode(IComponent component)
+    protected override IComponentRenderMode? GetComponentRenderMode(IComponent component)
     {
-        var ssrRenderBoundary = GetClosestRenderModeBoundary(component);
+        var componentState = GetComponentState(component);
+        var ssrRenderBoundary = GetClosestRenderModeBoundary(componentState);
 
         if (ssrRenderBoundary is null)
         {
@@ -44,12 +45,6 @@ internal partial class EndpointHtmlRenderer
         }
 
         return ssrRenderBoundary.RenderMode;
-    }
-
-    private SSRRenderModeBoundary? GetClosestRenderModeBoundary(IComponent component)
-    {
-        var componentState = GetComponentState(component);
-        return GetClosestRenderModeBoundary(componentState);
     }
 
     private SSRRenderModeBoundary? GetClosestRenderModeBoundary(int componentId)

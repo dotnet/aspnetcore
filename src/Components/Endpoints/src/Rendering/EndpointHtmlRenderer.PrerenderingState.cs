@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Web;
@@ -15,45 +16,38 @@ internal partial class EndpointHtmlRenderer
 {
     private static readonly object InvokedRenderModesKey = new object();
 
-    public async ValueTask<IHtmlContent> PrerenderPersistedStateAsync(HttpContext httpContext)
+    public async ValueTask<IHtmlContent> PrerenderPersistedStateOnFirstLoadAsync(HttpContext httpContext)
     {
+        // This is not the first load, do nothing
+        if (httpContext.Request.Headers.ContainsKey(_progressivelyEnhancedNavRequestHeaderName))
+        {
+            return ComponentStateHtmlContent.Empty;
+        }
+
         SetHttpContext(httpContext);
 
         var manager = _httpContext.RequestServices.GetRequiredService<ComponentStatePersistenceManager>();
 
         var serverStore = new ProtectedPrerenderComponentApplicationStore(_httpContext.RequestServices.GetRequiredService<IDataProtectionProvider>());
-        await manager.PersistStateAsync(serverStore, Dispatcher, (target, renderMode) =>
-        {
-            if (target is not IComponent)
-            {
-                 return true;
-            }
-
-            if (renderMode is not null)
-            {
-                return renderMode is ServerRenderMode;
-            }
-
-            var componentRenderMode = GetComponentRenderMode((IComponent)target);
-            return componentRenderMode is ServerRenderMode;
-        });
-
         var webAssemblyStore = new PrerenderComponentApplicationStore();
-        await manager.PersistStateAsync(webAssemblyStore, Dispatcher, (target, renderMode) =>
+
+        // In order to avoid running callbacks for auto render mode twice we use composite store
+        var server = new CopyOnlyStore<ServerRenderMode>();
+        var auto = new CopyOnlyStore<AutoRenderMode>();
+        var webAssembly = new CopyOnlyStore<WebAssemblyRenderMode>();
+        var store = new CompositeStore(server, auto, webAssembly);
+
+        await manager.PersistStateAsync(store, this);
+
+        foreach (var kvp in auto.Saved)
         {
-            if (target is not IComponent)
-            {
-                return false;
-            }
+            server.Saved.Add(kvp.Key, kvp.Value);
+            webAssembly.Saved.Add(kvp.Key, kvp.Value);
+        }
 
-            if (renderMode is not null)
-            {
-                return renderMode is WebAssemblyRenderMode;
-            }
-
-            var componentRenderMode = GetComponentRenderMode((IComponent)target);
-            return componentRenderMode is WebAssemblyRenderMode;
-        });
+        await Task.WhenAll(
+            serverStore.PersistStateAsync(server.Saved),
+            webAssemblyStore.PersistStateAsync(webAssembly.Saved));
 
         return new ComponentStateHtmlContent(serverStore, webAssemblyStore);
     }
@@ -91,12 +85,12 @@ internal partial class EndpointHtmlRenderer
         {
             case PersistedStateSerializationMode.Server:
                 var protectedStore = new ProtectedPrerenderComponentApplicationStore(_httpContext.RequestServices.GetRequiredService<IDataProtectionProvider>());
-                await manager.PersistStateAsync(protectedStore,Dispatcher);
+                await manager.PersistStateAsync(protectedStore, this);
                 return new ComponentStateHtmlContent(protectedStore, null);
 
             case PersistedStateSerializationMode.WebAssembly:
                 var store = new PrerenderComponentApplicationStore();
-                await manager.PersistStateAsync(store, Dispatcher);
+                await manager.PersistStateAsync(store, this);
                 return new ComponentStateHtmlContent(null, store);
 
             default:
@@ -177,5 +171,50 @@ internal partial class EndpointHtmlRenderer
                 writer.Write("-->");
             }
         }
+    }
+
+    internal class CompositeStore : IPersistentComponentStateStore, IEnumerable<IPersistentComponentStateStore>
+    {
+        public CompositeStore(
+            CopyOnlyStore<ServerRenderMode> server,
+            CopyOnlyStore<AutoRenderMode> auto,
+            CopyOnlyStore<WebAssemblyRenderMode> webassembly)
+        {
+            Server = server;
+            Auto = auto;
+            Webassembly = webassembly;
+        }
+
+        public CopyOnlyStore<ServerRenderMode> Server { get; }
+        public CopyOnlyStore<AutoRenderMode> Auto { get; }
+        public CopyOnlyStore<WebAssemblyRenderMode> Webassembly { get; }
+
+        public IEnumerator<IPersistentComponentStateStore> GetEnumerator()
+        {
+            yield return Server;
+            yield return Auto;
+            yield return Webassembly;
+        }
+
+        public Task<IDictionary<string, byte[]>> GetPersistedStateAsync() => throw new NotImplementedException();
+
+        public Task PersistStateAsync(IReadOnlyDictionary<string, byte[]> state) => Task.CompletedTask;
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    }
+
+    internal class CopyOnlyStore<T> : IPersistentComponentStateStore where T : IComponentRenderMode
+    {
+        public Dictionary<string, byte[]> Saved { get; private set; } = new();
+
+        public Task<IDictionary<string, byte[]>> GetPersistedStateAsync() => throw new NotImplementedException();
+
+        public Task PersistStateAsync(IReadOnlyDictionary<string, byte[]> state)
+        {
+            Saved = new Dictionary<string, byte[]>(state);
+            return Task.CompletedTask;
+        }
+
+        public bool SupportsRenderMode(IComponentRenderMode renderMode) => renderMode is T;
     }
 }

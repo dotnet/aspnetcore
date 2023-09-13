@@ -31,9 +31,9 @@ export async function startServer(components: RootComponentManager<ServerCompone
   }
 
   started = true;
-  appState = discoverServerPersistedState(document) || '';
+  appState = '';
   logger = new ConsoleLogger(options.logLevel);
-  circuit = new CircuitManager(components, appState, options, logger);
+  circuit = new CircuitManager(components, options, logger);
 
   logger.log(LogLevel.Information, 'Starting up Blazor server-side application.');
 
@@ -65,6 +65,10 @@ export async function startServer(components: RootComponentManager<ServerCompone
   Blazor._internal.sendJSDataStream = (data: ArrayBufferView | Blob, streamId: number, chunkSize: number) => circuit.sendJsDataStream(data, streamId, chunkSize);
 
   const jsInitializer = await fetchAndInvokeInitializers(options);
+
+  appState = discoverServerPersistedState(document) || '';
+  circuit.setApplicationState(appState);
+
   const circuitStarted = await circuit.start();
   if (!circuitStarted) {
     logger.log(LogLevel.Error, 'Failed to start the circuit.');
@@ -97,7 +101,7 @@ export function startCircuit(): Promise<boolean> {
 
   if (circuit.isDisposedOrDisposing()) {
     // If the current circuit is no longer available, create a new one.
-    circuit = new CircuitManager(circuit.getRootComponentManager(), appState, options, logger);
+    circuit = new CircuitManager(circuit.getRootComponentManager(), options, logger);
   }
 
   // Start the circuit. If the circuit has already started, this will return the existing

@@ -1,0 +1,35 @@
+﻿@page "/persist-state"
+
+<h1>Persist State Components</h1>
+
+@if (Server.HasValue)
+{
+    <strong>Server Persist State Component</strong>
+    <TestContentPackage.PersistStateComponent KeyName="server" @rendermode="@(new ServerRenderMode(true))" />
+    <hr />
+}
+
+@if (WebAssembly.HasValue)
+{
+    <strong>WebAssembly Persist State Component</strong>
+    <TestContentPackage.PersistStateComponent KeyName="wasm" @rendermode="@(new WebAssemblyRenderMode(true))" />
+    <hr />
+}
+
+@if (Auto.HasValue)
+{
+    <strong>Auto Persist State Component</strong>
+    <TestContentPackage.PersistStateComponent KeyName="auto" @rendermode="@(new AutoRenderMode(true))" />
+    <hr />
+}
+
+@code {
+    [Parameter, SupplyParameterFromQuery(Name = "server")]
+    public bool? Server { get; set; }
+
+    [Parameter, SupplyParameterFromQuery(Name = "wasm")]
+    public bool? WebAssembly { get; set; }
+
+    [Parameter, SupplyParameterFromQuery(Name = "auto")]
+    public bool? Auto { get; set; }
+}

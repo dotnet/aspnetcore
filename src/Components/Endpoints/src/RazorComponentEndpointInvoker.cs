@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointInvoker
 {
     private readonly EndpointHtmlRenderer _renderer;
-    private readonly ILogger<RazorComponentEndpointInvoker> _logger;
+    private readonly ILogger<RazorComponentEndpointInvoker> _logger;    
 
     public RazorComponentEndpointInvoker(EndpointHtmlRenderer renderer, ILogger<RazorComponentEndpointInvoker> logger)
     {
@@ -120,7 +120,8 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             await _renderer.SendStreamingUpdatesAsync(context, quiesceTask, bufferWriter);
         }
 
-        var componentStateHtmlContent = await _renderer.PrerenderPersistedStateAsync(context);
+        // Emit comment containing state only on first load.
+        var componentStateHtmlContent = await _renderer.PrerenderPersistedStateOnFirstLoadAsync(context);
         componentStateHtmlContent.WriteTo(bufferWriter, HtmlEncoder.Default);
 
         // Invoke FlushAsync to ensure any buffered content is asynchronously written to the underlying

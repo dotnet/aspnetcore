@@ -3,7 +3,6 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
-using static Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components;
@@ -14,19 +13,16 @@ namespace Microsoft.AspNetCore.Components;
 public class PersistentComponentState
 {
     private IDictionary<string, byte[]>? _existingState;
-    private readonly IDictionary<string, byte[]> _currentState;
 
-    private readonly List<PersistenceCallback> _registeredCallbacks;
+    internal PersistenceContext? PersistenceContext { get; set; }
+
+    private readonly List<RegistrationContext> _registeredCallbacks;
 
     internal PersistentComponentState(
-        IDictionary<string, byte[]> currentState,
-        List<PersistenceCallback> pauseCallbacks)
+        List<RegistrationContext> pauseCallbacks)
     {
-        _currentState = currentState;
         _registeredCallbacks = pauseCallbacks;
     }
-
-    internal bool PersistingState { get; set; }
 
     internal void InitializeExistingState(IDictionary<string, byte[]> existingState)
     {
@@ -57,7 +53,7 @@ public class PersistentComponentState
     {
         ArgumentNullException.ThrowIfNull(callback);
 
-        var persistenceCallback = new PersistenceCallback(callback, renderMode);
+        var persistenceCallback = new RegistrationContext(callback, renderMode);
 
         _registeredCallbacks.Add(persistenceCallback);
 
@@ -75,17 +71,17 @@ public class PersistentComponentState
     {
         ArgumentNullException.ThrowIfNull(key);
 
-        if (!PersistingState)
+        if (PersistenceContext is not { State: var currentState })
         {
             throw new InvalidOperationException("Persisting state is only allowed during an OnPersisting callback.");
         }
 
-        if (_currentState.ContainsKey(key))
+        if (currentState.ContainsKey(key))
         {
             throw new ArgumentException($"There is already a persisted object under the same key '{key}'");
         }
 
-        _currentState.Add(key, JsonSerializer.SerializeToUtf8Bytes(instance, JsonSerializerOptionsProvider.Options));
+        currentState.Add(key, JsonSerializer.SerializeToUtf8Bytes(instance, JsonSerializerOptionsProvider.Options));
     }
 
     /// <summary>

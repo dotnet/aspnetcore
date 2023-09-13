@@ -136,7 +136,7 @@ internal sealed partial class ComponentHub : Hub
             // SignalR message loop (we'd get a deadlock if any of the initialization
             // logic relied on receiving a subsequent message from SignalR), and it will
             // take care of its own errors anyway.
-            _ = circuitHost.InitializeAsync(store, Context.ConnectionAborted);
+            _ = circuitHost.InitializeAsync(Context.ConnectionAborted);
 
             // It's safe to *publish* the circuit now because nothing will be able
             // to run inside it until after InitializeAsync completes.

@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Components.Infrastructure;
-using static Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager;
 
 namespace Microsoft.AspNetCore.Components;
 
@@ -12,10 +11,10 @@ namespace Microsoft.AspNetCore.Components;
 /// </summary>
 public readonly struct PersistingComponentStateSubscription : IDisposable
 {
-    private readonly List<PersistenceCallback>? _callbacks;
-    private readonly PersistenceCallback? _callback;
+    private readonly List<RegistrationContext>? _callbacks;
+    private readonly RegistrationContext? _callback;
 
-    internal PersistingComponentStateSubscription(List<PersistenceCallback> callbacks, PersistenceCallback callback)
+    internal PersistingComponentStateSubscription(List<RegistrationContext> callbacks, RegistrationContext callback)
     {
         _callbacks = callbacks;
         _callback = callback;

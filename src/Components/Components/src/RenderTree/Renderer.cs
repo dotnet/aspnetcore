@@ -134,6 +134,14 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         => GetRequiredComponentState(componentId);
 
     /// <summary>
+    /// Gets the <see cref="IComponentRenderMode"/> for a given component if available.
+    /// </summary>
+    /// <param name="component">The component type</param>
+    /// <returns></returns>
+    protected internal virtual IComponentRenderMode? GetComponentRenderMode(IComponent component)
+        => null;
+
+    /// <summary>
     /// 
     /// </summary>
     /// <param name="component"></param>

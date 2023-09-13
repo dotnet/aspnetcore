@@ -11,17 +11,15 @@ namespace Microsoft.AspNetCore.Components.Infrastructure;
 /// </summary>
 public class ComponentStatePersistenceManager
 {
-    private readonly List<PersistenceCallback> _pauseCallbacks = new();
-    private readonly Dictionary<string, byte[]> _currentState = new(StringComparer.Ordinal);
+    private readonly List<RegistrationContext> _registeredCallbacks = new();
     private readonly ILogger<ComponentStatePersistenceManager> _logger;
-    private readonly PersistentStateCallbackFilter _defaultFilter = (target, renderMode) => true;
 
     /// <summary>
     /// Initializes a new instance of <see cref="ComponentStatePersistenceManager"/>.
     /// </summary>
     public ComponentStatePersistenceManager(ILogger<ComponentStatePersistenceManager> logger)
     {
-        State = new PersistentComponentState(_currentState, _pauseCallbacks);
+        State = new PersistentComponentState(_registeredCallbacks);
         _logger = logger;
     }
 
@@ -48,52 +46,74 @@ public class ComponentStatePersistenceManager
     /// <param name="renderer">The <see cref="Renderer"/> that components are being rendered.</param>
     /// <returns>A <see cref="Task"/> that will complete when the state has been restored.</returns>
     public Task PersistStateAsync(IPersistentComponentStateStore store, Renderer renderer)
-        => PersistStateAsync(store, renderer.Dispatcher);
-
-    /// <summary>
-    /// Persists the component application state into the given <see cref="IPersistentComponentStateStore"/>.
-    /// </summary>
-    /// <param name="store">The <see cref="IPersistentComponentStateStore"/> to restore the application state from.</param>
-    /// <param name="dispatcher">The <see cref="Dispatcher"/> corresponding to the components' renderer.</param>
-    /// <returns>A <see cref="Task"/> that will complete when the state has been restored.</returns>
-    public Task PersistStateAsync(IPersistentComponentStateStore store, Dispatcher dispatcher)
-        => PersistStateAsync(store, dispatcher, _defaultFilter);
-
-    /// <summary>
-    /// Persists the component application state into the given <see cref="IPersistentComponentStateStore"/>.
-    /// </summary>
-    /// <param name="store">The <see cref="IPersistentComponentStateStore"/> to restore the application state from.</param>
-    /// <param name="dispatcher">The <see cref="Dispatcher"/> corresponding to the components' renderer.</param>
-    /// <param name="filter"></param>
-    /// <returns>A <see cref="Task"/> that will complete when the state has been restored.</returns>
-    public Task PersistStateAsync(IPersistentComponentStateStore store, Dispatcher dispatcher, PersistentStateCallbackFilter filter)
     {
-        return dispatcher.InvokeAsync(PauseAndPersistState);
+        return renderer.Dispatcher.InvokeAsync(PauseAndPersistState);
 
         async Task PauseAndPersistState()
         {
-            State.PersistingState = true;
-            await PauseAsync(filter);
-            State.PersistingState = false;
+            InferRenderModes(renderer);
 
-            await store.PersistStateAsync(_currentState);
+            if (store is IEnumerable<IPersistentComponentStateStore> compositeStore)
+            {
+                foreach (var store in compositeStore)
+                {
+                    await PersistState(store);
+                }
+            }
+            else
+            {
+                await PersistState(store);
+            }
+        }
+
+        async Task PersistState(IPersistentComponentStateStore store)
+        {
+            var currentState = new Dictionary<string, byte[]>();
+            State.PersistenceContext = new(currentState);
+
+            await PauseAsync(store);
+            await store.PersistStateAsync(currentState);
         }
     }
 
-    internal Task PauseAsync(PersistentStateCallbackFilter filter)
+    private void InferRenderModes(Renderer renderer)
+    {
+        for (var i = 0; i < _registeredCallbacks.Count; i++)
+        {
+            var registration = _registeredCallbacks[i];
+            if (registration.RenderMode != null)
+            {
+                // Explicitly set render mode, so nothing to do.
+                continue;
+            }
+
+            if (registration.Callback.Target is IComponent component)
+            {
+                var componentRenderMode = renderer.GetComponentRenderMode(component);
+                _registeredCallbacks[i] = new RegistrationContext(registration.Callback, componentRenderMode);
+                continue;
+            }
+
+            throw new InvalidOperationException(
+                $"The registered callback {registration.Callback.Method.Name} must be associated with a component or define" +
+                $" an explicit render mode type during registration.");
+        }
+    }
+
+    internal Task PauseAsync(IPersistentComponentStateStore store)
     {
         List<Task>? pendingCallbackTasks = null;
 
-        for (var i = 0; i < _pauseCallbacks.Count; i++)
+        for (var i = 0; i < _registeredCallbacks.Count; i++)
         {
-            var callback = _pauseCallbacks[i];
+            var registration = _registeredCallbacks[i];
 
-            if (!filter.Invoke(callback.Callback.Target, callback.RenderMode))
+            if (!store.SupportsRenderMode(registration.RenderMode!))
             {
                 continue;
             }
 
-            var result = ExecuteCallback(callback.Callback, _logger);
+            var result = ExecuteCallback(registration.Callback, _logger);
             if (!result.IsCompletedSuccessfully)
             {
                 pendingCallbackTasks ??= new();
@@ -144,14 +164,4 @@ public class ComponentStatePersistenceManager
             }
         }
     }
-
-    internal readonly record struct PersistenceCallback(Func<Task> Callback, IComponentRenderMode? RenderMode);
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="target"></param>
-    /// <param name="renderMode"></param>
-    /// <returns></returns>
-    public delegate bool PersistentStateCallbackFilter(object? target, IComponentRenderMode? renderMode);
 }

@@ -797,6 +797,61 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         AssertBrowserLogContainsMessage("Error: The circuit");
     }
 
+    [Fact]
+    public void CanPersistPrerenderedState_Server()
+    {
+        Navigate($"{ServerPathBase}/persist-state?server=true");
+
+        Browser.Equal("restored", () => Browser.FindElement(By.Id("server")).Text);
+        Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode-server")).Text);
+    }
+
+    [Fact]
+    public void CanPersistPrerenderedState_WebAssembly()
+    {
+        Navigate($"{ServerPathBase}/persist-state?wasm=true");
+
+        Browser.Equal("restored", () => Browser.FindElement(By.Id("wasm")).Text);
+        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-wasm")).Text);
+    }
+
+    [Fact]
+    public void CanPersistPrerenderedState_Auto_PersistsOnWebAssembly()
+    {
+        Navigate($"{ServerPathBase}/persist-state?auto=true");
+
+        Browser.Equal("restored", () => Browser.FindElement(By.Id("auto")).Text);
+        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-auto")).Text);
+    }
+
+    [Fact]
+    public void CanPersistPrerenderedState_Auto_PersistsOnServerWhenWebAssemblyNotLoaded()
+    {
+        Navigate(ServerPathBase);
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+        BlockWebAssemblyResourceLoad();
+
+        Navigate($"{ServerPathBase}/persist-state?auto=true");
+
+        Browser.Equal("restored", () => Browser.FindElement(By.Id("auto")).Text);
+        Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode-auto")).Text);
+    }
+
+    [Fact]
+    public void CanPersistState_AllRenderModesAtTheSameTime()
+    {
+        Navigate($"{ServerPathBase}/persist-state?server=true&wasm=true&auto=true");
+
+        Browser.Equal("restored", () => Browser.FindElement(By.Id("server")).Text);
+        Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode-server")).Text);
+
+        Browser.Equal("restored", () => Browser.FindElement(By.Id("wasm")).Text);
+        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-wasm")).Text);
+
+        Browser.Equal("restored", () => Browser.FindElement(By.Id("auto")).Text);
+        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-auto")).Text);
+    }
+
     private void BlockWebAssemblyResourceLoad()
     {
         ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('block-load-boot-resource', 'true')");
