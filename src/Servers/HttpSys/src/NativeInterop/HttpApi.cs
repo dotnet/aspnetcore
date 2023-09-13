@@ -41,11 +41,8 @@ internal static unsafe partial class HttpApi
 
     internal delegate uint HttpSetRequestPropertyInvoker(SafeHandle requestQueueHandle, ulong requestId, HTTP_REQUEST_PROPERTY propertyId, void* input, uint inputSize, IntPtr overlapped);
 
+    // This property is used by HttpListener to pass the version structure to the native layer in API calls.
     private static HTTPAPI_VERSION version;
-
-    // This property is used by HttpListener to pass the version structure to the native layer in API
-    // calls.
-
     internal static HTTPAPI_VERSION Version => version;
 
     internal static SafeLibraryHandle? HttpApiModule { get; private set; }

@@ -487,7 +487,7 @@ internal sealed class Response
         {
             return;
         }
-        string headerName;
+
         string headerValue;
         int lookup;
         byte* bytes;
@@ -495,22 +495,20 @@ internal sealed class Response
 
         var numUnknownHeaders = 0;
         var numKnownMultiHeaders = 0;
-        foreach (var headerPair in Headers)
+        foreach (var (headerName, headerValues) in Headers)
         {
-            if (headerPair.Value.Count == 0)
+            if (headerValues.Count == 0)
             {
                 continue;
             }
             // See if this is an unknown header
-            lookup = HttpApiTypes.HTTP_RESPONSE_HEADER_ID.IndexOfKnownHeader(headerPair.Key);
-
             // Http.Sys doesn't let us send the Connection: Upgrade header as a Known header.
-            if (lookup == -1 ||
-                (isOpaqueUpgrade && lookup == (int)HttpApiTypes.HTTP_RESPONSE_HEADER_ID.Enum.HttpHeaderConnection))
+            if (!HttpApiTypes.ResponseHeaders.KnownHeaders.TryGetValue(headerName, out lookup) ||
+                (isOpaqueUpgrade && lookup == (int)HTTP_HEADER_ID.HttpHeaderConnection))
             {
-                numUnknownHeaders += headerPair.Value.Count;
+                numUnknownHeaders += headerValues.Count;
             }
-            else if (headerPair.Value.Count > 1)
+            else if (headerValues.Count > 1)
             {
                 numKnownMultiHeaders++;
             }
@@ -520,19 +518,16 @@ internal sealed class Response
         fixed (__HTTP_KNOWN_HEADER_30* pKnownHeaders = &_nativeResponse.Base.Headers.KnownHeaders)
         {
             var knownHeaders = pKnownHeaders->AsSpan();
-            foreach (var headerPair in Headers)
+            foreach (var (headerName, headerValues) in Headers)
             {
-                if (headerPair.Value.Count == 0)
+                if (headerValues.Count == 0)
                 {
                     continue;
                 }
-                headerName = headerPair.Key;
-                var headerValues = headerPair.Value;
-                lookup = HttpApiTypes.HTTP_RESPONSE_HEADER_ID.IndexOfKnownHeader(headerName);
 
                 // Http.Sys doesn't let us send the Connection: Upgrade header as a Known header.
-                if (lookup == -1 ||
-                    (isOpaqueUpgrade && lookup == (int)HttpApiTypes.HTTP_RESPONSE_HEADER_ID.Enum.HttpHeaderConnection))
+                if (!HttpApiTypes.ResponseHeaders.KnownHeaders.TryGetValue(headerName, out lookup) ||
+                    (isOpaqueUpgrade && lookup == (int)HTTP_HEADER_ID.HttpHeaderConnection))
                 {
                     if (unknownHeaders == null)
                     {
@@ -556,7 +551,7 @@ internal sealed class Response
                         _nativeResponse.Base.Headers.UnknownHeaderCount++;
                     }
                 }
-                else if (headerPair.Value.Count == 1)
+                else if (headerValues.Count == 1)
                 {
                     headerValue = headerValues[0] ?? string.Empty;
                     bytes = allocator.GetHeaderEncodedBytes(headerValue, out bytesLength);
@@ -573,12 +568,12 @@ internal sealed class Response
                     }
 
                     knownHeaderInfo[_nativeResponse.ResponseInfoCount].Type = HTTP_RESPONSE_INFO_TYPE.HttpResponseInfoTypeMultipleKnownHeaders;
-                    knownHeaderInfo[_nativeResponse.ResponseInfoCount].Length = (uint)sizeof(HttpApiTypes.HTTP_MULTIPLE_KNOWN_HEADERS);
+                    knownHeaderInfo[_nativeResponse.ResponseInfoCount].Length = (uint)sizeof(HTTP_MULTIPLE_KNOWN_HEADERS);
 
-                    var header = allocator.AllocAsPointer<HttpApiTypes.HTTP_MULTIPLE_KNOWN_HEADERS>(1);
+                    var header = allocator.AllocAsPointer<HTTP_MULTIPLE_KNOWN_HEADERS>(1);
 
-                    header->HeaderId = (HttpApiTypes.HTTP_RESPONSE_HEADER_ID.Enum)lookup;
-                    header->Flags = HttpApiTypes.HTTP_RESPONSE_INFO_FLAGS.PreserveOrder; // The docs say this is for www-auth only.
+                    header->HeaderId = (HTTP_HEADER_ID)lookup;
+                    header->Flags = (uint)HttpApiTypes.HTTP_RESPONSE_INFO_FLAGS.PreserveOrder; // The docs say this is for www-auth only.
                     header->KnownHeaderCount = 0;
 
                     var headerAlloc = allocator.AllocAsPointer<HTTP_KNOWN_HEADER>(headerValues.Count);

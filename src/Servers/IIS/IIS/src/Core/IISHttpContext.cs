@@ -591,7 +591,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
                 continue;
             }
 
-            var knownHeaderIndex = HttpApiTypes.HTTP_RESPONSE_HEADER_ID.IndexOfKnownHeader(headerPair.Key);
+            var isKnownHeader = HttpApiTypes.ResponseHeaders.KnownHeaders.TryGetValue(headerPair.Key, out var knownHeaderIndex);
             for (var i = 0; i < headerValues.Count; i++)
             {
                 var headerValue = headerValues[i];
@@ -606,7 +606,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
 
                 fixed (byte* pHeaderValue = headerValueBytes)
                 {
-                    if (knownHeaderIndex == -1)
+                    if (!isKnownHeader)
                     {
                         var headerNameBytes = Encoding.UTF8.GetBytes(headerPair.Key);
                         fixed (byte* pHeaderName = headerNameBytes)

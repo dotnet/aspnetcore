@@ -1,1 +1,2 @@
 httpapi.*
+Windows.Win32.Networking.HttpServer

@@ -327,12 +327,12 @@ internal sealed partial class HttpSysListener : IDisposable
 
             knownHeaderInfo[httpResponse.ResponseInfoCount].Type = HTTP_RESPONSE_INFO_TYPE.HttpResponseInfoTypeMultipleKnownHeaders;
             knownHeaderInfo[httpResponse.ResponseInfoCount].Length =
-                (uint)sizeof(HttpApiTypes.HTTP_MULTIPLE_KNOWN_HEADERS);
+                (uint)sizeof(HTTP_MULTIPLE_KNOWN_HEADERS);
 
-            var header = allocator.AllocAsPointer<HttpApiTypes.HTTP_MULTIPLE_KNOWN_HEADERS>(1);
+            var header = allocator.AllocAsPointer<HTTP_MULTIPLE_KNOWN_HEADERS>(1);
 
-            header->HeaderId = HttpApiTypes.HTTP_RESPONSE_HEADER_ID.Enum.HttpHeaderWwwAuthenticate;
-            header->Flags = HttpApiTypes.HTTP_RESPONSE_INFO_FLAGS.PreserveOrder; // The docs say this is for www-auth only.
+            header->HeaderId = HTTP_HEADER_ID.HttpHeaderWwwAuthenticate;
+            header->Flags = (uint)HttpApiTypes.HTTP_RESPONSE_INFO_FLAGS.PreserveOrder; // The docs say this is for www-auth only.
             header->KnownHeaderCount = 0;
 
             var nativeHeaderValues = allocator.AllocAsPointer<HTTP_KNOWN_HEADER>(authChallenges.Count);
