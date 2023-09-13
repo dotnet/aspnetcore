@@ -402,22 +402,17 @@ internal sealed partial class WebSocketsTransport : ITransport, IStatefulReconne
         var cleanup = true;
         try
         {
-            if (_useStatefulReconnect && !_gracefulClose)
+            if (!_gracefulClose && UpdateConnectionPair())
             {
-                if (!UpdateConnectionPair())
-                {
-                    return;
-                }
-
                 try
                 {
                     await StartAsync(url, _webSocketMessageType == WebSocketMessageType.Binary ? TransferFormat.Binary : TransferFormat.Text,
                         cancellationToken: default).ConfigureAwait(false);
                     cleanup = false;
                 }
-                catch
+                catch (Exception ex)
                 {
-                    throw new InvalidOperationException("Reconnect attempt failed.");
+                    throw new InvalidOperationException("Reconnect attempt failed.", innerException: ex);
                 }
             }
         }
