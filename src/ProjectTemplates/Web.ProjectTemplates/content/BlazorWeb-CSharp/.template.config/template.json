@@ -63,6 +63,14 @@
           }
         },
         {
+          "condition": "(UseWebAssembly && InteractiveAtRoot)",
+          "rename": {
+            "BlazorWeb-CSharp/Components/Layout/": "./BlazorWeb-CSharp.Client/Layout/",
+            "BlazorWeb-CSharp/Components/Pages/": "./BlazorWeb-CSharp.Client/Pages/",
+            "BlazorWeb-CSharp/Components/Routes.razor": "./BlazorWeb-CSharp.Client/Routes.razor"
+          }
+        },
+        {
           "condition": "(!UseProgramMain)",
           "exclude": [
             "BlazorWeb-CSharp/Program.Main.cs"

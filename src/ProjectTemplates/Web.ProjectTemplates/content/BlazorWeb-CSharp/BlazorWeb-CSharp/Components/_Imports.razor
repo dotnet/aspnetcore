@@ -6,4 +6,7 @@
 @using Microsoft.AspNetCore.Components.Web.Virtualization
 @using Microsoft.JSInterop
 @using BlazorWeb_CSharp
+@*#if (UseWebAssembly) -->
+@using BlazorWeb_CSharp.Client
+##endif*@
 @using BlazorWeb_CSharp.Components
