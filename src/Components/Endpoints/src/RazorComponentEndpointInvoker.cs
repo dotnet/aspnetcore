@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Components.Endpoints.Rendering;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
@@ -133,7 +134,12 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
 
     private async Task<RequestValidationState> ValidateRequestAsync(HttpContext context, IAntiforgery? antiforgery)
     {
-        var isPost = HttpMethods.IsPost(context.Request.Method);
+        var isPost = HttpMethods.IsPost(context.Request.Method) &&
+            // Disable POST functionality during exception handling.
+            // The exception handler middleware will not update the request method, and we don't
+            // want to run the form handling logic against the error page.
+            context.Features.Get<IExceptionHandlerFeature>() == null;
+
         if (isPost)
         {
             var valid = false;
