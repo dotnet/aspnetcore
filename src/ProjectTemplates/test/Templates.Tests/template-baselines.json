@@ -556,7 +556,7 @@
       "AuthOption": "None"
     },
     "UseWebAssembly": {
-      "Template": "web",
+      "Template": "blazor",
       "Arguments": "new blazor --use-server false --use-wasm",
       "Files": [
         "{ProjectName}.sln",
@@ -589,7 +589,7 @@
       "AuthOption": "None"
     },
     "UseServerAndWebAssembly": {
-      "Template": "web",
+      "Template": "blazor",
       "Arguments": "new blazor --use-wasm",
       "Files": [
         "{ProjectName}.sln",
@@ -660,7 +660,7 @@
       "AuthOption": "None"
     },
     "EmptyUseWebAssembly": {
-      "Template": "web",
+      "Template": "blazor",
       "Arguments": "new blazor --use-server false --use-wasm --empty",
       "Files": [
         "{ProjectName}.sln",
@@ -683,7 +683,7 @@
       "AuthOption": "None"
     },
     "EmptyUseServerAndWebAssembly": {
-      "Template": "web",
+      "Template": "blazor",
       "Arguments": "new blazor --use-wasm --empty",
       "Files": [
         "{ProjectName}.sln",
