@@ -9,6 +9,8 @@ Microsoft.AspNetCore.Components.Forms.AntiforgeryStateProvider
 Microsoft.AspNetCore.Components.Forms.AntiforgeryStateProvider.AntiforgeryStateProvider() -> void
 Microsoft.AspNetCore.Components.Forms.AntiforgeryToken
 Microsoft.AspNetCore.Components.Forms.AntiforgeryToken.AntiforgeryToken() -> void
+Microsoft.AspNetCore.Components.Forms.EditForm.Enhance.get -> bool
+Microsoft.AspNetCore.Components.Forms.EditForm.Enhance.set -> void
 Microsoft.AspNetCore.Components.Forms.Editor<T>
 Microsoft.AspNetCore.Components.Forms.Editor<T>.Editor() -> void
 Microsoft.AspNetCore.Components.Forms.Editor<T>.NameFor(System.Linq.Expressions.LambdaExpression! expression) -> string!

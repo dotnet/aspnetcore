@@ -1,9 +1,10 @@
-﻿@page "/forms/no-antiforgery"
+﻿@page "/forms/non-enhanced-plainform"
 @using Microsoft.AspNetCore.Components.Forms
 
-<h2>Default form</h2>
+<h2>Non-enhanced form</h2>
 
-<form data-enhance method="post" @onsubmit="() => _submitted = true" @formname="someform">
+<form @formname="someform" method="POST" @onsubmit="() => _submitted = true">
+    <AntiforgeryToken />
     <input id="send" type="submit" value="Send" />
 </form>
 

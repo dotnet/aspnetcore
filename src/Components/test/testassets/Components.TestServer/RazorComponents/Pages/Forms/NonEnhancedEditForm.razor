@@ -1,11 +1,11 @@
-﻿@page "/forms/no-antiforgery"
+﻿@page "/forms/non-enhanced-editform"
 @using Microsoft.AspNetCore.Components.Forms
 
-<h2>Default form</h2>
+<h2>Non-enhanced editform</h2>
 
-<form data-enhance method="post" @onsubmit="() => _submitted = true" @formname="someform">
+<EditForm FormName="someform" Model="@this" method="POST" OnValidSubmit="() => _submitted = true">
     <input id="send" type="submit" value="Send" />
-</form>
+</EditForm>
 
 @if (_submitted)
 {
