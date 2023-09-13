@@ -58,81 +58,11 @@ internal static unsafe class HttpApiTypes
         HTTP_REQUEST_PROPERTY_SNI_FLAG_NO_SNI = 0x00000002,
     }
 
-    [StructLayout(LayoutKind.Explicit)]
-    internal struct HTTP_DATA_CHUNK
-    {
-        [FieldOffset(0)]
-        internal HTTP_DATA_CHUNK_TYPE DataChunkType;
-
-        [FieldOffset(8)]
-        internal FromMemory fromMemory;
-
-        [FieldOffset(8)]
-        internal FromFileHandle fromFile;
-
-        [FieldOffset(8)]
-        internal Trailers trailers;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct FromMemory
-    {
-        // 4 bytes for 32bit, 8 bytes for 64bit
-        internal IntPtr pBuffer;
-        internal uint BufferLength;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct FromFileHandle
-    {
-        internal ulong offset;
-        internal ulong count;
-        internal IntPtr fileHandle;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct Trailers
-    {
-        internal ushort trailerCount;
-        internal IntPtr pTrailers;
-    }
-
     [StructLayout(LayoutKind.Sequential)]
     internal struct HTTPAPI_VERSION
     {
         internal ushort HttpApiMajorVersion;
         internal ushort HttpApiMinorVersion;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct HTTP_SSL_CLIENT_CERT_INFO
-    {
-        internal uint CertFlags;
-        internal uint CertEncodedSize;
-        internal byte* pCertEncoded;
-        internal void* Token;
-        internal byte CertDeniedByMapper;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct HTTP_RESPONSE
-    {
-        internal uint Flags;
-        internal HTTP_VERSION Version;
-        internal ushort StatusCode;
-        internal ushort ReasonLength;
-        internal byte* pReason;
-        internal HTTP_RESPONSE_HEADERS Headers;
-        internal ushort EntityChunkCount;
-        internal HTTP_DATA_CHUNK* pEntityChunks;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct HTTP_RESPONSE_V2
-    {
-        internal HTTP_RESPONSE Response_V1;
-        internal ushort ResponseInfoCount;
-        internal HTTP_RESPONSE_INFO* pResponseInfo;
     }
 
     internal enum HTTP_RESPONSE_INFO_FLAGS : uint

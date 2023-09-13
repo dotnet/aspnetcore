@@ -26,13 +26,13 @@ internal static unsafe partial class HttpApi
     internal static partial uint HttpReceiveHttpRequest(SafeHandle requestQueueHandle, ulong requestId, uint flags, Windows.Win32.Networking.HttpServer.HTTP_REQUEST_V1* pRequestBuffer, uint requestBufferLength, uint* pBytesReturned, NativeOverlapped* pOverlapped);
 
     [LibraryImport(HTTPAPI, SetLastError = true)]
-    internal static partial uint HttpSendHttpResponse(SafeHandle requestQueueHandle, ulong requestId, uint flags, HttpApiTypes.HTTP_RESPONSE_V2* pHttpResponse, Windows.Win32.Networking.HttpServer.HTTP_CACHE_POLICY* pCachePolicy, uint* pBytesSent, IntPtr pReserved1, uint Reserved2, SafeNativeOverlapped pOverlapped, IntPtr pLogData);
+    internal static partial uint HttpSendHttpResponse(SafeHandle requestQueueHandle, ulong requestId, uint flags, Windows.Win32.Networking.HttpServer.HTTP_RESPONSE_V2* pHttpResponse, Windows.Win32.Networking.HttpServer.HTTP_CACHE_POLICY* pCachePolicy, uint* pBytesSent, IntPtr pReserved1, uint Reserved2, SafeNativeOverlapped pOverlapped, IntPtr pLogData);
 
     [LibraryImport(HTTPAPI, SetLastError = true)]
     internal static partial uint HttpWaitForDisconnectEx(SafeHandle requestQueueHandle, ulong connectionId, uint reserved, NativeOverlapped* overlapped);
 
     [LibraryImport(HTTPAPI, SetLastError = true)]
-    internal static partial uint HttpSendResponseEntityBody(SafeHandle requestQueueHandle, ulong requestId, uint flags, ushort entityChunkCount, HttpApiTypes.HTTP_DATA_CHUNK* pEntityChunks, uint* pBytesSent, IntPtr pReserved1, uint Reserved2, SafeNativeOverlapped pOverlapped, IntPtr pLogData);
+    internal static partial uint HttpSendResponseEntityBody(SafeHandle requestQueueHandle, ulong requestId, uint flags, ushort entityChunkCount, Windows.Win32.Networking.HttpServer.HTTP_DATA_CHUNK* pEntityChunks, uint* pBytesSent, IntPtr pReserved1, uint Reserved2, SafeNativeOverlapped pOverlapped, IntPtr pLogData);
 
     [LibraryImport(HTTPAPI, SetLastError = true, StringMarshalling = StringMarshalling.Utf16)]
     internal static unsafe partial uint HttpCreateRequestQueue(HttpApiTypes.HTTPAPI_VERSION version, string? pName,

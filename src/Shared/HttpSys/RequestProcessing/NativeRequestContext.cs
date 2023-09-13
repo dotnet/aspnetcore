@@ -715,7 +715,7 @@ internal unsafe class NativeRequestContext : IDisposable
 
         if (request->EntityChunkCount > 0 && dataChunkIndex < request->EntityChunkCount && dataChunkIndex != -1)
         {
-            var pDataChunk = (HttpApiTypes.HTTP_DATA_CHUNK*)(fixup + (byte*)&request->pEntityChunks[dataChunkIndex]);
+            var pDataChunk = (HTTP_DATA_CHUNK*)(fixup + (byte*)&request->pEntityChunks[dataChunkIndex]);
 
             fixed (byte* pReadBuffer = buffer)
             {
@@ -723,7 +723,7 @@ internal unsafe class NativeRequestContext : IDisposable
 
                 while (dataChunkIndex < request->EntityChunkCount && dataRead < size)
                 {
-                    if (dataChunkOffset >= pDataChunk->fromMemory.BufferLength)
+                    if (dataChunkOffset >= pDataChunk->Anonymous.FromMemory.BufferLength)
                     {
                         dataChunkOffset = 0;
                         dataChunkIndex++;
@@ -731,9 +731,9 @@ internal unsafe class NativeRequestContext : IDisposable
                     }
                     else
                     {
-                        var pFrom = (byte*)pDataChunk->fromMemory.pBuffer + dataChunkOffset + fixup;
+                        var pFrom = (byte*)pDataChunk->Anonymous.FromMemory.pBuffer + dataChunkOffset + fixup;
 
-                        var bytesToRead = pDataChunk->fromMemory.BufferLength - (uint)dataChunkOffset;
+                        var bytesToRead = pDataChunk->Anonymous.FromMemory.BufferLength - (uint)dataChunkOffset;
                         if (bytesToRead > (uint)size)
                         {
                             bytesToRead = (uint)size;

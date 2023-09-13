@@ -307,8 +307,8 @@ internal sealed partial class HttpSysListener : IDisposable
 
     internal unsafe void SendError(ulong requestId, int httpStatusCode, IList<string>? authChallenges = null)
     {
-        var httpResponse = new HttpApiTypes.HTTP_RESPONSE_V2();
-        httpResponse.Response_V1.Version = new()
+        var httpResponse = new HTTP_RESPONSE_V2();
+        httpResponse.Base.Version = new()
         {
             MajorVersion = 1,
             MinorVersion = 1
@@ -353,24 +353,24 @@ internal sealed partial class HttpSysListener : IDisposable
             httpResponse.ResponseInfoCount = 1;
         }
 
-        httpResponse.Response_V1.StatusCode = checked((ushort)httpStatusCode);
+        httpResponse.Base.StatusCode = checked((ushort)httpStatusCode);
         var statusDescription = HttpReasonPhrase.Get(httpStatusCode) ?? string.Empty;
         uint dataWritten = 0;
         uint statusCode;
 
         bytes = allocator.GetHeaderEncodedBytes(statusDescription, out bytesLength);
-        httpResponse.Response_V1.pReason = bytes;
-        httpResponse.Response_V1.ReasonLength = checked((ushort)bytesLength);
+        httpResponse.Base.pReason = (PCSTR)bytes;
+        httpResponse.Base.ReasonLength = checked((ushort)bytesLength);
 
         const int contentLengthLength = 1;
         var pContentLength = allocator.AllocAsPointer<byte>(contentLengthLength + 1);
         pContentLength[0] = (byte)'0';
         pContentLength[1] = 0; // null terminator
 
-        var knownHeaders = httpResponse.Response_V1.Headers.KnownHeaders.AsSpan();
+        var knownHeaders = httpResponse.Base.Headers.KnownHeaders.AsSpan();
         knownHeaders[(int)HttpSysResponseHeader.ContentLength].pRawValue = (PCSTR)pContentLength;
         knownHeaders[(int)HttpSysResponseHeader.ContentLength].RawValueLength = contentLengthLength;
-        httpResponse.Response_V1.Headers.UnknownHeaderCount = 0;
+        httpResponse.Base.Headers.UnknownHeaderCount = 0;
 
         statusCode =
             HttpApi.HttpSendHttpResponse(

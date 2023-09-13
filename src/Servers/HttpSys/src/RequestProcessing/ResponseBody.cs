@@ -145,15 +145,14 @@ internal sealed partial class ResponseBody : Stream
         Span<GCHandle> pinnedBuffers = default;
         try
         {
-            Span<HttpApiTypes.HTTP_DATA_CHUNK> dataChunks;
-            BuildDataChunks(ref allocator, endOfRequest, data, out dataChunks, out pinnedBuffers);
+            BuildDataChunks(ref allocator, endOfRequest, data, out var dataChunks, out pinnedBuffers);
             if (!started)
             {
                 statusCode = _requestContext.Response.SendHeaders(ref allocator, dataChunks, null, flags, false);
             }
             else
             {
-                fixed (HttpApiTypes.HTTP_DATA_CHUNK* pDataChunks = dataChunks)
+                fixed (HTTP_DATA_CHUNK* pDataChunks = dataChunks)
                 {
                     statusCode = HttpApi.HttpSendResponseEntityBody(
                             RequestQueueHandle,
@@ -195,7 +194,7 @@ internal sealed partial class ResponseBody : Stream
         }
     }
 
-    private unsafe void BuildDataChunks(scoped ref UnmanagedBufferAllocator allocator, bool endOfRequest, ArraySegment<byte> data, out Span<HttpApiTypes.HTTP_DATA_CHUNK> dataChunks, out Span<GCHandle> pins)
+    private unsafe void BuildDataChunks(scoped ref UnmanagedBufferAllocator allocator, bool endOfRequest, ArraySegment<byte> data, out Span<HTTP_DATA_CHUNK> dataChunks, out Span<GCHandle> pins)
     {
         var hasData = data.Count > 0;
         var chunked = _requestContext.Response.BoundaryType == BoundaryType.Chunked;
@@ -207,7 +206,7 @@ internal sealed partial class ResponseBody : Stream
         // Figure out how many data chunks
         if (chunked && !hasData && endOfRequest)
         {
-            dataChunks = allocator.AllocAsSpan<HttpApiTypes.HTTP_DATA_CHUNK>(1);
+            dataChunks = allocator.AllocAsSpan<HTTP_DATA_CHUNK>(1);
             SetDataChunkWithPinnedData(dataChunks, ref currentChunk, Helpers.ChunkTerminator);
             pins = default;
             return;
@@ -245,7 +244,7 @@ internal sealed partial class ResponseBody : Stream
         // Manually initialize the allocated GCHandles
         pins.Clear();
 
-        dataChunks = allocator.AllocAsSpan<HttpApiTypes.HTTP_DATA_CHUNK>(chunkCount);
+        dataChunks = allocator.AllocAsSpan<HTTP_DATA_CHUNK>(chunkCount);
 
         if (chunked)
         {
@@ -281,7 +280,7 @@ internal sealed partial class ResponseBody : Stream
     }
 
     private static unsafe void SetDataChunk(
-        Span<HttpApiTypes.HTTP_DATA_CHUNK> chunks,
+        Span<HTTP_DATA_CHUNK> chunks,
         ref int chunkIndex,
         ArraySegment<byte> buffer,
         out GCHandle handle)
@@ -291,7 +290,7 @@ internal sealed partial class ResponseBody : Stream
     }
 
     private static unsafe void SetDataChunkWithPinnedData(
-        Span<HttpApiTypes.HTTP_DATA_CHUNK> chunks,
+        Span<HTTP_DATA_CHUNK> chunks,
         ref int chunkIndex,
         ReadOnlySpan<byte> bytes)
     {
@@ -299,9 +298,9 @@ internal sealed partial class ResponseBody : Stream
         chunk.DataChunkType = HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromMemory;
         fixed (byte* ptr = bytes)
         {
-            chunk.fromMemory.pBuffer = (IntPtr)ptr;
+            chunk.Anonymous.FromMemory.pBuffer = ptr;
         }
-        chunk.fromMemory.BufferLength = (uint)bytes.Length;
+        chunk.Anonymous.FromMemory.BufferLength = (uint)bytes.Length;
     }
 
     private static void FreeDataBuffers(Span<GCHandle> pinnedBuffers)

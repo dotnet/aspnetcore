@@ -30,7 +30,7 @@ internal sealed class Response
     private TimeSpan? _cacheTtl;
     private long _expectedBodyLength;
     private BoundaryType _boundaryType;
-    private HttpApiTypes.HTTP_RESPONSE_V2 _nativeResponse;
+    private HTTP_RESPONSE_V2 _nativeResponse;
     private HeaderCollection? _trailers;
 
     internal Response(RequestContext requestContext)
@@ -40,14 +40,14 @@ internal sealed class Response
         Headers = new HeaderCollection();
         // We haven't started yet, or we're just buffered, we can clear any data, headers, and state so
         // that we can start over (e.g. to write an error message).
-        _nativeResponse = new HttpApiTypes.HTTP_RESPONSE_V2();
+        _nativeResponse = new HTTP_RESPONSE_V2();
         Headers.IsReadOnly = false;
         Headers.Clear();
         _reasonPhrase = null;
         _boundaryType = BoundaryType.None;
-        _nativeResponse.Response_V1.StatusCode = (ushort)StatusCodes.Status200OK;
-        _nativeResponse.Response_V1.Version.MajorVersion = 1;
-        _nativeResponse.Response_V1.Version.MinorVersion = 1;
+        _nativeResponse.Base.StatusCode = (ushort)StatusCodes.Status200OK;
+        _nativeResponse.Base.Version.MajorVersion = 1;
+        _nativeResponse.Base.Version.MinorVersion = 1;
         _responseState = ResponseState.Created;
         _expectedBodyLength = 0;
         _nativeStream = null;
@@ -69,7 +69,7 @@ internal sealed class Response
 
     public int StatusCode
     {
-        get { return _nativeResponse.Response_V1.StatusCode; }
+        get { return _nativeResponse.Base.StatusCode; }
         set
         {
             // Http.Sys automatically sends 100 Continue responses when you read from the request body.
@@ -78,7 +78,7 @@ internal sealed class Response
                 throw new ArgumentOutOfRangeException(nameof(value), value, string.Format(CultureInfo.CurrentCulture, Resources.Exception_InvalidStatusCode, value));
             }
             CheckResponseStarted();
-            _nativeResponse.Response_V1.StatusCode = (ushort)value;
+            _nativeResponse.Base.StatusCode = (ushort)value;
         }
     }
 
@@ -278,7 +278,7 @@ internal sealed class Response
     // It may also be faster to do this work in managed code and then pass down only one buffer.
     // What would we loose by bypassing HttpSendHttpResponse?
     internal unsafe uint SendHeaders(ref UnmanagedBufferAllocator allocator,
-        Span<HttpApiTypes.HTTP_DATA_CHUNK> dataChunks,
+        Span<HTTP_DATA_CHUNK> dataChunks,
         ResponseStreamAsyncResult? asyncResult,
         HttpApiTypes.HTTP_FLAGS flags,
         bool isOpaqueUpgrade)
@@ -293,22 +293,22 @@ internal sealed class Response
 
         SerializeHeaders(ref allocator, isOpaqueUpgrade);
 
-        fixed (HttpApiTypes.HTTP_DATA_CHUNK* chunks = dataChunks)
+        fixed (HTTP_DATA_CHUNK* chunks = dataChunks)
         {
             if (chunks != null)
             {
-                _nativeResponse.Response_V1.EntityChunkCount = checked((ushort)dataChunks.Length);
-                _nativeResponse.Response_V1.pEntityChunks = chunks;
+                _nativeResponse.Base.EntityChunkCount = checked((ushort)dataChunks.Length);
+                _nativeResponse.Base.pEntityChunks = chunks;
             }
             else if (asyncResult != null && asyncResult.DataChunks != null)
             {
-                _nativeResponse.Response_V1.EntityChunkCount = asyncResult.DataChunkCount;
-                _nativeResponse.Response_V1.pEntityChunks = asyncResult.DataChunks;
+                _nativeResponse.Base.EntityChunkCount = asyncResult.DataChunkCount;
+                _nativeResponse.Base.pEntityChunks = asyncResult.DataChunks;
             }
             else
             {
-                _nativeResponse.Response_V1.EntityChunkCount = 0;
-                _nativeResponse.Response_V1.pEntityChunks = null;
+                _nativeResponse.Base.EntityChunkCount = 0;
+                _nativeResponse.Base.pEntityChunks = null;
             }
 
             var cachePolicy = new HTTP_CACHE_POLICY();
@@ -319,10 +319,10 @@ internal sealed class Response
             }
 
             var pReasonPhrase = allocator.GetHeaderEncodedBytes(reasonPhrase, out var pReasonPhraseLength);
-            _nativeResponse.Response_V1.ReasonLength = checked((ushort)pReasonPhraseLength);
-            _nativeResponse.Response_V1.pReason = pReasonPhrase;
+            _nativeResponse.Base.ReasonLength = checked((ushort)pReasonPhraseLength);
+            _nativeResponse.Base.pReason = (PCSTR)pReasonPhrase;
 
-            fixed (HttpApiTypes.HTTP_RESPONSE_V2* pResponse = &_nativeResponse)
+            fixed (HTTP_RESPONSE_V2* pResponse = &_nativeResponse)
             {
                 statusCode =
                     HttpApi.HttpSendHttpResponse(
@@ -517,7 +517,7 @@ internal sealed class Response
             // else known single-value header.
         }
 
-        fixed (__HTTP_KNOWN_HEADER_30* pKnownHeaders = &_nativeResponse.Response_V1.Headers.KnownHeaders)
+        fixed (__HTTP_KNOWN_HEADER_30* pKnownHeaders = &_nativeResponse.Base.Headers.KnownHeaders)
         {
             var knownHeaders = pKnownHeaders->AsSpan();
             foreach (var headerPair in Headers)
@@ -538,22 +538,22 @@ internal sealed class Response
                     {
                         var unknownAlloc = allocator.AllocAsPointer<HTTP_UNKNOWN_HEADER>(numUnknownHeaders);
                         unknownHeaders = new Span<HTTP_UNKNOWN_HEADER>(unknownAlloc, numUnknownHeaders);
-                        _nativeResponse.Response_V1.Headers.pUnknownHeaders = unknownAlloc;
+                        _nativeResponse.Base.Headers.pUnknownHeaders = unknownAlloc;
                     }
 
                     for (var headerValueIndex = 0; headerValueIndex < headerValues.Count; headerValueIndex++)
                     {
                         // Add Name
                         bytes = allocator.GetHeaderEncodedBytes(headerName, out bytesLength);
-                        unknownHeaders[_nativeResponse.Response_V1.Headers.UnknownHeaderCount].NameLength = checked((ushort)bytesLength);
-                        unknownHeaders[_nativeResponse.Response_V1.Headers.UnknownHeaderCount].pName = (PCSTR)bytes;
+                        unknownHeaders[_nativeResponse.Base.Headers.UnknownHeaderCount].NameLength = checked((ushort)bytesLength);
+                        unknownHeaders[_nativeResponse.Base.Headers.UnknownHeaderCount].pName = (PCSTR)bytes;
 
                         // Add Value
                         headerValue = headerValues[headerValueIndex] ?? string.Empty;
                         bytes = allocator.GetHeaderEncodedBytes(headerValue, out bytesLength);
-                        unknownHeaders[_nativeResponse.Response_V1.Headers.UnknownHeaderCount].RawValueLength = checked((ushort)bytesLength);
-                        unknownHeaders[_nativeResponse.Response_V1.Headers.UnknownHeaderCount].pRawValue = (PCSTR)bytes;
-                        _nativeResponse.Response_V1.Headers.UnknownHeaderCount++;
+                        unknownHeaders[_nativeResponse.Base.Headers.UnknownHeaderCount].RawValueLength = checked((ushort)bytesLength);
+                        unknownHeaders[_nativeResponse.Base.Headers.UnknownHeaderCount].pRawValue = (PCSTR)bytes;
+                        _nativeResponse.Base.Headers.UnknownHeaderCount++;
                     }
                 }
                 else if (headerPair.Value.Count == 1)
@@ -603,7 +603,7 @@ internal sealed class Response
         }
     }
 
-    internal unsafe void SerializeTrailers(ref UnmanagedBufferAllocator allocator, out HttpApiTypes.HTTP_DATA_CHUNK dataChunk)
+    internal unsafe void SerializeTrailers(ref UnmanagedBufferAllocator allocator, out HTTP_DATA_CHUNK dataChunk)
     {
         Debug.Assert(HasTrailers);
         MakeTrailersReadOnly();
@@ -620,8 +620,8 @@ internal sealed class Response
         // overlapping fields. In order to make this clear here, we use Unsafe.SkipInit().
         Unsafe.SkipInit(out dataChunk);
         dataChunk.DataChunkType = HTTP_DATA_CHUNK_TYPE.HttpDataChunkTrailers;
-        dataChunk.trailers.trailerCount = checked((ushort)trailerCount);
-        dataChunk.trailers.pTrailers = (nint)unknownHeaders;
+        dataChunk.Anonymous.Trailers.TrailerCount = checked((ushort)trailerCount);
+        dataChunk.Anonymous.Trailers.pTrailers = unknownHeaders;
 
         var unknownHeadersOffset = 0;
 

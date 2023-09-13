@@ -59,7 +59,7 @@ internal static partial class NativeMethods
         IntPtr pvShutdownContext);
 
     [LibraryImport(AspNetCoreModuleDll)]
-    private static unsafe partial int http_write_response_bytes(NativeSafeHandle pInProcessHandler, HttpApiTypes.HTTP_DATA_CHUNK* pDataChunks, int nChunks, [MarshalAs(UnmanagedType.Bool)] out bool fCompletionExpected);
+    private static unsafe partial int http_write_response_bytes(NativeSafeHandle pInProcessHandler, HTTP_DATA_CHUNK* pDataChunks, int nChunks, [MarshalAs(UnmanagedType.Bool)] out bool fCompletionExpected);
 
     [LibraryImport(AspNetCoreModuleDll)]
     private static partial int http_flush_response_bytes(NativeSafeHandle pInProcessHandler, [MarshalAs(UnmanagedType.Bool)] bool fMoreData, [MarshalAs(UnmanagedType.Bool)] out bool fCompletionExpected);
@@ -127,7 +127,7 @@ internal static partial class NativeMethods
     [LibraryImport(AspNetCoreModuleDll)]
     private static unsafe partial int http_websockets_write_bytes(
         NativeSafeHandle pInProcessHandler,
-        HttpApiTypes.HTTP_DATA_CHUNK* pDataChunks,
+        HTTP_DATA_CHUNK* pDataChunks,
         int nChunks,
         delegate* unmanaged<IntPtr, IntPtr, IntPtr, REQUEST_NOTIFICATION_STATUS> pfnCompletionCallback,
         IntPtr pvCompletionContext,
@@ -187,7 +187,7 @@ internal static partial class NativeMethods
         Validate(register_callbacks(pInProcessApplication, requestCallback, shutdownCallback, disconnectCallback, asyncCallback, requestsDrainedHandler, pvRequestContext, pvShutdownContext));
     }
 
-    internal static unsafe int HttpWriteResponseBytes(NativeSafeHandle pInProcessHandler, HttpApiTypes.HTTP_DATA_CHUNK* pDataChunks, int nChunks, out bool fCompletionExpected)
+    internal static unsafe int HttpWriteResponseBytes(NativeSafeHandle pInProcessHandler, HTTP_DATA_CHUNK* pDataChunks, int nChunks, out bool fCompletionExpected)
     {
         return http_write_response_bytes(pInProcessHandler, pDataChunks, nChunks, out fCompletionExpected);
     }
@@ -271,7 +271,7 @@ internal static partial class NativeMethods
 
     internal static unsafe int HttpWebsocketsWriteBytes(
         NativeSafeHandle pInProcessHandler,
-        HttpApiTypes.HTTP_DATA_CHUNK* pDataChunks,
+        HTTP_DATA_CHUNK* pDataChunks,
         int nChunks,
         delegate* unmanaged<IntPtr, IntPtr, IntPtr, REQUEST_NOTIFICATION_STATUS> pfnCompletionCallback,
         IntPtr pvCompletionContext,
