@@ -252,6 +252,7 @@
     "InteractiveAtRoot": {
       "type": "parameter",
       "datatype": "bool",
+      "isEnabled": "(UseServer || UseWebAssembly)",
       "defaultValue": "false",
       "displayName": "_Enable interactive rendering globally throughout the site",
       "description": "Configures whether to make every page interactive by applying an interactive render mode at the top level. If false, pages will use static server rendering by default, and can be marked interactive on a per-page or per-component basis."
