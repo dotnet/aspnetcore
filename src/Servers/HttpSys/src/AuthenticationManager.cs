@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys;
 public sealed class AuthenticationManager
 {
     private static readonly int AuthInfoSize =
-        Marshal.SizeOf<HttpApiTypes.HTTP_SERVER_AUTHENTICATION_INFO>();
+        Marshal.SizeOf<HTTP_SERVER_AUTHENTICATION_INFO>();
 
     private UrlGroup? _urlGroup;
     private AuthenticationSchemes _authSchemes;
@@ -79,14 +79,13 @@ public sealed class AuthenticationManager
             return;
         }
 
-        HttpApiTypes.HTTP_SERVER_AUTHENTICATION_INFO authInfo =
-            new HttpApiTypes.HTTP_SERVER_AUTHENTICATION_INFO();
-
-        authInfo.Flags = HttpApiTypes.HTTP_FLAGS.HTTP_PROPERTY_FLAG_PRESENT;
+        var authInfo = new HTTP_SERVER_AUTHENTICATION_INFO();
+        authInfo.Flags._bitfield = (uint)HttpApiTypes.HTTP_FLAGS.HTTP_PROPERTY_FLAG_PRESENT;
         var authSchemes = (HttpApiTypes.HTTP_AUTH_TYPES)_authSchemes;
+
         if (authSchemes != HttpApiTypes.HTTP_AUTH_TYPES.NONE)
         {
-            authInfo.AuthSchemes = authSchemes;
+            authInfo.AuthSchemes = (uint)authSchemes;
 
             // TODO:
             // NTLM auth sharing (on by default?) DisableNTLMCredentialCaching

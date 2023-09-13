@@ -204,19 +204,19 @@ public class HttpsTests
                 Assert.NotNull(requestInfoFeature);
                 Assert.True(requestInfoFeature.RequestInfo.Count > 0);
                 var tlsInfo = requestInfoFeature.RequestInfo[(int)HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeSslProtocol];
-                HttpApiTypes.HTTP_SSL_PROTOCOL_INFO tlsCopy;
+                HTTP_SSL_PROTOCOL_INFO tlsCopy;
                 unsafe
                 {
                     using var handle = tlsInfo.Pin();
-                    tlsCopy = Marshal.PtrToStructure<HttpApiTypes.HTTP_SSL_PROTOCOL_INFO>((IntPtr)handle.Pointer);
+                    tlsCopy = Marshal.PtrToStructure<HTTP_SSL_PROTOCOL_INFO>((IntPtr)handle.Pointer);
                 }
 
                 // Assert.Equal(tlsFeature.Protocol, tlsCopy.Protocol); // These don't directly match because the native and managed enums use different values.
-                Assert.Equal(tlsFeature.CipherAlgorithm, tlsCopy.CipherType);
+                Assert.Equal((uint)tlsFeature.CipherAlgorithm, tlsCopy.CipherType);
                 Assert.Equal(tlsFeature.CipherStrength, (int)tlsCopy.CipherStrength);
-                Assert.Equal(tlsFeature.HashAlgorithm, tlsCopy.HashType);
+                Assert.Equal((uint)tlsFeature.HashAlgorithm, tlsCopy.HashType);
                 Assert.Equal(tlsFeature.HashStrength, (int)tlsCopy.HashStrength);
-                Assert.Equal(tlsFeature.KeyExchangeAlgorithm, tlsCopy.KeyExchangeType);
+                Assert.Equal((uint)tlsFeature.KeyExchangeAlgorithm, tlsCopy.KeyExchangeType);
                 Assert.Equal(tlsFeature.KeyExchangeStrength, (int)tlsCopy.KeyExchangeStrength);
             }
             catch (Exception ex)

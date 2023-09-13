@@ -209,7 +209,7 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
         }
     }
 
-    internal unsafe HttpApiTypes.HTTP_REQUEST_PROPERTY_SNI GetClientSni()
+    internal unsafe HTTP_REQUEST_PROPERTY_SNI GetClientSni()
     {
         if (HttpApi.HttpGetRequestProperty != null)
         {
@@ -229,7 +229,7 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
 
                 if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
                 {
-                    return Marshal.PtrToStructure<HttpApiTypes.HTTP_REQUEST_PROPERTY_SNI>((IntPtr)pBuffer);
+                    return Marshal.PtrToStructure<HTTP_REQUEST_PROPERTY_SNI>((IntPtr)pBuffer);
                 }
             }
         }
@@ -247,9 +247,9 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
 
         try
         {
-            var streamError = new HttpApiTypes.HTTP_REQUEST_PROPERTY_STREAM_ERROR() { ErrorCode = (uint)errorCode };
+            var streamError = new HTTP_REQUEST_PROPERTY_STREAM_ERROR() { ErrorCode = (uint)errorCode };
             var statusCode = HttpApi.HttpSetRequestProperty(Server.RequestQueue.Handle, Request.RequestId, HTTP_REQUEST_PROPERTY.HttpRequestPropertyStreamError, &streamError,
-                (uint)sizeof(HttpApiTypes.HTTP_REQUEST_PROPERTY_STREAM_ERROR), IntPtr.Zero);
+                (uint)sizeof(HTTP_REQUEST_PROPERTY_STREAM_ERROR), IntPtr.Zero);
         }
         catch (ObjectDisposedException)
         {

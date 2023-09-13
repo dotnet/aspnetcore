@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Logging;
 using Windows.Win32;
+using Windows.Win32.Foundation;
 using Windows.Win32.Networking.HttpServer;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
@@ -13,11 +14,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys;
 internal sealed partial class UrlGroup : IDisposable
 {
     private static readonly int BindingInfoSize =
-        Marshal.SizeOf<HttpApiTypes.HTTP_BINDING_INFO>();
+        Marshal.SizeOf<HTTP_BINDING_INFO>();
     private static readonly int QosInfoSize =
-        Marshal.SizeOf<HttpApiTypes.HTTP_QOS_SETTING_INFO>();
+        Marshal.SizeOf<HTTP_QOS_SETTING_INFO>();
     private static readonly int RequestPropertyInfoSize =
-        Marshal.SizeOf<HttpApiTypes.HTTP_BINDING_INFO>();
+        Marshal.SizeOf<HTTP_BINDING_INFO>();
 
     private readonly ILogger _logger;
 
@@ -48,31 +49,38 @@ internal sealed partial class UrlGroup : IDisposable
 
     internal unsafe void SetMaxConnections(long maxConnections)
     {
-        var connectionLimit = new HttpApiTypes.HTTP_CONNECTION_LIMIT_INFO();
-        connectionLimit.Flags = HttpApiTypes.HTTP_FLAGS.HTTP_PROPERTY_FLAG_PRESENT;
-        connectionLimit.MaxConnections = (uint)maxConnections;
+        var connectionLimit = new HTTP_CONNECTION_LIMIT_INFO
+        {
+            Flags = { _bitfield = (uint)HttpApiTypes.HTTP_FLAGS.HTTP_PROPERTY_FLAG_PRESENT },
+            MaxConnections = (uint)maxConnections
+        };
 
-        var qosSettings = new HttpApiTypes.HTTP_QOS_SETTING_INFO();
-        qosSettings.QosType = HttpApiTypes.HTTP_QOS_SETTING_TYPE.HttpQosSettingTypeConnectionLimit;
-        qosSettings.QosSetting = new IntPtr(&connectionLimit);
+        var qosSettings = new HTTP_QOS_SETTING_INFO
+        {
+            QosType = HTTP_QOS_SETTING_TYPE.HttpQosSettingTypeConnectionLimit,
+            QosSetting = &connectionLimit
+        };
 
         SetProperty(HTTP_SERVER_PROPERTY.HttpServerQosProperty, new IntPtr(&qosSettings), (uint)QosInfoSize);
     }
 
     internal unsafe void SetDelegationProperty(RequestQueue destination)
     {
-        var propertyInfo = new HttpApiTypes.HTTP_BINDING_INFO();
-        propertyInfo.Flags = HttpApiTypes.HTTP_FLAGS.HTTP_PROPERTY_FLAG_PRESENT;
-        propertyInfo.RequestQueueHandle = destination.Handle.DangerousGetHandle();
+        var propertyInfo = new HTTP_BINDING_INFO
+        {
+            Flags = { _bitfield = (uint)HttpApiTypes.HTTP_FLAGS.HTTP_PROPERTY_FLAG_PRESENT },
+            RequestQueueHandle = (HANDLE)destination.Handle.DangerousGetHandle()
+        };
 
         SetProperty(HTTP_SERVER_PROPERTY.HttpServerDelegationProperty, new IntPtr(&propertyInfo), (uint)RequestPropertyInfoSize);
     }
 
     internal unsafe void UnSetDelegationProperty(RequestQueue destination, bool throwOnError = true)
     {
-        var propertyInfo = new HttpApiTypes.HTTP_BINDING_INFO();
-        propertyInfo.Flags = HttpApiTypes.HTTP_FLAGS.NONE;
-        propertyInfo.RequestQueueHandle = destination.Handle.DangerousGetHandle();
+        var propertyInfo = new HTTP_BINDING_INFO
+        {
+            RequestQueueHandle = (HANDLE)destination.Handle.DangerousGetHandle()
+        };
 
         SetProperty(HTTP_SERVER_PROPERTY.HttpServerDelegationProperty, new IntPtr(&propertyInfo), (uint)RequestPropertyInfoSize, throwOnError);
     }
@@ -101,9 +109,11 @@ internal sealed partial class UrlGroup : IDisposable
         // Set the association between request queue and url group. After this, requests for registered urls will
         // get delivered to this request queue.
 
-        var info = new HttpApiTypes.HTTP_BINDING_INFO();
-        info.Flags = HttpApiTypes.HTTP_FLAGS.HTTP_PROPERTY_FLAG_PRESENT;
-        info.RequestQueueHandle = _requestQueue.Handle.DangerousGetHandle();
+        var info = new HTTP_BINDING_INFO
+        {
+            Flags = { _bitfield = (uint)HttpApiTypes.HTTP_FLAGS.HTTP_PROPERTY_FLAG_PRESENT },
+            RequestQueueHandle = (HANDLE)_requestQueue.Handle.DangerousGetHandle()
+        };
 
         var infoptr = new IntPtr(&info);
 
@@ -120,10 +130,7 @@ internal sealed partial class UrlGroup : IDisposable
         // is fine since http.sys allows to set HttpServerBindingProperty multiple times for valid
         // Url groups.
 
-        var info = new HttpApiTypes.HTTP_BINDING_INFO();
-        info.Flags = HttpApiTypes.HTTP_FLAGS.NONE;
-        info.RequestQueueHandle = IntPtr.Zero;
-
+        var info = new HTTP_BINDING_INFO();
         var infoptr = new IntPtr(&info);
 
         SetProperty(HTTP_SERVER_PROPERTY.HttpServerBindingProperty,

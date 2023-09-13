@@ -344,16 +344,16 @@ internal sealed partial class Request
     private void GetTlsHandshakeResults()
     {
         var handshake = RequestContext.GetTlsHandshake();
-        Protocol = handshake.Protocol;
-        CipherAlgorithm = handshake.CipherType;
+        Protocol = (SslProtocols)handshake.Protocol;
+        CipherAlgorithm = (CipherAlgorithmType)handshake.CipherType;
         CipherStrength = (int)handshake.CipherStrength;
-        HashAlgorithm = handshake.HashType;
+        HashAlgorithm = (HashAlgorithmType)handshake.HashType;
         HashStrength = (int)handshake.HashStrength;
-        KeyExchangeAlgorithm = handshake.KeyExchangeType;
+        KeyExchangeAlgorithm = (ExchangeAlgorithmType)handshake.KeyExchangeType;
         KeyExchangeStrength = (int)handshake.KeyExchangeStrength;
 
         var sni = RequestContext.GetClientSni();
-        SniHostName = sni.Hostname;
+        SniHostName = sni.Hostname.ToString();
     }
 
     public X509Certificate2? ClientCertificate

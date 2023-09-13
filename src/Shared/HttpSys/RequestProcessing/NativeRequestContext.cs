@@ -319,8 +319,8 @@ internal unsafe class NativeRequestContext : IDisposable
             if (info != null
                 && info->InfoType == HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeAuth)
             {
-                var authInfo = (HttpApiTypes.HTTP_REQUEST_AUTH_INFO*)info->pInfo;
-                if (authInfo->AuthStatus == HttpApiTypes.HTTP_AUTH_STATUS.HttpAuthStatusSuccess)
+                var authInfo = (HTTP_REQUEST_AUTH_INFO*)info->pInfo;
+                if (authInfo->AuthStatus == HTTP_AUTH_STATUS.HttpAuthStatusSuccess)
                 {
                     return true;
                 }
@@ -340,8 +340,8 @@ internal unsafe class NativeRequestContext : IDisposable
             if (info != null
                 && info->InfoType == HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeAuth)
             {
-                var authInfo = (HttpApiTypes.HTTP_REQUEST_AUTH_INFO*)info->pInfo;
-                if (authInfo->AuthStatus == HttpApiTypes.HTTP_AUTH_STATUS.HttpAuthStatusSuccess)
+                var authInfo = (HTTP_REQUEST_AUTH_INFO*)info->pInfo;
+                if (authInfo->AuthStatus == HTTP_AUTH_STATUS.HttpAuthStatusSuccess)
                 {
                     // Duplicates AccessToken
                     var identity = new WindowsIdentity(authInfo->AccessToken, GetAuthTypeFromRequest(authInfo->AuthType));
@@ -357,7 +357,7 @@ internal unsafe class NativeRequestContext : IDisposable
         return new WindowsPrincipal(WindowsIdentity.GetAnonymous()); // Anonymous / !IsAuthenticated
     }
 
-    internal HttpApiTypes.HTTP_SSL_PROTOCOL_INFO GetTlsHandshake()
+    internal HTTP_SSL_PROTOCOL_INFO GetTlsHandshake()
     {
         var requestInfo = NativeRequestV2->pRequestInfo;
         var infoCount = NativeRequestV2->RequestInfoCount;
@@ -368,7 +368,7 @@ internal unsafe class NativeRequestContext : IDisposable
             if (info != null
                 && info->InfoType == HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeSslProtocol)
             {
-                var authInfo = *((HttpApiTypes.HTTP_SSL_PROTOCOL_INFO*)info->pInfo);
+                var authInfo = *(HTTP_SSL_PROTOCOL_INFO*)info->pInfo;
                 SetSslProtocol(&authInfo);
                 return authInfo;
             }
@@ -377,7 +377,7 @@ internal unsafe class NativeRequestContext : IDisposable
         return default;
     }
 
-    private static void SetSslProtocol(HttpApiTypes.HTTP_SSL_PROTOCOL_INFO* protocolInfo)
+    private static void SetSslProtocol(HTTP_SSL_PROTOCOL_INFO* protocolInfo)
     {
         var protocol = protocolInfo->Protocol;
         // The OS considers client and server TLS as different enum values. SslProtocols choose to combine those for some reason.
@@ -385,47 +385,46 @@ internal unsafe class NativeRequestContext : IDisposable
         // https://learn.microsoft.com/windows/desktop/api/schannel/ns-schannel-_secpkgcontext_connectioninfo
         // Compare to https://referencesource.microsoft.com/#System/net/System/Net/SecureProtocols/_SslState.cs,8905d1bf17729de3
 #pragma warning disable CS0618 // Type or member is obsolete
-        if ((protocol & SslProtocols.Ssl2) != 0)
+        if ((protocol & (uint)SslProtocols.Ssl2) != 0)
         {
-            protocol |= SslProtocols.Ssl2;
+            protocol |= (uint)SslProtocols.Ssl2;
         }
-        if ((protocol & SslProtocols.Ssl3) != 0)
+        if ((protocol & (uint)SslProtocols.Ssl3) != 0)
         {
-            protocol |= SslProtocols.Ssl3;
+            protocol |= (uint)SslProtocols.Ssl3;
         }
 #pragma warning restore CS0618 // Type or Prmember is obsolete
 #pragma warning disable SYSLIB0039 // TLS 1.0 and 1.1 are obsolete
-        if ((protocol & SslProtocols.Tls) != 0)
+        if ((protocol & (uint)SslProtocols.Tls) != 0)
         {
-            protocol |= SslProtocols.Tls;
+            protocol |= (uint)SslProtocols.Tls;
         }
-        if ((protocol & SslProtocols.Tls11) != 0)
+        if ((protocol & (uint)SslProtocols.Tls11) != 0)
         {
-            protocol |= SslProtocols.Tls11;
+            protocol |= (uint)SslProtocols.Tls11;
         }
 #pragma warning restore SYSLIB0039
-        if ((protocol & SslProtocols.Tls12) != 0)
+        if ((protocol & (uint)SslProtocols.Tls12) != 0)
         {
-            protocol |= SslProtocols.Tls12;
+            protocol |= (uint)SslProtocols.Tls12;
         }
-        if ((protocol & SslProtocols.Tls13) != 0)
+        if ((protocol & (uint)SslProtocols.Tls13) != 0)
         {
-            protocol |= SslProtocols.Tls13;
+            protocol |= (uint)SslProtocols.Tls13;
         }
 
         protocolInfo->Protocol = protocol;
     }
 
-    private static string GetAuthTypeFromRequest(HttpApiTypes.HTTP_REQUEST_AUTH_TYPE input)
+    private static string GetAuthTypeFromRequest(HTTP_REQUEST_AUTH_TYPE input)
     {
         return input switch
         {
-            HttpApiTypes.HTTP_REQUEST_AUTH_TYPE.HttpRequestAuthTypeBasic => "Basic",
-            HttpApiTypes.HTTP_REQUEST_AUTH_TYPE.HttpRequestAuthTypeNTLM => "NTLM",
-            // case HttpApi.HTTP_REQUEST_AUTH_TYPE.HttpRequestAuthTypeDigest:
-            //  return "Digest";
-            HttpApiTypes.HTTP_REQUEST_AUTH_TYPE.HttpRequestAuthTypeNegotiate => "Negotiate",
-            HttpApiTypes.HTTP_REQUEST_AUTH_TYPE.HttpRequestAuthTypeKerberos => "Kerberos",
+            HTTP_REQUEST_AUTH_TYPE.HttpRequestAuthTypeBasic => "Basic",
+            HTTP_REQUEST_AUTH_TYPE.HttpRequestAuthTypeNTLM => "NTLM",
+            // case HTTP_REQUEST_AUTH_TYPE.HttpRequestAuthTypeDigest => "Digest";
+            HTTP_REQUEST_AUTH_TYPE.HttpRequestAuthTypeNegotiate => "Negotiate",
+            HTTP_REQUEST_AUTH_TYPE.HttpRequestAuthTypeKerberos => "Kerberos",
             _ => throw new NotImplementedException(input.ToString()),
         };
     }

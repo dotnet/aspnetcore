@@ -393,20 +393,20 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
 
     private void GetTlsHandshakeResults()
     {
-        var handshake = this.GetTlsHandshake();
-        Protocol = handshake.Protocol;
-        CipherAlgorithm = handshake.CipherType;
+        var handshake = GetTlsHandshake();
+        Protocol = (SslProtocols)handshake.Protocol;
+        CipherAlgorithm = (CipherAlgorithmType)handshake.CipherType;
         CipherStrength = (int)handshake.CipherStrength;
-        HashAlgorithm = handshake.HashType;
+        HashAlgorithm = (HashAlgorithmType)handshake.HashType;
         HashStrength = (int)handshake.HashStrength;
-        KeyExchangeAlgorithm = handshake.KeyExchangeType;
+        KeyExchangeAlgorithm = (ExchangeAlgorithmType)handshake.KeyExchangeType;
         KeyExchangeStrength = (int)handshake.KeyExchangeStrength;
 
         var sni = GetClientSni();
-        SniHostName = sni.Hostname;
+        SniHostName = sni.Hostname.ToString();
     }
 
-    private unsafe HttpApiTypes.HTTP_REQUEST_PROPERTY_SNI GetClientSni()
+    private unsafe HTTP_REQUEST_PROPERTY_SNI GetClientSni()
     {
         var buffer = new byte[HttpApiTypes.SniPropertySizeInBytes];
         fixed (byte* pBuffer = buffer)
@@ -421,7 +421,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
                 bytesReturned: null,
                 IntPtr.Zero);
 
-            return statusCode == NativeMethods.HR_OK ? Marshal.PtrToStructure<HttpApiTypes.HTTP_REQUEST_PROPERTY_SNI>((IntPtr)pBuffer) : default;
+            return statusCode == NativeMethods.HR_OK ? Marshal.PtrToStructure<HTTP_REQUEST_PROPERTY_SNI>((IntPtr)pBuffer) : default;
         }
     }
 
