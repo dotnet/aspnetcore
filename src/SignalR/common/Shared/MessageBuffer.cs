@@ -204,8 +204,7 @@ internal sealed class MessageBuffer : IDisposable
         }
 
         var currentId = _currentReceivingSequenceId;
-        // Safe to modify outside a lock because the only other modifier is ResetSequence()
-        // which would be called on the same thread after this method completes
+        // ShouldProcessMessage is never called in parallel and is the only method referencing _currentReceivingSequenceId
         _currentReceivingSequenceId++;
         if (currentId <= _latestReceivedSequenceId)
         {
