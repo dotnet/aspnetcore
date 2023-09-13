@@ -372,18 +372,15 @@ internal sealed partial class HttpSysListener : IDisposable
         knownHeaders[(int)HttpSysResponseHeader.ContentLength].RawValueLength = contentLengthLength;
         httpResponse.Base.Headers.UnknownHeaderCount = 0;
 
-        statusCode =
-            HttpApi.HttpSendHttpResponse(
-                _requestQueue.Handle,
-                requestId,
-                0,
-                &httpResponse,
-                null,
-                &dataWritten,
-                IntPtr.Zero,
-                0,
-                SafeNativeOverlapped.Zero,
-                IntPtr.Zero);
+        statusCode = PInvoke.HttpSendHttpResponse(
+            _requestQueue.Handle,
+            requestId,
+            0,
+            httpResponse,
+            null,
+            &dataWritten,
+            null,
+            null);
         if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
         {
             // if we fail to send a 401 something's seriously wrong, abort the request

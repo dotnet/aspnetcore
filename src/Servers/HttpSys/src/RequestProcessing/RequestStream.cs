@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Logging;
+using Windows.Win32;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
@@ -133,15 +134,14 @@ internal sealed partial class RequestStream : Stream
 
                 uint flags = 0;
 
-                statusCode =
-                    HttpApi.HttpReceiveRequestEntityBody(
-                        RequestQueueHandle,
-                        RequestId,
-                        flags,
-                        (IntPtr)(pBuffer + offset),
-                        (uint)size,
-                        out extraDataRead,
-                        SafeNativeOverlapped.Zero);
+                statusCode = PInvoke.HttpReceiveRequestEntityBody(
+                    RequestQueueHandle,
+                    RequestId,
+                    flags,
+                    (pBuffer + offset),
+                    (uint)size,
+                    &extraDataRead,
+                    default);
 
                 dataRead += extraDataRead;
             }

@@ -63,6 +63,12 @@ internal static unsafe class HttpApiTypes
     {
         internal ushort HttpApiMajorVersion;
         internal ushort HttpApiMinorVersion;
+
+        public static explicit operator HTTPAPI_VERSION(Windows.Win32.Networking.HttpServer.HTTPAPI_VERSION v) => new()
+        {
+            HttpApiMajorVersion = v.HttpApiMajorVersion,
+            HttpApiMinorVersion = v.HttpApiMinorVersion
+        };
     }
 
     internal enum HTTP_RESPONSE_INFO_FLAGS : uint

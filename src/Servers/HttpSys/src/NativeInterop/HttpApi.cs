@@ -20,9 +20,6 @@ internal static unsafe partial class HttpApi
     internal static partial uint HttpReceiveClientCertificate(SafeHandle requestQueueHandle, ulong connectionId, uint flags, Windows.Win32.Networking.HttpServer.HTTP_SSL_CLIENT_CERT_INFO* pSslClientCertInfo, uint sslClientCertInfoSize, uint* pBytesReceived, SafeNativeOverlapped pOverlapped);
 
     [LibraryImport(HTTPAPI, SetLastError = true)]
-    internal static partial uint HttpReceiveClientCertificate(SafeHandle requestQueueHandle, ulong connectionId, uint flags, byte* pSslClientCertInfo, uint sslClientCertInfoSize, uint* pBytesReceived, SafeNativeOverlapped pOverlapped);
-
-    [LibraryImport(HTTPAPI, SetLastError = true)]
     internal static partial uint HttpReceiveHttpRequest(SafeHandle requestQueueHandle, ulong requestId, uint flags, Windows.Win32.Networking.HttpServer.HTTP_REQUEST_V1* pRequestBuffer, uint requestBufferLength, uint* pBytesReturned, NativeOverlapped* pOverlapped);
 
     [LibraryImport(HTTPAPI, SetLastError = true)]
@@ -34,8 +31,9 @@ internal static unsafe partial class HttpApi
     [LibraryImport(HTTPAPI, SetLastError = true)]
     internal static partial uint HttpSendResponseEntityBody(SafeHandle requestQueueHandle, ulong requestId, uint flags, ushort entityChunkCount, Windows.Win32.Networking.HttpServer.HTTP_DATA_CHUNK* pEntityChunks, uint* pBytesSent, IntPtr pReserved1, uint Reserved2, SafeNativeOverlapped pOverlapped, IntPtr pLogData);
 
+    // Error SYSLIB1051 The type 'Windows.Win32.Networking.HttpServer.HTTPAPI_VERESION' is not supported by source-generated P/Invokes. The generated source will not handle marshalling of parameter 'version'.
     [LibraryImport(HTTPAPI, SetLastError = true, StringMarshalling = StringMarshalling.Utf16)]
-    internal static unsafe partial uint HttpCreateRequestQueue(HttpApiTypes.HTTPAPI_VERSION version, string? pName,
+    internal static partial uint HttpCreateRequestQueue(HttpApiTypes.HTTPAPI_VERSION version, string? pName,
         IntPtr pSecurityAttributes, HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG flags, out HttpRequestQueueV2Handle pReqQueueHandle);
 
     internal delegate uint HttpGetRequestPropertyInvoker(SafeHandle requestQueueHandle, ulong requestId, HTTP_REQUEST_PROPERTY propertyId,
@@ -43,13 +41,10 @@ internal static unsafe partial class HttpApi
 
     internal delegate uint HttpSetRequestPropertyInvoker(SafeHandle requestQueueHandle, ulong requestId, HTTP_REQUEST_PROPERTY propertyId, void* input, uint inputSize, IntPtr overlapped);
 
-    private static HttpApiTypes.HTTPAPI_VERSION oldVersion;
     private static HTTPAPI_VERSION version;
 
     // This property is used by HttpListener to pass the version structure to the native layer in API
     // calls.
-
-    internal static HttpApiTypes.HTTPAPI_VERSION OldVersion => oldVersion;
 
     internal static HTTPAPI_VERSION Version => version;
 
@@ -69,8 +64,6 @@ internal static unsafe partial class HttpApi
 
     private static void InitHttpApi()
     {
-        oldVersion.HttpApiMajorVersion = 2;
-        oldVersion.HttpApiMinorVersion = 0;
         version.HttpApiMajorVersion = 2;
         version.HttpApiMinorVersion = 0;
 

@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Logging;
+using Windows.Win32;
 using Windows.Win32.Networking.HttpServer;
 using static Microsoft.AspNetCore.HttpSys.Internal.UnsafeNclNativeMethods;
 
@@ -152,20 +153,14 @@ internal sealed partial class ResponseBody : Stream
             }
             else
             {
-                fixed (HTTP_DATA_CHUNK* pDataChunks = dataChunks)
-                {
-                    statusCode = HttpApi.HttpSendResponseEntityBody(
-                            RequestQueueHandle,
-                            RequestId,
-                            (uint)flags,
-                            (ushort)dataChunks.Length,
-                            pDataChunks,
-                            null,
-                            IntPtr.Zero,
-                            0,
-                            SafeNativeOverlapped.Zero,
-                            IntPtr.Zero);
-                }
+                statusCode = PInvoke.HttpSendResponseEntityBody(
+                    RequestQueueHandle,
+                    RequestId,
+                    (uint)flags,
+                    dataChunks,
+                    null,
+                    null,
+                    null);
             }
         }
         finally
