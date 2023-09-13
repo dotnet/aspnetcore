@@ -5,7 +5,7 @@
 
 <h2>Default form with bound parameter using data annotations for validation and data member to tweak the binding.</h2>
 
-<EditForm Model="Parameter" method="POST" OnValidSubmit="() => _submitted = true" FormName="someform">
+<EditForm Model="Parameter" method="POST" OnValidSubmit="() => _submitted = true" FormName="someform" Enhance>
     <DataAnnotationsValidator />
     <ValidationSummary/>
     <p>

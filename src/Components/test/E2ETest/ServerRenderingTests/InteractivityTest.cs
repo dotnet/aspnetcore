@@ -290,6 +290,56 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
 
     [Theory]
     [MemberData(nameof(AddCounterLinkSequences))]
+    public void DynamicallyAddedSsrComponents_CanBecomeInteractive_AfterInitialPageLoadCompletes(string[] addCounterLinkIds)
+    {
+        // Navigate directly to the page with streaming enabled so that we can defer the page load.
+        Navigate($"{ServerPathBase}/streaming-interactivity?ShouldStream=True");
+        Browser.Equal("Streaming", () => Browser.FindElement(By.Id("status")).Text);
+        Browser.Equal("loading", () => ((IJavaScriptExecutor)Browser).ExecuteScript("return window.document.readyState;"));
+
+        for (var i = 0; i < addCounterLinkIds.Length; i++)
+        {
+            Browser.Click(By.Id(addCounterLinkIds[i]));
+
+            // To verify that components use the most up-to-date parameters when they become interactive, we
+            // perform SSR updates with new parameter values.
+            // The first counter will have an increment amount of 1, the second 2, etc.
+            for (var j = 0; j < i; j++)
+            {
+                Browser.Click(By.Id($"update-counter-link-{i}"));
+            }
+
+            if (addCounterLinkIds[i].Contains("prerendered"))
+            {
+                Browser.Equal("False", () => Browser.FindElement(By.Id($"is-interactive-{i}")).Text);
+                Browser.Click(By.Id($"increment-{i}"));
+                Browser.Equal("0", () => Browser.FindElement(By.Id($"count-{i}")).Text);
+            }
+            else
+            {
+                // Non-prerendered components won't produce any output until they become interactive.
+                // We verify this by ensuring that the "action links" exist on the page,
+                // but the interactive component does not.
+                Browser.Exists(By.Id($"remove-counter-link-{i}"));
+                Browser.DoesNotExist(By.Id($"is-interactive-{i}"));
+            }
+        }
+
+        Browser.Click(By.Id("stop-streaming-link"));
+
+        for (var i = 0; i < addCounterLinkIds.Length; i++)
+        {
+            Browser.Equal("True", () => Browser.FindElement(By.Id($"is-interactive-{i}")).Text);
+
+            Browser.Click(By.Id($"increment-{i}"));
+            Browser.Equal($"{i + 1}", () => Browser.FindElement(By.Id($"count-{i}")).Text);
+        }
+
+        AssertBrowserLogDoesNotContainErrors();
+    }
+
+    [Theory]
+    [MemberData(nameof(AddCounterLinkSequences))]
     public void InteractiveRootComponents_CanReceiveSsrParameterUpdates_FromEnhancedNavigation(string[] addCounterLinkIds)
     {
         Navigate($"{ServerPathBase}/streaming-interactivity");

@@ -3,7 +3,7 @@
 
 <h2>Plain form</h2>
 
-<form method="post" @onsubmit="() => _submitted = true" @formname="my-form">
+<form data-enhance method="post" @onsubmit="() => _submitted = true" @formname="my-form">
     <AntiforgeryToken />
 
     <p id="StringViaExplicitPropertyName">
