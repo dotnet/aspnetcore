@@ -17,6 +17,8 @@ Microsoft.AspNetCore.Components.CascadingValueSource<TValue>.NotifyChangedAsync(
 Microsoft.AspNetCore.Components.ComponentBase.DispatchExceptionAsync(System.Exception! exception) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.IComponentRenderMode
 Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.PersistStateAsync(Microsoft.AspNetCore.Components.IPersistentComponentStateStore! store, Microsoft.AspNetCore.Components.Dispatcher! dispatcher) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.InjectAttribute.Key.get -> object?
+Microsoft.AspNetCore.Components.InjectAttribute.Key.init -> void
 Microsoft.AspNetCore.Components.ParameterView.ToDictionary() -> System.Collections.Generic.IReadOnlyDictionary<string!, object?>!
 *REMOVED*Microsoft.AspNetCore.Components.ParameterView.ToDictionary() -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>!
 Microsoft.AspNetCore.Components.RenderHandle.DispatchExceptionAsync(System.Exception! exception) -> System.Threading.Tasks.Task!
