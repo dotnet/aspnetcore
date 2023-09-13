@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Components.WebView.Photino;
 using Microsoft.Extensions.DependencyInjection;
 using PhotinoNET;
 
-namespace Microsoft.AspNetCore.Components.WebView;
+namespace Microsoft.AspNetCore.Components.WebViewE2E.Test;
 
 class Program
 {
@@ -23,9 +23,11 @@ class Program
             Console.WriteLine($"Current assembly: {typeof(Program).Assembly.Location}");
             var thisProgramDir = Path.GetDirectoryName(typeof(Program).Assembly.Location);
 
-            Console.WriteLine($"Old PATH: {Environment.GetEnvironmentVariable("PATH")}");
-            Environment.SetEnvironmentVariable("PATH", Path.Combine(thisProgramDir, "runtimes", RuntimeInformation.RuntimeIdentifier, "native") + ";" + Environment.GetEnvironmentVariable("PATH"));
-            Console.WriteLine($"New PATH: {Environment.GetEnvironmentVariable("PATH")}");
+            // Add correct runtime sub-folder to PATH to ensure native files are discovered (this is supposed to happen automatically, but somehow it doesn't...)
+            var newNativePath = Path.Combine(thisProgramDir, "runtimes", RuntimeInformation.RuntimeIdentifier, "native");
+            Console.WriteLine($"Adding new native path: {newNativePath  }");
+            Environment.SetEnvironmentVariable("PATH", newNativePath + ";" + Environment.GetEnvironmentVariable("PATH"));
+            Console.WriteLine($"New PATH env var: {Environment.GetEnvironmentVariable("PATH")}");
 
             var thisAppFiles = Directory.GetFiles(thisProgramDir, "*", SearchOption.AllDirectories).ToArray();
             Console.WriteLine($"Found {thisAppFiles.Length} files in this app:");
