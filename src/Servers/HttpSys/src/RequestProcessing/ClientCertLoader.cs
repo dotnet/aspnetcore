@@ -162,7 +162,7 @@ internal sealed unsafe partial class ClientCertLoader : IAsyncResult, IDisposabl
                 HttpApi.HttpReceiveClientCertificate(
                     RequestQueueHandle,
                     RequestContext.Request.UConnectionId,
-                    (uint)HttpApiTypes.HTTP_FLAGS.NONE,
+                    0u,
                     RequestBlob,
                     size,
                     &bytesReceived,
@@ -241,7 +241,7 @@ internal sealed unsafe partial class ClientCertLoader : IAsyncResult, IDisposabl
                     HttpApi.HttpReceiveClientCertificate(
                         requestContext.Server.RequestQueue.Handle,
                         requestContext.Request.UConnectionId,
-                        (uint)HttpApiTypes.HTTP_FLAGS.NONE,
+                        0u,
                         asyncResult._memoryBlob,
                         asyncResult._size,
                         &bytesReceived,

@@ -117,7 +117,7 @@ internal sealed unsafe class AsyncAcceptContext : IValueTaskSource<RequestContex
                 _requestContext.RequestId,
                 // Small perf impact by not using HTTP_RECEIVE_REQUEST_FLAG_COPY_BODY
                 // if the request sends header+body in a single TCP packet
-                (uint)HttpApiTypes.HTTP_FLAGS.NONE,
+                0u,
                 _requestContext.NativeRequest,
                 _requestContext.Size,
                 &bytesTransferred,

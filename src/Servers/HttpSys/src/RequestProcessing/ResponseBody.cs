@@ -156,7 +156,7 @@ internal sealed partial class ResponseBody : Stream
                 statusCode = PInvoke.HttpSendResponseEntityBody(
                     RequestQueueHandle,
                     RequestId,
-                    (uint)flags,
+                    flags,
                     dataChunks,
                     null,
                     null,
@@ -359,7 +359,7 @@ internal sealed partial class ResponseBody : Stream
                 statusCode = HttpApi.HttpSendResponseEntityBody(
                     RequestQueueHandle,
                     RequestId,
-                    (uint)flags,
+                    flags,
                     asyncResult.DataChunkCount,
                     asyncResult.DataChunks,
                     &bytesSent,
@@ -411,7 +411,7 @@ internal sealed partial class ResponseBody : Stream
         }
 
         // Last write, cache it for special cancellation handling.
-        if ((flags & HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA) == 0)
+        if ((flags & PInvoke.HTTP_SEND_RESPONSE_FLAG_MORE_DATA) == 0)
         {
             _lastWrite = asyncResult;
         }
@@ -461,9 +461,9 @@ internal sealed partial class ResponseBody : Stream
         _requestContext.Abort();
     }
 
-    private HttpApiTypes.HTTP_FLAGS ComputeLeftToWrite(long writeCount, bool endOfRequest = false)
+    private uint ComputeLeftToWrite(long writeCount, bool endOfRequest = false)
     {
-        var flags = HttpApiTypes.HTTP_FLAGS.NONE;
+        var flags = 0u;
         if (!_requestContext.Response.HasComputedHeaders)
         {
             flags = _requestContext.Response.ComputeHeaders(writeCount, endOfRequest);
@@ -486,19 +486,19 @@ internal sealed partial class ResponseBody : Stream
 
         if (endOfRequest && _requestContext.Response.BoundaryType == BoundaryType.Close)
         {
-            flags |= HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_DISCONNECT;
+            flags |= PInvoke.HTTP_SEND_RESPONSE_FLAG_DISCONNECT;
         }
         else if (!endOfRequest
             && (_leftToWrite != writeCount || _requestContext.Response.TrailersExpected))
         {
-            flags |= HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA;
+            flags |= PInvoke.HTTP_SEND_RESPONSE_FLAG_MORE_DATA;
         }
         if (EnableKernelResponseBuffering)
         {
             // "When this flag is set, it should also be used consistently in calls to the HttpSendResponseEntityBody function."
             // so: make sure we add it in *all* scenarios where it applies - our "close" could be at the end of a bunch
             // of buffered chunks
-            flags |= HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_BUFFER_DATA;
+            flags |= PInvoke.HTTP_SEND_RESPONSE_FLAG_BUFFER_DATA;
         }
 
         // Update _leftToWrite now so we can queue up additional async writes.
@@ -682,7 +682,7 @@ internal sealed partial class ResponseBody : Stream
                 statusCode = HttpApi.HttpSendResponseEntityBody(
                         RequestQueueHandle,
                         RequestId,
-                        (uint)flags,
+                        flags,
                         asyncResult.DataChunkCount,
                         asyncResult.DataChunks,
                         &bytesSent,
@@ -734,7 +734,7 @@ internal sealed partial class ResponseBody : Stream
         }
 
         // Last write, cache it for special cancellation handling.
-        if ((flags & HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA) == 0)
+        if ((flags & PInvoke.HTTP_SEND_RESPONSE_FLAG_MORE_DATA) == 0)
         {
             _lastWrite = asyncResult;
         }

@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
+using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Networking.HttpServer;
 
@@ -280,7 +281,7 @@ internal sealed class Response
     internal unsafe uint SendHeaders(ref UnmanagedBufferAllocator allocator,
         Span<HTTP_DATA_CHUNK> dataChunks,
         ResponseStreamAsyncResult? asyncResult,
-        HttpApiTypes.HTTP_FLAGS flags,
+        uint flags,
         bool isOpaqueUpgrade)
     {
         Debug.Assert(!HasStarted, "HttpListenerResponse::SendHeaders()|SentHeaders is true.");
@@ -328,7 +329,7 @@ internal sealed class Response
                     HttpApi.HttpSendHttpResponse(
                         RequestContext.Server.RequestQueue.Handle,
                         Request.RequestId,
-                        (uint)flags,
+                        flags,
                         pResponse,
                         &cachePolicy,
                         &bytesSent,
@@ -339,14 +340,14 @@ internal sealed class Response
 
                 // GoAway is only supported on later versions. Retry.
                 if (statusCode == ErrorCodes.ERROR_INVALID_PARAMETER
-                    && (flags & HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_GOAWAY) != 0)
+                    && (flags & PInvoke.HTTP_SEND_RESPONSE_FLAG_GOAWAY) != 0)
                 {
-                    flags &= ~HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_GOAWAY;
+                    flags &= ~PInvoke.HTTP_SEND_RESPONSE_FLAG_GOAWAY;
                     statusCode =
                         HttpApi.HttpSendHttpResponse(
                             RequestContext.Server.RequestQueue.Handle,
                             Request.RequestId,
-                            (uint)flags,
+                            flags,
                             pResponse,
                             &cachePolicy,
                             &bytesSent,
@@ -375,15 +376,15 @@ internal sealed class Response
         return statusCode;
     }
 
-    internal HttpApiTypes.HTTP_FLAGS ComputeHeaders(long writeCount, bool endOfRequest = false)
+    internal uint ComputeHeaders(long writeCount, bool endOfRequest = false)
     {
         Headers.IsReadOnly = false; // Temporarily unlock
-        if (StatusCode == (ushort)StatusCodes.Status401Unauthorized)
+        if (StatusCode == StatusCodes.Status401Unauthorized)
         {
             AuthenticationManager.SetAuthenticationChallenge(RequestContext);
         }
 
-        var flags = HttpApiTypes.HTTP_FLAGS.NONE;
+        var flags = 0u;
         Debug.Assert(!HasComputedHeaders, nameof(HasComputedHeaders) + " is true.");
         _responseState = ResponseState.ComputedHeaders;
 
@@ -461,10 +462,10 @@ internal sealed class Response
             {
                 Headers.Append(HeaderNames.Connection, Constants.Close);
             }
-            flags = HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_DISCONNECT;
+            flags = PInvoke.HTTP_SEND_RESPONSE_FLAG_DISCONNECT;
             if (responseCloseSet && requestVersion >= Constants.V2 && SupportsGoAway)
             {
-                flags |= HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_GOAWAY;
+                flags |= PInvoke.HTTP_SEND_RESPONSE_FLAG_GOAWAY;
             }
         }
 
@@ -573,7 +574,7 @@ internal sealed class Response
                     var header = allocator.AllocAsPointer<HTTP_MULTIPLE_KNOWN_HEADERS>(1);
 
                     header->HeaderId = (HTTP_HEADER_ID)lookup;
-                    header->Flags = (uint)HttpApiTypes.HTTP_RESPONSE_INFO_FLAGS.PreserveOrder; // The docs say this is for www-auth only.
+                    header->Flags = PInvoke.HTTP_RESPONSE_INFO_FLAGS_PRESERVE_ORDER; // The docs say this is for www-auth only.
                     header->KnownHeaderCount = 0;
 
                     var headerAlloc = allocator.AllocAsPointer<HTTP_KNOWN_HEADER>(headerValues.Count);
@@ -659,9 +660,9 @@ internal sealed class Response
         {
             // TODO: Send headers async?
             ulong errorCode = SendHeaders(ref allocator, null, null,
-                HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_OPAQUE |
-                HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA |
-                HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_BUFFER_DATA,
+                PInvoke.HTTP_SEND_RESPONSE_FLAG_OPAQUE |
+                PInvoke.HTTP_SEND_RESPONSE_FLAG_MORE_DATA |
+                PInvoke.HTTP_SEND_RESPONSE_FLAG_BUFFER_DATA,
                 true);
 
             if (errorCode != ErrorCodes.ERROR_SUCCESS)

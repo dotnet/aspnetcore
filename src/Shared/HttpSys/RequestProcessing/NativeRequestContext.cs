@@ -16,6 +16,7 @@ using System.Security.Principal;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.HttpSys;
 using Microsoft.Extensions.Primitives;
+using Windows.Win32;
 using Windows.Win32.Networking.HttpServer;
 
 namespace Microsoft.AspNetCore.HttpSys.Internal;
@@ -156,9 +157,9 @@ internal unsafe class NativeRequestContext : IDisposable
         }
     }
 
-    internal bool IsHttp2 => ((HttpApiTypes.HTTP_REQUEST_FLAGS)NativeRequest->Flags).HasFlag(HttpApiTypes.HTTP_REQUEST_FLAGS.Http2);
+    internal bool IsHttp2 => (NativeRequest->Flags & PInvoke.HTTP_REQUEST_FLAG_HTTP2) != 0;
 
-    internal bool IsHttp3 => ((HttpApiTypes.HTTP_REQUEST_FLAGS)NativeRequest->Flags).HasFlag(HttpApiTypes.HTTP_REQUEST_FLAGS.Http3);
+    internal bool IsHttp3 => (NativeRequest->Flags & PInvoke.HTTP_REQUEST_FLAG_HTTP3) != 0;
 
     // Assumes memory isn't pinned. Will fail if called by IIS.
     internal uint Size

@@ -30,16 +30,16 @@ internal sealed partial class RequestQueue
         _mode = mode;
         _logger = logger;
 
-        var flags = HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.None;
+        var flags = 0u;
         Created = true;
 
         if (_mode == RequestQueueMode.Attach)
         {
-            flags = HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.OpenExisting;
+            flags = PInvoke.HTTP_CREATE_REQUEST_QUEUE_FLAG_OPEN_EXISTING;
             Created = false;
             if (receiver)
             {
-                flags |= HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.Delegation;
+                flags |= PInvoke.HTTP_CREATE_REQUEST_QUEUE_FLAG_DELEGATION;
             }
         }
 
@@ -54,7 +54,7 @@ internal sealed partial class RequestQueue
         {
             // Tried to create, but it already exists so attach to it instead.
             Created = false;
-            flags = HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.OpenExisting;
+            flags = PInvoke.HTTP_CREATE_REQUEST_QUEUE_FLAG_OPEN_EXISTING;
             statusCode = HttpApi.HttpCreateRequestQueue(
                     (HttpApiTypes.HTTPAPI_VERSION)HttpApi.Version,
                     requestQueueName,
@@ -63,7 +63,7 @@ internal sealed partial class RequestQueue
                     out requestQueueHandle);
         }
 
-        if (flags.HasFlag(HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.OpenExisting) && statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_FILE_NOT_FOUND)
+        if ((flags & PInvoke.HTTP_CREATE_REQUEST_QUEUE_FLAG_OPEN_EXISTING) != 0 && statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_FILE_NOT_FOUND)
         {
             throw new HttpSysException((int)statusCode, $"Failed to attach to the given request queue '{requestQueueName}', the queue could not be found.");
         }

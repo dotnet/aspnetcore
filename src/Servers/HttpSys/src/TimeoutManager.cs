@@ -211,7 +211,7 @@ public sealed class TimeoutManager
 
         var timeoutinfo = new HTTP_TIMEOUT_LIMIT_INFO();
 
-        timeoutinfo.Flags._bitfield = (uint)HttpApiTypes.HTTP_FLAGS.HTTP_PROPERTY_FLAG_PRESENT;
+        timeoutinfo.Flags._bitfield = HttpApiTypes.HTTP_PROPERTY_FLAGS_PRESENT;
         timeoutinfo.DrainEntityBody =
             (ushort)timeouts[(int)TimeoutType.DrainEntityBody];
         timeoutinfo.EntityBody =

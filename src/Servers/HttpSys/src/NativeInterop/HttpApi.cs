@@ -34,7 +34,7 @@ internal static unsafe partial class HttpApi
     // Error SYSLIB1051 The type 'Windows.Win32.Networking.HttpServer.HTTPAPI_VERESION' is not supported by source-generated P/Invokes. The generated source will not handle marshalling of parameter 'version'.
     [LibraryImport(HTTPAPI, SetLastError = true, StringMarshalling = StringMarshalling.Utf16)]
     internal static partial uint HttpCreateRequestQueue(HttpApiTypes.HTTPAPI_VERSION version, string? pName,
-        IntPtr pSecurityAttributes, HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG flags, out HttpRequestQueueV2Handle pReqQueueHandle);
+        IntPtr pSecurityAttributes, uint flags, out HttpRequestQueueV2Handle pReqQueueHandle);
 
     internal delegate uint HttpGetRequestPropertyInvoker(SafeHandle requestQueueHandle, ulong requestId, HTTP_REQUEST_PROPERTY propertyId,
         void* qualifier, uint qualifierSize, void* output, uint outputSize, uint* bytesReturned, IntPtr overlapped);

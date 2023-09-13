@@ -332,7 +332,7 @@ internal sealed partial class HttpSysListener : IDisposable
             var header = allocator.AllocAsPointer<HTTP_MULTIPLE_KNOWN_HEADERS>(1);
 
             header->HeaderId = HTTP_HEADER_ID.HttpHeaderWwwAuthenticate;
-            header->Flags = (uint)HttpApiTypes.HTTP_RESPONSE_INFO_FLAGS.PreserveOrder; // The docs say this is for www-auth only.
+            header->Flags = PInvoke.HTTP_RESPONSE_INFO_FLAGS_PRESERVE_ORDER; // The docs say this is for www-auth only.
             header->KnownHeaderCount = 0;
 
             var nativeHeaderValues = allocator.AllocAsPointer<HTTP_KNOWN_HEADER>(authChallenges.Count);

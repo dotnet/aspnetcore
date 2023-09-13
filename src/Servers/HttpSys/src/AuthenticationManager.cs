@@ -80,12 +80,11 @@ public sealed class AuthenticationManager
         }
 
         var authInfo = new HTTP_SERVER_AUTHENTICATION_INFO();
-        authInfo.Flags._bitfield = (uint)HttpApiTypes.HTTP_FLAGS.HTTP_PROPERTY_FLAG_PRESENT;
-        var authSchemes = (HttpApiTypes.HTTP_AUTH_TYPES)_authSchemes;
+        authInfo.Flags._bitfield = HttpApiTypes.HTTP_PROPERTY_FLAGS_PRESENT;
 
-        if (authSchemes != HttpApiTypes.HTTP_AUTH_TYPES.NONE)
+        if (_authSchemes != AuthenticationSchemes.None)
         {
-            authInfo.AuthSchemes = (uint)authSchemes;
+            authInfo.AuthSchemes = (uint)_authSchemes;
 
             // TODO:
             // NTLM auth sharing (on by default?) DisableNTLMCredentialCaching
