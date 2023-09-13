@@ -104,14 +104,6 @@ internal static unsafe class HttpApiTypes
         internal ushort HttpApiMinorVersion;
     }
 
-    // Only cache unauthorized GETs + HEADs.
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct HTTP_CACHE_POLICY
-    {
-        internal HTTP_CACHE_POLICY_TYPE Policy;
-        internal uint SecondsToLive;
-    }
-
     [StructLayout(LayoutKind.Sequential)]
     internal struct HTTP_SSL_CLIENT_CERT_INFO
     {

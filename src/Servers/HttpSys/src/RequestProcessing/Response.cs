@@ -311,7 +311,7 @@ internal sealed class Response
                 _nativeResponse.Response_V1.pEntityChunks = null;
             }
 
-            var cachePolicy = new HttpApiTypes.HTTP_CACHE_POLICY();
+            var cachePolicy = new HTTP_CACHE_POLICY();
             if (_cacheTtl.HasValue && _cacheTtl.Value > TimeSpan.Zero)
             {
                 cachePolicy.Policy = HTTP_CACHE_POLICY_TYPE.HttpCachePolicyTimeToLive;

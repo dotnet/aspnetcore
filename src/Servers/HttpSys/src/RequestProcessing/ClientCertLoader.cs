@@ -8,6 +8,7 @@ using System.Security;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.HttpSys.Internal;
+using Windows.Win32.Networking.HttpServer;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
@@ -20,7 +21,7 @@ internal sealed unsafe partial class ClientCertLoader : IAsyncResult, IDisposabl
 
     private SafeNativeOverlapped? _overlapped;
     private byte[]? _backingBuffer;
-    private HttpApiTypes.HTTP_SSL_CLIENT_CERT_INFO* _memoryBlob;
+    private HTTP_SSL_CLIENT_CERT_INFO* _memoryBlob;
     private uint _size;
     private readonly TaskCompletionSource<object?> _tcs;
     private readonly RequestContext _requestContext;
@@ -97,7 +98,7 @@ internal sealed unsafe partial class ClientCertLoader : IAsyncResult, IDisposabl
         }
     }
 
-    private HttpApiTypes.HTTP_SSL_CLIENT_CERT_INFO* RequestBlob
+    private HTTP_SSL_CLIENT_CERT_INFO* RequestBlob
     {
         get
         {
@@ -127,7 +128,7 @@ internal sealed unsafe partial class ClientCertLoader : IAsyncResult, IDisposabl
         var boundHandle = RequestContext.Server.RequestQueue.BoundHandle;
         _overlapped = new SafeNativeOverlapped(boundHandle,
             boundHandle.AllocateNativeOverlapped(IOCallback, this, _backingBuffer));
-        _memoryBlob = (HttpApiTypes.HTTP_SSL_CLIENT_CERT_INFO*)Marshal.UnsafeAddrOfPinnedArrayElement(_backingBuffer, 0);
+        _memoryBlob = (HTTP_SSL_CLIENT_CERT_INFO*)Marshal.UnsafeAddrOfPinnedArrayElement(_backingBuffer, 0);
     }
 
     // When you use netsh to configure HTTP.SYS with clientcertnegotiation = enable
@@ -150,14 +151,14 @@ internal sealed unsafe partial class ClientCertLoader : IAsyncResult, IDisposabl
     // HTTP.SYS will not do this for you automatically
     internal Task LoadClientCertificateAsync()
     {
-        uint size = CertBoblSize;
+        var size = CertBoblSize;
         bool retry;
         do
         {
             retry = false;
             uint bytesReceived = 0;
 
-            uint statusCode =
+            var statusCode =
                 HttpApi.HttpReceiveClientCertificate(
                     RequestQueueHandle,
                     RequestContext.Request.UConnectionId,
@@ -169,7 +170,7 @@ internal sealed unsafe partial class ClientCertLoader : IAsyncResult, IDisposabl
 
             if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_MORE_DATA)
             {
-                HttpApiTypes.HTTP_SSL_CLIENT_CERT_INFO* pClientCertInfo = RequestBlob;
+                var pClientCertInfo = RequestBlob;
                 size = bytesReceived + pClientCertInfo->CertEncodedSize;
                 Reset(size);
                 retry = true;
@@ -223,7 +224,7 @@ internal sealed unsafe partial class ClientCertLoader : IAsyncResult, IDisposabl
     [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Redirected to callback")]
     private static unsafe void IOCompleted(ClientCertLoader asyncResult, uint errorCode, uint numBytes)
     {
-        RequestContext requestContext = asyncResult.RequestContext;
+        var requestContext = asyncResult.RequestContext;
         try
         {
             if (errorCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_MORE_DATA)
@@ -232,7 +233,7 @@ internal sealed unsafe partial class ClientCertLoader : IAsyncResult, IDisposabl
                 // return the size of the initial cert structure.  To get the full size,
                 // we need to add the certificate encoding size as well.
 
-                HttpApiTypes.HTTP_SSL_CLIENT_CERT_INFO* pClientCertInfo = asyncResult.RequestBlob;
+                var pClientCertInfo = asyncResult.RequestBlob;
                 asyncResult.Reset(numBytes + pClientCertInfo->CertEncodedSize);
 
                 uint bytesReceived = 0;
@@ -264,7 +265,7 @@ internal sealed unsafe partial class ClientCertLoader : IAsyncResult, IDisposabl
             }
             else
             {
-                HttpApiTypes.HTTP_SSL_CLIENT_CERT_INFO* pClientCertInfo = asyncResult._memoryBlob;
+                var pClientCertInfo = asyncResult._memoryBlob;
                 if (pClientCertInfo == null)
                 {
                     asyncResult.Complete(0, null);
@@ -275,7 +276,7 @@ internal sealed unsafe partial class ClientCertLoader : IAsyncResult, IDisposabl
                     {
                         try
                         {
-                            byte[] certEncoded = new byte[pClientCertInfo->CertEncodedSize];
+                            var certEncoded = new byte[pClientCertInfo->CertEncodedSize];
                             Marshal.Copy((IntPtr)pClientCertInfo->pCertEncoded, certEncoded, 0, certEncoded.Length);
                             asyncResult.Complete((int)pClientCertInfo->CertFlags, new X509Certificate2(certEncoded));
                         }
