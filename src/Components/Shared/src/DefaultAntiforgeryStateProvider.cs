@@ -26,7 +26,7 @@ internal class DefaultAntiforgeryStateProvider : AntiforgeryStateProvider, IDisp
         {
             state.PersistAsJson(PersistenceKey, _currentToken);
             return Task.CompletedTask;
-        }, new ServerRenderMode());
+        }, new AutoRenderMode());
 
         state.TryTakeFromJson(PersistenceKey, out _currentToken);
     }
