@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
@@ -28,4 +29,7 @@ public static class EnhancedNavigationTestUtil
             ((IJavaScriptExecutor)browser).ExecuteScript("sessionStorage.setItem('suppress-enhanced-navigation', 'true')");
         }
     }
+
+    public static long GetScrollY(this IWebDriver browser)
+        => Convert.ToInt64(((IJavaScriptExecutor)browser).ExecuteScript("return window.scrollY"), CultureInfo.CurrentCulture);
 }

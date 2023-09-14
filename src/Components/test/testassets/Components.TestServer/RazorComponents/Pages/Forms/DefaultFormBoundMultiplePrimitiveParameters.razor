@@ -3,7 +3,7 @@
 
 <h2>Default form with bound parameter</h2>
 
-<form method="post" @onsubmit="() => _submitted = true" @formname="myform">
+<form data-enhance method="post" @onsubmit="() => _submitted = true" @formname="myform">
     <input type="text" name="Parameter" value="@(_attemptedParameterValue ?? Parameter.ToString())" />
     <input type="text" name="OtherParameter" value="@(_attemptedOtherValue ?? OtherParameter.ToString())" />
     <input id="send" type="submit" value="Send" />
