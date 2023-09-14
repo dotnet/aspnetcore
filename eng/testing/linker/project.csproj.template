@@ -25,29 +25,29 @@
   <ItemGroup>
     <KnownAppHostPack
       Include="@(KnownAppHostPack->WithMetadataValue('TargetFramework', 'net8.0'))"
-      TargetFramework="${TargetFramework}"
+      TargetFramework="${DefaultNetCoreTargetFramework}"
       Condition="'@(KnownAppHostPack->Count())' != '0' AND
-        !(@(KnownAppHostPack->AnyHaveMetadataValue('TargetFramework', '${TargetFramework}')))" />
+        !(@(KnownAppHostPack->AnyHaveMetadataValue('TargetFramework', '${DefaultNetCoreTargetFramework}')))" />
     <KnownRuntimePack
       Include="@(KnownRuntimePack->WithMetadataValue('TargetFramework', 'net8.0'))"
-      TargetFramework="${TargetFramework}"
+      TargetFramework="${DefaultNetCoreTargetFramework}"
       Condition="'@(KnownRuntimePack->Count())' != '0' AND
-        !(@(KnownRuntimePack->AnyHaveMetadataValue('TargetFramework', '${TargetFramework}')))" />
+        !(@(KnownRuntimePack->AnyHaveMetadataValue('TargetFramework', '${DefaultNetCoreTargetFramework}')))" />
     <KnownFrameworkReference
       Include="@(KnownFrameworkReference->WithMetadataValue('TargetFramework', 'net8.0'))"
-      TargetFramework="${TargetFramework}"
+      TargetFramework="${DefaultNetCoreTargetFramework}"
       Condition="'@(KnownFrameworkReference->Count())' != '0' AND
-        !(@(KnownFrameworkReference->AnyHaveMetadataValue('TargetFramework', '${TargetFramework}')))" />
+        !(@(KnownFrameworkReference->AnyHaveMetadataValue('TargetFramework', '${DefaultNetCoreTargetFramework}')))" />
     <KnownILLinkPack
       Include="@(KnownILLinkPack->WithMetadataValue('TargetFramework', 'net8.0'))"
-      TargetFramework="${TargetFramework}"
+      TargetFramework="${DefaultNetCoreTargetFramework}"
       Condition="'@(KnownILLinkPack->Count())' != '0' AND
-        !(@(KnownILLinkPack->AnyHaveMetadataValue('TargetFramework', '${TargetFramework}')))" />
+        !(@(KnownILLinkPack->AnyHaveMetadataValue('TargetFramework', '${DefaultNetCoreTargetFramework}')))" />
     <KnownWebAssemblySdkPack
       Include="@(KnownWebAssemblySdkPack->WithMetadataValue('TargetFramework', 'net8.0'))"
-      TargetFramework="${TargetFramework}"
+      TargetFramework="${DefaultNetCoreTargetFramework}"
       Condition="'@(KnownWebAssemblySdkPack->Count())' != '0' AND
-        !(@(KnownWebAssemblySdkPack->AnyHaveMetadataValue('TargetFramework', '${TargetFramework}')))" />
+        !(@(KnownWebAssemblySdkPack->AnyHaveMetadataValue('TargetFramework', '${DefaultNetCoreTargetFramework}')))" />
   </ItemGroup>
 
 </Project>

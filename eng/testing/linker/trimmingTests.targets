@@ -90,6 +90,7 @@
                                                  .Replace('{AdditionalProperties}', '$(_additionalPropertiesString)')
                                                  .Replace('{RuntimeHostConfigurationOptions}', '$(_runtimeHostConfigurationOptionsString)')
                                                  .Replace('{AdditionalProjectReferences}', '$(_additionalProjectReferencesString)')
+                                                 .Replace('{DefaultNetCoreTargetFramework}', '$(DefaultNetCoreTargetFramework)')
                                                  )"
                       Overwrite="true" />
     <Copy SourceFiles="$(_projectSourceFile);
