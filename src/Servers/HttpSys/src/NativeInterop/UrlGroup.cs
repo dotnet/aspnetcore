@@ -51,7 +51,7 @@ internal sealed partial class UrlGroup : IDisposable
     {
         var connectionLimit = new HTTP_CONNECTION_LIMIT_INFO
         {
-            Flags = { _bitfield = HttpApiTypes.HTTP_PROPERTY_FLAGS_PRESENT },
+            Flags = HttpApi.HTTP_PROPERTY_FLAGS_PRESENT,
             MaxConnections = (uint)maxConnections
         };
 
@@ -68,7 +68,7 @@ internal sealed partial class UrlGroup : IDisposable
     {
         var propertyInfo = new HTTP_BINDING_INFO
         {
-            Flags = { _bitfield = HttpApiTypes.HTTP_PROPERTY_FLAGS_PRESENT },
+            Flags = HttpApi.HTTP_PROPERTY_FLAGS_PRESENT,
             RequestQueueHandle = (HANDLE)destination.Handle.DangerousGetHandle()
         };
 
@@ -111,7 +111,7 @@ internal sealed partial class UrlGroup : IDisposable
 
         var info = new HTTP_BINDING_INFO
         {
-            Flags = { _bitfield = HttpApiTypes.HTTP_PROPERTY_FLAGS_PRESENT },
+            Flags = HttpApi.HTTP_PROPERTY_FLAGS_PRESENT,
             RequestQueueHandle = (HANDLE)_requestQueue.Handle.DangerousGetHandle()
         };
 

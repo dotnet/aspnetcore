@@ -413,7 +413,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
         {
             var statusCode = NativeMethods.HttpQueryRequestProperty(
                 RequestId,
-                HttpApiTypes.HTTP_REQUEST_PROPERTY.HttpRequestPropertySni,
+                HTTP_REQUEST_PROPERTY.HttpRequestPropertySni,
                 qualifier: null,
                 qualifierSize: 0,
                 (void*)pBuffer,
@@ -591,7 +591,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
                 continue;
             }
 
-            var isKnownHeader = HttpApiTypes.ResponseHeaders.KnownHeaders.TryGetValue(headerPair.Key, out var knownHeaderIndex);
+            var isKnownHeader = HttpApiTypes.KnownResponseHeaders.TryGetValue(headerPair.Key, out var knownHeaderIndex);
             for (var i = 0; i < headerValues.Count; i++)
             {
                 var headerValue = headerValues[i];

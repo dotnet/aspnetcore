@@ -1,8 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
-using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.AspNetCore.Server.IIS.Core;
 using Windows.Win32.Networking.HttpServer;
 
@@ -92,9 +92,10 @@ internal static partial class NativeMethods
     private static partial int http_get_application_properties(out IISConfigurationData iiConfigData);
 
     [LibraryImport(AspNetCoreModuleDll)]
-    private static unsafe partial int http_query_request_property(
+    [SuppressMessage("LibraryImportGenerator", "SYSLIB1051:Specified type is not supported by source-generated P/Invokes", Justification = "The enum is handled by the runtime.")]
+    private unsafe static partial int http_query_request_property(
         ulong requestId,
-        HttpApiTypes.HTTP_REQUEST_PROPERTY propertyId,
+        HTTP_REQUEST_PROPERTY propertyId,
         void* qualifier,
         uint qualifierSize,
         void* output,
@@ -150,6 +151,7 @@ internal static partial class NativeMethods
 
     [LibraryImport(AspNetCoreModuleDll)]
     private static unsafe partial int http_has_response4(NativeSafeHandle pInProcessHandler, [MarshalAs(UnmanagedType.Bool)] out bool isResponse4);
+
     [LibraryImport(AspNetCoreModuleDll)]
     private static unsafe partial int http_response_set_trailer(NativeSafeHandle pInProcessHandler, byte* pszHeaderName, byte* pszHeaderValue, ushort usHeaderValueLength, [MarshalAs(UnmanagedType.Bool)] bool replace);
 
@@ -243,7 +245,7 @@ internal static partial class NativeMethods
         return iisConfigurationData;
     }
 
-    public static unsafe int HttpQueryRequestProperty(ulong requestId, HttpApiTypes.HTTP_REQUEST_PROPERTY propertyId, void* qualifier, uint qualifierSize, void* output, uint outputSize, uint* bytesReturned, IntPtr overlapped)
+    public static unsafe int HttpQueryRequestProperty(ulong requestId, HTTP_REQUEST_PROPERTY propertyId, void* qualifier, uint qualifierSize, void* output, uint outputSize, uint* bytesReturned, IntPtr overlapped)
     {
         return http_query_request_property(requestId, propertyId, qualifier, qualifierSize, output, outputSize, bytesReturned, overlapped);
     }

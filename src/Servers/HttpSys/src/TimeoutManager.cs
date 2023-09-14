@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.InteropServices;
-using Microsoft.AspNetCore.HttpSys.Internal;
 using Windows.Win32.Networking.HttpServer;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
@@ -209,20 +208,16 @@ public sealed class TimeoutManager
             return;
         }
 
-        var timeoutinfo = new HTTP_TIMEOUT_LIMIT_INFO();
-
-        timeoutinfo.Flags._bitfield = HttpApiTypes.HTTP_PROPERTY_FLAGS_PRESENT;
-        timeoutinfo.DrainEntityBody =
-            (ushort)timeouts[(int)TimeoutType.DrainEntityBody];
-        timeoutinfo.EntityBody =
-            (ushort)timeouts[(int)TimeoutType.EntityBody];
-        timeoutinfo.RequestQueue =
-            (ushort)timeouts[(int)TimeoutType.RequestQueue];
-        timeoutinfo.IdleConnection =
-            (ushort)timeouts[(int)TimeoutType.IdleConnection];
-        timeoutinfo.HeaderWait =
-            (ushort)timeouts[(int)TimeoutType.HeaderWait];
-        timeoutinfo.MinSendRate = minSendBytesPerSecond;
+        var timeoutinfo = new HTTP_TIMEOUT_LIMIT_INFO
+        {
+            Flags = HttpApi.HTTP_PROPERTY_FLAGS_PRESENT,
+            DrainEntityBody = (ushort)timeouts[(int)TimeoutType.DrainEntityBody],
+            EntityBody = (ushort)timeouts[(int)TimeoutType.EntityBody],
+            RequestQueue = (ushort)timeouts[(int)TimeoutType.RequestQueue],
+            IdleConnection = (ushort)timeouts[(int)TimeoutType.IdleConnection],
+            HeaderWait = (ushort)timeouts[(int)TimeoutType.HeaderWait],
+            MinSendRate = minSendBytesPerSecond
+        };
 
         var infoptr = new IntPtr(&timeoutinfo);
 
@@ -231,7 +226,7 @@ public sealed class TimeoutManager
             infoptr, (uint)TimeoutLimitSize);
     }
 
-    internal enum TimeoutType : int
+    private enum TimeoutType : int
     {
         EntityBody,
         DrainEntityBody,

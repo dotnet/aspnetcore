@@ -504,7 +504,7 @@ internal sealed class Response
             }
             // See if this is an unknown header
             // Http.Sys doesn't let us send the Connection: Upgrade header as a Known header.
-            if (!HttpApiTypes.ResponseHeaders.KnownHeaders.TryGetValue(headerName, out lookup) ||
+            if (!HttpApiTypes.KnownResponseHeaders.TryGetValue(headerName, out lookup) ||
                 (isOpaqueUpgrade && lookup == (int)HTTP_HEADER_ID.HttpHeaderConnection))
             {
                 numUnknownHeaders += headerValues.Count;
@@ -527,7 +527,7 @@ internal sealed class Response
                 }
 
                 // Http.Sys doesn't let us send the Connection: Upgrade header as a Known header.
-                if (!HttpApiTypes.ResponseHeaders.KnownHeaders.TryGetValue(headerName, out lookup) ||
+                if (!HttpApiTypes.KnownResponseHeaders.TryGetValue(headerName, out lookup) ||
                     (isOpaqueUpgrade && lookup == (int)HTTP_HEADER_ID.HttpHeaderConnection))
                 {
                     if (unknownHeaders == null)

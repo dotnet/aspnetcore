@@ -4,7 +4,6 @@
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
-using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Windows.Win32.Networking.HttpServer;
@@ -80,7 +79,7 @@ public sealed class AuthenticationManager
         }
 
         var authInfo = new HTTP_SERVER_AUTHENTICATION_INFO();
-        authInfo.Flags._bitfield = HttpApiTypes.HTTP_PROPERTY_FLAGS_PRESENT;
+        authInfo.Flags = HttpApi.HTTP_PROPERTY_FLAGS_PRESENT;
 
         if (_authSchemes != AuthenticationSchemes.None)
         {
