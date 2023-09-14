@@ -11,12 +11,12 @@ builder.Services.AddRazorComponents();
 #else
 builder.Services.AddRazorComponents()
     #if (UseServer && UseWebAssembly)
-    .AddServerComponents()
-    .AddWebAssemblyComponents();
+    .AddInteractiveServerComponents()
+    .AddInteractiveWebAssemblyComponents();
     #elif(UseServer)
-    .AddServerComponents();
+    .AddInteractiveServerComponents();
     #elif(UseWebAssembly)
-    .AddWebAssemblyComponents();
+    .AddInteractiveWebAssemblyComponents();
     #endif
 #endif
 
@@ -48,15 +48,15 @@ app.UseStaticFiles();
 
 #if (UseServer && UseWebAssembly)
 app.MapRazorComponents<App>()
-    .AddServerRenderMode()
-    .AddWebAssemblyRenderMode()
+    .AddInteractiveServerRenderMode()
+    .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(Counter).Assembly);
 #elif (UseServer)
 app.MapRazorComponents<App>()
-    .AddServerRenderMode();
+    .AddInteractiveServerRenderMode();
 #elif (UseWebAssembly)
 app.MapRazorComponents<App>()
-    .AddWebAssemblyRenderMode()
+    .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(Counter).Assembly);
 #else
 app.MapRazorComponents<App>();

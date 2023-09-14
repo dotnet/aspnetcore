@@ -16,11 +16,11 @@
     @*#if (!InteractiveAtRoot)
     <HeadOutlet />
     ##elseif (UseServer && UseWebAssembly)
-    <HeadOutlet @rendermode="@RenderMode.Auto" />
+    <HeadOutlet @rendermode="@RenderMode.InteractiveAuto" />
     ##elseif (UseServer)
-    <HeadOutlet @rendermode="@RenderMode.Server" />
+    <HeadOutlet @rendermode="@RenderMode.InteractiveServer" />
     ##else
-    <HeadOutlet @rendermode="@RenderMode.WebAssembly" />
+    <HeadOutlet @rendermode="@RenderMode.InteractiveWebAssembly" />
     ##endif*@
 </head>
 
@@ -28,11 +28,11 @@
     @*#if (!InteractiveAtRoot)
     <Routes />
     ##elseif (UseServer && UseWebAssembly) -->
-    <Routes @rendermode="@RenderMode.Auto" />
+    <Routes @rendermode="@RenderMode.InteractiveAuto" />
     ##elseif (UseServer)
-    <Routes @rendermode="@RenderMode.Server" />
+    <Routes @rendermode="@RenderMode.InteractiveServer" />
     ##else
-    <Routes @rendermode="@RenderMode.WebAssembly" />
+    <Routes @rendermode="@RenderMode.InteractiveWebAssembly" />
     ##endif*@
     <script src="_framework/blazor.web.js"></script>
 </body>
