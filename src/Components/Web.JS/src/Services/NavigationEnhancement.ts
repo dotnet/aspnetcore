@@ -39,8 +39,8 @@ export interface NavigationEnhancementCallbacks {
   documentUpdated: () => void;
 }
 
-export function isPerformingEnhancedPageLoad() {
-  return performingEnhancedPageLoad;
+export function isPageLoading() {
+  return performingEnhancedPageLoad || document.readyState === 'loading';
 }
 
 export function attachProgressivelyEnhancedNavigationListener(callbacks: NavigationEnhancementCallbacks) {

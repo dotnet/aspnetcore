@@ -31,14 +31,14 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
   started = true;
 
   Blazor._internal.loadWebAssemblyQuicklyTimeout = 3000;
+
   // Defined here to avoid inadvertently imported enhanced navigation
   // related APIs in WebAssembly or Blazor Server contexts.
   Blazor._internal.hotReloadApplied = () => {
-    if (hasProgrammaticEnhancedNavigationHandler())
-    {
+    if (hasProgrammaticEnhancedNavigationHandler()) {
       performProgrammaticEnhancedNavigation(location.href, true);
     }
-  }
+  };
 
   setCircuitOptions(options?.circuit);
   setWebAssemblyOptions(options?.webAssembly);
@@ -52,10 +52,21 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
     attachProgressivelyEnhancedNavigationListener(rootComponentManager);
   }
 
-  registerAllComponentDescriptors(document);
-  rootComponentManager.documentUpdated();
+  // Wait until the initial page response completes before activating interactive components.
+  // If stream rendering is used, this helps to ensure that only the final set of interactive
+  // components produced by the stream render actually get activated for interactivity.
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', onInitialDomContentLoaded);
+  } else {
+    onInitialDomContentLoaded();
+  }
 
   return Promise.resolve();
+}
+
+function onInitialDomContentLoaded() {
+  registerAllComponentDescriptors(document);
+  rootComponentManager.documentUpdated();
 }
 
 Blazor.start = boot;
