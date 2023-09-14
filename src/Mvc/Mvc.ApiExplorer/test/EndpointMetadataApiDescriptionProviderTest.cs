@@ -422,6 +422,7 @@ public class EndpointMetadataApiDescriptionProviderTest
     {
         Assert.Empty(GetApiDescription((IInferredServiceInterface foo) => { }).ParameterDescriptions);
         Assert.Empty(GetApiDescription(([FromServices] int foo) => { }).ParameterDescriptions);
+        Assert.Empty(GetApiDescription(([FromKeyedServices("foo")] int foo) => { }).ParameterDescriptions);
         Assert.Empty(GetApiDescription((HttpContext context) => { }).ParameterDescriptions);
         Assert.Empty(GetApiDescription((HttpRequest request) => { }).ParameterDescriptions);
         Assert.Empty(GetApiDescription((HttpResponse response) => { }).ParameterDescriptions);
