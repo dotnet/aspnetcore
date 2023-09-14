@@ -10,6 +10,9 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 /// </summary>
 public sealed class RazorComponentsServiceOptions
 {
+    // Fairly long default lifetime to allow for clock skew across servers
+    private TimeSpan _temporaryRedirectionUrlValidityDuration = TimeSpan.FromMinutes(5);
+
     internal FormDataMapperOptions _formMappingOptions = new();
 
     /// <summary>
@@ -62,5 +65,21 @@ public sealed class RazorComponentsServiceOptions
     {
         get => _formMappingOptions.MaxKeyBufferSize;
         set => _formMappingOptions.MaxKeyBufferSize = value;
+    }
+
+    /// <summary>
+    /// Gets or sets the lifetime of data protection validity for temporary redirection URLs
+    /// emitted by Blazor server-side rendering. These are only used transiently so the lifetime
+    /// only needs to be long enough for a client to receive the URL and begin navigation to it.
+    /// However, it should also be long enough to allow for clock skew across servers.
+    /// </summary>
+    public TimeSpan TemporaryRedirectionUrlValidityDuration
+    {
+        get => _temporaryRedirectionUrlValidityDuration;
+        set
+        {
+            ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(value.TotalMilliseconds, 0);
+            _temporaryRedirectionUrlValidityDuration = value;
+        }
     }
 }

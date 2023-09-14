@@ -36,6 +36,13 @@ public class ServerStartup
         services.AddSingleton<CircuitHandler>(circuitContextAccessor);
         services.AddSingleton(circuitContextAccessor);
 
+        services.AddKeyedSingleton(
+            "keyed-service-1",
+            BasicTestApp.PropertyInjection.TestKeyedService.Create("value-1"));
+        services.AddKeyedSingleton(
+            BasicTestApp.PropertyInjection.TestServiceKey.ServiceB,
+            BasicTestApp.PropertyInjection.TestKeyedService.Create("value-2"));
+
         // Since tests run in parallel, we use an ephemeral key provider to avoid filesystem
         // contention issues.
         services.AddSingleton<IDataProtectionProvider, EphemeralDataProtectionProvider>();
