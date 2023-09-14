@@ -16,7 +16,7 @@ public static class WebAssemblyRazorComponentsEndpointConventionBuilderExtension
     /// Configures the application to support the <see cref="RenderMode.InteractiveWebAssembly"/> render mode.
     /// </summary>
     /// <returns>The <see cref="RazorComponentsEndpointConventionBuilder"/>.</returns>
-    public static RazorComponentsEndpointConventionBuilder AddWebAssemblyRenderMode(
+    public static RazorComponentsEndpointConventionBuilder AddInteractiveWebAssemblyRenderMode(
         this RazorComponentsEndpointConventionBuilder builder,
         Action<WebAssemblyComponentsEndpointOptions>? callback = null)
     {

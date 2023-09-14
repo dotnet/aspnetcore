@@ -30,8 +30,8 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             options.MaxFormMappingRecursionDepth = 5;
             options.MaxFormMappingCollectionSize = 100;
         })
-            .AddWebAssemblyComponents()
-            .AddServerComponents();
+            .AddInteractiveWebAssemblyComponents()
+            .AddInteractiveServerComponents();
         services.AddHttpContextAccessor();
         services.AddSingleton<AsyncOperationService>();
         services.AddCascadingAuthenticationState();
@@ -59,8 +59,8 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             {
                 endpoints.MapRazorComponents<TRootComponent>()
                     .AddAdditionalAssemblies(Assembly.Load("Components.WasmMinimal"))
-                    .AddServerRenderMode()
-                    .AddWebAssemblyRenderMode(options => options.PathPrefix = "/WasmMinimal");
+                    .AddInteractiveServerRenderMode()
+                    .AddInteractiveWebAssemblyRenderMode(options => options.PathPrefix = "/WasmMinimal");
 
                 NotEnabledStreamingRenderingComponent.MapEndpoints(endpoints);
                 StreamingRenderingForm.MapEndpoints(endpoints);

@@ -67,12 +67,12 @@ internal class SSRRenderModeBoundary : IComponent
         // We have to allow for specified rendermodes being subclases of the known types
         if (renderMode is InteractiveServerRenderMode || renderMode is InteractiveAutoRenderMode)
         {
-            AssertRenderModeIsConfigured<InteractiveServerRenderMode>(componentType, renderMode, configuredModes, "AddServerRenderMode");
+            AssertRenderModeIsConfigured<InteractiveServerRenderMode>(componentType, renderMode, configuredModes, "AddInteractiveServerRenderMode");
         }
 
         if (renderMode is InteractiveWebAssemblyRenderMode || renderMode is InteractiveAutoRenderMode)
         {
-            AssertRenderModeIsConfigured<InteractiveWebAssemblyRenderMode>(componentType, renderMode, configuredModes, "AddWebAssemblyRenderMode");
+            AssertRenderModeIsConfigured<InteractiveWebAssemblyRenderMode>(componentType, renderMode, configuredModes, "AddInteractiveWebAssemblyRenderMode");
         }
     }
 

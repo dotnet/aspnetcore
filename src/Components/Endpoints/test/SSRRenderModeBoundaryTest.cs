@@ -36,7 +36,7 @@ public class SSRRenderModeBoundaryTest
         var ex = Assert.Throws<InvalidOperationException>(() => new SSRRenderModeBoundary(
             httpContext, typeof(TestComponent), new ServerRenderModeSubclass()));
         Assert.Contains($"A component of type '{typeof(TestComponent)}' has render mode '{nameof(ServerRenderModeSubclass)}'", ex.Message);
-        Assert.Contains($"add a call to 'AddServerRenderMode'", ex.Message);
+        Assert.Contains($"add a call to 'AddInteractiveServerRenderMode'", ex.Message);
     }
 
     [Fact]
@@ -50,7 +50,7 @@ public class SSRRenderModeBoundaryTest
         var ex = Assert.Throws<InvalidOperationException>(() => new SSRRenderModeBoundary(
             httpContext, typeof(TestComponent), new WebAssemblyRenderModeSubclass()));
         Assert.Contains($"A component of type '{typeof(TestComponent)}' has render mode '{nameof(WebAssemblyRenderModeSubclass)}'", ex.Message);
-        Assert.Contains($"add a call to 'AddWebAssemblyRenderMode'", ex.Message);
+        Assert.Contains($"add a call to 'AddInteractiveWebAssemblyRenderMode'", ex.Message);
     }
 
     [Fact]
@@ -64,7 +64,7 @@ public class SSRRenderModeBoundaryTest
         var ex = Assert.Throws<InvalidOperationException>(() => new SSRRenderModeBoundary(
             httpContext, typeof(TestComponent), new AutoRenderModeSubclass()));
         Assert.Contains($"A component of type '{typeof(TestComponent)}' has render mode '{nameof(AutoRenderModeSubclass)}'", ex.Message);
-        Assert.Contains($"add a call to 'AddServerRenderMode'", ex.Message);
+        Assert.Contains($"add a call to 'AddInteractiveServerRenderMode'", ex.Message);
     }
 
     [Fact]
@@ -78,7 +78,7 @@ public class SSRRenderModeBoundaryTest
         var ex = Assert.Throws<InvalidOperationException>(() => new SSRRenderModeBoundary(
             httpContext, typeof(TestComponent), new AutoRenderModeSubclass()));
         Assert.Contains($"A component of type '{typeof(TestComponent)}' has render mode '{nameof(AutoRenderModeSubclass)}'", ex.Message);
-        Assert.Contains($"add a call to 'AddWebAssemblyRenderMode'", ex.Message);
+        Assert.Contains($"add a call to 'AddInteractiveWebAssemblyRenderMode'", ex.Message);
     }
 
     private static void PrepareEndpoint(HttpContext httpContext, params IComponentRenderMode[] configuredModes)

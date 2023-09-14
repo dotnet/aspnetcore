@@ -21,7 +21,7 @@ public static class WebAssemblyRazorComponentsBuilderExtensions
     /// </summary>
     /// <param name="builder">The <see cref="IRazorComponentsBuilder"/>.</param>
     /// <returns>An <see cref="IRazorComponentsBuilder"/> that can be used to further customize the configuration.</returns>
-    public static IRazorComponentsBuilder AddWebAssemblyComponents(this IRazorComponentsBuilder builder)
+    public static IRazorComponentsBuilder AddInteractiveWebAssemblyComponents(this IRazorComponentsBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(builder, nameof(builder));
 
@@ -38,7 +38,7 @@ public static class WebAssemblyRazorComponentsBuilderExtensions
             {
                 if (renderMode is InteractiveWebAssemblyRenderMode)
                 {
-                    throw new InvalidOperationException("Invalid render mode. Use AddWebAssemblyRenderMode(Action<WebAssemblyComponentsEndpointOptions>) to configure the WebAssembly render mode.");
+                    throw new InvalidOperationException("Invalid render mode. Use AddInteractiveWebAssemblyRenderMode(Action<WebAssemblyComponentsEndpointOptions>) to configure the WebAssembly render mode.");
                 }
 
                 return Array.Empty<RouteEndpointBuilder>();
