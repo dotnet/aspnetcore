@@ -73,6 +73,13 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
   }
 
   public onDocumentUpdated() {
+    // Root components may have been added, updated, or removed.
+    this.rootComponentsMayRequireRefresh();
+  }
+
+  public onEnhancedNavigationCompleted() {
+    // Root components may now be ready for activation if they had been previously
+    // skipped for activation due to an enhanced navigation being underway.
     this.rootComponentsMayRequireRefresh();
   }
 

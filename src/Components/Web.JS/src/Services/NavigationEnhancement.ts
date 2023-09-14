@@ -37,6 +37,7 @@ let performingEnhancedPageLoad: boolean;
 
 export interface NavigationEnhancementCallbacks {
   documentUpdated: () => void;
+  enhancedNavigationCompleted: () => void;
 }
 
 export function isPageLoading() {
@@ -250,7 +251,7 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, f
     }
 
     performingEnhancedPageLoad = false;
-    navigationEnhancementCallbacks.documentUpdated();
+    navigationEnhancementCallbacks.enhancedNavigationCompleted();
   }
 }
 

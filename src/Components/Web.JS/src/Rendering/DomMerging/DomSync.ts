@@ -6,7 +6,7 @@ import { isInteractiveRootComponentElement } from '../BrowserRenderer';
 import { applyAnyDeferredValue } from '../DomSpecialPropertyUtil';
 import { LogicalElement, getLogicalChildrenArray, getLogicalNextSibling, getLogicalParent, getLogicalRootDescriptor, insertLogicalChild, insertLogicalChildBefore, isLogicalElement, toLogicalElement, toLogicalRootCommentElement } from '../LogicalElements';
 import { synchronizeAttributes } from './AttributeSync';
-import { areIncompatibleDataPermanentElements, isDataPermanentElement } from './DataPermanentElementSync';
+import { cannotMergeDueToDataPermanentAttributes, isDataPermanentElement } from './DataPermanentElementSync';
 import { UpdateCost, ItemList, Operation, computeEditScript } from './EditScript';
 
 let descriptorHandler: DescriptorHandler | null = null;
@@ -290,8 +290,6 @@ function domNodeComparer(a: Node, b: Node): UpdateCost {
       // For elements, we're only doing a shallow comparison and don't know if attributes/descendants are different.
       // We never 'update' one element type into another. We regard the update cost for same-type elements as zero because
       // then the 'find common prefix/suffix' optimization can include elements in those prefixes/suffixes.
-      // If an element has the 'data-permanent' attribute, it may have content that should be retained between DOM synchronizations.
-      // To maximize the chance that data permanent elements get matched up correctly, we compare the IDs of each element.
       // TODO: If we want to support some way to force matching/nonmatching based on @key, we can add logic here
       //       to return UpdateCost.Infinite if either has a key but they don't match. This will prevent unwanted retention.
       //       For the converse (forcing retention, even if that means reordering), we could post-process the list of
@@ -300,7 +298,10 @@ function domNodeComparer(a: Node, b: Node): UpdateCost {
         return UpdateCost.Infinite;
       }
 
-      if (areIncompatibleDataPermanentElements(a as Element, b as Element)) {
+      // The two elements must have matching 'data-permanent' attribute values for them to be merged. If they don't match, either:
+      // [1] We're comparing a data-permanent element to a non-data-permanent one.
+      // [2] We're comparing elements that represent two different data-permanent containers.
+      if (cannotMergeDueToDataPermanentAttributes(a as Element, b as Element)) {
         return UpdateCost.Infinite;
       }
 

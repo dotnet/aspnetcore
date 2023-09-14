@@ -6,7 +6,6 @@ import { IBlazor } from '../GlobalExports';
 // The base Blazor event type.
 // Properties listed here get assigned by the event registry in 'dispatchEvent'.
 interface BlazorEvent {
-  blazor: IBlazor;
   type: keyof BlazorEventMap;
 }
 
@@ -15,13 +14,14 @@ export interface BlazorEventMap {
   'enhancedload': BlazorEvent;
 }
 
-export class EventRegistry {
+export class JSEventRegistry {
   private readonly _eventListeners = new Map<string, Set<(ev: any) => void>>();
 
-  private _blazor: IBlazor | null = null;
-
-  public attachBlazorInstance(blazor: IBlazor) {
-    this._blazor = blazor;
+  static create(blazor: IBlazor): JSEventRegistry {
+    const result = new JSEventRegistry();
+    blazor.addEventListener = result.addEventListener.bind(result);
+    blazor.removeEventListener = result.removeEventListener.bind(result);
+    return result;
   }
 
   public addEventListener<K extends keyof BlazorEventMap>(type: K, listener: (ev: BlazorEventMap[K]) => void): void {
@@ -35,19 +35,10 @@ export class EventRegistry {
   }
 
   public removeEventListener<K extends keyof BlazorEventMap>(type: K, listener: (ev: BlazorEventMap[K]) => void): void {
-    const listenersForEventType = this._eventListeners.get(type);
-    if (!listenersForEventType) {
-      return;
-    }
-
-    listenersForEventType.delete(listener);
+    this._eventListeners.get(type)?.delete(listener);
   }
 
   public dispatchEvent<K extends keyof BlazorEventMap>(type: K, ev: Omit<BlazorEventMap[K], keyof BlazorEvent>): void {
-    if (this._blazor === null) {
-      throw new Error('Blazor events cannot be dispatched until a Blazor instance gets attached');
-    }
-
     const listenersForEventType = this._eventListeners.get(type);
     if (!listenersForEventType) {
       return;
@@ -55,7 +46,6 @@ export class EventRegistry {
 
     const event: BlazorEventMap[K] = {
       ...ev,
-      blazor: this._blazor,
       type,
     };
 
