@@ -71,6 +71,11 @@ internal partial class EndpointHtmlRenderer
         return null;
     }
 
+    public static void MarkAsAllowingEnhancedNavigation(HttpContext context)
+    {
+        context.Response.Headers.Add("blazor-enhanced-nav", "allow");
+    }
+
     public ValueTask<IHtmlAsyncContent> PrerenderComponentAsync(
         HttpContext httpContext,
         [DynamicallyAccessedMembers(Component)] Type componentType,
@@ -170,13 +175,15 @@ internal partial class EndpointHtmlRenderer
                 "Navigation commands can not be issued during server-side prerendering after the response from the server has started. Applications must buffer the" +
                 "response and avoid using features like FlushAsync() before all components on the page have been rendered to prevent failed navigation commands.");
         }
-        else if (IsPossibleExternalDestination(httpContext.Request, navigationException.Location) && httpContext.Request.Headers.ContainsKey("blazor-enhanced-nav"))
+        else if (IsPossibleExternalDestination(httpContext.Request, navigationException.Location)
+            && IsProgressivelyEnhancedNavigation(httpContext.Request))
         {
-            // It's unsafe to do a 301/302/etc to an external destination when this was requested via fetch, because
-            // assuming it doesn't expose CORS headers, we won't be allowed to follow the redirection nor will
-            // we even find out what the destination URL would have been. But since it's our own JS code making this
-            // fetch request, we can have a custom protocol for describing the URL we wanted to redirect to.
-            httpContext.Response.Headers.Add("blazor-enhanced-nav-redirect-location", navigationException.Location);
+            // For progressively-enhanced nav, we prefer to use opaque redirections for external URLs rather than
+            // forcing the request to be retried, since that allows post-redirect-get to work, plus avoids a
+            // duplicated request. The client can't rely on receiving this header, though, since non-Blazor endpoints
+            // wouldn't return it.
+            httpContext.Response.Headers.Add("blazor-enhanced-nav-redirect-location",
+                OpaqueRedirection.CreateProtectedRedirectionUrl(httpContext, navigationException.Location));
             return new ValueTask<PrerenderedComponentHtmlContent>(PrerenderedComponentHtmlContent.Empty);
         }
         else
