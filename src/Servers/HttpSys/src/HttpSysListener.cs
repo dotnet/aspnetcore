@@ -53,8 +53,6 @@ internal sealed partial class HttpSysListener : IDisposable
             throw new PlatformNotSupportedException();
         }
 
-        Debug.Assert(HttpApi.Version.HttpApiMajorVersion == 2, "Invalid Http api version");
-
         Options = options;
 
         Logger = loggerFactory.CreateLogger<HttpSysListener>();
