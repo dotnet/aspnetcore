@@ -825,7 +825,7 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
     }
 
     [Fact]
-    public void CanPersistPrerenderedState_Auto_PersistsOnServerWhenWebAssemblyNotLoaded()
+    public void CanPersistPrerenderedState_Auto_PersistsOnServer()
     {
         Navigate(ServerPathBase);
         Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
