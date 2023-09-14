@@ -4,22 +4,22 @@
 namespace Microsoft.AspNetCore.Components.Web;
 
 /// <summary>
-/// A <see cref="IComponentRenderMode"/> indicating that the component should be rendered on the client using WebAssembly.
+/// A <see cref="IComponentRenderMode"/> indicating that the component should be rendered interactively on the client using WebAssembly.
 /// </summary>
-public class WebAssemblyRenderMode : IComponentRenderMode
+public class InteractiveWebAssemblyRenderMode : IComponentRenderMode
 {
     /// <summary>
-    /// Constructs an instance of <see cref="WebAssemblyRenderMode"/>.
+    /// Constructs an instance of <see cref="InteractiveWebAssemblyRenderMode"/>.
     /// </summary>
-    public WebAssemblyRenderMode() : this(true)
+    public InteractiveWebAssemblyRenderMode() : this(true)
     {
     }
 
     /// <summary>
-    /// Constructs an instance of <see cref="WebAssemblyRenderMode"/>
+    /// Constructs an instance of <see cref="InteractiveWebAssemblyRenderMode"/>
     /// </summary>
     /// <param name="prerender">A flag indicating whether the component should first prerender on the server. The default value is true.</param>
-    public WebAssemblyRenderMode(bool prerender)
+    public InteractiveWebAssemblyRenderMode(bool prerender)
     {
         Prerender = prerender;
     }

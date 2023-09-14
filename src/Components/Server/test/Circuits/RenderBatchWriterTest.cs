@@ -215,7 +215,7 @@ public class RenderBatchWriterTest
                     RenderTreeFrame.Markup(132, "Some markup"),
                     RenderTreeFrame.Text(133, "\n\t  "),
                     RenderTreeFrame.NamedEvent(135, "SomeEventType", "Some assigned name"),
-                    RenderTreeFrame.ComponentRenderModeFrame(136, RenderMode.Auto),
+                    RenderTreeFrame.ComponentRenderModeFrame(136, RenderMode.InteractiveAuto),
 
                     // Testing deduplication
                     RenderTreeFrame.Attribute(200, "Attribute with string value", "String value"),

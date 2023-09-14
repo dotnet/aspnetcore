@@ -55,7 +55,7 @@ public static class ServerRazorComponentsBuilderExtensions
         {
             if (renderMode is not InternalServerRenderMode)
             {
-                if (renderMode is ServerRenderMode)
+                if (renderMode is InteractiveServerRenderMode)
                 {
                     throw new InvalidOperationException("Invalid render mode. Use AddServerRenderMode() to configure the Server render mode.");
                 }
@@ -73,7 +73,7 @@ public static class ServerRazorComponentsBuilderExtensions
         {
             return renderMode switch
             {
-                ServerRenderMode _ or AutoRenderMode _ => true,
+                InteractiveServerRenderMode _ or InteractiveAutoRenderMode _ => true,
                 _ => false,
             };
         }

@@ -17,14 +17,14 @@ internal class RazorComponentDataSourceOptions
         .Create(
             equals: (x, y) => (x,y) switch
             {
-                (ServerRenderMode, ServerRenderMode) => true,
-                (WebAssemblyRenderMode, WebAssemblyRenderMode) => true,
+                (InteractiveServerRenderMode, InteractiveServerRenderMode) => true,
+                (InteractiveWebAssemblyRenderMode, InteractiveWebAssemblyRenderMode) => true,
                 _ => false,
             },
             getHashCode: obj => obj switch
             {
-                ServerRenderMode => 1,
-                WebAssemblyRenderMode => 2,
+                InteractiveServerRenderMode => 1,
+                InteractiveWebAssemblyRenderMode => 2,
                 _ => throw new InvalidOperationException($"Unknown render mode: {obj}"),
             });
 

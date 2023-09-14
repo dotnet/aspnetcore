@@ -36,7 +36,7 @@ public static class WebAssemblyRazorComponentsBuilderExtensions
         {
             if (renderMode is not WebAssemblyRenderModeWithOptions wasmWithOptions)
             {
-                if (renderMode is WebAssemblyRenderMode)
+                if (renderMode is InteractiveWebAssemblyRenderMode)
                 {
                     throw new InvalidOperationException("Invalid render mode. Use AddWebAssemblyRenderMode(Action<WebAssemblyComponentsEndpointOptions>) to configure the WebAssembly render mode.");
                 }
@@ -62,7 +62,7 @@ public static class WebAssemblyRazorComponentsBuilderExtensions
         }
 
         public override bool Supports(IComponentRenderMode renderMode)
-            => renderMode is WebAssemblyRenderMode or AutoRenderMode;
+            => renderMode is InteractiveWebAssemblyRenderMode or InteractiveAutoRenderMode;
 
         private class EndpointRouteBuilder : IEndpointRouteBuilder
         {
