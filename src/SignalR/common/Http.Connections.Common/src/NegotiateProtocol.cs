@@ -66,7 +66,7 @@ public static class NegotiateProtocol
                 return;
             }
 
-            if (response.UseAcking)
+            if (response.UseStatefulReconnect)
             {
                 writer.WriteBoolean(AckPropertyNameBytes, true);
             }
@@ -262,7 +262,7 @@ public static class NegotiateProtocol
                 AvailableTransports = availableTransports,
                 Error = error,
                 Version = version,
-                UseAcking = useAck,
+                UseStatefulReconnect = useAck,
             };
         }
         catch (Exception ex)

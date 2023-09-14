@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Telemetry.Testing.Metering;
+using Microsoft.Extensions.Telemetry.Testing.Metrics;
 using Moq;
 
 namespace Microsoft.AspNetCore.Routing;
@@ -167,7 +167,6 @@ public class RoutingMetricsTests
             new DefaultEndpointDataSource(),
             listener,
             Options.Create(new RouteOptions()),
-            Options.Create(new FormOptions()),
             metrics,
             next);
 

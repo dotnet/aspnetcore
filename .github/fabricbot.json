@@ -1496,7 +1496,7 @@
             ]
           },
           {
-            "label": "area-runtime",
+            "label": "area-networking",
             "pathFilter": [
               "src/Servers/",
               "src/Http/",
@@ -1633,7 +1633,7 @@
             {
               "name": "addedToMilestone",
               "parameters": {
-                "milestoneName": ".NET 8 Planning"
+                "milestoneName": ".NET 9 Planning"
               }
             },
             {
@@ -1649,12 +1649,12 @@
           "issues",
           "project_card"
         ],
-        "taskName": "Comment when an investigation issue moved to .NET 8 Planning",
+        "taskName": "Comment when an investigation issue moved to .NET 9 Planning",
         "actions": [
           {
             "name": "addReply",
             "parameters": {
-              "comment": "To learn more about what this message means, what to expect next, and how this issue will be handled you can read our [Triage Process document](https://github.com/dotnet/aspnetcore/blob/main/docs/TriageProcess.md).\nWe're moving this issue to the .NET 8 Planning milestone for future evaluation / consideration. Because it's not immediately obvious what is causing this behavior, we would like to keep this around to collect more feedback, which can later help us determine how to handle this. We will re-evaluate this issue, during our next planning meeting(s).\nIf we later determine, that the issue has no community involvement, or it's very rare and low-impact issue, we will close it - so that the team can focus on more important and high impact work."
+              "comment": "To learn more about what this message means, what to expect next, and how this issue will be handled you can read our [Triage Process document](https://github.com/dotnet/aspnetcore/blob/main/docs/TriageProcess.md).\nWe're moving this issue to the .NET 9 Planning milestone for future evaluation / consideration. Because it's not immediately obvious what is causing this behavior, we would like to keep this around to collect more feedback, which can later help us determine how to handle this. We will re-evaluate this issue, during our next planning meeting(s).\nIf we later determine, that the issue has no community involvement, or it's very rare and low-impact issue, we will close it - so that the team can focus on more important and high impact work."
             }
           }
         ]
@@ -2510,7 +2510,7 @@
             {
               "name": "addedToMilestone",
               "parameters": {
-                "milestoneName": ".NET 8 Planning"
+                "milestoneName": ".NET 9 Planning"
               }
             },
             {
@@ -2531,12 +2531,12 @@
           "issues",
           "project_card"
         ],
-        "taskName": "Comment when an issue is moved to `.NET 8 Planning` milestone",
+        "taskName": "Comment when an issue is moved to `.NET 9 Planning` milestone",
         "actions": [
           {
             "name": "addReply",
             "parameters": {
-              "comment": "Thanks for contacting us.\n\nWe're moving this issue to the `.NET 8 Planning` milestone for future evaluation / consideration. We would like to keep this around to collect more feedback, which can help us with prioritizing this work. We will re-evaluate this issue, during our next planning meeting(s). \nIf we later determine, that the issue has no community involvement, or it's very rare and low-impact issue, we will close it - so that the team can focus on more important and high impact issues.\nTo learn more about what to expect next and how this issue will be handled you can read more about our triage process [here](https://github.com/dotnet/aspnetcore/blob/main/docs/TriageProcess.md)."
+              "comment": "Thanks for contacting us.\n\nWe're moving this issue to the `.NET 9 Planning` milestone for future evaluation / consideration. We would like to keep this around to collect more feedback, which can help us with prioritizing this work. We will re-evaluate this issue, during our next planning meeting(s). \nIf we later determine, that the issue has no community involvement, or it's very rare and low-impact issue, we will close it - so that the team can focus on more important and high impact issues.\nTo learn more about what to expect next and how this issue will be handled you can read more about our triage process [here](https://github.com/dotnet/aspnetcore/blob/main/docs/TriageProcess.md)."
             }
           }
         ]
@@ -3236,7 +3236,7 @@
           {
             "name": "addMilestone",
             "parameters": {
-              "milestoneName": "6.0.22"
+              "milestoneName": "6.0.23"
             }
           }
         ]
@@ -3280,7 +3280,7 @@
           {
             "name": "addMilestone",
             "parameters": {
-              "milestoneName": "7.0.11"
+              "milestoneName": "7.0.12"
             }
           }
         ]
@@ -3401,7 +3401,7 @@
           {
             "name": "addReply",
             "parameters": {
-              "comment": "Thank you for filing this issue. In order for us to investigate this issue, please provide [a minimalistic repro project](https://github.com/dotnet/aspnetcore/blob/main/docs/repro.md) that illustrates the problem."
+              "comment": "Thank you for filing this issue. In order for us to investigate this issue, please provide [a minimal repro project](https://github.com/dotnet/aspnetcore/blob/main/docs/repro.md) that illustrates the problem without unnecessary code. Please share with us in a public GitHub repo because we cannot open ZIP attachments, and don't include any confidential content."
             }
           },
           {

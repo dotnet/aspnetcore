@@ -4,6 +4,7 @@
 using System.Globalization;
 using System.Reflection;
 using System.Security.Claims;
+using System.Web;
 using Components.TestServer.RazorComponents;
 using Components.TestServer.RazorComponents.Pages.Forms;
 using Components.TestServer.Services;
@@ -59,10 +60,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
                 endpoints.MapRazorComponents<TRootComponent>()
                     .AddAdditionalAssemblies(Assembly.Load("Components.WasmMinimal"))
                     .AddServerRenderMode()
-                    .AddWebAssemblyRenderMode(new WebAssemblyComponentsEndpointOptions
-                    {
-                        PathPrefix = "/WasmMinimal"
-                    });
+                    .AddWebAssemblyRenderMode(options => options.PathPrefix = "/WasmMinimal");
 
                 NotEnabledStreamingRenderingComponent.MapEndpoints(endpoints);
                 StreamingRenderingForm.MapEndpoints(endpoints);
@@ -122,6 +120,18 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             response.StatusCode = 404;
             response.ContentType = "text/html";
             await response.WriteAsync("<h1>404</h1><p>Sorry, there's nothing here! This is a custom server-generated 404 message.</p>");
+        });
+
+        // Used when testing that enhanced nav includes "Accept: text/html"
+        endpoints.Map("/nav/list-headers", async (HttpRequest request, HttpResponse response) =>
+        {
+            response.ContentType = "text/html";
+            await response.WriteAsync("<ul id='all-headers'>");
+            foreach (var header in request.Headers)
+            {
+                await response.WriteAsync($"<li>{HttpUtility.HtmlEncode(header.Key)}: {HttpUtility.HtmlEncode(header.Value)}</li>");
+            }
+            await response.WriteAsync("</ul>");
         });
     }
 }

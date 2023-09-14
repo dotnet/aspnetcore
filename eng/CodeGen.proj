@@ -24,10 +24,12 @@
       <_RequiresDelayedBuild Include="@(_ProvidesReferenceOrRequiresDelay->WithMetadataValue('RequiresDelayedBuild','true')->Distinct())" />
       <_SharedFrameworkAndPackageRef Include="@(_ProjectReferenceProvider->WithMetadataValue('IsAspNetCoreApp','true')->WithMetadataValue('IsPackable', 'true'))" />
       <_SharedFrameworkRef Include="@(_ProjectReferenceProvider->WithMetadataValue('IsAspNetCoreApp','true')->WithMetadataValue('IsPackable', 'false'))" />
-      <_TrimmableProject Include="@(_ProjectReferenceProvider->WithMetadataValue('IsTrimmable', 'true'))" />
       <_ShippingAssemblyWithDupes Include="@(_ProjectReferenceProvider->WithMetadataValue('IsAspNetCoreApp', 'true'))" />
       <_ShippingAssemblyWithDupes Include="@(_ProjectReferenceProvider->WithMetadataValue('IsShippingPackage', 'true'))" />
       <_ShippingAssembly Include="@(_ShippingAssemblyWithDupes->Distinct())" />
+      <!-- _ProjectReferenceProvider is already Distinct() and does not include metadata for each target framework. -->
+      <!-- If a project is trimmable for even just one of multiple target frameworks, include it in TrimmableProjects.props. -->
+      <_TrimmableProject Include="@(_ProvidesReferenceOrRequiresDelay->WithMetadataValue('IsTrimmable', 'true')->WithMetadataValue('IsProjectReferenceProvider','true')->Distinct())" />
     </ItemGroup>
 
     <PropertyGroup>

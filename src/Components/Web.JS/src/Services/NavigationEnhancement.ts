@@ -39,8 +39,8 @@ export interface NavigationEnhancementCallbacks {
   documentUpdated: () => void;
 }
 
-export function isPerformingEnhancedPageLoad() {
-  return performingEnhancedPageLoad;
+export function isPageLoading() {
+  return performingEnhancedPageLoad || document.readyState === 'loading';
 }
 
 export function attachProgressivelyEnhancedNavigationListener(callbacks: NavigationEnhancementCallbacks) {
@@ -133,7 +133,10 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, f
   const abortSignal = currentEnhancedNavigationAbortController.signal;
   const responsePromise = fetch(internalDestinationHref, Object.assign({
     signal: abortSignal,
-    headers: { 'blazor-enhanced-nav': 'on' },
+    headers: {
+      'blazor-enhanced-nav': 'on',
+      'accept': 'text/html',
+    },
   }, fetchOptions));
   await getResponsePartsWithFraming(responsePromise, abortSignal,
     (response, initialContent) => {

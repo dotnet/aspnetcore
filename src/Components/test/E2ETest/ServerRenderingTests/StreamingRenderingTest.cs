@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net.Http;
+using System.Text;
 using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
@@ -145,5 +147,79 @@ public class StreamingRenderingTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.Navigate().Back();
         Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
         Assert.EndsWith("/subdir/nav", Browser.Url);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void CanAddScriptElementsDynamically(bool suppressEnhancedNavigation)
+    {
+        EnhancedNavigationTestUtil.SuppressEnhancedNavigation(this, suppressEnhancedNavigation);
+        Navigate($"{ServerPathBase}/streaming-scripts");
+
+        Browser.Equal("This was set by JS via src", () => Browser.FindElement(By.Id("dynamic-script-output-src")).Text);
+        Browser.Equal("This was set by JS via inline script asynchronously (special chars: ' \" </script>)", () => Browser.FindElement(By.Id("dynamic-script-output-inline")).Text);
+        Browser.Exists(By.Id("dynamic-p-before"));
+        Browser.Exists(By.Id("dynamic-p-between"));
+        Browser.Exists(By.Id("dynamic-p-after"));
+    }
+
+    [Fact]
+    public async Task HandlesOverlappingStreamingBatches()
+    {
+        // We're not using the browser in this test, but this call is simply to ensure
+        // the server is running
+        Navigate($"{ServerPathBase}/nav");
+
+        // Perform a bandwidth-limited get request. It's difficult to pick parameters that surface the
+        // problem reported in #50198 but these ones did so (until the implementation was fixed).
+        var itemCount = 100000;
+        var url = new Uri(new Uri(Browser.Url), $"{ServerPathBase}/overlapping-streaming?count={itemCount}");
+        var response = await BandwidthThrottledGet(url.ToString(), 1024 * 10, 1);
+        response = response.Replace("&#xD;", "");
+
+        // Verify initial synchronous output
+        var initialContent = ExtractContent(response, "<div id=\"content-to-verify\">", "</div>");
+        Assert.Equal(ExpectedContent("Initial", itemCount), initialContent);
+
+        // Verify there was exactly one <blazor-ssr> block with the expected content
+        var ssrBlockCount = response.Split("<blazor-ssr>").Length - 1;
+        Assert.Equal(1, ssrBlockCount);
+        var streamingBlock = ExtractContent(response, "<blazor-ssr>", "</blazor-ssr>");
+        var streamingContent = ExtractContent(streamingBlock, "<div id=\"content-to-verify\">", "</div>");
+        Assert.Equal(ExpectedContent("Modified", itemCount), streamingContent);
+
+        static string ExtractContent(string html, string startMarker, string endMarker)
+        {
+            var startPos = html.IndexOf(startMarker, StringComparison.Ordinal);
+            Assert.True(startPos > 0);
+            var endPos = html.IndexOf(endMarker, startPos, StringComparison.Ordinal);
+            var content = html.Substring(startPos + startMarker.Length, endPos - startPos - startMarker.Length);
+            Assert.True(content.Length > 0);
+            return content;
+        }
+
+        static string ExpectedContent(string message, int itemCount)
+            => string.Join("", Enumerable.Range(0, itemCount).Select(i => $"<span>{i}: {message}</span>&#xA;"));
+
+        static async Task<string> BandwidthThrottledGet(string url, int chunkLength, int delayPerChunkMs)
+        {
+            var httpClient = new HttpClient { MaxResponseContentBufferSize = chunkLength };
+            var responseStream = await httpClient.GetStreamAsync(url);
+            var receiveBuffer = new byte[chunkLength];
+
+            var resultBuilder = new StringBuilder();
+            while (true)
+            {
+                var bytesRead = await responseStream.ReadAsync(receiveBuffer, 0, receiveBuffer.Length);
+                if (bytesRead == 0)
+                {
+                    return resultBuilder.ToString();
+                }
+
+                resultBuilder.Append(Encoding.UTF8.GetString(receiveBuffer, 0, bytesRead));
+                await Task.Delay(delayPerChunkMs);
+            }
+        }
     }
 }

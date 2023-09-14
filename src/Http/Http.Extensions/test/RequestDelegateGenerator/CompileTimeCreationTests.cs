@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 using System.Collections.Immutable;
+using System.Globalization;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator;
@@ -94,6 +95,57 @@ app.MapGet("/hello", (HttpContext context) => Task.CompletedTask);
         Assert.Empty(diagnostics.Where(d => d.Severity >= DiagnosticSeverity.Warning));
 
         await VerifyAgainstBaselineUsingFile(updatedCompilation);
+    }
+
+    [Fact]
+    public async Task SupportsMapCallOnNewLine()
+    {
+        var source = """
+app
+     .MapGet("/hello1/{id}", (int id) => $"Hello {id}!");
+EndpointRouteBuilderExtensions
+    .MapGet(app, "/hello2/{id}", (int id) => $"Hello {id}!");
+app.
+    MapGet("/hello1/{id}", (int id) => $"Hello {id}!");
+EndpointRouteBuilderExtensions.
+   MapGet(app, "/hello2/{id}", (int id) => $"Hello {id}!");
+app.
+MapGet("/hello1/{id}", (int id) => $"Hello {id}!");
+EndpointRouteBuilderExtensions.
+MapGet(app, "/hello2/{id}", (int id) => $"Hello {id}!");
+app.
+
+
+MapGet("/hello1/{id}", (int id) => $"Hello {id}!");
+EndpointRouteBuilderExtensions.
+
+
+MapGet(app, "/hello2/{id}", (int id) => $"Hello {id}!");
+app.
+MapGet
+("/hello1/{id}", (int id) => $"Hello {id}!");
+EndpointRouteBuilderExtensions.
+   MapGet
+(app, "/hello2/{id}", (int id) => $"Hello {id}!");
+app
+.
+MapGet
+("/hello1/{id}", (int id) => $"Hello {id}!");
+EndpointRouteBuilderExtensions
+.
+   MapGet
+(app, "/hello2/{id}", (int id) => $"Hello {id}!");
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoints = GetEndpointsFromCompilation(compilation);
+
+        for (int i = 0; i < endpoints.Length; i++)
+        {
+            var httpContext = CreateHttpContext();
+            httpContext.Request.RouteValues["id"] = i.ToString(CultureInfo.InvariantCulture);
+            await endpoints[i].RequestDelegate(httpContext);
+            await VerifyResponseBodyAsync(httpContext, $"Hello {i}!");
+        }
     }
 
     [Fact]

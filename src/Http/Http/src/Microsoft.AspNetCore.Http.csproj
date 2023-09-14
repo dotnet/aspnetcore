@@ -12,9 +12,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-	<Compile Include="$(SharedSourceRoot)CancellationTokenSourcePool.cs" />
-    <Compile Include="$(SharedSourceRoot)CopyOnWriteDictionary\*.cs" LinkBase="Shared"/>
-    <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" LinkBase="Shared"/>
+    <Compile Include="$(SharedSourceRoot)CancellationTokenSourcePool.cs" />
+    <Compile Include="$(SharedSourceRoot)CopyOnWriteDictionary\*.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" LinkBase="Shared" />
     <Compile Include="..\..\Shared\StreamCopyOperationInternal.cs" Link="Internal\StreamCopyOperationInternal.cs" />
     <Compile Include="..\..\Shared\CookieHeaderParserShared.cs" Link="Internal\CookieHeaderParserShared.cs" />
     <Compile Include="$(SharedSourceRoot)HttpRuleParser.cs" LinkBase="Shared" />

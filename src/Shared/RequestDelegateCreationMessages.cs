@@ -48,4 +48,9 @@ internal static class RequestDelegateCreationLogging
     public const string InvalidAntiforgeryTokenEventName = "InvalidAntiforgeryToken";
     public const string InvalidAntiforgeryTokenLogMessage = @"Invalid anti-forgery token found when reading parameter ""{ParameterType} {ParameterName}"" from the request body as form.";
     public const string InvalidAntiforgeryTokenExceptionMessage = @"Invalid anti-forgery token found when reading parameter ""{0} {1}"" from the request body as form.";
+
+    public const int FormDataMappingFailedEventId = 10;
+    public const string FormDataMappingFailedEventName = "FormDataMappingFailed";
+    public const string FormDataMappingFailedLogMessage = @"Failed to bind parameter ""{ParameterType} {ParameterName}"" from the request body as form.";
+    public const string FormDataMappingFailedExceptionMessage = @"Failed to bind parameter ""{0} {1}"" from the request body as form.";
 }

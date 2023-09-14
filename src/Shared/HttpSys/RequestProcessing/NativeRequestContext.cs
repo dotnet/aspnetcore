@@ -760,9 +760,12 @@ internal unsafe class NativeRequestContext : IDisposable
 
         var info = new Dictionary<int, ReadOnlyMemory<byte>>(count);
 
+        long fixup = (byte*)nativeRequest - (byte*)baseAddress;
+        var pRequestInfo = (HttpApiTypes.HTTP_REQUEST_INFO*)((byte*)nativeRequest->pRequestInfo + fixup);
+
         for (var i = 0; i < count; i++)
         {
-            var requestInfo = nativeRequest->pRequestInfo[i];
+            var requestInfo = pRequestInfo[i];
 
             var memory = PermanentlyPinned
                 ? new PointerMemoryManager<byte>((byte*)requestInfo.pInfo, (int)requestInfo.InfoLength).Memory

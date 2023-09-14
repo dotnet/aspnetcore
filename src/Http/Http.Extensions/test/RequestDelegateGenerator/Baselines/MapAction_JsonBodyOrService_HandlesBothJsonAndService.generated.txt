@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Http.Generated
         private static readonly JsonOptions FallbackJsonOptions = new();
         private static readonly string[] PostVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Post };
 
-        [InterceptsLocation(@"TestMapActions.cs", 25, 13)]
+        [InterceptsLocation(@"TestMapActions.cs", 26, 13)]
         internal static RouteHandlerBuilder MapPost0(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
@@ -123,18 +123,18 @@ namespace Microsoft.AspNetCore.Http.Generated
                     var wasParamCheckFailure = false;
                     // Endpoint Parameter: todo (Type = Microsoft.AspNetCore.Http.Generators.Tests.Todo, IsOptional = False, IsParsable = False, IsArray = False, Source = JsonBodyOrService)
                     var todo_resolveJsonBodyOrServiceResult = await todo_JsonBodyOrServiceResolver(httpContext, false);
-                    var todo_local = todo_resolveJsonBodyOrServiceResult.Item2;
                     if (!todo_resolveJsonBodyOrServiceResult.Item1)
                     {
                         return;
                     }
+                    var todo_local = todo_resolveJsonBodyOrServiceResult.Item2!;
                     // Endpoint Parameter: svc (Type = Microsoft.AspNetCore.Http.Generators.Tests.TestService, IsOptional = False, IsParsable = False, IsArray = False, Source = JsonBodyOrService)
                     var svc_resolveJsonBodyOrServiceResult = await svc_JsonBodyOrServiceResolver(httpContext, false);
-                    var svc_local = svc_resolveJsonBodyOrServiceResult.Item2;
                     if (!svc_resolveJsonBodyOrServiceResult.Item1)
                     {
                         return;
                     }
+                    var svc_local = svc_resolveJsonBodyOrServiceResult.Item2!;
 
                     if (wasParamCheckFailure)
                     {
@@ -158,18 +158,18 @@ namespace Microsoft.AspNetCore.Http.Generated
                     var wasParamCheckFailure = false;
                     // Endpoint Parameter: todo (Type = Microsoft.AspNetCore.Http.Generators.Tests.Todo, IsOptional = False, IsParsable = False, IsArray = False, Source = JsonBodyOrService)
                     var todo_resolveJsonBodyOrServiceResult = await todo_JsonBodyOrServiceResolver(httpContext, false);
-                    var todo_local = todo_resolveJsonBodyOrServiceResult.Item2;
                     if (!todo_resolveJsonBodyOrServiceResult.Item1)
                     {
                         return;
                     }
+                    var todo_local = todo_resolveJsonBodyOrServiceResult.Item2!;
                     // Endpoint Parameter: svc (Type = Microsoft.AspNetCore.Http.Generators.Tests.TestService, IsOptional = False, IsParsable = False, IsArray = False, Source = JsonBodyOrService)
                     var svc_resolveJsonBodyOrServiceResult = await svc_JsonBodyOrServiceResolver(httpContext, false);
-                    var svc_local = svc_resolveJsonBodyOrServiceResult.Item2;
                     if (!svc_resolveJsonBodyOrServiceResult.Item1)
                     {
                         return;
                     }
+                    var svc_local = svc_resolveJsonBodyOrServiceResult.Item2!;
 
                     if (wasParamCheckFailure)
                     {

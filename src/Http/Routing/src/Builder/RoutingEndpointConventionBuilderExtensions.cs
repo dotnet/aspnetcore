@@ -145,7 +145,7 @@ public static class RoutingEndpointConventionBuilderExtensions
             {
                 throw new InvalidOperationException("This endpoint does not support Order.");
             }
-        });      
+        });
         return builder;
     }
 

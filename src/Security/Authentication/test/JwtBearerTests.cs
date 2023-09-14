@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Net.Http;
@@ -958,15 +959,15 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
     }
 
     [Fact]
-    public async Task ExpirationAndIssuedNullWhenMinOrMaxValue()
+    public async Task ExpirationAndIssuedWhenMinOrMaxValue()
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(new string('a', 128)));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var claims = new[]
         {
-                new Claim(ClaimTypes.NameIdentifier, "Bob")
-            };
+            new Claim(ClaimTypes.NameIdentifier, "Bob")
+        };
 
         var token = new JwtSecurityToken(
             issuer: "issuer.contoso.com",
@@ -995,8 +996,18 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
         Assert.Equal(HttpStatusCode.OK, response.Response.StatusCode);
         var responseBody = await response.Response.Content.ReadAsStringAsync();
         using var dom = JsonDocument.Parse(responseBody);
-        Assert.Equal(JsonValueKind.Null, dom.RootElement.GetProperty("expires").ValueKind);
         Assert.Equal(JsonValueKind.Null, dom.RootElement.GetProperty("issued").ValueKind);
+
+        var expiresElement = dom.RootElement.GetProperty("expires");
+        Assert.Equal(JsonValueKind.String, expiresElement.ValueKind);
+
+        var elementValue = DateTime.Parse(expiresElement.GetString(), CultureInfo.InvariantCulture);
+        var elementValueUtc = elementValue.ToUniversalTime();
+        // roundtrip DateTime.MaxValue through parsing because it is lossy and we
+        // need equivalent values to compare against.
+        var max = DateTime.Parse(DateTime.MaxValue.ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture);
+
+        Assert.Equal(max, elementValueUtc);
     }
 
     [Fact]

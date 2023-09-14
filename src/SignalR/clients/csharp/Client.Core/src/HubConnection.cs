@@ -579,6 +579,13 @@ public partial class HubConnection : IAsyncDisposable
                         TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.OnlyOnFaulted,
                         TaskScheduler.Default);
                 }
+
+#pragma warning disable CA2252 // This API requires opting into preview features
+                if (connectionState.Connection.Features.Get<IStatefulReconnectFeature>() is IStatefulReconnectFeature feature)
+                {
+                    feature.DisableReconnect();
+                }
+#pragma warning restore CA2252 // This API requires opting into preview features
             }
             else
             {
@@ -1088,6 +1095,14 @@ public partial class HubConnection : IAsyncDisposable
                 {
                     Log.ReceivedCloseWithError(_logger, close.Error);
                 }
+
+#pragma warning disable CA2252 // This API requires opting into preview features
+                if (connectionState.Connection.Features.Get<IStatefulReconnectFeature>() is IStatefulReconnectFeature feature)
+                {
+                    feature.DisableReconnect();
+                }
+#pragma warning restore CA2252 // This API requires opting into preview features
+
                 return close;
             case PingMessage _:
                 Log.ReceivedPing(_logger);
@@ -1900,14 +1915,16 @@ public partial class HubConnection : IAsyncDisposable
             _logger = _hubConnection._logger;
             _hasInherentKeepAlive = connection.Features.Get<IConnectionInherentKeepAliveFeature>()?.HasInherentKeepAlive ?? false;
 
-            if (Connection.Features.Get<IReconnectFeature>() is IReconnectFeature feature)
+#pragma warning disable CA2252 // This API requires opting into preview features
+            if (Connection.Features.Get<IStatefulReconnectFeature>() is IStatefulReconnectFeature feature)
             {
                 _messageBuffer = new MessageBuffer(connection, hubConnection._protocol,
                     _hubConnection._serviceProvider.GetService<IOptions<HubConnectionOptions>>()?.Value.StatefulReconnectBufferSize
-                    ?? DefaultStatefulReconnectBufferSize);
+                        ?? DefaultStatefulReconnectBufferSize);
 
-                feature.NotifyOnReconnect = _messageBuffer.Resend;
+                feature.OnReconnected(_messageBuffer.ResendAsync);
             }
+#pragma warning restore CA2252 // This API requires opting into preview features
         }
 
         public string GetNextId() => (++_nextInvocationId).ToString(CultureInfo.InvariantCulture);

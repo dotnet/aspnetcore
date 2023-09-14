@@ -31,7 +31,7 @@
     string _attemptedValue = null;
     IReadOnlyList<FormattableString> _errors;
 
-    [SupplyParameterFromForm(Handler = "bind-integer")] public int Id { get; set; } = 0;
+    [SupplyParameterFromForm(FormName = "bind-integer")] public int Id { get; set; } = 0;
 
     [CascadingParameter] public FormMappingContext Context { get; set; }
 

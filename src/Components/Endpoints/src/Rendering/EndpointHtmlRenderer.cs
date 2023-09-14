@@ -52,6 +52,8 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         _services = serviceProvider;
     }
 
+    internal HttpContext? HttpContext => _httpContext;
+
     private void SetHttpContext(HttpContext httpContext)
     {
         if (_httpContext is null)

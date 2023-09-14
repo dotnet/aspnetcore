@@ -671,6 +671,10 @@ function InitializeNativeTools() {
   }
 }
 
+function Read-ArcadeSdkVersion() {
+  return $GlobalJson.'msbuild-sdks'.'Microsoft.DotNet.Arcade.Sdk'
+}
+
 function InitializeToolset() {
   if (Test-Path variable:global:_ToolsetBuildProj) {
     return $global:_ToolsetBuildProj
@@ -678,7 +682,7 @@ function InitializeToolset() {
 
   $nugetCache = GetNuGetPackageCachePath
 
-  $toolsetVersion = $GlobalJson.'msbuild-sdks'.'Microsoft.DotNet.Arcade.Sdk'
+  $toolsetVersion = Read-ArcadeSdkVersion
   $toolsetLocationFile = Join-Path $ToolsetDir "$toolsetVersion.txt"
 
   if (Test-Path $toolsetLocationFile) {

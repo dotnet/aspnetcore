@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
-using Microsoft.Extensions.Telemetry.Testing.Metering;
+using Microsoft.Extensions.Telemetry.Testing.Metrics;
 using Moq;
 
 namespace Microsoft.AspNetCore.Hosting.Tests;
@@ -122,6 +122,56 @@ public class HostingApplicationDiagnosticsTests
         Assert.Collection(requestDurationCollector2.GetMeasurementSnapshot(),
             m => Assert.True(m.Value > 0),
             m => Assert.True(m.Value > 0));
+    }
+
+    [Fact]
+    public void EventCountersEnabled()
+    {
+        // Arrange
+        var hostingEventSource = new HostingEventSource(Guid.NewGuid().ToString());
+
+        var eventListener = new TestCounterListener(new[]
+        {
+            "requests-per-second",
+            "total-requests",
+            "current-requests",
+            "failed-requests"
+        });
+
+        eventListener.EnableEvents(hostingEventSource, EventLevel.Informational, EventKeywords.None,
+            new Dictionary<string, string>
+            {
+                { "EventCounterIntervalSec", "1" }
+            });
+
+        var testMeterFactory = new TestMeterFactory();
+
+        // Act
+        var hostingApplication = CreateApplication(out var features, eventSource: hostingEventSource, meterFactory: testMeterFactory);
+        var context = hostingApplication.CreateContext(features);
+
+        // Assert
+        Assert.True(context.EventLogEnabled);
+        Assert.False(context.MetricsEnabled);
+    }
+
+    [Fact]
+    public void MetricsEnabled()
+    {
+        // Arrange
+        var hostingEventSource = new HostingEventSource(Guid.NewGuid().ToString());
+
+        var testMeterFactory = new TestMeterFactory();
+        using var activeRequestsCollector = new MetricCollector<long>(testMeterFactory, HostingMetrics.MeterName, "http.server.active_requests");
+        using var requestDurationCollector = new MetricCollector<double>(testMeterFactory, HostingMetrics.MeterName, "http.server.request.duration");
+
+        // Act
+        var hostingApplication = CreateApplication(out var features, eventSource: hostingEventSource, meterFactory: testMeterFactory);
+        var context = hostingApplication.CreateContext(features);
+
+        // Assert
+        Assert.True(context.MetricsEnabled);
+        Assert.False(context.EventLogEnabled);
     }
 
     [Fact]

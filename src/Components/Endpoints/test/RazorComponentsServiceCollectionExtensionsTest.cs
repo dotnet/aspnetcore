@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms.Mapping;
+using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -13,6 +14,7 @@ public class RazorComponentsServiceCollectionExtensionsTest
     {
         // Arrange
         var services = new ServiceCollection();
+        services.AddSingleton<IConfiguration>(new ConfigurationBuilder().AddInMemoryCollection().Build());
 
         // Act
         RazorComponentsServiceCollectionExtensions.AddRazorComponents(services);
@@ -28,8 +30,8 @@ public class RazorComponentsServiceCollectionExtensionsTest
             }
             else
             {
-                // 'multi-registration' services should only have one *instance* of each implementation registered.
-                AssertContainsSingle(services, service.ServiceType, service.ImplementationType);
+                // 'multi-registration' services should not have any duplicate implementation types
+                AssertAllImplementationTypesAreDistinct(services, service.ServiceType);
             }
         }
     }
@@ -39,6 +41,7 @@ public class RazorComponentsServiceCollectionExtensionsTest
     {
         // Arrange
         var services = new ServiceCollection();
+        services.AddSingleton<IConfiguration>(new ConfigurationBuilder().AddInMemoryCollection().Build());
 
         // Act
         RazorComponentsServiceCollectionExtensions.AddRazorComponents(services);
@@ -55,8 +58,8 @@ public class RazorComponentsServiceCollectionExtensionsTest
             }
             else
             {
-                // 'multi-registration' services should only have one *instance* of each implementation registered.
-                AssertContainsSingle(services, service.ServiceType, service.ImplementationType);
+                // 'multi-registration' services should not have any duplicate implementation types
+                AssertAllImplementationTypesAreDistinct(services, service.ServiceType);
             }
         }
     }
@@ -104,28 +107,32 @@ public class RazorComponentsServiceCollectionExtensionsTest
             $" time(s) but was actually registered {actual} time(s).");
     }
 
-    private void AssertContainsSingle(
+    private void AssertAllImplementationTypesAreDistinct(
         IServiceCollection services,
-        Type serviceType,
-        Type implementationType)
+        Type serviceType)
     {
-        var matches = services
-            .Where(sd =>
-                sd.ServiceType == serviceType &&
-                sd.ImplementationType == implementationType)
+        var serviceProvider = services.BuildServiceProvider();
+        var implementationTypes = services
+            .Where(sd => sd.ServiceType == serviceType)
+            .Select(service => service switch
+            {
+                { ImplementationType: { } type } => type,
+                { ImplementationInstance: { } instance } => instance.GetType(),
+                { ImplementationFactory: { } factory } => factory(serviceProvider).GetType(),
+            })
             .ToArray();
 
-        if (matches.Length == 0)
+        if (implementationTypes.Length == 0)
         {
             Assert.True(
                 false,
-                $"Could not find an instance of {implementationType} registered as {serviceType}");
+                $"Could not find an implementation type for {serviceType}");
         }
-        else if (matches.Length > 1)
+        else if (implementationTypes.Length != implementationTypes.Distinct().Count())
         {
             Assert.True(
                 false,
-                $"Found multiple instances of {implementationType} registered as {serviceType}");
+                $"Found duplicate implementation types for {serviceType}. Implementation types: {string.Join(", ", implementationTypes.Select(x => x.ToString()))}");
         }
     }
 }

@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Http.Generated
         private static readonly JsonOptions FallbackJsonOptions = new();
         private static readonly string[] PostVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Post };
 
-        [InterceptsLocation(@"TestMapActions.cs", 25, 13)]
+        [InterceptsLocation(@"TestMapActions.cs", 26, 13)]
         internal static RouteHandlerBuilder MapPost0(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
@@ -125,11 +125,11 @@ namespace Microsoft.AspNetCore.Http.Generated
                     var wasParamCheckFailure = false;
                     // Endpoint Parameter: x (Type = Microsoft.AspNetCore.Http.Generators.Tests.CustomMetadataEmitter, IsOptional = False, IsParsable = False, IsArray = False, Source = JsonBodyOrService)
                     var x_resolveJsonBodyOrServiceResult = await x_JsonBodyOrServiceResolver(httpContext, false);
-                    var x_local = x_resolveJsonBodyOrServiceResult.Item2;
                     if (!x_resolveJsonBodyOrServiceResult.Item1)
                     {
                         return;
                     }
+                    var x_local = x_resolveJsonBodyOrServiceResult.Item2!;
 
                     if (wasParamCheckFailure)
                     {
@@ -144,11 +144,11 @@ namespace Microsoft.AspNetCore.Http.Generated
                     var wasParamCheckFailure = false;
                     // Endpoint Parameter: x (Type = Microsoft.AspNetCore.Http.Generators.Tests.CustomMetadataEmitter, IsOptional = False, IsParsable = False, IsArray = False, Source = JsonBodyOrService)
                     var x_resolveJsonBodyOrServiceResult = await x_JsonBodyOrServiceResolver(httpContext, false);
-                    var x_local = x_resolveJsonBodyOrServiceResult.Item2;
                     if (!x_resolveJsonBodyOrServiceResult.Item1)
                     {
                         return;
                     }
+                    var x_local = x_resolveJsonBodyOrServiceResult.Item2!;
 
                     if (wasParamCheckFailure)
                     {

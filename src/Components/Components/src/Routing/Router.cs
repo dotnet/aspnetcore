@@ -92,6 +92,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
     /// over wildcards.
     /// <para>This property is obsolete and configuring it does nothing.</para>
     /// </summary>
+    [Obsolete("This property is obsolete and configuring it has not effect.")]
     [Parameter] public bool PreferExactMatches { get; set; }
 
     private RouteTable Routes { get; set; }
@@ -165,14 +166,14 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 
         if (!routeKey.Equals(_routeTableLastBuiltForRouteKey))
         {
-            Routes = RouteTableFactory.Create(routeKey, ServiceProvider);
+            Routes = RouteTableFactory.Instance.Create(routeKey, ServiceProvider);
             _routeTableLastBuiltForRouteKey = routeKey;
         }
     }
 
     private void ClearRouteCaches()
     {
-        RouteTableFactory.ClearCaches();
+        RouteTableFactory.Instance.ClearCaches();
         _routeTableLastBuiltForRouteKey = default;
     }
 

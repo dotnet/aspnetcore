@@ -290,6 +290,56 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
 
     [Theory]
     [MemberData(nameof(AddCounterLinkSequences))]
+    public void DynamicallyAddedSsrComponents_CanBecomeInteractive_AfterInitialPageLoadCompletes(string[] addCounterLinkIds)
+    {
+        // Navigate directly to the page with streaming enabled so that we can defer the page load.
+        Navigate($"{ServerPathBase}/streaming-interactivity?ShouldStream=True");
+        Browser.Equal("Streaming", () => Browser.FindElement(By.Id("status")).Text);
+        Browser.Equal("loading", () => ((IJavaScriptExecutor)Browser).ExecuteScript("return window.document.readyState;"));
+
+        for (var i = 0; i < addCounterLinkIds.Length; i++)
+        {
+            Browser.Click(By.Id(addCounterLinkIds[i]));
+
+            // To verify that components use the most up-to-date parameters when they become interactive, we
+            // perform SSR updates with new parameter values.
+            // The first counter will have an increment amount of 1, the second 2, etc.
+            for (var j = 0; j < i; j++)
+            {
+                Browser.Click(By.Id($"update-counter-link-{i}"));
+            }
+
+            if (addCounterLinkIds[i].Contains("prerendered"))
+            {
+                Browser.Equal("False", () => Browser.FindElement(By.Id($"is-interactive-{i}")).Text);
+                Browser.Click(By.Id($"increment-{i}"));
+                Browser.Equal("0", () => Browser.FindElement(By.Id($"count-{i}")).Text);
+            }
+            else
+            {
+                // Non-prerendered components won't produce any output until they become interactive.
+                // We verify this by ensuring that the "action links" exist on the page,
+                // but the interactive component does not.
+                Browser.Exists(By.Id($"remove-counter-link-{i}"));
+                Browser.DoesNotExist(By.Id($"is-interactive-{i}"));
+            }
+        }
+
+        Browser.Click(By.Id("stop-streaming-link"));
+
+        for (var i = 0; i < addCounterLinkIds.Length; i++)
+        {
+            Browser.Equal("True", () => Browser.FindElement(By.Id($"is-interactive-{i}")).Text);
+
+            Browser.Click(By.Id($"increment-{i}"));
+            Browser.Equal($"{i + 1}", () => Browser.FindElement(By.Id($"count-{i}")).Text);
+        }
+
+        AssertBrowserLogDoesNotContainErrors();
+    }
+
+    [Theory]
+    [MemberData(nameof(AddCounterLinkSequences))]
     public void InteractiveRootComponents_CanReceiveSsrParameterUpdates_FromEnhancedNavigation(string[] addCounterLinkIds)
     {
         Navigate($"{ServerPathBase}/streaming-interactivity");
@@ -670,6 +720,133 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-2")).Text);
     }
 
+    [Fact]
+    public void Circuit_ShutsDown_WhenAllBlazorServerComponentsGetRemoved()
+    {
+        Navigate($"{ServerPathBase}/streaming-interactivity");
+
+        Browser.Equal("Not streaming", () => Browser.FindElement(By.Id("status")).Text);
+
+        Browser.Click(By.Id(AddServerPrerenderedId));
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-0")).Text);
+
+        Browser.Click(By.Id("increment-0"));
+        Browser.Equal("1", () => Browser.FindElement(By.Id("count-0")).Text);
+
+        Browser.Click(By.Id("remove-counter-link-0"));
+
+        AssertBrowserLogContainsMessage("Connection disconnected.");
+        AssertBrowserLogDoesNotContainErrors();
+    }
+
+    [Fact]
+    public void Circuit_CanShutDownAndReInitializeMultipleTimes()
+    {
+        const int numCircuits = 5;
+
+        Navigate($"{ServerPathBase}/streaming-interactivity");
+
+        Browser.Equal("Not streaming", () => Browser.FindElement(By.Id("status")).Text);
+
+        for (var i = 0; i < numCircuits; i++)
+        {
+            Browser.Click(By.Id(AddServerPrerenderedId));
+            Browser.Equal("True", () => Browser.FindElement(By.Id($"is-interactive-{i}")).Text);
+
+            Browser.Click(By.Id($"increment-{i}"));
+            Browser.Equal("1", () => Browser.FindElement(By.Id($"count-{i}")).Text);
+
+            Browser.Click(By.Id($"remove-counter-link-{i}"));
+
+            AssertBrowserLogContainsMessage("Connection disconnected.");
+            AssertBrowserLogDoesNotContainErrors();
+            ClearBrowserLogs();
+        }
+    }
+
+    [Fact]
+    public async Task ReconnectionHandler_DoesNotRun_AfterIntentionallyShuttingDownTheCircuit()
+    {
+        Navigate($"{ServerPathBase}/streaming-interactivity");
+
+        Browser.Equal("Not streaming", () => Browser.FindElement(By.Id("status")).Text);
+
+        Browser.Click(By.Id(AddServerPrerenderedId));
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-0")).Text);
+
+        Browser.Click(By.Id("increment-0"));
+        Browser.Equal("1", () => Browser.FindElement(By.Id("count-0")).Text);
+
+        Browser.Click(By.Id("remove-counter-link-0"));
+
+        AssertBrowserLogContainsMessage("Connection disconnected.");
+        AssertBrowserLogDoesNotContainErrors();
+        ClearBrowserLogs();
+
+        // Wait for the reconnection handler to run, if it's going to. Hopefully it doesn't.
+        await Task.Delay(5000);
+
+        AssertBrowserLogDoesNotContainMessage("WebSocket connected to");
+    }
+
+    [Fact]
+    public void DotNetObjectReference_CannotBeUsed_AfterCircuitShutsDown()
+    {
+        Navigate($"{ServerPathBase}/streaming-interactivity");
+
+        Browser.Equal("Not streaming", () => Browser.FindElement(By.Id("status")).Text);
+
+        Browser.Click(By.Id(AddServerPrerenderedId));
+        Browser.Equal("True", () => Browser.FindElement(By.Id($"is-interactive-0")).Text);
+
+        // This JS call works via .NET object reference to a counter component.
+        ((IJavaScriptExecutor)Browser).ExecuteScript("window.incrementCounter(0)");
+        Browser.Equal("1", () => Browser.FindElement(By.Id($"count-0")).Text);
+
+        Browser.Click(By.Id($"remove-counter-link-0"));
+        AssertBrowserLogContainsMessage("Connection disconnected.");
+        AssertBrowserLogDoesNotContainErrors();
+
+        ((IJavaScriptExecutor)Browser).ExecuteScript("window.incrementCounter(0)");
+
+        AssertBrowserLogContainsMessage("Error: The circuit");
+    }
+
+    [Fact]
+    public void DotNetObjectReference_CannotBeUsed_AfterCircuitShutsDown_AndANewCircuitIsInitialized()
+    {
+        Navigate($"{ServerPathBase}/streaming-interactivity");
+
+        Browser.Equal("Not streaming", () => Browser.FindElement(By.Id("status")).Text);
+
+        Browser.Click(By.Id(AddServerPrerenderedId));
+        Browser.Equal("True", () => Browser.FindElement(By.Id($"is-interactive-0")).Text);
+
+        // This JS call works via .NET object reference to a counter component.
+        ((IJavaScriptExecutor)Browser).ExecuteScript("window.incrementCounter(0)");
+        Browser.Equal("1", () => Browser.FindElement(By.Id($"count-0")).Text);
+
+        Browser.Click(By.Id($"remove-counter-link-0"));
+        AssertBrowserLogContainsMessage("Connection disconnected.");
+        AssertBrowserLogDoesNotContainErrors();
+
+        ((IJavaScriptExecutor)Browser).ExecuteScript("window.incrementCounter(0)");
+
+        AssertBrowserLogContainsMessage("Error: The circuit");
+        ClearBrowserLogs();
+
+        Browser.Click(By.Id(AddServerPrerenderedId));
+        Browser.Equal("True", () => Browser.FindElement(By.Id($"is-interactive-1")).Text);
+
+        ((IJavaScriptExecutor)Browser).ExecuteScript("window.incrementCounter(1)");
+        Browser.Equal("1", () => Browser.FindElement(By.Id($"count-1")).Text);
+
+        AssertBrowserLogDoesNotContainErrors();
+
+        ((IJavaScriptExecutor)Browser).ExecuteScript("window.incrementCounter(0)");
+        AssertBrowserLogContainsMessage("Error: The circuit");
+    }
+
     private void BlockWebAssemblyResourceLoad()
     {
         ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('block-load-boot-resource', 'true')");
@@ -719,17 +896,25 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
     }
 
     private void AssertBrowserLogContainsMessage(string message)
+        => Browser.True(() => DoesBrowserLogContainMessage(message));
+
+    private void AssertBrowserLogDoesNotContainMessage(string message)
+        => Browser.False(() => DoesBrowserLogContainMessage(message));
+
+    private bool DoesBrowserLogContainMessage(string message)
     {
-        Browser.True(() =>
-        {
-            var entries = Browser.Manage().Logs.GetLog(LogType.Browser);
-            return entries.Any(entry => entry.Message.Contains(message));
-        });
+        var entries = Browser.Manage().Logs.GetLog(LogType.Browser);
+        return entries.Any(entry => entry.Message.Contains(message));
     }
 
     private void AssertBrowserLogDoesNotContainErrors()
     {
         var entries = Browser.Manage().Logs.GetLog(LogType.Browser);
         Assert.DoesNotContain(entries, entry => entry.Level == LogLevel.Severe);
+    }
+
+    private void ClearBrowserLogs()
+    {
+        ((IJavaScriptExecutor)Browser).ExecuteScript("console.clear()");
     }
 }

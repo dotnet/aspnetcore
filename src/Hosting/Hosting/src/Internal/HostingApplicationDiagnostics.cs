@@ -54,13 +54,26 @@ internal sealed class HostingApplicationDiagnostics
     {
         long startTimestamp = 0;
 
-        if (_eventSource.IsEnabled() || _metrics.IsEnabled())
+        if (_metrics.IsEnabled())
         {
-            context.EventLogOrMetricsEnabled = true;
+            context.MetricsEnabled = true;
             context.MetricsTagsFeature ??= new HttpMetricsTagsFeature();
             httpContext.Features.Set<IHttpMetricsTagsFeature>(context.MetricsTagsFeature);
 
             startTimestamp = Stopwatch.GetTimestamp();
+
+            // To keep the hot path short we defer logging in this function to non-inlines
+            RecordRequestStartMetrics(httpContext);
+        }
+
+        if (_eventSource.IsEnabled())
+        {
+            context.EventLogEnabled = true;
+
+            if (startTimestamp == 0)
+            {
+                startTimestamp = Stopwatch.GetTimestamp();
+            }
 
             // To keep the hot path short we defer logging in this function to non-inlines
             RecordRequestStartEventLog(httpContext);
@@ -135,7 +148,7 @@ internal sealed class HostingApplicationDiagnostics
             // Non-inline
             LogRequestFinished(context, startTimestamp, currentTimestamp);
 
-            if (context.EventLogOrMetricsEnabled)
+            if (context.MetricsEnabled)
             {
                 var route = httpContext.GetEndpoint()?.Metadata.GetMetadata<IRouteDiagnosticsMetadata>()?.Route;
                 var customTags = context.MetricsTagsFeature?.TagsList;
@@ -197,7 +210,7 @@ internal sealed class HostingApplicationDiagnostics
             StopActivity(httpContext, activity, context.HasDiagnosticListener);
         }
 
-        if (context.EventLogOrMetricsEnabled)
+        if (context.EventLogEnabled)
         {
             if (exception != null)
             {
@@ -219,7 +232,7 @@ internal sealed class HostingApplicationDiagnostics
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void ContextDisposed(HostingApplication.Context context)
     {
-        if (context.EventLogOrMetricsEnabled)
+        if (context.EventLogEnabled)
         {
             _eventSource.RequestStop();
         }
@@ -352,8 +365,13 @@ internal sealed class HostingApplicationDiagnostics
     [MethodImpl(MethodImplOptions.NoInlining)]
     private void RecordRequestStartEventLog(HttpContext httpContext)
     {
-        _metrics.RequestStart(httpContext.Request.IsHttps, httpContext.Request.Scheme, httpContext.Request.Method, httpContext.Request.Host);
         _eventSource.RequestStart(httpContext.Request.Method, httpContext.Request.Path);
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void RecordRequestStartMetrics(HttpContext httpContext)
+    {
+        _metrics.RequestStart(httpContext.Request.IsHttps, httpContext.Request.Scheme, httpContext.Request.Method, httpContext.Request.Host);
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]

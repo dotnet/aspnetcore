@@ -267,6 +267,112 @@ public class FormDataMapperTests
         Assert.Equal(10, value);
     }
 
+    [Fact]
+    public void Deserialize_Collections_SupportsMultipleElementsPerKey_ForSingleValueElementTypes_ParsableTypes()
+    {
+        // Arrange
+        var data = new Dictionary<string, StringValues>() { ["values"] = new StringValues(new[] { "10", "11" }) };
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
+        reader.PushPrefix("values");
+        var options = new FormDataMapperOptions();
+
+        // Act
+        var result = FormDataMapper.Map<List<int>>(reader, options);
+
+        // Assert
+        Assert.Collection(result,
+            v => Assert.Equal(10, v),
+            v => Assert.Equal(11, v));
+    }
+
+    [Fact]
+    public void Deserialize_Collections_SupportsMultipleElementsPerKey_ForSingleValueElementTypes_EnumTypes()
+    {
+        // Arrange
+        var data = new Dictionary<string, StringValues>() { ["values"] = new StringValues(new[] { "Red", "Blue" }) };
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
+        reader.PushPrefix("values");
+        var options = new FormDataMapperOptions();
+
+        // Act
+        var result = FormDataMapper.Map<List<Colors>>(reader, options);
+
+        // Assert
+        Assert.Collection(result,
+            v => Assert.Equal(Colors.Red, v),
+            v => Assert.Equal(Colors.Blue, v));
+    }
+
+    [Fact]
+    public void Deserialize_Collections_SupportsMultipleElementsPerKey_ForSingleValueElementTypes_Nullable_WhenUnderlyingElementIsSingleValue()
+    {
+        // Arrange
+        var data = new Dictionary<string, StringValues>() { ["values"] = new StringValues(new[] { "Red", "Blue" }) };
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
+        reader.PushPrefix("values");
+        var options = new FormDataMapperOptions();
+
+        // Act
+        var result = FormDataMapper.Map<List<Colors?>>(reader, options);
+
+        // Assert
+        Assert.Collection(result,
+            v => Assert.Equal(Colors.Red, v),
+            v => Assert.Equal(Colors.Blue, v));
+    }
+
+    [Fact]
+    public void Deserialize_Collections_MultipleElementsPerKey_CanReportErrors()
+    {
+        // Arrange
+        var data = new Dictionary<string, StringValues>() { ["values"] = new StringValues(new[] { "10", "a" }) };
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
+        reader.PushPrefix("values");
+        var errors = new List<FormDataMappingError>();
+        reader.ErrorHandler = (key, message, attemptedValue) =>
+        {
+            errors.Add(new FormDataMappingError(key, message, attemptedValue));
+        };
+
+        var options = new FormDataMapperOptions();
+
+        // Act
+        var result = FormDataMapper.Map<List<int>>(reader, options);
+
+        // Assert
+        Assert.Equal(10, Assert.Single(result));
+        var error = Assert.Single(errors);
+        Assert.Equal("values", error.Key);
+        Assert.Equal("The value 'a' is not valid for 'values'.", error.Message.ToString(CultureInfo.InvariantCulture));
+    }
+
+    [Fact]
+    public void Deserialize_Collections_MultipleElementsPerKey_ContinuesProcessingValuesAfterErrors()
+    {
+        // Arrange
+        var data = new Dictionary<string, StringValues>() { ["values"] = new StringValues(new[] { "10", "a", "11" }) };
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
+        reader.PushPrefix("values");
+        var errors = new List<FormDataMappingError>();
+        reader.ErrorHandler = (key, message, attemptedValue) =>
+        {
+            errors.Add(new FormDataMappingError(key, message, attemptedValue));
+        };
+
+        var options = new FormDataMapperOptions();
+
+        // Act
+        var result = FormDataMapper.Map<List<int>>(reader, options);
+
+        // Assert
+        Assert.Collection(result,
+            v => Assert.Equal(10, v),
+            v => Assert.Equal(11, v));
+        var error = Assert.Single(errors);
+        Assert.Equal("values", error.Key);
+        Assert.Equal("The value 'a' is not valid for 'values'.", error.Message.ToString(CultureInfo.InvariantCulture));
+    }
+
     [Theory]
     [InlineData(99)]
     [InlineData(100)]
@@ -329,6 +435,66 @@ public class FormDataMapperTests
 
         // Act
         var result = FormDataMapper.Map<int[]>(reader, options);
+
+        TestArrayPoolBufferAdapter.OnRent -= rented.Add;
+        TestArrayPoolBufferAdapter.OnReturn -= returned.Add;
+
+        // Assert
+        Assert.Equal(rented.Count, returned.Count);
+    }
+
+    [Theory]
+    [InlineData(2)]
+    [InlineData(99)]
+    [InlineData(100)]
+    [InlineData(101)]
+    [InlineData(109)]
+    [InlineData(110)]
+    [InlineData(120)]
+    public void Deserialize_Collections_AlwaysReturnsBuffer(int size)
+    {
+        // Arrange
+        var rented = new List<int[]>();
+        var returned = new List<int[]>();
+
+        var data = new Dictionary<string, StringValues>(Enumerable.Range(0, size)
+            .Select(i => new KeyValuePair<string, StringValues>(
+                $"[{i.ToString(CultureInfo.InvariantCulture)}]",
+                (i + 10).ToString(CultureInfo.InvariantCulture))));
+
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
+        var options = new FormDataMapperOptions
+        {
+            MaxCollectionSize = 140
+        };
+
+        var elementConverter = new ThrowingConverter();
+        elementConverter.OnTryReadDelegate = (ref FormDataReader context, Type type, FormDataMapperOptions options, out int result, out bool found) =>
+        {
+            context.TryGetValue(out var value);
+            var index = int.Parse(value, CultureInfo.InvariantCulture) - 10;
+            if (index + 1 == size)
+            {
+                throw new InvalidOperationException("Can't parse this!");
+            }
+            result = default;
+            found = true;
+            return false;
+        };
+
+        var converter = new CollectionConverter<
+                int[],
+                TestArrayPoolBufferAdapter,
+                TestArrayPoolBufferAdapter.PooledBuffer,
+                int>(elementConverter);
+
+        options.AddConverter(converter);
+
+        TestArrayPoolBufferAdapter.OnRent += rented.Add;
+        TestArrayPoolBufferAdapter.OnReturn += returned.Add;
+
+        // Act
+        var result = Assert.Throws<InvalidOperationException>(() => FormDataMapper.Map<int[]>(reader, options));
 
         TestArrayPoolBufferAdapter.OnRent -= rented.Add;
         TestArrayPoolBufferAdapter.OnReturn -= returned.Add;
@@ -1540,6 +1706,97 @@ public class FormDataMapperTests
     }
 
     [Fact]
+    public void CanDeserialize_ComplexType_IgnoresPropertiesWithoutPublicSetters()
+    {
+        // Arrange
+        var expected = new TypeIgnoresReadOnlyProperties() { Name = "John" };
+        var data = new Dictionary<string, StringValues>()
+        {
+            ["Id"] = "1",
+            ["Name"] = "John",
+            ["Age"] = "20",
+            ["Email"] = "john@doe.com",
+            ["IsPreferred"] = "true",
+        };
+
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
+        var options = new FormDataMapperOptions();
+
+        // Act
+        var result = FormDataMapper.Map<TypeIgnoresReadOnlyProperties>(reader, options);
+        Assert.Equal(0, result.Id);
+        Assert.Equal(expected.Name, result.Name);
+        Assert.Equal(expected.Age, result.Age);
+        Assert.Equal(expected.Email, result.Email);
+        Assert.Equal(expected.IsPreferred, result.IsPreferred);
+    }
+
+    [Fact]
+    public void CanDeserialize_ComplexType_RequiredProperties()
+    {
+        // Arrange
+        var expected = new TypeRequiredProperties() { Name = null, Age = 20 };
+        var data = new Dictionary<string, StringValues>()
+        {
+            ["Age"] = "20",
+        };
+
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
+        var errors = new List<FormDataMappingError>();
+        reader.ErrorHandler = (key, message, attemptedValue) =>
+        {
+            errors.Add(new FormDataMappingError(key, message, attemptedValue));
+        };
+        var options = new FormDataMapperOptions();
+
+        // Act
+        var result = FormDataMapper.Map<TypeRequiredProperties>(reader, options);
+        Assert.Equal(expected.Name, result.Name);
+        Assert.Equal(expected.Age, result.Age);
+        Assert.Single(errors);
+    }
+
+    [Fact]
+    public void CanDeserialize_ComplexType_CanDeserializeTuples()
+    {
+        // Arrange
+        var expected = new Tuple<int, string>(1, "John");
+        var data = new Dictionary<string, StringValues>()
+        {
+            ["Item1"] = "1",
+            ["Item2"] = "John",
+        };
+
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
+        var options = new FormDataMapperOptions();
+
+        // Act
+        var result = FormDataMapper.Map<Tuple<int, string>>(reader, options);
+        Assert.Equal(expected.Item1, result.Item1);
+        Assert.Equal(expected.Item2, result.Item2);
+    }
+
+    [Fact]
+    public void CanDeserialize_ComplexType_CanDeserializeValueTuples()
+    {
+        // Arrange
+        var expected = new ValueTuple<int, string>(1, "John");
+        var data = new Dictionary<string, StringValues>()
+        {
+            ["Item1"] = "1",
+            ["Item2"] = "John",
+        };
+
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
+        var options = new FormDataMapperOptions();
+
+        // Act
+        var result = FormDataMapper.Map<ValueTuple<int, string>>(reader, options);
+        Assert.Equal(expected.Item1, result.Item1);
+        Assert.Equal(expected.Item2, result.Item2);
+    }
+
+    [Fact]
     public void CanDeserialize_ComplexType_DoesNotRegisterMissingRequiredParametersIfNoValueFound()
     {
         // Arrange
@@ -1995,6 +2252,26 @@ internal class DataMemberAttributesConstructorType
     public string Ignored { get; set; }
 }
 
+internal class TypeIgnoresReadOnlyProperties
+{
+    public int Id { get; }
+
+    public int Age { get; internal set; }
+
+    public string Email { get; private set; }
+
+    public bool IsPreferred { get; protected set; }
+
+    public string Name { get; set; }
+}
+
+internal class TypeRequiredProperties
+{
+    public int Age { get; set; }
+
+    public required string Name { get; set; }
+}
+
 public class ThrowsWithMissingParameterValue
 {
     public ThrowsWithMissingParameterValue(string key)
@@ -2006,4 +2283,18 @@ public class ThrowsWithMissingParameterValue
     public string Key { get; set; }
 
     public int Value { get; set; }
+}
+
+public class Throwing { }
+
+internal class ThrowingConverter : FormDataConverter<int>
+{
+    internal delegate bool OnTryRead(ref FormDataReader context, Type type, FormDataMapperOptions options, out int result, out bool found);
+
+    internal OnTryRead OnTryReadDelegate { get; set; } =
+        (ref FormDataReader context, Type type, FormDataMapperOptions options, out int result, out bool found) =>
+            throw new InvalidOperationException("Could not read value.");
+
+    internal override bool TryRead(ref FormDataReader context, Type type, FormDataMapperOptions options, out int result, out bool found) =>
+        OnTryReadDelegate.Invoke(ref context, type, options, out result, out found);
 }
