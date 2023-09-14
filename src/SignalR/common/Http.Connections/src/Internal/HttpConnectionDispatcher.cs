@@ -295,8 +295,9 @@ internal sealed partial class HttpConnectionDispatcher
                 {
                     // If false then the transport was ungracefully closed, this can mean a temporary network disconnection
                     // We'll mark the connection as inactive and allow the connection to reconnect if that's the case.
-                    // TODO: If acks aren't enabled we can close the connection immediately (not LongPolling)
-                    if (await connection.TransportTask!)
+                    if (await connection.TransportTask!
+                        // If acks aren't enabled we can close the connection immediately (not LongPolling)
+                        || !connection.ClientReconnectExpected())
                     {
                         await _manager.DisposeAndRemoveAsync(connection, closeGracefully: true, HttpConnectionStopStatus.NormalClosure);
                     }

@@ -1006,7 +1006,7 @@ public partial class HubConnection : IAsyncDisposable
 
         if (connectionState.UsingAcks())
         {
-            await connectionState.WriteAsync(new SerializedHubMessage(hubMessage), cancellationToken).ConfigureAwait(false);
+            await connectionState.WriteAsync(hubMessage, cancellationToken).ConfigureAwait(false);
         }
         else
         {
@@ -1133,7 +1133,7 @@ public partial class HubConnection : IAsyncDisposable
                 break;
             case AckMessage ackMessage:
                 Log.ReceivedAckMessage(_logger, ackMessage.SequenceId);
-                connectionState.Ack(ackMessage);
+                await connectionState.AckAsync(ackMessage).ConfigureAwait(false);
                 break;
             case SequenceMessage sequenceMessage:
                 Log.ReceivedSequenceMessage(_logger, sequenceMessage.SequenceId);
@@ -1943,7 +1943,7 @@ public partial class HubConnection : IAsyncDisposable
             {
                 _messageBuffer = new MessageBuffer(connection, hubConnection._protocol,
                     _hubConnection._serviceProvider.GetService<IOptions<HubConnectionOptions>>()?.Value.StatefulReconnectBufferSize
-                        ?? DefaultStatefulReconnectBufferSize);
+                        ?? DefaultStatefulReconnectBufferSize, _logger);
 
                 feature.OnReconnected(_messageBuffer.ResendAsync);
             }
@@ -2071,7 +2071,7 @@ public partial class HubConnection : IAsyncDisposable
             }
         }
 
-        public ValueTask<FlushResult> WriteAsync(SerializedHubMessage message, CancellationToken cancellationToken)
+        public ValueTask<FlushResult> WriteAsync(HubMessage message, CancellationToken cancellationToken)
         {
             Debug.Assert(_messageBuffer is not null);
             return _messageBuffer.WriteAsync(message, cancellationToken);
@@ -2090,12 +2090,14 @@ public partial class HubConnection : IAsyncDisposable
             return true;
         }
 
-        public void Ack(AckMessage ackMessage)
+        public Task AckAsync(AckMessage ackMessage)
         {
             if (UsingAcks())
             {
-                _messageBuffer.Ack(ackMessage);
+                return _messageBuffer.AckAsync(ackMessage);
             }
+
+            return Task.CompletedTask;
         }
 
         public void ResetSequence(SequenceMessage sequenceMessage)
