@@ -506,7 +506,7 @@
   "blazor": {
     "NoInteractivity": {
       "Template": "blazor",
-      "Arguments": "new blazor --interactivity none",
+      "Arguments": "new blazor --interactive none",
       "Files": [
         "appsettings.Development.json",
         "appsettings.json",
@@ -557,7 +557,7 @@
     },
     "UseWebAssembly": {
       "Template": "blazor",
-      "Arguments": "new blazor --interactivity webassembly",
+      "Arguments": "new blazor --interactive webassembly",
       "Files": [
         "{ProjectName}.sln",
         "{ProjectName}/appsettings.Development.json",
@@ -589,7 +589,7 @@
     },
     "UseServerAndWebAssembly": {
       "Template": "blazor",
-      "Arguments": "new blazor --interactivity auto",
+      "Arguments": "new blazor --interactive auto",
       "Files": [
         "{ProjectName}.sln",
         "{ProjectName}/appsettings.Development.json",
@@ -647,7 +647,7 @@
     },
     "UseWebAssemblyInteractiveAtRoot": {
       "Template": "blazor",
-      "Arguments": "new blazor --interactivity webassembly --all-interactive",
+      "Arguments": "new blazor --interactive webassembly --all-interactive",
       "Files": [
         "{ProjectName}/appsettings.Development.json",
         "{ProjectName}/appsettings.json",
@@ -679,7 +679,7 @@
     },
     "UseServerAndWebAssemblyInteractiveAtRoot": {
       "Template": "blazor",
-      "Arguments": "new blazor --interactivity auto --all-interactive",
+      "Arguments": "new blazor --interactive auto --all-interactive",
       "Files": [
         "{ProjectName}/appsettings.Development.json",
         "{ProjectName}/appsettings.json",
@@ -711,7 +711,7 @@
     },
     "EmptyNoInteractivity": {
       "Template": "blazor",
-      "Arguments": "new blazor --interactivity none --empty",
+      "Arguments": "new blazor --interactive none --empty",
       "Files": [
         "appsettings.Development.json",
         "appsettings.json",
@@ -749,7 +749,7 @@
     },
     "EmptyUseWebAssembly": {
       "Template": "blazor",
-      "Arguments": "new blazor --interactivity webassembly --empty",
+      "Arguments": "new blazor --interactive webassembly --empty",
       "Files": [
         "{ProjectName}.sln",
         "{ProjectName}/appsettings.Development.json",
@@ -772,7 +772,7 @@
     },
     "EmptyUseServerAndWebAssembly": {
       "Template": "blazor",
-      "Arguments": "new blazor --interactivity auto --empty",
+      "Arguments": "new blazor --interactive auto --empty",
       "Files": [
         "{ProjectName}.sln",
         "{ProjectName}/appsettings.Development.json",
