@@ -132,7 +132,7 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
 
         if (!connection.ShouldProcessMessage(hubMessage))
         {
-            Log.DroppingMessage(_logger, ((HubInvocationMessage)hubMessage).GetType().Name, ((HubInvocationMessage)hubMessage).InvocationId);
+            Log.DroppingMessage(_logger, hubMessage.GetType().Name, (hubMessage as HubInvocationMessage)?.InvocationId ?? "(null)");
             return Task.CompletedTask;
         }
 

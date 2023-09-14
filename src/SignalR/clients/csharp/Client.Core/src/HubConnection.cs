@@ -481,12 +481,35 @@ public partial class HubConnection : IAsyncDisposable
         var connection = await _connectionFactory.ConnectAsync(_endPoint, cancellationToken).ConfigureAwait(false);
         var startingConnectionState = new ConnectionState(connection, this);
 
+#pragma warning disable CA2252 // This API requires opting into preview features
+        var statefulReconnectFeature = connection.Features.Get<IStatefulReconnectFeature>();
+#pragma warning restore CA2252 // This API requires opting into preview features
+
         // From here on, if an error occurs we need to shut down the connection because
         // we still own it.
         try
         {
-            Log.HubProtocol(_logger, _protocol.Name, _protocol.Version);
-            await HandshakeAsync(startingConnectionState, cancellationToken).ConfigureAwait(false);
+            var usedProtocolVersion = _protocol.Version;
+            if (statefulReconnectFeature is null && _protocol.IsVersionSupported(1))
+            {
+                // Stateful Reconnect starts with HubProtocol version 2, newer clients connecting to older servers will fail to connect due to
+                // the handshake only supporting version 1, so we will try to send version 1 during the handshake to keep old servers working
+                // if the client is not attempting to enable stateful reconnect and therefore does not require a newer HubProtocol.
+                usedProtocolVersion = 1;
+            }
+            else if (_protocol.Version < 2)
+            {
+                if (statefulReconnectFeature is not null)
+                {
+                    Log.DisablingReconnect(_logger, _protocol.Name, _protocol.Version);
+#pragma warning disable CA2252 // This API requires opting into preview features
+                    statefulReconnectFeature.DisableReconnect();
+#pragma warning restore CA2252 // This API requires opting into preview features
+                }
+            }
+
+            Log.HubProtocol(_logger, _protocol.Name, usedProtocolVersion);
+            await HandshakeAsync(startingConnectionState, usedProtocolVersion, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -1240,12 +1263,12 @@ public partial class HubConnection : IAsyncDisposable
         ObjectDisposedThrowHelper.ThrowIf(_disposed, this);
     }
 
-    private async Task HandshakeAsync(ConnectionState startingConnectionState, CancellationToken cancellationToken)
+    private async Task HandshakeAsync(ConnectionState startingConnectionState, int protocolVersion, CancellationToken cancellationToken)
     {
         // Send the Handshake request
         Log.SendingHubHandshake(_logger);
 
-        var handshakeRequest = new HandshakeRequestMessage(_protocol.Name, _protocol.Version);
+        var handshakeRequest = new HandshakeRequestMessage(_protocol.Name, protocolVersion);
         HandshakeProtocol.WriteRequestMessage(handshakeRequest, startingConnectionState.Connection.Transport.Output);
 
         var sendHandshakeResult = await startingConnectionState.Connection.Transport.Output.FlushAsync(CancellationToken.None).ConfigureAwait(false);
