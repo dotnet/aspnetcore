@@ -61,7 +61,11 @@ internal class PrerenderComponentApplicationStore : IPersistentComponentStateSto
 
         _stateIsPersisted = true;
 
-        PersistedState = Convert.ToBase64String(SerializeState(state));
+        if (state is not null && state.Count > 0)
+        {
+            PersistedState = Convert.ToBase64String(SerializeState(state));
+        }
+
         return Task.CompletedTask;
     }
 }

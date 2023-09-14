@@ -157,14 +157,14 @@ internal partial class EndpointHtmlRenderer
 
         public void WriteTo(TextWriter writer, HtmlEncoder encoder)
         {
-            if (_serverStore is not null)
+            if (_serverStore is not null && _serverStore.PersistedState is not null)
             {
                 writer.Write("<!--Blazor-Server-Component-State:");
                 writer.Write(_serverStore.PersistedState);
                 writer.Write("-->");
             }
 
-            if (_webAssemblyStore is not null)
+            if (_webAssemblyStore is not null && _webAssemblyStore.PersistedState is not null)
             {
                 writer.Write("<!--Blazor-WebAssembly-Component-State:");
                 writer.Write(_webAssemblyStore.PersistedState);
