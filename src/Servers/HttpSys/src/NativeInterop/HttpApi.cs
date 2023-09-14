@@ -54,7 +54,7 @@ internal static partial class HttpApi
     internal static bool SupportsDelegation { get; }
     internal static bool Supported { get; }
 
-    unsafe static HttpApi()
+    static unsafe HttpApi()
     {
         var statusCode = PInvoke.HttpInitialize(Version, HTTP_INITIALIZE.HTTP_INITIALIZE_SERVER | HTTP_INITIALIZE.HTTP_INITIALIZE_CONFIG);
 
