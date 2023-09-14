@@ -53,6 +53,28 @@ public class ComponentApplicationLifetimeTest
     }
 
     [Fact]
+    public async Task PersistStateAsync_ThrowsWhenCallbackRenerModeCannotBeInferred()
+    {
+        // Arrange
+        var state = new Dictionary<string, byte[]>();
+        var store = new TestStore(state);
+        var lifetime = new ComponentStatePersistenceManager(NullLogger<ComponentStatePersistenceManager>.Instance);
+
+        var renderer = new TestRenderer();
+        var data = new byte[] { 1, 2, 3, 4 };
+
+        lifetime.State.RegisterOnPersisting(() =>
+        {
+            lifetime.State.PersistAsJson("MyState", new byte[] { 1, 2, 3, 4 });
+            return Task.CompletedTask;
+        });
+
+        // Act
+        // Assert
+        await Assert.ThrowsAsync<InvalidOperationException>(() => lifetime.PersistStateAsync(store, renderer));
+    }
+
+    [Fact]
     public async Task PersistStateAsync_SavesPersistedStateToTheStore()
     {
         // Arrange
