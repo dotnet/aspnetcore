@@ -10,13 +10,16 @@ internal static class Ensure
     public static T NotNull<T>(T obj, string paramName)
         where T : class
     {
-        ArgumentNullThrowHelper.ThrowIfNull(paramName)
+		if (obj == null)
+        {
+            throw new ArgumentNullException(paramName);
+        }
         return obj;
     }
 
     public static string NotNullOrEmpty(string obj, string paramName)
     {
-        ArgumentThrowHelper.ThrowIfNullOrEmpty(paramName);
+        ArgumentThrowHelper.ThrowIfNullOrEmpty(obj, paramName);
         return obj;
     }
 }
