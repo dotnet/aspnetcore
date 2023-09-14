@@ -1775,6 +1775,7 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.OutputCaching.Microbenchmarks", "src\Middleware\OutputCaching\perf\Microbenchmarks\Microsoft.AspNetCore.OutputCaching.Microbenchmarks.csproj", "{137AD17B-066F-4ED4-80FA-8D21C7B76CA6}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.WebViewE2E.Test", "src\Components\WebView\test\E2ETest\Microsoft.AspNetCore.Components.WebViewE2E.Test.csproj", "{CAEB7F57-28A8-451C-95D0-45FCAA3C726C}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.OutputCaching.StackExchangeRedis.Tests", "src\Middleware\Microsoft.AspNetCore.OutputCaching.StackExchangeRedis\test\Microsoft.AspNetCore.OutputCaching.StackExchangeRedis.Tests.csproj", "{A939893A-B3CD-48F6-80D3-340C8A6E275B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.OutputCaching.StackExchangeRedis", "src\Middleware\Microsoft.AspNetCore.OutputCaching.StackExchangeRedis\src\Microsoft.AspNetCore.OutputCaching.StackExchangeRedis.csproj", "{F232B503-D412-45EE-8B31-EFD46B9FA302}"
