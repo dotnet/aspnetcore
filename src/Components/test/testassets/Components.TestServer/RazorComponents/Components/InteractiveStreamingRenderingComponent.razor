@@ -180,7 +180,7 @@ else
             RenderModeId.ServerNonPrerendered => new InteractiveServerRenderMode(false),
             RenderModeId.WebAssemblyPrerendered => RenderMode.InteractiveWebAssembly,
             RenderModeId.WebAssemblyNonPrerendered => new InteractiveWebAssemblyRenderMode(false),
-            RenderModeId.AutoPrerendered => InteractiveAutoerMode.Auto,
+            RenderModeId.AutoPrerendered => RenderMode.InteractiveAuto,
             RenderModeId.AutoNonPrerendered => new InteractiveAutoRenderMode(false),
             _ => throw new InvalidOperationException($"Unknown render mode: {renderMode}"),
         };
