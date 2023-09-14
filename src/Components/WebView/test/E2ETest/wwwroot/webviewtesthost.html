@@ -22,6 +22,9 @@
     <script src="_framework/blazor.webview.js"></script>
 
     <script>
+        // These methods are used to communicate with the test infrastructure. The test can
+        // send messages to this JS code to invoke things or to check the status of things.
+
         function PostMessageToDotNet(message) {
             if (window.chrome && window.chrome.webview) {
                 // Windows WebView2
@@ -42,13 +45,11 @@
             if (!event.data.startsWith('__bwv')) {
                 console.log("FILTER: Received message: " + event.data);
 
-                if (event.data === "wvt:GetControlDivValue")
-                {
+                if (event.data === "wvt:GetControlDivValue") {
                     var controlDivValue = document.getElementById('controlDiv').innerText;
                     PostMessageToDotNet('wvt:NewControlDivValue:' + controlDivValue);
                 }
-                else if (event.data.startsWith("wvt:ClickButton:"))
-                {
+                else if (event.data.startsWith("wvt:ClickButton:")) {
                     var buttonToClick = event.data.substring(16);
                     document.getElementById(buttonToClick).click();
                 }

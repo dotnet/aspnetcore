@@ -7,7 +7,6 @@
     <NoWarn>@(NoWarn);CS8002</NoWarn>
     <!-- See code comment in Program.cs/Main in this project regarding this -->
     <StartupObject>Microsoft.AspNetCore.Components.WebViewE2E.Test.Program</StartupObject>
-    <IsTestProject>true</IsTestProject>
   </PropertyGroup>
 
   <ItemGroup>
