@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
-using System.Diagnostics;
 using System.Security.Claims;
 using System.Security.Principal;
 using Microsoft.AspNetCore.Authentication;
@@ -570,29 +569,29 @@ internal sealed partial class HttpConnectionDispatcher
             return false;
         }
 
+        switch (connection.TrySetTransport(transportType, _metrics))
+        {
+            case HttpConnectionContext.SetTransportState.Success:
+                break;
+
+            case HttpConnectionContext.SetTransportState.AlreadyActive:
+                Log.ConnectionAlreadyActive(_logger, connection.ConnectionId, context.TraceIdentifier);
+
+                // Reject the request with a 409 conflict
+                context.Response.StatusCode = StatusCodes.Status409Conflict;
+                context.Response.ContentType = "text/plain";
+                return false;
+
+            case HttpConnectionContext.SetTransportState.CannotChange:
+                context.Response.ContentType = "text/plain";
+                context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                Log.CannotChangeTransport(_logger, connection.TransportType, transportType);
+                await context.Response.WriteAsync("Cannot change transports mid-connection");
+                return false;
+        }
+
         // Set the IHttpConnectionFeature now that we can access it.
         connection.Features.Set(context.Features.Get<IHttpConnectionFeature>());
-
-        if (connection.TransportType == HttpTransportType.None)
-        {
-            if (HttpConnectionsEventSource.Log.IsEnabled() || connection.MetricsContext.ConnectionDurationEnabled)
-            {
-                connection.StartTimestamp = Stopwatch.GetTimestamp();
-            }
-
-            connection.TransportType = transportType;
-
-            HttpConnectionsEventSource.Log.ConnectionStart(connection.ConnectionId);
-            _metrics.ConnectionTransportStart(connection.MetricsContext, transportType);
-        }
-        else if (connection.TransportType != transportType)
-        {
-            context.Response.ContentType = "text/plain";
-            context.Response.StatusCode = StatusCodes.Status400BadRequest;
-            Log.CannotChangeTransport(_logger, connection.TransportType, transportType);
-            await context.Response.WriteAsync("Cannot change transports mid-connection");
-            return false;
-        }
 
         // Configure transport-specific features.
         if (transportType == HttpTransportType.LongPolling)
