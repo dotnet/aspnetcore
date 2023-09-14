@@ -312,7 +312,7 @@ export class WebRootComponentManager implements DescriptorHandler, NavigationEnh
           return null;
         }
 
-        if (!isRendererAttached(rendererId) && rendererId !== WebRendererId.Server && hasStartedServer()) {
+        if (!isRendererAttached(rendererId) && (rendererId !== WebRendererId.Server || hasStartedServer())) {
           // The renderer for this descriptor is not attached, so we'll no-op.
           // After the renderer attaches, we'll handle this descriptor again if
           // it's still in the document.
