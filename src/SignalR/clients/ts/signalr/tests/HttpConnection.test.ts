@@ -1981,13 +1981,18 @@ describe("TransportSendQueue", () => {
             TestWebSocket.webSocketSet = new PromiseSource();
             TestWebSocket.webSocket.close();
 
-            // transport should be trying to connect again
-            await TestWebSocket.webSocketSet;
-            await TestWebSocket.webSocket.openSet;
-            expect(disconnectedCalled).toBe(true);
-            expect(resendCalled).toBe(false);
-            // fail to connect
-            TestWebSocket.webSocket.onclose(new TestEvent());
+            for (let i = 0; i < 3; i++) {
+                // transport should be trying to connect again
+                await TestWebSocket.webSocketSet;
+                await TestWebSocket.webSocket.openSet;
+                expect(resendCalled).toBe(false);
+                expect(disconnectedCalled).toBe(true);
+
+                TestWebSocket.webSocketSet = new PromiseSource();
+
+                // fail to connect
+                TestWebSocket.webSocket.onclose(new TestEvent());
+            }
 
             await onclosePromise;
             expect(resendCalled).toBe(false);
