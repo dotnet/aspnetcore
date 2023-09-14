@@ -16,10 +16,10 @@ internal partial class EndpointHtmlRenderer
 {
     private static readonly object InvokedRenderModesKey = new object();
 
-    public async ValueTask<IHtmlContent> PrerenderPersistedStateOnFirstLoadAsync(HttpContext httpContext)
+    public async ValueTask<IHtmlContent> PrerenderPersistedStateOnFirstRenderAsync(HttpContext httpContext)
     {
-        // This is not the first load, do nothing
-        if (httpContext.Request.Headers.ContainsKey(_progressivelyEnhancedNavRequestHeaderName))
+        // This is not the first render, do nothing
+        if (IsProgressivelyEnhancedNavigation(httpContext.Request))
         {
             return ComponentStateHtmlContent.Empty;
         }
