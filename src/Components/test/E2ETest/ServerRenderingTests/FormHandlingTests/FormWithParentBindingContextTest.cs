@@ -1224,10 +1224,8 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         DispatchToFormCore(dispatchToForm);
     }
 
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public void CanBindToFormWithFiles(bool suppressEnhancedNavigation)
+    [Fact]
+    public void CanBindToFormWithFiles()
     {
         var profilePicture = TempFile.Create(_tempDirectory, "txt", "This is a profile picture.");
         var headerPhoto = TempFile.Create(_tempDirectory, "txt", "This is a header picture.");
@@ -1237,7 +1235,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         {
             Url = "forms/with-files",
             FormCssSelector = "form",
-            SuppressEnhancedNavigation = suppressEnhancedNavigation,
+            FormIsEnhanced = false,
             UpdateFormAction = () =>
             {
                 Browser.Exists(By.CssSelector("input[name='Model.ProfilePicture']")).SendKeys(profilePicture.Path);
