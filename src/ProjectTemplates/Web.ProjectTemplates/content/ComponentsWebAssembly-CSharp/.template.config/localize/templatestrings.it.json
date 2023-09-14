@@ -1,6 +1,6 @@
 ﻿{
   "author": "Microsoft",
-  "name": "App WebAssembly Blazor",
+  "name": "Blazor WebAssembly Standalone App",
   "description": "Modello di progetto per la creazione di un'app Blazor eseguita in WebAssembly. Questo modello può essere usato per app Web con interfacce utente dinamiche.",
   "symbols/Framework/description": "Il framework di destinazione per il progetto.",
   "symbols/Framework/choices/net8.0/description": "Destinazione net8.0",

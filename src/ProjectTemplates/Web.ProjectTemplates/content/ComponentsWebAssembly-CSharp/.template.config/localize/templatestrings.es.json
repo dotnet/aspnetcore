@@ -1,6 +1,6 @@
 ﻿{
   "author": "Microsoft",
-  "name": "Aplicación Blazor para WebAssembly",
+  "name": "Blazor WebAssembly Standalone App",
   "description": "Plantilla de proyecto para crear una aplicación Blazor que se ejecuta en WebAssembly. Esta plantilla se puede usar para las aplicaciones web con interfaces de usuario dinámicas enriquecidas.",
   "symbols/Framework/description": "Marco de destino del proyecto.",
   "symbols/Framework/choices/net8.0/description": "net8.0 de destino",

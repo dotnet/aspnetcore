@@ -1,6 +1,6 @@
 ﻿{
   "author": "Microsoft",
-  "name": "Aplikace Blazor WebAssembly",
+  "name": "Blazor WebAssembly Standalone App",
   "description": "Šablona projektu pro vytvoření aplikace Blazor, která běží ve WebAssembly. Tato šablona se dá využít pro webové aplikace s propracovanými dynamickými uživatelskými rozhraními (UI).",
   "symbols/Framework/description": "Cílová architektura pro projekt",
   "symbols/Framework/choices/net8.0/description": "Cílový net8.0",
