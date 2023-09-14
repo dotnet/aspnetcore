@@ -93,7 +93,7 @@ internal static partial class NativeMethods
 
     [LibraryImport(AspNetCoreModuleDll)]
     [SuppressMessage("LibraryImportGenerator", "SYSLIB1051:Specified type is not supported by source-generated P/Invokes", Justification = "The enum is handled by the runtime.")]
-    private unsafe static partial int http_query_request_property(
+    private static unsafe partial int http_query_request_property(
         ulong requestId,
         HTTP_REQUEST_PROPERTY propertyId,
         void* qualifier,
