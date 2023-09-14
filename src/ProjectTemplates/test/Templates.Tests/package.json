@@ -10,7 +10,7 @@
   },
   "author": "",
   "license": "MIT",
-  "devDependencies": {
-    "selenium-standalone": "^9.1.1"
+  "dependencies": {
+    "selenium-standalone": "^7.1.0"
   }
 }
