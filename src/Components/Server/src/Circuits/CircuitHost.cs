@@ -120,8 +120,8 @@ internal partial class CircuitHost : IAsyncDisposable
                 var pendingRenders = new Task[count];
                 for (var i = 0; i < count; i++)
                 {
-                    var (componentType, parameters, sequence) = Descriptors[i];
-                    pendingRenders[i] = Renderer.AddComponentAsync(componentType, parameters, sequence.ToString(CultureInfo.InvariantCulture));
+                    var (componentType, parameters, sequence, uniqueId) = Descriptors[i];
+                    pendingRenders[i] = Renderer.AddComponentAsync(componentType, parameters, (uniqueId ?? sequence).ToString(CultureInfo.InvariantCulture));
                 }
 
                 // Now we wait for all components to finish rendering.

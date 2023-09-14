@@ -36,6 +36,8 @@ internal struct ComponentMarker
     // from being rendered from the client-side.
     public int? Sequence { get; set; }
 
+    public int? UniqueId { get; set; }
+
     // A data-protected payload that allows the server to validate the legitimacy
     // of the invocation.
     // The value will be null for end markers.

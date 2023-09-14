@@ -264,7 +264,8 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
         {
             ComponentType = componentType,
             Parameters = parameters,
-            Sequence = serverComponent.Sequence
+            Sequence = serverComponent.Sequence,
+            UniqueId = record.UniqueId
         };
 
         return (componentDescriptor, serverComponent);

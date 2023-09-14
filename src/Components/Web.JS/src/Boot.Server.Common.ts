@@ -110,7 +110,9 @@ export function hasStartedServer(): boolean {
 }
 
 export async function disposeCircuit() {
-  await circuit?.dispose();
+  const disposePromise = circuit?.dispose();
+  started = false;
+  await disposePromise;
 }
 
 export function isCircuitAvailable(): boolean {
