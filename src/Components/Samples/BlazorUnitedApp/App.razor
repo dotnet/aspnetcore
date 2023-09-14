@@ -36,6 +36,15 @@
         <a class="dismiss">🗙</a>
     </div>
 
-    <script src="_framework/blazor.web.js" suppress-error="BL9992"></script>
+    <script src="_framework/blazor.web.js" autostart="false">
+    </script>
+    <script>
+        Blazor.start({
+            circuit: {
+                logLevel: 1, // LogLevel.Debug
+                configureSignalR: builder => builder.configureLogging("debug") // LogLevel.Debug
+            }
+        });
+    </script>
 </body>
 </html>
