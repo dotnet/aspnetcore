@@ -122,9 +122,7 @@ public class AuthenticationProperties
     /// <param name="key">Property key.</param>
     /// <returns>Retrieved value or <c>null</c> if the property is not set.</returns>
     public string? GetString(string key)
-    {
-        return Items.TryGetValue(key, out var value) ? value : null;
-    }
+     => Items.TryGetValue(key, out var value) ? value : null;
 
     /// <summary>
     /// Set or remove a string value from the <see cref="Items"/> collection.
@@ -132,16 +130,7 @@ public class AuthenticationProperties
     /// <param name="key">Property key.</param>
     /// <param name="value">Value to set or <see langword="null" /> to remove the property.</param>
     public void SetString(string key, string? value)
-    {
-        if (value != null)
-        {
-            Items[key] = value;
-        }
-        else
-        {
-            Items.Remove(key);
-        }
-    }
+        => value is not null ? Items[key] = value : Items.Remove(key);
 
     /// <summary>
     /// Get a parameter from the <see cref="Parameters"/> collection.
