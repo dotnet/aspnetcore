@@ -81,7 +81,7 @@ public class PersistComponentStateTagHelperTest
             ViewContext = GetViewContext()
         };
 
-        EndpointHtmlRenderer.UpdateSaveStateRenderMode(tagHelper.ViewContext.HttpContext, Components.Web.RenderMode.WebAssembly);
+        EndpointHtmlRenderer.UpdateSaveStateRenderMode(tagHelper.ViewContext.HttpContext, Components.Web.RenderMode.InteractiveWebAssembly);
 
         var context = GetTagHelperContext();
         var output = GetTagHelperOutput();
@@ -129,7 +129,7 @@ public class PersistComponentStateTagHelperTest
             ViewContext = GetViewContext()
         };
 
-        EndpointHtmlRenderer.UpdateSaveStateRenderMode(tagHelper.ViewContext.HttpContext, Components.Web.RenderMode.Server);
+        EndpointHtmlRenderer.UpdateSaveStateRenderMode(tagHelper.ViewContext.HttpContext, Components.Web.RenderMode.InteractiveServer);
 
         var context = GetTagHelperContext();
         var output = GetTagHelperOutput();
@@ -154,8 +154,8 @@ public class PersistComponentStateTagHelperTest
             ViewContext = GetViewContext()
         };
 
-        EndpointHtmlRenderer.UpdateSaveStateRenderMode(tagHelper.ViewContext.HttpContext, Components.Web.RenderMode.Server);
-        EndpointHtmlRenderer.UpdateSaveStateRenderMode(tagHelper.ViewContext.HttpContext, Components.Web.RenderMode.WebAssembly);
+        EndpointHtmlRenderer.UpdateSaveStateRenderMode(tagHelper.ViewContext.HttpContext, Components.Web.RenderMode.InteractiveServer);
+        EndpointHtmlRenderer.UpdateSaveStateRenderMode(tagHelper.ViewContext.HttpContext, Components.Web.RenderMode.InteractiveWebAssembly);
 
         var context = GetTagHelperContext();
         var output = GetTagHelperOutput();
