@@ -5,20 +5,14 @@
   "disableHttpsSymbol": "NoHttps",
   "symbolInfo": [
     {
-      "id": "UseServer",
+      "id": "InteractivityPlatform",
       "isVisible": true,
       "persistenceScope": "templateGroup"
     },
     {
-      "id": "UseWebAssembly",
+      "id": "InteractivityLocation",
       "isVisible": true,
       "persistenceScope": "templateGroup"
-    },
-    {
-      "id": "UseProgramMain",
-      "isVisible": true,
-      "persistenceScope": "shared",
-      "persistenceScopeName": "Microsoft"
     },
     {
       "id": "IncludeSampleContent",
@@ -27,7 +21,7 @@
       "persistenceScopeName": "Microsoft"
     },
     {
-      "id": "InteractiveAtRoot",
+      "id": "UseProgramMain",
       "isVisible": true,
       "persistenceScope": "shared",
       "persistenceScopeName": "Microsoft"
