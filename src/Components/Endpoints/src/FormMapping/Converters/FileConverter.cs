@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 
-internal sealed class FileConverter<T> : FormDataConverter<T>, ISingleValueConverter
+internal sealed class FileConverter<T> : FormDataConverter<T>
 {
     [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
     [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
