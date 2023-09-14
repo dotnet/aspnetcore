@@ -1137,7 +1137,6 @@ public partial class HubConnection : IAsyncDisposable
                 break;
             case SequenceMessage sequenceMessage:
                 Log.ReceivedSequenceMessage(_logger, sequenceMessage.SequenceId);
-                connectionState.ResetSequence(sequenceMessage);
                 break;
             default:
                 throw new InvalidOperationException($"Unexpected message type: {message.GetType().FullName}");
@@ -2098,14 +2097,6 @@ public partial class HubConnection : IAsyncDisposable
             }
 
             return Task.CompletedTask;
-        }
-
-        public void ResetSequence(SequenceMessage sequenceMessage)
-        {
-            if (UsingAcks())
-            {
-                _messageBuffer.ResetSequence(sequenceMessage);
-            }
         }
 
         [MemberNotNullWhen(true, nameof(_messageBuffer))]

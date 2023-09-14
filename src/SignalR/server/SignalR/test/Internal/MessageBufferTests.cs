@@ -142,9 +142,8 @@ public class MessageBufferTests
         DuplexPipe.UpdateConnectionPair(ref pipes, connection);
         await messageBuffer.ResendAsync(pipes.Transport.Output);
 
-        // Any message except SequenceMessage will be ignored until a SequenceMessage is received
-        Assert.False(messageBuffer.ShouldProcessMessage(PingMessage.Instance));
-        Assert.False(messageBuffer.ShouldProcessMessage(CompletionMessage.WithResult("1", null)));
+        Assert.True(messageBuffer.ShouldProcessMessage(PingMessage.Instance));
+        Assert.True(messageBuffer.ShouldProcessMessage(CompletionMessage.WithResult("1", null)));
         Assert.True(messageBuffer.ShouldProcessMessage(new SequenceMessage(1)));
 
         res = await pipes.Application.Input.ReadAsync();
@@ -164,10 +163,10 @@ public class MessageBufferTests
 
         pipes.Application.Input.AdvanceTo(buffer.Start);
 
-        messageBuffer.ResetSequence(new SequenceMessage(1));
+        messageBuffer.ShouldProcessMessage(new SequenceMessage(1));
 
         Assert.True(messageBuffer.ShouldProcessMessage(PingMessage.Instance));
-        Assert.True(messageBuffer.ShouldProcessMessage(CompletionMessage.WithResult("1", null)));
+        Assert.False(messageBuffer.ShouldProcessMessage(CompletionMessage.WithResult("1", null)));
     }
 
     [Fact]
@@ -235,7 +234,7 @@ public class MessageBufferTests
 
         pipes.Application.Input.AdvanceTo(buffer.Start);
 
-        Assert.Throws<InvalidOperationException>(() => messageBuffer.ResetSequence(new SequenceMessage(2)));
+        Assert.Throws<InvalidOperationException>(() => messageBuffer.ShouldProcessMessage(new SequenceMessage(2)));
     }
 
     [Fact]

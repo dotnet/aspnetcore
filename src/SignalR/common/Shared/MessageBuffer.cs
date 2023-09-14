@@ -41,7 +41,6 @@ internal sealed class MessageBuffer : IDisposable
     private PipeWriter _writer;
 
     private long _totalMessageCount;
-    private bool _waitForSequenceMessage;
 
     // Message IDs start at 1 and always increment by 1
     private long _currentReceivingSequenceId = 1;
@@ -210,19 +209,20 @@ internal sealed class MessageBuffer : IDisposable
 
     internal bool ShouldProcessMessage(HubMessage message)
     {
-        // TODO: if we're expecting a sequence message but get here should we error or ignore or maybe even continue to process them?
-        if (_waitForSequenceMessage)
+        if (message is SequenceMessage sequenceMessage)
         {
-            if (message is SequenceMessage)
+            // TODO: is a sequence message expected right now?
+
+            if (sequenceMessage.SequenceId > _currentReceivingSequenceId)
             {
-                _waitForSequenceMessage = false;
-                return true;
+                throw new InvalidOperationException("Sequence ID greater than amount of messages we've received.");
             }
-            else
-            {
-                // ignore messages received while waiting for sequence message
-                return false;
-            }
+
+            _currentReceivingSequenceId = sequenceMessage.SequenceId;
+
+            // Technically handled by the 'is not HubInvocationMessage' check, but this is future proofing in case that check changes
+            // SequenceMessage should not be counted towards ackable messages
+            return true;
         }
 
         // Only care about messages implementing HubInvocationMessage currently (e.g. ignore ping, close, ack, sequence)
@@ -233,6 +233,7 @@ internal sealed class MessageBuffer : IDisposable
         }
 
         var currentId = _currentReceivingSequenceId;
+        // ShouldProcessMessage is never called in parallel and is the only method referencing _currentReceivingSequenceId
         _currentReceivingSequenceId++;
         if (currentId <= _latestReceivedSequenceId)
         {
@@ -244,21 +245,8 @@ internal sealed class MessageBuffer : IDisposable
         return true;
     }
 
-    internal void ResetSequence(SequenceMessage sequenceMessage)
-    {
-        // TODO: is a sequence message expected right now?
-
-        if (sequenceMessage.SequenceId > _currentReceivingSequenceId)
-        {
-            throw new InvalidOperationException("Sequence ID greater than amount of messages we've received.");
-        }
-        _currentReceivingSequenceId = sequenceMessage.SequenceId;
-    }
-
     internal async Task ResendAsync(PipeWriter writer)
     {
-        _waitForSequenceMessage = true;
-
         var tcs = new TaskCompletionSource<FlushResult>(TaskCreationOptions.RunContinuationsAsynchronously);
         _resend = tcs;
 

@@ -198,7 +198,6 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
 
             case SequenceMessage sequenceMessage:
                 Log.ReceivedSequenceMessage(_logger, sequenceMessage.SequenceId);
-                connection.ResetSequence(sequenceMessage);
                 break;
 
             case CloseMessage closeMessage:
