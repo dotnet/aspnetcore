@@ -356,18 +356,18 @@ internal sealed partial class HttpConnectionDispatcher
             Log.NegotiateProtocolVersionMismatch(_logger, 0);
         }
 
-        var useAck = false;
-        if (options.AllowStatefulReconnects == true && context.Request.Query.TryGetValue("UseAck", out var useAckValue))
+        var useStatefulReconnect = false;
+        if (options.AllowStatefulReconnects == true && context.Request.Query.TryGetValue("UseStatefulReconnect", out var useStatefulReconnectValue))
         {
-            var useAckStringValue = useAckValue.ToString();
-            bool.TryParse(useAckStringValue, out useAck);
+            var useStatefulReconnectStringValue = useStatefulReconnectValue.ToString();
+            bool.TryParse(useStatefulReconnectStringValue, out useStatefulReconnect);
         }
 
         // Establish the connection
         HttpConnectionContext? connection = null;
         if (error == null)
         {
-            connection = CreateConnection(options, clientProtocolVersion, useAck);
+            connection = CreateConnection(options, clientProtocolVersion, useStatefulReconnect);
         }
 
         // Set the Connection ID on the logging scope so that logs from now on will have the
@@ -380,7 +380,8 @@ internal sealed partial class HttpConnectionDispatcher
         try
         {
             // Get the bytes for the connection id
-            WriteNegotiatePayload(writer, connection?.ConnectionId, connection?.ConnectionToken, context, options, clientProtocolVersion, error, useAck);
+            WriteNegotiatePayload(writer, connection?.ConnectionId, connection?.ConnectionToken, context, options,
+                clientProtocolVersion, error, useStatefulReconnect);
 
             Log.NegotiationRequest(_logger);
 
@@ -395,7 +396,7 @@ internal sealed partial class HttpConnectionDispatcher
     }
 
     private static void WriteNegotiatePayload(IBufferWriter<byte> writer, string? connectionId, string? connectionToken, HttpContext context, HttpConnectionDispatcherOptions options,
-        int clientProtocolVersion, string? error, bool useAck)
+        int clientProtocolVersion, string? error, bool useStatefulReconnect)
     {
         var response = new NegotiationResponse();
 
@@ -410,7 +411,7 @@ internal sealed partial class HttpConnectionDispatcher
         response.ConnectionId = connectionId;
         response.ConnectionToken = connectionToken;
         response.AvailableTransports = new List<AvailableTransport>();
-        response.UseStatefulReconnect = useAck;
+        response.UseStatefulReconnect = useStatefulReconnect;
 
         if ((options.Transports & HttpTransportType.WebSockets) != 0 && ServerHasWebSockets(context.Features))
         {
@@ -810,9 +811,9 @@ internal sealed partial class HttpConnectionDispatcher
         return connection;
     }
 
-    private HttpConnectionContext CreateConnection(HttpConnectionDispatcherOptions options, int clientProtocolVersion = 0, bool useAck = false)
+    private HttpConnectionContext CreateConnection(HttpConnectionDispatcherOptions options, int clientProtocolVersion = 0, bool useStatefulReconnect = false)
     {
-        return _manager.CreateConnection(options, clientProtocolVersion, useAck);
+        return _manager.CreateConnection(options, clientProtocolVersion, useStatefulReconnect);
     }
 
     private static void AddNoCacheHeaders(HttpResponse response)

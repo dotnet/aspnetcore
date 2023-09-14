@@ -2263,7 +2263,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
     }
 
     [Fact]
-    public async Task NegotiateDoesNotReturnUseAckWhenNotEnabledOnServer()
+    public async Task NegotiateDoesNotReturnUseStatefulReconnectWhenNotEnabledOnServer()
     {
         using (StartVerifiableLog())
         {
@@ -2278,11 +2278,11 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             context.Request.Path = "/foo";
             context.Request.Method = "POST";
             context.Response.Body = ms;
-            context.Request.QueryString = new QueryString("?negotiateVersion=1&UseAck=true");
+            context.Request.QueryString = new QueryString("?negotiateVersion=1&UseStatefulReconnect=true");
             await dispatcher.ExecuteNegotiateAsync(context, new HttpConnectionDispatcherOptions { AllowStatefulReconnects = false });
 
             var negotiateResponse = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(ms.ToArray()));
-            Assert.False(negotiateResponse.TryGetValue("useAck", out _));
+            Assert.False(negotiateResponse.TryGetValue("useStatefulReconnect", out _));
 
             Assert.True(manager.TryGetConnection(negotiateResponse["connectionToken"].ToString(), out var connection));
 #pragma warning disable CA2252 // This API requires opting into preview features
@@ -2292,7 +2292,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
     }
 
     [Fact]
-    public async Task NegotiateDoesNotReturnUseAckWhenEnabledOnServerButNotRequestedByClient()
+    public async Task NegotiateDoesNotReturnUseStatefulReconnectWhenEnabledOnServerButNotRequestedByClient()
     {
         using (StartVerifiableLog())
         {
@@ -2311,7 +2311,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             await dispatcher.ExecuteNegotiateAsync(context, new HttpConnectionDispatcherOptions { AllowStatefulReconnects = true });
 
             var negotiateResponse = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(ms.ToArray()));
-            Assert.False(negotiateResponse.TryGetValue("useAck", out _));
+            Assert.False(negotiateResponse.TryGetValue("useStatefulReconnect", out _));
 
             Assert.True(manager.TryGetConnection(negotiateResponse["connectionToken"].ToString(), out var connection));
 #pragma warning disable CA2252 // This API requires opting into preview features
@@ -2321,7 +2321,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
     }
 
     [Fact]
-    public async Task NegotiateReturnsUseAckWhenEnabledOnServerAndRequestedByClient()
+    public async Task NegotiateReturnsUseStatefulReconnectWhenEnabledOnServerAndRequestedByClient()
     {
         using (StartVerifiableLog())
         {
@@ -2336,11 +2336,11 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             context.Request.Path = "/foo";
             context.Request.Method = "POST";
             context.Response.Body = ms;
-            context.Request.QueryString = new QueryString("?negotiateVersion=1&UseAck=true");
+            context.Request.QueryString = new QueryString("?negotiateVersion=1&UseStatefulReconnect=true");
             await dispatcher.ExecuteNegotiateAsync(context, new HttpConnectionDispatcherOptions { AllowStatefulReconnects = true });
 
             var negotiateResponse = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(ms.ToArray()));
-            Assert.True((bool)negotiateResponse["useAck"]);
+            Assert.True((bool)negotiateResponse["useStatefulReconnect"]);
 
             Assert.True(manager.TryGetConnection(negotiateResponse["connectionToken"].ToString(), out var connection));
 #pragma warning disable CA2252 // This API requires opting into preview features
@@ -2358,7 +2358,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var options = new HttpConnectionDispatcherOptions() { AllowStatefulReconnects = true };
             options.WebSockets.CloseTimeout = TimeSpan.FromMilliseconds(1);
             // pretend negotiate occurred
-            var connection = manager.CreateConnection(options, negotiateVersion: 1, useAck: true);
+            var connection = manager.CreateConnection(options, negotiateVersion: 1, useStatefulReconnect: true);
             connection.TransportType = HttpTransportType.WebSockets;
 
             var dispatcher = CreateDispatcher(manager, LoggerFactory);
@@ -2433,7 +2433,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var options = new HttpConnectionDispatcherOptions() { AllowStatefulReconnects = true };
             options.WebSockets.CloseTimeout = TimeSpan.FromMilliseconds(1);
             // pretend negotiate occurred
-            var connection = manager.CreateConnection(options, negotiateVersion: 1, useAck: true);
+            var connection = manager.CreateConnection(options, negotiateVersion: 1, useStatefulReconnect: true);
             connection.TransportType = HttpTransportType.WebSockets;
 
             var dispatcher = CreateDispatcher(manager, LoggerFactory);
