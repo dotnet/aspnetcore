@@ -3,7 +3,7 @@
 
 import { internalFunctions as navigationManagerFunctions } from '../../Services/NavigationManager';
 import { toLogicalRootCommentElement, LogicalElement, toLogicalElement } from '../../Rendering/LogicalElements';
-import { ServerComponentDescriptor, descriptorToMarker } from '../../Services/ComponentDescriptorDiscovery';
+import { ComponentMarker, ServerComponentDescriptor, descriptorToMarker } from '../../Services/ComponentDescriptorDiscovery';
 import { HttpTransportType, HubConnection, HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/signalr';
 import { getAndRemovePendingRootComponentContainer } from '../../Rendering/JSRootComponents';
 import { RootComponentManager } from '../../Services/RootComponentManager';
@@ -78,7 +78,12 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       return false;
     }
 
-    const componentsJson = JSON.stringify(this._componentManager.initialComponents.map(c => descriptorToMarker(c)));
+    const components: unknown [] = [];
+    this._componentManager.descriptors.forEach(descriptor => {
+      components.push(descriptorToMarker(descriptor as ServerComponentDescriptor));
+    });
+
+    const componentsJson = JSON.stringify(components);
     this._circuitId = await this._connection.invoke<string>(
       'StartCircuit',
       navigationManagerFunctions.getBaseURI(),

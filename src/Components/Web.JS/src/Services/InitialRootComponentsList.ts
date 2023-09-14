@@ -5,7 +5,10 @@ import { ComponentDescriptor } from './ComponentDescriptorDiscovery';
 import { RootComponentManager } from './RootComponentManager';
 
 export class InitialRootComponentsList<ComponentDescriptorType extends ComponentDescriptor> implements RootComponentManager<ComponentDescriptorType> {
+  public readonly descriptors: Set<unknown>;
+
   constructor(public readonly initialComponents: ComponentDescriptorType[]) {
+    this.descriptors = new Set(initialComponents);
   }
 
   resolveRootComponent(selectorId: number, _componentId: number): ComponentDescriptor {

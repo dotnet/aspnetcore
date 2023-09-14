@@ -42,11 +42,11 @@ type RootComponentInfo = {
 export class WebRootComponentManager implements DescriptorHandler, NavigationEnhancementCallbacks, RootComponentManager<never> {
   private readonly _rootComponents = new Set<RootComponentInfo>();
 
-  private readonly _descriptors = new Set<ComponentDescriptor>();
-
   private readonly _pendingComponentsToResolve = new Map<number, RootComponentInfo>();
 
   private _didWebAssemblyFailToLoadQuickly = false;
+
+  public readonly descriptors = new Set<unknown>();
 
   private _isComponentRefreshPending = false;
 
@@ -78,7 +78,7 @@ export class WebRootComponentManager implements DescriptorHandler, NavigationEnh
   }
 
   public registerComponent(descriptor: ComponentDescriptor) {
-    if (this._descriptors.has(descriptor)) {
+    if (this.descriptors.has(descriptor)) {
       return;
     }
 
@@ -90,12 +90,12 @@ export class WebRootComponentManager implements DescriptorHandler, NavigationEnh
       this.startLoadingWebAssemblyIfNotStarted();
     }
 
-    this._descriptors.add(descriptor);
+    this.descriptors.add(descriptor);
     this._rootComponents.add({ descriptor });
   }
 
   private unregisterComponent(component: RootComponentInfo) {
-    this._descriptors.delete(component.descriptor);
+    this.descriptors.delete(component.descriptor);
     this._rootComponents.delete(component);
   }
 
@@ -256,8 +256,12 @@ export class WebRootComponentManager implements DescriptorHandler, NavigationEnh
     }
 
     for (const [rendererId, operations] of operationsByRendererId) {
-      const operationsJson = JSON.stringify(operations);
-      updateRootComponents(rendererId, operationsJson);
+      if (rendererId === WebRendererId.Server && !hasStartedServer()) {
+        this.startCircutIfNotStarted();
+      } else {
+        const operationsJson = JSON.stringify(operations);
+        updateRootComponents(rendererId, operationsJson);
+      }
     }
 
     this.circuitMayHaveNoRootComponents();
@@ -267,7 +271,6 @@ export class WebRootComponentManager implements DescriptorHandler, NavigationEnh
     const resolvedType = descriptor.type === 'auto' ? this.getAutoRenderMode() : descriptor.type;
     switch (resolvedType) {
       case 'server':
-        this.startCircutIfNotStarted();
         return WebRendererId.Server;
       case 'webassembly':
         this.startWebAssemblyIfNotStarted();
@@ -309,7 +312,7 @@ export class WebRootComponentManager implements DescriptorHandler, NavigationEnh
           return null;
         }
 
-        if (!isRendererAttached(rendererId)) {
+        if (!isRendererAttached(rendererId) && rendererId !== WebRendererId.Server && hasStartedServer()) {
           // The renderer for this descriptor is not attached, so we'll no-op.
           // After the renderer attaches, we'll handle this descriptor again if
           // it's still in the document.
