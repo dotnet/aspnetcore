@@ -1989,6 +1989,48 @@ public class FormDataMapperTests
     }
 
     [Fact]
+    public void CanDeserialize_ComplexType_CanSerializerIReadOnlyListBrowserFile()
+    {
+        // Arrange
+        var expectedString1 = "This is the contents of my first text file.";
+        var expectedString2 = "This is the contents of my second text file.";
+        var expected = new FormFileCollection
+        {
+            new FormFile(new MemoryStream(Encoding.UTF8.GetBytes(expectedString1)), 0, expectedString1.Length, "file", "file1.txt"),
+            new FormFile(new MemoryStream(Encoding.UTF8.GetBytes(expectedString2)), 0, expectedString2.Length, "file", "file2.txt")
+        };
+        var data = new Dictionary<string, StringValues>();
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture, expected);
+        var errors = new List<FormDataMappingError>();
+        reader.ErrorHandler = (key, message, attemptedValue) =>
+        {
+            errors.Add(new FormDataMappingError(key, message, attemptedValue));
+        };
+        reader.PushPrefix("file");
+        var options = new FormDataMapperOptions();
+
+        // Act
+        var result = CallDeserialize(reader, options, typeof(IReadOnlyList<IBrowserFile>));
+
+        // Assert
+        var browserFiles = Assert.IsAssignableFrom<IReadOnlyList<IBrowserFile>>(result);
+        // First file
+        var browserFile1 = browserFiles[0];
+        Assert.Equal("file", browserFile1.Name);
+        Assert.Equal(expectedString1.Length, browserFile1.Size);
+        var buffer1 = new byte[browserFile1.Size];
+        browserFile1.OpenReadStream().Read(buffer1);
+        Assert.Equal(expectedString1, Encoding.UTF8.GetString(buffer1, 0, buffer1.Length));
+        // Second files
+        var browserFile2 = browserFiles[0];
+        Assert.Equal("file", browserFile2.Name);
+        Assert.Equal(expectedString1.Length, browserFile2.Size);
+        var buffer2 = new byte[browserFile2.Size];
+        browserFile1.OpenReadStream().Read(buffer2);
+        Assert.Equal(expectedString1, Encoding.UTF8.GetString(buffer2, 0, buffer2.Length));
+    }
+
+    [Fact]
     public void RecursiveTypes_Comparer_SortsValues_Correctly()
     {
         // Arrange

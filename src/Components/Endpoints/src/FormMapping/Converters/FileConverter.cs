@@ -34,6 +34,19 @@ internal sealed class FileConverter<T> : FormDataConverter<T>
                 return true;
             }
         }
+
+        if (typeof(T) == typeof(IReadOnlyList<IBrowserFile>))
+        {
+            var targetFiles = reader.FormFileCollection.GetFiles(reader.CurrentPrefix.ToString());
+            var buffer = ReadOnlyCollectionBufferAdapter<IBrowserFile>.CreateBuffer();
+            for (var i = 0; i < targetFiles.Count; i++)
+            {
+                buffer = ReadOnlyCollectionBufferAdapter<IBrowserFile>.Add(ref buffer, new BrowserFileFromFormFile(targetFiles[i]));
+            }
+            result = (T)(IReadOnlyList<IBrowserFile>)ReadOnlyCollectionBufferAdapter<IBrowserFile>.ToResult(buffer);
+            found = true;
+            return true;
+        }
 #endif
 
         if (typeof(T) == typeof(IReadOnlyList<IFormFile>))

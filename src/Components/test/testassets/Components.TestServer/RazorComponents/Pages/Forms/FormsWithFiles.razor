@@ -8,21 +8,28 @@
     <div>
         <label for="Model.ProfilePicture">
             Profile Picture:
-            <InputFile @bind-Value="Model.ProfilePicture" name="Model.ProfilePicture" />
+            <input type="file" name="Model.ProfilePicture" />
         </label>
         <ValidationMessage For="() => Model.ProfilePicture" />
     </div>
     <div>
         <label for="Model.Documents">
             Documents:
-            <InputFile @bind-Value="Model.Documents" multiple name="Model.Documents" />
+            <input type="file" multiple name="Model.Documents" />
         </label>
         <ValidationMessage For="() => Model.Documents" />
     </div>
     <div>
-        <label for="Model.Documents">
+        <label for="Model.Images">
+            Images:
+            <input type="file" multiple name="Model.Images" />
+        </label>
+        <ValidationMessage For="() => Model.Images" />
+    </div>
+    <div>
+        <label for="Model.HeaderPhoto">
             Header Photo:
-            <InputFile @bind-Value="Model.HeaderPhoto" name="Model.HeaderPhoto" />
+            <input type="file" name="Model.HeaderPhoto" />
         </label>
         <ValidationMessage For="() => Model.HeaderPhoto" />
     </div>
@@ -33,6 +40,7 @@
 {
     <p id="profile-picture">Profile Picture: @Model.ProfilePicture.FileName</p>
     <p id="documents">Documents: @Model.Documents.Count()</p>
+    <p id="images">Images: @Model.Images.Count()</p>
     <p id="header-photo">Header Photo: @Model.HeaderPhoto.Name</p>
     <p id="form-collection">Total: @Model.FormFiles.Count</p>
 }
@@ -51,6 +59,7 @@
     {
         public IFormFile ProfilePicture { get; set; }
         public IReadOnlyList<IFormFile> Documents { get; set; }
+        public IReadOnlyList<IBrowserFile> Images { get; set; }
         public IBrowserFile HeaderPhoto { get; set; }
         public IFormFileCollection FormFiles { get; set; }
     }

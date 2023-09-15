@@ -1231,6 +1231,9 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         var headerPhoto = TempFile.Create(_tempDirectory, "txt", "This is a header picture.");
         var file1 = TempFile.Create(_tempDirectory, "txt", "This is file 1.");
         var file2 = TempFile.Create(_tempDirectory, "txt", "This is file 2.");
+        var file3 = TempFile.Create(_tempDirectory, "txt", "This is file 3.");
+        var file4 = TempFile.Create(_tempDirectory, "txt", "This is file 4.");
+        var file5 = TempFile.Create(_tempDirectory, "txt", "This is file 5.");
         var dispatchToForm = new DispatchToForm(this)
         {
             Url = "forms/with-files",
@@ -1241,6 +1244,9 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
                 Browser.Exists(By.CssSelector("input[name='Model.ProfilePicture']")).SendKeys(profilePicture.Path);
                 Browser.Exists(By.CssSelector("input[name='Model.Documents']")).SendKeys(file1.Path);
                 Browser.Exists(By.CssSelector("input[name='Model.Documents']")).SendKeys(file2.Path);
+                Browser.Exists(By.CssSelector("input[name='Model.Images']")).SendKeys(file3.Path);
+                Browser.Exists(By.CssSelector("input[name='Model.Images']")).SendKeys(file4.Path);
+                Browser.Exists(By.CssSelector("input[name='Model.Images']")).SendKeys(file5.Path);
                 Browser.Exists(By.CssSelector("input[name='Model.HeaderPhoto']")).SendKeys(headerPhoto.Path);
             }
         };
@@ -1248,8 +1254,9 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
 
         Assert.Equal($"Profile Picture: {profilePicture.Name}", Browser.Exists(By.Id("profile-picture")).Text);
         Assert.Equal("Documents: 2", Browser.Exists(By.Id("documents")).Text);
+        Assert.Equal("Images: 3", Browser.Exists(By.Id("images")).Text);
         Assert.Equal("Header Photo: Model.HeaderPhoto", Browser.Exists(By.Id("header-photo")).Text);
-        Assert.Equal("Total: 4", Browser.Exists(By.Id("form-collection")).Text);
+        Assert.Equal("Total: 7", Browser.Exists(By.Id("form-collection")).Text);
     }
 
     private void DispatchToFormCore(DispatchToForm dispatch)

@@ -14,7 +14,7 @@ internal sealed class FileConverterFactory : IFormDataConverterFactory
     [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
     [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
 #if COMPONENTS
-    public bool CanConvert(Type type, FormDataMapperOptions options) => CanConvertCommon(type) || type == typeof(IBrowserFile);
+    public bool CanConvert(Type type, FormDataMapperOptions options) => CanConvertCommon(type) || type == typeof(IBrowserFile) || type == typeof(IReadOnlyList<IBrowserFile>);
 #else
     public bool CanConvert(Type type, FormDataMapperOptions options) => CanConvertCommon(type);
 #endif
