@@ -1,6 +1,6 @@
 ﻿{
   "author": "Microsoft",
-  "name": "Aplikacja zestawu WebAssembly platformy Blazor",
+  "name": "Blazor WebAssembly Standalone App",
   "description": "Szablon projektu służący do tworzenia aplikacji Blazor działającej na zestawie WebAssembly. Ten szablon może być używany dla aplikacji internetowych z rozbudowanymi, dynamicznymi interfejsami użytkowników.",
   "symbols/Framework/description": "Platforma docelowa dla tego projektu.",
   "symbols/Framework/choices/net8.0/description": "Docelowa platforma net8.0",

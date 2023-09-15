@@ -1,6 +1,6 @@
 ﻿{
   "author": "Майкрософт",
-  "name": "Приложение WebAssembly Blazor",
+  "name": "Blazor WebAssembly Standalone App",
   "description": "Шаблон проекта для создания приложения Blazor, которое запускается в WebAssembly. Этот шаблон можно использовать для веб-приложений с полнофункциональными динамическими пользовательскими интерфейсами.",
   "symbols/Framework/description": "Целевая платформа для проекта.",
   "symbols/Framework/choices/net8.0/description": "Целевая net8.0",

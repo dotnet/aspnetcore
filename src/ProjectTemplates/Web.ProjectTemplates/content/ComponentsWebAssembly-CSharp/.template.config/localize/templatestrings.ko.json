@@ -1,6 +1,6 @@
 ﻿{
   "author": "Microsoft",
-  "name": "Blazor WebAssembly 앱",
+  "name": "Blazor WebAssembly Standalone App",
   "description": "WebAssembly에서 실행되는 Blazor 앱을 만드는 데 사용되는 프로젝트 템플릿입니다. 이 템플릿을 사용하여 다양한 동적 UI(사용자 인터페이스)가 포함된 웹앱을 만들 수 있습니다.",
   "symbols/Framework/description": "프로젝트에 대한 대상 프레임워크입니다.",
   "symbols/Framework/choices/net8.0/description": "대상 net8.0",

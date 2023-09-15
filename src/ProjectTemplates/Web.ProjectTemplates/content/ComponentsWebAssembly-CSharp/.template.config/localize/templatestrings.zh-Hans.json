@@ -1,6 +1,6 @@
 ﻿{
   "author": "Microsoft",
-  "name": "Blazor WebAssembly 应用",
+  "name": "Blazor WebAssembly Standalone App",
   "description": "用于创建在 WebAssembly 上运行的 Blazor 应用的项目模板。此模板可用于具有丰富动态用户界面(UI)的 Web 应用。",
   "symbols/Framework/description": "项目的目标框架。",
   "symbols/Framework/choices/net8.0/description": "目标 net8.0",
