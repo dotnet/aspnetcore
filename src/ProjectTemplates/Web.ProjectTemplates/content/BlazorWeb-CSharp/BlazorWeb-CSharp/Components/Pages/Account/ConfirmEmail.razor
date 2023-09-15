@@ -1,0 +1,48 @@
+﻿@page "/Account/ConfirmEmail"
+
+@using System.Text
+@using BlazorWeb_CSharp.Data
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.WebUtilities
+
+@inject UserManager<ApplicationUser> UserManager
+@inject NavigationManager NavigationManager
+
+<PageTitle>Confirm email</PageTitle>
+
+<h1>Confirm email</h1>
+<StatusMessage Message="@statusMessage" />
+
+@code {
+    string? statusMessage;
+
+    [SupplyParameterFromQuery]
+    public string? UserId { get; set; }
+
+    [SupplyParameterFromQuery]
+    public string? Code { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (UserId == null || Code == null)
+        {
+            NavigationManager.NavigateTo("/");
+        }
+        else
+        {
+            var user = await UserManager.FindByIdAsync(UserId);
+            if (user == null)
+            {
+                // Need a way to trigger a 404 from Blazor: https://github.com/dotnet/aspnetcore/issues/45654
+                statusMessage = $"Error loading user with ID {UserId}";
+            }
+            else
+            {
+
+                var code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(Code));
+                var result = await UserManager.ConfirmEmailAsync(user, code);
+                statusMessage = result.Succeeded ? "Thank you for confirming your email." : "Error confirming your email.";
+            }
+        }
+    }
+}

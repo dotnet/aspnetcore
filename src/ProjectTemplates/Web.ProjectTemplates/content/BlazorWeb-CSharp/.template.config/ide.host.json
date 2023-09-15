@@ -21,6 +21,12 @@
       "persistenceScopeName": "Microsoft"
     },
     {
+      "id": "auth",
+      "isVisible": true,
+      "defaultValue": "None",
+      "persistenceScope": "templateGroup"
+    },
+    {
       "id": "UseProgramMain",
       "isVisible": true,
       "persistenceScope": "shared",

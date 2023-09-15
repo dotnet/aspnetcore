@@ -1,0 +1,12 @@
+﻿@if (!String.IsNullOrEmpty(Message))
+{
+    var statusMessageClass = Message.StartsWith("Error") ? "danger" : "success";
+    <div class="alert alert-@statusMessageClass alert-dismissible" role="alert">
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        @Message
+    </div>
+}
+
+@code {
+    [Parameter] public string? Message { get; set; }
+}
