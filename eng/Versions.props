@@ -140,14 +140,14 @@
     <MicrosoftExtensionsTelemetryTestingVersion>8.0.0-rc.2.23463.6</MicrosoftExtensionsTelemetryTestingVersion>
     <MicrosoftExtensionsTimeProviderTestingVersion>8.0.0-rc.2.23463.6</MicrosoftExtensionsTimeProviderTestingVersion>
     <!-- Packages from dotnet/efcore -->
-    <dotnetefVersion>8.0.0-rc.2.23464.8</dotnetefVersion>
-    <MicrosoftEntityFrameworkCoreInMemoryVersion>8.0.0-rc.2.23464.8</MicrosoftEntityFrameworkCoreInMemoryVersion>
-    <MicrosoftEntityFrameworkCoreRelationalVersion>8.0.0-rc.2.23464.8</MicrosoftEntityFrameworkCoreRelationalVersion>
-    <MicrosoftEntityFrameworkCoreSqliteVersion>8.0.0-rc.2.23464.8</MicrosoftEntityFrameworkCoreSqliteVersion>
-    <MicrosoftEntityFrameworkCoreSqlServerVersion>8.0.0-rc.2.23464.8</MicrosoftEntityFrameworkCoreSqlServerVersion>
-    <MicrosoftEntityFrameworkCoreToolsVersion>8.0.0-rc.2.23464.8</MicrosoftEntityFrameworkCoreToolsVersion>
-    <MicrosoftEntityFrameworkCoreVersion>8.0.0-rc.2.23464.8</MicrosoftEntityFrameworkCoreVersion>
-    <MicrosoftEntityFrameworkCoreDesignVersion>8.0.0-rc.2.23464.8</MicrosoftEntityFrameworkCoreDesignVersion>
+    <dotnetefVersion>8.0.0-rc.2.23464.12</dotnetefVersion>
+    <MicrosoftEntityFrameworkCoreInMemoryVersion>8.0.0-rc.2.23464.12</MicrosoftEntityFrameworkCoreInMemoryVersion>
+    <MicrosoftEntityFrameworkCoreRelationalVersion>8.0.0-rc.2.23464.12</MicrosoftEntityFrameworkCoreRelationalVersion>
+    <MicrosoftEntityFrameworkCoreSqliteVersion>8.0.0-rc.2.23464.12</MicrosoftEntityFrameworkCoreSqliteVersion>
+    <MicrosoftEntityFrameworkCoreSqlServerVersion>8.0.0-rc.2.23464.12</MicrosoftEntityFrameworkCoreSqlServerVersion>
+    <MicrosoftEntityFrameworkCoreToolsVersion>8.0.0-rc.2.23464.12</MicrosoftEntityFrameworkCoreToolsVersion>
+    <MicrosoftEntityFrameworkCoreVersion>8.0.0-rc.2.23464.12</MicrosoftEntityFrameworkCoreVersion>
+    <MicrosoftEntityFrameworkCoreDesignVersion>8.0.0-rc.2.23464.12</MicrosoftEntityFrameworkCoreDesignVersion>
     <!-- Packages from dotnet/roslyn -->
     <MicrosoftCodeAnalysisCommonVersion>4.7.0-3.23314.3</MicrosoftCodeAnalysisCommonVersion>
     <MicrosoftCodeAnalysisExternalAccessAspNetCoreVersion>4.7.0-3.23314.3</MicrosoftCodeAnalysisExternalAccessAspNetCoreVersion>
