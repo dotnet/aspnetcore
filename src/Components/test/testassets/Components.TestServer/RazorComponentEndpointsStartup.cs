@@ -60,10 +60,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
                 endpoints.MapRazorComponents<TRootComponent>()
                     .AddAdditionalAssemblies(Assembly.Load("Components.WasmMinimal"))
                     .AddServerRenderMode()
-                    .AddWebAssemblyRenderMode(new WebAssemblyComponentsEndpointOptions
-                    {
-                        PathPrefix = "/WasmMinimal"
-                    });
+                    .AddWebAssemblyRenderMode(options => options.PathPrefix = "/WasmMinimal");
 
                 NotEnabledStreamingRenderingComponent.MapEndpoints(endpoints);
                 StreamingRenderingForm.MapEndpoints(endpoints);

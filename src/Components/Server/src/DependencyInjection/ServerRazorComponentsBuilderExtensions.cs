@@ -45,19 +45,24 @@ public static class ServerRazorComponentsBuilderExtensions
         public IServiceCollection Services { get; }
     }
 
-    private class CircuitEndpointProvider : RenderModeEndpointProvider
+    private class CircuitEndpointProvider(IServiceProvider services) : RenderModeEndpointProvider
     {
-        public CircuitEndpointProvider(IServiceProvider services)
-        {
-            Services = services;
-        }
-
-        public IServiceProvider Services { get; }
+        public IServiceProvider Services { get; } = services;
 
         public override IEnumerable<RouteEndpointBuilder> GetEndpointBuilders(
             IComponentRenderMode renderMode,
             IApplicationBuilder applicationBuilder)
         {
+            if (renderMode is not InternalServerRenderMode)
+            {
+                if (renderMode is ServerRenderMode)
+                {
+                    throw new InvalidOperationException("Invalid render mode. Use AddServerRenderMode() to configure the Server render mode.");
+                }
+
+                return Array.Empty<RouteEndpointBuilder>();
+            }
+
             var endpointRouteBuilder = new EndpointRouteBuilder(Services, applicationBuilder);
             endpointRouteBuilder.MapBlazorHub();
 

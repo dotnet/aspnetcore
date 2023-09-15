@@ -2,10 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 
-internal static class FormDataMapper
+internal static partial class FormDataMapper
 {
     [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
     [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
@@ -13,20 +14,35 @@ internal static class FormDataMapper
         FormDataReader reader,
         FormDataMapperOptions options)
     {
+        FormDataConverter<T>? converter;
         try
         {
-            var converter = options.ResolveConverter<T>();
-            if (converter.TryRead(ref reader, typeof(T), options, out var result, out _))
+            converter = options.ResolveConverter<T>();
+            if (converter == null)
             {
-                return result;
+                Log.CannotResolveConverter(options.Logger, typeof(T), null);
+                return default;
             }
+        }
+        catch (Exception ex)
+        {
+            Log.CannotResolveConverter(options.Logger, typeof(T), ex);
+            return default;
+        }
 
-            // Always return the result, even if it has failures. This is because we do not want
-            // to loose the data that we were able to deserialize.
+        if (converter.TryRead(ref reader, typeof(T), options, out var result, out _))
+        {
             return result;
         }
-        finally
-        {
-        }
+
+        // Always return the result, even if it has failures. This is because we do not want
+        // to loose the data that we were able to deserialize.
+        return result;
+    }
+
+    private static partial class Log
+    {
+        [LoggerMessage(1, LogLevel.Warning, "Cannot resolve converter for type '{Type}'.", EventName = "CannotResolveConverter")]
+        public static partial void CannotResolveConverter(ILogger logger, Type type, Exception? ex);
     }
 }

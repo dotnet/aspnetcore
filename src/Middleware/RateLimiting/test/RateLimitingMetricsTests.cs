@@ -14,7 +14,7 @@ using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Telemetry.Testing.Metering;
+using Microsoft.Extensions.Telemetry.Testing.Metrics;
 using Moq;
 
 namespace Microsoft.AspNetCore.RateLimiting;
