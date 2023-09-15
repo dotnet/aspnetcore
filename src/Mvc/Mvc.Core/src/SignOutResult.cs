@@ -111,7 +111,7 @@ public partial class SignOutResult : ActionResult, IResult
         }
 
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
-        var logger = loggerFactory.CreateLogger<SignOutResult>();
+        var logger = loggerFactory.CreateLogger(typeof(SignOutResult));
         Log.SignOutResultExecuting(logger, AuthenticationSchemes);
 
         if (AuthenticationSchemes.Count == 0)

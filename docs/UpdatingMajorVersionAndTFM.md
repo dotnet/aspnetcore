@@ -15,7 +15,6 @@ Typically, we will update the Major Version before updating the TFM. This is bec
   2. Change `PreReleaseVersionIteration` to `1`.
   3. Change `PreReleaseVersionLabel` to `alpha`.
   4. Change `PreReleaseBrandingLabel` to `Alpha $(PreReleaseVersionIteration)`.
-* In [src/Framework/test/TestData.cs](/src/Framework/test/TestData.cs), update `ListedTargetingPackAssemblies` by incrementing the AssemblyVersion of all aspnetcore assemblies by 1 major version. Once dotnet/runtime updates their AssemblyVersions, we also need to update those in this file. They typically make that change at the same time as their TFM update, but we change our AssemblyVersions as soon as we update branding.
 * Add entries to [NuGet.config](/NuGet.config) for the new Major Version's feed. This just means copying the current feeds (e.g. `dotnet8` and `dotnet8-transport`) and adding entries for the new feeds (`dotnet9` and `dotnet9-transport`). Make an effort to remove old feeds here at the same time.
 * In [src/ProjectTemplates/Shared/TemplatePackageInstaller.cs](/src/ProjectTemplates/Shared/TemplatePackageInstaller.cs), add an entry to `_templatePackages` for `Microsoft.DotNet.Web.ProjectTemplates` matching the new version.
 * In [eng/targets/CSharp.Common.props](/eng/targets/CSharp.Common.props) for the previous release branch, modify the `<LangVersion>` to be a hardcoded version instead of `preview`. (e.g. If main is being updated to 8.0.0 modify the `<LangVersion>` in the release/7.0 branch). See https://learn.microsoft.com/dotnet/csharp/language-reference/configure-language-version#defaults to find what language version to use.
@@ -24,6 +23,7 @@ Typically, we will update the Major Version before updating the TFM. This is bec
     * The result of `.\eng\scripts\mark-shipped.cmd` should be checked in to the release branch as well, as part of the RTM release.
 * Update `.\eng\Baseline.xml` to reflect the set of RTM packages that were just shipped. Then, `dotnet run` `.\eng\tools\BaselineGenerator\BaselineGenerator.csproj`, which will update `.\eng\Baseline.Designer.props`. If RTM hasn't shipped yet, do this in a separate PR once it has.
 * Update `.\eng\PlatformManifest.txt` and `.\eng\PackageOverrides.txt`. Download the just released RTM version of the `Microsoft.AspNetCore.App.Ref` package, and copy over the files from the `data` folder. This can be done in the same PR as the one updating `.\eng\Baseline.xml` and `.\eng\Baseline.Designer.props` (see https://github.com/dotnet/aspnetcore/pull/49269).
+* Update [helix-matrix.yml](https://github.com/dotnet/aspnetcore/blob/436556163a671259c8b14ae1c90d72767af62d18/.azure/pipelines/helix-matrix.yml#L12-L16) to list the currently active release branches
 
 ### Validation
 

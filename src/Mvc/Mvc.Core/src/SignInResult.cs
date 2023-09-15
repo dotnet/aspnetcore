@@ -81,7 +81,7 @@ public partial class SignInResult : ActionResult
 
         var httpContext = context.HttpContext;
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
-        var logger = loggerFactory.CreateLogger<SignInResult>();
+        var logger = loggerFactory.CreateLogger(typeof(SignInResult));
         Log.SignInResultExecuting(logger, AuthenticationScheme, Principal);
 
         return httpContext.SignInAsync(AuthenticationScheme, Principal, Properties);
