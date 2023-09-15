@@ -183,6 +183,7 @@ public sealed class WebAssemblyHost : IAsyncDisposable
             });
 
             await initializationTcs.Task;
+            store.ExistingState.Clear();
 
             await tcs.Task;
         }

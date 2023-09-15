@@ -22,7 +22,7 @@ import { sendJSDataStream } from './CircuitStreamingInterop';
 export class CircuitManager implements DotNet.DotNetCallDispatcher {
   private readonly _componentManager: RootComponentManager<ServerComponentDescriptor>;
 
-  private _applicationState: string = '';
+  private readonly _applicationState: string;
 
   private readonly _options: CircuitStartOptions;
 
@@ -46,19 +46,17 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
   public constructor(
     componentManager: RootComponentManager<ServerComponentDescriptor>,
+    appState: string,
     options: CircuitStartOptions,
     logger: ConsoleLogger,
   ) {
     this._circuitId = undefined;
+    this._applicationState = appState;
     this._componentManager = componentManager;
     this._options = options;
     this._logger = logger;
     this._renderQueue = new RenderQueue(this._logger);
     this._dispatcher = DotNet.attachDispatcher(this);
-  }
-
-  public setApplicationState(appState: string) {
-    this._applicationState = appState;
   }
 
   public start(): Promise<boolean> {

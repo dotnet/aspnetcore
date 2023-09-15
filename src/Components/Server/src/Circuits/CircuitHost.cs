@@ -96,7 +96,7 @@ internal partial class CircuitHost : IAsyncDisposable
 
     // InitializeAsync is used in a fire-and-forget context, so it's responsible for its own
     // error handling.
-    public Task InitializeAsync(CancellationToken cancellationToken)
+    public Task InitializeAsync(ProtectedPrerenderComponentApplicationStore store, CancellationToken cancellationToken)
     {
         Log.InitializationStarted(_logger);
 
@@ -126,6 +126,11 @@ internal partial class CircuitHost : IAsyncDisposable
 
                 // Now we wait for all components to finish rendering.
                 await Task.WhenAll(pendingRenders);
+
+                // At this point all components have successfully produced an initial render and we can clear the contents of the component
+                // application state store. This ensures the memory that was not used during the initial render of these components gets
+                // reclaimed since no-one else is holding on to it any longer.
+                store.ExistingState.Clear();
 
                 Log.InitializationSucceeded(_logger);
             }

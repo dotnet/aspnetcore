@@ -121,6 +121,8 @@ export async function startWebAssembly(components: RootComponentManager<WebAssem
     getParameterValues: (id) => componentAttacher.getParameterValues(id) || '',
   };
 
+  Blazor._internal.getPersistedState = () => discoverWebAssemblyPersistedState(document) || ''
+
   Blazor._internal.attachRootComponentToElement = (selector, componentId, rendererId: any) => {
     const element = componentAttacher.resolveRegisteredElement(selector, componentId);
     if (!element) {
@@ -137,8 +139,6 @@ export async function startWebAssembly(components: RootComponentManager<WebAssem
   } catch (ex) {
     throw new Error(`Failed to start platform. Reason: ${ex}`);
   }
-
-  Blazor._internal.getPersistedState = () => discoverWebAssemblyPersistedState(document) || '';;
 
   // Start up the application
   platform.callEntryPoint();
