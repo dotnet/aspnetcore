@@ -42,5 +42,5 @@
       <_Parameter2 Condition="'$(IsHelixJob)' == 'true'">..\BasicTestApp</_Parameter2>
     </AssemblyAttribute>
   </ItemGroup>
-
+  
 </Project>

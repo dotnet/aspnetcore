@@ -1,0 +1,24 @@
+﻿@page "/persist-wasm-state"
+@attribute [RenderModeWebAssembly]
+
+<p>WebAssembly Persist State Component</p>
+
+@if (!destroyAndRecreate)
+{
+    <TestContentPackage.PersistStateComponent KeyName="wasm" />
+}
+else
+{
+    <TestContentPackage.PersistStateComponent KeyName="wasm" />
+}
+
+<button id="destroy-and-recreate" @onclick="DestroyAndRecreate">Destroy and recreate</button>
+
+@code {
+    private bool destroyAndRecreate = false;
+
+    private void DestroyAndRecreate()
+    {
+        destroyAndRecreate = true;
+    }
+}

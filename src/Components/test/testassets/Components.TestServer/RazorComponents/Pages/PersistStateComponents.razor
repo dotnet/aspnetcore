@@ -2,22 +2,19 @@
 
 <h1>Persist State Components</h1>
 
-@if (Server.HasValue)
-{
+@if (Server.HasValue && Server.Value) {
     <strong>Server Persist State Component</strong>
     <TestContentPackage.PersistStateComponent KeyName="server" @rendermode="@(new ServerRenderMode(true))" />
     <hr />
 }
 
-@if (WebAssembly.HasValue)
-{
+@if (WebAssembly.HasValue && WebAssembly.Value) {
     <strong>WebAssembly Persist State Component</strong>
     <TestContentPackage.PersistStateComponent KeyName="wasm" @rendermode="@(new WebAssemblyRenderMode(true))" />
     <hr />
 }
 
-@if (Auto.HasValue)
-{
+@if (Auto.HasValue && Auto.Value) {
     <strong>Auto Persist State Component</strong>
     <TestContentPackage.PersistStateComponent KeyName="auto" @rendermode="@(new AutoRenderMode(true))" />
     <hr />

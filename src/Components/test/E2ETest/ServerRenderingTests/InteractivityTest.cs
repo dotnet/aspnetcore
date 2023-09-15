@@ -902,6 +902,30 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-auto")).Text);
     }
 
+    [Fact]
+    public void CanPersistPrerenderedState_ServerPrerenderedStateAvailableOnlyOnFirstRender()
+    {
+        Navigate($"{ServerPathBase}/persist-server-state");
+
+        Browser.Equal("restored", () => Browser.FindElement(By.Id("server")).Text);
+
+        Browser.Click(By.Id("destroy-and-recreate"));
+
+        Browser.Equal("not restored", () => Browser.FindElement(By.Id("server")).Text);
+    }
+
+    [Fact]
+    public void CanPersistPrerenderedState_WebAssemblyPrerenderedStateAvailableOnlyOnFirstRender()
+    {
+        Navigate($"{ServerPathBase}/persist-wasm-state");
+
+        Browser.Equal("restored", () => Browser.FindElement(By.Id("wasm")).Text);
+
+        Browser.Click(By.Id("destroy-and-recreate"));
+
+        Browser.Equal("not restored", () => Browser.FindElement(By.Id("wasm")).Text);
+    }
+
     private void BlockWebAssemblyResourceLoad()
     {
         ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('block-load-boot-resource', 'true')");
