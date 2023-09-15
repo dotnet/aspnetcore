@@ -5,19 +5,35 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <base href="/" />
-    @*#if (SampleContent) -->
+    @*#if (SampleContent)
     <link rel="stylesheet" href="bootstrap/bootstrap.min.css" />
     ##endif*@
     <link rel="stylesheet" href="app.css" />
     <link rel="stylesheet" href="BlazorWeb-CSharp.styles.css" />
-    @*#if (SampleContent) -->
+    @*#if (SampleContent)
     <link rel="icon" type="image/png" href="favicon.png" />
     ##endif*@
+    @*#if (!InteractiveAtRoot)
     <HeadOutlet />
+    ##elseif (UseServer && UseWebAssembly)
+    <HeadOutlet @rendermode="@RenderMode.InteractiveAuto" />
+    ##elseif (UseServer)
+    <HeadOutlet @rendermode="@RenderMode.InteractiveServer" />
+    ##else
+    <HeadOutlet @rendermode="@RenderMode.InteractiveWebAssembly" />
+    ##endif*@
 </head>
 
 <body>
+    @*#if (!InteractiveAtRoot)
     <Routes />
+    ##elseif (UseServer && UseWebAssembly) -->
+    <Routes @rendermode="@RenderMode.InteractiveAuto" />
+    ##elseif (UseServer)
+    <Routes @rendermode="@RenderMode.InteractiveServer" />
+    ##else
+    <Routes @rendermode="@RenderMode.InteractiveWebAssembly" />
+    ##endif*@
     <script src="_framework/blazor.web.js"></script>
 </body>
 
