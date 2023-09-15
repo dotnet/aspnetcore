@@ -11,6 +11,7 @@ const nonBubblingEvents = toLookup([
   'canplay',
   'canplaythrough',
   'change',
+  'close',
   'cuechange',
   'durationchange',
   'emptied',
