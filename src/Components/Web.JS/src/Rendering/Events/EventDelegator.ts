@@ -8,6 +8,7 @@ import { dispatchEvent } from '../WebRendererInteropMethods';
 const nonBubblingEvents = toLookup([
   'abort',
   'blur',
+  'cancel',
   'canplay',
   'canplaythrough',
   'change',

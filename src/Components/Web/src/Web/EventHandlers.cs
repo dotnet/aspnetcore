@@ -126,7 +126,8 @@ namespace Microsoft.AspNetCore.Components.Web;
 [EventHandler("ontoggle", typeof(EventArgs), true, true)]
 
 // <dialog>
-[EventHandler("onclose", typeof(EventArgs), true, true)]
+[EventHandler("oncancel", typeof(EventArgs), false, true)]
+[EventHandler("onclose", typeof(EventArgs), false, true)]
 public static class EventHandlers
 {
 }
