@@ -186,6 +186,23 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     }
 
     [Fact]
+    public void Close_CanTrigger()
+    {
+        Browser.MountTestComponent<CloseEventComponent>();
+
+        var dialogClose = Browser.Exists(By.Id("dialog-close"));
+
+        var output = Browser.Exists(By.Id("output"));
+        Assert.Equal(string.Empty, output.Text);
+
+        // Click
+        var actions = new Actions(Browser).Click(dialogClose);
+
+        actions.Perform();
+        Browser.Equal("onclose,", () => output.Text);
+    }
+
+    [Fact]
     public void PointerDown_CanTrigger()
     {
         Browser.MountTestComponent<MouseEventComponent>();
