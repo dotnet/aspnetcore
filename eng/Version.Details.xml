@@ -334,7 +334,7 @@
       <Sha>9a1c3e1b7f0c8763d4c96e593961a61a72679a7b</Sha>
       <SourceBuild RepoName="xdt" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="8.0.0-alpha.1.23461.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="8.0.0-alpha.1.23462.1">
       <Uri>https://github.com/dotnet/source-build-reference-packages</Uri>
       <Sha>264d80ed1ee84b458328b2df68f9930deac08bff</Sha>
       <SourceBuild RepoName="source-build-reference-packages" ManagedOnly="true" />
@@ -396,6 +396,10 @@
     <Dependency Name="Microsoft.Extensions.Telemetry.Testing" Version="8.0.0-rc.2.23463.6">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>3d37cefe219c12c2185a710531016cbaffb7996b</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.Extensions.TimeProvider.Testing" Version="8.0.0-rc.2.23461.3">
+      <Uri>https://github.com/dotnet/extensions</Uri>
+      <Sha>7c6fa3e84ea0b3d08998726c7cac30e3117ed318</Sha>
     </Dependency>
     <Dependency Name="NuGet.Frameworks" Version="6.2.4">
       <Uri>https://github.com/nuget/nuget.client</Uri>

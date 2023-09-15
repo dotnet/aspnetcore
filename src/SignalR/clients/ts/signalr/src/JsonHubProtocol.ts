@@ -15,7 +15,7 @@ export class JsonHubProtocol implements IHubProtocol {
     /** @inheritDoc */
     public readonly name: string = JSON_HUB_PROTOCOL_NAME;
     /** @inheritDoc */
-    public readonly version: number = 1;
+    public readonly version: number = 2;
 
     /** @inheritDoc */
     public readonly transferFormat: TransferFormat = TransferFormat.Text;
