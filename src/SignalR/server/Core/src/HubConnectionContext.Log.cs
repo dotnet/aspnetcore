@@ -38,5 +38,8 @@ public partial class HubConnectionContext
 
         [LoggerMessage(10, LogLevel.Debug, "The maximum message size of {MaxMessageSize}B was exceeded while parsing the Handshake. The message size can be configured in AddHubOptions.", EventName = "HandshakeSizeLimitExceeded")]
         public static partial void HandshakeSizeLimitExceeded(ILogger logger, long maxMessageSize);
+
+        [LoggerMessage(11, LogLevel.Debug, "HubProtocol '{Protocol} v{Version}' does not support Stateful Reconnect. Disabling the feature.", EventName = "DisablingReconnect")]
+        public static partial void DisablingReconnect(ILogger logger, string protocol, int version);
     }
 }
