@@ -137,8 +137,8 @@
     <SystemIOHashingVersion>8.0.0-rc.2.23463.10</SystemIOHashingVersion>
     <SystemRuntimeCachingVersion>8.0.0-rc.2.23463.10</SystemRuntimeCachingVersion>
     <!-- Packages from dotnet/extensions -->
-    <MicrosoftExtensionsTelemetryTestingVersion>8.0.0-rc.2.23464.5</MicrosoftExtensionsTelemetryTestingVersion>
-    <MicrosoftExtensionsTimeProviderTestingVersion>8.0.0-rc.2.23464.5</MicrosoftExtensionsTimeProviderTestingVersion>
+    <MicrosoftExtensionsTelemetryTestingVersion>8.0.0-rc.2.23465.4</MicrosoftExtensionsTelemetryTestingVersion>
+    <MicrosoftExtensionsTimeProviderTestingVersion>8.0.0-rc.2.23465.4</MicrosoftExtensionsTimeProviderTestingVersion>
     <!-- Packages from dotnet/efcore -->
     <dotnetefVersion>8.0.0-rc.2.23466.1</dotnetefVersion>
     <MicrosoftEntityFrameworkCoreInMemoryVersion>8.0.0-rc.2.23466.1</MicrosoftEntityFrameworkCoreInMemoryVersion>
