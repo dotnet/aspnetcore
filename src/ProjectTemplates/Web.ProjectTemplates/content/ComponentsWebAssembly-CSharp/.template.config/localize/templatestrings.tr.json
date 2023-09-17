@@ -1,6 +1,6 @@
 ﻿{
   "author": "Microsoft",
-  "name": "Blazor WebAssembly Standalone App",
+  "name": "Blazor WebAssembly Tek Başına Uygulaması",
   "description": "WebAssembly üzerinde çalışan bir Blazor uygulaması oluşturmaya yönelik proje şablonu. Bu şablon, zengin dinamik kullanıcı arabirimlerine (UI) sahip web uygulamaları için kullanılabilir.",
   "symbols/Framework/description": "Projenin hedef çerçevesi.",
   "symbols/Framework/choices/net8.0/description": "Hedef net8.0",

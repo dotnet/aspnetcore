@@ -1,6 +1,6 @@
 ﻿{
   "author": "Microsoft",
-  "name": "Blazor WebAssembly Standalone App",
+  "name": "Blazor WebAssembly スタンドアロン アプリ",
   "description": "WebAssembly で実行される Blazor アプリを作成するためのプロジェクト テンプレート。このテンプレートは、高度でダイナミックなユーザー インターフェイス (UI) を備えた Web アプリに使用できます。",
   "symbols/Framework/description": "プロジェクトのターゲット フレームワークです。",
   "symbols/Framework/choices/net8.0/description": "ターゲット net8.0",
