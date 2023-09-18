@@ -5,12 +5,14 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Tools.Internal;
 using Xunit.Abstractions;
 
 namespace Microsoft.Extensions.ApiDescription.Client;
 
+[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/50662")]
 public class TargetTest : IDisposable
 {
     private static Assembly _assembly = typeof(TargetTest).Assembly;
