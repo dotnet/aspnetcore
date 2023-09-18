@@ -38,6 +38,8 @@
     <KnownFrameworkReference Update="Microsoft.NETCore.App">
       <LatestRuntimeFrameworkVersion
           Condition=" '%(TargetFramework)' == '$(TargetFramework)' ">$(MicrosoftNETCoreAppRuntimeVersion)</LatestRuntimeFrameworkVersion>
+      <TargetingPackVersion
+          Condition=" '%(TargetFramework)' == '$(TargetFramework)' ">$(MicrosoftNETCoreAppRefVersion)</TargetingPackVersion>
       <!--
         Change the default shared framework version only when _not_ servicing. Avoid bumping version used in most
         projects. When servicing, projects (Microsoft.AspNetCore.App.Runtime in particular) can use
