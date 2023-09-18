@@ -9,7 +9,9 @@
     <IsPackable>false</IsPackable>
     <IsTrimmable>true</IsTrimmable>
     <EnableRequestDelegateGenerator>true</EnableRequestDelegateGenerator>
+    <!-- TODO: Remove InterceptorsPreview feature after 8.0 RC2 SDK is used for build -->
     <Features>$(Features);InterceptorsPreview</Features>
+    <InterceptorsPreviewNamespaces>$(InterceptorsPreviewNamespaces);Microsoft.AspNetCore.Http.Generated</InterceptorsPreviewNamespaces>
   </PropertyGroup>
 
   <ItemGroup>
