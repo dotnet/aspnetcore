@@ -1,6 +1,7 @@
 using BlazorWeb_CSharp.Client;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 
@@ -35,11 +36,17 @@ public class PersistingAuthenticationStateProvider : AuthenticationStateProvider
             }
 
             return Task.CompletedTask;
-        });
+        #if (UseServer && UseWebAssembly)
+        }, RenderMode.InteractiveAuto);
+        #elif (UseServer)
+        }, RenderMode.InteractiveServer);
+        #elif (UseWebAssembly)
+        }, RenderMode.InteractiveWebAssembly);
+        #endif
     }
 
-    private HttpContext RequiredHttpContext => 
-        _contextAccessor.HttpContext ?? throw new InvalidOperationException("IHttpContextAccessor HttpContext AsyncLocal missing!"); 
+    private HttpContext RequiredHttpContext =>
+        _contextAccessor.HttpContext ?? throw new InvalidOperationException("IHttpContextAccessor HttpContext AsyncLocal missing!");
 
     public override Task<AuthenticationState> GetAuthenticationStateAsync() =>
         Task.FromResult(new AuthenticationState(RequiredHttpContext.User));
