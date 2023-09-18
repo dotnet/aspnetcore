@@ -65,9 +65,9 @@ internal partial class EndpointHtmlRenderer
         {
             var currentInvocation = mode switch
             {
-                ServerRenderMode => InvokedRenderModes.Mode.Server,
-                WebAssemblyRenderMode => InvokedRenderModes.Mode.WebAssembly,
-                AutoRenderMode => throw new NotImplementedException("TODO: To be able to support AutoRenderMode, we have to serialize persisted state in both WebAssembly and Server formats, or unify the two formats."),
+                InteractiveServerRenderMode => InvokedRenderModes.Mode.Server,
+                InteractiveWebAssemblyRenderMode => InvokedRenderModes.Mode.WebAssembly,
+                InteractiveAutoRenderMode => throw new NotImplementedException("TODO: To be able to support InteractiveAutoRenderMode, we have to serialize persisted state in both WebAssembly and Server formats, or unify the two formats."),
                 _ => throw new ArgumentException(Resources.FormatUnsupportedRenderMode(mode), nameof(mode)),
             };
 
@@ -88,9 +88,9 @@ internal partial class EndpointHtmlRenderer
 
     private static bool ModeEnablesPrerendering(IComponentRenderMode? mode) => mode switch
     {
-        ServerRenderMode { Prerender: true } => true,
-        WebAssemblyRenderMode { Prerender: true } => true,
-        AutoRenderMode { Prerender: true } => true,
+        InteractiveServerRenderMode { Prerender: true } => true,
+        InteractiveWebAssemblyRenderMode { Prerender: true } => true,
+        InteractiveAutoRenderMode { Prerender: true } => true,
         _ => false
     };
 

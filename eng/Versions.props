@@ -108,6 +108,7 @@
     <MicrosoftExtensionsOptionsVersion>8.0.0-rc.2.23457.7</MicrosoftExtensionsOptionsVersion>
     <MicrosoftExtensionsPrimitivesVersion>8.0.0-rc.2.23457.7</MicrosoftExtensionsPrimitivesVersion>
     <MicrosoftInternalRuntimeAspNetCoreTransportVersion>8.0.0-rc.2.23457.7</MicrosoftInternalRuntimeAspNetCoreTransportVersion>
+    <MicrosoftSourceBuildIntermediateruntimelinuxx64Version>8.0.0-rc.2.23457.7</MicrosoftSourceBuildIntermediateruntimelinuxx64Version>
     <SystemConfigurationConfigurationManagerVersion>8.0.0-rc.2.23457.7</SystemConfigurationConfigurationManagerVersion>
     <SystemDiagnosticsDiagnosticSourceVersion>8.0.0-rc.2.23457.7</SystemDiagnosticsDiagnosticSourceVersion>
     <SystemDiagnosticsEventLogVersion>8.0.0-rc.2.23457.7</SystemDiagnosticsEventLogVersion>
@@ -127,7 +128,6 @@
     <SystemThreadingAccessControlVersion>8.0.0-rc.2.23457.7</SystemThreadingAccessControlVersion>
     <SystemThreadingChannelsVersion>8.0.0-rc.2.23457.7</SystemThreadingChannelsVersion>
     <SystemThreadingRateLimitingVersion>8.0.0-rc.2.23457.7</SystemThreadingRateLimitingVersion>
-    <MicrosoftSourceBuildIntermediateruntimelinuxx64Version>8.0.0-rc.2.23457.7</MicrosoftSourceBuildIntermediateruntimelinuxx64Version>
     <!-- Only listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
     <MicrosoftNETCorePlatformsVersion>8.0.0-rc.2.23457.7</MicrosoftNETCorePlatformsVersion>
     <MicrosoftBclAsyncInterfacesVersion>8.0.0-rc.2.23457.7</MicrosoftBclAsyncInterfacesVersion>

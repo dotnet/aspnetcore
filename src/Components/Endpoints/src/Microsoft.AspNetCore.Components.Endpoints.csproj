@@ -10,6 +10,7 @@
     <IsPackable>false</IsPackable>
     <EmbeddedFilesManifestFileName>Microsoft.Extensions.FileProviders.Embedded.Manifest.xml</EmbeddedFilesManifestFileName>
     <Nullable>enable</Nullable>
+    <DefineConstants>$(DefineConstants);COMPONENTS</DefineConstants>
   </PropertyGroup>
 
   <!-- This workaround is required when referencing FileProviders.Embedded as a project -->

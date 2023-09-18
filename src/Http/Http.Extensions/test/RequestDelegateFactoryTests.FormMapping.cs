@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 
@@ -278,7 +280,30 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         var exception = await Assert.ThrowsAsync<BadHttpRequestException>(async () => await requestDelegate(httpContext));
 
         Assert.Equal("The maximum recursion depth of '3' was exceeded for 'Manager.Manager.Manager.Name'.", exception.Message);
+    }
 
+    [Fact]
+    public async Task SupportsFormFileSourcesInDto()
+    {
+        FormFileDto capturedArgument = default;
+        void TestAction([FromForm] FormFileDto args) { capturedArgument = args; };
+        var httpContext = CreateHttpContext();
+        var formFiles = new FormFileCollection
+        {
+            new FormFile(Stream.Null, 0, 10, "file", "file.txt"),
+            new FormFile(Stream.Null, 0, 10, "formFiles", "file-1.txt"),
+            new FormFile(Stream.Null, 0, 10, "formFiles", "file-2.txt"),
+        };
+        httpContext.Request.Form = new FormCollection(new() { { "Description", "A test file" } }, formFiles);
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+        Assert.Equal("A test file", capturedArgument.Description);
+        Assert.Equal(formFiles["file"], capturedArgument.File);
+        Assert.Equal(formFiles.GetFiles("formFiles"), capturedArgument.FormFiles);
+        Assert.Equal(formFiles, capturedArgument.FormFileCollection);
     }
 
     private record TodoRecord(int Id, string Name, bool IsCompleted);
@@ -287,5 +312,14 @@ public partial class RequestDelegateFactoryTests : LoggedTest
     {
         public string Name { get; set; }
         public Employee Manager { get; set; }
+    }
+#nullable enable
+
+    private class FormFileDto
+    {
+        public string Description { get; set; } = String.Empty;
+        public IFormFile? File { get; set; }
+        public IReadOnlyList<IFormFile>? FormFiles { get; set; }
+        public IFormFileCollection? FormFileCollection { get; set; }
     }
 }

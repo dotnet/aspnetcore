@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.FormMapping;
@@ -33,9 +34,17 @@ internal struct FormDataReader : IDisposable
         _prefixBuffer = buffer;
     }
 
+    public FormDataReader(IReadOnlyDictionary<FormKey, StringValues> formCollection, CultureInfo culture, Memory<char> buffer, IFormFileCollection formFileCollection)
+        : this(formCollection, culture, buffer)
+    {
+        FormFileCollection = formFileCollection;
+    }
+
     internal ReadOnlyMemory<char> CurrentPrefix => _currentPrefixBuffer;
 
-    public IFormatProvider Culture { get; internal set; }
+    public IFormatProvider Culture { get; }
+
+    public IFormFileCollection? FormFileCollection { get; internal set; }
 
     public int MaxRecursionDepth { get; set; } = 64;
 
