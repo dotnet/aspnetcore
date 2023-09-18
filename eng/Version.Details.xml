@@ -313,11 +313,11 @@
     -->
     <Dependency Name="Microsoft.NETCore.App.Runtime.win-x64" Version="8.0.0-rc.2.23464.16">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>9cdbc87dadbf358206f20f17fed005cdcb253452</Sha>
+      <Sha>da3500bb02343b1d0424c74ccdddbc592b5b3f4f</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.runtime.linux-x64" Version="8.0.0-rc.2.23464.16">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.runtime.linux-x64" Version="8.0.0-rc.2.23457.7">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>9cdbc87dadbf358206f20f17fed005cdcb253452</Sha>
+      <Sha>da3500bb02343b1d0424c74ccdddbc592b5b3f4f</Sha>
       <SourceBuild RepoName="runtime" ManagedOnly="false" />
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Runtime.AOT.win-x64.Cross.browser-wasm" Version="8.0.0-rc.2.23464.16">
