@@ -23,7 +23,9 @@ internal sealed class ComplexTypeExpressionConverterFactory<T>(FormDataMetadataF
     [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
     private CompiledComplexTypeConverter<T>.ConverterDelegate CreateConverterBody(Type type, FormDataMapperOptions options)
     {
-        var metadata = factory.GetOrCreateMetadataFor(type, options);
+        var metadata = factory.GetOrCreateMetadataFor(type, options) ??
+            throw new InvalidOperationException($"Could not resolve metadata for type '{type.FullName}'.");
+
         var properties = metadata.Properties;
         var constructorParameters = metadata.ConstructorParameters;
 

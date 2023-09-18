@@ -14,12 +14,24 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.OutputCaching.Tests;
 
-public class OutputCacheMiddlewareTests
+public class OutputCacheMiddlewareTests_SimpleStore : OutputCacheMiddlewareTests
 {
+    public override ITestOutputCacheStore GetStore() => new SimpleTestOutputCache();
+}
+
+public class OutputCacheMiddlewareTests_BufferStore : OutputCacheMiddlewareTests
+{
+    public override ITestOutputCacheStore GetStore() => new BufferTestOutputCache();
+}
+
+public abstract class OutputCacheMiddlewareTests
+{
+    public abstract ITestOutputCacheStore GetStore();
+
     [Fact]
     public async Task TryServeFromCacheAsync_OnlyIfCached_Serves504()
     {
-        var cache = new TestOutputCache();
+        var cache = GetStore();
         var sink = new TestSink();
         var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache, keyProvider: new TestResponseCachingKeyProvider("BaseKey"));
         var context = TestUtils.CreateTestContext(cache: cache);
@@ -39,7 +51,7 @@ public class OutputCacheMiddlewareTests
     [Fact]
     public async Task TryServeFromCacheAsync_CachedResponseNotFound_Fails()
     {
-        var cache = new TestOutputCache();
+        var cache = GetStore();
         var sink = new TestSink();
         var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache, keyProvider: new TestResponseCachingKeyProvider("BaseKey"));
         var context = TestUtils.CreateTestContext(cache: cache);
@@ -55,7 +67,7 @@ public class OutputCacheMiddlewareTests
     [Fact]
     public async Task TryServeFromCacheAsync_CachedResponseFound_Succeeds()
     {
-        var cache = new TestOutputCache();
+        var cache = GetStore();
         var sink = new TestSink();
         var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache, keyProvider: new TestResponseCachingKeyProvider("BaseKey"));
         var context = TestUtils.CreateTestContext(cache: cache);
@@ -83,7 +95,7 @@ public class OutputCacheMiddlewareTests
     [Fact]
     public async Task TryServeFromCacheAsync_CachedResponseFound_OverwritesExistingHeaders()
     {
-        var cache = new TestOutputCache();
+        var cache = GetStore();
         var sink = new TestSink();
         var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache, keyProvider: new TestResponseCachingKeyProvider("BaseKey"));
         var context = TestUtils.CreateTestContext(cache: cache);
@@ -113,7 +125,7 @@ public class OutputCacheMiddlewareTests
     [Fact]
     public async Task TryServeFromCacheAsync_CachedResponseFound_Serves304IfPossible()
     {
-        var cache = new TestOutputCache();
+        var cache = GetStore();
         var sink = new TestSink();
         var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache, keyProvider: new TestResponseCachingKeyProvider("BaseKey"));
         var context = TestUtils.CreateTestContext(cache: cache);
@@ -142,7 +154,7 @@ public class OutputCacheMiddlewareTests
     [Fact]
     public void ContentIsNotModified_NotConditionalRequest_False()
     {
-        var cache = new TestOutputCache();
+        var cache = GetStore();
         var sink = new TestSink();
         var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache);
         var context = TestUtils.CreateTestContext(testSink: sink);
@@ -501,7 +513,7 @@ public class OutputCacheMiddlewareTests
     [MemberData(nameof(NullOrEmptyVaryRules))]
     public void FinalizeCacheHeadersAsync_UpdateCachedVaryByRules_NullOrEmptyRules(StringValues vary)
     {
-        var cache = new TestOutputCache();
+        var cache = GetStore();
         var sink = new TestSink();
         var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache);
         var context = TestUtils.CreateTestContext(cache: cache);
@@ -589,7 +601,7 @@ public class OutputCacheMiddlewareTests
     [Fact]
     public async Task FinalizeCacheBody_Cache_IfContentLengthMatches()
     {
-        var cache = new TestOutputCache();
+        var cache = GetStore();
         var sink = new TestSink();
         var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache);
         var context = TestUtils.CreateTestContext(cache: cache);
@@ -617,7 +629,7 @@ public class OutputCacheMiddlewareTests
     [InlineData("HEAD")]
     public async Task FinalizeCacheBody_DoNotCache_IfContentLengthMismatches(string method)
     {
-        var cache = new TestOutputCache();
+        var cache = GetStore();
         var sink = new TestSink();
         var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache);
         var context = TestUtils.CreateTestContext(cache: cache);
@@ -646,7 +658,7 @@ public class OutputCacheMiddlewareTests
     [InlineData(true)]
     public async Task FinalizeCacheBody_RequestHead_Cache_IfContentLengthPresent_AndBodyAbsentOrOfSameLength(bool includeBody)
     {
-        var cache = new TestOutputCache();
+        var cache = GetStore();
         var sink = new TestSink();
         var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache);
         var context = TestUtils.CreateTestContext(cache: cache);
@@ -677,7 +689,7 @@ public class OutputCacheMiddlewareTests
     [Fact]
     public async Task FinalizeCacheBody_Cache_IfContentLengthAbsent()
     {
-        var cache = new TestOutputCache();
+        var cache = GetStore();
         var sink = new TestSink();
         var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache);
         var context = TestUtils.CreateTestContext(cache: cache);
@@ -702,7 +714,7 @@ public class OutputCacheMiddlewareTests
     [Fact]
     public async Task FinalizeCacheBody_DoNotCache_IfIsResponseCacheableFalse()
     {
-        var cache = new TestOutputCache();
+        var cache = GetStore();
         var sink = new TestSink();
         var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache);
         var context = TestUtils.CreateTestContext(cache: cache);
@@ -723,7 +735,7 @@ public class OutputCacheMiddlewareTests
     [Fact]
     public async Task FinalizeCacheBody_DoNotCache_IfBufferingDisabled()
     {
-        var cache = new TestOutputCache();
+        var cache = GetStore();
         var sink = new TestSink();
         var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache);
         var context = TestUtils.CreateTestContext(cache: cache);
@@ -949,7 +961,7 @@ public class OutputCacheMiddlewareTests
     [Fact]
     public async Task EmptyCacheKey_IsNotCached()
     {
-        var cache = new TestOutputCache();
+        var cache = GetStore();
         var sink = new TestSink();
         var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache);
         var context = TestUtils.CreateTestContext(cache: cache);
@@ -1004,7 +1016,7 @@ public class OutputCacheMiddlewareTests
             builder.Cache();
         }, true);
 
-        var cache = new TestOutputCache();
+        var cache = GetStore();
         var sink = new TestSink();
         var middleware = TestUtils.CreateTestMiddleware(options: options, testSink: sink, cache: cache, next: async c =>
         {

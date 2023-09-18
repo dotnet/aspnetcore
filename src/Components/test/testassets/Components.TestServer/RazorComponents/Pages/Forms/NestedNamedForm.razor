@@ -4,7 +4,7 @@
 <h2>Nested named form</h2>
 
 <FormMappingScope Name="parent-context" Context="bindingContext">
-    <EditForm FormName="named-form-handler" EditContext="_editContext" method="POST" OnValidSubmit="() => _submitted = true">
+    <EditForm Enhance FormName="named-form-handler" EditContext="_editContext" method="POST" OnValidSubmit="() => _submitted = true">
     <input id="send" type="submit" value="Send" />
 </EditForm>
 

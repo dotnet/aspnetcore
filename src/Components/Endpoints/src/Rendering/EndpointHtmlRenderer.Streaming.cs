@@ -15,7 +15,6 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal partial class EndpointHtmlRenderer
 {
-    private const string _progressivelyEnhancedNavRequestHeaderName = "blazor-enhanced-nav";
     private const string _streamingRenderingFramingHeaderName = "ssr-framing";
     private TextWriter? _streamingUpdatesWriter;
     private HashSet<int>? _visitedComponentIdsInCurrentStreamingBatch;
@@ -23,7 +22,7 @@ internal partial class EndpointHtmlRenderer
 
     public void InitializeStreamingRenderingFraming(HttpContext httpContext)
     {
-        if (httpContext.Request.Headers.ContainsKey(_progressivelyEnhancedNavRequestHeaderName))
+        if (IsProgressivelyEnhancedNavigation(httpContext.Request))
         {
             var id = Guid.NewGuid().ToString();
             httpContext.Response.Headers.Add(_streamingRenderingFramingHeaderName, id);
@@ -60,7 +59,7 @@ internal partial class EndpointHtmlRenderer
         }
         catch (NavigationException navigationException)
         {
-            HandleNavigationAfterResponseStarted(writer, navigationException.Location);
+            HandleNavigationAfterResponseStarted(writer, httpContext, navigationException.Location);
         }
         catch (Exception ex)
         {
@@ -141,7 +140,7 @@ internal partial class EndpointHtmlRenderer
                 writer.Write("</template>");
             }
 
-            writer.Write("</blazor-ssr>");
+            writer.Write("<blazor-ssr-end></blazor-ssr-end></blazor-ssr>");
             writer.Write(_ssrFramingCommentMarkup);
         }
     }
@@ -165,7 +164,7 @@ internal partial class EndpointHtmlRenderer
         // We already started the response so we have no choice but to return a 200 with HTML and will
         // have to communicate the error information within that
         var env = httpContext.RequestServices.GetRequiredService<IWebHostEnvironment>();
-        var options = httpContext.RequestServices.GetRequiredService<IOptions<RazorComponentsEndpointOptions>>();
+        var options = httpContext.RequestServices.GetRequiredService<IOptions<RazorComponentsServiceOptions>>();
         var showDetailedErrors = env.IsDevelopment() || options.Value.DetailedErrors;
         var message = showDetailedErrors
             ? exception.ToString()
@@ -173,14 +172,26 @@ internal partial class EndpointHtmlRenderer
 
         writer.Write("<blazor-ssr><template type=\"error\">");
         writer.Write(HtmlEncoder.Default.Encode(message));
-        writer.Write("</template></blazor-ssr>");
+        writer.Write("</template><blazor-ssr-end></blazor-ssr-end></blazor-ssr>");
     }
 
-    private static void HandleNavigationAfterResponseStarted(TextWriter writer, string destinationUrl)
+    private static void HandleNavigationAfterResponseStarted(TextWriter writer, HttpContext httpContext, string destinationUrl)
     {
-        writer.Write("<blazor-ssr><template type=\"redirection\">");
-        writer.Write(HtmlEncoder.Default.Encode(destinationUrl));
-        writer.Write("</template></blazor-ssr>");
+        writer.Write("<blazor-ssr><template type=\"redirection\"");
+
+        if (string.Equals(httpContext.Request.Method, "POST", StringComparison.OrdinalIgnoreCase))
+        {
+            writer.Write(" from=\"form-post\"");
+        }
+
+        if (IsProgressivelyEnhancedNavigation(httpContext.Request))
+        {
+            writer.Write(" enhanced=\"true\"");
+        }
+
+        writer.Write(">");
+        writer.Write(HtmlEncoder.Default.Encode(OpaqueRedirection.CreateProtectedRedirectionUrl(httpContext, destinationUrl)));
+        writer.Write("</template><blazor-ssr-end></blazor-ssr-end></blazor-ssr>");
     }
 
     protected override void WriteComponentHtml(int componentId, TextWriter output)
@@ -241,6 +252,13 @@ internal partial class EndpointHtmlRenderer
             output.Write(serializedEndRecord);
             output.Write("-->");
         }
+    }
+
+    private static bool IsProgressivelyEnhancedNavigation(HttpRequest request)
+    {
+        // For enhanced nav, the Blazor JS code controls the "accept" header precisely, so we can be very specific about the format
+        var accept = request.Headers.Accept;
+        return accept.Count == 1 && string.Equals(accept[0]!, "text/html;blazor-enhanced-nav=on", StringComparison.Ordinal);
     }
 
     private readonly struct ComponentIdAndDepth

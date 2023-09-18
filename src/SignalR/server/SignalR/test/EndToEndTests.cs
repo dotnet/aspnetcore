@@ -685,7 +685,7 @@ public class EndToEndTests : FunctionalTestBase
     {
         private ITransport _transport;
 
-        public ITransport CreateTransport(HttpTransportType availableServerTransports, bool useAck)
+        public ITransport CreateTransport(HttpTransportType availableServerTransports, bool useStatefulReconnect)
         {
             if (_transport == null)
             {

@@ -21,7 +21,8 @@ public partial class StaticHtmlRenderer
         string.Empty,
         typeof(FormMappingContext));
 
-    private static readonly HtmlEncoder _htmlEncoder = HtmlEncoder.Default;
+    private static readonly TextEncoder _javaScriptEncoder = JavaScriptEncoder.Default;
+    private TextEncoder _htmlEncoder = HtmlEncoder.Default;
     private string? _closestSelectValueAsString;
 
     /// <summary>
@@ -138,6 +139,10 @@ public partial class StaticHtmlRenderer
                 _htmlEncoder.Encode(output, capturedValueAttribute);
                 afterElement = position + frame.ElementSubtreeLength; // Skip descendants
             }
+            else if (string.Equals(frame.ElementNameField, "script", StringComparison.OrdinalIgnoreCase))
+            {
+                afterElement = RenderScriptElementChildren(componentId, output, frames, afterAttributes, remainingElements);
+            }
             else
             {
                 afterElement = RenderChildren(componentId, output, frames, afterAttributes, remainingElements);
@@ -170,6 +175,25 @@ public partial class StaticHtmlRenderer
             }
             Debug.Assert(afterAttributes == position + frame.ElementSubtreeLength);
             return afterAttributes;
+        }
+    }
+
+    private int RenderScriptElementChildren(int componentId, TextWriter output, ArrayRange<RenderTreeFrame> frames, int position, int maxElements)
+    {
+        // Inside a <script> context, AddContent calls should result in the text being
+        // JavaScript encoded rather than HTML encoded. It's not that we recommend inserting
+        // user-supplied content inside a <script> block, but that if someone does, we
+        // want the encoding style to match the context for correctness and safety. This is
+        // also consistent with .cshtml's treatment of <script>.
+        var originalEncoder = _htmlEncoder;
+        try
+        {
+            _htmlEncoder = _javaScriptEncoder;
+            return RenderChildren(componentId, output, frames, position, maxElements);
+        }
+        finally
+        {
+            _htmlEncoder = originalEncoder;
         }
     }
 
@@ -245,7 +269,7 @@ public partial class StaticHtmlRenderer
         return false;
     }
 
-    private static int RenderAttributes(
+    private int RenderAttributes(
         TextWriter output, ArrayRange<RenderTreeFrame> frames, int position, int maxElements, bool includeValueAttribute, out string? capturedValueAttribute)
     {
         capturedValueAttribute = null;

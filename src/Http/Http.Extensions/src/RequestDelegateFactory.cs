@@ -81,6 +81,8 @@ public static partial class RequestDelegateFactory
         Log.RequiredParameterNotProvided(httpContext, parameterType, parameterName, source, shouldThrow));
     private static readonly MethodInfo LogImplicitBodyNotProvidedMethod = GetMethodInfo<Action<HttpContext, string, bool>>((httpContext, parameterName, shouldThrow) =>
         Log.ImplicitBodyNotProvided(httpContext, parameterName, shouldThrow));
+    private static readonly MethodInfo LogFormMappingFailedMethod = GetMethodInfo<Action<HttpContext, string, string, FormDataMappingException, bool>>((httpContext, parameterName, parameterType, exception, shouldThrow) =>
+        Log.FormDataMappingFailed(httpContext, parameterName, parameterType, exception, shouldThrow));
 
     private static readonly ParameterExpression TargetExpr = Expression.Parameter(typeof(object), "target");
     private static readonly ParameterExpression BodyValueExpr = Expression.Parameter(typeof(object), "bodyValue");
@@ -2023,10 +2025,11 @@ public static partial class RequestDelegateFactory
         for (var i = 0; i < factoryContext.ArgumentExpressions.Length; i++)
         {
             var parameter = factoryContext.Parameters[i];
-            var key = parameter.Name!;
+            var formAttribute = parameter.GetCustomAttributes().OfType<IFromFormMetadata>().FirstOrDefault();
+            var key = formAttribute == null || string.IsNullOrEmpty(formAttribute.Name) ? parameter.Name! : formAttribute.Name;
             if (factoryContext.TrackedParameters.TryGetValue(key, out var trackedParameter) && trackedParameter == RequestDelegateFactoryConstants.FormBindingAttribute)
             {
-                factoryContext.ArgumentExpressions[i] = BindComplexParameterFromFormItem(parameter, key, factoryContext);
+                factoryContext.ArgumentExpressions[i] = BindComplexParameterFromFormItem(parameter, key, factoryContext, true);
             }
         }
     }
@@ -2034,11 +2037,23 @@ public static partial class RequestDelegateFactory
     private static Expression BindComplexParameterFromFormItem(
         ParameterInfo parameter,
         string key,
-        RequestDelegateFactoryContext factoryContext)
+        RequestDelegateFactoryContext factoryContext,
+        bool setExpressions = false)
     {
         factoryContext.FirstFormRequestBodyParameter ??= parameter;
         factoryContext.TrackedParameters.TryAdd(key, RequestDelegateFactoryConstants.FormBindingAttribute);
         factoryContext.ReadForm = true;
+
+        // var name_local;
+        var formArgument = Expression.Variable(parameter.ParameterType, $"{parameter.Name}_local");
+
+        // Delay setting the generated LINQ expressions until
+        // metadata has already been inferred so that we can read from `FormMappingOptionsMetadata`.
+        if (!setExpressions)
+        {
+            return formArgument;
+        }
+
         var formDataMapperOptions = new FormDataMapperOptions();
         var formMappingOptionsMetadatas = factoryContext.EndpointBuilder.Metadata.OfType<FormMappingOptionsMetadata>();
         foreach (var formMappingOptionsMetadata in formMappingOptionsMetadatas)
@@ -2048,14 +2063,13 @@ public static partial class RequestDelegateFactory
             formDataMapperOptions.MaxKeyBufferSize = formMappingOptionsMetadata.MaxKeySize ?? formDataMapperOptions.MaxKeyBufferSize;
         }
 
-        // var name_local;
         // var name_reader;
         // var form_dict;
         // var form_buffer;
-        var formArgument = Expression.Variable(parameter.ParameterType, $"{parameter.Name}_local");
         var formReader = Expression.Variable(typeof(FormDataReader), $"{parameter.Name}_reader");
         var formDict = Expression.Variable(typeof(IReadOnlyDictionary<FormKey, StringValues>), "form_dict");
         var formBuffer = Expression.Variable(typeof(char[]), "form_buffer");
+        var formDataMappingException = Expression.Variable(typeof(FormDataMappingException), "form_exception");
 
         // ProcessForm(context.Request.Form, form_dict, form_buffer);
         var processFormExpr = Expression.Call(ProcessFormMethod, FormExpr, Expression.Constant(formDataMapperOptions.MaxKeyBufferSize), formDict, formBuffer);
@@ -2088,17 +2102,55 @@ public static partial class RequestDelegateFactory
             Expression.NotEqual(formBuffer, Expression.Constant(null)),
             returnBufferExpr);
 
-        return Expression.Block(
-            new[] { formArgument, formReader, formDict, formBuffer },
-            Expression.TryFinally(
+        var parameterTypeNameConstant = Expression.Constant(TypeNameHelper.GetTypeDisplayName(parameter.ParameterType, fullName: false));
+        var parameterNameConstant = Expression.Constant(parameter.Name);
+
+        // try
+        // {
+        //   ProcessForm(context.Request.Form, form_dict, form_buffer);
+        //   name_reader = new FormDataReader(form_dict, CultureInfo.InvariantCulture, form_buffer.AsMemory(0, FormDataMapperOptions.MaxKeyBufferSize));
+        //   name_reader.MaxRecursionDepth = formDataMapperOptions.MaxRecursionDepth;
+        //   name_local = FormDataMapper.Map<string>(name_reader, FormDataMapperOptions);
+        // }
+        // catch (FormDataMappingException e)
+        // {
+        //    wasParamCheckFailure = true;
+        //    LogFormMappingFailedMethod(httpContext, "string", "name", ex, factoryContext.ThrowOnBadRequest);
+        // }
+        // finally
+        // {
+        //   if (form_buffer != null)
+        //   {
+        //     ArrayPool<char>.Shared.Return(form_buffer, false);
+        //   }
+        // }
+        var bindAndCheckForm = Expression.Block(
+            new[] { formReader, formDict, formBuffer, formDataMappingException },
+            Expression.TryCatchFinally(
                 Expression.Block(
+                    typeof(void),
                     processFormExpr,
                     initializeReaderExpr,
                     setMaxRecursionDepthExpr,
                     Expression.Assign(formArgument, invokeMapMethodExpr)),
-                conditionalReturnBufferExpr),
-            formArgument
+                conditionalReturnBufferExpr,
+                Expression.Catch(formDataMappingException, Expression.Block(
+                    typeof(void),
+                    Expression.Assign(WasParamCheckFailureExpr, Expression.Constant(true)),
+                    Expression.Call(
+                        LogFormMappingFailedMethod,
+                        HttpContextExpr,
+                        parameterTypeNameConstant,
+                        parameterNameConstant,
+                        formDataMappingException,
+                        Expression.Constant(factoryContext.ThrowOnBadRequest))
+                )))
         );
+
+        factoryContext.ParamCheckExpressions.Add(bindAndCheckForm);
+        factoryContext.ExtraLocals.Add(formArgument);
+
+        return formArgument;
     }
 
     private static void ProcessForm(IFormCollection form, int maxKeyBufferSize, ref IReadOnlyDictionary<FormKey, StringValues> formDictionary, ref char[] buffer)
@@ -2641,6 +2693,20 @@ public static partial class RequestDelegateFactory
 
         [LoggerMessage(RequestDelegateCreationLogging.InvalidAntiforgeryTokenEventId, LogLevel.Debug, RequestDelegateCreationLogging.InvalidAntiforgeryTokenLogMessage, EventName = RequestDelegateCreationLogging.InvalidAntiforgeryTokenEventName)]
         private static partial void InvalidAntiforgeryToken(ILogger logger, string parameterType, string parameterName, Exception exception);
+
+        public static void FormDataMappingFailed(HttpContext httpContext, string parameterTypeName, string parameterName, FormDataMappingException exception, bool shouldThrow)
+        {
+            if (shouldThrow)
+            {
+                var message = string.Format(CultureInfo.InvariantCulture, exception.Error.Message.Format, exception.Error.Message.GetArguments());
+                throw new BadHttpRequestException(message, exception);
+            }
+
+            FormDataMappingFailed(GetLogger(httpContext), parameterTypeName, parameterName, exception);
+        }
+
+        [LoggerMessage(RequestDelegateCreationLogging.FormDataMappingFailedEventId, LogLevel.Debug, RequestDelegateCreationLogging.FormDataMappingFailedLogMessage, EventName = RequestDelegateCreationLogging.FormDataMappingFailedEventName)]
+        private static partial void FormDataMappingFailed(ILogger logger, string parameterType, string parameterName, Exception exception);
 
         private static ILogger GetLogger(HttpContext httpContext)
         {

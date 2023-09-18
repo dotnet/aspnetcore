@@ -3,7 +3,7 @@
 
 <h2>Default form with bound parameter</h2>
 
-<EditForm Model="Parameter" method="POST" OnValidSubmit="() => _submitted = true" FormName="someform">
+<EditForm Enhance Model="Parameter" method="POST" OnValidSubmit="() => _submitted = true" FormName="someform">
     <InputText @bind-Value="Parameter" />
     <input id="send" type="submit" value="Send" />
 </EditForm>

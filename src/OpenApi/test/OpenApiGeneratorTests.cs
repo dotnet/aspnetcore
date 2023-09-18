@@ -401,6 +401,7 @@ public class OpenApiOperationGeneratorTests
     {
         Assert.Empty(GetOpenApiOperation((IInferredServiceInterface foo) => { }).Parameters);
         Assert.Empty(GetOpenApiOperation(([FromServices] int foo) => { }).Parameters);
+        Assert.Empty(GetOpenApiOperation(([FromKeyedServices("foo")] int foo) => { }).Parameters);
         Assert.Empty(GetOpenApiOperation((HttpContext context) => { }).Parameters);
         Assert.Empty(GetOpenApiOperation((HttpRequest request) => { }).Parameters);
         Assert.Empty(GetOpenApiOperation((HttpResponse response) => { }).Parameters);
