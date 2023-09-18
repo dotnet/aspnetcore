@@ -29,6 +29,8 @@ Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.MaxFormM
 Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.MaxFormMappingRecursionDepth.get -> int
 Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.MaxFormMappingRecursionDepth.set -> void
 Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.RazorComponentsServiceOptions() -> void
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.TemporaryRedirectionUrlValidityDuration.get -> System.TimeSpan
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.TemporaryRedirectionUrlValidityDuration.set -> void
 Microsoft.AspNetCore.Components.Endpoints.RootComponentMetadata
 Microsoft.AspNetCore.Components.Endpoints.RootComponentMetadata.RootComponentMetadata(System.Type! rootComponentType) -> void
 Microsoft.AspNetCore.Components.Endpoints.RootComponentMetadata.Type.get -> System.Type!

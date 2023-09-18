@@ -392,6 +392,10 @@
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>c56a1b709d96dd30c9bf767cf0ded347b690c6a1</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.Extensions.TimeProvider.Testing" Version="9.0.0-alpha.1.23460.2">
+      <Uri>https://github.com/dotnet/extensions</Uri>
+      <Sha>c56a1b709d96dd30c9bf767cf0ded347b690c6a1</Sha>
+    </Dependency>
     <Dependency Name="NuGet.Frameworks" Version="6.2.4">
       <Uri>https://github.com/nuget/nuget.client</Uri>
       <Sha>8fef55f5a55a3b4f2c96cd1a9b5ddc51d4b927f8</Sha>

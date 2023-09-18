@@ -47,7 +47,7 @@ public sealed class JsonHubProtocol : IHubProtocol
     private static readonly JsonEncodedText SequenceIdPropertyNameBytes = JsonEncodedText.Encode(SequenceIdPropertyName);
 
     private const string ProtocolName = "json";
-    private const int ProtocolVersion = 1;
+    private const int ProtocolVersion = 2;
 
     /// <summary>
     /// Gets the serializer used to serialize invocation arguments and return values.
@@ -82,7 +82,7 @@ public sealed class JsonHubProtocol : IHubProtocol
     /// <inheritdoc />
     public bool IsVersionSupported(int version)
     {
-        return version == Version;
+        return version <= Version;
     }
 
     /// <inheritdoc />

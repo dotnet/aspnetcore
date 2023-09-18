@@ -3,7 +3,7 @@
 
 <h2>Default form hitting max collection limit</h2>
 
-<EditForm Model="Values" method="POST" OnValidSubmit="() => _submitted = true" FormName="someform">
+<EditForm Enhance Model="Values" method="POST" OnValidSubmit="() => _submitted = true" FormName="someform">
     <ValidationSummary />
     @for (int i = 0; i < Values.Length; i++)
     {

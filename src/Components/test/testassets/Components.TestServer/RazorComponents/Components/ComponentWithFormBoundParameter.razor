@@ -1,6 +1,6 @@
 ﻿@using Microsoft.AspNetCore.Components.Forms
 
-<form method="post" @onsubmit="() => _submitted = true" @formname="named-form-handler">
+<form data-enhance method="post" @onsubmit="() => _submitted = true" @formname="named-form-handler">
     <AntiforgeryToken />
     <InputText @bind-Value="Parameter" />
     <input id="send" type="submit" value="Send" />

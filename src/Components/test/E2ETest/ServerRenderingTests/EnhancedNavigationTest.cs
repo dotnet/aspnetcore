@@ -8,7 +8,7 @@ using TestServer;
 using Xunit.Abstractions;
 using Components.TestServer.RazorComponents;
 using OpenQA.Selenium;
-using System.Globalization;
+using OpenQA.Selenium.Support.Extensions;
 
 namespace Microsoft.AspNetCore.Components.E2ETests.ServerRenderingTests;
 
@@ -79,13 +79,42 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         var ul = Browser.Exists(By.Id("all-headers"));
         var allHeaders = ul.FindElements(By.TagName("li")).Select(x => x.Text.ToLowerInvariant()).ToList();
 
-        // The server can trigger arbitrary behavior based on this
-        Assert.Contains("blazor-enhanced-nav: on", allHeaders);
+        // Specifying text/html is to make the enhanced nav outcomes more similar to non-enhanced nav.
+        // For example, the default error middleware will only serve the error page if this content type is requested.
+        // The blazor-enhanced-nav parameter can be used to trigger arbitrary server-side behaviors.
+        Assert.Contains("accept: text/html;blazor-enhanced-nav=on", allHeaders);
+    }
 
-        // This is to make the enhanced nav outcomes more similar to non-enhanced nav.
-        // For example, the default error middleware will only serve the error page if
-        // this header is included.
-        Assert.Contains("accept: text/html", allHeaders);
+    [Fact]
+    public void EnhancedNavCanBeDisabledHierarchically()
+    {
+        Navigate($"{ServerPathBase}/nav");
+
+        var originalH1Elem = Browser.Exists(By.TagName("h1"));
+        Browser.Equal("Hello", () => originalH1Elem.Text);
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Other (no enhanced nav)")).Click();
+
+        // Check we got there, but we did *not* retain the <h1> element
+        Browser.Equal("Other", () => Browser.Exists(By.TagName("h1")).Text);
+        Assert.Throws<StaleElementReferenceException>(() => originalH1Elem.Text);
+
+    }
+
+    [Fact]
+    public void EnhancedNavCanBeReenabledHierarchically()
+    {
+        Navigate($"{ServerPathBase}/nav");
+
+        var originalH1Elem = Browser.Exists(By.TagName("h1"));
+        Browser.Equal("Hello", () => originalH1Elem.Text);
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Other (re-enabled enhanced nav)")).Click();
+
+        // Check we got there, and it did retain the <h1> element
+        Browser.Equal("Other", () => Browser.Exists(By.TagName("h1")).Text);
+        Assert.Equal("Other", originalH1Elem.Text);
+
     }
 
     [Fact]
@@ -93,74 +122,11 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
     {
         Navigate($"{ServerPathBase}/nav");
         Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Scroll to hash")).Click();
-        Assert.Equal(0, BrowserScrollY);
+        Assert.Equal(0, Browser.GetScrollY());
 
         var asyncContentHeader = Browser.Exists(By.Id("some-content"));
         Browser.Equal("Some content", () => asyncContentHeader.Text);
-        Browser.True(() => BrowserScrollY > 500);
-    }
-
-    [Fact]
-    public void CanFollowSynchronousRedirection()
-    {
-        Navigate($"{ServerPathBase}/nav");
-
-        var h1Elem = Browser.Exists(By.TagName("h1"));
-        Browser.Equal("Hello", () => h1Elem.Text);
-
-        // Click a link and show we redirected, preserving elements, and updating the URL
-        // Note that in this specific case we can't preserve the hash part of the URL, as it
-        // gets lost when the browser follows a 'fetch' redirection. If we decide it's important
-        // to support this later, we'd have to change the server not to do a real redirection
-        // here and instead use the same protocol it uses for external redirections.
-        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Redirect")).Click();
-        Browser.Equal("Scroll to hash", () => h1Elem.Text);
-        Assert.EndsWith("/subdir/nav/scroll-to-hash", Browser.Url);
-
-        // See that 'back' takes you to the place from before the redirection
-        Browser.Navigate().Back();
-        Browser.Equal("Hello", () => h1Elem.Text);
-        Assert.EndsWith("/subdir/nav", Browser.Url);
-    }
-
-    [Fact]
-    public void CanFollowAsynchronousRedirectionWhileStreaming()
-    {
-        Navigate($"{ServerPathBase}/nav");
-
-        var h1Elem = Browser.Exists(By.TagName("h1"));
-        Browser.Equal("Hello", () => h1Elem.Text);
-
-        // Click a link and show we redirected, preserving elements, scrolling to hash, and updating the URL
-        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Redirect while streaming")).Click();
-        Browser.Equal("Scroll to hash", () => h1Elem.Text);
-        Browser.True(() => BrowserScrollY > 500);
-        Assert.EndsWith("/subdir/nav/scroll-to-hash#some-content", Browser.Url);
-
-        // See that 'back' takes you to the place from before the redirection
-        Browser.Navigate().Back();
-        Browser.Equal("Hello", () => h1Elem.Text);
-        Assert.EndsWith("/subdir/nav", Browser.Url);
-    }
-
-    [Fact]
-    public void CanFollowSynchronousExternalRedirection()
-    {
-        Navigate($"{ServerPathBase}/nav");
-        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
-
-        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Redirect external")).Click();
-        Browser.Contains("microsoft.com", () => Browser.Url);
-    }
-
-    [Fact]
-    public void CanFollowAsynchronousExternalRedirectionWhileStreaming()
-    {
-        Navigate($"{ServerPathBase}/nav");
-        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
-
-        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Redirect external while streaming")).Click();
-        Browser.Contains("microsoft.com", () => Browser.Url);
+        Browser.True(() => Browser.GetScrollY() > 500);
     }
 
     [Theory]
@@ -342,10 +308,16 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Assert.EndsWith("/nav", Browser.Url);
     }
 
-    private long BrowserScrollY
+    [Fact]
+    public void EnhancedNavNotUsedForNonBlazorDestinations()
     {
-        get => Convert.ToInt64(((IJavaScriptExecutor)Browser).ExecuteScript("return window.scrollY"), CultureInfo.CurrentCulture);
-        set => ((IJavaScriptExecutor)Browser).ExecuteScript($"window.scrollTo(0, {value})");
+        Navigate($"{ServerPathBase}/nav");
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+        Assert.Equal("object", Browser.ExecuteJavaScript<string>("return typeof Blazor")); // Blazor JS is loaded
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Non-Blazor HTML page")).Click();
+        Browser.Equal("This is a non-Blazor endpoint", () => Browser.Exists(By.TagName("h1")).Text);
+        Assert.Equal("undefined", Browser.ExecuteJavaScript<string>("return typeof Blazor")); // Blazor JS is NOT loaded
     }
 
     private static bool IsElementStale(IWebElement element)
