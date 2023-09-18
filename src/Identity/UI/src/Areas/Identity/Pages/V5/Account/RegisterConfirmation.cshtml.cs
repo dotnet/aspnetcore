@@ -3,7 +3,6 @@
 
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
@@ -46,9 +45,9 @@ public class RegisterConfirmationModel : PageModel
 internal sealed class RegisterConfirmationModel<TUser> : RegisterConfirmationModel where TUser : class
 {
     private readonly UserManager<TUser> _userManager;
-    private readonly IEmailSender _sender;
+    private readonly IEmailSender<TUser> _sender;
 
-    public RegisterConfirmationModel(UserManager<TUser> userManager, IEmailSender sender)
+    public RegisterConfirmationModel(UserManager<TUser> userManager, IEmailSender<TUser> sender)
     {
         _userManager = userManager;
         _sender = sender;
@@ -70,7 +69,7 @@ internal sealed class RegisterConfirmationModel<TUser> : RegisterConfirmationMod
 
         Email = email;
         // If the email sender is a no-op, display the confirm link in the page
-        DisplayConfirmAccountLink = _sender is NoOpEmailSender;
+        DisplayConfirmAccountLink = _sender is DefaultMessageEmailSender<TUser> defaultMessageSender && defaultMessageSender.IsNoOp;
         if (DisplayConfirmAccountLink)
         {
             var userId = await _userManager.GetUserIdAsync(user);

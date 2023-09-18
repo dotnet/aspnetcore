@@ -8,7 +8,6 @@ using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
@@ -98,14 +97,14 @@ internal sealed class RegisterModel<TUser> : RegisterModel where TUser : class
     private readonly IUserStore<TUser> _userStore;
     private readonly IUserEmailStore<TUser> _emailStore;
     private readonly ILogger<RegisterModel> _logger;
-    private readonly IEmailSender _emailSender;
+    private readonly IEmailSender<TUser> _emailSender;
 
     public RegisterModel(
         UserManager<TUser> userManager,
         IUserStore<TUser> userStore,
         SignInManager<TUser> signInManager,
         ILogger<RegisterModel> logger,
-        IEmailSender emailSender)
+        IEmailSender<TUser>  emailSender)
     {
         _userManager = userManager;
         _userStore = userStore;
@@ -146,8 +145,7 @@ internal sealed class RegisterModel<TUser> : RegisterModel where TUser : class
                     values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
                     protocol: Request.Scheme)!;
 
-                await _emailSender.SendEmailAsync(Input.Email, "Confirm your email",
-                    $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+                await _emailSender.SendConfirmationLinkAsync(user, Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
 
                 if (_userManager.Options.SignIn.RequireConfirmedAccount)
                 {
