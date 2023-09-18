@@ -20,4 +20,5 @@
   <ItemGroup>
     {AdditionalProjectReferences}
   </ItemGroup>
+  
 </Project>
