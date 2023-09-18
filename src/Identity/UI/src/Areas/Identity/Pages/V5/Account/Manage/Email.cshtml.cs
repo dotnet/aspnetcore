@@ -4,7 +4,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 using System.Text.Encodings.Web;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
@@ -83,12 +82,12 @@ internal sealed class EmailModel<TUser> : EmailModel where TUser : class
 {
     private readonly UserManager<TUser> _userManager;
     private readonly SignInManager<TUser> _signInManager;
-    private readonly IEmailSender _emailSender;
+    private readonly IEmailSender<TUser> _emailSender;
 
     public EmailModel(
         UserManager<TUser> userManager,
         SignInManager<TUser> signInManager,
-        IEmailSender emailSender)
+        IEmailSender<TUser> emailSender)
     {
         _userManager = userManager;
         _signInManager = signInManager;

@@ -5,7 +5,6 @@ using System.ComponentModel.DataAnnotations;
 using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
@@ -52,9 +51,9 @@ public abstract class ForgotPasswordModel : PageModel
 internal sealed class ForgotPasswordModel<TUser> : ForgotPasswordModel where TUser : class
 {
     private readonly UserManager<TUser> _userManager;
-    private readonly IEmailSender _emailSender;
+    private readonly IEmailSender<TUser> _emailSender;
 
-    public ForgotPasswordModel(UserManager<TUser> userManager, IEmailSender emailSender)
+    public ForgotPasswordModel(UserManager<TUser> userManager, IEmailSender<TUser> emailSender)
     {
         _userManager = userManager;
         _emailSender = emailSender;
