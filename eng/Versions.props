@@ -108,11 +108,12 @@
     <MicrosoftExtensionsOptionsVersion>9.0.0-alpha.1.23465.20</MicrosoftExtensionsOptionsVersion>
     <MicrosoftExtensionsPrimitivesVersion>9.0.0-alpha.1.23465.20</MicrosoftExtensionsPrimitivesVersion>
     <MicrosoftInternalRuntimeAspNetCoreTransportVersion>9.0.0-alpha.1.23465.20</MicrosoftInternalRuntimeAspNetCoreTransportVersion>
+    <MicrosoftSourceBuildIntermediateruntimelinuxx64Version>9.0.0-alpha.1.23465.20</MicrosoftSourceBuildIntermediateruntimelinuxx64Version>
+    <SystemCompositionVersion>9.0.0-alpha.1.23465.20</SystemCompositionVersion>
     <SystemConfigurationConfigurationManagerVersion>9.0.0-alpha.1.23465.20</SystemConfigurationConfigurationManagerVersion>
     <SystemDiagnosticsDiagnosticSourceVersion>9.0.0-alpha.1.23465.20</SystemDiagnosticsDiagnosticSourceVersion>
     <SystemDiagnosticsEventLogVersion>9.0.0-alpha.1.23465.20</SystemDiagnosticsEventLogVersion>
     <SystemDirectoryServicesProtocolsVersion>9.0.0-alpha.1.23465.20</SystemDirectoryServicesProtocolsVersion>
-    <SystemDrawingCommonVersion>9.0.0-alpha.1.23460.1</SystemDrawingCommonVersion>
     <SystemIOPipelinesVersion>9.0.0-alpha.1.23465.20</SystemIOPipelinesVersion>
     <SystemNetHttpJsonVersion>9.0.0-alpha.1.23465.20</SystemNetHttpJsonVersion>
     <SystemNetHttpWinHttpHandlerVersion>9.0.0-alpha.1.23465.20</SystemNetHttpWinHttpHandlerVersion>
@@ -168,8 +169,8 @@
     <MicrosoftSourceBuildIntermediatesourcebuildreferencepackagesVersion>9.0.0-alpha.1.23465.1</MicrosoftSourceBuildIntermediatesourcebuildreferencepackagesVersion>
     <!-- Packages from dotnet/symreader -->
     <MicrosoftSourceBuildIntermediatesymreaderVersion>2.1.0-beta.23409.1</MicrosoftSourceBuildIntermediatesymreaderVersion>
-    <!-- Packages from dotnet/runtime -->
-    <SystemCompositionVersion>9.0.0-alpha.1.23465.20</SystemCompositionVersion>
+    <!-- Packages from dotnet/winforms -->
+    <SystemDrawingCommonVersion>9.0.0-alpha.1.23467.2</SystemDrawingCommonVersion>
     <!-- Packages from dotnet/xdt -->
     <MicrosoftWebXdtVersion>7.0.0-preview.22423.2</MicrosoftWebXdtVersion>
   </PropertyGroup>
