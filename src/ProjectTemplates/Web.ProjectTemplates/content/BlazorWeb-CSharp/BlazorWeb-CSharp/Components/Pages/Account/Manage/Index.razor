@@ -8,12 +8,13 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject UserManager<ApplicationUser> UserManager
 @inject SignInManager<ApplicationUser> SignInManager
+@inject UserAccessor UserAccessor;
 @inject NavigationManager NavigationManager
 
 <PageTitle>Profile</PageTitle>
 
 <h3>Profile</h3>
-<StatusMessage Message="@_message" />
+<StatusMessage />
 
 <div class="row">
     <div class="col-md-6">
@@ -35,27 +36,18 @@
 </div>
 
 @code {
-    private string? _message;
-    private ApplicationUser? _user;
+    private ApplicationUser _user = default!;
     private string? _username;
     private string? _phoneNumber;
 
     [SupplyParameterFromForm]
     private InputModel Input { get; set; } = default!;
 
-    [CascadingParameter]
-    private Task<AuthenticationState>? AuthenticationStateTask { get; set; }
-
     protected override async Task OnInitializedAsync()
     {
         Input ??= new();
 
-        (_user, _message) = await UserManager.GetUserAsync(AuthenticationStateTask);
-        if (_user is null)
-        {
-            return;
-        }
-
+        _user = await UserAccessor.GetRequiredUserAsync();
         _username = await UserManager.GetUserNameAsync(_user);
         _phoneNumber = await UserManager.GetPhoneNumberAsync(_user);
 
@@ -64,23 +56,18 @@
 
     private async Task OnValidSubmitAsync()
     {
-        if (_user is null)
-        {
-            return;
-        }
-
         if (Input.PhoneNumber != _phoneNumber)
         {
             var setPhoneResult = await UserManager.SetPhoneNumberAsync(_user, Input.PhoneNumber);
             if (!setPhoneResult.Succeeded)
             {
-                _message = "Unexpected error when trying to set phone number.";
+                NavigationManager.RedirectToCurrentPage(new() { ["Message"] = "Unexpected error when trying to set phone number." });
                 return;
             }
         }
 
         await SignInManager.RefreshSignInAsync(_user);
-        _message = "Your profile has been updated";
+        NavigationManager.RedirectToCurrentPage(new() { ["Message"] = "Your profile has been updated" });
     }
 
     private sealed class InputModel

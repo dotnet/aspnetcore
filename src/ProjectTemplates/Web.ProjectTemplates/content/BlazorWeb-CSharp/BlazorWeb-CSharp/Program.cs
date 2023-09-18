@@ -33,6 +33,7 @@ builder.Services.AddRazorComponents()
 #if (IndividualLocalAuth)
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<AuthenticationStateProvider, PersistingAuthenticationStateProvider>();
+builder.Services.AddScoped<UserAccessor>();
 
 builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme)
     .AddIdentityCookies();
@@ -96,4 +97,9 @@ app.MapRazorComponents<App>()
 app.MapRazorComponents<App>();
 #endif
 
+#if (IndividualLocalAuth)
+// Add additional endpoints required by the Identity /Account Razor components.
+app.MapAdditionalIdentityEndpoints();
+
+#endif
 app.Run();

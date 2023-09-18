@@ -1,7 +1,35 @@
 ﻿@page "/Account/Manage/PersonalData"
 
+@using System.Text.Json
+@using Microsoft.AspNetCore.Identity
+@using BlazorWeb_CSharp.Data
+
+@inject UserAccessor UserAccessor
+
 <PageTitle>Personal Data</PageTitle>
 
+<StatusMessage />
 <h3>Personal Data</h3>
 
-@* TODO: Implement this *@
+<div class="row">
+    <div class="col-md-6">
+        <p>Your account contains personal data that you have given us. This page allows you to download or delete that data.</p>
+        <p>
+            <strong>Deleting this data will permanently remove your account, and this cannot be recovered.</strong>
+        </p>
+        <form id="download-data" action="/Account/Manage/DownloadPersonalData" method="post">
+            <AntiforgeryToken />
+            <button class="btn btn-primary" type="submit">Download</button>
+        </form>
+        <p>
+            <a id="delete" href="/Account/Manage/DeletePersonalData" class="btn btn-danger">Delete</a>
+        </p>
+    </div>
+</div>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        _ = await UserAccessor.GetRequiredUserAsync();
+    }
+}

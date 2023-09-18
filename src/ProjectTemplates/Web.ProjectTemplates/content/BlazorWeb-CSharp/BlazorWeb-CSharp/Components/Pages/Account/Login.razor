@@ -10,7 +10,6 @@
 @inject SignInManager<ApplicationUser> SignInManager
 @inject ILogger<Login> Logger
 @inject NavigationManager NavigationManager
-@inject IHttpContextAccessor HttpContextAccessor
 
 <PageTitle>Log in</PageTitle>
 
@@ -60,38 +59,19 @@
         <section>
             <h3>Use another service to log in.</h3>
             <hr />
-            @if ((externalLogins?.Count ?? 0) == 0)
-            {
-                <div>
-                    <p>
-                        There are no external authentication services configured. See this <a href="https://go.microsoft.com/fwlink/?LinkID=532715">article
-                        about setting up this ASP.NET application to support logging in via external services</a>.
-                    </p>
-                </div>
-            }
-            else
-            {
-                <form id="external-account" action="@(NavigationManager.GetUriWithQueryParameters("/Account/ExternalLogin", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl })))" method="post" class="form-horizontal">
-                    <div>
-                        <p>
-                            @foreach (var provider in externalLogins!)
-                            {
-                                <button type="submit" class="btn btn-primary" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">@provider.DisplayName</button>
-                            }
-                        </p>
-                    </div>
-                </form>
-            }
+            <ExternalLoginPicker />
         </section>
     </div>
 </div>
 
 @code {
     string? errorMessage;
-    IList<AuthenticationScheme>? externalLogins;
+
+    [CascadingParameter]
+    public HttpContext HttpContext { get; set; } = default!;
 
     [SupplyParameterFromForm]
-    public InputModel Input { get; set; } = new();
+    public InputModel Input { get; set; } = default!;
 
     [SupplyParameterFromQuery]
     public string ReturnUrl { get; set; } = "";
@@ -112,11 +92,14 @@
 
     protected override async Task OnInitializedAsync()
     {
-        // Clear the existing external cookie to ensure a clean login process
-        // No access to HttpContext: https://github.com/dotnet/aspnetcore/issues/48769
-        await HttpContextAccessor.HttpContext!.SignOutAsync(IdentityConstants.ExternalScheme);
+        Input ??= new();
+        ReturnUrl ??= "/";
 
-        externalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+        if (HttpMethods.IsGet(HttpContext.Request.Method))
+        {
+            // Clear the existing external cookie to ensure a clean login process
+            await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
+        }
     }
 
     public async Task LoginUser()
@@ -127,17 +110,18 @@
         if (result.Succeeded)
         {
             Logger.LogInformation("User logged in.");
-            NavigationManager.NavigateTo(ReturnUrl);
+            NavigationManager.RedirectTo(ReturnUrl);
         }
         if (result.RequiresTwoFactor)
         {
-            NavigationManager.NavigateTo(NavigationManager.GetUriWithQueryParameters("/Account/LoginWith2fa",
-                new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl, ["RememberMe"] = Input.RememberMe }));
+            NavigationManager.RedirectTo(
+                "/Account/LoginWith2fa",
+                new() { ["ReturnUrl"] = ReturnUrl, ["RememberMe"] = Input.RememberMe });
         }
         if (result.IsLockedOut)
         {
             Logger.LogWarning("User account locked out.");
-            NavigationManager.NavigateTo("/Account/Lockout");
+            NavigationManager.RedirectTo("/Account/Lockout");
         }
         else
         {

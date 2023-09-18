@@ -50,37 +50,14 @@
         <section>
             <h3>Use another service to register.</h3>
             <hr />
-            @{
-                if ((ExternalLogins?.Count ?? 0) == 0)
-                {
-                    <div>
-                        <p>
-                            There are no external authentication services configured. See this <a href="https://go.microsoft.com/fwlink/?LinkID=532715">article
-                            about setting up this ASP.NET application to support logging in via external services</a>.
-                        </p>
-                    </div>
-                }
-                else
-                {
-                    <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@ReturnUrl" method="post" class="form-horizontal">
-                        <div>
-                            <p>
-                                @foreach (var provider in ExternalLogins!)
-                                {
-                                    <button type="submit" class="btn btn-primary" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">@provider.DisplayName</button>
-                                }
-                            </p>
-                        </div>
-                    </form>
-                }
-            }
+            <ExternalLoginPicker />
         </section>
     </div>
 </div>
 
 @code {
     [SupplyParameterFromForm]
-    public InputModel Input { get; set; } = new();
+    public InputModel Input { get; set; } = default!;
 
     /// <summary>
     ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
@@ -88,12 +65,6 @@
     /// </summary>
     [SupplyParameterFromQuery]
     public string ReturnUrl { get; set; } = "";
-
-    /// <summary>
-    ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-    ///     directly from your code. This API may change or be removed in future releases.
-    /// </summary>
-    public IList<AuthenticationScheme>? ExternalLogins { get; set; }
 
     /// <summary>
     ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
@@ -133,9 +104,9 @@
     IEnumerable<IdentityError>? identityErrors;
     string? Message => identityErrors is null ? null : "Error: " + string.Join(", ", identityErrors.Select(error => error.Description));
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        ExternalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+        Input ??= new();
     }
 
     public async Task RegisterUser(EditContext editContext)
@@ -163,14 +134,14 @@
 
             if (UserManager.Options.SignIn.RequireConfirmedAccount)
             {
-                NavigationManager.NavigateTo(NavigationManager.GetUriWithQueryParameters(
-                    NavigationManager.ToAbsoluteUri("/Account/RegisterConfirmation").AbsoluteUri,
-                    new Dictionary<string, object?> { { "email", Input.Email }, { "returnUrl", ReturnUrl } }));
+                NavigationManager.RedirectTo(
+                    "/Account/RegisterConfirmation",
+                    new() { ["Email"] = Input.Email, ["ReturnUrl"] = ReturnUrl });
             }
             else
             {
                 await SignInManager.SignInAsync(user, isPersistent: false);
-                NavigationManager.NavigateTo(NavigationManager.ToAbsoluteUri(NavigationManager.ToBaseRelativePath(ReturnUrl)).AbsoluteUri);
+                NavigationManager.RedirectTo(ReturnUrl);
             }
         }
         else

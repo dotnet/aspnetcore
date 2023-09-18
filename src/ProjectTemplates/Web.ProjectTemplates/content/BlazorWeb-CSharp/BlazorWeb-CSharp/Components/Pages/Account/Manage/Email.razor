@@ -9,6 +9,7 @@
 @using BlazorWeb_CSharp.Data
 
 @inject UserManager<ApplicationUser> UserManager
+@inject UserAccessor UserAccessor
 @inject IEmailSender EmailSender
 @inject NavigationManager NavigationManager
 
@@ -16,7 +17,7 @@
 
 <h3>Manage email</h3>
 
-<StatusMessage Message="@_message" />
+<StatusMessage />
 <div class="row">
     <div class="col-md-6">
         <form id="send-verification-form" @onsubmit="OnSendEmailVerificationAsync" @formname="send-verification" method="post">
@@ -54,27 +55,18 @@
 </div>
 
 @code {
-    private string? _message;
-    private ApplicationUser? _user;
+    private ApplicationUser _user = default!;
     private string? _email;
     private bool _isEmailConfirmed;
 
     [SupplyParameterFromForm]
     private InputModel Input { get; set; } = default!;
 
-    [CascadingParameter]
-    private Task<AuthenticationState>? AuthenticationStateTask { get; set; }
-
     protected override async Task OnInitializedAsync()
     {
         Input ??= new();
 
-        (_user, _message) = await UserManager.GetUserAsync(AuthenticationStateTask);
-        if (_user is null)
-        {
-            return;
-        }
-
+        _user = await UserAccessor.GetRequiredUserAsync();
         _email = await UserManager.GetEmailAsync(_user);
         _isEmailConfirmed = await UserManager.IsEmailConfirmedAsync(_user);
 
@@ -83,49 +75,40 @@
 
     private async Task OnValidSubmitAsync()
     {
-        if (_user is null)
-        {
-            return;
-        }
-
         if (Input.NewEmail != _email)
         {
             var userId = await UserManager.GetUserIdAsync(_user);
             var code = await UserManager.GenerateChangeEmailTokenAsync(_user, Input.NewEmail!);
             code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
             var callbackUrl = NavigationManager.GetUriWithQueryParameters(
-                $"{NavigationManager.BaseUri}Identity/Account/ConfirmEmailChange",
+                $"{NavigationManager.BaseUri}Account/ConfirmEmailChange",
                 new Dictionary<string, object?> { { "userId", userId }, { "email", Input.NewEmail }, { "code", code } });
             await EmailSender.SendEmailAsync(
                 Input.NewEmail!,
                 "Confirm your email",
                 $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
-            _message = "Confirmation link to change email sent. Please check your email.";
+
+            NavigationManager.RedirectToCurrentPage(new() { ["Message"] = "Confirmation link to change email sent. Please check your email." });
             return;
         }
 
-        _message = "Your email is unchanged.";
+        NavigationManager.RedirectToCurrentPage(new() { ["Message"] = "Your email is unchanged." });
     }
 
     private async Task OnSendEmailVerificationAsync()
     {
-        if (_user is null)
-        {
-            return;
-        }
-
         var userId = await UserManager.GetUserIdAsync(_user);
         var code = await UserManager.GenerateEmailConfirmationTokenAsync(_user);
         code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
         var callbackUrl = NavigationManager.GetUriWithQueryParameters(
-            $"{NavigationManager.BaseUri}Identity/Account/ConfirmEmail",
+            $"{NavigationManager.BaseUri}Account/ConfirmEmail",
             new Dictionary<string, object?> { { "userId", userId }, { "code", code } });
         await EmailSender.SendEmailAsync(
             _email!,
             "Confirm your email",
             $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
 
-        _message = "Verification email sent. Please check your email.";
+        NavigationManager.RedirectToCurrentPage(new() { ["Message"] = "Verification email sent. Please check your email." });
     }
 
     private sealed class InputModel

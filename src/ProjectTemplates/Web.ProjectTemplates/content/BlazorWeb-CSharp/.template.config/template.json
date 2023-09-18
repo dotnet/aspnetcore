@@ -114,7 +114,9 @@
           "condition": "(!IndividualLocalAuth)",
           "exclude": [
             "BlazorWeb-CSharp/Components/Pages/Account/**",
+            "BlazorWeb-CSharp/Components/Identity/**",
             "BlazorWeb-CSharp/Data/**",
+            "BlazorWeb-CSharp/Identity/**",
             "BlazorWeb-CSharp/PersistingAuthenticationStateProvider.cs",
             "BlazorWeb-CSharp.Client/PersistedAuthenticationStateProvider.cs",
             "BlazorWeb-CSharp.Client/UserInfo.cs",

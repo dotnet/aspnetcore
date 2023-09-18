@@ -1,0 +1,20 @@
+﻿@{
+    var message = Message ?? MessageFromQuery;
+}
+
+@if (!string.IsNullOrEmpty(message))
+{
+    var statusMessageClass = message.StartsWith("Error") ? "danger" : "success";
+    <div class="alert alert-@statusMessageClass alert-dismissible" role="alert">
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        @message
+    </div>
+}
+
+@code {
+    [Parameter]
+    public string? Message { get; set; }
+
+    [SupplyParameterFromQuery(Name = "Message")]
+    public string? MessageFromQuery { get; set; }
+}
