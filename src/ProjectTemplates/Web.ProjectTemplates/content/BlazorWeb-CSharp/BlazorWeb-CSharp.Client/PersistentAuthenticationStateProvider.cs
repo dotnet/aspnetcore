@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 
 namespace BlazorWeb_CSharp.Client;
 
-public class PersistedAuthenticationStateProvider(PersistentComponentState persistentState) : AuthenticationStateProvider
+public class PersistentAuthenticationStateProvider(PersistentComponentState persistentState) : AuthenticationStateProvider
 {
     private static readonly Task<AuthenticationState> _unauthenticatedTask =
         Task.FromResult(new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity())));
@@ -24,7 +24,7 @@ public class PersistedAuthenticationStateProvider(PersistentComponentState persi
 
         return Task.FromResult(
             new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(claims,
-                authenticationType: nameof(PersistedAuthenticationStateProvider)))));
+                authenticationType: nameof(PersistentAuthenticationStateProvider)))));
     }
 }
 
