@@ -13,11 +13,15 @@
     <PackageReference Include="Microsoft.DotNet.ILCompiler"
                       Version="$(MicrosoftNETCoreAppRuntimeVersion)" />
 
-    <!-- Workaround when there is no vNext SDK available; copy known apphost/framework reference info from 8.0. -->
+    <!-- Workaround when there is no vNext SDK available; copy known packs info from 8.0. -->
     <KnownILLinkPack Include="@(KnownILLinkPack->WithMetadataValue('TargetFramework', 'net8.0'))"
                      TargetFramework="$(TargetFramework)"
                      Condition="'@(KnownILLinkPack->Count())' != '0' AND
                                  !(@(KnownILLinkPack->AnyHaveMetadataValue('TargetFramework', '$(TargetFramework)')))" />
+    <KnownILCompilerPack Include="@(KnownILCompilerPack->WithMetadataValue('TargetFramework', 'net8.0'))"
+                     TargetFramework="$(TargetFramework)"
+                     Condition="'@(KnownILCompilerPack->Count())' != '0' AND
+                                 !(@(KnownILCompilerPack->AnyHaveMetadataValue('TargetFramework', '$(TargetFramework)')))" />
 
   </ItemGroup>
 
