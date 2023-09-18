@@ -314,6 +314,10 @@
     <Dependency Name="Microsoft.NETCore.App.Runtime.win-x64" Version="9.0.0-alpha.1.23465.20">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>fd20f42f1f4fa77a0facde02e0c1527fa26e95cb</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.runtime.linux-x64" Version="9.0.0-alpha.1.23465.20">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>fd20f42f1f4fa77a0facde02e0c1527fa26e95cb</Sha>
       <SourceBuild RepoName="runtime" ManagedOnly="false" />
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Runtime.AOT.win-x64.Cross.browser-wasm" Version="9.0.0-alpha.1.23465.20">
