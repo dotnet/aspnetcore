@@ -9,12 +9,12 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
-/// Extension methods for setting up Redis distributed cache related services in an <see cref="IServiceCollection" />.
+/// Extension methods for setting up Redis output cache related services in an <see cref="IServiceCollection" />.
 /// </summary>
 public static class StackExchangeRedisOutputCacheServiceCollectionExtensions
 {
     /// <summary>
-    /// Adds Redis distributed caching services to the specified <see cref="IServiceCollection" />.
+    /// Adds Redis output caching services to the specified <see cref="IServiceCollection" />.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
     /// <param name="setupAction">An <see cref="Action{RedisOutputCacheOptions}"/> to configure the provided

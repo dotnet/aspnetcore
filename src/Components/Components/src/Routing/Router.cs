@@ -166,14 +166,14 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 
         if (!routeKey.Equals(_routeTableLastBuiltForRouteKey))
         {
-            Routes = RouteTableFactory.Create(routeKey, ServiceProvider);
+            Routes = RouteTableFactory.Instance.Create(routeKey, ServiceProvider);
             _routeTableLastBuiltForRouteKey = routeKey;
         }
     }
 
     private void ClearRouteCaches()
     {
-        RouteTableFactory.ClearCaches();
+        RouteTableFactory.Instance.ClearCaches();
         _routeTableLastBuiltForRouteKey = default;
     }
 
