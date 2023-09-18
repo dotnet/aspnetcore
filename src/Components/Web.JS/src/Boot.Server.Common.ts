@@ -7,7 +7,7 @@ import { LogLevel } from './Platform/Logging/Logger';
 import { CircuitManager } from './Platform/Circuits/CircuitManager';
 import { resolveOptions, CircuitStartOptions } from './Platform/Circuits/CircuitStartOptions';
 import { DefaultReconnectionHandler } from './Platform/Circuits/DefaultReconnectionHandler';
-import { discoverPersistedState, ServerComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
+import { discoverServerPersistedState, ServerComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
 import { fetchAndInvokeInitializers } from './JSInitializers/JSInitializers.Server';
 import { RootComponentManager } from './Services/RootComponentManager';
 
@@ -31,7 +31,7 @@ export async function startServer(components: RootComponentManager<ServerCompone
   }
 
   started = true;
-  appState = discoverPersistedState(document) || '';
+  appState = discoverServerPersistedState(document) || '';
   logger = new ConsoleLogger(options.logLevel);
   circuit = new CircuitManager(components, appState, options, logger);
 
@@ -65,6 +65,7 @@ export async function startServer(components: RootComponentManager<ServerCompone
   Blazor._internal.sendJSDataStream = (data: ArrayBufferView | Blob, streamId: number, chunkSize: number) => circuit.sendJsDataStream(data, streamId, chunkSize);
 
   const jsInitializer = await fetchAndInvokeInitializers(options);
+
   const circuitStarted = await circuit.start();
   if (!circuitStarted) {
     logger.log(LogLevel.Error, 'Failed to start the circuit.');
@@ -97,6 +98,7 @@ export function startCircuit(): Promise<boolean> {
 
   if (circuit.isDisposedOrDisposing()) {
     // If the current circuit is no longer available, create a new one.
+    appState = discoverServerPersistedState(document) || '';
     circuit = new CircuitManager(circuit.getRootComponentManager(), appState, options, logger);
   }
 
@@ -115,4 +117,8 @@ export async function disposeCircuit() {
 
 export function isCircuitAvailable(): boolean {
   return !circuit.isDisposedOrDisposing();
+}
+
+export function updateServerRootComponents(operations: string): Promise<void>|undefined {
+  return circuit.updateRootComponents(operations);
 }

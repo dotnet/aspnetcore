@@ -11,17 +11,18 @@ namespace Microsoft.AspNetCore.Components.Infrastructure;
 /// </summary>
 public class ComponentStatePersistenceManager
 {
-    private bool _stateIsPersisted;
-    private readonly List<Func<Task>> _pauseCallbacks = new();
-    private readonly Dictionary<string, byte[]> _currentState = new(StringComparer.Ordinal);
+    private readonly List<PersistComponentStateRegistration> _registeredCallbacks = new();
     private readonly ILogger<ComponentStatePersistenceManager> _logger;
+
+    private bool _stateIsPersisted;
+    private readonly Dictionary<string, byte[]> _currentState = new(StringComparer.Ordinal);
 
     /// <summary>
     /// Initializes a new instance of <see cref="ComponentStatePersistenceManager"/>.
     /// </summary>
     public ComponentStatePersistenceManager(ILogger<ComponentStatePersistenceManager> logger)
     {
-        State = new PersistentComponentState(_currentState, _pauseCallbacks);
+        State = new PersistentComponentState(_currentState, _registeredCallbacks);
         _logger = logger;
     }
 
@@ -48,43 +49,100 @@ public class ComponentStatePersistenceManager
     /// <param name="renderer">The <see cref="Renderer"/> that components are being rendered.</param>
     /// <returns>A <see cref="Task"/> that will complete when the state has been restored.</returns>
     public Task PersistStateAsync(IPersistentComponentStateStore store, Renderer renderer)
-        => PersistStateAsync(store, renderer.Dispatcher);
-
-    /// <summary>
-    /// Persists the component application state into the given <see cref="IPersistentComponentStateStore"/>.
-    /// </summary>
-    /// <param name="store">The <see cref="IPersistentComponentStateStore"/> to restore the application state from.</param>
-    /// <param name="dispatcher">The <see cref="Dispatcher"/> corresponding to the components' renderer.</param>
-    /// <returns>A <see cref="Task"/> that will complete when the state has been restored.</returns>
-    public Task PersistStateAsync(IPersistentComponentStateStore store, Dispatcher dispatcher)
     {
         if (_stateIsPersisted)
         {
             throw new InvalidOperationException("State already persisted.");
         }
 
-        _stateIsPersisted = true;
-
-        return dispatcher.InvokeAsync(PauseAndPersistState);
+        return renderer.Dispatcher.InvokeAsync(PauseAndPersistState);
 
         async Task PauseAndPersistState()
         {
             State.PersistingState = true;
-            await PauseAsync();
-            State.PersistingState = false;
 
+            if (store is IEnumerable<IPersistentComponentStateStore> compositeStore)
+            {
+                // We only need to do inference when there is more than one store. This is determined by
+                // the set of rendered components.
+                InferRenderModes(renderer);
+
+                // Iterate over each store and give it a chance to run against the existing declared
+                // render modes. After we've run through a store, we clear the current state so that
+                // the next store can start with a clean slate.
+                foreach (var store in compositeStore)
+                {
+                    await PersistState(store);
+                    _currentState.Clear();
+                }
+            }
+            else
+            {
+                await PersistState(store);
+            }
+
+            State.PersistingState = false;
+            _stateIsPersisted = true;
+        }
+
+        async Task PersistState(IPersistentComponentStateStore store)
+        {
+            await PauseAsync(store);
             await store.PersistStateAsync(_currentState);
         }
     }
 
-    internal Task PauseAsync()
+    private void InferRenderModes(Renderer renderer)
+    {
+        for (var i = 0; i < _registeredCallbacks.Count; i++)
+        {
+            var registration = _registeredCallbacks[i];
+            if (registration.RenderMode != null)
+            {
+                // Explicitly set render mode, so nothing to do.
+                continue;
+            }
+
+            if (registration.Callback.Target is IComponent component)
+            {
+                var componentRenderMode = renderer.GetComponentRenderMode(component);
+                if (componentRenderMode != null)
+                {
+                    _registeredCallbacks[i] = new PersistComponentStateRegistration(registration.Callback, componentRenderMode);
+                }
+                else
+                {
+                    // If we can't find a render mode, it's an SSR only component and we don't need to
+                    // persist its state at all.
+                    _registeredCallbacks[i] = default;
+                }
+                continue;
+            }
+
+            throw new InvalidOperationException(
+                $"The registered callback {registration.Callback.Method.Name} must be associated with a component or define" +
+                $" an explicit render mode type during registration.");
+        }
+    }
+
+    internal Task PauseAsync(IPersistentComponentStateStore store)
     {
         List<Task>? pendingCallbackTasks = null;
 
-        for (var i = 0; i < _pauseCallbacks.Count; i++)
+        for (var i = 0; i < _registeredCallbacks.Count; i++)
         {
-            var callback = _pauseCallbacks[i];
-            var result = ExecuteCallback(callback, _logger);
+            var registration = _registeredCallbacks[i];
+
+            if (!store.SupportsRenderMode(registration.RenderMode!))
+            {
+                // The callback does not have an associated render mode and we are in a multi-store scenario.
+                // Otherwise, in a single store scenario, we just run the callback.
+                // If the registration callback is null, it's because it was associated with a component and we couldn't infer
+                // its render mode, which means is an SSR only component and we don't need to persist its state at all.
+                continue;
+            }
+
+            var result = ExecuteCallback(registration.Callback, _logger);
             if (!result.IsCompletedSuccessfully)
             {
                 pendingCallbackTasks ??= new();

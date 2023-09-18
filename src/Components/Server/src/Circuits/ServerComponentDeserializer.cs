@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json;
@@ -270,6 +271,95 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
         return (componentDescriptor, serverComponent);
     }
 
+    public bool TryDeserializeRootComponentOperations(string serializedComponentOperations, out (RootComponentOperation, ComponentDescriptor?)[] operations)
+    {
+        int[]? seenComponentIdsStorage = null;
+        try
+        {
+            var result = JsonSerializer.Deserialize<RootComponentOperation[]>(
+                serializedComponentOperations,
+                ServerComponentSerializationSettings.JsonSerializationOptions);
+
+            operations = new (RootComponentOperation, ComponentDescriptor?)[result.Length];
+
+            Span<int> seenComponentIds = result.Length <= 128
+                ? stackalloc int[result.Length]
+                : (seenComponentIdsStorage = ArrayPool<int>.Shared.Rent(result.Length)).AsSpan(0, result.Length);
+            var currentComponentIdIndex = 0;
+            for (var i = 0; i < result.Length; i++)
+            {
+                var operation = result[i];
+                if (operation.Type == RootComponentOperationType.Remove ||
+                    operation.Type == RootComponentOperationType.Update)
+                {
+                    if (operation.ComponentId == null)
+                    {
+                        Log.InvalidRootComponentOperation(_logger, operation.Type, message: "Missing component ID.");
+                        operations = null;
+                        return false;
+                    }
+
+                    if (seenComponentIds[0..currentComponentIdIndex]
+                        .Contains(operation.ComponentId.Value))
+                    {
+                        Log.InvalidRootComponentOperation(_logger, operation.Type, message: "Duplicate component ID.");
+                        operations = null;
+                        return false;
+                    }
+
+                    seenComponentIds[currentComponentIdIndex++] = operation.ComponentId.Value;
+                }
+
+                if (operation.Type == RootComponentOperationType.Remove)
+                {
+                    operations[i] = (operation, null);
+                    continue;
+                }
+
+                if (operation.Type == RootComponentOperationType.Add)
+                {
+                    if (operation.SelectorId is not { } selectorId)
+                    {
+                        Log.InvalidRootComponentOperation(_logger, operation.Type, message: "Missing selector ID.");
+                        operations = null;
+                        return false;
+                    }
+                }
+
+                if (operation.Marker == null)
+                {
+                    Log.InvalidRootComponentOperation(_logger, operation.Type, message: "Missing marker.");
+                    operations = null;
+                    return false;
+                }
+
+                if (!TryDeserializeSingleComponentDescriptor(operation.Marker.Value, out var descriptor))
+                {
+                    operations = null;
+                    return false;
+                }
+
+                operations[i] = (operation, descriptor);
+            }
+
+            return true;
+
+        }
+        catch (Exception ex)
+        {
+            Log.FailedToProcessRootComponentOperations(_logger, ex);
+            operations = null;
+            return false;
+        }
+        finally
+        {
+            if (seenComponentIdsStorage != null)
+            {
+                ArrayPool<int>.Shared.Return(seenComponentIdsStorage);
+            }
+        }
+    }
+
     private static partial class Log
     {
         [LoggerMessage(1, LogLevel.Debug, "Failed to deserialize the component descriptor.", EventName = "FailedToDeserializeDescriptor")]
@@ -301,5 +391,11 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
 
         [LoggerMessage(10, LogLevel.Debug, "The descriptor with sequence '{sequence}' was already used for the current invocationId '{invocationId}'.", EventName = "ReusedDescriptorSequence")]
         public static partial void ReusedDescriptorSequence(ILogger<ServerComponentDeserializer> logger, int sequence, string invocationId);
+
+        [LoggerMessage(11, LogLevel.Debug, "The root component operation of type '{OperationType}' was invalid: {Message}", EventName = "InvalidRootComponentOperation")]
+        public static partial void InvalidRootComponentOperation(ILogger logger, RootComponentOperationType operationType, string message);
+
+        [LoggerMessage(12, LogLevel.Debug, "Failed to parse root component operations", EventName = nameof(FailedToProcessRootComponentOperations))]
+        public static partial void FailedToProcessRootComponentOperations(ILogger logger, Exception exception);
     }
 }
