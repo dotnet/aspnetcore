@@ -18,6 +18,7 @@ import { RootComponentsFunctions } from './Rendering/JSRootComponents';
 import { attachWebRendererInterop } from './Rendering/WebRendererInteropMethods';
 import { WebStartOptions } from './Platform/WebStartOptions';
 import { RuntimeAPI } from 'dotnet';
+import { JSEventRegistry } from './Services/JSEventRegistry';
 
 // TODO: It's kind of hard to tell which .NET platform(s) some of these APIs are relevant to.
 // It's important to know this information when dealing with the possibility of mulitple .NET platforms being available.
@@ -29,10 +30,12 @@ import { RuntimeAPI } from 'dotnet';
 // * Blazor._internal.{foo}: internal, platform-agnostic Blazor APIs
 // * Blazor.platform.{somePlatformName}.{foo}: public, platform-specific Blazor APIs (would be empty at first, so no initial breaking changes)
 // * Blazor.platform.{somePlatformName}.{_internal}.{foo}: internal, platform-specific Blazor APIs
-interface IBlazor {
+export interface IBlazor {
   navigateTo: (uri: string, options: NavigationOptions) => void;
   registerCustomEventType: (eventName: string, options: EventTypeOptions) => void;
 
+  addEventListener?: typeof JSEventRegistry.prototype.addEventListener;
+  removeEventListener?: typeof JSEventRegistry.prototype.removeEventListener;
   disconnect?: () => void;
   reconnect?: (existingConnection?: HubConnection) => Promise<boolean>;
   defaultReconnectionHandler?: DefaultReconnectionHandler;
@@ -104,7 +107,7 @@ export const Blazor: IBlazor = {
     InputFile,
     NavigationLock,
     getJSDataStreamChunk: getNextChunk,
-    attachWebRendererInterop
+    attachWebRendererInterop,
   },
 };
 

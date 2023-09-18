@@ -186,6 +186,37 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     }
 
     [Fact]
+    public void Close_CanTrigger()
+    {
+        Browser.MountTestComponent<DialogEventsComponent>();
+
+        Browser.Exists(By.Id("show-dialog")).Click();
+
+        var output = Browser.Exists(By.Id("output"));
+        Assert.Equal(string.Empty, output.Text);
+
+        // Click
+        Browser.Exists(By.Id("dialog-close")).Click();
+        Browser.Equal("onclose,", () => output.Text);
+    }
+
+    [Fact]
+    public void Cancel_CanTrigger()
+    {
+        Browser.MountTestComponent<DialogEventsComponent>();
+
+        Browser.Exists(By.Id("show-dialog")).Click();
+
+        var output = Browser.Exists(By.Id("output"));
+        Assert.Equal(string.Empty, output.Text);
+
+        // Press escape to cancel. This fires both close and cancel, but MDN doesn't document in which order
+        Browser.FindElement(By.Id("my-dialog")).SendKeys(Keys.Escape);
+        Browser.Contains("onclose,", () => output.Text);
+        Browser.Contains("oncancel,", () => output.Text);
+    }
+
+    [Fact]
     public void PointerDown_CanTrigger()
     {
         Browser.MountTestComponent<MouseEventComponent>();

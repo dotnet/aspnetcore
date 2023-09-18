@@ -26,6 +26,7 @@ internal sealed class FormDataMapperOptions
     {
         _converters = new(WellKnownConverters.Converters);
         _factories.Add(new ParsableConverterFactory());
+        _factories.Add(new FileConverterFactory());
         _factories.Add(new EnumConverterFactory());
         _factories.Add(new NullableConverterFactory());
         _factories.Add(new DictionaryConverterFactory());

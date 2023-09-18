@@ -63,6 +63,14 @@
           }
         },
         {
+          "condition": "(UseWebAssembly && InteractiveAtRoot)",
+          "rename": {
+            "BlazorWeb-CSharp/Components/Layout/": "./BlazorWeb-CSharp.Client/Layout/",
+            "BlazorWeb-CSharp/Components/Pages/": "./BlazorWeb-CSharp.Client/Pages/",
+            "BlazorWeb-CSharp/Components/Routes.razor": "./BlazorWeb-CSharp.Client/Routes.razor"
+          }
+        },
+        {
           "condition": "(!UseProgramMain)",
           "exclude": [
             "BlazorWeb-CSharp/Program.Main.cs"
@@ -78,7 +86,7 @@
           }
         },
         {
-          "condition": "!(UseServer || UseWebAssembly)",
+          "condition": "(!(UseServer && !UseWebAssembly))",
           "exclude": [
             "BlazorWeb-CSharp/Components/Pages/Counter.razor"
           ]
@@ -218,19 +226,62 @@
       },
       "replaces": "44300"
     },
-    "UseWebAssembly": {
+    "InteractivityPlatform": {
       "type": "parameter",
-      "datatype": "bool",
-      "defaultValue": "false",
-      "displayName": "_Use interactive WebAssembly components",
-      "description": "Configures whether to support rendering components interactively in the browser using WebAssembly. The default value is false."
+      "datatype": "choice",
+      "defaultValue": "Server",
+      "displayName": "_Interactivity type",
+      "description": "Chooses which hosting platform to use for interactive components",
+      "choices": [
+        {
+          "choice": "None",
+          "displayName": "None",
+          "description": "No interactivity (static server rendering only)"
+        },
+        {
+          "choice": "Server",
+          "displayName": "Server",
+          "description": "Runs on the server"
+        },
+        {
+          "choice": "WebAssembly",
+          "displayName": "WebAssembly",
+          "description": "Runs in the browser using WebAssembly"
+        },
+        {
+          "choice": "Auto",
+          "displayName": "Auto (Server and WebAssembly)",
+          "description": "Uses Server while downloading WebAssembly assets, then uses WebAssembly"
+        }
+      ]
+    },
+    "InteractivityLocation": {
+      "type": "parameter",
+      "datatype": "choice",
+      "defaultValue": "InteractivePerPage",
+      "displayName": "_Interactivity location",
+      "description": "Chooses which components will have interactive rendering enabled",
+      "isEnabled": "(InteractivityPlatform != \"None\")",
+      "choices": [
+        {
+          "choice": "InteractivePerPage",
+          "displayName": "Per page/component",
+          "description": "Interactivity is applied on a per-page or per-component basis"
+        },
+        {
+          "choice": "InteractiveGlobal",
+          "displayName": "Global",
+          "description": "Interactivity is applied at the root level"
+        }
+      ]
+    },
+    "UseWebAssembly": {
+      "type": "computed",
+      "value": "(InteractivityPlatform == \"WebAssembly\" || InteractivityPlatform == \"Auto\")"
     },
     "UseServer": {
-      "type": "parameter",
-      "datatype": "bool",
-      "defaultValue": "true",
-      "displayName": "_Use interactive server components",
-      "description": "Configures whether to support rendering components interactively on the server via a SignalR WebSocket connection. The default value is true."
+      "type": "computed",
+      "value": "(InteractivityPlatform == \"Server\" || InteractivityPlatform == \"Auto\")"
     },
     "IncludeSampleContent": {
       "type": "parameter",
@@ -248,6 +299,18 @@
     "SampleContent": {
       "type": "computed",
       "value": "(((IncludeSampleContent && (HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\"))) || ((!Empty && (HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\"))))"
+    },
+    "AllInteractive": {
+      "type": "parameter",
+      "datatype": "bool",
+      "isEnabled": "(InteractivityPlatform != \"None\")",
+      "defaultValue": "false",
+      "displayName": "_Enable interactive rendering globally throughout the site",
+      "description": "Configures whether to make every page interactive by applying an interactive render mode at the top level. If false, pages will use static server rendering by default, and can be marked interactive on a per-page or per-component basis."
+    },
+    "InteractiveAtRoot": {
+      "type": "computed",
+      "value": "(InteractivityLocation == \"InteractiveGlobal\" || AllInteractive)"
     },
     "RequiresHttps": {
       "type": "computed",

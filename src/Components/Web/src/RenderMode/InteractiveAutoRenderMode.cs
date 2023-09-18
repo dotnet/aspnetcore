@@ -4,22 +4,22 @@
 namespace Microsoft.AspNetCore.Components.Web;
 
 /// <summary>
-/// A <see cref="IComponentRenderMode"/> indicating that the component's render mode should be determined automatically based on a policy.
+/// A <see cref="IComponentRenderMode"/> indicating that the component should be interactive, with its hosting platform determined automatically based on a policy.
 /// </summary>
-public class AutoRenderMode : IComponentRenderMode
+public class InteractiveAutoRenderMode : IComponentRenderMode
 {
     /// <summary>
-    /// Constructs an instance of <see cref="AutoRenderMode"/>.
+    /// Constructs an instance of <see cref="InteractiveAutoRenderMode"/>.
     /// </summary>
-    public AutoRenderMode() : this(true)
+    public InteractiveAutoRenderMode() : this(true)
     {
     }
 
     /// <summary>
-    /// Constructs an instance of <see cref="AutoRenderMode"/>
+    /// Constructs an instance of <see cref="InteractiveAutoRenderMode"/>
     /// </summary>
     /// <param name="prerender">A flag indicating whether the component should first prerender on the server. The default value is true.</param>
-    public AutoRenderMode(bool prerender)
+    public InteractiveAutoRenderMode(bool prerender)
     {
         Prerender = prerender;
     }

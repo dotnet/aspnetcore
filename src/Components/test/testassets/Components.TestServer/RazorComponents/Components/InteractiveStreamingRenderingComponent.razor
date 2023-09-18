@@ -176,12 +176,12 @@ else
     {
         return renderMode switch
         {
-            RenderModeId.ServerPrerendered => RenderMode.Server,
-            RenderModeId.ServerNonPrerendered => new ServerRenderMode(false),
-            RenderModeId.WebAssemblyPrerendered => RenderMode.WebAssembly,
-            RenderModeId.WebAssemblyNonPrerendered => new WebAssemblyRenderMode(false),
-            RenderModeId.AutoPrerendered => RenderMode.Auto,
-            RenderModeId.AutoNonPrerendered => new AutoRenderMode(false),
+            RenderModeId.ServerPrerendered => RenderMode.InteractiveServer,
+            RenderModeId.ServerNonPrerendered => new InteractiveServerRenderMode(false),
+            RenderModeId.WebAssemblyPrerendered => RenderMode.InteractiveWebAssembly,
+            RenderModeId.WebAssemblyNonPrerendered => new InteractiveWebAssemblyRenderMode(false),
+            RenderModeId.AutoPrerendered => RenderMode.InteractiveAuto,
+            RenderModeId.AutoNonPrerendered => new InteractiveAutoRenderMode(false),
             _ => throw new InvalidOperationException($"Unknown render mode: {renderMode}"),
         };
     }

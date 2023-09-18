@@ -129,8 +129,8 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
                 if (!found)
                 {
                     throw new InvalidOperationException($"Unable to find a provider for the render mode: {renderMode.GetType().FullName}. This generally " +
-                        "means that a call to 'AddWebAssemblyComponents' or 'AddServerComponents' is missing. " +
-                        "For example, change builder.Services.AddRazorComponents() to builder.Services.AddRazorComponents().AddServerComponents().");
+                        "means that a call to 'AddInteractiveWebAssemblyComponents' or 'AddInteractiveServerComponents' is missing. " +
+                        "For example, change builder.Services.AddRazorComponents() to builder.Services.AddRazorComponents().AddInteractiveServerComponents().");
                 }
             }
 

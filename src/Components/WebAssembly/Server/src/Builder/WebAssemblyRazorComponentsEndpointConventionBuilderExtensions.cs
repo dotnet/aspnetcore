@@ -13,10 +13,10 @@ namespace Microsoft.AspNetCore.Builder;
 public static class WebAssemblyRazorComponentsEndpointConventionBuilderExtensions
 {
     /// <summary>
-    /// Configures the <see cref="RenderMode.WebAssembly"/> for this application.
+    /// Configures the application to support the <see cref="RenderMode.InteractiveWebAssembly"/> render mode.
     /// </summary>
     /// <returns>The <see cref="RazorComponentsEndpointConventionBuilder"/>.</returns>
-    public static RazorComponentsEndpointConventionBuilder AddWebAssemblyRenderMode(
+    public static RazorComponentsEndpointConventionBuilder AddInteractiveWebAssemblyRenderMode(
         this RazorComponentsEndpointConventionBuilder builder,
         Action<WebAssemblyComponentsEndpointOptions>? callback = null)
     {

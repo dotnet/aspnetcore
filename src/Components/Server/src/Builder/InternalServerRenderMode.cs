@@ -5,6 +5,6 @@ using Microsoft.AspNetCore.Components.Web;
 
 namespace Microsoft.AspNetCore.Builder;
 
-internal class InternalServerRenderMode : ServerRenderMode
+internal class InternalServerRenderMode : InteractiveServerRenderMode
 {
 }

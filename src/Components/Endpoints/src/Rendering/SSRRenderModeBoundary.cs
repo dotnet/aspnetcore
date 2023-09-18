@@ -43,9 +43,9 @@ internal class SSRRenderModeBoundary : IComponent
         _renderMode = renderMode;
         _prerender = renderMode switch
         {
-            ServerRenderMode mode => mode.Prerender,
-            WebAssemblyRenderMode mode => mode.Prerender,
-            AutoRenderMode mode => mode.Prerender,
+            InteractiveServerRenderMode mode => mode.Prerender,
+            InteractiveWebAssemblyRenderMode mode => mode.Prerender,
+            InteractiveAutoRenderMode mode => mode.Prerender,
             _ => throw new ArgumentException($"Server-side rendering does not support the render mode '{renderMode}'.", nameof(renderMode))
         };
     }
@@ -65,14 +65,14 @@ internal class SSRRenderModeBoundary : IComponent
         var configuredModes = configuredRenderModesMetadata.ConfiguredRenderModes;
 
         // We have to allow for specified rendermodes being subclases of the known types
-        if (renderMode is ServerRenderMode || renderMode is AutoRenderMode)
+        if (renderMode is InteractiveServerRenderMode || renderMode is InteractiveAutoRenderMode)
         {
-            AssertRenderModeIsConfigured<ServerRenderMode>(componentType, renderMode, configuredModes, "AddServerRenderMode");
+            AssertRenderModeIsConfigured<InteractiveServerRenderMode>(componentType, renderMode, configuredModes, "AddInteractiveServerRenderMode");
         }
 
-        if (renderMode is WebAssemblyRenderMode || renderMode is AutoRenderMode)
+        if (renderMode is InteractiveWebAssemblyRenderMode || renderMode is InteractiveAutoRenderMode)
         {
-            AssertRenderModeIsConfigured<WebAssemblyRenderMode>(componentType, renderMode, configuredModes, "AddWebAssemblyRenderMode");
+            AssertRenderModeIsConfigured<InteractiveWebAssemblyRenderMode>(componentType, renderMode, configuredModes, "AddInteractiveWebAssemblyRenderMode");
         }
     }
 
@@ -165,13 +165,13 @@ internal class SSRRenderModeBoundary : IComponent
 
         var marker = _renderMode switch
         {
-            ServerRenderMode server => ComponentMarker.Create(ComponentMarker.ServerMarkerType, server.Prerender, _markerKey),
-            WebAssemblyRenderMode webAssembly => ComponentMarker.Create(ComponentMarker.WebAssemblyMarkerType, webAssembly.Prerender, _markerKey),
-            AutoRenderMode auto => ComponentMarker.Create(ComponentMarker.AutoMarkerType, auto.Prerender, _markerKey),
+            InteractiveServerRenderMode server => ComponentMarker.Create(ComponentMarker.ServerMarkerType, server.Prerender, _markerKey),
+            InteractiveWebAssemblyRenderMode webAssembly => ComponentMarker.Create(ComponentMarker.WebAssemblyMarkerType, webAssembly.Prerender, _markerKey),
+            InteractiveAutoRenderMode auto => ComponentMarker.Create(ComponentMarker.AutoMarkerType, auto.Prerender, _markerKey),
             _ => throw new UnreachableException($"Unknown render mode {_renderMode.GetType().FullName}"),
         };
 
-        if (_renderMode is ServerRenderMode or AutoRenderMode)
+        if (_renderMode is InteractiveServerRenderMode or InteractiveAutoRenderMode)
         {
             // Lazy because we don't actually want to require a whole chain of services including Data Protection
             // to be required unless you actually use Server render mode.
@@ -181,7 +181,7 @@ internal class SSRRenderModeBoundary : IComponent
             serverComponentSerializer.SerializeInvocation(ref marker, invocationId, _componentType, parameters);
         }
 
-        if (_renderMode is WebAssemblyRenderMode or AutoRenderMode)
+        if (_renderMode is InteractiveWebAssemblyRenderMode or InteractiveAutoRenderMode)
         {
             WebAssemblyComponentSerializer.SerializeInvocation(ref marker, _componentType, parameters);
         }

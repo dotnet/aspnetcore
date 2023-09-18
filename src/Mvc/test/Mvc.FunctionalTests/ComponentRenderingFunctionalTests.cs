@@ -40,7 +40,7 @@ public class ComponentRenderingFunctionalTests : IClassFixture<MvcTestFixture<Ba
     {
         // Arrange & Act
         var client = CreateClient(Factory.WithWebHostBuilder(builder =>
-            builder.ConfigureServices(services => services.AddRazorComponents().AddServerComponents())));
+            builder.ConfigureServices(services => services.AddRazorComponents().AddInteractiveServerComponents())));
 
         var response = await client.GetAsync("http://localhost/components/routable");
 
@@ -71,7 +71,7 @@ public class ComponentRenderingFunctionalTests : IClassFixture<MvcTestFixture<Ba
     {
         // Arrange & Act
         var client = CreateClient(Factory.WithWebHostBuilder(builder =>
-                builder.ConfigureServices(services => services.AddRazorComponents().AddServerComponents())));
+                builder.ConfigureServices(services => services.AddRazorComponents().AddInteractiveServerComponents())));
 
         var response = await client.GetAsync("http://localhost/components/routable");
 
@@ -87,7 +87,7 @@ public class ComponentRenderingFunctionalTests : IClassFixture<MvcTestFixture<Ba
     {
         // Arrange & Act
         var client = CreateClient(Factory.WithWebHostBuilder(builder =>
-            builder.ConfigureServices(services => services.AddRazorComponents().AddServerComponents())));
+            builder.ConfigureServices(services => services.AddRazorComponents().AddInteractiveServerComponents())));
 
         var response = await client.GetAsync("http://localhost/components/throws");
 

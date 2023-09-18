@@ -20,9 +20,9 @@ public class SSRRenderModeBoundaryTest
         httpContext.SetEndpoint(new Endpoint(null, new EndpointMetadataCollection(), null));
 
         // Act/Assert: no exception means we're OK
-        new SSRRenderModeBoundary(httpContext, typeof(TestComponent), new ServerRenderMode());
-        new SSRRenderModeBoundary(httpContext, typeof(TestComponent), new WebAssemblyRenderMode());
-        new SSRRenderModeBoundary(httpContext, typeof(TestComponent), new AutoRenderMode());
+        new SSRRenderModeBoundary(httpContext, typeof(TestComponent), new InteractiveServerRenderMode());
+        new SSRRenderModeBoundary(httpContext, typeof(TestComponent), new InteractiveWebAssemblyRenderMode());
+        new SSRRenderModeBoundary(httpContext, typeof(TestComponent), new InteractiveAutoRenderMode());
     }
 
     [Fact]
@@ -36,7 +36,7 @@ public class SSRRenderModeBoundaryTest
         var ex = Assert.Throws<InvalidOperationException>(() => new SSRRenderModeBoundary(
             httpContext, typeof(TestComponent), new ServerRenderModeSubclass()));
         Assert.Contains($"A component of type '{typeof(TestComponent)}' has render mode '{nameof(ServerRenderModeSubclass)}'", ex.Message);
-        Assert.Contains($"add a call to 'AddServerRenderMode'", ex.Message);
+        Assert.Contains($"add a call to 'AddInteractiveServerRenderMode'", ex.Message);
     }
 
     [Fact]
@@ -50,7 +50,7 @@ public class SSRRenderModeBoundaryTest
         var ex = Assert.Throws<InvalidOperationException>(() => new SSRRenderModeBoundary(
             httpContext, typeof(TestComponent), new WebAssemblyRenderModeSubclass()));
         Assert.Contains($"A component of type '{typeof(TestComponent)}' has render mode '{nameof(WebAssemblyRenderModeSubclass)}'", ex.Message);
-        Assert.Contains($"add a call to 'AddWebAssemblyRenderMode'", ex.Message);
+        Assert.Contains($"add a call to 'AddInteractiveWebAssemblyRenderMode'", ex.Message);
     }
 
     [Fact]
@@ -64,7 +64,7 @@ public class SSRRenderModeBoundaryTest
         var ex = Assert.Throws<InvalidOperationException>(() => new SSRRenderModeBoundary(
             httpContext, typeof(TestComponent), new AutoRenderModeSubclass()));
         Assert.Contains($"A component of type '{typeof(TestComponent)}' has render mode '{nameof(AutoRenderModeSubclass)}'", ex.Message);
-        Assert.Contains($"add a call to 'AddServerRenderMode'", ex.Message);
+        Assert.Contains($"add a call to 'AddInteractiveServerRenderMode'", ex.Message);
     }
 
     [Fact]
@@ -78,7 +78,7 @@ public class SSRRenderModeBoundaryTest
         var ex = Assert.Throws<InvalidOperationException>(() => new SSRRenderModeBoundary(
             httpContext, typeof(TestComponent), new AutoRenderModeSubclass()));
         Assert.Contains($"A component of type '{typeof(TestComponent)}' has render mode '{nameof(AutoRenderModeSubclass)}'", ex.Message);
-        Assert.Contains($"add a call to 'AddWebAssemblyRenderMode'", ex.Message);
+        Assert.Contains($"add a call to 'AddInteractiveWebAssemblyRenderMode'", ex.Message);
     }
 
     private static void PrepareEndpoint(HttpContext httpContext, params IComponentRenderMode[] configuredModes)
@@ -96,7 +96,7 @@ public class SSRRenderModeBoundaryTest
             => throw new NotImplementedException();
     }
 
-    class ServerRenderModeSubclass : ServerRenderMode { }
-    class WebAssemblyRenderModeSubclass : WebAssemblyRenderMode { }
-    class AutoRenderModeSubclass : AutoRenderMode { }
+    class ServerRenderModeSubclass : InteractiveServerRenderMode { }
+    class WebAssemblyRenderModeSubclass : InteractiveWebAssemblyRenderMode { }
+    class AutoRenderModeSubclass : InteractiveAutoRenderMode { }
 }

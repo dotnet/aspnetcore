@@ -506,7 +506,7 @@
   "blazor": {
     "NoInteractivity": {
       "Template": "blazor",
-      "Arguments": "new blazor --use-server false",
+      "Arguments": "new blazor --interactivity none",
       "Files": [
         "appsettings.Development.json",
         "appsettings.json",
@@ -556,8 +556,8 @@
       "AuthOption": "None"
     },
     "UseWebAssembly": {
-      "Template": "web",
-      "Arguments": "new blazor --use-server false --use-wasm",
+      "Template": "blazor",
+      "Arguments": "new blazor --interactivity webassembly",
       "Files": [
         "{ProjectName}.sln",
         "{ProjectName}/appsettings.Development.json",
@@ -571,7 +571,6 @@
         "{ProjectName}/Components/Layout/MainLayout.razor.css",
         "{ProjectName}/Components/Layout/NavMenu.razor",
         "{ProjectName}/Components/Layout/NavMenu.razor.css",
-        "{ProjectName}/Components/Pages/Counter.razor",
         "{ProjectName}/Components/Pages/Home.razor",
         "{ProjectName}/Components/Pages/Weather.razor",
         "{ProjectName}/Properties/launchSettings.json",
@@ -589,8 +588,8 @@
       "AuthOption": "None"
     },
     "UseServerAndWebAssembly": {
-      "Template": "web",
-      "Arguments": "new blazor --use-wasm",
+      "Template": "blazor",
+      "Arguments": "new blazor --interactivity auto",
       "Files": [
         "{ProjectName}.sln",
         "{ProjectName}/appsettings.Development.json",
@@ -604,7 +603,6 @@
         "{ProjectName}/Components/Layout/MainLayout.razor.css",
         "{ProjectName}/Components/Layout/NavMenu.razor",
         "{ProjectName}/Components/Layout/NavMenu.razor.css",
-        "{ProjectName}/Components/Pages/Counter.razor",
         "{ProjectName}/Components/Pages/Home.razor",
         "{ProjectName}/Components/Pages/Weather.razor",
         "{ProjectName}/Properties/launchSettings.json",
@@ -621,9 +619,99 @@
       ],
       "AuthOption": "None"
     },
+    "UseServerInteractiveAtRoot": {
+      "Template": "blazor",
+      "Arguments": "new blazor --all-interactive",
+      "Files": [
+        "appsettings.Development.json",
+        "appsettings.json",
+        "Components/App.razor",
+        "Components/Layout/MainLayout.razor",
+        "Components/Layout/MainLayout.razor.css",
+        "Components/Layout/NavMenu.razor",
+        "Components/Layout/NavMenu.razor.css",
+        "Components/Pages/Counter.razor",
+        "Components/Pages/Home.razor",
+        "Components/Pages/Weather.razor",
+        "Components/Routes.razor",
+        "Components/_Imports.razor",
+        "Program.cs",
+        "Properties/launchSettings.json",
+        "{ProjectName}.csproj",
+        "wwwroot/app.css",
+        "wwwroot/bootstrap/bootstrap.min.css",
+        "wwwroot/bootstrap/bootstrap.min.css.map",
+        "wwwroot/favicon.png"
+      ],
+      "AuthOption": "None"
+    },
+    "UseWebAssemblyInteractiveAtRoot": {
+      "Template": "blazor",
+      "Arguments": "new blazor --interactivity webassembly --all-interactive",
+      "Files": [
+        "{ProjectName}/appsettings.Development.json",
+        "{ProjectName}/appsettings.json",
+        "{ProjectName}/Components/App.razor",
+        "{ProjectName}/Components/_Imports.razor",
+        "{ProjectName}/Program.cs",
+        "{ProjectName}/Properties/launchSettings.json",
+        "{ProjectName}/{ProjectName}.csproj",
+        "{ProjectName}/wwwroot/app.css",
+        "{ProjectName}/wwwroot/bootstrap/bootstrap.min.css",
+        "{ProjectName}/wwwroot/bootstrap/bootstrap.min.css.map",
+        "{ProjectName}/wwwroot/favicon.png",
+        "{ProjectName}.Client/Layout/MainLayout.razor",
+        "{ProjectName}.Client/Layout/MainLayout.razor.css",
+        "{ProjectName}.Client/Layout/NavMenu.razor",
+        "{ProjectName}.Client/Layout/NavMenu.razor.css",
+        "{ProjectName}.Client/Pages/Counter.razor",
+        "{ProjectName}.Client/Pages/Home.razor",
+        "{ProjectName}.Client/Pages/Weather.razor",
+        "{ProjectName}.Client/Program.cs",
+        "{ProjectName}.Client/Routes.razor",
+        "{ProjectName}.Client/{ProjectName}.Client.csproj",
+        "{ProjectName}.Client/wwwroot/appsettings.Development.json",
+        "{ProjectName}.Client/wwwroot/appsettings.json",
+        "{ProjectName}.Client/_Imports.razor",
+        "{ProjectName}.sln"
+      ],
+      "AuthOption": "None"
+    },
+    "UseServerAndWebAssemblyInteractiveAtRoot": {
+      "Template": "blazor",
+      "Arguments": "new blazor --interactivity auto --all-interactive",
+      "Files": [
+        "{ProjectName}/appsettings.Development.json",
+        "{ProjectName}/appsettings.json",
+        "{ProjectName}/Components/App.razor",
+        "{ProjectName}/Components/_Imports.razor",
+        "{ProjectName}/Program.cs",
+        "{ProjectName}/Properties/launchSettings.json",
+        "{ProjectName}/{ProjectName}.csproj",
+        "{ProjectName}/wwwroot/app.css",
+        "{ProjectName}/wwwroot/bootstrap/bootstrap.min.css",
+        "{ProjectName}/wwwroot/bootstrap/bootstrap.min.css.map",
+        "{ProjectName}/wwwroot/favicon.png",
+        "{ProjectName}.Client/Layout/MainLayout.razor",
+        "{ProjectName}.Client/Layout/MainLayout.razor.css",
+        "{ProjectName}.Client/Layout/NavMenu.razor",
+        "{ProjectName}.Client/Layout/NavMenu.razor.css",
+        "{ProjectName}.Client/Pages/Counter.razor",
+        "{ProjectName}.Client/Pages/Home.razor",
+        "{ProjectName}.Client/Pages/Weather.razor",
+        "{ProjectName}.Client/Program.cs",
+        "{ProjectName}.Client/Routes.razor",
+        "{ProjectName}.Client/{ProjectName}.Client.csproj",
+        "{ProjectName}.Client/wwwroot/appsettings.Development.json",
+        "{ProjectName}.Client/wwwroot/appsettings.json",
+        "{ProjectName}.Client/_Imports.razor",
+        "{ProjectName}.sln"
+      ],
+      "AuthOption": "None"
+    },
     "EmptyNoInteractivity": {
       "Template": "blazor",
-      "Arguments": "new blazor --use-server false --empty",
+      "Arguments": "new blazor --interactivity none --empty",
       "Files": [
         "appsettings.Development.json",
         "appsettings.json",
@@ -660,8 +748,8 @@
       "AuthOption": "None"
     },
     "EmptyUseWebAssembly": {
-      "Template": "web",
-      "Arguments": "new blazor --use-server false --use-wasm --empty",
+      "Template": "blazor",
+      "Arguments": "new blazor --interactivity webassembly --empty",
       "Files": [
         "{ProjectName}.sln",
         "{ProjectName}/appsettings.Development.json",
@@ -683,8 +771,8 @@
       "AuthOption": "None"
     },
     "EmptyUseServerAndWebAssembly": {
-      "Template": "web",
-      "Arguments": "new blazor --use-wasm --empty",
+      "Template": "blazor",
+      "Arguments": "new blazor --interactivity auto --empty",
       "Files": [
         "{ProjectName}.sln",
         "{ProjectName}/appsettings.Development.json",
