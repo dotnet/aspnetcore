@@ -9,7 +9,7 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 #if (IndividualLocalAuth)
 builder.Services.AddAuthorizationCore();
 builder.Services.AddCascadingAuthenticationState();
-builder.Services.AddSingleton<AuthenticationStateProvider, PersistedAuthenticationStateProvider>();
+builder.Services.AddSingleton<AuthenticationStateProvider, PersistentAuthenticationStateProvider>();
 
 #endif
 await builder.Build().RunAsync();

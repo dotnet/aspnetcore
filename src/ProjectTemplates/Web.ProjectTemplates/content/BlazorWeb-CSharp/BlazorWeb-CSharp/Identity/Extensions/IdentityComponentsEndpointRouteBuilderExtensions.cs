@@ -18,7 +18,8 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
     {
         ArgumentNullException.ThrowIfNull(endpoints);
 
-        var logger = endpoints.ServiceProvider.GetRequiredService<ILogger<IdentityComponentsEndpointRouteBuilderExtensions>>();
+        var loggerFactory = endpoints.ServiceProvider.GetRequiredService<ILoggerFactory>();
+        var logger = loggerFactory.CreateLogger("IdentityUI");
         var accountGroup = endpoints.MapGroup("/Account");
 
         accountGroup.MapPost("/PerformExternalLogin", (
@@ -35,7 +36,7 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
                 context.Request.PathBase,
                 $"/Account/ExternalLogin",
                 QueryString.Create(query));
-                
+
             var properties = signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
             return Results.Challenge(properties, [provider]);
         });
@@ -72,7 +73,7 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
                 context.Request.PathBase,
                 $"/Account/Manage/ExternalLogins",
                 QueryString.Create("Action", ExternalLogins.LinkLoginCallbackAction));
-                
+
             var properties = signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl, signInManager.UserManager.GetUserId(context.User));
             return Results.Challenge(properties, [provider]);
         });
