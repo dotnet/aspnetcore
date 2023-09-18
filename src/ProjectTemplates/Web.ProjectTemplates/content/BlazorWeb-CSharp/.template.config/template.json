@@ -130,7 +130,7 @@
           ]
         },
         {
-          "condition": "(IndividualLocalAuth && UseLocalDB)",
+          "condition": "(IndividualLocalAuth && UseLocalDB && UseWebAssembly)",
           "rename": {
             "BlazorWeb-CSharp/Data/SqlServer/": "BlazorWeb-CSharp/Data/Migrations/"
           },
@@ -139,9 +139,27 @@
           ]
         },
         {
-          "condition": "(IndividualLocalAuth && !UseLocalDB)",
+          "condition": "(IndividualLocalAuth && UseLocalDB && !UseWebAssembly)",
+          "rename": {
+            "BlazorWeb-CSharp/Data/SqlServer/": "Data/Migrations/"
+          },
+          "exclude": [
+            "BlazorWeb-CSharp/Data/SqlLite/**"
+          ]
+        },
+        {
+          "condition": "(IndividualLocalAuth && !UseLocalDB && UseWebAssembly)",
           "rename": {
             "BlazorWeb-CSharp/Data/SqlLite/": "BlazorWeb-CSharp/Data/Migrations/"
+          },
+          "exclude": [
+            "BlazorWeb-CSharp/Data/SqlServer/**"
+          ]
+        },
+        {
+          "condition": "(IndividualLocalAuth && !UseLocalDB && !UseWebAssembly)",
+          "rename": {
+            "BlazorWeb-CSharp/Data/SqlLite/": "Data/Migrations/"
           },
           "exclude": [
             "BlazorWeb-CSharp/Data/SqlServer/**"
