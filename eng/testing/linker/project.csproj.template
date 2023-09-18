@@ -25,9 +25,9 @@
   <ItemGroup>
     <KnownILLinkPack
       Include="@(KnownILLinkPack->WithMetadataValue('TargetFramework', 'net8.0'))"
-      TargetFramework="{DefaultNetCoreTargetFramework}"
+      TargetFramework="{TargetFramework}"
       Condition="'@(KnownILLinkPack->Count())' != '0' AND
-        !(@(KnownILLinkPack->AnyHaveMetadataValue('TargetFramework', '{DefaultNetCoreTargetFramework}')))" />
+        !(@(KnownILLinkPack->AnyHaveMetadataValue('TargetFramework', '{TargetFramework}')))" />
   </ItemGroup>
 
 </Project>
