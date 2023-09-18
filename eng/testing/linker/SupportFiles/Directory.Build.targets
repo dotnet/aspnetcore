@@ -14,6 +14,10 @@
                       Version="$(MicrosoftNETCoreAppRuntimeVersion)" />
 
     <!-- Workaround when there is no vNext SDK available; copy known packs info from 8.0. -->
+    <KnownFrameworkReference Include="@(KnownFrameworkReference->WithMetadataValue('TargetFramework', 'net8.0'))"
+                     TargetFramework="$(TargetFramework)"
+                     Condition="'@(KnownFrameworkReference->Count())' != '0' AND
+                                 !(@(KnownFrameworkReference->AnyHaveMetadataValue('TargetFramework', '$(TargetFramework)')))" />
     <KnownILLinkPack Include="@(KnownILLinkPack->WithMetadataValue('TargetFramework', 'net8.0'))"
                      TargetFramework="$(TargetFramework)"
                      Condition="'@(KnownILLinkPack->Count())' != '0' AND
