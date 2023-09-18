@@ -40,6 +40,30 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         DispatchToFormCore(dispatchToForm);
     }
 
+    [Fact]
+    public void PlainFormIsNotEnhancedByDefault()
+    {
+        var dispatchToForm = new DispatchToForm(this)
+        {
+            Url = $"forms/non-enhanced-plainform",
+            FormCssSelector = "form",
+            FormIsEnhanced = false,
+        };
+        DispatchToFormCore(dispatchToForm);
+    }
+
+    [Fact]
+    public void EditFormIsNotEnhancedByDefault()
+    {
+        var dispatchToForm = new DispatchToForm(this)
+        {
+            Url = $"forms/non-enhanced-editform",
+            FormCssSelector = "form",
+            FormIsEnhanced = false,
+        };
+        DispatchToFormCore(dispatchToForm);
+    }
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
@@ -1267,7 +1291,12 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
                 }
             }
 
-            if (!dispatch.SuppressEnhancedNavigation)
+            if (!dispatch.FormIsEnhanced)
+            {
+                // Verify the same form element is *not* still in the page
+                Assert.Throws<StaleElementReferenceException>(() => form.GetAttribute("method"));
+            }
+            else if (!dispatch.SuppressEnhancedNavigation)
             {
                 // Verify the same form element is still in the page
                 // We wouldn't be allowed to read the attribute if the element is stale
@@ -1306,6 +1335,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         public Action UpdateFormAction { get; internal set; }
         public Action<ReadOnlyCollection<IWebElement>> AssertErrors { get; internal set; }
         public string ErrorSelector { get; internal set; } = "#errors > li";
+        public bool FormIsEnhanced { get; internal set; } = true; // Default to true because that's the case for almost all test cases
     }
 
     private string GetExpectedTarget(FormWithParentBindingContextTest test, string expectedActionValue, string url)

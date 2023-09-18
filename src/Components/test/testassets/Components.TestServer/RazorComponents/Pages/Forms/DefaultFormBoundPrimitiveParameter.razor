@@ -3,7 +3,7 @@
 
 <h2>Default form with bound parameter</h2>
 
-<form method="post" @onsubmit="() => _submitted = true" @formname="myform">
+<form data-enhance method="post" @onsubmit="() => _submitted = true" @formname="myform">
     <input type="text" name="Parameter" value="@(_attemptedValue ?? Parameter.ToString())" />
     <input id="send" type="submit" value="Send" />
     <AntiforgeryToken />
@@ -14,7 +14,7 @@
     var errors = Context.GetErrors("Parameter");
     if (errors == null)
     {
-        <p id="pass">Your number is @Parameter!</p>        
+        <p id="pass">Your number is @Parameter!</p>
     }else
     {
         <p>There were errors:</p>
