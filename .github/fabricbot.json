@@ -3304,7 +3304,7 @@
             {
               "name": "prTargetsBranch",
               "parameters": {
-                "branchName": "release/8.0-rc1"
+                "branchName": "release/8.0-rc2"
               }
             }
           ]
@@ -3315,7 +3315,7 @@
           "issues",
           "project_card"
         ],
-        "taskName": "[Milestone Assignments] Assign Milestone to PRs merged to release/8.0-rc1 branch",
+        "taskName": "[Milestone Assignments] Assign Milestone to PRs merged to release/8.0-rc2 branch",
         "actions": [
           {
             "name": "removeMilestone",
@@ -3324,7 +3324,7 @@
           {
             "name": "addMilestone",
             "parameters": {
-              "milestoneName": "8.0-rc1"
+              "milestoneName": "8.0-rc2"
             }
           }
         ]
@@ -3368,7 +3368,7 @@
           {
             "name": "addMilestone",
             "parameters": {
-              "milestoneName": "8.0-rc2"
+              "milestoneName": "8.0.0"
             }
           }
         ]
