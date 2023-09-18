@@ -20,14 +20,4 @@
   <ItemGroup>
     {AdditionalProjectReferences}
   </ItemGroup>
-
-  <!-- Workaround when there is no vNext SDK available; copy known apphost/framework reference info from 8.0. -->
-  <ItemGroup>
-    <KnownILLinkPack
-      Include="@(KnownILLinkPack->WithMetadataValue('TargetFramework', 'net8.0'))"
-      TargetFramework="{TargetFramework}"
-      Condition="'@(KnownILLinkPack->Count())' != '0' AND
-        !(@(KnownILLinkPack->AnyHaveMetadataValue('TargetFramework', '{TargetFramework}')))" />
-  </ItemGroup>
-
 </Project>

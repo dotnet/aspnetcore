@@ -12,7 +12,15 @@
 
     <PackageReference Include="Microsoft.DotNet.ILCompiler"
                       Version="$(MicrosoftNETCoreAppRuntimeVersion)" />
+
+    <KnownILLinkPack Include="@(KnownILLinkPack->WithMetadataValue('TargetFramework', 'net8.0'))"
+                     TargetFramework="$(TargetFramework)"
+                     Condition="'@(KnownILLinkPack->Count())' != '0' AND
+                                 !(@(KnownILLinkPack->AnyHaveMetadataValue('TargetFramework', '$(TargetFramework)')))" />
+
   </ItemGroup>
+
+  <!-- Workaround when there is no vNext SDK available; copy known apphost/framework reference info from 8.0. -->
 
   <!--
   Reference the Microsoft.AspNetCore.App shared framework assemblies with ProjectReference.
