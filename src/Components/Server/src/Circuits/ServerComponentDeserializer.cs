@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json;
@@ -272,6 +273,7 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
 
     public bool TryDeserializeRootComponentOperations(string serializedComponentOperations, out (RootComponentOperation, ComponentDescriptor?)[] operations)
     {
+        int[]? seenComponentIdsStorage = null;
         try
         {
             var result = JsonSerializer.Deserialize<RootComponentOperation[]>(
@@ -280,6 +282,10 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
 
             operations = new (RootComponentOperation, ComponentDescriptor?)[result.Length];
 
+            Span<int> seenComponentIds = result.Length <= 128
+                ? stackalloc int[result.Length]
+                : (seenComponentIdsStorage = ArrayPool<int>.Shared.Rent(result.Length)).AsSpan(0, result.Length);
+            var currentComponentIdIndex = 0;
             for (var i = 0; i < result.Length; i++)
             {
                 var operation = result[i];
@@ -293,6 +299,15 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
                         return false;
                     }
 
+                    if (seenComponentIds[0..currentComponentIdIndex]
+                        .Contains(operation.ComponentId.Value))
+                    {
+                        Log.InvalidRootComponentOperation(_logger, operation.Type, message: "Duplicate component ID.");
+                        operations = null;
+                        return false;
+                    }
+
+                    seenComponentIds[currentComponentIdIndex++] = operation.ComponentId.Value;
                 }
 
                 if (operation.Type == RootComponentOperationType.Remove)
@@ -335,6 +350,13 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
             Log.FailedToProcessRootComponentOperations(_logger, ex);
             operations = null;
             return false;
+        }
+        finally
+        {
+            if (seenComponentIdsStorage != null)
+            {
+                ArrayPool<int>.Shared.Return(seenComponentIdsStorage);
+            }
         }
     }
 

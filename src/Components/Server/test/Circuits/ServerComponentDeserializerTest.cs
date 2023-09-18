@@ -3,7 +3,6 @@
 
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.Endpoints;
-using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -435,6 +434,41 @@ public class ServerComponentDeserializerTest
         };
         var operationsJson = JsonSerializer.Serialize(
             new[] { operation },
+            ServerComponentSerializationSettings.JsonSerializationOptions);
+
+        var deserializer = CreateServerComponentDeserializer();
+
+        // Act
+        var result = deserializer.TryDeserializeRootComponentOperations(operationsJson, out var parsed);
+
+        // Assert
+        Assert.False(result);
+        Assert.Null(parsed);
+    }
+
+    [Fact]
+    public void UpdateRootComponents_TryDeserializeRootComponentOperationsReturnsFalse_WhenComponentIdIsRepeated()
+    {
+        // Arrange
+        var operation = new RootComponentOperation
+        {
+            Type = RootComponentOperationType.Update,
+            ComponentId = 1,
+            Marker = CreateMarker(typeof(DynamicallyAddedComponent), new()
+            {
+                ["Message"] = "Some other message",
+            }),
+        };
+
+        var other = new RootComponentOperation
+        {
+            Type = RootComponentOperationType.Remove,
+            ComponentId = 1,
+            Marker = CreateMarker(typeof(DynamicallyAddedComponent)),
+        };
+
+        var operationsJson = JsonSerializer.Serialize(
+            new[] { operation, other },
             ServerComponentSerializationSettings.JsonSerializationOptions);
 
         var deserializer = CreateServerComponentDeserializer();

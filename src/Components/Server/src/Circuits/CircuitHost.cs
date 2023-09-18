@@ -731,7 +731,7 @@ internal partial class CircuitHost : IAsyncDisposable
         IServerComponentDeserializer serverComponentDeserializer,
         CancellationToken cancellation)
     {
-        Log.InitializationStarted(_logger);
+        Log.UpdateRootComponentsStarted(_logger);
 
         return Renderer.Dispatcher.InvokeAsync(async () =>
         {
@@ -795,6 +795,7 @@ internal partial class CircuitHost : IAsyncDisposable
                                 throw new InvalidOperationException($"Incorrect type for descriptor '{descriptor.ComponentType.FullName}'");
                             }
 
+                            // We don't need to await component updates as any unhandled exception will be reported and terminate the circuit.
                             _ = Renderer.UpdateRootComponentAsync(operation.ComponentId.Value, descriptor.Parameters);
 
                             break;
@@ -809,12 +810,12 @@ internal partial class CircuitHost : IAsyncDisposable
                     await Task.WhenAll(pendingTasks);
                 }
 
-                Log.InitializationSucceeded(_logger);
+                Log.UpdateRootComponentsSucceeded(_logger);
             }
             catch (Exception ex)
             {
-                // Report errors asynchronously. InitializeAsync is designed not to throw.
-                Log.InitializationFailed(_logger, ex);
+                // Report errors asynchronously. UpdateRootComponents is designed not to throw.
+                Log.UpdateRootComponentsFailed(_logger, ex);
                 UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
                 await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex), ex);
             }
@@ -868,6 +869,15 @@ internal partial class CircuitHost : IAsyncDisposable
 
         [LoggerMessage(110, LogLevel.Error, "Unhandled error invoking circuit handler type {handlerType}.{handlerMethod}: {Message}", EventName = "CircuitHandlerFailed")]
         private static partial void CircuitHandlerFailed(ILogger logger, Type handlerType, string handlerMethod, string message, Exception exception);
+
+        [LoggerMessage(111, LogLevel.Debug, "Update root components started.", EventName = nameof(UpdateRootComponentsStarted))]
+        public static partial void UpdateRootComponentsStarted(ILogger logger);
+
+        [LoggerMessage(112, LogLevel.Debug, "Update root components succeeded.", EventName = nameof(UpdateRootComponentsSucceeded))]
+        public static partial void UpdateRootComponentsSucceeded(ILogger logger);
+
+        [LoggerMessage(113, LogLevel.Debug, "Update root components failed.", EventName = nameof(UpdateRootComponentsFailed))]
+        public static partial void UpdateRootComponentsFailed(ILogger logger, Exception exception);
 
         public static void CircuitHandlerFailed(ILogger logger, CircuitHandler handler, string handlerMethod, Exception exception)
         {

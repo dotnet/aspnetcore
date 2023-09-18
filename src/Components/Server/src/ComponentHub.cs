@@ -176,6 +176,8 @@ internal sealed partial class ComponentHub : Hub
             await _circuitRegistry.TerminateAsync(circuitHost.CircuitId);
             await NotifyClientError(Clients.Caller, "The list of component operations is not valid.");
             Context.Abort();
+
+            return;
         }
 
         var store = !string.IsNullOrEmpty(applicationState) ?

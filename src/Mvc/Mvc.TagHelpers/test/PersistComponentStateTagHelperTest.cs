@@ -92,7 +92,7 @@ public class PersistComponentStateTagHelperTest
         {
             manager.State.PersistAsJson("state", "state value");
             return Task.CompletedTask;
-        }, new InteractiveWebAssemblyRenderMode());
+        }, RenderMode.InteractiveWebAssembly);
         await tagHelper.ProcessAsync(context, output);
 
         // Assert
@@ -151,7 +151,7 @@ public class PersistComponentStateTagHelperTest
         {
             manager.State.PersistAsJson("state", "state value");
             return Task.CompletedTask;
-        }, new InteractiveServerRenderMode());
+        }, RenderMode.InteractiveServer);
 
         await tagHelper.ProcessAsync(context, output);
 
@@ -204,7 +204,7 @@ public class PersistComponentStateTagHelperTest
         {
             manager.State.PersistAsJson("state", "state value");
             return Task.CompletedTask;
-        }, new InteractiveServerRenderMode());
+        }, RenderMode.InteractiveServer);
 
         await tagHelper.ProcessAsync(context, output);
 
