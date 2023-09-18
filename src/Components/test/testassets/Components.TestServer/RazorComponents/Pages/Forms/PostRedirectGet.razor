@@ -4,12 +4,12 @@
 
 <h3>Post/Redirect/Get</h3>
 
-<form method="post" @formname="sync-form" @onsubmit="@DoRedirection">
+<form data-enhance method="post" @formname="sync-form" @onsubmit="@DoRedirection">
     <AntiforgeryToken />
     <button id="sync-redirect" type="submit">Redirect synchronously</button>
 </form>
 
-<form method="post" @formname="async-form" @onsubmit="@DoAsyncRedirection">
+<form data-enhance method="post" @formname="async-form" @onsubmit="@DoAsyncRedirection">
     <AntiforgeryToken />
     <button id="async-redirect" type="submit">Redirect asynchronously</button>
 </form>

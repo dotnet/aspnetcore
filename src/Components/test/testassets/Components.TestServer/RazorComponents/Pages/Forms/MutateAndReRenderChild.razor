@@ -2,7 +2,7 @@
 
 <h2>Render count: <span id="render-count">@(++renderCount)</span></h2>
 
-<form method="post" @formname="mutate-and-notify" @onsubmit="HandleSubmit">
+<form data-enhance method="post" @formname="mutate-and-notify" @onsubmit="HandleSubmit">
     <AntiforgeryToken />
     <p>
         Simple value:

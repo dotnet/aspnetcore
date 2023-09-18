@@ -3,7 +3,7 @@
 
 <p><a href="@(Nav.GetUriWithQueryParameter(nameof(ThrowDuringInitialRender), true))">Throw during initial render</a></p>
 
-<form method="post" @formname="trigger-error" @onsubmit="TriggerError">
+<form data-enhance method="post" @formname="trigger-error" @onsubmit="TriggerError">
     <AntiforgeryToken />
     <button id="throw-sync" type="submit" name="@(nameof(Scenario))" value="ThrowDuringEventSync">Throw during event synchronously</button>
     <button id="throw-async" type="submit" name="@(nameof(Scenario))" value="ThrowDuringEventAsync">Throw during event asynchronously</button>

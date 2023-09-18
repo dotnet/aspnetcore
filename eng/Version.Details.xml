@@ -329,9 +329,9 @@
       <Sha>9a1c3e1b7f0c8763d4c96e593961a61a72679a7b</Sha>
       <SourceBuild RepoName="xdt" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="8.0.0-alpha.1.23461.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="9.0.0-alpha.1.23465.1">
       <Uri>https://github.com/dotnet/source-build-reference-packages</Uri>
-      <Sha>264d80ed1ee84b458328b2df68f9930deac08bff</Sha>
+      <Sha>eeb7f1b24a845eebf3e0885a4650b8df67741d4a</Sha>
       <SourceBuild RepoName="source-build-reference-packages" ManagedOnly="true" />
     </Dependency>
     <!-- Not updated automatically -->
@@ -363,9 +363,9 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>fd20f42f1f4fa77a0facde02e0c1527fa26e95cb</Sha>
     </Dependency>
-    <Dependency Name="System.Drawing.Common" Version="9.0.0-alpha.1.23460.1">
+    <Dependency Name="System.Drawing.Common" Version="9.0.0-alpha.1.23467.2">
       <Uri>https://github.com/dotnet/winforms</Uri>
-      <Sha>478c4e1d28e9adf29938c135aedbb31be47289fd</Sha>
+      <Sha>159522f33a2e7b38b46f17cbe02a037af2bbde8f</Sha>
     </Dependency>
     <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="8.0.0-beta.23451.1">
       <Uri>https://github.com/dotnet/arcade</Uri>
@@ -389,6 +389,10 @@
       <Sha>4665b3d04e1da3796b965c3c3e3b97f55c449a6e</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Telemetry.Testing" Version="9.0.0-alpha.1.23460.2">
+      <Uri>https://github.com/dotnet/extensions</Uri>
+      <Sha>c56a1b709d96dd30c9bf767cf0ded347b690c6a1</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.Extensions.TimeProvider.Testing" Version="9.0.0-alpha.1.23460.2">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>c56a1b709d96dd30c9bf767cf0ded347b690c6a1</Sha>
     </Dependency>

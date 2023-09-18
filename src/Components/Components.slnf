@@ -42,6 +42,7 @@
       "src\\Components\\WebView\\Samples\\PhotinoPlatform\\testassets\\PhotinoTestApp\\PhotinoTestApp.csproj",
       "src\\Components\\WebView\\WebView\\src\\Microsoft.AspNetCore.Components.WebView.csproj",
       "src\\Components\\WebView\\WebView\\test\\Microsoft.AspNetCore.Components.WebView.Test.csproj",
+      "src\\Components\\WebView\\test\\E2ETest\\Microsoft.AspNetCore.Components.WebViewE2E.Test.csproj",
       "src\\Components\\Web\\src\\Microsoft.AspNetCore.Components.Web.csproj",
       "src\\Components\\Web\\test\\Microsoft.AspNetCore.Components.Web.Tests.csproj",
       "src\\Components\\benchmarkapps\\BlazingPizza.Server\\BlazingPizza.Server.csproj",
