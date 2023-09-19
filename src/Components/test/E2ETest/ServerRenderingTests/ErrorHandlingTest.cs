@@ -31,6 +31,7 @@ public class ErrorHandlingTest(BrowserFixture browserFixture, BasicTestAppServer
             Browser.FindElements(By.CssSelector(".text-danger")),
             item => Assert.Equal("Error.", item.Text),
             item => Assert.Equal("An error occurred while processing your request.", item.Text));
+        Browser.Equal("False", () => Browser.FindElement(By.Id("is-interactive-server")).Text);
     }
 
     private void GoTo(string relativePath)

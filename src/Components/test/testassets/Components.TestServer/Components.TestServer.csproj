@@ -43,4 +43,10 @@
     </AssemblyAttribute>
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="RazorComponents\Pages\ErrorLayout.razor">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+    </Content>
+  </ItemGroup>
+
 </Project>

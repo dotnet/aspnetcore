@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Routing;
-using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Routing;
@@ -60,7 +59,6 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         if (_httpContext is null)
         {
             _httpContext = httpContext;
-            _allowBoundaryMarkers = _httpContext.Features.Get<IExceptionHandlerFeature>() is null;
         }
         else if (_httpContext != httpContext)
         {

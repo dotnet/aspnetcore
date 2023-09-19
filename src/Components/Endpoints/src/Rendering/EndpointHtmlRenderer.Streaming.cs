@@ -19,10 +19,11 @@ internal partial class EndpointHtmlRenderer
     private TextWriter? _streamingUpdatesWriter;
     private HashSet<int>? _visitedComponentIdsInCurrentStreamingBatch;
     private string? _ssrFramingCommentMarkup;
-    private bool _allowBoundaryMarkers;
+    private bool _isHandlingErrors;
 
-    public void InitializeStreamingRenderingFraming(HttpContext httpContext)
+    public void InitializeStreamingRenderingFraming(HttpContext httpContext, bool isErrorHandler)
     {
+        _isHandlingErrors = isErrorHandler;
         if (IsProgressivelyEnhancedNavigation(httpContext.Request))
         {
             var id = Guid.NewGuid().ToString();
@@ -203,7 +204,7 @@ internal partial class EndpointHtmlRenderer
     {
         var componentId = componentFrame.ComponentId;
         var sequenceAndKey = new SequenceAndKey(componentFrame.Sequence, componentFrame.ComponentKey);
-        WriteComponentHtml(componentId, output, _allowBoundaryMarkers, sequenceAndKey);
+        WriteComponentHtml(componentId, output, allowBoundaryMarkers: true, sequenceAndKey);
     }
 
     private void WriteComponentHtml(int componentId, TextWriter output, bool allowBoundaryMarkers, SequenceAndKey sequenceAndKey = default)
@@ -211,11 +212,11 @@ internal partial class EndpointHtmlRenderer
         _visitedComponentIdsInCurrentStreamingBatch?.Add(componentId);
 
         var componentState = (EndpointComponentState)GetComponentState(componentId);
-        var renderBoundaryMarkers = allowBoundaryMarkers && componentState.StreamRendering;
+        var renderBoundaryMarkers = allowBoundaryMarkers && componentState.StreamRendering && !_isHandlingErrors;
 
         ComponentEndMarker? endMarkerOrNull = default;
 
-        if (componentState.Component is SSRRenderModeBoundary boundary)
+        if (componentState.Component is SSRRenderModeBoundary boundary && !_isHandlingErrors)
         {
             var marker = boundary.ToMarker(_httpContext, sequenceAndKey.Sequence, sequenceAndKey.Key);
             endMarkerOrNull = marker.ToEndMarker();
@@ -247,7 +248,7 @@ internal partial class EndpointHtmlRenderer
             output.Write("-->");
         }
 
-        if (endMarkerOrNull is { } endMarker)
+        if (endMarkerOrNull is { } endMarker && !_isHandlingErrors)
         {
             var serializedEndRecord = JsonSerializer.Serialize(endMarker, ServerComponentSerializationSettings.JsonSerializationOptions);
             output.Write("<!--Blazor:");

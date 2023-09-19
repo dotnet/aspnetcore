@@ -35,8 +35,12 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
     private async Task RenderComponentCore(HttpContext context)
     {
         context.Response.ContentType = RazorComponentResultExecutor.DefaultContentType;
-        _renderer.InitializeStreamingRenderingFraming(context);
-        EndpointHtmlRenderer.MarkAsAllowingEnhancedNavigation(context);
+        var isErrorHandler = context.Features.Get<IExceptionHandlerFeature>() is not null;
+        _renderer.InitializeStreamingRenderingFraming(context, isErrorHandler);
+        if (!isErrorHandler)
+        {
+            EndpointHtmlRenderer.MarkAsAllowingEnhancedNavigation(context);
+        }
 
         var endpoint = context.GetEndpoint() ?? throw new InvalidOperationException($"An endpoint must be set on the '{nameof(HttpContext)}'.");
 
@@ -84,7 +88,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             context,
             rootComponent,
             ParameterView.Empty,
-            waitForQuiescence: result.IsPost);
+            waitForQuiescence: result.IsPost || isErrorHandler);
 
         Task quiesceTask;
         if (!result.IsPost)
@@ -123,8 +127,11 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         }
 
         // Emit comment containing state.
-        var componentStateHtmlContent = await _renderer.PrerenderPersistedStateAsync(context);
-        componentStateHtmlContent.WriteTo(bufferWriter, HtmlEncoder.Default);
+        if (!isErrorHandler)
+        {
+            var componentStateHtmlContent = await _renderer.PrerenderPersistedStateAsync(context);
+            componentStateHtmlContent.WriteTo(bufferWriter, HtmlEncoder.Default);
+        }
 
         // Invoke FlushAsync to ensure any buffered content is asynchronously written to the underlying
         // response asynchronously. In the absence of this line, the buffer gets synchronously written to the
