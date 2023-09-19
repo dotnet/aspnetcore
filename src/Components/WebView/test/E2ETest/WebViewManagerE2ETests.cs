@@ -18,6 +18,7 @@ public class WebViewManagerE2ETests
     [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX,
         SkipReason = "On Helix/Ubuntu the native Photino assemblies can't be found, and on macOS it can't detect when the WebView is ready")]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/50802")]
     public async Task CanLaunchPhotinoWebViewAndClickButton()
     {
         var photinoTestProgramExePath = typeof(WebViewManagerE2ETests).Assembly.Location;
