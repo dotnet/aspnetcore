@@ -1,7 +1,8 @@
 {
+  "version": "4.12.0",
   "drivers": {
     "chrome": {
-      "version" : "114.0.5735.90"
+      "version" : "117.0.5938.62"
     }
   },
   "ignoreExtraDrivers": true
