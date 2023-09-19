@@ -21,7 +21,7 @@
             <EditForm id="account" Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login">
                 <h2>Use a local account to log in.</h2>
                 <hr />
-                <ValidationSummary class="text-danger" role="alert" />
+                <ValidationSummary class="text-danger" />
                 <div class="form-floating mb-3">
                     <InputText id="email" @bind-Value="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
                     <label for="email" class="form-label">Email</label>

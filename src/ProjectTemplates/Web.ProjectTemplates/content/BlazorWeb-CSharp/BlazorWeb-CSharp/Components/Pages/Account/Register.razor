@@ -27,7 +27,7 @@
             <DataAnnotationsValidator />
             <h2>Create a new account.</h2>
             <hr />
-            <ValidationSummary class="text-danger" role="alert" />
+            <ValidationSummary class="text-danger" />
             <div class="form-floating mb-3">
                 <InputText id="email" @bind-Value="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
                 <label for="email">Email</label>
@@ -126,7 +126,7 @@
             var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
             code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
             var callbackUrl = NavigationManager.GetUriWithQueryParameters(
-                NavigationManager.ToAbsoluteUri("/Account/ConfirmEmail").AbsoluteUri, 
+                NavigationManager.ToAbsoluteUri("/Account/ConfirmEmail").AbsoluteUri,
                 new Dictionary<string, object?> { { "userId", userId }, { "code", code }, { "returnUrl", ReturnUrl } });
 
             await EmailSender.SendEmailAsync(Input.Email, "Confirm your email",

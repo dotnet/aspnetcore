@@ -27,17 +27,17 @@
 <h2 id="external-login-title">Associate your @providerDisplayName account.</h2>
 <hr />
 
-<p id="external-login-description" class="text-info">
+<div id="external-login-description"  class="alert alert-info">
     You've successfully authenticated with <strong>@providerDisplayName</strong>.
     Please enter an email address for this site below and click the Register button to finish
     logging in.
-</p>
+</div>
 
 <div class="row">
     <div class="col-md-4">
         <EditForm id="confirmation-form" Model="Input" OnValidSubmit="OnValidSubmitAsync" FormName="confirmation" method="post">
             <DataAnnotationsValidator />
-            <ValidationSummary />
+            <ValidationSummary class="text-danger" />
             <div class="form-floating mb-3">
                 <InputText id="email" @bind-Value="Input.Email" class="form-control" autocomplete="email" placeholder="Please enter your email." />
                 <label for="email" class="form-label">Email</label>

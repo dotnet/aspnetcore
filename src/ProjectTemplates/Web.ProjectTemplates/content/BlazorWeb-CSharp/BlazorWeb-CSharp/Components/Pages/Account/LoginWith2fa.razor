@@ -22,7 +22,7 @@
             <input type="hidden" name="ReturnUrl" value="@ReturnUrl" />
             <input type="hidden" name="RememberMe" value="@RememberMe" />
             <DataAnnotationsValidator />
-            <ValidationSummary class="text-danger" role="alert" />
+            <ValidationSummary class="text-danger" />
             <div class="form-floating mb-3">
                 <InputText id="two-factor-code" @bind-Value="Input.TwoFactorCode" class="form-control" autocomplete="off" />
                 <label for="two-factor-code" class="form-label">Authenticator code</label>
