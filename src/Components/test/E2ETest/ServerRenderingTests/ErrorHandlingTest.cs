@@ -33,6 +33,7 @@ public class ErrorHandlingTest(BrowserFixture browserFixture, BasicTestAppServer
             item => Assert.Equal("An error occurred while processing your request.", item.Text));
         Browser.Equal("False", () => Browser.FindElement(By.Id("is-interactive-server")).Text);
         Browser.Click(By.Id("call-blazor-start"));
+        Browser.Exists(By.Id("blazor-started"));
         Browser.Equal("False", () => Browser.FindElement(By.Id("is-interactive-server")).Text);
     }
 
