@@ -6,20 +6,20 @@ namespace Microsoft.AspNetCore.Components.Web;
 /// <summary>
 /// A <see cref="IComponentRenderMode"/> indicating that the component should be rendered interactively on the server using Blazor Server hosting.
 /// </summary>
-public class ServerRenderMode : IComponentRenderMode
+public class InteractiveServerRenderMode : IComponentRenderMode
 {
     /// <summary>
-    /// Constructs an instance of <see cref="ServerRenderMode"/>.
+    /// Constructs an instance of <see cref="InteractiveServerRenderMode"/>.
     /// </summary>
-    public ServerRenderMode() : this(true)
+    public InteractiveServerRenderMode() : this(true)
     {
     }
 
     /// <summary>
-    /// Constructs an instance of <see cref="ServerRenderMode"/>
+    /// Constructs an instance of <see cref="InteractiveServerRenderMode"/>
     /// </summary>
     /// <param name="prerender">A flag indicating whether the component should first prerender on the server. The default value is true.</param>
-    public ServerRenderMode(bool prerender)
+    public InteractiveServerRenderMode(bool prerender)
     {
         Prerender = prerender;
     }

@@ -563,6 +563,27 @@ public class MapIdentityApiTests : LoggedTest
     }
 
     [Fact]
+    public async Task AccountConfirmationEmailCanBeCustomized()
+    {
+        var emailSender = new TestEmailSender();
+        var customEmailSender = new TestCustomEmailSender(emailSender);
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            AddIdentityApiEndpoints(services);
+            services.AddSingleton<IEmailSender<ApplicationUser>>(customEmailSender);
+        });
+        using var client = app.GetTestClient();
+
+        await RegisterAsync(client);
+
+        var email = Assert.Single(emailSender.Emails);
+        Assert.Equal(Email, email.Address);
+        Assert.Equal(TestCustomEmailSender.CustomSubject, email.Subject);
+        Assert.Equal(TestCustomEmailSender.CustomMessage, email.HtmlMessage);
+    }
+
+    [Fact]
     public async Task CanAddEndpointsToMultipleRouteGroupsForSameUserType()
     {
         // Test with confirmation email since that tests link generation capabilities
@@ -1507,6 +1528,25 @@ public class MapIdentityApiTests : LoggedTest
             Emails.Add(new(email, subject, htmlMessage));
             return Task.CompletedTask;
         }
+    }
+
+    private sealed class TestCustomEmailSender(IEmailSender emailSender) : IEmailSender<ApplicationUser>
+    {
+        public const string CustomSubject = "Custom subject";
+        public const string CustomMessage = "Custom message";
+
+        public Task SendConfirmationLinkAsync(ApplicationUser user, string email, string confirmationLink)
+        {
+            Assert.Equal(user.Email, email);
+            emailSender.SendEmailAsync(email, "Custom subject", "Custom message");
+            return Task.CompletedTask;
+        }
+
+        public Task SendPasswordResetCodeAsync(ApplicationUser user, string email, string resetCode) =>
+            throw new NotImplementedException();
+
+        public Task SendPasswordResetLinkAsync(ApplicationUser user, string email, string resetLink) =>
+            throw new NotImplementedException();
     }
 
     private sealed record TestEmail(string Address, string Subject, string HtmlMessage);

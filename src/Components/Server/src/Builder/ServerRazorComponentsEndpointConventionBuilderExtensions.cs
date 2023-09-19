@@ -12,10 +12,10 @@ namespace Microsoft.AspNetCore.Builder;
 public static class ServerRazorComponentsEndpointConventionBuilderExtensions
 {
     /// <summary>
-    /// Configures the <see cref="RenderMode.Server"/> for this application.
+    /// Configures the application to support the <see cref="RenderMode.InteractiveServer"/> render mode.
     /// </summary>
     /// <returns>The <see cref="RazorComponentsEndpointConventionBuilder"/>.</returns>
-    public static RazorComponentsEndpointConventionBuilder AddServerRenderMode(this RazorComponentsEndpointConventionBuilder builder)
+    public static RazorComponentsEndpointConventionBuilder AddInteractiveServerRenderMode(this RazorComponentsEndpointConventionBuilder builder)
     {
         ComponentEndpointConventionBuilderHelper.AddRenderMode(builder, new InternalServerRenderMode());
         return builder;

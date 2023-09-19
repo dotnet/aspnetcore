@@ -13,7 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)BearerToken\DTO\*.cs" LinkBase="DTO" />
+    <Compile Include="$(SharedSourceRoot)DefaultMessageEmailSender.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -8,6 +8,7 @@ import { setCircuitOptions, startServer } from './Boot.Server.Common';
 import { ServerComponentDescriptor, discoverComponents } from './Services/ComponentDescriptorDiscovery';
 import { DotNet } from '@microsoft/dotnet-js-interop';
 import { InitialRootComponentsList } from './Services/InitialRootComponentsList';
+import { JSEventRegistry } from './Services/JSEventRegistry';
 
 let started = false;
 
@@ -19,6 +20,7 @@ function boot(userOptions?: Partial<CircuitStartOptions>): Promise<void> {
 
   setCircuitOptions(userOptions);
 
+  JSEventRegistry.create(Blazor);
   const serverComponents = discoverComponents(document, 'server') as ServerComponentDescriptor[];
   const components = new InitialRootComponentsList(serverComponents);
   return startServer(components);

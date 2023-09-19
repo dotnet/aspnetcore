@@ -492,6 +492,63 @@ describe('DomSync', () => {
     expect(newDocTypeNode).toBe(origDocTypeNode);
     expect(destination.body.textContent).toBe('Goodbye');
   });
+
+  test('should preserve content in elements marked as data permanent', () => {
+    // Arrange
+    const destination = makeExistingContent(`<div>not preserved</div><div data-permanent>preserved</div><div>also not preserved</div>`);
+    const newContent = makeNewContent(`<div></div><div data-permanent>other content</div><div></div>`);
+    const oldNodes = toNodeArray(destination);
+
+    // Act
+    synchronizeDomContent(destination, newContent);
+    const newNodes = toNodeArray(destination);
+
+    // Assert
+    expect(oldNodes[0]).toBe(newNodes[0]);
+    expect(oldNodes[1]).toBe(newNodes[1]);
+    expect(newNodes[0].textContent).toBe('');
+    expect(newNodes[1].textContent).toBe('preserved');
+  });
+
+  test('should preserve content in elements marked as data permanent by matching attribute value', () => {
+    // Arrange
+    const destination = makeExistingContent(`<div>not preserved</div><div data-permanent="first">first preserved</div>`);
+    const newContent1 = makeNewContent(`<div>not preserved</div><div data-permanent="second">second preserved</div><div data-permanent="first">other content</div>`);
+    const newContent2 = makeNewContent(`<div>not preserved</div><div data-permanent="second">other content</div><div id="foo"></div><div data-permanent="first">other content</div>`);
+    const nodes1 = toNodeArray(destination);
+
+    // Act/assert 1: The original data permanent content is preserved
+    synchronizeDomContent(destination, newContent1);
+    const nodes2 = toNodeArray(destination);
+    expect(nodes1[1]).toBe(nodes2[2]);
+    expect(nodes2[1].textContent).toBe('second preserved');
+    expect(nodes2[2].textContent).toBe('first preserved');
+
+    // Act/assert 2: The new data permanent content is preserved
+    synchronizeDomContent(destination, newContent2);
+    const nodes3 = toNodeArray(destination);
+    expect(nodes2[1]).toBe(nodes3[1]);
+    expect(nodes2[2]).toBe(nodes3[3]);
+    expect(nodes3[1].textContent).toBe('second preserved');
+    expect(nodes3[3].textContent).toBe('first preserved');
+  });
+
+  test('should not preserve content in elements marked as data permanent if attribute value does not match', () => {
+    // Arrange
+    const destination = makeExistingContent(`<div>not preserved</div><div data-permanent="first">preserved</div><div>also not preserved</div>`);
+    const newContent = makeNewContent(`<div></div><div data-permanent="second">new content</div><div></div>`);
+    const oldNodes = toNodeArray(destination);
+
+    // Act
+    synchronizeDomContent(destination, newContent);
+    const newNodes = toNodeArray(destination);
+
+    // Assert
+    expect(oldNodes[0]).toBe(newNodes[0]);
+    expect(oldNodes[1]).not.toBe(newNodes[1]);
+    expect(newNodes[0].textContent).toBe('');
+    expect(newNodes[1].textContent).toBe('new content');
+  });
 });
 
 test('should remove value if neither source nor destination has one', () => {

@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web.HtmlRendering;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
@@ -33,19 +34,39 @@ internal partial class EndpointHtmlRenderer
         }
     }
 
+    protected override IComponentRenderMode? GetComponentRenderMode(IComponent component)
+    {
+        var componentState = GetComponentState(component);
+        var ssrRenderBoundary = GetClosestRenderModeBoundary(componentState);
+
+        if (ssrRenderBoundary is null)
+        {
+            return null;
+        }
+
+        return ssrRenderBoundary.RenderMode;
+    }
+
     private SSRRenderModeBoundary? GetClosestRenderModeBoundary(int componentId)
     {
         var componentState = GetComponentState(componentId);
+        return GetClosestRenderModeBoundary(componentState);
+    }
+
+    private static SSRRenderModeBoundary? GetClosestRenderModeBoundary(ComponentState componentState)
+    {
+        var currentComponentState = componentState;
+
         do
         {
-            if (componentState.Component is SSRRenderModeBoundary boundary)
+            if (currentComponentState.Component is SSRRenderModeBoundary boundary)
             {
                 return boundary;
             }
 
-            componentState = componentState.ParentComponentState;
+            currentComponentState = currentComponentState.ParentComponentState;
         }
-        while (componentState is not null);
+        while (currentComponentState is not null);
 
         return null;
     }

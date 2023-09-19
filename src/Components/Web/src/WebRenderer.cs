@@ -86,14 +86,6 @@ public abstract class WebRenderer : Renderer
     }
 
     /// <summary>
-    /// Performs the specified operations on the renderer's root components.
-    /// </summary>
-    /// <param name="operationsJson">A JSON-serialized list of operations to perform on the renderer's root components.</param>
-    protected virtual void UpdateRootComponents(string operationsJson)
-    {
-    }
-
-    /// <summary>
     /// Called by the framework to give a location for the specified root component in the browser DOM.
     /// </summary>
     /// <param name="componentId">The component ID.</param>
@@ -123,7 +115,6 @@ public abstract class WebRenderer : Renderer
         private readonly JSComponentInterop _jsComponentInterop;
 
         [DynamicDependency(nameof(DispatchEventAsync))]
-        [DynamicDependency(nameof(UpdateRootComponents))]
         public WebRendererInteropMethods(WebRenderer renderer, JsonSerializerOptions jsonOptions, JSComponentInterop jsComponentInterop)
         {
             _renderer = renderer;
@@ -140,10 +131,6 @@ public abstract class WebRenderer : Renderer
                 webEventData.EventFieldInfo,
                 webEventData.EventArgs);
         }
-
-        [JSInvokable]
-        public void UpdateRootComponents(string operationsJson)
-            => _renderer.UpdateRootComponents(operationsJson);
 
         [JSInvokable] // Linker preserves this if you call RootComponents.Add
         public int AddRootComponent(string identifier, string domElementSelector)
