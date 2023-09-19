@@ -118,6 +118,7 @@ internal partial class EndpointHtmlRenderer
             }
 
             // Now process the list, skipping any we've already visited in an earlier iteration
+            var isEnhancedNavigation = IsProgressivelyEnhancedNavigation(_httpContext.Request);
             for (var i = 0; i < componentIdsInDepthOrder.Length; i++)
             {
                 var componentId = componentIdsInDepthOrder[i].ComponentId;
@@ -132,7 +133,7 @@ internal partial class EndpointHtmlRenderer
                 // as it is being written out.
                 writer.Write($"<template blazor-component-id=\"");
                 writer.Write(componentId);
-                writer.Write("\">");
+                writer.Write(isEnhancedNavigation ? "\" enhanced-nav=\"true\">" : "\">");
 
                 // We don't need boundary markers at the top-level since the info is on the <template> anyway.
                 WriteComponentHtml(componentId, writer, allowBoundaryMarkers: false);
