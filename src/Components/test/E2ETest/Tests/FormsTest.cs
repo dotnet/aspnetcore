@@ -990,6 +990,39 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Collection(logEntries, x => Assert.Equal("OnValidSubmit", x));
     }
 
+    [Fact]
+    public async Task CannotSubmitEditFormSynchronouslyAfterItWasRemoved()
+    {
+        var appElement = MountSimpleValidationComponent();
+
+        var submitButtonFinder = By.CssSelector("button[type=submit]");
+        Browser.Exists(submitButtonFinder);
+
+        // Remove the form then immediately also submit it, so the server receives both
+        // the 'remove' and 'submit' commands (in that order) before it updates the UI
+        appElement.FindElement(By.Id("remove-form")).Click();
+
+        try
+        {
+            appElement.FindElement(submitButtonFinder).Click();
+        }
+        catch (NoSuchElementException)
+        {
+            // This should happen on WebAssembly because the form will be removed synchronously
+            // That means the test has passed
+            return;
+        }
+
+        // Wait for the removal to complete, which is intentionally delayed to ensure
+        // this test can submit a second instruction before the first is processed.
+        Browser.DoesNotExist(submitButtonFinder);
+
+        // Verify that the form submit event was not processed, even if we wait a while
+        // to be really sure the second instruction was processed.
+        await Task.Delay(1000);
+        Browser.DoesNotExist(By.Id("last-callback"));
+    }
+
     private Func<string[]> CreateValidationMessagesAccessor(IWebElement appElement, string messageSelector = ".validation-message")
     {
         return () => appElement.FindElements(By.CssSelector(messageSelector))
