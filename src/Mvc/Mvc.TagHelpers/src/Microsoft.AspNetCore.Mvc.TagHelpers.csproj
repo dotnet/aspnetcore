@@ -6,7 +6,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;aspnetcoremvc;taghelper;taghelpers</PackageTags>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
-    <IsPackable>false</IsPackable>
+    <IsPackable>true</IsPackable>
     <Nullable>disable</Nullable>
   </PropertyGroup>
 

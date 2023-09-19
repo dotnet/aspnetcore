@@ -9,6 +9,7 @@
     <Nullable>enable</Nullable>
     <Trimmable>true</Trimmable>
     <DefineConstants>$(DefineConstants);JS_INTEROP</DefineConstants>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>

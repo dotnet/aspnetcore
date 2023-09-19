@@ -8,6 +8,7 @@
     <Nullable>enable</Nullable>
     <Trimmable>true</Trimmable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>

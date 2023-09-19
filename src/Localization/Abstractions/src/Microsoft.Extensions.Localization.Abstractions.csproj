@@ -12,6 +12,7 @@ Microsoft.Extensions.Localization.IStringLocalizer&lt;T&gt;</Description>
     <PackageTags>localization</PackageTags>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <Nullable>enable</Nullable>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
 
 </Project>

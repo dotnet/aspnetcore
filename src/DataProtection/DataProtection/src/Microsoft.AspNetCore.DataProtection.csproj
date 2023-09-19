@@ -11,6 +11,7 @@
     <SuppressNullableAttributesImport>true</SuppressNullableAttributesImport>
     <Nullable>annotations</Nullable>
     <Nullable Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'">enable</Nullable>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
