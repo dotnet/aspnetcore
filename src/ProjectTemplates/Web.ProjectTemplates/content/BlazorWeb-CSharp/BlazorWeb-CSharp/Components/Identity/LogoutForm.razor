@@ -1,0 +1,32 @@
+@using Microsoft.AspNetCore.Identity
+@using BlazorWeb_CSharp.Data
+
+@inject SignInManager<ApplicationUser> SignInManager
+@inject NavigationManager NavigationManager
+
+<form @onsubmit="OnSubmitAsync" @formname="logout" method="post" @attributes="AdditionalAttributes">
+    <AntiforgeryToken />
+    <input type="hidden" name="ReturnUrl" value="@NavigationManager.Uri" />
+</form>
+
+@code {
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object?>? AdditionalAttributes { get; set; }
+
+    [SupplyParameterFromForm]
+    private string? ReturnUrl { get; set; }
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    private async Task OnSubmitAsync()
+    {
+        var user = HttpContext.User;
+
+        if (SignInManager.IsSignedIn(user))
+        {
+            await SignInManager.SignOutAsync();
+            NavigationManager.RedirectTo(ReturnUrl ?? "/");
+        }
+    }
+}

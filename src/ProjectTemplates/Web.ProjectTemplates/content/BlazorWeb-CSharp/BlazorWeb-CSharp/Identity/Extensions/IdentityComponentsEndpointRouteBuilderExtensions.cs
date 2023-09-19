@@ -41,24 +41,6 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
             return Results.Challenge(properties, [provider]);
         });
 
-        accountGroup.MapPost("/Logout", async (
-            [FromServices] SignInManager<ApplicationUser> signInManager,
-            [FromForm] string returnUrl) =>
-        {
-            await signInManager.SignOutAsync();
-            logger.LogInformation("User logged out.");
-            if (returnUrl is not null)
-            {
-                return Results.LocalRedirect(returnUrl);
-            }
-            else
-            {
-                // This needs to be a redirect so that the browser performs a new
-                // request and the identity for the user gets updated.
-                return Results.LocalRedirect("/");
-            }
-        });
-
         var manageGroup = accountGroup.MapGroup("/Manage").RequireAuthorization();
 
         manageGroup.MapPost("/LinkExternalLogin", async (
