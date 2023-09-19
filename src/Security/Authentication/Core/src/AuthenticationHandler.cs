@@ -18,7 +18,7 @@ public abstract class AuthenticationHandler<TOptions> : IAuthenticationHandler w
     private Task<AuthenticateResult>? _authenticateTask;
 
     /// <summary>
-    /// Gets or sets the <see cref="AuthenticationScheme"/> asssociated with this authentication handler.
+    /// Gets or sets the <see cref="AuthenticationScheme"/> associated with this authentication handler.
     /// </summary>
     public AuthenticationScheme Scheme { get; private set; } = default!;
 

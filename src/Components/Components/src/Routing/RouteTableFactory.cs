@@ -19,29 +19,31 @@ namespace Microsoft.AspNetCore.Components;
 /// <summary>
 /// Resolves components for an application.
 /// </summary>
-internal static class RouteTableFactory
+internal class RouteTableFactory
 {
-    private static readonly ConcurrentDictionary<RouteKey, RouteTable> Cache = new();
+    public static readonly RouteTableFactory Instance = new();
     public static readonly IComparer<InboundRouteEntry> RouteOrder = Comparer<InboundRouteEntry>.Create((x, y) =>
     {
         var result = RouteComparison(x, y);
         return result != 0 ? result : string.Compare(x.RoutePattern.RawText, y.RoutePattern.RawText, StringComparison.OrdinalIgnoreCase);
     });
 
-    public static RouteTable Create(RouteKey routeKey, IServiceProvider serviceProvider)
+    private readonly ConcurrentDictionary<RouteKey, RouteTable> _cache = new();
+
+    public RouteTable Create(RouteKey routeKey, IServiceProvider serviceProvider)
     {
-        if (Cache.TryGetValue(routeKey, out var resolvedComponents))
+        if (_cache.TryGetValue(routeKey, out var resolvedComponents))
         {
             return resolvedComponents;
         }
 
         var componentTypes = GetRouteableComponents(routeKey);
         var routeTable = Create(componentTypes, serviceProvider);
-        Cache.TryAdd(routeKey, routeTable);
+        _cache.TryAdd(routeKey, routeTable);
         return routeTable;
     }
 
-    public static void ClearCaches() => Cache.Clear();
+    public void ClearCaches() => _cache.Clear();
 
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Application code does not get trimmed, and the framework does not define routable components.")]
     private static List<Type> GetRouteableComponents(RouteKey routeKey)

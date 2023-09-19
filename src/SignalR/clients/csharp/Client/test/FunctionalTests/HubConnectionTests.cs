@@ -2893,7 +2893,7 @@ public class HubConnectionTests : FunctionalTestBase
 
                 // In-progress send canceled when connection closes
                 var ex = await Assert.ThrowsAnyAsync<Exception>(() => resultTask);
-                Assert.True(ex is TaskCanceledException or WebSocketException);
+                Assert.True(ex is TaskCanceledException || ex is WebSocketException);
                 await closedTcs.Task;
 
                 Assert.Equal(HubConnectionState.Disconnected, connection.State);
