@@ -246,8 +246,7 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         var actions = new Actions(Browser).DragAndDrop(input, target);
 
         actions.Perform();
-        // drop doesn't seem to trigger in Selenium. But it's sufficient to determine "any" drag event works
-        Browser.Equal("dragstart,", () => output.Text);
+        Browser.Equal("dragstart,drop,", () => output.Text);
     }
 
     [Fact]
