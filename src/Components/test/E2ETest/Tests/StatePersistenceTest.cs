@@ -51,7 +51,7 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
     [InlineData(false, typeof(InteractiveWebAssemblyRenderMode), (string)null)]
     [InlineData(false, typeof(InteractiveWebAssemblyRenderMode), "WebAssemblyStreaming")]
     [InlineData(false, typeof(InteractiveAutoRenderMode), (string)null)]
-    [InlineData(false, typeof(InteractiveAutoRenderMode), "AutoStreaming")]
+    // [InlineData(false, typeof(InteractiveAutoRenderMode), "AutoStreaming")] https://github.com/dotnet/aspnetcore/issues/50810
     public void CanRenderComponentWithPersistedState(bool suppressEnhancedNavigation, Type renderMode, string streaming)
     {
         var mode = renderMode switch
