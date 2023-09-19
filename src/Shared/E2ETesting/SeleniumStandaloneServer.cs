@@ -106,7 +106,7 @@ public class SeleniumStandaloneServer : IDisposable
             output.WriteLine($"Using chromedriver at path {chromeDriverPathEnvVar}");
             var chromeDriverVersion = new ProcessStartInfo
             {
-                FileName = chromeDriverPathEnvVar,
+                FileName = Path.Combine(chromeDriverPathEnvVar, "chromedriver"),
                 Arguments = "--version",
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
