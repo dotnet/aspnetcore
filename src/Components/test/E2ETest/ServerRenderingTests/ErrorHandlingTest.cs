@@ -21,7 +21,7 @@ public class ErrorHandlingTest(BrowserFixture browserFixture, BasicTestAppServer
 {
 
     [Fact]
-    public void RendersExceptionFromComponent()
+    public async Task RendersExceptionFromComponent()
     {
         GoTo("Throws?suppress-autostart=true");
 
@@ -33,6 +33,7 @@ public class ErrorHandlingTest(BrowserFixture browserFixture, BasicTestAppServer
             item => Assert.Equal("An error occurred while processing your request.", item.Text));
         Browser.Equal("False", () => Browser.FindElement(By.Id("is-interactive-server")).Text);
         Browser.Click(By.Id("call-blazor-start"));
+        await Task.Delay(3000);
         Browser.Exists(By.Id("blazor-started"));
         Browser.Equal("False", () => Browser.FindElement(By.Id("is-interactive-server")).Text);
     }
