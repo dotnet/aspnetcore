@@ -42,13 +42,13 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
             switch (operation.Type)
             {
                 case RootComponentOperationType.Add:
-                    _ = AddComponentAsync(componentType!, parameters, operation.SelectorId!.Value.ToString(CultureInfo.InvariantCulture));
+                    _ = HandleRootComponentAddOperationAsync(componentType!, parameters, operation.SelectorId!.Value.ToString(CultureInfo.InvariantCulture));
                     break;
                 case RootComponentOperationType.Update:
-                    _ = RenderRootComponentAsync(operation.ComponentId!.Value, parameters);
+                    _ = HandleRootComponentUpdateOperationAsync(operation.ComponentId!.Value, parameters, operation.SelectorId!.Value.ToString(CultureInfo.InvariantCulture));
                     break;
                 case RootComponentOperationType.Remove:
-                    RemoveRootComponent(operation.ComponentId!.Value);
+                    HandleRootComponentRemoveOperation(operation.ComponentId!.Value);
                     break;
             }
         }
