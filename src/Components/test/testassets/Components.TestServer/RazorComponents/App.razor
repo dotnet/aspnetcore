@@ -65,6 +65,11 @@
                 if (useLongWebAssemblyTimeout) {
                     Blazor._internal.loadWebAssemblyQuicklyTimeout = 10000000;
                 }
+            }).then(() => {
+                const startedParagraph = document.createElement('p');
+                startedParagraph.id = 'blazor-started';
+                startedParagraph.style = 'display: none;';
+                document.body.appendChild(startedParagraph);
             });
         }
 

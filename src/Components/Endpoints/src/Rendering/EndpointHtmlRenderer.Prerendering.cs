@@ -17,6 +17,11 @@ internal partial class EndpointHtmlRenderer
 
     protected override IComponent ResolveComponentForRenderMode([DynamicallyAccessedMembers(Component)] Type componentType, int? parentComponentId, IComponentActivator componentActivator, IComponentRenderMode renderMode)
     {
+        if (_isHandlingErrors)
+        {
+            // Ignore the render mode boundary in error scenarios.
+            return componentActivator.CreateInstance(componentType);
+        }
         var closestRenderModeBoundary = parentComponentId.HasValue
             ? GetClosestRenderModeBoundary(parentComponentId.Value)
             : null;

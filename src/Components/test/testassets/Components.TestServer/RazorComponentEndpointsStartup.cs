@@ -51,6 +51,11 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
         app.Map("/subdir", app =>
         {
+            if (!env.IsDevelopment())
+            {
+                app.UseExceptionHandler("/Error", createScopeForErrors: true);
+            }
+
             app.UseStaticFiles();
             app.UseRouting();
             UseFakeAuthState(app);
