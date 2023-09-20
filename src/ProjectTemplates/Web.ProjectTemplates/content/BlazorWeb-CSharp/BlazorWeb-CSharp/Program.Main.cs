@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 #endif
-#if (UseWebAssembly)
+#if (UseWebAssembly && SampleContent)
 using BlazorWeb_CSharp.Client.Pages;
 #endif
 using BlazorWeb_CSharp.Components;
@@ -104,18 +104,21 @@ public class Program
 
         #if (UseServer && UseWebAssembly)
         app.MapRazorComponents<App>()
-          .AddInteractiveServerRenderMode()
-          .AddInteractiveWebAssemblyRenderMode()
-          .AddAdditionalAssemblies(typeof(Counter).Assembly);
+            .AddInteractiveServerRenderMode()
+            .AddInteractiveWebAssemblyRenderMode()
         #elif (UseServer)
         app.MapRazorComponents<App>()
-          .AddInteractiveServerRenderMode();
+            .AddInteractiveServerRenderMode();
         #elif (UseWebAssembly)
         app.MapRazorComponents<App>()
-          .AddInteractiveWebAssemblyRenderMode()
-          .AddAdditionalAssemblies(typeof(Counter).Assembly);
+            .AddInteractiveWebAssemblyRenderMode()
         #else
         app.MapRazorComponents<App>();
+        #endif
+        #if (UseWebAssembly && SampleContent)
+            .AddAdditionalAssemblies(typeof(Counter).Assembly);
+        #elif (UseWebAssembly)
+            .AddAdditionalAssemblies(typeof(Client._Imports).Assembly);
         #endif
 
         #if (IndividualLocalAuth)

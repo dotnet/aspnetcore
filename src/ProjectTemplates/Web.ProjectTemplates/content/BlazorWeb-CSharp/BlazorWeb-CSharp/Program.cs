@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 #endif
-#if (UseWebAssembly)
+#if (UseWebAssembly && SampleContent)
 using BlazorWeb_CSharp.Client.Pages;
 #endif
 using BlazorWeb_CSharp.Components;
@@ -101,16 +101,19 @@ app.UseStaticFiles();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()
-    .AddAdditionalAssemblies(typeof(Counter).Assembly);
 #elif (UseServer)
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 #elif (UseWebAssembly)
 app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode()
-    .AddAdditionalAssemblies(typeof(Counter).Assembly);
 #else
 app.MapRazorComponents<App>();
+#endif
+#if (UseWebAssembly && SampleContent)
+    .AddAdditionalAssemblies(typeof(Counter).Assembly);
+#elif (UseWebAssembly)
+    .AddAdditionalAssemblies(typeof(BlazorWeb_CSharp.Client._Imports).Assembly);
 #endif
 
 #if (IndividualLocalAuth)
