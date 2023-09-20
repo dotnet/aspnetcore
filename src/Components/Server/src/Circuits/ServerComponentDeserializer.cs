@@ -316,7 +316,8 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
                     continue;
                 }
 
-                if (operation.Type == RootComponentOperationType.Add)
+                if (operation.Type == RootComponentOperationType.Add ||
+                    operation.Type == RootComponentOperationType.Update)
                 {
                     if (operation.SelectorId is not { } selectorId)
                     {

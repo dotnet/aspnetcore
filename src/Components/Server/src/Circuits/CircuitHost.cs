@@ -781,7 +781,7 @@ internal partial class CircuitHost : IAsyncDisposable
                     switch (operation.Type)
                     {
                         case RootComponentOperationType.Add:
-                            var task = Renderer.AddComponentAsync(descriptor.ComponentType, descriptor.Parameters, operation.SelectorId.Value.ToString(CultureInfo.InvariantCulture));
+                            var task = Renderer.HandleRootComponentAddOperationAsync(descriptor.ComponentType, descriptor.Parameters, operation.SelectorId.Value.ToString(CultureInfo.InvariantCulture));
                             if (pendingTasks != null)
                             {
                                 pendingTasks[i] = task;
@@ -796,11 +796,12 @@ internal partial class CircuitHost : IAsyncDisposable
                             }
 
                             // We don't need to await component updates as any unhandled exception will be reported and terminate the circuit.
-                            _ = Renderer.UpdateRootComponentAsync(operation.ComponentId.Value, descriptor.Parameters);
+                            var selectorId = operation.SelectorId.Value.ToString(CultureInfo.InvariantCulture);
+                            _ = Renderer.HandleRootComponentRemoveOperationAsync(operation.ComponentId.Value, componentType, descriptor.Parameters, selectorId);
 
                             break;
                         case RootComponentOperationType.Remove:
-                            Renderer.RemoveExistingRootComponent(operation.ComponentId.Value);
+                            Renderer.HandleRootComponentRemoveOperation(operation.ComponentId.Value);
                             break;
                     }
                 }

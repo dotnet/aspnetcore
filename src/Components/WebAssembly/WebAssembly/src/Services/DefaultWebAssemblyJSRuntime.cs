@@ -138,13 +138,18 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
                 throw new InvalidOperationException($"The component operation of type '{operation.Type}' requires a '{nameof(operation.Marker)}' to be specified.");
             }
 
-            Type? componentType = null;
-            if (operation.Type == RootComponentOperationType.Add)
+            if (operation.Type == RootComponentOperationType.Add ||
+                operation.Type == RootComponentOperationType.Update)
             {
                 if (operation.SelectorId == null)
                 {
                     throw new InvalidOperationException($"The component operation of type '{operation.Type}' requires a '{nameof(operation.SelectorId)}' to be specified.");
                 }
+            }
+
+            Type? componentType = null;
+            if (operation.Type == RootComponentOperationType.Add)
+            {
                 componentType = Instance._rootComponentCache.GetRootComponent(operation.Marker!.Value.Assembly!, operation.Marker.Value.TypeName!)
                 ?? throw new InvalidOperationException($"Root component type '{operation.Marker.Value.TypeName}' could not be found in the assembly '{operation.Marker.Value.Assembly}'.");
             }

@@ -23,6 +23,7 @@ type RootComponentAddOperation = {
 
 type RootComponentUpdateOperation = {
   type: 'update';
+  selectorId: number;
   componentId: number;
   marker: ComponentMarker;
 };
@@ -39,7 +40,7 @@ type RootComponentInfo = {
   interactiveComponentId?: number;
 };
 
-export class WebRootComponentManager implements DescriptorHandler, RootComponentManager<never> {
+export class WebRootComponentManager implements DescriptorHandler, RootComponentManager</* InitialComponentsDescriptorType */ never> {
   private readonly _rootComponents = new Set<RootComponentInfo>();
 
   private readonly _descriptors = new Set<ComponentDescriptor>();
@@ -368,8 +369,11 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
 
       if (component.interactiveComponentId !== undefined) {
         // The component has become interactive, so we'll update its parameters.
+        // It's possible that .NET will decide to replace the component with an entirely new instance,
+        // so we track the component as a pending component to resolve for interactivity.
         component.uniqueIdAtLastUpdate = component.descriptor.uniqueId;
-        return { type: 'update', componentId: component.interactiveComponentId, marker: descriptorToMarker(component.descriptor) };
+        this._pendingComponentsToResolve.set(component.descriptor.uniqueId, component);
+        return { type: 'update', selectorId: component.descriptor.uniqueId, componentId: component.interactiveComponentId, marker: descriptorToMarker(component.descriptor) };
       }
 
       // We have started to add the component, but it has not become interactive yet.
@@ -404,10 +408,8 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
 
     this._pendingComponentsToResolve.delete(selectorId);
 
-    if (component.interactiveComponentId !== undefined) {
-      throw new Error('Cannot resolve a root component for the same descriptor multiple times.');
-    }
-
+    // It's possible for a descriptor to be assigned multiple component IDs throughout its lifetime,
+    // so we don't check for that case and treat it as an error.
     component.interactiveComponentId = componentId;
 
     // The descriptor may have changed since the last call to handleUpdatedRootComponentsCore().

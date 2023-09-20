@@ -187,7 +187,7 @@ public sealed class WebAssemblyHost : IAsyncDisposable
                         for (var i = 0; i < mappings.Length; i++)
                         {
                             var rootComponent = mappings[i];
-                            pendingRenders.Add(renderer.AddComponentAsync(
+                            pendingRenders.Add(renderer.HandleRootComponentAddOperationAsync(
                                 rootComponent.ComponentType,
                                 rootComponent.Parameters,
                                 rootComponent.Selector));
