@@ -395,7 +395,7 @@ public class Http3RequestTests : LoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/50833")]
+    [SkipOnCI("https://github.com/dotnet/aspnetcore/issues/50833")]
     public async Task POST_ServerCompletesWithoutReadingRequestBody_ClientGetsResponse()
     {
         // Arrange
@@ -700,7 +700,7 @@ public class Http3RequestTests : LoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/50833")]
+    [SkipOnCI("https://github.com/dotnet/aspnetcore/issues/50833")]
     public async Task POST_Expect100Continue_Get100Continue()
     {
         // Arrange
