@@ -23,7 +23,7 @@ public class ErrorHandlingTest(BrowserFixture browserFixture, BasicTestAppServer
     [Fact]
     public void RendersExceptionFromComponent()
     {
-        GoTo("Throws");
+        GoTo("Throws?suppress-autostart=true");
 
         Browser.Equal("Error", () => Browser.Title);
 
@@ -31,6 +31,8 @@ public class ErrorHandlingTest(BrowserFixture browserFixture, BasicTestAppServer
             Browser.FindElements(By.CssSelector(".text-danger")),
             item => Assert.Equal("Error.", item.Text),
             item => Assert.Equal("An error occurred while processing your request.", item.Text));
+        Browser.Equal("False", () => Browser.FindElement(By.Id("is-interactive-server")).Text);
+        Browser.Click(By.Id("call-blazor-start"));
         Browser.Equal("False", () => Browser.FindElement(By.Id("is-interactive-server")).Text);
     }
 

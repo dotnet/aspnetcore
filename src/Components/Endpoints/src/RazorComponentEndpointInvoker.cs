@@ -37,10 +37,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         context.Response.ContentType = RazorComponentResultExecutor.DefaultContentType;
         var isErrorHandler = context.Features.Get<IExceptionHandlerFeature>() is not null;
         _renderer.InitializeStreamingRenderingFraming(context, isErrorHandler);
-        if (!isErrorHandler)
-        {
-            EndpointHtmlRenderer.MarkAsAllowingEnhancedNavigation(context);
-        }
+        EndpointHtmlRenderer.MarkAsAllowingEnhancedNavigation(context);
 
         var endpoint = context.GetEndpoint() ?? throw new InvalidOperationException($"An endpoint must be set on the '{nameof(HttpContext)}'.");
 
@@ -141,13 +138,13 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
 
     private async Task<RequestValidationState> ValidateRequestAsync(HttpContext context, IAntiforgery? antiforgery)
     {
-        var isPost = HttpMethods.IsPost(context.Request.Method) &&
+        var processPost = HttpMethods.IsPost(context.Request.Method) &&
             // Disable POST functionality during exception handling.
             // The exception handler middleware will not update the request method, and we don't
             // want to run the form handling logic against the error page.
             context.Features.Get<IExceptionHandlerFeature>() == null;
 
-        if (isPost)
+        if (processPost)
         {
             var valid = false;
             // Respect the token validation done by the middleware _if_ it has been set, otherwise
@@ -200,7 +197,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             await context.Request.ReadFormAsync();
 
             var handler = GetFormHandler(context, out var isBadRequest);
-            return new(valid && !isBadRequest, isPost, handler);
+            return new(valid && !isBadRequest, processPost, handler);
         }
 
         return RequestValidationState.ValidNonPostRequest;
