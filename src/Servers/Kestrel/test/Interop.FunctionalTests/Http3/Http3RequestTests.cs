@@ -960,7 +960,7 @@ public class Http3RequestTests : LoggedTest
     [ConditionalTheory]
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/38008")]
     [MsQuicSupported]
-    [InlineData(HttpProtocols.Http3)]
+    //[InlineData(HttpProtocols.Http3)] Skip: see https://github.com/dotnet/aspnetcore/issues/50833
     [InlineData(HttpProtocols.Http2)]
     public async Task POST_ClientCancellationBidirectional_RequestAbortRaised(HttpProtocols protocol)
     {
@@ -1061,7 +1061,7 @@ public class Http3RequestTests : LoggedTest
     // Verify HTTP/2 and HTTP/3 match behavior
     [ConditionalTheory]
     [MsQuicSupported]
-    [InlineData(HttpProtocols.Http3)]
+    //[InlineData(HttpProtocols.Http3)] Skip: see https://github.com/dotnet/aspnetcore/issues/50833
     [InlineData(HttpProtocols.Http2)]
     public async Task POST_Bidirectional_LargeData_Cancellation_Error(HttpProtocols protocol)
     {
