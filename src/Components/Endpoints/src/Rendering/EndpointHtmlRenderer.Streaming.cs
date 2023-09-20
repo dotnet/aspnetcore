@@ -19,9 +19,11 @@ internal partial class EndpointHtmlRenderer
     private TextWriter? _streamingUpdatesWriter;
     private HashSet<int>? _visitedComponentIdsInCurrentStreamingBatch;
     private string? _ssrFramingCommentMarkup;
+    private bool _isHandlingErrors;
 
-    public void InitializeStreamingRenderingFraming(HttpContext httpContext)
+    public void InitializeStreamingRenderingFraming(HttpContext httpContext, bool isErrorHandler)
     {
+        _isHandlingErrors = isErrorHandler;
         if (IsProgressivelyEnhancedNavigation(httpContext.Request))
         {
             var id = Guid.NewGuid().ToString();
