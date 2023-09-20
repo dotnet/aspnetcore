@@ -216,7 +216,7 @@ internal partial class EndpointHtmlRenderer
 
         ComponentEndMarker? endMarkerOrNull = default;
 
-        if (componentState.Component is SSRRenderModeBoundary boundary && !_isHandlingErrors)
+        if (componentState.Component is SSRRenderModeBoundary boundary)
         {
             var marker = boundary.ToMarker(_httpContext, sequenceAndKey.Sequence, sequenceAndKey.Key);
             endMarkerOrNull = marker.ToEndMarker();

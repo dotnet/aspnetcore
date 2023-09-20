@@ -36,6 +36,10 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
     {
         context.Response.ContentType = RazorComponentResultExecutor.DefaultContentType;
         var isErrorHandler = context.Features.Get<IExceptionHandlerFeature>() is not null;
+        if (isErrorHandler)
+        {
+            Log.InteractivityDisabledForErrorHandling(_logger);
+        }
         _renderer.InitializeStreamingRenderingFraming(context, isErrorHandler);
         EndpointHtmlRenderer.MarkAsAllowingEnhancedNavigation(context);
 
@@ -44,7 +48,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         var rootComponent = endpoint.Metadata.GetRequiredMetadata<RootComponentMetadata>().Type;
         var pageComponent = endpoint.Metadata.GetRequiredMetadata<ComponentTypeMetadata>().Type;
 
-        Log.BeginRenderComponent(_logger, rootComponent.Name, pageComponent.Name);
+        Log.BeginRenderRootComponent(_logger, rootComponent.Name, pageComponent.Name);
 
         // Metadata controls whether we require antiforgery protection for this endpoint or we should skip it.
         // The default for razor component endpoints is to require the metadata, but it can be overriden by
@@ -241,22 +245,25 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
 
     public static partial class Log
     {
-        [LoggerMessage(1, LogLevel.Debug, "Begin render root component '{componentType}' with page '{pageType}'.", EventName = "BeginRenderRootComponent")]
-        public static partial void BeginRenderComponent(ILogger<RazorComponentEndpointInvoker> logger, string componentType, string pageType);
+        [LoggerMessage(1, LogLevel.Debug, "Begin render root component '{componentType}' with page '{pageType}'.", EventName = nameof(BeginRenderRootComponent))]
+        public static partial void BeginRenderRootComponent(ILogger<RazorComponentEndpointInvoker> logger, string componentType, string pageType);
 
-        [LoggerMessage(2, LogLevel.Debug, "The antiforgery middleware already failed to validate the current token.", EventName = "MiddlewareAntiforgeryValidationFailed")]
+        [LoggerMessage(2, LogLevel.Debug, "The antiforgery middleware already failed to validate the current token.", EventName = nameof(MiddlewareAntiforgeryValidationFailed))]
         public static partial void MiddlewareAntiforgeryValidationFailed(ILogger<RazorComponentEndpointInvoker> logger);
 
-        [LoggerMessage(3, LogLevel.Debug, "The antiforgery middleware already succeeded to validate the current token.", EventName = "MiddlewareAntiforgeryValidationSucceeded")]
+        [LoggerMessage(3, LogLevel.Debug, "The antiforgery middleware already succeeded to validate the current token.", EventName = nameof(MiddlewareAntiforgeryValidationSucceeded))]
         public static partial void MiddlewareAntiforgeryValidationSucceeded(ILogger<RazorComponentEndpointInvoker> logger);
 
-        [LoggerMessage(4, LogLevel.Debug, "The endpoint disabled antiforgery token validation.", EventName = "EndpointAntiforgeryValidationDisabled")]
+        [LoggerMessage(4, LogLevel.Debug, "The endpoint disabled antiforgery token validation.", EventName = nameof(EndpointAntiforgeryValidationDisabled))]
         public static partial void EndpointAntiforgeryValidationDisabled(ILogger<RazorComponentEndpointInvoker> logger);
 
-        [LoggerMessage(5, LogLevel.Information, "Antiforgery token validation failed for the current request.", EventName = "EndpointAntiforgeryValidationFailed")]
+        [LoggerMessage(5, LogLevel.Information, "Antiforgery token validation failed for the current request.", EventName = nameof(EndpointAntiforgeryValidationFailed))]
         public static partial void EndpointAntiforgeryValidationFailed(ILogger<RazorComponentEndpointInvoker> logger);
 
-        [LoggerMessage(6, LogLevel.Debug, "Antiforgery token validation succeeded for the current request.", EventName = "EndpointAntiforgeryValidationSucceeded")]
+        [LoggerMessage(6, LogLevel.Debug, "Antiforgery token validation succeeded for the current request.", EventName = nameof(EndpointAntiforgeryValidationSucceeded))]
         public static partial void EndpointAntiforgeryValidationSucceeded(ILogger<RazorComponentEndpointInvoker> logger);
+
+        [LoggerMessage(7, LogLevel.Debug, "Error handling in progress. Interactive components are not enabled.", EventName = nameof(InteractivityDisabledForErrorHandling))]
+        public static partial void InteractivityDisabledForErrorHandling(ILogger<RazorComponentEndpointInvoker> logger);
     }
 }
